@@ -6,3 +6,11 @@
 #end-page-header #end-page-timestamp {
   font-weight: bold;
 }
+
+#end-page-header #end-page-responseid {
+  font-size: 12px;
+}
+
+#end-page-header #end-page-responseid #end-page-id {
+  text-transform: lowercase;
+}

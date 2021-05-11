@@ -59,6 +59,7 @@ function submitFormDirective(
       logoUrl: '<',
       myInfoError: '<',
       disableSubmitButton: '<',
+      responseId: '<',
     },
     link: function (scope, _element, _attrs, _ctrl) {
       const startDate = Date.now() // Used to calculate time spent on form
@@ -321,7 +322,7 @@ function submitFormDirective(
             responseMode: form.responseMode,
           },
           submissionContent, // POST body
-        ).then(handleSubmitSuccess, handleSubmitFailure)
+        ).then((response) => handleSubmitSuccess(response), handleSubmitFailure)
       }
 
       /**
@@ -334,7 +335,8 @@ function submitFormDirective(
        * Returns a callback for form submission success, which updates UI
        * state and Google Analytics.
        */
-      const handleSubmitSuccess = () => {
+      const handleSubmitSuccess = (response) => {
+        scope.responseId = response.id
         setFormState(FORM_STATES.SUBMITTED)
         GTag.submitFormSuccess(scope.form, startDate, Date.now())
         if (shouldTrackPersistentLoginUse()) {
