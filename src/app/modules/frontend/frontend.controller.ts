@@ -1,10 +1,10 @@
 import ejs from 'ejs'
-import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import featureManager from '../../config/feature-manager'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
+import { ControllerHandler } from '../core/core.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -14,7 +14,7 @@ const logger = createLoggerWithLabel(module)
  * @param res - Express response object
  * @returns Templated Javascript code for the frontend to initialise Google Tag Manager
  */
-export const addGoogleAnalyticsData: RequestHandler<
+export const addGoogleAnalyticsData: ControllerHandler<
   unknown,
   string | { message: string }
 > = (req, res) => {
@@ -52,7 +52,7 @@ export const addGoogleAnalyticsData: RequestHandler<
  * @param res - Express response object
  * @returns Templated Javascript code with environment variables for the frontend
  */
-export const addEnvVarData: RequestHandler<unknown, { message: string }> = (
+export const addEnvVarData: ControllerHandler<unknown, { message: string }> = (
   req,
   res,
 ) => {
@@ -82,9 +82,11 @@ export const addEnvVarData: RequestHandler<unknown, { message: string }> = (
  * @param res - Express response object
  * @returns Templated Javascript code for the frontend that redirects to specific form url
  */
-export const generateRedirectUrl: RequestHandler<
+export const generateRedirectUrl: ControllerHandler<
   unknown,
-  string | { message: string }
+  string | { message: string },
+  unknown,
+  { redirectPath: string }
 > = (req, res) => {
   const js = `
     // Update hash to match form id
@@ -116,13 +118,13 @@ export const generateRedirectUrl: RequestHandler<
 
 /**
  * Handler for GET /frontend/features endpoint.
- * @param req - Express request object
+ * @param _req - Express request object
  * @param res - Express response object
  * @returns Current featureManager states
  */
-export const showFeaturesStates: RequestHandler<
+export const showFeaturesStates: ControllerHandler<
   unknown,
   typeof featureManager.states
-> = (req, res) => {
+> = (_req, res) => {
   return res.json(featureManager.states)
 }

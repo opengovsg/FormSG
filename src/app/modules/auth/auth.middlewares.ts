@@ -1,5 +1,6 @@
-import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
+
+import { ControllerHandler } from '../core/core.types'
 
 import { isUserInSession } from './auth.utils'
 
@@ -9,7 +10,7 @@ import { isUserInSession } from './auth.utils'
  * @returns next if user exists in session
  * @returns 401 if user does not exist in session
  */
-export const withUserAuthentication: RequestHandler = (req, res, next) => {
+export const withUserAuthentication: ControllerHandler = (req, res, next) => {
   if (isUserInSession(req.session)) {
     return next()
   }

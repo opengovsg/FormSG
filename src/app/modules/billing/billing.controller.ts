@@ -1,10 +1,10 @@
-import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
 import { BillingInfoDto, BillingQueryDto, ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
+import { ControllerHandler } from '../core/core.types'
 
 import { BillingFactory } from './billing.factory'
 
@@ -18,7 +18,7 @@ const logger = createLoggerWithLabel(module)
  * @return 401 when request does not contain a user session
  * @return 500 when error occurs whilst querying database
  */
-export const handleGetBillInfo: RequestHandler<
+export const handleGetBillInfo: ControllerHandler<
   unknown,
   ErrorDto | BillingInfoDto,
   unknown,

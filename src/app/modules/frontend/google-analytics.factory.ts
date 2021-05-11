@@ -1,15 +1,18 @@
-import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../config/feature-manager'
+import { ControllerHandler } from '../core/core.types'
 
 import * as FrontendServerController from './frontend.controller'
 
 interface IGoogleAnalyticsFactory {
-  addGoogleAnalyticsData: RequestHandler<unknown, string | { message: string }>
+  addGoogleAnalyticsData: ControllerHandler<
+    unknown,
+    string | { message: string }
+  >
 }
 
 const googleAnalyticsFeature = FeatureManager.get(FeatureNames.GoogleAnalytics)

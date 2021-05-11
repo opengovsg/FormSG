@@ -1,9 +1,9 @@
 import { celebrate, Joi } from 'celebrate'
-import { RequestHandler } from 'express'
 
 import { BasicField, FieldResponse } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
+import { ControllerHandler } from '../../core/core.types'
 
 import * as EmailSubmissionReceiver from './email-submission.receiver'
 import { mapRouteError } from './email-submission.util'
@@ -19,7 +19,7 @@ const logger = createLoggerWithLabel(module)
  * @param res - Express response object
  * @param next - Express next middleware function
  */
-export const receiveEmailSubmission: RequestHandler<
+export const receiveEmailSubmission: ControllerHandler<
   unknown,
   { message: string },
   { responses: FieldResponse[] }

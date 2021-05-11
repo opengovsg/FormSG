@@ -1,5 +1,4 @@
 import { celebrate, Joi, Segments } from 'celebrate'
-import { RequestHandler } from 'express'
 import { okAsync, ResultAsync } from 'neverthrow'
 
 import FeatureManager, {
@@ -7,6 +6,7 @@ import FeatureManager, {
   RegisteredFeature,
 } from '../../config/feature-manager'
 import { MissingFeatureError } from '../../modules/core/core.errors'
+import { ControllerHandler } from '../../modules/core/core.types'
 
 import {
   CaptchaConnectionError,
@@ -26,7 +26,7 @@ interface ICaptchaFactory {
     | MissingCaptchaError
     | MissingFeatureError
   >
-  validateCaptchaParams: RequestHandler
+  validateCaptchaParams: ControllerHandler
 }
 
 export const createCaptchaFactory = ({

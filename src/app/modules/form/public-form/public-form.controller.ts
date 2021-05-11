@@ -1,5 +1,4 @@
 import { celebrate, Joi, Segments } from 'celebrate'
-import { Request, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err } from 'neverthrow'
 import querystring from 'querystring'
@@ -16,6 +15,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
+import { ControllerHandler } from '../../core/core.types'
 import {
   MYINFO_COOKIE_NAME,
   MYINFO_COOKIE_OPTIONS,
@@ -63,7 +63,7 @@ const validateSubmitFormFeedbackParams = celebrate({
  * @returns 410 if form has been archived
  * @returns 500 if database error occurs
  */
-export const submitFormFeedback: RequestHandler<
+export const submitFormFeedback: ControllerHandler<
   { formId: string },
   ErrorDto | PrivateFormErrorDto,
   { rating: number; comment: string }
@@ -149,7 +149,7 @@ export const submitFormFeedback: RequestHandler<
 export const handleSubmitFeedback = [
   validateSubmitFormFeedbackParams,
   submitFormFeedback,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for various endpoints to redirect to their hashbanged versions.
@@ -161,7 +161,7 @@ export const handleSubmitFeedback = [
  *
  * @returns 302 redirect
  */
-export const handleRedirect: RequestHandler<
+export const handleRedirect: ControllerHandler<
   RedirectParams,
   unknown,
   unknown,
@@ -214,7 +214,7 @@ export const handleRedirect: RequestHandler<
  * @returns 410 if form has been archived
  * @returns 500 if database error occurs or if the type of error is unknown
  */
-export const handleGetPublicForm: RequestHandler<
+export const handleGetPublicForm: ControllerHandler<
   { formId: string },
   PublicFormViewDto | ErrorDto | PrivateFormErrorDto
 > = async (req, res) => {
@@ -373,11 +373,11 @@ export const handleGetPublicForm: RequestHandler<
  * @returns 500 when the redirect url could not be created
  * @returns 500 when the redirect feature is not enabled
  */
-export const _handleFormAuthRedirect: RequestHandler<
+export const _handleFormAuthRedirect: ControllerHandler<
   { formId: string },
   PublicFormAuthRedirectDto | ErrorDto,
   unknown,
-  Request['query'] & { isPersistentLogin?: boolean }
+  { isPersistentLogin?: boolean }
 > = (req, res) => {
   const { formId } = req.params
   const { isPersistentLogin } = req.query
@@ -450,7 +450,7 @@ export const handleFormAuthRedirect = [
     }),
   }),
   _handleFormAuthRedirect,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for validating the eServiceId of a given form
@@ -464,7 +464,7 @@ export const handleFormAuthRedirect = [
  * @returns 500 when the url for the login page of the form could not be generated
  * @returns 502 when the login page for singpass could not be fetched
  */
-export const handleValidateFormEsrvcId: RequestHandler<
+export const handleValidateFormEsrvcId: ControllerHandler<
   { formId: string },
   PublicFormAuthValidateEsrvcIdDto | ErrorDto
 > = (req, res) => {

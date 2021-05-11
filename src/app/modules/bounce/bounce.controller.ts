@@ -1,10 +1,10 @@
-import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { ISnsNotification } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { EmailType } from '../../services/mail/mail.constants'
 import { DatabaseConflictError } from '../core/core.errors'
+import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
 import * as BounceService from './bounce.service'
@@ -18,7 +18,7 @@ const logger = createLoggerWithLabel(module)
  * @param req Express request object
  * @param res - Express response object
  */
-export const handleSns: RequestHandler<
+export const handleSns: ControllerHandler<
   unknown,
   never,
   ISnsNotification

@@ -1,4 +1,3 @@
-import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { SALT_ROUNDS } from '../../../shared/util/verification'
@@ -7,6 +6,7 @@ import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta } from '../../utils/request'
+import { ControllerHandler } from '../core/core.types'
 
 import { VerificationFactory } from './verification.factory'
 import { Transaction } from './verification.types'
@@ -22,7 +22,7 @@ const logger = createLoggerWithLabel(module)
  * @returns 201 - transaction is created
  * @returns 200 - transaction was not created as no fields were verifiable for the form
  */
-export const handleCreateTransaction: RequestHandler<
+export const handleCreateTransaction: ControllerHandler<
   never,
   Transaction | ErrorDto,
   { formId: string }
@@ -58,7 +58,7 @@ export const handleCreateTransaction: RequestHandler<
  * @param req
  * @param res
  */
-export const handleGetTransactionMetadata: RequestHandler<
+export const handleGetTransactionMetadata: ControllerHandler<
   {
     transactionId: string
   },
@@ -91,7 +91,7 @@ export const handleGetTransactionMetadata: RequestHandler<
  * @param req
  * @param res
  */
-export const handleResetField: RequestHandler<
+export const handleResetField: ControllerHandler<
   { transactionId: string },
   ErrorDto,
   { fieldId: string }
@@ -123,7 +123,7 @@ export const handleResetField: RequestHandler<
  * @param req
  * @param res
  */
-export const handleGetOtp: RequestHandler<
+export const handleGetOtp: ControllerHandler<
   { transactionId: string },
   ErrorDto,
   { answer: string; fieldId: string }
@@ -165,7 +165,7 @@ export const handleGetOtp: RequestHandler<
  * @param req
  * @param res
  */
-export const handleVerifyOtp: RequestHandler<
+export const handleVerifyOtp: ControllerHandler<
   { transactionId: string },
   string | ErrorDto,
   { otp: string; fieldId: string }

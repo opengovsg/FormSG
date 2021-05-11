@@ -1,6 +1,5 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
-import { Request, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
@@ -42,6 +41,7 @@ import {
   DatabasePayloadSizeError,
   DatabaseValidationError,
 } from '../../core/core.errors'
+import { ControllerHandler } from '../../core/core.types'
 import * as FeedbackService from '../../feedback/feedback.service'
 import {
   createCorppassParsedResponses,
@@ -171,7 +171,7 @@ const fileUploadValidator = celebrate({
  * @returns 422 when user of given id cannnot be found in the database
  * @returns 500 when database errors occur
  */
-export const handleListDashboardForms: RequestHandler<
+export const handleListDashboardForms: ControllerHandler<
   unknown,
   FormMetaView[] | ErrorDto
 > = async (req, res) => {
@@ -204,7 +204,7 @@ export const handleListDashboardForms: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
+export const handleGetAdminForm: ControllerHandler<{ formId: string }> = (
   req,
   res,
 ) => {
@@ -250,7 +250,7 @@ export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleGetFormCollaborators: RequestHandler<
+export const handleGetFormCollaborators: ControllerHandler<
   { formId: string },
   PermissionsUpdateDto | ErrorDto
 > = (req, res) => {
@@ -298,7 +298,7 @@ export const handleGetFormCollaborators: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handlePreviewAdminForm: RequestHandler<{ formId: string }> = (
+export const handlePreviewAdminForm: ControllerHandler<{ formId: string }> = (
   req,
   res,
 ) => {
@@ -348,7 +348,7 @@ export const handlePreviewAdminForm: RequestHandler<{ formId: string }> = (
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  */
-export const createPresignedPostUrlForImages: RequestHandler<
+export const createPresignedPostUrlForImages: ControllerHandler<
   { formId: string },
   unknown,
   {
@@ -400,7 +400,7 @@ export const createPresignedPostUrlForImages: RequestHandler<
 export const handleCreatePresignedPostUrlForImages = [
   fileUploadValidator,
   createPresignedPostUrlForImages,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for POST /:formId([a-fA-F0-9]{24})/adminform/logos.
@@ -413,7 +413,7 @@ export const handleCreatePresignedPostUrlForImages = [
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  */
-export const createPresignedPostUrlForLogos: RequestHandler<
+export const createPresignedPostUrlForLogos: ControllerHandler<
   { formId: string },
   unknown,
   {
@@ -465,7 +465,7 @@ export const createPresignedPostUrlForLogos: RequestHandler<
 export const handleCreatePresignedPostUrlForLogos = [
   fileUploadValidator,
   createPresignedPostUrlForLogos,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 // Validates that the ending date >= starting date
 const validateDateRange = celebrate({
@@ -489,7 +489,7 @@ const validateDateRange = celebrate({
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const countFormSubmissions: RequestHandler<
+export const countFormSubmissions: ControllerHandler<
   { formId: string },
   unknown,
   unknown,
@@ -554,7 +554,7 @@ export const countFormSubmissions: RequestHandler<
 export const handleCountFormSubmissions = [
   validateDateRange,
   countFormSubmissions,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for GET /{formId}/adminform/feedback/count.
@@ -567,7 +567,7 @@ export const handleCountFormSubmissions = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleCountFormFeedback: RequestHandler<{
+export const handleCountFormFeedback: ControllerHandler<{
   formId: string
 }> = async (req, res) => {
   const { formId } = req.params
@@ -616,7 +616,7 @@ export const handleCountFormFeedback: RequestHandler<{
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database or stream error occurs
  */
-export const handleStreamFormFeedback: RequestHandler<{
+export const handleStreamFormFeedback: ControllerHandler<{
   formId: string
 }> = async (req, res) => {
   const { formId } = req.params
@@ -710,7 +710,7 @@ export const handleStreamFormFeedback: RequestHandler<{
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleGetFormFeedback: RequestHandler<{
+export const handleGetFormFeedback: ControllerHandler<{
   formId: string
 }> = (req, res) => {
   const { formId } = req.params
@@ -753,7 +753,7 @@ export const handleGetFormFeedback: RequestHandler<{
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
+export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
   req,
   res,
 ) => {
@@ -805,7 +805,7 @@ export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const duplicateAdminForm: RequestHandler<
+export const duplicateAdminForm: ControllerHandler<
   { formId: string },
   unknown,
   DuplicateFormBody
@@ -858,7 +858,7 @@ export const duplicateAdminForm: RequestHandler<
 export const handleDuplicateAdminForm = [
   duplicateFormValidator,
   duplicateAdminForm,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for GET /:formId/adminform/template
@@ -870,7 +870,7 @@ export const handleDuplicateAdminForm = [
  * @returns 410 when form is archived
  * @returns 500 when database error occurs
  */
-export const handleGetTemplateForm: RequestHandler<{ formId: string }> = (
+export const handleGetTemplateForm: ControllerHandler<{ formId: string }> = (
   req,
   res,
 ) => {
@@ -927,7 +927,7 @@ export const handleGetTemplateForm: RequestHandler<{ formId: string }> = (
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleCopyTemplateForm: RequestHandler<
+export const handleCopyTemplateForm: ControllerHandler<
   { formId: string },
   unknown,
   DuplicateFormBody
@@ -988,7 +988,7 @@ export const handleCopyTemplateForm: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const transferFormOwnership: RequestHandler<
+export const transferFormOwnership: ControllerHandler<
   { formId: string },
   unknown,
   { email: string }
@@ -1036,7 +1036,7 @@ export const transferFormOwnership: RequestHandler<
 export const handleTransferFormOwnership = [
   transferFormOwnershipValidator,
   transferFormOwnership,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for POST /adminform.
@@ -1048,7 +1048,7 @@ export const handleTransferFormOwnership = [
  * @returns 422 when user of given id cannnot be found in the database, or when form parameters are invalid
  * @returns 500 when database error occurs
  */
-export const createForm: RequestHandler<
+export const createForm: ControllerHandler<
   unknown,
   unknown,
   { form: Omit<IForm, 'admin'> }
@@ -1083,7 +1083,7 @@ export const createForm: RequestHandler<
 export const handleCreateForm = [
   createFormValidator,
   createForm,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for PUT /:formId/adminform.
@@ -1100,7 +1100,7 @@ export const handleCreateForm = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleUpdateForm: RequestHandler<
+export const handleUpdateForm: ControllerHandler<
   { formId: string },
   unknown,
   { form: FormUpdateParams }
@@ -1171,7 +1171,7 @@ export const handleUpdateForm: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleUpdateSettings: RequestHandler<
+export const handleUpdateSettings: ControllerHandler<
   { formId: string },
   FormSettings | ErrorDto,
   SettingsUpdateDto
@@ -1216,7 +1216,7 @@ export const handleUpdateSettings: RequestHandler<
  * Private handler for PUT /forms/:formId/fields/:fieldId
  * @precondition Must be preceded by request validation
  */
-export const _handleUpdateFormField: RequestHandler<
+export const _handleUpdateFormField: ControllerHandler<
   {
     formId: string
     fieldId: string
@@ -1275,7 +1275,7 @@ export const _handleUpdateFormField: RequestHandler<
  * @returns 409 when saving form settings incurs a conflict in the database
  * @returns 500 when database error occurs
  */
-export const handleGetSettings: RequestHandler<
+export const handleGetSettings: ControllerHandler<
   { formId: string },
   FormSettings | ErrorDto
 > = (req, res) => {
@@ -1320,7 +1320,7 @@ export const handleGetSettings: RequestHandler<
  * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
-export const submitEncryptPreview: RequestHandler<
+export const submitEncryptPreview: ControllerHandler<
   { formId: string },
   { message: string; submissionId: string } | ErrorDto,
   EncryptSubmissionDto
@@ -1399,7 +1399,7 @@ export const submitEncryptPreview: RequestHandler<
 export const handleEncryptPreviewSubmission = [
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   submitEncryptPreview,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for POST /v2/submissions/encrypt/preview/:formId.
@@ -1413,7 +1413,7 @@ export const handleEncryptPreviewSubmission = [
  * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
-export const submitEmailPreview: RequestHandler<
+export const submitEmailPreview: ControllerHandler<
   { formId: string },
   { message: string; submissionId?: string },
   { responses: FieldResponse[]; isPreview: boolean },
@@ -1426,7 +1426,7 @@ export const submitEmailPreview: RequestHandler<
   const logMeta = {
     action: 'submitEmailPreview',
     formId,
-    ...createReqMeta(req as Request),
+    ...createReqMeta(req),
   }
 
   const formResult = await UserService.getPopulatedUserById(sessionUserId)
@@ -1543,7 +1543,7 @@ export const handleEmailPreviewSubmission = [
   EmailSubmissionMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailPreview,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for PUT /forms/:formId/fields/:fieldId
@@ -1599,7 +1599,7 @@ export const handleUpdateFormField = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleCreateFormField: RequestHandler<
+export const _handleCreateFormField: ControllerHandler<
   { formId: string },
   FormFieldDto | ErrorDto,
   FieldCreateDto
@@ -1651,7 +1651,10 @@ export const _handleCreateFormField: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleDeleteLogic: RequestHandler = (req, res) => {
+export const handleDeleteLogic: ControllerHandler<{
+  formId: string
+  logicId: string
+}> = (req, res) => {
   const { formId, logicId } = req.params
   const sessionUserId = (req.session as Express.AuthedSession).user._id
 
@@ -1727,11 +1730,11 @@ export const handleCreateFormField = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleReorderFormField: RequestHandler<
+export const _handleReorderFormField: ControllerHandler<
   { formId: string; fieldId: string },
   FormFieldDto[] | ErrorDto,
   unknown,
-  Request['query'] & { to: number }
+  { to: number }
 > = (req, res) => {
   const { formId, fieldId } = req.params
   const { to } = req.query
@@ -1782,7 +1785,7 @@ export const handleReorderFormField = [
     },
   }),
   _handleReorderFormField,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * NOTE: Exported for testing.
@@ -1796,7 +1799,7 @@ export const handleReorderFormField = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleUpdateLogic: RequestHandler<
+export const _handleUpdateLogic: ControllerHandler<
   { formId: string; logicId: string },
   LogicDto | ErrorDto,
   LogicDto
@@ -1891,7 +1894,7 @@ export const handleUpdateLogic = [
     { reqContext: true },
   ),
   _handleUpdateLogic,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for DELETE /forms/:formId/fields/:fieldId
@@ -1905,7 +1908,7 @@ export const handleUpdateLogic = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs during deletion
  */
-export const handleDeleteFormField: RequestHandler<
+export const handleDeleteFormField: ControllerHandler<
   { formId: string; fieldId: string },
   ErrorDto | void
 > = (req, res) => {
@@ -1957,7 +1960,7 @@ export const handleDeleteFormField: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleUpdateEndPage: RequestHandler<
+export const _handleUpdateEndPage: ControllerHandler<
   { formId: string },
   IFormDocument['endPage'] | ErrorDto,
   EndPageUpdateDto
@@ -2010,7 +2013,7 @@ export const handleUpdateEndPage = [
     },
   }),
   _handleUpdateEndPage,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for GET /admin/forms/:formId/fields/:fieldId
@@ -2024,7 +2027,7 @@ export const handleUpdateEndPage = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleGetFormField: RequestHandler<
+export const handleGetFormField: ControllerHandler<
   {
     formId: string
     fieldId: string
@@ -2078,7 +2081,7 @@ export const handleGetFormField: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleUpdateCollaborators: RequestHandler<
+export const _handleUpdateCollaborators: ControllerHandler<
   { formId: string },
   PermissionsUpdateDto | ErrorDto,
   PermissionsUpdateDto
@@ -2138,4 +2141,4 @@ export const handleUpdateCollaborators = [
     ),
   }),
   _handleUpdateCollaborators,
-] as RequestHandler[]
+] as ControllerHandler[]

@@ -1,4 +1,3 @@
-import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
 
@@ -6,6 +5,7 @@ import { LINKS } from '../../../shared/constants'
 import { createLoggerWithLabel } from '../../config/logger'
 import MailService from '../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../utils/request'
+import { ControllerHandler } from '../core/core.types'
 import * as UserService from '../user/user.service'
 
 import * as AuthService from './auth.service'
@@ -20,7 +20,7 @@ const logger = createLoggerWithLabel(module)
  * @returns 401 when domain of body.email is invalid
  * @returns 200 if domain of body.email is valid
  */
-export const handleCheckUser: RequestHandler<
+export const handleCheckUser: ControllerHandler<
   unknown,
   string,
   { email: string }
@@ -51,7 +51,7 @@ export const handleCheckUser: RequestHandler<
  * @return 401 when email domain is invalid
  * @return 500 when unknown errors occurs during generate OTP, or create/send the email that delivers the OTP to the user's email address
  */
-export const handleLoginSendOtp: RequestHandler<
+export const handleLoginSendOtp: ControllerHandler<
   unknown,
   { message: string } | string,
   { email: string }
@@ -110,7 +110,7 @@ export const handleLoginSendOtp: RequestHandler<
  * @returns 422 when the OTP is invalid
  * @returns 500 when error occurred whilst verifying the OTP
  */
-export const handleLoginVerifyOtp: RequestHandler<
+export const handleLoginVerifyOtp: ControllerHandler<
   unknown,
   string | SessionUser,
   { email: string; otp: string }
@@ -186,7 +186,7 @@ export const handleLoginVerifyOtp: RequestHandler<
   )
 }
 
-export const handleSignout: RequestHandler = async (req, res) => {
+export const handleSignout: ControllerHandler = async (req, res) => {
   if (!req.session || isEmpty(req.session)) {
     logger.error({
       message: 'Attempted to sign out without a session',
