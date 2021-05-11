@@ -11,7 +11,7 @@ import {
   MyInfoAttribute,
 } from './field'
 import { ILogicSchema, LogicDto } from './form_logic'
-import { FormLogoState, IFormLogo } from './form_logo'
+import { ICustomFormLogo, IFormLogo } from './form_logo'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
 
 export enum AuthType {
@@ -77,15 +77,11 @@ export type FormOtpData = {
   msgSrvcName?: string
 }
 
-export type Logo = {
-  state: FormLogoState
-}
-
 export type StartPage = {
   paragraph?: string
   estTimeTaken?: number
   colorTheme?: Colors
-  logo?: IFormLogo
+  logo?: IFormLogo | ICustomFormLogo
 }
 
 export type EndPage = {
