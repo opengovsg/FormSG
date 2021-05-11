@@ -93,18 +93,20 @@ function SubmissionsFactory(
     xhr.send(fd)
     // On Response
     xhr.onreadystatechange = function () {
-      // 4 DONE  The operation is complete.
       const OPERATION_DONE = 4
       if (xhr.readyState === OPERATION_DONE) {
         // waterfall is successful
+        let response = {}
+        try {
+          response = JSON.parse(xhr.responseText)
+          // eslint-disable-next-line no-empty
+        } catch (e) {}
         if (xhr.status === HttpStatus.OK) {
-          deferred.resolve('Submission has finished.')
+          deferred.resolve({
+            message: 'Submission has finished.',
+            id: response.submissionId || 'Not available',
+          })
         } else {
-          let response = {}
-          try {
-            response = JSON.parse(xhr.responseText)
-            // eslint-disable-next-line no-empty
-          } catch (e) {}
           deferred.reject(
             `${
               response.message ||
@@ -133,8 +135,11 @@ function SubmissionsFactory(
         version: body.version,
       })
       .then(
-        function () {
-          deferred.resolve('Submission has finished.')
+        function (response) {
+          deferred.resolve({
+            message: 'Submission has finished.',
+            id: response.submissionId,
+          })
         },
         function (error) {
           deferred.reject(
