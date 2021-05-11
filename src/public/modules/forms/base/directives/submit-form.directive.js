@@ -59,7 +59,6 @@ function submitFormDirective(
       logoUrl: '<',
       myInfoError: '<',
       disableSubmitButton: '<',
-      responseId: '<',
     },
     link: function (scope, _element, _attrs, _ctrl) {
       const startDate = Date.now() // Used to calculate time spent on form
@@ -355,6 +354,7 @@ function submitFormDirective(
        * @param {string?} toastMessage The toast message to display, if any.
        */
       const handleSubmitFailure = (error, toastMessage) => {
+        scope.responseId = ''
         const form = scope.form
         console.error('Submission error:\t', error)
         setFormState(FORM_STATES.SUBMISSION_ERROR)
