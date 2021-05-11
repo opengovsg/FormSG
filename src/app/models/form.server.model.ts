@@ -671,6 +671,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     ).exec()
   }
 
+  // Deletes specified form field by id.
+  FormSchema.statics.deleteFormFieldById = async function (
+    this: IFormModel,
+    formId: string,
+    fieldId: string,
+  ): Promise<IFormSchema | null> {
+    return this.findByIdAndUpdate(
+      formId,
+      { $pull: { form_fields: { _id: fieldId } } },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+
   // Hooks
   FormSchema.pre<IFormSchema>('validate', function (next) {
     // Reject save if form document is too large

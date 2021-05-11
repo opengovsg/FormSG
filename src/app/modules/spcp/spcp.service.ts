@@ -5,6 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { AuthType } from '../../../types'
+import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
 import { ISpcpMyInfo } from '../../config/feature-manager'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
@@ -25,7 +26,6 @@ import {
   CorppassJwtPayload,
   JwtName,
   JwtPayload,
-  LoginPageValidationResult,
   ParsedSpcpParams,
   SingpassAttributes,
   SingpassJwtPayload,
@@ -158,7 +158,7 @@ export class SpcpService {
    */
   validateLoginPage(
     loginHtml: string,
-  ): Result<LoginPageValidationResult, LoginPageValidationError> {
+  ): Result<PublicFormAuthValidateEsrvcIdDto, LoginPageValidationError> {
     // The successful login page should have the title 'SingPass Login'
     // The error page should have the title 'SingPass - System Error Page'
     const title = getSubstringBetween(loginHtml, '<title>', '</title>')

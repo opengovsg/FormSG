@@ -1729,3 +1729,54 @@ export const handleReorderFormField = [
   }),
   _handleReorderFormField,
 ] as RequestHandler[]
+
+/**
+ * Handler for DELETE /forms/:formId/fields/:fieldId
+ * @security session
+ *
+ * @returns 204 when deletion is successful
+ * @returns 403 when current user does not have permissions to delete form field
+ * @returns 404 when form cannot be found
+ * @returns 404 when form field to delete cannot be found
+ * @returns 410 when deleting form field of an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs during deletion
+ */
+export const handleDeleteFormField: RequestHandler<
+  { formId: string; fieldId: string },
+  ErrorDto | void
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: Delete form field.
+      .andThen((form) => AdminFormService.deleteFormField(form, fieldId))
+      .map(() => res.sendStatus(StatusCodes.NO_CONTENT))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when deleting form field',
+          meta: {
+            action: 'handleDeleteFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            fieldId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
