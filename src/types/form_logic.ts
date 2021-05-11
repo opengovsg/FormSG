@@ -107,3 +107,8 @@ export type LogicCondition =
   | CategoricalLogicCondition
   | BinaryLogicCondition
   | NumericalLogicCondition
+
+/**
+ * Logic POJO with functions removed
+ */
+export type LogicDto = ILogic & { _id?: Document['_id'] }

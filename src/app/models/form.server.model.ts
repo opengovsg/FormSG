@@ -14,6 +14,7 @@ import {
   AuthType,
   BasicField,
   Colors,
+  EndPage,
   FormField,
   FormFieldWithId,
   FormLogoState,
@@ -29,6 +30,7 @@ import {
   IFormModel,
   IFormSchema,
   IPopulatedForm,
+  LogicDto,
   LogicType,
   Permission,
   PickDuplicateForm,
@@ -523,6 +525,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
+  FormDocumentSchema.methods.updateFormCollaborators = async function (
+    this: IFormDocument,
+    updatedPermissions: Permission[],
+  ) {
+    this.permissionList = updatedPermissions
+    return this.save()
+  }
+
   FormDocumentSchema.methods.updateFormFieldById = function (
     this: IFormDocument,
     fieldId: string,
@@ -680,6 +690,37 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.findByIdAndUpdate(
       formId,
       { $pull: { form_fields: { _id: fieldId } } },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+  // Updates specified form logic.
+  FormSchema.statics.updateFormLogic = async function (
+    this: IFormModel,
+    formId: string,
+    logicId: string,
+    updatedLogic: LogicDto,
+  ): Promise<IFormSchema | null> {
+    return this.findByIdAndUpdate(
+      formId,
+      {
+        $set: { 'form_logics.$[object]': updatedLogic },
+      },
+      {
+        arrayFilters: [{ 'object._id': logicId }],
+        new: true,
+        runValidators: true,
+      },
+    ).exec()
+  }
+
+  FormSchema.statics.updateEndPageById = async function (
+    this: IFormModel,
+    formId: string,
+    newEndPage: EndPage,
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { endPage: newEndPage },
       { new: true, runValidators: true },
     ).exec()
   }

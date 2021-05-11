@@ -1,7 +1,7 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { assignIn, last, omit } from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
 import {
@@ -17,10 +17,14 @@ import {
   IForm,
   IFormDocument,
   IFormSchema,
+  ILogicSchema,
   IPopulatedForm,
   IUserSchema,
+  LogicDto,
+  Permission,
 } from '../../../../types'
 import {
+  EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
   SettingsUpdateDto,
@@ -48,7 +52,7 @@ import {
   TransferOwnershipError,
 } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
-import { getFormFieldById } from '../form.utils'
+import { getFormFieldById, getLogicById } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -637,6 +641,35 @@ export const updateForm = (
 }
 
 /**
+ * Updates the collaborators of a given form
+ * @param form the form to update collaborators fo
+ * @param updatedCollaborators the new list of collaborators
+ *
+ * @returns ok(collaborators) if form updates successfully
+ * @returns err(PossibleDatabaseError) if any database errors occurs
+ */
+export const updateFormCollaborators = (
+  form: IPopulatedForm,
+  updatedCollaborators: Permission[],
+): ResultAsync<Permission[], PossibleDatabaseError> => {
+  return ResultAsync.fromPromise(
+    form.updateFormCollaborators(updatedCollaborators),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form collaborators',
+        meta: {
+          action: 'updateFormCollaborators',
+          formId: form._id,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen(({ permissionList }) => okAsync(permissionList))
+}
+
+/**
  * Updates form settings.
  * @param originalForm The original form to update settings for
  * @param body the subset of form settings to update
@@ -695,7 +728,10 @@ export const updateFormSettings = (
 export const deleteFormLogic = (
   form: IPopulatedForm,
   logicId: string,
-): ResultAsync<IFormSchema, DatabaseError | LogicNotFoundError> => {
+): ResultAsync<
+  IFormSchema,
+  DatabaseError | LogicNotFoundError | FormNotFoundError
+> => {
   // First check if specified logic exists
   if (!form.form_logics.some((logic) => logic.id === logicId)) {
     logger.error({
@@ -730,6 +766,64 @@ export const deleteFormLogic = (
       return errAsync(new FormNotFoundError())
     }
     return okAsync(updatedForm)
+  })
+}
+
+/**
+ * Updates form logic.
+ * @param form The original form to update logic in
+ * @param logicId the logicId to update
+ * @param updatedLogic Object containing the updated logic
+ * @returns ok(updated logic dto) on success
+ * @returns err(database errors) if db error is thrown during logic update
+ * @returns err(LogicNotFoundError) if logicId does not exist on form
+ */
+export const updateFormLogic = (
+  form: IPopulatedForm,
+  logicId: string,
+  updatedLogic: LogicDto,
+): ResultAsync<
+  ILogicSchema,
+  DatabaseError | LogicNotFoundError | FormNotFoundError
+> => {
+  // First check if specified logic exists
+  if (!form.form_logics.some((logic) => logic._id.toHexString() === logicId)) {
+    logger.error({
+      message: 'Error occurred - logicId to be updated does not exist',
+      meta: {
+        action: 'updateFormLogic',
+        formId: form._id,
+        logicId,
+      },
+    })
+    return errAsync(new LogicNotFoundError())
+  }
+
+  // Update specified logic
+  return ResultAsync.fromPromise(
+    FormModel.updateFormLogic(form._id.toHexString(), logicId, updatedLogic),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating form logic',
+        meta: {
+          action: 'updateFormLogic',
+          formId: form._id,
+          logicId,
+          updatedLogic,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+    // On success, return updated form logic
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    const updatedLogic = getLogicById(updatedForm.form_logics, logicId)
+    return updatedLogic
+      ? okAsync(updatedLogic)
+      : errAsync(new LogicNotFoundError()) // Possible race condition if logic gets deleted after the initial logicId check but before the db update
   })
 }
 
@@ -778,4 +872,62 @@ export const deleteFormField = <T extends IFormSchema>(
     }
     return okAsync(updatedForm)
   })
+}
+
+/**
+ * Update the end page of the given form
+ * @param formId the id of the form to update the end page for
+ * @param newEndPage the new end page object to replace the current one
+ * @returns ok(updated end page object) when update is successful
+ * @returns err(FormNotFoundError) if form cannot be found
+ * @returns err(PossibleDatabaseError) if endpage update fails
+ */
+export const updateEndPage = (
+  formId: string,
+  newEndPage: EndPageUpdateDto,
+): ResultAsync<
+  IFormDocument['endPage'],
+  PossibleDatabaseError | FormNotFoundError
+> => {
+  return ResultAsync.fromPromise(
+    FormModel.updateEndPageById(formId, newEndPage),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating form end page',
+        meta: {
+          action: 'updateEndPage',
+          formId,
+          newEndPage,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.endPage)
+  })
+}
+
+/**
+ * Retrieves a form field from the given form.
+ * @param form The form to retrieve the specified form field for
+ * @param fieldId the id of the form field
+ * @returns ok(form field) on success
+ * @returns err(FieldNotFoundError) if the fieldId does not exist in form's fields
+ */
+export const getFormField = (
+  form: IPopulatedForm,
+  fieldId: string,
+): Result<IFieldSchema, FieldNotFoundError> => {
+  const formField = getFormFieldById(form.form_fields, fieldId)
+  if (!formField)
+    return err(
+      new FieldNotFoundError(
+        `Attempted to retrieve field ${fieldId} from ${form._id} but field was not present`,
+      ),
+    )
+  return ok(formField)
 }

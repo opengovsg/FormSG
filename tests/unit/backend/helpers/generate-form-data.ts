@@ -31,6 +31,7 @@ import {
   IMobileFieldSchema,
   INumberField,
   IRatingField,
+  IRatingFieldSchema,
   IShortTextField,
   IShortTextFieldSchema,
   ISingleAnswerResponse,
@@ -153,6 +154,15 @@ export const generateDefaultField = (
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as IHomenoFieldSchema
+    case BasicField.Rating:
+      return {
+        ...defaultParams,
+        ratingOptions: {
+          shape: 'Heart',
+          steps: 5,
+        },
+        ...customParams,
+      } as IRatingFieldSchema
     default:
       return {
         ...defaultParams,

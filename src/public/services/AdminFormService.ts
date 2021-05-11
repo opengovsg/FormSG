@@ -1,10 +1,12 @@
 import axios from 'axios'
 
-import { FormSettings } from '../../types'
+import { FormSettings, LogicDto } from '../../types'
 import {
+  EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
   FormFieldDto,
+  PermissionsUpdateDto,
   SettingsUpdateDto,
 } from '../../types/api'
 
@@ -19,6 +21,15 @@ export const updateFormSettings = async (
       `${ADMIN_FORM_ENDPOINT}/${formId}/settings`,
       settingsToUpdate,
     )
+    .then(({ data }) => data)
+}
+
+export const getSingleFormField = async (
+  formId: string,
+  fieldId: string,
+): Promise<FormFieldDto> => {
+  return axios
+    .get<FormFieldDto>(`${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}`)
     .then(({ data }) => data)
 }
 
@@ -47,6 +58,18 @@ export const createSingleFormField = async (
     .then(({ data }) => data)
 }
 
+export const updateCollaborators = async (
+  formId: string,
+  collaboratorsToUpdate: PermissionsUpdateDto,
+): Promise<PermissionsUpdateDto> => {
+  return axios
+    .put<PermissionsUpdateDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators`,
+      collaboratorsToUpdate,
+    )
+    .then(({ data }) => data)
+}
+
 /**
  * Reorders the field to the given new position.
  * @param formId the id of the form to perform the field reorder
@@ -70,7 +93,7 @@ export const reorderSingleFormField = async (
 
 /**
  * Delete a single form field by its id in given form
- * @param formId the form to delete the field from
+ * @param formId the id of the form to delete the field from
  * @param fieldId the id of the field to delete
  * @returns void on success
  */
@@ -81,6 +104,24 @@ export const deleteSingleFormField = async (
   return axios.delete(`${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}`)
 }
 
+/**
+ * Updates the end page for the given form referenced by its id
+ * @param formId the id of the form to update end page for
+ * @param newEndPage the new endpage to replace with
+ * @returns the updated end page on success
+ */
+export const updateFormEndPage = async (
+  formId: string,
+  newEndPage: EndPageUpdateDto,
+): Promise<EndPageUpdateDto> => {
+  return axios
+    .put<EndPageUpdateDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/end-page`,
+      newEndPage,
+    )
+    .then(({ data }) => data)
+}
+
 export const deleteFormLogic = async (
   formId: string,
   logicId: string,
@@ -88,4 +129,17 @@ export const deleteFormLogic = async (
   return axios
     .delete(`${ADMIN_FORM_ENDPOINT}/${formId}/logic/${logicId}`)
     .then(() => true)
+}
+
+export const updateFormLogic = async (
+  formId: string,
+  logicId: string,
+  updatedLogic: LogicDto,
+): Promise<LogicDto> => {
+  return axios
+    .put<LogicDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/logic/${logicId}`,
+      updatedLogic,
+    )
+    .then(({ data }) => data)
 }
