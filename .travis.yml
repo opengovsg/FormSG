@@ -45,7 +45,7 @@ jobs:
       workspaces:
         use: build
       script:
-        - npm run test-backend
+        - npm run test-backend-ci
       after_success:
         - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
     - name: End-to-end tests
