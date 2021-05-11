@@ -25,7 +25,7 @@ jest.mock('twilio', () => () => ({
   },
 }))
 
-describe('verification.routes', () => {
+describe('public-forms.verification.routes', () => {
   let mockEmptyFormId: string
   let mockVerifiableFormId: string
   let request: Session
