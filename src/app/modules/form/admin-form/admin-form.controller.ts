@@ -6,7 +6,10 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
-import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
+import {
+  MAX_UPLOAD_FILE_SIZE,
+  VALID_UPLOAD_FILE_TYPES,
+} from '../../../../shared/constants'
 import {
   AuthType,
   BasicField,
@@ -2212,6 +2215,22 @@ export const handleUpdateStartPage = [
         .required(),
       logo: Joi.object({
         state: Joi.string().valid(...Object.values(FormLogoState)),
+        fileId: Joi.when('state', {
+          is: FormLogoState.Custom,
+          then: Joi.string().required(),
+        }),
+        fileName: Joi.when('state', {
+          is: FormLogoState.Custom,
+          then: Joi.string()
+            // Captures only the extensions below regardless of their case
+            // Refer to https://regex101.com/ with the below regex for a full explanation
+            .pattern(/\.(gif|png|jpeg|jpg)$/im)
+            .required(),
+        }),
+        fileSizeInBytes: Joi.when('state', {
+          is: FormLogoState.Custom,
+          then: Joi.number().max(MAX_UPLOAD_FILE_SIZE).required(),
+        }),
       }).required(),
     },
   }),
