@@ -119,7 +119,10 @@ const submitEmailModeForm: RequestHandler<
         // Validate responses
         EmailSubmissionService.validateAttachments(req.body.responses)
           .andThen(() =>
-            SubmissionService.getProcessedResponses(form, req.body.responses),
+            SubmissionService.ParsedResponsesObject.parseResponses(
+              form,
+              req.body.responses,
+            ),
           )
           .map((parsedResponses) => ({ parsedResponses, form }))
           .mapErr((error) => {
@@ -139,10 +142,9 @@ const submitEmailModeForm: RequestHandler<
               .asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
-                parsedResponses: [
-                  ...parsedResponses,
-                  ...createCorppassParsedResponses(jwt.userName, jwt.userInfo),
-                ],
+                parsedResponses: parsedResponses.addNdiResponses(
+                  createCorppassParsedResponses(jwt.userName, jwt.userInfo),
+                ),
               }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
@@ -158,10 +160,9 @@ const submitEmailModeForm: RequestHandler<
               .asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
-                parsedResponses: [
-                  ...parsedResponses,
-                  ...createSingpassParsedResponses(jwt.userName),
-                ],
+                parsedResponses: parsedResponses.addNdiResponses(
+                  createSingpassParsedResponses(jwt.userName),
+                ),
               }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
@@ -181,16 +182,19 @@ const submitEmailModeForm: RequestHandler<
               .asyncAndThen((uinFin) =>
                 MyInfoFactory.fetchMyInfoHashes(uinFin, formId)
                   .andThen((hashes) =>
-                    MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
+                    MyInfoFactory.checkMyInfoHashes(
+                      // TODO: A better solution might exist
+                      parsedResponses.responses,
+                      hashes,
+                    ),
                   )
                   .map<IPopulatedEmailFormWithResponsesAndHash>(
                     (hashedFields) => ({
                       form,
                       hashedFields,
-                      parsedResponses: [
-                        ...parsedResponses,
-                        ...createSingpassParsedResponses(uinFin),
-                      ],
+                      parsedResponses: parsedResponses.addNdiResponses(
+                        createSingpassParsedResponses(uinFin),
+                      ),
                     }),
                   ),
               )
@@ -213,7 +217,8 @@ const submitEmailModeForm: RequestHandler<
       .andThen(({ form, parsedResponses, hashedFields }) => {
         // Create data for response email as well as email confirmation
         const emailData = new SubmissionEmailObj(
-          parsedResponses,
+          // TODO: A better solution might exist
+          [...parsedResponses.responses, ...parsedResponses.ndiResponses],
           hashedFields,
           form.authType,
         )
@@ -257,7 +262,8 @@ const submitEmailModeForm: RequestHandler<
         // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
         return MailService.sendSubmissionToAdmin({
           replyToEmails: EmailSubmissionService.extractEmailAnswers(
-            parsedResponses,
+            // TODO: A better solution might exist
+            [...parsedResponses.responses, ...parsedResponses.ndiResponses],
           ),
           form,
           submission,
@@ -292,7 +298,11 @@ const submitEmailModeForm: RequestHandler<
           // Send email confirmations
           void SubmissionService.sendEmailConfirmations({
             form,
-            parsedResponses,
+            // TODO: A better solution might exist
+            parsedResponses: [
+              ...parsedResponses.responses,
+              ...parsedResponses.ndiResponses,
+            ],
             submission,
             attachments,
             autoReplyData: emailData.autoReplyData,
