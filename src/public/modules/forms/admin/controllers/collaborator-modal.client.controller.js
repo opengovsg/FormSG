@@ -237,29 +237,34 @@ function CollaboratorModalController(
     )
 
     $scope.btnStatus = 2 // pressed; loading
-    $scope.updatePermissionList(permissionList).then((err) => {
-      if (err) {
-        // Make the alert message correspond to the error code
-        if (err.response.status === StatusCodes.BAD_REQUEST) {
-          Toastr.error(
-            'Please ensure that the email entered is a valid government email. If the error still persists, refresh and try again later.',
-          )
-        } else if (err.response.status === StatusCodes.UNPROCESSABLE_ENTITY) {
-          Toastr.error(`${email} is not part of a whitelisted agency.`)
-        } else {
-          Toastr.error('Error adding collaborator.')
-        }
-        resetCollabForm()
-        return
-      }
-      // If no error, clear email input
-      $scope.btnStatus = 3 // pressed; saved
-      $scope.closeEditCollaboratorDropdowns()
+    $scope
+      .updatePermissionList(permissionList)
+      .then(() => {
+        // If no error, clear email input
+        $scope.btnStatus = 3 // pressed; saved
+        $scope.closeEditCollaboratorDropdowns()
 
-      $timeout(() => {
-        resetCollabForm()
-      }, 1000)
-    })
+        $timeout(() => {
+          resetCollabForm()
+        }, 1000)
+      })
+      .catch((err) => {
+        console.log('ERR', err)
+        if (err) {
+          // Make the alert message correspond to the error code
+          if (err.response.status === StatusCodes.BAD_REQUEST) {
+            Toastr.error(
+              'Please ensure that the email entered is a valid government email. If the error still persists, refresh and try again later.',
+            )
+          } else if (err.response.status === StatusCodes.UNPROCESSABLE_ENTITY) {
+            Toastr.error(`${email} is not part of a whitelisted agency.`)
+          } else {
+            Toastr.error('Error adding collaborator.')
+          }
+          resetCollabForm()
+          return
+        }
+      })
   }
 
   /**
