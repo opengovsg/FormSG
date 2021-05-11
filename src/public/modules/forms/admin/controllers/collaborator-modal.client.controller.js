@@ -237,7 +237,7 @@ function CollaboratorModalController(
     )
 
     $scope.btnStatus = 2 // pressed; loading
-    $scope.updatePermissionList(permissionList).catch((err) => {
+    $scope.updatePermissionList(permissionList).then((err) => {
       if (err) {
         // Make the alert message correspond to the error code
         if (err.response.status === StatusCodes.BAD_REQUEST) {
