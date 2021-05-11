@@ -331,7 +331,7 @@ export interface IFormModel extends Model<IFormSchema> {
    */
   updateEndPageById(
     formId: string,
-    newEndPage: StartPage,
+    newEndPage: EndPage,
   ): Promise<IFormDocument | null>
 
   /**
@@ -342,7 +342,7 @@ export interface IFormModel extends Model<IFormSchema> {
    */
   updateStartPageById(
     formId: string,
-    newStartPage: EndPage,
+    newStartPage: StartPage,
   ): Promise<IFormDocument | null>
 
   updateFormLogic(
