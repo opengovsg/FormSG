@@ -21,8 +21,7 @@ jobs:
           restore-keys: |
             ${{ runner.OS }}-node-
             ${{ runner.OS }}-
-      - name: Install dependencies
-        run: npm install
+      - run: npm ci
 
   test-frontend:
     needs: install
