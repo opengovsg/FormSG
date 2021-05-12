@@ -77,6 +77,7 @@ describe('public-forms.verification.routes', () => {
 
       // Assert
       expect(response.status).toBe(StatusCodes.OK)
+      expect(response.body).toEqual({})
     })
 
     it('should return 201 when form has verifiable fields', async () => {
