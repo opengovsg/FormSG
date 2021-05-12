@@ -22,6 +22,10 @@ VfnRouter.post(
   VerificationController.handleCreateTransaction,
 )
 
+/**
+ * Route for GET /transaction/:transactionId
+ * @deprecated in favour of GET /forms/:formId/fieldverifications/:id
+ */
 VfnRouter.get(
   '/:transactionId([a-fA-F0-9]{24})',
   celebrate({

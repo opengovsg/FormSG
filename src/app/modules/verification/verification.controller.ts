@@ -97,6 +97,9 @@ export const handleCreateTransactionWithFieldId: RequestHandler<
  * Returns a transaction's id and expiry time if it exists
  * @param req
  * @param res
+ * @returns 200 with transactionId/formId and expiry time when transaction exists
+ * @returns 404 when the transaction could not be found
+ * @returns 500 when database error occurs
  */
 export const handleGetTransactionMetadata: RequestHandler<
   {
