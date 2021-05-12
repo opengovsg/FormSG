@@ -6,4 +6,4 @@ export const PublicFormsVerificationRouter = Router()
 
 PublicFormsVerificationRouter.route(
   '/:formId([a-fA-F0-9]{24})/fieldverifications',
-).post(VerificationController.handleCreateTransactionWithFieldId)
+).post(VerificationController.handleCreateVerificationTransaction)

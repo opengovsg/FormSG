@@ -62,13 +62,13 @@ export const handleCreateTransaction: RequestHandler<
  * @returns 201 - transaction is created
  * @returns 200 - transaction was not created as no fields were verifiable for the form
  */
-export const handleCreateTransactionWithFieldId: RequestHandler<
+export const handleCreateVerificationTransaction: RequestHandler<
   { formId: string },
   Transaction | ErrorDto
 > = async (req, res) => {
   const { formId } = req.params
   const logMeta = {
-    action: 'handleCreateTransactionWithFieldId',
+    action: 'handleCreateVerificationTransaction',
     formId,
     ...createReqMeta(req),
   }
