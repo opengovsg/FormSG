@@ -13,7 +13,9 @@ export type FetchNewTransactionResponse =
 
 type VerifiedFieldSignature = Opaque<string, 'VerifiedFieldSignature'>
 
-/** Exported for testing */
+/** Exported for testing
+ * @deprecated
+ */
 export const TRANSACTION_ENDPOINT = '/transaction'
 
 /** Exported for testing */
