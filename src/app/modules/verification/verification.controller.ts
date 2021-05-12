@@ -17,6 +17,7 @@ const logger = createLoggerWithLabel(module)
  * NOTE: Private handler for POST /transaction
  * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
  * If no fields are verifiable, then it did not create a transaction and returns an empty object.
+ * @deprecated in favour of handleCreateVerificationTransaction
  * @param req
  * @param res
  * @returns 201 - transaction is created
