@@ -35,19 +35,6 @@ jobs:
         create:
           name: build
           paths: .
-    - stage: Tests
-      name: Frontend tests
-      workspaces:
-        use: build
-      script:
-        - npm run test-frontend
-    - name: Backend tests
-      workspaces:
-        use: build
-      script:
-        - npm run test-backend
-      after_success:
-        - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
     - name: End-to-end tests
       workspaces:
         use: build
