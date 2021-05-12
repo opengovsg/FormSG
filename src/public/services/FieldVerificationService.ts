@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { Opaque } from 'type-fest'
 
+import { PublicTransaction } from 'src/types'
+
 export type JsonDate = Opaque<string, 'JsonDate'>
 
 /**
@@ -101,4 +103,27 @@ export const resetVerifiedField = async ({
   return axios.post(`${TRANSACTION_ENDPOINT}/${transactionId}/reset`, {
     fieldId,
   })
+}
+
+/**
+ * Retrieves the transaction of the form with the given Id.
+ *
+ * @param transactionId The generated transaction id for the form
+ * @param formId The id of form
+ * @returns 200 with transactionId/formId and expiry time when transaction exists
+ * @returns 404 when the transaction could not be found
+ * @returns 500 when internal server occurs
+ */
+export const retrieveTransactionById = ({
+  formId,
+  transactionId,
+}: {
+  formId: string
+  transactionId: string
+}): Promise<PublicTransaction> => {
+  return axios
+    .get<PublicTransaction>(
+      `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}`,
+    )
+    .then(({ data }) => data)
 }
