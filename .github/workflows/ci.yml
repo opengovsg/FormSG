@@ -60,5 +60,5 @@ jobs:
           key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
       - run: npm ci
       - run: npm run test-backend
-      - name: Produce coverage
-        run: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v1.1.2
