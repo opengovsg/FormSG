@@ -114,6 +114,7 @@ AdminFormsFormRouter.route(
    * @returns 500 when database error occurs
    */
   .put(AdminFormController.handleUpdateFormField)
+
   /**
    * Delete form field by fieldId of form corresponding to formId.
    * @route DELETE /admin/forms/:formId/fields/:fieldId
@@ -142,6 +143,22 @@ AdminFormsFormRouter.route(
    * @returns 500 when database error occurs
    */
   .get(AdminFormController.handleGetFormField)
+  /**
+   * Duplicates the form field with the corresponding fieldId
+   * @route POST /:formId/fields/:fieldId/duplicate
+   * @security session
+   *
+   * @returns 200 with updated form
+   * @returns 400 when form field has invalid updates to be performed
+   * @returns 403 when current user does not have permissions to update form
+   * @returns 404 when form or field to update cannot be found
+   * @returns 409 when saving updated form incurs a conflict in the database
+   * @returns 410 when form to update is archived
+   * @returns 413 when updated form is too large to be saved in the database
+   * @returns 422 when user in session cannot be retrieved from the database
+   * @returns 500 when database error occurs
+   */
+  .post(AdminFormController.handleDuplicateField)
 
 AdminFormsFormRouter.post(
   '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/reorder',
