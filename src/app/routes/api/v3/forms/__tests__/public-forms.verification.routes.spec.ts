@@ -60,7 +60,7 @@ describe('public-forms.verification.routes', () => {
 
   afterAll(async () => await dbHandler.closeDatabase())
 
-  describe('POST /', () => {
+  describe('POST /forms/:formId/fieldverifications', () => {
     it('should return 404 when formId is malformed', async () => {
       // Act
       const response = await request.post(`/forms/malformed/fieldverifications`)
