@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson-ext'
 import mockAxios from 'jest-mock-axios'
 
 import {
@@ -6,6 +7,7 @@ import {
   FORM_API_PREFIX,
   JsonDate,
   resetVerifiedField,
+  retrieveTransactionById,
   TRANSACTION_ENDPOINT,
   triggerSendOtp,
   VERIFICATION_ENDPOINT,
@@ -134,6 +136,49 @@ describe('FieldVerificationService', () => {
           fieldId: mockFieldId,
         },
       )
+    })
+  })
+
+  describe('retrieveTransactionById', () => {
+    const MOCK_TRANSACTION_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    it('should return 200 with the transactionId, formId and expiry time when successful', async () => {
+      // Arrange
+      const expectedTransaction = {
+        formId: MOCK_FORM_ID,
+        expireAt: Date.now(),
+        _id: MOCK_TRANSACTION_ID,
+      }
+      mockAxios.get.mockResolvedValueOnce({ data: expectedTransaction })
+
+      // Act
+      const actualTransaction = await retrieveTransactionById({
+        formId: MOCK_FORM_ID,
+        transactionId: MOCK_TRANSACTION_ID,
+      })
+
+      // Await
+      expect(mockAxios.get).toHaveBeenCalledWith(
+        `${FORM_API_PREFIX}/${MOCK_FORM_ID}/${VERIFICATION_ENDPOINT}/${MOCK_TRANSACTION_ID}`,
+      )
+      expect(actualTransaction).toEqual(expectedTransaction)
+    })
+
+    it('should return the error when an error occurs', async () => {
+      // Arrange
+      mockAxios.get.mockRejectedValueOnce(new Error('some network error'))
+
+      // Act
+      const responsePromise = retrieveTransactionById({
+        formId: MOCK_FORM_ID,
+        transactionId: MOCK_TRANSACTION_ID,
+      })
+
+      // Assert
+      expect(mockAxios.get).toHaveBeenCalledWith(
+        `${FORM_API_PREFIX}/${MOCK_FORM_ID}/${VERIFICATION_ENDPOINT}/${MOCK_TRANSACTION_ID}`,
+      )
+      await expect(responsePromise).rejects.toBeInstanceOf(Error)
     })
   })
 })
