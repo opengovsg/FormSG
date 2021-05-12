@@ -321,7 +321,10 @@ function submitFormDirective(
             responseMode: form.responseMode,
           },
           submissionContent, // POST body
-        ).then((response) => handleSubmitSuccess(response), handleSubmitFailure)
+        ).then(
+          (response) => handleSubmitSuccess(response),
+          (err, message) => handleSubmitFailure(err, message),
+        )
       }
 
       /**
