@@ -32,7 +32,7 @@ import { VerifiedContentFactory } from '../../verified-content/verified-content.
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import {
-  getProcessedResponses,
+  ParsedResponsesObject,
   sendEmailConfirmations,
 } from '../submission.service'
 
@@ -154,7 +154,10 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
   }
 
   // Process encrypted submission
-  const processedResponsesResult = await getProcessedResponses(form, responses)
+  const processedResponsesResult = await ParsedResponsesObject.parseResponses(
+    form,
+    responses,
+  )
   if (processedResponsesResult.isErr()) {
     logger.error({
       message: 'Error processing encrypted submission.',
@@ -361,7 +364,11 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
 
   return sendEmailConfirmations({
     form,
-    parsedResponses: processedResponses,
+    /** TODO: NDI responses not appended to storage-mode version of sendEmailConfirmation.
+     *  Figure out a way to project responses differently depending on what context
+     *  it is used in.
+     */
+    parsedResponses: processedResponses.responses,
     submission: savedSubmission,
   }).mapErr((error) => {
     logger.error({

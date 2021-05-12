@@ -170,11 +170,22 @@ export class ParsedResponsesObject {
   public ndiResponses: ProcessedFieldResponse[] = []
   constructor(public responses: ProcessedFieldResponse[]) {}
 
-  addNdiResponses(ndiResponses: ProcessedFieldResponse[]) {
+  addNdiResponses(
+    ndiResponses: ProcessedFieldResponse[],
+  ): ParsedResponsesObject {
     this.ndiResponses = ndiResponses
     return this
   }
 
+  /**
+   * Injects response metadata such as the question, visibility state. In
+   * addition, validation such as input validation or signature validation on
+   * verified fields are also performed on the response.
+   * @param form The form document corresponding to the responses
+   * @param responses The responses to process and validate
+   * @returns neverthrow ok() with field responses with additional metadata injected.
+   * @returns neverthrow err() if response validation fails
+   */
   static parseResponses(
     form: IFormDocument,
     responses: FieldResponse[],
