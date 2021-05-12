@@ -3,7 +3,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  build:
+  install:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,16 +22,18 @@ jobs:
             ${{ runner.OS }}-node-
             ${{ runner.OS }}-
       - name: Install dependencies
-        run: |
-          npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
-          npm ci
-      - name: Lint
-        run: npm run lint-ci
-      - name: Build application
-        run: npm run build
-      - name: Frontend tests
-        run: npm run test-frontend
-      - name: Backend tests
-        run: npm run test-backend
-      - name: End-to-end tests
-        run: npm run test-e2e-ci
+        run: npm ci
+
+  test-frontend:
+    needs: install
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: npm run test-frontend
+
+  test-backend:
+    needs: install
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: npm run test-backend
