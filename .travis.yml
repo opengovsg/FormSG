@@ -35,7 +35,8 @@ jobs:
         create:
           name: build
           paths: .
-    - name: End-to-end tests
+    - stage: Tests
+      name: End-to-end tests
       workspaces:
         use: build
       addons:
