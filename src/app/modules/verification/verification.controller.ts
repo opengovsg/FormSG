@@ -2,7 +2,6 @@ import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { SALT_ROUNDS } from '../../../shared/util/verification'
-import { PublicTransaction } from '../../../types'
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
@@ -85,38 +84,6 @@ export const handleCreateTransactionWithFieldId: RequestHandler<
     .mapErr((error) => {
       logger.error({
         message: 'Error creating transaction',
-        meta: logMeta,
-        error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- * Returns a transaction's id and expiry time if it exists
- * @param req
- * @param res
- */
-export const handleGetTransactionMetadata: RequestHandler<
-  {
-    transactionId: string
-  },
-  PublicTransaction | ErrorDto
-> = async (req, res) => {
-  const { transactionId } = req.params
-  const logMeta = {
-    action: 'handleGetTransactionMetadata',
-    transactionId,
-    ...createReqMeta(req),
-  }
-  return VerificationFactory.getTransactionMetadata(transactionId)
-    .map((publicTransaction) =>
-      res.status(StatusCodes.OK).json(publicTransaction),
-    )
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error retrieving transaction metadata',
         meta: logMeta,
         error,
       })

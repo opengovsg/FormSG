@@ -22,16 +22,6 @@ VfnRouter.post(
   VerificationController.handleCreateTransaction,
 )
 
-VfnRouter.get(
-  '/:transactionId([a-fA-F0-9]{24})',
-  celebrate({
-    [Segments.PARAMS]: Joi.object({
-      transactionId: formatOfId,
-    }),
-  }),
-  VerificationController.handleGetTransactionMetadata,
-)
-
 VfnRouter.post(
   '/:transactionId([a-fA-F0-9]{24})/reset',
   celebrate({
