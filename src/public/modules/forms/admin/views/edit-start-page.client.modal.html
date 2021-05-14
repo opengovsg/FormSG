@@ -18,7 +18,7 @@
               <label class="col-xs-12">
                 <input
                   type="radio"
-                  ng-change="vm.updateLogoUrl()"
+                  ng-change="vm.updateLogoUrl(vm.myform.startPage.logo.state)"
                   ng-model="vm.myform.startPage.logo.state"
                   name="logo"
                   ng-value="state.enum"

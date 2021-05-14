@@ -177,7 +177,12 @@ function EditStartPageController(
     $uibModalInstance.close()
   }
 
-  vm.updateLogoUrl = function () {
+  vm.updateLogoUrl = function (logoState) {
+    if (logoState !== FormLogoState.Custom) {
+      vm.myform.startPage.logo = {
+        state: logoState,
+      }
+    }
     vm.logoUrl = getFormLogo(vm.myform)
   }
 }
