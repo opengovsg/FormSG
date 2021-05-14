@@ -62,7 +62,6 @@ import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
-import { getFormFieldById } from '../form.utils'
 
 import {
   PREVIEW_CORPPASS_UID,
@@ -1172,13 +1171,12 @@ export const handleUpdateForm: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleDuplicateField: RequestHandler<
+export const handleDuplicateFormField: RequestHandler<
   { formId: string; fieldId: string },
-  unknown,
-  { form: FormUpdateParams }
+  FormFieldDto | ErrorDto,
+  void
 > = (req, res) => {
   const { formId, fieldId } = req.params
-  const { form: formUpdateParams } = req.body
   const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   // Step 1: Retrieve currently logged in user.
@@ -1191,32 +1189,17 @@ export const handleDuplicateField: RequestHandler<
         level: PermissionLevel.Write,
       }),
     )
-    .andThen((retrievedForm) => {
-      // Step 3: Update form or form fields depending on form update parameters
-      // passed in.
-      const formField = getFormFieldById(retrievedForm.form_fields, fieldId)
-      // Use different service function depending on type of form update.
-      const updateFormResult: ResultAsync<
-        IPopulatedForm,
-        | EditFieldError
-        | DatabaseError
-        | DatabaseValidationError
-        | DatabaseConflictError
-        | DatabasePayloadSizeError
-      > = AdminFormService.duplicateFormFields(retrievedForm, formField)
-
-      return updateFormResult
-    })
-    .map((updatedForm) => res.status(StatusCodes.OK).json(updatedForm))
+    .andThen((form) => AdminFormService.duplicateFormField(form, fieldId))
+    .map((duplicatedField) => res.status(StatusCodes.OK).json(duplicatedField))
     .mapErr((error) => {
       logger.error({
-        message: 'Error occurred when updating form',
+        message: 'Error occurred when duplicating field',
         meta: {
-          action: 'handleUpdateForm',
+          action: 'handleDuplicateFormField',
           ...createReqMeta(req),
           userId: sessionUserId,
           formId,
-          formUpdateParams,
+          fieldId,
         },
         error,
       })

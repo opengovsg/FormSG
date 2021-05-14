@@ -287,11 +287,8 @@ const updateCurrentField = (
  */
 const insertField = (
   existingFormFields: IFieldSchema[],
-  fieldToInsert: IFieldSchema | null,
+  fieldToInsert: IFieldSchema,
 ): EditFormFieldResult => {
-  if (!fieldToInsert) {
-    return err(new EditFieldError('Field to duplicate is not present'))
-  }
   const doesFieldExist = existingFormFields.some(
     (f) => f.globalId === fieldToInsert.globalId,
   )
@@ -388,20 +385,4 @@ export const getUpdatedFormFields = (
     case EditFieldActions.Update:
       return updateCurrentField(currentFormFields, fieldToUpdate)
   }
-}
-
-/**
- * Creates a field action. Can be used for both creating and
- * duplicating form fields.
- * @param currentFormFields the existing form fields to update
- * @param fieldToAdd the parameters with the given update to perform and any metadata required.
- *
- * @returns ok(updated form fields array) if fields update successfully
- * @returns err(EditFieldError) if any errors occur whilst updating fields
- */
-export const getNewFormFields = (
-  currentFormFields: IFieldSchema[],
-  fieldToAdd: IFieldSchema | null,
-): EditFormFieldResult => {
-  return insertField(currentFormFields, fieldToAdd)
 }
