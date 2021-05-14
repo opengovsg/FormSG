@@ -1497,7 +1497,7 @@ describe('Form Model', () => {
         )
 
         // Assert
-        // Should have defaults populated but also replace the endpage with the new params
+        // Should have defaults populated but also replace the start page with the new params
         expect(actual?.toObject()).toEqual({
           ...form,
           lastModified: expect.any(Date),
