@@ -321,10 +321,7 @@ function submitFormDirective(
             responseMode: form.responseMode,
           },
           submissionContent, // POST body
-        ).then(
-          (response) => handleSubmitSuccess(response),
-          (err, message) => handleSubmitFailure(err, message),
-        )
+        ).then(handleSubmitSuccess, handleSubmitFailure)
       }
 
       /**
@@ -338,7 +335,7 @@ function submitFormDirective(
        * state and Google Analytics.
        */
       const handleSubmitSuccess = (response) => {
-        scope.responseId = response.id
+        scope.responseId = response.submissionId
         setFormState(FORM_STATES.SUBMITTED)
         GTag.submitFormSuccess(scope.form, startDate, Date.now())
         if (shouldTrackPersistentLoginUse()) {
@@ -357,7 +354,6 @@ function submitFormDirective(
        * @param {string?} toastMessage The toast message to display, if any.
        */
       const handleSubmitFailure = (error, toastMessage) => {
-        scope.responseId = ''
         const form = scope.form
         console.error('Submission error:\t', error)
         setFormState(FORM_STATES.SUBMISSION_ERROR)

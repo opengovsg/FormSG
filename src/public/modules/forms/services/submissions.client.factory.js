@@ -99,19 +99,18 @@ function SubmissionsFactory(
         let response = {}
         try {
           response = JSON.parse(xhr.responseText)
+          if (xhr.status === HttpStatus.OK) {
+            deferred.resolve({
+              message: 'Submission has finished.',
+              submissionId: response.submissionId,
+            })
+          } else {
+            deferred.reject(`${response.message}`)
+          }
           // eslint-disable-next-line no-empty
-        } catch (e) {}
-        if (xhr.status === HttpStatus.OK) {
-          deferred.resolve({
-            message: 'Submission has finished.',
-            id: response.submissionId || 'Not available',
-          })
-        } else {
+        } catch (e) {
           deferred.reject(
-            `${
-              response.message ||
-              "Please refresh and try again. If this doesn't work, try switching devices or networks."
-            }`,
+            "Please refresh and try again. If this doesn't work, try switching devices or networks.",
           )
         }
       }
@@ -138,7 +137,7 @@ function SubmissionsFactory(
         function (response) {
           deferred.resolve({
             message: 'Submission has finished.',
-            id: response.submissionId,
+            submissionId: response.submissionId,
           })
         },
         function (error) {
