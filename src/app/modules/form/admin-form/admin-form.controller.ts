@@ -2218,6 +2218,7 @@ export const handleUpdateStartPage = [
         fileId: Joi.when('state', {
           is: FormLogoState.Custom,
           then: Joi.string().required(),
+          otherwise: Joi.any().forbidden(),
         }),
         fileName: Joi.when('state', {
           is: FormLogoState.Custom,
@@ -2226,10 +2227,12 @@ export const handleUpdateStartPage = [
             // Refer to https://regex101.com/ with the below regex for a full explanation
             .pattern(/\.(gif|png|jpeg|jpg)$/im)
             .required(),
+          otherwise: Joi.any().forbidden(),
         }),
         fileSizeInBytes: Joi.when('state', {
           is: FormLogoState.Custom,
           then: Joi.number().max(MAX_UPLOAD_FILE_SIZE).required(),
+          otherwise: Joi.any().forbidden(),
         }),
       }).required(),
     },
