@@ -13,8 +13,14 @@ export type FetchNewTransactionResponse =
 
 type VerifiedFieldSignature = Opaque<string, 'VerifiedFieldSignature'>
 
-/** Exported for testing */
+/** Exported for testing
+ * @deprecated
+ */
 export const TRANSACTION_ENDPOINT = '/transaction'
+
+/** Exported for testing */
+export const FORM_API_PREFIX = '/api/v3/forms'
+export const VERIFICATION_ENDPOINT = 'fieldverifications'
 
 /**
  * Create a transaction for given form.
@@ -25,9 +31,9 @@ export const createTransactionForForm = async (
   formId: string,
 ): Promise<FetchNewTransactionResponse> => {
   return axios
-    .post<FetchNewTransactionResponse>(TRANSACTION_ENDPOINT, {
-      formId,
-    })
+    .post<FetchNewTransactionResponse>(
+      `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}`,
+    )
     .then(({ data }) => data)
 }
 

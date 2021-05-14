@@ -3,10 +3,12 @@ import mockAxios from 'jest-mock-axios'
 import {
   createTransactionForForm,
   FetchNewTransactionResponse,
+  FORM_API_PREFIX,
   JsonDate,
   resetVerifiedField,
   TRANSACTION_ENDPOINT,
   triggerSendOtp,
+  VERIFICATION_ENDPOINT,
   verifyOtp,
 } from '../FieldVerificationService'
 
@@ -31,9 +33,9 @@ describe('FieldVerificationService', () => {
 
       // Assert
       expect(actual).toEqual(expected)
-      expect(mockAxios.post).toHaveBeenCalledWith(TRANSACTION_ENDPOINT, {
-        formId: mockFormId,
-      })
+      expect(mockAxios.post).toHaveBeenCalledWith(
+        `${FORM_API_PREFIX}/${mockFormId}/${VERIFICATION_ENDPOINT}`,
+      )
     })
 
     it('should successfully return empty transaction data when returned data is empty', async () => {
@@ -48,9 +50,9 @@ describe('FieldVerificationService', () => {
 
       // Assert
       expect(actual).toEqual(expected)
-      expect(mockAxios.post).toHaveBeenCalledWith(TRANSACTION_ENDPOINT, {
-        formId: mockFormId,
-      })
+      expect(mockAxios.post).toHaveBeenCalledWith(
+        `${FORM_API_PREFIX}/${mockFormId}/${VERIFICATION_ENDPOINT}`,
+      )
     })
   })
 

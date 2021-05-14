@@ -167,44 +167,62 @@ describe('Verification controller', () => {
     })
   })
 
-  describe('handleGetTransactionMetadata', () => {
+  describe('handleCreateVerificationTransaction', () => {
     const MOCK_REQ = expressHandler.mockRequest({
-      params: { transactionId: MOCK_TRANSACTION_ID },
+      params: { formId: MOCK_FORM_ID },
     })
 
-    it('should return metadata when parameters are valid', async () => {
-      const transactionPublicView = mockTransaction.getPublicView()
-      MockVerificationFactory.getTransactionMetadata.mockReturnValueOnce(
-        okAsync(transactionPublicView),
+    it('should return transaction when parameters are valid', async () => {
+      MockVerificationFactory.createTransaction.mockReturnValueOnce(
+        okAsync(mockTransaction),
       )
 
-      await VerificationController.handleGetTransactionMetadata(
+      await VerificationController.handleCreateVerificationTransaction(
         MOCK_REQ,
         mockRes,
         jest.fn(),
       )
 
-      expect(
-        MockVerificationFactory.getTransactionMetadata,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID)
+      expect(MockVerificationFactory.createTransaction).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        transactionId: mockTransaction._id,
+        expireAt: mockTransaction.expireAt,
+      })
+    })
+
+    it('should return 200 with empty object when transaction is not created', async () => {
+      MockVerificationFactory.createTransaction.mockReturnValueOnce(
+        okAsync(null),
+      )
+      await VerificationController.handleCreateVerificationTransaction(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+      expect(MockVerificationFactory.createTransaction).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
-      expect(mockRes.json).toHaveBeenCalledWith(transactionPublicView)
+      expect(mockRes.json).toHaveBeenCalledWith({})
     })
 
-    it('should return 404 when transaction is not found', async () => {
-      MockVerificationFactory.getTransactionMetadata.mockReturnValueOnce(
-        errAsync(new TransactionNotFoundError()),
+    it('should return 404 when form is not found', async () => {
+      MockVerificationFactory.createTransaction.mockReturnValueOnce(
+        errAsync(new FormNotFoundError()),
       )
 
-      await VerificationController.handleGetTransactionMetadata(
+      await VerificationController.handleCreateVerificationTransaction(
         MOCK_REQ,
         mockRes,
         jest.fn(),
       )
 
-      expect(
-        MockVerificationFactory.getTransactionMetadata,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID)
+      expect(MockVerificationFactory.createTransaction).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
@@ -212,19 +230,19 @@ describe('Verification controller', () => {
     })
 
     it('should return 500 when database error occurs', async () => {
-      MockVerificationFactory.getTransactionMetadata.mockReturnValueOnce(
+      MockVerificationFactory.createTransaction.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
 
-      await VerificationController.handleGetTransactionMetadata(
+      await VerificationController.handleCreateVerificationTransaction(
         MOCK_REQ,
         mockRes,
         jest.fn(),
       )
 
-      expect(
-        MockVerificationFactory.getTransactionMetadata,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID)
+      expect(MockVerificationFactory.createTransaction).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
