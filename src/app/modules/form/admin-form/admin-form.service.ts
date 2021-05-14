@@ -67,7 +67,6 @@ import {
   FormUpdateParams,
 } from './admin-form.types'
 import {
-  getNewFormFields,
   getUpdatedFormFields,
   processDuplicateOverrideProps,
 } from './admin-form.utils'
@@ -470,36 +469,51 @@ export const updateFormField = (
 }
 
 /**
- * Updates form fields of given form depending on the given editFormFieldParams
- * @param originalForm the original form to update form fields for
- * @param formFieldToDuplicate the form field to duplicate
+ * Duplicates the form field of the corresponding fieldId
+ * @param form the original form to update form fields for
+ * @param fieldId fieldId of the the form field to duplicate
  *
- * @returns ok(updated form) if form fields update successfully
- * @returns err(EditFieldError) if any
- * @returns err(set of DatabaseError) if any database errors occurs
+ * @returns ok(duplicated field)
+ * @returns err(PossibleDatabaseError) when database errors arise
  */
-export const duplicateFormFields = (
-  originalForm: IPopulatedForm,
-  formFieldToDuplicate: IFieldSchema | null,
-): ResultAsync<IPopulatedForm, ReturnType<typeof transformMongoError>> => {
-  return getNewFormFields(
-    originalForm.form_fields,
-    formFieldToDuplicate,
-  ).asyncAndThen((newFormFields) => {
-    // Update form fields of original form.
-    originalForm.form_fields = newFormFields
-    return ResultAsync.fromPromise(originalForm.save(), (error) => {
+export const duplicateFormField = (
+  form: IPopulatedForm,
+  fieldId: string,
+): ResultAsync<
+  IFieldSchema,
+  PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
+> => {
+  const fieldToDuplicate = getFormFieldById(form.form_fields, fieldId)
+  if (!fieldToDuplicate) {
+    return errAsync(new FieldNotFoundError())
+  }
+  const duplicatedField = JSON.parse(JSON.stringify(fieldToDuplicate))
+  // Remove unique ids before saving
+  delete duplicatedField.globalId
+  delete duplicatedField._id
+
+  return ResultAsync.fromPromise(
+    form.insertFormField(duplicatedField),
+    (error) => {
       logger.error({
-        message: 'Error encountered while duplicating form fields',
+        message: 'Error encountered while duplicating form field',
         meta: {
-          action: 'duplicateFormFields',
-          originalForm,
-          formFieldToDuplicate,
+          action: 'duplicateFormField',
+          formId: form._id,
+          duplicatedField,
         },
         error,
       })
       return transformMongoError(error)
-    })
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    const updatedField = last(updatedForm.form_fields)
+    return updatedField
+      ? okAsync(updatedField)
+      : errAsync(new FieldNotFoundError())
   })
 }
 
