@@ -110,6 +110,11 @@ function FormApi($resource, FormErrorService, FormFields) {
         method: 'PUT',
         interceptor: getInterceptor(false),
       },
+      duplicate: {
+        url: '/api/v3/admin/forms/:formId/fields/:fieldId/duplicate',
+        method: 'POST',
+        interceptor: getInterceptor(false),
+      },
       save: {
         url: '/api/v3/admin/forms/:formId/duplicate',
         method: 'POST',

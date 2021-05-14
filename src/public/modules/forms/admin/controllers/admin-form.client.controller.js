@@ -187,7 +187,6 @@ function AdminFormController(
    */
   $scope.updateForm = (update) => {
     const updateType = get(update, 'type')
-
     switch (updateType) {
       case UPDATE_FORM_TYPES.CreateField: {
         const { body } = update
@@ -249,6 +248,30 @@ function AdminFormController(
             } else {
               Toastr.error('An error occurred while saving your changes.')
             }
+          })
+          .catch(handleUpdateError)
+      }
+      case UPDATE_FORM_TYPES.DuplicateField: {
+        const { fieldId } = update
+        return $q
+          .when(
+            AdminFormService.duplicateSingleFormField(
+              $scope.myform._id,
+              fieldId,
+            ),
+          )
+          .then((updatedFormField) => {
+            // !!! Convert retrieved form field objects into their class counterparts.
+            const updatedFieldClass = FieldFactory.createFieldFromData(
+              updatedFormField,
+            )
+            FormFields.injectMyInfoFieldInfo(updatedFieldClass)
+
+            // insert created field into form
+            $scope.myform.form_fields = [
+              ...$scope.myform.form_fields,
+              updatedFieldClass,
+            ]
           })
           .catch(handleUpdateError)
       }
