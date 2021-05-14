@@ -2,7 +2,6 @@ import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { SALT_ROUNDS } from '../../../shared/util/verification'
-import { PublicTransaction } from '../../../types'
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
@@ -15,8 +14,10 @@ import { mapRouteError } from './verification.util'
 const logger = createLoggerWithLabel(module)
 
 /**
+ * NOTE: Private handler for POST /transaction
  * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
  * If no fields are verifiable, then it did not create a transaction and returns an empty object.
+ * @deprecated in favour of handleCreateVerificationTransaction
  * @param req
  * @param res
  * @returns 201 - transaction is created
@@ -54,29 +55,36 @@ export const handleCreateTransaction: RequestHandler<
 }
 
 /**
- * Returns a transaction's id and expiry time if it exists
+ * NOTE: Private handler for POST /forms/:formId/fieldverifications
+ * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
+ * If no fields are verifiable, then it did not create a transaction and returns an empty object.
  * @param req
  * @param res
+ * @returns 201 - transaction is created
+ * @returns 200 - transaction was not created as no fields were verifiable for the form
  */
-export const handleGetTransactionMetadata: RequestHandler<
-  {
-    transactionId: string
-  },
-  PublicTransaction | ErrorDto
+export const handleCreateVerificationTransaction: RequestHandler<
+  { formId: string },
+  Transaction | ErrorDto
 > = async (req, res) => {
-  const { transactionId } = req.params
+  const { formId } = req.params
   const logMeta = {
-    action: 'handleGetTransactionMetadata',
-    transactionId,
+    action: 'handleCreateVerificationTransaction',
+    formId,
     ...createReqMeta(req),
   }
-  return VerificationFactory.getTransactionMetadata(transactionId)
-    .map((publicTransaction) =>
-      res.status(StatusCodes.OK).json(publicTransaction),
-    )
+  return VerificationFactory.createTransaction(formId)
+    .map((transaction) => {
+      return transaction
+        ? res.status(StatusCodes.CREATED).json({
+            expireAt: transaction.expireAt,
+            transactionId: transaction._id,
+          })
+        : res.status(StatusCodes.OK).json({})
+    })
     .mapErr((error) => {
       logger.error({
-        message: 'Error retrieving transaction metadata',
+        message: 'Error creating transaction',
         meta: logMeta,
         error,
       })

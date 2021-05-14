@@ -1,5 +1,5 @@
 'use strict'
-
+const { Colors } = require('../../../../../types/form.ts')
 const axios = require('axios').default
 const {
   MAX_UPLOAD_FILE_SIZE,
@@ -15,7 +15,6 @@ angular
   .module('forms')
   .controller('EditStartPageController', [
     '$uibModalInstance',
-    'ColorThemes',
     '$q',
     'myform',
     'updateStartPage',
@@ -24,7 +23,6 @@ angular
 
 function EditStartPageController(
   $uibModalInstance,
-  ColorThemes,
   $q,
   myform,
   updateStartPage,
@@ -40,7 +38,7 @@ function EditStartPageController(
 
   // Make a copy so nothing is changed in the original.
   vm.myform = angular.copy(myform)
-  vm.colorThemes = ColorThemes.colors
+  vm.colorThemes = Object.values(Colors)
   vm.hasClickedSave = false
 
   vm.saveStartPage = function (isValid) {

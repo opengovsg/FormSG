@@ -237,8 +237,18 @@ function CollaboratorModalController(
     )
 
     $scope.btnStatus = 2 // pressed; loading
-    $scope.updatePermissionList(permissionList).catch((err) => {
-      if (err) {
+    $scope
+      .updatePermissionList(permissionList)
+      .then(() => {
+        // If no error, clear email input
+        $scope.btnStatus = 3 // pressed; saved
+        $scope.closeEditCollaboratorDropdowns()
+
+        $timeout(() => {
+          resetCollabForm()
+        }, 1000)
+      })
+      .catch((err) => {
         // Make the alert message correspond to the error code
         if (err.response.status === StatusCodes.BAD_REQUEST) {
           Toastr.error(
@@ -250,16 +260,7 @@ function CollaboratorModalController(
           Toastr.error('Error adding collaborator.')
         }
         resetCollabForm()
-        return
-      }
-      // If no error, clear email input
-      $scope.btnStatus = 3 // pressed; saved
-      $scope.closeEditCollaboratorDropdowns()
-
-      $timeout(() => {
-        resetCollabForm()
-      }, 1000)
-    })
+      })
   }
 
   /**
