@@ -1357,7 +1357,12 @@ export const submitEncryptPreview: RequestHandler<
     )
     .andThen((form) =>
       checkIsEncryptedEncoding(encryptedContent)
-        .andThen(() => SubmissionService.getProcessedResponses(form, responses))
+        .andThen(() =>
+          SubmissionService.ParsedResponsesObject.parseResponses(
+            form,
+            responses,
+          ),
+        )
         .map((parsedResponses) => ({ parsedResponses, form }))
         .mapErr((error) => {
           logger.error({
@@ -1381,7 +1386,16 @@ export const submitEncryptPreview: RequestHandler<
 
       void SubmissionService.sendEmailConfirmations({
         form,
-        parsedResponses,
+        /**
+         * TODO: parsedResponses here can either just be parsedResponses.responses, or a concat with
+         * parsedResponses.ndiResponses which is always blank in this case.
+         * Leaning towards concatenating with ndiResponses because that is how parsedResponses is
+         * used in the email-submissions controller's sendEmailConfirmation function call.
+         */
+        parsedResponses: [
+          ...parsedResponses.responses,
+          ...parsedResponses.ndiResponses,
+        ],
         submission,
       })
 
@@ -1454,7 +1468,9 @@ export const submitEmailPreview: RequestHandler<
 
   const parsedResponsesResult = await EmailSubmissionService.validateAttachments(
     responses,
-  ).andThen(() => SubmissionService.getProcessedResponses(form, responses))
+  ).andThen(() =>
+    SubmissionService.ParsedResponsesObject.parseResponses(form, responses),
+  )
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',
@@ -1471,12 +1487,12 @@ export const submitEmailPreview: RequestHandler<
 
   // Handle SingPass, CorpPass and MyInfo authentication and validation
   if (form.authType === AuthType.SP || form.authType === AuthType.MyInfo) {
-    parsedResponses.push(
-      ...createSingpassParsedResponses(PREVIEW_SINGPASS_UINFIN),
+    parsedResponses.addNdiResponses(
+      createSingpassParsedResponses(PREVIEW_SINGPASS_UINFIN),
     )
   } else if (form.authType === AuthType.CP) {
-    parsedResponses.push(
-      ...createCorppassParsedResponses(
+    parsedResponses.addNdiResponses(
+      createCorppassParsedResponses(
         PREVIEW_CORPPASS_UINFIN,
         PREVIEW_CORPPASS_UID,
       ),
@@ -1484,7 +1500,8 @@ export const submitEmailPreview: RequestHandler<
   }
 
   const emailData = new SubmissionEmailObj(
-    parsedResponses,
+    // TODO: A better solution might exist
+    [...parsedResponses.responses, ...parsedResponses.ndiResponses],
     // All MyInfo fields are verified in preview
     new Set(AdminFormService.extractMyInfoFieldIds(form.form_fields)),
     form.authType,
@@ -1497,7 +1514,10 @@ export const submitEmailPreview: RequestHandler<
   )
 
   const sendAdminEmailResult = await MailService.sendSubmissionToAdmin({
-    replyToEmails: EmailSubmissionService.extractEmailAnswers(parsedResponses),
+    replyToEmails: EmailSubmissionService.extractEmailAnswers(
+      // TODO: A better solution might exist
+      [...parsedResponses.responses, ...parsedResponses.ndiResponses],
+    ),
     form,
     submission,
     attachments,
@@ -1522,7 +1542,11 @@ export const submitEmailPreview: RequestHandler<
   // this fails
   void SubmissionService.sendEmailConfirmations({
     form,
-    parsedResponses,
+    // TODO: A better solution might exist
+    parsedResponses: [
+      ...parsedResponses.responses,
+      ...parsedResponses.ndiResponses,
+    ],
     submission,
     attachments,
     autoReplyData: emailData.autoReplyData,

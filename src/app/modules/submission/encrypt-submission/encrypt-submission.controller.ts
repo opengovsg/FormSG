@@ -364,11 +364,16 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
 
   return sendEmailConfirmations({
     form,
-    /** TODO: NDI responses not appended to storage-mode version of sendEmailConfirmation.
-     *  Figure out a way to project responses differently depending on what context
-     *  it is used in.
+    /**
+     * TODO: parsedResponses here can either just be parsedResponses.responses, or a concat with
+     * parsedResponses.ndiResponses which is always blank in this case.
+     * Leaning towards concatenating with ndiResponses because that is how parsedResponses is
+     * used in the email-submissions controller's sendEmailConfirmation function call.
      */
-    parsedResponses: processedResponses.responses,
+    parsedResponses: [
+      ...processedResponses.responses,
+      ...processedResponses.ndiResponses,
+    ],
     submission: savedSubmission,
   }).mapErr((error) => {
     logger.error({
