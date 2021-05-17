@@ -17,5 +17,5 @@ PublicFormsVerificationRouter.route(
  * @returns 500 when a database error occurs
  */
 PublicFormsVerificationRouter.route(
-  '/:formId([a-fA-F0-9]{24})/fieldverification/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/reset',
+  '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/reset',
 ).post(VerificationController.handleResetFieldVerification)
