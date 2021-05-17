@@ -190,6 +190,15 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   ): Promise<T>
 
   /**
+   * Duplicates a form field into the form
+   * @param newField the fieldId of the field to duplicate
+   * @returns updated form after the duplication if field duplication is successful
+   * @throws FieldNotFound error if field to duplicate is missing
+
+   */
+  duplicateFormFieldById<T>(this: T, fieldId: string): Promise<T | null>
+
+  /**
    * Reorders field corresponding to given fieldId to given newPosition
    * @param fieldId the id of the field to reorder
    * @param newPosition the new position to move the field to
