@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { Opaque } from 'type-fest'
 
+import { VerifiableFieldType } from 'src/types'
+
 export type JsonDate = Opaque<string, 'JsonDate'>
 
 /**
@@ -39,23 +41,76 @@ export const createTransactionForForm = async (
 
 /**
  * Sends an OTP to given answer.
+ * @param formId The id of the form to generate the otp for
  * @param transactionId The generated transaction id for the form
  * @param fieldId The id of the verification field
  * @param answer The value of the verification field to verify. Usually an email or phone number
+ * @param fieldType The kind of field to generate the otp for
  * @returns 201 Created status if successfully sent
  */
-export const triggerSendOtp = async ({
+const triggerSendOtp = async ({
+  formId,
+  transactionId,
+  fieldId,
+  answer,
+  fieldType,
+}: {
+  formId: string
+  transactionId: string
+  fieldId: string
+  answer: string
+  fieldType: VerifiableFieldType
+}): Promise<void> => {
+  return axios.post(
+    `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/fields/${fieldId}/otp/generate`,
+    {
+      fieldType,
+      answer,
+    },
+  )
+}
+
+// Generates an otp for a given email
+export const sendOtpForEmail = async ({
+  formId,
   transactionId,
   fieldId,
   answer,
 }: {
+  formId: string
   transactionId: string
   fieldId: string
   answer: string
+  fieldType: VerifiableFieldType
 }): Promise<void> => {
-  return axios.post(`${TRANSACTION_ENDPOINT}/${transactionId}/otp`, {
+  return triggerSendOtp({
+    formId,
+    transactionId,
     fieldId,
     answer,
+    fieldType: VerifiableFieldType.email,
+  })
+}
+
+// Generates an otp for a given mobile number
+export const sendOtpForMobile = async ({
+  formId,
+  transactionId,
+  fieldId,
+  answer,
+}: {
+  formId: string
+  transactionId: string
+  fieldId: string
+  answer: string
+  fieldType: VerifiableFieldType
+}): Promise<void> => {
+  return triggerSendOtp({
+    formId,
+    transactionId,
+    fieldId,
+    answer,
+    fieldType: VerifiableFieldType.mobile,
   })
 }
 
