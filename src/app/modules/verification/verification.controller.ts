@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import { SALT_ROUNDS } from '../../../shared/util/verification'
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
+import * as FormService from '../../modules/form/form.service'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta } from '../../utils/request'
 
@@ -206,6 +207,7 @@ export const handleVerifyOtp: RequestHandler<
  * @param fieldId The id of the field to reset verification for
  * @param transactionId The transaction to reset
  * @returns 400 when the transaction has expired
+ * @returns 404 when the form could not be found
  * @returns 404 when the transaction could not be found
  * @returns 404 when the field could not be found
  * @returns 500 when a database error occurs
@@ -218,14 +220,17 @@ export const handleResetFieldVerification: RequestHandler<
   },
   ErrorDto
 > = async (req, res) => {
-  const { transactionId, fieldId } = req.params
+  const { transactionId, fieldId, formId } = req.params
   const logMeta = {
     action: 'handleResetFieldVerification',
     transactionId,
     fieldId,
     ...createReqMeta(req),
   }
-  return VerificationFactory.resetFieldForTransaction(transactionId, fieldId)
+  return FormService.retrieveFormById(formId)
+    .andThen(() =>
+      VerificationFactory.resetFieldForTransaction(transactionId, fieldId),
+    )
     .map(() => res.sendStatus(StatusCodes.OK))
     .mapErr((error) => {
       logger.error({
