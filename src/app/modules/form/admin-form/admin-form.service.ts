@@ -730,7 +730,7 @@ export const createFormLogic = (
 ): ResultAsync<ILogicSchema, DatabaseError | FormNotFoundError> => {
   // Create new form logic
   return ResultAsync.fromPromise(
-    FormModel.createFormLogic(form._id.toHexString(), createdLogic),
+    FormModel.createFormLogic(form._id, createdLogic),
     (error) => {
       logger.error({
         message: 'Error occurred when creating form logic',

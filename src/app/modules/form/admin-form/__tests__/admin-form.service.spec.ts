@@ -1693,10 +1693,7 @@ describe('admin-form.service', () => {
         expect.objectContaining(createdLogic),
       )
 
-      expect(CREATE_SPY).toHaveBeenCalledWith(
-        mockEmailForm._id.toHexString(),
-        createdLogic,
-      )
+      expect(CREATE_SPY).toHaveBeenCalledWith(mockEmailForm._id, createdLogic)
     })
 
     it('should return ok(created logic) on successful form logic create for encrypt mode form', async () => {
@@ -1712,10 +1709,7 @@ describe('admin-form.service', () => {
         expect.objectContaining(createdLogic),
       )
 
-      expect(CREATE_SPY).toHaveBeenCalledWith(
-        mockEncryptFormId.toHexString(),
-        createdLogic,
-      )
+      expect(CREATE_SPY).toHaveBeenCalledWith(mockEncryptFormId, createdLogic)
     })
   })
 
