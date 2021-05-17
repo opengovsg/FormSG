@@ -139,11 +139,11 @@ describe('public-forms.verification.routes', () => {
     })
   })
 
-  describe('POST /forms/:formId/fieldverification/:transactionId/fields/:fieldId/reset', () => {
+  describe('POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/reset', () => {
     it('should return 200 when transactionId and fieldId for email field are valid', async () => {
       // Act
       const response = await request.post(
-        `/forms/${mockVerifiableFormId}/fieldverification/${mockTransactionId}/fields/${mockEmailFieldId}/reset`,
+        `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/reset`,
       )
 
       // Assert
@@ -154,7 +154,7 @@ describe('public-forms.verification.routes', () => {
     it('should return 200 when transactionId and fieldId for mobile field are valid', async () => {
       // Act
       const response = await request.post(
-        `/forms/${mockVerifiableFormId}/fieldverification/${mockTransactionId}/fields/${mockMobileFieldId}/reset`,
+        `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/reset`,
       )
 
       // Assert
@@ -175,7 +175,7 @@ describe('public-forms.verification.routes', () => {
 
       // Act
       const response = await request.post(
-        `/forms/${mockVerifiableFormId}/fieldverification/${mockExpiredTransaction._id}/fields/${mockEmailFieldId}/reset`,
+        `/forms/${mockVerifiableFormId}/fieldverifications/${mockExpiredTransaction._id}/fields/${mockEmailFieldId}/reset`,
       )
 
       // Assert
@@ -184,6 +184,11 @@ describe('public-forms.verification.routes', () => {
     })
 
     it('should return 404 when formId is invalid', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
       // Act
       const response = await request.post(
         `/forms/${new ObjectId().toHexString()}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/reset`,
@@ -191,10 +196,15 @@ describe('public-forms.verification.routes', () => {
 
       // Assert
       expect(response.status).toBe(StatusCodes.NOT_FOUND)
-      expect(response.text).toBe(getReasonPhrase(StatusCodes.NOT_FOUND))
+      expect(response.body).toEqual(expectedResponse)
     })
 
     it('should return 404 when transactionId is invalid', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
       // Act
       const response = await request.post(
         `/forms/${mockVerifiableFormId}/fieldverifications/${new ObjectId().toHexString()}/fields/${mockEmailFieldId}/reset`,
@@ -202,10 +212,15 @@ describe('public-forms.verification.routes', () => {
 
       // Assert
       expect(response.status).toBe(StatusCodes.NOT_FOUND)
-      expect(response.text).toBe(getReasonPhrase(StatusCodes.NOT_FOUND))
+      expect(response.body).toEqual(expectedResponse)
     })
 
     it('should return 404 when fieldId is invalid', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
       // Act
       const response = await request.post(
         `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${new ObjectId().toHexString()}/reset`,
@@ -213,7 +228,7 @@ describe('public-forms.verification.routes', () => {
 
       // Assert
       expect(response.status).toBe(StatusCodes.NOT_FOUND)
-      expect(response.text).toBe(getReasonPhrase(StatusCodes.NOT_FOUND))
+      expect(response.body).toEqual(expectedResponse)
     })
   })
 })

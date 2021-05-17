@@ -19,6 +19,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import expressHandler from '../../../../../tests/unit/backend/helpers/jest-express'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
+import * as FormService from '../../form/form.service'
 import * as VerificationController from '../verification.controller'
 import {
   FieldNotFoundInTransactionError,
@@ -46,6 +47,8 @@ jest.mock('../verification.factory')
 const MockVerificationFactory = mocked(VerificationFactory, true)
 jest.mock('src/app/utils/otp')
 const MockOtpUtils = mocked(OtpUtils, true)
+jest.mock('../../form/form.service')
+const MockFormService = mocked(FormService, true)
 
 describe('Verification controller', () => {
   const MOCK_FORM_ID = new ObjectId().toHexString()
@@ -809,6 +812,10 @@ describe('Verification controller', () => {
       },
     })
 
+    beforeEach(() =>
+      MockFormService.retrieveFormById.mockReturnValue(okAsync({})),
+    )
+
     it('should correctly call service when params are valid', async () => {
       // Arrange
       MockVerificationFactory.resetFieldForTransaction.mockReturnValueOnce(
@@ -847,6 +854,29 @@ describe('Verification controller', () => {
         MockVerificationFactory.resetFieldForTransaction,
       ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 404 when form is not found', async () => {
+      // Arrange
+      MockFormService.retrieveFormById.mockReturnValue(
+        errAsync(new FormNotFoundError()),
+      )
+
+      // Act
+      await VerificationController.handleResetFieldVerification(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(
+        MockVerificationFactory.resetFieldForTransaction,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
       })
