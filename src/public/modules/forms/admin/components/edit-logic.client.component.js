@@ -112,12 +112,7 @@ function editLogicComponentController($uibModal, FormFields, Toastr, $q) {
           getNewCondition,
           myform: vm.myform,
         }),
-        updateLogic: () => updateLogic,
       },
     })
-  }
-
-  const updateLogic = (update) => {
-    return vm.updateForm({ update })
   }
 }

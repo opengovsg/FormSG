@@ -10,7 +10,6 @@ angular
   .controller('EditLogicModalController', [
     '$uibModalInstance',
     'externalScope',
-    'updateLogic',
     'FormFields',
     '$q',
     'Toastr',
@@ -20,7 +19,6 @@ angular
 function EditLogicModalController(
   $uibModalInstance,
   externalScope,
-  updateLogic,
   FormFields,
   $q,
   Toastr,
@@ -267,16 +265,25 @@ function EditLogicModalController(
     const { isNew, logicIndex } = externalScope
 
     if (isNew) {
-      vm.formLogics.push(vm.logic)
-      updateLogic({ form_logics: vm.formLogics }).then((error) => {
-        if (!error) {
-          $uibModalInstance.close()
-        }
-      })
-      // Not new, and logic index is provided
+      vm.createNewLogic(vm.logic)
     } else if (logicIndex !== -1) {
       vm.updateExistingLogic(logicIndex, vm.logic)
     }
+  }
+
+  vm.createNewLogic = function (newLogic) {
+    $q.when(AdminFormService.createFormLogic(vm.myform._id, newLogic))
+      .then((createdLogic) => {
+        const updatedFormLogics = [...vm.formLogics]
+        updatedFormLogics.push(createdLogic)
+        vm.formLogics = updatedFormLogics
+        externalScope.myform.form_logics = updatedFormLogics // update global myform
+        $uibModalInstance.close()
+      })
+      .catch((logicCreateError) => {
+        console.error(logicCreateError)
+        Toastr.error('Failed to create logic, please refresh and try again!')
+      })
   }
 
   vm.cancel = function () {
