@@ -278,8 +278,7 @@ function EditLogicModalController(
         externalScope.myform.form_logics.push(createdLogic) // update global myform
         $uibModalInstance.close()
       })
-      .catch((logicCreateError) => {
-        console.error(logicCreateError)
+      .catch(() => {
         Toastr.error('Failed to create logic, please refresh and try again!')
       })
   }
@@ -302,8 +301,7 @@ function EditLogicModalController(
         externalScope.myform.form_logics[logicIndex] = updatedLogic // update global myform
         $uibModalInstance.close()
       })
-      .catch((logicUpdateError) => {
-        console.error(logicUpdateError)
+      .catch(() => {
         Toastr.error('Failed to update logic, please refresh and try again!')
       })
   }
