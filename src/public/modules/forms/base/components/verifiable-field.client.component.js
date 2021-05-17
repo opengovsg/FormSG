@@ -9,6 +9,7 @@ angular.module('forms').component('verifiableFieldComponent', {
     field: '<', // The model that the input field is based on
     input: '<',
     formId: '<',
+    fieldType: '@',
   },
   controller: ['$q', '$timeout', '$interval', verifiableFieldController],
   controllerAs: 'vm',
@@ -47,7 +48,11 @@ function verifiableFieldController($q, $timeout, $interval) {
         throw new Error('No transaction id')
       }
 
+      console.log(vm.fieldType)
+
       await FieldVerificationService.triggerSendOtp({
+        fieldType: vm.fieldType,
+        formId: vm.formId,
         transactionId: vm.transactionId,
         fieldId: vm.field._id,
         answer: lastRequested.value,
