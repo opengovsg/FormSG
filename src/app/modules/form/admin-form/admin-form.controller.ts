@@ -1721,7 +1721,9 @@ export const handleCreateLogic = [
                 Joi.array().items(Joi.number()),
               )
               .required(),
-            ifValueType: Joi.valid(...Object.values(LogicIfValue)),
+            ifValueType: Joi.string()
+              .valid(...Object.values(LogicIfValue))
+              .required(),
           }).unknown(true),
         )
         .required(),
