@@ -26,6 +26,7 @@ import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.type
 import {
   mapAttachmentsFromResponses,
   mapRouteError,
+  ParsedResponsesObject,
   SubmissionEmailObj,
 } from './email-submission.util'
 
@@ -119,10 +120,7 @@ const submitEmailModeForm: RequestHandler<
         // Validate responses
         EmailSubmissionService.validateAttachments(req.body.responses)
           .andThen(() =>
-            SubmissionService.ParsedResponsesObject.parseResponses(
-              form,
-              req.body.responses,
-            ),
+            ParsedResponsesObject.parseResponses(form, req.body.responses),
           )
           .map((parsedResponses) => ({ parsedResponses, form }))
           .mapErr((error) => {

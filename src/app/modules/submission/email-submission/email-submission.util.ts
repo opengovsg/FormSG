@@ -1,8 +1,13 @@
 import { StatusCodes } from 'http-status-codes'
-import { compact, flattenDeep, sumBy } from 'lodash'
+import _, { compact, flattenDeep, sumBy } from 'lodash'
+import { err, ok, Result } from 'neverthrow'
 
 import { FilePlatforms } from '../../../../shared/constants'
 import * as FileValidation from '../../../../shared/util/file-validation'
+import {
+  getLogicUnitPreventingSubmit,
+  getVisibleFieldIds,
+} from '../../../../shared/util/logic'
 import {
   AuthType,
   BasicField,
@@ -14,7 +19,10 @@ import {
   FieldResponse,
   IAttachmentInfo,
   IAttachmentResponse,
+  IFieldSchema,
+  IFormDocument,
   MapRouteError,
+  ResponseMode,
   SPCPFieldTitle,
 } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -27,6 +35,7 @@ import {
   MailGenerationError,
   MailSendError,
 } from '../../../services/mail/mail.errors'
+import { validateField } from '../../../utils/field-validation'
 import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
@@ -69,6 +78,7 @@ import {
   ProcessedFieldResponse,
   ProcessedTableResponse,
 } from '../submission.types'
+import { getModeFilter } from '../submission.utils'
 
 import {
   ATTACHMENT_PREFIX,
@@ -763,5 +773,151 @@ export class SubmissionEmailObj {
         getFormFormattedResponse,
       ),
     )
+  }
+}
+
+/**
+ * Filter allowed form field responses from given responses and return the
+ * array of responses with duplicates removed.
+ *
+ * @param form The form document
+ * @param responses the responses that corresponds to the given form
+ * @returns neverthrow ok() filtered list of allowed responses with duplicates (if any) removed
+ * @returns neverthrow err(ConflictError) if the given form's form field ids count do not match given responses'
+ */
+// TODO: wont need to export this after removing `getProcessedResponses` from submission.service.ts
+export const getFilteredResponses = (
+  form: IFormDocument,
+  responses: FieldResponse[],
+): Result<FieldResponse[], ConflictError> => {
+  const modeFilter = getModeFilter(form.responseMode)
+
+  if (!form.form_fields) {
+    return err(new ConflictError('Form fields are missing'))
+  }
+  // _id must be transformed to string as form response is jsonified.
+  const fieldIds = modeFilter(form.form_fields).map((field) => ({
+    _id: String(field._id),
+  }))
+  const uniqueResponses = _.uniqBy(modeFilter(responses), '_id')
+  const results = _.intersectionBy(uniqueResponses, fieldIds, '_id')
+
+  if (results.length < fieldIds.length) {
+    const onlyInForm = _.differenceBy(fieldIds, results, '_id').map(
+      ({ _id }) => _id,
+    )
+    return err(
+      new ConflictError('Some form fields are missing', {
+        formId: form._id,
+        onlyInForm,
+      }),
+    )
+  }
+  return ok(results)
+}
+
+export class ParsedResponsesObject {
+  public ndiResponses: ProcessedFieldResponse[] = []
+  constructor(public responses: ProcessedFieldResponse[]) {}
+
+  addNdiResponses(
+    ndiResponses: ProcessedFieldResponse[],
+  ): ParsedResponsesObject {
+    this.ndiResponses = ndiResponses
+    return this
+  }
+
+  /**
+   * Injects response metadata such as the question, visibility state. In
+   * addition, validation such as input validation or signature validation on
+   * verified fields are also performed on the response.
+   * @param form The form document corresponding to the responses
+   * @param responses The responses to process and validate
+   * @returns neverthrow ok() with field responses with additional metadata injected.
+   * @returns neverthrow err() if response validation fails
+   */
+  static parseResponses(
+    form: IFormDocument,
+    responses: FieldResponse[],
+  ): Result<
+    ParsedResponsesObject,
+    ProcessingError | ConflictError | ValidateFieldError
+  > {
+    const filteredResponsesResult = getFilteredResponses(form, responses)
+    if (filteredResponsesResult.isErr()) {
+      return err(filteredResponsesResult.error)
+    }
+
+    const filteredResponses = filteredResponsesResult.value
+
+    // Set of all visible fields
+    const visibleFieldIds = getVisibleFieldIds(filteredResponses, form)
+
+    // Guard against invalid form submissions that should have been prevented by
+    // logic.
+    if (
+      getLogicUnitPreventingSubmit(filteredResponses, form, visibleFieldIds)
+    ) {
+      return err(new ProcessingError('Submission prevented by form logic'))
+    }
+
+    // Create a map keyed by field._id for easier access
+
+    if (!form.form_fields) {
+      return err(new ProcessingError('Form fields are undefined'))
+    }
+
+    const fieldMap = form.form_fields.reduce<{
+      [fieldId: string]: IFieldSchema
+    }>((acc, field) => {
+      acc[field._id] = field
+      return acc
+    }, {})
+
+    // Validate each field in the form and inject metadata into the responses.
+    const processedResponses = []
+    for (const response of filteredResponses) {
+      const responseId = response._id
+      const formField = fieldMap[responseId]
+      if (!formField) {
+        return err(
+          new ProcessingError('Response ID does not match form field IDs'),
+        )
+      }
+
+      const processingResponse: ProcessedFieldResponse = {
+        ...response,
+        isVisible:
+          // Set isVisible as true for Encrypt mode if there is a response for mobile and email field
+          // Because we cannot tell if the field is unhidden by logic
+          // This prevents downstream validateField from incorrectly preventing
+          // encrypt mode submissions with responses on unhidden fields
+          // TODO(#780): Remove this once submission service is separated into
+          // Email and Encrypted services
+          form.responseMode === ResponseMode.Encrypt
+            ? 'answer' in response &&
+              typeof response.answer === 'string' &&
+              response.answer.trim() !== ''
+            : visibleFieldIds.has(responseId),
+        question: formField.getQuestion(),
+      }
+
+      if (formField.isVerifiable) {
+        processingResponse.isUserVerified = formField.isVerifiable
+      }
+
+      // Error will be returned if the processed response is not valid.
+      const validateFieldResult = validateField(
+        form._id,
+        formField,
+        processingResponse,
+      )
+      if (validateFieldResult.isErr()) {
+        return err(validateFieldResult.error)
+      }
+      processedResponses.push(processingResponse)
+    }
+
+    return ok(new ParsedResponsesObject(processedResponses))
   }
 }

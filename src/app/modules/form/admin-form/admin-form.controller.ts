@@ -53,6 +53,7 @@ import * as EmailSubmissionService from '../../submission/email-submission/email
 import {
   mapAttachmentsFromResponses,
   mapRouteError as mapEmailSubmissionError,
+  ParsedResponsesObject,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
@@ -1357,12 +1358,7 @@ export const submitEncryptPreview: RequestHandler<
     )
     .andThen((form) =>
       checkIsEncryptedEncoding(encryptedContent)
-        .andThen(() =>
-          SubmissionService.ParsedResponsesObject.parseResponses(
-            form,
-            responses,
-          ),
-        )
+        .andThen(() => ParsedResponsesObject.parseResponses(form, responses))
         .map((parsedResponses) => ({ parsedResponses, form }))
         .mapErr((error) => {
           logger.error({
@@ -1468,9 +1464,7 @@ export const submitEmailPreview: RequestHandler<
 
   const parsedResponsesResult = await EmailSubmissionService.validateAttachments(
     responses,
-  ).andThen(() =>
-    SubmissionService.ParsedResponsesObject.parseResponses(form, responses),
-  )
+  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses))
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',

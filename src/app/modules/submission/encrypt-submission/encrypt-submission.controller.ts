@@ -30,11 +30,9 @@ import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
 import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
 import { WebhookFactory } from '../../webhook/webhook.factory'
+import { ParsedResponsesObject } from '../email-submission/email-submission.util'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
-import {
-  ParsedResponsesObject,
-  sendEmailConfirmations,
-} from '../submission.service'
+import { sendEmailConfirmations } from '../submission.service'
 
 import {
   checkFormIsEncryptMode,
