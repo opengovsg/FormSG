@@ -1,5 +1,5 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import _, { assignIn, last, omit } from 'lodash'
+import { assignIn, last, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
@@ -748,7 +748,7 @@ export const createFormLogic = (
     if (!updatedForm) {
       return errAsync(new FormNotFoundError())
     }
-    const createdLogic = _.last(updatedForm.form_logics)
+    const createdLogic = last(updatedForm.form_logics)
     return createdLogic ? okAsync(createdLogic) : errAsync(new DatabaseError())
   })
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
-import _, { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
+import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
@@ -1728,7 +1728,7 @@ describe('admin-form.service', () => {
 
     it('should return err(DatabaseError) if db returns form object that does not have form_logics array', async () => {
       // Arrange
-      const updatedFormWithoutLogic = _.omit(
+      const updatedFormWithoutLogic = omit(
         mockEncryptFormUpdated,
         'form_logics',
       )
