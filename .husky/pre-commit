@@ -1,4 +1,8 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+<<<<<<< HEAD
 npm run pre-commit && sh secrets-check.sh && cd frontend && npm run pre-commit
+=======
+npm run pre-commit && sh secrets-check.sh && cd frontend && npm run pre-commit
+>>>>>>> 5fbcb881 (feat(react): add base react app directory in root of the application (#1819))
