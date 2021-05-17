@@ -274,10 +274,8 @@ function EditLogicModalController(
   vm.createNewLogic = function (newLogic) {
     $q.when(AdminFormService.createFormLogic(vm.myform._id, newLogic))
       .then((createdLogic) => {
-        const updatedFormLogics = [...vm.formLogics]
-        updatedFormLogics.push(createdLogic)
-        vm.formLogics = updatedFormLogics
-        externalScope.myform.form_logics = updatedFormLogics // update global myform
+        vm.formLogics.push(createdLogic)
+        externalScope.myform.form_logics.push(createdLogic) // update global myform
         $uibModalInstance.close()
       })
       .catch((logicCreateError) => {
@@ -300,10 +298,8 @@ function EditLogicModalController(
       ),
     )
       .then((updatedLogic) => {
-        const updatedFormLogics = [...vm.formLogics]
-        updatedFormLogics[logicIndex] = updatedLogic
-        vm.formLogics = updatedFormLogics
-        externalScope.myform.form_logics = updatedFormLogics // update global myform
+        vm.formLogics[logicIndex] = updatedLogic
+        externalScope.myform.form_logics[logicIndex] = updatedLogic // update global myform
         $uibModalInstance.close()
       })
       .catch((logicUpdateError) => {
