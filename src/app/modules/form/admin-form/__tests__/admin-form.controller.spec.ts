@@ -7824,6 +7824,182 @@ describe('admin-form.controller', () => {
     })
   })
 
+  describe('_handleCreateLogic', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+
+    const logicId = new ObjectId().toHexString()
+    const mockFormLogic = {
+      form_logics: [
+        {
+          _id: logicId,
+          id: logicId,
+        } as ILogicSchema,
+      ],
+    }
+
+    const mockCreatedLogic = {
+      _id: logicId,
+    } as ILogicSchema
+
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+      ...mockFormLogic,
+    } as IPopulatedForm
+
+    const mockReq = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+        logicId,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+      body: mockCreatedLogic,
+    })
+    const mockRes = expressHandler.mockResponse()
+
+    beforeEach(() => {
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.createFormLogic.mockReturnValue(
+        okAsync(mockCreatedLogic),
+      )
+    })
+
+    it('should call all services correctly when request is valid', async () => {
+      await AdminFormController._handleCreateLogic(mockReq, mockRes, jest.fn())
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.createFormLogic).toHaveBeenCalledWith(
+        MOCK_FORM,
+        mockCreatedLogic,
+      )
+
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(mockCreatedLogic)
+    })
+
+    it('should return 403 when user does not have permissions to update logic', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        errAsync(
+          new ForbiddenFormError('not authorized to perform write operation'),
+        ),
+      )
+
+      await AdminFormController._handleCreateLogic(mockReq, mockRes, jest.fn())
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.createFormLogic).not.toHaveBeenCalled()
+
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'not authorized to perform write operation',
+      })
+    })
+
+    it('should return 404 when form cannot be found', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        errAsync(new FormNotFoundError()),
+      )
+
+      await AdminFormController._handleCreateLogic(mockReq, mockRes, jest.fn())
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.createFormLogic).not.toHaveBeenCalled()
+
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Form not found',
+      })
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      MockUserService.getPopulatedUserById.mockReturnValue(
+        errAsync(new MissingUserError()),
+      )
+
+      await AdminFormController._handleCreateLogic(mockReq, mockRes, jest.fn())
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+
+      expect(MockAdminFormService.createFormLogic).not.toHaveBeenCalled()
+
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'User not found',
+      })
+    })
+
+    it('should return 500 when database error occurs', async () => {
+      MockUserService.getPopulatedUserById.mockReturnValue(
+        errAsync(new DatabaseError()),
+      )
+
+      await AdminFormController._handleCreateLogic(mockReq, mockRes, jest.fn())
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+
+      expect(MockAdminFormService.createFormLogic).not.toHaveBeenCalled()
+
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Something went wrong. Please try again.',
+      })
+    })
+  })
+
   describe('handleDeleteFormField', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
