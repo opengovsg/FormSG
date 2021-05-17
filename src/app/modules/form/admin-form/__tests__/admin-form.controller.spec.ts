@@ -5120,6 +5120,7 @@ describe('admin-form.controller', () => {
       MockEmailSubmissionService.validateAttachments.mockReturnValue(
         okAsync(true),
       )
+      // TODO: Remove after mocking ParsedResponsesObj
       MockSubmissionService.getProcessedResponses.mockReturnValue(
         ok(MOCK_PARSED_RESPONSES),
       )
