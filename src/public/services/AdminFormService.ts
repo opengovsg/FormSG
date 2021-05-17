@@ -124,10 +124,10 @@ export const updateFormEndPage = async (
 
 export const createFormLogic = async (
   formId: string,
-  createdLogic: LogicDto,
+  createLogicBody: LogicDto,
 ): Promise<LogicDto> => {
   return axios
-    .post<LogicDto>(`${ADMIN_FORM_ENDPOINT}/${formId}/logic`, createdLogic)
+    .post<LogicDto>(`${ADMIN_FORM_ENDPOINT}/${formId}/logic`, createLogicBody)
     .then(({ data }) => data)
 }
 

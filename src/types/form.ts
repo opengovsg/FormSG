@@ -303,7 +303,7 @@ export interface IFormModel extends Model<IFormSchema> {
   ): Promise<IPopulatedForm | null>
   createFormLogic(
     formId: string,
-    createdLogic: LogicDto,
+    createLogicBody: LogicDto,
   ): Promise<IFormSchema | null>
   deleteFormLogic(formId: string, logicId: string): Promise<IFormSchema | null>
   /**

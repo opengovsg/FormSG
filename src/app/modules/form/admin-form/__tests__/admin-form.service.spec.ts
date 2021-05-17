@@ -1629,7 +1629,7 @@ describe('admin-form.service', () => {
       ],
     }
 
-    const createdLogic = {
+    const createLogicBody = {
       logicType: LogicType.PreventSubmit,
     } as ILogicSchema
 
@@ -1685,15 +1685,18 @@ describe('admin-form.service', () => {
       CREATE_SPY.mockResolvedValue(mockEmailFormUpdated as IFormSchema)
 
       // Act
-      const actualResult = await createFormLogic(mockEmailForm, createdLogic)
+      const actualResult = await createFormLogic(mockEmailForm, createLogicBody)
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(
-        expect.objectContaining(createdLogic),
+        expect.objectContaining(createLogicBody),
       )
 
-      expect(CREATE_SPY).toHaveBeenCalledWith(mockEmailForm._id, createdLogic)
+      expect(CREATE_SPY).toHaveBeenCalledWith(
+        mockEmailForm._id,
+        createLogicBody,
+      )
     })
 
     it('should return ok(created logic) on successful form logic create for encrypt mode form', async () => {
@@ -1701,15 +1704,21 @@ describe('admin-form.service', () => {
       CREATE_SPY.mockResolvedValue(mockEncryptFormUpdated as IFormSchema)
 
       // Act
-      const actualResult = await createFormLogic(mockEncryptForm, createdLogic)
+      const actualResult = await createFormLogic(
+        mockEncryptForm,
+        createLogicBody,
+      )
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(
-        expect.objectContaining(createdLogic),
+        expect.objectContaining(createLogicBody),
       )
 
-      expect(CREATE_SPY).toHaveBeenCalledWith(mockEncryptFormId, createdLogic)
+      expect(CREATE_SPY).toHaveBeenCalledWith(
+        mockEncryptFormId,
+        createLogicBody,
+      )
     })
 
     it('should return err(FormNotFoundError) if db does not return form object', async () => {
@@ -1717,13 +1726,19 @@ describe('admin-form.service', () => {
       CREATE_SPY.mockResolvedValue((undefined as unknown) as IFormSchema)
 
       // Act
-      const actualResult = await createFormLogic(mockEncryptForm, createdLogic)
+      const actualResult = await createFormLogic(
+        mockEncryptForm,
+        createLogicBody,
+      )
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
 
-      expect(CREATE_SPY).toHaveBeenCalledWith(mockEncryptFormId, createdLogic)
+      expect(CREATE_SPY).toHaveBeenCalledWith(
+        mockEncryptFormId,
+        createLogicBody,
+      )
     })
 
     it('should return err(DatabaseError) if db returns form object that does not have form_logics array', async () => {
@@ -1735,13 +1750,19 @@ describe('admin-form.service', () => {
       CREATE_SPY.mockResolvedValue(updatedFormWithoutLogic as IFormSchema)
 
       // Act
-      const actualResult = await createFormLogic(mockEncryptForm, createdLogic)
+      const actualResult = await createFormLogic(
+        mockEncryptForm,
+        createLogicBody,
+      )
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
 
-      expect(CREATE_SPY).toHaveBeenCalledWith(mockEncryptFormId, createdLogic)
+      expect(CREATE_SPY).toHaveBeenCalledWith(
+        mockEncryptFormId,
+        createLogicBody,
+      )
     })
 
     it('should return err(DatabaseError) if db returns form object that has empty form_logics array', async () => {
@@ -1753,13 +1774,19 @@ describe('admin-form.service', () => {
       CREATE_SPY.mockResolvedValue(updatedFormWithEmptyLogic as IFormSchema)
 
       // Act
-      const actualResult = await createFormLogic(mockEncryptForm, createdLogic)
+      const actualResult = await createFormLogic(
+        mockEncryptForm,
+        createLogicBody,
+      )
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
 
-      expect(CREATE_SPY).toHaveBeenCalledWith(mockEncryptFormId, createdLogic)
+      expect(CREATE_SPY).toHaveBeenCalledWith(
+        mockEncryptFormId,
+        createLogicBody,
+      )
     })
   })
 

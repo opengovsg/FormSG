@@ -685,11 +685,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormSchema.statics.createFormLogic = async function (
     this: IFormModel,
     formId: string,
-    createdLogic: LogicDto,
+    createLogicBody: LogicDto,
   ): Promise<IFormSchema | null> {
     return this.findByIdAndUpdate(
       formId,
-      { $push: { form_logics: createdLogic } },
+      { $push: { form_logics: createLogicBody } },
       {
         new: true,
         runValidators: true,

@@ -1660,7 +1660,7 @@ export const _handleCreateLogic: RequestHandler<
   LogicDto
 > = (req, res) => {
   const { formId } = req.params
-  const createdLogic = req.body
+  const createLogicBody = req.body
   const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   // Step 1: Retrieve currently logged in user.
@@ -1676,7 +1676,7 @@ export const _handleCreateLogic: RequestHandler<
       )
       // Step 3: Create form logic
       .andThen((retrievedForm) =>
-        AdminFormService.createFormLogic(retrievedForm, createdLogic),
+        AdminFormService.createFormLogic(retrievedForm, createLogicBody),
       )
       .map((createdLogic) => res.status(StatusCodes.OK).json(createdLogic))
       .mapErr((error) => {
@@ -1687,7 +1687,7 @@ export const _handleCreateLogic: RequestHandler<
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,
-            createdLogic,
+            createLogicBody,
           },
           error,
         })

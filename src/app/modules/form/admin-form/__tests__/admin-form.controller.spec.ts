@@ -7842,7 +7842,7 @@ describe('admin-form.controller', () => {
       ],
     }
 
-    const mockCreatedLogic = {
+    const mockCreateLogicBody = {
       _id: logicId,
     } as ILogicSchema
 
@@ -7863,7 +7863,7 @@ describe('admin-form.controller', () => {
           _id: MOCK_USER_ID,
         },
       },
-      body: mockCreatedLogic,
+      body: mockCreateLogicBody,
     })
     const mockRes = expressHandler.mockResponse()
 
@@ -7873,7 +7873,7 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM),
       )
       MockAdminFormService.createFormLogic.mockReturnValue(
-        okAsync(mockCreatedLogic),
+        okAsync(mockCreateLogicBody),
       )
     })
 
@@ -7892,11 +7892,11 @@ describe('admin-form.controller', () => {
       )
       expect(MockAdminFormService.createFormLogic).toHaveBeenCalledWith(
         MOCK_FORM,
-        mockCreatedLogic,
+        mockCreateLogicBody,
       )
 
       expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith(mockCreatedLogic)
+      expect(mockRes.json).toHaveBeenCalledWith(mockCreateLogicBody)
     })
 
     it('should return 403 when user does not have permissions to update logic', async () => {
