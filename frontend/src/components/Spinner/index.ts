@@ -1,3 +1,1 @@
-import { Spinner } from './Spinner'
-
-export default Spinner
+export { Spinner as default } from './Spinner'
