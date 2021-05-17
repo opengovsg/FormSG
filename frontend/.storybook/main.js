@@ -1,11 +1,17 @@
+<<<<<<< HEAD
 /* eslint-env node */
 const { propNames } = require('@chakra-ui/styled-system')
+=======
+>>>>>>> 5fbcb881 (feat(react): add base react app directory in root of the application (#1819))
 // Required to sync aliases between storybook and overriden configs
 const config = require('../config-overrides')
 const path = require('path')
 
 const toPath = (_path) => path.join(process.cwd(), _path)
+<<<<<<< HEAD
 const excludedPropNames = propNames.concat(['as', 'apply', 'sx', '__css'])
+=======
+>>>>>>> 5fbcb881 (feat(react): add base react app directory in root of the application (#1819))
 
 module.exports = {
   // Welcome story set first so it will show up first.
@@ -22,6 +28,7 @@ module.exports = {
     '@storybook/preset-create-react-app',
   ],
   typescript: {
+<<<<<<< HEAD
     check: false,
     checkOptions: {},
     reactDocgen: 'react-docgen-typescript',
@@ -41,6 +48,26 @@ module.exports = {
         const isHTMLElementProp = prop.parent.fileName.includes('node_modules')
         return !(isStyledSystemProp || isHTMLElementProp)
       },
+=======
+    reactDocgen: 'react-docgen-typescript',
+    reactDocgenTypescriptOptions: {
+      // Allows typed string unions to be generated properly.
+      shouldExtractLiteralValuesFromEnum: true,
+      compilerOptions: {
+        allowSyntheticDefaultImports: false,
+        esModuleInterop: false,
+      },
+      // Prevents extraneous props from showing up in controls.
+      // See https://github.com/chakra-ui/chakra-ui/issues/2009#issuecomment-765538309.
+      propFilter: (prop) =>
+        prop.parent !== undefined &&
+        (!prop.parent.fileName.includes('node_modules') ||
+          (prop.parent.fileName.includes('node_modules') &&
+            prop.parent.fileName.includes('node_modules/@chakra-ui/') &&
+            !prop.parent.fileName.includes(
+              'node_modules/@chakra-ui/styled-system',
+            ))),
+>>>>>>> 5fbcb881 (feat(react): add base react app directory in root of the application (#1819))
     },
   },
   // webpackFinal setup retrieved from ChakraUI's own Storybook setup
