@@ -20,3 +20,7 @@ PublicFormsVerificationRouter.route(
 PublicFormsVerificationRouter.route(
   '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/reset',
 ).post(VerificationController.handleResetFieldVerification)
+
+PublicFormsVerificationRouter.route(
+  '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/otp/generate',
+).post(VerificationController.handleGenerateOtp)

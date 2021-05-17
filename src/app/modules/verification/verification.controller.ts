@@ -1,3 +1,4 @@
+import { celebrate, Joi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
@@ -7,6 +8,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import * as FormService from '../../modules/form/form.service'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta } from '../../utils/request'
+import * as FormService from '../form/form.service'
 
 import { VerificationFactory } from './verification.factory'
 import { Transaction } from './verification.types'
@@ -133,6 +135,7 @@ export const handleResetField: RequestHandler<
  * The current answer is signed, and the signature is also saved in the transaction, with the field id as the key.
  * @param req
  * @param res
+ * @deprecated in favour of handleGenerateOtp
  */
 export const handleGetOtp: RequestHandler<
   { transactionId: string },
@@ -168,6 +171,61 @@ export const handleGetOtp: RequestHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * NOTE: This is exported solely for testing
+ * Generates an otp when a user requests to verify a field.
+ * The current answer is signed, and the signature is also saved in the transaction, with the field id as the key.
+ * @param req
+ * @param res
+ */
+export const _handleGenerateOtp: RequestHandler<
+  { transactionId: string; formId: string; fieldId: string },
+  ErrorDto,
+  { answer: string }
+> = async (req, res) => {
+  const { transactionId, formId, fieldId } = req.params
+  const { answer } = req.body
+  const logMeta = {
+    action: 'handleGenerateOtp',
+    transactionId,
+    fieldId,
+    ...createReqMeta(req),
+  }
+  return FormService.retrieveFormById(formId)
+    .andThen(() => generateOtpWithHash(logMeta, SALT_ROUNDS))
+    .andThen(({ otp, hashedOtp }) =>
+      VerificationFactory.sendNewOtp({
+        fieldId,
+        hashedOtp,
+        otp,
+        recipient: answer,
+        transactionId,
+      }),
+    )
+    .map(() => res.sendStatus(StatusCodes.CREATED))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error creating new OTP',
+        meta: logMeta,
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for the POST /forms/:formId/fieldverifications/:transactiond/fields/:fieldId/otp/generate endpoint
+ */
+export const handleGenerateOtp = [
+  celebrate({
+    [Segments.BODY]: Joi.object({
+      answer: Joi.string().required(),
+    }),
+  }),
+  _handleGenerateOtp,
+] as RequestHandler[]
 
 /**
  * When user submits their otp for the field, the otp is validated.
