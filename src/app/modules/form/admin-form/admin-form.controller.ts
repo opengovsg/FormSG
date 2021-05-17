@@ -2003,12 +2003,13 @@ export const _handleUpdateEndPage: RequestHandler<
  */
 export const handleUpdateEndPage = [
   celebrate({
-    [Segments.BODY]: {
+    [Segments.BODY]: Joi.object({
       title: Joi.string(),
       paragraph: Joi.string().allow(''),
       buttonLink: Joi.string().uri().allow(''),
       buttonText: Joi.string().allow(''),
-    },
+      // TODO(#1895): Remove when deprecated `buttons` key is removed from all forms in the database
+    }).unknown(true),
   }),
   _handleUpdateEndPage,
 ] as RequestHandler[]
