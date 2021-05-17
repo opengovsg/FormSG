@@ -1880,7 +1880,7 @@ export const handleUpdateLogic = [
         }),
         preventSubmitMessage: Joi.alternatives().conditional('logicType', {
           is: LogicType.PreventSubmit,
-          then: Joi.string().required(),
+          then: Joi.string(),
         }),
         // Allow other field related key-values to be provided and let the model
         // layer handle the validation.
