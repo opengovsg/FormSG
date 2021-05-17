@@ -2,10 +2,13 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
-import { SALT_ROUNDS } from '../../../shared/util/verification'
+import {
+  SALT_ROUNDS,
+  VERIFIED_FIELDTYPES,
+} from '../../../shared/util/verification'
+import { VerifiableFieldType } from '../../../types'
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
-import * as FormService from '../../modules/form/form.service'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta } from '../../utils/request'
 import * as FormService from '../form/form.service'
@@ -176,8 +179,24 @@ export const handleGetOtp: RequestHandler<
  * NOTE: This is exported solely for testing
  * Generates an otp when a user requests to verify a field.
  * The current answer is signed, and the signature is also saved in the transaction, with the field id as the key.
- * @param req
- * @param res
+ * @param answer The mobile or email number of the user
+ * @param transactionId The id of the transaction to verify
+ * @param formId The id of the form to verify
+ * @param fieldId The id of the field to verify
+ * @returns 200 when otp generated successfully
+ * @returns 400 when the parameters could not be parsed
+ * @returns 400 when the transaction has expired
+ * @returns 400 when the otp data could not be retrieved from the database
+ * @returns 400 when the otp could not be sent via sms
+ * @returns 400 when the otp could not be sent via email
+ * @returns 400 when the provided phone number is not valid
+ * @returns 400 when the field type is not supported for validation
+ * @returns 404 when the requested form was not found
+ * @returns 422 when the user requested for a new otp without waiting
+ * @returns 500 when the otp could not be hashed
+ * @returns 500 when the transaction could not be found
+ * @returns 500 when the field could not be found in the transaction
+ * @returns 500 when there is a database error
  */
 export const _handleGenerateOtp: RequestHandler<
   { transactionId: string; formId: string; fieldId: string },
@@ -216,12 +235,17 @@ export const _handleGenerateOtp: RequestHandler<
 }
 
 /**
- * Handler for the POST /forms/:formId/fieldverifications/:transactiond/fields/:fieldId/otp/generate endpoint
+ * Handler for the POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/generate endpoint
  */
 export const handleGenerateOtp = [
   celebrate({
     [Segments.BODY]: Joi.object({
-      answer: Joi.string().required(),
+      fieldType: Joi.string().valid(...VERIFIED_FIELDTYPES),
+      answer: Joi.string().when('fieldType', {
+        is: VerifiableFieldType.Email,
+        then: Joi.string().email(),
+        otherwise: Joi.string().pattern(/\+(65)\d{8}/m),
+      }),
     }),
   }),
   _handleGenerateOtp,

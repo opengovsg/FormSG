@@ -53,7 +53,7 @@ export enum SPCPFieldTitle {
   CpUen = 'CorpPass Validated UEN',
 }
 
-export const enum VerifiableFieldType {
-  email = 'email',
-  mobile = 'mobile',
+export enum VerifiableFieldType {
+  Email = BasicField.Email,
+  Mobile = BasicField.Mobile,
 }
