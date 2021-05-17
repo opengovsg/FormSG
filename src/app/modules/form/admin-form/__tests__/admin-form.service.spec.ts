@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
-import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
+import _, { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
@@ -1708,6 +1708,56 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(
         expect.objectContaining(createdLogic),
       )
+
+      expect(CREATE_SPY).toHaveBeenCalledWith(mockEncryptFormId, createdLogic)
+    })
+
+    it('should return err(FormNotFoundError) if db does not return form object', async () => {
+      // Arrange
+      CREATE_SPY.mockResolvedValue((undefined as unknown) as IFormSchema)
+
+      // Act
+      const actualResult = await createFormLogic(mockEncryptForm, createdLogic)
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
+
+      expect(CREATE_SPY).toHaveBeenCalledWith(mockEncryptFormId, createdLogic)
+    })
+
+    it('should return err(DatabaseError) if db returns form object that does not have form_logics array', async () => {
+      // Arrange
+      const updatedFormWithoutLogic = _.omit(
+        mockEncryptFormUpdated,
+        'form_logics',
+      )
+      CREATE_SPY.mockResolvedValue(updatedFormWithoutLogic as IFormSchema)
+
+      // Act
+      const actualResult = await createFormLogic(mockEncryptForm, createdLogic)
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
+
+      expect(CREATE_SPY).toHaveBeenCalledWith(mockEncryptFormId, createdLogic)
+    })
+
+    it('should return err(DatabaseError) if db returns form object that has empty form_logics array', async () => {
+      // Arrange
+      const updatedFormWithEmptyLogic = {
+        ...mockEncryptFormUpdated,
+        form_logics: [],
+      }
+      CREATE_SPY.mockResolvedValue(updatedFormWithEmptyLogic as IFormSchema)
+
+      // Act
+      const actualResult = await createFormLogic(mockEncryptForm, createdLogic)
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
 
       expect(CREATE_SPY).toHaveBeenCalledWith(mockEncryptFormId, createdLogic)
     })
