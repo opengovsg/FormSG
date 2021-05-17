@@ -1698,43 +1698,50 @@ export const _handleCreateLogic: RequestHandler<
 }
 
 /**
+ * Shape of request body used for joi validation for create and update logic
+ */
+const joiLogicBody = {
+  logicType: Joi.string()
+    .valid(...Object.values(LogicType))
+    .required(),
+  conditions: Joi.array()
+    .items(
+      Joi.object({
+        field: Joi.string().required(),
+        state: Joi.string()
+          .valid(...Object.values(LogicConditionState))
+          .required(),
+        value: Joi.alternatives()
+          .try(
+            Joi.number(),
+            Joi.string(),
+            Joi.array().items(Joi.string()),
+            Joi.array().items(Joi.number()),
+          )
+          .required(),
+        ifValueType: Joi.string()
+          .valid(...Object.values(LogicIfValue))
+          .required(),
+      }).unknown(true),
+    )
+    .required(),
+  show: Joi.alternatives().conditional('logicType', {
+    is: LogicType.ShowFields,
+    then: Joi.array().items(Joi.string()).required(),
+  }),
+  preventSubmitMessage: Joi.alternatives().conditional('logicType', {
+    is: LogicType.PreventSubmit,
+    then: Joi.string().required(),
+  }),
+}
+
+/**
  * Handler for POST /forms/:formId/logic
  */
 export const handleCreateLogic = [
   celebrate({
     [Segments.BODY]: Joi.object({
-      logicType: Joi.string()
-        .valid(...Object.values(LogicType))
-        .required(),
-      conditions: Joi.array()
-        .items(
-          Joi.object({
-            field: Joi.string().required(),
-            state: Joi.string()
-              .valid(...Object.values(LogicConditionState))
-              .required(),
-            value: Joi.alternatives()
-              .try(
-                Joi.number(),
-                Joi.string(),
-                Joi.array().items(Joi.string()),
-                Joi.array().items(Joi.number()),
-              )
-              .required(),
-            ifValueType: Joi.string()
-              .valid(...Object.values(LogicIfValue))
-              .required(),
-          }).unknown(true),
-        )
-        .required(),
-      show: Joi.alternatives().conditional('logicType', {
-        is: LogicType.ShowFields,
-        then: Joi.array().items(Joi.string()).required(),
-      }),
-      preventSubmitMessage: Joi.alternatives().conditional('logicType', {
-        is: LogicType.PreventSubmit,
-        then: Joi.string().required(),
-      }),
+      ...joiLogicBody,
       // Allow other field related key-values to be provided and let the model
       // layer handle the validation.
     }).unknown(true),
@@ -1950,38 +1957,7 @@ export const handleUpdateLogic = [
       [Segments.BODY]: Joi.object({
         // Ensures given logic is same as accessed logic
         _id: Joi.string().valid(Joi.ref('$params.logicId')).required(),
-        logicType: Joi.string()
-          .valid(...Object.values(LogicType))
-          .required(),
-        conditions: Joi.array()
-          .items(
-            Joi.object({
-              field: Joi.string().required(),
-              state: Joi.string()
-                .valid(...Object.values(LogicConditionState))
-                .required(),
-              value: Joi.alternatives()
-                .try(
-                  Joi.number(),
-                  Joi.string(),
-                  Joi.array().items(Joi.string()),
-                  Joi.array().items(Joi.number()),
-                )
-                .required(),
-              ifValueType: Joi.string()
-                .valid(...Object.values(LogicIfValue))
-                .required(),
-            }).unknown(true),
-          )
-          .required(),
-        show: Joi.alternatives().conditional('logicType', {
-          is: LogicType.ShowFields,
-          then: Joi.array().items(Joi.string()).required(),
-        }),
-        preventSubmitMessage: Joi.alternatives().conditional('logicType', {
-          is: LogicType.PreventSubmit,
-          then: Joi.string().required(),
-        }),
+        ...joiLogicBody,
         // Allow other field related key-values to be provided and let the model
         // layer handle the validation.
       }).unknown(true),
