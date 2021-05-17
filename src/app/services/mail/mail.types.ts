@@ -72,8 +72,11 @@ export type SubmissionToAdminHtmlData = {
 }
 
 export type AutoreplyHtmlData =
-  | ({ autoReplyBody: string[] } & AutoreplySummaryRenderData)
-  | { autoReplyBody: string[] }
+  | ({
+      responseId: string
+      autoReplyBody: string[]
+    } & AutoreplySummaryRenderData)
+  | { responseId: string; autoReplyBody: string[] }
 
 export type BounceNotificationHtmlData = {
   formTitle: string
