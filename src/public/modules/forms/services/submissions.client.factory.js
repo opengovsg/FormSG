@@ -107,7 +107,6 @@ function SubmissionsFactory(
           } else {
             deferred.reject(`${response.message}`)
           }
-          // eslint-disable-next-line no-empty
         } catch (e) {
           deferred.reject(
             "Please refresh and try again. If this doesn't work, try switching devices or networks.",
