@@ -732,6 +732,7 @@ describe('mail.service', () => {
     beforeAll(async () => {
       defaultHtml = (
         await MailUtils.generateAutoreplyHtml({
+          responseId: MOCK_AUTOREPLY_PARAMS.submission.id,
           autoReplyBody: DEFAULT_AUTO_REPLY_BODY,
         })
       )._unsafeUnwrap()
@@ -911,6 +912,7 @@ describe('mail.service', () => {
       }
       const expectedMailBody = (
         await MailUtils.generateAutoreplyHtml({
+          responseId: MOCK_AUTOREPLY_PARAMS.submission.id,
           autoReplyBody: DEFAULT_AUTO_REPLY_BODY,
           ...expectedRenderData,
         })
