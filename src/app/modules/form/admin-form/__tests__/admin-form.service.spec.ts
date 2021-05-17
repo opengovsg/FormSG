@@ -71,6 +71,7 @@ import {
   deleteFormField,
   deleteFormLogic,
   duplicateForm,
+  duplicateFormField,
   editFormFields,
   getDashboardForms,
   getFormField,
@@ -1468,6 +1469,78 @@ describe('admin-form.service', () => {
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(new LogicNotFoundError())
       expect(DELETE_SPY).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('duplicateFormField', () => {
+    it('should return updated form when field duplication is successful', async () => {
+      // Arrange
+      const fieldToDuplicate = generateDefaultField(BasicField.Mobile)
+      const duplicatedField = generateDefaultField(BasicField.Mobile)
+      const mockUpdatedForm = {
+        title: 'some mock form',
+        // Append duplicated field to end of form_fields.
+        form_fields: [fieldToDuplicate, duplicatedField],
+      } as IFormSchema
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: [fieldToDuplicate],
+        _id: new ObjectId(),
+        duplicateFormFieldById: jest.fn().mockResolvedValue(mockUpdatedForm),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await duplicateFormField(
+        mockForm,
+        String(fieldToDuplicate._id),
+      )
+
+      const actualDuplicatedField = {
+        ...omit(actual._unsafeUnwrap(), ['_id', 'globalId']),
+      }
+
+      const duplicatedFieldWithoutId = {
+        ...omit(duplicatedField, ['_id', 'globalId']),
+      }
+
+      // Assert
+      expect(actualDuplicatedField).toEqual(duplicatedFieldWithoutId)
+    })
+
+    it('should return FormNotFoundError when field duplication returns null', async () => {
+      // Arrange
+      const fieldToDuplicate = generateDefaultField(BasicField.Mobile)
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: [fieldToDuplicate],
+        _id: new ObjectId(),
+        duplicateFormFieldById: jest.fn().mockResolvedValue(null),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await duplicateFormField(mockForm, fieldToDuplicate._id)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
+    })
+
+    it('should return DatabaseValidationError when field model update throws a validation error', async () => {
+      // Arrange
+      const initialFields = [generateDefaultField(BasicField.Mobile)]
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: initialFields,
+        duplicateFormFieldById: jest.fn().mockRejectedValue(
+          // @ts-ignore
+          new mongoose.Error.ValidationError({ errors: 'does not matter' }),
+        ),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await duplicateFormField(mockForm, initialFields[0]._id)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
     })
   })
 
