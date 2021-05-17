@@ -301,6 +301,10 @@ export interface IFormModel extends Model<IFormSchema> {
     formId: string,
     fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null>
+  createFormLogic(
+    formId: string,
+    createdLogic: LogicDto,
+  ): Promise<IFormSchema | null>
   deleteFormLogic(formId: string, logicId: string): Promise<IFormSchema | null>
   /**
    * Deletes specified form field by its id from the form corresponding to given form id.

@@ -52,7 +52,7 @@ import {
   TransferOwnershipError,
 } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
-import { getFormFieldById, getLogicById } from '../form.utils'
+import { getFormFieldById, getLastLogic, getLogicById } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -714,6 +714,42 @@ export const updateFormSettings = (
       return errAsync(new FormNotFoundError())
     }
     return okAsync(updatedForm.getSettings())
+  })
+}
+
+/**
+ * Creates form logic.
+ * @param form The original form to create logic in
+ * @param createdLogic Object containing the created logic
+ * @returns ok(created logic dto) on success
+ * @returns err(database errors) if db error is thrown during logic update
+ */
+export const createFormLogic = (
+  form: IPopulatedForm,
+  createdLogic: LogicDto,
+): ResultAsync<ILogicSchema, DatabaseError | FormNotFoundError> => {
+  // Create new form logic
+  return ResultAsync.fromPromise(
+    FormModel.createFormLogic(form._id.toHexString(), createdLogic),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when creating form logic',
+        meta: {
+          action: 'createFormLogic',
+          formId: form._id,
+          createdLogic,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+    // On success, return created form logic
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    const createdLogic = getLastLogic(updatedForm.form_logics)
+    return createdLogic ? okAsync(createdLogic) : errAsync(new DatabaseError())
   })
 }
 
