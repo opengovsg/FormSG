@@ -1,0 +1,5 @@
+'{src,tests}/**/*.{js,ts}':
+  - eslint --fix
+'{src,tests}/**/*.html':
+  - htmlhint
+  - prettier --write
