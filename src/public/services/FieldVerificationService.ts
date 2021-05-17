@@ -48,7 +48,7 @@ export const createTransactionForForm = async (
  * @param fieldType The kind of field to generate the otp for
  * @returns 201 Created status if successfully sent
  */
-const triggerSendOtp = async ({
+export const triggerSendOtp = async ({
   formId,
   transactionId,
   fieldId,
@@ -68,50 +68,6 @@ const triggerSendOtp = async ({
       answer,
     },
   )
-}
-
-// Generates an otp for a given email
-export const sendOtpForEmail = async ({
-  formId,
-  transactionId,
-  fieldId,
-  answer,
-}: {
-  formId: string
-  transactionId: string
-  fieldId: string
-  answer: string
-  fieldType: VerifiableFieldType
-}): Promise<void> => {
-  return triggerSendOtp({
-    formId,
-    transactionId,
-    fieldId,
-    answer,
-    fieldType: VerifiableFieldType.email,
-  })
-}
-
-// Generates an otp for a given mobile number
-export const sendOtpForMobile = async ({
-  formId,
-  transactionId,
-  fieldId,
-  answer,
-}: {
-  formId: string
-  transactionId: string
-  fieldId: string
-  answer: string
-  fieldType: VerifiableFieldType
-}): Promise<void> => {
-  return triggerSendOtp({
-    formId,
-    transactionId,
-    fieldId,
-    answer,
-    fieldType: VerifiableFieldType.mobile,
-  })
 }
 
 /**
