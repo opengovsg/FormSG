@@ -145,6 +145,13 @@
 #settings-form #enable-captcha {
   display: flex;
   align-items: center;
+}
+
+#settings-form #enable-captcha-infobox {
+  display: flex;
+  align-items: center;
+  margin-left: 0;
+  margin-right: 0;
   padding-bottom: 45px;
 }
 
