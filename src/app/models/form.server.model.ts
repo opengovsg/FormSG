@@ -681,6 +681,22 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     ).exec()
   }
 
+  // Creates specified form logic.
+  FormSchema.statics.createFormLogic = async function (
+    this: IFormModel,
+    formId: string,
+    createLogicBody: LogicDto,
+  ): Promise<IFormSchema | null> {
+    return this.findByIdAndUpdate(
+      formId,
+      { $push: { form_logics: createLogicBody } },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).exec()
+  }
+
   // Deletes specified form field by id.
   FormSchema.statics.deleteFormFieldById = async function (
     this: IFormModel,
@@ -693,6 +709,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       { new: true, runValidators: true },
     ).exec()
   }
+
   // Updates specified form logic.
   FormSchema.statics.updateFormLogic = async function (
     this: IFormModel,

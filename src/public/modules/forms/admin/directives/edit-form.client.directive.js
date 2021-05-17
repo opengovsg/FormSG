@@ -98,13 +98,10 @@ function editFormController(
   let hiddenFieldSet = new Set() // To monitor which fields should be hidden because of form logic
   let conditionFieldSet = new Set() // To monitor which fields are conditions in the form logic
   // On change of form logic (scope.myform.form_logics), update our logic monitors
-  $scope.$watch(
-    (scope) => scope.myform.form_logics,
-    function (_newVal, _oldVal) {
-      updateHiddenFieldSet()
-      updateConditionFieldSet()
-    },
-  )
+  $scope.$watchCollection('myform.form_logics', function (_newVal, _oldVal) {
+    updateHiddenFieldSet()
+    updateConditionFieldSet()
+  })
 
   // Loop through form_logics to identify which fields should be hidden
   const updateHiddenFieldSet = function () {

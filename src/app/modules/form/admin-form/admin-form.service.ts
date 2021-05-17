@@ -718,6 +718,42 @@ export const updateFormSettings = (
 }
 
 /**
+ * Creates form logic.
+ * @param form The original form to create logic in
+ * @param createLogicBody Object containing the created logic
+ * @returns ok(created logic dto) on success
+ * @returns err(database errors) if db error is thrown during logic update
+ */
+export const createFormLogic = (
+  form: IPopulatedForm,
+  createLogicBody: LogicDto,
+): ResultAsync<ILogicSchema, DatabaseError | FormNotFoundError> => {
+  // Create new form logic
+  return ResultAsync.fromPromise(
+    FormModel.createFormLogic(form._id, createLogicBody),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when creating form logic',
+        meta: {
+          action: 'createFormLogic',
+          formId: form._id,
+          createLogicBody,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+    // On success, return created form logic
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    const createdLogic = last(updatedForm.form_logics)
+    return createdLogic ? okAsync(createdLogic) : errAsync(new DatabaseError())
+  })
+}
+
+/**
  * Deletes form logic.
  * @param form The original form to delete logic in
  * @param logicId the logicId to delete
