@@ -43,15 +43,8 @@
     "lint": "npm run lint-code && npm run lint-style && npm run lint-html",
     "lint-ci": "concurrently \"eslint src/ --quiet\" \"stylelint '*/**/*.css' --quiet\" \"htmlhint\" \"prettier --c './src/public/**/*.html' --ignore-path './dist/**'\"",
     "version": "auto-changelog -p && git add CHANGELOG.md",
-    "prepare": "husky install"
-  },
-  "lint-staged": {
-    "*.{js,ts}": "eslint --fix",
-    "*.css": "stylelint --fix",
-    "*.html": [
-      "htmlhint",
-      "prettier --write"
-    ]
+    "prepare": "husky install",
+    "pre-commit": "lint-staged"
   },
   "dependencies": {
     "@babel/runtime": "^7.14.0",

@@ -1,0 +1,66 @@
+{
+  "root": true,
+  "plugins": ["import", "simple-import-sort", "prettier"],
+  "overrides": [
+    {
+      "files": ["*.test.ts"],
+      "extends": ["react-app/jest"]
+    },
+    {
+      "files": ["*.ts", "*.tsx"],
+      "extends": ["react-app", "plugin:@typescript-eslint/recommended"],
+      "parser": "@typescript-eslint/parser"
+    },
+    {
+      "files": ["*.stories.*"],
+      "rules": {
+        "@typescript-eslint/explicit-module-boundary-types": "off"
+      }
+    }
+  ],
+  "ignorePatterns": ["build/**/*", "!.storybook"],
+  "env": { "es6": true },
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "rules": {
+    // Rules for auto sort of imports
+    "simple-import-sort/imports": [
+      "error",
+      {
+        "groups": [
+          // Side effect imports.
+          ["^\\u0000"],
+          // Packages.
+          // Packages. `react` related packages come first.
+          // Things that start with a letter (or digit or underscore), or
+          // `@` followed by a letter.
+          ["^react", "^@?\\w"],
+          // Root imports
+          // Shared imports should be separate from application imports.
+          ["^(~)(/.*|$)"],
+          ["^(~typings)(/.*|$)"],
+          [
+            "^(~assets|~theme)(/.*|$)",
+            "^(~contexts)(/.*|$)",
+            "^(~constants)(/.*|$)",
+            "^(~hooks)(/.*|$)",
+            "^(~utils)(/.*|$)",
+            "^(~services)(/.*|$)",
+            "^(~components)(/.*|$)"
+          ],
+          ["^(~pages)(/.*|$)"],
+          // Parent imports. Put `..` last.
+          ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
+          // Other relative imports. Put same-folder imports and `.` last.
+          ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"]
+        ]
+      }
+    ],
+    "simple-import-sort/exports": "error",
+    "import/first": "error",
+    "import/newline-after-import": "error",
+    "import/no-duplicates": "error"
+  }
+}
