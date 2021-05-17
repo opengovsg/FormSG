@@ -125,7 +125,7 @@ export const getLogicById = (
 /**
  * Returns the last form logic in form_logics array
  * @param form_logics the logics
- * @returns the last logic if exists, `null` otherwise
+ * @returns the last logic if it exists in form_logics, `null` otherwise
  */
 export const getLastLogic = (
   form_logics: IFormSchema['form_logics'],
