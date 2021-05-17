@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
+import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
@@ -1440,23 +1441,29 @@ describe('admin-form.form.routes', () => {
   describe('POST /:formId/fields/:fieldId/duplicate', () => {
     it('should return 200 with updated form with duplicated field', async () => {
       // Arrange
-      const defaultField = generateDefaultField(BasicField.Date)
+      const fieldToDuplicate = generateDefaultField(BasicField.Date)
       const formToUpdate = (await EmailFormModel.create({
         title: 'Form to update',
         emails: [defaultUser.email],
         admin: defaultUser._id,
-        form_fields: [defaultField],
+        form_fields: [fieldToDuplicate],
       })) as IPopulatedForm
 
-      const fieldToDuplicate = formToUpdate.form_fields[0]
+      const expectedOriginalField = {
+        ...omit(fieldToDuplicate, ['getQuestion']),
+        _id: new ObjectId(fieldToDuplicate._id),
+      }
+      const expectedDuplicatedField = {
+        ...omit(fieldToDuplicate, ['_id', 'globalId', 'getQuestion']), // do not compare _id and globalId
+      }
 
       // Act
       const response = await request.post(
-        `/${formToUpdate._id}/fields/${fieldToDuplicate._id}/duplicate`,
+        `/admin/forms/${formToUpdate._id}/fields/${fieldToDuplicate._id}/duplicate`,
       )
 
       // Assert
-      const expected = await EmailFormModel.findById(formToUpdate._id)
+      const actual = await EmailFormModel.findById(formToUpdate._id)
         .populate({
           path: 'admin',
           populate: {
@@ -1464,11 +1471,23 @@ describe('admin-form.form.routes', () => {
           },
         })
         .lean()
+
+      const actualOriginalField = {
+        ...omit(actual?.form_fields![0], ['dateValidation']),
+      }
+
+      const actualDuplicatedField = {
+        ...omit(actual?.form_fields![1], ['_id', 'globalId', 'dateValidation']),
+      }
+
       expect(response.status).toEqual(200)
-      expect(expected?.form_fields![0]).toEqual(defaultField)
-      expect(expected?.form_fields![1]).toEqual(defaultField)
-      expect(expected?.__v).toEqual(1)
-      expect(response.body).toEqual(jsonParseStringify(expected))
+      expect(actualOriginalField).toEqual(expectedOriginalField)
+      expect(actualDuplicatedField).toEqual(expectedDuplicatedField)
+      expect(actual?.__v).toEqual(1)
+      expect({
+        ...response.body,
+        _id: new ObjectId(response.body._id),
+      }).toEqual(actual?.form_fields![1])
     })
 
     it('should return 401 when user is not logged in', async () => {
@@ -1486,7 +1505,7 @@ describe('admin-form.form.routes', () => {
 
       // Act
       const response = await request.post(
-        `/${formToUpdate._id}/fields/${fieldToDuplicate._id}/duplicate`,
+        `/admin/forms/${formToUpdate._id}/fields/${fieldToDuplicate._id}/duplicate`,
       )
 
       // Assert
@@ -1517,7 +1536,7 @@ describe('admin-form.form.routes', () => {
 
       // Act
       const response = await request.post(
-        `/${randomForm._id}/fields/${fieldToDuplicate._id}/duplicate`,
+        `/admin/forms/${randomForm._id}/fields/${fieldToDuplicate._id}/duplicate`,
       )
 
       // Assert
@@ -1533,18 +1552,16 @@ describe('admin-form.form.routes', () => {
       const randomFieldId = new ObjectId()
 
       // Act
-      const response = await request
-        .post(`/${invalidFormId}/fields/${randomFieldId}/duplicate`)
-        .send({
-          form: { permissionList: [{ email: 'test@example.com' }] },
-        })
+      const response = await request.post(
+        `/admin/forms/${invalidFormId}/fields/${randomFieldId}/duplicate`,
+      )
 
       // Assert
       expect(response.status).toEqual(404)
       expect(response.body).toEqual({ message: 'Form not found' })
     })
 
-    it('should return 404 when field to update cannot be found', async () => {
+    it('should return 404 when field to duplicate cannot be found', async () => {
       // Arrange
       const formToUpdate = (await EmailFormModel.create({
         title: 'Form to update',
@@ -1562,7 +1579,7 @@ describe('admin-form.form.routes', () => {
 
       // Act
       const response = await request.post(
-        `/${formToUpdate._id}/fields/${randomFieldId}/duplicate`,
+        `/admin/forms/${formToUpdate._id}/fields/${randomFieldId}/duplicate`,
       )
 
       // Assert
@@ -1585,7 +1602,7 @@ describe('admin-form.form.routes', () => {
 
       // Act
       const response = await request.post(
-        `/${archivedForm._id}/fields/${fieldToDuplicate._id}/duplicate`,
+        `/admin/forms/${archivedForm._id}/fields/${fieldToDuplicate._id}/duplicate`,
       )
 
       // Assert
@@ -1609,7 +1626,7 @@ describe('admin-form.form.routes', () => {
 
       // Act
       const response = await request.post(
-        `/${formToUpdate._id}/fields/${fieldToDuplicate._id}/duplicate`,
+        `/admin/forms/${formToUpdate._id}/fields/${fieldToDuplicate._id}/duplicate`,
       )
 
       // Assert
@@ -1638,7 +1655,7 @@ describe('admin-form.form.routes', () => {
 
       // Act
       const response = await request.post(
-        `/${formToUpdate._id}/fields/${fieldToDuplicate._id}/duplicate`,
+        `/admin/forms/${formToUpdate._id}/fields/${fieldToDuplicate._id}/duplicate`,
       )
 
       // Assert
