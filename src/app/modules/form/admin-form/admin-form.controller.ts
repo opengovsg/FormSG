@@ -1713,7 +1713,14 @@ export const handleCreateLogic = [
             state: Joi.string()
               .valid(...Object.values(LogicConditionState))
               .required(),
-            value: Joi.any().required(),
+            value: Joi.alternatives()
+              .try(
+                Joi.number(),
+                Joi.string(),
+                Joi.array().items(Joi.string()),
+                Joi.array().items(Joi.number()),
+              )
+              .required(),
             ifValueType: Joi.valid(...Object.values(LogicIfValue)),
           }).unknown(true),
         )
@@ -1724,7 +1731,7 @@ export const handleCreateLogic = [
       }),
       preventSubmitMessage: Joi.alternatives().conditional('logicType', {
         is: LogicType.PreventSubmit,
-        then: Joi.string(),
+        then: Joi.string().required(),
       }),
       // Allow other field related key-values to be provided and let the model
       // layer handle the validation.
