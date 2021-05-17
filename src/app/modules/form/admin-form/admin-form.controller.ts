@@ -1740,11 +1740,7 @@ const joiLogicBody = {
  */
 export const handleCreateLogic = [
   celebrate({
-    [Segments.BODY]: Joi.object({
-      ...joiLogicBody,
-      // Allow other field related key-values to be provided and let the model
-      // layer handle the validation.
-    }).unknown(true),
+    [Segments.BODY]: joiLogicBody,
   }),
   _handleCreateLogic,
 ] as RequestHandler[]
@@ -1958,9 +1954,7 @@ export const handleUpdateLogic = [
         // Ensures given logic is same as accessed logic
         _id: Joi.string().valid(Joi.ref('$params.logicId')).required(),
         ...joiLogicBody,
-        // Allow other field related key-values to be provided and let the model
-        // layer handle the validation.
-      }).unknown(true),
+      }),
     },
     undefined,
     // Required so req.body can be validated against values in req.params.
