@@ -241,10 +241,12 @@ export class MailService {
       autoReplyMailData.sender || form.admin.agency.fullName
     ).replace('(', '\\(')
 
+    const responseId = submission.id
     const defaultBody = `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${form.admin.agency.fullName}`
     const autoReplyBody = (autoReplyMailData.body || defaultBody).split('\n')
 
     const templateData = {
+      responseId,
       autoReplyBody,
       // Only destructure formSummaryRenderData if form summary is included.
       ...(autoReplyMailData.includeFormSummary && formSummaryRenderData),

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
   <body>
+    Response ID: <%= responseId %>
+    <hr />
     <% autoReplyBody.forEach(function(line) { %> <%= line %><br />
     <% }) %> <% if (locals.refNo) { %>
     <br />
