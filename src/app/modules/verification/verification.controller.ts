@@ -100,6 +100,7 @@ export const handleCreateVerificationTransaction: RequestHandler<
  * @deprecated in favour of handleResetFieldVerification
  * @param req
  * @param res
+ * @deprecated in favour of handleGenerateOtp
  */
 export const handleResetField: RequestHandler<
   { transactionId: string },
