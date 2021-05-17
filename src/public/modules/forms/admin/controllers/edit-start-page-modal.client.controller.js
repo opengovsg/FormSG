@@ -43,8 +43,14 @@ function EditStartPageController(
 
   vm.saveStartPage = function (isValid) {
     vm.hasClickedSave = true
+    const logoState = vm.myform.startPage.logo.state
 
     if (isValid) {
+      if (logoState !== FormLogoState.Custom) {
+        vm.myform.startPage.logo = {
+          state: logoState,
+        }
+      }
       $q.when(updateStartPage({ newStartPage: vm.myform.startPage })).then(
         (error) => {
           if (!error) {
@@ -177,12 +183,7 @@ function EditStartPageController(
     $uibModalInstance.close()
   }
 
-  vm.updateLogoUrl = function (logoState) {
-    if (logoState !== FormLogoState.Custom) {
-      vm.myform.startPage.logo = {
-        state: logoState,
-      }
-    }
+  vm.updateLogoUrl = function () {
     vm.logoUrl = getFormLogo(vm.myform)
   }
 }
