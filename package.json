@@ -46,14 +46,6 @@
     "prepare": "husky install",
     "pre-commit": "lint-staged"
   },
-  "lint-staged": {
-    "*.{js,ts}": "eslint --fix",
-    "*.css": "stylelint --fix",
-    "*.html": [
-      "htmlhint",
-      "prettier --write"
-    ]
-  },
   "dependencies": {
     "@babel/runtime": "^7.14.0",
     "@joi/date": "^2.1.0",
