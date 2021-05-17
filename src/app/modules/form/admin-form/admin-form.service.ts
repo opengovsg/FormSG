@@ -470,7 +470,7 @@ export const updateFormField = (
 
 /**
  * Duplicates the form field of the corresponding fieldId
- * @param form the original form to update form fields for
+ * @param form the original form to duplicate form field for
  * @param fieldId fieldId of the the form field to duplicate
  *
  * @returns ok(duplicated field)
@@ -483,27 +483,19 @@ export const duplicateFormField = (
   IFieldSchema,
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
 > => {
-  const fieldToDuplicate = getFormFieldById(form.form_fields, fieldId)
-  if (!fieldToDuplicate) {
-    return errAsync(new FieldNotFoundError())
-  }
-  const duplicatedField = JSON.parse(JSON.stringify(fieldToDuplicate))
-  // Remove unique ids before saving
-  delete duplicatedField.globalId
-  delete duplicatedField._id
-
   return ResultAsync.fromPromise(
-    form.insertFormField(duplicatedField),
+    form.duplicateFormFieldById(fieldId),
     (error) => {
       logger.error({
         message: 'Error encountered while duplicating form field',
         meta: {
           action: 'duplicateFormField',
           formId: form._id,
-          duplicatedField,
+          fieldId,
         },
         error,
       })
+
       return transformMongoError(error)
     },
   ).andThen((updatedForm) => {
