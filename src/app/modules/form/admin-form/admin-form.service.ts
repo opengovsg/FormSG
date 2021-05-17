@@ -1,5 +1,5 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { assignIn, last, omit } from 'lodash'
+import _, { assignIn, last, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
@@ -52,7 +52,7 @@ import {
   TransferOwnershipError,
 } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
-import { getFormFieldById, getLastLogic, getLogicById } from '../form.utils'
+import { getFormFieldById, getLogicById } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -748,7 +748,7 @@ export const createFormLogic = (
     if (!updatedForm) {
       return errAsync(new FormNotFoundError())
     }
-    const createdLogic = getLastLogic(updatedForm.form_logics)
+    const createdLogic = _.last(updatedForm.form_logics)
     return createdLogic ? okAsync(createdLogic) : errAsync(new DatabaseError())
   })
 }

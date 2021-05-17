@@ -121,18 +121,3 @@ export const getLogicById = (
 
   return form_logics.find((logic) => logicId === String(logic._id)) ?? null
 }
-
-/**
- * Returns the last form logic in form_logics array
- * @param form_logics the logics
- * @returns the last logic if it exists in form_logics, `null` otherwise
- */
-export const getLastLogic = (
-  form_logics: IFormSchema['form_logics'],
-): ILogicSchema | null => {
-  if (!form_logics) {
-    return null
-  }
-
-  return form_logics[form_logics.length - 1] ?? null
-}
