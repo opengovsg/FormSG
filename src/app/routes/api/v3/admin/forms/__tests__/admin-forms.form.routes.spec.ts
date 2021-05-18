@@ -1500,7 +1500,7 @@ describe('admin-form.form.routes', () => {
       expect(resp.body).toEqual(jsonParseStringify(expectedResponse))
     })
 
-    it('should  return 404 when the form canont be found', async () => {
+    it('should  return 404 when the form cannot be found', async () => {
       // Act
       const resp = await request
         .put(`/admin/forms/${new ObjectId().toHexString()}/start-page`)
