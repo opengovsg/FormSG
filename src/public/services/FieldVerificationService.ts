@@ -92,7 +92,7 @@ export const verifyOtp = async ({
  * @param formId The id of the form to reset the transaction for
  * @param transactionId The generated transaction id for the form
  * @param fieldId The id of the verification field to reset
- * @returns 200 OK status if successfully reset
+ * @returns 204 Created if successfully reset
  */
 export const resetVerifiedField = async ({
   formId,
