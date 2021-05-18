@@ -71,12 +71,14 @@ export type SubmissionToAdminHtmlData = {
   appName: string
 }
 
+export type AutoreplyHtmlDefaultBody = {
+  submissionId: string
+  autoReplyBody: string[]
+}
+
 export type AutoreplyHtmlData =
-  | ({
-      responseId: string
-      autoReplyBody: string[]
-    } & AutoreplySummaryRenderData)
-  | { responseId: string; autoReplyBody: string[] }
+  | (AutoreplyHtmlDefaultBody & AutoreplySummaryRenderData)
+  | AutoreplyHtmlDefaultBody
 
 export type BounceNotificationHtmlData = {
   formTitle: string
