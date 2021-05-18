@@ -10,7 +10,6 @@ import { RequireAtLeastOne, SetOptional } from 'type-fest'
 import {
   AuthType,
   EncryptedSubmissionDto,
-  FieldResponse,
   SubmissionMetadataList,
 } from '../../../../types'
 import { EncryptSubmissionDto, ErrorDto } from '../../../../types/api'
@@ -66,13 +65,7 @@ const submitEncryptModeForm: RequestHandler<
     isPageFound?: boolean
     formTitle?: string
   },
-  {
-    responses: FieldResponse[]
-    encryptedContent: string
-    isPreview: boolean
-    attachments: Record<string, unknown>
-    version: number
-  },
+  EncryptSubmissionDto,
   { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
