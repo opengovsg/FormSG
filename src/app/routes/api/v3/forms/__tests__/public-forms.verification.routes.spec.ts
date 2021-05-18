@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson-ext'
 import { subMinutes } from 'date-fns'
-import { getReasonPhrase, StatusCodes } from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
 
@@ -140,26 +140,26 @@ describe('public-forms.verification.routes', () => {
   })
 
   describe('POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/reset', () => {
-    it('should return 200 when formId, transactionId and fieldId for email field are valid', async () => {
+    it('should return 204 when formId, transactionId and fieldId for email field are valid', async () => {
       // Act
       const response = await request.post(
         `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/reset`,
       )
 
       // Assert
-      expect(response.status).toBe(StatusCodes.OK)
-      expect(response.text).toBe(getReasonPhrase(StatusCodes.OK))
+      expect(response.status).toBe(StatusCodes.NO_CONTENT)
+      expect(response.text).toBe('')
     })
 
-    it('should return 200 when transactionId and fieldId for mobile field are valid', async () => {
+    it('should return 204 when transactionId and fieldId for mobile field are valid', async () => {
       // Act
       const response = await request.post(
         `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/reset`,
       )
 
       // Assert
-      expect(response.status).toBe(StatusCodes.OK)
-      expect(response.text).toBe(getReasonPhrase(StatusCodes.OK))
+      expect(response.status).toBe(StatusCodes.NO_CONTENT)
+      expect(response.text).toBe('')
     })
 
     it('should return 400 when the transaction has expired', async () => {

@@ -833,7 +833,7 @@ describe('Verification controller', () => {
       expect(
         MockVerificationFactory.resetFieldForTransaction,
       ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
-      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.NO_CONTENT)
     })
 
     it('should return 400 when transaction has expired', async () => {
