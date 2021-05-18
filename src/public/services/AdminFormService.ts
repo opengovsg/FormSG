@@ -73,9 +73,9 @@ export const updateCollaborators = async (
 export const duplicateSingleFormField = async (
   formId: string,
   fieldId: string,
-): Promise<FormFieldDto[]> => {
+): Promise<FormFieldDto> => {
   return axios
-    .post<FormFieldDto[]>(
+    .post<FormFieldDto>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}/duplicate`,
     )
     .then(({ data }) => data)
