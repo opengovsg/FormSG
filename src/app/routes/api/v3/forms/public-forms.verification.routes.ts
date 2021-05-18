@@ -10,6 +10,7 @@ PublicFormsVerificationRouter.route(
 
 /**
  * Route for resetting the verification of a given field
+ * @returns 200 when reset is successful
  * @returns 400 when the transaction has expired
  * @returns 404 when the form could not be found
  * @returns 404 when the transaction could not be found

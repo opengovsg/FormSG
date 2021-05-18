@@ -140,7 +140,7 @@ describe('public-forms.verification.routes', () => {
   })
 
   describe('POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/reset', () => {
-    it('should return 200 when transactionId and fieldId for email field are valid', async () => {
+    it('should return 200 when formId, transactionId and fieldId for email field are valid', async () => {
       // Act
       const response = await request.post(
         `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/reset`,

@@ -206,6 +206,7 @@ export const handleVerifyOtp: RequestHandler<
  * @param formId The id of the form to reset the field verification for
  * @param fieldId The id of the field to reset verification for
  * @param transactionId The transaction to reset
+ * @returns 200 when reset is successful
  * @returns 400 when the transaction has expired
  * @returns 404 when the form could not be found
  * @returns 404 when the transaction could not be found
