@@ -84,9 +84,7 @@ function editLogicComponentController($uibModal, FormFields, Toastr, $q) {
     const logicIdToDelete = vm.myform.form_logics[logicIndex]._id
     $q.when(AdminFormService.deleteFormLogic(vm.myform._id, logicIdToDelete))
       .then(() => {
-        const updatedLogic = [...vm.myform.form_logics]
-        updatedLogic.splice(logicIndex, 1)
-        vm.myform.form_logics = updatedLogic
+        vm.myform.form_logics.splice(logicIndex, 1)
       })
       .catch((logicDeleteError) => {
         console.error(logicDeleteError)
@@ -112,12 +110,7 @@ function editLogicComponentController($uibModal, FormFields, Toastr, $q) {
           getNewCondition,
           myform: vm.myform,
         }),
-        updateLogic: () => updateLogic,
       },
     })
-  }
-
-  const updateLogic = (update) => {
-    return vm.updateForm({ update })
   }
 }

@@ -1649,6 +1649,109 @@ export const _handleCreateFormField: RequestHandler<
 }
 
 /**
+ * NOTE: Exported for testing.
+ * Private handler for POST /forms/:formId/logic
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with created logic object when successfully created
+ * @returns 403 when user does not have permissions to create logic
+ * @returns 404 when form cannot be found
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleCreateLogic: RequestHandler<
+  { formId: string },
+  LogicDto | ErrorDto,
+  LogicDto
+> = (req, res) => {
+  const { formId } = req.params
+  const createLogicBody = req.body
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: Create form logic
+      .andThen((retrievedForm) =>
+        AdminFormService.createFormLogic(retrievedForm, createLogicBody),
+      )
+      .map((createdLogic) => res.status(StatusCodes.OK).json(createdLogic))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when creating form logic',
+          meta: {
+            action: 'handleCreateLogic',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            createLogicBody,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Shape of request body used for joi validation for create and update logic
+ */
+const joiLogicBody = {
+  logicType: Joi.string()
+    .valid(...Object.values(LogicType))
+    .required(),
+  conditions: Joi.array()
+    .items(
+      Joi.object({
+        field: Joi.string().required(),
+        state: Joi.string()
+          .valid(...Object.values(LogicConditionState))
+          .required(),
+        value: Joi.alternatives()
+          .try(
+            Joi.number(),
+            Joi.string(),
+            Joi.array().items(Joi.string()),
+            Joi.array().items(Joi.number()),
+          )
+          .required(),
+        ifValueType: Joi.string()
+          .valid(...Object.values(LogicIfValue))
+          .required(),
+      }).unknown(true),
+    )
+    .required(),
+  show: Joi.alternatives().conditional('logicType', {
+    is: LogicType.ShowFields,
+    then: Joi.array().items(Joi.string()).required(),
+  }),
+  preventSubmitMessage: Joi.alternatives().conditional('logicType', {
+    is: LogicType.PreventSubmit,
+    then: Joi.string().required(),
+  }),
+}
+
+/**
+ * Handler for POST /forms/:formId/logic
+ */
+export const handleCreateLogic = [
+  celebrate({
+    [Segments.BODY]: joiLogicBody,
+  }),
+  _handleCreateLogic,
+] as RequestHandler[]
+
+/**
  * Handler for DELETE /forms/:formId/logic/:logicId
  * @security session
  *
@@ -1797,7 +1900,7 @@ export const handleReorderFormField = [
  * @precondition Must be preceded by request validation
  * @security session
  *
- * @returns 200 with success message and updated logic object when successfully updated
+ * @returns 200 with updated logic object when successfully updated
  * @returns 403 when user does not have permissions to update logic
  * @returns 404 when form cannot be found
  * @returns 422 when user in session cannot be retrieved from the database
@@ -1856,41 +1959,8 @@ export const handleUpdateLogic = [
       [Segments.BODY]: Joi.object({
         // Ensures given logic is same as accessed logic
         _id: Joi.string().valid(Joi.ref('$params.logicId')).required(),
-        logicType: Joi.string()
-          .valid(...Object.values(LogicType))
-          .required(),
-        conditions: Joi.array()
-          .items(
-            Joi.object({
-              field: Joi.string().required(),
-              state: Joi.string()
-                .valid(...Object.values(LogicConditionState))
-                .required(),
-              value: Joi.alternatives()
-                .try(
-                  Joi.number(),
-                  Joi.string(),
-                  Joi.array().items(Joi.string()),
-                  Joi.array().items(Joi.number()),
-                )
-                .required(),
-              ifValueType: Joi.string()
-                .valid(...Object.values(LogicIfValue))
-                .required(),
-            }).unknown(true),
-          )
-          .required(),
-        show: Joi.alternatives().conditional('logicType', {
-          is: LogicType.ShowFields,
-          then: Joi.array().items(Joi.string()).required(),
-        }),
-        preventSubmitMessage: Joi.alternatives().conditional('logicType', {
-          is: LogicType.PreventSubmit,
-          then: Joi.string().required(),
-        }),
-        // Allow other field related key-values to be provided and let the model
-        // layer handle the validation.
-      }).unknown(true),
+        ...joiLogicBody,
+      }),
     },
     undefined,
     // Required so req.body can be validated against values in req.params.
@@ -2009,12 +2079,13 @@ export const _handleUpdateEndPage: RequestHandler<
  */
 export const handleUpdateEndPage = [
   celebrate({
-    [Segments.BODY]: {
+    [Segments.BODY]: Joi.object({
       title: Joi.string(),
       paragraph: Joi.string().allow(''),
       buttonLink: Joi.string().uri().allow(''),
       buttonText: Joi.string().allow(''),
-    },
+      // TODO(#1895): Remove when deprecated `buttons` key is removed from all forms in the database
+    }).unknown(true),
   }),
   _handleUpdateEndPage,
 ] as RequestHandler[]

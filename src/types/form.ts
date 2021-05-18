@@ -299,6 +299,10 @@ export interface IFormModel extends Model<IFormSchema> {
     fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null>
 
+  createFormLogic(
+    formId: string,
+    createLogicBody: LogicDto,
+  ): Promise<IFormSchema | null>
   deleteFormLogic(formId: string, logicId: string): Promise<IFormSchema | null>
 
   /**

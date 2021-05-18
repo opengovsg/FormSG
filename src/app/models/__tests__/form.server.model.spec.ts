@@ -1058,6 +1058,149 @@ describe('Form Model', () => {
       })
     })
 
+    describe('createFormLogic', () => {
+      const logicId = new ObjectId().toHexString()
+
+      const mockExistingFormLogic = {
+        form_logics: [
+          {
+            _id: logicId,
+            logicType: LogicType.ShowFields,
+          } as ILogicSchema,
+        ],
+      }
+
+      const mockNewFormLogic = ({
+        logicType: LogicType.PreventSubmit,
+      } as unknown) as ILogicSchema
+
+      it('should return form upon successful create logic if form_logic is currently empty', async () => {
+        // arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          status: Status.Public,
+          responseMode: ResponseMode.Email,
+          form_logics: [],
+        })
+        const form = await Form.create(formParams)
+
+        // act
+        const modifiedForm = await Form.createFormLogic(
+          form._id,
+          mockNewFormLogic,
+        )
+
+        // assert
+        // Form should be returned
+        expect(modifiedForm).not.toBeNull()
+
+        // Form should have correct status, responsemode
+        expect(modifiedForm?.responseMode).not.toBeNull()
+        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.status).not.toBeNull()
+        expect(modifiedForm?.status).toEqual(Status.Public)
+
+        // Check that form logic has been added
+        expect(modifiedForm?.form_logics).toBeDefined()
+        expect(modifiedForm?.form_logics).toHaveLength(1)
+        expect(modifiedForm!.form_logics![0].logicType).toEqual(
+          LogicType.PreventSubmit,
+        )
+      })
+
+      it('should allow the same logic to be added more than once and then return form if createLogic is called more than once', async () => {
+        // arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          status: Status.Public,
+          responseMode: ResponseMode.Email,
+          form_logics: [],
+        })
+        const form = await Form.create(formParams)
+
+        // act
+        await Form.createFormLogic(form._id, mockNewFormLogic)
+
+        const modifiedFormRepeat = await Form.createFormLogic(
+          form._id,
+          mockNewFormLogic,
+        )
+
+        // assert
+        // Form should be returned
+        expect(modifiedFormRepeat).not.toBeNull()
+
+        // Form should have correct status, responsemode
+        expect(modifiedFormRepeat?.responseMode).not.toBeNull()
+        expect(modifiedFormRepeat?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedFormRepeat?.status).not.toBeNull()
+        expect(modifiedFormRepeat?.status).toEqual(Status.Public)
+
+        // Check that form logic has been added
+        expect(modifiedFormRepeat?.form_logics).toBeDefined()
+        expect(modifiedFormRepeat?.form_logics).toHaveLength(2)
+        expect(modifiedFormRepeat!.form_logics![0].logicType).toEqual(
+          LogicType.PreventSubmit,
+        )
+        expect(modifiedFormRepeat!.form_logics![1].logicType).toEqual(
+          LogicType.PreventSubmit,
+        )
+      })
+
+      it('should return form upon successful create logic if form_logic has existing elements', async () => {
+        // arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          status: Status.Public,
+          responseMode: ResponseMode.Email,
+          ...mockExistingFormLogic,
+        })
+        const form = await Form.create(formParams)
+
+        // act
+        const modifiedForm = await Form.createFormLogic(
+          form._id,
+          mockNewFormLogic,
+        )
+
+        // assert
+        // Form should be returned
+        expect(modifiedForm).not.toBeNull()
+
+        // Form should have correct status, responsemode
+        expect(modifiedForm?.responseMode).not.toBeNull()
+        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.status).not.toBeNull()
+        expect(modifiedForm?.status).toEqual(Status.Public)
+
+        // Check that form logic has been added
+        expect(modifiedForm?.form_logics).toBeDefined()
+        expect(modifiedForm?.form_logics).toHaveLength(2)
+        expect(modifiedForm!.form_logics![0].logicType).toEqual(
+          LogicType.ShowFields,
+        )
+        expect(modifiedForm!.form_logics![1].logicType).toEqual(
+          LogicType.PreventSubmit,
+        )
+      })
+
+      it('should return null if formId is invalid', async () => {
+        // arrange
+
+        const invalidFormId = new ObjectId().toHexString()
+
+        // act
+        const modifiedForm = await Form.createFormLogic(
+          invalidFormId,
+          mockNewFormLogic,
+        )
+
+        // assert
+        // should return null
+        expect(modifiedForm).toBeNull()
+      })
+    })
+
     describe('deleteFormLogic', () => {
       const logicId = new ObjectId().toHexString()
       const mockFormLogic = {
