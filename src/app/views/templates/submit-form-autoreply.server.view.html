@@ -1,7 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <style type="text/css">
+      hr {
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
   <body>
-    Response ID: <%= responseId %>
+    Response ID: <%= submissionId %>
     <hr />
     <% autoReplyBody.forEach(function(line) { %> <%= line %><br />
     <% }) %> <% if (locals.refNo) { %>
