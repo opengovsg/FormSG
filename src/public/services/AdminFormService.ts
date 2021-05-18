@@ -2,6 +2,8 @@ import axios from 'axios'
 
 import { FormSettings, LogicDto } from '../../types'
 import {
+  EmailSubmissionDto,
+  EncryptSubmissionDto,
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
@@ -9,7 +11,9 @@ import {
   PermissionsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
+  SubmissionResponseDto,
 } from '../../types/api'
+import { createEmailSubmissionFormData } from '../utils/submission'
 
 const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
 
@@ -179,6 +183,57 @@ export const updateFormStartPage = async (
     .put<StartPageUpdateDto>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/start-page`,
       newStartPage,
+    )
+    .then(({ data }) => data)
+}
+
+export const submitEmailModeFormSubmissionPreview = async ({
+  formId,
+  content,
+  attachments,
+  captchaResponse,
+}: {
+  formId: string
+  content: EmailSubmissionDto
+  attachments?: Record<string, File>
+  captchaResponse?: string | null
+}): Promise<SubmissionResponseDto> => {
+  const formData = createEmailSubmissionFormData({
+    content,
+    attachments,
+  })
+
+  return axios
+    .post<SubmissionResponseDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
+      formData,
+      {
+        params: {
+          captchaResponse: String(captchaResponse),
+        },
+      },
+    )
+    .then(({ data }) => data)
+}
+
+export const submitStorageModeFormSubmissionPreview = async ({
+  formId,
+  content,
+  captchaResponse,
+}: {
+  formId: string
+  content: EncryptSubmissionDto
+  captchaResponse: string
+}): Promise<SubmissionResponseDto> => {
+  return axios
+    .post<SubmissionResponseDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
+      content,
+      {
+        params: {
+          captchaResponse: String(captchaResponse),
+        },
+      },
     )
     .then(({ data }) => data)
 }
