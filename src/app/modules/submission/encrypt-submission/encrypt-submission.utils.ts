@@ -1,7 +1,14 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
+import { err, ok, Result } from 'neverthrow'
 
-import { EncryptedSubmissionDto, SubmissionData } from '../../../../types'
+import { getVisibleFieldIds } from '../../../../shared/util/logic'
+import {
+  EncryptedSubmissionDto,
+  FieldResponse,
+  IFormDocument,
+  SubmissionData,
+} from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { MalformedVerifiedContentError } from '../../../modules/verified-content/verified-content.errors'
@@ -35,6 +42,7 @@ import {
   VerifyJwtError,
 } from '../../spcp/spcp.errors'
 import { MissingUserError } from '../../user/user.errors'
+import { getFilteredResponses } from '../email-submission/email-submission.util'
 import {
   ConflictError,
   InvalidEncodingError,
@@ -43,6 +51,7 @@ import {
   SubmissionNotFoundError,
   ValidateFieldError,
 } from '../submission.errors'
+import { IncomingSubmission } from '../submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -208,5 +217,62 @@ export const createEncryptedSubmissionDto = (
     content: submissionData.encryptedContent,
     verified: submissionData.verifiedContent,
     attachmentMetadata: attachmentPresignedUrls,
+  }
+}
+
+export class IncomingEncryptSubmission extends IncomingSubmission {
+  constructor(responses: FieldResponse[]) {
+    super(responses)
+  }
+
+  static init(
+    form: IFormDocument,
+    responses: FieldResponse[],
+  ): Result<
+    IncomingEncryptSubmission,
+    ProcessingError | ConflictError | ValidateFieldError
+  > {
+    const getFilteredResponsesResult = getFilteredResponses(form, responses)
+    if (getFilteredResponsesResult.isErr()) {
+      return err(getFilteredResponsesResult.error)
+    }
+    const filteredResponses = getFilteredResponsesResult.value
+
+    // Set of all visible fields
+    const visibleFieldIds = getVisibleFieldIds(filteredResponses, form)
+
+    const getFieldMapResult = this.getFieldMap(form, responses)
+    if (getFieldMapResult.isErr()) {
+      return err(getFieldMapResult.error)
+    }
+    const fieldMap = getFieldMapResult.value
+
+    const visibleResponseIds = this.getVisibleResponseIds(
+      filteredResponses,
+      fieldMap,
+      (response: FieldResponse) =>
+        'answer' in response &&
+        typeof response.answer === 'string' &&
+        response.answer.trim() !== '',
+    )
+
+    const verifiableResponseIds = this.getVerifiableResponseIds(
+      filteredResponses,
+      fieldMap,
+    )
+
+    const validationResult = this.validateResponses(
+      filteredResponses,
+      form,
+      fieldMap,
+      visibleFieldIds,
+      visibleResponseIds,
+      verifiableResponseIds,
+    )
+    if (validationResult.isErr()) {
+      return err(validationResult.error)
+    }
+
+    return ok(new IncomingEncryptSubmission(filteredResponses))
   }
 }
