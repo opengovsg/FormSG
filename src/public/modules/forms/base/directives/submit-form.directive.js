@@ -1,8 +1,10 @@
 'use strict'
-const { cloneDeep } = require('lodash')
+const cloneDeep = require('lodash/cloneDeep')
 
 const FieldVerificationService = require('../../../../services/FieldVerificationService')
 const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
+const PublicFormService = require('../../../../services/PublicFormService')
+const AdminFormService = require('../../../../services/AdminFormService')
 const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
@@ -30,6 +32,7 @@ angular
     'GTag',
     'SpcpSession',
     'captchaService',
+    'responseModeEnum',
     'Toastr',
     '$filter',
     'Submissions',
@@ -44,6 +47,7 @@ function submitFormDirective(
   GTag,
   SpcpSession,
   captchaService,
+  responseModeEnum,
   Toastr,
   $filter,
   Submissions,
@@ -303,10 +307,7 @@ function submitFormDirective(
         let submissionContent
 
         try {
-          submissionContent = Object.assign(
-            { captchaResponse: captchaService.response },
-            await form.getSubmissionContent(),
-          )
+          submissionContent = await form.getSubmissionContent()
         } catch (err) {
           return handleSubmitFailure(
             err,
@@ -315,13 +316,53 @@ function submitFormDirective(
           )
         }
 
-        Submissions.post(
-          {
-            formId: scope.form._id,
-            responseMode: form.responseMode,
-          },
-          submissionContent, // POST body
-        ).then(handleSubmitSuccess, handleSubmitFailure)
+        const captchaResponse = captchaService.response
+
+        switch (form.responseMode) {
+          case responseModeEnum.EMAIL: {
+            const content = { responses: submissionContent.responses }
+
+            const submitFn = form.isPreview
+              ? AdminFormService.submitEmailModeFormSubmissionPreview
+              : PublicFormService.submitEmailModeFormSubmission
+
+            return $q
+              .when(
+                submitFn({
+                  formId: scope.form._id,
+                  content,
+                  captchaResponse,
+                  attachments: submissionContent.attachments,
+                }),
+              )
+              .then(handleSubmitSuccess)
+              .catch(handleSubmitFailure)
+          }
+          case responseModeEnum.ENCRYPT: {
+            const submitFn = form.isPreview
+              ? AdminFormService.submitStorageModeFormSubmissionPreview
+              : PublicFormService.submitStorageModeFormSubmission
+
+            return $q
+              .when(
+                submitFn({
+                  formId: scope.form._id,
+                  content: submissionContent,
+                  captchaResponse,
+                }),
+              )
+              .then(handleSubmitSuccess)
+              .catch(handleSubmitFailure)
+          }
+          default:
+            handleSubmitFailure(
+              new Error(
+                'Invalid response mode',
+                'There was an error while processing your submission. Please refresh and try again. ' +
+                  'If the problem persists, try using a different browser.',
+              ),
+            )
+        }
       }
 
       /**
