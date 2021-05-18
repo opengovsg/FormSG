@@ -335,7 +335,7 @@ function submitFormDirective(
        * state and Google Analytics.
        */
       const handleSubmitSuccess = (response) => {
-        scope.responseId = response.submissionId
+        scope.submissionId = response.submissionId
         setFormState(FORM_STATES.SUBMITTED)
         GTag.submitFormSuccess(scope.form, startDate, Date.now())
         if (shouldTrackPersistentLoginUse()) {

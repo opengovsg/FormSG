@@ -105,7 +105,10 @@ function SubmissionsFactory(
               submissionId: response.submissionId,
             })
           } else {
-            deferred.reject(`${response.message}`)
+            deferred.reject(
+              `${response.message}` ||
+                "Please refresh and try again. If this doesn't work, try switching devices or networks.",
+            )
           }
         } catch (e) {
           deferred.reject(

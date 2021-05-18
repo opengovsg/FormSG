@@ -7,10 +7,10 @@
   font-weight: bold;
 }
 
-#end-page-header #end-page-responseid {
+#end-page-header #end-page-submissionId {
   font-size: 12px;
 }
 
-#end-page-header #end-page-responseid #end-page-id {
+#end-page-header #end-page-submissionId #end-page-id {
   text-transform: lowercase;
 }
