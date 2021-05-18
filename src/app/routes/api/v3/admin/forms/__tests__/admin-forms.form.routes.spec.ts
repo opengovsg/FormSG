@@ -1565,12 +1565,7 @@ describe('admin-form.form.routes', () => {
         form_fields: [generateDefaultField(BasicField.Date)],
       })) as IPopulatedForm
 
-      const fieldToDuplicate = formToUpdate.form_fields[0]
-      let randomFieldId = new ObjectId()
-
-      while (fieldToDuplicate._id == randomFieldId) {
-        randomFieldId = new ObjectId()
-      }
+      const randomFieldId = new ObjectId()
 
       // Act
       const response = await request.post(
