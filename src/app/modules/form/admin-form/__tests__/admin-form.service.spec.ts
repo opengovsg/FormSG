@@ -1495,13 +1495,15 @@ describe('admin-form.service', () => {
         String(fieldToDuplicate._id),
       )
 
-      const actualDuplicatedField = {
-        ...omit(actual._unsafeUnwrap(), ['_id', 'globalId']),
-      }
+      const actualDuplicatedField = omit(actual._unsafeUnwrap(), [
+        '_id',
+        'globalId',
+      ])
 
-      const duplicatedFieldWithoutId = {
-        ...omit(duplicatedField, ['_id', 'globalId']),
-      }
+      const duplicatedFieldWithoutId = omit(duplicatedField, [
+        '_id',
+        'globalId',
+      ])
 
       // Assert
       expect(actualDuplicatedField).toEqual(duplicatedFieldWithoutId)

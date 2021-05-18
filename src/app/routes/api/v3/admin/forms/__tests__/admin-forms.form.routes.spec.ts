@@ -1463,22 +1463,17 @@ describe('admin-form.form.routes', () => {
       )
 
       // Assert
-      const actual = await EmailFormModel.findById(formToUpdate._id)
-        .populate({
-          path: 'admin',
-          populate: {
-            path: 'agency',
-          },
-        })
-        .lean()
+      const actual = await EmailFormModel.findById(formToUpdate._id).lean()
 
-      const actualOriginalField = {
-        ...omit(actual?.form_fields![0], ['dateValidation']),
-      }
+      const actualOriginalField = omit(actual?.form_fields![0], [
+        'dateValidation',
+      ])
 
-      const actualDuplicatedField = {
-        ...omit(actual?.form_fields![1], ['_id', 'globalId', 'dateValidation']),
-      }
+      const actualDuplicatedField = omit(actual?.form_fields![1], [
+        '_id',
+        'globalId',
+        'dateValidation',
+      ])
 
       expect(response.status).toEqual(200)
       expect(actualOriginalField).toEqual(expectedOriginalField)

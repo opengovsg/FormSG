@@ -1993,18 +1993,22 @@ describe('Form Model', () => {
 
         // Act
         const actual = await validForm.duplicateFormFieldById(fieldId)
-        const actualDuplicatedField = {
-          // @ts-ignore
-          ...omit(actual?.form_fields.toObject()[1], ['_id', 'globalId']), // do not compare _id and globalId
-        }
+        // @ts-ignore
+        const actualDuplicatedField = omit(actual?.form_fields.toObject()[1], [
+          '_id',
+          'globalId',
+        ]) // do not compare _id and globalId
+
         // Assert
         const expectedOriginalField = {
           ...omit(fieldToDuplicate, ['getQuestion']),
           _id: new ObjectId(fieldToDuplicate._id),
         }
-        const expectedDuplicatedField = {
-          ...omit(fieldToDuplicate, ['_id', 'globalId', 'getQuestion']),
-        }
+        const expectedDuplicatedField = omit(fieldToDuplicate, [
+          '_id',
+          'globalId',
+          'getQuestion',
+        ])
 
         // @ts-ignore
         expect(actual?.form_fields.toObject()[0]).toEqual(expectedOriginalField)
