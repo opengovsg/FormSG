@@ -44,14 +44,17 @@ function EditStartPageController(
   vm.saveStartPage = function (isValid) {
     vm.hasClickedSave = true
     const logoState = vm.myform.startPage.logo.state
+    // Clones the start page so that the original one can be used.
+    // This prevents the actual start page from being affected in the event of failure
+    const clonedStartPage = angular.copy(vm.myform.startPage)
 
     if (isValid) {
       if (logoState !== FormLogoState.Custom) {
-        vm.myform.startPage.logo = {
+        clonedStartPage.logo = {
           state: logoState,
         }
       }
-      $q.when(updateStartPage({ newStartPage: vm.myform.startPage })).then(
+      $q.when(updateStartPage({ newStartPage: clonedStartPage })).then(
         (error) => {
           if (!error) {
             vm.hasClickedSave = false
