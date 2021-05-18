@@ -34,7 +34,7 @@ const logger = createLoggerWithLabel(module)
 const submitEmailModeForm: RequestHandler<
   { formId: string },
   { message: string; submissionId?: string; spcpSubmissionFailure?: true },
-  { responses: FieldResponse[]; isPreview: boolean },
+  { responses: FieldResponse[] },
   { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
