@@ -1,5 +1,6 @@
 'use strict'
 const cloneDeep = require('lodash/cloneDeep')
+const get = require('lodash/get')
 
 const FieldVerificationService = require('../../../../services/FieldVerificationService')
 const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
@@ -396,10 +397,20 @@ function submitFormDirective(
        */
       const handleSubmitFailure = (error, toastMessage) => {
         const form = scope.form
+        const errorMessage = get(
+          error,
+          'response.data.message',
+          get(
+            error,
+            'message',
+            "Please refresh and try again. If this doesn't work, try switching devices or networks.",
+          ),
+        )
+
         console.error('Submission error:\t', error)
         setFormState(FORM_STATES.SUBMISSION_ERROR)
         if (!toastMessage) {
-          toastMessage = error
+          toastMessage = errorMessage
         }
         Toastr.error(
           toastMessage,
@@ -411,7 +422,7 @@ function submitFormDirective(
           'Submission Error',
         )
         GTag.submitFormFailure(form, startDate, Date.now(), error)
-        if (error.spcpSubmissionFailure) {
+        if (get(error, 'response.data.spcpSubmissionFailure')) {
           SpcpSession.logout()
         }
 
