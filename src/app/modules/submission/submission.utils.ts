@@ -197,10 +197,9 @@ export class IncomingSubmission {
   ): VisibleResponseIdSet {
     return responses.reduce<FieldIdSet>((acc, response) => {
       const responseId = response._id
-      if (!visibilityPredicate(response)) {
-        return acc
+      if (visibilityPredicate(response)) {
+        acc.add(responseId)
       }
-      acc.add(responseId)
       return acc
     }, new Set()) as VisibleResponseIdSet
   }
