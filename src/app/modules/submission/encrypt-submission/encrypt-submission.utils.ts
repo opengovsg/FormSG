@@ -42,7 +42,6 @@ import {
   VerifyJwtError,
 } from '../../spcp/spcp.errors'
 import { MissingUserError } from '../../user/user.errors'
-import { getFilteredResponses } from '../email-submission/email-submission.util'
 import {
   ConflictError,
   InvalidEncodingError,
@@ -51,7 +50,7 @@ import {
   SubmissionNotFoundError,
   ValidateFieldError,
 } from '../submission.errors'
-import { IncomingSubmission } from '../submission.utils'
+import { getFilteredResponses, IncomingSubmission } from '../submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
