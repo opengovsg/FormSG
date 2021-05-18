@@ -45,7 +45,7 @@
         </p>
         <div
           id="start-page-btn-container"
-          ng-if="['SP', 'CP', 'MyInfo'].includes(vm.authType)"
+          ng-if="['SP', 'CP', 'MyInfo', 'SGID'].includes(vm.authType)"
         >
           <button
             type="button"
@@ -67,6 +67,18 @@
             ng-disabled="vm.isAdminPreview"
           >
             <span>Login with Singpass (Corporate)</span>
+            <span class="hidden-xs start-page-multiline-btn-decorator">
+              <i class="bx bx-log-in"></i>
+            </span>
+          </button>
+          <button
+            type="button"
+            class="start-page-btn {{ vm.colorTheme }}-font start-page-multiline-btn"
+            ng-click="vm.formLogin({ isPersistentLogin: false })"
+            ng-if="vm.authType==='SGID' && !vm.userName && !vm.isTemplate"
+            ng-disabled="vm.isAdminPreview"
+          >
+            <span>Login with Singpass App</span>
             <span class="hidden-xs start-page-multiline-btn-decorator">
               <i class="bx bx-log-in"></i>
             </span>

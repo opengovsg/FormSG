@@ -19,6 +19,7 @@ import {
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import * as MyInfoUtil from '../../myinfo/myinfo.util'
+import { SgidService } from '../../sgid/sgid.service'
 import { SpcpService } from '../../spcp/spcp.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as SubmissionService from '../submission.service'
@@ -217,6 +218,26 @@ const submitEmailModeForm: ControllerHandler<
                 spcpSubmissionFailure = true
                 logger.error({
                   message: 'Error verifying MyInfo hashes',
+                  meta: logMeta,
+                  error,
+                })
+                return error
+              })
+          case AuthType.SGID:
+            return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
+              .map<IPopulatedEmailFormWithResponsesAndHash>(
+                ({ userName: uinFin }) => ({
+                  form,
+                  parsedResponses: parsedResponses.addNdiResponses({
+                    authType,
+                    uinFin,
+                  }),
+                }),
+              )
+              .mapErr((error) => {
+                spcpSubmissionFailure = true
+                logger.error({
+                  message: 'Failed to verify sgID JWT with auth client',
                   meta: logMeta,
                   error,
                 })

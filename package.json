@@ -60,6 +60,7 @@
     "@opengovsg/formsg-sdk": "^0.9.0",
     "@opengovsg/myinfo-gov-client": "^4.0.0",
     "@opengovsg/ng-file-upload": "^12.2.15",
+    "@opengovsg/sgid-client": "0.0.12",
     "@opengovsg/spcp-auth-client": "^1.4.8",
     "@sentry/browser": "^6.8.0",
     "@sentry/integrations": "^6.8.0",

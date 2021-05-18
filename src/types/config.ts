@@ -56,6 +56,7 @@ export type Config = {
   db: DbConfig
   aws: AwsConfig
   mail: MailConfig
+  sgid: ISgidVarsSchema
 
   cookieSettings: SessionOptions['cookie']
   // Consts
@@ -97,6 +98,18 @@ export interface ICompulsoryVarsSchema {
     logoS3Bucket: string
     attachmentS3Bucket: string
   }
+}
+
+export interface ISgidVarsSchema {
+  endpoint: string
+  clientId: string
+  clientSecret: string
+  privateKey: string
+  publicKey: string
+  redirectUri: string
+  cookieMaxAge: number
+  cookieMaxAgePreserved: number
+  cookieDomain: string
 }
 
 export interface IOptionalVarsSchema {

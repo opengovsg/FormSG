@@ -20,6 +20,7 @@ import {
   optionalVarsSchema,
   prodOnlyVarsSchema,
 } from './schema'
+import { sgidVarsSchema } from './sgid'
 
 // Load and validate optional configuration values
 // If environment variables are not present, defaults are loaded
@@ -30,6 +31,12 @@ const optionalVars = convict(optionalVarsSchema)
 // Load and validate compulsory configuration values
 // If environment variables are not present, an error will be thrown
 const compulsoryVars = convict(compulsoryVarsSchema)
+  .validate({ allowed: 'strict' })
+  .getProperties()
+
+// Load and validate sgid configuration values
+// If environment variables are not present, an error will be thrown
+const sgid = convict(sgidVarsSchema)
   .validate({ allowed: 'strict' })
   .getProperties()
 
@@ -206,6 +213,7 @@ const config: Config = {
   db: dbConfig,
   aws: awsConfig,
   mail: mailConfig,
+  sgid,
   cookieSettings,
   isDev,
   nodeEnv,

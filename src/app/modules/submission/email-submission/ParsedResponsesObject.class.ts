@@ -12,6 +12,7 @@ import {
   ResponseMode,
 } from '../../../../types'
 import { validateField } from '../../../utils/field-validation'
+import { createSgidParsedResponses } from '../../sgid/sgid.util'
 import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
@@ -25,7 +26,7 @@ import { ProcessedFieldResponse } from '../submission.types'
 import { getFilteredResponses } from '../submission.utils'
 
 type NdiUserInfo =
-  | { authType: AuthType.SP | AuthType.MyInfo; uinFin: string }
+  | { authType: AuthType.SP | AuthType.MyInfo | AuthType.SGID; uinFin: string }
   | { authType: AuthType.CP; uinFin: string; userInfo: string }
 
 export default class ParsedResponsesObject {
@@ -48,6 +49,9 @@ export default class ParsedResponsesObject {
           info.uinFin,
           info.userInfo,
         )
+        break
+      case AuthType.SGID:
+        this.ndiResponses = createSgidParsedResponses(info.uinFin)
         break
     }
     return this

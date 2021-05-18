@@ -187,6 +187,11 @@ function settingsFormDirective(
             name: 'Singpass (Corporate)',
             isEnabledInStorageMode: true,
           },
+          {
+            val: 'SGID',
+            name: 'Singpass App-only Login (Free)',
+            isEnabledInStorageMode: false,
+          },
         ]
 
         // Lazily access fields to prevent race-conditions
