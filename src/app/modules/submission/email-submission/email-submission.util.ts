@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
-import _, { compact, flattenDeep, sumBy } from 'lodash'
+import { compact, flattenDeep, sumBy } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
 import { FilePlatforms } from '../../../../shared/constants'
@@ -78,7 +78,7 @@ import {
   ProcessedFieldResponse,
   ProcessedTableResponse,
 } from '../submission.types'
-import { getModeFilter } from '../submission.utils'
+import { getFilteredResponses } from '../submission.utils'
 
 import {
   ATTACHMENT_PREFIX,
@@ -774,46 +774,6 @@ export class SubmissionEmailObj {
       ),
     )
   }
-}
-
-/**
- * Filter allowed form field responses from given responses and return the
- * array of responses with duplicates removed.
- *
- * @param form The form document
- * @param responses the responses that corresponds to the given form
- * @returns neverthrow ok() filtered list of allowed responses with duplicates (if any) removed
- * @returns neverthrow err(ConflictError) if the given form's form field ids count do not match given responses'
- */
-// TODO: wont need to export this after removing `getProcessedResponses` from submission.service.ts
-export const getFilteredResponses = (
-  form: IFormDocument,
-  responses: FieldResponse[],
-): Result<FieldResponse[], ConflictError> => {
-  const modeFilter = getModeFilter(form.responseMode)
-
-  if (!form.form_fields) {
-    return err(new ConflictError('Form fields are missing'))
-  }
-  // _id must be transformed to string as form response is jsonified.
-  const fieldIds = modeFilter(form.form_fields).map((field) => ({
-    _id: String(field._id),
-  }))
-  const uniqueResponses = _.uniqBy(modeFilter(responses), '_id')
-  const results = _.intersectionBy(uniqueResponses, fieldIds, '_id')
-
-  if (results.length < fieldIds.length) {
-    const onlyInForm = _.differenceBy(fieldIds, results, '_id').map(
-      ({ _id }) => _id,
-    )
-    return err(
-      new ConflictError('Some form fields are missing', {
-        formId: form._id,
-        onlyInForm,
-      }),
-    )
-  }
-  return ok(results)
 }
 
 export class ParsedResponsesObject {

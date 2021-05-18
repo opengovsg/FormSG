@@ -22,7 +22,6 @@ import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import { validateField } from '../../utils/field-validation'
 import { DatabaseError, MalformedParametersError } from '../core/core.errors'
 
-import { getFilteredResponses } from './email-submission/email-submission.util'
 import {
   ConflictError,
   ProcessingError,
@@ -30,7 +29,10 @@ import {
   ValidateFieldError,
 } from './submission.errors'
 import { ProcessedFieldResponse } from './submission.types'
-import { extractEmailConfirmationData } from './submission.utils'
+import {
+  extractEmailConfirmationData,
+  getFilteredResponses,
+} from './submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
