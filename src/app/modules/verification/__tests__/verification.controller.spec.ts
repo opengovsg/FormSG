@@ -12,7 +12,7 @@ import {
 } from 'src/app/services/sms/sms.errors'
 import { HashingError } from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
-import { IVerificationSchema } from 'src/types'
+import { IFormSchema, IVerificationSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -813,7 +813,9 @@ describe('Verification controller', () => {
     })
 
     beforeEach(() =>
-      MockFormService.retrieveFormById.mockReturnValue(okAsync({})),
+      MockFormService.retrieveFormById.mockReturnValue(
+        okAsync({} as IFormSchema),
+      ),
     )
 
     it('should correctly call service when params are valid', async () => {
@@ -830,6 +832,9 @@ describe('Verification controller', () => {
       )
 
       // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
       expect(
         MockVerificationFactory.resetFieldForTransaction,
       ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
@@ -850,6 +855,9 @@ describe('Verification controller', () => {
       )
 
       // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
       expect(
         MockVerificationFactory.resetFieldForTransaction,
       ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
@@ -873,6 +881,9 @@ describe('Verification controller', () => {
       )
 
       // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
       expect(
         MockVerificationFactory.resetFieldForTransaction,
       ).not.toHaveBeenCalled()
@@ -896,6 +907,9 @@ describe('Verification controller', () => {
       )
 
       // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
       expect(
         MockVerificationFactory.resetFieldForTransaction,
       ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
@@ -919,6 +933,9 @@ describe('Verification controller', () => {
       )
 
       // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
       expect(
         MockVerificationFactory.resetFieldForTransaction,
       ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
@@ -929,16 +946,19 @@ describe('Verification controller', () => {
     })
 
     it('should return 500 when database error occurs', async () => {
+      // Arrange
       MockVerificationFactory.resetFieldForTransaction.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
 
+      // Act
       await VerificationController.handleResetFieldVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
       )
 
+      // Assert
       expect(
         MockVerificationFactory.resetFieldForTransaction,
       ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
