@@ -8,11 +8,11 @@ Closes [insert issue #]
 
 **Breaking Changes** 
 <!-- Does this PR contain any backward incompatible changes? If so, what are they and should there be special considerations for release? -->
+- [ ] Yes - this PR contains breaking changes
+- [ ] No - this PR is backwards compatible  
 - Details ...
 
 **Features**:
-
-- Details ...
 
 **Improvements**:
 
