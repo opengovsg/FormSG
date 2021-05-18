@@ -14,6 +14,8 @@ Closes [insert issue #]
 
 **Features**:
 
+- Details ...
+
 **Improvements**:
 
 - Details ...
