@@ -1,7 +1,12 @@
 import { Request, RequestHandler } from 'express'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
-import { AuthType, FieldResponse, IPopulatedEmailForm } from '../../../../types'
+import { AuthType, IPopulatedEmailForm } from '../../../../types'
+import {
+  EmailSubmissionDto,
+  SubmissionErrorDto,
+  SubmissionResponseDto,
+} from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import MailService from '../../../services/mail/mail.service'
@@ -33,8 +38,8 @@ const logger = createLoggerWithLabel(module)
 
 const submitEmailModeForm: RequestHandler<
   { formId: string },
-  { message: string; submissionId?: string; spcpSubmissionFailure?: true },
-  { responses: FieldResponse[] },
+  SubmissionResponseDto | SubmissionErrorDto,
+  EmailSubmissionDto,
   { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params

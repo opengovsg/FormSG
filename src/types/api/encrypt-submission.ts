@@ -4,7 +4,6 @@ export type EncryptSubmissionDto = {
   responses: FieldResponse[]
   encryptedContent: string
   attachments?: EncryptedAttachmentsDto
-  isPreview: boolean
   version: number
 }
 
