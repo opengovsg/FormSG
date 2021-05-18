@@ -10,7 +10,7 @@ import { createEmailSubmissionFormData } from '../utils/submission'
 const PUBLIC_FORMS_ENDPOINT = '/api/v3/forms'
 
 /**
- * Submits the email mode form's FormData created from given submissionContent
+ * Submits an email mode form submission.
  * @param formId id of form to submit submission for
  * @param content content of submission
  * @param attachments any attachments included in submission
@@ -48,7 +48,7 @@ export const submitEmailModeFormSubmission = async ({
 }
 
 /**
- * Submits the given storage mode form's submission object
+ * Submits a storage mode form's submission.
  * @param formId id of form to submit submission for
  * @param content the storage mode submission object to submit
  * @param captchaResponse string if captcha to be included, defaults to null

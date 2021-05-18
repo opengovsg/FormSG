@@ -187,6 +187,15 @@ export const updateFormStartPage = async (
     .then(({ data }) => data)
 }
 
+/**
+ * Submits a preview version of an email mode form submission.
+ * @param formId id of form to submit submission for
+ * @param content content of submission
+ * @param attachments any attachments included in submission
+ * @param captchaResponse string if captcha to be included, defaults to null
+ *
+ * @returns SubmissionResponseDto if successful, else SubmissionErrorDto on error
+ */
 export const submitEmailModeFormSubmissionPreview = async ({
   formId,
   content,
@@ -216,6 +225,14 @@ export const submitEmailModeFormSubmissionPreview = async ({
     .then(({ data }) => data)
 }
 
+/**
+ * Submits a preview version of a storage mode form's submission.
+ * @param formId id of form to submit submission for
+ * @param content the storage mode submission object to submit
+ * @param captchaResponse string if captcha to be included, defaults to null
+ *
+ * @returns SubmissionResponseDto if successful, else SubmissionErrorDto on error
+ */
 export const submitStorageModeFormSubmissionPreview = async ({
   formId,
   content,
