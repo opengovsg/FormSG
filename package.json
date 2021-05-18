@@ -162,7 +162,7 @@
     "@babel/preset-env": "^7.14.2",
     "@opengovsg/mockpass": "^2.6.10",
     "@types/bcrypt": "^5.0.0",
-    "@types/bluebird": "^3.5.34",
+    "@types/bluebird": "^3.5.35",
     "@types/busboy": "^0.2.3",
     "@types/compression": "^1.7.0",
     "@types/convict": "^6.0.2",
