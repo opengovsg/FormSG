@@ -6,6 +6,10 @@ Closes [insert issue #]
 ## Solution
 <!-- How did you solve the problem? -->
 
+**Breaking Changes** 
+<!-- Does this PR contain any backward incompatible changes? If so, what are they and should there be special considerations for release? -->
+- Details ...
+
 **Features**:
 
 - Details ...
