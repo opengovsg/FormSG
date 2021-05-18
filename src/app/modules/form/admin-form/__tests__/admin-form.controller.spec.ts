@@ -7363,6 +7363,16 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_FIELD_ID,
       )
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
     })
 
     it('should return 403 when current user does not have permissions to delete form fields', async () => {
@@ -7386,6 +7396,16 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(MockAdminFormService.duplicateFormField).not.toHaveBeenCalled()
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
     })
 
     it('should return 404 when field to duplicate cannot be found', async () => {
@@ -7411,6 +7431,16 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_FIELD_ID,
       )
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
     })
 
     it('should return 404 when form to duplicate form field for cannot be found', async () => {
@@ -7435,6 +7465,16 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(MockAdminFormService.duplicateFormField).not.toHaveBeenCalled()
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
     })
 
     it('should return 410 when form to duplicate form field for is already archived', async () => {
@@ -7459,6 +7499,16 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(MockAdminFormService.duplicateFormField).not.toHaveBeenCalled()
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
     })
 
     it('should return 422 when user in session cannot be retrieved from the database', async () => {
@@ -7486,6 +7536,12 @@ describe('admin-form.controller', () => {
         MockAuthService.getFormAfterPermissionChecks,
       ).not.toHaveBeenCalled()
       expect(MockAdminFormService.duplicateFormField).not.toHaveBeenCalled()
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
     })
 
     it('should return 500 when generic database error occurs during form field deletion', async () => {
@@ -7512,6 +7568,16 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.duplicateFormField).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_FIELD_ID,
+      )
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
       )
     })
   })
