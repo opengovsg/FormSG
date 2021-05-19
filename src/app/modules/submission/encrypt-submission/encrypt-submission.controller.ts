@@ -25,7 +25,6 @@ import {
 } from '../../core/core.errors'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
-import { isFormEncryptMode } from '../../form/form.utils'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
 import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
@@ -76,7 +75,22 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
     const { errorMessage, statusCode } = mapRouteError(formResult.error)
     return res.status(statusCode).json({ message: errorMessage })
   }
-  const form = formResult.value
+
+  const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formResult.value)
+  if (checkFormIsEncryptModeResult.isErr()) {
+    logger.error({
+      message:
+        'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
+      meta: logMeta,
+    })
+    const { statusCode, errorMessage } = mapRouteError(
+      checkFormIsEncryptModeResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+  const form = checkFormIsEncryptModeResult.value
 
   // Check that form is public
   const formPublicResult = FormService.isFormPublic(form)
@@ -150,18 +164,6 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
     )
     return res.status(statusCode).json({
       message: errorMessage,
-    })
-  }
-
-  if (!isFormEncryptMode(form)) {
-    logger.error({
-      message:
-        'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
-      meta: logMeta,
-    })
-    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-      message:
-        'Unable to process non-encrypt mode submission on encrypt-form submission endpoint',
     })
   }
 
