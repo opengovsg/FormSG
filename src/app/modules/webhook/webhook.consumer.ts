@@ -5,6 +5,7 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Consumer } from 'sqs-consumer'
 
 import { SubmissionWebhookInfo } from '../../../types'
+import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { getEncryptSubmissionModel } from '../../models/submission.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
@@ -37,13 +38,15 @@ export const startWebhookConsumer = (
   const app = Consumer.create({
     queueUrl,
     handleMessage: createWebhookQueueHandler(producer),
-    sqs: new aws.SQS({
-      httpOptions: {
-        agent: new https.Agent({
-          keepAlive: true,
+    sqs: config.isDev
+      ? undefined
+      : new aws.SQS({
+          httpOptions: {
+            agent: new https.Agent({
+              keepAlive: true,
+            }),
+          },
         }),
-      },
-    }),
   })
 
   app.on('error', (error, message) => {

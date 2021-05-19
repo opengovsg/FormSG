@@ -38,6 +38,7 @@ services:
       - MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
       - MYINFO_CLIENT_ID=mockClientId
       - MYINFO_CLIENT_SECRET=mockClientSecret
+      - WEBHOOK_SQS_URL=http://localhost:4566/000000000000/local-webhooks-sqs-queue
       - GA_TRACKING_ID
       - SENTRY_CONFIG_URL
       - TWILIO_ACCOUNT_SID
@@ -105,7 +106,7 @@ services:
     depends_on:
       - formsg
     environment:
-      - SERVICES=s3
+      - SERVICES=s3,sqs
       - DATA_DIR=/tmp/localstack/data
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket
       - IMAGE_S3_BUCKET=local-image-bucket
