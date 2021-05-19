@@ -1987,7 +1987,7 @@ describe('Form Model', () => {
       it('should return updated document with duplicated form field', async () => {
         // Arrange
         const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
-        expect(validForm.form_fields).toBeEmpty()
+
         validForm.form_fields = [fieldToDuplicate]
         const fieldId = fieldToDuplicate._id
 
