@@ -385,7 +385,8 @@
         >
           <i class="bx bx-info-circle bx-md icon-spacing"></i>
           <span class="alert-msg"
-            >Webhook cannot be changed unless your form is deactivated.</span
+            >Webhook settings cannot be changed unless your form is
+            deactivated.</span
           >
         </div>
         <div
@@ -397,7 +398,7 @@
             >Webhook is not available for forms with attachment fields.</span
           >
         </div>
-        <div class="row feature-container">
+        <div class="row feature-container webhook-feature-container">
           <div
             class="settings-save col-xs-12"
             ng-class="(settingsForm.webhookUrl.$invalid) ? 'input-disabled' : ''"
@@ -412,8 +413,8 @@
               ng-required="false"
               ng-disabled="isFormPublic() || doesFormContainAttachments()"
               autocomplete="off"
-              ng-keyup="$event.keyCode === 13 && settingsForm.webhookUrl.$valid && saveForm()"
-              ng-blur="saveForm()"
+              ng-keyup="$event.keyCode === 13 && settingsForm.webhookUrl.$valid && saveWebhookUrl()"
+              ng-blur="saveWebhookUrl()"
               ng-class="settingsForm.webhookUrl.$valid ? '' : 'input-error'"
               validate-url
             />
@@ -425,6 +426,39 @@
               <span class="alert-msg">
                 Please enter a valid URL (starting with https://)
               </span>
+            </div>
+          </div>
+        </div>
+        <div class="settings-input">
+          <div class="row">
+            <div class="col-xs-9">
+              <span class="label-custom label-medium label-bottom"
+                >Enable retries</span
+              >
+              (<a
+                translate-attr="{ href: 'LINKS.WEBHOOK_RETRIES' }"
+                target="_blank"
+                >What are retries?</a
+              >)
+            </div>
+            <div class="col-xs-3">
+              <label
+                class="toggle-selector pull-right"
+                ng-class="tempForm.webhook.isRetryEnabled ? 'toggle-selector-on' : ''"
+                ng-style="isWebhookRetryToggleDisabled() ? { 'cursor': 'not-allowed' } : ''"
+              >
+                <input
+                  type="checkbox"
+                  ng-model="tempForm.webhook.isRetryEnabled"
+                  ng-change="saveForm()"
+                  ng-disabled="isWebhookRetryToggleDisabled()"
+                />
+                <div class="toggle-selector-switch">
+                  <i
+                    ng-class="tempForm.webhook.isRetryEnabled ? 'bx bx-check' : 'bx bx-x'"
+                  ></i>
+                </div>
+              </label>
             </div>
           </div>
         </div>
