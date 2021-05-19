@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
 import { subMinutes } from 'date-fns'
-import { StatusCodes } from 'http-status-codes'
+import { getReasonPhrase, StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import nodemailer from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer'
