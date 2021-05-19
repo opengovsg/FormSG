@@ -1500,13 +1500,13 @@ describe('admin-form.service', () => {
         'globalId',
       ])
 
-      const duplicatedFieldWithoutId = omit(duplicatedField, [
+      const expectedDuplicateFieldWithoutId = omit(duplicatedField, [
         '_id',
         'globalId',
       ])
 
       // Assert
-      expect(actualDuplicatedField).toEqual(duplicatedFieldWithoutId)
+      expect(actualDuplicatedField).toEqual(expectedDuplicateFieldWithoutId)
     })
 
     it('should return FormNotFoundError when field duplication returns null', async () => {

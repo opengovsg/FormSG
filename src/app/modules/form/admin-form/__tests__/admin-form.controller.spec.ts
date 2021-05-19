@@ -7375,7 +7375,7 @@ describe('admin-form.controller', () => {
       )
     })
 
-    it('should return 403 when current user does not have permissions to delete form fields', async () => {
+    it('should return 403 when current user does not have permissions to duplicate form fields', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       const expectedErrorString = 'no write permissions'
@@ -7544,7 +7544,7 @@ describe('admin-form.controller', () => {
       ).not.toHaveBeenCalled()
     })
 
-    it('should return 500 when generic database error occurs during form field deletion', async () => {
+    it('should return 500 when generic database error occurs during form field duplication', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
 
