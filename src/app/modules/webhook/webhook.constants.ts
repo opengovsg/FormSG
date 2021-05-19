@@ -1,3 +1,5 @@
+import config from '../../config/config'
+
 import { RetryInterval } from './webhook.types'
 
 /**
@@ -16,14 +18,20 @@ const minutes = (m: number) => m * 60
  * to wait + jitter before 2nd time, etc.
  * All units are in seconds.
  */
-export const RETRY_INTERVALS: RetryInterval[] = [
-  { base: minutes(5), jitter: minutes(1) },
-  { base: hours(1), jitter: minutes(30) },
-  { base: hours(2), jitter: minutes(30) },
-  { base: hours(4), jitter: minutes(30) },
-  { base: hours(8), jitter: minutes(30) },
-  { base: hours(24), jitter: minutes(30) },
-]
+export const RETRY_INTERVALS: RetryInterval[] = config.isDev
+  ? [
+      { base: 10, jitter: 5 },
+      { base: 20, jitter: 5 },
+      { base: 30, jitter: 5 },
+    ]
+  : [
+      { base: minutes(5), jitter: minutes(1) },
+      { base: hours(1), jitter: minutes(30) },
+      { base: hours(2), jitter: minutes(30) },
+      { base: hours(4), jitter: minutes(30) },
+      { base: hours(8), jitter: minutes(30) },
+      { base: hours(24), jitter: minutes(30) },
+    ]
 
 /**
  * Max possible delay for a message, as specified by AWS.
