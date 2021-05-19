@@ -174,6 +174,7 @@ export const handleGetOtp: RequestHandler<
  * This signature will be appended to the response when the form is submitted.
  * @param req
  * @param res
+ * @deprecated in favour of handleOtpVerification
  */
 export const handleVerifyOtp: RequestHandler<
   { transactionId: string },
