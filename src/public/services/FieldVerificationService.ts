@@ -61,25 +61,27 @@ export const triggerSendOtp = async ({
 
 /**
  * Verifies given OTP for given fieldId
+ * @param formId The id of the form
  * @param transactionId The generated transaction id for the form
  * @param fieldId The id of the verification field
  * @param otp The user-entered OTP value to verify against
  * @returns The verified signature on success
  */
 export const verifyOtp = async ({
+  formId,
   transactionId,
   fieldId,
   otp,
 }: {
+  formId: string
   transactionId: string
   fieldId: string
   otp: string
 }): Promise<VerifiedFieldSignature> => {
   return axios
     .post<VerifiedFieldSignature>(
-      `${TRANSACTION_ENDPOINT}/${transactionId}/otp/verify`,
+      `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/fields/${fieldId}/otp/verify`,
       {
-        fieldId,
         otp,
       },
     )
