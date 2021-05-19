@@ -139,7 +139,7 @@ function SubmissionsFactory(
         function (response) {
           deferred.resolve({
             message: 'Submission has finished.',
-            submissionId: response.submissionId,
+            submissionId: response.data.submissionId,
           })
         },
         function (error) {
