@@ -24,6 +24,7 @@ PublicFormsVerificationRouter.route(
 /**
  * Route for generating a new otp for a given field
  * @returns 201 when otp generated successfully
+ * @returns 400 when joi validation fails
  * @returns 400 when the parameters could not be parsed
  * @returns 400 when the transaction has expired
  * @returns 400 when the otp could not be sent via sms
