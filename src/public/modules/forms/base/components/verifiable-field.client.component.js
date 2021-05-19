@@ -81,6 +81,7 @@ function verifiableFieldController($q, $timeout, $interval) {
 
       $q.resolve(
         FieldVerificationService.verifyOtp({
+          formId: vm.formId,
           transactionId: vm.transactionId,
           fieldId: vm.field._id,
           otp,
