@@ -3,7 +3,11 @@ import { ObjectId } from 'bson-ext'
 import { subMinutes } from 'date-fns'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
+import nodemailer from 'nodemailer'
+import Mail from 'nodemailer/lib/mailer'
 import session, { Session } from 'supertest-session'
+import { MockedObjectDeep } from 'ts-jest/dist/utils/testing'
+import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
 import {
@@ -17,8 +21,6 @@ import { WAIT_FOR_OTP_SECONDS } from 'src/shared/util/verification'
 import { BasicField, IVerificationSchema, VerifiableFieldType } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
-// eslint-disable-next-line simple-import-sort/imports
-import { mockTransport } from 'tests/integration/helpers/nodemailer'
 import MockTwilio from 'tests/integration/helpers/twilio'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
@@ -31,7 +33,11 @@ const Form = getFormModel(mongoose)
 const verificationApp = setupApp('/forms', PublicFormsVerificationRouter)
 const VerificationModel = getVerificationModel(mongoose)
 
-mockTransport.sendMail.mockResolvedValue(true)
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockReturnValue({
+    sendMail: jest.fn().mockResolvedValue(true),
+  }),
+}))
 
 describe('public-forms.verification.routes', () => {
   let mockTransaction: IVerificationSchema
@@ -41,8 +47,12 @@ describe('public-forms.verification.routes', () => {
   let mockEmailFieldId: string
   let mockMobileFieldId: string
   let request: Session
+  let MockTransport: MockedObjectDeep<Mail>
 
-  beforeAll(async () => await dbHandler.connect())
+  beforeAll(async () => {
+    await dbHandler.connect()
+    MockTransport = mocked(nodemailer.createTransport(), true)
+  })
 
   beforeEach(async () => {
     request = session(verificationApp)
@@ -232,7 +242,6 @@ describe('public-forms.verification.routes', () => {
 
   describe('POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/generate', () => {
     beforeEach(() => {
-      mockTransport.sendMail.mockResolvedValue(true)
       MockTwilio.messages.create.mockResolvedValue({
         sid: 'mockSid',
       })
@@ -390,7 +399,7 @@ describe('public-forms.verification.routes', () => {
     it('should return 400 when the otp could not be sent and fieldType is email', async () => {
       // Arrange
       // Retries on failure until limit hit, hence cannot just mock once
-      mockTransport.sendMail.mockRejectedValue('no')
+      MockTransport.sendMail.mockRejectedValue('no')
       const expectedResponse = {
         message: 'Sorry, something went wrong. Please refresh and try again.',
       }
