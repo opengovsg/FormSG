@@ -153,6 +153,18 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
     })
   }
 
+  if (!isFormEncryptMode(form)) {
+    logger.error({
+      message:
+        'Trying to encrypt verified SpCp fields on non-encrypt mode form',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      message:
+        'Unable to encrypt verified SPCP fields on non storage mode forms',
+    })
+  }
+
   // Process encrypted submission
   const processedResponsesResult = await getProcessedResponses(form, responses)
   if (processedResponsesResult.isErr()) {
@@ -237,18 +249,6 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
   }
 
   // Encrypt Verified SPCP Fields
-  if (!isFormEncryptMode(form)) {
-    logger.error({
-      message:
-        'Trying to encrypt verified SpCp fields on non-encrypt mode form',
-      meta: logMeta,
-    })
-    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-      message:
-        'Unable to encrypt verified SPCP fields on non storage mode forms',
-    })
-  }
-
   let verified
   if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
     const encryptVerifiedContentResult = VerifiedContentFactory.getVerifiedContent(
