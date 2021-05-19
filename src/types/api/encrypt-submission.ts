@@ -1,7 +1,7 @@
 import { FieldResponse } from '../response'
 
 export type EncryptSubmissionDto = {
-  responses: FieldResponse[]
+  responses: ({ question: string } & FieldResponse)[]
   encryptedContent: string
   attachments?: EncryptedAttachmentsDto
   version: number

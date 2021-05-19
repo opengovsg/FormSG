@@ -2,10 +2,17 @@
 import MockAxios from 'jest-mock-axios'
 
 import { BasicField } from 'src/types'
-import { EmailSubmissionDto, SubmissionResponseDto } from 'src/types/api'
+import {
+  EmailSubmissionDto,
+  EncryptSubmissionDto,
+  SubmissionResponseDto,
+} from 'src/types/api'
 
 import * as SubmissionUtil from '../../utils/submission'
-import { submitEmailModeFormSubmission } from '../PublicFormService'
+import {
+  submitEmailModeFormSubmission,
+  submitStorageModeFormSubmission,
+} from '../PublicFormService'
 
 jest.mock('axios', () => MockAxios)
 
@@ -88,6 +95,68 @@ describe('PublicFormService', () => {
       expect(createFormDataSpy).toHaveBeenCalledWith({
         content: MOCK_CONTENT,
       })
+    })
+  })
+
+  describe('submitStorageModeFormSubmission', () => {
+    const MOCK_FORM_ID = 'mock–form-id-2'
+    const MOCK_RESPONSE: SubmissionResponseDto = {
+      message: 'some mock response again',
+      submissionId: 'created submission id again',
+    }
+    const MOCK_CONTENT: EncryptSubmissionDto = {
+      responses: [
+        {
+          question: 'some question',
+          answer: 'some answer',
+          fieldType: BasicField.ShortText,
+          _id: 'some_id',
+        },
+      ],
+      encryptedContent: 'encryptedContent1337H@xx0r',
+      version: 1,
+    }
+
+    it('should call api with correct params successfully when captcha is provided', async () => {
+      // Arrange
+      const mockCaptcha = 'some captcha response'
+
+      // Act
+      const actual = submitStorageModeFormSubmission({
+        formId: MOCK_FORM_ID,
+        content: MOCK_CONTENT,
+        captchaResponse: mockCaptcha,
+      })
+      MockAxios.mockResponse({ data: MOCK_RESPONSE })
+
+      // Assert
+      await expect(actual).resolves.toEqual(MOCK_RESPONSE)
+      expect(
+        MockAxios.post,
+      ).toHaveBeenCalledWith(
+        `/api/v3/forms/${MOCK_FORM_ID}/submissions/encrypt`,
+        MOCK_CONTENT,
+        { params: { captchaResponse: mockCaptcha } },
+      )
+    })
+
+    it('should call api with correct params successfully when captcha is not provided', async () => {
+      // Act
+      const actual = submitStorageModeFormSubmission({
+        formId: MOCK_FORM_ID,
+        content: MOCK_CONTENT,
+        // No captcha entered
+      })
+      MockAxios.mockResponse({ data: MOCK_RESPONSE })
+
+      // Assert
+      await expect(actual).resolves.toEqual(MOCK_RESPONSE)
+      expect(MockAxios.post).toHaveBeenCalledWith(
+        `/api/v3/forms/${MOCK_FORM_ID}/submissions/encrypt`,
+        MOCK_CONTENT,
+        // Should default to stringified null
+        { params: { captchaResponse: 'null' } },
+      )
     })
   })
 })
