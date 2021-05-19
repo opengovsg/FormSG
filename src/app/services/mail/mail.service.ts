@@ -245,6 +245,7 @@ export class MailService {
     const autoReplyBody = (autoReplyMailData.body || defaultBody).split('\n')
 
     const templateData = {
+      submissionId: submission.id,
       autoReplyBody,
       // Only destructure formSummaryRenderData if form summary is included.
       ...(autoReplyMailData.includeFormSummary && formSummaryRenderData),

@@ -916,6 +916,10 @@
   padding: 20px;
 }
 
+.edit-modal-window .preview-field-panel #email-preview #response-id {
+  color: #979797;
+}
+
 .edit-modal-window .preview-field-panel #email-preview .editable-text {
   color: #283d86;
   text-align: justify;
