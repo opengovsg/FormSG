@@ -1478,7 +1478,7 @@ describe('admin-form.form.routes', () => {
       expect(response.status).toEqual(200)
       expect(actualOriginalField).toEqual(expectedOriginalField)
       expect(actualDuplicatedField).toEqual(expectedDuplicatedField)
-      expect(actual?.__v).toEqual(1)
+      expect(actual?.__v).toEqual(1) // mongoose version key should be incremented by one upon save()
       expect({
         ...response.body,
         _id: new ObjectId(response.body._id),
