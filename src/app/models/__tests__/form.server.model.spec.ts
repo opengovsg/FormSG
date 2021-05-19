@@ -67,6 +67,7 @@ const FORM_DEFAULTS = {
   permissionList: [],
   webhook: {
     url: '',
+    isRetryEnabled: false,
   },
   status: 'PRIVATE',
   submissionLimit: null,

@@ -127,7 +127,6 @@ describe('Submission Model', () => {
               verifiedContent: undefined,
               version: 0,
               created: submission.created,
-              attachmentMetadata: new Map(),
             },
           },
         })

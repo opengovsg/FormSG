@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson-ext'
+import { merge } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
@@ -85,11 +86,7 @@ describe('admin-form.settings.routes', () => {
 
       // Assert
       const expectedResponse = JSON.parse(
-        JSON.stringify({
-          ...formToUpdate.getSettings(),
-          // Should get updated with new settings
-          ...settingsToUpdate,
-        }),
+        JSON.stringify(merge(formToUpdate.getSettings(), settingsToUpdate)),
       )
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(expectedResponse)
