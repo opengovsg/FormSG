@@ -157,3 +157,20 @@ AdminFormsFormRouter.put(
   '/:formId([a-fA-F0-9]{24})/end-page',
   AdminFormController.handleUpdateEndPage,
 )
+
+/**
+ * Replaces the startPage of the given form with what is given in the request
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated start page
+ * @returns 403 when current user does not have permissions to update the start page
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating the start page for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+AdminFormsFormRouter.put(
+  '/:formId([a-fA-F0-9]{24})/start-page',
+  AdminFormController.handleUpdateStartPage,
+)

@@ -20,6 +20,7 @@ import {
   LogicType,
   Permission,
   ResponseMode,
+  StartPage,
   Status,
 } from 'src/types'
 
@@ -1586,6 +1587,87 @@ describe('Form Model', () => {
         expect(modifiedForm!.form_logics![0].logicType).toEqual(
           LogicType.ShowFields,
         )
+      })
+    })
+
+    describe('updateStartPageById', () => {
+      it('should update start page and return updated form when successful', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+          startPage: {
+            title: 'old title',
+          },
+        })
+        const form = (await Form.create(formParams)).toObject()
+        const prevModifiedDate = form.lastModified
+        const updatedStartPage: StartPage = {
+          paragraph: 'some description paragraph',
+          // This is a huge form.
+          estTimeTaken: 10000000,
+        }
+
+        // Act
+        const actual = await Form.updateStartPageById(
+          form._id,
+          updatedStartPage,
+        )
+
+        // Assert
+        // Should have defaults populated but also replace the startPage with the new params
+        expect(actual?.toObject()).toEqual({
+          ...form,
+          lastModified: expect.any(Date),
+          startPage: { ...form.startPage, ...updatedStartPage },
+        })
+        expect(actual.lastModified! > prevModifiedDate!).toBe(true)
+      })
+
+      it('should update start page with defaults when optional values are not provided', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+        })
+        const form = (await Form.create(formParams)).toObject()
+        const updatedStartPage: StartPage = {
+          paragraph: 'some description paragraph',
+        }
+
+        // Act
+        const actual = await Form.updateStartPageById(
+          form._id,
+          updatedStartPage,
+        )
+
+        // Assert
+        // Should have defaults populated but also replace the start page with the new params
+        expect(actual?.toObject()).toEqual({
+          ...form,
+          lastModified: expect.any(Date),
+          startPage: {
+            ...updatedStartPage,
+            // Defaults should be populated and returned
+            colorTheme: 'blue',
+          },
+        })
+      })
+
+      it('should return null when formId given is not in the database', async () => {
+        // Arrange
+        await expect(Form.countDocuments()).resolves.toEqual(0)
+        const updatedStartPage: StartPage = {
+          paragraph: 'does not really matter',
+        }
+
+        // Act
+        const actual = await Form.updateStartPageById(
+          new ObjectId().toHexString(),
+          updatedStartPage,
+        )
+
+        // Assert
+        expect(actual).toEqual(null)
+        await expect(Form.countDocuments()).resolves.toEqual(0)
       })
     })
   })

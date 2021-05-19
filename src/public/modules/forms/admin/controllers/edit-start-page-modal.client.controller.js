@@ -17,11 +17,16 @@ angular
     '$uibModalInstance',
     '$q',
     'myform',
-    'updateField',
+    'updateStartPage',
     EditStartPageController,
   ])
 
-function EditStartPageController($uibModalInstance, $q, myform, updateField) {
+function EditStartPageController(
+  $uibModalInstance,
+  $q,
+  myform,
+  updateStartPage,
+) {
   let source
   const vm = this
 
@@ -38,14 +43,25 @@ function EditStartPageController($uibModalInstance, $q, myform, updateField) {
 
   vm.saveStartPage = function (isValid) {
     vm.hasClickedSave = true
+    const logoState = vm.myform.startPage.logo.state
+    // Clones the start page so that the original one can be used.
+    // This prevents the actual start page from being affected in the event of failure
+    const clonedStartPage = angular.copy(vm.myform.startPage)
 
     if (isValid) {
-      updateField({ startPage: vm.myform.startPage }).then((error) => {
-        if (!error) {
-          vm.hasClickedSave = false
-          $uibModalInstance.close()
+      if (logoState !== FormLogoState.Custom) {
+        clonedStartPage.logo = {
+          state: logoState,
         }
-      })
+      }
+      $q.when(updateStartPage({ newStartPage: clonedStartPage })).then(
+        (error) => {
+          if (!error) {
+            vm.hasClickedSave = false
+            $uibModalInstance.close()
+          }
+        },
+      )
     }
   }
 
