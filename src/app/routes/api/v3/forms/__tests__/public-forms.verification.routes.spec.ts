@@ -1,6 +1,8 @@
+import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
-import { subMinutes } from 'date-fns'
+import { subMinutes, subYears } from 'date-fns'
 import { StatusCodes } from 'http-status-codes'
+import _ from 'lodash'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
 
@@ -10,12 +12,14 @@ import {
   MOCK_SIGNED_DATA,
 } from 'src/app/modules/verification/__tests__/verification.test.helpers'
 import getVerificationModel from 'src/app/modules/verification/verification.model'
+import { NUM_OTP_RETRIES } from 'src/shared/util/verification'
 import { BasicField, IVerificationSchema } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { MOCK_OTP } from '../../../../../modules/verification/__tests__/verification.test.helpers'
 import { PublicFormsVerificationRouter } from '../public-forms.verification.routes'
 
 const verificationApp = setupApp('/forms', PublicFormsVerificationRouter)
@@ -228,6 +232,251 @@ describe('public-forms.verification.routes', () => {
 
       // Assert
       expect(response.status).toBe(StatusCodes.NOT_FOUND)
+      expect(response.body).toEqual(expectedResponse)
+    })
+  })
+
+  describe('POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/verify', () => {
+    beforeAll(() => {
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true)
+    })
+
+    it('should return 200 when the fieldType is email, request parameters are valid and the otp is correct', async () => {
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/verify`,
+        )
+        .send({ otp: MOCK_OTP })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.OK)
+      expect(response.body).toBe(MOCK_SIGNED_DATA)
+    })
+
+    it('should return 200 when the fieldType is mobile, request parameters are valid and the otp is correct', async () => {
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/verify`,
+        )
+        .send({ otp: MOCK_OTP })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.OK)
+      expect(response.body).toBe(MOCK_SIGNED_DATA)
+    })
+
+    it('should return 400 when the transaction is expired', async () => {
+      // Arrange
+      const { _id: expiredTransactionId } = await VerificationModel.create({
+        formId: mockVerifiableFormId,
+        expireAt: Date.now(),
+        fields: [],
+      })
+      const expectedResponse = {
+        message: 'Your session has expired, please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${expiredTransactionId}/fields/${mockMobileFieldId}/otp/verify`,
+        )
+        .send({ otp: MOCK_OTP })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 400 when the hash data could not be found', async () => {
+      // Arrange
+      // Remove the email field and persist to db
+      await mockTransaction.fields[1].remove()
+      await mockTransaction.save()
+
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/verify`,
+        )
+        .send({ otp: MOCK_OTP })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.NOT_FOUND)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 404 when the the form could not be found', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${new ObjectId().toHexString()}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/verify`,
+        )
+        .send({ otp: MOCK_OTP })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.NOT_FOUND)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 404 when the the transaction could not be found', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${new ObjectId().toHexString()}/fields/${mockMobileFieldId}/otp/verify`,
+        )
+        .send({ otp: MOCK_OTP })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.NOT_FOUND)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 404 when the field could not be found', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${new ObjectId().toHexString()}/otp/verify`,
+        )
+        .send({ otp: MOCK_OTP })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.NOT_FOUND)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 422 when the otp is expired', async () => {
+      // Arrange
+      const mockOtpExpiredTransaction = await VerificationModel.create({
+        formId: mockVerifiableFormId,
+        fields: [
+          generateFieldParams({
+            _id: mockEmailFieldId,
+            hashCreatedAt: subYears(Date.now(), 1),
+            fieldType: BasicField.Email,
+            hashRetries: 0,
+            hashedOtp: MOCK_HASHED_OTP,
+            signedData: MOCK_SIGNED_DATA,
+          }),
+        ],
+      })
+      const expectedResponse = {
+        message: 'Your OTP has expired, please request for a new one.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockOtpExpiredTransaction._id}/fields/${mockEmailFieldId}/otp/verify`,
+        )
+        .send({ otp: MOCK_OTP })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.UNPROCESSABLE_ENTITY)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 422 when the OTP retry limit is exceeded', async () => {
+      // Arrange
+      const requestForOtp = () =>
+        request
+          .post(
+            `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/verify`,
+          )
+          .send({ otp: MOCK_OTP })
+      const expectedResponse = {
+        message:
+          'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
+      }
+
+      // Act
+      await Promise.allSettled(
+        _.range(NUM_OTP_RETRIES).map(() => requestForOtp()),
+      )
+      const response = await requestForOtp()
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.UNPROCESSABLE_ENTITY)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 422 when the otp is wrong', async () => {
+      // Arrange
+      jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(false)
+      const expectedResponse = {
+        message: 'Wrong OTP.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/verify`,
+        )
+        .send({ otp: '000000' })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.UNPROCESSABLE_ENTITY)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 500 when hashing error occurs', async () => {
+      // Arrange
+      jest.spyOn(bcrypt, 'compare').mockRejectedValueOnce(false)
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/verify`,
+        )
+        .send({ otp: MOCK_OTP })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.INTERNAL_SERVER_ERROR)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 500 when database error occurs', async () => {
+      // Arrange
+      jest
+        .spyOn(VerificationModel, 'findById')
+        .mockReturnValue({ exec: jest.fn().mockRejectedValue('no') })
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/verify`,
+        )
+        .send({ otp: MOCK_OTP })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.INTERNAL_SERVER_ERROR)
       expect(response.body).toEqual(expectedResponse)
     })
   })
