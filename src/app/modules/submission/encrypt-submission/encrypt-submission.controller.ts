@@ -156,12 +156,12 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
   if (!isFormEncryptMode(form)) {
     logger.error({
       message:
-        'Trying to encrypt verified SpCp fields on non-encrypt mode form',
+        'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
       meta: logMeta,
     })
     return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
       message:
-        'Unable to encrypt verified SPCP fields on non storage mode forms',
+        'Unable to process non-encrypt mode submission on encrypt-form submission endpoint',
     })
   }
 
