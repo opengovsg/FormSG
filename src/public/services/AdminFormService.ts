@@ -200,7 +200,7 @@ export const submitEmailModeFormSubmissionPreview = async ({
   formId,
   content,
   attachments,
-  captchaResponse,
+  captchaResponse = null,
 }: {
   formId: string
   content: EmailSubmissionDto
@@ -236,11 +236,11 @@ export const submitEmailModeFormSubmissionPreview = async ({
 export const submitStorageModeFormSubmissionPreview = async ({
   formId,
   content,
-  captchaResponse,
+  captchaResponse = null,
 }: {
   formId: string
   content: EncryptSubmissionDto
-  captchaResponse: string
+  captchaResponse?: string | null
 }): Promise<SubmissionResponseDto> => {
   return axios
     .post<SubmissionResponseDto>(
