@@ -71,7 +71,7 @@ export type SubmissionToAdminHtmlData = {
   appName: string
 }
 
-export type AutoreplyHtmlDefaultBody = {
+type AutoreplyHtmlDefaultBody = {
   submissionId: string
   autoReplyBody: string[]
 }
