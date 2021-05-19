@@ -48,8 +48,6 @@ function verifiableFieldController($q, $timeout, $interval) {
         throw new Error('No transaction id')
       }
 
-      console.log(vm.fieldType)
-
       await FieldVerificationService.triggerSendOtp({
         fieldType: vm.fieldType,
         formId: vm.formId,
