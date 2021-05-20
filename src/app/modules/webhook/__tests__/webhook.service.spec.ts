@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
-import { ObjectID } from 'bson'
+import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
@@ -96,7 +96,7 @@ describe('webhook.service', () => {
     jest.restoreAllMocks()
 
     // prepare for form creation workflow
-    const MOCK_ADMIN_OBJ_ID = new ObjectID()
+    const MOCK_ADMIN_OBJ_ID = new ObjectId()
     const MOCK_EPOCH = 1487076708000
     const preloaded = await dbHandler.insertFormCollectionReqs({
       userId: MOCK_ADMIN_OBJ_ID,
@@ -183,7 +183,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await saveWebhookRecord(
-        new ObjectID(),
+        new ObjectId(),
         mockWebhookResponse,
       )
 
