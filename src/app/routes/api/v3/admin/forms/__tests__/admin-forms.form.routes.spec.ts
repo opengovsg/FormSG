@@ -17,9 +17,9 @@ import {
 } from 'src/app/modules/core/core.errors'
 import {
   BasicField,
-  IPopulatedForm,
   Colors,
   FormLogoState,
+  IPopulatedForm,
   IUserSchema,
   ResponseMode,
   StartPage,
@@ -1657,6 +1657,8 @@ describe('admin-form.form.routes', () => {
         message:
           'Error: [something happened]. Please refresh and try again. If you still need help, email us at form@open.gov.sg.',
       })
+    })
+  })
 
   describe('PUT /admin/forms/:formId/start-page', () => {
     const MOCK_START_PAGE: StartPage = {
