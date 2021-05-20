@@ -107,7 +107,7 @@
     "express-device": "~0.4.2",
     "express-rate-limit": "^5.2.6",
     "express-request-id": "^1.4.1",
-    "express-session": "^1.15.6",
+    "express-session": "^1.17.2",
     "express-winston": "^4.1.0",
     "fetch-readablestream": "^0.2.0",
     "file-loader": "^4.3.0",
