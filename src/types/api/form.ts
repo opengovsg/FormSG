@@ -1,10 +1,10 @@
 import { LeanDocument } from 'mongoose'
-import { ConditionalPick, Primitive } from 'type-fest'
+import { ConditionalPick, PartialDeep, Primitive } from 'type-fest'
 
 import { FormField, FormFieldSchema, FormFieldWithId } from '../field'
 import { EndPage, FormSettings, Permission, StartPage } from '../form'
 
-export type SettingsUpdateDto = Partial<FormSettings>
+export type SettingsUpdateDto = PartialDeep<FormSettings>
 
 export type FieldUpdateDto = FormFieldWithId
 
