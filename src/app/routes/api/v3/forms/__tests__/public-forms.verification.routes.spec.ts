@@ -352,16 +352,19 @@ describe('public-forms.verification.routes', () => {
 
     it('should return 400 when the transaction has expired', async () => {
       // Arrange
-      // NOTE: This error is only thrown on interaction with the db, hence the db is mocked here
-      jest.spyOn(Form, 'getOtpData').mockResolvedValueOnce(null)
+      const { _id: expiredTransactionId } = await VerificationModel.create({
+        formId: mockVerifiableFormId,
+        expireAt: Date.now(),
+        fields: [],
+      })
       const expectedResponse = {
-        message: 'Sorry, something went wrong. Please refresh and try again.',
+        message: 'Your session has expired, please refresh and try again.',
       }
 
       // Act
       const response = await request
         .post(
-          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
+          `/forms/${mockVerifiableFormId}/fieldverifications/${expiredTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
         )
         .send({
           fieldType: VerifiableFieldType.Mobile,
