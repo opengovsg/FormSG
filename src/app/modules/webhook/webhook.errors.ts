@@ -65,3 +65,12 @@ export class WebhookNoMoreRetriesError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Failed to push message to SQS.
+ */
+export class WebhookPushToQueueError extends ApplicationError {
+  constructor(message = 'Failed to push webhook to message queue') {
+    super(message)
+  }
+}

@@ -34,6 +34,11 @@ export const RETRY_INTERVALS: RetryInterval[] = config.isDev
     ]
 
 /**
+ * Max possible delay for a message, as specified by AWS.
+ */
+export const MAX_DELAY_SECONDS = minutes(15)
+
+/**
  * Tolerance allowed for determining if a message is due to be sent.
  * If a message's next attempt is due within this number of seconds
  * from the current time, it will be sent.
