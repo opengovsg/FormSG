@@ -79,6 +79,7 @@ export interface IVerifiedFields {
 
 export interface IWebhookVerifiedContent {
   signingSecretKey: string
+  webhookQueueUrl: string
 }
 
 export interface IIntranet {
