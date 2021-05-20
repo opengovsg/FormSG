@@ -127,7 +127,7 @@ export class WebhookQueueMessage {
   incrementAttempts(): Result<WebhookQueueMessage, WebhookNoMoreRetriesError> {
     const updatedPreviousAttempts = [
       ...this.message.previousAttempts,
-      Date.now(),
+      this.message.nextAttempt,
     ]
     return getNextAttempt(updatedPreviousAttempts).map(
       (nextAttempt) =>
