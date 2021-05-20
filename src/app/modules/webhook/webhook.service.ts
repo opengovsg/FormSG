@@ -7,6 +7,7 @@ import {
   IEncryptedSubmissionSchema,
   ISubmissionSchema,
   IWebhookResponse,
+  WebhookView,
 } from '../../../types'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -69,12 +70,11 @@ export const saveWebhookRecord = (
 }
 
 export const sendWebhook = (
-  submission: IEncryptedSubmissionSchema,
+  webhookView: WebhookView,
   webhookUrl: string,
 ): ResultAsync<IWebhookResponse, WebhookValidationError> => {
   const now = Date.now()
-  const submissionWebhookView = submission.getWebhookView()
-  const { submissionId, formId } = submissionWebhookView.data
+  const { submissionId, formId } = webhookView.data
 
   const signature = formsgSdk.webhooks.generateSignature({
     uri: webhookUrl,
@@ -104,7 +104,7 @@ export const sendWebhook = (
   })
     .andThen(() =>
       ResultAsync.fromPromise(
-        axios.post<unknown>(webhookUrl, submissionWebhookView, {
+        axios.post<unknown>(webhookUrl, webhookView, {
           headers: {
             'X-FormSG-Signature': formsgSdk.webhooks.constructHeader({
               epoch: now,
@@ -186,7 +186,7 @@ export const createInitialWebhookSender = () => (
   WebhookValidationError | PossibleDatabaseError | SubmissionNotFoundError
 > => {
   // Attempt to send webhook
-  return sendWebhook(submission, webhookUrl)
+  return sendWebhook(submission.getWebhookView(), webhookUrl)
     .andThen((webhookResponse) =>
       // Save record of sending to database
       saveWebhookRecord(submission._id, webhookResponse),

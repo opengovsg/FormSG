@@ -238,7 +238,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await sendWebhook(
-        testEncryptedSubmission,
+        testEncryptedSubmission.getWebhookView(),
         MOCK_WEBHOOK_URL,
       )
 
@@ -259,7 +259,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await sendWebhook(
-        testEncryptedSubmission,
+        testEncryptedSubmission.getWebhookView(),
         MOCK_WEBHOOK_URL,
       )
 
@@ -296,7 +296,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await sendWebhook(
-        testEncryptedSubmission,
+        testEncryptedSubmission.getWebhookView(),
         MOCK_WEBHOOK_URL,
       )
 
@@ -324,7 +324,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await sendWebhook(
-        testEncryptedSubmission,
+        testEncryptedSubmission.getWebhookView(),
         MOCK_WEBHOOK_URL,
       )
 
@@ -357,7 +357,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await sendWebhook(
-        testEncryptedSubmission,
+        testEncryptedSubmission.getWebhookView(),
         MOCK_WEBHOOK_URL,
       )
 
@@ -387,7 +387,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await sendWebhook(
-        testEncryptedSubmission,
+        testEncryptedSubmission.getWebhookView(),
         MOCK_WEBHOOK_URL,
       )
 
