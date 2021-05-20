@@ -1,4 +1,4 @@
-import { ObjectID } from 'bson'
+import { ObjectId } from 'bson'
 import { times } from 'lodash'
 import mongoose from 'mongoose'
 
@@ -107,7 +107,7 @@ describe('Submission Model', () => {
     describe('getWebhookView', () => {
       it('should return non-null view with encryptedSubmission type (without verified content)', async () => {
         // Arrange
-        const formId = new ObjectID()
+        const formId = new ObjectId()
 
         const submission = await EncryptedSubmission.create({
           submissionType: SubmissionType.Encrypt,
@@ -137,7 +137,7 @@ describe('Submission Model', () => {
 
       it('should return null view with non-encryptSubmission type', async () => {
         // Arrange
-        const formId = new ObjectID()
+        const formId = new ObjectId()
         const submission = await EmailSubmission.create({
           submissionType: SubmissionType.Email,
           form: formId,
@@ -162,7 +162,7 @@ describe('Submission Model', () => {
     describe('addWebhookResponse', () => {
       it('should return updated submission with webhook response when submission ID is valid', async () => {
         // Arrange
-        const formId = new ObjectID()
+        const formId = new ObjectId()
         const submission = await EncryptedSubmission.create({
           submissionType: SubmissionType.Encrypt,
           form: formId,
@@ -205,7 +205,7 @@ describe('Submission Model', () => {
 
       it('should return null when submission id is invalid', async () => {
         // Arrange
-        const formId = new ObjectID()
+        const formId = new ObjectId()
         const submission = await EncryptedSubmission.create({
           submissionType: SubmissionType.Encrypt,
           form: formId,
@@ -231,7 +231,7 @@ describe('Submission Model', () => {
           },
         } as IWebhookResponse
 
-        const invalidSubmissionId = new ObjectID().toHexString()
+        const invalidSubmissionId = new ObjectId().toHexString()
 
         // Act
         const actualSubmission = await EncryptedSubmission.addWebhookResponse(
