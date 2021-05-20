@@ -71,12 +71,7 @@ export const saveWebhookRecord = (
 export const sendWebhook = (
   submission: IEncryptedSubmissionSchema,
   webhookUrl: string,
-): ResultAsync<
-  IWebhookResponse,
-  | WebhookValidationError
-  | WebhookFailedWithAxiosError
-  | WebhookFailedWithUnknownError
-> => {
+): ResultAsync<IWebhookResponse, WebhookValidationError> => {
   const now = Date.now()
   const submissionWebhookView = submission.getWebhookView()
   const { submissionId, formId } = submissionWebhookView.data
