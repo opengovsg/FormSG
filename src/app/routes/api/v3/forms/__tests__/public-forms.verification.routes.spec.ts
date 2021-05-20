@@ -312,7 +312,7 @@ describe('public-forms.verification.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 404 when the the form could not be found', async () => {
+    it('should return 404 when the form could not be found', async () => {
       // Arrange
       const expectedResponse = {
         message: 'Sorry, something went wrong. Please refresh and try again.',
@@ -330,7 +330,7 @@ describe('public-forms.verification.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 404 when the the transaction could not be found', async () => {
+    it('should return 404 when the transaction could not be found', async () => {
       // Arrange
       const expectedResponse = {
         message: 'Sorry, something went wrong. Please refresh and try again.',
