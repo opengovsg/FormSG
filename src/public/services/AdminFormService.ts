@@ -8,6 +8,7 @@ import {
   FormFieldDto,
   PermissionsUpdateDto,
   SettingsUpdateDto,
+  StartPageUpdateDto,
 } from '../../types/api'
 
 const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
@@ -160,6 +161,24 @@ export const updateFormLogic = async (
     .put<LogicDto>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/logic/${logicId}`,
       updatedLogic,
+    )
+    .then(({ data }) => data)
+}
+
+/**
+ * Updates the start page for the given form referenced by its id
+ * @param formId the id of the form to update start page for
+ * @param newEndPage the new start page to replace with
+ * @returns the updated start page on success
+ */
+export const updateFormStartPage = async (
+  formId: string,
+  newStartPage: StartPageUpdateDto,
+): Promise<StartPageUpdateDto> => {
+  return axios
+    .put<StartPageUpdateDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/start-page`,
+      newStartPage,
     )
     .then(({ data }) => data)
 }

@@ -21,6 +21,7 @@ function fieldDirective(FormFields) {
       transactionId: '<',
       onDropdownClick: '&',
       isValidateDate: '<',
+      formId: '<',
     },
     link: function (scope) {
       if ((scope.isadminpreview || scope.isTemplate) && scope.field.myInfo) {

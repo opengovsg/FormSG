@@ -40,6 +40,7 @@ import {
   LogicType,
   PickDuplicateForm,
   ResponseMode,
+  StartPage,
   Status,
 } from 'src/types'
 import {
@@ -83,6 +84,7 @@ import {
   updateFormField,
   updateFormLogic,
   updateFormSettings,
+  updateStartPage,
 } from '../admin-form.service'
 import {
   DuplicateFormBody,
@@ -1984,6 +1986,57 @@ describe('admin-form.service', () => {
 
       // Act
       const actual = await updateEndPage(MOCK_FORM_ID, MOCK_NEW_END_PAGE)
+
+      // Assert
+      const actualError = actual._unsafeUnwrapErr()
+      expect(actualError).toBeInstanceOf(DatabaseError)
+      expect(actualError.message).toIncludeMultiple([
+        expectedErrorMsg,
+        'Please refresh and try again.',
+      ])
+    })
+  })
+
+  describe('updateStartPage', () => {
+    const updateSpy = jest.spyOn(FormModel, 'updateStartPageById')
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_NEW_START_PAGE: StartPage = {
+      paragraph: 'some paragraph',
+      estTimeTaken: 10000000,
+    }
+
+    it('should return updated start page when update is successful', async () => {
+      // Arrange
+      const mockUpdatedForm = {
+        startPage: MOCK_NEW_START_PAGE,
+      } as IFormDocument
+      updateSpy.mockResolvedValueOnce(mockUpdatedForm)
+
+      // Act
+      const actual = await updateStartPage(MOCK_FORM_ID, MOCK_NEW_START_PAGE)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(MOCK_NEW_START_PAGE)
+    })
+
+    it('should return FormNotFoundError when form cannot be found', async () => {
+      // Arrange
+      updateSpy.mockResolvedValueOnce(null)
+
+      // Act
+      const actual = await updateStartPage(MOCK_FORM_ID, MOCK_NEW_START_PAGE)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
+    })
+
+    it('should return DatabaseError when database model update throws an error', async () => {
+      // Arrange
+      const expectedErrorMsg = 'some error'
+      updateSpy.mockRejectedValueOnce(new Error(expectedErrorMsg))
+
+      // Act
+      const actual = await updateStartPage(MOCK_FORM_ID, MOCK_NEW_START_PAGE)
 
       // Assert
       const actualError = actual._unsafeUnwrapErr()

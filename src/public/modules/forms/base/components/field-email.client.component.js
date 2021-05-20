@@ -6,6 +6,7 @@ angular.module('forms').component('emailFieldComponent', {
     field: '<',
     forms: '<',
     transactionId: '<',
+    formId: '<',
   },
   controllerAs: 'vm',
 })

@@ -18,8 +18,11 @@ import {
 import {
   BasicField,
   IPopulatedForm,
+  Colors,
+  FormLogoState,
   IUserSchema,
   ResponseMode,
+  StartPage,
   Status,
 } from 'src/types'
 
@@ -1654,6 +1657,145 @@ describe('admin-form.form.routes', () => {
         message:
           'Error: [something happened]. Please refresh and try again. If you still need help, email us at form@open.gov.sg.',
       })
+
+  describe('PUT /admin/forms/:formId/start-page', () => {
+    const MOCK_START_PAGE: StartPage = {
+      paragraph: 'old end page',
+    }
+
+    const MOCK_UPDATED_START_PAGE: StartPage = {
+      paragraph: 'new mock start page title',
+      colorTheme: Colors.Blue,
+      logo: {
+        state: FormLogoState.None,
+      },
+      estTimeTaken: 10,
+    }
+
+    it('should return 200 when the request is successful', async () => {
+      // Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        startPage: MOCK_START_PAGE,
+      })
+
+      // Act
+      const resp = await request
+        .put(`/admin/forms/${form._id}/start-page`)
+        .send(MOCK_UPDATED_START_PAGE)
+
+      // Assert
+      expect(resp.status).toBe(200)
+      expect(resp.body).toEqual(
+        jsonParseStringify({ colorTheme: 'blue', ...MOCK_UPDATED_START_PAGE }),
+      )
+    })
+
+    it('should return 403 when the user does not have permission to update the start page', async () => {
+      // Arrange
+      // Create separate user
+      const { user: formOwner } = await dbHandler.insertFormCollectionReqs({
+        userId: new ObjectId(),
+        mailName: 'collab-user',
+        shortName: 'collabUser',
+      })
+      const form = await EmailFormModel.create({
+        emails: [formOwner.email],
+        title: 'email me',
+        admin: formOwner._id,
+        startPage: MOCK_START_PAGE,
+      })
+      const expectedResponse = {
+        message: `User ${defaultUser.email} not authorized to perform write operation on Form ${form._id} with title: ${form.title}.`,
+      }
+      // Act
+      const resp = await request
+        .put(`/admin/forms/${form._id}/start-page`)
+        .send(MOCK_UPDATED_START_PAGE)
+
+      // Assert
+      expect(resp.status).toBe(403)
+      expect(resp.body).toEqual(jsonParseStringify(expectedResponse))
+    })
+
+    it('should  return 404 when the form cannot be found', async () => {
+      // Act
+      const resp = await request
+        .put(`/admin/forms/${new ObjectId().toHexString()}/start-page`)
+        .send(MOCK_UPDATED_START_PAGE)
+      const expectedResponse = { message: 'Form not found' }
+
+      // Assert
+      expect(resp.status).toBe(404)
+      expect(resp.body).toEqual(jsonParseStringify(expectedResponse))
+    })
+
+    it('should return 410 when updating the start page for a form that has been archived', async () => {
+      // Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        startPage: MOCK_START_PAGE,
+        status: Status.Archived,
+      })
+      const expectedResponse = { message: 'Form has been archived' }
+
+      // Act
+      const resp = await request
+        .put(`/admin/forms/${form._id}/start-page`)
+        .send(MOCK_UPDATED_START_PAGE)
+
+      // Assert
+      expect(resp.status).toBe(410)
+      expect(resp.body).toEqual(expectedResponse)
+    })
+
+    it('should return 422 when the user cannot be retrieved from the database', async () => {
+      // Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        startPage: MOCK_START_PAGE,
+      })
+      // Remove all users so that user will not be found
+      await dbHandler.clearCollection(UserModel.collection.name)
+      const expectedResponse = { message: 'User not found' }
+
+      // Act
+      const resp = await request
+        .put(`/admin/forms/${form._id}/start-page`)
+        .send(MOCK_UPDATED_START_PAGE)
+
+      // Assert
+      expect(resp.status).toBe(422)
+      expect(resp.body).toEqual(expectedResponse)
+    })
+
+    it('should return 500 when a database error occurs', async () => {
+      // Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        startPage: MOCK_START_PAGE,
+      })
+      jest
+        .spyOn(AdminFormService, 'updateStartPage')
+        .mockReturnValueOnce(errAsync(new DatabaseError('whoops')))
+      const expectedResponse = { message: 'whoops' }
+
+      // Act
+      const resp = await request
+        .put(`/admin/forms/${form._id}/start-page`)
+        .send(MOCK_UPDATED_START_PAGE)
+
+      // Assert
+      expect(resp.status).toBe(500)
+      expect(resp.body).toEqual(expectedResponse)
     })
   })
 })

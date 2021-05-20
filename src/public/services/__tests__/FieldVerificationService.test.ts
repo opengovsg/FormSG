@@ -118,9 +118,11 @@ describe('FieldVerificationService', () => {
       // Arrange
       const mockTransactionId = 'mockTransactionIdYetAgain'
       const mockFieldId = 'someFieldIdYetAgain'
+      const mockFormId = 'someFormId'
 
       // Act
       const actualPromise = resetVerifiedField({
+        formId: mockFormId,
         transactionId: mockTransactionId,
         fieldId: mockFieldId,
       })
@@ -129,10 +131,7 @@ describe('FieldVerificationService', () => {
 
       // Assert
       expect(mockAxios.post).toHaveBeenCalledWith(
-        `${TRANSACTION_ENDPOINT}/${mockTransactionId}/reset`,
-        {
-          fieldId: mockFieldId,
-        },
+        `${FORM_API_PREFIX}/${mockFormId}/${VERIFICATION_ENDPOINT}/${mockTransactionId}/fields/${mockFieldId}/reset`,
       )
     })
   })

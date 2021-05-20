@@ -5,7 +5,14 @@
   <div id="end-page-main-container" class="{{ vm.colorTheme }}-bg">
     <div class="row">
       <p id="end-page-header">
-        Form submitted <span id="end-page-timestamp"> {{ vm.timestamp }} </span>
+        <span id="end-page-submissionId">
+          Response ID: <span id="end-page-id"> {{ vm.submissionId }} </span>
+        </span>
+        <br />
+        <span>
+          Form submitted
+          <span id="end-page-timestamp"> {{ vm.timestamp }} </span>
+        </span>
       </p>
       <h2 id="end-page-title">{{ vm.title }}</h2>
       <div class="end-page-follow-up end-page-instructions">

@@ -28,6 +28,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
   SettingsUpdateDto,
+  StartPageUpdateDto,
 } from '../../../../types/api'
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -1007,4 +1008,41 @@ export const getFormField = (
       ),
     )
   return ok(formField)
+}
+
+/**
+ * Update the start page of the given form
+ * @param formId the id of the form to update the end page for
+ * @param newStartPage the new start page object to replace the current one
+ * @returns ok(updated start page object) when update is successful
+ * @returns err(FormNotFoundError) if form cannot be found
+ * @returns err(PossibleDatabaseError) if start page update fails
+ */
+export const updateStartPage = (
+  formId: string,
+  newStartPage: StartPageUpdateDto,
+): ResultAsync<
+  IFormDocument['startPage'],
+  PossibleDatabaseError | FormNotFoundError
+> => {
+  return ResultAsync.fromPromise(
+    FormModel.updateStartPageById(formId, newStartPage),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating form start page',
+        meta: {
+          action: 'updateStartPage',
+          formId,
+          newStartPage,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.startPage)
+  })
 }

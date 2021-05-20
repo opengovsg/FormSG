@@ -37,6 +37,7 @@ import {
   PublicForm,
   PublicFormValues,
   ResponseMode,
+  StartPage,
   Status,
 } from '../../types'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
@@ -753,6 +754,18 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.findByIdAndUpdate(
       formId,
       { endPage: newEndPage },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+
+  FormSchema.statics.updateStartPageById = async function (
+    this: IFormModel,
+    formId: string,
+    newStartPage: StartPage,
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { startPage: newStartPage },
       { new: true, runValidators: true },
     ).exec()
   }

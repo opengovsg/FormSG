@@ -334,7 +334,8 @@ function submitFormDirective(
        * Returns a callback for form submission success, which updates UI
        * state and Google Analytics.
        */
-      const handleSubmitSuccess = () => {
+      const handleSubmitSuccess = (response) => {
+        scope.submissionId = response.submissionId
         setFormState(FORM_STATES.SUBMITTED)
         GTag.submitFormSuccess(scope.form, startDate, Date.now())
         if (shouldTrackPersistentLoginUse()) {

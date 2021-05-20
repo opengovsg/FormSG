@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import { SALT_ROUNDS } from '../../../shared/util/verification'
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
+import * as FormService from '../../modules/form/form.service'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta } from '../../utils/request'
 
@@ -96,6 +97,7 @@ export const handleCreateVerificationTransaction: RequestHandler<
 /**
  *  When user changes the input value in the verifiable field,
  *  we reset the field in the transaction, removing the previously saved signature.
+ * @deprecated in favour of handleResetFieldVerification
  * @param req
  * @param res
  */
@@ -195,6 +197,49 @@ export const handleVerifyOtp: RequestHandler<
         error,
       })
       const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for resetting the verification state of a field.
+ * @param formId The id of the form to reset the field verification for
+ * @param fieldId The id of the field to reset verification for
+ * @param transactionId The transaction to reset
+ * @returns 204 when reset is successful
+ * @returns 400 when the transaction has expired
+ * @returns 404 when the form could not be found
+ * @returns 404 when the transaction could not be found
+ * @returns 404 when the field could not be found
+ * @returns 500 when a database error occurs
+ */
+export const handleResetFieldVerification: RequestHandler<
+  {
+    formId: string
+    fieldId: string
+    transactionId: string
+  },
+  ErrorDto
+> = async (req, res) => {
+  const { transactionId, fieldId, formId } = req.params
+  const logMeta = {
+    action: 'handleResetFieldVerification',
+    transactionId,
+    fieldId,
+    ...createReqMeta(req),
+  }
+  return FormService.retrieveFormById(formId)
+    .andThen(() =>
+      VerificationFactory.resetFieldForTransaction(transactionId, fieldId),
+    )
+    .map(() => res.sendStatus(StatusCodes.NO_CONTENT))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error resetting field in transaction',
+        meta: logMeta,
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }

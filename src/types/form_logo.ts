@@ -13,6 +13,7 @@ export interface IFormLogo {
 export type IFormLogoSchema = IFormLogo & Document
 
 export interface ICustomFormLogo extends IFormLogo {
+  state: FormLogoState.Custom
   fileId: string
   fileName: string
   fileSizeInBytes: number

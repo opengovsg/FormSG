@@ -55,6 +55,7 @@
             colortheme="{{ form.startPage.colorTheme }}"
             is-template="form.isTemplate"
             transaction-id="transactionId"
+            form-id="form._id"
           ></field-directive>
         </div>
       </form>
@@ -91,6 +92,7 @@
       auth-type="{{ form.authType }}"
       is-admin-preview="false"
       color-theme="{{ form.startPage.colorTheme }}"
+      submission-id="{{ submissionId }}"
     >
     </end-page-component>
   </form>
