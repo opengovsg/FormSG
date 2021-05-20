@@ -343,16 +343,11 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
   })
 
   // Fire webhooks if available
-  // Note that we push data to webhook endpoints on a best effort basis
-  // As such, we should not await on these post requests
+  // To avoid being coupled to latency of receiving system,
+  // do not await on webhook
   const webhookUrl = form.webhook?.url
   if (webhookUrl) {
-    void WebhookFactory.sendWebhook(
-      submission,
-      webhookUrl,
-    ).andThen((response) =>
-      WebhookFactory.saveWebhookRecord(submission._id, response),
-    )
+    void WebhookFactory.sendInitialWebhook(submission, webhookUrl)
   }
 
   // Send Email Confirmations

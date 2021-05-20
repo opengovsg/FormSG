@@ -173,3 +173,23 @@ export const sendWebhook = (
       })
     })
 }
+
+/**
+ * Creates a function which sends a webhook and saves the necessary records.
+ * @returns function which sends webhook and saves a record of it
+ */
+export const createInitialWebhookSender = () => (
+  submission: IEncryptedSubmissionSchema,
+  webhookUrl: string,
+): ResultAsync<
+  true,
+  WebhookValidationError | PossibleDatabaseError | SubmissionNotFoundError
+> => {
+  // Attempt to send webhook
+  return sendWebhook(submission, webhookUrl)
+    .andThen((webhookResponse) =>
+      // Save record of sending to database
+      saveWebhookRecord(submission._id, webhookResponse),
+    )
+    .map(() => true)
+}

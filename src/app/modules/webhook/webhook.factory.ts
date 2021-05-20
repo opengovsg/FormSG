@@ -9,19 +9,23 @@ import { MissingFeatureError } from '../core/core.errors'
 import * as WebhookService from './webhook.service'
 
 interface IWebhookFactory {
-  sendWebhook: typeof WebhookService.sendWebhook
-  saveWebhookRecord: typeof WebhookService.saveWebhookRecord
+  sendInitialWebhook: ReturnType<
+    typeof WebhookService.createInitialWebhookSender
+  >
 }
 
 export const createWebhookFactory = ({
   isEnabled,
   props,
 }: RegisteredFeature<FeatureNames.WebhookVerifiedContent>): IWebhookFactory => {
-  if (isEnabled && props) return WebhookService
+  if (isEnabled && props) {
+    return {
+      sendInitialWebhook: WebhookService.createInitialWebhookSender(),
+    }
+  }
   const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
   return {
-    sendWebhook: () => errAsync(error),
-    saveWebhookRecord: () => errAsync(error),
+    sendInitialWebhook: () => errAsync(error),
   }
 }
 
