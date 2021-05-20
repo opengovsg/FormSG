@@ -15,8 +15,9 @@ import {
   WebhookFailedQueueMessage,
   webhookMessageSchema,
   WebhookQueueMessageObject,
+  WebhookQueueMessagePrettified,
 } from './webhook.types'
-import { getNextAttempt } from './webhook.utils'
+import { getNextAttempt, prettifyEpoch } from './webhook.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -146,7 +147,19 @@ export class WebhookQueueMessage {
   getRetriesFailedState(): WebhookFailedQueueMessage {
     return {
       submissionId: this.submissionId,
-      previousAttempts: [...this.message.previousAttempts, this.nextAttempt],
+      previousAttempts: [
+        ...this.message.previousAttempts,
+        this.nextAttempt,
+      ].map(prettifyEpoch),
+      _v: this.message._v,
+    }
+  }
+
+  prettify(): WebhookQueueMessagePrettified {
+    return {
+      submissionId: this.submissionId,
+      previousAttempts: this.message.previousAttempts.map(prettifyEpoch),
+      nextAttempt: prettifyEpoch(this.nextAttempt),
       _v: this.message._v,
     }
   }

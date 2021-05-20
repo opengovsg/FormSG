@@ -27,10 +27,22 @@ export const webhookMessageSchema = z.object({
 export type WebhookQueueMessageObject = z.infer<typeof webhookMessageSchema>
 
 /**
- * Same as a regular queue message, except no next attempt
+ * Webhook queue message object formatted for readable logs.
+ */
+export type WebhookQueueMessagePrettified = Omit<
+  WebhookQueueMessageObject,
+  'previousAttempts' | 'nextAttempt'
+> & {
+  previousAttempts: string[]
+  nextAttempt: string
+}
+
+/**
+ * Failed webhook queue message formatted for readable logs.
+ * Same as a regular queue message except no next attempt.
  */
 export type WebhookFailedQueueMessage = Omit<
-  WebhookQueueMessageObject,
+  WebhookQueueMessagePrettified,
   'nextAttempt'
 >
 

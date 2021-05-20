@@ -134,7 +134,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
         message: 'Webhook queue message could not be requeued',
         meta: {
           action: 'createWebhookQueueHandler',
-          webhookMessage,
+          webhookMessage: webhookMessage.prettify(),
         },
         error: requeueResult.error,
       })
@@ -202,7 +202,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
     message: 'Error while attempting to retry webhook',
     meta: {
       action: 'createWebhookQueueHandler',
-      webhookMessage,
+      webhookMessage: webhookMessage.prettify(),
     },
     error: retryResult.error,
   })

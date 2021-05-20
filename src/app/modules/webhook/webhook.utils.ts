@@ -1,5 +1,6 @@
 import { AxiosResponse } from 'axios'
 import { inRange } from 'lodash'
+import moment from 'moment-timezone'
 import { err, ok, Result } from 'neverthrow'
 
 import { stringifySafe } from '../../../shared/util/stringify-safe'
@@ -60,3 +61,11 @@ export const calculateDelaySeconds = (nextAttempt: number): number => {
   const secondsToNextAttempt = Math.max(0, (nextAttempt - Date.now()) / 1000)
   return Math.min(secondsToNextAttempt, MAX_DELAY_SECONDS)
 }
+
+/**
+ * Converts an epoch to a readable format.
+ * @param epoch
+ * @returns the epoch represented as a readable string
+ */
+export const prettifyEpoch = (epoch: number): string =>
+  moment(epoch).tz('Asia/Singapore').format('D MMM YYYY, h:mm:ssa z')

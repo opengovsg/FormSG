@@ -43,7 +43,7 @@ export class WebhookProducer {
           message: `Pushed webhook to queue`,
           meta: {
             action: 'sendMessage',
-            queueMessage,
+            webhookMessage: queueMessage.prettify(),
             attemptNum,
           },
         })
