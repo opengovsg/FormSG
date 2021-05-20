@@ -347,7 +347,11 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
   // do not await on webhook
   const webhookUrl = form.webhook?.url
   if (webhookUrl) {
-    void WebhookFactory.sendInitialWebhook(submission, webhookUrl)
+    void WebhookFactory.sendInitialWebhook(
+      submission,
+      webhookUrl,
+      !!form.webhook?.isRetryEnabled,
+    )
   }
 
   // Send Email Confirmations

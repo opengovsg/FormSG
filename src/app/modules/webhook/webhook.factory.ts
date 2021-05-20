@@ -6,6 +6,8 @@ import FeatureManager, {
 } from '../../config/feature-manager'
 import { MissingFeatureError } from '../core/core.errors'
 
+import { startWebhookConsumer } from './webhook.consumer'
+import { WebhookProducer } from './webhook.producer'
 import * as WebhookService from './webhook.service'
 
 interface IWebhookFactory {
@@ -19,8 +21,14 @@ export const createWebhookFactory = ({
   props,
 }: RegisteredFeature<FeatureNames.WebhookVerifiedContent>): IWebhookFactory => {
   if (isEnabled && props) {
+    const { webhookQueueUrl } = props
+    let producer: WebhookProducer | undefined
+    if (webhookQueueUrl) {
+      producer = new WebhookProducer(webhookQueueUrl)
+      startWebhookConsumer(webhookQueueUrl, producer)
+    }
     return {
-      sendInitialWebhook: WebhookService.createInitialWebhookSender(),
+      sendInitialWebhook: WebhookService.createInitialWebhookSender(producer),
     }
   }
   const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
