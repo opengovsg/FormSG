@@ -39,3 +39,29 @@ export class WebhookFailedWithAxiosError extends ApplicationError {
     this.meta = { originalError: error }
   }
 }
+
+/**
+ * Webhook queue message incorrectly formatted and hence could not be parsed
+ */
+export class WebhookQueueMessageParsingError extends ApplicationError {
+  meta: {
+    originalError: unknown
+  }
+
+  constructor(
+    error: unknown,
+    message = 'Unable to parse body of webhook queue message',
+  ) {
+    super(message)
+    this.meta = { originalError: error }
+  }
+}
+
+/**
+ * Maximum retries exceeded for webhook.
+ */
+export class WebhookNoMoreRetriesError extends ApplicationError {
+  constructor(message = 'Maximum retries exceeded for webhook') {
+    super(message)
+  }
+}
