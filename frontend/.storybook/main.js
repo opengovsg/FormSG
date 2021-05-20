@@ -1,3 +1,4 @@
+/* eslint-env node */
 const { propNames } = require('@chakra-ui/styled-system')
 // Required to sync aliases between storybook and overriden configs
 const config = require('../config-overrides')
