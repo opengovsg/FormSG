@@ -2065,6 +2065,48 @@ describe('Form Model', () => {
       })
     })
 
+    describe('duplicateFormFieldById', () => {
+      it('should return updated document with duplicated form field', async () => {
+        // Arrange
+        const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
+
+        validForm.form_fields = [fieldToDuplicate]
+        const fieldId = fieldToDuplicate._id
+
+        // Act
+        const actual = await validForm.duplicateFormFieldById(fieldId)
+        // @ts-ignore
+        const actualDuplicatedField = omit(actual?.form_fields.toObject()[1], [
+          '_id',
+          'globalId',
+        ]) // do not compare _id and globalId
+
+        // Assert
+        const expectedOriginalField = {
+          ...omit(fieldToDuplicate, ['getQuestion']),
+          _id: new ObjectId(fieldToDuplicate._id),
+        }
+        const expectedDuplicatedField = omit(fieldToDuplicate, [
+          '_id',
+          'globalId',
+          'getQuestion',
+        ])
+
+        // @ts-ignore
+        expect(actual?.form_fields.toObject()[0]).toEqual(expectedOriginalField)
+        expect(actualDuplicatedField).toEqual(expectedDuplicatedField)
+      })
+
+      it('should return null if given fieldId is invalid', async () => {
+        const updatedForm = await validForm.duplicateFormFieldById(
+          new ObjectId().toHexString(),
+        )
+
+        // Assert
+        expect(updatedForm).toBeNull()
+      })
+    })
+
     describe('reorderFormFieldById', () => {
       let form: IFormSchema
       const FIELD_ID_TO_REORDER = new ObjectId().toHexString()

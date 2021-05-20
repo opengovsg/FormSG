@@ -1,5 +1,5 @@
 import BSON from 'bson-ext'
-import { compact, pick, uniq } from 'lodash'
+import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   Mongoose,
   Query,
@@ -557,6 +557,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   ) {
     // eslint-disable-next-line @typescript-eslint/no-extra-semi
     ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(newField)
+    return this.save()
+  }
+
+  FormDocumentSchema.methods.duplicateFormFieldById = function (
+    this: IFormDocument,
+    fieldId: string,
+  ) {
+    const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
+    if (!fieldToDuplicate) return Promise.resolve(null)
+    const duplicatedField = omit(fieldToDuplicate, ['_id', 'globalId'])
+
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
+    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(
+      duplicatedField,
+    )
     return this.save()
   }
 

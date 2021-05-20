@@ -470,6 +470,47 @@ export const updateFormField = (
 }
 
 /**
+ * Duplicates the form field of the corresponding fieldId
+ * @param form the original form to duplicate form field for
+ * @param fieldId fieldId of the the form field to duplicate
+ *
+ * @returns ok(duplicated field)
+ * @returns err(PossibleDatabaseError) when database errors arise
+ */
+export const duplicateFormField = (
+  form: IPopulatedForm,
+  fieldId: string,
+): ResultAsync<
+  IFieldSchema,
+  PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
+> => {
+  return ResultAsync.fromPromise(
+    form.duplicateFormFieldById(fieldId),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while duplicating form field',
+        meta: {
+          action: 'duplicateFormField',
+          formId: form._id,
+          fieldId,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    const updatedField = last(updatedForm.form_fields)
+    return updatedField
+      ? okAsync(updatedField)
+      : errAsync(new FieldNotFoundError())
+  })
+}
+
+/**
  * Inserts a new form field into given form's fields with the field provided
  * @param form the form to insert the new field into
  * @param newField the new field to insert

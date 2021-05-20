@@ -1,5 +1,4 @@
 'use strict'
-const { EditFieldActions } = require('shared/constants')
 const { groupLogicUnitsByField } = require('shared/util/logic')
 const { reorder } = require('shared/util/immutable-array-fns')
 const FieldFactory = require('../../helpers/field-factory')
@@ -473,17 +472,9 @@ function editFormController(
       $scope.numMyInfoFields >= $scope.maxMyInfoFields
     )
       return
-    let duplicatedField = _.cloneDeep(fieldToDuplicate)
-    // Remove unique ids before saving
-    delete duplicatedField.globalId
-    delete duplicatedField._id
     updateField({
-      editFormField: {
-        action: {
-          name: EditFieldActions.Duplicate,
-        },
-        field: duplicatedField,
-      },
+      fieldId: fieldToDuplicate._id,
+      type: UPDATE_FORM_TYPES.DuplicateField,
     })
   }
 

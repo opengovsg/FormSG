@@ -71,6 +71,17 @@ export const updateCollaborators = async (
     .then(({ data }) => data)
 }
 
+export const duplicateSingleFormField = async (
+  formId: string,
+  fieldId: string,
+): Promise<FormFieldDto> => {
+  return axios
+    .post<FormFieldDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}/duplicate`,
+    )
+    .then(({ data }) => data)
+}
+
 /**
  * Reorders the field to the given new position.
  * @param formId the id of the form to perform the field reorder

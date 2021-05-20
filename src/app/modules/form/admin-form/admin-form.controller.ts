@@ -1164,6 +1164,56 @@ export const handleUpdateForm: RequestHandler<
 }
 
 /**
+ * Handler for POST /:formId/fields/:fieldId/duplicate
+ * @security session
+ *
+ * @returns 200 with duplicated field
+ * @returns 400 when form field has invalid updates to be performed
+ * @returns 403 when current user does not have permissions to update form
+ * @returns 404 when form or field to duplicate cannot be found
+ * @returns 409 when saving updated form incurs a conflict in the database
+ * @returns 410 when form to update is archived
+ * @returns 413 when updated form is too large to be saved in the database
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleDuplicateFormField: RequestHandler<
+  { formId: string; fieldId: string },
+  FormFieldDto | ErrorDto
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((form) => AdminFormService.duplicateFormField(form, fieldId))
+    .map((duplicatedField) => res.status(StatusCodes.OK).json(duplicatedField))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when duplicating field',
+        meta: {
+          action: 'handleDuplicateFormField',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          fieldId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
  * Handler for PATCH /forms/:formId/settings.
  * @security session
  *
