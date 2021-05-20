@@ -138,6 +138,7 @@ describe('webhook.service', () => {
         'X-FormSG-Signature': `t=${MOCK_EPOCH},s=${testEncryptedSubmission._id},f=${testEncryptedForm._id},v1=${testSignature}`,
       },
       maxRedirects: 0,
+      timeout: 10000,
     }
   })
 

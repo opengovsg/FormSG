@@ -114,6 +114,9 @@ export const sendWebhook = (
             }),
           },
           maxRedirects: 0,
+          // Timeout after 10 seconds to allow for cold starts in receiver,
+          // e.g. Lambdas
+          timeout: 10 * 1000,
         }),
         (error) => {
           logger.error({
