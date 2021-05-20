@@ -37,10 +37,12 @@ export const startWebhookConsumer = (
 ): void => {
   const app = Consumer.create({
     queueUrl,
+    region: config.aws.region,
     handleMessage: createWebhookQueueHandler(producer),
     sqs: config.isDev
       ? undefined
       : new aws.SQS({
+          region: config.aws.region,
           httpOptions: {
             agent: new https.Agent({
               keepAlive: true,

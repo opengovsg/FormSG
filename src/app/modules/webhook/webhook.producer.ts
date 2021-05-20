@@ -2,6 +2,7 @@ import { ResultAsync } from 'neverthrow'
 import promiseRetry from 'promise-retry'
 import { Producer } from 'sqs-producer'
 
+import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 
 import { WebhookPushToQueueError } from './webhook.errors'
@@ -20,6 +21,7 @@ export class WebhookProducer {
   constructor(queueUrl: string) {
     this.producer = Producer.create({
       queueUrl,
+      region: config.aws.region,
     })
   }
 
