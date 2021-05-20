@@ -1,4 +1,5 @@
 import { AxiosResponse } from 'axios'
+import { inRange } from 'lodash'
 import moment from 'moment-timezone'
 import { err, ok, Result } from 'neverthrow'
 
@@ -39,6 +40,16 @@ export const getNextAttempt = (
   )
   return ok(Date.now() + nextAttemptWaitTimeSeconds * 1000)
 }
+
+/**
+ * Encodes success condition of webhook. Webhooks are considered
+ * successful if the status code >= 200 and < 300.
+ * @param webhookResponse Response from receiving server
+ * @returns true if webhook was successful
+ */
+export const isSuccessfulResponse = (
+  webhookResponse: IWebhookResponse,
+): boolean => inRange(webhookResponse.response.status, 200, 300)
 
 /**
  * Calculates the number of seconds to delay a message sent to
