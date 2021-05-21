@@ -496,9 +496,13 @@ describe('FormService', () => {
       // Arrange
       const expected = _generateMockFullForm()
       const MOCK_FORM_ID = new ObjectId().toHexString()
-
+      const MOCK_NEW_OWNER = { email: 'test@open.gov.sg' }
       // Act
-      const actualPromise = transferOwner(MOCK_FORM_ID, MOCK_INTERCEPTOR)
+      const actualPromise = transferOwner(
+        MOCK_FORM_ID,
+        MOCK_NEW_OWNER,
+        MOCK_INTERCEPTOR,
+      )
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -506,6 +510,7 @@ describe('FormService', () => {
       expect(actual).toEqual(expected)
       expect(mockAxios.post).toHaveBeenCalledWith(
         `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/collaborators/transfer-owner`,
+        MOCK_NEW_OWNER,
       )
     })
 
@@ -513,15 +518,21 @@ describe('FormService', () => {
       // Arrange
       const expected = new Error('error')
       const MOCK_FORM_ID = new ObjectId().toHexString()
+      const MOCK_NEW_OWNER = { email: 'test@open.gov.sg' }
 
       // Act
-      const actualPromise = transferOwner(MOCK_FORM_ID, MOCK_INTERCEPTOR)
+      const actualPromise = transferOwner(
+        MOCK_FORM_ID,
+        MOCK_NEW_OWNER,
+        MOCK_INTERCEPTOR,
+      )
       mockAxios.mockError(expected)
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
       expect(mockAxios.post).toHaveBeenCalledWith(
         `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/collaborators/transfer-owner`,
+        MOCK_NEW_OWNER,
       )
     })
   })
