@@ -295,8 +295,8 @@ function AdminFormController(
           .catch(handleUpdateError)
       }
       default:
-        return FormApi.update({ formId: $scope.myform._id }, { form: update })
-          .$promise.then((savedForm) => {
+        return FormApi.update($scope.myform._id, { form: update })
+          .then((savedForm) => {
             // Updating this form updates lastModified
             // and also updates myform if a formToUse is passed in
             $scope.myform = savedForm
