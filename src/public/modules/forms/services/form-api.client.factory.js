@@ -1,12 +1,11 @@
 'use strict'
-
 const { get } = require('lodash')
 const Form = require('../viewmodels/Form.class')
-
+const FormService = require('../../../services/FormService')
 // Forms service used for communicating with the forms REST endpoints
 angular
   .module('forms')
-  .factory('FormApi', ['$resource', 'FormErrorService', 'FormFields', FormApi])
+  .factory('FormApi', ['FormErrorService', 'FormFields', FormApi])
 
 // Helper function for getting formID from path starting with /:formId/.
 // If form ID is not found, returns an empty string.
@@ -25,7 +24,7 @@ const extractFormId = (path) => {
  * Service for making API calls to /:formId/:accessMode endpoint, which is used
  * for all CRUD operations for forms.
  */
-function FormApi($resource, FormErrorService, FormFields) {
+function FormApi(FormErrorService, FormFields) {
   /**
    * Used to generate interceptors for all API calls. These interceptors have the
    * following responsibilities:
@@ -53,101 +52,49 @@ function FormApi($resource, FormErrorService, FormFields) {
         // all the form data; for PUT requests, it returns a $resource instance with
         // all the form data at the top level. We need to ensure that the postprocessing
         // is done in both cases.
-        if (get(response, 'resource.form.form_fields')) {
-          FormFields.injectMyInfoIntoForm(response.resource.form)
+        if (get(response, 'data.form.form_fields')) {
+          FormFields.injectMyInfoIntoForm(response.data.form)
           // Convert plain form object to smart Form instance
-          response.resource.form = new Form(response.resource.form)
-        } else if (get(response, 'resource.form_fields')) {
-          FormFields.injectMyInfoIntoForm(response.resource)
-          response.resource = new Form(response.resource)
+          response.data.form = new Form(response.data.form)
+        } else if (get(response, 'data.form_fields')) {
+          FormFields.injectMyInfoIntoForm(response.data)
+          response.data = new Form(response.data)
         }
-        return response.resource
+        return response
       },
     }
-    if (redirectOnError) {
-      interceptor.responseError = (response) => {
-        return FormErrorService.redirect({
-          response,
-          targetState: errorTargetState,
-          targetFormId: extractFormId(get(response, 'config.url')),
-        })
-      }
-    }
+    interceptor.responseError = redirectOnError
+      ? (response) => {
+          return FormErrorService.redirect({
+            response,
+            targetState: errorTargetState,
+            targetFormId: extractFormId(get(response, 'config.url')),
+          })
+        }
+      : null
     return interceptor
   }
 
-  // accessMode is either adminForm or publicForm
-  let resourceUrl = '/:formId/:accessMode'
-  const V3_PUBLICFORM_URL = '/api/v3/forms/:formId'
-
-  return $resource(
-    resourceUrl,
-    // default to admin for access mode, since that applies to most methods
-    { accessMode: 'adminform' },
-    {
-      query: {
-        url: '/api/v3/admin/forms',
-        method: 'GET',
-        isArray: true,
-        headers: { 'If-Modified-Since': '0' },
-        interceptor: getInterceptor(true, 'listForms'),
-        // disable IE ajax request caching (so new forms show on dashboard)
-      },
-      getAdmin: {
-        method: 'GET',
-        headers: { 'If-Modified-Since': '0' },
-        interceptor: getInterceptor(true, 'viewForm'),
-        // disable IE ajax request caching (so new fields show on build panel)
-      },
-      getPublic: {
-        url: V3_PUBLICFORM_URL,
-        method: 'GET',
-        // disable IE ajax request caching (so new fields show on build panel)
-        headers: { 'If-Modified-Since': '0' },
-        interceptor: getInterceptor(true),
-      },
-      update: {
-        method: 'PUT',
-        interceptor: getInterceptor(false),
-      },
-      save: {
-        url: '/api/v3/admin/forms/:formId/duplicate',
-        method: 'POST',
-        interceptor: getInterceptor(false),
-      },
-      delete: {
-        url: '/api/v3/admin/forms/:formId',
-        method: 'DELETE',
-        interceptor: getInterceptor(false),
-      },
-      // create is called without formId, so the endpoint is just /adminform
-      create: {
-        url: '/api/v3/admin/forms',
-        method: 'POST',
-        interceptor: getInterceptor(true, 'listForms'),
-      },
-      // Used for viewing templates with use-template or examples listing. Any logged in officer is authorized.
-      template: {
-        url: resourceUrl + '/template',
-        method: 'GET',
-        interceptor: getInterceptor(true, 'templateForm'),
-      },
-      // Used for previewing the form from the form admin page. Must be a viewer, collaborator or admin.
-      preview: {
-        url: '/api/v3/admin/forms/:formId/preview',
-        method: 'GET',
-        interceptor: getInterceptor(true, 'previewForm'),
-      },
-      useTemplate: {
-        url: resourceUrl + '/copy',
-        method: 'POST',
-        interceptor: getInterceptor(true, 'useTemplate'),
-      },
-      transferOwner: {
-        url: '/api/v3/admin/forms/:formId/collaborators/transfer-owner',
-        method: 'POST',
-        interceptor: getInterceptor(false),
-      },
-    },
-  )
+  return {
+    query: () => FormService.queryForm(getInterceptor(true, 'listForms')),
+    getAdmin: (formId) =>
+      FormService.getAdminForm(formId, getInterceptor(true, 'viewForm')),
+    getPublic: (formId) =>
+      FormService.getPublicForm(formId, getInterceptor(true)),
+    update: (formId, update) =>
+      FormService.updateForm(formId, update, getInterceptor(false)),
+    save: (formId, formToSave) =>
+      FormService.saveForm(formId, formToSave, getInterceptor(false)),
+    delete: (formId) => FormService.deleteForm(formId, getInterceptor(false)),
+    create: (newForm) =>
+      FormService.createForm(newForm, getInterceptor(true, 'listForms')),
+    template: (formId) =>
+      FormService.queryTemplate(formId, getInterceptor(true, 'templateForm')),
+    preview: (formId) =>
+      FormService.previewForm(formId, getInterceptor(true, 'previewForm')),
+    useTemplate: (formId) =>
+      FormService.useTemplate(formId, getInterceptor(true, 'useTemplate')),
+    transferOwner: (formId) =>
+      FormService.transferOwner(formId, getInterceptor(false)),
+  }
 }
