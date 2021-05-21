@@ -94,7 +94,7 @@ function FormApi(FormErrorService, FormFields) {
       FormService.previewForm(formId, getInterceptor(true, 'previewForm')),
     useTemplate: (formId) =>
       FormService.useTemplate(formId, getInterceptor(true, 'useTemplate')),
-    transferOwner: (formId) =>
-      FormService.transferOwner(formId, getInterceptor(false)),
+    transferOwner: (formId, newOwner) =>
+      FormService.transferOwner(formId, newOwner, getInterceptor(false)),
   }
 }

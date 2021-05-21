@@ -82,7 +82,7 @@ function CollaboratorModalController(
         Toastr.success('Form ownership transferred. You are now an Editor.')
       })
       .catch((err) => {
-        Toastr.error(err.data.message)
+        Toastr.error(err.response.data.message)
         return
       })
       .finally(() => {

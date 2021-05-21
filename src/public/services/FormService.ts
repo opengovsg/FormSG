@@ -153,6 +153,7 @@ export const useTemplate = async (
 
 export const transferOwner = async (
   formId: string,
+  newOwner: { email: string },
   interceptor: Interceptor,
 ): Promise<{ form: IPopulatedForm }> => {
   const instance = axios.create()
@@ -160,6 +161,7 @@ export const transferOwner = async (
   return instance
     .post<{ form: IPopulatedForm }>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/transfer-owner`,
+      newOwner,
     )
     .then(({ data }) => data)
 }
