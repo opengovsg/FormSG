@@ -28,9 +28,7 @@ function DeleteFormModalController($uibModalInstance, externalScope, FormApi) {
         }`,
       )
     }
-    FormApi.delete({
-      formId: vm.myforms[formIndex]._id,
-    }).$promise.then(
+    FormApi.delete(vm.myforms[formIndex]._id).then(
       function () {
         vm.myforms.splice(formIndex, 1)
         vm.cancel()

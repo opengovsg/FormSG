@@ -73,11 +73,10 @@ function CollaboratorModalController(
       return
     }
 
-    FormApi.transferOwner(
-      { formId: $scope.myform._id },
-      { email: $scope.transferOwnerEmail },
-    )
-      .$promise.then((res) => {
+    FormApi.transferOwner($scope.myform._id, {
+      email: $scope.transferOwnerEmail,
+    })
+      .then((res) => {
         $scope.myform = res.form
         externalScope.refreshFormDataFromCollab($scope.myform)
         Toastr.success('Form ownership transferred. You are now an Editor.')
