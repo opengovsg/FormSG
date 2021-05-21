@@ -194,9 +194,9 @@ function ListFormsController(
       resolve: {
         FormToDuplicate: () => {
           // Retrieve the form so that we can populate the modal with any existing email recipients
-          return $q
-            .when(FormApi.preview(vm.myforms[formIndex]._id))
-            .then((res) => res.form)
+          return FormApi.preview(vm.myforms[formIndex]._id).then(
+            (res) => res.form,
+          )
         },
         createFormModalOptions: () => ({ mode: 'duplicate' }),
         externalScope: () => ({
