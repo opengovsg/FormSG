@@ -71,7 +71,13 @@ function SubmitFormController(
     vm.banner = {}
   }
 
-  SpcpSession.setUser(vm.myform.authType)
+  try {
+    SpcpSession.setUser(vm.myform.authType)
+  } catch (error) {
+    Toastr.error(
+      'An error occurred while retrieving logging in. Kindly refresh your browser and log in again, or try again later.',
+    )
+  }
 
   angular.element($document[0]).on('touchstart', function (e) {
     let activeElement = angular.element($document[0].activeElement)[0]

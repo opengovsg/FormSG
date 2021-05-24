@@ -80,6 +80,8 @@ export const getStoredJwt = (authType: AuthType): string | null => {
 
 /**
  * Decodes and returns decoded jwt of auth type, if any.
+ * On any errors, the retrieved jwt will also be deleted.
+ *
  * @param authType the authType to retrieve mapped JWT from for decoding
  * @returns decoded JWT object if cookie was available, null otherwise
  * @throws jwt-decode#InvalidTokenError if retrieved jwt is malformed
@@ -88,12 +90,20 @@ export const getStoredJwt = (authType: AuthType): string | null => {
 export const getDecodedJwt = (authType: AuthType): SpcpAuth | null => {
   const jwt = getStoredJwt(authType)
   if (!jwt) return null
-  return SpcpAuth.parse(jwtDecode(jwt))
+
+  try {
+    return SpcpAuth.parse(jwtDecode(jwt))
+  } catch (error) {
+    // On error, delete cookie that is a malformed or misshapen JWT.
+    logout(authType)
+    // Rethrow error for caller to handle.
+    // eslint-disable-next-line typesafe/no-throw-sync-func
+    throw error
+  }
 }
 
 /**
  * Logs out of public form by removing stored cookie based on auth type provided.
- * Note: if
  * @param authType the auth type for deleting cookie mapped to that auth type
  */
 export const logout = (
