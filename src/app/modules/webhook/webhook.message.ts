@@ -17,7 +17,7 @@ import {
   WebhookQueueMessageObject,
   WebhookQueueMessagePrettified,
 } from './webhook.types'
-import { getNextAttempt, prettifyEpoch } from './webhook.utils'
+import { getFirstAttempt, getNextAttempt, prettifyEpoch } from './webhook.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -85,7 +85,7 @@ export class WebhookQueueMessage {
   static fromSubmissionId(
     submissionId: string,
   ): Result<WebhookQueueMessage, WebhookNoMoreRetriesError> {
-    return getNextAttempt([]).map(
+    return getFirstAttempt().map(
       (nextAttempt) =>
         new WebhookQueueMessage({
           submissionId,

@@ -24,6 +24,21 @@ export const formatWebhookResponse = (
 })
 
 /**
+ * Computes epoch of first webhook retry.
+ * In practice this should never return an error, but for the sake of code
+ * maintainability, it does not make any assumptions about the retry policy,
+ * i.e. the retry policy can be an empty array.
+ * @returns ok(epoch of next attempt) if there is a retry policy
+ * @returns err(WebhookNoMoreRetriesError) if the retry policy is empty
+ */
+export const getFirstAttempt = (): Result<
+  number,
+  WebhookNoMoreRetriesError
+> => {
+  return getNextAttempt(/* previousAttempts= */ [])
+}
+
+/**
  * Computes epoch of next webhook attempt based on previous attempts.
  * @param previousAttempts Array of epochs of previous attempts
  * @returns ok(epoch of next attempt) if there are valid retries remaining
