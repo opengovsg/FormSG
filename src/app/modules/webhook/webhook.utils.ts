@@ -31,8 +31,9 @@ export const formatWebhookResponse = (
 export const getNextAttempt = (
   previousAttempts: number[],
 ): Result<number, WebhookNoMoreRetriesError> => {
-  if (previousAttempts.length >= RETRY_INTERVALS.length)
+  if (previousAttempts.length >= RETRY_INTERVALS.length) {
     return err(new WebhookNoMoreRetriesError())
+  }
   const interval = RETRY_INTERVALS[previousAttempts.length]
   const nextAttemptWaitTimeSeconds = randomUniform(
     interval.base - interval.jitter,
