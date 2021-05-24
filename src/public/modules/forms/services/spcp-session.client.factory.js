@@ -1,34 +1,36 @@
 'use strict'
 
-const jwtDecode = require('jwt-decode').default
+const {
+  getDecodedJwt,
+  getStoredJwt,
+  logout,
+} = require('../../../services/PublicFormAuthService')
 
 angular
   .module('forms')
-  .factory('SpcpSession', ['$window', '$cookies', SpcpSession])
+  .factory('SpcpSession', ['$interval', '$window', '$cookies', SpcpSession])
 
-function SpcpSession($window, $cookies) {
+function SpcpSession($interval, $window, $cookies) {
   let session = {
     userName: null,
-    cookieName: null,
     rememberMe: null,
     issuedAt: null,
-    cookieNames: {
-      SP: 'jwtSp',
-      CP: 'jwtCp',
-    },
+    intervals: {},
     setUser: function (authType) {
-      if (session.cookieNames[authType]) {
-        session.cookieName = session.cookieNames[authType]
-        const cookie = $cookies.get(session.cookieName)
-        if (cookie) {
-          const decoded = jwtDecode(cookie)
-          session.userName = decoded.userName
-          session.rememberMe = decoded.rememberMe
-          session.issuedAt = parseInt(decoded.iat)
-          // Every 5 seconds, check if cookie exists and log out if cookie does not exist
-          setInterval(session.checkCookie, 5000)
-        }
+      const decoded = getDecodedJwt(authType)
+      if (!decoded) return
+      session.userName = decoded.userName
+      session.rememberMe = decoded.rememberMe
+      session.issuedAt = parseInt(decoded.iat)
+      // Every 5 seconds, check if cookie exists and log out if cookie does not exist.
+      // Clear stored interval if it already exists.
+      if (session.intervals[authType]) {
+        $interval.cancel(session.intervals[authType])
       }
+      session.intervals[authType] = $interval(
+        () => session.checkCookie(authType),
+        5000,
+      )
     },
     setUserName: function (userName) {
       session.userName = userName
@@ -36,18 +38,18 @@ function SpcpSession($window, $cookies) {
     clearUserName: function () {
       session.userName = undefined
     },
-    logout: function () {
-      $cookies.remove(
-        session.cookieName,
-        $window.spcpCookieDomain ? { domain: $window.spcpCookieDomain } : {},
-      )
+    logout: function (authType) {
+      logout(authType, { domain: $window.spcpCookieDomain })
+      if (session.intervals[authType]) {
+        $interval.cancel(session.intervals[authType])
+      }
       $cookies.put('isJustLogOut', true)
       $window.location.reload()
     },
-    checkCookie: function () {
-      let cookie = $cookies.get(session.cookieName)
-      if (!cookie) {
-        session.logout()
+    checkCookie: function (authType) {
+      const jwt = getStoredJwt(authType)
+      if (!jwt) {
+        session.logout(authType)
       }
     },
     isJustLogOut: function () {
