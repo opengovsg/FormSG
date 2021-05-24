@@ -5,6 +5,7 @@ import { err, ok, Result } from 'neverthrow'
 
 import { stringifySafe } from '../../../shared/util/stringify-safe'
 import { IWebhookResponse } from '../../../types'
+import { TIMEZONE } from '../../constants/timezone'
 import { randomUniformInt } from '../../utils/random-uniform'
 
 import { MAX_DELAY_SECONDS, RETRY_INTERVALS } from './webhook.constants'
@@ -69,4 +70,4 @@ export const calculateDelaySeconds = (nextAttempt: number): number => {
  * @returns the epoch represented as a readable string
  */
 export const prettifyEpoch = (epoch: number): string =>
-  moment(epoch).tz('Asia/Singapore').format('D MMM YYYY, h:mm:ssa z')
+  moment(epoch).tz(TIMEZONE).format('D MMM YYYY, h:mm:ssa z')
