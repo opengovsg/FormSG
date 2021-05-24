@@ -5,7 +5,7 @@ import { err, ok, Result } from 'neverthrow'
 
 import { stringifySafe } from '../../../shared/util/stringify-safe'
 import { IWebhookResponse } from '../../../types'
-import { randomUniform } from '../../utils/random-uniform'
+import { randomUniformInt } from '../../utils/random-uniform'
 
 import { MAX_DELAY_SECONDS, RETRY_INTERVALS } from './webhook.constants'
 import { WebhookNoMoreRetriesError } from './webhook.errors'
@@ -35,7 +35,7 @@ export const getNextAttempt = (
     return err(new WebhookNoMoreRetriesError())
   }
   const interval = RETRY_INTERVALS[previousAttempts.length]
-  const nextAttemptWaitTimeSeconds = randomUniform(
+  const nextAttemptWaitTimeSeconds = randomUniformInt(
     interval.base - interval.jitter,
     interval.base + interval.jitter,
   )
