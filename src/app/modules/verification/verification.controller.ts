@@ -209,27 +209,32 @@ export const _handleGenerateOtp: RequestHandler<
     fieldId,
     ...createReqMeta(req),
   }
-  return FormService.retrieveFormById(formId)
-    .andThen(() => generateOtpWithHash(logMeta, SALT_ROUNDS))
-    .andThen(({ otp, hashedOtp }) =>
-      VerificationFactory.sendNewOtp({
-        fieldId,
-        hashedOtp,
-        otp,
-        recipient: answer,
-        transactionId,
-      }),
-    )
-    .map(() => res.sendStatus(StatusCodes.CREATED))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error creating new OTP',
-        meta: logMeta,
-        error,
+  // Step 1: Ensure that the form for the specified transaction exists
+  return (
+    FormService.retrieveFormById(formId)
+      // Step 2: Generate hash and otp
+      .andThen(() => generateOtpWithHash(logMeta, SALT_ROUNDS))
+      .andThen(({ otp, hashedOtp }) =>
+        // Step 3: Send otp
+        VerificationFactory.sendNewOtp({
+          fieldId,
+          hashedOtp,
+          otp,
+          recipient: answer,
+          transactionId,
+        }),
+      )
+      .map(() => res.sendStatus(StatusCodes.CREATED))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error creating new OTP',
+          meta: logMeta,
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
       })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
+  )
 }
 
 /**
