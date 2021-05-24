@@ -1,4 +1,5 @@
 import axios from 'axios'
+import Cookies from 'js-cookie'
 import jwtDecode from 'jwt-decode'
 import { z } from 'zod'
 
@@ -7,7 +8,6 @@ import {
   PublicFormAuthRedirectDto,
   PublicFormAuthValidateEsrvcIdDto,
 } from '../../types/api'
-import { CookieBuilderOptions, deleteCookie, getCookie } from '../utils/cookie'
 
 enum PublicFormAuthCookieName {
   SP = 'jwtSp',
@@ -75,7 +75,7 @@ export const mapAuthTypeToCookieName = (
 export const getStoredJwt = (authType: AuthType): string | null => {
   const cookieName = mapAuthTypeToCookieName(authType)
   if (!cookieName) return null
-  return getCookie(cookieName)
+  return Cookies.get(cookieName) ?? null
 }
 
 /**
@@ -108,11 +108,11 @@ export const getDecodedJwt = (authType: AuthType): SpcpAuth | null => {
  */
 export const logout = (
   authType: AuthType,
-  options: CookieBuilderOptions = {},
+  options: Cookies.CookieAttributes = {},
 ): void => {
   const cookieToRemove = mapAuthTypeToCookieName(authType)
   // Only remove if there is a valid mapping and there is a stored jwt already.
   if (cookieToRemove && getStoredJwt(authType)) {
-    deleteCookie(cookieToRemove, options)
+    Cookies.remove(cookieToRemove, options)
   }
 }
