@@ -18,11 +18,10 @@ import {
 import getVerificationModel from 'src/app/modules/verification/verification.model'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import { WAIT_FOR_OTP_SECONDS } from 'src/shared/util/verification'
-import { BasicField, IVerificationSchema, VerifiableFieldType } from 'src/types'
+import { BasicField, IVerificationSchema } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import MockTwilio from 'tests/integration/helpers/twilio'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -254,7 +253,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Email,
           answer: 'open@gov.sg',
         })
 
@@ -270,8 +268,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Mobile,
-          // NOTE: a valid mobile number is +65 followed by ANY 8 digits
           answer: '+6512345678',
         })
 
@@ -281,50 +277,45 @@ describe('public-forms.verification.routes', () => {
     })
 
     it('should return 400 when fieldType is email but the provided email is not valid', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
       // Act
       const response = await request
         .post(
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Email,
           answer: 'notanemail',
         })
 
       // Assert
       expect(response.status).toBe(StatusCodes.BAD_REQUEST)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'answer',
-            message: 'Please ensure that the email provided is valid.',
-          },
-        }),
-      )
+      expect(response.body).toEqual(expectedResponse)
     })
 
     it('should return 400 when fieldType is mobile but the provided phone number is not valid', async () => {
+      // Arrange
+      const expectedResponse = {
+        message:
+          'This phone number does not seem to be valid. Please try again with a valid phone number.',
+      }
+
       // Act
       const response = await request
         .post(
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Mobile,
           // 7 digits after +65 instead of 8
           answer: '+651234567',
         })
 
       // Assert
       expect(response.status).toBe(StatusCodes.BAD_REQUEST)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'answer',
-            message: 'Please ensure that the phone number provided is valid.',
-          },
-        }),
-      )
+      expect(response.body).toEqual(expectedResponse)
     })
 
     it('should return 400 when the parameters are malformed', async () => {
@@ -341,7 +332,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Mobile,
           answer: '+6512345678',
         })
 
@@ -367,7 +357,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${mockVerifiableFormId}/fieldverifications/${expiredTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Mobile,
           answer: '+6512345678',
         })
 
@@ -389,7 +378,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Mobile,
           // 7 digits after +65 instead of 8
           answer: '+6512345678',
         })
@@ -413,7 +401,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Email,
           answer: 'mail@me.com',
         })
 
@@ -434,7 +421,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${new ObjectId().toHexString()}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Mobile,
           answer: '+6512345678',
         })
 
@@ -455,7 +441,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${mockVerifiableFormId}/fieldverifications/${new ObjectId().toHexString()}/fields/${mockMobileFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Mobile,
           answer: '+6512345678',
         })
 
@@ -476,7 +461,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${new ObjectId().toHexString()}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Mobile,
           answer: '+6512345678',
         })
 
@@ -497,7 +481,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Mobile,
           answer: '+6512345678',
         })
       const response = await request
@@ -505,7 +488,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Mobile,
           answer: '+6512345678',
         })
 
@@ -527,7 +509,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Mobile,
           answer: '+6512345678',
         })
 
@@ -551,7 +532,6 @@ describe('public-forms.verification.routes', () => {
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
         )
         .send({
-          fieldType: VerifiableFieldType.Mobile,
           answer: '+6512345678',
         })
 
