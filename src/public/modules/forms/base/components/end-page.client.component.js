@@ -22,7 +22,7 @@ function endPageController(SpcpSession, $window, moment) {
 
   vm.timestamp = moment().format('D MMM YYYY, HH:mm')
   vm.userName = SpcpSession.userName
-  vm.formLogout = SpcpSession.logout
+  vm.formLogout = () => SpcpSession.logout(vm.authType)
 
   vm.customLinkReload = () => {
     if (!vm.buttonLink || vm.buttonLink === $window.location.hash) {

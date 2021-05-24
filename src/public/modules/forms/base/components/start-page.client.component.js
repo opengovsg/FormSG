@@ -24,7 +24,7 @@ angular.module('forms').component('startPageComponent', {
 function startPageController(SpcpSession, Toastr) {
   const vm = this
 
-  vm.formLogout = SpcpSession.logout
+  vm.formLogout = () => SpcpSession.logout(vm.authType)
 
   vm.rememberMe = {
     checked: false,
