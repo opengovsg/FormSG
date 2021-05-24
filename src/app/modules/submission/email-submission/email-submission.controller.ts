@@ -44,6 +44,17 @@ const submitEmailModeForm: RequestHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const attachments = mapAttachmentsFromResponses(req.body.responses)
+
+  if ('isPreview' in req.body) {
+    logger.info({
+      message: 'isPreview is still being sent when submitting email mode form',
+      meta: {
+        action: 'submitEmailModeForm',
+        type: 'deprecatedCheck',
+      },
+    })
+  }
+
   let spcpSubmissionFailure: undefined | true
 
   const logMeta = {
