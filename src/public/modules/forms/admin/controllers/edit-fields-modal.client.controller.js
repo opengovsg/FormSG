@@ -13,8 +13,7 @@ const { uploadImage } = require('../../../../services/FileHandlerService')
 const {
   DateSelectedValidation: DateValidationOptions,
 } = require('../../../../../shared/constants')
-const { Rating } = require('../../../../../types/form')
-const { RatingShape } = require('../../../../../types/field/ratingField')
+const { Rating, RatingShape } = require('../../../../../types')
 const CancelToken = axios.CancelToken
 
 const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '7']
@@ -161,7 +160,7 @@ function EditFieldsModalController(
     }
   }
 
-  vm.ratingSteps = Object.values(Rating)
+  vm.ratingSteps = Rating
   vm.ratingShapes = Object.values(RatingShape)
 
   vm.showDuplicateOptionsError = function (field) {

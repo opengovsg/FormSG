@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { Document, LeanDocument, Model, ToObjectOptions, Types } from 'mongoose'
 import { Merge, SetRequired } from 'type-fest'
 
@@ -36,24 +37,25 @@ export enum Colors {
   Grey = 'grey',
 }
 
-export enum Rating {
-  One = 1,
-  Two = 2,
-  Three = 3,
-  Four = 4,
-  Five = 5,
-  Six = 6,
-  Seven = 7,
-  Eight = 8,
-  Nine = 9,
-  Ten = 10,
-}
-
 export enum ResponseMode {
   Encrypt = 'encrypt',
   Email = 'email',
 }
 
+export const Rating = _.range(1, 11)
+
+export enum RatingEnum {
+  One = 1,
+  Two,
+  Three,
+  Four,
+  Five,
+  Six,
+  Seven,
+  Eight,
+  Nine,
+  Ten,
+}
 // Typings
 // Make sure this is kept in sync with form.server.model#FORM_PUBLIC_FIELDS.
 export type PublicFormValues = Pick<
