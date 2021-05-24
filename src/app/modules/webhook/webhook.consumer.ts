@@ -91,20 +91,19 @@ export const startWebhookConsumer = (
 const createWebhookQueueHandler = (producer: WebhookProducer) => async (
   sqsMessage: aws.SQS.Message,
 ): Promise<void> => {
+  const { Body, MessageId } = sqsMessage
+  const logMeta = {
+    action: 'createWebhookQueueHandler',
+    MessageId,
+  }
   logger.info({
     message: 'Consumed message from webhook queue',
-    meta: {
-      action: 'createWebhookQueueHandler',
-    },
+    meta: logMeta,
   })
-  const { Body } = sqsMessage
   if (!Body) {
     logger.error({
       message: 'Webhook queue message contained undefined body',
-      meta: {
-        action: 'createWebhookQueueHandler',
-        sqsMessage,
-      },
+      meta: logMeta,
     })
     // Malformed message will be retried until redrive policy is exceeded,
     // upon which it will be moved to dead-letter queue
@@ -116,9 +115,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
   if (webhookMessageResult.isErr()) {
     logger.error({
       message: 'Webhook queue message could not be parsed',
-      meta: {
-        action: 'createWebhookQueueHandler',
-      },
+      meta: logMeta,
       error: webhookMessageResult.error,
     })
     return Promise.reject()
@@ -129,16 +126,14 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
   if (!webhookMessage.isDue()) {
     logger.info({
       message: 'Webhook not due yet, requeueing',
-      meta: {
-        action: 'createWebhookQueueHandler',
-      },
+      meta: logMeta,
     })
     const requeueResult = await producer.sendMessage(webhookMessage)
     if (requeueResult.isErr()) {
       logger.error({
         message: 'Webhook queue message could not be requeued',
         meta: {
-          action: 'createWebhookQueueHandler',
+          ...logMeta,
           webhookMessage: webhookMessage.prettify(),
         },
         error: requeueResult.error,
