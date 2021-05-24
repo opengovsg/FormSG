@@ -4,6 +4,7 @@ import { subMinutes, subYears } from 'date-fns'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import mongoose from 'mongoose'
+import { okAsync } from 'neverthrow'
 import session, { Session } from 'supertest-session'
 
 import {
@@ -12,6 +13,8 @@ import {
   MOCK_SIGNED_DATA,
 } from 'src/app/modules/verification/__tests__/verification.test.helpers'
 import getVerificationModel from 'src/app/modules/verification/verification.model'
+import MailService from 'src/app/services/mail/mail.service'
+import * as OtpUtils from 'src/app/utils/otp'
 import { NUM_OTP_RETRIES } from 'src/shared/util/verification'
 import { BasicField, IVerificationSchema } from 'src/types'
 
@@ -47,6 +50,8 @@ describe('public-forms.verification.routes', () => {
   let mockEmailFieldId: string
   let mockMobileFieldId: string
   let request: Session
+  const MOCK_VALID_EMAIL_DOMAIN = 'example.com'
+  const MOCK_EMAIL = `mock@${MOCK_VALID_EMAIL_DOMAIN}`
 
   beforeAll(async () => await dbHandler.connect())
 
@@ -70,7 +75,7 @@ describe('public-forms.verification.routes', () => {
     mockMobileFieldId = String(mobileField._id)
     const { form: verifiableForm } = await dbHandler.insertEmailForm({
       // Alternative mail domain so as not to clash with emptyForm
-      mailDomain: 'test2.gov.sg',
+      mailDomain: MOCK_VALID_EMAIL_DOMAIN,
       formOptions: {
         form_fields: [emailField, mobileField],
       },
@@ -237,11 +242,18 @@ describe('public-forms.verification.routes', () => {
   })
 
   describe('POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/verify', () => {
-    beforeAll(() => {
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true)
+    // Mock the generation of otp so that the stored otp is the mock OTP
+    beforeEach(async () => {
+      await dbHandler.insertAgency({
+        mailDomain: MOCK_VALID_EMAIL_DOMAIN,
+      })
+      jest.spyOn(OtpUtils, 'generateOtp').mockReturnValue(MOCK_OTP)
     })
 
     it('should return 200 when the fieldType is email, request parameters are valid and the otp is correct', async () => {
+      // Arrange
+      await requestForOtp(MOCK_EMAIL)
+
       // Act
       const response = await request
         .post(
@@ -255,6 +267,9 @@ describe('public-forms.verification.routes', () => {
     })
 
     it('should return 200 when the fieldType is mobile, request parameters are valid and the otp is correct', async () => {
+      // Arrange
+      await requestForOtp(MOCK_EMAIL)
+
       // Act
       const response = await request
         .post(
@@ -480,4 +495,19 @@ describe('public-forms.verification.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
   })
+
+  // Helper functions
+  const requestForOtp = async (fieldId: string, answer: string) => {
+    // Set that so no real mail is sent.
+    jest
+      .spyOn(MailService, 'sendVerificationOtp')
+      .mockReturnValue(okAsync(true))
+
+    const response = await request
+      .post(
+        `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${fieldId}/otp/generate`,
+      )
+      .send({ answer })
+    expect(response.status).toBe(StatusCodes.CREATED)
+  }
 })
