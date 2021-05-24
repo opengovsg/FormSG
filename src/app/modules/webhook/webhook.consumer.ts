@@ -227,8 +227,8 @@ const retrieveWebhookInfo = (
 ): ResultAsync<
   SubmissionWebhookInfo,
   SubmissionNotFoundError | PossibleDatabaseError
-> =>
-  ResultAsync.fromPromise(
+> => {
+  return ResultAsync.fromPromise(
     EncryptSubmission.retrieveWebhookInfoById(submissionId),
     (error) => {
       logger.error({
@@ -245,3 +245,4 @@ const retrieveWebhookInfo = (
     if (!submissionInfo) return errAsync(new SubmissionNotFoundError())
     return okAsync(submissionInfo)
   })
+}
