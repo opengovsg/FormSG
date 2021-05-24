@@ -38,7 +38,7 @@ services:
       - MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
       - MYINFO_CLIENT_ID=mockClientId
       - MYINFO_CLIENT_SECRET=mockClientSecret
-      - WEBHOOK_SQS_URL=http://localhost:4566/000000000000/local-webhooks-sqs-queue
+      - WEBHOOK_SQS_URL=http://localhost:4566/000000000000/local-webhooks-sqs-main
       - GA_TRACKING_ID
       - SENTRY_CONFIG_URL
       - TWILIO_ACCOUNT_SID
@@ -111,9 +111,6 @@ services:
     volumes:
       - './.localstack:/tmp/localstack'
       - '/var/run/docker.sock:/var/run/docker.sock'
-      # This is where we add scripts to initialise AWS resources.
-      # Docs: https://github.com/localstack/localstack#initializing-a-fresh-instance
-      - './docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d'
     network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:4566 to localstack:4566
 
   maildev:
