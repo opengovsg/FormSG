@@ -1,7 +1,5 @@
 import mockAxios from 'jest-mock-axios'
 
-import { VerifiableFieldType } from 'src/types'
-
 import {
   createTransactionForForm,
   FetchNewTransactionResponse,
@@ -72,7 +70,6 @@ describe('FieldVerificationService', () => {
         transactionId: mockTransactionId,
         answer: mockAnswer,
         fieldId: mockFieldId,
-        fieldType: VerifiableFieldType.Email,
       })
       mockAxios.mockResponse({ status: 201, data: 'Created' })
       await actualPromise
@@ -81,7 +78,6 @@ describe('FieldVerificationService', () => {
       expect(mockAxios.post).toHaveBeenCalledWith(
         `${FORM_API_PREFIX}/${mockFormId}/${VERIFICATION_ENDPOINT}/${mockTransactionId}/fields/${mockFieldId}/otp/generate`,
         {
-          fieldType: VerifiableFieldType.Email,
           answer: mockAnswer,
         },
       )

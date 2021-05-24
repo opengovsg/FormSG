@@ -1,8 +1,6 @@
 import axios from 'axios'
 import { Opaque } from 'type-fest'
 
-import { VerifiableFieldType } from 'src/types'
-
 export type JsonDate = Opaque<string, 'JsonDate'>
 
 /**
@@ -53,18 +51,15 @@ export const triggerSendOtp = async ({
   transactionId,
   fieldId,
   answer,
-  fieldType,
 }: {
   formId: string
   transactionId: string
   fieldId: string
   answer: string
-  fieldType: VerifiableFieldType
 }): Promise<void> => {
   return axios.post(
     `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/fields/${fieldId}/otp/generate`,
     {
-      fieldType,
       answer,
     },
   )

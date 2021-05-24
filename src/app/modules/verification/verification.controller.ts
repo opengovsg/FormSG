@@ -6,7 +6,6 @@ import {
   SALT_ROUNDS,
   VERIFIED_FIELDTYPES,
 } from '../../../shared/util/verification'
-import { VerifiableFieldType } from '../../../types'
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
@@ -240,11 +239,7 @@ export const handleGenerateOtp = [
   celebrate({
     [Segments.BODY]: Joi.object({
       fieldType: Joi.string().valid(...VERIFIED_FIELDTYPES),
-      answer: Joi.string().when('fieldType', {
-        is: VerifiableFieldType.Email,
-        then: Joi.string().email(),
-        otherwise: Joi.string().pattern(/\+(65)\d{8}/m),
-      }),
+      answer: Joi.string().required(),
     }),
   }),
   _handleGenerateOtp,

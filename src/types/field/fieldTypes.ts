@@ -52,8 +52,3 @@ export enum SPCPFieldTitle {
   CpUid = 'CorpPass Validated UID',
   CpUen = 'CorpPass Validated UEN',
 }
-
-export enum VerifiableFieldType {
-  Email = BasicField.Email,
-  Mobile = BasicField.Mobile,
-}
