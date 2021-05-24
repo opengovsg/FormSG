@@ -36,6 +36,19 @@ export enum Colors {
   Grey = 'grey',
 }
 
+export enum Rating {
+  One = 1,
+  Two = 2,
+  Three = 3,
+  Four = 4,
+  Five = 5,
+  Six = 6,
+  Seven = 7,
+  Eight = 8,
+  Nine = 9,
+  Ten = 10,
+}
+
 export enum ResponseMode {
   Encrypt = 'encrypt',
   Email = 'email',
