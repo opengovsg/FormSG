@@ -10,14 +10,14 @@ import {
 
 import * as SubmissionUtil from '../../utils/submission'
 import {
-  submitEmailModeFormSubmission,
-  submitStorageModeFormSubmission,
+  submitEmailModeForm,
+  submitStorageModeForm,
 } from '../PublicFormService'
 
 jest.mock('axios', () => MockAxios)
 
 describe('PublicFormService', () => {
-  describe('submitEmailModeFormSubmission', () => {
+  describe('submitEmailModeForm', () => {
     const MOCK_FORM_ID = 'mock–form-id'
     const MOCK_RESPONSE: SubmissionResponseDto = {
       message: 'some mock response',
@@ -45,7 +45,7 @@ describe('PublicFormService', () => {
         .mockReturnValueOnce(expectedFormData)
 
       // Act
-      const actual = submitEmailModeFormSubmission({
+      const actual = submitEmailModeForm({
         formId: MOCK_FORM_ID,
         content: MOCK_CONTENT,
         captchaResponse: mockCaptcha,
@@ -77,7 +77,7 @@ describe('PublicFormService', () => {
         .mockReturnValueOnce(expectedFormData)
 
       // Act
-      const actual = submitEmailModeFormSubmission({
+      const actual = submitEmailModeForm({
         formId: MOCK_FORM_ID,
         content: MOCK_CONTENT,
         // No captcha entered
@@ -98,7 +98,7 @@ describe('PublicFormService', () => {
     })
   })
 
-  describe('submitStorageModeFormSubmission', () => {
+  describe('submitStorageModeForm', () => {
     const MOCK_FORM_ID = 'mock–form-id-2'
     const MOCK_RESPONSE: SubmissionResponseDto = {
       message: 'some mock response again',
@@ -122,7 +122,7 @@ describe('PublicFormService', () => {
       const mockCaptcha = 'some captcha response'
 
       // Act
-      const actual = submitStorageModeFormSubmission({
+      const actual = submitStorageModeForm({
         formId: MOCK_FORM_ID,
         content: MOCK_CONTENT,
         captchaResponse: mockCaptcha,
@@ -142,7 +142,7 @@ describe('PublicFormService', () => {
 
     it('should call api with correct params successfully when captcha is not provided', async () => {
       // Act
-      const actual = submitStorageModeFormSubmission({
+      const actual = submitStorageModeForm({
         formId: MOCK_FORM_ID,
         content: MOCK_CONTENT,
         // No captcha entered

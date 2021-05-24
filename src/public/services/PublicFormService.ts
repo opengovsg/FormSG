@@ -18,7 +18,7 @@ const PUBLIC_FORMS_ENDPOINT = '/api/v3/forms'
  *
  * @returns SubmissionResponseDto if successful, else SubmissionErrorDto on error
  */
-export const submitEmailModeFormSubmission = async ({
+export const submitEmailModeForm = async ({
   formId,
   content,
   attachments,
@@ -55,7 +55,7 @@ export const submitEmailModeFormSubmission = async ({
  *
  * @returns SubmissionResponseDto if successful, else SubmissionErrorDto on error
  */
-export const submitStorageModeFormSubmission = async ({
+export const submitStorageModeForm = async ({
   formId,
   content,
   captchaResponse = null,

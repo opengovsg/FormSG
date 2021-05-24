@@ -10,14 +10,14 @@ import {
 
 import * as SubmissionUtil from '../../utils/submission'
 import {
-  submitEmailModeFormSubmissionPreview,
-  submitStorageModeFormSubmissionPreview,
+  submitEmailModeFormPreview,
+  submitStorageModeFormPreview,
 } from '../AdminFormService'
 
 jest.mock('axios', () => MockAxios)
 
 describe('AdminFormService', () => {
-  describe('submitEmailModeFormSubmissionPreview', () => {
+  describe('submitEmailModeFormPreview', () => {
     const MOCK_FORM_ID = 'mock–form-id'
     const MOCK_RESPONSE: SubmissionResponseDto = {
       message: 'some mock response',
@@ -45,7 +45,7 @@ describe('AdminFormService', () => {
         .mockReturnValueOnce(expectedFormData)
 
       // Act
-      const actual = submitEmailModeFormSubmissionPreview({
+      const actual = submitEmailModeFormPreview({
         formId: MOCK_FORM_ID,
         content: MOCK_CONTENT,
         captchaResponse: mockCaptcha,
@@ -77,7 +77,7 @@ describe('AdminFormService', () => {
         .mockReturnValueOnce(expectedFormData)
 
       // Act
-      const actual = submitEmailModeFormSubmissionPreview({
+      const actual = submitEmailModeFormPreview({
         formId: MOCK_FORM_ID,
         content: MOCK_CONTENT,
         // No captcha entered
@@ -98,7 +98,7 @@ describe('AdminFormService', () => {
     })
   })
 
-  describe('submitStorageModeFormSubmissionPreview', () => {
+  describe('submitStorageModeFormPreview', () => {
     const MOCK_FORM_ID = 'mock–form-id-2'
     const MOCK_RESPONSE: SubmissionResponseDto = {
       message: 'some mock response again',
@@ -122,7 +122,7 @@ describe('AdminFormService', () => {
       const mockCaptcha = 'some captcha response'
 
       // Act
-      const actual = submitStorageModeFormSubmissionPreview({
+      const actual = submitStorageModeFormPreview({
         formId: MOCK_FORM_ID,
         content: MOCK_CONTENT,
         captchaResponse: mockCaptcha,
@@ -142,7 +142,7 @@ describe('AdminFormService', () => {
 
     it('should call api with correct params successfully when captcha is not provided', async () => {
       // Act
-      const actual = submitStorageModeFormSubmissionPreview({
+      const actual = submitStorageModeFormPreview({
         formId: MOCK_FORM_ID,
         content: MOCK_CONTENT,
         // No captcha entered

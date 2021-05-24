@@ -196,7 +196,7 @@ export const updateFormStartPage = async (
  *
  * @returns SubmissionResponseDto if successful, else SubmissionErrorDto on error
  */
-export const submitEmailModeFormSubmissionPreview = async ({
+export const submitEmailModeFormPreview = async ({
   formId,
   content,
   attachments,
@@ -233,7 +233,7 @@ export const submitEmailModeFormSubmissionPreview = async ({
  *
  * @returns SubmissionResponseDto if successful, else SubmissionErrorDto on error
  */
-export const submitStorageModeFormSubmissionPreview = async ({
+export const submitStorageModeFormPreview = async ({
   formId,
   content,
   captchaResponse = null,

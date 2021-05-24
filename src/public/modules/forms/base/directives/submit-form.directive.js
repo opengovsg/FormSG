@@ -324,8 +324,8 @@ function submitFormDirective(
             const content = { responses: submissionContent.responses }
 
             const submitFn = form.isPreview
-              ? AdminFormService.submitEmailModeFormSubmissionPreview
-              : PublicFormService.submitEmailModeFormSubmission
+              ? AdminFormService.submitEmailModeFormPreview
+              : PublicFormService.submitEmailModeForm
 
             return $q
               .when(
@@ -341,8 +341,8 @@ function submitFormDirective(
           }
           case responseModeEnum.ENCRYPT: {
             const submitFn = form.isPreview
-              ? AdminFormService.submitStorageModeFormSubmissionPreview
-              : PublicFormService.submitStorageModeFormSubmission
+              ? AdminFormService.submitStorageModeFormPreview
+              : PublicFormService.submitStorageModeForm
 
             return $q
               .when(
