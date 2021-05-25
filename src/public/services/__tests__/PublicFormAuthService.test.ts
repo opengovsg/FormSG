@@ -162,6 +162,8 @@ describe('PublicFormAuthService', () => {
       parseSpy = jest.spyOn(SpcpAuth, 'parse')
     })
 
+    afterEach(() => MockCookies.get.mockReset())
+
     it('should return null if jwt cannot be retrieved', () => {
       // Arrange
       // Mock no cookie retrieved.
@@ -252,6 +254,33 @@ describe('PublicFormAuthService', () => {
       }
       expect(actual).toEqual(expectedDecode)
       expect(parseSpy).toHaveBeenCalledWith(expectedDecode)
+      expect(MockCookies.remove).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('logout', () => {
+    it('should remove cookie if jwt exists', () => {
+      // Arrange
+      const expectedJwt = 'some mock jwt'
+      // @ts-ignore
+      MockCookies.get.mockReturnValueOnce(expectedJwt)
+      const mockOptions: Cookies.CookieAttributes = { domain: 'mockDomain' }
+
+      // Act
+      PublicFormAuthService.logout(AuthType.CP, mockOptions)
+
+      // Assert
+      expect(MockCookies.remove).toHaveBeenCalledWith(
+        PublicFormAuthCookieName.CP,
+        mockOptions,
+      )
+    })
+
+    it('should do nothing if jwt does not exist', () => {
+      // Act
+      PublicFormAuthService.logout(AuthType.SP)
+
+      // Assert
       expect(MockCookies.remove).not.toHaveBeenCalled()
     })
   })
