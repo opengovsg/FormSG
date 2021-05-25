@@ -1,10 +1,11 @@
 import { ObjectId } from 'bson-ext'
 import MockAxios from 'jest-mock-axios'
 
+import { FeedbackCsvGenerator } from '../../helpers/FeedbackCsvGenerator'
 import * as FormFeedbackService from '../FormFeedbackService'
 
 jest.mock('axios', () => MockAxios)
-FormFeedbackService.FeedbackCsvGenerator.prototype.addLineFromFeedback = jest.fn()
+FeedbackCsvGenerator.prototype.addLineFromFeedback = jest.fn()
 
 describe('FormFeedbackService', () => {
   afterEach(() => jest.clearAllMocks())
@@ -135,8 +136,8 @@ describe('FormFeedbackService', () => {
       MockAxios.get
         .mockResolvedValueOnce({ data: 1 })
         .mockResolvedValueOnce({ data: [mockFeedback] })
-      FormFeedbackService.FeedbackCsvGenerator.prototype.addLineFromFeedback = jest.fn()
-      FormFeedbackService.FeedbackCsvGenerator.prototype.triggerFileDownload = jest.fn()
+      FeedbackCsvGenerator.prototype.addLineFromFeedback = jest.fn()
+      FeedbackCsvGenerator.prototype.triggerFileDownload = jest.fn()
 
       // Act
       await FormFeedbackService.downloadFeedback(mockFormId, mockFormTitle)
@@ -146,10 +147,10 @@ describe('FormFeedbackService', () => {
         `${FormFeedbackService.ADMIN_FORM_ENDPOINT}/${mockFormId}/feedback/download`,
       )
       expect(
-        FormFeedbackService.FeedbackCsvGenerator.prototype.addLineFromFeedback,
+        FeedbackCsvGenerator.prototype.addLineFromFeedback,
       ).toHaveBeenCalled()
       expect(
-        FormFeedbackService.FeedbackCsvGenerator.prototype.triggerFileDownload,
+        FeedbackCsvGenerator.prototype.triggerFileDownload,
       ).toHaveBeenCalled()
     })
 
@@ -159,8 +160,8 @@ describe('FormFeedbackService', () => {
       MockAxios.get
         .mockResolvedValueOnce({ data: 100000 })
         .mockResolvedValueOnce({ data: undefined })
-      FormFeedbackService.FeedbackCsvGenerator.prototype.addLineFromFeedback = jest.fn()
-      FormFeedbackService.FeedbackCsvGenerator.prototype.triggerFileDownload = jest.fn()
+      FeedbackCsvGenerator.prototype.addLineFromFeedback = jest.fn()
+      FeedbackCsvGenerator.prototype.triggerFileDownload = jest.fn()
 
       // Act
       const actualPromise = FormFeedbackService.downloadFeedback(
@@ -181,8 +182,8 @@ describe('FormFeedbackService', () => {
       MockAxios.get
         .mockResolvedValueOnce({ data: 100000 })
         .mockRejectedValueOnce(expected)
-      FormFeedbackService.FeedbackCsvGenerator.prototype.addLineFromFeedback = jest.fn()
-      FormFeedbackService.FeedbackCsvGenerator.prototype.triggerFileDownload = jest.fn()
+      FeedbackCsvGenerator.prototype.addLineFromFeedback = jest.fn()
+      FeedbackCsvGenerator.prototype.triggerFileDownload = jest.fn()
 
       // Act
       const actualPromise = FormFeedbackService.downloadFeedback(

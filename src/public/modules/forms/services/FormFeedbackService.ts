@@ -1,12 +1,11 @@
 import axios from 'axios'
-import moment from 'moment-timezone'
 
 import {
   FormFeedbackPostDto,
   FormFeedbackResponseDto,
   GetFormFeedbackDto,
 } from '../../../../types/api/form-feedback'
-import { CsvGenerator } from '../helpers/CsvGenerator'
+import { FeedbackCsvGenerator } from '../helpers/FeedbackCsvGenerator'
 
 // Exported for testing
 export const PUBLIC_FORM_ENDPOINT = '/api/v3/forms'
@@ -52,32 +51,6 @@ export const countFeedback = async (formId: string): Promise<number> => {
   return axios
     .get<number>(`${ADMIN_FORM_ENDPOINT}/${formId}/feedback/count`)
     .then(({ data }) => data)
-}
-
-/**
- * Class to encapsulate the FeedbackCsv and its attributes
- * Exported for testing
- */
-export class FeedbackCsvGenerator extends CsvGenerator {
-  constructor(expectedNumberOfRecords: number) {
-    super(expectedNumberOfRecords, 0)
-    this.setHeader(['Date', 'Comment', 'Rating'])
-  }
-
-  /**
-   * Generate a string representing a form feedback CSV line record
-   * @param {IFormFeedbackDocument} feedback
-   * @param {Date} feedback.created
-   * @param {string} feedback.comment
-   * @param {number} feedback.rating
-   */
-  addLineFromFeedback(feedback: FormFeedbackResponseDto) {
-    const createdAt = moment(feedback.created)
-      .tz('Asia/Singapore')
-      .format('DD MMM YYYY hh:mm:ss A')
-
-    this.addLine([createdAt, feedback.comment || '', feedback.rating])
-  }
 }
 
 /**
