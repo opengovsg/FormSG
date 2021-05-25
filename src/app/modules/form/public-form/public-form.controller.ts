@@ -125,8 +125,10 @@ export const submitFormFeedback: RequestHandler<
     rating,
     comment,
   })
-    .map((submitFeedbackResult) =>
-      res.status(StatusCodes.OK).json(submitFeedbackResult),
+    .map(() =>
+      res
+        .status(StatusCodes.OK)
+        .json({ message: 'Successfully submitted feedback' }),
     )
     .mapErr((error) => {
       logger.error({

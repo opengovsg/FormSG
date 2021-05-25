@@ -38,6 +38,9 @@ describe('public-form.feedback.routes', () => {
         rating: 5,
         comment: 'great mock',
       }
+      const expectedResponse = JSON.parse(
+        JSON.stringify({ message: 'Successfully submitted feedback' }),
+      )
 
       // Act
       const response = await request
@@ -46,7 +49,7 @@ describe('public-form.feedback.routes', () => {
 
       // Assert
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual(expect.objectContaining(MOCK_FEEDBACK))
+      expect(response.body).toEqual(expectedResponse)
     })
 
     it('should return 400 when form feedback submitted is malformed', async () => {
