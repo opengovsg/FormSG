@@ -10,11 +10,11 @@ angular.module('forms').component('feedbackFormComponent', {
     formId: '@',
     colorTheme: '@',
   },
-  controller: ['Toastr', '$scope', feedbackController],
+  controller: ['Toastr', '$q', feedbackController],
   controllerAs: 'vm',
 })
 
-function feedbackController(Toastr, $scope) {
+function feedbackController(Toastr, $q) {
   const vm = this
 
   vm.$onInit = () => {
@@ -33,14 +33,13 @@ function feedbackController(Toastr, $scope) {
         isPreview: vm.isPreview,
       }
 
-      FormFeedback.postFeedback(vm.formId, feedback).then(
-        function (_response) {
+      $q.when(FormFeedback.postFeedback(vm.formId, feedback)).then(
+        function () {
           vm.isSubmitted = true
           vm.isLoading = false
           Toastr.success('Thank you for your submission!')
-          $scope.$apply()
         },
-        function (_error) {
+        function () {
           vm.isSubmitted = true
           vm.isLoading = false
           Toastr.error(

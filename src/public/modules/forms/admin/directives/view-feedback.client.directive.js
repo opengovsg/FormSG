@@ -6,13 +6,20 @@ angular
   .module('forms')
   .directive('viewFeedbackDirective', [
     '$timeout',
+    '$q',
     'Submissions',
     'NgTableParams',
     'emoji',
     viewFeedbackDirective,
   ])
 
-function viewFeedbackDirective($timeout, Submissions, NgTableParams, emoji) {
+function viewFeedbackDirective(
+  $timeout,
+  $q,
+  Submissions,
+  NgTableParams,
+  emoji,
+) {
   return {
     templateUrl:
       'modules/forms/admin/directiveViews/view-feedback.client.view.html',
@@ -74,7 +81,7 @@ function viewFeedbackDirective($timeout, Submissions, NgTableParams, emoji) {
         })
 
         $scope.createFeedbackTable = function (submissionCount) {
-          FormFeedback.getFeedback($scope.myform._id).then(
+          $q.when(FormFeedback.getFeedback($scope.myform._id)).then(
             function (response) {
               // Configure table
               $scope.tableParams = new NgTableParams(
@@ -118,10 +125,11 @@ function viewFeedbackDirective($timeout, Submissions, NgTableParams, emoji) {
           const formTitle = $scope.myform.title
 
           $scope.csvDownloading = true
-          FormFeedback.downloadFeedback(formId, formTitle).finally(function () {
-            $scope.csvDownloading = false
-            $scope.$apply()
-          })
+          $q.when(FormFeedback.downloadFeedback(formId, formTitle)).finally(
+            function () {
+              $scope.csvDownloading = false
+            },
+          )
         }
       },
     ],
