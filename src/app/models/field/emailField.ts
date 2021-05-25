@@ -29,9 +29,15 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
       includeFormSummary: {
         type: Boolean,
         default: false,
-        set: function (this: IEmailFieldSchema, v: boolean) {
-          // PDF response not allowed for encrypt forms
-          return this.parent().responseMode === ResponseMode.Encrypt ? false : v
+        validate: {
+          validator: function (this: IEmailFieldSchema) {
+            // PDF response not allowed for encrypt forms but ignore if no autoreply
+            return (
+              this.parent().responseMode !== ResponseMode.Encrypt ||
+              !this.autoReplyOptions.hasAutoReply
+            )
+          },
+          message: 'Autoreply PDF is not allowed for storage mode forms',
         },
       },
     },
