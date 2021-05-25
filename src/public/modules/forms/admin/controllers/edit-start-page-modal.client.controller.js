@@ -43,9 +43,7 @@ function EditStartPageController(
 
   // Populate start page with default if it does not exist.
   if (!get(vm.myform, 'startPage.logo')) {
-    vm.myform.startPage = {
-      logo: FormLogoState.Default,
-    }
+    vm.myform.startPage.logo = FormLogoState.Default
   }
 
   vm.colorThemes = Object.values(Colors)
