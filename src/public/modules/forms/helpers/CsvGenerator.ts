@@ -36,7 +36,6 @@ export class CsvGenerator {
 
   /**
    * Insert raw data for a given row into the CSV file
-   * @param {Array} rowData array of data to be inserted
    */
   addLine(rowData: (number | string)[]): void {
     this.records[this.idx] = stringify(rowData)
@@ -45,17 +44,15 @@ export class CsvGenerator {
 
   /**
    * Insert headers into the CSV file after the meta-data
-   * @param {Array} headerLabels array of labels for header row
    */
-  setHeader(headerLabels: (number | string)[]): void {
+  setHeader(headerLabels: string[]): void {
     this.records[this.startIdx - 1] = stringify(headerLabels)
   }
 
   /**
    * Insert meta-data array into the start of the CSV file
-   * @param {Array} metaDataRows array of arrays, metaDataRows[i][j] holds the data for row i, col j of the metaData table
    */
-  addMetaData(metaDataRows: (number | string)[]): void {
+  addMetaData(metaDataRows: (number | string)[][]): void {
     const metaData = metaDataRows.map((data) => stringify(data))
     // Start splicing at index 1 because BOM is at index 0.
     this.records.splice(1, this.numOfMetaDataRows, ...metaData)
@@ -63,7 +60,6 @@ export class CsvGenerator {
 
   /**
    * Download CSV file to disk
-   * @param {string} fileName
    */
   triggerFileDownload(fileName: string): void {
     const blob = new Blob(this.records, {
