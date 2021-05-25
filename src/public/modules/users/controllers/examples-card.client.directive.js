@@ -23,6 +23,7 @@ function examplesCard() {
       'Auth',
       '$location',
       'Toastr',
+      '$q',
       examplesCardController,
     ],
   }
@@ -38,6 +39,7 @@ function examplesCardController(
   Auth,
   $location,
   Toastr,
+  $q,
 ) {
   $scope.user = Auth.getUser()
 
@@ -98,9 +100,13 @@ function examplesCardController(
       controllerAs: 'vm',
       resolve: {
         FormToDuplicate: () => {
-          return FormApi.template({
-            formId: $scope.form._id,
-          }).$promise.then((res) => res.form)
+          return $q
+            .when(
+              FormApi.template({
+                formId: $scope.form._id,
+              }),
+            )
+            .then((res) => res.form)
         },
         createFormModalOptions: () => ({ mode: 'useTemplate' }),
         externalScope: () => ({
