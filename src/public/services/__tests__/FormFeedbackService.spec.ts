@@ -156,7 +156,7 @@ describe('FormFeedbackService', () => {
 
     it('should reject with the correct error message when the feedback is too large to download', async () => {
       // Arrange
-      const expected = new Error('Feedback size too large to download')
+      const expected = new Error('Error downloading feedback')
       MockAxios.get
         .mockResolvedValueOnce({ data: 100000 })
         .mockResolvedValueOnce({ data: undefined })
