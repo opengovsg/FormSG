@@ -1,8 +1,11 @@
+/* eslint-env node */
+const { propNames } = require('@chakra-ui/styled-system')
 // Required to sync aliases between storybook and overriden configs
 const config = require('../config-overrides')
 const path = require('path')
 
 const toPath = (_path) => path.join(process.cwd(), _path)
+const excludedPropNames = propNames.concat(['as', 'apply', 'sx', '__css'])
 
 module.exports = {
   // Welcome story set first so it will show up first.
@@ -19,24 +22,25 @@ module.exports = {
     '@storybook/preset-create-react-app',
   ],
   typescript: {
+    check: false,
+    checkOptions: {},
     reactDocgen: 'react-docgen-typescript',
     reactDocgenTypescriptOptions: {
-      // Allows typed string unions to be generated properly.
       shouldExtractLiteralValuesFromEnum: true,
-      compilerOptions: {
-        allowSyntheticDefaultImports: false,
-        esModuleInterop: false,
+      shouldRemoveUndefinedFromOptional: true,
+      allowSyntheticDefaultImports: true,
+      esModuleInterop: true,
+      propFilter: (prop) => {
+        if (!prop.parent) {
+          return !prop.declarations.some((d) =>
+            d.fileName.includes('node_modules'),
+          )
+        }
+
+        const isStyledSystemProp = excludedPropNames.includes(prop.name)
+        const isHTMLElementProp = prop.parent.fileName.includes('node_modules')
+        return !(isStyledSystemProp || isHTMLElementProp)
       },
-      // Prevents extraneous props from showing up in controls.
-      // See https://github.com/chakra-ui/chakra-ui/issues/2009#issuecomment-765538309.
-      propFilter: (prop) =>
-        prop.parent !== undefined &&
-        (!prop.parent.fileName.includes('node_modules') ||
-          (prop.parent.fileName.includes('node_modules') &&
-            prop.parent.fileName.includes('node_modules/@chakra-ui/') &&
-            !prop.parent.fileName.includes(
-              'node_modules/@chakra-ui/styled-system',
-            ))),
     },
   },
   // webpackFinal setup retrieved from ChakraUI's own Storybook setup

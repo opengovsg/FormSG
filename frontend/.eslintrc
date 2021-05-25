@@ -1,6 +1,7 @@
 {
   "root": true,
   "plugins": ["import", "simple-import-sort", "prettier"],
+  "extends": ["eslint:recommended", "plugin:prettier/recommended"],
   "overrides": [
     {
       "files": ["*.test.ts"],
