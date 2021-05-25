@@ -40,7 +40,7 @@ export const MAX_DELAY_SECONDS = minutes(15)
 
 /**
  * Tolerance allowed for determining if a message is due to be sent.
- * If a message's next attempt is due within this number of seconds
- * from the current time, it will be sent.
+ * If a message's next attempt is scheduled either in the past or this
+ * number of seconds in the future, it will be sent.
  */
 export const DUE_TIME_TOLERANCE_SECONDS = minutes(1)

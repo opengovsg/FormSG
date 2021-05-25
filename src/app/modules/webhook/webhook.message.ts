@@ -111,7 +111,9 @@ export class WebhookQueueMessage {
   isDue(): boolean {
     // Allow tolerance for clock drift
     return (
-      Math.abs(differenceInSeconds(Date.now(), this.message.nextAttempt)) <=
+      // Argument order is important. If nextAttempt is in the past,
+      // differenceInSeconds will return a negative number.
+      differenceInSeconds(this.message.nextAttempt, Date.now()) <=
       DUE_TIME_TOLERANCE_SECONDS
     )
   }
