@@ -56,8 +56,9 @@ export const countFeedback = async (formId: string): Promise<number> => {
 
 /**
  * Class to encapsulate the FeedbackCsv and its attributes
+ * Exported for testing
  */
-class FeedbackCsvGenerator extends CsvGenerator {
+export class FeedbackCsvGenerator extends CsvGenerator {
   constructor(expectedNumberOfRecords: number) {
     super(expectedNumberOfRecords, 0)
     this.setHeader(['Date', 'Comment', 'Rating'])
