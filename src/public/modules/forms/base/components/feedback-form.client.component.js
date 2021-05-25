@@ -1,6 +1,6 @@
 'use strict'
 
-const FormFeedback = require('../../services/FormFeedbackService')
+const FormFeedback = require('../../../../services/FormFeedbackService')
 
 angular.module('forms').component('feedbackFormComponent', {
   templateUrl:

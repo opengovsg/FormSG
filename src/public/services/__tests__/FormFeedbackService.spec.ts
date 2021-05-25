@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson-ext'
 import MockAxios from 'jest-mock-axios'
 
-import { FeedbackCsvGenerator } from '../../helpers/FeedbackCsvGenerator'
+import { FeedbackCsvGenerator } from '../../modules/forms/helpers/FeedbackCsvGenerator'
 import * as FormFeedbackService from '../FormFeedbackService'
 
 jest.mock('axios', () => MockAxios)

@@ -4,8 +4,8 @@ import {
   FormFeedbackPostDto,
   FormFeedbackResponseDto,
   GetFormFeedbackDto,
-} from '../../../../types/api/form-feedback'
-import { FeedbackCsvGenerator } from '../helpers/FeedbackCsvGenerator'
+} from '../../types/api/form-feedback'
+import { FeedbackCsvGenerator } from '../modules/forms/helpers/FeedbackCsvGenerator'
 
 // Exported for testing
 export const PUBLIC_FORM_ENDPOINT = '/api/v3/forms'
