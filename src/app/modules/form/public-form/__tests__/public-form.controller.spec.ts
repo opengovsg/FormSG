@@ -126,9 +126,9 @@ describe('public-form.controller', () => {
         comment: MOCK_REQ.body.comment,
       })
       expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Successfully submitted feedback',
-      })
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expect.objectContaining(mockFormFeedback),
+      )
     })
 
     it('should return 404 when retrieving form results in FormNotFoundError', async () => {
