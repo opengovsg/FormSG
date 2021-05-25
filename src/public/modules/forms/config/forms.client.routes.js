@@ -36,14 +36,15 @@ angular.module('forms').config([
           FormData: [
             'FormApi',
             '$transition$',
-            function (FormApi, $transition$) {
-              return FormApi.preview($transition$.params().formId).then(
-                (FormData) => {
+            '$q',
+            function (FormApi, $transition$, $q) {
+              return $q
+                .when(FormApi.preview($transition$.params().formId))
+                .then((FormData) => {
                   FormData.isTemplate = true
                   FormData.isPreview = true
                   return FormData
-                },
-              )
+                })
             },
           ],
         },
