@@ -17,11 +17,9 @@ describe('CsvGenerator', () => {
   describe('Constructor', () => {
     it('should initialise the instance properties correctly with defaults if params are not passed to constructor', () => {
       // Arrange
-
       const csv = new CsvGenerator()
 
       // Assert
-
       expect(csv.expectedNumberOfRecords).toEqual(0)
       expect(csv.numOfMetaDataRows).toEqual(0)
       expect(csv.numOfHeaderRows).toEqual(1)
@@ -34,11 +32,9 @@ describe('CsvGenerator', () => {
 
     it('should initialise the instance properties correctly if params are passed to constructor', () => {
       // Arrange
-
       const csv = new CsvGenerator(1, 2)
 
       // Assert
-
       expect(csv.expectedNumberOfRecords).toEqual(1)
       expect(csv.numOfMetaDataRows).toEqual(2)
       expect(csv.numOfHeaderRows).toEqual(1)
@@ -53,17 +49,14 @@ describe('CsvGenerator', () => {
   describe('addLine', () => {
     it('should insert raw data of type string correctly', () => {
       // Arrange
-
       const csv = new CsvGenerator(1)
       const lineToAdd = ['a', 'b']
       const stringifiedData = stringify(lineToAdd)
 
       // Act
-
       csv.addLine(lineToAdd)
 
       // Assert
-
       expect(csv.idx).toEqual(3)
       expect(csv.records.length).toEqual(3)
       expect(csv.records[2]).toEqual(stringifiedData)
@@ -71,17 +64,14 @@ describe('CsvGenerator', () => {
 
     it('should insert raw data of type number correctly', () => {
       // Arrange
-
       const csv = new CsvGenerator(1)
       const lineToAdd = [1, 2]
       const stringifiedData = stringify(lineToAdd)
 
       // Act
-
       csv.addLine(lineToAdd)
 
       // Assert
-
       expect(csv.idx).toEqual(3)
       expect(csv.records.length).toEqual(3)
       expect(csv.records[2]).toEqual(stringifiedData)
@@ -91,17 +81,14 @@ describe('CsvGenerator', () => {
   describe('setHeader', () => {
     it('should set headers correctly', () => {
       // Arrange
-
       const csv = new CsvGenerator()
       const headers = ['field1', 'field2']
       const stringifiedHeaders = stringify(headers)
 
       // Act
-
       csv.setHeader(headers)
 
       // Assert
-
       expect(csv.records[1]).toEqual(stringifiedHeaders)
     })
   })
@@ -109,7 +96,6 @@ describe('CsvGenerator', () => {
   describe('addMetaData', () => {
     it('should set metaData correctly for both string and numbers', () => {
       // Arrange
-
       const csv = new CsvGenerator(0, 3)
       const metaData = [
         ['metaData1a', 'metaData1b'],
@@ -119,11 +105,9 @@ describe('CsvGenerator', () => {
       const stringifiedMetaData = metaData.map((data) => stringify(data))
 
       // Act
-
       csv.addMetaData(metaData)
 
       // Assert
-
       expect(csv.records[1]).toEqual(stringifiedMetaData[0])
       expect(csv.records[2]).toEqual(stringifiedMetaData[1])
       expect(csv.records[3]).toEqual(stringifiedMetaData[2])
@@ -133,7 +117,6 @@ describe('CsvGenerator', () => {
   describe('triggerFileDownload', () => {
     it('should call triggerFileDownload with the correct parameters', () => {
       // Arrange
-
       const csv = new CsvGenerator(1)
       const lineToAdd = [1, 2]
       const blob = new Blob(csv.records, {
@@ -141,12 +124,10 @@ describe('CsvGenerator', () => {
       })
 
       // Act
-
       csv.addLine(lineToAdd)
       csv.triggerFileDownload('some filename')
 
       // Assert
-
       expect(MockTriggerFileDownload).toHaveBeenCalledWith(
         blob,
         'some filename',
@@ -157,35 +138,29 @@ describe('CsvGenerator', () => {
   describe('length', () => {
     it('should corrently return length of csv file when header and meta data are empty', () => {
       // Arrange
-
       const csv = new CsvGenerator(1)
       const lineToAdd = [1, 2]
 
       // Act
-
       csv.addLine(lineToAdd)
 
       // Assert
-
       expect(csv.length()).toEqual(1)
     })
 
     it('should corrently return length of csv file when header and meta data are present', () => {
       // Arrange
-
       const csv = new CsvGenerator(1, 1)
       const lineToAdd = [1, 2]
       const metaData = [['metaData1a', 'metaData1b']]
       const headers = ['field1', 'field2']
 
       // Act
-
       csv.addLine(lineToAdd)
       csv.setHeader(headers)
       csv.addMetaData(metaData)
 
       // Assert
-
       expect(csv.length()).toEqual(1)
     })
   })
