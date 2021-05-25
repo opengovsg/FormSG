@@ -1,4 +1,3 @@
-import { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ObjectId } from 'bson'
 import { StatusCodes } from 'http-status-codes'
 import mockAxios from 'jest-mock-axios'
@@ -36,18 +35,13 @@ const MOCK_USER = {
 
 describe('FormService', () => {
   afterEach(() => mockAxios.reset())
-  const MOCK_INTERCEPTOR = {
-    response: (response: AxiosResponse) => response,
-    request: (config: AxiosRequestConfig) => config,
-    responseError: null,
-  }
   describe('queryForm', () => {
     it('should successfully return all available forms if GET request succeeds', async () => {
       // Arrange
       const expected: FormMetaView[] = [_generateMockDashboardViewForm()]
 
       // Act
-      const actualPromise = queryForm(MOCK_INTERCEPTOR)
+      const actualPromise = queryForm()
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -63,7 +57,7 @@ describe('FormService', () => {
       const expected: FormMetaView[] = []
 
       // Act
-      const actualPromise = queryForm(MOCK_INTERCEPTOR)
+      const actualPromise = queryForm()
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -79,7 +73,7 @@ describe('FormService', () => {
       const expected = new Error('error')
 
       // Act
-      const actualPromise = queryForm(MOCK_INTERCEPTOR)
+      const actualPromise = queryForm()
       mockAxios.mockError(expected)
 
       //Assert
@@ -97,11 +91,7 @@ describe('FormService', () => {
       const accessMode = 'adminform'
 
       // Act
-      const actualPromise = getAdminForm(
-        expected._id,
-        MOCK_INTERCEPTOR,
-        accessMode,
-      )
+      const actualPromise = getAdminForm(expected._id, accessMode)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -122,11 +112,7 @@ describe('FormService', () => {
       const accessMode = 'adminform'
 
       // Act
-      const actualPromise = getAdminForm(
-        MOCK_FORM._id,
-        MOCK_INTERCEPTOR,
-        accessMode,
-      )
+      const actualPromise = getAdminForm(MOCK_FORM._id, accessMode)
       mockAxios.mockError(expected)
 
       // Assert
@@ -152,7 +138,7 @@ describe('FormService', () => {
       }
 
       // Act
-      const actualPromise = getPublicForm(MOCK_FORM_ID, MOCK_INTERCEPTOR)
+      const actualPromise = getPublicForm(MOCK_FORM_ID)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -172,7 +158,7 @@ describe('FormService', () => {
       const expected = new Error('error')
 
       // Act
-      const actualPromise = getPublicForm(MOCK_FORM_ID, MOCK_INTERCEPTOR)
+      const actualPromise = getPublicForm(MOCK_FORM_ID)
       mockAxios.mockError(expected)
 
       // Assert
@@ -202,12 +188,7 @@ describe('FormService', () => {
       const accessMode = 'adminform'
 
       // Act
-      const actualPromise = updateForm(
-        MOCK_FORM_ID,
-        update,
-        MOCK_INTERCEPTOR,
-        accessMode,
-      )
+      const actualPromise = updateForm(MOCK_FORM_ID, update, accessMode)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -234,7 +215,7 @@ describe('FormService', () => {
       const accessMode = 'adminform'
 
       // Act
-      const actualPromise = updateForm(MOCK_FORM_ID, update, MOCK_INTERCEPTOR)
+      const actualPromise = updateForm(MOCK_FORM_ID, update)
       mockAxios.mockError(expected)
 
       // Assert
@@ -253,11 +234,7 @@ describe('FormService', () => {
         const MOCK_FIELDS = [_generateMockField()]
 
         // Act
-        const actualPromise = saveForm(
-          MOCK_FORM_ID,
-          MOCK_FIELDS,
-          MOCK_INTERCEPTOR,
-        )
+        const actualPromise = saveForm(MOCK_FORM_ID, MOCK_FIELDS)
         mockAxios.mockResponse({ data: expected })
         const actual = await actualPromise
 
@@ -276,11 +253,7 @@ describe('FormService', () => {
         const MOCK_FIELDS = [_generateMockField()]
 
         // Act
-        const actualPromise = saveForm(
-          MOCK_FORM_ID,
-          MOCK_FIELDS,
-          MOCK_INTERCEPTOR,
-        )
+        const actualPromise = saveForm(MOCK_FORM_ID, MOCK_FIELDS)
         mockAxios.mockError(expected)
 
         // Assert
@@ -299,7 +272,7 @@ describe('FormService', () => {
       const MOCK_FORM_ID = new ObjectId().toHexString()
 
       // Act
-      const actualPromise = deleteForm(MOCK_FORM_ID, MOCK_INTERCEPTOR)
+      const actualPromise = deleteForm(MOCK_FORM_ID)
       mockAxios.mockResponse({
         status: StatusCodes.OK,
         data: { message: 'Form has been archived' },
@@ -318,7 +291,7 @@ describe('FormService', () => {
       const MOCK_FORM_ID = new ObjectId().toHexString()
 
       // Act
-      const actualPromise = deleteForm(MOCK_FORM_ID, MOCK_INTERCEPTOR)
+      const actualPromise = deleteForm(MOCK_FORM_ID)
       mockAxios.mockError(expected)
 
       await expect(actualPromise).rejects.toEqual(expected)
@@ -336,7 +309,7 @@ describe('FormService', () => {
       const MOCK_FORM_PARAMS = { form: [_generateMockField()] }
 
       // Act
-      const actualPromise = createForm(MOCK_FORM_PARAMS, MOCK_INTERCEPTOR)
+      const actualPromise = createForm(MOCK_FORM_PARAMS)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -354,7 +327,7 @@ describe('FormService', () => {
       const MOCK_FORM_PARAMS = { form: [_generateMockField()] }
 
       // Act
-      const actualPromise = createForm(MOCK_FORM_PARAMS, MOCK_INTERCEPTOR)
+      const actualPromise = createForm(MOCK_FORM_PARAMS)
       mockAxios.mockError(expected)
 
       // Assert
@@ -374,11 +347,7 @@ describe('FormService', () => {
       const accessMode = 'adminform'
 
       // Act
-      const actualPromise = queryTemplate(
-        MOCK_FORM_ID,
-        MOCK_INTERCEPTOR,
-        accessMode,
-      )
+      const actualPromise = queryTemplate(MOCK_FORM_ID, accessMode)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -396,11 +365,7 @@ describe('FormService', () => {
       const accessMode = 'adminform'
 
       // Act
-      const actualPromise = queryTemplate(
-        MOCK_FORM_ID,
-        MOCK_INTERCEPTOR,
-        accessMode,
-      )
+      const actualPromise = queryTemplate(MOCK_FORM_ID, accessMode)
       mockAxios.mockError(expected)
 
       // Assert
@@ -418,7 +383,7 @@ describe('FormService', () => {
       const MOCK_FORM_ID = new ObjectId().toHexString()
 
       // Act
-      const actualPromise = previewForm(MOCK_FORM_ID, MOCK_INTERCEPTOR)
+      const actualPromise = previewForm(MOCK_FORM_ID)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -435,7 +400,7 @@ describe('FormService', () => {
       const MOCK_FORM_ID = new ObjectId().toHexString()
 
       // Act
-      const actualPromise = previewForm(MOCK_FORM_ID, MOCK_INTERCEPTOR)
+      const actualPromise = previewForm(MOCK_FORM_ID)
       mockAxios.mockError(expected)
 
       // Assert
@@ -454,11 +419,7 @@ describe('FormService', () => {
       const accessMode = 'adminform'
 
       // Act
-      const actualPromise = useTemplate(
-        MOCK_FORM_ID,
-        MOCK_INTERCEPTOR,
-        accessMode,
-      )
+      const actualPromise = useTemplate(MOCK_FORM_ID, accessMode)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -476,11 +437,7 @@ describe('FormService', () => {
       const accessMode = 'adminform'
 
       // Act
-      const actualPromise = useTemplate(
-        MOCK_FORM_ID,
-        MOCK_INTERCEPTOR,
-        accessMode,
-      )
+      const actualPromise = useTemplate(MOCK_FORM_ID, accessMode)
       mockAxios.mockError(expected)
 
       // Assert
@@ -498,11 +455,7 @@ describe('FormService', () => {
       const MOCK_FORM_ID = new ObjectId().toHexString()
       const MOCK_NEW_OWNER = { email: 'test@open.gov.sg' }
       // Act
-      const actualPromise = transferOwner(
-        MOCK_FORM_ID,
-        MOCK_NEW_OWNER,
-        MOCK_INTERCEPTOR,
-      )
+      const actualPromise = transferOwner(MOCK_FORM_ID, MOCK_NEW_OWNER)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -521,11 +474,7 @@ describe('FormService', () => {
       const MOCK_NEW_OWNER = { email: 'test@open.gov.sg' }
 
       // Act
-      const actualPromise = transferOwner(
-        MOCK_FORM_ID,
-        MOCK_NEW_OWNER,
-        MOCK_INTERCEPTOR,
-      )
+      const actualPromise = transferOwner(MOCK_FORM_ID, MOCK_NEW_OWNER)
       mockAxios.mockError(expected)
 
       // Assert
