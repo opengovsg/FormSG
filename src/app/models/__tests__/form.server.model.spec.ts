@@ -12,6 +12,7 @@ import {
   BasicField,
   EndPage,
   FormFieldWithId,
+  FormLogoState,
   IEncryptedForm,
   IFieldSchema,
   IFormSchema,
@@ -57,6 +58,9 @@ const FORM_DEFAULTS = {
   isListed: true,
   startPage: {
     colorTheme: 'blue',
+    logo: {
+      state: FormLogoState.Default,
+    },
   },
   endPage: {
     title: 'Thank you for filling out the form.',
@@ -1620,7 +1624,7 @@ describe('Form Model', () => {
           lastModified: expect.any(Date),
           startPage: { ...form.startPage, ...updatedStartPage },
         })
-        expect(actual.lastModified! > prevModifiedDate!).toBe(true)
+        expect((actual?.lastModified ?? 0) > (prevModifiedDate ?? 0)).toBe(true)
       })
 
       it('should update start page with defaults when optional values are not provided', async () => {
@@ -1648,6 +1652,9 @@ describe('Form Model', () => {
             ...updatedStartPage,
             // Defaults should be populated and returned
             colorTheme: 'blue',
+            logo: {
+              state: FormLogoState.Default,
+            },
           },
         })
       })
