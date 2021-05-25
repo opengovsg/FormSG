@@ -43,6 +43,7 @@ angular
     'FormSgSdk',
     'externalScope',
     'MailTo',
+    '$q',
     CreateFormModalController,
   ])
 
@@ -61,6 +62,7 @@ function CreateFormModalController(
   FormSgSdk,
   externalScope,
   MailTo,
+  $q,
 ) {
   const vm = this
 
@@ -255,10 +257,12 @@ function CreateFormModalController(
         const formMode = vm.mode
         switch (formMode) {
           case 'duplicate': {
-            FormFactory.generateForm(
-              formMode,
-              formParams,
-              FormToDuplicate._id,
+            $q.when(
+              FormFactory.generateForm(
+                formMode,
+                formParams,
+                FormToDuplicate._id,
+              ),
             ).then((data) => {
               vm.closeCreateModal()
               externalScope.onDuplicateSuccess(data)
@@ -267,30 +271,35 @@ function CreateFormModalController(
           }
           case 'useTemplate': {
             const { form } = externalScope
-            FormFactory.generateForm(formMode, formParams, form._id).then(
-              (data) => {
-                vm.closeCreateModal()
-                vm.goToWithId('viewForm', data._id + '')
-                GTag.examplesClickCreateNewForm(form)
-              },
-              handleCreateFormError,
-            )
+            $q.when(
+              FormFactory.generateForm(formMode, formParams, form._id),
+            ).then((data) => {
+              vm.closeCreateModal()
+              vm.goToWithId('viewForm', data._id + '')
+              GTag.examplesClickCreateNewForm(form)
+            }, handleCreateFormError)
             break
           }
           case 'createFromTemplate': {
             // Create new form from template selected
             const newForm = Object.assign({}, vm.template, formParams)
-            FormFactory.generateForm('create', newForm).then((data) => {
-              vm.closeCreateModal()
-              vm.goToWithId('viewForm', data._id + '')
-            }, handleCreateFormError)
+            $q.when(FormFactory.generateForm('create', newForm)).then(
+              (data) => {
+                vm.closeCreateModal()
+                vm.goToWithId('viewForm', data._id + '')
+              },
+              handleCreateFormError,
+            )
             break
           }
           case 'create': // Create form
-            FormFactory.generateForm(formMode, formParams).then((data) => {
-              vm.closeCreateModal()
-              vm.goToWithId('viewForm', data._id + '')
-            }, handleCreateFormError)
+            $q.when(FormFactory.generateForm(formMode, formParams)).then(
+              (data) => {
+                vm.closeCreateModal()
+                vm.goToWithId('viewForm', data._id + '')
+              },
+              handleCreateFormError,
+            )
             break
         }
       }
