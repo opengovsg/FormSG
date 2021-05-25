@@ -80,6 +80,5 @@ export const downloadFeedback = async (
       })
 
       csvGenerator.triggerFileDownload(`${formTitle}-${formId}-feedback.csv`)
-      return Promise.resolve()
     })
 }
