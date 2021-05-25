@@ -23,6 +23,17 @@ export interface IFormFeedback {
   comment?: string
 }
 
+export type FormFeedbackPostDto = Omit<IFormFeedback, 'formId'> & {
+  isPreview?: boolean
+}
+
+export type FormFeedbackResponseDto = IFormFeedback & {
+  created?: Date
+  lastModified?: Date
+}
+
+export type GetFormFeedbackDto = FeedbackResponse
+
 export interface IFormFeedbackSchema extends IFormFeedback, Document {
   created?: Date
   lastModified?: Date

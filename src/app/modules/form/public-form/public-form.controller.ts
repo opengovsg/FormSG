@@ -6,7 +6,7 @@ import { err } from 'neverthrow'
 import querystring from 'querystring'
 import { UnreachableCaseError } from 'ts-essentials'
 
-import { AuthType } from '../../../../types'
+import { AuthType, FormFeedbackResponseDto } from '../../../../types'
 import {
   ErrorDto,
   PrivateFormErrorDto,
@@ -66,7 +66,7 @@ const validateSubmitFormFeedbackParams = celebrate({
  */
 export const submitFormFeedback: RequestHandler<
   { formId: string },
-  ErrorDto | PrivateFormErrorDto,
+  FormFeedbackResponseDto | ErrorDto | PrivateFormErrorDto,
   { rating: number; comment: string }
 > = async (req, res) => {
   const { formId } = req.params
