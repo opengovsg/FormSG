@@ -75,7 +75,7 @@ function SubmitFormController(
     SpcpSession.setUser(vm.myform.authType)
   } catch (error) {
     Toastr.error(
-      'An error occurred while retrieving logging in. Kindly refresh your browser and log in again, or try again later.',
+      'An error occurred while logging in. Kindly refresh your browser and log in again, or try again later.',
     )
   }
 
