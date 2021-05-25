@@ -21,8 +21,9 @@ angular.module('forms').config([
           FormData: [
             'FormApi',
             '$transition$',
-            function (FormApi, $transition$) {
-              return FormApi.getPublic($transition$.params().formId)
+            '$q',
+            function (FormApi, $transition$, $q) {
+              return $q.when(FormApi.getPublic($transition$.params().formId))
             },
           ],
         },
@@ -115,8 +116,9 @@ angular.module('forms').config([
           FormData: [
             'FormApi',
             '$transition$',
-            function (FormApi, $transition$) {
-              return FormApi.getAdmin($transition$.params().formId)
+            '$q',
+            function (FormApi, $transition$, $q) {
+              return $q.when(FormApi.getAdmin($transition$.params().formId))
             },
           ],
         },
