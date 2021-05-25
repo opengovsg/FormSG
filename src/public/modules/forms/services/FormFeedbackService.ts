@@ -1,11 +1,11 @@
 import axios from 'axios'
 import moment from 'moment-timezone'
 
-import { FormFeedbackPostDto } from '../../../../types'
 import {
+  FormFeedbackPostDto,
   FormFeedbackResponseDto,
   GetFormFeedbackDto,
-} from '../../../../types/form_feedback'
+} from '../../../../types/api/form-feedback'
 import { CsvGenerator } from '../helpers/CsvGenerator'
 
 // Exported for testing

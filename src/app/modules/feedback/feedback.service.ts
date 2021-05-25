@@ -4,10 +4,8 @@ import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 
 import { IFormFeedbackSchema } from '../../../types'
-import {
-  FeedbackResponse,
-  ProcessedFeedback,
-} from '../../../types/form_feedback'
+import { GetFormFeedbackDto } from '../../../types/api/form-feedback'
+import { ProcessedFeedback } from '../../../types/form_feedback'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormFeedbackModel from '../../models/form_feedback.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
@@ -63,7 +61,7 @@ export const getFormFeedbackStream = (
  */
 export const getFormFeedbacks = (
   formId: string,
-): ResultAsync<FeedbackResponse, DatabaseError> => {
+): ResultAsync<GetFormFeedbackDto, DatabaseError> => {
   return ResultAsync.fromPromise(
     FormFeedbackModel.find({ formId }).sort({ created: 1 }).exec(),
     (error) => {

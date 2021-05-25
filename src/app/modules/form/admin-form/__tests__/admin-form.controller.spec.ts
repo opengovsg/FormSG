@@ -65,7 +65,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
 } from 'src/types/api'
-import { FeedbackResponse } from 'src/types/form_feedback'
+import { GetFormFeedbackDto } from 'src/types/api/form-feedback'
 
 import {
   generateDefaultField,
@@ -2406,7 +2406,7 @@ describe('admin-form.controller', () => {
     it('should return 200 with feedback response successfully', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      const expectedFormFeedback: FeedbackResponse = {
+      const expectedFormFeedback: GetFormFeedbackDto = {
         count: 212,
         feedback: [
           {

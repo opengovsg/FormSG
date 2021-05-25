@@ -8,7 +8,7 @@ import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { FeedbackResponse } from '../../../../types/form_feedback'
+import { GetFormFeedbackDto } from '../../../../types/api/form-feedback'
 import { DatabaseError } from '../../core/core.errors'
 import * as FeedbackService from '../feedback.service'
 
@@ -182,7 +182,7 @@ describe('feedback.service', () => {
       const actualResult = await FeedbackService.getFormFeedbacks(mockFormId)
 
       // Assert
-      const expectedResult: FeedbackResponse = {
+      const expectedResult: GetFormFeedbackDto = {
         count: 1,
         average: '3.00',
         feedback: [

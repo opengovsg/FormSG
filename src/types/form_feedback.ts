@@ -11,29 +11,11 @@ export type ProcessedFeedback = {
   dateShort: string
 }
 
-export type FeedbackResponse = {
-  average?: string
-  count: number
-  feedback: ProcessedFeedback[]
-}
-
 export interface IFormFeedback {
   formId: IFormSchema['_id']
   rating: number
   comment?: string
 }
-
-export type FormFeedbackPostDto = Omit<IFormFeedback, 'formId'> & {
-  isPreview?: boolean
-}
-
-export type FormFeedbackResponseDto = IFormFeedback & {
-  created?: Date
-  lastModified?: Date
-}
-
-export type GetFormFeedbackDto = FeedbackResponse
-
 export interface IFormFeedbackSchema extends IFormFeedback, Document {
   created?: Date
   lastModified?: Date

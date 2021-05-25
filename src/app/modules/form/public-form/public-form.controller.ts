@@ -6,13 +6,14 @@ import { err } from 'neverthrow'
 import querystring from 'querystring'
 import { UnreachableCaseError } from 'ts-essentials'
 
-import { AuthType, FormFeedbackResponseDto } from '../../../../types'
+import { AuthType } from '../../../../types'
 import {
   ErrorDto,
   PrivateFormErrorDto,
   PublicFormAuthRedirectDto,
   PublicFormAuthValidateEsrvcIdDto,
 } from '../../../../types/api'
+import { FormFeedbackResponseDto } from '../../../../types/api/form-feedback'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
