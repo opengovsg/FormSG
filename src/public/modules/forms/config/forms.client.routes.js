@@ -133,7 +133,8 @@ angular.module('forms').config([
           'build@viewForm': {
             template: `<edit-form-directive
               myform="myform"
-              update-form="updateForm(update)">
+              update-form="updateForm(update)"
+              update-form-end-page="updateFormEndPage(newEndPage)">
               </edit-form-directive>`,
           },
           'logic@viewForm': {

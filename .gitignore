@@ -31,6 +31,10 @@ dist/
 *.sublime-project
 *.sublime-workspace
 
+# IntelliJ editor
+# ==============
+.idea/
+
 # General
 # =======
 *.log

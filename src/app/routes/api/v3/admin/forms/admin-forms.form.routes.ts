@@ -128,6 +128,20 @@ AdminFormsFormRouter.route(
    * @returns 500 when database error occurs during deletion
    */
   .delete(AdminFormController.handleDeleteFormField)
+  /**
+   * Retrives the form field using the fieldId from the specified form
+   * @route GET /admin/forms/:formId/fields/:fieldId
+   * @security session
+   *
+   * @returns 200 with form field when retrieval is successful
+   * @returns 403 when current user does not have permissions to retrieve form field
+   * @returns 404 when form cannot be found
+   * @returns 404 when form field cannot be found
+   * @returns 410 when retrieving form field of an archived form
+   * @returns 422 when user in session cannot be retrieved from the database
+   * @returns 500 when database error occurs
+   */
+  .get(AdminFormController.handleGetFormField)
 
 AdminFormsFormRouter.post(
   '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/reorder',
@@ -137,4 +151,9 @@ AdminFormsFormRouter.post(
 AdminFormsFormRouter.post(
   '/:formId([a-fA-F0-9]{24})/fields',
   AdminFormController.handleCreateFormField,
+)
+
+AdminFormsFormRouter.put(
+  '/:formId([a-fA-F0-9]{24})/end-page',
+  AdminFormController.handleUpdateEndPage,
 )

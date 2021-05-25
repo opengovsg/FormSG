@@ -1,6 +1,6 @@
-import config from './app/config/config'
-import { createLoggerWithLabel } from './app/config/logger'
-import loadApp from './app/loaders'
+import config from './config/config'
+import { createLoggerWithLabel } from './config/logger'
+import loadApp from './loaders'
 
 const logger = createLoggerWithLabel(module)
 

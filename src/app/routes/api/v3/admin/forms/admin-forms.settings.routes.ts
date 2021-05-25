@@ -3,10 +3,7 @@ import { Router } from 'express'
 
 import { AuthType, Status } from '../../../../../../types'
 import { SettingsUpdateDto } from '../../../../../../types/api'
-import {
-  handleGetSettings,
-  handleUpdateSettings,
-} from '../../../../../modules/form/admin-form/admin-form.controller'
+import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 
 export const AdminFormsSettingsRouter = Router()
 
@@ -52,7 +49,7 @@ AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings')
    * @returns 422 when user in session cannot be retrieved from the database
    * @returns 500 when database error occurs
    */
-  .patch(updateSettingsValidator, handleUpdateSettings)
+  .patch(updateSettingsValidator, AdminFormController.handleUpdateSettings)
   /**
    * Retrieve the settings of the specified form
    * @route GET /admin/forms/:formId/settings
@@ -65,4 +62,37 @@ AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings')
    * @returns 409 when saving form settings incurs a conflict in the database
    * @returns 500 when database error occurs
    */
-  .get(handleGetSettings)
+  .get(AdminFormController.handleGetSettings)
+
+AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/collaborators')
+  /**
+   * Updates the collaborator list for a given formId
+   * @route PUT /admin/forms/:formId/collaborators
+   * @group admin
+   * @precondition Must be preceded by request validation
+   * @security session
+   *
+   * @returns 200 with updated collaborators and permissions
+   * @returns 403 when current user does not have permissions to update the collaborators
+   * @returns 404 when form cannot be found
+   * @returns 410 when updating collaborators for an archived form
+   * @returns 422 when user in session cannot be retrieved from the database
+   * @returns 500 when database error occurs
+   */
+  .put(AdminFormController.handleUpdateCollaborators)
+  /**
+   * Retrieves the collaborators for a given formId
+   * @route GET /admin/forms/:formId/collaborators
+   * @group admin
+   * @precondition Must be preceded by request validation
+   * @security session
+
+   *
+   * @returns 200 with collaborators
+   * @returns 403 when current user does not have read permissions for the form
+   * @returns 404 when form cannot be found
+   * @returns 410 when retrieving collaborators for an archived form
+   * @returns 422 when user in session cannot be retrieved from the database
+   * @returns 500 when database error occurs
+   */
+  .get(AdminFormController.handleGetFormCollaborators)

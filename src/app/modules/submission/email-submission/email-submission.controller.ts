@@ -50,8 +50,6 @@ const submitEmailModeForm: RequestHandler<
   return (
     // Retrieve form
     FormService.retrieveFullFormById(formId)
-      .andThen((form) => EmailSubmissionService.checkFormIsEmailMode(form))
-      // NOTE: This is on the top most level because errors are reported together for the first two
       .mapErr((error) => {
         logger.error({
           message: 'Error while retrieving form from database',
@@ -60,6 +58,16 @@ const submitEmailModeForm: RequestHandler<
         })
         return error
       })
+      .andThen((form) =>
+        EmailSubmissionService.checkFormIsEmailMode(form).mapErr((error) => {
+          logger.warn({
+            message: 'Attempt to submit non-email-mode form',
+            meta: logMeta,
+            error,
+          })
+          return error
+        }),
+      )
       .andThen((form) =>
         // Check that form is public
         // If it is, pass through and return the original form

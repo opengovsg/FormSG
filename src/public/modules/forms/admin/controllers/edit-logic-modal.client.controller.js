@@ -3,6 +3,7 @@
 const { range } = require('lodash')
 const { LogicType } = require('../../../../../types')
 const FormLogic = require('../../services/form-logic/form-logic.client.service')
+const AdminFormService = require('../../../../services/AdminFormService')
 
 angular
   .module('forms')
@@ -11,6 +12,8 @@ angular
     'externalScope',
     'updateLogic',
     'FormFields',
+    '$q',
+    'Toastr',
     EditLogicModalController,
   ])
 
@@ -19,6 +22,8 @@ function EditLogicModalController(
   externalScope,
   updateLogic,
   FormFields,
+  $q,
+  Toastr,
 ) {
   const vm = this
 
@@ -263,19 +268,40 @@ function EditLogicModalController(
 
     if (isNew) {
       vm.formLogics.push(vm.logic)
+      updateLogic({ form_logics: vm.formLogics }).then((error) => {
+        if (!error) {
+          $uibModalInstance.close()
+        }
+      })
       // Not new, and logic index is provided
     } else if (logicIndex !== -1) {
-      vm.formLogics[logicIndex] = vm.logic
+      vm.updateExistingLogic(logicIndex, vm.logic)
     }
-
-    updateLogic({ form_logics: vm.formLogics }).then((error) => {
-      if (!error) {
-        $uibModalInstance.close()
-      }
-    })
   }
 
   vm.cancel = function () {
     $uibModalInstance.close()
+  }
+
+  vm.updateExistingLogic = function (logicIndex, updatedLogic) {
+    const logicIdToUpdate = vm.formLogics[logicIndex]._id
+    $q.when(
+      AdminFormService.updateFormLogic(
+        vm.myform._id,
+        logicIdToUpdate,
+        updatedLogic,
+      ),
+    )
+      .then((updatedLogic) => {
+        const updatedFormLogics = [...vm.formLogics]
+        updatedFormLogics[logicIndex] = updatedLogic
+        vm.formLogics = updatedFormLogics
+        externalScope.myform.form_logics = updatedFormLogics // update global myform
+        $uibModalInstance.close()
+      })
+      .catch((logicUpdateError) => {
+        console.error(logicUpdateError)
+        Toastr.error('Failed to update logic, please refresh and try again!')
+      })
   }
 }
