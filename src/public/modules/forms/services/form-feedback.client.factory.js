@@ -1,7 +1,7 @@
 'use strict'
 
 const { fixParamsToUrl } = require('../helpers/util')
-const CsvGenerator = require('../helpers/CsvGenerator')
+const { CsvGenerator } = require('../helpers/CsvGenerator')
 const moment = require('moment-timezone')
 
 class FeedbackCsvGenerator extends CsvGenerator {
