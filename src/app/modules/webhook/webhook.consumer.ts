@@ -138,7 +138,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
         },
         error: requeueResult.error,
       })
-      // Reject so requeue can be re-attempted
+      // Reject so message is moved to DLQ
       return Promise.reject()
     }
     // Delete existing message from queue
@@ -198,6 +198,19 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
     })
     return Promise.resolve()
   }
+  // Special handling for retries not enabled - this should not be moved
+  // to DLQ as admin has disabled webhooks and/or webhook retries on purpose
+  if (retryResult.error instanceof WebhookRetriesNotEnabledError) {
+    logger.warn({
+      message: 'Webhook retries no longer enabled on form',
+      meta: {
+        action: 'createWebhookQueueHandler',
+        webhookMessage: webhookMessage.prettify(),
+      },
+    })
+    return Promise.resolve()
+  }
+  // Remaining cases are unexpected errors, move to DLQ
   logger.error({
     message: 'Error while attempting to retry webhook',
     meta: {
@@ -206,7 +219,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
     },
     error: retryResult.error,
   })
-  // Reject so retry can be reattempted or moved to dead-letter queue
+  // Reject so retry can be moved to dead-letter queue
   // if redrive policy is exceeded
   return Promise.reject()
 }
