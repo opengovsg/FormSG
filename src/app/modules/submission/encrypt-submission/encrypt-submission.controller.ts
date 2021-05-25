@@ -58,8 +58,20 @@ const Joi = BaseJoi.extend(JoiDate)
 
 const submitEncryptModeForm: RequestHandler = async (req, res) => {
   const { formId } = req.params
+
+  if ('isPreview' in req.body) {
+    logger.info({
+      message:
+        'isPreview is still being sent when submitting encrypt mode form',
+      meta: {
+        action: 'submitEncryptModeForm',
+        type: 'deprecatedCheck',
+      },
+    })
+  }
+
   const logMeta = {
-    action: 'handleEncryptedSubmission',
+    action: 'submitEncryptModeForm',
     ...createReqMeta(req),
     formId,
   }

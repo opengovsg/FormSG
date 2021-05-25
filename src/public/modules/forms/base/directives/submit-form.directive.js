@@ -1,8 +1,11 @@
 'use strict'
-const { cloneDeep } = require('lodash')
+const cloneDeep = require('lodash/cloneDeep')
+const get = require('lodash/get')
 
 const FieldVerificationService = require('../../../../services/FieldVerificationService')
 const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
+const PublicFormService = require('../../../../services/PublicFormService')
+const AdminFormService = require('../../../../services/AdminFormService')
 const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
@@ -30,6 +33,7 @@ angular
     'GTag',
     'SpcpSession',
     'captchaService',
+    'responseModeEnum',
     'Toastr',
     '$filter',
     'Submissions',
@@ -44,6 +48,7 @@ function submitFormDirective(
   GTag,
   SpcpSession,
   captchaService,
+  responseModeEnum,
   Toastr,
   $filter,
   Submissions,
@@ -303,10 +308,7 @@ function submitFormDirective(
         let submissionContent
 
         try {
-          submissionContent = Object.assign(
-            { captchaResponse: captchaService.response },
-            await form.getSubmissionContent(),
-          )
+          submissionContent = await form.getSubmissionContent()
         } catch (err) {
           return handleSubmitFailure(
             err,
@@ -315,13 +317,53 @@ function submitFormDirective(
           )
         }
 
-        Submissions.post(
-          {
-            formId: scope.form._id,
-            responseMode: form.responseMode,
-          },
-          submissionContent, // POST body
-        ).then(handleSubmitSuccess, handleSubmitFailure)
+        const captchaResponse = captchaService.response
+
+        switch (form.responseMode) {
+          case responseModeEnum.EMAIL: {
+            const content = { responses: submissionContent.responses }
+
+            const submitFn = form.isPreview
+              ? AdminFormService.submitEmailModeFormPreview
+              : PublicFormService.submitEmailModeForm
+
+            return $q
+              .when(
+                submitFn({
+                  formId: scope.form._id,
+                  content,
+                  captchaResponse,
+                  attachments: submissionContent.attachments,
+                }),
+              )
+              .then(handleSubmitSuccess)
+              .catch(handleSubmitFailure)
+          }
+          case responseModeEnum.ENCRYPT: {
+            const submitFn = form.isPreview
+              ? AdminFormService.submitStorageModeFormPreview
+              : PublicFormService.submitStorageModeForm
+
+            return $q
+              .when(
+                submitFn({
+                  formId: scope.form._id,
+                  content: submissionContent,
+                  captchaResponse,
+                }),
+              )
+              .then(handleSubmitSuccess)
+              .catch(handleSubmitFailure)
+          }
+          default:
+            handleSubmitFailure(
+              new Error(
+                'Invalid response mode',
+                'There was an error while processing your submission. Please refresh and try again. ' +
+                  'If the problem persists, try using a different browser.',
+              ),
+            )
+        }
       }
 
       /**
@@ -355,10 +397,20 @@ function submitFormDirective(
        */
       const handleSubmitFailure = (error, toastMessage) => {
         const form = scope.form
+        const errorMessage = get(
+          error,
+          'response.data.message',
+          get(
+            error,
+            'message',
+            "Please refresh and try again. If this doesn't work, try switching devices or networks.",
+          ),
+        )
+
         console.error('Submission error:\t', error)
         setFormState(FORM_STATES.SUBMISSION_ERROR)
         if (!toastMessage) {
-          toastMessage = error
+          toastMessage = errorMessage
         }
         Toastr.error(
           toastMessage,
@@ -370,7 +422,7 @@ function submitFormDirective(
           'Submission Error',
         )
         GTag.submitFormFailure(form, startDate, Date.now(), error)
-        if (error.spcpSubmissionFailure) {
+        if (get(error, 'response.data.spcpSubmissionFailure')) {
           SpcpSession.logout()
         }
 

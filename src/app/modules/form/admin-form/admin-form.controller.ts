@@ -1473,7 +1473,7 @@ export const handleEncryptPreviewSubmission = [
 export const submitEmailPreview: RequestHandler<
   { formId: string },
   { message: string; submissionId?: string },
-  { responses: FieldResponse[]; isPreview: boolean },
+  { responses: FieldResponse[] },
   { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params

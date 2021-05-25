@@ -5103,7 +5103,6 @@ describe('admin-form.controller', () => {
     } as IEmailSubmissionSchema
     const MOCK_SUBMISSION_BODY = {
       responses: MOCK_RESPONSES,
-      isPreview: false,
     }
     const MOCK_DATA_COLLATION_DATA = 'mockDataCollation'
     const MOCK_FORM_DATA = 'mockFormData'
@@ -6063,7 +6062,6 @@ describe('admin-form.controller', () => {
       responses: MOCK_RESPONSES,
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
       version: MOCK_VERSION,
-      isPreview: false,
       attachments: {
         [new ObjectId().toHexString()]: {
           encryptedFile: {
