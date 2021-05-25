@@ -1,6 +1,8 @@
 'use strict'
-const { Colors } = require('../../../../../types/form.ts')
+const get = require('lodash/get')
 const axios = require('axios').default
+
+const { Colors } = require('../../../../../types/form.ts')
 const {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
@@ -38,6 +40,14 @@ function EditStartPageController(
 
   // Make a copy so nothing is changed in the original.
   vm.myform = angular.copy(myform)
+
+  // Populate start page with default if it does not exist.
+  if (get(vm.myform, 'startPage.logo')) {
+    vm.myform.startPage = {
+      logo: FormLogoState.Default,
+    }
+  }
+
   vm.colorThemes = Object.values(Colors)
   vm.hasClickedSave = false
 
