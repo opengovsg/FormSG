@@ -42,7 +42,7 @@ function EditStartPageController(
   vm.myform = angular.copy(myform)
 
   // Populate start page with default if it does not exist.
-  if (get(vm.myform, 'startPage.logo')) {
+  if (!get(vm.myform, 'startPage.logo')) {
     vm.myform.startPage = {
       logo: FormLogoState.Default,
     }
