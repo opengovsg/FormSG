@@ -9,7 +9,12 @@ import {
   PublicFormAuthValidateEsrvcIdDto,
 } from '../../types/api'
 
-enum PublicFormAuthCookieName {
+type AuthTypeWithJwt = AuthType.CP | AuthType.SP
+
+/**
+ * Exported for testing.
+ */
+export enum PublicFormAuthCookieName {
   SP = 'jwtSp',
   CP = 'jwtCp',
 }
@@ -54,8 +59,8 @@ export const validateEsrvcId = async (
  * @param authType the auth type to retrieve the mapped cookie name for
  * @returns cookie name if mapping exists, null otherwise
  */
-export const mapAuthTypeToCookieName = (
-  authType: AuthType,
+const mapAuthTypeToCookieName = (
+  authType: AuthTypeWithJwt,
 ): PublicFormAuthCookieName | null => {
   switch (authType) {
     case AuthType.SP:
@@ -68,11 +73,11 @@ export const mapAuthTypeToCookieName = (
 }
 
 /**
- * Get stored public form auth cookie of given authType, if available.
- * @param authType the type of cookie to retrieve
- * @returns cookie string related to authType if available, else return null
+ * Get stored public form auth jwt of given authType, if available.
+ * @param authType the type of jwt to retrieve
+ * @returns jwt string related to authType if available, else return null
  */
-export const getStoredJwt = (authType: AuthType): string | null => {
+export const getStoredJwt = (authType: AuthTypeWithJwt): string | null => {
   const cookieName = mapAuthTypeToCookieName(authType)
   if (!cookieName) return null
   return Cookies.get(cookieName) ?? null
@@ -87,7 +92,7 @@ export const getStoredJwt = (authType: AuthType): string | null => {
  * @throws jwt-decode#InvalidTokenError if retrieved jwt is malformed
  * @throws Error if retrieved jwt shape does not match expected
  */
-export const getDecodedJwt = (authType: AuthType): SpcpAuth | null => {
+export const getDecodedJwt = (authType: AuthTypeWithJwt): SpcpAuth | null => {
   const jwt = getStoredJwt(authType)
   if (!jwt) return null
 
@@ -107,7 +112,7 @@ export const getDecodedJwt = (authType: AuthType): SpcpAuth | null => {
  * @param authType the auth type for deleting cookie mapped to that auth type
  */
 export const logout = (
-  authType: AuthType,
+  authType: AuthTypeWithJwt,
   options: Cookies.CookieAttributes = {},
 ): void => {
   const cookieToRemove = mapAuthTypeToCookieName(authType)
