@@ -12,7 +12,12 @@ import {
   EncryptedSubmissionDto,
   SubmissionMetadataList,
 } from '../../../../types'
-import { EncryptSubmissionDto, ErrorDto } from '../../../../types/api'
+import {
+  EncryptSubmissionDto,
+  ErrorDto,
+  SubmissionErrorDto,
+  SubmissionResponseDto,
+} from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
@@ -58,13 +63,7 @@ const Joi = BaseJoi.extend(JoiDate)
 
 const submitEncryptModeForm: RequestHandler<
   { formId: string },
-  {
-    message: string
-    submissionId?: string
-    spcpSubmissionFailure?: boolean
-    isPageFound?: boolean
-    formTitle?: string
-  },
+  SubmissionResponseDto | SubmissionErrorDto,
   EncryptSubmissionDto,
   { captchaResponse?: unknown }
 > = async (req, res) => {
@@ -129,8 +128,6 @@ const submitEncryptModeForm: RequestHandler<
     } else {
       return res.status(statusCode).json({
         message: form.inactiveMessage,
-        isPageFound: true,
-        formTitle: form.title,
       })
     }
   }
@@ -166,8 +163,6 @@ const submitEncryptModeForm: RequestHandler<
     const { statusCode } = mapRouteError(formSubmissionLimitResult.error)
     return res.status(statusCode).json({
       message: form.inactiveMessage,
-      isPageFound: true,
-      formTitle: form.title,
     })
   }
 
@@ -353,7 +348,6 @@ const submitEncryptModeForm: RequestHandler<
       message:
         'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
       submissionId: submission._id,
-      spcpSubmissionFailure: false,
     })
   }
 
