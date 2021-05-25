@@ -15,7 +15,6 @@ import {
   DatabaseValidationError,
 } from 'src/app/modules/core/core.errors'
 import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
-import { FeedbackResponse } from 'src/app/modules/feedback/feedback.types'
 import {
   AttachmentTooLargeError,
   InvalidFileExtensionError,
@@ -66,6 +65,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
 } from 'src/types/api'
+import { FeedbackResponse } from 'src/types/form_feedback'
 
 import {
   generateDefaultField,

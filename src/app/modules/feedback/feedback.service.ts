@@ -4,12 +4,14 @@ import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 
 import { IFormFeedbackSchema } from '../../../types'
+import {
+  FeedbackResponse,
+  ProcessedFeedback,
+} from '../../../types/form_feedback'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormFeedbackModel from '../../models/form_feedback.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
-
-import { FeedbackResponse, ProcessedFeedback } from './feedback.types'
 
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
 const logger = createLoggerWithLabel(module)
