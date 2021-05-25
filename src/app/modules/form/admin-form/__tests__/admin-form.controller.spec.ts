@@ -65,7 +65,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
 } from 'src/types/api'
-import { GetFormFeedbackDto } from 'src/types/api/form-feedback'
+import { GetFormFeedbackDto } from 'src/types/api/form_feedback'
 
 import {
   generateDefaultField,

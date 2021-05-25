@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson'
 import moment from 'moment-timezone'
 
-import { FormFeedbackResponseDto } from '../../../../../types/api/form-feedback'
+import { FormFeedbackResponseDto } from '../../../../../types/api/form_feedback'
 import { FeedbackCsvGenerator } from '../FeedbackCsvGenerator'
 
 describe('FeedbackCsvGenerator', () => {

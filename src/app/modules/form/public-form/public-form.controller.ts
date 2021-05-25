@@ -13,7 +13,7 @@ import {
   PublicFormAuthRedirectDto,
   PublicFormAuthValidateEsrvcIdDto,
 } from '../../../../types/api'
-import { FormFeedbackResponseDto } from '../../../../types/api/form-feedback'
+import { FormFeedbackResponseDto } from '../../../../types/api/form_feedback'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'

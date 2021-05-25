@@ -4,7 +4,7 @@ import {
   FormFeedbackPostDto,
   FormFeedbackResponseDto,
   GetFormFeedbackDto,
-} from '../../types/api/form-feedback'
+} from '../../types/api/form_feedback'
 import { FeedbackCsvGenerator } from '../modules/forms/helpers/FeedbackCsvGenerator'
 
 // Exported for testing
