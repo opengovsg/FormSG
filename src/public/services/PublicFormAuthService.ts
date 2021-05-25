@@ -19,13 +19,13 @@ export enum PublicFormAuthCookieName {
   CP = 'jwtCp',
 }
 
-const SpcpAuth = z.object({
+export const SpcpAuth = z.object({
   userName: z.string(),
   rememberMe: z.boolean(),
   iat: z.number(),
   exp: z.number(),
 })
-type SpcpAuth = z.infer<typeof SpcpAuth>
+export type SpcpAuth = z.infer<typeof SpcpAuth>
 
 // Exported for testing
 export const PUBLIC_FORMS_ENDPOINT = '/api/v3/forms'
