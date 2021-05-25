@@ -356,6 +356,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               'Webhook must be a valid URL over HTTPS and point to a public IP.',
           },
         },
+        isRetryEnabled: {
+          type: Boolean,
+          default: false,
+        },
       },
 
       msgSrvcName: {
