@@ -2,10 +2,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
-import {
-  SALT_ROUNDS,
-  VERIFIED_FIELDTYPES,
-} from '../../../shared/util/verification'
+import { SALT_ROUNDS } from '../../../shared/util/verification'
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
@@ -243,7 +240,6 @@ export const _handleGenerateOtp: RequestHandler<
 export const handleGenerateOtp = [
   celebrate({
     [Segments.BODY]: Joi.object({
-      fieldType: Joi.string().valid(...VERIFIED_FIELDTYPES),
       answer: Joi.string().required(),
     }),
   }),
