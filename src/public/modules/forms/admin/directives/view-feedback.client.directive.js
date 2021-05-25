@@ -1,6 +1,6 @@
 'use strict'
 
-const FormFeedback = require('../../../../services/FormFeedbackService')
+const FormFeedbackService = require('../../../../services/FormFeedbackService')
 
 angular
   .module('forms')
@@ -81,7 +81,7 @@ function viewFeedbackDirective(
         })
 
         $scope.createFeedbackTable = function (submissionCount) {
-          $q.when(FormFeedback.getFeedback($scope.myform._id)).then(
+          $q.when(FormFeedbackService.getFeedback($scope.myform._id)).then(
             function (response) {
               // Configure table
               $scope.tableParams = new NgTableParams(
@@ -125,11 +125,11 @@ function viewFeedbackDirective(
           const formTitle = $scope.myform.title
 
           $scope.csvDownloading = true
-          $q.when(FormFeedback.downloadFeedback(formId, formTitle)).finally(
-            function () {
-              $scope.csvDownloading = false
-            },
-          )
+          $q.when(
+            FormFeedbackService.downloadFeedback(formId, formTitle),
+          ).finally(function () {
+            $scope.csvDownloading = false
+          })
         }
       },
     ],

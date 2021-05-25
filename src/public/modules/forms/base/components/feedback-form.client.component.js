@@ -1,6 +1,6 @@
 'use strict'
 
-const FormFeedback = require('../../../../services/FormFeedbackService')
+const FormFeedbackService = require('../../../../services/FormFeedbackService')
 
 angular.module('forms').component('feedbackFormComponent', {
   templateUrl:
@@ -33,7 +33,7 @@ function feedbackController(Toastr, $q) {
         isPreview: vm.isPreview,
       }
 
-      $q.when(FormFeedback.postFeedback(vm.formId, feedback)).then(
+      $q.when(FormFeedbackService.postFeedback(vm.formId, feedback)).then(
         function () {
           vm.isSubmitted = true
           vm.isLoading = false
