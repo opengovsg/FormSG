@@ -20,7 +20,6 @@ const MOCK_ENCRYPTED_CONTENT = `${'a'.repeat(44)};${'a'.repeat(
 const MOCK_SUBMISSION_BODY = {
   responses: [],
   encryptedContent: MOCK_ENCRYPTED_CONTENT,
-  isPreview: false,
   version: 1,
 }
 

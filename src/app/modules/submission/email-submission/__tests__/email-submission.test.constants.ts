@@ -16,7 +16,6 @@ import {
 
 export const MOCK_NO_RESPONSES_BODY = {
   responses: [],
-  isPreview: false,
 }
 
 export const MOCK_TEXT_FIELD = generateDefaultField(BasicField.ShortText)

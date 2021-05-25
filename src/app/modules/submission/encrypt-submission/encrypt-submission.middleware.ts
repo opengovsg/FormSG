@@ -47,7 +47,10 @@ export const validateEncryptSubmissionParams = celebrate({
         }),
       )
       .optional(),
-    isPreview: Joi.boolean().required(),
+    /**
+     * @deprecated unused key, but frontend may still send it.
+     */
+    isPreview: Joi.boolean(),
     version: Joi.number().required(),
   }),
 })

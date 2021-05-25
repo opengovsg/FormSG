@@ -12,6 +12,7 @@ import {
   BasicField,
   EndPage,
   FormFieldWithId,
+  FormLogoState,
   IEncryptedForm,
   IFieldSchema,
   IFormSchema,
@@ -20,6 +21,7 @@ import {
   LogicType,
   Permission,
   ResponseMode,
+  StartPage,
   Status,
 } from 'src/types'
 
@@ -56,6 +58,9 @@ const FORM_DEFAULTS = {
   isListed: true,
   startPage: {
     colorTheme: 'blue',
+    logo: {
+      state: FormLogoState.Default,
+    },
   },
   endPage: {
     title: 'Thank you for filling out the form.',
@@ -1057,6 +1062,149 @@ describe('Form Model', () => {
       })
     })
 
+    describe('createFormLogic', () => {
+      const logicId = new ObjectId().toHexString()
+
+      const mockExistingFormLogic = {
+        form_logics: [
+          {
+            _id: logicId,
+            logicType: LogicType.ShowFields,
+          } as ILogicSchema,
+        ],
+      }
+
+      const mockNewFormLogic = ({
+        logicType: LogicType.PreventSubmit,
+      } as unknown) as ILogicSchema
+
+      it('should return form upon successful create logic if form_logic is currently empty', async () => {
+        // arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          status: Status.Public,
+          responseMode: ResponseMode.Email,
+          form_logics: [],
+        })
+        const form = await Form.create(formParams)
+
+        // act
+        const modifiedForm = await Form.createFormLogic(
+          form._id,
+          mockNewFormLogic,
+        )
+
+        // assert
+        // Form should be returned
+        expect(modifiedForm).not.toBeNull()
+
+        // Form should have correct status, responsemode
+        expect(modifiedForm?.responseMode).not.toBeNull()
+        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.status).not.toBeNull()
+        expect(modifiedForm?.status).toEqual(Status.Public)
+
+        // Check that form logic has been added
+        expect(modifiedForm?.form_logics).toBeDefined()
+        expect(modifiedForm?.form_logics).toHaveLength(1)
+        expect(modifiedForm!.form_logics![0].logicType).toEqual(
+          LogicType.PreventSubmit,
+        )
+      })
+
+      it('should allow the same logic to be added more than once and then return form if createLogic is called more than once', async () => {
+        // arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          status: Status.Public,
+          responseMode: ResponseMode.Email,
+          form_logics: [],
+        })
+        const form = await Form.create(formParams)
+
+        // act
+        await Form.createFormLogic(form._id, mockNewFormLogic)
+
+        const modifiedFormRepeat = await Form.createFormLogic(
+          form._id,
+          mockNewFormLogic,
+        )
+
+        // assert
+        // Form should be returned
+        expect(modifiedFormRepeat).not.toBeNull()
+
+        // Form should have correct status, responsemode
+        expect(modifiedFormRepeat?.responseMode).not.toBeNull()
+        expect(modifiedFormRepeat?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedFormRepeat?.status).not.toBeNull()
+        expect(modifiedFormRepeat?.status).toEqual(Status.Public)
+
+        // Check that form logic has been added
+        expect(modifiedFormRepeat?.form_logics).toBeDefined()
+        expect(modifiedFormRepeat?.form_logics).toHaveLength(2)
+        expect(modifiedFormRepeat!.form_logics![0].logicType).toEqual(
+          LogicType.PreventSubmit,
+        )
+        expect(modifiedFormRepeat!.form_logics![1].logicType).toEqual(
+          LogicType.PreventSubmit,
+        )
+      })
+
+      it('should return form upon successful create logic if form_logic has existing elements', async () => {
+        // arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          status: Status.Public,
+          responseMode: ResponseMode.Email,
+          ...mockExistingFormLogic,
+        })
+        const form = await Form.create(formParams)
+
+        // act
+        const modifiedForm = await Form.createFormLogic(
+          form._id,
+          mockNewFormLogic,
+        )
+
+        // assert
+        // Form should be returned
+        expect(modifiedForm).not.toBeNull()
+
+        // Form should have correct status, responsemode
+        expect(modifiedForm?.responseMode).not.toBeNull()
+        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.status).not.toBeNull()
+        expect(modifiedForm?.status).toEqual(Status.Public)
+
+        // Check that form logic has been added
+        expect(modifiedForm?.form_logics).toBeDefined()
+        expect(modifiedForm?.form_logics).toHaveLength(2)
+        expect(modifiedForm!.form_logics![0].logicType).toEqual(
+          LogicType.ShowFields,
+        )
+        expect(modifiedForm!.form_logics![1].logicType).toEqual(
+          LogicType.PreventSubmit,
+        )
+      })
+
+      it('should return null if formId is invalid', async () => {
+        // arrange
+
+        const invalidFormId = new ObjectId().toHexString()
+
+        // act
+        const modifiedForm = await Form.createFormLogic(
+          invalidFormId,
+          mockNewFormLogic,
+        )
+
+        // assert
+        // should return null
+        expect(modifiedForm).toBeNull()
+      })
+    })
+
     describe('deleteFormLogic', () => {
       const logicId = new ObjectId().toHexString()
       const mockFormLogic = {
@@ -1443,6 +1591,90 @@ describe('Form Model', () => {
         expect(modifiedForm!.form_logics![0].logicType).toEqual(
           LogicType.ShowFields,
         )
+      })
+    })
+
+    describe('updateStartPageById', () => {
+      it('should update start page and return updated form when successful', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+          startPage: {
+            title: 'old title',
+          },
+        })
+        const form = (await Form.create(formParams)).toObject()
+        const prevModifiedDate = form.lastModified
+        const updatedStartPage: StartPage = {
+          paragraph: 'some description paragraph',
+          // This is a huge form.
+          estTimeTaken: 10000000,
+        }
+
+        // Act
+        const actual = await Form.updateStartPageById(
+          form._id,
+          updatedStartPage,
+        )
+
+        // Assert
+        // Should have defaults populated but also replace the startPage with the new params
+        expect(actual?.toObject()).toEqual({
+          ...form,
+          lastModified: expect.any(Date),
+          startPage: { ...form.startPage, ...updatedStartPage },
+        })
+        expect((actual?.lastModified ?? 0) > (prevModifiedDate ?? 0)).toBe(true)
+      })
+
+      it('should update start page with defaults when optional values are not provided', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+        })
+        const form = (await Form.create(formParams)).toObject()
+        const updatedStartPage: StartPage = {
+          paragraph: 'some description paragraph',
+        }
+
+        // Act
+        const actual = await Form.updateStartPageById(
+          form._id,
+          updatedStartPage,
+        )
+
+        // Assert
+        // Should have defaults populated but also replace the start page with the new params
+        expect(actual?.toObject()).toEqual({
+          ...form,
+          lastModified: expect.any(Date),
+          startPage: {
+            ...updatedStartPage,
+            // Defaults should be populated and returned
+            colorTheme: 'blue',
+            logo: {
+              state: FormLogoState.Default,
+            },
+          },
+        })
+      })
+
+      it('should return null when formId given is not in the database', async () => {
+        // Arrange
+        await expect(Form.countDocuments()).resolves.toEqual(0)
+        const updatedStartPage: StartPage = {
+          paragraph: 'does not really matter',
+        }
+
+        // Act
+        const actual = await Form.updateStartPageById(
+          new ObjectId().toHexString(),
+          updatedStartPage,
+        )
+
+        // Assert
+        expect(actual).toEqual(null)
+        await expect(Form.countDocuments()).resolves.toEqual(0)
       })
     })
   })
@@ -1837,6 +2069,48 @@ describe('Form Model', () => {
 
         // Assert
         expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+      })
+    })
+
+    describe('duplicateFormFieldById', () => {
+      it('should return updated document with duplicated form field', async () => {
+        // Arrange
+        const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
+
+        validForm.form_fields = [fieldToDuplicate]
+        const fieldId = fieldToDuplicate._id
+
+        // Act
+        const actual = await validForm.duplicateFormFieldById(fieldId)
+        // @ts-ignore
+        const actualDuplicatedField = omit(actual?.form_fields.toObject()[1], [
+          '_id',
+          'globalId',
+        ]) // do not compare _id and globalId
+
+        // Assert
+        const expectedOriginalField = {
+          ...omit(fieldToDuplicate, ['getQuestion']),
+          _id: new ObjectId(fieldToDuplicate._id),
+        }
+        const expectedDuplicatedField = omit(fieldToDuplicate, [
+          '_id',
+          'globalId',
+          'getQuestion',
+        ])
+
+        // @ts-ignore
+        expect(actual?.form_fields.toObject()[0]).toEqual(expectedOriginalField)
+        expect(actualDuplicatedField).toEqual(expectedDuplicatedField)
+      })
+
+      it('should return null if given fieldId is invalid', async () => {
+        const updatedForm = await validForm.duplicateFormFieldById(
+          new ObjectId().toHexString(),
+        )
+
+        // Assert
+        expect(updatedForm).toBeNull()
       })
     })
 
