@@ -37,6 +37,8 @@
     "build-storybook": "build-storybook -s public",
     "lint": "eslint ./ --ignore-path .gitignore && prettier . -c",
     "lint:fix": "eslint ./ --ignore-path .gitignore --fix && prettier . -c --write",
+    "test:a11y": "npm run build-storybook && jest --config .storybook/storyshots/jest.config.js",
+    "test:a11y-dev": "cross-env USE_DEV_SERVER=true jest --config .storybook/storyshots/jest.config.js",
     "pre-commit": "lint-staged"
   },
   "browserslist": {
@@ -52,13 +54,15 @@
     ]
   },
   "devDependencies": {
-    "@storybook/addon-a11y": "^6.3.0-alpha.20",
-    "@storybook/addon-actions": "^6.3.0-alpha.20",
-    "@storybook/addon-essentials": "^6.3.0-alpha.20",
-    "@storybook/addon-links": "^6.3.0-alpha.20",
-    "@storybook/node-logger": "^6.3.0-alpha.20",
-    "@storybook/preset-create-react-app": "^3.1.6-alpha.0",
-    "@storybook/react": "^6.3.0-alpha.20",
+    "@storybook/addon-a11y": "^6.2.9",
+    "@storybook/addon-actions": "^6.2.9",
+    "@storybook/addon-essentials": "^6.2.9",
+    "@storybook/addon-links": "^6.2.9",
+    "@storybook/addon-storyshots": "^6.2.9",
+    "@storybook/addon-storyshots-puppeteer": "^6.2.9",
+    "@storybook/node-logger": "^6.2.9",
+    "@storybook/preset-create-react-app": "^3.1.7",
+    "@storybook/react": "^6.2.9",
     "@types/react-router-dom": "^5.1.7",
     "chromatic": "^5.8.0",
     "cross-env": "^7.0.3",
@@ -66,8 +70,10 @@
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "lint-staged": "^10.5.4",
+    "puppeteer": "^9.1.1",
     "react-app-rewire-alias": "^1.0.3",
     "react-app-rewired": "^2.1.8",
-    "storybook-addon-pseudo-states": "^1.0.0"
+    "storybook-addon-pseudo-states": "^1.0.0",
+    "ts-jest": "^26.5.6"
   }
 }
