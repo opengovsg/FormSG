@@ -70,7 +70,7 @@ export const downloadFeedback = async (
     )
     .then(({ data }) => {
       if (!data) {
-        return Promise.reject(new Error('Feedback size too large to download'))
+        return Promise.reject(new Error('Error downloading feedback'))
       }
 
       const csvGenerator = new FeedbackCsvGenerator(expectedNumResponses)
