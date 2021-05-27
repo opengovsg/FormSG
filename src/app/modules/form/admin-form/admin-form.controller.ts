@@ -498,7 +498,7 @@ const validateDateRange = celebrate({
  */
 export const countFormSubmissions: RequestHandler<
   { formId: string },
-  unknown,
+  ErrorDto | number,
   unknown,
   { startDate?: string; endDate?: string }
 > = async (req, res) => {

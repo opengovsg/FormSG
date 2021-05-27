@@ -18,7 +18,6 @@ angular
     '$timeout',
     '$window',
     'GTag',
-    'responseModeEnum',
     'FormSgSdk',
     SubmissionsFactory,
   ])
@@ -31,15 +30,7 @@ function killWorkers(pool) {
   pool.forEach((worker) => worker.terminate())
 }
 
-function SubmissionsFactory(
-  $q,
-  $http,
-  $timeout,
-  $window,
-  GTag,
-  responseModeEnum,
-  FormSgSdk,
-) {
+function SubmissionsFactory($q, $http, $timeout, $window, GTag, FormSgSdk) {
   const ADMIN_FORMS_PREFIX = '/api/v3/admin/forms'
 
   const generateDownloadUrl = (params, downloadAttachments) => {
@@ -78,6 +69,7 @@ function SubmissionsFactory(
       )
       return deferred.promise
     },
+
     getMetadata: function (params) {
       const deferred = $q.defer()
       let resUrl = `${fixParamsToUrl(
