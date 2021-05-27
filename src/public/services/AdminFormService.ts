@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { FormSettings, LogicDto } from '../../types'
+import { FormSettings, LogicDto, SubmissionMetadataList } from '../../types'
 import {
   EmailSubmissionDto,
   EncryptSubmissionDto,
@@ -12,6 +12,7 @@ import {
   SettingsUpdateDto,
   StartPageUpdateDto,
   SubmissionCountDto,
+  SubmissionMetadataDto,
   SubmissionResponseDto,
 } from '../../types/api'
 import { createEmailSubmissionFormData } from '../utils/submission'
@@ -267,11 +268,35 @@ export const countFormSubmissions = async ({
   startDate,
   endDate,
 }: SubmissionCountDto): Promise<number> => {
-  let queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/count`
-
+  const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/count`
   if (startDate && endDate) {
-    queryUrl += `?startDate=${startDate}&endDate=${endDate}`
+    return axios
+      .get(queryUrl, {
+        params: { startDate, endDate },
+      })
+      .then(({ data }) => data)
   }
-
   return axios.get(queryUrl).then(({ data }) => data)
+}
+
+/**
+ * Retrieves the metadata for either a page of submission or a single submissionId if submissionId is specified
+ * @param formId The id of the form to retrieve submission for
+ * @param submissionId The id of the specified submission to retrieve
+ * @param pageNum The page number of the responses
+ * @returns The metadata of the form
+ */
+export const getFormsMetadata = async ({
+  formId,
+  submissionId,
+  pageNum,
+}: SubmissionMetadataDto): Promise<SubmissionMetadataList> => {
+  const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`
+  const params = submissionId ? { submissionId } : { page: pageNum }
+
+  return axios
+    .get(queryUrl, {
+      params,
+    })
+    .then(({ data }) => data)
 }

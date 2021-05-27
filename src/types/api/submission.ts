@@ -1,3 +1,5 @@
+import { RequireAtLeastOne } from 'type-fest'
+
 import { ErrorDto } from './core'
 
 export type SubmissionResponseDto = {
@@ -12,3 +14,10 @@ export type SubmissionCountDto = {
   startDate?: Date
   endDate?: Date
 }
+
+export type SubmissionMetadataDto = {
+  formId: string
+} & RequireAtLeastOne<{
+  submissionId: string
+  pageNum: number
+}>
