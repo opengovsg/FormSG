@@ -49,48 +49,6 @@ function SubmissionsFactory($q, $http, $timeout, $window, GTag, FormSgSdk) {
   }
 
   const submissionService = {
-    count: function (params) {
-      const deferred = $q.defer()
-      let resUrl = fixParamsToUrl(
-        params,
-        `${ADMIN_FORMS_PREFIX}/:formId/submissions/count`,
-      )
-      if (params.startDate && params.endDate) {
-        resUrl += `?startDate=${params.startDate}&endDate=${params.endDate}`
-      }
-
-      $http.get(resUrl).then(
-        function (response) {
-          deferred.resolve(response.data)
-        },
-        function () {
-          deferred.reject('Submissions count cannot be obtained.')
-        },
-      )
-      return deferred.promise
-    },
-
-    getMetadata: function (params) {
-      const deferred = $q.defer()
-      let resUrl = `${fixParamsToUrl(
-        params,
-        `${ADMIN_FORMS_PREFIX}/:formId/submissions/metadata`,
-      )}?page=${params.page}`
-
-      if (params.filterBySubmissionRefId) {
-        resUrl += `&submissionId=${params.filterBySubmissionRefId}`
-      }
-
-      $http.get(resUrl).then(
-        function (response) {
-          deferred.resolve(response.data)
-        },
-        function () {
-          deferred.reject('Submissions: Responses cannot be obtained.')
-        },
-      )
-      return deferred.promise
-    },
     getEncryptedResponse: function (params) {
       const deferred = $q.defer()
       const resUrl = `${fixParamsToUrl(
@@ -177,6 +135,7 @@ function SubmissionsFactory($q, $http, $timeout, $window, GTag, FormSgSdk) {
       // Creates a new AbortController for every request
       downloadAbortController = new AbortController()
 
+      // TODO: change this to AdminFormService.countFormSubmissions
       return this.count(params).then((expectedNumResponses) => {
         return new Promise(function (resolve, reject) {
           // No responses expected
