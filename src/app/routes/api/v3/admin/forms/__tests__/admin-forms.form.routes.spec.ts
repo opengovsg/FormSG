@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
+import { omit } from 'lodash'
 import mongoose from 'mongoose'
-import { err, errAsync } from 'neverthrow'
+import { err, errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import getFormModel, {
@@ -9,11 +10,21 @@ import getFormModel, {
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
+import * as AuthService from 'src/app/modules/auth/auth.service'
 import {
   DatabaseError,
   DatabasePayloadSizeError,
 } from 'src/app/modules/core/core.errors'
-import { BasicField, IUserSchema, ResponseMode, Status } from 'src/types'
+import {
+  BasicField,
+  Colors,
+  FormLogoState,
+  IPopulatedForm,
+  IUserSchema,
+  ResponseMode,
+  StartPage,
+  Status,
+} from 'src/types'
 
 import {
   createAuthedSession,
@@ -1427,6 +1438,366 @@ describe('admin-form.form.routes', () => {
       expect(response.body).toEqual({
         message: 'Something went wrong. Please try again.',
       })
+    })
+  })
+
+  describe('POST /:formId/fields/:fieldId/duplicate', () => {
+    it('should return 200 with updated form with duplicated field', async () => {
+      // Arrange
+      const fieldToDuplicate = generateDefaultField(BasicField.Date)
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [fieldToDuplicate],
+      })) as IPopulatedForm
+
+      const expectedOriginalField = {
+        ...omit(fieldToDuplicate, ['getQuestion']),
+        _id: new ObjectId(fieldToDuplicate._id),
+      }
+      const expectedDuplicatedField = {
+        ...omit(fieldToDuplicate, ['_id', 'globalId', 'getQuestion']), // do not compare _id and globalId
+      }
+
+      // Act
+      const response = await request.post(
+        `/admin/forms/${formToUpdate._id}/fields/${fieldToDuplicate._id}/duplicate`,
+      )
+
+      // Assert
+      const actual = await EmailFormModel.findById(formToUpdate._id).lean()
+
+      const actualOriginalField = omit(actual?.form_fields![0], [
+        'dateValidation',
+      ])
+
+      const actualDuplicatedField = omit(actual?.form_fields![1], [
+        '_id',
+        'globalId',
+        'dateValidation',
+      ])
+
+      expect(response.status).toEqual(200)
+      expect(actualOriginalField).toEqual(expectedOriginalField)
+      expect(actualDuplicatedField).toEqual(expectedDuplicatedField)
+      expect(actual?.__v).toEqual(1) // mongoose version key should be incremented by one upon save()
+      expect({
+        ...response.body,
+        _id: new ObjectId(response.body._id),
+      }).toEqual(actual?.form_fields![1])
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Date)],
+      })) as IPopulatedForm
+
+      const fieldToDuplicate = formToUpdate.form_fields[0]
+
+      // Act
+      const response = await request.post(
+        `/admin/forms/${formToUpdate._id}/fields/${fieldToDuplicate._id}/duplicate`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user does not have permissions to update form', async () => {
+      // Arrange
+      // Create separate user
+      const collabUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'collab-user',
+          shortName: 'collabUser',
+        })
+      ).user
+
+      const randomForm = (await EncryptFormModel.create({
+        title: 'form that user has no write access to',
+        admin: collabUser._id,
+        publicKey: 'some random key',
+        permissionList: [{ email: defaultUser.email }],
+        form_fields: [generateDefaultField(BasicField.Date)],
+      })) as IPopulatedForm
+
+      const fieldToDuplicate = randomForm.form_fields[0]
+
+      // Act
+      const response = await request.post(
+        `/admin/forms/${randomForm._id}/fields/${fieldToDuplicate._id}/duplicate`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: `User ${defaultUser.email} not authorized to perform write operation on Form ${randomForm._id} with title: ${randomForm.title}.`,
+      })
+    })
+
+    it('should return 404 when form to update cannot be found', async () => {
+      // Arrange
+      const invalidFormId = new ObjectId()
+      const randomFieldId = new ObjectId()
+
+      // Act
+      const response = await request.post(
+        `/admin/forms/${invalidFormId}/fields/${randomFieldId}/duplicate`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 404 when field to duplicate cannot be found', async () => {
+      // Arrange
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Date)],
+      })) as IPopulatedForm
+
+      const randomFieldId = new ObjectId()
+
+      // Act
+      const response = await request.post(
+        `/admin/forms/${formToUpdate._id}/fields/${randomFieldId}/duplicate`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 410 when form is already archived', async () => {
+      // Arrange
+      // Create archived form.
+      const archivedForm = (await EmailFormModel.create({
+        title: 'Form already archived',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Date)],
+        status: Status.Archived,
+      })) as IPopulatedForm
+
+      const fieldToDuplicate = archivedForm.form_fields[0]
+
+      // Act
+      const response = await request.post(
+        `/admin/forms/${archivedForm._id}/fields/${fieldToDuplicate._id}/duplicate`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when user in session cannot be found in the database', async () => {
+      // Arrange
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to archive',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Date)],
+      })) as IPopulatedForm
+
+      const fieldToDuplicate = formToUpdate.form_fields[0]
+
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.post(
+        `/admin/forms/${formToUpdate._id}/fields/${fieldToDuplicate._id}/duplicate`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 500 when database error occurs whilst updating form', async () => {
+      // Arrange
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Date)],
+      })) as IPopulatedForm
+
+      const fieldToDuplicate = formToUpdate.form_fields[0]
+
+      formToUpdate.save = jest
+        .fn()
+        .mockRejectedValue(new Error('something happened'))
+
+      jest
+        .spyOn(AuthService, 'getFormAfterPermissionChecks')
+        .mockReturnValue(okAsync(formToUpdate))
+
+      // Act
+      const response = await request.post(
+        `/admin/forms/${formToUpdate._id}/fields/${fieldToDuplicate._id}/duplicate`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message:
+          'Error: [something happened]. Please refresh and try again. If you still need help, email us at form@open.gov.sg.',
+      })
+    })
+  })
+
+  describe('PUT /admin/forms/:formId/start-page', () => {
+    const MOCK_START_PAGE: StartPage = {
+      paragraph: 'old end page',
+    }
+
+    const MOCK_UPDATED_START_PAGE: StartPage = {
+      paragraph: 'new mock start page title',
+      colorTheme: Colors.Blue,
+      logo: {
+        state: FormLogoState.None,
+      },
+      estTimeTaken: 10,
+    }
+
+    it('should return 200 when the request is successful', async () => {
+      // Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        startPage: MOCK_START_PAGE,
+      })
+
+      // Act
+      const resp = await request
+        .put(`/admin/forms/${form._id}/start-page`)
+        .send(MOCK_UPDATED_START_PAGE)
+
+      // Assert
+      expect(resp.status).toBe(200)
+      expect(resp.body).toEqual(
+        jsonParseStringify({ colorTheme: 'blue', ...MOCK_UPDATED_START_PAGE }),
+      )
+    })
+
+    it('should return 403 when the user does not have permission to update the start page', async () => {
+      // Arrange
+      // Create separate user
+      const { user: formOwner } = await dbHandler.insertFormCollectionReqs({
+        userId: new ObjectId(),
+        mailName: 'collab-user',
+        shortName: 'collabUser',
+      })
+      const form = await EmailFormModel.create({
+        emails: [formOwner.email],
+        title: 'email me',
+        admin: formOwner._id,
+        startPage: MOCK_START_PAGE,
+      })
+      const expectedResponse = {
+        message: `User ${defaultUser.email} not authorized to perform write operation on Form ${form._id} with title: ${form.title}.`,
+      }
+      // Act
+      const resp = await request
+        .put(`/admin/forms/${form._id}/start-page`)
+        .send(MOCK_UPDATED_START_PAGE)
+
+      // Assert
+      expect(resp.status).toBe(403)
+      expect(resp.body).toEqual(jsonParseStringify(expectedResponse))
+    })
+
+    it('should  return 404 when the form cannot be found', async () => {
+      // Act
+      const resp = await request
+        .put(`/admin/forms/${new ObjectId().toHexString()}/start-page`)
+        .send(MOCK_UPDATED_START_PAGE)
+      const expectedResponse = { message: 'Form not found' }
+
+      // Assert
+      expect(resp.status).toBe(404)
+      expect(resp.body).toEqual(jsonParseStringify(expectedResponse))
+    })
+
+    it('should return 410 when updating the start page for a form that has been archived', async () => {
+      // Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        startPage: MOCK_START_PAGE,
+        status: Status.Archived,
+      })
+      const expectedResponse = { message: 'Form has been archived' }
+
+      // Act
+      const resp = await request
+        .put(`/admin/forms/${form._id}/start-page`)
+        .send(MOCK_UPDATED_START_PAGE)
+
+      // Assert
+      expect(resp.status).toBe(410)
+      expect(resp.body).toEqual(expectedResponse)
+    })
+
+    it('should return 422 when the user cannot be retrieved from the database', async () => {
+      // Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        startPage: MOCK_START_PAGE,
+      })
+      // Remove all users so that user will not be found
+      await dbHandler.clearCollection(UserModel.collection.name)
+      const expectedResponse = { message: 'User not found' }
+
+      // Act
+      const resp = await request
+        .put(`/admin/forms/${form._id}/start-page`)
+        .send(MOCK_UPDATED_START_PAGE)
+
+      // Assert
+      expect(resp.status).toBe(422)
+      expect(resp.body).toEqual(expectedResponse)
+    })
+
+    it('should return 500 when a database error occurs', async () => {
+      // Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        startPage: MOCK_START_PAGE,
+      })
+      jest
+        .spyOn(AdminFormService, 'updateStartPage')
+        .mockReturnValueOnce(errAsync(new DatabaseError('whoops')))
+      const expectedResponse = { message: 'whoops' }
+
+      // Act
+      const resp = await request
+        .put(`/admin/forms/${form._id}/start-page`)
+        .send(MOCK_UPDATED_START_PAGE)
+
+      // Assert
+      expect(resp.status).toBe(500)
+      expect(resp.body).toEqual(expectedResponse)
     })
   })
 })

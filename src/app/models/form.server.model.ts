@@ -1,5 +1,5 @@
 import BSON from 'bson-ext'
-import { compact, pick, uniq } from 'lodash'
+import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   Mongoose,
   Query,
@@ -37,6 +37,7 @@ import {
   PublicForm,
   PublicFormValues,
   ResponseMode,
+  StartPage,
   Status,
 } from '../../types'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
@@ -260,7 +261,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           enum: Object.values(Colors),
           default: Colors.Blue,
         },
-        logo: FormLogoSchema,
+        logo: {
+          type: FormLogoSchema,
+          default: () => ({}),
+        },
       },
 
       endPage: {
@@ -559,6 +563,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
+  FormDocumentSchema.methods.duplicateFormFieldById = function (
+    this: IFormDocument,
+    fieldId: string,
+  ) {
+    const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
+    if (!fieldToDuplicate) return Promise.resolve(null)
+    const duplicatedField = omit(fieldToDuplicate, ['_id', 'globalId'])
+
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
+    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(
+      duplicatedField,
+    )
+    return this.save()
+  }
+
   FormDocumentSchema.methods.reorderFormFieldById = function (
     this: IFormDocument,
     fieldId: string,
@@ -738,6 +757,18 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.findByIdAndUpdate(
       formId,
       { endPage: newEndPage },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+
+  FormSchema.statics.updateStartPageById = async function (
+    this: IFormModel,
+    formId: string,
+    newStartPage: StartPage,
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { startPage: newStartPage },
       { new: true, runValidators: true },
     ).exec()
   }

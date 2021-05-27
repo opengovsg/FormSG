@@ -2,13 +2,18 @@ import axios from 'axios'
 
 import { FormSettings, LogicDto } from '../../types'
 import {
+  EmailSubmissionDto,
+  EncryptSubmissionDto,
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
   FormFieldDto,
   PermissionsUpdateDto,
   SettingsUpdateDto,
+  StartPageUpdateDto,
+  SubmissionResponseDto,
 } from '../../types/api'
+import { createEmailSubmissionFormData } from '../utils/submission'
 
 const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
 
@@ -66,6 +71,17 @@ export const updateCollaborators = async (
     .put<PermissionsUpdateDto>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators`,
       collaboratorsToUpdate,
+    )
+    .then(({ data }) => data)
+}
+
+export const duplicateSingleFormField = async (
+  formId: string,
+  fieldId: string,
+): Promise<FormFieldDto> => {
+  return axios
+    .post<FormFieldDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}/duplicate`,
     )
     .then(({ data }) => data)
 }
@@ -149,6 +165,92 @@ export const updateFormLogic = async (
     .put<LogicDto>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/logic/${logicId}`,
       updatedLogic,
+    )
+    .then(({ data }) => data)
+}
+
+/**
+ * Updates the start page for the given form referenced by its id
+ * @param formId the id of the form to update start page for
+ * @param newEndPage the new start page to replace with
+ * @returns the updated start page on success
+ */
+export const updateFormStartPage = async (
+  formId: string,
+  newStartPage: StartPageUpdateDto,
+): Promise<StartPageUpdateDto> => {
+  return axios
+    .put<StartPageUpdateDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/start-page`,
+      newStartPage,
+    )
+    .then(({ data }) => data)
+}
+
+/**
+ * Submits a preview version of an email mode form submission.
+ * @param formId id of form to submit submission for
+ * @param content content of submission
+ * @param attachments any attachments included in submission
+ * @param captchaResponse string if captcha to be included, defaults to null
+ *
+ * @returns SubmissionResponseDto if successful, else SubmissionErrorDto on error
+ */
+export const submitEmailModeFormPreview = async ({
+  formId,
+  content,
+  attachments,
+  captchaResponse = null,
+}: {
+  formId: string
+  content: EmailSubmissionDto
+  attachments?: Record<string, File>
+  captchaResponse?: string | null
+}): Promise<SubmissionResponseDto> => {
+  const formData = createEmailSubmissionFormData({
+    content,
+    attachments,
+  })
+
+  return axios
+    .post<SubmissionResponseDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
+      formData,
+      {
+        params: {
+          captchaResponse: String(captchaResponse),
+        },
+      },
+    )
+    .then(({ data }) => data)
+}
+
+/**
+ * Submits a preview version of a storage mode form's submission.
+ * @param formId id of form to submit submission for
+ * @param content the storage mode submission object to submit
+ * @param captchaResponse string if captcha to be included, defaults to null
+ *
+ * @returns SubmissionResponseDto if successful, else SubmissionErrorDto on error
+ */
+export const submitStorageModeFormPreview = async ({
+  formId,
+  content,
+  captchaResponse = null,
+}: {
+  formId: string
+  content: EncryptSubmissionDto
+  captchaResponse?: string | null
+}): Promise<SubmissionResponseDto> => {
+  return axios
+    .post<SubmissionResponseDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
+      content,
+      {
+        params: {
+          captchaResponse: String(captchaResponse),
+        },
+      },
     )
     .then(({ data }) => data)
 }

@@ -4,6 +4,7 @@ import {
   HASH_EXPIRE_AFTER_SECONDS,
   VERIFIED_FIELDTYPES,
   WAIT_FOR_OTP_SECONDS,
+  WAIT_FOR_OTP_TOLERANCE_SECONDS,
 } from '../../../shared/util/verification'
 import {
   IFieldSchema,
@@ -108,7 +109,13 @@ export const isOtpWaitTimeElapsed = (hashCreatedAt: Date | null): boolean => {
   // No hash created yet, so no wait time
   if (!hashCreatedAt) return true
 
-  const elapseAt = getExpiryDate(WAIT_FOR_OTP_SECONDS, hashCreatedAt)
+  // Loosen validation by WAIT_FOR_OTP_TOLERANCE_SECONDS. This is because of
+  // potential clock drift between servers, where valid requests may be rejected
+  // because servers are a few seconds in front/behind each other.
+  const elapseAt = getExpiryDate(
+    /*expireAfter=*/ WAIT_FOR_OTP_SECONDS - WAIT_FOR_OTP_TOLERANCE_SECONDS,
+    /*fromDate=*/ hashCreatedAt,
+  )
   const currentDate = new Date()
   return currentDate > elapseAt
 }

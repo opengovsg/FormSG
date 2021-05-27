@@ -1,3 +1,4 @@
+import range from 'lodash/range'
 import { Document, LeanDocument, Model, ToObjectOptions, Types } from 'mongoose'
 import { Merge, SetRequired } from 'type-fest'
 
@@ -11,7 +12,7 @@ import {
   MyInfoAttribute,
 } from './field'
 import { ILogicSchema, LogicDto } from './form_logic'
-import { FormLogoState, IFormLogo } from './form_logo'
+import { ICustomFormLogo, IFormLogo } from './form_logo'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
 
 export enum AuthType {
@@ -40,6 +41,8 @@ export enum ResponseMode {
   Encrypt = 'encrypt',
   Email = 'email',
 }
+
+export const Rating = range(1, 11).map(String)
 
 // Typings
 // Make sure this is kept in sync with form.server.model#FORM_PUBLIC_FIELDS.
@@ -77,15 +80,11 @@ export type FormOtpData = {
   msgSrvcName?: string
 }
 
-export type Logo = {
-  state: FormLogoState
-}
-
 export type StartPage = {
   paragraph?: string
   estTimeTaken?: number
   colorTheme?: Colors
-  logo?: IFormLogo
+  logo?: IFormLogo | ICustomFormLogo
 }
 
 export type EndPage = {
@@ -188,6 +187,15 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
     this: T,
     updateFormCollaborators: Permission[],
   ): Promise<T>
+
+  /**
+   * Duplicates a form field into the form
+   * @param newField the fieldId of the field to duplicate
+   * @returns updated form after the duplication if field duplication is successful
+   * @throws FieldNotFound error if field to duplicate does not exist
+
+   */
+  duplicateFormFieldById<T>(this: T, fieldId: string): Promise<T | null>
 
   /**
    * Reorders field corresponding to given fieldId to given newPosition
@@ -297,15 +305,18 @@ export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
 
 export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
+
   getFullFormById(
     formId: string,
     fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null>
+
   createFormLogic(
     formId: string,
     createLogicBody: LogicDto,
   ): Promise<IFormSchema | null>
   deleteFormLogic(formId: string, logicId: string): Promise<IFormSchema | null>
+
   /**
    * Deletes specified form field by its id from the form corresponding to given form id.
    * @param formId the id of the form to delete specific form field for
@@ -316,11 +327,14 @@ export interface IFormModel extends Model<IFormSchema> {
     formId: string,
     fieldId: string,
   ): Promise<IFormSchema | null>
+
   deactivateById(formId: string): Promise<IFormSchema | null>
+
   getMetaByUserIdOrEmail(
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
   ): Promise<FormMetaView[]>
+
   /**
    * Update the end page of form with given endpage object.
    * @param formId the id of the form to update
@@ -331,6 +345,18 @@ export interface IFormModel extends Model<IFormSchema> {
     formId: string,
     newEndPage: EndPage,
   ): Promise<IFormDocument | null>
+
+  /**
+   * Update the start page of form with given startpage object.
+   * @param formId the id of the form to update
+   * @param newStartPage the new StartPage object to replace with
+   * @returns the updated form document if form exists, null otherwise
+   */
+  updateStartPageById(
+    formId: string,
+    newStartPage: StartPage,
+  ): Promise<IFormDocument | null>
+
   updateFormLogic(
     formId: string,
     logicId: string,

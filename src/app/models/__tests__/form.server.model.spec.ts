@@ -12,6 +12,7 @@ import {
   BasicField,
   EndPage,
   FormFieldWithId,
+  FormLogoState,
   IEncryptedForm,
   IFieldSchema,
   IFormSchema,
@@ -20,6 +21,7 @@ import {
   LogicType,
   Permission,
   ResponseMode,
+  StartPage,
   Status,
 } from 'src/types'
 
@@ -56,6 +58,9 @@ const FORM_DEFAULTS = {
   isListed: true,
   startPage: {
     colorTheme: 'blue',
+    logo: {
+      state: FormLogoState.Default,
+    },
   },
   endPage: {
     title: 'Thank you for filling out the form.',
@@ -1588,6 +1593,90 @@ describe('Form Model', () => {
         )
       })
     })
+
+    describe('updateStartPageById', () => {
+      it('should update start page and return updated form when successful', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+          startPage: {
+            title: 'old title',
+          },
+        })
+        const form = (await Form.create(formParams)).toObject()
+        const prevModifiedDate = form.lastModified
+        const updatedStartPage: StartPage = {
+          paragraph: 'some description paragraph',
+          // This is a huge form.
+          estTimeTaken: 10000000,
+        }
+
+        // Act
+        const actual = await Form.updateStartPageById(
+          form._id,
+          updatedStartPage,
+        )
+
+        // Assert
+        // Should have defaults populated but also replace the startPage with the new params
+        expect(actual?.toObject()).toEqual({
+          ...form,
+          lastModified: expect.any(Date),
+          startPage: { ...form.startPage, ...updatedStartPage },
+        })
+        expect((actual?.lastModified ?? 0) > (prevModifiedDate ?? 0)).toBe(true)
+      })
+
+      it('should update start page with defaults when optional values are not provided', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+        })
+        const form = (await Form.create(formParams)).toObject()
+        const updatedStartPage: StartPage = {
+          paragraph: 'some description paragraph',
+        }
+
+        // Act
+        const actual = await Form.updateStartPageById(
+          form._id,
+          updatedStartPage,
+        )
+
+        // Assert
+        // Should have defaults populated but also replace the start page with the new params
+        expect(actual?.toObject()).toEqual({
+          ...form,
+          lastModified: expect.any(Date),
+          startPage: {
+            ...updatedStartPage,
+            // Defaults should be populated and returned
+            colorTheme: 'blue',
+            logo: {
+              state: FormLogoState.Default,
+            },
+          },
+        })
+      })
+
+      it('should return null when formId given is not in the database', async () => {
+        // Arrange
+        await expect(Form.countDocuments()).resolves.toEqual(0)
+        const updatedStartPage: StartPage = {
+          paragraph: 'does not really matter',
+        }
+
+        // Act
+        const actual = await Form.updateStartPageById(
+          new ObjectId().toHexString(),
+          updatedStartPage,
+        )
+
+        // Assert
+        expect(actual).toEqual(null)
+        await expect(Form.countDocuments()).resolves.toEqual(0)
+      })
+    })
   })
 
   describe('Methods', () => {
@@ -1980,6 +2069,48 @@ describe('Form Model', () => {
 
         // Assert
         expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+      })
+    })
+
+    describe('duplicateFormFieldById', () => {
+      it('should return updated document with duplicated form field', async () => {
+        // Arrange
+        const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
+
+        validForm.form_fields = [fieldToDuplicate]
+        const fieldId = fieldToDuplicate._id
+
+        // Act
+        const actual = await validForm.duplicateFormFieldById(fieldId)
+        // @ts-ignore
+        const actualDuplicatedField = omit(actual?.form_fields.toObject()[1], [
+          '_id',
+          'globalId',
+        ]) // do not compare _id and globalId
+
+        // Assert
+        const expectedOriginalField = {
+          ...omit(fieldToDuplicate, ['getQuestion']),
+          _id: new ObjectId(fieldToDuplicate._id),
+        }
+        const expectedDuplicatedField = omit(fieldToDuplicate, [
+          '_id',
+          'globalId',
+          'getQuestion',
+        ])
+
+        // @ts-ignore
+        expect(actual?.form_fields.toObject()[0]).toEqual(expectedOriginalField)
+        expect(actualDuplicatedField).toEqual(expectedDuplicatedField)
+      })
+
+      it('should return null if given fieldId is invalid', async () => {
+        const updatedForm = await validForm.duplicateFormFieldById(
+          new ObjectId().toHexString(),
+        )
+
+        // Assert
+        expect(updatedForm).toBeNull()
       })
     })
 

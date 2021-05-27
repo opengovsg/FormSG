@@ -40,6 +40,7 @@ import {
   LogicType,
   PickDuplicateForm,
   ResponseMode,
+  StartPage,
   Status,
 } from 'src/types'
 import {
@@ -71,6 +72,7 @@ import {
   deleteFormField,
   deleteFormLogic,
   duplicateForm,
+  duplicateFormField,
   editFormFields,
   getDashboardForms,
   getFormField,
@@ -82,6 +84,7 @@ import {
   updateFormField,
   updateFormLogic,
   updateFormSettings,
+  updateStartPage,
 } from '../admin-form.service'
 import {
   DuplicateFormBody,
@@ -1471,6 +1474,80 @@ describe('admin-form.service', () => {
     })
   })
 
+  describe('duplicateFormField', () => {
+    it('should return updated form when field duplication is successful', async () => {
+      // Arrange
+      const fieldToDuplicate = generateDefaultField(BasicField.Mobile)
+      const duplicatedField = generateDefaultField(BasicField.Mobile)
+      const mockUpdatedForm = {
+        title: 'some mock form',
+        // Append duplicated field to end of form_fields.
+        form_fields: [fieldToDuplicate, duplicatedField],
+      } as IFormSchema
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: [fieldToDuplicate],
+        _id: new ObjectId(),
+        duplicateFormFieldById: jest.fn().mockResolvedValue(mockUpdatedForm),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await duplicateFormField(
+        mockForm,
+        String(fieldToDuplicate._id),
+      )
+
+      const actualDuplicatedField = omit(actual._unsafeUnwrap(), [
+        '_id',
+        'globalId',
+      ])
+
+      const expectedDuplicateFieldWithoutId = omit(duplicatedField, [
+        '_id',
+        'globalId',
+      ])
+
+      // Assert
+      expect(actualDuplicatedField).toEqual(expectedDuplicateFieldWithoutId)
+    })
+
+    it('should return FormNotFoundError when field duplication returns null', async () => {
+      // Arrange
+      const fieldToDuplicate = generateDefaultField(BasicField.Mobile)
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: [fieldToDuplicate],
+        _id: new ObjectId(),
+        duplicateFormFieldById: jest.fn().mockResolvedValue(null),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await duplicateFormField(mockForm, fieldToDuplicate._id)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
+    })
+
+    it('should return DatabaseValidationError when field model update throws a validation error', async () => {
+      // Arrange
+      const initialFields = [generateDefaultField(BasicField.Mobile)]
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: initialFields,
+        duplicateFormFieldById: jest.fn().mockRejectedValue(
+          // @ts-ignore
+          new mongoose.Error.ValidationError({ errors: 'does not matter' }),
+        ),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await duplicateFormField(mockForm, initialFields[0]._id)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
+    })
+  })
+
   describe('reorderFormField', () => {
     it('should return reordered fields successfully', async () => {
       // Arrange
@@ -1909,6 +1986,57 @@ describe('admin-form.service', () => {
 
       // Act
       const actual = await updateEndPage(MOCK_FORM_ID, MOCK_NEW_END_PAGE)
+
+      // Assert
+      const actualError = actual._unsafeUnwrapErr()
+      expect(actualError).toBeInstanceOf(DatabaseError)
+      expect(actualError.message).toIncludeMultiple([
+        expectedErrorMsg,
+        'Please refresh and try again.',
+      ])
+    })
+  })
+
+  describe('updateStartPage', () => {
+    const updateSpy = jest.spyOn(FormModel, 'updateStartPageById')
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_NEW_START_PAGE: StartPage = {
+      paragraph: 'some paragraph',
+      estTimeTaken: 10000000,
+    }
+
+    it('should return updated start page when update is successful', async () => {
+      // Arrange
+      const mockUpdatedForm = {
+        startPage: MOCK_NEW_START_PAGE,
+      } as IFormDocument
+      updateSpy.mockResolvedValueOnce(mockUpdatedForm)
+
+      // Act
+      const actual = await updateStartPage(MOCK_FORM_ID, MOCK_NEW_START_PAGE)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(MOCK_NEW_START_PAGE)
+    })
+
+    it('should return FormNotFoundError when form cannot be found', async () => {
+      // Arrange
+      updateSpy.mockResolvedValueOnce(null)
+
+      // Act
+      const actual = await updateStartPage(MOCK_FORM_ID, MOCK_NEW_START_PAGE)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
+    })
+
+    it('should return DatabaseError when database model update throws an error', async () => {
+      // Arrange
+      const expectedErrorMsg = 'some error'
+      updateSpy.mockRejectedValueOnce(new Error(expectedErrorMsg))
+
+      // Act
+      const actual = await updateStartPage(MOCK_FORM_ID, MOCK_NEW_START_PAGE)
 
       // Assert
       const actualError = actual._unsafeUnwrapErr()
