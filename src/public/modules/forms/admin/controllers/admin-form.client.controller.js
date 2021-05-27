@@ -295,6 +295,7 @@ function AdminFormController(
           .catch(handleUpdateError)
       }
       default:
+        // This block should not be reached. All updateForm calls should have an update type.
         return $q
           .when(FormApi.update($scope.myform._id, { form: update }))
           .then((savedForm) => {

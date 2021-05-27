@@ -48,8 +48,8 @@ function FormApi(FormErrorService, FormFields) {
    */
   const handleResponse = (data) => {
     // The backend returns different shapes for different request types. For GET
-    // requests, it returns a $resource instance with a form attribute containing
-    // all the form data; for PUT requests, it returns a $resource instance with
+    // requests, it returns an object with a form attribute containing
+    // all the form data; for PUT requests, it returns an object with
     // all the form data at the top level. We need to ensure that the postprocessing
     // is done in both cases.
     if (get(data, 'form.form_fields')) {
@@ -94,19 +94,19 @@ function FormApi(FormErrorService, FormFields) {
 
   return {
     query: () =>
-      generateService(FormService.queryForm, {
+      generateService(FormService.getDashboardViews, {
         redirectOnError: true,
         errorTargetState: 'listForms',
       }),
     getAdmin: (formId) =>
       generateService(
-        FormService.getAdminForm,
+        FormService.getAdminFormView,
         { redirectOnError: true, errorTargetState: 'viewForm' },
         formId,
       ),
     getPublic: (formId) =>
       generateService(
-        FormService.getPublicForm,
+        FormService.getPublicFormView,
         { redirectOnError: true },
         formId,
       ),
@@ -119,7 +119,7 @@ function FormApi(FormErrorService, FormFields) {
       ),
     save: (formId, formToSave) =>
       generateService(
-        FormService.saveForm,
+        FormService.duplicateForm,
         { redirectOnError: false },
         formId,
         formToSave,
