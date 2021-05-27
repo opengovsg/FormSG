@@ -1,6 +1,7 @@
 'use strict'
 const dedent = require('dedent-js')
 const { get, set, isEqual } = require('lodash')
+const AdminFormService = require('../../../../services/AdminFormService')
 
 const SETTINGS_PATH = [
   'title',
@@ -28,6 +29,7 @@ const createTempSettings = (myform) => {
 angular
   .module('forms')
   .directive('settingsFormDirective', [
+    '$q',
     'Toastr',
     '$timeout',
     'responseModeEnum',
@@ -38,12 +40,12 @@ angular
   ])
 
 function settingsFormDirective(
+  $q,
   Toastr,
   $timeout,
   responseModeEnum,
   $uibModal,
   Auth,
-  Submissions,
 ) {
   return {
     templateUrl:
@@ -64,11 +66,20 @@ function settingsFormDirective(
         $scope.submissionLimitUnlimited = null
 
         $scope.currentResponsesCount = 0
-        Submissions.count({ formId: $scope.myform._id }).then(
-          (responsesCount) => {
-            $scope.currentResponsesCount = responsesCount
-          },
+        $q.when(
+          AdminFormService.countFormSubmissions({
+            formId: $scope.myform._id,
+          }),
         )
+          .then((responsesCount) => {
+            $scope.currentResponsesCount = responsesCount
+          })
+          .catch((error) => {
+            Toastr.error(
+              `Unfortunately, there was an error in displaying the number of responses. Please refresh and try again!`,
+            )
+            console.log(error)
+          })
 
         const getCurrentSettings = () => {
           // Detect difference between the new form (tempForm) and the old form (myform),

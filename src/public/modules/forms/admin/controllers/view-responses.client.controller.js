@@ -5,9 +5,12 @@ const { triggerFileDownload } = require('../../helpers/util')
 
 const SHOW_PROGRESS_DELAY_MS = 3000
 
+const AdminFormService = require('../../../../services/AdminFormService')
+
 angular
   .module('forms')
   .controller('ViewResponsesController', [
+    '$q',
     '$scope',
     'Submissions',
     'NgTableParams',
@@ -23,6 +26,7 @@ angular
   ])
 
 function ViewResponsesController(
+  $q,
   $scope,
   Submissions,
   NgTableParams,
@@ -253,7 +257,6 @@ function ViewResponsesController(
   vm.confirmSubmissionCountsBeforeDownload = function () {
     let params = {
       formId: vm.myform._id,
-      formTitle: vm.myform.title,
     }
     if (vm.datePicker.date.startDate && vm.datePicker.date.endDate) {
       params.startDate = moment(new Date(vm.datePicker.date.startDate)).format(
@@ -263,26 +266,28 @@ function ViewResponsesController(
         'YYYY-MM-DD',
       )
     }
-    Submissions.count(params).then((responsesCount) => {
-      vm.attachmentsToDownload = responsesCount
-      $uibModal
-        .open({
-          backdrop: 'static',
-          resolve: { responsesCount },
-          controller: [
-            '$scope',
-            '$uibModalInstance',
-            'responsesCount',
-            function ($scope, $uibModalInstance, responsesCount) {
-              $scope.responsesCount = responsesCount
-            },
-          ],
-          windowClass: 'pop-up-modal-window',
-          templateUrl:
-            'modules/forms/admin/views/download-all-attachments.client.modal.html',
-        })
-        .result.then(() => vm.exportCsv(true))
-    })
+    $q.when(AdminFormService.countFormSubmissions(params)).then(
+      (responsesCount) => {
+        vm.attachmentsToDownload = responsesCount
+        $uibModal
+          .open({
+            backdrop: 'static',
+            resolve: { responsesCount },
+            controller: [
+              '$scope',
+              '$uibModalInstance',
+              'responsesCount',
+              function ($scope, $uibModalInstance, responsesCount) {
+                $scope.responsesCount = responsesCount
+              },
+            ],
+            windowClass: 'pop-up-modal-window',
+            templateUrl:
+              'modules/forms/admin/views/download-all-attachments.client.modal.html',
+          })
+          .result.then(() => vm.exportCsv(true))
+      },
+    )
   }
 
   vm.downloadAllAttachments = function () {
@@ -351,9 +356,7 @@ function ViewResponsesController(
   // When this route is initialized, call the responses count function
   $scope.$parent.$watch('vm.activeResultsTab', (newValue) => {
     if (newValue === 'responses' && vm.loading) {
-      Submissions.count({
-        formId: vm.myform._id,
-      })
+      $q.when(AdminFormService.countFormSubmissions({ formId: vm.myform._id }))
         .then((responsesCount) => {
           vm.responsesCount = responsesCount
           $timeout(() => {
