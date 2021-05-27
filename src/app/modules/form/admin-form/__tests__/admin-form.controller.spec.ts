@@ -15,7 +15,6 @@ import {
   DatabaseValidationError,
 } from 'src/app/modules/core/core.errors'
 import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
-import { FeedbackResponse } from 'src/app/modules/feedback/feedback.types'
 import {
   AttachmentTooLargeError,
   InvalidFileExtensionError,
@@ -66,6 +65,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
 } from 'src/types/api'
+import { GetFormFeedbackDto } from 'src/types/api/form_feedback'
 
 import {
   generateDefaultField,
@@ -2406,7 +2406,7 @@ describe('admin-form.controller', () => {
     it('should return 200 with feedback response successfully', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      const expectedFormFeedback: FeedbackResponse = {
+      const expectedFormFeedback: GetFormFeedbackDto = {
         count: 212,
         feedback: [
           {

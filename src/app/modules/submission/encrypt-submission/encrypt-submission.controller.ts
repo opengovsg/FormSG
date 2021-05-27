@@ -1,6 +1,6 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
-import { RequestHandler } from 'express'
+import { Request, RequestHandler } from 'express'
 import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
@@ -12,7 +12,12 @@ import {
   EncryptedSubmissionDto,
   SubmissionMetadataList,
 } from '../../../../types'
-import { EncryptSubmissionDto, ErrorDto } from '../../../../types/api'
+import {
+  EncryptSubmissionDto,
+  ErrorDto,
+  SubmissionErrorDto,
+  SubmissionResponseDto,
+} from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
@@ -56,7 +61,12 @@ const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
 
-const submitEncryptModeForm: RequestHandler = async (req, res) => {
+const submitEncryptModeForm: RequestHandler<
+  { formId: string },
+  SubmissionResponseDto | SubmissionErrorDto,
+  EncryptSubmissionDto,
+  { captchaResponse?: unknown }
+> = async (req, res) => {
   const { formId } = req.params
 
   if ('isPreview' in req.body) {
@@ -72,7 +82,7 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
 
   const logMeta = {
     action: 'submitEncryptModeForm',
-    ...createReqMeta(req),
+    ...createReqMeta(req as Request),
     formId,
   }
 
@@ -118,8 +128,6 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
     } else {
       return res.status(statusCode).json({
         message: form.inactiveMessage,
-        isPageFound: true,
-        formTitle: form.title,
       })
     }
   }
@@ -128,7 +136,7 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
   if (form.hasCaptcha) {
     const captchaResult = await CaptchaFactory.verifyCaptchaResponse(
       req.query.captchaResponse,
-      getRequestIp(req),
+      getRequestIp(req as Request),
     )
     if (captchaResult.isErr()) {
       logger.error({
@@ -155,8 +163,6 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
     const { statusCode } = mapRouteError(formSubmissionLimitResult.error)
     return res.status(statusCode).json({
       message: form.inactiveMessage,
-      isPageFound: true,
-      formTitle: form.title,
     })
   }
 
@@ -334,7 +340,7 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
       message: 'Encrypt submission save error',
       meta: {
         action: 'onEncryptSubmissionFailure',
-        ...createReqMeta(req),
+        ...createReqMeta(req as Request),
       },
       error: err,
     })
@@ -342,7 +348,6 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
       message:
         'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
       submissionId: submission._id,
-      spcpSubmissionFailure: false,
     })
   }
 

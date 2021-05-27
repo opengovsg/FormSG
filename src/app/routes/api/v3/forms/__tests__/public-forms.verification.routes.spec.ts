@@ -1,12 +1,17 @@
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
 import { subMinutes, subYears } from 'date-fns'
-import { StatusCodes } from 'http-status-codes'
+import { getReasonPhrase, StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
+import nodemailer from 'nodemailer'
+import Mail from 'nodemailer/lib/mailer'
 import session, { Session } from 'supertest-session'
+import { MockedObjectDeep } from 'ts-jest/dist/utils/testing'
+import { mocked } from 'ts-jest/utils'
 
+import getFormModel from 'src/app/models/form.server.model'
 import {
   generateFieldParams,
   MOCK_HASHED_OTP,
@@ -14,16 +19,24 @@ import {
 } from 'src/app/modules/verification/__tests__/verification.test.helpers'
 import getVerificationModel from 'src/app/modules/verification/verification.model'
 import MailService from 'src/app/services/mail/mail.service'
+import { SmsSendError } from 'src/app/services/sms/sms.errors'
+import * as SmsService from 'src/app/services/sms/sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
-import { NUM_OTP_RETRIES } from 'src/shared/util/verification'
+import {
+  NUM_OTP_RETRIES,
+  WAIT_FOR_OTP_SECONDS,
+} from 'src/shared/util/verification'
 import { BasicField, IVerificationSchema } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
+import MockTwilio from 'tests/integration/helpers/twilio'
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { MOCK_OTP } from '../../../../../modules/verification/__tests__/verification.test.helpers'
 import { PublicFormsVerificationRouter } from '../public-forms.verification.routes'
+
+const Form = getFormModel(mongoose)
 
 const verificationApp = setupApp('/forms', PublicFormsVerificationRouter)
 const VerificationModel = getVerificationModel(mongoose)
@@ -32,14 +45,6 @@ jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockReturnValue({
     sendMail: jest.fn().mockResolvedValue(true),
   }),
-}))
-// Default Twilio export is a function
-jest.mock('twilio', () => () => ({
-  messages: {
-    create: jest.fn().mockResolvedValue({
-      sid: 'mockSid',
-    }),
-  },
 }))
 
 describe('public-forms.verification.routes', () => {
@@ -50,10 +55,15 @@ describe('public-forms.verification.routes', () => {
   let mockEmailFieldId: string
   let mockMobileFieldId: string
   let request: Session
+  const MOCK_MOBILE_NUMBER = '+6582990039'
   const MOCK_VALID_EMAIL_DOMAIN = 'example.com'
   const MOCK_EMAIL = `mock@${MOCK_VALID_EMAIL_DOMAIN}`
+  let MockTransport: MockedObjectDeep<Mail>
 
-  beforeAll(async () => await dbHandler.connect())
+  beforeAll(async () => {
+    await dbHandler.connect()
+    MockTransport = mocked(nodemailer.createTransport(), true)
+  })
 
   beforeEach(async () => {
     request = session(verificationApp)
@@ -241,6 +251,310 @@ describe('public-forms.verification.routes', () => {
     })
   })
 
+  describe('POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/generate', () => {
+    beforeEach(() => {
+      MockTwilio.messages.create.mockResolvedValue({
+        sid: 'mockSid',
+      })
+    })
+
+    it('should return 201 when parameters for email field are valid', async () => {
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'open@gov.sg',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.CREATED)
+      expect(response.text).toBe(getReasonPhrase(StatusCodes.CREATED))
+    })
+
+    it('should return 201 when parameters for mobile field are valid', async () => {
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
+        )
+        .send({
+          answer: '+6512345678',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.CREATED)
+      expect(response.text).toBe(getReasonPhrase(StatusCodes.CREATED))
+    })
+
+    it('should return 400 when fieldType is email but the provided email is not valid', async () => {
+      // Arrange
+      const expectedResponse = {
+        message:
+          'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'notanemail',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 400 when fieldType is mobile but the provided phone number is not valid', async () => {
+      // Arrange
+      const expectedResponse = {
+        message:
+          'This phone number does not seem to be valid. Please try again with a valid phone number.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
+        )
+        .send({
+          // 7 digits after +65 instead of 8
+          answer: '+651234567',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 400 when otp data could not be retrieved from the form due to parameters being malformed', async () => {
+      // Arrange
+      // NOTE: This error is only thrown on interaction with the db, hence the db is mocked here
+      jest.spyOn(Form, 'getOtpData').mockResolvedValueOnce(null)
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
+        )
+        .send({
+          answer: '+6512345678',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 400 when the transaction has expired', async () => {
+      // Arrange
+      const { _id: expiredTransactionId } = await VerificationModel.create({
+        formId: mockVerifiableFormId,
+        expireAt: Date.now(),
+        fields: [],
+      })
+      const expectedResponse = {
+        message: 'Your session has expired, please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${expiredTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
+        )
+        .send({
+          answer: '+6512345678',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 400 when the otp could not be sent and fieldType is mobile', async () => {
+      // Arrange
+      MockTwilio.messages.create.mockRejectedValueOnce(new SmsSendError())
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
+        )
+        .send({
+          // 7 digits after +65 instead of 8
+          answer: '+6512345678',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 400 when the otp could not be sent and fieldType is email', async () => {
+      // Arrange
+      // Retries on failure until limit hit, hence cannot just mock once
+      MockTransport.sendMail.mockRejectedValueOnce('no')
+      const expectedResponse = {
+        message:
+          'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'mail@me.com',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 404 when the requested form was not found', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${new ObjectId().toHexString()}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
+        )
+        .send({
+          answer: '+6512345678',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.NOT_FOUND)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 404 when the transaction was not found', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${new ObjectId().toHexString()}/fields/${mockMobileFieldId}/otp/generate`,
+        )
+        .send({
+          answer: '+6512345678',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.NOT_FOUND)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 404 when the field was not found', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${new ObjectId().toHexString()}/otp/generate`,
+        )
+        .send({
+          answer: '+6512345678',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.NOT_FOUND)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 422 when the user requested for otp without waiting', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
+      }
+
+      // Act
+      await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
+        )
+        .send({
+          answer: '+6512345678',
+        })
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
+        )
+        .send({
+          answer: '+6512345678',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.UNPROCESSABLE_ENTITY)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 500 when the otp could not be hashed', async () => {
+      // Arrange
+      jest.spyOn(bcrypt, 'hash').mockRejectedValueOnce('hashbrowns')
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
+        )
+        .send({
+          answer: '+6512345678',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.INTERNAL_SERVER_ERROR)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 500 when there is a database error', async () => {
+      // Arrange
+      jest.spyOn(VerificationModel, 'findById').mockReturnValueOnce({
+        exec: () => Promise.reject('no.'),
+      })
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
+        )
+        .send({
+          answer: '+6512345678',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.INTERNAL_SERVER_ERROR)
+      expect(response.body).toEqual(expectedResponse)
+    })
+  })
+
   describe('POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/verify', () => {
     // Mock the generation of otp so that the stored otp is the mock OTP
     beforeEach(async () => {
@@ -252,7 +566,7 @@ describe('public-forms.verification.routes', () => {
 
     it('should return 200 when the fieldType is email, request parameters are valid and the otp is correct', async () => {
       // Arrange
-      await requestForOtp(MOCK_EMAIL)
+      await requestForMailOtp(mockEmailFieldId, MOCK_EMAIL)
 
       // Act
       const response = await request
@@ -263,12 +577,12 @@ describe('public-forms.verification.routes', () => {
 
       // Assert
       expect(response.status).toBe(StatusCodes.OK)
-      expect(response.body).toBe(MOCK_SIGNED_DATA)
+      expect(response.body).toBeString()
     })
 
     it('should return 200 when the fieldType is mobile, request parameters are valid and the otp is correct', async () => {
       // Arrange
-      await requestForOtp(MOCK_EMAIL)
+      await requestForSmsOtp(mockMobileFieldId, MOCK_MOBILE_NUMBER)
 
       // Act
       const response = await request
@@ -279,7 +593,7 @@ describe('public-forms.verification.routes', () => {
 
       // Assert
       expect(response.status).toBe(StatusCodes.OK)
-      expect(response.body).toBe(MOCK_SIGNED_DATA)
+      expect(response.body).toBeString()
     })
 
     it('should return 400 when the transaction is expired', async () => {
@@ -497,11 +811,25 @@ describe('public-forms.verification.routes', () => {
   })
 
   // Helper functions
-  const requestForOtp = async (fieldId: string, answer: string) => {
+  const requestForMailOtp = async (fieldId: string, answer: string) => {
     // Set that so no real mail is sent.
     jest
       .spyOn(MailService, 'sendVerificationOtp')
-      .mockReturnValue(okAsync(true))
+      .mockReturnValueOnce(okAsync(true))
+
+    const response = await request
+      .post(
+        `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${fieldId}/otp/generate`,
+      )
+      .send({ answer })
+    expect(response.status).toBe(StatusCodes.CREATED)
+  }
+
+  const requestForSmsOtp = async (fieldId: string, answer: string) => {
+    // Set that so no real mail is sent.
+    jest
+      .spyOn(SmsService, 'sendVerificationOtp')
+      .mockReturnValueOnce(okAsync(true))
 
     const response = await request
       .post(

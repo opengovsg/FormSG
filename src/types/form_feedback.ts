@@ -2,16 +2,25 @@ import { Document, Model, QueryCursor } from 'mongoose'
 
 import { IFormSchema } from './form'
 
+export type ProcessedFeedback = {
+  index: number
+  timestamp: number
+  rating: number
+  comment: string
+  date: string
+  dateShort: string
+}
+
 export interface IFormFeedback {
   formId: IFormSchema['_id']
   rating: number
   comment?: string
 }
-
 export interface IFormFeedbackSchema extends IFormFeedback, Document {
   created?: Date
   lastModified?: Date
 }
+
 export interface IFormFeedbackDocument extends IFormFeedbackSchema {
   created: Date
   lastModified: Date
