@@ -313,18 +313,22 @@ export const _handleOtpVerification: RequestHandler<
     fieldId,
     ...createReqMeta(req),
   }
-  return FormService.retrieveFormById(formId)
-    .andThen(() => VerificationFactory.verifyOtp(transactionId, fieldId, otp))
-    .map((signedData) => res.status(StatusCodes.OK).json(signedData))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error verifying OTP',
-        meta: logMeta,
-        error,
+  // Step 1: Ensure that the form for the specified transaction exists
+  return (
+    FormService.retrieveFormById(formId)
+      // Step 2: Verify the otp sent over by the client
+      .andThen(() => VerificationFactory.verifyOtp(transactionId, fieldId, otp))
+      .map((signedData) => res.status(StatusCodes.OK).json(signedData))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error verifying OTP',
+          meta: logMeta,
+          error,
+        })
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
       })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
+  )
 }
 
 /**
