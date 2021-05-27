@@ -12,6 +12,7 @@ import * as SubmissionUtil from '../../utils/submission'
 import {
   ADMIN_FORM_ENDPOINT,
   countFormSubmissions,
+  getEncryptedResponse,
   getFormsMetadata,
   submitEmailModeFormPreview,
   submitStorageModeFormPreview,
@@ -272,6 +273,33 @@ describe('AdminFormService', () => {
             page: MOCK_PAGE_NUM,
           },
         },
+      )
+    })
+  })
+
+  describe('getEncryptedResponse', () => {
+    const MOCK_FORM_ID = 'mock–form-id'
+    const MOCK_SUBMISSION_ID = 'fake'
+    const MOCK_RESPONSE = {
+      refNo: '1',
+      submissionTime: 'sometime',
+      content: 'jk',
+      verified: 'whups',
+      attachmentMetadata: {},
+    }
+
+    it('should call the api correctly when the parameters are valid', async () => {
+      // Act
+      const actual = getEncryptedResponse({
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+      })
+      MockAxios.mockResponse({ data: MOCK_RESPONSE })
+
+      // Assert
+      await expect(actual).resolves.toEqual(MOCK_RESPONSE)
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/${MOCK_SUBMISSION_ID}`,
       )
     })
   })
