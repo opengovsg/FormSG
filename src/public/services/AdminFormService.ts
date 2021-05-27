@@ -16,7 +16,8 @@ import {
 } from '../../types/api'
 import { createEmailSubmissionFormData } from '../utils/submission'
 
-const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
+// Exported for testing
+export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
 
 export const updateFormSettings = async (
   formId: string,

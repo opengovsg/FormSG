@@ -10,6 +10,8 @@ import {
 
 import * as SubmissionUtil from '../../utils/submission'
 import {
+  ADMIN_FORM_ENDPOINT,
+  countFormSubmissions,
   submitEmailModeFormPreview,
   submitStorageModeFormPreview,
 } from '../AdminFormService'
@@ -156,6 +158,57 @@ describe('AdminFormService', () => {
         MOCK_CONTENT,
         // Should default to stringified null
         { params: { captchaResponse: 'null' } },
+      )
+    })
+  })
+
+  describe('countFormSubmissions', () => {
+    const MOCK_FORM_ID = 'mock–form-id'
+    const MOCK_START_DATE = new Date(2020, 11, 17)
+    const MOCK_END_DATE = new Date(2021, 1, 10)
+
+    it('should call api successfully when all parameters are provided', async () => {
+      // Act
+      const actual = countFormSubmissions({
+        formId: MOCK_FORM_ID,
+        startDate: MOCK_START_DATE,
+        endDate: MOCK_END_DATE,
+      })
+      MockAxios.mockResponse({ data: 123 })
+
+      // Assert
+      await expect(actual).resolves.toEqual(123)
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/count?startDate=${MOCK_START_DATE}&endDate=${MOCK_END_DATE}`,
+      )
+    })
+
+    it('should call api successfully when only formId is provided', async () => {
+      // Act
+      const actual = countFormSubmissions({
+        formId: MOCK_FORM_ID,
+      })
+      MockAxios.mockResponse({ data: 123 })
+
+      // Assert
+      await expect(actual).resolves.toEqual(123)
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/count`,
+      )
+    })
+
+    it('should call api successfully with only formId when startDate or endDate is provided', async () => {
+      // Act
+      const actual = countFormSubmissions({
+        formId: MOCK_FORM_ID,
+        startDate: MOCK_START_DATE,
+      })
+      MockAxios.mockResponse({ data: 123 })
+
+      // Assert
+      await expect(actual).resolves.toEqual(123)
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/count`,
       )
     })
   })
