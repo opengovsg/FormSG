@@ -182,7 +182,7 @@ const EncryptSubmissionSchema = new Schema<
  * which will be posted to the webhook URL.
  */
 EncryptSubmissionSchema.methods.getWebhookView = function (
-  this: IEncryptedSubmissionSchema,
+  this: IEncryptedSubmissionSchema | IPopulatedWebhookSubmission,
 ): WebhookView {
   const formId = this.populated('form')
     ? String(this.form._id)
