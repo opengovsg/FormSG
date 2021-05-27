@@ -8,21 +8,12 @@ angular
   .directive('viewFeedbackDirective', [
     '$q',
     '$timeout',
-    '$q',
-    'Submissions',
     'NgTableParams',
     'emoji',
     viewFeedbackDirective,
   ])
 
-function viewFeedbackDirective(
-  $q,
-  $timeout,
-  $q,
-  Submissions,
-  NgTableParams,
-  emoji,
-) {
+function viewFeedbackDirective($q, $timeout, NgTableParams, emoji) {
   return {
     templateUrl:
       'modules/forms/admin/directiveViews/view-feedback.client.view.html',
