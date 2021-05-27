@@ -22,7 +22,7 @@ export const PUBLIC_FORM_ENDPOINT = '/api/v3/forms'
  * owns or collaborates on
  * @returns Metadata required for forms on dashboard view
  */
-export const getDashboardViews = async (): Promise<FormMetaView[]> => {
+export const getDashboardView = async (): Promise<FormMetaView[]> => {
   return axios
     .get<FormMetaView[]>(`${ADMIN_FORM_ENDPOINT}`, {
       headers: { 'If-Modified-Since': '0' },

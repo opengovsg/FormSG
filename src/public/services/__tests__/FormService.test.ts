@@ -20,7 +20,7 @@ import {
   deleteForm,
   duplicateForm,
   getAdminFormView,
-  getDashboardViews,
+  getDashboardView,
   getPublicFormView,
   previewForm,
   PUBLIC_FORM_ENDPOINT,
@@ -38,13 +38,13 @@ const MOCK_USER = {
 
 describe('FormService', () => {
   afterEach(() => mockAxios.reset())
-  describe('getDashboardViews', () => {
+  describe('getDashboardView', () => {
     it('should successfully return all available forms if GET request succeeds', async () => {
       // Arrange
       const expected: FormMetaView[] = [_generateMockDashboardViewForm()]
 
       // Act
-      const actualPromise = getDashboardViews()
+      const actualPromise = getDashboardView()
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -60,7 +60,7 @@ describe('FormService', () => {
       const expected: FormMetaView[] = []
 
       // Act
-      const actualPromise = getDashboardViews()
+      const actualPromise = getDashboardView()
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -76,7 +76,7 @@ describe('FormService', () => {
       const expected = new Error('error')
 
       // Act
-      const actualPromise = getDashboardViews()
+      const actualPromise = getDashboardView()
       mockAxios.mockError(expected)
 
       //Assert
