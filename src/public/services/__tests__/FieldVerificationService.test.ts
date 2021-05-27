@@ -6,7 +6,6 @@ import {
   FORM_API_PREFIX,
   JsonDate,
   resetVerifiedField,
-  TRANSACTION_ENDPOINT,
   triggerSendOtp,
   VERIFICATION_ENDPOINT,
   verifyOtp,
@@ -90,11 +89,13 @@ describe('FieldVerificationService', () => {
       const mockTransactionId = 'someOtherTxnId'
       const mockFieldId = 'anotherFieldId'
       const mockOtp = '123456'
+      const mockFormId = 'formszxc'
 
       const expectedSignature = 'abcdefg'
 
       // Act
       const actualPromise = verifyOtp({
+        formId: mockFormId,
         fieldId: mockFieldId,
         otp: mockOtp,
         transactionId: mockTransactionId,
@@ -105,9 +106,8 @@ describe('FieldVerificationService', () => {
       // Assert
       expect(actual).toEqual(expectedSignature)
       expect(mockAxios.post).toHaveBeenCalledWith(
-        `${TRANSACTION_ENDPOINT}/${mockTransactionId}/otp/verify`,
+        `${FORM_API_PREFIX}/${mockFormId}/${VERIFICATION_ENDPOINT}/${mockTransactionId}/fields/${mockFieldId}/otp/verify`,
         {
-          fieldId: mockFieldId,
           otp: mockOtp,
         },
       )
