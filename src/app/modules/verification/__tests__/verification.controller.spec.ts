@@ -12,6 +12,7 @@ import {
 } from 'src/app/services/sms/sms.errors'
 import { HashingError } from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
+import { WAIT_FOR_OTP_SECONDS } from 'src/shared/util/verification'
 import { IFormSchema, IVerificationSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -600,6 +601,433 @@ describe('Verification controller', () => {
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
+    })
+  })
+
+  describe('_handleGenerateOtp', () => {
+    const MOCK_REQ = expressHandler.mockRequest({
+      body: { answer: MOCK_ANSWER },
+      params: {
+        formId: MOCK_FORM_ID,
+        transactionId: MOCK_TRANSACTION_ID,
+        fieldId: MOCK_FIELD_ID,
+      },
+    })
+
+    beforeEach(() => {
+      MockFormService.retrieveFormById.mockReturnValue(
+        okAsync({} as IFormSchema),
+      )
+
+      MockOtpUtils.generateOtpWithHash.mockReturnValue(
+        okAsync({
+          otp: MOCK_OTP,
+          hashedOtp: MOCK_HASHED_OTP,
+        }),
+      )
+      MockVerificationFactory.sendNewOtp.mockReturnValue(
+        okAsync(mockTransaction),
+      )
+    })
+
+    it('should return 201 when params are valid', async () => {
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).toHaveBeenCalledWith({
+        transactionId: MOCK_TRANSACTION_ID,
+        fieldId: MOCK_FIELD_ID,
+        otp: MOCK_OTP,
+        hashedOtp: MOCK_HASHED_OTP,
+        recipient: MOCK_ANSWER,
+      })
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
+    })
+
+    it('should return 400 when form SMS parameters are malformed', async () => {
+      // Arrange
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new MalformedParametersError('')),
+      )
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).toHaveBeenCalledWith({
+        transactionId: MOCK_TRANSACTION_ID,
+        fieldId: MOCK_FIELD_ID,
+        otp: MOCK_OTP,
+        hashedOtp: MOCK_HASHED_OTP,
+        recipient: MOCK_ANSWER,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 400 when transaction has expired', async () => {
+      // Arrange
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new TransactionExpiredError("don't eat expired food")),
+      )
+      const expectedResponse = {
+        message: 'Your session has expired, please refresh and try again.',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).toHaveBeenCalledWith({
+        transactionId: MOCK_TRANSACTION_ID,
+        fieldId: MOCK_FIELD_ID,
+        otp: MOCK_OTP,
+        hashedOtp: MOCK_HASHED_OTP,
+        recipient: MOCK_ANSWER,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 400 when SMS sending errors', async () => {
+      // Arrange
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new SmsSendError()),
+      )
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).toHaveBeenCalledWith({
+        transactionId: MOCK_TRANSACTION_ID,
+        fieldId: MOCK_FIELD_ID,
+        otp: MOCK_OTP,
+        hashedOtp: MOCK_HASHED_OTP,
+        recipient: MOCK_ANSWER,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 400 when email sending errors', async () => {
+      // Arrange
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new MailSendError()),
+      )
+      const expectedResponse = {
+        message:
+          'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).toHaveBeenCalledWith({
+        transactionId: MOCK_TRANSACTION_ID,
+        fieldId: MOCK_FIELD_ID,
+        otp: MOCK_OTP,
+        hashedOtp: MOCK_HASHED_OTP,
+        recipient: MOCK_ANSWER,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 400 when phone number is invalid', async () => {
+      // Arrange
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new InvalidNumberError()),
+      )
+      const expectedResponse = {
+        message:
+          'This phone number does not seem to be valid. Please try again with a valid phone number.',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).toHaveBeenCalledWith({
+        transactionId: MOCK_TRANSACTION_ID,
+        fieldId: MOCK_FIELD_ID,
+        otp: MOCK_OTP,
+        hashedOtp: MOCK_HASHED_OTP,
+        recipient: MOCK_ANSWER,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 400 when field type is not verifiable', async () => {
+      // Arrange
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new NonVerifiedFieldTypeError('')),
+      )
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).toHaveBeenCalledWith({
+        transactionId: MOCK_TRANSACTION_ID,
+        fieldId: MOCK_FIELD_ID,
+        otp: MOCK_OTP,
+        hashedOtp: MOCK_HASHED_OTP,
+        recipient: MOCK_ANSWER,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 404 when form is not found', async () => {
+      // Arrange
+      MockFormService.retrieveFormById.mockReturnValueOnce(
+        errAsync(new FormNotFoundError()),
+      )
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 404 when transaction is not found', async () => {
+      // Arrange
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new TransactionNotFoundError('wad')),
+      )
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).toHaveBeenCalledWith({
+        transactionId: MOCK_TRANSACTION_ID,
+        fieldId: MOCK_FIELD_ID,
+        otp: MOCK_OTP,
+        hashedOtp: MOCK_HASHED_OTP,
+        recipient: MOCK_ANSWER,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 404 when field ID is not found', async () => {
+      // Arrange
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new FieldNotFoundInTransactionError()),
+      )
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).toHaveBeenCalledWith({
+        transactionId: MOCK_TRANSACTION_ID,
+        fieldId: MOCK_FIELD_ID,
+        otp: MOCK_OTP,
+        hashedOtp: MOCK_HASHED_OTP,
+        recipient: MOCK_ANSWER,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 422 when OTP waiting time has not elapsed', async () => {
+      // Arrange
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new WaitForOtpError()),
+      )
+      const expectedResponse = {
+        message: `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).toHaveBeenCalledWith({
+        transactionId: MOCK_TRANSACTION_ID,
+        fieldId: MOCK_FIELD_ID,
+        otp: MOCK_OTP,
+        hashedOtp: MOCK_HASHED_OTP,
+        recipient: MOCK_ANSWER,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.UNPROCESSABLE_ENTITY,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 500 when error occurs while hashing', async () => {
+      // Arrange
+      MockOtpUtils.generateOtpWithHash.mockReturnValueOnce(
+        errAsync(new HashingError()),
+      )
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
+    })
+
+    it('should return 500 when database error occurs', async () => {
+      // Arrange
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new DatabaseError()),
+      )
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+      expect(MockVerificationFactory.sendNewOtp).toHaveBeenCalledWith({
+        transactionId: MOCK_TRANSACTION_ID,
+        fieldId: MOCK_FIELD_ID,
+        otp: MOCK_OTP,
+        hashedOtp: MOCK_HASHED_OTP,
+        recipient: MOCK_ANSWER,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
   })
 

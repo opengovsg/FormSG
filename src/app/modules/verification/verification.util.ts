@@ -159,12 +159,17 @@ export const mapRouteError: MapRouteError = (
       }
     case MalformedParametersError:
     case SmsSendError:
-    case MailSendError:
     case NonVerifiedFieldTypeError:
     case MissingHashDataError:
     case DatabaseValidationError:
       return {
         errorMessage: coreErrorMsg,
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
+    case MailSendError:
+      return {
+        errorMessage:
+          'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
         statusCode: StatusCodes.BAD_REQUEST,
       }
     case DatabasePayloadSizeError:
