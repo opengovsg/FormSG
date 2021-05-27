@@ -393,7 +393,8 @@ describe('public-forms.verification.routes', () => {
       // Retries on failure until limit hit, hence cannot just mock once
       MockTransport.sendMail.mockRejectedValue('no')
       const expectedResponse = {
-        message: 'Sorry, something went wrong. Please refresh and try again.',
+        message:
+          'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
       }
 
       // Act
