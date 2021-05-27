@@ -1,6 +1,11 @@
 import axios from 'axios'
 
-import { FormSettings, LogicDto, SubmissionMetadataList } from '../../types'
+import {
+  EncryptedSubmissionDto,
+  FormSettings,
+  LogicDto,
+  SubmissionMetadataList,
+} from '../../types'
 import {
   EmailSubmissionDto,
   EncryptSubmissionDto,
@@ -11,9 +16,10 @@ import {
   PermissionsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
-  SubmissionCountDto,
-  SubmissionMetadataDto,
+  SubmissionCountQueryDto,
+  SubmissionMetadataQueryDto,
   SubmissionResponseDto,
+  SubmissionResponseQueryDto,
 } from '../../types/api'
 import { createEmailSubmissionFormData } from '../utils/submission'
 
@@ -267,7 +273,7 @@ export const countFormSubmissions = async ({
   formId,
   startDate,
   endDate,
-}: SubmissionCountDto): Promise<number> => {
+}: SubmissionCountQueryDto): Promise<number> => {
   const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/count`
   if (startDate && endDate) {
     return axios
@@ -290,13 +296,27 @@ export const getFormsMetadata = async ({
   formId,
   submissionId,
   pageNum,
-}: SubmissionMetadataDto): Promise<SubmissionMetadataList> => {
-  const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`
+}: SubmissionMetadataQueryDto): Promise<SubmissionMetadataList> => {
   const params = submissionId ? { submissionId } : { page: pageNum }
 
   return axios
-    .get(queryUrl, {
+    .get(`${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`, {
       params,
     })
+    .then(({ data }) => data)
+}
+
+/**
+ * Returns the data of a single submission of a given storage mode form
+ * @param formId The id of the form to query
+ * @param submissionId The id of the submission
+ * @returns The data of the submission
+ */
+export const getEncryptedResponse = ({
+  formId,
+  submissionId,
+}: SubmissionResponseQueryDto): Promise<EncryptedSubmissionDto> => {
+  return axios
+    .get(`${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}`)
     .then(({ data }) => data)
 }

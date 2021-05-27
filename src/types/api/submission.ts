@@ -9,15 +9,20 @@ export type SubmissionResponseDto = {
 
 export type SubmissionErrorDto = ErrorDto & { spcpSubmissionFailure?: true }
 
-export type SubmissionCountDto = {
+export type SubmissionCountQueryDto = {
   formId: string
   startDate?: Date
   endDate?: Date
 }
 
-export type SubmissionMetadataDto = {
+export type SubmissionMetadataQueryDto = {
   formId: string
 } & RequireAtLeastOne<{
   submissionId: string
   pageNum: number
 }>
+
+export type SubmissionResponseQueryDto = {
+  formId: string
+  submissionId: string
+}
