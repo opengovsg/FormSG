@@ -200,10 +200,12 @@ function ViewResponsesController(
     vm.loading = true
     vm.currentView = 3
 
-    Submissions.getEncryptedResponse({
-      formId: vm.myform._id,
-      submissionId,
-    }).then((response) => {
+    $q.when(
+      AdminFormService.getEncryptedResponse({
+        formId: vm.myform._id,
+        submissionId,
+      }),
+    ).then((response) => {
       if (vm.encryptionKey !== null) {
         vm.attachmentDownloadUrls = new Map()
 
