@@ -6,3 +6,9 @@ export type SubmissionResponseDto = {
 }
 
 export type SubmissionErrorDto = ErrorDto & { spcpSubmissionFailure?: true }
+
+export type SubmissionCountDto = {
+  formId: string
+  startDate?: Date
+  endDate?: Date
+}

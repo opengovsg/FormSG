@@ -11,6 +11,7 @@ import {
   PermissionsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
+  SubmissionCountDto,
   SubmissionResponseDto,
 } from '../../types/api'
 import { createEmailSubmissionFormData } from '../utils/submission'
@@ -253,4 +254,23 @@ export const submitStorageModeFormPreview = async ({
       },
     )
     .then(({ data }) => data)
+}
+
+/**
+ * Counts the number of submissions for a given form
+ * @param urlParameters Mapping of the url parameters to values
+ * @returns The number of form submissions
+ */
+export const countFormSubmissions = async ({
+  formId,
+  startDate,
+  endDate,
+}: SubmissionCountDto): Promise<number> => {
+  let queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/count`
+
+  if (startDate && endDate) {
+    queryUrl += `?startDate=${startDate}&endDate=${endDate}`
+  }
+
+  return axios.get(queryUrl).then(({ data }) => data)
 }
