@@ -1,10 +1,12 @@
 'use strict'
 
+const FormFeedbackService = require('../../../../services/FormFeedbackService')
+
 angular
   .module('forms')
   .directive('viewFeedbackDirective', [
     '$timeout',
-    'FormFeedback',
+    '$q',
     'Submissions',
     'NgTableParams',
     'emoji',
@@ -13,7 +15,7 @@ angular
 
 function viewFeedbackDirective(
   $timeout,
-  FormFeedback,
+  $q,
   Submissions,
   NgTableParams,
   emoji,
@@ -79,9 +81,7 @@ function viewFeedbackDirective(
         })
 
         $scope.createFeedbackTable = function (submissionCount) {
-          FormFeedback.getFeedback({
-            formId: $scope.myform._id,
-          }).then(
+          $q.when(FormFeedbackService.getFeedback($scope.myform._id)).then(
             function (response) {
               // Configure table
               $scope.tableParams = new NgTableParams(
@@ -121,13 +121,13 @@ function viewFeedbackDirective(
         }
 
         $scope.exportCsv = function () {
-          let params = {
-            formId: $scope.myform._id,
-            formTitle: $scope.myform.title,
-          }
+          const formId = $scope.myform._id
+          const formTitle = $scope.myform.title
 
           $scope.csvDownloading = true
-          FormFeedback.downloadFeedback(params).finally(function () {
+          $q.when(
+            FormFeedbackService.downloadFeedback(formId, formTitle),
+          ).finally(function () {
             $scope.csvDownloading = false
           })
         }
