@@ -37,7 +37,8 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
               !this.autoReplyOptions.hasAutoReply
             )
           },
-          message: 'Autoreply PDF is not allowed for storage mode forms',
+          message:
+            'PDF response summaries are not allowed for email confirmations in storage mode forms',
         },
       },
     },
@@ -66,21 +67,6 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
         message: 'There are one or more duplicate or invalid email domains.',
       },
     },
-  })
-
-  // PDF response not allowed if autoreply is set in encrypted forms. If
-  // autoreply is not set, then we don't care whether the pdf is set.
-  EmailFieldSchema.pre<IEmailFieldSchema>('validate', function (next) {
-    if (this.parent().responseMode === ResponseMode.Encrypt) {
-      const { hasAutoReply, includeFormSummary } = this.autoReplyOptions || {}
-      if (hasAutoReply && includeFormSummary) {
-        return next(
-          Error('Autoreply PDF is not allowed for storage mode forms'),
-        )
-      }
-    }
-
-    return next()
   })
 
   return EmailFieldSchema
