@@ -5,9 +5,9 @@ import { StatusCodes } from 'http-status-codes'
 import { SALT_ROUNDS } from '../../../shared/util/verification'
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
-import * as FormService from '../../modules/form/form.service'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta } from '../../utils/request'
+import * as FormService from '../form/form.service'
 
 import { VerificationFactory } from './verification.factory'
 import { Transaction } from './verification.types'
@@ -101,6 +101,7 @@ export const handleCreateVerificationTransaction: RequestHandler<
  * @deprecated in favour of handleResetFieldVerification
  * @param req
  * @param res
+ * @deprecated in favour of handleGenerateOtp
  */
 export const handleResetField: RequestHandler<
   { transactionId: string },
@@ -133,6 +134,7 @@ export const handleResetField: RequestHandler<
  * The current answer is signed, and the signature is also saved in the transaction, with the field id as the key.
  * @param req
  * @param res
+ * @deprecated in favour of handleGenerateOtp
  */
 export const handleGetOtp: RequestHandler<
   { transactionId: string },
@@ -168,6 +170,81 @@ export const handleGetOtp: RequestHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * NOTE: This is exported solely for testing
+ * Generates an otp when a user requests to verify a field.
+ * The current answer is signed, and the signature is also saved in the transaction, with the field id as the key.
+ * @param answer The mobile or email number of the user
+ * @param transactionId The id of the transaction to verify
+ * @param formId The id of the form to verify
+ * @param fieldId The id of the field to verify
+ * @returns 201 when otp generated successfully
+ * @returns 400 when the parameters could not be parsed
+ * @returns 400 when the transaction has expired
+ * @returns 400 when the otp could not be sent via sms
+ * @returns 400 when the otp could not be sent via email
+ * @returns 400 when the provided phone number is not valid
+ * @returns 400 when the field type is not supported for validation
+ * @returns 404 when the requested form was not found
+ * @returns 404 when the transaction was not found
+ * @returns 404 when the field was not found
+ * @returns 422 when the user requested for a new otp without waiting
+ * @returns 500 when the otp could not be hashed
+ * @returns 500 when there is a database error
+ */
+export const _handleGenerateOtp: RequestHandler<
+  { transactionId: string; formId: string; fieldId: string },
+  ErrorDto,
+  { answer: string }
+> = async (req, res) => {
+  const { transactionId, formId, fieldId } = req.params
+  const { answer } = req.body
+  const logMeta = {
+    action: 'handleGenerateOtp',
+    transactionId,
+    fieldId,
+    ...createReqMeta(req),
+  }
+  // Step 1: Ensure that the form for the specified transaction exists
+  return (
+    FormService.retrieveFormById(formId)
+      // Step 2: Generate hash and otp
+      .andThen(() => generateOtpWithHash(logMeta, SALT_ROUNDS))
+      .andThen(({ otp, hashedOtp }) =>
+        // Step 3: Send otp
+        VerificationFactory.sendNewOtp({
+          fieldId,
+          hashedOtp,
+          otp,
+          recipient: answer,
+          transactionId,
+        }),
+      )
+      .map(() => res.sendStatus(StatusCodes.CREATED))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error creating new OTP',
+          meta: logMeta,
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for the POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/generate endpoint
+ */
+export const handleGenerateOtp = [
+  celebrate({
+    [Segments.BODY]: Joi.object({
+      answer: Joi.string().required(),
+    }),
+  }),
+  _handleGenerateOtp,
+] as RequestHandler[]
 
 /**
  * When user submits their otp for the field, the otp is validated.

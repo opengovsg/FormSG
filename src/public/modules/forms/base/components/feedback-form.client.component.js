@@ -1,5 +1,7 @@
 'use strict'
 
+const FormFeedbackService = require('../../../../services/FormFeedbackService')
+
 angular.module('forms').component('feedbackFormComponent', {
   templateUrl:
     'modules/forms/base/componentViews/feedback-form.client.view.html',
@@ -8,11 +10,11 @@ angular.module('forms').component('feedbackFormComponent', {
     formId: '@',
     colorTheme: '@',
   },
-  controller: ['FormFeedback', 'Toastr', feedbackController],
+  controller: ['Toastr', '$q', feedbackController],
   controllerAs: 'vm',
 })
 
-function feedbackController(FormFeedback, Toastr) {
+function feedbackController(Toastr, $q) {
   const vm = this
 
   vm.$onInit = () => {
@@ -31,19 +33,13 @@ function feedbackController(FormFeedback, Toastr) {
         isPreview: vm.isPreview,
       }
 
-      FormFeedback.postFeedback(
-        {
-          formId: vm.formId,
-        },
-        feedback,
-      ).then(
-        function (_response) {
+      $q.when(FormFeedbackService.postFeedback(vm.formId, feedback)).then(
+        function () {
           vm.isSubmitted = true
           vm.isLoading = false
           Toastr.success('Thank you for your submission!')
         },
-        function (error) {
-          console.error(error)
+        function () {
           vm.isSubmitted = true
           vm.isLoading = false
           Toastr.error(

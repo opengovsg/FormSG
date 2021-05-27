@@ -1,6 +1,6 @@
 'use strict'
 
-const CsvGenerator = require('../../forms/helpers/CsvGenerator')
+const { CsvGenerator } = require('../../forms/helpers/CsvGenerator')
 const BillingService = require('../../../services/BillingService')
 
 angular

@@ -11,6 +11,7 @@ angular.module('forms').component('endPageComponent', {
     authType: '@',
     isAdminPreview: '<',
     colorTheme: '@',
+    submissionId: '@',
   },
   controller: ['SpcpSession', '$window', 'moment', endPageController],
   controllerAs: 'vm',
