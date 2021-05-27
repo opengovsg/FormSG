@@ -31,20 +31,19 @@ const EmailSubmission = getEmailSubmissionModel(mongoose)
 
 // TODO: Add more tests for the rest of the submission schema.
 describe('Submission Model', () => {
-  beforeAll(async () => await dbHandler.connect())
+  beforeAll(async () => {
+    await dbHandler.connect()
+    MockDns.resolve.mockResolvedValue(['1.1.1.1'])
+  })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
   const MOCK_ENCRYPTED_CONTENT = 'abcdefg encryptedContent'
+  const MOCK_VERIFIED_CONTENT = 'hijklmnop verifiedContent'
   const MOCK_WEBHOOK_URL = 'https://test.web.site'
 
   describe('Statics', () => {
     describe('retrieveWebhookInfoById', () => {
-      beforeAll(() => {
-        // Ensure that webhook URL is always valid
-        MockDns.resolve.mockResolvedValue(['1.1.1.1'])
-      })
-
       it('should return the populated submission when the submission and webhook URL exist', async () => {
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
@@ -244,7 +243,7 @@ describe('Submission Model', () => {
 
   describe('Methods', () => {
     describe('getWebhookView', () => {
-      it('should return non-null view with encryptedSubmission type (without verified content)', async () => {
+      it('should return non-null view with encryptedSubmission type when submission has no verified content', async () => {
         // Arrange
         const formId = new ObjectId()
 
@@ -269,6 +268,79 @@ describe('Submission Model', () => {
             created: expect.any(Date),
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             verifiedContent: undefined,
+            version: 1,
+          },
+        })
+      })
+
+      it('should return non-null view with encryptedSubmission type when submission has verified content', async () => {
+        // Arrange
+        const formId = new ObjectId()
+
+        const submission = await EncryptedSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: formId,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          verifiedContent: MOCK_VERIFIED_CONTENT,
+          version: 1,
+          authType: AuthType.NIL,
+          myInfoFields: [],
+          webhookResponses: [],
+        })
+
+        // Act
+        const actualWebhookView = submission.getWebhookView()
+
+        // Assert
+        expect(actualWebhookView).toEqual({
+          data: {
+            formId: expect.any(String),
+            submissionId: expect.any(String),
+            created: expect.any(Date),
+            encryptedContent: MOCK_ENCRYPTED_CONTENT,
+            verifiedContent: MOCK_VERIFIED_CONTENT,
+            version: 1,
+          },
+        })
+      })
+
+      it('should return non-null view with encryptedSubmission type when submission is populated with webhook info', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            webhook: {
+              url: MOCK_WEBHOOK_URL,
+              isRetryEnabled: false,
+            },
+          },
+        })
+
+        const submission = await EncryptedSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: form._id,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          verifiedContent: MOCK_VERIFIED_CONTENT,
+          version: 1,
+          authType: AuthType.NIL,
+          myInfoFields: [],
+          webhookResponses: [],
+        })
+
+        const populatedSubmission = await EncryptedSubmission.findById(
+          submission._id,
+        ).populate('form', 'webhook')
+
+        // Act
+        const actualWebhookView = populatedSubmission!.getWebhookView()
+
+        // Assert
+        expect(actualWebhookView).toEqual({
+          data: {
+            formId: expect.any(String),
+            submissionId: expect.any(String),
+            created: expect.any(Date),
+            encryptedContent: MOCK_ENCRYPTED_CONTENT,
+            verifiedContent: MOCK_VERIFIED_CONTENT,
             version: 1,
           },
         })
