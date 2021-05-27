@@ -5,7 +5,7 @@ const { triggerFileDownload } = require('../../helpers/util')
 
 const SHOW_PROGRESS_DELAY_MS = 3000
 
-const AdminFormService = require('../../../../services/AdminFormService')
+const AdminSubmissionsService = require('../../../../services/AdminSubmissionsService')
 
 angular
   .module('forms')
@@ -201,7 +201,7 @@ function ViewResponsesController(
     vm.currentView = 3
 
     $q.when(
-      AdminFormService.getEncryptedResponse({
+      AdminSubmissionsService.getEncryptedResponse({
         formId: vm.myform._id,
         submissionId,
       }),
@@ -268,7 +268,7 @@ function ViewResponsesController(
         'YYYY-MM-DD',
       )
     }
-    $q.when(AdminFormService.countFormSubmissions(params)).then(
+    $q.when(AdminSubmissionsService.countFormSubmissions(params)).then(
       (responsesCount) => {
         vm.attachmentsToDownload = responsesCount
         $uibModal
@@ -358,7 +358,9 @@ function ViewResponsesController(
   // When this route is initialized, call the responses count function
   $scope.$parent.$watch('vm.activeResultsTab', (newValue) => {
     if (newValue === 'responses' && vm.loading) {
-      $q.when(AdminFormService.countFormSubmissions({ formId: vm.myform._id }))
+      $q.when(
+        AdminSubmissionsService.countFormSubmissions({ formId: vm.myform._id }),
+      )
         .then((responsesCount) => {
           vm.responsesCount = responsesCount
           $timeout(() => {
@@ -404,7 +406,7 @@ function ViewResponsesController(
           let { page } = params.url()
           return $q
             .when(
-              AdminFormService.getFormsMetadata({
+              AdminSubmissionsService.getFormsMetadata({
                 formId: vm.myform._id,
                 submissionId: vm.filterBySubmissionRefId,
                 pageNum: page,

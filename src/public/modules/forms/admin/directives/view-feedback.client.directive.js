@@ -1,7 +1,7 @@
 'use strict'
 
 const FormFeedbackService = require('../../../../services/FormFeedbackService')
-const AdminFormService = require('../../../../services/AdminFormService')
+const AdminSubmissionsService = require('../../../../services/AdminSubmissionsService')
 
 angular
   .module('forms')
@@ -71,7 +71,7 @@ function viewFeedbackDirective(
         $scope.$parent.$watch('vm.activeResultsTab', (newValue) => {
           if (newValue === 'feedback' && $scope.loading) {
             $q.when(
-              AdminFormService.countFormSubmissions({
+              AdminSubmissionsService.countFormSubmissions({
                 formId: $scope.myform._id,
               }),
             )

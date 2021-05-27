@@ -1,7 +1,7 @@
 'use strict'
 const dedent = require('dedent-js')
 const { get, set, isEqual } = require('lodash')
-const AdminFormService = require('../../../../services/AdminFormService')
+const AdminSubmissionsService = require('../../../../services/AdminSubmissionsService')
 
 const SETTINGS_PATH = [
   'title',
@@ -67,7 +67,7 @@ function settingsFormDirective(
 
         $scope.currentResponsesCount = 0
         $q.when(
-          AdminFormService.countFormSubmissions({
+          AdminSubmissionsService.countFormSubmissions({
             formId: $scope.myform._id,
           }),
         )

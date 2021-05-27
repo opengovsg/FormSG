@@ -7,7 +7,7 @@ const ndjsonStream = require('../helpers/ndjsonStream')
 const fetchStream = require('fetch-readablestream')
 const { decode: decodeBase64 } = require('@stablelib/base64')
 const JSZip = require('jszip')
-const AdminFormService = require('../../../services/AdminFormService')
+const AdminSubmissionsService = require('../../../services/AdminSubmissionsService')
 
 const NUM_OF_METADATA_ROWS = 5
 
@@ -122,7 +122,11 @@ function SubmissionsFactory($q, $http, $timeout, $window, GTag, FormSgSdk) {
 
       return $q
         .when(
-          AdminFormService.countFormSubmissions({ formId, startDate, endDate }),
+          AdminSubmissionsService.countFormSubmissions({
+            formId,
+            startDate,
+            endDate,
+          }),
         )
         .then((expectedNumResponses) => {
           return new Promise(function (resolve, reject) {
