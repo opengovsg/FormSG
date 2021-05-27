@@ -279,7 +279,8 @@ describe('public-forms.verification.routes', () => {
     it('should return 400 when fieldType is email but the provided email is not valid', async () => {
       // Arrange
       const expectedResponse = {
-        message: 'Sorry, something went wrong. Please refresh and try again.',
+        message:
+          'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
       }
 
       // Act
@@ -318,7 +319,7 @@ describe('public-forms.verification.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 400 when the parameters are malformed', async () => {
+    it('should return 400 when otp data could not be retrieved from the form due to parameters being malformed', async () => {
       // Arrange
       // NOTE: This error is only thrown on interaction with the db, hence the db is mocked here
       jest.spyOn(Form, 'getOtpData').mockResolvedValueOnce(null)
