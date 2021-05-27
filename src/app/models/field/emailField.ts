@@ -30,12 +30,12 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
         type: Boolean,
         default: false,
         validate: {
-          validator: function (this: IEmailFieldSchema) {
+          validator: function (this: IEmailFieldSchema, v: boolean) {
             // PDF response not allowed for encrypt forms but ignore if no autoreply
-            return (
-              this.parent().responseMode !== ResponseMode.Encrypt ||
-              !this.autoReplyOptions.hasAutoReply
-            )
+            return v
+              ? this.parent().responseMode !== ResponseMode.Encrypt ||
+                  !this.autoReplyOptions.hasAutoReply
+              : true
           },
           message:
             'PDF response summaries are not allowed for email confirmations in storage mode forms',
