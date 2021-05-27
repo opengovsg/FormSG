@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import MockAxios from 'jest-mock-axios'
 
-import { BasicField } from 'src/types'
+import { BasicField, SubmissionMetadataList } from 'src/types'
 import {
   EmailSubmissionDto,
   EncryptSubmissionDto,
@@ -12,6 +12,7 @@ import * as SubmissionUtil from '../../utils/submission'
 import {
   ADMIN_FORM_ENDPOINT,
   countFormSubmissions,
+  getFormsMetadata,
   submitEmailModeFormPreview,
   submitStorageModeFormPreview,
 } from '../AdminFormService'
@@ -179,7 +180,13 @@ describe('AdminFormService', () => {
       // Assert
       await expect(actual).resolves.toEqual(123)
       expect(MockAxios.get).toHaveBeenCalledWith(
-        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/count?startDate=${MOCK_START_DATE}&endDate=${MOCK_END_DATE}`,
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/count`,
+        {
+          params: {
+            startDate: MOCK_START_DATE,
+            endDate: MOCK_END_DATE,
+          },
+        },
       )
     })
 
@@ -209,6 +216,62 @@ describe('AdminFormService', () => {
       await expect(actual).resolves.toEqual(123)
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/count`,
+      )
+    })
+  })
+
+  describe('getFormsMetadata', () => {
+    const MOCK_FORM_ID = 'mock–form-id'
+    const MOCK_SUBMISSION_ID = 'fake'
+    const MOCK_PAGE_NUM = 1
+    const MOCK_RESPONSE: SubmissionMetadataList = {
+      count: 1,
+      metadata: [
+        {
+          number: 1,
+          refNo: '1234',
+          submissionTime: 'sometime',
+        },
+      ],
+    }
+    it('should call the api with only submissionId when both parameters are provided', async () => {
+      // Act
+      const actual = getFormsMetadata({
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+        pageNum: MOCK_PAGE_NUM,
+      })
+      MockAxios.mockResponse({ data: MOCK_RESPONSE })
+
+      // Assert
+      await expect(actual).resolves.toEqual(MOCK_RESPONSE)
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/metadata`,
+        {
+          params: {
+            submissionId: MOCK_SUBMISSION_ID,
+          },
+        },
+      )
+    })
+
+    it('should call the api correctly when a single parameter is provided', async () => {
+      // Act
+      const actual = getFormsMetadata({
+        formId: MOCK_FORM_ID,
+        pageNum: MOCK_PAGE_NUM,
+      })
+      MockAxios.mockResponse({ data: MOCK_RESPONSE })
+
+      // Assert
+      await expect(actual).resolves.toEqual(MOCK_RESPONSE)
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/metadata`,
+        {
+          params: {
+            page: MOCK_PAGE_NUM,
+          },
+        },
       )
     })
   })
