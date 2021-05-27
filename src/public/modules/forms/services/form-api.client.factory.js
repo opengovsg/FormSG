@@ -94,7 +94,7 @@ function FormApi(FormErrorService, FormFields) {
 
   return {
     query: () =>
-      generateService(FormService.getDashboardViews, {
+      generateService(FormService.getDashboardView, {
         redirectOnError: true,
         errorTargetState: 'listForms',
       }),
