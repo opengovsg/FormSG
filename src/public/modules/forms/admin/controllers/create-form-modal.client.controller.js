@@ -278,14 +278,14 @@ function CreateFormModalController(
           case 'createFromTemplate': {
             // Create new form from template selected
             const newForm = Object.assign({}, vm.template, formParams)
-            $q.when(FormApi.create(newForm)).then((data) => {
+            $q.when(FormApi.create({ form: newForm })).then((data) => {
               vm.closeCreateModal()
               vm.goToWithId('viewForm', data._id + '')
             }, handleCreateFormError)
             break
           }
           case 'create': // Create form
-            $q.when(FormApi.create(formParams)).then((data) => {
+            $q.when(FormApi.create({ form: formParams })).then((data) => {
               vm.closeCreateModal()
               vm.goToWithId('viewForm', data._id + '')
             }, handleCreateFormError)
