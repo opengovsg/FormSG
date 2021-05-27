@@ -2,7 +2,10 @@ import { ObjectId } from 'bson'
 import { StatusCodes } from 'http-status-codes'
 import mockAxios from 'jest-mock-axios'
 
-import { FormUpdateParams } from 'src/app/modules/form/admin-form/admin-form.types'
+import {
+  DuplicateFormBody,
+  FormUpdateParams,
+} from 'src/app/modules/form/admin-form/admin-form.types'
 import { IFieldSchema, IPopulatedUser, IYesNoFieldSchema } from 'src/types'
 import {
   FormMetaView,
@@ -15,13 +18,13 @@ import {
   ADMIN_FORM_ENDPOINT,
   createForm,
   deleteForm,
-  getAdminForm,
-  getPublicForm,
+  duplicateForm,
+  getAdminFormView,
+  getDashboardViews,
+  getPublicFormView,
   previewForm,
   PUBLIC_FORM_ENDPOINT,
-  queryForm,
   queryTemplate,
-  saveForm,
   transferOwner,
   updateForm,
   useTemplate,
@@ -35,13 +38,13 @@ const MOCK_USER = {
 
 describe('FormService', () => {
   afterEach(() => mockAxios.reset())
-  describe('queryForm', () => {
+  describe('getDashboardViews', () => {
     it('should successfully return all available forms if GET request succeeds', async () => {
       // Arrange
       const expected: FormMetaView[] = [_generateMockDashboardViewForm()]
 
       // Act
-      const actualPromise = queryForm()
+      const actualPromise = getDashboardViews()
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -57,7 +60,7 @@ describe('FormService', () => {
       const expected: FormMetaView[] = []
 
       // Act
-      const actualPromise = queryForm()
+      const actualPromise = getDashboardViews()
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -73,7 +76,7 @@ describe('FormService', () => {
       const expected = new Error('error')
 
       // Act
-      const actualPromise = queryForm()
+      const actualPromise = getDashboardViews()
       mockAxios.mockError(expected)
 
       //Assert
@@ -84,41 +87,36 @@ describe('FormService', () => {
     })
   })
 
-  describe('getAdminForm', () => {
+  describe('getAdminFormView', () => {
     it('should return admin form if GET request succeeds', async () => {
       // Arrange
       const expected = _generateMockFullForm()
-      const accessMode = 'adminform'
 
       // Act
-      const actualPromise = getAdminForm(expected._id, accessMode)
+      const actualPromise = getAdminFormView(expected._id)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
       // Assert
       expect(actual).toEqual(expected)
-      expect(mockAxios.get).toHaveBeenCalledWith(
-        `/${expected._id}/${accessMode}`,
-        {
-          headers: { 'If-Modified-Since': '0' },
-        },
-      )
+      expect(mockAxios.get).toHaveBeenCalledWith(`/${expected._id}/adminform`, {
+        headers: { 'If-Modified-Since': '0' },
+      })
     })
 
     it('should reject with error message when GET request fails', async () => {
       // Arrange
       const expected = new Error('error')
       const MOCK_FORM = _generateMockFullForm()
-      const accessMode = 'adminform'
 
       // Act
-      const actualPromise = getAdminForm(MOCK_FORM._id, accessMode)
+      const actualPromise = getAdminFormView(MOCK_FORM._id)
       mockAxios.mockError(expected)
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
       expect(mockAxios.get).toHaveBeenCalledWith(
-        `/${MOCK_FORM._id}/${accessMode}`,
+        `/${MOCK_FORM._id}/adminform`,
         {
           headers: { 'If-Modified-Since': '0' },
         },
@@ -126,7 +124,7 @@ describe('FormService', () => {
     })
   })
 
-  describe('getPublicForm', () => {
+  describe('getPublicFormView', () => {
     it('should return public form if GET request succeeds', async () => {
       // Arrange
       const MOCK_FORM_ID = new ObjectId().toHexString()
@@ -138,7 +136,7 @@ describe('FormService', () => {
       }
 
       // Act
-      const actualPromise = getPublicForm(MOCK_FORM_ID)
+      const actualPromise = getPublicFormView(MOCK_FORM_ID)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
@@ -158,7 +156,7 @@ describe('FormService', () => {
       const expected = new Error('error')
 
       // Act
-      const actualPromise = getPublicForm(MOCK_FORM_ID)
+      const actualPromise = getPublicFormView(MOCK_FORM_ID)
       mockAxios.mockError(expected)
 
       // Assert
@@ -185,17 +183,16 @@ describe('FormService', () => {
           },
         } as FormUpdateParams,
       }
-      const accessMode = 'adminform'
 
       // Act
-      const actualPromise = updateForm(MOCK_FORM_ID, update, accessMode)
+      const actualPromise = updateForm(MOCK_FORM_ID, update)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
       // Assert
       expect(actual).toEqual(expected)
       expect(mockAxios.put).toHaveBeenCalledWith(
-        `${MOCK_FORM_ID}/${accessMode}`,
+        `${MOCK_FORM_ID}/adminform`,
         update,
       )
     })
@@ -226,15 +223,22 @@ describe('FormService', () => {
       )
     })
 
-    describe('saveForm', () => {
+    describe('duplicateForm', () => {
       it('should return saved form if POST request succeeds', async () => {
         // Arrange
         const expected = _generateMockDashboardViewForm()
         const MOCK_FORM_ID = expected._id
-        const MOCK_FIELDS = [_generateMockField()]
+        const MOCK_DUPLICATE_FORM_BODY = {
+          title: 'title',
+          responseMode: ResponseMode.Email,
+          emails: 'test@example.com',
+        } as DuplicateFormBody
 
         // Act
-        const actualPromise = saveForm(MOCK_FORM_ID, MOCK_FIELDS)
+        const actualPromise = duplicateForm(
+          MOCK_FORM_ID,
+          MOCK_DUPLICATE_FORM_BODY,
+        )
         mockAxios.mockResponse({ data: expected })
         const actual = await actualPromise
 
@@ -242,7 +246,7 @@ describe('FormService', () => {
         expect(actual).toEqual(expected)
         expect(mockAxios.post).toHaveBeenCalledWith(
           `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/duplicate`,
-          MOCK_FIELDS,
+          MOCK_DUPLICATE_FORM_BODY,
         )
       })
 
@@ -250,17 +254,24 @@ describe('FormService', () => {
         // Arrange
         const expected = new Error('error')
         const MOCK_FORM_ID = new ObjectId().toHexString()
-        const MOCK_FIELDS = [_generateMockField()]
+        const MOCK_DUPLICATE_FORM_BODY = {
+          title: 'title',
+          responseMode: ResponseMode.Email,
+          emails: 'test@example.com',
+        } as DuplicateFormBody
 
         // Act
-        const actualPromise = saveForm(MOCK_FORM_ID, MOCK_FIELDS)
+        const actualPromise = duplicateForm(
+          MOCK_FORM_ID,
+          MOCK_DUPLICATE_FORM_BODY,
+        )
         mockAxios.mockError(expected)
 
         // Assert
         await expect(actualPromise).rejects.toEqual(expected)
         expect(mockAxios.post).toHaveBeenCalledWith(
           `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/duplicate`,
-          MOCK_FIELDS,
+          MOCK_DUPLICATE_FORM_BODY,
         )
       })
     })
@@ -306,8 +317,10 @@ describe('FormService', () => {
     it('should return created form if POST request succeeds', async () => {
       // Arrange
       const expected = { form_fields: [_generateMockField()] }
-      const MOCK_FORM_PARAMS = { form: [_generateMockField()] }
-
+      const MOCK_FORM_PARAMS = {
+        title: 'title',
+        responseMode: ResponseMode.Email,
+      }
       // Act
       const actualPromise = createForm(MOCK_FORM_PARAMS)
       mockAxios.mockResponse({ data: expected })
@@ -324,7 +337,10 @@ describe('FormService', () => {
     it('should reject with error message if POST request fails', async () => {
       // Arrange
       const expected = new Error('error')
-      const MOCK_FORM_PARAMS = { form: [_generateMockField()] }
+      const MOCK_FORM_PARAMS = {
+        title: 'title',
+        responseMode: ResponseMode.Email,
+      }
 
       // Act
       const actualPromise = createForm(MOCK_FORM_PARAMS)
@@ -344,17 +360,16 @@ describe('FormService', () => {
       // Arrange
       const expected = _generateMockPublicForm()
       const MOCK_FORM_ID = new ObjectId().toHexString()
-      const accessMode = 'adminform'
 
       // Act
-      const actualPromise = queryTemplate(MOCK_FORM_ID, accessMode)
+      const actualPromise = queryTemplate(MOCK_FORM_ID)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
       // Assert
       expect(actual).toEqual(expected)
       expect(mockAxios.get).toHaveBeenCalledWith(
-        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/${accessMode}/template`,
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/adminform/template`,
       )
     })
 
@@ -362,16 +377,15 @@ describe('FormService', () => {
       // Arrange
       const expected = new Error('error')
       const MOCK_FORM_ID = new ObjectId().toHexString()
-      const accessMode = 'adminform'
 
       // Act
-      const actualPromise = queryTemplate(MOCK_FORM_ID, accessMode)
+      const actualPromise = queryTemplate(MOCK_FORM_ID)
       mockAxios.mockError(expected)
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
       expect(mockAxios.get).toHaveBeenCalledWith(
-        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/${accessMode}/template`,
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/adminform/template`,
       )
     })
   })
@@ -416,17 +430,16 @@ describe('FormService', () => {
       // Arrange
       const expected = _generateMockDashboardViewForm()
       const MOCK_FORM_ID = new ObjectId().toHexString()
-      const accessMode = 'adminform'
 
       // Act
-      const actualPromise = useTemplate(MOCK_FORM_ID, accessMode)
+      const actualPromise = useTemplate(MOCK_FORM_ID)
       mockAxios.mockResponse({ data: expected })
       const actual = await actualPromise
 
       // Assert
       expect(actual).toEqual(expected)
       expect(mockAxios.post).toHaveBeenCalledWith(
-        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/${accessMode}/copy`,
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/adminform/copy`,
       )
     })
 
@@ -434,16 +447,15 @@ describe('FormService', () => {
       // Arrange
       const expected = new Error('error')
       const MOCK_FORM_ID = new ObjectId().toHexString()
-      const accessMode = 'adminform'
 
       // Act
-      const actualPromise = useTemplate(MOCK_FORM_ID, accessMode)
+      const actualPromise = useTemplate(MOCK_FORM_ID)
       mockAxios.mockError(expected)
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
       expect(mockAxios.post).toHaveBeenCalledWith(
-        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/${accessMode}/copy`,
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/adminform/copy`,
       )
     })
   })
