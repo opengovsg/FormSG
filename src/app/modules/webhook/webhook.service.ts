@@ -179,6 +179,9 @@ export const sendWebhook = (
 
 /**
  * Creates a function which sends a webhook and saves the necessary records.
+ * This function sends the INITIAL webhook, which occurs immediately after
+ * a submission. If the initial webhook fails and retries are enabled, the
+ * webhook is queued for retries.
  * @returns function which sends webhook and saves a record of it
  */
 export const createInitialWebhookSender = (producer?: WebhookProducer) => (
