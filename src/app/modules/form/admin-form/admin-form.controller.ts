@@ -1460,7 +1460,7 @@ export const handleEncryptPreviewSubmission = [
 ] as RequestHandler[]
 
 /**
- * Handler for POST /v2/submissions/encrypt/preview/:formId.
+ * Handler for POST /v2/submissions/email/preview/:formId.
  * @security session
  *
  * @returns 200 with a mock submission ID
