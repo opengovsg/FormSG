@@ -43,6 +43,7 @@ import {
   SendEmailConfirmationError,
   ValidateFieldError,
 } from '../../submission.errors'
+import { extractEmailConfirmationData } from '../../submission.utils'
 
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = mocked(MailService, true)
@@ -588,12 +589,16 @@ describe('submission.service', () => {
           }),
         },
       ]
+      const autoReplyData = extractEmailConfirmationData(
+        responses,
+        mockForm.form_fields,
+      )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        parsedResponses: responses,
+        autoReplyData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
-        autoReplyData: MOCK_AUTOREPLY_DATA,
+        responsesData: MOCK_AUTOREPLY_DATA,
       })
 
       const expectedAutoReplyData = [
@@ -624,13 +629,17 @@ describe('submission.service', () => {
           }),
         },
       ]
+      const autoReplyData = extractEmailConfirmationData(
+        responses,
+        mockForm.form_fields,
+      )
 
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        parsedResponses: responses,
+        autoReplyData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
-        autoReplyData: MOCK_AUTOREPLY_DATA,
+        responsesData: MOCK_AUTOREPLY_DATA,
       })
 
       expect(MockMailService.sendAutoReplyEmails).not.toHaveBeenCalled()
@@ -666,12 +675,16 @@ describe('submission.service', () => {
           }),
         },
       ]
+      const autoReplyData = extractEmailConfirmationData(
+        responses,
+        mockForm.form_fields,
+      )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        parsedResponses: responses,
+        autoReplyData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
-        autoReplyData: MOCK_AUTOREPLY_DATA,
+        responsesData: MOCK_AUTOREPLY_DATA,
       })
 
       expect(MockMailService.sendAutoReplyEmails).not.toHaveBeenCalled()
@@ -713,12 +726,16 @@ describe('submission.service', () => {
           }),
         },
       ]
+      const autoReplyData = extractEmailConfirmationData(
+        responses,
+        mockForm.form_fields,
+      )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        parsedResponses: responses,
+        autoReplyData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
-        autoReplyData: MOCK_AUTOREPLY_DATA,
+        responsesData: MOCK_AUTOREPLY_DATA,
       })
 
       const expectedAutoReplyData = [EXPECTED_AUTOREPLY_DATA_1]
@@ -772,12 +789,16 @@ describe('submission.service', () => {
           }),
         },
       ]
+      const autoReplyData = extractEmailConfirmationData(
+        responses,
+        mockForm.form_fields,
+      )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        parsedResponses: responses,
+        autoReplyData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
-        autoReplyData: undefined,
+        responsesData: undefined,
       })
 
       const expectedAutoReplyData = [
@@ -834,12 +855,16 @@ describe('submission.service', () => {
           }),
         },
       ]
+      const autoReplyData = extractEmailConfirmationData(
+        responses,
+        mockForm.form_fields,
+      )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        parsedResponses: responses,
+        autoReplyData,
         submission: MOCK_SUBMISSION,
         attachments: undefined,
-        autoReplyData: MOCK_AUTOREPLY_DATA,
+        responsesData: MOCK_AUTOREPLY_DATA,
       })
 
       const expectedAutoReplyData = [
@@ -889,12 +914,16 @@ describe('submission.service', () => {
           }),
         },
       ]
+      const autoReplyData = extractEmailConfirmationData(
+        responses,
+        mockForm.form_fields,
+      )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        parsedResponses: responses,
+        autoReplyData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
-        autoReplyData: MOCK_AUTOREPLY_DATA,
+        responsesData: MOCK_AUTOREPLY_DATA,
       })
 
       const expectedAutoReplyData = [
@@ -954,12 +983,16 @@ describe('submission.service', () => {
           }),
         },
       ]
+      const autoReplyData = extractEmailConfirmationData(
+        responses,
+        mockForm.form_fields,
+      )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        parsedResponses: responses,
+        autoReplyData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
-        autoReplyData: MOCK_AUTOREPLY_DATA,
+        responsesData: MOCK_AUTOREPLY_DATA,
       })
 
       const expectedAutoReplyData = [
