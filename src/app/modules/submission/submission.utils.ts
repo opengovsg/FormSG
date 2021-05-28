@@ -325,11 +325,4 @@ export class IncomingSubmission {
 
     return ok(true)
   }
-
-  /**
-   * TODO: Consider the need for a set of _id: question pairs.
-   * Because this can easily be obtained from fieldMap, this might
-   * not be necessary.
-   */
-  // TODO: Consider the need to store the form object for data lookup.
 }
