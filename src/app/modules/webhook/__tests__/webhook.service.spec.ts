@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
+import { ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
@@ -8,12 +9,18 @@ import { getEncryptSubmissionModel } from 'src/app/models/submission.server.mode
 import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
 import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.validation'
 import { transformMongoError } from 'src/app/utils/handle-mongo-error'
-import { IWebhookResponse, WebhookView } from 'src/types'
+import {
+  IEncryptedSubmissionSchema,
+  IWebhookResponse,
+  WebhookView,
+} from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { SubmissionNotFoundError } from '../../submission/submission.errors'
-import { saveWebhookRecord, sendWebhook } from '../webhook.service'
+import { WebhookQueueMessage } from '../webhook.message'
+import { WebhookProducer } from '../webhook.producer'
+import * as WebhookService from '../webhook.service'
 
 // define suite-wide mocks
 jest.mock('axios')
@@ -24,6 +31,9 @@ const MockWebhookValidationModule = mocked(WebhookValidationModule, true)
 
 jest.mock('src/app/config/formsg-sdk')
 const MockFormSgSdk = mocked(formsgSdk, true)
+
+jest.mock('../webhook.message.ts')
+const MockWebhookQueueMessage = mocked(WebhookQueueMessage, true)
 
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
 
@@ -137,7 +147,7 @@ describe('webhook.service', () => {
         .mockRejectedValueOnce(mockDBError)
 
       // Act
-      const actual = await saveWebhookRecord(
+      const actual = await WebhookService.saveWebhookRecord(
         MOCK_SUBMISSION_ID,
         mockWebhookResponse,
       )
@@ -161,7 +171,7 @@ describe('webhook.service', () => {
       } as IWebhookResponse
 
       // Act
-      const actual = await saveWebhookRecord(
+      const actual = await WebhookService.saveWebhookRecord(
         new ObjectId(),
         mockWebhookResponse,
       )
@@ -194,7 +204,7 @@ describe('webhook.service', () => {
         .mockResolvedValue(expectedSubmission)
 
       // Act
-      const actual = await saveWebhookRecord(
+      const actual = await WebhookService.saveWebhookRecord(
         MOCK_SUBMISSION_ID,
         mockWebhookResponse,
       )
@@ -216,7 +226,10 @@ describe('webhook.service', () => {
       )
 
       // Act
-      const actual = await sendWebhook(MOCK_WEBHOOK_VIEW, MOCK_WEBHOOK_URL)
+      const actual = await WebhookService.sendWebhook(
+        MOCK_WEBHOOK_VIEW,
+        MOCK_WEBHOOK_URL,
+      )
 
       // Assert
       const expectedError = new WebhookValidationError(DEFAULT_ERROR_MSG)
@@ -234,7 +247,10 @@ describe('webhook.service', () => {
       )
 
       // Act
-      const actual = await sendWebhook(MOCK_WEBHOOK_VIEW, MOCK_WEBHOOK_URL)
+      const actual = await WebhookService.sendWebhook(
+        MOCK_WEBHOOK_VIEW,
+        MOCK_WEBHOOK_URL,
+      )
 
       // Assert
       const expectedError = new WebhookValidationError(
@@ -265,7 +281,10 @@ describe('webhook.service', () => {
       MockAxios.isAxiosError.mockReturnValue(true)
 
       // Act
-      const actual = await sendWebhook(MOCK_WEBHOOK_VIEW, MOCK_WEBHOOK_URL)
+      const actual = await WebhookService.sendWebhook(
+        MOCK_WEBHOOK_VIEW,
+        MOCK_WEBHOOK_URL,
+      )
 
       // Assert
       const expectedResult = {
@@ -293,7 +312,10 @@ describe('webhook.service', () => {
       MockAxios.isAxiosError.mockReturnValue(false)
 
       // Act
-      const actual = await sendWebhook(MOCK_WEBHOOK_VIEW, MOCK_WEBHOOK_URL)
+      const actual = await WebhookService.sendWebhook(
+        MOCK_WEBHOOK_VIEW,
+        MOCK_WEBHOOK_URL,
+      )
 
       // Assert
       const expectedResult = {
@@ -323,7 +345,10 @@ describe('webhook.service', () => {
       MockAxios.isAxiosError.mockReturnValue(false)
 
       // Act
-      const actual = await sendWebhook(MOCK_WEBHOOK_VIEW, MOCK_WEBHOOK_URL)
+      const actual = await WebhookService.sendWebhook(
+        MOCK_WEBHOOK_VIEW,
+        MOCK_WEBHOOK_URL,
+      )
 
       // Assert
       const expectedResult = {
@@ -350,7 +375,10 @@ describe('webhook.service', () => {
       MockAxios.post.mockResolvedValue(MOCK_AXIOS_SUCCESS_RESPONSE)
 
       // Act
-      const actual = await sendWebhook(MOCK_WEBHOOK_VIEW, MOCK_WEBHOOK_URL)
+      const actual = await WebhookService.sendWebhook(
+        MOCK_WEBHOOK_VIEW,
+        MOCK_WEBHOOK_URL,
+      )
 
       // Assert
       const expectedResult = {
@@ -368,6 +396,80 @@ describe('webhook.service', () => {
         testConfig,
       )
       expect(actual._unsafeUnwrap()).toEqual(expectedResult)
+    })
+  })
+
+  describe('createInitialWebhookSender', () => {
+    // This suite only checks for correct behaviour for webhook retries,
+    // since there are separate tests for sending webhooks and saving
+    // responses to the database.
+    let testSubmission: IEncryptedSubmissionSchema
+    const MOCK_PRODUCER = ({
+      sendMessage: jest.fn().mockReturnValue(okAsync(true)),
+    } as unknown) as WebhookProducer
+    beforeEach(() => {
+      jest.clearAllMocks()
+
+      testSubmission = new EncryptSubmissionModel({
+        _id: MOCK_SUBMISSION_ID,
+      })
+      jest
+        .spyOn(EncryptSubmissionModel, 'addWebhookResponse')
+        .mockResolvedValue(testSubmission)
+      MockWebhookValidationModule.validateWebhookUrl.mockResolvedValue()
+    })
+
+    it('should return true without retrying when webhook is successful and retries are enabled', async () => {
+      MockAxios.post.mockResolvedValue(MOCK_AXIOS_SUCCESS_RESPONSE)
+
+      const result = await WebhookService.createInitialWebhookSender(
+        MOCK_PRODUCER,
+      )(testSubmission, MOCK_WEBHOOK_URL, /* isRetryEnabled= */ true)
+
+      expect(result._unsafeUnwrap()).toBe(true)
+      expect(MockWebhookQueueMessage.fromSubmissionId).not.toHaveBeenCalled()
+    })
+
+    it('should return true without retrying when webhook fails but retries are not enabled globally', async () => {
+      MockAxios.post.mockResolvedValue(MOCK_AXIOS_SUCCESS_RESPONSE)
+
+      const result = await WebhookService
+        .createInitialWebhookSender
+        // no producer passed to createInitialWebhookSender, so retries not enabled globally
+        ()(testSubmission, MOCK_WEBHOOK_URL, true)
+
+      expect(result._unsafeUnwrap()).toBe(true)
+      expect(MockWebhookQueueMessage.fromSubmissionId).not.toHaveBeenCalled()
+    })
+
+    it('should return true without retrying when webhook fails and retries are not enabled for form', async () => {
+      MockAxios.post.mockResolvedValue(MOCK_AXIOS_FAILURE_RESPONSE)
+
+      const result = await WebhookService
+        .createInitialWebhookSender
+        // no producer passed to createInitialWebhookSender, so retries not enabled globally
+        ()(testSubmission, MOCK_WEBHOOK_URL, /* isRetryEnabled= */ false)
+
+      expect(result._unsafeUnwrap()).toBe(true)
+      expect(MockWebhookQueueMessage.fromSubmissionId).not.toHaveBeenCalled()
+    })
+
+    it('should return true and retry when webhook fails and retries are enabled', async () => {
+      const mockQueueMessage = ('mockQueueMessage' as unknown) as WebhookQueueMessage
+      MockWebhookQueueMessage.fromSubmissionId.mockReturnValueOnce(
+        ok(mockQueueMessage),
+      )
+      MockAxios.post.mockResolvedValue(MOCK_AXIOS_FAILURE_RESPONSE)
+
+      const result = await WebhookService.createInitialWebhookSender(
+        MOCK_PRODUCER,
+      )(testSubmission, MOCK_WEBHOOK_URL, /* isRetryEnabled= */ true)
+
+      expect(result._unsafeUnwrap()).toBe(true)
+      expect(MockWebhookQueueMessage.fromSubmissionId).toHaveBeenCalledWith(
+        String(testSubmission._id),
+      )
+      expect(MOCK_PRODUCER.sendMessage).toHaveBeenCalledWith(mockQueueMessage)
     })
   })
 })
