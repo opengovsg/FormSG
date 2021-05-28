@@ -21,7 +21,6 @@ import {
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
-import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import {
@@ -52,6 +51,7 @@ import {
 } from './encrypt-submission.service'
 import {
   createEncryptedSubmissionDto,
+  IncomingEncryptSubmission,
   mapRouteError,
 } from './encrypt-submission.utils'
 
@@ -166,41 +166,23 @@ const submitEncryptModeForm: RequestHandler<
     })
   }
 
-  // Validate encrypted submission
+  // Create Incoming Submission
   const { encryptedContent, responses } = req.body
-  const encryptedEncodingResult = await checkIsEncryptedEncoding(
+  const incomingSubmissionResult = IncomingEncryptSubmission.init(
+    form,
+    responses,
     encryptedContent,
   )
-  if (encryptedEncodingResult.isErr()) {
-    logger.error({
-      message: 'Error verifying content has encrypted encoding.',
-      meta: logMeta,
-      error: encryptedEncodingResult.error,
-    })
+  if (incomingSubmissionResult.isErr()) {
     const { statusCode, errorMessage } = mapRouteError(
-      encryptedEncodingResult.error,
+      incomingSubmissionResult.error,
     )
     return res.status(statusCode).json({
       message: errorMessage,
     })
   }
+  const incomingSubmission = incomingSubmissionResult.value
 
-  // Process encrypted submission
-  const processedResponsesResult = await getProcessedResponses(form, responses)
-  if (processedResponsesResult.isErr()) {
-    logger.error({
-      message: 'Error processing encrypted submission.',
-      meta: logMeta,
-      error: processedResponsesResult.error,
-    })
-    const { statusCode, errorMessage } = mapRouteError(
-      processedResponsesResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-  const processedResponses = processedResponsesResult.value
   delete (req.body as SetOptional<EncryptSubmissionDto, 'responses'>).responses
 
   // Checks if user is SPCP-authenticated before allowing submission
@@ -301,7 +283,6 @@ const submitEncryptModeForm: RequestHandler<
   }
 
   // Save Responses to Database
-  const formData = req.body.encryptedContent
   let attachmentMetadata = new Map<string, string>()
 
   if (req.body.attachments) {
@@ -326,7 +307,7 @@ const submitEncryptModeForm: RequestHandler<
     form: form._id,
     authType: form.authType,
     myInfoFields: form.getUniqueMyInfoAttrs(),
-    encryptedContent: formData,
+    encryptedContent: incomingSubmission.encryptedContent,
     verifiedContent: verified,
     attachmentMetadata,
     version: req.body.version,
