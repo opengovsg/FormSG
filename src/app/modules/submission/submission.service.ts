@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -30,49 +29,10 @@ import {
   ValidateFieldError,
 } from './submission.errors'
 import { ProcessedFieldResponse } from './submission.types'
-import { extractEmailConfirmationData, getModeFilter } from './submission.utils'
+import { getFilteredResponses, getModeFilter, extractEmailConfirmationData } from './submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
-
-/**
- * Filter allowed form field responses from given responses and return the
- * array of responses with duplicates removed.
- *
- * @param form The form document
- * @param responses the responses that corresponds to the given form
- * @returns neverthrow ok() filtered list of allowed responses with duplicates (if any) removed
- * @returns neverthrow err(ConflictError) if the given form's form field ids count do not match given responses'
- */
-const getFilteredResponses = (
-  form: IFormDocument,
-  responses: FieldResponse[],
-): Result<FieldResponse[], ConflictError> => {
-  const modeFilter = getModeFilter(form.responseMode)
-
-  if (!form.form_fields) {
-    return err(new ConflictError('Form fields are missing'))
-  }
-  // _id must be transformed to string as form response is jsonified.
-  const fieldIds = modeFilter(form.form_fields).map((field) => ({
-    _id: String(field._id),
-  }))
-  const uniqueResponses = _.uniqBy(modeFilter(responses), '_id')
-  const results = _.intersectionBy(uniqueResponses, fieldIds, '_id')
-
-  if (results.length < fieldIds.length) {
-    const onlyInForm = _.differenceBy(fieldIds, results, '_id').map(
-      ({ _id }) => _id,
-    )
-    return err(
-      new ConflictError('Some form fields are missing', {
-        formId: form._id,
-        onlyInForm,
-      }),
-    )
-  }
-  return ok(results)
-}
 
 /**
  * Injects response metadata such as the question, visibility state. In
