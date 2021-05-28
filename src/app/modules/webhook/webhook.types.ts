@@ -15,7 +15,7 @@ export interface WebhookParams {
  * Schema for webhook queue message, which allows an object to be validated.
  */
 export const webhookMessageSchema = z.object({
-  submissionId: z.string(),
+  submissionId: z.string().regex(/^[a-f\d]{24}$/i),
   previousAttempts: z.array(z.number()),
   nextAttempt: z.number(),
   _v: z.number(),
