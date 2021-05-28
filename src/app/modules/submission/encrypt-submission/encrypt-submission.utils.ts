@@ -1,7 +1,14 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
+import { Result } from 'neverthrow'
 
-import { EncryptedSubmissionDto, SubmissionData } from '../../../../types'
+import { getVisibleFieldIds } from '../../../../shared/util/logic'
+import {
+  EncryptedSubmissionDto,
+  FieldResponse,
+  IPopulatedEncryptedForm,
+  SubmissionData,
+} from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { MalformedVerifiedContentError } from '../../../modules/verified-content/verified-content.errors'
@@ -10,6 +17,7 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
+import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import {
   AttachmentUploadError,
   DatabaseConflictError,
@@ -43,6 +51,7 @@ import {
   SubmissionNotFoundError,
   ValidateFieldError,
 } from '../submission.errors'
+import { getFilteredResponses, IncomingSubmission } from '../submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -208,5 +217,106 @@ export const createEncryptedSubmissionDto = (
     content: submissionData.encryptedContent,
     verified: submissionData.verifiedContent,
     attachmentMetadata: attachmentPresignedUrls,
+  }
+}
+
+export class IncomingEncryptSubmission extends IncomingSubmission {
+  constructor(
+    responses: FieldResponse[],
+    public readonly form: IPopulatedEncryptedForm,
+    public readonly encryptedContent: string,
+  ) {
+    super(responses, form)
+  }
+
+  static init(
+    form: IPopulatedEncryptedForm,
+    responses: FieldResponse[],
+    encryptedContent: string,
+  ): Result<
+    IncomingEncryptSubmission,
+    ProcessingError | ConflictError | ValidateFieldError
+  > {
+    const logMeta = {
+      action: 'IncomingEncryptSubmission initialisation',
+      formId: form._id,
+    }
+    return checkIsEncryptedEncoding(encryptedContent)
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error verifying content has encrypted encoding.',
+          meta: logMeta,
+          error,
+        })
+        return error
+      })
+      .andThen(() =>
+        this.processResponses(responses, form).mapErr((error) => {
+          logger.error({
+            message: 'Error processing encrypted submission.',
+            meta: logMeta,
+            error,
+          })
+          return error
+        }),
+      )
+      .map(
+        (filteredResponses) =>
+          new IncomingEncryptSubmission(
+            filteredResponses,
+            form,
+            encryptedContent,
+          ),
+      )
+  }
+
+  private static processResponses(
+    responses: FieldResponse[],
+    form: IPopulatedEncryptedForm,
+  ): Result<
+    FieldResponse[],
+    ProcessingError | ConflictError | ValidateFieldError
+  > {
+    return getFilteredResponses(form, responses)
+      .andThen((filteredResponses) =>
+        this.getFieldMap(form, filteredResponses).map((fieldMap) => ({
+          filteredResponses,
+          fieldMap,
+        })),
+      )
+      .map(({ filteredResponses, fieldMap }) => ({
+        filteredResponses,
+        fieldMap,
+        visibleFieldIds: getVisibleFieldIds(filteredResponses, form),
+        verifiableResponseIds: this.getVerifiableResponseIds(
+          filteredResponses,
+          fieldMap,
+        ),
+        visibleResponseIds: this.getVisibleResponseIds(
+          filteredResponses,
+          fieldMap,
+          (response: FieldResponse) =>
+            'answer' in response &&
+            typeof response.answer === 'string' &&
+            response.answer.trim() !== '',
+        ),
+      }))
+      .andThen(
+        ({
+          filteredResponses,
+          fieldMap,
+          visibleFieldIds,
+          visibleResponseIds,
+          verifiableResponseIds,
+        }) =>
+          this.validateResponses(
+            filteredResponses,
+            form,
+            fieldMap,
+            visibleFieldIds,
+            visibleResponseIds,
+            verifiableResponseIds,
+          ).map(() => filteredResponses),
+      )
   }
 }
