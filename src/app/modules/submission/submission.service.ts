@@ -18,6 +18,7 @@ import {
 import { createLoggerWithLabel } from '../../config/logger'
 import getSubmissionModel from '../../models/submission.server.model'
 import MailService from '../../services/mail/mail.service'
+import { AutoReplyMailData } from '../../services/mail/mail.types'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import { validateField } from '../../utils/field-validation'
 import { DatabaseError, MalformedParametersError } from '../core/core.errors'
@@ -29,7 +30,7 @@ import {
   ValidateFieldError,
 } from './submission.errors'
 import { ProcessedFieldResponse } from './submission.types'
-import { getFilteredResponses, getModeFilter, extractEmailConfirmationData } from './submission.utils'
+import { getFilteredResponses } from './submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
@@ -181,43 +182,39 @@ export const getFormSubmissionsCount = (
  * @param param0 Data to include in email confirmations
  * @param param0.form Form object
  * @param param0.submission Submission object which was saved to database
- * @param param0.parsedResponses Responses for each field
- * @param param0.autoReplyData Subset of responses to be included in email confirmation
+ * @param param0.responsesData Subset of responses to be included in email confirmation
  * @param param0.attachments Attachments to be included in email
+ * @param autoReplyData Array of objects that contains autoreply mail data to override with defaults
  * @returns ok(true) if all emails were sent successfully
  * @returns err(SendEmailConfirmationError) if any email failed to be sent
  */
 export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   form,
   submission,
-  parsedResponses,
-  autoReplyData,
+  responsesData = [],
   attachments,
+  autoReplyData,
 }: {
   form: IPopulatedForm
   submission: S
-  parsedResponses: ProcessedFieldResponse[]
-  autoReplyData?: EmailRespondentConfirmationField[]
+  responsesData?: EmailRespondentConfirmationField[]
   attachments?: IAttachmentInfo[]
+  autoReplyData: AutoReplyMailData[]
 }): ResultAsync<true, SendEmailConfirmationError> => {
   const logMeta = {
     action: 'sendEmailConfirmations',
     formId: form._id,
     submissionid: submission._id,
   }
-  const confirmationData = extractEmailConfirmationData(
-    parsedResponses,
-    form.form_fields,
-  )
-  if (confirmationData.length === 0) {
+  if (autoReplyData.length === 0) {
     return okAsync(true)
   }
   const sentEmailsPromise = MailService.sendAutoReplyEmails({
     form,
     submission,
     attachments,
-    responsesData: autoReplyData ?? [],
-    autoReplyMailDatas: confirmationData,
+    responsesData,
+    autoReplyMailDatas: autoReplyData,
   })
   return ResultAsync.fromPromise(sentEmailsPromise, (error) => {
     logger.error({

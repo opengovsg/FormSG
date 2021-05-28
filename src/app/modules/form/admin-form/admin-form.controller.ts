@@ -67,6 +67,10 @@ import {
   mapRouteError as mapEncryptSubmissionError,
 } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import * as SubmissionService from '../../submission/submission.service'
+import {
+  extractEmailConfirmationData,
+  extractEmailConfirmationDataFromIncomingSubmission,
+} from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -1438,8 +1442,10 @@ export const submitEncryptPreview: RequestHandler<
 
       void SubmissionService.sendEmailConfirmations({
         form,
-        parsedResponses,
         submission,
+        autoReplyData: extractEmailConfirmationDataFromIncomingSubmission(
+          incomingSubmission,
+        ),
       })
 
       // Return the reply early to the submitter
@@ -1579,10 +1585,13 @@ export const submitEmailPreview: RequestHandler<
   // this fails
   void SubmissionService.sendEmailConfirmations({
     form,
-    parsedResponses,
     submission,
     attachments,
-    autoReplyData: emailData.autoReplyData,
+    responsesData: emailData.autoReplyData,
+    autoReplyData: extractEmailConfirmationData(
+      parsedResponses,
+      form.form_fields,
+    ),
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',

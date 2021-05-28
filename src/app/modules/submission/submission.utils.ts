@@ -60,16 +60,17 @@ const encryptModeFilter = <T extends ModeFilterParam>(responses: T[] = []) => {
 
 /**
  * Extracts response data to be sent in email confirmations
- * @param parsedResponses Responses from form filler
+ * @param responses Responses from form filler
  * @param formFields Fields from form object
  * @returns Array of data for email confirmations
  */
+// TODO: Migrate to extractEmailConfirmationDataFromIncomingSubmission
 export const extractEmailConfirmationData = (
-  parsedResponses: ProcessedFieldResponse[],
+  responses: FieldResponse[],
   formFields: IFieldSchema[] | undefined,
 ): AutoReplyMailData[] => {
   const fieldsById = keyBy(formFields, '_id')
-  return parsedResponses.reduce<AutoReplyMailData[]>((acc, response) => {
+  return responses.reduce<AutoReplyMailData[]>((acc, response) => {
     const field = fieldsById[response._id]
     if (
       field &&
@@ -91,6 +92,20 @@ export const extractEmailConfirmationData = (
     return acc
   }, [])
 }
+
+/**
+ * Extracts response data to be sent in email confirmations
+ * @param responses Responses from form filler
+ * @param formFields Fields from form object
+ * @returns Array of data for email confirmations
+ */
+export const extractEmailConfirmationDataFromIncomingSubmission = (
+  incomingSubmission: IncomingSubmission,
+): AutoReplyMailData[] => {
+  const { responses, form } = incomingSubmission
+  return extractEmailConfirmationData(responses, form.form_fields)
+}
+
 /**
  * Filter allowed form field responses from given responses and return the
  * array of responses with duplicates removed.
@@ -310,4 +325,11 @@ export class IncomingSubmission {
 
     return ok(true)
   }
+
+  /**
+   * TODO: Consider the need for a set of _id: question pairs.
+   * Because this can easily be obtained from fieldMap, this might
+   * not be necessary.
+   */
+  // TODO: Consider the need to store the form object for data lookup.
 }

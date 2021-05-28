@@ -34,10 +34,8 @@ import { getPopulatedUserById } from '../../user/user.service'
 import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
-import {
-  getProcessedResponses,
-  sendEmailConfirmations,
-} from '../submission.service'
+import { sendEmailConfirmations } from '../submission.service'
+import { extractEmailConfirmationDataFromIncomingSubmission } from '../submission.utils'
 
 import {
   checkFormIsEncryptMode,
@@ -361,8 +359,10 @@ const submitEncryptModeForm: RequestHandler<
 
   return sendEmailConfirmations({
     form,
-    parsedResponses: processedResponses,
     submission: savedSubmission,
+    autoReplyData: extractEmailConfirmationDataFromIncomingSubmission(
+      incomingSubmission,
+    ),
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',
