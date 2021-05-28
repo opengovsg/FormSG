@@ -261,7 +261,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           enum: Object.values(Colors),
           default: Colors.Blue,
         },
-        logo: FormLogoSchema,
+        logo: {
+          type: FormLogoSchema,
+          default: () => ({}),
+        },
       },
 
       endPage: {

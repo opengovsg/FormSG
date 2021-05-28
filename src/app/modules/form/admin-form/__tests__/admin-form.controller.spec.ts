@@ -15,7 +15,6 @@ import {
   DatabaseValidationError,
 } from 'src/app/modules/core/core.errors'
 import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
-import { FeedbackResponse } from 'src/app/modules/feedback/feedback.types'
 import {
   AttachmentTooLargeError,
   InvalidFileExtensionError,
@@ -66,6 +65,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
 } from 'src/types/api'
+import { GetFormFeedbackDto } from 'src/types/api/form_feedback'
 
 import {
   generateDefaultField,
@@ -2406,7 +2406,7 @@ describe('admin-form.controller', () => {
     it('should return 200 with feedback response successfully', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      const expectedFormFeedback: FeedbackResponse = {
+      const expectedFormFeedback: GetFormFeedbackDto = {
         count: 212,
         feedback: [
           {
@@ -5103,7 +5103,6 @@ describe('admin-form.controller', () => {
     } as IEmailSubmissionSchema
     const MOCK_SUBMISSION_BODY = {
       responses: MOCK_RESPONSES,
-      isPreview: false,
     }
     const MOCK_DATA_COLLATION_DATA = 'mockDataCollation'
     const MOCK_FORM_DATA = 'mockFormData'
@@ -6063,7 +6062,6 @@ describe('admin-form.controller', () => {
       responses: MOCK_RESPONSES,
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
       version: MOCK_VERSION,
-      isPreview: false,
       attachments: {
         [new ObjectId().toHexString()]: {
           encryptedFile: {

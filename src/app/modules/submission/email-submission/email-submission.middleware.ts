@@ -78,6 +78,9 @@ export const validateResponseParams = celebrate({
           .with('filename', 'content'), // if filename is present, content must be present
       )
       .required(),
-    isPreview: Joi.boolean().required(),
+    /**
+     * @deprecated unused key, but frontend still sends it.
+     */
+    isPreview: Joi.boolean(),
   }),
 })

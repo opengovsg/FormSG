@@ -113,7 +113,6 @@ class Form {
   async getSubmissionContent() {
     const submissionContent = {
       attachments: await this._getAttachments(),
-      isPreview: this.isPreview,
       responses: this._getResponsesForSubmission(),
     }
     if (this.responseMode === 'encrypt') {

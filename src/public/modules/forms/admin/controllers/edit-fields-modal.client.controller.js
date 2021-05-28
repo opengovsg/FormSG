@@ -13,7 +13,7 @@ const { uploadImage } = require('../../../../services/FileHandlerService')
 const {
   DateSelectedValidation: DateValidationOptions,
 } = require('../../../../../shared/constants')
-
+const { Rating, RatingShape } = require('../../../../../types')
 const CancelToken = axios.CancelToken
 
 const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '7']
@@ -25,7 +25,6 @@ angular
     '$uibModalInstance',
     'externalScope',
     'responseModeEnum',
-    'Rating',
     'Attachment',
     'FormFields',
     '$q',
@@ -41,7 +40,6 @@ function EditFieldsModalController(
   $uibModalInstance,
   externalScope,
   responseModeEnum,
-  Rating,
   Attachment,
   FormFields,
   $q,
@@ -162,8 +160,8 @@ function EditFieldsModalController(
     }
   }
 
-  vm.ratingSteps = Rating.steps
-  vm.ratingShapes = Rating.shapes
+  vm.ratingSteps = Rating
+  vm.ratingShapes = Object.values(RatingShape)
 
   vm.showDuplicateOptionsError = function (field) {
     // This function assumes that the txt file option for dropdown automatically removes duplicates

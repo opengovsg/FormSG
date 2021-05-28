@@ -1,12 +1,10 @@
 'use strict'
 
-const HttpStatus = require('http-status-codes')
 const CsvMHGenerator = require('../helpers/CsvMergedHeadersGenerator')
 const DecryptionWorker = require('../helpers/decryption.worker.js')
 const { fixParamsToUrl, triggerFileDownload } = require('../helpers/util')
 const ndjsonStream = require('../helpers/ndjsonStream')
 const fetchStream = require('fetch-readablestream')
-const { forOwn } = require('lodash')
 const { decode: decodeBase64 } = require('@stablelib/base64')
 const JSZip = require('jszip')
 
@@ -42,10 +40,6 @@ function SubmissionsFactory(
   responseModeEnum,
   FormSgSdk,
 ) {
-  const previewSubmitUrl =
-    '/api/v3/admin/forms/:formId/preview/submissions/:responseMode'
-  const publicSubmitUrl = '/api/v3/forms/:formId/submissions/:responseMode'
-
   const ADMIN_FORMS_PREFIX = '/api/v3/admin/forms'
 
   const generateDownloadUrl = (params, downloadAttachments) => {
@@ -63,112 +57,7 @@ function SubmissionsFactory(
     return resUrl
   }
 
-  /**
-   * Creates form data and submits as multi-part
-   * @param {String} resUrl
-   * @param {Object} body
-   */
-  const emailSubmissionOverMultiPart = (resUrl, body) => {
-    let deferred = $q.defer()
-    // Create form data from body
-    let fd = new FormData()
-    const formBody = {
-      isPreview: body.isPreview,
-      responses: body.responses,
-    }
-    // append body of post request to body key of formData
-    fd.append('body', JSON.stringify(formBody))
-    // append each file of post request to formData
-    if (body.attachments) {
-      forOwn(body.attachments, (attachment, fieldId) => {
-        if (attachment) {
-          fd.append(attachment.name, attachment, fieldId)
-        }
-      })
-    }
-    // initialise new XMLHttpRequest
-    let xhr = new XMLHttpRequest()
-    xhr.open('POST', resUrl)
-    // Send Data
-    xhr.send(fd)
-    // On Response
-    xhr.onreadystatechange = function () {
-      const OPERATION_DONE = 4
-      if (xhr.readyState === OPERATION_DONE) {
-        // waterfall is successful
-        let response = {}
-        try {
-          response = JSON.parse(xhr.responseText)
-          if (xhr.status === HttpStatus.OK) {
-            deferred.resolve({
-              message: 'Submission has finished.',
-              submissionId: response.submissionId,
-            })
-          } else {
-            deferred.reject(
-              `${response.message}` ||
-                "Please refresh and try again. If this doesn't work, try switching devices or networks.",
-            )
-          }
-        } catch (e) {
-          deferred.reject(
-            "Please refresh and try again. If this doesn't work, try switching devices or networks.",
-          )
-        }
-      }
-    }
-    return deferred.promise
-  }
-
-  /**
-   * Creates request body and submits using $http service
-   * @param {String} resUrl
-   * @param {Object} body
-   */
-  const encryptSubmissionOverHttp = (resUrl, body) => {
-    let deferred = $q.defer()
-    $http
-      .post(resUrl, {
-        isPreview: body.isPreview,
-        responses: body.responses,
-        encryptedContent: body.encryptedContent,
-        attachments: body.attachments,
-        version: body.version,
-      })
-      .then(
-        function (response) {
-          deferred.resolve({
-            message: 'Submission has finished.',
-            submissionId: response.data.submissionId,
-          })
-        },
-        function (error) {
-          deferred.reject(
-            `${
-              error.message ||
-              "Please refresh and try again. If this doesn't work, try switching devices or networks."
-            }`,
-          )
-        },
-      )
-    return deferred.promise
-  }
-
   const submissionService = {
-    post: function (params, body) {
-      const resUrl = fixParamsToUrl(
-        params,
-        (body.isPreview ? previewSubmitUrl : publicSubmitUrl) +
-          '?captchaResponse=' +
-          body.captchaResponse,
-        true,
-      )
-      if (params.responseMode === responseModeEnum.ENCRYPT) {
-        return encryptSubmissionOverHttp(resUrl, body)
-      } else {
-        return emailSubmissionOverMultiPart(resUrl, body)
-      }
-    },
     count: function (params) {
       const deferred = $q.defer()
       let resUrl = fixParamsToUrl(

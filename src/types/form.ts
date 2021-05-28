@@ -1,3 +1,4 @@
+import range from 'lodash/range'
 import { Document, LeanDocument, Model, ToObjectOptions, Types } from 'mongoose'
 import { Merge, SetRequired } from 'type-fest'
 
@@ -40,6 +41,8 @@ export enum ResponseMode {
   Encrypt = 'encrypt',
   Email = 'email',
 }
+
+export const Rating = range(1, 11).map(String)
 
 // Typings
 // Make sure this is kept in sync with form.server.model#FORM_PUBLIC_FIELDS.
