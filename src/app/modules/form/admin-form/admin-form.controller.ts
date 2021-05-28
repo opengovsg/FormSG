@@ -40,7 +40,6 @@ import {
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
-import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {
@@ -63,7 +62,10 @@ import {
 } from '../../submission/email-submission/email-submission.util'
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
-import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
+import {
+  IncomingEncryptSubmission,
+  mapRouteError as mapEncryptSubmissionError,
+} from '../../submission/encrypt-submission/encrypt-submission.utils'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
@@ -1412,19 +1414,18 @@ export const submitEncryptPreview: RequestHandler<
       }),
     )
     .andThen((form) =>
-      checkIsEncryptedEncoding(encryptedContent)
-        .andThen(() => SubmissionService.getProcessedResponses(form, responses))
-        .map((parsedResponses) => ({ parsedResponses, form }))
+      IncomingEncryptSubmission.init(form, responses, encryptedContent)
+        .map((incomingSubmission) => ({ incomingSubmission, form }))
         .mapErr((error) => {
           logger.error({
-            message: 'Error while parsing responses for preview submission',
+            message: 'Error while processing incoming preview submission.',
             meta: logMeta,
             error,
           })
           return error
         }),
     )
-    .map(({ parsedResponses, form }) => {
+    .map(({ incomingSubmission, form }) => {
       const submission = EncryptSubmissionService.createEncryptSubmissionWithoutSave(
         {
           form,
