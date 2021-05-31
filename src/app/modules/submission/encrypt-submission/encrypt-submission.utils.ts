@@ -237,29 +237,8 @@ export class IncomingEncryptSubmission extends IncomingSubmission {
     IncomingEncryptSubmission,
     ProcessingError | ConflictError | ValidateFieldError
   > {
-    const logMeta = {
-      action: 'IncomingEncryptSubmission initialisation',
-      formId: form._id,
-    }
     return checkIsEncryptedEncoding(encryptedContent)
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error verifying content has encrypted encoding.',
-          meta: logMeta,
-          error,
-        })
-        return error
-      })
-      .andThen(() =>
-        this.processResponses(responses, form).mapErr((error) => {
-          logger.error({
-            message: 'Error processing encrypted submission.',
-            meta: logMeta,
-            error,
-          })
-          return error
-        }),
-      )
+      .andThen(() => this.processResponses(responses, form))
       .map(
         (filteredResponses) =>
           new IncomingEncryptSubmission(
