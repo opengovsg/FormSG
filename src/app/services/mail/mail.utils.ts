@@ -1,6 +1,6 @@
 import dedent from 'dedent-js'
 import ejs, { Data } from 'ejs'
-import { err, ok, Result, ResultAsync } from 'neverthrow'
+import { combine, err, Result, ResultAsync } from 'neverthrow'
 import puppeteer from 'puppeteer-core'
 
 import { BounceType, Email } from '../../../types'
@@ -167,7 +167,5 @@ export const areEmailsValid = (
 
   // NOTE: This is provably safe because the check above returns an error if there are some strings
   // which cannot be parsed as an email.
-  return ok(
-    possibleEmailResults.map((emailResult) => emailResult._unsafeUnwrap()),
-  )
+  return combine(possibleEmailResults)
 }
