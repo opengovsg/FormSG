@@ -137,7 +137,7 @@
     "opossum": "^6.1.0",
     "p-queue": "^6.6.2",
     "promise-retry": "^2.0.1",
-    "puppeteer-core": "^5.3.1",
+    "puppeteer-core": "^10.0.0",
     "selectize": "0.12.6",
     "slick-carousel": "1.8.1",
     "sortablejs": "~1.13.0",
