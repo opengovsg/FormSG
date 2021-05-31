@@ -221,7 +221,7 @@ export const createEncryptedSubmissionDto = (
 }
 
 export class IncomingEncryptSubmission extends IncomingSubmission {
-  constructor(
+  private constructor(
     responses: FieldResponse[],
     public readonly form: IPopulatedEncryptedForm,
     public readonly encryptedContent: string,

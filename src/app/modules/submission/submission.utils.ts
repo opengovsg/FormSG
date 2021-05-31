@@ -146,7 +146,7 @@ export const getFilteredResponses = (
 }
 
 export class IncomingSubmission {
-  constructor(
+  protected constructor(
     public readonly responses: FieldResponse[],
     public readonly form: IPopulatedForm,
   ) {}
