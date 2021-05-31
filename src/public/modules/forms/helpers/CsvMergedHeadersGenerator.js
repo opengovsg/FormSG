@@ -107,21 +107,25 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
 
     // Craft a new csv row for each unprocessed record
     // O(qn), where q = number of unique questions, n = number of submissions.
-    this.unprocessed.forEach((up) => {
-      let createdAt = moment(up.created).tz('Asia/Singapore')
-      createdAt = createdAt.isValid()
-        ? createdAt.format('DD MMM YYYY hh:mm:ss A')
-        : createdAt
-      let row = [up.submissionId, createdAt]
-      for (let [fieldId] of this.fieldIdToQuestion) {
-        const numCols = this.fieldIdToNumCols[fieldId]
-        for (let colIndex = 0; colIndex < numCols; colIndex++) {
-          row.push(this._extractAnswer(up.record, fieldId, colIndex))
+    this.unprocessed
+      .map((up) => {
+        const createdAt = moment(up.created).tz('Asia/Singapore')
+        return { up, createdAt }
+      })
+      .sort((a, b) => this._dateComparator(a.createdAt, b.createdAt)) // responses are first sorted
+      .forEach(({ up, createdAt }) => {
+        createdAt = createdAt.isValid()
+          ? createdAt.format('DD MMM YYYY hh:mm:ss A')
+          : createdAt
+        let row = [up.submissionId, createdAt]
+        for (let [fieldId] of this.fieldIdToQuestion) {
+          const numCols = this.fieldIdToNumCols[fieldId]
+          for (let colIndex = 0; colIndex < numCols; colIndex++) {
+            row.push(this._extractAnswer(up.record, fieldId, colIndex))
+          }
         }
-      }
-      this.addLine(row)
-    })
-
+        this.addLine(row)
+      })
     this.hasBeenProcessed = true
   }
 
@@ -147,6 +151,17 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
   downloadCsv(filename) {
     this.process()
     this.triggerFileDownload(filename)
+  }
+
+  _dateComparator(firstDate, secondDate) {
+    if (firstDate.isBefore(secondDate)) {
+      return -1
+    } else if (firstDate.isAfter(secondDate)) {
+      return 1
+    } else {
+      // dates are the same
+      return 0
+    }
   }
 }
 
