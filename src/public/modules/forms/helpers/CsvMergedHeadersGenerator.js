@@ -1,6 +1,6 @@
 const moment = require('moment-timezone')
 const keyBy = require('lodash/keyBy')
-const CsvGenerator = require('./CsvGenerator')
+const { CsvGenerator } = require('./CsvGenerator')
 const { getResponseInstance } = require('./response-factory')
 
 /**

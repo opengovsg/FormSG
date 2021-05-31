@@ -1,12 +1,21 @@
-const { stringify } = require('csv-string')
-const { triggerFileDownload } = require('./util')
+import { stringify } from 'csv-string'
+
+import { triggerFileDownload } from './util'
 
 // Used to denote to Excel that the CSV is UTF8-encoded. See
 // https://stackoverflow.com/questions/19492846/javascript-to-csv-export-encoding-issue
 // for more information.
 const UTF8_BYTE_ORDER_MARK = '\uFEFF'
 
-module.exports = class CsvGenerator {
+export class CsvGenerator {
+  expectedNumberOfRecords: number
+  numOfMetaDataRows: number
+  numOfHeaderRows: number
+  lastCreatedAt: number
+  startIdx: number
+  idx: number
+  records: string[]
+
   constructor(expectedNumberOfRecords = 0, numOfMetaDataRows = 0) {
     this.expectedNumberOfRecords = expectedNumberOfRecords
     this.numOfMetaDataRows = numOfMetaDataRows
@@ -27,36 +36,32 @@ module.exports = class CsvGenerator {
 
   /**
    * Insert raw data for a given row into the CSV file
-   * @param {Array} rowData array of data to be inserted
    */
-  addLine(rowData) {
+  addLine(rowData: (number | string)[]): void {
     this.records[this.idx] = stringify(rowData)
     this.idx++
   }
 
   /**
    * Insert headers into the CSV file after the meta-data
-   * @param {Array} headerLabels array of labels for header row
    */
-  setHeader(headerLabels) {
+  setHeader(headerLabels: string[]): void {
     this.records[this.startIdx - 1] = stringify(headerLabels)
   }
 
   /**
    * Insert meta-data array into the start of the CSV file
-   * @param {Array} metaDataRows array of arrays, metaDataRows[i][j] holds the data for row i, col j of the metaData table
    */
-  addMetaData(metaDataRows) {
+  addMetaData(metaDataRows: (number | string)[][]): void {
     const metaData = metaDataRows.map((data) => stringify(data))
     // Start splicing at index 1 because BOM is at index 0.
     this.records.splice(1, this.numOfMetaDataRows, ...metaData)
   }
 
   /**
-   * Download CSV file
-   * @param {string} fileName
+   * Download CSV file to disk
    */
-  triggerFileDownload(fileName) {
+  triggerFileDownload(fileName: string): void {
     const blob = new Blob(this.records, {
       type: 'text/csv;charset=utf-8',
     })
@@ -66,7 +71,7 @@ module.exports = class CsvGenerator {
   /**
    * Returns current length of CSV file excluding header and meta-data
    */
-  length() {
+  length(): number {
     return this.idx - this.startIdx
   }
 }

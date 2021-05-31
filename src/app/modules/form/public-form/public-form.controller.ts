@@ -65,7 +65,7 @@ const validateSubmitFormFeedbackParams = celebrate({
  */
 export const submitFormFeedback: ControllerHandler<
   { formId: string },
-  ErrorDto | PrivateFormErrorDto,
+  { message: string } | ErrorDto | PrivateFormErrorDto,
   { rating: number; comment: string }
 > = async (req, res) => {
   const { formId } = req.params
@@ -119,31 +119,29 @@ export const submitFormFeedback: ControllerHandler<
   }
 
   // Form is valid, proceed to next step.
-  const submitFeedbackResult = await PublicFormService.insertFormFeedback({
+  return PublicFormService.insertFormFeedback({
     formId: form._id,
     rating,
     comment,
   })
-
-  if (submitFeedbackResult.isErr()) {
-    const { error } = submitFeedbackResult
-    logger.error({
-      message: 'Error creating form feedback',
-      meta: {
-        action: 'handleSubmitFeedback',
-        ...createReqMeta(req),
-        formId,
-      },
-      error,
+    .map(() =>
+      res
+        .status(StatusCodes.OK)
+        .json({ message: 'Successfully submitted feedback' }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error creating form feedback',
+        meta: {
+          action: 'handleSubmitFeedback',
+          ...createReqMeta(req),
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
     })
-    const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  // Success.
-  return res
-    .status(StatusCodes.OK)
-    .json({ message: 'Successfully submitted feedback' })
 }
 
 export const handleSubmitFeedback = [
