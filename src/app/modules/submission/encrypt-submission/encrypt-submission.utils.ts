@@ -51,6 +51,7 @@ import {
   SubmissionNotFoundError,
   ValidateFieldError,
 } from '../submission.errors'
+import { ValidatedFieldMap } from '../submission.types'
 import { getFilteredResponses, IncomingSubmission } from '../submission.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -256,30 +257,36 @@ export class IncomingEncryptSubmission extends IncomingSubmission {
     FieldResponse[],
     ProcessingError | ConflictError | ValidateFieldError
   > {
-    return getFilteredResponses(form, responses)
-      .andThen((filteredResponses) =>
-        this.getFieldMap(form, filteredResponses).map((fieldMap) => ({
-          filteredResponses,
-          fieldMap,
-        })),
-      )
-      .map(({ filteredResponses, fieldMap }) => ({
+    const transformFilteredResponses = ({
+      filteredResponses,
+      fieldMap,
+    }: {
+      filteredResponses: FieldResponse[]
+      fieldMap: ValidatedFieldMap
+    }) => ({
+      filteredResponses,
+      fieldMap,
+      visibleFieldIds: getVisibleFieldIds(filteredResponses, form),
+      verifiableResponseIds: this.getVerifiableResponseIds(
         filteredResponses,
         fieldMap,
-        visibleFieldIds: getVisibleFieldIds(filteredResponses, form),
-        verifiableResponseIds: this.getVerifiableResponseIds(
-          filteredResponses,
-          fieldMap,
+      ),
+      visibleResponseIds: this.getVisibleResponseIds(
+        filteredResponses,
+        fieldMap,
+        (response: FieldResponse) =>
+          'answer' in response &&
+          typeof response.answer === 'string' &&
+          response.answer.trim() !== '',
+      ),
+    })
+
+    return getFilteredResponses(form, responses)
+      .andThen((filteredResponses) =>
+        this.getFieldMap(form, filteredResponses).map((fieldMap) =>
+          transformFilteredResponses({ filteredResponses, fieldMap }),
         ),
-        visibleResponseIds: this.getVisibleResponseIds(
-          filteredResponses,
-          fieldMap,
-          (response: FieldResponse) =>
-            'answer' in response &&
-            typeof response.answer === 'string' &&
-            response.answer.trim() !== '',
-        ),
-      }))
+      )
       .andThen(
         ({
           filteredResponses,
