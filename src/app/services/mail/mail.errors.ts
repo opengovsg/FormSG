@@ -14,3 +14,11 @@ export class MailGenerationError extends ApplicationError {
     super(message)
   }
 }
+
+export class InvalidMailAddressError extends ApplicationError {
+  constructor(
+    message = 'An error occured while trying to parse a string as an email address',
+  ) {
+    super(message)
+  }
+}

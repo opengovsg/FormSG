@@ -3,6 +3,7 @@ import { OperationOptions } from 'retry'
 
 import {
   AutoReplyOptions,
+  Email,
   EmailAdminDataField,
   IFormSchema,
   IPopulatedForm,
@@ -40,7 +41,7 @@ export type MailServiceParams = {
 }
 
 export type AutoReplyMailData = {
-  email: string
+  email: Email
   subject?: AutoReplyOptions['autoReplySubject']
   sender?: AutoReplyOptions['autoReplySender']
   body?: AutoReplyOptions['autoReplyMessage']
@@ -56,7 +57,7 @@ export type AutoreplySummaryRenderData = {
 }
 
 export type MailOptions = Omit<Mail.Options, 'to'> & {
-  to: string | string[]
+  to: Email | Email[]
 }
 
 export type SubmissionToAdminHtmlData = {

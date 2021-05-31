@@ -1,15 +1,17 @@
 import dedent from 'dedent-js'
 import ejs, { Data } from 'ejs'
-import { flattenDeep } from 'lodash'
-import { ResultAsync } from 'neverthrow'
+import { err, ok, Result, ResultAsync } from 'neverthrow'
 import puppeteer from 'puppeteer-core'
-import validator from 'validator'
 
-import { BounceType } from '../../../types'
+import { BounceType, Email } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 
-import { MailGenerationError, MailSendError } from './mail.errors'
+import {
+  InvalidMailAddressError,
+  MailGenerationError,
+  MailSendError,
+} from './mail.errors'
 import {
   AutoreplyHtmlData,
   AutoreplySummaryRenderData,
@@ -151,21 +153,21 @@ export const generateAutoreplyHtml = (
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
-export const isToFieldValid = (addresses: string | string[]): boolean => {
-  // Retrieve all emails from each address.
-  // As addresses can be strings or a string array, cast given addresses param
-  // into an array regardless and flatten deep.
-  // The individual strings may still be an comma separated string, and thus
-  // further splitting is necessary.
-  // The final result is once again flattened.
-  const mails = flattenDeep(
-    flattenDeep([addresses]).map((addrString) =>
-      String(addrString)
-        .split(',')
-        .map((addr) => addr.trim()),
-    ),
-  )
+export const isEmailValid = (addresses: Email | Email[]): boolean => {
+  return Email.assert(addresses) || addresses.length > 0
+}
 
-  // Every address must be an email to be valid.
-  return mails.every((addr) => validator.isEmail(addr))
+export const areEmailsValid = (
+  addresses: string[],
+): Result<Email[], InvalidMailAddressError> => {
+  const possibleEmailResults = addresses.map(Email.parse)
+  if (possibleEmailResults.some((emailResult) => emailResult.isErr())) {
+    return err(new InvalidMailAddressError())
+  }
+
+  // NOTE: This is provably safe because the check above returns an error if there are some strings
+  // which cannot be parsed as an email.
+  return ok(
+    possibleEmailResults.map((emailResult) => emailResult._unsafeUnwrap()),
+  )
 }

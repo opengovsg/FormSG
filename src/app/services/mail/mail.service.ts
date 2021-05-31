@@ -1,4 +1,4 @@
-import { get, inRange, isEmpty } from 'lodash'
+import { get, inRange } from 'lodash'
 import moment from 'moment-timezone'
 import { err, errAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
@@ -8,7 +8,9 @@ import validator from 'validator'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../shared/util/verification'
 import {
   BounceType,
+  Email,
   EmailAdminDataField,
+  IEmailForm,
   IEmailFormSchema,
   ISubmissionSchema,
 } from '../../../types'
@@ -16,7 +18,11 @@ import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
-import { MailGenerationError, MailSendError } from './mail.errors'
+import {
+  InvalidMailAddressError,
+  MailGenerationError,
+  MailSendError,
+} from './mail.errors'
 import {
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
@@ -27,13 +33,14 @@ import {
   SendSingleAutoreplyMailArgs,
 } from './mail.types'
 import {
+  areEmailsValid,
   generateAutoreplyHtml,
   generateAutoreplyPdf,
   generateBounceNotificationHtml,
   generateLoginOtpHtml,
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
-  isToFieldValid,
+  isEmailValid,
 } from './mail.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -176,22 +183,13 @@ export class MailService {
     }
 
     // Guard against missing mail info.
-    if (!mail || isEmpty(mail.to)) {
+    if (!mail || !isEmailValid(mail.to)) {
       logger.error({
-        message: 'Undefined mail',
+        message: 'Undefined mail object',
         meta: logMeta,
       })
 
       return errAsync(new MailSendError('Mail undefined error'))
-    }
-
-    // Guard against invalid emails.
-    if (!isToFieldValid(mail.to)) {
-      logger.error({
-        message: `${mail.to} is not a valid email`,
-        meta: logMeta,
-      })
-      return errAsync(new MailSendError('Invalid email error'))
     }
 
     return ResultAsync.fromPromise(
@@ -283,7 +281,7 @@ export class MailService {
    * @throws error if mail fails, to be handled by the caller
    */
   sendVerificationOtp = (
-    recipient: string,
+    recipient: Email,
     otp: string,
   ): ResultAsync<true, MailSendError> => {
     const minutesToExpiry = Math.floor(HASH_EXPIRE_AFTER_SECONDS / 60)
@@ -317,7 +315,7 @@ export class MailService {
     otp,
     ipAddress,
   }: {
-    recipient: string
+    recipient: Email
     otp: string
     ipAddress: string
   }): ResultAsync<true, MailSendError> => {
@@ -369,7 +367,7 @@ export class MailService {
     formTitle,
     formId,
   }: {
-    emailRecipients: string[]
+    emailRecipients: Email[]
     bouncedRecipients: string[]
     bounceType: BounceType | undefined
     formTitle: string
@@ -434,7 +432,10 @@ export class MailService {
     formData,
   }: {
     replyToEmails?: string[]
-    form: Pick<IEmailFormSchema, '_id' | 'title' | 'emails'>
+    // This is a work-around - unable to change typing of IEmailFormSchema due to mongoose restrictions
+    // Hence, there is an erroneous typing where email can be undefined but this should never occur.
+    // Thus, intersect with IEmailForm to obtain correct type
+    form: Pick<IEmailFormSchema, '_id' | 'title'> & Pick<IEmailForm, 'emails'>
     submission: Pick<ISubmissionSchema, 'id' | 'created'>
     attachments?: Mail.Attachment[]
     formData: EmailAdminDataField[]
@@ -442,7 +443,10 @@ export class MailService {
       question: string
       answer: string | number
     }[]
-  }): ResultAsync<true, MailGenerationError | MailSendError> => {
+  }): ResultAsync<
+    true,
+    MailGenerationError | MailSendError | InvalidMailAddressError
+  > => {
     const refNo = String(submission.id)
     const formTitle = form.title
     const submissionTime = moment(submission.created)
@@ -472,35 +476,40 @@ export class MailService {
       formData,
     }
 
-    return generateSubmissionToAdminHtml(htmlData).andThen((mailHtml) => {
-      const mail: MailOptions = {
-        to: form.emails,
-        from: this.#senderFromString,
-        subject: `formsg-auto: ${formTitle} (Ref: ${refNo})`,
-        html: mailHtml,
-        attachments,
-        headers: {
-          [EMAIL_HEADERS.formId]: String(form._id),
-          [EMAIL_HEADERS.submissionId]: refNo,
-          [EMAIL_HEADERS.emailType]: EmailType.AdminResponse,
-        },
-        // replyTo options only allow string format.
-        replyTo: replyToEmails?.join(', '),
-      }
+    const formEmails =
+      typeof form.emails === 'string' ? [form.emails] : form.emails
 
-      return this.#sendNodeMail(mail, {
-        mailId: refNo,
-        formId: String(form._id),
-      }).mapErr((error) => {
-        // Add additional logging.
-        logger.error({
-          message: 'Error sending submission to admin email',
-          meta: {
-            action: 'sendSubmissionToAdmin',
+    return areEmailsValid(formEmails).asyncAndThen((emails) => {
+      return generateSubmissionToAdminHtml(htmlData).andThen((mailHtml) => {
+        const mail: MailOptions = {
+          to: emails,
+          from: this.#senderFromString,
+          subject: `formsg-auto: ${formTitle} (Ref: ${refNo})`,
+          html: mailHtml,
+          attachments,
+          headers: {
+            [EMAIL_HEADERS.formId]: String(form._id),
+            [EMAIL_HEADERS.submissionId]: refNo,
+            [EMAIL_HEADERS.emailType]: EmailType.AdminResponse,
           },
-          error,
+          // replyTo options only allow string format.
+          replyTo: replyToEmails?.join(', '),
+        }
+
+        return this.#sendNodeMail(mail, {
+          mailId: refNo,
+          formId: String(form._id),
+        }).mapErr((error) => {
+          // Add additional logging.
+          logger.error({
+            message: 'Error sending submission to admin email',
+            meta: {
+              action: 'sendSubmissionToAdmin',
+            },
+            error,
+          })
+          return error
         })
-        return error
       })
     })
   }
