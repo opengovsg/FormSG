@@ -292,9 +292,10 @@ export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
 
 export type IPopulatedEncryptedForm = IPopulatedForm & IEncryptedForm
 
-export interface IEmailForm extends IForm {
+export interface IEmailForm extends Omit<IForm, 'emails'> {
   // string type is allowed due to a setter on the form schema that transforms
   // strings to string array.
+  // NOTE: Email mode forms always have an email associated with them by definition
   emails: string[] | string
   publicKey?: never
 }
