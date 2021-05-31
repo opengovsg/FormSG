@@ -289,14 +289,21 @@ export class IncomingSubmission {
     return processedResponse
   }
 
-  protected static validateResponses(
-    responses: FieldResponse[],
-    form: IFormDocument,
-    fieldMap: ValidatedFieldMap,
-    visibleFieldIds: FieldIdSet,
-    visibleResponseIds: VisibleResponseIdSet,
-    verifiableResponseIds: VerifiableResponseIdSet,
-  ): Result<true, ProcessingError | ValidateFieldError> {
+  protected static validateResponses({
+    responses,
+    form,
+    fieldMap,
+    visibleFieldIds,
+    visibleResponseIds,
+    verifiableResponseIds,
+  }: {
+    responses: FieldResponse[]
+    form: IFormDocument
+    fieldMap: ValidatedFieldMap
+    visibleFieldIds: FieldIdSet
+    visibleResponseIds: VisibleResponseIdSet
+    verifiableResponseIds: VerifiableResponseIdSet
+  }): Result<true, ProcessingError | ValidateFieldError> {
     // Guard against invalid form submissions that should have been prevented by
     // logic.
     if (getLogicUnitPreventingSubmit(responses, form, visibleFieldIds)) {

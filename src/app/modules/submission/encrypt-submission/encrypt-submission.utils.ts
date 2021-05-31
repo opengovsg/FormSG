@@ -264,7 +264,7 @@ export class IncomingEncryptSubmission extends IncomingSubmission {
       filteredResponses: FieldResponse[]
       fieldMap: ValidatedFieldMap
     }) => ({
-      filteredResponses,
+      responses: filteredResponses,
       fieldMap,
       visibleFieldIds: getVisibleFieldIds(filteredResponses, form),
       verifiableResponseIds: this.getVerifiableResponseIds(
@@ -287,22 +287,10 @@ export class IncomingEncryptSubmission extends IncomingSubmission {
           transformFilteredResponses({ filteredResponses, fieldMap }),
         ),
       )
-      .andThen(
-        ({
-          filteredResponses,
-          fieldMap,
-          visibleFieldIds,
-          visibleResponseIds,
-          verifiableResponseIds,
-        }) =>
-          this.validateResponses(
-            filteredResponses,
-            form,
-            fieldMap,
-            visibleFieldIds,
-            visibleResponseIds,
-            verifiableResponseIds,
-          ).map(() => filteredResponses),
+      .andThen((responsesAndMetadata) =>
+        this.validateResponses({ ...responsesAndMetadata, form }).map(
+          () => responsesAndMetadata.responses,
+        ),
       )
   }
 }
