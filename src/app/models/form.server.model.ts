@@ -7,13 +7,13 @@ import mongoose, {
   SchemaOptions,
   Types,
 } from 'mongoose'
-import validator from 'validator'
 
 import { reorder } from '../../shared/util/immutable-array-fns'
 import {
   AuthType,
   BasicField,
   Colors,
+  Email,
   EndPage,
   FormField,
   FormFieldWithId,
@@ -157,7 +157,7 @@ const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
       validator: (v: string[]) => {
         if (!Array.isArray(v)) return false
         if (v.length === 0) return false
-        return v.every((email) => validator.isEmail(email))
+        return v.every((email) => Email.parse(email).isOk())
       },
       message: 'Please provide valid email addresses',
     },
