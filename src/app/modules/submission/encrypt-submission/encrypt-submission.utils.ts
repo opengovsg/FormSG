@@ -274,10 +274,7 @@ export class IncomingEncryptSubmission extends IncomingSubmission {
       visibleResponseIds: this.getVisibleResponseIds(
         filteredResponses,
         fieldMap,
-        (response: FieldResponse) =>
-          'answer' in response &&
-          typeof response.answer === 'string' &&
-          response.answer.trim() !== '',
+        this.responseVisibilityPredicate,
       ),
     })
 
@@ -292,5 +289,13 @@ export class IncomingEncryptSubmission extends IncomingSubmission {
           () => responsesAndMetadata.responses,
         ),
       )
+  }
+
+  static responseVisibilityPredicate(response: FieldResponse): boolean {
+    return (
+      'answer' in response &&
+      typeof response.answer === 'string' &&
+      response.answer.trim() !== ''
+    )
   }
 }
