@@ -1,6 +1,8 @@
 import { errAsync } from 'neverthrow'
 import Twilio from 'twilio'
 
+import { PhoneNumber } from 'src/types'
+
 import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
@@ -17,12 +19,12 @@ import { BounceNotificationSmsParams, TwilioConfig } from './sms.types'
 
 interface ISmsFactory {
   sendVerificationOtp: (
-    recipient: string,
+    recipient: PhoneNumber,
     otp: string,
     formId: string,
   ) => ReturnType<typeof sendVerificationOtp>
   sendAdminContactOtp: (
-    recipient: string,
+    recipient: PhoneNumber,
     otp: string,
     userId: string,
   ) => ReturnType<typeof sendAdminContactOtp>

@@ -5,7 +5,7 @@ import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
 import { isPhoneNumber } from '../../../shared/util/phone-num-validation'
-import { AdminContactOtpData, FormOtpData } from '../../../types'
+import { AdminContactOtpData, FormOtpData, PhoneNumber } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel from '../../models/form.server.model'
@@ -164,7 +164,7 @@ const logSmsSend = (logParams: LogSmsParams) => {
 const sendSms = (
   twilioConfig: TwilioConfig,
   smsData: FormOtpData | AdminContactOtpData,
-  recipient: string,
+  recipient: PhoneNumber,
   message: string,
   smsType: SmsType,
 ): ResultAsync<true, SmsSendError | InvalidNumberError> => {
@@ -264,6 +264,7 @@ const sendSms = (
       return error
     })
 }
+
 /**
  * Gets the correct twilio client for the form and sends an otp to a valid phonenumber
  * @param recipient The phone number to send to
@@ -272,7 +273,7 @@ const sendSms = (
  *
  */
 export const sendVerificationOtp = (
-  recipient: string,
+  recipient: PhoneNumber,
   otp: string,
   formId: string,
   defaultConfig: TwilioConfig,
@@ -336,7 +337,7 @@ export const sendVerificationOtp = (
 }
 
 export const sendAdminContactOtp = (
-  recipient: string,
+  recipient: PhoneNumber,
   otp: string,
   userId: string,
   defaultConfig: TwilioConfig,

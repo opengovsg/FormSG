@@ -7,6 +7,7 @@ import {
   IFormSchema,
   IUserSchema,
   Permission,
+  PhoneNumber,
 } from '../../../types'
 
 export enum SmsType {
@@ -103,7 +104,7 @@ export type TwilioConfig = {
 }
 
 export interface BounceNotificationSmsParams {
-  recipient: string
+  recipient: PhoneNumber
   recipientEmail: string
   adminId: string
   adminEmail: string
