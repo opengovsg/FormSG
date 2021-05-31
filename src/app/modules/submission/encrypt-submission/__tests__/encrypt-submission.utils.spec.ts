@@ -1,9 +1,27 @@
 import { ObjectId } from 'bson-ext'
 import moment from 'moment-timezone'
+import { ok } from 'neverthrow'
+import { mocked } from 'ts-jest/utils'
 
-import { SubmissionData } from 'src/types'
+import {
+  BasicField,
+  IFormSchema,
+  ResponseMode,
+  SubmissionData,
+} from 'src/types'
 
-import { createEncryptedSubmissionDto } from '../encrypt-submission.utils'
+import {
+  generateDefaultField,
+  generateSingleAnswerResponse,
+} from '../../../../../../tests/unit/backend/helpers/generate-form-data'
+import { checkIsEncryptedEncoding } from '../../../../utils/encryption'
+import {
+  createEncryptedSubmissionDto,
+  IncomingEncryptSubmission,
+} from '../encrypt-submission.utils'
+
+jest.mock('../../../../utils/encryption')
+const mockCheckIsEncryptedEncoding = mocked(checkIsEncryptedEncoding)
 
 describe('encrypt-submission.utils', () => {
   describe('createEncryptedSubmissionDto', () => {
@@ -36,6 +54,55 @@ describe('encrypt-submission.utils', () => {
         verified: submissionData.verifiedContent,
         attachmentMetadata: attachmentPresignedUrls,
       })
+    })
+  })
+
+  describe('IncomingEncryptSubmission', () => {
+    it('should create an incoming encrypt submission with valid form and responses', () => {
+      mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
+      const mobileField = generateDefaultField(BasicField.Mobile)
+      const emailField = generateDefaultField(BasicField.Email)
+      const mobileResponse = generateSingleAnswerResponse(
+        mobileField,
+        '+6587654321',
+      )
+      const emailResponse = generateSingleAnswerResponse(
+        emailField,
+        'test@example.com',
+      )
+      const responses = [mobileResponse, emailResponse]
+      const initResult = IncomingEncryptSubmission.init(
+        ({
+          responseMode: ResponseMode.Encrypt,
+          form_fields: [mobileField, emailField],
+        } as unknown) as IFormSchema,
+        responses,
+        '',
+      )
+      if (initResult.isErr()) {
+        throw new Error('Init failed')
+      }
+      expect(initResult.value.responses).toEqual(responses)
+    })
+
+    it('should fail when responses are missing', () => {
+      mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
+      const mobileField = generateDefaultField(BasicField.Mobile)
+      const emailField = generateDefaultField(BasicField.Email)
+      const mobileResponse = generateSingleAnswerResponse(
+        mobileField,
+        '+6587654321',
+      )
+      const responses = [mobileResponse]
+      const initResult = IncomingEncryptSubmission.init(
+        ({
+          responseMode: ResponseMode.Encrypt,
+          form_fields: [mobileField, emailField],
+        } as unknown) as IFormSchema,
+        responses,
+        '',
+      )
+      expect(initResult.isErr()).toEqual(true)
     })
   })
 })
