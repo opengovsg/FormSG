@@ -6,11 +6,10 @@ export type ErrorResponseData = {
   errorMessage: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ControllerHandler<
+export type ControllerHandler<
   P = unknown,
   ResBody = unknown,
   ReqBody = unknown,
   ReqQuery = unknown,
   Locals = Record<string, unknown>
-> extends RequestHandler<P, ResBody, ReqBody, ReqQuery, Locals> {}
+> = RequestHandler<P, ResBody, ReqBody, ReqQuery, Locals>

@@ -102,7 +102,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [MOCK_TEXTFIELD_RESPONSE],
           }),
         )
@@ -131,7 +130,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answer: '' }],
           }),
         )
@@ -158,7 +156,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [
               {
                 ...MOCK_ATTACHMENT_RESPONSE,
@@ -190,7 +187,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [{ ...MOCK_SECTION_RESPONSE, isHeader: true }],
           }),
         )
@@ -217,7 +213,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [{ ...MOCK_OPTIONAL_VERIFIED_RESPONSE, signature: '' }],
           }),
         )
@@ -244,7 +239,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [MOCK_CHECKBOX_RESPONSE],
           }),
         )
@@ -255,26 +249,6 @@ describe('email-submission.routes', () => {
         message: 'Form submission successful.',
         submissionId: expect.any(String),
       })
-    })
-
-    it('should return 400 when isPreview key is missing', async () => {
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          hasCaptcha: false,
-          status: Status.Public,
-        },
-      })
-
-      const response = await request
-        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-        // Note missing isPreview
-        .field('body', JSON.stringify({ responses: [] }))
-        .query({ captchaResponse: 'null' })
-
-      expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
     })
 
     it('should return 400 when responses key is missing', async () => {
@@ -288,7 +262,7 @@ describe('email-submission.routes', () => {
       const response = await request
         .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
         // Note missing responses
-        .field('body', JSON.stringify({ isPreview: false }))
+        .field('body', JSON.stringify({}))
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
@@ -310,7 +284,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_TEXTFIELD_RESPONSE, '_id')],
           }),
         )
@@ -335,7 +308,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'fieldType')],
           }),
         )
@@ -360,7 +332,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [
               { ...MOCK_TEXTFIELD_RESPONSE, fieldType: 'definitelyInvalid' },
             ],
@@ -387,7 +358,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'answer')],
           }),
         )
@@ -412,7 +382,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answerArray: [] }],
           }),
         )
@@ -437,7 +406,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'content'],
           }),
         )
@@ -462,7 +430,6 @@ describe('email-submission.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'filename'],
           }),
         )

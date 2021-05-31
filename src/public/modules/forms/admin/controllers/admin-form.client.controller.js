@@ -187,7 +187,6 @@ function AdminFormController(
    */
   $scope.updateForm = (update) => {
     const updateType = get(update, 'type')
-
     switch (updateType) {
       case UPDATE_FORM_TYPES.CreateField: {
         const { body } = update
@@ -252,6 +251,30 @@ function AdminFormController(
           })
           .catch(handleUpdateError)
       }
+      case UPDATE_FORM_TYPES.DuplicateField: {
+        const { fieldId } = update
+        return $q
+          .when(
+            AdminFormService.duplicateSingleFormField(
+              $scope.myform._id,
+              fieldId,
+            ),
+          )
+          .then((updatedFormField) => {
+            // !!! Convert retrieved form field objects into their class counterparts.
+            const updatedFieldClass = FieldFactory.createFieldFromData(
+              updatedFormField,
+            )
+            FormFields.injectMyInfoFieldInfo(updatedFieldClass)
+
+            // insert created field into form
+            $scope.myform.form_fields = [
+              ...$scope.myform.form_fields,
+              updatedFieldClass,
+            ]
+          })
+          .catch(handleUpdateError)
+      }
       case UPDATE_FORM_TYPES.ReorderField: {
         const { fieldId, newPosition } = update
 
@@ -290,6 +313,17 @@ function AdminFormController(
       .when(AdminFormService.updateFormEndPage($scope.myform._id, newEndPage))
       .then((updatedEndPage) => {
         $scope.myform.endPage = updatedEndPage
+      })
+      .catch(handleUpdateError)
+  }
+
+  $scope.updateFormStartPage = (newStartPage) => {
+    return $q
+      .when(
+        AdminFormService.updateFormStartPage($scope.myform._id, newStartPage),
+      )
+      .then((updatedStartPage) => {
+        $scope.myform.startPage = updatedStartPage
       })
       .catch(handleUpdateError)
   }

@@ -174,7 +174,7 @@ export const formatVehicleNumbers = (
   const vehicleNumbers: string[] = []
   field.forEach((vehicle) => {
     if (vehicle.unavailable) return
-    if (vehicle.vehicleno.value) {
+    if (vehicle.vehicleno?.value) {
       vehicleNumbers.push(vehicle.vehicleno.value)
     }
   })

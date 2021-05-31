@@ -10,7 +10,12 @@ import {
   EncryptedSubmissionDto,
   SubmissionMetadataList,
 } from '../../../../types'
-import { EncryptSubmissionDto, ErrorDto } from '../../../../types/api'
+import {
+  EncryptSubmissionDto,
+  ErrorDto,
+  SubmissionErrorDto,
+  SubmissionResponseDto,
+} from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
@@ -24,7 +29,6 @@ import {
 import { ControllerHandler } from '../../core/core.types'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
-import { isFormEncryptMode } from '../../form/form.utils'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
 import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
@@ -56,13 +60,27 @@ const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
 
-const submitEncryptModeForm: ControllerHandler<{ formId: string }> = async (
-  req,
-  res,
-) => {
+const submitEncryptModeForm: ControllerHandler<
+  { formId: string },
+  SubmissionResponseDto | SubmissionErrorDto,
+  EncryptSubmissionDto,
+  { captchaResponse?: unknown }
+> = async (req, res) => {
   const { formId } = req.params
+
+  if ('isPreview' in req.body) {
+    logger.info({
+      message:
+        'isPreview is still being sent when submitting encrypt mode form',
+      meta: {
+        action: 'submitEncryptModeForm',
+        type: 'deprecatedCheck',
+      },
+    })
+  }
+
   const logMeta = {
-    action: 'handleEncryptedSubmission',
+    action: 'submitEncryptModeForm',
     ...createReqMeta(req),
     formId,
   }
@@ -78,7 +96,22 @@ const submitEncryptModeForm: ControllerHandler<{ formId: string }> = async (
     const { errorMessage, statusCode } = mapRouteError(formResult.error)
     return res.status(statusCode).json({ message: errorMessage })
   }
-  const form = formResult.value
+
+  const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formResult.value)
+  if (checkFormIsEncryptModeResult.isErr()) {
+    logger.error({
+      message:
+        'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
+      meta: logMeta,
+    })
+    const { statusCode, errorMessage } = mapRouteError(
+      checkFormIsEncryptModeResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+  const form = checkFormIsEncryptModeResult.value
 
   // Check that form is public
   const formPublicResult = FormService.isFormPublic(form)
@@ -94,8 +127,6 @@ const submitEncryptModeForm: ControllerHandler<{ formId: string }> = async (
     } else {
       return res.status(statusCode).json({
         message: form.inactiveMessage,
-        isPageFound: true,
-        formTitle: form.title,
       })
     }
   }
@@ -131,8 +162,6 @@ const submitEncryptModeForm: ControllerHandler<{ formId: string }> = async (
     const { statusCode } = mapRouteError(formSubmissionLimitResult.error)
     return res.status(statusCode).json({
       message: form.inactiveMessage,
-      isPageFound: true,
-      formTitle: form.title,
     })
   }
 
@@ -239,18 +268,6 @@ const submitEncryptModeForm: ControllerHandler<{ formId: string }> = async (
   }
 
   // Encrypt Verified SPCP Fields
-  if (!isFormEncryptMode(form)) {
-    logger.error({
-      message:
-        'Trying to encrypt verified SpCp fields on non-encrypt mode form',
-      meta: logMeta,
-    })
-    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-      message:
-        'Unable to encrypt verified SPCP fields on non storage mode forms',
-    })
-  }
-
   let verified
   if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
     const encryptVerifiedContentResult = VerifiedContentFactory.getVerifiedContent(
@@ -330,7 +347,6 @@ const submitEncryptModeForm: ControllerHandler<{ formId: string }> = async (
       message:
         'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
       submissionId: submission._id,
-      spcpSubmissionFailure: false,
     })
   }
 

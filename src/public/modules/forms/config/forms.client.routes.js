@@ -134,6 +134,7 @@ angular.module('forms').config([
             template: `<edit-form-directive
               myform="myform"
               update-form="updateForm(update)"
+              update-form-start-page="updateFormStartPage(newStartPage)"
               update-form-end-page="updateFormEndPage(newEndPage)">
               </edit-form-directive>`,
           },

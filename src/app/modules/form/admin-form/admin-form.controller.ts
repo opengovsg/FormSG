@@ -4,11 +4,16 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
-import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
+import {
+  MAX_UPLOAD_FILE_SIZE,
+  VALID_UPLOAD_FILE_TYPES,
+} from '../../../../shared/constants'
 import {
   AuthType,
   BasicField,
+  Colors,
   FieldResponse,
+  FormLogoState,
   FormMetaView,
   FormSettings,
   IForm,
@@ -29,6 +34,7 @@ import {
   FormFieldDto,
   PermissionsUpdateDto,
   SettingsUpdateDto,
+  StartPageUpdateDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
@@ -1157,6 +1163,56 @@ export const handleUpdateForm: ControllerHandler<
 }
 
 /**
+ * Handler for POST /:formId/fields/:fieldId/duplicate
+ * @security session
+ *
+ * @returns 200 with duplicated field
+ * @returns 400 when form field has invalid updates to be performed
+ * @returns 403 when current user does not have permissions to update form
+ * @returns 404 when form or field to duplicate cannot be found
+ * @returns 409 when saving updated form incurs a conflict in the database
+ * @returns 410 when form to update is archived
+ * @returns 413 when updated form is too large to be saved in the database
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleDuplicateFormField: ControllerHandler<
+  { formId: string; fieldId: string },
+  FormFieldDto | ErrorDto
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((form) => AdminFormService.duplicateFormField(form, fieldId))
+    .map((duplicatedField) => res.status(StatusCodes.OK).json(duplicatedField))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when duplicating field',
+        meta: {
+          action: 'handleDuplicateFormField',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          fieldId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
  * Handler for PATCH /forms/:formId/settings.
  * @security session
  *
@@ -1416,7 +1472,7 @@ export const handleEncryptPreviewSubmission = [
 export const submitEmailPreview: ControllerHandler<
   { formId: string },
   { message: string; submissionId?: string },
-  { responses: FieldResponse[]; isPreview: boolean },
+  { responses: FieldResponse[] },
   { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
@@ -1642,6 +1698,109 @@ export const _handleCreateFormField: ControllerHandler<
 }
 
 /**
+ * NOTE: Exported for testing.
+ * Private handler for POST /forms/:formId/logic
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with created logic object when successfully created
+ * @returns 403 when user does not have permissions to create logic
+ * @returns 404 when form cannot be found
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleCreateLogic: ControllerHandler<
+  { formId: string },
+  LogicDto | ErrorDto,
+  LogicDto
+> = (req, res) => {
+  const { formId } = req.params
+  const createLogicBody = req.body
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: Create form logic
+      .andThen((retrievedForm) =>
+        AdminFormService.createFormLogic(retrievedForm, createLogicBody),
+      )
+      .map((createdLogic) => res.status(StatusCodes.OK).json(createdLogic))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when creating form logic',
+          meta: {
+            action: 'handleCreateLogic',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            createLogicBody,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Shape of request body used for joi validation for create and update logic
+ */
+const joiLogicBody = {
+  logicType: Joi.string()
+    .valid(...Object.values(LogicType))
+    .required(),
+  conditions: Joi.array()
+    .items(
+      Joi.object({
+        field: Joi.string().required(),
+        state: Joi.string()
+          .valid(...Object.values(LogicConditionState))
+          .required(),
+        value: Joi.alternatives()
+          .try(
+            Joi.number(),
+            Joi.string(),
+            Joi.array().items(Joi.string()),
+            Joi.array().items(Joi.number()),
+          )
+          .required(),
+        ifValueType: Joi.string()
+          .valid(...Object.values(LogicIfValue))
+          .required(),
+      }).unknown(true),
+    )
+    .required(),
+  show: Joi.alternatives().conditional('logicType', {
+    is: LogicType.ShowFields,
+    then: Joi.array().items(Joi.string()).required(),
+  }),
+  preventSubmitMessage: Joi.alternatives().conditional('logicType', {
+    is: LogicType.PreventSubmit,
+    then: Joi.string().required(),
+  }),
+}
+
+/**
+ * Handler for POST /forms/:formId/logic
+ */
+export const handleCreateLogic = [
+  celebrate({
+    [Segments.BODY]: joiLogicBody,
+  }),
+  _handleCreateLogic,
+] as ControllerHandler[]
+
+/**
  * Handler for DELETE /forms/:formId/logic/:logicId
  * @security session
  *
@@ -1793,7 +1952,7 @@ export const handleReorderFormField = [
  * @precondition Must be preceded by request validation
  * @security session
  *
- * @returns 200 with success message and updated logic object when successfully updated
+ * @returns 200 with updated logic object when successfully updated
  * @returns 403 when user does not have permissions to update logic
  * @returns 404 when form cannot be found
  * @returns 422 when user in session cannot be retrieved from the database
@@ -1852,41 +2011,8 @@ export const handleUpdateLogic = [
       [Segments.BODY]: Joi.object({
         // Ensures given logic is same as accessed logic
         _id: Joi.string().valid(Joi.ref('$params.logicId')).required(),
-        logicType: Joi.string()
-          .valid(...Object.values(LogicType))
-          .required(),
-        conditions: Joi.array()
-          .items(
-            Joi.object({
-              field: Joi.string().required(),
-              state: Joi.string()
-                .valid(...Object.values(LogicConditionState))
-                .required(),
-              value: Joi.alternatives()
-                .try(
-                  Joi.number(),
-                  Joi.string(),
-                  Joi.array().items(Joi.string()),
-                  Joi.array().items(Joi.number()),
-                )
-                .required(),
-              ifValueType: Joi.string()
-                .valid(...Object.values(LogicIfValue))
-                .required(),
-            }).unknown(true),
-          )
-          .required(),
-        show: Joi.alternatives().conditional('logicType', {
-          is: LogicType.ShowFields,
-          then: Joi.array().items(Joi.string()).required(),
-        }),
-        preventSubmitMessage: Joi.alternatives().conditional('logicType', {
-          is: LogicType.PreventSubmit,
-          then: Joi.string().required(),
-        }),
-        // Allow other field related key-values to be provided and let the model
-        // layer handle the validation.
-      }).unknown(true),
+        ...joiLogicBody,
+      }),
     },
     undefined,
     // Required so req.body can be validated against values in req.params.
@@ -1954,7 +2080,7 @@ export const handleDeleteFormField: ControllerHandler<
  * @security session
  *
  * @returns 200 with updated end page
- * @returns 403 when current user does not have permissions to create a form field
+ * @returns 403 when current user does not have permissions to update the end page
  * @returns 404 when form cannot be found
  * @returns 410 when updating the end page for an archived form
  * @returns 422 when user in session cannot be retrieved from the database
@@ -2005,12 +2131,13 @@ export const _handleUpdateEndPage: ControllerHandler<
  */
 export const handleUpdateEndPage = [
   celebrate({
-    [Segments.BODY]: {
+    [Segments.BODY]: Joi.object({
       title: Joi.string(),
       paragraph: Joi.string().allow(''),
       buttonLink: Joi.string().uri().allow(''),
       buttonText: Joi.string().allow(''),
-    },
+      // TODO(#1895): Remove when deprecated `buttons` key is removed from all forms in the database
+    }).unknown(true),
   }),
   _handleUpdateEndPage,
 ] as ControllerHandler[]
@@ -2141,4 +2268,97 @@ export const handleUpdateCollaborators = [
     ),
   }),
   _handleUpdateCollaborators,
+] as ControllerHandler[]
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/start-page
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated start page
+ * @returns 403 when current user does not have permissions to update the start page
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating the start page for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleUpdateStartPage: ControllerHandler<
+  { formId: string },
+  IFormDocument['startPage'] | ErrorDto,
+  StartPageUpdateDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, proceed to allow updating of start page
+      .andThen(() => AdminFormService.updateStartPage(formId, req.body))
+      .map((updatedStartPage) =>
+        res.status(StatusCodes.OK).json(updatedStartPage),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating start page',
+          meta: {
+            action: '_handleUpdateStartPage',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            body: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for PUT /forms/:formId/start-page
+ */
+export const handleUpdateStartPage = [
+  celebrate({
+    [Segments.BODY]: {
+      paragraph: Joi.string().allow('').optional(),
+      estTimeTaken: Joi.number().min(1).max(1000).required(),
+      colorTheme: Joi.string()
+        .valid(...Object.values(Colors))
+        .required(),
+      logo: Joi.object({
+        state: Joi.string().valid(...Object.values(FormLogoState)),
+        fileId: Joi.when('state', {
+          is: FormLogoState.Custom,
+          then: Joi.string().required(),
+          otherwise: Joi.any().forbidden(),
+        }),
+        fileName: Joi.when('state', {
+          is: FormLogoState.Custom,
+          then: Joi.string()
+            // Captures only the extensions below regardless of their case
+            // Refer to https://regex101.com/ with the below regex for a full explanation
+            .pattern(/\.(gif|png|jpeg|jpg)$/im)
+            .required(),
+          otherwise: Joi.any().forbidden(),
+        }),
+        fileSizeInBytes: Joi.when('state', {
+          is: FormLogoState.Custom,
+          then: Joi.number().max(MAX_UPLOAD_FILE_SIZE).required(),
+          otherwise: Joi.any().forbidden(),
+        }),
+      }).required(),
+    },
+  }),
+  _handleUpdateStartPage,
 ] as ControllerHandler[]

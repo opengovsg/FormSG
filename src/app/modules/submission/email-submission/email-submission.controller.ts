@@ -1,6 +1,11 @@
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
-import { AuthType, FieldResponse, IPopulatedEmailForm } from '../../../../types'
+import { AuthType, IPopulatedEmailForm } from '../../../../types'
+import {
+  EmailSubmissionDto,
+  SubmissionErrorDto,
+  SubmissionResponseDto,
+} from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import MailService from '../../../services/mail/mail.service'
@@ -33,12 +38,23 @@ const logger = createLoggerWithLabel(module)
 
 const submitEmailModeForm: ControllerHandler<
   { formId: string },
-  { message: string; submissionId?: string; spcpSubmissionFailure?: true },
-  { responses: FieldResponse[]; isPreview: boolean },
+  SubmissionResponseDto | SubmissionErrorDto,
+  EmailSubmissionDto,
   { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
   const attachments = mapAttachmentsFromResponses(req.body.responses)
+
+  if ('isPreview' in req.body) {
+    logger.info({
+      message: 'isPreview is still being sent when submitting email mode form',
+      meta: {
+        action: 'submitEmailModeForm',
+        type: 'deprecatedCheck',
+      },
+    })
+  }
+
   let spcpSubmissionFailure: undefined | true
 
   const logMeta = {

@@ -1,9 +1,9 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { SALT_ROUNDS } from '../../../shared/util/verification'
-import { PublicTransaction } from '../../../types'
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
+import * as FormService from '../../modules/form/form.service'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
@@ -15,8 +15,10 @@ import { mapRouteError } from './verification.util'
 const logger = createLoggerWithLabel(module)
 
 /**
+ * NOTE: Private handler for POST /transaction
  * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
  * If no fields are verifiable, then it did not create a transaction and returns an empty object.
+ * @deprecated in favour of handleCreateVerificationTransaction
  * @param req
  * @param res
  * @returns 201 - transaction is created
@@ -54,29 +56,36 @@ export const handleCreateTransaction: ControllerHandler<
 }
 
 /**
- * Returns a transaction's id and expiry time if it exists
+ * NOTE: Private handler for POST /forms/:formId/fieldverifications
+ * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
+ * If no fields are verifiable, then it did not create a transaction and returns an empty object.
  * @param req
  * @param res
+ * @returns 201 - transaction is created
+ * @returns 200 - transaction was not created as no fields were verifiable for the form
  */
-export const handleGetTransactionMetadata: ControllerHandler<
-  {
-    transactionId: string
-  },
-  PublicTransaction | ErrorDto
+export const handleCreateVerificationTransaction: ControllerHandler<
+  { formId: string },
+  Transaction | ErrorDto
 > = async (req, res) => {
-  const { transactionId } = req.params
+  const { formId } = req.params
   const logMeta = {
-    action: 'handleGetTransactionMetadata',
-    transactionId,
+    action: 'handleCreateVerificationTransaction',
+    formId,
     ...createReqMeta(req),
   }
-  return VerificationFactory.getTransactionMetadata(transactionId)
-    .map((publicTransaction) =>
-      res.status(StatusCodes.OK).json(publicTransaction),
-    )
+  return VerificationFactory.createTransaction(formId)
+    .map((transaction) => {
+      return transaction
+        ? res.status(StatusCodes.CREATED).json({
+            expireAt: transaction.expireAt,
+            transactionId: transaction._id,
+          })
+        : res.status(StatusCodes.OK).json({})
+    })
     .mapErr((error) => {
       logger.error({
-        message: 'Error retrieving transaction metadata',
+        message: 'Error creating transaction',
         meta: logMeta,
         error,
       })
@@ -88,6 +97,7 @@ export const handleGetTransactionMetadata: ControllerHandler<
 /**
  *  When user changes the input value in the verifiable field,
  *  we reset the field in the transaction, removing the previously saved signature.
+ * @deprecated in favour of handleResetFieldVerification
  * @param req
  * @param res
  */
@@ -187,6 +197,49 @@ export const handleVerifyOtp: ControllerHandler<
         error,
       })
       const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for resetting the verification state of a field.
+ * @param formId The id of the form to reset the field verification for
+ * @param fieldId The id of the field to reset verification for
+ * @param transactionId The transaction to reset
+ * @returns 204 when reset is successful
+ * @returns 400 when the transaction has expired
+ * @returns 404 when the form could not be found
+ * @returns 404 when the transaction could not be found
+ * @returns 404 when the field could not be found
+ * @returns 500 when a database error occurs
+ */
+export const handleResetFieldVerification: ControllerHandler<
+  {
+    formId: string
+    fieldId: string
+    transactionId: string
+  },
+  ErrorDto
+> = async (req, res) => {
+  const { transactionId, fieldId, formId } = req.params
+  const logMeta = {
+    action: 'handleResetFieldVerification',
+    transactionId,
+    fieldId,
+    ...createReqMeta(req),
+  }
+  return FormService.retrieveFormById(formId)
+    .andThen(() =>
+      VerificationFactory.resetFieldForTransaction(transactionId, fieldId),
+    )
+    .map(() => res.sendStatus(StatusCodes.NO_CONTENT))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error resetting field in transaction',
+        meta: logMeta,
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }

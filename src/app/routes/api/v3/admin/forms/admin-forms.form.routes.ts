@@ -114,6 +114,7 @@ AdminFormsFormRouter.route(
    * @returns 500 when database error occurs
    */
   .put(AdminFormController.handleUpdateFormField)
+
   /**
    * Delete form field by fieldId of form corresponding to formId.
    * @route DELETE /admin/forms/:formId/fields/:fieldId
@@ -143,6 +144,26 @@ AdminFormsFormRouter.route(
    */
   .get(AdminFormController.handleGetFormField)
 
+/**
+ * Duplicates the form field with the fieldId from the specified form
+ * @route POST /:formId/fields/:fieldId/duplicate
+ * @security session
+ *
+ * @returns 200 with duplicated field
+ * @returns 400 when form field has invalid updates to be performed
+ * @returns 403 when current user does not have permissions to update form
+ * @returns 404 when form or field to duplicate cannot be found
+ * @returns 409 when saving updated form incurs a conflict in the database
+ * @returns 410 when form to update is archived
+ * @returns 413 when updated form is too large to be saved in the database
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+AdminFormsFormRouter.post(
+  '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/duplicate',
+  AdminFormController.handleDuplicateFormField,
+)
+
 AdminFormsFormRouter.post(
   '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/reorder',
   AdminFormController.handleReorderFormField,
@@ -156,4 +177,21 @@ AdminFormsFormRouter.post(
 AdminFormsFormRouter.put(
   '/:formId([a-fA-F0-9]{24})/end-page',
   AdminFormController.handleUpdateEndPage,
+)
+
+/**
+ * Replaces the startPage of the given form with what is given in the request
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated start page
+ * @returns 403 when current user does not have permissions to update the start page
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating the start page for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+AdminFormsFormRouter.put(
+  '/:formId([a-fA-F0-9]{24})/start-page',
+  AdminFormController.handleUpdateStartPage,
 )
