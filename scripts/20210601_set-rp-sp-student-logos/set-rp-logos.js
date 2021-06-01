@@ -1,6 +1,11 @@
 /* eslint-disable */
 
 // BEFORE
+// A: Count number of forms belonging to RP students.
+{
+  let rpStudentUserIds = db.users.find({ email: /.+myrp\.edu\.sg$/i }).map(b => b._id)
+  db.forms.find({ admin: { $in: rpStudentUserIds } }).count()
+}
 // Should be 0
 {
   db.forms.count({
@@ -10,10 +15,12 @@
 
 // UPDATE
 {
-  let rpForms = []
+  let rpStudentUserIds = db.users.find({ email: /.+myrp\.edu\.sg$/i }).map(b => b._id)
+  let rpStudentFormIds = db.forms.find({ admin: { $in: rpStudentUserIds } }).map(b => b._id)
+
   db.forms.updateMany(
     {
-      _id: { $in: rpForms },
+      _id: { $in: rpStudentFormIds },
     },
     {
       $set: {
@@ -35,4 +42,10 @@
   db.forms.count({
     'startPage.logo.fileId': { $eq: '1622549887610-rp%20student%20logo.png' },
   })
+}
+// Count number of forms belonging to RP students.
+// Should still remain the same as A.
+{
+  let rpStudentUserIds = db.users.find({ email: /.+myrp\.edu\.sg$/i }).map(b => b._id)
+  db.forms.find({ admin: { $in: rpStudentUserIds } }).count()
 }
