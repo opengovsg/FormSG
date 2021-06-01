@@ -104,7 +104,7 @@ const compileUserModel = (db: Mongoose) => {
   )
 
   // Methods
-  UserSchema.methods.getPublicView = function (this: IUserSchema): PublicUser {
+  UserSchema.methods.getPublicView = function (): PublicUser {
     // Return public view of nested agency document if populated.
     return {
       agency: this.populated('agency')
@@ -118,7 +118,6 @@ const compileUserModel = (db: Mongoose) => {
    * Upserts given user details into User collection.
    */
   UserSchema.statics.upsertUser = async function (
-    this: IUserModel,
     upsertParams: Pick<IUser, 'email' | 'agency' | 'lastAccessed'>,
   ) {
     return this.findOneAndUpdate(
@@ -141,7 +140,6 @@ const compileUserModel = (db: Mongoose) => {
    * User collection.
    */
   UserSchema.statics.findContactNumbersByEmails = async function (
-    this: IUserModel,
     emails: string[],
   ) {
     return this.find()

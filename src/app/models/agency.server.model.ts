@@ -50,9 +50,7 @@ const AgencySchema = new Schema<IAgencySchema>(
 )
 
 // Methods
-AgencySchema.methods.getPublicView = function (
-  this: IAgencySchema,
-): PublicAgency {
+AgencySchema.methods.getPublicView = function (): PublicAgency {
   return pick(this, AGENCY_PUBLIC_FIELDS) as PublicAgency
 }
 

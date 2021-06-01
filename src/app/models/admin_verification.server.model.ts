@@ -54,7 +54,6 @@ AdminVerificationSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
  * Upserts given OTP into AdminVerification collection.
  */
 AdminVerificationSchema.statics.upsertOtp = async function (
-  this: IAdminVerificationModel,
   upsertParams: UpsertOtpParams,
 ) {
   return this.findOneAndUpdate(
@@ -73,7 +72,6 @@ AdminVerificationSchema.statics.upsertOtp = async function (
  * @returns the incremented document
  */
 AdminVerificationSchema.statics.incrementAttemptsByAdminId = async function (
-  this: IAdminVerificationModel,
   adminId: IUserSchema['_id'],
 ) {
   return this.findOneAndUpdate(
