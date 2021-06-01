@@ -24,9 +24,7 @@ export const PUBLIC_FORM_ENDPOINT = '/api/v3/forms'
  */
 export const getDashboardView = async (): Promise<FormMetaView[]> => {
   return axios
-    .get<FormMetaView[]>(`${ADMIN_FORM_ENDPOINT}`, {
-      headers: { 'If-Modified-Since': '0' },
-    })
+    .get<FormMetaView[]>(`${ADMIN_FORM_ENDPOINT}`)
     .then(({ data }) => data)
 }
 
@@ -40,9 +38,7 @@ export const getAdminFormView = async (
 ): Promise<{ form: IPopulatedForm }> => {
   // disable IE ajax request caching (so new forms show on dashboard)
   return axios
-    .get<{ form: IPopulatedForm }>(`/${formId}/adminform`, {
-      headers: { 'If-Modified-Since': '0' },
-    })
+    .get<{ form: IPopulatedForm }>(`/${formId}/adminform`)
     .then(({ data }) => data)
 }
 
@@ -57,9 +53,7 @@ export const getPublicFormView = async (
 ): Promise<PublicFormViewDto> => {
   // disable IE ajax request caching (so new forms show on dashboard)
   return axios
-    .get<PublicFormViewDto>(`${PUBLIC_FORM_ENDPOINT}/${formId}`, {
-      headers: { 'If-Modified-Since': '0' },
-    })
+    .get<PublicFormViewDto>(`${PUBLIC_FORM_ENDPOINT}/${formId}`)
     .then(({ data }) => data)
 }
 

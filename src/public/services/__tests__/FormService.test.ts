@@ -50,9 +50,7 @@ describe('FormService', () => {
 
       // Assert
       expect(actual).toEqual(expected)
-      expect(mockAxios.get).toHaveBeenCalledWith(`${ADMIN_FORM_ENDPOINT}`, {
-        headers: { 'If-Modified-Since': '0' },
-      })
+      expect(mockAxios.get).toHaveBeenCalledWith(`${ADMIN_FORM_ENDPOINT}`)
     })
 
     it('should successfully return empty array if GET request succeeds and there are no forms', async () => {
@@ -66,9 +64,7 @@ describe('FormService', () => {
 
       // Assert
       expect(actual).toEqual(expected)
-      expect(mockAxios.get).toHaveBeenCalledWith(`${ADMIN_FORM_ENDPOINT}`, {
-        headers: { 'If-Modified-Since': '0' },
-      })
+      expect(mockAxios.get).toHaveBeenCalledWith(`${ADMIN_FORM_ENDPOINT}`)
     })
 
     it('should reject with error message if GET request fails', async () => {
@@ -81,9 +77,7 @@ describe('FormService', () => {
 
       //Assert
       await expect(actualPromise).rejects.toEqual(expected)
-      expect(mockAxios.get).toHaveBeenCalledWith(`${ADMIN_FORM_ENDPOINT}`, {
-        headers: { 'If-Modified-Since': '0' },
-      })
+      expect(mockAxios.get).toHaveBeenCalledWith(`${ADMIN_FORM_ENDPOINT}`)
     })
   })
 
@@ -99,9 +93,7 @@ describe('FormService', () => {
 
       // Assert
       expect(actual).toEqual(expected)
-      expect(mockAxios.get).toHaveBeenCalledWith(`/${expected._id}/adminform`, {
-        headers: { 'If-Modified-Since': '0' },
-      })
+      expect(mockAxios.get).toHaveBeenCalledWith(`/${expected._id}/adminform`)
     })
 
     it('should reject with error message when GET request fails', async () => {
@@ -115,12 +107,7 @@ describe('FormService', () => {
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
-      expect(mockAxios.get).toHaveBeenCalledWith(
-        `/${MOCK_FORM._id}/adminform`,
-        {
-          headers: { 'If-Modified-Since': '0' },
-        },
-      )
+      expect(mockAxios.get).toHaveBeenCalledWith(`/${MOCK_FORM._id}/adminform`)
     })
   })
 
@@ -144,9 +131,6 @@ describe('FormService', () => {
       expect(actual).toEqual(expected)
       expect(mockAxios.get).toHaveBeenCalledWith(
         `${PUBLIC_FORM_ENDPOINT}/${MOCK_FORM_ID}`,
-        {
-          headers: { 'If-Modified-Since': '0' },
-        },
       )
     })
 
@@ -163,9 +147,6 @@ describe('FormService', () => {
       await expect(actualPromise).rejects.toEqual(expected)
       expect(mockAxios.get).toHaveBeenCalledWith(
         `${PUBLIC_FORM_ENDPOINT}/${MOCK_FORM_ID}`,
-        {
-          headers: { 'If-Modified-Since': '0' },
-        },
       )
     })
   })
