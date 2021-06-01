@@ -41,13 +41,13 @@ export const getMongoErrorMessage = (
 
   // Handle mongoose errors
   if (err instanceof MongooseError.ValidationError) {
-    // Join all error messages into a single message if available.
-    const joinedMessage = Object.values(err.errors)
-      .map((err) => err.message)
-      .join(', ')
+    // Deduplicate then Join all error messages into a single message if available.
+    const messages = Object.values(err.errors).map((error) => error.message)
+    const dedupMessages = [...new Set(messages)]
+    const joinedMessage = dedupMessages.join(', ')
 
     return formatErrorRecoveryMessage(
-      joinedMessage ?? err.message ?? defaultErrorMessage,
+      (joinedMessage || err.message) ?? defaultErrorMessage,
     )
   }
 
