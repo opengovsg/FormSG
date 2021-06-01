@@ -9,9 +9,8 @@ import {
   SubmissionResponseQueryDto,
 } from 'src/types/api'
 
-import formSgSdk from '../services/FormSgSdk'
-
 import { ADMIN_FORM_ENDPOINT } from './AdminFormService'
+import { FormSgSdk } from './FormSgSdkService'
 
 /**
  * Counts the number of submissions for a given form
@@ -103,6 +102,6 @@ export const downloadAndDecryptAttachmentsAsZip = async (
 const downloadAndDecryptAttachment = (url: string, secretKey: string) => {
   return axios.get(url).then(({ data }) => {
     data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
-    return formSgSdk.crypto.decryptFile(secretKey, data.encryptedFile)
+    return FormSgSdk.crypto.decryptFile(secretKey, data.encryptedFile)
   })
 }

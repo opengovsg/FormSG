@@ -2,6 +2,7 @@
 const { triggerFileDownload } = require('../../helpers/util')
 const { templates } = require('../constants/covid19')
 const Form = require('../../viewmodels/Form.class')
+const { FormSgSdk } = require('../../../../services/FormSgSdkService')
 
 /**
  * Determine the form title when duplicating a form
@@ -40,7 +41,6 @@ angular
     'FormFactory',
     'FormFields',
     'GTag',
-    'FormSgSdk',
     'externalScope',
     'MailTo',
     CreateFormModalController,
@@ -58,7 +58,6 @@ function CreateFormModalController(
   FormFactory,
   FormFields,
   GTag,
-  FormSgSdk,
   externalScope,
   MailTo,
 ) {

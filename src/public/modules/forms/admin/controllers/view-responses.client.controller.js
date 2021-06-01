@@ -5,6 +5,8 @@ const {
 } = require('../../helpers/process-decrypted-content')
 const { triggerFileDownload } = require('../../helpers/util')
 
+const { FormSgSdk } = require('../../../../services/FormSgSdkService')
+
 const SHOW_PROGRESS_DELAY_MS = 3000
 
 const AdminSubmissionsService = require('../../../../services/AdminSubmissionsService')
@@ -23,7 +25,6 @@ angular
     '$location',
     '$anchorScroll',
     'moment',
-    'FormSgSdk',
     ViewResponsesController,
   ])
 
@@ -39,7 +40,6 @@ function ViewResponsesController(
   $location,
   $anchorScroll,
   moment,
-  FormSgSdk,
 ) {
   const vm = this
 
