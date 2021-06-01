@@ -61,6 +61,7 @@ import {
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
+import ParsedResponsesObject from '../../submission/email-submission/ParsedResponsesObject.class'
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
@@ -1512,7 +1513,7 @@ export const submitEmailPreview: ControllerHandler<
 
   const parsedResponsesResult =
     await EmailSubmissionService.validateAttachments(responses).andThen(() =>
-      SubmissionService.getProcessedResponses(form, responses),
+      ParsedResponsesObject.parseResponses(form, responses),
     )
   if (parsedResponsesResult.isErr()) {
     logger.error({
@@ -1530,12 +1531,12 @@ export const submitEmailPreview: ControllerHandler<
 
   // Handle SingPass, CorpPass and MyInfo authentication and validation
   if (form.authType === AuthType.SP || form.authType === AuthType.MyInfo) {
-    parsedResponses.push(
-      ...createSingpassParsedResponses(PREVIEW_SINGPASS_UINFIN),
+    parsedResponses.addNdiResponses(
+      createSingpassParsedResponses(PREVIEW_SINGPASS_UINFIN),
     )
   } else if (form.authType === AuthType.CP) {
-    parsedResponses.push(
-      ...createCorppassParsedResponses(
+    parsedResponses.addNdiResponses(
+      createCorppassParsedResponses(
         PREVIEW_CORPPASS_UINFIN,
         PREVIEW_CORPPASS_UID,
       ),
@@ -1543,7 +1544,7 @@ export const submitEmailPreview: ControllerHandler<
   }
 
   const emailData = new SubmissionEmailObj(
-    parsedResponses,
+    parsedResponses.getAllResponses(),
     // All MyInfo fields are verified in preview
     new Set(AdminFormService.extractMyInfoFieldIds(form.form_fields)),
     form.authType,
@@ -1556,7 +1557,9 @@ export const submitEmailPreview: ControllerHandler<
   )
 
   const sendAdminEmailResult = await MailService.sendSubmissionToAdmin({
-    replyToEmails: EmailSubmissionService.extractEmailAnswers(parsedResponses),
+    replyToEmails: EmailSubmissionService.extractEmailAnswers(
+      parsedResponses.getAllResponses(),
+    ),
     form,
     submission,
     attachments,
@@ -1585,7 +1588,7 @@ export const submitEmailPreview: ControllerHandler<
     attachments,
     responsesData: emailData.autoReplyData,
     recipientData: extractEmailConfirmationData(
-      parsedResponses,
+      parsedResponses.getAllResponses(),
       form.form_fields,
     ),
   }).mapErr((error) => {
