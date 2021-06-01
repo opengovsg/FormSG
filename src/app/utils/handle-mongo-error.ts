@@ -47,7 +47,7 @@ export const getMongoErrorMessage = (
     const joinedMessage = dedupMessages.join(', ')
 
     return formatErrorRecoveryMessage(
-      joinedMessage ?? err.message ?? defaultErrorMessage,
+      joinedMessage || err.message ?? defaultErrorMessage,
     )
   }
 
