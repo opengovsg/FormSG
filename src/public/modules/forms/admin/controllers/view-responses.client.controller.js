@@ -1,6 +1,8 @@
 'use strict'
 
-const processDecryptedContent = require('../../helpers/process-decrypted-content')
+const {
+  processDecryptedContent,
+} = require('../../helpers/process-decrypted-content')
 const { triggerFileDownload } = require('../../helpers/util')
 
 const SHOW_PROGRESS_DELAY_MS = 3000

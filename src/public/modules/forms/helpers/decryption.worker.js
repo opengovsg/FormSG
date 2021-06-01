@@ -8,7 +8,9 @@ const JSZip = require('jszip')
 const moment = require('moment-timezone')
 const { default: PQueue } = require('p-queue')
 
-const processDecryptedContent = require('../helpers/process-decrypted-content')
+const {
+  processDecryptedContent,
+} = require('../helpers/process-decrypted-content')
 const {
   TRANSACTION_EXPIRE_AFTER_SECONDS,
 } = require('../../../../shared/util/verification')
