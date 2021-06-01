@@ -1,5 +1,6 @@
 import { ResultAsync } from 'neverthrow'
 import promiseRetry from 'promise-retry'
+import { OperationOptions } from 'retry'
 import { Producer } from 'sqs-producer'
 
 import config from '../../config/config'
@@ -28,11 +29,13 @@ export class WebhookProducer {
   /**
    * Enqueues a message.
    * @param queueMessage Message to send
+   * @param retryOptions optional customisation of retry parameters
    * @returns ok(true) if sending message suceeds
    * @returns err if sending message fails
    */
   sendMessage(
     queueMessage: WebhookQueueMessage,
+    retryOptions?: OperationOptions,
   ): ResultAsync<true, WebhookPushToQueueError> {
     const sendMessageRetry = promiseRetry<true>(async (retry, attemptNum) => {
       try {
@@ -61,7 +64,7 @@ export class WebhookProducer {
         })
         return retry(error)
       }
-    })
+    }, retryOptions)
     return ResultAsync.fromPromise(sendMessageRetry, (error) => {
       logger.error({
         message: 'All attempts to push webhook to queue failed',

@@ -85,10 +85,12 @@ export const startWebhookConsumer = (
  * 3) If the webhook is due, attempts the webhook
  * 4) Records the webhook attempt in the database
  * 5) If the webhook failed again, requeues the message
+ *
+ * Exported for testing.
  * @param producer Producer which can write messages to queue
  * @returns Handler for consumption of queue messages
  */
-const createWebhookQueueHandler =
+export const createWebhookQueueHandler =
   (producer: WebhookProducer) =>
   async (sqsMessage: aws.SQS.Message): Promise<void> => {
     const { Body, MessageId } = sqsMessage
