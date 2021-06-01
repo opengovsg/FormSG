@@ -158,19 +158,6 @@ describe('verification.routes', () => {
     })
   })
 
-  describe('GET /:transactionId', () => {
-    it('should return 200 when transactionId is valid', async () => {
-      const response = await request.get(`/transaction/${mockTransactionId}`)
-
-      expect(response.status).toBe(StatusCodes.OK)
-      expect(response.body).toEqual({
-        formId: expect.any(String),
-        expireAt: expect.any(String),
-        _id: expect.any(String),
-      })
-    })
-  })
-
   describe('POST /:transactionId/reset', () => {
     it('should return 400 when fieldId is not provided in body', async () => {
       const response = await request.post(

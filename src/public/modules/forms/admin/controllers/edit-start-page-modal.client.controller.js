@@ -1,5 +1,5 @@
 'use strict'
-
+const { Colors } = require('../../../../../types/form.ts')
 const axios = require('axios').default
 const {
   MAX_UPLOAD_FILE_SIZE,
@@ -15,19 +15,17 @@ angular
   .module('forms')
   .controller('EditStartPageController', [
     '$uibModalInstance',
-    'ColorThemes',
     '$q',
     'myform',
-    'updateField',
+    'updateStartPage',
     EditStartPageController,
   ])
 
 function EditStartPageController(
   $uibModalInstance,
-  ColorThemes,
   $q,
   myform,
-  updateField,
+  updateStartPage,
 ) {
   let source
   const vm = this
@@ -40,19 +38,30 @@ function EditStartPageController(
 
   // Make a copy so nothing is changed in the original.
   vm.myform = angular.copy(myform)
-  vm.colorThemes = ColorThemes.colors
+  vm.colorThemes = Object.values(Colors)
   vm.hasClickedSave = false
 
   vm.saveStartPage = function (isValid) {
     vm.hasClickedSave = true
+    const logoState = vm.myform.startPage.logo.state
+    // Clones the start page so that the original one can be used.
+    // This prevents the actual start page from being affected in the event of failure
+    const clonedStartPage = angular.copy(vm.myform.startPage)
 
     if (isValid) {
-      updateField({ startPage: vm.myform.startPage }).then((error) => {
-        if (!error) {
-          vm.hasClickedSave = false
-          $uibModalInstance.close()
+      if (logoState !== FormLogoState.Custom) {
+        clonedStartPage.logo = {
+          state: logoState,
         }
-      })
+      }
+      $q.when(updateStartPage({ newStartPage: clonedStartPage })).then(
+        (error) => {
+          if (!error) {
+            vm.hasClickedSave = false
+            $uibModalInstance.close()
+          }
+        },
+      )
     }
   }
 

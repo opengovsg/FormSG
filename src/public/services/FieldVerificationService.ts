@@ -13,8 +13,14 @@ export type FetchNewTransactionResponse =
 
 type VerifiedFieldSignature = Opaque<string, 'VerifiedFieldSignature'>
 
-/** Exported for testing */
+/** Exported for testing
+ * @deprecated
+ */
 export const TRANSACTION_ENDPOINT = '/transaction'
+
+/** Exported for testing */
+export const FORM_API_PREFIX = '/api/v3/forms'
+export const VERIFICATION_ENDPOINT = 'fieldverifications'
 
 /**
  * Create a transaction for given form.
@@ -25,9 +31,9 @@ export const createTransactionForForm = async (
   formId: string,
 ): Promise<FetchNewTransactionResponse> => {
   return axios
-    .post<FetchNewTransactionResponse>(TRANSACTION_ENDPOINT, {
-      formId,
-    })
+    .post<FetchNewTransactionResponse>(
+      `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}`,
+    )
     .then(({ data }) => data)
 }
 
@@ -83,18 +89,21 @@ export const verifyOtp = async ({
 /**
  * Reset the field in the transaction, removing the previously saved signature.
  *
+ * @param formId The id of the form to reset the transaction for
  * @param transactionId The generated transaction id for the form
  * @param fieldId The id of the verification field to reset
- * @returns 200 OK status if successfully reset
+ * @returns 204 Created if successfully reset
  */
 export const resetVerifiedField = async ({
+  formId,
   transactionId,
   fieldId,
 }: {
+  formId: string
   transactionId: string
   fieldId: string
 }): Promise<void> => {
-  return axios.post(`${TRANSACTION_ENDPOINT}/${transactionId}/reset`, {
-    fieldId,
-  })
+  return axios.post(
+    `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/fields/${fieldId}/reset`,
+  )
 }

@@ -37,8 +37,10 @@ import {
   IPopulatedForm,
   IPopulatedUser,
   IUserSchema,
+  LogicType,
   PickDuplicateForm,
   ResponseMode,
+  StartPage,
   Status,
 } from 'src/types'
 import {
@@ -64,11 +66,13 @@ import {
   archiveForm,
   createForm,
   createFormField,
+  createFormLogic,
   createPresignedPostUrlForImages,
   createPresignedPostUrlForLogos,
   deleteFormField,
   deleteFormLogic,
   duplicateForm,
+  duplicateFormField,
   editFormFields,
   getDashboardForms,
   getFormField,
@@ -80,6 +84,7 @@ import {
   updateFormField,
   updateFormLogic,
   updateFormSettings,
+  updateStartPage,
 } from '../admin-form.service'
 import {
   DuplicateFormBody,
@@ -1469,6 +1474,80 @@ describe('admin-form.service', () => {
     })
   })
 
+  describe('duplicateFormField', () => {
+    it('should return updated form when field duplication is successful', async () => {
+      // Arrange
+      const fieldToDuplicate = generateDefaultField(BasicField.Mobile)
+      const duplicatedField = generateDefaultField(BasicField.Mobile)
+      const mockUpdatedForm = {
+        title: 'some mock form',
+        // Append duplicated field to end of form_fields.
+        form_fields: [fieldToDuplicate, duplicatedField],
+      } as IFormSchema
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: [fieldToDuplicate],
+        _id: new ObjectId(),
+        duplicateFormFieldById: jest.fn().mockResolvedValue(mockUpdatedForm),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await duplicateFormField(
+        mockForm,
+        String(fieldToDuplicate._id),
+      )
+
+      const actualDuplicatedField = omit(actual._unsafeUnwrap(), [
+        '_id',
+        'globalId',
+      ])
+
+      const expectedDuplicateFieldWithoutId = omit(duplicatedField, [
+        '_id',
+        'globalId',
+      ])
+
+      // Assert
+      expect(actualDuplicatedField).toEqual(expectedDuplicateFieldWithoutId)
+    })
+
+    it('should return FormNotFoundError when field duplication returns null', async () => {
+      // Arrange
+      const fieldToDuplicate = generateDefaultField(BasicField.Mobile)
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: [fieldToDuplicate],
+        _id: new ObjectId(),
+        duplicateFormFieldById: jest.fn().mockResolvedValue(null),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await duplicateFormField(mockForm, fieldToDuplicate._id)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
+    })
+
+    it('should return DatabaseValidationError when field model update throws a validation error', async () => {
+      // Arrange
+      const initialFields = [generateDefaultField(BasicField.Mobile)]
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: initialFields,
+        duplicateFormFieldById: jest.fn().mockRejectedValue(
+          // @ts-ignore
+          new mongoose.Error.ValidationError({ errors: 'does not matter' }),
+        ),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await duplicateFormField(mockForm, initialFields[0]._id)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
+    })
+  })
+
   describe('reorderFormField', () => {
     it('should return reordered fields successfully', async () => {
       // Arrange
@@ -1606,6 +1685,188 @@ describe('admin-form.service', () => {
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(ApplicationError)
     })
   })
+
+  describe('createFormLogic', () => {
+    const logicId1 = new ObjectId()
+    const logicId2 = new ObjectId()
+    const logicId3 = new ObjectId()
+    const mockEmailFormId = new ObjectId()
+    const mockEncryptFormId = new ObjectId()
+
+    const mockFormLogicOld = {
+      form_logics: [
+        {
+          _id: logicId1,
+          logicType: LogicType.ShowFields,
+        } as ILogicSchema,
+        {
+          _id: logicId2,
+          logicType: LogicType.ShowFields,
+        } as ILogicSchema,
+      ],
+    }
+
+    const createLogicBody = {
+      logicType: LogicType.PreventSubmit,
+    } as ILogicSchema
+
+    const mockFormLogicUpdated = {
+      form_logics: [
+        {
+          _id: logicId1,
+          logicType: LogicType.ShowFields,
+        } as ILogicSchema,
+        {
+          _id: logicId2,
+          logicType: LogicType.ShowFields,
+        } as ILogicSchema,
+        {
+          _id: logicId3,
+          logicType: LogicType.PreventSubmit,
+        } as ILogicSchema,
+      ],
+    }
+
+    const CREATE_SPY = jest.spyOn(FormModel, 'createFormLogic')
+
+    let mockEmailForm: IPopulatedForm,
+      mockEncryptForm: IPopulatedForm,
+      mockEmailFormUpdated: IPopulatedForm,
+      mockEncryptFormUpdated: IPopulatedForm
+
+    beforeEach(() => {
+      mockEmailForm = ({
+        _id: mockEmailFormId,
+        status: Status.Public,
+        responseMode: ResponseMode.Email,
+        ...mockFormLogicOld,
+      } as unknown) as IPopulatedForm
+      mockEncryptForm = ({
+        _id: mockEncryptFormId,
+        status: Status.Public,
+        responseMode: ResponseMode.Encrypt,
+        ...mockFormLogicOld,
+      } as unknown) as IPopulatedForm
+      mockEmailFormUpdated = ({
+        ...mockEmailForm,
+        ...mockFormLogicUpdated,
+      } as unknown) as IPopulatedForm
+      mockEncryptFormUpdated = ({
+        ...mockEncryptForm,
+        ...mockFormLogicUpdated,
+      } as unknown) as IPopulatedForm
+    })
+
+    it('should return ok(created logic) on successful form logic create for email mode form', async () => {
+      // Arrange
+      CREATE_SPY.mockResolvedValue(mockEmailFormUpdated as IFormSchema)
+
+      // Act
+      const actualResult = await createFormLogic(mockEmailForm, createLogicBody)
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(
+        expect.objectContaining(createLogicBody),
+      )
+
+      expect(CREATE_SPY).toHaveBeenCalledWith(
+        mockEmailForm._id,
+        createLogicBody,
+      )
+    })
+
+    it('should return ok(created logic) on successful form logic create for encrypt mode form', async () => {
+      // Arrange
+      CREATE_SPY.mockResolvedValue(mockEncryptFormUpdated as IFormSchema)
+
+      // Act
+      const actualResult = await createFormLogic(
+        mockEncryptForm,
+        createLogicBody,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(
+        expect.objectContaining(createLogicBody),
+      )
+
+      expect(CREATE_SPY).toHaveBeenCalledWith(
+        mockEncryptFormId,
+        createLogicBody,
+      )
+    })
+
+    it('should return err(FormNotFoundError) if db does not return form object', async () => {
+      // Arrange
+      CREATE_SPY.mockResolvedValue((undefined as unknown) as IFormSchema)
+
+      // Act
+      const actualResult = await createFormLogic(
+        mockEncryptForm,
+        createLogicBody,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
+
+      expect(CREATE_SPY).toHaveBeenCalledWith(
+        mockEncryptFormId,
+        createLogicBody,
+      )
+    })
+
+    it('should return err(DatabaseError) if db returns form object that does not have form_logics array', async () => {
+      // Arrange
+      const updatedFormWithoutLogic = omit(
+        mockEncryptFormUpdated,
+        'form_logics',
+      )
+      CREATE_SPY.mockResolvedValue(updatedFormWithoutLogic as IFormSchema)
+
+      // Act
+      const actualResult = await createFormLogic(
+        mockEncryptForm,
+        createLogicBody,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
+
+      expect(CREATE_SPY).toHaveBeenCalledWith(
+        mockEncryptFormId,
+        createLogicBody,
+      )
+    })
+
+    it('should return err(DatabaseError) if db returns form object that has empty form_logics array', async () => {
+      // Arrange
+      const updatedFormWithEmptyLogic = {
+        ...mockEncryptFormUpdated,
+        form_logics: [],
+      }
+      CREATE_SPY.mockResolvedValue(updatedFormWithEmptyLogic as IFormSchema)
+
+      // Act
+      const actualResult = await createFormLogic(
+        mockEncryptForm,
+        createLogicBody,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
+
+      expect(CREATE_SPY).toHaveBeenCalledWith(
+        mockEncryptFormId,
+        createLogicBody,
+      )
+    })
+  })
+
   describe('deleteFormField', () => {
     let deleteSpy: jest.SpyInstance
 
@@ -1736,6 +1997,57 @@ describe('admin-form.service', () => {
     })
   })
 
+  describe('updateStartPage', () => {
+    const updateSpy = jest.spyOn(FormModel, 'updateStartPageById')
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_NEW_START_PAGE: StartPage = {
+      paragraph: 'some paragraph',
+      estTimeTaken: 10000000,
+    }
+
+    it('should return updated start page when update is successful', async () => {
+      // Arrange
+      const mockUpdatedForm = {
+        startPage: MOCK_NEW_START_PAGE,
+      } as IFormDocument
+      updateSpy.mockResolvedValueOnce(mockUpdatedForm)
+
+      // Act
+      const actual = await updateStartPage(MOCK_FORM_ID, MOCK_NEW_START_PAGE)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(MOCK_NEW_START_PAGE)
+    })
+
+    it('should return FormNotFoundError when form cannot be found', async () => {
+      // Arrange
+      updateSpy.mockResolvedValueOnce(null)
+
+      // Act
+      const actual = await updateStartPage(MOCK_FORM_ID, MOCK_NEW_START_PAGE)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
+    })
+
+    it('should return DatabaseError when database model update throws an error', async () => {
+      // Arrange
+      const expectedErrorMsg = 'some error'
+      updateSpy.mockRejectedValueOnce(new Error(expectedErrorMsg))
+
+      // Act
+      const actual = await updateStartPage(MOCK_FORM_ID, MOCK_NEW_START_PAGE)
+
+      // Assert
+      const actualError = actual._unsafeUnwrapErr()
+      expect(actualError).toBeInstanceOf(DatabaseError)
+      expect(actualError.message).toIncludeMultiple([
+        expectedErrorMsg,
+        'Please refresh and try again.',
+      ])
+    })
+  })
+
   describe('updateFormLogic', () => {
     const logicId1 = new ObjectId()
     const logicId2 = new ObjectId()
@@ -1746,29 +2058,29 @@ describe('admin-form.service', () => {
       form_logics: [
         {
           _id: logicId1,
-          logicType: 'showFields',
+          logicType: LogicType.ShowFields,
         } as ILogicSchema,
         {
           _id: logicId2,
-          logicType: 'showFields',
+          logicType: LogicType.ShowFields,
         } as ILogicSchema,
       ],
     }
 
     const updatedLogic = {
       _id: logicId1,
-      logicType: 'preventSubmit',
+      logicType: LogicType.PreventSubmit,
     } as ILogicSchema
 
     const mockFormLogicUpdated = {
       form_logics: [
         {
           _id: logicId1,
-          logicType: 'preventSubmit',
+          logicType: LogicType.PreventSubmit,
         } as ILogicSchema,
         {
           _id: logicId2,
-          logicType: 'showFields',
+          logicType: LogicType.ShowFields,
         } as ILogicSchema,
       ],
     }

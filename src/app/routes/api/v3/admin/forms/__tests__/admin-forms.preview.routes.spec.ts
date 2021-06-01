@@ -283,7 +283,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [MOCK_TEXTFIELD_RESPONSE],
           }),
         )
@@ -315,7 +314,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answer: '' }],
           }),
         )
@@ -345,7 +343,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [
               {
                 ...MOCK_ATTACHMENT_RESPONSE,
@@ -380,7 +377,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [{ ...MOCK_SECTION_RESPONSE, isHeader: true }],
           }),
         )
@@ -410,7 +406,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [{ ...MOCK_OPTIONAL_VERIFIED_RESPONSE, signature: '' }],
           }),
         )
@@ -440,7 +435,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [MOCK_CHECKBOX_RESPONSE],
           }),
         )
@@ -451,29 +445,6 @@ describe('admin-form.preview.routes', () => {
         message: 'Form submission successful.',
         submissionId: expect.any(String),
       })
-    })
-
-    it('should return 400 when isPreview key is missing', async () => {
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          hasCaptcha: false,
-          status: Status.Public,
-          admin: defaultUser._id,
-        },
-        // Avoid default mail domain so that user emails in the database don't conflict
-        mailDomain: 'test2.gov.sg',
-      })
-
-      const response = await request
-        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}/preview/submissions/email`)
-        // Note missing isPreview
-        .field('body', JSON.stringify({ responses: [] }))
-        .query({ captchaResponse: 'null' })
-
-      expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
     })
 
     it('should return 400 when responses key is missing', async () => {
@@ -490,7 +461,7 @@ describe('admin-form.preview.routes', () => {
       const response = await request
         .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}/preview/submissions/email`)
         // Note missing responses
-        .field('body', JSON.stringify({ isPreview: false }))
+        .field('body', JSON.stringify({}))
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
@@ -515,7 +486,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_TEXTFIELD_RESPONSE, '_id')],
           }),
         )
@@ -543,7 +513,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'fieldType')],
           }),
         )
@@ -571,7 +540,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [
               { ...MOCK_TEXTFIELD_RESPONSE, fieldType: 'definitelyInvalid' },
             ],
@@ -601,7 +569,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'answer')],
           }),
         )
@@ -629,7 +596,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answerArray: [] }],
           }),
         )
@@ -657,7 +623,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'content'],
           }),
         )
@@ -685,7 +650,6 @@ describe('admin-form.preview.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'filename'],
           }),
         )
@@ -716,7 +680,6 @@ describe('admin-form.preview.routes', () => {
       responses: [MOCK_RESPONSE],
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
       version: MOCK_VERSION,
-      isPreview: false,
       attachments: {
         [MOCK_ATTACHMENT_FIELD_ID]: {
           encryptedFile: {

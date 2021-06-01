@@ -7,6 +7,7 @@ angular.module('forms').component('mobileFieldComponent', {
     field: '<',
     forms: '<',
     transactionId: '<',
+    formId: '<',
   },
   controllerAs: 'vm',
 })
