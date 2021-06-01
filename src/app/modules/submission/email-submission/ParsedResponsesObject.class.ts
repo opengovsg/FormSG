@@ -30,6 +30,10 @@ export default class ParsedResponsesObject {
     return this
   }
 
+  getAllResponses(): ProcessedFieldResponse[] {
+    return [...this.responses, ...this.ndiResponses]
+  }
+
   /**
    * Injects response metadata such as the question, visibility state. In
    * addition, validation such as input validation or signature validation on
