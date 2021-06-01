@@ -1,7 +1,5 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
-import { Request, RequestHandler } from 'express'
-import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
@@ -28,6 +26,7 @@ import {
   MalformedParametersError,
   MissingFeatureError,
 } from '../../core/core.errors'
+import { ControllerHandler } from '../../core/core.types'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
 import { SpcpFactory } from '../../spcp/spcp.factory'
@@ -61,7 +60,7 @@ const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
 
-const submitEncryptModeForm: RequestHandler<
+const submitEncryptModeForm: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
   EncryptSubmissionDto,
@@ -82,7 +81,7 @@ const submitEncryptModeForm: RequestHandler<
 
   const logMeta = {
     action: 'submitEncryptModeForm',
-    ...createReqMeta(req as Request),
+    ...createReqMeta(req),
     formId,
   }
 
@@ -136,7 +135,7 @@ const submitEncryptModeForm: RequestHandler<
   if (form.hasCaptcha) {
     const captchaResult = await CaptchaFactory.verifyCaptchaResponse(
       req.query.captchaResponse,
-      getRequestIp(req as Request),
+      getRequestIp(req),
     )
     if (captchaResult.isErr()) {
       logger.error({
@@ -340,7 +339,7 @@ const submitEncryptModeForm: RequestHandler<
       message: 'Encrypt submission save error',
       meta: {
         action: 'onEncryptSubmissionFailure',
-        ...createReqMeta(req as Request),
+        ...createReqMeta(req),
       },
       error: err,
     })
@@ -396,7 +395,7 @@ const submitEncryptModeForm: RequestHandler<
 export const handleEncryptedSubmission = [
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   submitEncryptModeForm,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 // Validates that the ending date >= starting date
 const validateDateRange = celebrate({
@@ -424,11 +423,11 @@ const validateDateRange = celebrate({
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 if any errors occurs in stream pipeline or error retrieving form
  */
-export const streamEncryptedResponses: RequestHandler<
+export const streamEncryptedResponses: ControllerHandler<
   { formId: string },
   unknown,
   unknown,
-  Query & { startDate?: string; endDate?: string; downloadAttachments: boolean }
+  { startDate?: string; endDate?: string; downloadAttachments: boolean }
 > = async (req, res) => {
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { formId } = req.params
@@ -540,7 +539,7 @@ export const streamEncryptedResponses: RequestHandler<
 export const handleStreamEncryptedResponses = [
   validateDateRange,
   streamEncryptedResponses,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 const validateSubmissionId = celebrate({
   [Segments.QUERY]: {
@@ -564,7 +563,7 @@ const validateSubmissionId = celebrate({
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when any errors occurs in database query or generating signed URL
  */
-export const getEncryptedResponseUsingQueryParams: RequestHandler<
+export const getEncryptedResponseUsingQueryParams: ControllerHandler<
   { formId: string },
   EncryptedSubmissionDto | ErrorDto,
   unknown,
@@ -629,7 +628,7 @@ export const getEncryptedResponseUsingQueryParams: RequestHandler<
 export const handleGetEncryptedResponseUsingQueryParams = [
   validateSubmissionId,
   getEncryptedResponseUsingQueryParams,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for GET /:formId/submissions/:submissionId
@@ -644,11 +643,9 @@ export const handleGetEncryptedResponseUsingQueryParams = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when any errors occurs in database query or generating signed URL
  */
-export const handleGetEncryptedResponse: RequestHandler<
+export const handleGetEncryptedResponse: ControllerHandler<
   { formId: string; submissionId: string },
-  EncryptedSubmissionDto | ErrorDto,
-  unknown,
-  Query
+  EncryptedSubmissionDto | ErrorDto
 > = async (req, res) => {
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { formId, submissionId } = req.params
@@ -713,15 +710,14 @@ export const handleGetEncryptedResponse: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 if any errors occurs whilst querying database
  */
-export const getMetadata: RequestHandler<
+export const getMetadata: ControllerHandler<
   { formId: string },
   SubmissionMetadataList | ErrorDto,
   unknown,
-  Query &
-    RequireAtLeastOne<
-      { page?: number; submissionId?: string },
-      'page' | 'submissionId'
-    >
+  RequireAtLeastOne<
+    { page?: number; submissionId?: string },
+    'page' | 'submissionId'
+  >
 > = async (req, res) => {
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { formId } = req.params
@@ -792,4 +788,4 @@ export const handleGetMetadata = [
     },
   }),
   getMetadata,
-] as RequestHandler[]
+] as ControllerHandler[]

@@ -1,17 +1,16 @@
-import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../config/feature-manager'
+import { ControllerHandler } from '../core/core.types'
 
 import * as FrontendServerController from './frontend.controller'
 
 interface IGoogleAnalyticsFactory {
-  addGoogleAnalyticsData: RequestHandler<
-    ParamsDictionary,
+  addGoogleAnalyticsData: ControllerHandler<
+    unknown,
     string | { message: string }
   >
 }

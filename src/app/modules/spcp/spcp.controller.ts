@@ -1,5 +1,3 @@
-import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { AuthType } from '../../../types'
@@ -8,6 +6,7 @@ import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { BillingFactory } from '../billing/billing.factory'
+import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
 import { SpcpFactory } from './spcp.factory'
@@ -21,8 +20,8 @@ const logger = createLoggerWithLabel(module)
  * @param req - Express request object
  * @param res - Express response object
  */
-export const handleRedirect: RequestHandler<
-  ParamsDictionary,
+export const handleRedirect: ControllerHandler<
+  unknown,
   { redirectURL: string } | { message: string },
   unknown,
   {
@@ -59,8 +58,8 @@ export const handleRedirect: RequestHandler<
  * @param req - Express request object
  * @param res - Express response object
  */
-export const handleValidate: RequestHandler<
-  ParamsDictionary,
+export const handleValidate: ControllerHandler<
+  unknown,
   PublicFormAuthValidateEsrvcIdDto | { message: string },
   unknown,
   {
@@ -98,8 +97,8 @@ export const handleValidate: RequestHandler<
  */
 export const handleLogin: (
   authType: AuthType.SP | AuthType.CP,
-) => RequestHandler<
-  ParamsDictionary,
+) => ControllerHandler<
+  unknown,
   unknown,
   unknown,
   { SAMLart: string; RelayState: string }
