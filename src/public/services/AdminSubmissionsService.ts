@@ -99,7 +99,10 @@ export const downloadAndDecryptAttachmentsAsZip = async (
  * @param {String} secretKey An instance of EncryptionKey for decrypting the attachment
  * @returns {Promise} A Promise containing the contents of the file as a Blob
  */
-const downloadAndDecryptAttachment = (url: string, secretKey: string) => {
+export const downloadAndDecryptAttachment = (
+  url: string,
+  secretKey: string,
+): Promise<Uint8Array | null> => {
   return axios.get(url).then(({ data }) => {
     data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
     return FormSgSdk.crypto.decryptFile(secretKey, data.encryptedFile)
