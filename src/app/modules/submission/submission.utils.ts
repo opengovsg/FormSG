@@ -202,17 +202,18 @@ export class IncomingSubmission {
   /**
    * Generates a set of response IDs that are visible.
    * @param responses
-   * @param fieldMap
    * @param visibilityPredicate - Predicate that determines if a response
    * is visible.
    * @returns visibleResponseIds - Generated set of response IDs.
    * @protected
    */
-  protected static getVisibleResponseIds(
-    responses: FieldResponse[],
-    fieldMap: ValidatedFieldMap,
-    visibilityPredicate: (r: FieldResponse) => boolean,
-  ): VisibleResponseIdSet {
+  protected static getVisibleResponseIds({
+    responses,
+    visibilityPredicate,
+  }: {
+    responses: FieldResponse[]
+    visibilityPredicate: (r: FieldResponse) => boolean
+  }): VisibleResponseIdSet {
     return responses.reduce<FieldIdSet>((acc, response) => {
       const responseId = response._id
       if (visibilityPredicate(response)) {
@@ -231,10 +232,13 @@ export class IncomingSubmission {
    * @returns verifiableResponseIds - Generated set of response IDs.
    * @protected
    */
-  protected static getVerifiableResponseIds(
-    responses: FieldResponse[],
-    fieldMap: ValidatedFieldMap,
-  ): VerifiableResponseIdSet {
+  protected static getVerifiableResponseIds({
+    responses,
+    fieldMap,
+  }: {
+    responses: FieldResponse[]
+    fieldMap: ValidatedFieldMap
+  }): VerifiableResponseIdSet {
     return responses.reduce<FieldIdSet>((acc, response) => {
       const responseId = response._id
       const formField = fieldMap[responseId]
@@ -263,12 +267,17 @@ export class IncomingSubmission {
    * @returns processedFieldResponse - The ProcessedFieldResponse
    * @protected
    */
-  protected static getLegacyProcessedFieldResponse(
-    response: FieldResponse,
-    fieldMap: ValidatedFieldMap,
-    visibleResponseIds: VisibleResponseIdSet,
-    verifiableResponseIds: VerifiableResponseIdSet,
-  ): ProcessedFieldResponse {
+  protected static getLegacyProcessedFieldResponse({
+    response,
+    fieldMap,
+    visibleResponseIds,
+    verifiableResponseIds,
+  }: {
+    response: FieldResponse
+    fieldMap: ValidatedFieldMap
+    visibleResponseIds: VisibleResponseIdSet
+    verifiableResponseIds: VerifiableResponseIdSet
+  }): ProcessedFieldResponse {
     const responseId = response._id
     const formField = fieldMap[responseId]
     const processedResponse: ProcessedFieldResponse = {
@@ -316,12 +325,12 @@ export class IncomingSubmission {
       return validateField(
         form._id,
         formField,
-        this.getLegacyProcessedFieldResponse(
+        this.getLegacyProcessedFieldResponse({
           response,
           fieldMap,
           visibleResponseIds,
           verifiableResponseIds,
-        ),
+        }),
       )
     })
 

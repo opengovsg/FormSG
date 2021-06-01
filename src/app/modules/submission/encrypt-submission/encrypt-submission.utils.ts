@@ -267,15 +267,14 @@ export class IncomingEncryptSubmission extends IncomingSubmission {
       responses: filteredResponses,
       fieldMap,
       visibleFieldIds: getVisibleFieldIds(filteredResponses, form),
-      verifiableResponseIds: this.getVerifiableResponseIds(
-        filteredResponses,
+      verifiableResponseIds: this.getVerifiableResponseIds({
+        responses: filteredResponses,
         fieldMap,
-      ),
-      visibleResponseIds: this.getVisibleResponseIds(
-        filteredResponses,
-        fieldMap,
-        this.responseVisibilityPredicate,
-      ),
+      }),
+      visibleResponseIds: this.getVisibleResponseIds({
+        responses: filteredResponses,
+        visibilityPredicate: this.responseVisibilityPredicate,
+      }),
     })
 
     return getFilteredResponses(form, responses)
