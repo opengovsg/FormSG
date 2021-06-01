@@ -34,6 +34,7 @@ import {
   mapRouteError,
   SubmissionEmailObj,
 } from './email-submission.util'
+import ParsedResponsesObject from './ParsedResponsesObject.class'
 
 const logger = createLoggerWithLabel(module)
 
@@ -136,7 +137,7 @@ const submitEmailModeForm: ControllerHandler<
         // Validate responses
         EmailSubmissionService.validateAttachments(req.body.responses)
           .andThen(() =>
-            SubmissionService.getProcessedResponses(form, req.body.responses),
+            ParsedResponsesObject.parseResponses(form, req.body.responses),
           )
           .map((parsedResponses) => ({ parsedResponses, form }))
           .mapErr((error) => {
@@ -156,10 +157,9 @@ const submitEmailModeForm: ControllerHandler<
               .asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
-                parsedResponses: [
-                  ...parsedResponses,
-                  ...createCorppassParsedResponses(jwt.userName, jwt.userInfo),
-                ],
+                parsedResponses: parsedResponses.addNdiResponses(
+                  createCorppassParsedResponses(jwt.userName, jwt.userInfo),
+                ),
               }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
@@ -175,10 +175,9 @@ const submitEmailModeForm: ControllerHandler<
               .asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
-                parsedResponses: [
-                  ...parsedResponses,
-                  ...createSingpassParsedResponses(jwt.userName),
-                ],
+                parsedResponses: parsedResponses.addNdiResponses(
+                  createSingpassParsedResponses(jwt.userName),
+                ),
               }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
@@ -198,16 +197,18 @@ const submitEmailModeForm: ControllerHandler<
               .asyncAndThen((uinFin) =>
                 MyInfoFactory.fetchMyInfoHashes(uinFin, formId)
                   .andThen((hashes) =>
-                    MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
+                    MyInfoFactory.checkMyInfoHashes(
+                      parsedResponses.responses,
+                      hashes,
+                    ),
                   )
                   .map<IPopulatedEmailFormWithResponsesAndHash>(
                     (hashedFields) => ({
                       form,
                       hashedFields,
-                      parsedResponses: [
-                        ...parsedResponses,
-                        ...createSingpassParsedResponses(uinFin),
-                      ],
+                      parsedResponses: parsedResponses.addNdiResponses(
+                        createSingpassParsedResponses(uinFin),
+                      ),
                     }),
                   ),
               )
@@ -230,7 +231,7 @@ const submitEmailModeForm: ControllerHandler<
       .andThen(({ form, parsedResponses, hashedFields }) => {
         // Create data for response email as well as email confirmation
         const emailData = new SubmissionEmailObj(
-          parsedResponses,
+          parsedResponses.getAllResponses(),
           hashedFields,
           form.authType,
         )
@@ -273,8 +274,9 @@ const submitEmailModeForm: ControllerHandler<
         // NOTE: This should short circuit in the event of an error.
         // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
         return MailService.sendSubmissionToAdmin({
-          replyToEmails:
-            EmailSubmissionService.extractEmailAnswers(parsedResponses),
+          replyToEmails: EmailSubmissionService.extractEmailAnswers(
+            parsedResponses.getAllResponses(),
+          ),
           form,
           submission,
           attachments,
@@ -312,7 +314,7 @@ const submitEmailModeForm: ControllerHandler<
             attachments,
             responsesData: emailData.autoReplyData,
             recipientData: extractEmailConfirmationData(
-              parsedResponses,
+              parsedResponses.getAllResponses(),
               form.form_fields,
             ),
           }).mapErr((error) => {
