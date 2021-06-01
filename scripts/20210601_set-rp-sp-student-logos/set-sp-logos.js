@@ -31,7 +31,7 @@
 
 // AFTER
 
-// Number of forms SP's logo fileId.
+// Number of forms SP's logo fileId. Should be equal to A.
 {
   db.forms.count({ 'startPage.logo.fileId': { $eq: '1622549643061-sp%20student%20logo.png' } })
 }
