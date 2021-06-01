@@ -136,6 +136,7 @@ describe('webhook.service', () => {
         'X-FormSG-Signature': `t=${MOCK_EPOCH},s=${testEncryptedSubmission._id},f=${testEncryptedForm._id},v1=${testSignature}`,
       },
       maxRedirects: 0,
+      timeout: 10000,
     }
   })
 
@@ -235,7 +236,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await sendWebhook(
-        testEncryptedSubmission,
+        testEncryptedSubmission.getWebhookView(),
         MOCK_WEBHOOK_URL,
       )
 
@@ -256,7 +257,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await sendWebhook(
-        testEncryptedSubmission,
+        testEncryptedSubmission.getWebhookView(),
         MOCK_WEBHOOK_URL,
       )
 
@@ -293,7 +294,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await sendWebhook(
-        testEncryptedSubmission,
+        testEncryptedSubmission.getWebhookView(),
         MOCK_WEBHOOK_URL,
       )
 
@@ -321,7 +322,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await sendWebhook(
-        testEncryptedSubmission,
+        testEncryptedSubmission.getWebhookView(),
         MOCK_WEBHOOK_URL,
       )
 
@@ -354,7 +355,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await sendWebhook(
-        testEncryptedSubmission,
+        testEncryptedSubmission.getWebhookView(),
         MOCK_WEBHOOK_URL,
       )
 
@@ -384,7 +385,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await sendWebhook(
-        testEncryptedSubmission,
+        testEncryptedSubmission.getWebhookView(),
         MOCK_WEBHOOK_URL,
       )
 
