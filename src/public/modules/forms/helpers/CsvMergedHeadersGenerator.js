@@ -165,8 +165,9 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
    * @param string secondDate
    */
   _dateComparator(firstDate, secondDate) {
-    const first = moment(firstDate)
-    const second = moment(secondDate)
+    // cast to Asia/Singapore to ensure both dates are of the same timezone
+    const first = moment(firstDate).tz('Asia/Singapore')
+    const second = moment(secondDate).tz('Asia/Singapore')
     if (first.isBefore(second)) {
       return -1
     } else if (first.isAfter(second)) {
