@@ -361,27 +361,31 @@ describe('encrypt-submission.service', () => {
       const awsSpy = jest
         .spyOn(aws.s3, 'getSignedUrl')
         // @ts-ignore
-        .mockImplementationOnce((_operation, _params, callback) =>
-          callback(expectedError),
-        )
+        .mockImplementationOnce((_operation, _params, callback) => {
+          return callback(expectedError)
+        })
       const mockInput = new PassThrough()
-      const actualErrors: any[] = []
 
       // Act
-      // Build pipeline.
-      mockInput
-        .pipe(
-          transformAttachmentMetaStream({
-            enabled: true,
-            urlValidDuration: expectedExpiry,
-          }),
-        )
-        .on('error', (error) => actualErrors.push(error))
+      // Build (promisified) pipeline for testing.
+      const streamPromise = new Promise((resolve, reject) => {
+        mockInput
+          .pipe(
+            transformAttachmentMetaStream({
+              enabled: true,
+              urlValidDuration: expectedExpiry,
+            }),
+          )
+          .on('finish', resolve)
+          .on('error', reject)
+      })
 
       // Emit events.
       mockInput.emit('data', clone(MOCK_SUB_CURSOR_DATA_2))
 
       // Assert
+      // Should reject since error is returned from callback.
+      await expect(streamPromise).rejects.toEqual(expectedError)
       expect(awsSpy).toHaveBeenCalledWith(
         'getObject',
         {
@@ -393,7 +397,6 @@ describe('encrypt-submission.service', () => {
         // @ts-ignore
         expect.any(Function),
       )
-      expect(actualErrors).toEqual([expectedError])
     })
   })
 
