@@ -1,4 +1,4 @@
-import _, { keyBy } from 'lodash'
+import { differenceBy, intersectionBy, keyBy, uniqBy } from 'lodash'
 import { combine, err, ok, Result } from 'neverthrow'
 
 import { FIELDS_TO_REJECT } from '../../../shared/resources/basic'
@@ -128,11 +128,11 @@ export const getFilteredResponses = (
   const fieldIds = modeFilter(form.form_fields).map((field) => ({
     _id: String(field._id),
   }))
-  const uniqueResponses = _.uniqBy(modeFilter(responses), '_id')
-  const results = _.intersectionBy(uniqueResponses, fieldIds, '_id')
+  const uniqueResponses = uniqBy(modeFilter(responses), '_id')
+  const results = intersectionBy(uniqueResponses, fieldIds, '_id')
 
   if (results.length < fieldIds.length) {
-    const onlyInForm = _.differenceBy(fieldIds, results, '_id').map(
+    const onlyInForm = differenceBy(fieldIds, results, '_id').map(
       ({ _id }) => _id,
     )
     return err(
