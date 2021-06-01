@@ -9,6 +9,7 @@ import {
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
   IEncryptSubmissionModel,
+  IPopulatedWebhookSubmission,
   ISubmissionModel,
   ISubmissionSchema,
   IWebhookResponse,
@@ -17,6 +18,7 @@ import {
   SubmissionCursorData,
   SubmissionMetadata,
   SubmissionType,
+  SubmissionWebhookInfo,
   WebhookData,
   WebhookView,
 } from '../../types'
@@ -180,10 +182,13 @@ const EncryptSubmissionSchema = new Schema<
  * which will be posted to the webhook URL.
  */
 EncryptSubmissionSchema.methods.getWebhookView = function (
-  this: IEncryptedSubmissionSchema,
+  this: IEncryptedSubmissionSchema | IPopulatedWebhookSubmission,
 ): WebhookView {
+  const formId = this.populated('form')
+    ? String(this.form._id)
+    : String(this.form)
   const webhookData: WebhookData = {
-    formId: String(this.form),
+    formId,
     submissionId: String(this._id),
     encryptedContent: this.encryptedContent,
     verifiedContent: this.verifiedContent,
@@ -206,6 +211,22 @@ EncryptSubmissionSchema.statics.addWebhookResponse = function (
     { $push: { webhookResponses: webhookResponse } },
     { new: true, setDefaultsOnInsert: true, runValidators: true },
   ).exec()
+}
+
+EncryptSubmissionSchema.statics.retrieveWebhookInfoById = function (
+  this: IEncryptSubmissionModel,
+  submissionId: string,
+): Promise<SubmissionWebhookInfo | null> {
+  return this.findById(submissionId)
+    .populate('form', 'webhook')
+    .then((populatedSubmission: IPopulatedWebhookSubmission | null) => {
+      if (!populatedSubmission) return null
+      return {
+        webhookUrl: populatedSubmission.form.webhook?.url ?? '',
+        isRetryEnabled: !!populatedSubmission.form.webhook?.isRetryEnabled,
+        webhookView: populatedSubmission.getWebhookView(),
+      }
+    })
 }
 
 EncryptSubmissionSchema.statics.findSingleMetadata = function (
