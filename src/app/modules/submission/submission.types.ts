@@ -18,7 +18,7 @@ export type ProcessedResponse = {
 
 /**
  * Represents a field map that is guaranteed to contain the id of
- * ALL responses in an incoming response.
+ * ALL field responses in an incoming submission.
  */
 export type ValidatedFieldMap = Opaque<
   { [p: string]: IFieldSchema },
