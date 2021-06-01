@@ -3,7 +3,7 @@
 const CsvMHGenerator = require('../helpers/CsvMergedHeadersGenerator')
 const DecryptionWorker = require('../helpers/decryption.worker.js')
 const { fixParamsToUrl, triggerFileDownload } = require('../helpers/util')
-const ndjsonStream = require('../helpers/ndjsonStream')
+const { ndjsonStream } = require('../helpers/ndjsonStream')
 const fetchStream = require('fetch-readablestream')
 const { decode: decodeBase64 } = require('@stablelib/base64')
 const JSZip = require('jszip')
