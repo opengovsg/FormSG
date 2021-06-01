@@ -295,9 +295,11 @@ function ViewResponsesController(
   }
 
   vm.downloadAllAttachments = function () {
-    Submissions.downloadAndDecryptAttachmentsAsZip(
-      vm.attachmentDownloadUrls,
-      vm.encryptionKey.secretKey,
+    $q.when(
+      AdminSubmissionsService.downloadAndDecryptAttachmentsAsZip(
+        vm.attachmentDownloadUrls,
+        vm.encryptionKey.secretKey,
+      ),
     )
       .then((blob) => {
         triggerFileDownload(
