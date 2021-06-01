@@ -19,6 +19,7 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
     super(expectedNumberOfRecords, numOfMetaDataRows)
 
     this.hasBeenProcessed = false
+    this.hasBeenSorted = false
     this.fieldIdToQuestion = new Map()
     this.fieldIdToNumCols = {}
     this.unprocessed = []
@@ -107,26 +108,30 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
 
     // Craft a new csv row for each unprocessed record
     // O(qn), where q = number of unique questions, n = number of submissions.
-    this.unprocessed
-      .map((up) => {
-        const createdAt = moment(up.created).tz('Asia/Singapore')
-        return { up, createdAt }
-      })
-      .sort((a, b) => this._dateComparator(a.createdAt, b.createdAt)) // responses are first sorted
-      .forEach(({ up, createdAt }) => {
-        createdAt = createdAt.isValid()
-          ? createdAt.format('DD MMM YYYY hh:mm:ss A')
-          : createdAt
-        let row = [up.submissionId, createdAt]
-        for (let [fieldId] of this.fieldIdToQuestion) {
-          const numCols = this.fieldIdToNumCols[fieldId]
-          for (let colIndex = 0; colIndex < numCols; colIndex++) {
-            row.push(this._extractAnswer(up.record, fieldId, colIndex))
-          }
+    this.unprocessed.forEach((up) => {
+      let createdAt = moment(up.created).tz('Asia/Singapore')
+      createdAt = createdAt.isValid()
+        ? createdAt.format('DD MMM YYYY hh:mm:ss A')
+        : createdAt
+      let row = [up.submissionId, createdAt]
+      for (let [fieldId] of this.fieldIdToQuestion) {
+        const numCols = this.fieldIdToNumCols[fieldId]
+        for (let colIndex = 0; colIndex < numCols; colIndex++) {
+          row.push(this._extractAnswer(up.record, fieldId, colIndex))
         }
-        this.addLine(row)
-      })
+      }
+      this.addLine(row)
+    })
     this.hasBeenProcessed = true
+  }
+
+  /**
+   * Sorts unprocessed records from oldest to newest
+   */
+  sort() {
+    if (this.hasBeenSorted) return
+    this.unprocessed.sort((a, b) => this._dateComparator(a.created, b.created))
+    this.hasBeenSorted = true
   }
 
   /**
@@ -149,14 +154,22 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
    * @param {string} filename
    */
   downloadCsv(filename) {
+    this.sort()
     this.process()
     this.triggerFileDownload(filename)
   }
 
+  /**
+   * Comparator for dates
+   * @param string firstDate
+   * @param string secondDate
+   */
   _dateComparator(firstDate, secondDate) {
-    if (firstDate.isBefore(secondDate)) {
+    const first = moment(firstDate)
+    const second = moment(secondDate)
+    if (first.isBefore(second)) {
       return -1
-    } else if (firstDate.isAfter(secondDate)) {
+    } else if (first.isAfter(second)) {
       return 1
     } else {
       // dates are the same
