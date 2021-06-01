@@ -49,9 +49,9 @@ import {
 } from './encrypt-submission.service'
 import {
   createEncryptedSubmissionDto,
-  IncomingEncryptSubmission,
   mapRouteError,
 } from './encrypt-submission.utils'
+import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)

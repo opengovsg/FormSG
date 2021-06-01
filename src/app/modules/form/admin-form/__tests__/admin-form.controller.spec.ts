@@ -22,7 +22,7 @@ import {
 import * as EmailSubmissionService from 'src/app/modules/submission/email-submission/email-submission.service'
 import * as EmailSubmissionUtil from 'src/app/modules/submission/email-submission/email-submission.util'
 import * as EncryptSubmissionService from 'src/app/modules/submission/encrypt-submission/encrypt-submission.service'
-import * as EncryptSubmissionUtil from 'src/app/modules/submission/encrypt-submission/encrypt-submission.utils'
+import IncomingEncryptSubmission from 'src/app/modules/submission/encrypt-submission/IncomingEncryptSubmission.class'
 import {
   ConflictError,
   InvalidEncodingError,
@@ -113,6 +113,10 @@ jest.mock(
   'src/app/modules/submission/email-submission/email-submission.service',
 )
 jest.mock(
+  'src/app/modules/submission/encrypt-submission/IncomingEncryptSubmission.class',
+)
+const MockIncomingEncryptSubmission = mocked(IncomingEncryptSubmission)
+jest.mock(
   'src/app/modules/submission/encrypt-submission/encrypt-submission.utils',
   () => ({
     ...jest.requireActual(
@@ -120,7 +124,6 @@ jest.mock(
     ),
   }),
 )
-const MockEncryptSubmissionUtils = mocked(EncryptSubmissionUtil)
 const MockEmailSubmissionService = mocked(EmailSubmissionService)
 jest.mock('src/app/modules/submission/submission.utils')
 const MockSubmissionUtils = mocked(SubmissionUtils)
@@ -6106,10 +6109,10 @@ describe('admin-form.controller', () => {
       MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValue(
         ok(MOCK_FORM),
       )
-      MockEncryptSubmissionUtils.IncomingEncryptSubmission.init = mockIncomingEncryptSubmissionInit
+      MockIncomingEncryptSubmission.init = mockIncomingEncryptSubmissionInit
       mockIncomingEncryptSubmissionInit.mockReturnValue(
         ok(
-          new EncryptSubmissionUtil.IncomingEncryptSubmission(
+          new IncomingEncryptSubmission(
             MOCK_RESPONSES,
             MOCK_FORM,
             MOCK_ENCRYPTED_CONTENT,
@@ -6157,9 +6160,11 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEncryptSubmissionUtils.IncomingEncryptSubmission.init,
-      ).toHaveBeenCalledWith(MOCK_FORM, MOCK_RESPONSES, MOCK_ENCRYPTED_CONTENT)
+      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+        MOCK_ENCRYPTED_CONTENT,
+      )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).toHaveBeenCalledWith({
@@ -6213,9 +6218,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEncryptSubmissionUtils.IncomingEncryptSubmission.init,
-      ).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6260,9 +6263,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEncryptSubmissionUtils.IncomingEncryptSubmission.init,
-      ).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6311,9 +6312,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEncryptSubmissionUtils.IncomingEncryptSubmission.init,
-      ).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6362,9 +6361,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEncryptSubmissionUtils.IncomingEncryptSubmission.init,
-      ).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6413,9 +6410,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEncryptSubmissionUtils.IncomingEncryptSubmission.init,
-      ).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6464,9 +6459,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEncryptSubmissionUtils.IncomingEncryptSubmission.init,
-      ).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6515,9 +6508,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEncryptSubmissionUtils.IncomingEncryptSubmission.init,
-      ).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6566,9 +6557,11 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEncryptSubmissionUtils.IncomingEncryptSubmission.init,
-      ).toHaveBeenCalledWith(MOCK_FORM, MOCK_RESPONSES, MOCK_ENCRYPTED_CONTENT)
+      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+        MOCK_ENCRYPTED_CONTENT,
+      )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6617,9 +6610,11 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEncryptSubmissionUtils.IncomingEncryptSubmission.init,
-      ).toHaveBeenCalledWith(MOCK_FORM, MOCK_RESPONSES, MOCK_ENCRYPTED_CONTENT)
+      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+        MOCK_ENCRYPTED_CONTENT,
+      )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6668,9 +6663,11 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEncryptSubmissionUtils.IncomingEncryptSubmission.init,
-      ).toHaveBeenCalledWith(MOCK_FORM, MOCK_RESPONSES, MOCK_ENCRYPTED_CONTENT)
+      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+        MOCK_ENCRYPTED_CONTENT,
+      )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6719,9 +6716,11 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEncryptSubmissionUtils.IncomingEncryptSubmission.init,
-      ).toHaveBeenCalledWith(MOCK_FORM, MOCK_RESPONSES, MOCK_ENCRYPTED_CONTENT)
+      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+        MOCK_ENCRYPTED_CONTENT,
+      )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()

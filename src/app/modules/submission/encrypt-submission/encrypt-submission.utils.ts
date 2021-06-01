@@ -1,14 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
-import { Result } from 'neverthrow'
 
-import { getVisibleFieldIds } from '../../../../shared/util/logic'
-import {
-  EncryptedSubmissionDto,
-  FieldResponse,
-  IPopulatedEncryptedForm,
-  SubmissionData,
-} from '../../../../types'
+import { EncryptedSubmissionDto, SubmissionData } from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { MalformedVerifiedContentError } from '../../../modules/verified-content/verified-content.errors'
@@ -17,7 +10,6 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
-import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import {
   AttachmentUploadError,
   DatabaseConflictError,
@@ -51,8 +43,6 @@ import {
   SubmissionNotFoundError,
   ValidateFieldError,
 } from '../submission.errors'
-import { ValidatedFieldMap } from '../submission.types'
-import { getFilteredResponses, IncomingSubmission } from '../submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -218,83 +208,5 @@ export const createEncryptedSubmissionDto = (
     content: submissionData.encryptedContent,
     verified: submissionData.verifiedContent,
     attachmentMetadata: attachmentPresignedUrls,
-  }
-}
-
-export class IncomingEncryptSubmission extends IncomingSubmission {
-  private constructor(
-    responses: FieldResponse[],
-    public readonly form: IPopulatedEncryptedForm,
-    public readonly encryptedContent: string,
-  ) {
-    super(responses, form)
-  }
-
-  static init(
-    form: IPopulatedEncryptedForm,
-    responses: FieldResponse[],
-    encryptedContent: string,
-  ): Result<
-    IncomingEncryptSubmission,
-    ProcessingError | ConflictError | ValidateFieldError
-  > {
-    return checkIsEncryptedEncoding(encryptedContent)
-      .andThen(() => this.processResponses(responses, form))
-      .map(
-        (filteredResponses) =>
-          new IncomingEncryptSubmission(
-            filteredResponses,
-            form,
-            encryptedContent,
-          ),
-      )
-  }
-
-  private static processResponses(
-    responses: FieldResponse[],
-    form: IPopulatedEncryptedForm,
-  ): Result<
-    FieldResponse[],
-    ProcessingError | ConflictError | ValidateFieldError
-  > {
-    const transformFilteredResponses = ({
-      filteredResponses,
-      fieldMap,
-    }: {
-      filteredResponses: FieldResponse[]
-      fieldMap: ValidatedFieldMap
-    }) => ({
-      responses: filteredResponses,
-      fieldMap,
-      visibleFieldIds: getVisibleFieldIds(filteredResponses, form),
-      verifiableResponseIds: this.getVerifiableResponseIds({
-        responses: filteredResponses,
-        fieldMap,
-      }),
-      visibleResponseIds: this.getVisibleResponseIds({
-        responses: filteredResponses,
-        visibilityPredicate: this.responseVisibilityPredicate,
-      }),
-    })
-
-    return getFilteredResponses(form, responses)
-      .andThen((filteredResponses) =>
-        this.getFieldMap(form, filteredResponses).map((fieldMap) =>
-          transformFilteredResponses({ filteredResponses, fieldMap }),
-        ),
-      )
-      .andThen((responsesAndMetadata) =>
-        this.validateResponses({ ...responsesAndMetadata, form }).map(
-          () => responsesAndMetadata.responses,
-        ),
-      )
-  }
-
-  static responseVisibilityPredicate(response: FieldResponse): boolean {
-    return (
-      'answer' in response &&
-      typeof response.answer === 'string' &&
-      response.answer.trim() !== ''
-    )
   }
 }
