@@ -1,7 +1,7 @@
 'use strict'
 
 const { LogicType } = require('../../../../../types')
-const AdminFormService = require('../../../../services/AdminFormService')
+const UpdateFormService = require('../../../../services/UpdateFormService')
 
 angular.module('forms').component('editLogicComponent', {
   templateUrl: 'modules/forms/admin/componentViews/edit-logic.client.view.html',
@@ -82,7 +82,7 @@ function editLogicComponentController($uibModal, FormFields, Toastr, $q) {
 
   vm.deleteLogic = function (logicIndex) {
     const logicIdToDelete = vm.myform.form_logics[logicIndex]._id
-    $q.when(AdminFormService.deleteFormLogic(vm.myform._id, logicIdToDelete))
+    $q.when(UpdateFormService.deleteFormLogic(vm.myform._id, logicIdToDelete))
       .then(() => {
         vm.myform.form_logics.splice(logicIndex, 1)
       })

@@ -2,7 +2,7 @@
 
 const { get } = require('lodash')
 const { StatusCodes } = require('http-status-codes')
-const AdminFormService = require('../../../../services/AdminFormService')
+const UpdateFormService = require('../../../../services/UpdateFormService')
 
 angular
   .module('forms')
@@ -99,7 +99,10 @@ function CollaboratorModalController(
   $scope.updatePermissionList = (permissionList) => {
     return $q
       .when(
-        AdminFormService.updateCollaborators($scope.myform._id, permissionList),
+        UpdateFormService.updateCollaborators(
+          $scope.myform._id,
+          permissionList,
+        ),
       )
       .then((updatedCollaborators) => {
         $scope.myform.permissionList = updatedCollaborators

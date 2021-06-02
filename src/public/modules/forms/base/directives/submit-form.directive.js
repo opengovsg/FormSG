@@ -5,7 +5,7 @@ const get = require('lodash/get')
 const FieldVerificationService = require('../../../../services/FieldVerificationService')
 const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
 const PublicFormService = require('../../../../services/PublicFormService')
-const AdminFormService = require('../../../../services/AdminFormService')
+const UpdateFormService = require('../../../../services/UpdateFormService')
 const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
@@ -324,7 +324,7 @@ function submitFormDirective(
             const content = { responses: submissionContent.responses }
 
             const submitFn = form.isPreview
-              ? AdminFormService.submitEmailModeFormPreview
+              ? UpdateFormService.submitEmailModeFormPreview
               : PublicFormService.submitEmailModeForm
 
             return $q
@@ -341,7 +341,7 @@ function submitFormDirective(
           }
           case responseModeEnum.ENCRYPT: {
             const submitFn = form.isPreview
-              ? AdminFormService.submitStorageModeFormPreview
+              ? UpdateFormService.submitStorageModeFormPreview
               : PublicFormService.submitStorageModeForm
 
             return $q
