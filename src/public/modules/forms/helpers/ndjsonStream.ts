@@ -15,6 +15,7 @@ export const ndjsonStream = (
       const reader = response.getReader()
       maybeReader = reader
       const decoder = new TextDecoder()
+      let data_buf = ''
 
       return reader
         .read()
@@ -24,14 +25,22 @@ export const ndjsonStream = (
           }
 
           if (result.done) {
+            data_buf = data_buf.trim()
+            if (data_buf.length !== 0) {
+              try {
+                controller.enqueue(data_buf)
+              } catch (e) {
+                controller.error(e)
+                return
+              }
+            }
             return controller.close()
           }
 
           // Read the input in as a stream and split by newline and trim
-          const lines = decoder
-            .decode(result.value, { stream: true })
-            .split('\n')
-            .map((line) => line.trim())
+          const data = decoder.decode(result.value, { stream: true })
+          data_buf += data
+          const lines = data_buf.split('\n').map((line) => line.trim())
 
           // Only append if there is content available
           lines.forEach((line) => {
@@ -46,6 +55,7 @@ export const ndjsonStream = (
             }
           })
 
+          data_buf = lines[lines.length - 1]
           return reader.read().then(processResult)
         })
     },
