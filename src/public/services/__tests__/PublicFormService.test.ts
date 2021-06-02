@@ -10,6 +10,7 @@ import {
 
 import * as SubmissionUtil from '../../utils/submission'
 import {
+  getPublicFormView,
   submitEmailModeForm,
   submitStorageModeForm,
 } from '../PublicFormService'
@@ -152,6 +153,46 @@ describe('PublicFormService', () => {
         MOCK_CONTENT,
         // Should default to stringified null
         { params: { captchaResponse: 'null' } },
+      )
+    })
+  })
+
+  describe('getPublicFormView', () => {
+    it('should return public form if GET request succeeds', async () => {
+      // Arrange
+      const MOCK_FORM_ID = 'mock-form-id'
+      const expected = {
+        form: { _id: MOCK_FORM_ID, form_fields: [] },
+        spcpSession: { username: 'username' },
+        isIntranetUser: false,
+        myInfoError: true,
+      }
+
+      // Act
+      const actualPromise = getPublicFormView(MOCK_FORM_ID)
+      MockAxios.mockResponse({ data: expected })
+      const actual = await actualPromise
+
+      // Assert
+      expect(actual).toEqual(expected)
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        `/api/v3/forms/${MOCK_FORM_ID}`,
+      )
+    })
+
+    it('should reject with error message if GET request fails', async () => {
+      // Arrange
+      const MOCK_FORM_ID = 'mock-form-id'
+      const expected = new Error('error')
+
+      // Act
+      const actualPromise = getPublicFormView(MOCK_FORM_ID)
+      MockAxios.mockError(expected)
+
+      // Assert
+      await expect(actualPromise).rejects.toEqual(expected)
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        `/api/v3/forms/${MOCK_FORM_ID}`,
       )
     })
   })

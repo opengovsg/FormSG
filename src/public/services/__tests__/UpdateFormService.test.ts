@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { ObjectId } from 'bson'
 import MockAxios from 'jest-mock-axios'
 
-import { BasicField } from 'src/types'
+import { FormUpdateParams } from 'src/app/modules/form/admin-form/admin-form.types'
+import { BasicField, IPopulatedForm, IYesNoFieldSchema } from 'src/types'
 import {
   EmailSubmissionDto,
   EncryptSubmissionDto,
@@ -10,13 +12,16 @@ import {
 
 import * as SubmissionUtil from '../../utils/submission'
 import {
+  ADMIN_FORM_ENDPOINT,
   submitEmailModeFormPreview,
   submitStorageModeFormPreview,
-} from '../AdminFormService'
+  transferOwner,
+  updateForm,
+} from '../UpdateFormService'
 
 jest.mock('axios', () => MockAxios)
 
-describe('AdminFormService', () => {
+describe('UpdateFormService', () => {
   describe('submitEmailModeFormPreview', () => {
     const MOCK_FORM_ID = 'mock–form-id'
     const MOCK_RESPONSE: SubmissionResponseDto = {
@@ -152,6 +157,97 @@ describe('AdminFormService', () => {
         MOCK_CONTENT,
         // Should default to stringified null
         { params: { captchaResponse: 'null' } },
+      )
+    })
+  })
+
+  describe('updateForm', () => {
+    it('should return updated form if PUT request succeeds', async () => {
+      // Arrange
+      const expected = [{} as IYesNoFieldSchema]
+      const MOCK_FORM_ID = new ObjectId().toHexString()
+      const update = {
+        editFormField: {
+          action: { name: 'REORDER' },
+          field: expected[0],
+        },
+      } as FormUpdateParams
+
+      // Act
+      const actualPromise = updateForm(MOCK_FORM_ID, update)
+      MockAxios.mockResponse({ data: expected })
+      const actual = await actualPromise
+
+      // Assert
+      expect(actual).toEqual(expected)
+      expect(MockAxios.put).toHaveBeenCalledWith(`${MOCK_FORM_ID}/adminform`, {
+        form: update,
+      })
+    })
+
+    it('should reject with error message if PUT request fails', async () => {
+      // Arrange
+      const expected = new Error('error')
+      const MOCK_FORM_ID = new ObjectId().toHexString()
+      const update = {
+        editFormField: {
+          action: { name: 'REORDER' },
+          field: {} as IYesNoFieldSchema,
+        },
+      } as FormUpdateParams
+
+      // Act
+      const actualPromise = updateForm(MOCK_FORM_ID, update)
+      MockAxios.mockError(expected)
+
+      // Assert
+      await expect(actualPromise).rejects.toEqual(expected)
+      expect(MockAxios.put).toHaveBeenCalledWith(`${MOCK_FORM_ID}/adminform`, {
+        form: update,
+      })
+    })
+  })
+
+  describe('transferOwner', () => {
+    it('should return updated form if POST request succeeds', async () => {
+      // Arrange
+      const MOCK_FORM_ID = 'mock-form-id'
+      const expected = {
+        _id: MOCK_FORM_ID,
+      } as IPopulatedForm
+      const MOCK_NEW_OWNER = 'test@open.gov.sg'
+      // Act
+      const actualPromise = transferOwner(MOCK_FORM_ID, MOCK_NEW_OWNER)
+      MockAxios.mockResponse({ data: expected })
+      const actual = await actualPromise
+
+      // Assert
+      expect(actual).toEqual(expected)
+      expect(
+        MockAxios.post,
+      ).toHaveBeenCalledWith(
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/collaborators/transfer-owner`,
+        { email: MOCK_NEW_OWNER },
+      )
+    })
+
+    it('should reject with error message if POST request fails', async () => {
+      // Arrange
+      const expected = new Error('error')
+      const MOCK_FORM_ID = 'mock-form-id'
+      const MOCK_NEW_OWNER = 'test@open.gov.sg'
+
+      // Act
+      const actualPromise = transferOwner(MOCK_FORM_ID, MOCK_NEW_OWNER)
+      MockAxios.mockError(expected)
+
+      // Assert
+      await expect(actualPromise).rejects.toEqual(expected)
+      expect(
+        MockAxios.post,
+      ).toHaveBeenCalledWith(
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/collaborators/transfer-owner`,
+        { email: MOCK_NEW_OWNER },
       )
     })
   })
