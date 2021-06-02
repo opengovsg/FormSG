@@ -1,15 +1,5 @@
-import { IFieldSchema, IFormDocument } from '../../../types'
-
-window.angular = {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  module: jest.fn(() => ({
-    factory: jest.fn(),
-  })),
-}
-
-// eslint-disable-next-line import/first
-import * as BetaService from '../../modules/forms/services/betas.client.factory'
+import { IField, IForm, IUser } from '../../../types'
+import * as BetaService from '../BetaService'
 
 describe('BetaService', () => {
   const nonBetaFeature = 'nonBetaFeature'
@@ -18,13 +8,13 @@ describe('BetaService', () => {
   const betaFeaturesField = {
     [featureOne]: {
       flag: 'betaFlagOne',
-      matches(field: IFieldSchema) {
+      matches(field: IField) {
         return field.title === featureOne
       },
     },
     [featureTwo]: {
       flag: 'betaFlagTwo',
-      matches(field: IFieldSchema) {
+      matches(field: IField) {
         return field.title === featureTwo
       },
     },
@@ -33,7 +23,7 @@ describe('BetaService', () => {
     betaFlags: {
       [betaFeaturesField[featureOne].flag]: true,
     },
-  }
+  } as IUser
   describe('isBetaField', () => {
     it('returns truthy for defined beta fields', () => {
       const result = BetaService.isBetaField(featureOne, betaFeaturesField)
@@ -73,7 +63,7 @@ describe('BetaService', () => {
   describe('getBetaFeaturesForFields', () => {
     const form = {
       form_fields: [{ title: featureTwo }],
-    } as IFormDocument
+    } as IForm
     it('lists the beta features that the user lacks', () => {
       const result = BetaService.getMissingFieldPermissions(
         userWithFeatureOne,
