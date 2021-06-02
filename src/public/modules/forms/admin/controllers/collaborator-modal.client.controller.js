@@ -89,7 +89,7 @@ function CollaboratorModalController(
   }
 
   /**
-   * Calls AdminFormService to update the permission list (collaborators) of a form
+   * Calls UpdateFormService to update the permission list (collaborators) of a form
    * @param {Array} permissionList - New permission list for the form
    */
   $scope.updatePermissionList = (permissionList) => {
