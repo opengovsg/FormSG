@@ -1,6 +1,6 @@
 import { Result } from 'neverthrow'
 
-import { getVisibleFieldIds } from '../../../../shared/util/logic'
+import { FieldIdSet, getVisibleFieldIds } from '../../../../shared/util/logic'
 import { FieldResponse, IPopulatedEncryptedForm } from '../../../../types'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import {
@@ -8,7 +8,11 @@ import {
   ProcessingError,
   ValidateFieldError,
 } from '../submission.errors'
-import { ValidatedFieldMap } from '../submission.types'
+import {
+  ValidatedFieldMap,
+  VerifiableResponseIdSet,
+  VisibleResponseIdSet,
+} from '../submission.types'
 import { getFilteredResponses, IncomingSubmission } from '../submission.utils'
 
 export default class IncomingEncryptSubmission extends IncomingSubmission {
@@ -47,13 +51,39 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
     FieldResponse[],
     ProcessingError | ConflictError | ValidateFieldError
   > {
-    const transformFilteredResponses = ({
-      filteredResponses,
-      fieldMap,
-    }: {
-      filteredResponses: FieldResponse[]
-      fieldMap: ValidatedFieldMap
-    }) => ({
+    return getFilteredResponses(form, responses)
+      .andThen((filteredResponses) =>
+        this.getFieldMap(form, filteredResponses).map((fieldMap) =>
+          this.transformFilteredResponses({
+            form,
+            filteredResponses,
+            fieldMap,
+          }),
+        ),
+      )
+      .andThen((responsesAndMetadata) =>
+        this.validateResponses({ ...responsesAndMetadata, form }).map(
+          () => responsesAndMetadata.responses,
+        ),
+      )
+  }
+
+  private static transformFilteredResponses({
+    form,
+    filteredResponses,
+    fieldMap,
+  }: {
+    form: IPopulatedEncryptedForm
+    filteredResponses: FieldResponse[]
+    fieldMap: ValidatedFieldMap
+  }): {
+    responses: FieldResponse[]
+    fieldMap: ValidatedFieldMap
+    visibleFieldIds: FieldIdSet
+    verifiableResponseIds: VerifiableResponseIdSet
+    visibleResponseIds: VisibleResponseIdSet
+  } {
+    return {
       responses: filteredResponses,
       fieldMap,
       visibleFieldIds: getVisibleFieldIds(filteredResponses, form),
@@ -65,22 +95,10 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
         responses: filteredResponses,
         visibilityPredicate: this.responseVisibilityPredicate,
       }),
-    })
-
-    return getFilteredResponses(form, responses)
-      .andThen((filteredResponses) =>
-        this.getFieldMap(form, filteredResponses).map((fieldMap) =>
-          transformFilteredResponses({ filteredResponses, fieldMap }),
-        ),
-      )
-      .andThen((responsesAndMetadata) =>
-        this.validateResponses({ ...responsesAndMetadata, form }).map(
-          () => responsesAndMetadata.responses,
-        ),
-      )
+    }
   }
 
-  static responseVisibilityPredicate(response: FieldResponse): boolean {
+  private static responseVisibilityPredicate(response: FieldResponse): boolean {
     return (
       'answer' in response &&
       typeof response.answer === 'string' &&
