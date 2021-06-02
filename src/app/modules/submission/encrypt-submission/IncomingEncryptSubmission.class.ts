@@ -3,6 +3,7 @@ import { Result } from 'neverthrow'
 import { FieldIdSet, getVisibleFieldIds } from '../../../../shared/util/logic'
 import { FieldResponse, IPopulatedEncryptedForm } from '../../../../types'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
+import { IncomingSubmission } from '../IncomingSubmission.class'
 import {
   ConflictError,
   ProcessingError,
@@ -13,7 +14,7 @@ import {
   VerifiableResponseIdSet,
   VisibleResponseIdSet,
 } from '../submission.types'
-import { getFilteredResponses, IncomingSubmission } from '../submission.utils'
+import { getFilteredResponses } from '../submission.utils'
 
 export default class IncomingEncryptSubmission extends IncomingSubmission {
   private constructor(
