@@ -1,5 +1,4 @@
 import { ObjectId } from 'bson'
-import { StatusCodes } from 'http-status-codes'
 import MockAxios from 'jest-mock-axios'
 
 import { DuplicateFormBody } from 'src/app/modules/form/admin-form/admin-form.types'
@@ -9,7 +8,6 @@ import { ResponseMode } from 'src/types/form'
 import {
   ADMIN_FORM_ENDPOINT,
   createForm,
-  deleteForm,
   duplicateForm,
 } from '../CreateFormService'
 
@@ -68,42 +66,6 @@ describe('CreateFormService', () => {
       expect(MockAxios.post).toHaveBeenCalledWith(
         `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/duplicate`,
         MOCK_DUPLICATE_FORM_BODY,
-      )
-    })
-  })
-
-  describe('deleteForm', () => {
-    it('should successfully call delete endpoint', async () => {
-      // Arrange
-      const MOCK_FORM_ID = new ObjectId().toHexString()
-
-      // Act
-      const actualPromise = deleteForm(MOCK_FORM_ID)
-      MockAxios.mockResponse({
-        status: StatusCodes.OK,
-        data: { message: 'Form has been archived' },
-      })
-      await actualPromise
-
-      // Assert
-      expect(MockAxios.delete).toHaveBeenCalledWith(
-        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}`,
-      )
-    })
-
-    it('should reject with error message if DELETE request fails', async () => {
-      // Arrange
-      const expected = new Error('error')
-      const MOCK_FORM_ID = new ObjectId().toHexString()
-
-      // Act
-      const actualPromise = deleteForm(MOCK_FORM_ID)
-      MockAxios.mockError(expected)
-
-      await expect(actualPromise).rejects.toEqual(expected)
-      // Assert
-      expect(MockAxios.delete).toHaveBeenCalledWith(
-        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}`,
       )
     })
   })

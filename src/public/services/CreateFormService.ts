@@ -36,15 +36,3 @@ export const createForm = async (
     .post<IFormSchema>(`${ADMIN_FORM_ENDPOINT}`, { form: newForm })
     .then(({ data }) => data)
 }
-
-/**
- * Deletes the form with the corresponding formId
- * @param formId formId of form to delete
- */
-export const deleteForm = async (
-  formId: string,
-): Promise<{ message: string }> => {
-  return axios
-    .delete(`${ADMIN_FORM_ENDPOINT}/${formId}`)
-    .then(({ data }) => data)
-}

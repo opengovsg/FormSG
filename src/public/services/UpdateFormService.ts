@@ -260,6 +260,18 @@ export const submitStorageModeFormPreview = async ({
 }
 
 /**
+ * Deletes the form with the corresponding formId
+ * @param formId formId of form to delete
+ */
+export const deleteForm = async (
+  formId: string,
+): Promise<{ message: string }> => {
+  return axios
+    .delete(`${ADMIN_FORM_ENDPOINT}/${formId}`)
+    .then(({ data }) => data)
+}
+
+/**
  * Updates FormUpdateParams attribute(s) in the corresponding form.
  * @deprecated This function should no longer be called
  * @param formId formId of form in question
