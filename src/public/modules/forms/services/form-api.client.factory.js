@@ -36,10 +36,8 @@ function FormApi(FormErrorService, FormFields) {
    * @param {*} input API service data input
    * @returns Transformed input
    */
-  const handleInput = (input) => {
-    if (get(input, 'form')) {
-      FormFields.removeMyInfoFromForm(input)
-    }
+  const stripMyInfo = (input) => {
+    FormFields.removeMyInfoFromForm(input)
     return input
   }
 
@@ -51,7 +49,7 @@ function FormApi(FormErrorService, FormFields) {
    * @param {*} data Data returned from API call
    * @returns Transformed data
    */
-  const handleResponse = (data) => {
+  const injectMyInfo = (data) => {
     // The backend returns different shapes for different request types. For GET
     // requests, it returns an object with a form attribute containing
     // all the form data; for PUT requests, it returns an object with
@@ -89,73 +87,100 @@ function FormApi(FormErrorService, FormFields) {
     }
   }
 
-  const generateService = (service, errorParams, ...inputs) => {
-    return service(...inputs.map((input) => handleInput(input)))
+  const generateService = (
+    service,
+    handleInput,
+    handleResponse,
+    errorParams,
+    ...inputs
+  ) => {
+    const input = handleInput
+      ? inputs.map((input) => handleInput(input))
+      : inputs
+    return service(...input)
       .then((data) => {
-        return handleResponse(data)
+        return handleResponse ? handleResponse(data) : data
       })
       .catch((err) => handleError(err, errorParams))
   }
 
   return {
     getDashboardView: () =>
-      generateService(AdminViewFormService.getDashboardView, {
+      generateService(AdminViewFormService.getDashboardView, null, null, {
         redirectOnError: true,
         errorTargetState: 'listForms',
       }),
     getAdminForm: (formId) =>
       generateService(
         AdminViewFormService.getAdminFormView,
+        null,
+        injectMyInfo,
         { redirectOnError: true, errorTargetState: 'viewForm' },
         formId,
       ),
     getPublicForm: (formId) =>
       generateService(
         PublicFormService.getPublicFormView,
+        null,
+        injectMyInfo,
         { redirectOnError: true },
         formId,
       ),
     updateForm: (formId, update) =>
       generateService(
         UpdateFormService.updateForm,
+        stripMyInfo,
+        injectMyInfo,
         { redirectOnError: false },
         formId,
         update,
       ),
-    duplicateForm: (formId, formToSave) =>
+    duplicateForm: (formId, duplicateFormBody) =>
       generateService(
         CreateFormService.duplicateForm,
+        null,
+        injectMyInfo,
         { redirectOnError: false },
         formId,
-        formToSave,
+        duplicateFormBody,
       ),
     deleteForm: (formId) =>
       generateService(
         UpdateFormService.deleteForm,
+        null,
+        null,
         { redirectOnError: false },
         formId,
       ),
     createForm: (newForm) =>
       generateService(
         CreateFormService.createForm,
+        stripMyInfo,
+        injectMyInfo,
         { redirectOnError: true, errorTargetState: 'listForms' },
         newForm,
       ),
     queryTemplate: (formId) =>
       generateService(
         ExamplesService.queryTemplate,
+        null,
+        injectMyInfo,
         { redirectOnError: true, errorTargetState: 'templateForm' },
         formId,
       ),
     previewForm: (formId) =>
       generateService(
         AdminViewFormService.previewForm,
+        null,
+        injectMyInfo,
         { redirectOnError: true, errorTargetState: 'previewForm' },
         formId,
       ),
     useTemplate: (formId, overrideParams) =>
       generateService(
         ExamplesService.useTemplate,
+        null,
+        null,
         { redirectOnError: true, errorTargetState: 'useTemplate' },
         formId,
         overrideParams,
@@ -163,6 +188,8 @@ function FormApi(FormErrorService, FormFields) {
     transferOwner: (formId, newOwner) =>
       generateService(
         UpdateFormService.transferOwner,
+        null,
+        injectMyInfo,
         { redirectOnError: false },
         formId,
         newOwner,
