@@ -36,15 +36,14 @@ angular.module('forms').config([
           FormData: [
             'FormApi',
             '$transition$',
-            '$q',
-            function (FormApi, $transition$, $q) {
-              return $q
-                .when(FormApi.previewForm($transition$.params().formId))
-                .then((FormData) => {
+            function (FormApi, $transition$) {
+              return FormApi.previewForm($transition$.params().formId).then(
+                (FormData) => {
                   FormData.isTemplate = true
                   FormData.isPreview = true
                   return FormData
-                })
+                },
+              )
             },
           ],
         },
@@ -58,14 +57,13 @@ angular.module('forms').config([
           FormData: [
             'FormApi',
             '$transition$',
-            '$q',
-            function (FormApi, $transition$, $q) {
-              return $q
-                .when(FormApi.template($transition$.params()))
-                .then((FormData) => {
+            function (FormApi, $transition$) {
+              return FormApi.template($transition$.params()).then(
+                (FormData) => {
                   FormData.isTemplate = true
                   return FormData
-                })
+                },
+              )
             },
           ],
         },
@@ -81,17 +79,15 @@ angular.module('forms').config([
           // If the user is logged in, this field will contain the form data of the provided formId,
           // otherwise it will only contain the formId itself.
           FormData: [
-            '$q',
             'Auth',
             'FormErrorService',
             '$stateParams',
-            function ($q, Auth, FormErrorService, $stateParams) {
+            function (Auth, FormErrorService, $stateParams) {
               if (!Auth.getUser()) {
                 return $stateParams.formId
               }
 
-              return $q
-                .when(ExamplesService.getSingleExampleForm($stateParams.formId))
+              return ExamplesService.getSingleExampleForm($stateParams.formId)
                 .then(function (response) {
                   response.form.isTemplate = true
                   return response.form
