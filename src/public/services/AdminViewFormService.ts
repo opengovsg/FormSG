@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-import { FormMetaView, PublicForm } from 'src/types'
-import { FormViewDto } from 'src/types/api'
+import { FormViewDto } from '../..//types/api'
+import { FormMetaView, PublicForm } from '../../types'
 
 // endpoint exported for testing
 export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
