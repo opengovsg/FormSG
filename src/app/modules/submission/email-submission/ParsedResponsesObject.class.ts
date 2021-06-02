@@ -21,7 +21,7 @@ import { getFilteredResponses } from '../submission.utils'
 
 export default class ParsedResponsesObject {
   public ndiResponses: ProcessedFieldResponse[] = []
-  constructor(public responses: ProcessedFieldResponse[]) {}
+  private constructor(public responses: ProcessedFieldResponse[]) {}
 
   addNdiResponses(
     ndiResponses: ProcessedFieldResponse[],
