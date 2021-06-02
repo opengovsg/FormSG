@@ -77,7 +77,6 @@ BounceSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
  * @returns the created Bounce document
  */
 BounceSchema.statics.fromSnsNotification = function (
-  this: IBounceModel,
   snsInfo: IEmailNotification,
   formId: string,
 ): IBounceSchema {
@@ -103,7 +102,6 @@ BounceSchema.statics.fromSnsNotification = function (
  * @returns the updated document
  */
 BounceSchema.methods.updateBounceInfo = function (
-  this: IBounceSchema,
   snsInfo: IEmailNotification,
 ): IBounceSchema {
   // First, get rid of outdated emails
@@ -141,9 +139,7 @@ BounceSchema.methods.updateBounceInfo = function (
  * bounced), false otherwise.
  * @returns true if all recipients bounced
  */
-BounceSchema.methods.isCriticalBounce = function (
-  this: IBounceSchema,
-): boolean {
+BounceSchema.methods.isCriticalBounce = function (): boolean {
   return this.bounces.every((emailInfo) => emailInfo.hasBounced)
 }
 
@@ -152,9 +148,7 @@ BounceSchema.methods.isCriticalBounce = function (
  * all bounces were permanent, false otherwise.
  * @returns true if all bounecs were permanent
  */
-BounceSchema.methods.areAllPermanentBounces = function (
-  this: IBounceSchema,
-): boolean {
+BounceSchema.methods.areAllPermanentBounces = function (): boolean {
   return this.bounces.every(
     (emailInfo) =>
       emailInfo.hasBounced && emailInfo.bounceType === BounceType.Permanent,
@@ -165,7 +159,7 @@ BounceSchema.methods.areAllPermanentBounces = function (
  * Returns the list of email recipients for this form
  * @returns Array of email addresses
  */
-BounceSchema.methods.getEmails = function (this: IBounceSchema): string[] {
+BounceSchema.methods.getEmails = function (): string[] {
   // Return a regular array to prevent unexpected bugs with mongoose
   // CoreDocumentArray
   return Array.from(this.bounces.map((emailInfo) => emailInfo.email))
@@ -177,7 +171,6 @@ BounceSchema.methods.getEmails = function (this: IBounceSchema): string[] {
  * @returns void. Modifies document in place.
  */
 BounceSchema.methods.setNotificationState = function (
-  this: IBounceSchema,
   emailRecipients: string[],
   smsRecipients: UserContactView[],
 ): void {
@@ -194,7 +187,7 @@ BounceSchema.methods.setNotificationState = function (
  * false otherwise.
  * @returns true if at least one admin or collaborator has been notified
  */
-BounceSchema.methods.hasNotified = function (this: IBounceSchema): boolean {
+BounceSchema.methods.hasNotified = function (): boolean {
   return this.hasAutoEmailed || this.hasAutoSmsed
 }
 

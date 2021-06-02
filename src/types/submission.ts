@@ -83,7 +83,7 @@ export interface IEmailSubmission extends ISubmission {
   getWebhookView(): null
 }
 
-export type IEmailSubmissionSchema = IEmailSubmission & ISubmissionSchema
+export interface IEmailSubmissionSchema extends IEmailSubmission, Document {}
 
 export interface IEncryptedSubmission extends ISubmission {
   recipientEmails: never
@@ -98,8 +98,9 @@ export interface IEncryptedSubmission extends ISubmission {
   getWebhookView(): WebhookView
 }
 
-export type IEncryptedSubmissionSchema = IEncryptedSubmission &
-  ISubmissionSchema
+export interface IEncryptedSubmissionSchema
+  extends IEncryptedSubmission,
+    Document {}
 
 export interface IWebhookResponse {
   webhookUrl: string

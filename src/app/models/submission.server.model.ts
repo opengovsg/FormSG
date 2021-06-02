@@ -71,7 +71,6 @@ SubmissionSchema.index({
 
 // Base schema static methods
 SubmissionSchema.statics.findFormsWithSubsAbove = function (
-  this: ISubmissionModel,
   minSubCount: number,
 ): Promise<FindFormsWithSubsAboveResult[]> {
   return this.aggregate<FindFormsWithSubsAboveResult>([
@@ -179,9 +178,7 @@ const EncryptSubmissionSchema = new Schema<
  * Returns an object which represents the encrypted submission
  * which will be posted to the webhook URL.
  */
-EncryptSubmissionSchema.methods.getWebhookView = function (
-  this: IEncryptedSubmissionSchema,
-): WebhookView {
+EncryptSubmissionSchema.methods.getWebhookView = function (): WebhookView {
   const webhookData: WebhookData = {
     formId: String(this.form),
     submissionId: String(this._id),
@@ -197,7 +194,6 @@ EncryptSubmissionSchema.methods.getWebhookView = function (
 }
 
 EncryptSubmissionSchema.statics.addWebhookResponse = function (
-  this: IEncryptSubmissionModel,
   submissionId: string,
   webhookResponse: IWebhookResponse,
 ): Promise<IEncryptedSubmissionSchema | null> {
@@ -209,7 +205,6 @@ EncryptSubmissionSchema.statics.addWebhookResponse = function (
 }
 
 EncryptSubmissionSchema.statics.findSingleMetadata = function (
-  this: IEncryptSubmissionModel,
   formId: string,
   submissionId: string,
 ): Promise<SubmissionMetadata | null> {
@@ -254,7 +249,6 @@ type MetadataAggregateResult = {
 }
 
 EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
-  this: IEncryptSubmissionModel,
   formId: string,
   {
     page = 1,
@@ -319,8 +313,7 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   )
 }
 
-const getSubmissionCursorByFormId: IEncryptSubmissionModel['getSubmissionCursorByFormId'] = function (
-  this: IEncryptSubmissionModel,
+EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
   formId,
   dateRange = {},
 ) {
@@ -345,10 +338,7 @@ const getSubmissionCursorByFormId: IEncryptSubmissionModel['getSubmissionCursorB
   )
 }
 
-EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = getSubmissionCursorByFormId
-
 EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
-  this: IEncryptSubmissionModel,
   formId: string,
   submissionId: string,
 ) {
