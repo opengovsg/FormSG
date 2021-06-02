@@ -77,6 +77,7 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import ParsedResponsesObject from '../../../submission/email-submission/ParsedResponsesObject.class'
 import * as UserService from '../../../user/user.service'
 import {
   ForbiddenFormError,
@@ -127,6 +128,8 @@ jest.mock('src/app/modules/submission/submission.utils')
 const MockSubmissionUtils = mocked(SubmissionUtils)
 jest.mock('../admin-form.service')
 const MockAdminFormService = mocked(AdminFormService)
+jest.mock('../../../submission/email-submission/ParsedResponsesObject.class')
+const MockParsedResponsesObject = mocked(ParsedResponsesObject)
 jest.mock('../../form.service')
 const MockFormService = mocked(FormService)
 jest.mock('../../../user/user.service')
@@ -5130,8 +5133,12 @@ describe('admin-form.controller', () => {
       MockEmailSubmissionService.validateAttachments.mockReturnValue(
         okAsync(true),
       )
-      MockSubmissionService.getProcessedResponses.mockReturnValue(
-        ok(MOCK_PARSED_RESPONSES),
+      MockParsedResponsesObject.mockClear()
+      MockParsedResponsesObject.parseResponses.mockReturnValue(
+        ok(new ParsedResponsesObject(MOCK_PARSED_RESPONSES)),
+      )
+      MockParsedResponsesObject.mock.instances[0].getAllResponses.mockReturnValue(
+        MOCK_PARSED_RESPONSES,
       )
       MockEmailSubmissionService.createEmailSubmissionWithoutSave.mockReturnValue(
         MOCK_SUBMISSION,
@@ -5186,7 +5193,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -5692,7 +5699,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 400 when responses cannot be processed', async () => {
-      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+      MockParsedResponsesObject.parseResponses.mockReturnValueOnce(
         err(new ProcessingError()),
       )
       const mockReq = expressHandler.mockRequest({
@@ -5726,7 +5733,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -5748,7 +5755,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 409 when the submitted field IDs do not match the form field IDs', async () => {
-      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+      MockParsedResponsesObject.parseResponses.mockReturnValueOnce(
         err(new ConflictError('')),
       )
       const mockReq = expressHandler.mockRequest({
@@ -5782,7 +5789,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -5804,7 +5811,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 400 when any answer is invalid', async () => {
-      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+      MockParsedResponsesObject.parseResponses.mockReturnValueOnce(
         err(new ValidateFieldError()),
       )
       const mockReq = expressHandler.mockRequest({
@@ -5838,7 +5845,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -5894,7 +5901,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -5959,7 +5966,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -6024,7 +6031,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
