@@ -1,7 +1,12 @@
 'use strict'
 const { get } = require('lodash')
 const Form = require('../viewmodels/Form.class')
-const FormService = require('../../../services/FormService')
+const CreateFormService = require('../../../services/CreateFormService')
+const UpdateFormService = require('../../../services/UpdateFormService')
+const ExamplesService = require('../../../services/ExamplesService')
+const AdminViewFormService = require('../../../services/AdminViewFormService')
+const PublicFormService = require('../../../services/PublicFormService')
+
 // Forms service used for communicating with the forms REST endpoints
 angular
   .module('forms')
@@ -93,70 +98,71 @@ function FormApi(FormErrorService, FormFields) {
   }
 
   return {
-    query: () =>
-      generateService(FormService.getDashboardView, {
+    getDashboardView: () =>
+      generateService(AdminViewFormService.getDashboardView, {
         redirectOnError: true,
         errorTargetState: 'listForms',
       }),
-    getAdmin: (formId) =>
+    getAdminForm: (formId) =>
       generateService(
-        FormService.getAdminFormView,
+        AdminViewFormService.getAdminFormView,
         { redirectOnError: true, errorTargetState: 'viewForm' },
         formId,
       ),
-    getPublic: (formId) =>
+    getPublicForm: (formId) =>
       generateService(
-        FormService.getPublicFormView,
+        PublicFormService.getPublicFormView,
         { redirectOnError: true },
         formId,
       ),
-    update: (formId, update) =>
+    updateForm: (formId, update) =>
       generateService(
-        FormService.updateForm,
+        UpdateFormService.updateForm,
         { redirectOnError: false },
         formId,
         update,
       ),
-    save: (formId, formToSave) =>
+    duplicateForm: (formId, formToSave) =>
       generateService(
-        FormService.duplicateForm,
+        CreateFormService.duplicateForm,
         { redirectOnError: false },
         formId,
         formToSave,
       ),
-    delete: (formId) =>
+    deleteForm: (formId) =>
       generateService(
-        FormService.deleteForm,
+        CreateFormService.deleteForm,
         { redirectOnError: false },
         formId,
       ),
-    create: (newForm) =>
+    createForm: (newForm) =>
       generateService(
-        FormService.createForm,
+        CreateFormService.createForm,
         { redirectOnError: true, errorTargetState: 'listForms' },
         newForm,
       ),
-    template: (formId) =>
+    queryTemplate: (formId) =>
       generateService(
-        FormService.queryTemplate,
+        ExamplesService.queryTemplate,
         { redirectOnError: true, errorTargetState: 'templateForm' },
         formId,
       ),
-    preview: (formId) =>
+    previewForm: (formId) =>
       generateService(
-        FormService.previewForm,
+        AdminViewFormService.previewForm,
         { redirectOnError: true, errorTargetState: 'previewForm' },
         formId,
       ),
-    useTemplate: (formId) =>
+    useTemplate: (formId, overrideParams) =>
       generateService(
-        FormService.useTemplate,
+        ExamplesService.useTemplate,
         { redirectOnError: true, errorTargetState: 'useTemplate' },
         formId,
+        overrideParams,
       ),
     transferOwner: (formId, newOwner) =>
       generateService(
-        FormService.transferOwner,
+        UpdateFormService.transferOwner,
         { redirectOnError: false },
         formId,
         newOwner,

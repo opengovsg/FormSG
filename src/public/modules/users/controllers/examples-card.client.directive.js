@@ -101,11 +101,7 @@ function examplesCardController(
       resolve: {
         FormToDuplicate: () => {
           return $q
-            .when(
-              FormApi.template({
-                formId: $scope.form._id,
-              }),
-            )
+            .when(FormApi.queryTemplate($scope.form._id))
             .then((res) => res.form)
         },
         createFormModalOptions: () => ({ mode: 'useTemplate' }),

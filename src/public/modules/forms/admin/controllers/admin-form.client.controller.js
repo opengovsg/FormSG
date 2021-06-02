@@ -299,7 +299,7 @@ function AdminFormController(
       default:
         // This block should not be reached. All updateForm calls should have an update type.
         return $q
-          .when(FormApi.update($scope.myform._id, { form: update }))
+          .when(FormApi.updateForm($scope.myform._id, update))
           .then((savedForm) => {
             // Updating this form updates lastModified
             // and also updates myform if a formToUse is passed in

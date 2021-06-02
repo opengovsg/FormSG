@@ -73,11 +73,7 @@ function CollaboratorModalController(
       return
     }
 
-    $q.when(
-      FormApi.transferOwner($scope.myform._id, {
-        email: $scope.transferOwnerEmail,
-      }),
-    )
+    $q.when(FormApi.transferOwner($scope.myform._id, $scope.transferOwnerEmail))
       .then((res) => {
         $scope.myform = res.form
         externalScope.refreshFormDataFromCollab($scope.myform)

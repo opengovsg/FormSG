@@ -76,7 +76,7 @@ function ListFormsController(
     // Massage user email into a name
     turnEmailToName()
 
-    $q.when(FormApi.query()).then((_forms) => {
+    $q.when(FormApi.getDashboardView()).then((_forms) => {
       vm.myforms = _forms
     })
   }
@@ -195,7 +195,7 @@ function ListFormsController(
         FormToDuplicate: () => {
           // Retrieve the form so that we can populate the modal with any existing email recipients
           return $q
-            .when(FormApi.preview(vm.myforms[formIndex]._id))
+            .when(FormApi.previewForm(vm.myforms[formIndex]._id))
             .then((res) => res.form)
         },
         createFormModalOptions: () => ({ mode: 'duplicate' }),

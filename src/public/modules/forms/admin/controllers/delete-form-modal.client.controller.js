@@ -34,7 +34,7 @@ function DeleteFormModalController(
         }`,
       )
     }
-    $q.when(FormApi.delete(vm.myforms[formIndex]._id)).then(
+    $q.when(FormApi.deleteForm(vm.myforms[formIndex]._id)).then(
       function () {
         vm.myforms.splice(formIndex, 1)
         vm.cancel()

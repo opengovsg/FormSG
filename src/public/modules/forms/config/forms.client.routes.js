@@ -23,7 +23,9 @@ angular.module('forms').config([
             '$transition$',
             '$q',
             function (FormApi, $transition$, $q) {
-              return $q.when(FormApi.getPublic($transition$.params().formId))
+              return $q.when(
+                FormApi.getPublicForm($transition$.params().formId),
+              )
             },
           ],
         },
@@ -40,7 +42,7 @@ angular.module('forms').config([
             '$q',
             function (FormApi, $transition$, $q) {
               return $q
-                .when(FormApi.preview($transition$.params().formId))
+                .when(FormApi.previewForm($transition$.params().formId))
                 .then((FormData) => {
                   FormData.isTemplate = true
                   FormData.isPreview = true
@@ -118,7 +120,7 @@ angular.module('forms').config([
             '$transition$',
             '$q',
             function (FormApi, $transition$, $q) {
-              return $q.when(FormApi.getAdmin($transition$.params().formId))
+              return $q.when(FormApi.getAdminForm($transition$.params().formId))
             },
           ],
         },
