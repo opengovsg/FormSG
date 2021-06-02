@@ -31,14 +31,10 @@ describe('CreateFormService', () => {
       }
       const MOCK_FORM_ID = expected._id
       const MOCK_DUPLICATE_FORM_BODY = _generateDuplicateFormBody()
+      MockAxios.post.mockResolvedValueOnce({ data: expected })
 
       // Act
-      const actualPromise = duplicateForm(
-        MOCK_FORM_ID,
-        MOCK_DUPLICATE_FORM_BODY,
-      )
-      MockAxios.mockResponse({ data: expected })
-      const actual = await actualPromise
+      const actual = await duplicateForm(MOCK_FORM_ID, MOCK_DUPLICATE_FORM_BODY)
 
       // Assert
       expect(actual).toEqual(expected)
@@ -53,13 +49,13 @@ describe('CreateFormService', () => {
       const expected = new Error('error')
       const MOCK_FORM_ID = new ObjectId().toHexString()
       const MOCK_DUPLICATE_FORM_BODY = _generateDuplicateFormBody()
+      MockAxios.post.mockRejectedValueOnce(expected)
 
       // Act
       const actualPromise = duplicateForm(
         MOCK_FORM_ID,
         MOCK_DUPLICATE_FORM_BODY,
       )
-      MockAxios.mockError(expected)
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
@@ -78,10 +74,10 @@ describe('CreateFormService', () => {
         title: 'title',
         responseMode: ResponseMode.Email,
       }
+      MockAxios.post.mockResolvedValueOnce({ data: expected })
+
       // Act
-      const actualPromise = createForm(MOCK_FORM_PARAMS)
-      MockAxios.mockResponse({ data: expected })
-      const actual = await actualPromise
+      const actual = await createForm(MOCK_FORM_PARAMS)
 
       // Assert
       expect(actual).toEqual(expected)
@@ -97,10 +93,9 @@ describe('CreateFormService', () => {
         title: 'title',
         responseMode: ResponseMode.Email,
       }
-
+      MockAxios.post.mockRejectedValueOnce(expected)
       // Act
       const actualPromise = createForm(MOCK_FORM_PARAMS)
-      MockAxios.mockError(expected)
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)

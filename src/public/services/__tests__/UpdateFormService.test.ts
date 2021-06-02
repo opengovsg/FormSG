@@ -167,14 +167,13 @@ describe('UpdateFormService', () => {
     it('should successfully call delete endpoint', async () => {
       // Arrange
       const MOCK_FORM_ID = new ObjectId().toHexString()
-
-      // Act
-      const actualPromise = deleteForm(MOCK_FORM_ID)
-      MockAxios.mockResponse({
+      MockAxios.delete.mockResolvedValueOnce({
         status: StatusCodes.OK,
         data: { message: 'Form has been archived' },
       })
-      await actualPromise
+
+      // Act
+      await deleteForm(MOCK_FORM_ID)
 
       // Assert
       expect(MockAxios.delete).toHaveBeenCalledWith(
@@ -186,10 +185,10 @@ describe('UpdateFormService', () => {
       // Arrange
       const expected = new Error('error')
       const MOCK_FORM_ID = new ObjectId().toHexString()
+      MockAxios.delete.mockRejectedValueOnce(expected)
 
       // Act
       const actualPromise = deleteForm(MOCK_FORM_ID)
-      MockAxios.mockError(expected)
 
       await expect(actualPromise).rejects.toEqual(expected)
       // Assert
@@ -210,11 +209,10 @@ describe('UpdateFormService', () => {
           field: expected[0],
         },
       } as FormUpdateParams
+      MockAxios.put.mockResolvedValueOnce({ data: expected })
 
       // Act
-      const actualPromise = updateForm(MOCK_FORM_ID, update)
-      MockAxios.mockResponse({ data: expected })
-      const actual = await actualPromise
+      const actual = await updateForm(MOCK_FORM_ID, update)
 
       // Assert
       expect(actual).toEqual(expected)
@@ -233,10 +231,10 @@ describe('UpdateFormService', () => {
           field: {} as IYesNoFieldSchema,
         },
       } as FormUpdateParams
+      MockAxios.put.mockRejectedValueOnce(expected)
 
       // Act
       const actualPromise = updateForm(MOCK_FORM_ID, update)
-      MockAxios.mockError(expected)
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
@@ -254,10 +252,10 @@ describe('UpdateFormService', () => {
         _id: MOCK_FORM_ID,
       } as IPopulatedForm
       const MOCK_NEW_OWNER = 'test@open.gov.sg'
+      MockAxios.post.mockResolvedValueOnce({ data: expected })
+
       // Act
-      const actualPromise = transferOwner(MOCK_FORM_ID, MOCK_NEW_OWNER)
-      MockAxios.mockResponse({ data: expected })
-      const actual = await actualPromise
+      const actual = await transferOwner(MOCK_FORM_ID, MOCK_NEW_OWNER)
 
       // Assert
       expect(actual).toEqual(expected)
@@ -274,10 +272,10 @@ describe('UpdateFormService', () => {
       const expected = new Error('error')
       const MOCK_FORM_ID = 'mock-form-id'
       const MOCK_NEW_OWNER = 'test@open.gov.sg'
+      MockAxios.post.mockRejectedValueOnce(expected)
 
       // Act
       const actualPromise = transferOwner(MOCK_FORM_ID, MOCK_NEW_OWNER)
-      MockAxios.mockError(expected)
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)

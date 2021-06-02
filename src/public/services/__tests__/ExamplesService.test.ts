@@ -107,14 +107,13 @@ describe('ExamplesService', () => {
         admin: MOCK_USER,
       }
       const MOCK_DUPLICATE_FORM_BODY = _generateDuplicateFormBody()
+      MockAxios.post.mockResolvedValueOnce({ data: expected })
 
       // Act
-      const actualPromise = ExamplesService.useTemplate(
+      const actual = await ExamplesService.useTemplate(
         MOCK_FORM_ID,
         MOCK_DUPLICATE_FORM_BODY,
       )
-      MockAxios.mockResponse({ data: expected })
-      const actual = await actualPromise
 
       // Assert
       expect(actual).toEqual(expected)
@@ -129,13 +128,13 @@ describe('ExamplesService', () => {
       const expected = new Error('error')
       const MOCK_FORM_ID = 'mock-form-id'
       const MOCK_DUPLICATE_FORM_BODY = _generateDuplicateFormBody()
+      MockAxios.post.mockRejectedValueOnce(expected)
 
       // Act
       const actualPromise = ExamplesService.useTemplate(
         MOCK_FORM_ID,
         MOCK_DUPLICATE_FORM_BODY,
       )
-      MockAxios.mockError(expected)
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
@@ -158,11 +157,10 @@ describe('ExamplesService', () => {
         title: 'mock preview title',
         admin: MOCK_USER,
       } as unknown) as PublicForm
+      MockAxios.get.mockResolvedValueOnce({ data: expected })
 
       // Act
-      const actualPromise = ExamplesService.queryTemplate(MOCK_FORM_ID)
-      MockAxios.mockResponse({ data: expected })
-      const actual = await actualPromise
+      const actual = await ExamplesService.queryTemplate(MOCK_FORM_ID)
 
       // Assert
       expect(actual).toEqual(expected)
@@ -175,10 +173,10 @@ describe('ExamplesService', () => {
       // Arrange
       const expected = new Error('error')
       const MOCK_FORM_ID = 'mock-form-id'
+      MockAxios.get.mockRejectedValueOnce(expected)
 
       // Act
       const actualPromise = ExamplesService.queryTemplate(MOCK_FORM_ID)
-      MockAxios.mockError(expected)
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
