@@ -24,7 +24,6 @@ export const getExampleForms = (
   return axios
     .get<ExampleFormsResult>(EXAMPLES_ENDPOINT, {
       params: exampleFormsSearchParams,
-      // disable IE ajax request caching (so search requests don't get cached)
       headers: { 'If-Modified-Since': '0' },
     })
     .then(({ data }) => data)
@@ -39,7 +38,6 @@ export const getSingleExampleForm = (
 ): Promise<ExampleSingleFormResult> => {
   return axios
     .get<ExampleSingleFormResult>(`${EXAMPLES_ENDPOINT}/${formId}`, {
-      // disable IE ajax request caching (so search requests don't get cached)
       headers: { 'If-Modified-Since': '0' },
     })
     .then(({ data }) => data)
