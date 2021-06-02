@@ -131,7 +131,7 @@ function FormApi(FormErrorService, FormFields) {
       ),
     deleteForm: (formId) =>
       generateService(
-        CreateFormService.deleteForm,
+        UpdateFormService.deleteForm,
         { redirectOnError: false },
         formId,
       ),
