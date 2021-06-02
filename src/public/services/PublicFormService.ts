@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+import { PublicFormViewDto } from 'src/app/modules/form/public-form/public-form.types'
+
 import {
   EmailSubmissionDto,
   EncryptSubmissionDto,
@@ -74,5 +76,19 @@ export const submitStorageModeForm = async ({
         },
       },
     )
+    .then(({ data }) => data)
+}
+
+/**
+ * Gets public view of form, along with any
+ * identify information obtained from Singpass/Corppass/MyInfo.
+ * @param formId FormId of form in question
+ * @returns Public view of form, with additional identify information
+ */
+export const getPublicFormView = async (
+  formId: string,
+): Promise<PublicFormViewDto> => {
+  return axios
+    .get<PublicFormViewDto>(`${PUBLIC_FORMS_ENDPOINT}/${formId}`)
     .then(({ data }) => data)
 }

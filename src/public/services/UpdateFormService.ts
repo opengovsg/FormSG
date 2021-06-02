@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-import { FormSettings, LogicDto } from '../../types'
+import { FormUpdateParams } from 'src/app/modules/form/admin-form/admin-form.types'
+
+import { FormSettings, IPopulatedForm, LogicDto } from '../../types'
 import {
   EmailSubmissionDto,
   EncryptSubmissionDto,
@@ -8,6 +10,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
   FormFieldDto,
+  FormViewDto,
   PermissionsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
@@ -15,7 +18,8 @@ import {
 } from '../../types/api'
 import { createEmailSubmissionFormData } from '../utils/submission'
 
-const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
+// endpoint exported for testing
+export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
 
 export const updateFormSettings = async (
   formId: string,
@@ -251,6 +255,38 @@ export const submitStorageModeFormPreview = async ({
           captchaResponse: String(captchaResponse),
         },
       },
+    )
+    .then(({ data }) => data)
+}
+
+/**
+ * Updates FormUpdateParams attribute(s) in the corresponding form.
+ * @deprecated This function should no longer be called
+ * @param formId formId of form in question
+ * @returns Updated form
+ */
+export const updateForm = async (
+  formId: string,
+  update: FormUpdateParams,
+): Promise<IPopulatedForm> => {
+  return axios
+    .put<IPopulatedForm>(`${formId}/adminform`, { form: update })
+    .then(({ data }) => data)
+}
+
+/**
+ * Transfers ownership of form to another user with the given email.
+ * @param newOwnerEmail Email of new owner
+ * @returns Updated form with new ownership.
+ */
+export const transferOwner = async (
+  formId: string,
+  newOwnerEmail: string,
+): Promise<FormViewDto> => {
+  return axios
+    .post<FormViewDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/transfer-owner`,
+      { email: newOwnerEmail },
     )
     .then(({ data }) => data)
 }
