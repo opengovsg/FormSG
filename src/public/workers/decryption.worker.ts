@@ -1,25 +1,23 @@
+import formsgPackage from '@opengovsg/formsg-sdk'
+import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
+import { decode as decodeBase64 } from '@stablelib/base64'
+import JSZip from 'jszip'
+import { cloneDeep } from 'lodash'
+import moment from 'moment-timezone'
+import { default as PQueue } from 'p-queue'
+
+import { TRANSACTION_EXPIRE_AFTER_SECONDS } from '../../shared/util/verification'
+import { processDecryptedContent } from '../modules/forms/helpers/process-decrypted-content'
+
 require('core-js/stable')
 require('regenerator-runtime/runtime')
 
-const formsgPackage = require('@opengovsg/formsg-sdk')
-const { cloneDeep } = require('lodash')
-const { decode: decodeBase64 } = require('@stablelib/base64')
-const JSZip = require('jszip')
-const moment = require('moment-timezone')
-const { default: PQueue } = require('p-queue')
-
-const {
-  processDecryptedContent,
-} = require('../helpers/process-decrypted-content')
-const {
-  TRANSACTION_EXPIRE_AFTER_SECONDS,
-} = require('../../../../shared/util/verification')
-
-let formsgSdk
+let formsgSdk: ReturnType<typeof formsgPackage>
 const queue = new PQueue({ concurrency: 1 })
 
-function initFormSg(formsgSdkMode) {
+function initFormSg(formsgSdkMode: PackageMode) {
   if (!formsgSdkMode) {
+    // eslint-disable-next-line typesafe/no-throw-sync-func
     throw new Error('An init message must contain a `formsgSdkMode` parameter')
   }
   formsgSdk = formsgPackage({
@@ -40,8 +38,8 @@ function downloadAndDecryptAttachment(url, secretKey) {
 }
 
 function downloadAndDecryptAttachmentsAsZip(attachmentDownloadUrls, secretKey) {
-  var zip = new JSZip()
-  let downloadPromises = []
+  const zip = new JSZip()
+  const downloadPromises = []
   for (const [questionNum, metadata] of attachmentDownloadUrls) {
     downloadPromises.push(
       downloadAndDecryptAttachment(metadata.url, secretKey).then(
@@ -69,7 +67,7 @@ function downloadAndDecryptAttachmentsAsZip(attachmentDownloadUrls, secretKey) {
  * @returns {Boolean}
  */
 function verifySignature(decryptedSubmission, created) {
-  let signatureFields = decryptedSubmission.filter((field) => field.signature)
+  const signatureFields = decryptedSubmission.filter((field) => field.signature)
   if (signatureFields.length === 0) return true
   const verified = signatureFields.map((field) => {
     const { signature: signatureString, _id: fieldId, answer } = field
@@ -147,14 +145,14 @@ class CsvRecord {
    * using `postMessage` since it does not contain code.
    */
   materializeSubmissionData() {
-    let downloadStatus = {
+    const downloadStatus = {
       _id: '000000000000000000000000',
       fieldType: 'textfield',
       question: 'Download Status',
       answer: this._statusMessage,
       questionNumber: 1000000,
     }
-    let output = cloneDeep(this._record)
+    const output = cloneDeep(this._record)
     output.unshift(downloadStatus)
 
     this.submissionData = {
@@ -181,7 +179,7 @@ async function decryptIntoCsv(data) {
 
   let submission
   let csvRecord
-  let attachmentDownloadUrls = new Map()
+  const attachmentDownloadUrls = new Map()
   let downloadBlob
 
   try {
