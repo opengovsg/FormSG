@@ -7,6 +7,7 @@ import { ADMIN_FORM_ENDPOINT } from '../AdminFormService'
 import {
   countFormSubmissions,
   getEncryptedResponse,
+  getFormMetadata,
   getFormsMetadata,
 } from '../AdminSubmissionsService'
 
@@ -56,7 +57,6 @@ describe('AdminSubmissionsService', () => {
 
   describe('getFormsMetadata', () => {
     const MOCK_FORM_ID = 'mock–form-id'
-    const MOCK_SUBMISSION_ID = 'fake'
     const MOCK_PAGE_NUM = 1
     const MOCK_RESPONSE: SubmissionMetadataList = {
       count: 1,
@@ -68,28 +68,8 @@ describe('AdminSubmissionsService', () => {
         },
       ],
     }
-    it('should call the api with only submissionId when both parameters are provided', async () => {
-      // Act
-      const actual = getFormsMetadata({
-        formId: MOCK_FORM_ID,
-        submissionId: MOCK_SUBMISSION_ID,
-        pageNum: MOCK_PAGE_NUM,
-      })
-      MockAxios.mockResponse({ data: MOCK_RESPONSE })
 
-      // Assert
-      await expect(actual).resolves.toEqual(MOCK_RESPONSE)
-      expect(MockAxios.get).toHaveBeenCalledWith(
-        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/metadata`,
-        {
-          params: {
-            submissionId: MOCK_SUBMISSION_ID,
-          },
-        },
-      )
-    })
-
-    it('should call the api correctly when a single parameter is provided', async () => {
+    it('should call the api correctly', async () => {
       // Act
       const actual = getFormsMetadata({
         formId: MOCK_FORM_ID,
@@ -104,6 +84,41 @@ describe('AdminSubmissionsService', () => {
         {
           params: {
             page: MOCK_PAGE_NUM,
+          },
+        },
+      )
+    })
+  })
+
+  describe('getFormMetadata', () => {
+    const MOCK_FORM_ID = 'mock–form-id'
+    const MOCK_SUBMISSION_ID = 'fake'
+    const MOCK_RESPONSE: SubmissionMetadataList = {
+      count: 1,
+      metadata: [
+        {
+          number: 1,
+          refNo: '1234',
+          submissionTime: 'sometime',
+        },
+      ],
+    }
+
+    it('should call the api correctly', async () => {
+      // Act
+      const actual = getFormMetadata({
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+      })
+      MockAxios.mockResponse({ data: MOCK_RESPONSE })
+
+      // Assert
+      await expect(actual).resolves.toEqual(MOCK_RESPONSE)
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/metadata`,
+        {
+          params: {
+            submissionId: MOCK_SUBMISSION_ID,
           },
         },
       )

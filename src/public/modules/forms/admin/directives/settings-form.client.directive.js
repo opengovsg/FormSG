@@ -76,7 +76,7 @@ function settingsFormDirective(
           })
           .catch((error) => {
             Toastr.error(
-              `Unfortunately, there was an error in displaying the number of responses. Please refresh and try again!`,
+              `There was an error in displaying the number of responses. Please refresh and try again.`,
             )
             console.log(error)
           })

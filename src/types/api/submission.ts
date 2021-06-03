@@ -1,5 +1,3 @@
-import { RequireAtLeastOne } from 'type-fest'
-
 import { ErrorDto } from './core'
 
 export type SubmissionResponseDto = {
@@ -17,12 +15,15 @@ export type SubmissionCountQueryDto = {
   }
 }
 
-export type SubmissionMetadataQueryDto = {
+export type FormsSubmissionMetadataQueryDto = {
   formId: string
-} & RequireAtLeastOne<{
-  submissionId: string
   pageNum: number
-}>
+}
+
+export type FormSubmissionMetadataQueryDto = {
+  formId: string
+  submissionId: string
+}
 
 export type SubmissionResponseQueryDto = {
   formId: string

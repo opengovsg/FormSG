@@ -406,14 +406,17 @@ function ViewResponsesController(
       {
         getData: (params) => {
           let { page } = params.url()
-          return $q
-            .when(
-              AdminSubmissionsService.getFormsMetadata({
+          const getMetadataPromise = vm.filterBySubmissionRefId
+            ? AdminSubmissionsService.getFormMetadata({
                 formId: vm.myform._id,
                 submissionId: vm.filterBySubmissionRefId,
+              })
+            : AdminSubmissionsService.getFormsMetadata({
+                formId: vm.myform._id,
                 pageNum: page,
-              }),
-            )
+              })
+          return $q
+            .when(getMetadataPromise)
             .then((data) => {
               params.total(data.count)
               vm.responsesCount = data.count

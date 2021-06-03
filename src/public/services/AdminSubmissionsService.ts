@@ -2,8 +2,9 @@ import axios from 'axios'
 
 import { EncryptedSubmissionDto, SubmissionMetadataList } from 'src/types'
 import {
+  FormsSubmissionMetadataQueryDto,
+  FormSubmissionMetadataQueryDto,
   SubmissionCountQueryDto,
-  SubmissionMetadataQueryDto,
   SubmissionResponseQueryDto,
 } from 'src/types/api'
 
@@ -30,22 +31,39 @@ export const countFormSubmissions = async ({
 }
 
 /**
- * Retrieves the metadata for either a page of submission or a single submissionId if submissionId is specified
+ * Retrieves the metadata for a page of submissions
  * @param formId The id of the form to retrieve submission for
- * @param submissionId The id of the specified submission to retrieve
  * @param pageNum The page number of the responses
- * @returns The metadata of the form
+ * @returns The metadata of the page of forms
  */
 export const getFormsMetadata = async ({
   formId,
-  submissionId,
   pageNum,
-}: SubmissionMetadataQueryDto): Promise<SubmissionMetadataList> => {
-  const params = submissionId ? { submissionId } : { page: pageNum }
-
+}: FormsSubmissionMetadataQueryDto): Promise<SubmissionMetadataList> => {
   return axios
     .get(`${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`, {
-      params,
+      params: {
+        page: pageNum,
+      },
+    })
+    .then(({ data }) => data)
+}
+
+/**
+ * Retrieves the metadata for a single submissionId if submissionId is specified
+ * @param formId The id of the form to retrieve submission for
+ * @param submissionId The id of the specified submission to retrieve
+ * @returns The metadata of the form
+ */
+export const getFormMetadata = async ({
+  formId,
+  submissionId,
+}: FormSubmissionMetadataQueryDto): Promise<SubmissionMetadataList> => {
+  return axios
+    .get(`${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`, {
+      params: {
+        submissionId,
+      },
     })
     .then(({ data }) => data)
 }
@@ -56,7 +74,7 @@ export const getFormsMetadata = async ({
  * @param submissionId The id of the submission
  * @returns The data of the submission
  */
-export const getEncryptedResponse = ({
+export const getEncryptedResponse = async ({
   formId,
   submissionId,
 }: SubmissionResponseQueryDto): Promise<EncryptedSubmissionDto> => {
