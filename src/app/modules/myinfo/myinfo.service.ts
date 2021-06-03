@@ -16,6 +16,7 @@ import {
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
+  IPossiblyPrefilledField,
   MyInfoAttribute,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -47,7 +48,6 @@ import {
 import {
   IMyInfoRedirectURLArgs,
   IMyInfoServiceConfig,
-  IPossiblyPrefilledField,
   MyInfoParsedRelayState,
 } from './myinfo.types'
 import {

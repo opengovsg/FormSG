@@ -44,6 +44,8 @@ import {
   Status,
 } from 'src/types'
 import {
+  DuplicateFormBody,
+  EditFormFieldParams,
   FieldCreateDto,
   FieldUpdateDto,
   SettingsUpdateDto,
@@ -86,11 +88,7 @@ import {
   updateFormSettings,
   updateStartPage,
 } from '../admin-form.service'
-import {
-  DuplicateFormBody,
-  EditFormFieldParams,
-  OverrideProps,
-} from '../admin-form.types'
+import { OverrideProps } from '../admin-form.types'
 import * as AdminFormUtils from '../admin-form.utils'
 
 const FormModel = getFormModel(mongoose)

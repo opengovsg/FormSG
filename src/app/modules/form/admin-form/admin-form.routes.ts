@@ -7,11 +7,11 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import { ResponseMode } from '../../../../types'
+import { DuplicateFormBody } from '../../../../types/api'
 import { withUserAuthentication } from '../../auth/auth.middlewares'
 import * as EncryptSubmissionController from '../../submission/encrypt-submission/encrypt-submission.controller'
 
 import * as AdminFormController from './admin-form.controller'
-import { DuplicateFormBody } from './admin-form.types'
 
 export const AdminFormsRouter = Router()
 

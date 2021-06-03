@@ -10,6 +10,7 @@ import {
   PrivateFormErrorDto,
   PublicFormAuthRedirectDto,
   PublicFormAuthValidateEsrvcIdDto,
+  PublicFormViewDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
@@ -36,7 +37,7 @@ import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
-import { PublicFormViewDto, RedirectParams } from './public-form.types'
+import { RedirectParams } from './public-form.types'
 import { mapFormAuthError, mapRouteError } from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)

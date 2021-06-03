@@ -12,16 +12,13 @@ import {
   ResponseMode,
   Status,
 } from 'src/types'
+import { DuplicateFormBody, EditFormFieldParams } from 'src/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { ForbiddenFormError } from '../../form.errors'
 import { EditFieldError } from '../admin-form.errors'
-import {
-  DuplicateFormBody,
-  EditFormFieldParams,
-  OverrideProps,
-} from '../admin-form.types'
+import { OverrideProps } from '../admin-form.types'
 import {
   assertHasDeletePermissions,
   assertHasReadPermissions,

@@ -12,6 +12,7 @@ import {
   IFormSchema,
   IHashes,
   IMyInfo,
+  IPossiblyPrefilledField,
   MapRouteError,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -39,7 +40,6 @@ import {
   MyInfoMissingHashError,
 } from './myinfo.errors'
 import {
-  IPossiblyPrefilledField,
   MyInfoComparePromises,
   MyInfoCookiePayload,
   MyInfoCookieState,
