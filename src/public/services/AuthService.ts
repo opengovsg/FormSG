@@ -4,9 +4,9 @@ import { Opaque } from 'type-fest'
 // Exported for testing.
 export const AUTH_ENDPOINT = '/api/v3/auth'
 
-const STORAGE_ADMIN_KEY = 'user'
+const STORAGE_USER_KEY = 'user'
 
-type AdminId = Opaque<string, 'AdminId'>
+type UserId = Opaque<string, 'UserId'>
 type AgencyId = Opaque<string, 'AgencyId'>
 
 export type Agency = {
@@ -17,8 +17,8 @@ export type Agency = {
   _id: AgencyId
 }
 
-export type Admin = {
-  _id: AdminId
+export type User = {
+  _id: UserId
   email: string
   agency: Agency
   created: string
@@ -27,13 +27,13 @@ export type Admin = {
 }
 
 /**
- * Save logged in admin to localStorage.
+ * Save logged in user to localStorage.
  * May not be needed in React depending on implementation.
  *
- * @param admin the admin to save to local storage
+ * @param user the user to save to local storage
  */
-const saveAdminToLocalStorage = (admin: Admin) => {
-  return localStorage.setItem(STORAGE_ADMIN_KEY, JSON.stringify(admin))
+const saveUserToLocalStorage = (user: User) => {
+  return localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user))
 }
 
 type Email = Opaque<string, 'Email'>
@@ -75,11 +75,11 @@ export const sendLoginOtp = async (email: Email): Promise<string> => {
 export const verifyLoginOtp = async (params: {
   otp: string
   email: string
-}): Promise<Admin> => {
+}): Promise<User> => {
   return axios
-    .post<Admin>(`${AUTH_ENDPOINT}/otp/verify`, params)
+    .post<User>(`${AUTH_ENDPOINT}/otp/verify`, params)
     .then(({ data }) => {
-      saveAdminToLocalStorage(data)
+      saveUserToLocalStorage(data)
       return data
     })
 }
