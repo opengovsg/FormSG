@@ -1,9 +1,9 @@
 {
   "short_name": "FormSG",
-  "name": "FormSG: Form Manager for Government", 
+  "name": "FormSG: Form Manager for Government",
   "icons": [
     {
-      "src": "logomark.ico",
+      "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
