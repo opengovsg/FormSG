@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-import MockAxios from 'jest-mock-axios'
+import axios from 'axios'
+import { mocked } from 'ts-jest/utils'
 
 import { SubmissionMetadataList } from 'src/types'
 
@@ -11,7 +11,8 @@ import {
   getFormsMetadata,
 } from '../AdminSubmissionsService'
 
-jest.mock('axios', () => MockAxios)
+jest.mock('axios')
+const MockAxios = mocked(axios, true)
 
 describe('AdminSubmissionsService', () => {
   describe('countFormSubmissions', () => {
@@ -20,12 +21,14 @@ describe('AdminSubmissionsService', () => {
     const MOCK_END_DATE = new Date(2021, 1, 10)
 
     it('should call api successfully when all parameters are provided', async () => {
+      // Arrange
+      MockAxios.get.mockResolvedValueOnce({ data: 123 })
+
       // Act
       const actual = countFormSubmissions({
         formId: MOCK_FORM_ID,
         dates: { startDate: MOCK_START_DATE, endDate: MOCK_END_DATE },
       })
-      MockAxios.mockResponse({ data: 123 })
 
       // Assert
       await expect(actual).resolves.toEqual(123)
@@ -41,11 +44,13 @@ describe('AdminSubmissionsService', () => {
     })
 
     it('should call api successfully when only formId is provided', async () => {
+      // Arrange
+      MockAxios.get.mockResolvedValueOnce({ data: 123 })
+
       // Act
       const actual = countFormSubmissions({
         formId: MOCK_FORM_ID,
       })
-      MockAxios.mockResponse({ data: 123 })
 
       // Assert
       await expect(actual).resolves.toEqual(123)
@@ -70,12 +75,14 @@ describe('AdminSubmissionsService', () => {
     }
 
     it('should call the api correctly', async () => {
+      // Arrange
+      MockAxios.get.mockResolvedValueOnce({ data: MOCK_RESPONSE })
+
       // Act
       const actual = getFormsMetadata({
         formId: MOCK_FORM_ID,
         pageNum: MOCK_PAGE_NUM,
       })
-      MockAxios.mockResponse({ data: MOCK_RESPONSE })
 
       // Assert
       await expect(actual).resolves.toEqual(MOCK_RESPONSE)
@@ -105,12 +112,14 @@ describe('AdminSubmissionsService', () => {
     }
 
     it('should call the api correctly', async () => {
+      // Arrange
+      MockAxios.get.mockResolvedValueOnce({ data: MOCK_RESPONSE })
+
       // Act
       const actual = getFormMetadata({
         formId: MOCK_FORM_ID,
         submissionId: MOCK_SUBMISSION_ID,
       })
-      MockAxios.mockResponse({ data: MOCK_RESPONSE })
 
       // Assert
       await expect(actual).resolves.toEqual(MOCK_RESPONSE)
@@ -137,12 +146,14 @@ describe('AdminSubmissionsService', () => {
     }
 
     it('should call the api correctly when the parameters are valid', async () => {
+      // Arrange
+      MockAxios.get.mockResolvedValueOnce({ data: MOCK_RESPONSE })
+
       // Act
       const actual = getEncryptedResponse({
         formId: MOCK_FORM_ID,
         submissionId: MOCK_SUBMISSION_ID,
       })
-      MockAxios.mockResponse({ data: MOCK_RESPONSE })
 
       // Assert
       await expect(actual).resolves.toEqual(MOCK_RESPONSE)
