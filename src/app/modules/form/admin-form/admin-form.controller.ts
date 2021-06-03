@@ -26,12 +26,14 @@ import {
   ResponseMode,
 } from '../../../../types'
 import {
+  DuplicateFormBody,
   EncryptSubmissionDto,
   EndPageUpdateDto,
   ErrorDto,
   FieldCreateDto,
   FieldUpdateDto,
   FormFieldDto,
+  FormUpdateParams,
   PermissionsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
@@ -75,11 +77,7 @@ import {
 } from './admin-form.constants'
 import { EditFieldError } from './admin-form.errors'
 import * as AdminFormService from './admin-form.service'
-import {
-  DuplicateFormBody,
-  FormUpdateParams,
-  PermissionLevel,
-} from './admin-form.types'
+import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md

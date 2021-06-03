@@ -12,6 +12,7 @@ import {
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
+  IPossiblyPrefilledField,
   MyInfoAttribute,
 } from 'src/types'
 
@@ -27,7 +28,7 @@ import {
   MyInfoMissingAccessTokenError,
   MyInfoParseRelayStateError,
 } from '../myinfo.errors'
-import { IPossiblyPrefilledField, MyInfoRelayState } from '../myinfo.types'
+import { MyInfoRelayState } from '../myinfo.types'
 
 import {
   MOCK_ACCESS_TOKEN,

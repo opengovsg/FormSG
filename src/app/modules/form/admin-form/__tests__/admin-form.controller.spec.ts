@@ -61,6 +61,8 @@ import {
   Status,
 } from 'src/types'
 import {
+  DuplicateFormBody,
+  EditFormFieldParams,
   EncryptSubmissionDto,
   FieldCreateDto,
   FieldUpdateDto,
@@ -92,11 +94,7 @@ import {
   InvalidFileTypeError,
 } from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'
-import {
-  DuplicateFormBody,
-  EditFormFieldParams,
-  PermissionLevel,
-} from '../admin-form.types'
+import { PermissionLevel } from '../admin-form.types'
 
 jest.mock('src/app/modules/auth/auth.service')
 const MockAuthService = mocked(AuthService)
