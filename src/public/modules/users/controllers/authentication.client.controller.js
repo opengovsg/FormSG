@@ -1,10 +1,12 @@
 'use strict'
 
 const HttpStatus = require('http-status-codes')
+const AdminAuthService = require('../../../services/AdminAuthService')
 
 angular
   .module('users')
   .controller('AuthenticationController', [
+    '$q',
     '$scope',
     '$state',
     '$timeout',
@@ -15,6 +17,7 @@ angular
   ])
 
 function AuthenticationController(
+  $q,
   $scope,
   $state,
   $timeout,
@@ -54,7 +57,7 @@ function AuthenticationController(
 
   vm.handleEmailKeyUp = function (e) {
     if (e.keyCode == 13) {
-      vm.isSubmitEmailDisabled === false && vm.checkEmail()
+      vm.isSubmitEmailDisabled === false && vm.login()
       // condition vm.isSubmitEmailDisabled == false is necessary to prevent retries using enter key
       // when submit button is disabled
     } else {
@@ -122,45 +125,23 @@ function AuthenticationController(
   // 4 - Verify OTP
 
   /**
-   * Conducts front-end check of user email format
+   * Checks validity of email domain (i.e. agency) and sends login OTP if email
+   * is valid.
    */
-  vm.checkEmail = function () {
+  vm.login = function () {
     vm.buttonClicked = true
-    if (/\S+@\S+\.\S+/.test(vm.credentials.email)) {
-      vm.credentials.email = vm.credentials.email.toLowerCase()
-      vm.checkUser()
-    } else {
-      // Invalid email
-      vm.buttonClicked = false
-      vm.signInMsg = {
-        isMsg: true,
-        isError: true,
-        msg: 'Please enter a valid email',
-      }
-      vm.isSubmitEmailDisabled = true
-    }
-  }
-
-  /**
-   * Checks validity of email domain (i.e. agency)
-   * Directs user to otp input page
-   */
-  vm.checkUser = function () {
-    Auth.checkUser(vm.credentials).then(
-      function () {
-        vm.sendOtp()
-      },
-      function (error) {
+    $q.when(AdminAuthService.checkIsEmailAllowed(vm.credentials.email))
+      .then(() => vm.sendOtp())
+      .catch((error) => {
         // Invalid agency
         vm.buttonClicked = false
         vm.signInMsg = {
           isMsg: true,
           isError: true,
-          msg: error,
+          msg: error.message,
         }
         vm.isSubmitEmailDisabled = true
-      },
-    )
+      })
   }
 
   /**
