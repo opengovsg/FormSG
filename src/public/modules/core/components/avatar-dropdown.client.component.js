@@ -109,7 +109,7 @@ function avatarDropdownController(
         // Update success, update user.
         if (returnVal) {
           vm.user = returnVal
-          Auth.setUser(returnVal)
+          UserService.saveUserToLocalStorage(returnVal)
           vm.showExclamation = !returnVal.contact
         }
       })
