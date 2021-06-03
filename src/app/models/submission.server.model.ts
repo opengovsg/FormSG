@@ -15,6 +15,7 @@ import {
   IWebhookResponseSchema,
   MyInfoAttribute,
   SubmissionCursorData,
+  SubmissionData,
   SubmissionMetadata,
   SubmissionType,
   WebhookData,
@@ -314,9 +315,12 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
 }
 
 EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
-  formId,
-  dateRange = {},
-) {
+  formId: string,
+  dateRange: {
+    startDate?: string
+    endDate?: string
+  } = {},
+): QueryCursor<SubmissionCursorData> {
   const streamQuery = {
     form: formId,
     ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
@@ -341,7 +345,7 @@ EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
 EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
   formId: string,
   submissionId: string,
-) {
+): Promise<SubmissionData | null> {
   return this.findOne({
     _id: submissionId,
     form: formId,

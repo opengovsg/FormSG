@@ -120,9 +120,13 @@ export type SubmissionCursorData = Pick<
   'encryptedContent' | 'verifiedContent' | 'created' | 'id'
 > & { attachmentMetadata?: Record<string, string> } & Document
 
-export type SubmissionData = Omit<
+export type SubmissionData = Pick<
   IEncryptedSubmissionSchema,
-  'version' | 'webhookResponses'
+  | 'encryptedContent'
+  | 'verifiedContent'
+  | 'attachmentMetadata'
+  | 'created'
+  | '_id'
 >
 
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
