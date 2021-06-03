@@ -1,9 +1,13 @@
 import { StatusCodes } from 'http-status-codes'
 
+import { createLoggerWithLabel } from '../../config/logger'
+import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as UserService from '../user/user.service'
 
 import { isUserInSession } from './auth.utils'
+
+const logger = createLoggerWithLabel(module)
 
 /**
  * Middleware that only allows authenticated users to pass through to the next
@@ -52,4 +56,33 @@ export const denyRpSpStudentEmails: ControllerHandler<
         .status(StatusCodes.UNPROCESSABLE_ENTITY)
         .json({ message: 'User not found' }),
     )
+}
+
+/**
+ * Logs all admin actions which change database state (i.e. non-GET requests)
+ * @returns next
+ */
+export const logAdminAction: ControllerHandler<
+  unknown,
+  unknown,
+  unknown
+> = async (req, res, next) => {
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const body = req.body
+  const method = req.method
+
+  if (req.method.toLowerCase() !== 'get') {
+    logger.info({
+      message: 'Admin attempting to make changes',
+      meta: {
+        action: 'logAdminAction',
+        method,
+        ...createReqMeta(req),
+        sessionUserId,
+        body,
+      },
+    })
+  }
+
+  return next()
 }

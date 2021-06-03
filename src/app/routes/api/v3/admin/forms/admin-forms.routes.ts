@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import {
   denyRpSpStudentEmails,
+  logAdminAction,
   withUserAuthentication,
 } from '../../../../../modules/auth/auth.middlewares'
 
@@ -18,6 +19,9 @@ export const AdminFormsRouter = Router()
 // All routes in this handler should be protected by authentication.
 AdminFormsRouter.use(withUserAuthentication)
 AdminFormsRouter.use(denyRpSpStudentEmails)
+
+// Log all non-get admin actions
+AdminFormsRouter.use(logAdminAction)
 
 AdminFormsRouter.use(AdminFormsSettingsRouter)
 AdminFormsRouter.use(AdminFormsFeedbackRouter)
