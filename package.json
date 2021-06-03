@@ -65,7 +65,7 @@
     "@opengovsg/ng-file-upload": "^12.2.15",
     "@opengovsg/spcp-auth-client": "^1.4.7",
     "@sentry/browser": "^6.5.1",
-    "@sentry/integrations": "^6.5.0",
+    "@sentry/integrations": "^6.5.1",
     "@stablelib/base64": "^1.0.1",
     "JSONStream": "^1.3.5",
     "abortcontroller-polyfill": "^1.7.3",
