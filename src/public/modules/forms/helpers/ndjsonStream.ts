@@ -20,7 +20,7 @@ export const ndjsonStream = (
       return reader
         .read()
         .then(function processResult(result): Promise<void> | undefined | void {
-          if (shouldCancel) {
+          if (result.done && shouldCancel) {
             return
           }
 
@@ -38,8 +38,7 @@ export const ndjsonStream = (
           }
 
           // Read the input in as a stream and split by newline and trim
-          const data = decoder.decode(result.value, { stream: true })
-          data_buf += data
+          data_buf += decoder.decode(result.value, { stream: true })
           const lines = data_buf.split('\n').map((line) => line.trim())
 
           // Only append if there is content available
@@ -56,13 +55,16 @@ export const ndjsonStream = (
           })
 
           data_buf = lines[lines.length - 1]
+
           return reader.read().then(processResult)
         })
     },
     cancel: function (reason) {
       console.log('Cancel registered due to ', reason)
       shouldCancel = true
-      maybeReader && maybeReader.cancel()
+      if (maybeReader) {
+        return maybeReader.cancel()
+      }
     },
   })
 }
