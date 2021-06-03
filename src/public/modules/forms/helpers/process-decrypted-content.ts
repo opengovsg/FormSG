@@ -51,9 +51,9 @@ const getResponseFromVerifiedField = (
 }
 
 const isVerifiedFormField = (
-  possibleFormField: unknown,
+  possibleFormField: VerifiedFormField | null,
 ): possibleFormField is VerifiedFormField => {
-  return !!possibleFormField && !!(possibleFormField as VerifiedFormField)._id
+  return !!possibleFormField
 }
 
 /**
