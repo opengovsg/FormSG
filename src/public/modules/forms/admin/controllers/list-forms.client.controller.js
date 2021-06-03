@@ -1,6 +1,7 @@
 'use strict'
 
 const get = require('lodash/get')
+const BetaService = require('../../../../services/BetaService')
 
 // Forms controller
 angular
@@ -15,7 +16,6 @@ angular
     '$timeout',
     '$window',
     'Toastr',
-    'Betas',
     ListFormsController,
   ])
 
@@ -29,7 +29,6 @@ function ListFormsController(
   $timeout,
   $window,
   Toastr,
-  Betas,
 ) {
   const vm = this
 
@@ -172,7 +171,7 @@ function ListFormsController(
   }
 
   vm.duplicateForm = function (formIndex) {
-    const missingBetaPermissions = Betas.getMissingFieldPermissions(
+    const missingBetaPermissions = BetaService.getMissingFieldPermissions(
       vm.user,
       vm.myforms[formIndex],
     )
