@@ -16,14 +16,13 @@ import { ADMIN_FORM_ENDPOINT } from './AdminFormService'
  */
 export const countFormSubmissions = async ({
   formId,
-  startDate,
-  endDate,
+  dates,
 }: SubmissionCountQueryDto): Promise<number> => {
   const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/count`
-  if (startDate && endDate) {
+  if (dates) {
     return axios
       .get(queryUrl, {
-        params: { startDate, endDate },
+        params: { ...dates },
       })
       .then(({ data }) => data)
   }

@@ -11,8 +11,10 @@ export type SubmissionErrorDto = ErrorDto & { spcpSubmissionFailure?: true }
 
 export type SubmissionCountQueryDto = {
   formId: string
-  startDate?: Date
-  endDate?: Date
+  dates?: {
+    startDate: Date
+    endDate: Date
+  }
 }
 
 export type SubmissionMetadataQueryDto = {

@@ -257,17 +257,19 @@ function ViewResponsesController(
   }
 
   vm.confirmSubmissionCountsBeforeDownload = function () {
-    let params = {
-      formId: vm.myform._id,
-    }
-    if (vm.datePicker.date.startDate && vm.datePicker.date.endDate) {
-      params.startDate = moment(new Date(vm.datePicker.date.startDate)).format(
-        'YYYY-MM-DD',
-      )
-      params.endDate = moment(new Date(vm.datePicker.date.endDate)).format(
-        'YYYY-MM-DD',
-      )
-    }
+    const { startDate, endDate } = vm.datePicker.date
+    const params =
+      startDate && endDate
+        ? {
+            formId: vm.myform._id,
+            date: {
+              startDate: moment(new Date(startDate)).format('YYYY-MM-DD'),
+              endDate: moment(new Date(endDate)).format('YYYY-MM-DD'),
+            },
+          }
+        : {
+            formId: vm.myform._id,
+          }
     $q.when(AdminSubmissionsService.countFormSubmissions(params)).then(
       (responsesCount) => {
         vm.attachmentsToDownload = responsesCount
