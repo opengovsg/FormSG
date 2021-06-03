@@ -10,6 +10,11 @@ module.exports = [
     module: {
       rules: [
         {
+          test: /\.worker\.ts$/,
+          loader: 'worker-loader',
+          options: { publicPath: '/public/' },
+        },
+        {
           test: /\.ts$/,
           loader: 'ts-loader',
           options: {
@@ -22,20 +27,6 @@ module.exports = [
           options: {
             minimize: true,
           },
-        },
-        {
-          test: /\.worker\.js$/,
-          // Don't transpile polyfills
-          exclude: /@babel(?:\/|\\{1,2})runtime|core-js/,
-          use: [
-            {
-              loader: 'worker-loader',
-              options: { publicPath: '/public/' },
-            },
-            {
-              loader: 'babel-loader',
-            },
-          ],
         },
       ],
     },
