@@ -1,7 +1,5 @@
 import axios from 'axios'
 
-import { FormUpdateParams } from 'src/app/modules/form/admin-form/admin-form.types'
-
 import { FormSettings, IPopulatedForm, LogicDto } from '../../types'
 import {
   EmailSubmissionDto,
@@ -10,6 +8,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
   FormFieldDto,
+  FormUpdateParams,
   FormViewDto,
   PermissionsUpdateDto,
   SettingsUpdateDto,

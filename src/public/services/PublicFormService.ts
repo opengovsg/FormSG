@@ -1,10 +1,9 @@
 import axios from 'axios'
 
-import { PublicFormViewDto } from 'src/app/modules/form/public-form/public-form.types'
-
 import {
   EmailSubmissionDto,
   EncryptSubmissionDto,
+  PublicFormViewDto,
   SubmissionResponseDto,
 } from '../../types/api'
 import { createEmailSubmissionFormData } from '../utils/submission'

@@ -1,9 +1,8 @@
 import axios from 'axios'
 
-import { DuplicateFormBody } from 'src/app/modules/form/admin-form/admin-form.types'
-import { FormMetaView, PublicForm } from 'src/types'
-
+import { FormMetaView, PublicForm } from '../../types'
 import {
+  DuplicateFormBody,
   ExampleFormsQueryDto,
   ExampleFormsResult,
   ExampleSingleFormResult,

@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-import { DuplicateFormBody } from 'src/app/modules/form/admin-form/admin-form.types'
-import { FormMetaView, IForm, IFormSchema } from 'src/types'
+import { FormMetaView, IForm, IFormSchema } from '../../types'
+import { DuplicateFormBody } from '../../types/api'
 
 // endpoints exported for testing
 export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
