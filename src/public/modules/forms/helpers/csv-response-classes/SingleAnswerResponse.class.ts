@@ -1,9 +1,9 @@
-import { SingleDimResponse } from '../../../../../types/response'
+import { DisplayedResponse } from '../../../../../types/response'
 
 import { Response } from './Response.class'
 
 export class SingleAnswerResponse extends Response {
-  constructor(responseData: SingleDimResponse) {
+  constructor(responseData: DisplayedResponse) {
     super(responseData)
   }
 

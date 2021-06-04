@@ -1,6 +1,10 @@
-import { TwoDimResponse } from '../../../../../types/response'
+import { AnswerArray, DisplayedResponse } from '../../../../../types/response'
 
 import { Response } from './Response.class'
+
+export interface TwoDimResponse extends Omit<DisplayedResponse, 'answerArray'> {
+  answerArray: Extract<AnswerArray, string[][]>
+}
 
 export class TableResponse extends Response {
   constructor(responseData: TwoDimResponse) {

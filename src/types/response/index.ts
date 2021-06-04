@@ -66,13 +66,4 @@ export type DisplayedResponse = {
   isHeader?: boolean
 }
 
-type AnswerArray = string[] | string[][]
-
-export interface SingleDimResponse
-  extends Omit<DisplayedResponse, 'answerArray'> {
-  answerArray: Extract<AnswerArray, string[]>
-}
-
-export interface TwoDimResponse extends Omit<DisplayedResponse, 'answerArray'> {
-  answerArray: Extract<AnswerArray, string[][]>
-}
+export type AnswerArray = string[] | string[][] // answer array can take in string arrays of different dimensions
