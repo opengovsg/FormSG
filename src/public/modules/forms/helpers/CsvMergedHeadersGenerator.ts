@@ -1,21 +1,32 @@
-const moment = require('moment-timezone')
-const keyBy = require('lodash/keyBy')
-const { CsvGenerator } = require('./CsvGenerator')
-const { getResponseInstance } = require('./response-factory')
+import { keyBy } from 'lodash'
+import moment from 'moment-timezone'
+import { Dictionary } from 'ts-essentials/dist/types'
 
-/**
- * @typedef {{
- *    _id: string,
- *    question: string,
- *    answer?: string,
- *    answerArray?: string[],
- *    fieldType: string,
- *    isHeader?: boolean,
- * }} DisplayedResponse
- */
+import { DisplayedResponse } from 'src/types/response'
+
+import { Response } from './csv-response-classes'
+import { CsvGenerator } from './CsvGenerator'
+import { getResponseInstance } from './response-factory'
+
+type UnprocessedRecord = {
+  created: string
+  submissionId: string
+  record: ReturnType<typeof keyBy>
+}
 
 class CsvMergedHeadersGenerator extends CsvGenerator {
-  constructor(expectedNumberOfRecords, numOfMetaDataRows) {
+  hasBeenProcessed: boolean
+  fieldIdToQuestion: Map<
+    string,
+    {
+      created: string
+      question: string
+    }
+  >
+  fieldIdToNumCols: Record<string, number>
+  unprocessed: UnprocessedRecord[]
+
+  constructor(expectedNumberOfRecords: number, numOfMetaDataRows: number) {
     super(expectedNumberOfRecords, numOfMetaDataRows)
 
     this.hasBeenProcessed = false
@@ -38,7 +49,15 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
    * @param {string} decryptedContent.created
    * @param {string} decryptedContent.submissionId
    */
-  addRecord({ record, created, submissionId }) {
+  addRecord({
+    record,
+    created,
+    submissionId,
+  }: {
+    record: DisplayedResponse[]
+    created: string
+    submissionId: string
+  }) {
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
     const fieldRecords = record.map((content) => {
@@ -80,9 +99,14 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
    * Extracts the string representation from an unprocessed record.
    * @param {Object} unprocessedRecord
    * @param {string} fieldId
+   * @param {number} colIndex
    * @returns {string}
    */
-  _extractAnswer(unprocessedRecord, fieldId, colIndex) {
+  _extractAnswer(
+    unprocessedRecord: Dictionary<Response>,
+    fieldId: string,
+    colIndex: number,
+  ) {
     const fieldRecord = unprocessedRecord[fieldId]
     if (!fieldRecord) return ''
     return fieldRecord.getAnswer(colIndex)
@@ -97,7 +121,7 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
     if (this.hasBeenProcessed) return
 
     // Create a header row in CSV using the fieldIdToQuestion map.
-    let headers = ['Reference number', 'Timestamp']
+    const headers = ['Reference number', 'Timestamp']
     this.fieldIdToQuestion.forEach((value, fieldId) => {
       for (let i = 0; i < this.fieldIdToNumCols[fieldId]; i++) {
         headers.push(value.question)
@@ -108,17 +132,20 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
     // Craft a new csv row for each unprocessed record
     // O(qn), where q = number of unique questions, n = number of submissions.
     this.unprocessed.forEach((up) => {
-      let createdAt = moment(up.created).tz('Asia/Singapore')
-      createdAt = createdAt.isValid()
+      const createdAt = moment(up.created).tz('Asia/Singapore')
+      const formattedDate = createdAt.isValid()
         ? createdAt.format('DD MMM YYYY hh:mm:ss A')
-        : createdAt
-      let row = [up.submissionId, createdAt]
-      for (let [fieldId] of this.fieldIdToQuestion) {
-        const numCols = this.fieldIdToNumCols[fieldId]
-        for (let colIndex = 0; colIndex < numCols; colIndex++) {
-          row.push(this._extractAnswer(up.record, fieldId, colIndex))
-        }
-      }
+        : createdAt.toString() // just convert to string if given date is not valid
+      const row = [up.submissionId, formattedDate]
+
+      this.fieldIdToQuestion.forEach(
+        (_question: { created: string; question: string }, fieldId: string) => {
+          const numCols = this.fieldIdToNumCols[fieldId]
+          for (let colIndex = 0; colIndex < numCols; colIndex++) {
+            row.push(this._extractAnswer(up.record, fieldId, colIndex))
+          }
+        },
+      )
       this.addLine(row)
     })
 
@@ -129,8 +156,8 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
    * Add meta-data as first three rows of the CSV. If there is already meta-data
    * added, it will be replaced by the latest counts.
    */
-  addMetaDataFromSubmission(errorCount, unverifiedCount) {
-    let metaDataRows = [
+  addMetaDataFromSubmission(errorCount: number, unverifiedCount: number) {
+    const metaDataRows = [
       ['Expected total responses', this.expectedNumberOfRecords],
       ['Success count', this.length()],
       ['Error count', errorCount],
@@ -144,7 +171,7 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
    * Main method to call to retrieve a downloadable csv.
    * @param {string} filename
    */
-  downloadCsv(filename) {
+  downloadCsv(filename: string) {
     this.process()
     this.triggerFileDownload(filename)
   }
