@@ -56,3 +56,23 @@ export interface IClientEncryptSubmission extends IClientSubmission {
   encryptedContent: string
   version: number
 }
+
+export type DisplayedResponse = {
+  _id: string
+  question: string
+  answer?: string
+  answerArray: AnswerArray
+  fieldType: string
+  isHeader?: boolean
+}
+
+type AnswerArray = string[] | string[][]
+
+export interface SingleDimResponse
+  extends Omit<DisplayedResponse, 'answerArray'> {
+  answerArray: Extract<AnswerArray, string[]>
+}
+
+export interface TwoDimResponse extends Omit<DisplayedResponse, 'answerArray'> {
+  answerArray: Extract<AnswerArray, string[][]>
+}
