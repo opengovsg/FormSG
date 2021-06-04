@@ -1,6 +1,7 @@
 'use strict'
 
 const ExamplesService = require('../../../services/ExamplesService')
+const UserService = require('../../../services/UserService')
 
 // Setting up route
 angular.module('forms').config([
@@ -74,16 +75,14 @@ angular.module('forms').config([
         url: '/{formId:[0-9a-fA-F]{24}}/use-template',
         templateUrl: 'modules/users/views/examples.client.view.html',
         resolve: {
-          Auth: 'Auth',
           FormErrorService: 'FormErrorService',
           // If the user is logged in, this field will contain the form data of the provided formId,
           // otherwise it will only contain the formId itself.
           FormData: [
-            'Auth',
             'FormErrorService',
             '$stateParams',
-            function (Auth, FormErrorService, $stateParams) {
-              if (!Auth.getUser()) {
+            function (FormErrorService, $stateParams) {
+              if (!UserService.getUserFromLocalStorage()) {
                 return $stateParams.formId
               }
 

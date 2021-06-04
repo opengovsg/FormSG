@@ -1,12 +1,14 @@
-angular.module('core').factory('GTag', ['Auth', '$rootScope', '$window', GTag])
+const UserService = require('../../../services/UserService')
 
-function GTag(Auth, $rootScope, $window) {
+angular.module('core').factory('GTag', ['$rootScope', '$window', GTag])
+
+function GTag($rootScope, $window) {
   // Google Analytics tracking ID provided on signup.
   const GATrackingID = $window.GATrackingID
   let gtagService = {}
 
   const getUserEmail = () => {
-    const user = Auth.getUser()
+    const user = UserService.getUserFromLocalStorage()
     return user && user.email
   }
 

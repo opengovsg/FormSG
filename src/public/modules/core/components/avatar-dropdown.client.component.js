@@ -12,7 +12,6 @@ angular.module('core').component('avatarDropdownComponent', {
     '$state',
     '$uibModal',
     '$window',
-    'Auth',
     'Features',
     'Toastr',
     avatarDropdownController,
@@ -26,14 +25,13 @@ function avatarDropdownController(
   $state,
   $uibModal,
   $window,
-  Auth,
   Features,
   Toastr,
 ) {
   const vm = this
 
   // Preload user with current details, redirect to signin if unable to get user
-  vm.user = Auth.getUser() || $state.go('signin')
+  vm.user = UserService.getUserFromLocalStorage() || $state.go('signin')
   vm.avatarText = generateAvatarText()
 
   vm.isDropdownHover = false
