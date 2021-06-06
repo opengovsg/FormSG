@@ -17,6 +17,12 @@ const minutes = (m: number) => m * 60
  * retrying the first time, element 1 is time to wait
  * to wait + jitter before 2nd time, etc.
  * All units are in seconds.
+ *
+ * @example [{ base: 10, jitter: 5}, { base: 20, jitter: 5 }] means
+ * the first retry is attempted between 10 - 5 = 5 seconds and
+ * 10 + 5 = 15 seconds after the submission. If the first retry fails,
+ * then the second retry is attempted between 15 and 25 seconds after
+ * the submission.
  */
 export const RETRY_INTERVALS: RetryInterval[] = config.isDev
   ? [
@@ -26,11 +32,11 @@ export const RETRY_INTERVALS: RetryInterval[] = config.isDev
     ]
   : [
       { base: minutes(5), jitter: minutes(1) },
-      { base: hours(1), jitter: minutes(30) },
+      { base: hours(1), jitter: minutes(15) },
       { base: hours(2), jitter: minutes(30) },
-      { base: hours(4), jitter: minutes(30) },
-      { base: hours(8), jitter: minutes(30) },
-      { base: hours(24), jitter: minutes(30) },
+      { base: hours(4), jitter: hours(1) },
+      { base: hours(8), jitter: hours(2) },
+      { base: hours(20), jitter: hours(4) },
     ]
 
 /**
