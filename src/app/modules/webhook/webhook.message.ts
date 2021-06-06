@@ -17,7 +17,7 @@ import {
   WebhookQueueMessageObject,
   WebhookQueueMessagePrettified,
 } from './webhook.types'
-import { getFirstAttempt, getNextAttempt, prettifyEpoch } from './webhook.utils'
+import { getNextAttempt, prettifyEpoch } from './webhook.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -78,6 +78,10 @@ export class WebhookQueueMessage {
    * Initialises a webhook queue message which has not been
    * retried as yet. This function succeeds as long as
    * the retry policy allows for at least one retry.
+   *
+   * Assumes that initial webhook has just been attempted,
+   * hence uses the current date as the time of the first
+   * webhook attempt.
    * @param submissionId
    * @returns ok(encapsulated message) if retry policy exists
    * @returns err if the retry policy does not allow any retries
@@ -85,11 +89,12 @@ export class WebhookQueueMessage {
   static fromSubmissionId(
     submissionId: string,
   ): Result<WebhookQueueMessage, WebhookNoMoreRetriesError> {
-    return getFirstAttempt().map(
+    const initialAttempt = Date.now()
+    return getNextAttempt(/* previousAttempts =*/ [initialAttempt]).map(
       (nextAttempt) =>
         new WebhookQueueMessage({
           submissionId,
-          previousAttempts: [],
+          previousAttempts: [initialAttempt],
           nextAttempt,
           _v: QUEUE_MESSAGE_VERSION,
         }),

@@ -67,13 +67,21 @@ describe('WebhookQueueMessage', () => {
   })
 
   describe('fromSubmissionId', () => {
+    const MOCK_NOW = Date.now()
+
+    beforeAll(() => {
+      jest.spyOn(Date, 'now').mockReturnValue(MOCK_NOW)
+    })
+
+    afterAll(() => jest.restoreAllMocks())
+
     it('should correctly create a WebhookQueueMessage without any retry history', () => {
       const submissionId = new ObjectId().toHexString()
       const result = WebhookQueueMessage.fromSubmissionId(submissionId)
 
       expect(result._unsafeUnwrap().message).toEqual({
         submissionId,
-        previousAttempts: [],
+        previousAttempts: [MOCK_NOW],
         nextAttempt: expect.any(Number),
         _v: QUEUE_MESSAGE_VERSION,
       })

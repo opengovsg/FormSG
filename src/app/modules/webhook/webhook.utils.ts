@@ -24,21 +24,6 @@ export const formatWebhookResponse = (
 })
 
 /**
- * Computes epoch of first webhook retry.
- * In practice this should never return an error, but for the sake of code
- * maintainability, it does not make any assumptions about the retry policy,
- * i.e. the retry policy can be an empty array.
- * @returns ok(epoch of next attempt) if there is a retry policy
- * @returns err(WebhookNoMoreRetriesError) if the retry policy is empty
- */
-export const getFirstAttempt = (): Result<
-  number,
-  WebhookNoMoreRetriesError
-> => {
-  return getNextAttempt(/* previousAttempts= */ [])
-}
-
-/**
  * Computes epoch of next webhook attempt based on previous attempts.
  * @param previousAttempts Array of epochs of previous attempts
  * @returns ok(epoch of next attempt) if there are valid retries remaining
@@ -47,15 +32,24 @@ export const getFirstAttempt = (): Result<
 export const getNextAttempt = (
   previousAttempts: number[],
 ): Result<number, WebhookNoMoreRetriesError> => {
-  if (previousAttempts.length >= RETRY_INTERVALS.length) {
+  // Total allowed number of attempts is RETRY_INTERVALS + 1.
+  // The +1 accounts for the initial webhook attempt immediately
+  // after form submission.
+  if (previousAttempts.length >= RETRY_INTERVALS.length + 1) {
     return err(new WebhookNoMoreRetriesError())
   }
-  const interval = RETRY_INTERVALS[previousAttempts.length]
+  // The -1 accounts for the initial webhook attempt, e.g. if
+  // the length of previousAttempts is 1, then we should get
+  // the interval for the first retry at RETRY_INTERVALS[0]
+  const interval = RETRY_INTERVALS[previousAttempts.length - 1]
   const nextAttemptWaitTimeSeconds = randomUniformInt(
     interval.base - interval.jitter,
     interval.base + interval.jitter,
   )
-  return ok(Date.now() + nextAttemptWaitTimeSeconds * 1000)
+  // Calculate next attempt based on time from initial attempt, or
+  // current date if initial attempt does not exist
+  const initialAttempt = previousAttempts[0] ?? Date.now()
+  return ok(initialAttempt + nextAttemptWaitTimeSeconds * 1000)
 }
 
 /**
