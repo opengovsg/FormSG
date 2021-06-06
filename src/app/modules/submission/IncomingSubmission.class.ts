@@ -3,6 +3,7 @@ import { combine, err, ok, Result } from 'neverthrow'
 import {
   FieldIdSet,
   getLogicUnitPreventingSubmit,
+  getVisibleFieldIds,
 } from '../../../shared/util/logic'
 import {
   FieldResponse,
@@ -20,14 +21,22 @@ import {
   VisibleResponseIdSet,
 } from './submission.types'
 
-export class IncomingSubmission {
+export abstract class IncomingSubmission {
+  private readonly visibleFieldIds: FieldIdSet
+  private readonly visibleResponseIds: VisibleResponseIdSet
+  private readonly verifiableResponseIds: VerifiableResponseIdSet
   protected constructor(
     public readonly responses: FieldResponse[],
     public readonly form: IPopulatedForm,
-  ) {}
+    private fieldMap: ValidatedFieldMap,
+  ) {
+    this.visibleFieldIds = getVisibleFieldIds(responses, form)
+    this.visibleResponseIds = this.getVisibleResponseIds()
+    this.verifiableResponseIds = this.getVerifiableResponseIds()
+  }
 
   /**
-   * Generate a look-up table that maps an object ID to form field.
+   * Generate a look-up table that maps an response ID to form field.
    * Additionally, guarantees that every response's ID can be found.
    * @param form - The form to generate the lookup table for.
    * @param responses - List of responses. Used for validation to achieve
@@ -76,22 +85,13 @@ export class IncomingSubmission {
 
   /**
    * Generates a set of response IDs that are visible.
-   * @param responses
-   * @param visibilityPredicate - Predicate that determines if a response
-   * is visible.
    * @returns visibleResponseIds - Generated set of response IDs.
    * @protected
    */
-  protected static getVisibleResponseIds({
-    responses,
-    visibilityPredicate,
-  }: {
-    responses: FieldResponse[]
-    visibilityPredicate: (r: FieldResponse) => boolean
-  }): VisibleResponseIdSet {
-    return responses.reduce<FieldIdSet>((acc, response) => {
+  private getVisibleResponseIds(): VisibleResponseIdSet {
+    return this.responses.reduce<FieldIdSet>((acc, response) => {
       const responseId = response._id
-      if (visibilityPredicate(response)) {
+      if (this.responseVisibilityPredicate(response)) {
         acc.add(responseId)
       }
       return acc
@@ -102,21 +102,13 @@ export class IncomingSubmission {
    * Generates a set of response IDs that are verifiable. A response is
    * said to be verifiable if its corresponding form field has the
    * isVerifiable property set to `true`.
-   * @param responses
-   * @param fieldMap
    * @returns verifiableResponseIds - Generated set of response IDs.
    * @protected
    */
-  protected static getVerifiableResponseIds({
-    responses,
-    fieldMap,
-  }: {
-    responses: FieldResponse[]
-    fieldMap: ValidatedFieldMap
-  }): VerifiableResponseIdSet {
-    return responses.reduce<FieldIdSet>((acc, response) => {
+  private getVerifiableResponseIds(): VerifiableResponseIdSet {
+    return this.responses.reduce<FieldIdSet>((acc, response) => {
       const responseId = response._id
-      const formField = fieldMap[responseId]
+      const formField = this.fieldMap[responseId]
       if (formField.isVerifiable) {
         acc.add(responseId)
       }
@@ -136,28 +128,17 @@ export class IncomingSubmission {
    * data sets that help determine what each metadata field should
    * contain.
    * @param response
-   * @param fieldMap
-   * @param visibleResponseIds
-   * @param verifiableResponseIds
    * @returns processedFieldResponse - The ProcessedFieldResponse
    * @protected
    */
-  protected static getLegacyProcessedFieldResponse({
-    response,
-    fieldMap,
-    visibleResponseIds,
-    verifiableResponseIds,
-  }: {
-    response: FieldResponse
-    fieldMap: ValidatedFieldMap
-    visibleResponseIds: VisibleResponseIdSet
-    verifiableResponseIds: VerifiableResponseIdSet
-  }): ProcessedFieldResponse {
+  protected getLegacyProcessedFieldResponse(
+    response: FieldResponse,
+  ): ProcessedFieldResponse {
     const responseId = response._id
-    const formField = fieldMap[responseId]
+    const formField = this.fieldMap[responseId]
     const processedResponse: ProcessedFieldResponse = {
       ...response,
-      isVisible: visibleResponseIds.has(responseId),
+      isVisible: this.visibleResponseIds.has(responseId),
       question: formField.getQuestion(),
     }
 
@@ -166,46 +147,33 @@ export class IncomingSubmission {
      * getProcessedResponse function. TODO: Check if can just move this into
      * the object instantiation stage, preserving the possible undefined value.
      */
-    if (verifiableResponseIds.has(responseId)) {
+    if (this.verifiableResponseIds.has(responseId)) {
       processedResponse.isUserVerified = true
     }
 
     return processedResponse
   }
 
-  protected static validateResponses({
-    responses,
-    form,
-    fieldMap,
-    visibleFieldIds,
-    visibleResponseIds,
-    verifiableResponseIds,
-  }: {
-    responses: FieldResponse[]
-    form: IFormDocument
-    fieldMap: ValidatedFieldMap
-    visibleFieldIds: FieldIdSet
-    visibleResponseIds: VisibleResponseIdSet
-    verifiableResponseIds: VerifiableResponseIdSet
-  }): Result<true, ProcessingError | ValidateFieldError> {
+  protected validate(): Result<true, ProcessingError | ValidateFieldError> {
     // Guard against invalid form submissions that should have been prevented by
     // logic.
-    if (getLogicUnitPreventingSubmit(responses, form, visibleFieldIds)) {
+    if (
+      getLogicUnitPreventingSubmit(
+        this.responses,
+        this.form,
+        this.visibleFieldIds,
+      )
+    ) {
       return err(new ProcessingError('Submission prevented by form logic'))
     }
 
-    const validationResultList = responses.map((response) => {
+    const validationResultList = this.responses.map((response) => {
       const responseId = response._id
-      const formField = fieldMap[responseId]
+      const formField = this.fieldMap[responseId]
       return validateField(
-        form._id,
+        this.form._id,
         formField,
-        this.getLegacyProcessedFieldResponse({
-          response,
-          fieldMap,
-          visibleResponseIds,
-          verifiableResponseIds,
-        }),
+        this.getLegacyProcessedFieldResponse(response),
       )
     })
 
@@ -216,4 +184,12 @@ export class IncomingSubmission {
 
     return ok(true)
   }
+
+  /**
+   * Predicate that determines if a response is visible. To be implemented in
+   * derived class.
+   * @param response
+   * @returns boolean
+   */
+  abstract responseVisibilityPredicate(response: FieldResponse): boolean
 }
