@@ -21,22 +21,27 @@ describe('webhook.utils', () => {
   })
   describe('getNextAttempt', () => {
     it('should return WebhookNoMoreRetriesError when retry limit is exceeded', () => {
-      // array of previous attempts is exactly equal to RETRY_INTERVALS, meaning
-      // all retries are used up
-      const result = getNextAttempt(Array(RETRY_INTERVALS.length).fill(0))
+      // array of previous attempts is equal to RETRY_INTERVALS + 1, meaning
+      // all retries are used up (in addition to 1 initial webhook attempt)
+      const result = getNextAttempt(Array(RETRY_INTERVALS.length + 1).fill(0))
 
       expect(result._unsafeUnwrapErr()).toEqual(new WebhookNoMoreRetriesError())
     })
 
     it('should return time of next attempt correctly when there are retries remaining', () => {
-      // still 1 retry remaining
-      const result = getNextAttempt(Array(RETRY_INTERVALS.length - 1).fill(0))
+      // total number of allowed attempts is RETRY_INTERVALS.length + 1, with the +1
+      // accounting for the initial attempt
+      const result = getNextAttempt(
+        Array(RETRY_INTERVALS.length).fill(MOCK_NOW),
+      )
 
       const finalRetryInterval = last(RETRY_INTERVALS)!
       expect(MockRandomUniformInt).toHaveBeenCalledWith(
         finalRetryInterval.base - finalRetryInterval.jitter,
         finalRetryInterval.base + finalRetryInterval.jitter,
       )
+      // previousAttempts array was filled with MOCK_NOW, so next attempt is calculated
+      // from MOCK_NOW
       expect(result._unsafeUnwrap()).toBe(MOCK_NOW + MOCK_RANDOM_INT * 1000)
     })
   })
