@@ -356,8 +356,7 @@ function settingsFormDirective(
           }
         }
 
-        $scope.isWebhookRetryToggleDisabled = () =>
-          $scope.isFormPublic() || !$scope.tempForm.webhook.url
+        $scope.isWebhookRetryToggleDisabled = () => !$scope.tempForm.webhook.url
 
         $scope.saveWebhookUrl = () => {
           if (!get($scope, 'tempForm.webhook.url')) {
