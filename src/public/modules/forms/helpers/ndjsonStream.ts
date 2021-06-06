@@ -39,10 +39,12 @@ export const ndjsonStream = (
 
           // Read the input in as a stream and split by newline and trim
           data_buf += decoder.decode(result.value, { stream: true })
-          const lines = data_buf.split('\n').map((line) => line.trim())
+          const lines = data_buf.split('\n')
+          const readableLines = lines.slice(0, -1).map((line) => line.trim())
+          const bufferStore = lines[lines.length - 1]
 
           // Only append if there is content available
-          lines.forEach((line) => {
+          readableLines.forEach((line) => {
             if (line) {
               try {
                 controller.enqueue(line)
@@ -54,7 +56,7 @@ export const ndjsonStream = (
             }
           })
 
-          data_buf = lines[lines.length - 1]
+          data_buf = bufferStore
 
           return reader.read().then(processResult)
         })
