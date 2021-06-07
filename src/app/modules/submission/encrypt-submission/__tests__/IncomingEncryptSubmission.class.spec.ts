@@ -5,7 +5,11 @@ import {
   generateDefaultField,
   generateSingleAnswerResponse,
 } from '../../../../../../tests/unit/backend/helpers/generate-form-data'
-import { BasicField, IFormSchema, ResponseMode } from '../../../../../types'
+import {
+  BasicField,
+  IPopulatedEncryptedForm,
+  ResponseMode,
+} from '../../../../../types'
 import { checkIsEncryptedEncoding } from '../../../../utils/encryption'
 import IncomingEncryptSubmission from '../IncomingEncryptSubmission.class'
 
@@ -27,10 +31,10 @@ describe('IncomingEncryptSubmission', () => {
     )
     const responses = [mobileResponse, emailResponse]
     const initResult = IncomingEncryptSubmission.init(
-      ({
+      {
         responseMode: ResponseMode.Encrypt,
         form_fields: [mobileField, emailField],
-      } as unknown) as IFormSchema,
+      } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
     )
@@ -50,10 +54,10 @@ describe('IncomingEncryptSubmission', () => {
     )
     const responses = [mobileResponse]
     const initResult = IncomingEncryptSubmission.init(
-      ({
+      {
         responseMode: ResponseMode.Encrypt,
         form_fields: [mobileField, emailField],
-      } as unknown) as IFormSchema,
+      } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
     )
