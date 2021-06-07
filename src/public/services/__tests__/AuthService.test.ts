@@ -5,6 +5,7 @@ import { Opaque } from 'type-fest'
 import {
   AUTH_ENDPOINT,
   checkIsEmailAllowed,
+  logout,
   sendLoginOtp,
   verifyLoginOtp,
 } from '../AuthService'
@@ -81,6 +82,22 @@ describe('AuthService', () => {
         EXPECTED_POST_ENDPOINT,
         expectedParams,
       )
+    })
+  })
+
+  describe('logout', () => {
+    const EXPECTED_ENDPOINT = `${AUTH_ENDPOINT}/logout`
+    it('should call endpoint successfully', async () => {
+      // Arrange
+      const mockReturn = { status: 200 }
+      MockAxios.get.mockResolvedValueOnce(mockReturn)
+
+      // Act
+      const actual = await logout()
+
+      // Assert
+      expect(actual).toEqual(mockReturn)
+      expect(MockAxios.get).toHaveBeenLastCalledWith(EXPECTED_ENDPOINT)
     })
   })
 })
