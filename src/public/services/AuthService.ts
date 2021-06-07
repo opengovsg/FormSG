@@ -1,7 +1,8 @@
 import axios from 'axios'
 import { Opaque } from 'type-fest'
 
-const AUTH_ENDPOINT = '/api/v3/auth'
+// Exported for testing.
+export const AUTH_ENDPOINT = '/api/v3/auth'
 
 type Email = Opaque<string, 'Email'>
 
