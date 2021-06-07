@@ -380,16 +380,6 @@
           </label>
         </div>
         <div
-          ng-if="isFormPublic()"
-          class="alert-custom alert-info spcp-warning"
-        >
-          <i class="bx bx-info-circle bx-md icon-spacing"></i>
-          <span class="alert-msg"
-            >Webhook settings cannot be changed unless your form is
-            deactivated.</span
-          >
-        </div>
-        <div
           ng-if="doesFormContainAttachments()"
           class="alert-custom alert-info spcp-warning"
         >
@@ -418,6 +408,13 @@
               ng-class="settingsForm.webhookUrl.$valid ? '' : 'input-error'"
               validate-url
             />
+            <div ng-if="isFormPublic()" class="alert-custom alert-info">
+              <i class="bx bx-info-circle bx-md icon-spacing"></i>
+              <span class="alert-msg"
+                >Webhook URL cannot be changed unless your form is
+                deactivated.</span
+              >
+            </div>
             <div
               class="alert-custom alert-error"
               ng-if="settingsForm.webhookUrl.$invalid"
