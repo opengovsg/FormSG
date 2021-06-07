@@ -151,11 +151,11 @@ describe('ExamplesService', () => {
         _id: 'mock-user-id',
       } as IPopulatedUser
       const MOCK_FORM_ID = 'mock-form-id'
-      const expected = ({
+      const expected = {
         _id: MOCK_FORM_ID,
         title: 'mock preview title',
         admin: MOCK_USER,
-      } as unknown) as PublicForm
+      } as unknown as PublicForm
       MockAxios.get.mockResolvedValueOnce({ data: expected })
 
       // Act

@@ -55,9 +55,7 @@ describe('PublicFormService', () => {
 
       // Assert
       await expect(actual).resolves.toEqual(MOCK_RESPONSE)
-      expect(
-        MockAxios.post,
-      ).toHaveBeenCalledWith(
+      expect(MockAxios.post).toHaveBeenCalledWith(
         `/api/v3/forms/${MOCK_FORM_ID}/submissions/email`,
         expectedFormData,
         { params: { captchaResponse: mockCaptcha } },
@@ -132,9 +130,7 @@ describe('PublicFormService', () => {
 
       // Assert
       await expect(actual).resolves.toEqual(MOCK_RESPONSE)
-      expect(
-        MockAxios.post,
-      ).toHaveBeenCalledWith(
+      expect(MockAxios.post).toHaveBeenCalledWith(
         `/api/v3/forms/${MOCK_FORM_ID}/submissions/encrypt`,
         MOCK_CONTENT,
         { params: { captchaResponse: mockCaptcha } },
