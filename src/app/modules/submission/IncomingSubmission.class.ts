@@ -62,25 +62,29 @@ export abstract class IncomingSubmission {
       return acc
     }, {})
 
-    const validationResultList = responses.map((r) => {
-      const responseId = r._id
-      const formField = fieldMap[responseId]
-      if (!formField) {
-        return err(
-          new ProcessingError('Response ID does not match form field IDs'),
-        )
-      }
-      return ok(r)
-    })
-
-    const validationResultCombined = combine(validationResultList)
-    if (validationResultCombined.isErr()) {
+    if (!this.isFieldMapValid(fieldMap, responses)) {
       return err(
         new ProcessingError('Response ID does not match form field IDs'),
       )
     }
 
-    return ok(fieldMap as ValidatedFieldMap)
+    return ok(fieldMap)
+  }
+
+  private static isFieldMapValid(
+    fieldMap: {
+      [p: string]: IFieldSchema
+    },
+    responses: FieldResponse[],
+  ): fieldMap is ValidatedFieldMap {
+    for (const r of responses) {
+      const responseId = r._id
+      const formField = fieldMap[responseId]
+      if (!formField) {
+        return false
+      }
+    }
+    return true
   }
 
   /**
