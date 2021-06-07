@@ -1431,7 +1431,7 @@ export const submitEncryptPreview: RequestHandler<
       const submission = EncryptSubmissionService.createEncryptSubmissionWithoutSave(
         {
           form,
-          encryptedContent,
+          encryptedContent: incomingSubmission.encryptedContent,
           // Don't bother encrypting and signing mock variables for previews
           verifiedContent: '',
           version,
