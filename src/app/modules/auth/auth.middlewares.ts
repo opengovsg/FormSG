@@ -34,11 +34,11 @@ const DENIED_DOMAINS = ['myrp.edu.sg', 'ichat.sp.edu.sg']
  * @returns 400 if user in session is from a disallowed domain and
  * HTTP method changes database state; next otherwise
  */
-export const denyRpSpStudentEmails: ControllerHandler<
-  unknown,
-  unknown,
-  unknown
-> = async (req, res, next) => {
+export const denyRpSpStudentEmails: ControllerHandler = async (
+  req,
+  res,
+  next,
+) => {
   const userId = (req.session as Express.AuthedSession).user._id
   return UserService.findUserById(userId)
     .map((user) => {
@@ -62,14 +62,15 @@ export const denyRpSpStudentEmails: ControllerHandler<
  * Logs all admin actions which change database state (i.e. non-GET requests)
  * @returns next
  */
-export const logAdminAction: ControllerHandler<
-  unknown,
-  unknown,
-  unknown
-> = async (req, res, next) => {
+export const logAdminAction: ControllerHandler<{ formId: string }> = async (
+  req,
+  res,
+  next,
+) => {
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const body = req.body
   const method = req.method
+  const { formId } = req.params
 
   if (req.method.toLowerCase() !== 'get') {
     logger.info({
@@ -79,6 +80,7 @@ export const logAdminAction: ControllerHandler<
         method,
         ...createReqMeta(req),
         sessionUserId,
+        formId,
         body,
       },
     })

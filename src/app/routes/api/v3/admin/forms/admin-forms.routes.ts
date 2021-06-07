@@ -20,8 +20,8 @@ export const AdminFormsRouter = Router()
 AdminFormsRouter.use(withUserAuthentication)
 AdminFormsRouter.use(denyRpSpStudentEmails)
 
-// Log all non-get admin actions
-AdminFormsRouter.use(logAdminAction)
+// Log all non-get admin form actions
+AdminFormsRouter.use('/:formId([a-fA-F0-9]{24})/', logAdminAction)
 
 AdminFormsRouter.use(AdminFormsSettingsRouter)
 AdminFormsRouter.use(AdminFormsFeedbackRouter)
