@@ -50,12 +50,6 @@ const getResponseFromVerifiedField = (
   }
 }
 
-const isVerifiedFormField = (
-  possibleFormField: VerifiedFormField | null,
-): possibleFormField is VerifiedFormField => {
-  return !!possibleFormField
-}
-
 /**
  * Converts a decrypted verified object into an array with the same shape as the
  * current decrypted content to be concatenated with the decrypted content.
@@ -73,7 +67,9 @@ const convertToResponseArray = (
     .map((fieldType) =>
       getResponseFromVerifiedField(fieldType, verifiedObj[fieldType]),
     )
-    .filter<VerifiedFormField>(isVerifiedFormField)
+    .filter((field): field is VerifiedFormField => {
+      return !!field
+    })
 }
 
 /**
