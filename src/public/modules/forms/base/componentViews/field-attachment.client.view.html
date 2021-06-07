@@ -23,7 +23,12 @@
   <div class="col-xs-12 field-input">
     <label
       for="{{ vm.field._id || 'defaultID' }}"
-      class="btn-custom btn-large col-md-3 col-sm-3 col-xs-12 ng-scope attachment-button"
+      class="
+        btn-custom btn-large
+        col-md-3 col-sm-3 col-xs-12
+        ng-scope
+        attachment-button
+      "
       ng-class="['{{ colortheme }}-bg {{ colortheme }}-border', vm.attachmentIsDisabled(vm.field) ? 'disabled' : '']"
       ng-click="vm.forms.myForm[vm.field._id].$setTouched(); vm.touchAttachment()"
       ng-if="!vm.fileAttached"
