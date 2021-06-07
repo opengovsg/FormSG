@@ -1,33 +1,21 @@
 import axios from 'axios'
-import validator from 'validator'
+import { Opaque } from 'type-fest'
 
 const AUTH_ENDPOINT = '/api/v3/auth'
+
+type Email = Opaque<string, 'Email'>
 
 /**
  * Check whether the given email string is from an email domain.
  * @param email the email to check
  * @returns original email if email is valid
- * @throws Error on invalid email
- * @throws Error on non 2xx response
  */
-export const checkIsEmailAllowed = async (email = ''): Promise<string> => {
-  if (!validator.isEmail(email)) {
-    throw new Error('Please enter a valid email address')
-  }
-
+export const checkIsEmailAllowed = async (email: string): Promise<Email> => {
   return axios
     .post(`${AUTH_ENDPOINT}/email/validate`, {
       email: email.toLowerCase(),
     })
-    .then(() => email)
-    .catch((error) => {
-      if (axios.isAxiosError(error) && error.response?.data) {
-        throw new Error(error.response.data)
-      }
-      throw new Error(
-        'Something went wrong while validating your email. Please refresh and try again',
-      )
-    })
+    .then(() => email as Email)
 }
 
 /**
@@ -37,22 +25,10 @@ export const checkIsEmailAllowed = async (email = ''): Promise<string> => {
  * @throws Error on invalid email
  * @throws Error on non 2xx response
  */
-export const sendLoginOtp = async (email = ''): Promise<string> => {
-  if (!validator.isEmail(email)) {
-    throw new Error('Please enter a valid email address')
-  }
-
+export const sendLoginOtp = async (email: Email): Promise<string> => {
   return axios
     .post<string>(`${AUTH_ENDPOINT}/otp/generate`, {
       email: email.toLowerCase(),
     })
     .then(({ data }) => data)
-    .catch((error) => {
-      if (axios.isAxiosError(error) && error.response?.data) {
-        throw new Error(error.response.data)
-      }
-      throw new Error(
-        'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
-      )
-    })
 }

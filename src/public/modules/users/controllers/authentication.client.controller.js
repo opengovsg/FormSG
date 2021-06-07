@@ -1,6 +1,8 @@
 'use strict'
 
 const HttpStatus = require('http-status-codes')
+const get = require('lodash/get')
+const validator = require('validator').default
 const AuthService = require('../../../services/AuthService')
 
 angular
@@ -118,6 +120,16 @@ function AuthenticationController(
     }
   }
 
+  const setEmailSignInError = (errorMsg) => {
+    vm.buttonClicked = false
+    vm.signInMsg = {
+      isMsg: true,
+      isError: true,
+      msg: errorMsg,
+    }
+    vm.isSubmitEmailDisabled = true
+  }
+
   // Steps of sign-in process
   // 1 - Check if user email is in valid format
   // 2 - Check if user's email domain (i.e. agency) is valid
@@ -130,17 +142,22 @@ function AuthenticationController(
    */
   vm.login = function () {
     vm.buttonClicked = true
+
+    const email = vm.credentials.email
+    if (!validator.isEmail(email)) {
+      setEmailSignInError('Please enter a valid email address')
+      return
+    }
+
     $q.when(AuthService.checkIsEmailAllowed(vm.credentials.email))
       .then(() => vm.sendOtp())
       .catch((error) => {
-        // Invalid agency
-        vm.buttonClicked = false
-        vm.signInMsg = {
-          isMsg: true,
-          isError: true,
-          msg: error.message,
-        }
-        vm.isSubmitEmailDisabled = true
+        const errorMsg = get(
+          error,
+          'response.data',
+          'Something went wrong while validating your email. Please refresh and try again',
+        )
+        setEmailSignInError(errorMsg)
       })
   }
 
@@ -178,13 +195,18 @@ function AuthenticationController(
         }, 20000)
       })
       .catch((error) => {
+        const errorMsg = get(
+          error,
+          'response.data',
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+        )
         vm.isOtpSending = false
         vm.buttonClicked = false
         // Configure message to be shown
         vm.signInMsg = {
           isMsg: true,
           isError: true,
-          msg: error.message,
+          msg: errorMsg,
         }
       })
   }
