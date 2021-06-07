@@ -23,7 +23,6 @@ function Auth($q, $http, $state, $window) {
   let authService = {
     getUser,
     setUser,
-    refreshUser,
     signOut,
   }
   return authService
@@ -49,19 +48,6 @@ function Auth($q, $http, $state, $window) {
     } catch (error) {
       return null
     }
-  }
-
-  function refreshUser() {
-    return $http
-      .get('/api/v3/user')
-      .then(({ data }) => {
-        setUser(data)
-        return data
-      })
-      .catch(() => {
-        setUser(null)
-        return null
-      })
   }
   function signOut() {
     $http.get('/api/v3/auth/logout').then(
