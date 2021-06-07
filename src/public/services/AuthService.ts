@@ -1,7 +1,9 @@
 import axios from 'axios'
 import { Opaque } from 'type-fest'
 
-import { saveUserToLocalStorage, User } from './UserService'
+import { User } from '../../types/api/user'
+
+import { saveUserToLocalStorage } from './UserService'
 
 // Exported for testing.
 export const AUTH_ENDPOINT = '/api/v3/auth'

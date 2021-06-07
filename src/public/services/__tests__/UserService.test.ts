@@ -1,4 +1,5 @@
-import { saveUserToLocalStorage, STORAGE_USER_KEY, User } from '../UserService'
+import { User } from '../../../types/api/user'
+import { saveUserToLocalStorage, STORAGE_USER_KEY } from '../UserService'
 
 describe('UserService', () => {
   describe('saveUserToLocalStorage', () => {

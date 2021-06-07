@@ -1,27 +1,7 @@
-import { Opaque } from 'type-fest'
+import { User } from '../../types/api/user'
 
 /** Exported for testing */
 export const STORAGE_USER_KEY = 'user'
-
-type UserId = Opaque<string, 'UserId'>
-type AgencyId = Opaque<string, 'AgencyId'>
-
-export type Agency = {
-  emailDomain: string[]
-  fullName: string
-  shortName: string
-  logo: string
-  _id: AgencyId
-}
-
-export type User = {
-  _id: UserId
-  email: string
-  agency: Agency
-  created: string
-  lastAccessed: string
-  updatedAt: string
-}
 
 /**
  * Save logged in user to localStorage.
