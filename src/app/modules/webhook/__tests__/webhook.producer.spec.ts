@@ -15,10 +15,12 @@ describe('WebhookProducer', () => {
   let webhookProducer: WebhookProducer
   const mockSendMessage = jest.fn()
 
+  const MOCK_NOW = Date.now()
+
   const MESSAGE_BODY = {
     submissionId: new ObjectId().toHexString(),
-    previousAttempts: [Date.now()],
-    nextAttempt: Date.now(),
+    previousAttempts: [MOCK_NOW],
+    nextAttempt: MOCK_NOW,
     _v: 0,
   }
 
@@ -29,7 +31,10 @@ describe('WebhookProducer', () => {
     webhookProducer = new WebhookProducer('')
   })
 
-  beforeEach(() => jest.resetAllMocks())
+  beforeEach(() => {
+    jest.resetAllMocks()
+    jest.spyOn(Date, 'now').mockReturnValue(MOCK_NOW)
+  })
 
   describe('sendMessage', () => {
     it('should return true when message is sent on first try', async () => {
@@ -86,7 +91,7 @@ describe('WebhookProducer', () => {
       mockSendMessage.mockResolvedValueOnce([])
       const webhookMessage = new WebhookQueueMessage({
         ...MESSAGE_BODY,
-        nextAttempt: subMinutes(Date.now(), 10).getTime(),
+        nextAttempt: subMinutes(MOCK_NOW, 10).getTime(),
       })
 
       const result = await webhookProducer.sendMessage(webhookMessage)
@@ -104,7 +109,7 @@ describe('WebhookProducer', () => {
       mockSendMessage.mockResolvedValueOnce([])
       const webhookMessage = new WebhookQueueMessage({
         ...MESSAGE_BODY,
-        nextAttempt: addHours(Date.now(), 10).getTime(),
+        nextAttempt: addHours(MOCK_NOW, 10).getTime(),
       })
 
       const result = await webhookProducer.sendMessage(webhookMessage)
@@ -123,7 +128,7 @@ describe('WebhookProducer', () => {
       mockSendMessage.mockResolvedValueOnce([])
       const webhookMessage = new WebhookQueueMessage({
         ...MESSAGE_BODY,
-        nextAttempt: addMinutes(Date.now(), minutesInFuture).getTime(),
+        nextAttempt: addMinutes(MOCK_NOW, minutesInFuture).getTime(),
       })
 
       const result = await webhookProducer.sendMessage(webhookMessage)
