@@ -21,7 +21,6 @@ function Auth($q, $http, $state, $window) {
    */
 
   let authService = {
-    verifyOtp,
     getUser,
     setUser,
     refreshUser,
@@ -64,20 +63,6 @@ function Auth($q, $http, $state, $window) {
         return null
       })
   }
-  function verifyOtp(credentials) {
-    let deferred = $q.defer()
-    $http.post('/api/v3/auth/otp/verify', credentials).then(
-      function (response) {
-        setUser(response.data)
-        deferred.resolve()
-      },
-      function (error) {
-        deferred.reject(error)
-      },
-    )
-    return deferred.promise
-  }
-
   function signOut() {
     $http.get('/api/v3/auth/logout').then(
       function () {
