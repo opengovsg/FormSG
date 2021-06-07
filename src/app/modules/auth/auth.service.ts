@@ -300,18 +300,20 @@ export const getFormAfterPermissionChecks = ({
  * @returns err(ForbiddenFormError if user does not have permission
  * @returns err(DatabaseError) if any database error occurs
  */
-export const checkFormForPermissions = (level: PermissionLevel) => ({
-  user,
-  form,
-}: {
-  user: IUserSchema
-  form: IPopulatedForm
-}): Result<IPopulatedForm, FormDeletedError | ForbiddenFormError> =>
-  // Step 1: Check whether form is available to be retrieved.
-  assertFormAvailable(form)
-    // Step 2: Check required permission levels.
-    .andThen(() => getAssertPermissionFn(level)(user, form))
-    .map(() => form)
+export const checkFormForPermissions =
+  (level: PermissionLevel) =>
+  ({
+    user,
+    form,
+  }: {
+    user: IUserSchema
+    form: IPopulatedForm
+  }): Result<IPopulatedForm, FormDeletedError | ForbiddenFormError> =>
+    // Step 1: Check whether form is available to be retrieved.
+    assertFormAvailable(form)
+      // Step 2: Check required permission levels.
+      .andThen(() => getAssertPermissionFn(level)(user, form))
+      .map(() => form)
 
 /**
  * Retrieves the form of given formId provided that the form is public.

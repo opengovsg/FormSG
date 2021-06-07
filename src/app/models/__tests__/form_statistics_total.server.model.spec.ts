@@ -22,11 +22,11 @@ describe('FormStatisticsTotal Model', () => {
         formCounts.forEach((count) => {
           submissionPromises.push(
             // Using mongodb native function to bypass collection presave hook.
-            (FormStatsModel.collection.insertOne({
+            FormStatsModel.collection.insertOne({
               formId: new ObjectId(),
               totalCount: count,
               lastSubmission: new Date(),
-            }) as unknown) as Promise<IFormStatisticsTotalSchema>,
+            }) as unknown as Promise<IFormStatisticsTotalSchema>,
           )
         })
         await Promise.all(submissionPromises)
@@ -53,11 +53,11 @@ describe('FormStatisticsTotal Model', () => {
         formCounts.forEach((count) => {
           submissionPromises.push(
             // Using mongodb native function to bypass collection presave hook.
-            (FormStatsModel.collection.insertOne({
+            FormStatsModel.collection.insertOne({
               formId: new ObjectId(),
               totalCount: count,
               lastSubmission: new Date(),
-            }) as unknown) as Promise<IFormStatisticsTotalSchema>,
+            }) as unknown as Promise<IFormStatisticsTotalSchema>,
           )
         })
         await Promise.all(submissionPromises)

@@ -149,9 +149,8 @@ const submitEncryptModeForm: ControllerHandler<
   }
 
   // Check that the form has not reached submission limits
-  const formSubmissionLimitResult = await FormService.checkFormSubmissionLimitAndDeactivateForm(
-    form,
-  )
+  const formSubmissionLimitResult =
+    await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
   if (formSubmissionLimitResult.isErr()) {
     logger.warn({
       message:
@@ -270,14 +269,16 @@ const submitEncryptModeForm: ControllerHandler<
   // Encrypt Verified SPCP Fields
   let verified
   if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
-    const encryptVerifiedContentResult = VerifiedContentFactory.getVerifiedContent(
-      { type: form.authType, data: { uinFin, userInfo } },
-    ).andThen((verifiedContent) =>
-      VerifiedContentFactory.encryptVerifiedContent({
-        verifiedContent,
-        formPublicKey: form.publicKey,
-      }),
-    )
+    const encryptVerifiedContentResult =
+      VerifiedContentFactory.getVerifiedContent({
+        type: form.authType,
+        data: { uinFin, userInfo },
+      }).andThen((verifiedContent) =>
+        VerifiedContentFactory.encryptVerifiedContent({
+          verifiedContent,
+          formPublicKey: form.publicKey,
+        }),
+      )
 
     if (encryptVerifiedContentResult.isErr()) {
       const { error } = encryptVerifiedContentResult
@@ -363,11 +364,8 @@ const submitEncryptModeForm: ControllerHandler<
   // As such, we should not await on these post requests
   const webhookUrl = form.webhook?.url
   if (webhookUrl) {
-    void WebhookFactory.sendWebhook(
-      submission,
-      webhookUrl,
-    ).andThen((response) =>
-      WebhookFactory.saveWebhookRecord(submission._id, response),
+    void WebhookFactory.sendWebhook(submission, webhookUrl).andThen(
+      (response) => WebhookFactory.saveWebhookRecord(submission._id, response),
     )
   }
 

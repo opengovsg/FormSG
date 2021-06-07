@@ -623,18 +623,18 @@ describe('admin-form.controller', () => {
       email: 'randomrandomtest@example.com',
     } as IPopulatedUser
 
-    const MOCK_SCRUBBED_FORM = ({
+    const MOCK_SCRUBBED_FORM = {
       _id: MOCK_FORM_ID,
       title: 'mock preview title',
       admin: { _id: MOCK_USER_ID },
-    } as unknown) as PublicForm
+    } as unknown as PublicForm
 
-    const MOCK_FORM = (mocked({
+    const MOCK_FORM = mocked({
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
       title: MOCK_SCRUBBED_FORM.title,
       getPublicView: jest.fn().mockResolvedValue(MOCK_SCRUBBED_FORM),
-    }) as unknown) as MockedObject<IPopulatedForm>
+    }) as unknown as MockedObject<IPopulatedForm>
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
@@ -3266,18 +3266,18 @@ describe('admin-form.controller', () => {
       email: 'alwaystesting@example.com',
     } as IPopulatedUser
 
-    const MOCK_SCRUBBED_FORM = ({
+    const MOCK_SCRUBBED_FORM = {
       _id: MOCK_FORM_ID,
       title: "guess what it's another mock title",
       admin: { _id: MOCK_USER_ID },
-    } as unknown) as PublicForm
+    } as unknown as PublicForm
 
-    const MOCK_FORM = (mocked({
+    const MOCK_FORM = mocked({
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
       title: MOCK_SCRUBBED_FORM.title,
       getPublicView: jest.fn().mockResolvedValue(MOCK_SCRUBBED_FORM),
-    }) as unknown) as MockedObject<IPopulatedForm>
+    }) as unknown as MockedObject<IPopulatedForm>
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
@@ -5133,11 +5133,11 @@ describe('admin-form.controller', () => {
       MockSubmissionService.sendEmailConfirmations.mockReturnValue(
         okAsync(true),
       )
-      jest.spyOn(EmailSubmissionUtil, 'SubmissionEmailObj').mockReturnValue(({
+      jest.spyOn(EmailSubmissionUtil, 'SubmissionEmailObj').mockReturnValue({
         dataCollationData: MOCK_DATA_COLLATION_DATA,
         formData: MOCK_FORM_DATA,
         autoReplyData: MOCK_AUTOREPLY_DATA,
-      } as unknown) as EmailSubmissionUtil.SubmissionEmailObj)
+      } as unknown as EmailSubmissionUtil.SubmissionEmailObj)
     })
 
     it('should call all services correctly when submission is valid', async () => {
@@ -8798,14 +8798,14 @@ describe('admin-form.controller', () => {
       email: 'somerandom@example.com',
     } as IPopulatedUser
 
-    const MOCK_FORM = ({
+    const MOCK_FORM = {
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
       startPage: {
         paragraph: 'old end page',
       },
       title: 'mock start page title',
-    } as unknown) as IPopulatedForm
+    } as unknown as IPopulatedForm
 
     const MOCK_UPDATED_FORM = {
       ...MOCK_FORM,

@@ -68,16 +68,14 @@ const MOCK_WEBHOOK_FAILURE_RESPONSE: Pick<IWebhookResponse, 'response'> = {
     headers: '{}',
   },
 }
-const MOCK_WEBHOOK_DEFAULT_FORMAT_RESPONSE: Pick<
-  IWebhookResponse,
-  'response'
-> = {
-  response: {
-    data: '',
-    status: 0,
-    headers: '',
-  },
-}
+const MOCK_WEBHOOK_DEFAULT_FORMAT_RESPONSE: Pick<IWebhookResponse, 'response'> =
+  {
+    response: {
+      data: '',
+      status: 0,
+      headers: '',
+    },
+  }
 
 describe('webhook.service', () => {
   beforeAll(async () => await dbHandler.connect())

@@ -19,8 +19,7 @@ const templates = [
   {
     admin: {
       agency: {
-        logo:
-          'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
+        logo: 'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
       },
     },
     authType: 'NIL',
@@ -165,8 +164,7 @@ const templates = [
   {
     admin: {
       agency: {
-        logo:
-          'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
+        logo: 'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
       },
     },
     authType: 'NIL',
@@ -533,8 +531,7 @@ const templates = [
   {
     admin: {
       agency: {
-        logo:
-          'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
+        logo: 'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
       },
     },
     authType: 'NIL',
@@ -675,8 +672,7 @@ const templates = [
   {
     admin: {
       agency: {
-        logo:
-          'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
+        logo: 'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
       },
     },
     authType: 'NIL',

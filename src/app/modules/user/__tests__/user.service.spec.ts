@@ -413,9 +413,9 @@ describe('user.service', () => {
     it('should return admin successfully', async () => {
       // Arrange
       const mockUserId = new ObjectID().toHexString()
-      const findSpy = jest.spyOn(UserModel, 'findById').mockReturnValueOnce(({
+      const findSpy = jest.spyOn(UserModel, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(defaultUser),
-      } as unknown) as Query<IUserSchema | null, IUserSchema, unknown>)
+      } as unknown as Query<IUserSchema | null, IUserSchema, unknown>)
 
       // Act
       const actualResult = await UserService.findUserById(mockUserId)
@@ -429,9 +429,9 @@ describe('user.service', () => {
     it('should return DatabaseError when query throws an error', async () => {
       // Arrange
       const mockUserId = new ObjectID().toHexString()
-      const findSpy = jest.spyOn(UserModel, 'findById').mockReturnValueOnce(({
+      const findSpy = jest.spyOn(UserModel, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockRejectedValue(new Error('database bad')),
-      } as unknown) as Query<IUserSchema | null, IUserSchema, unknown>)
+      } as unknown as Query<IUserSchema | null, IUserSchema, unknown>)
 
       // Act
       const actualResult = await UserService.findUserById(mockUserId)
@@ -445,9 +445,9 @@ describe('user.service', () => {
     it('should return MissingUserError when query returns null', async () => {
       // Arrange
       const mockUserId = new ObjectID().toHexString()
-      const findSpy = jest.spyOn(UserModel, 'findById').mockReturnValueOnce(({
+      const findSpy = jest.spyOn(UserModel, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(null),
-      } as unknown) as Query<IUserSchema | null, IUserSchema, unknown>)
+      } as unknown as Query<IUserSchema | null, IUserSchema, unknown>)
 
       // Act
       const actualResult = await UserService.findUserById(mockUserId)
@@ -463,9 +463,9 @@ describe('user.service', () => {
     it('should return admin successfully', async () => {
       // Arrange
       const mockEmail = 'someemail@example.com'
-      const findSpy = jest.spyOn(UserModel, 'findOne').mockReturnValueOnce(({
+      const findSpy = jest.spyOn(UserModel, 'findOne').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(defaultUser),
-      } as unknown) as Query<IUserSchema | null, IUserSchema, unknown>)
+      } as unknown as Query<IUserSchema | null, IUserSchema, unknown>)
 
       // Act
       const actualResult = await UserService.findUserByEmail(mockEmail)
@@ -479,9 +479,9 @@ describe('user.service', () => {
     it('should return DatabaseError when query throws an error', async () => {
       // Arrange
       const mockEmail = 'another@example.com'
-      const findSpy = jest.spyOn(UserModel, 'findOne').mockReturnValueOnce(({
+      const findSpy = jest.spyOn(UserModel, 'findOne').mockReturnValueOnce({
         exec: jest.fn().mockRejectedValue(new Error('database bad!')),
-      } as unknown) as Query<IUserSchema | null, IUserSchema, unknown>)
+      } as unknown as Query<IUserSchema | null, IUserSchema, unknown>)
 
       // Act
       const actualResult = await UserService.findUserByEmail(mockEmail)
@@ -495,9 +495,9 @@ describe('user.service', () => {
     it('should return MissingUserError when query returns null', async () => {
       // Arrange
       const mockEmail = 'mockEmail@example.com'
-      const findSpy = jest.spyOn(UserModel, 'findOne').mockReturnValueOnce(({
+      const findSpy = jest.spyOn(UserModel, 'findOne').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(null),
-      } as unknown) as Query<IUserSchema | null, IUserSchema, unknown>)
+      } as unknown as Query<IUserSchema | null, IUserSchema, unknown>)
 
       // Act
       const actualResult = await UserService.findUserByEmail(mockEmail)
