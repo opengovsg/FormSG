@@ -94,7 +94,7 @@ describe('Dropdown validation', () => {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
     })
     const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
-      answer: (['KISS', 'DRY'] as unknown) as string,
+      answer: ['KISS', 'DRY'] as unknown as string,
     })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)

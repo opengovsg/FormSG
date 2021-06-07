@@ -33,16 +33,15 @@ describe('Encrypt Submission Model', () => {
         const validFormId = new ObjectId().toHexString()
         const createdDate = new Date()
         // Add valid encrypt submission.
-        const validSubmission = await Submission.create<IEncryptedSubmissionSchema>(
-          {
+        const validSubmission =
+          await Submission.create<IEncryptedSubmissionSchema>({
             form: validFormId,
             myInfoFields: [],
             submissionType: SubmissionType.Encrypt,
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             version: 1,
             created: createdDate,
-          },
-        )
+          })
 
         // Act
         const result = await EncryptSubmission.findSingleMetadata(
@@ -391,15 +390,14 @@ describe('Encrypt Submission Model', () => {
       it('should return null when type of submission with given id is not SubmissionType.Encrypt', async () => {
         // Arrange
         const validFormId = new ObjectId().toHexString()
-        const validEmailSubmission = await Submission.create<IEmailSubmissionSchema>(
-          {
+        const validEmailSubmission =
+          await Submission.create<IEmailSubmissionSchema>({
             submissionType: SubmissionType.Email,
             form: validFormId,
             recipientEmails: ['any@example.com'],
             responseHash: 'any hash',
             responseSalt: 'any salt',
-          },
-        )
+          })
 
         // Act
         const actual = await EncryptSubmission.findEncryptedSubmissionById(

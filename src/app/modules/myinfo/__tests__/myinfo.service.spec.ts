@@ -210,9 +210,7 @@ describe('MyInfoService', () => {
       const mockReturnValue = { mock: 'value' }
       const mockUpdateHashes = jest
         .spyOn(MyInfoHash, 'updateHashes')
-        .mockResolvedValueOnce(
-          (mockReturnValue as unknown) as IMyInfoHashSchema,
-        )
+        .mockResolvedValueOnce(mockReturnValue as unknown as IMyInfoHashSchema)
       MockBcrypt.hash.mockImplementation((v) => Promise.resolve(v))
       const expectedHashes = {} as Record<string, string>
       MOCK_POPULATED_FORM_FIELDS.forEach((field) => {
@@ -318,7 +316,7 @@ describe('MyInfoService', () => {
       MockBcrypt.compare.mockResolvedValue(true)
 
       const result = await myInfoService.checkMyInfoHashes(
-        (MOCK_RESPONSES as unknown) as ProcessedFieldResponse[],
+        MOCK_RESPONSES as unknown as ProcessedFieldResponse[],
         MOCK_HASHES as IHashes,
       )
 
@@ -329,7 +327,7 @@ describe('MyInfoService', () => {
       MockBcrypt.compare.mockRejectedValue('')
 
       const result = await myInfoService.checkMyInfoHashes(
-        (MOCK_RESPONSES as unknown) as ProcessedFieldResponse[],
+        MOCK_RESPONSES as unknown as ProcessedFieldResponse[],
         MOCK_HASHES as IHashes,
       )
 
@@ -348,7 +346,7 @@ describe('MyInfoService', () => {
       })
 
       const result = await myInfoService.checkMyInfoHashes(
-        (MOCK_RESPONSES as unknown) as ProcessedFieldResponse[],
+        MOCK_RESPONSES as unknown as ProcessedFieldResponse[],
         MOCK_HASHES as IHashes,
       )
 

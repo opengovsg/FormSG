@@ -74,13 +74,11 @@ const bounceSmsCountSchema = {
   },
 }
 
-const FormDeactivatedSmsCountSchema = new Schema<IFormDeactivatedSmsCountSchema>(
-  bounceSmsCountSchema,
-)
+const FormDeactivatedSmsCountSchema =
+  new Schema<IFormDeactivatedSmsCountSchema>(bounceSmsCountSchema)
 
-const BouncedSubmissionSmsCountSchema = new Schema<IBouncedSubmissionSmsCountSchema>(
-  bounceSmsCountSchema,
-)
+const BouncedSubmissionSmsCountSchema =
+  new Schema<IBouncedSubmissionSmsCountSchema>(bounceSmsCountSchema)
 
 const compileSmsCountModel = (db: Mongoose) => {
   const SmsCountSchema = new Schema<ISmsCountSchema, ISmsCountModel>(

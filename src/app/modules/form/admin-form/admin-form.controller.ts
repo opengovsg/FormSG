@@ -1422,15 +1422,14 @@ export const submitEncryptPreview: ControllerHandler<
         }),
     )
     .map(({ parsedResponses, form }) => {
-      const submission = EncryptSubmissionService.createEncryptSubmissionWithoutSave(
-        {
+      const submission =
+        EncryptSubmissionService.createEncryptSubmissionWithoutSave({
           form,
           encryptedContent,
           // Don't bother encrypting and signing mock variables for previews
           verifiedContent: '',
           version,
-        },
-      )
+        })
 
       void SubmissionService.sendEmailConfirmations({
         form,
@@ -1505,9 +1504,10 @@ export const submitEmailPreview: ControllerHandler<
   }
   const form = formResult.value
 
-  const parsedResponsesResult = await EmailSubmissionService.validateAttachments(
-    responses,
-  ).andThen(() => SubmissionService.getProcessedResponses(form, responses))
+  const parsedResponsesResult =
+    await EmailSubmissionService.validateAttachments(responses).andThen(() =>
+      SubmissionService.getProcessedResponses(form, responses),
+    )
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',

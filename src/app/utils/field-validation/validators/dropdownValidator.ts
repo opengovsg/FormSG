@@ -19,20 +19,19 @@ type DropdownValidatorConstructor = (
  * Returns a validation function
  * to check if dropdown selection is one of the options.
  */
-const makeDropdownValidator: DropdownValidatorConstructor = (dropdownField) => (
-  response,
-) => {
-  const { myInfo, fieldOptions } = dropdownField
-  // Inject fieldOptions for MyInfo. This is necessary because the
-  // client strips out MyInfo data to keep each form submission lightweight
-  const validOptions = myInfo?.attr
-    ? getMyInfoFieldOptions(myInfo.attr)
-    : fieldOptions
-  const { answer } = response
-  return isOneOfOptions(validOptions, answer)
-    ? right(response)
-    : left(`DropdownValidator:\t answer is not a valid dropdown option`)
-}
+const makeDropdownValidator: DropdownValidatorConstructor =
+  (dropdownField) => (response) => {
+    const { myInfo, fieldOptions } = dropdownField
+    // Inject fieldOptions for MyInfo. This is necessary because the
+    // client strips out MyInfo data to keep each form submission lightweight
+    const validOptions = myInfo?.attr
+      ? getMyInfoFieldOptions(myInfo.attr)
+      : fieldOptions
+    const { answer } = response
+    return isOneOfOptions(validOptions, answer)
+      ? right(response)
+      : left(`DropdownValidator:\t answer is not a valid dropdown option`)
+  }
 
 /**
  * Returns a validation function for a dropdown field when called.

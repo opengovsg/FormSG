@@ -65,12 +65,12 @@ describe('form.utils', () => {
       // Arrange
       const fieldToFind = generateDefaultField(BasicField.Number)
       // Should not turn this unit test into an integration test, so mocking return and leaving responsibility to mongoose.
-      const mockDocArray = ({
+      const mockDocArray = {
         0: generateDefaultField(BasicField.LongText),
         1: fieldToFind,
         isMongooseDocumentArray: true,
         id: jest.fn().mockReturnValue(fieldToFind),
-      } as unknown) as Types.DocumentArray<IFieldSchema>
+      } as unknown as Types.DocumentArray<IFieldSchema>
 
       // Act
       const result = getFormFieldById(mockDocArray, fieldToFind._id)

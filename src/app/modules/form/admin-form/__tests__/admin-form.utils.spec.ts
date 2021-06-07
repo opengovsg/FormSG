@@ -446,13 +446,13 @@ describe('admin-form.utils', () => {
       const initialField = generateDefaultField(BasicField.Email, {
         title: 'some old title',
       })
-      const desyncedEmailField = ({
+      const desyncedEmailField = {
         ...initialField,
         title: 'new title',
         hasAllowedEmailDomains: true,
         // true but empty array
         allowedEmailDomains: [],
-      } as unknown) as IEmailFieldSchema
+      } as unknown as IEmailFieldSchema
 
       const updateFieldParams: EditFormFieldParams = {
         action: {
@@ -481,12 +481,12 @@ describe('admin-form.utils', () => {
 
     it('should return synced email field when creating with desynced email field', async () => {
       // Arrange
-      const desyncedEmailField = ({
+      const desyncedEmailField = {
         ...generateDefaultField(BasicField.Email),
         hasAllowedEmailDomains: false,
         // False but contains domains.
         allowedEmailDomains: ['@example.com'],
-      } as unknown) as IEmailFieldSchema
+      } as unknown as IEmailFieldSchema
 
       const createFieldParams: EditFormFieldParams = {
         action: {

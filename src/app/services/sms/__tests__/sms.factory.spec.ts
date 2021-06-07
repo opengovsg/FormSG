@@ -24,9 +24,9 @@ jest.mock('twilio', () =>
 jest.mock('../sms.service')
 const MockSmsService = mocked(SmsService, true)
 
-const MOCKED_TWILIO = ({
+const MOCKED_TWILIO = {
   mocked: 'this is mocked',
-} as unknown) as Twilio.Twilio
+} as unknown as Twilio.Twilio
 
 const MOCK_BOUNCE_SMS_PARAMS: BounceNotificationSmsParams = {
   adminEmail: 'admin@email.com',
