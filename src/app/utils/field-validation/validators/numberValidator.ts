@@ -63,7 +63,7 @@ const exactLengthValidator: NumberValidatorConstructor =
 
 /**
  * Returns the appropriate validation function
- * based on the number validation option selected.
+ * based on the number length validation option selected.
  */
 const getNumberLengthValidator: NumberValidatorConstructor = (numberField) => {
   switch (numberField.ValidationOptions.selectedValidation) {
@@ -79,6 +79,47 @@ const getNumberLengthValidator: NumberValidatorConstructor = (numberField) => {
 }
 
 /**
+ * Returns a validation function to check if number value is
+ * less than the minimum value specified.
+ */
+const minRangeValidator: NumberValidatorConstructor =
+  (numberField) => (response) => {
+    const { answer } = response
+    const { customMin } = numberField.ValidationOptions
+    return !customMin || Number(answer) >= customMin
+      ? right(response)
+      : left(`NumberValidator:\t answer is smaller than custom minimum value`)
+  }
+
+/**
+ * Returns a validation function to check if number value is
+ * less than the minimum value specified.
+ */
+const maxRangeValidator: NumberValidatorConstructor =
+  (numberField) => (response) => {
+    const { answer } = response
+    const { customMax } = numberField.ValidationOptions
+    return !customMax || Number(answer) <= customMax
+      ? right(response)
+      : left(`NumberValidator:\t answer is larger than custom maximum value`)
+  }
+
+/**
+ * Returns the appropriate validation function
+ * based on the number range validation option selected.
+ */
+const getNumberRangeValidator: NumberValidatorConstructor = (numberField) => {
+  switch (numberField.ValidationOptions.selectedValidation) {
+    case NumberSelectedValidation.Min:
+      return minRangeValidator(numberField)
+    case NumberSelectedValidation.Max:
+      return maxRangeValidator(numberField)
+    default:
+      return right
+  }
+}
+
+/**
  * Returns a validation function for a number field when called.
  */
 export const constructNumberValidator: NumberValidatorConstructor = (
@@ -88,4 +129,5 @@ export const constructNumberValidator: NumberValidatorConstructor = (
     notEmptySingleAnswerResponse,
     chain(numberFormatValidator),
     chain(getNumberLengthValidator(numberField)),
+    chain(getNumberRangeValidator(numberField)),
   )
