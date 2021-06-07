@@ -1,6 +1,7 @@
 import { Opaque } from 'type-fest'
 
-const STORAGE_USER_KEY = 'user'
+/** Exported for testing */
+export const STORAGE_USER_KEY = 'user'
 
 type UserId = Opaque<string, 'UserId'>
 type AgencyId = Opaque<string, 'AgencyId'>
