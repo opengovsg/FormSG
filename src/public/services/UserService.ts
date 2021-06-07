@@ -4,8 +4,8 @@ import { User } from '../../types/api/user'
 
 /** Exported for testing */
 export const STORAGE_USER_KEY = 'user'
-
-const USER_ENDPOINT = '/api/v3/user'
+/** Exported for testing */
+export const USER_ENDPOINT = '/api/v3/user'
 
 /**
  * Save logged in user to localStorage.
