@@ -1,4 +1,3 @@
-import { Request, RequestHandler } from 'express'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import { AuthType, IPopulatedEmailForm } from '../../../../types'
@@ -11,6 +10,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import MailService from '../../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
+import { ControllerHandler } from '../../core/core.types'
 import * as FormService from '../../form/form.service'
 import {
   MYINFO_COOKIE_NAME,
@@ -37,7 +37,7 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
-const submitEmailModeForm: RequestHandler<
+const submitEmailModeForm: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
   EmailSubmissionDto,
@@ -60,7 +60,7 @@ const submitEmailModeForm: RequestHandler<
 
   const logMeta = {
     action: 'handleEmailSubmission',
-    ...createReqMeta(req as Request),
+    ...createReqMeta(req),
     formId,
   }
 
@@ -104,7 +104,7 @@ const submitEmailModeForm: RequestHandler<
         if (form.hasCaptcha) {
           return CaptchaFactory.verifyCaptchaResponse(
             req.query.captchaResponse,
-            getRequestIp(req as Request),
+            getRequestIp(req),
           )
             .map(() => form)
             .mapErr((error) => {
@@ -273,9 +273,8 @@ const submitEmailModeForm: RequestHandler<
         // NOTE: This should short circuit in the event of an error.
         // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
         return MailService.sendSubmissionToAdmin({
-          replyToEmails: EmailSubmissionService.extractEmailAnswers(
-            parsedResponses,
-          ),
+          replyToEmails:
+            EmailSubmissionService.extractEmailAnswers(parsedResponses),
           form,
           submission,
           attachments,
@@ -349,4 +348,4 @@ export const handleEmailSubmission = [
   EmailSubmissionMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailModeForm,
-] as RequestHandler[]
+] as ControllerHandler[]

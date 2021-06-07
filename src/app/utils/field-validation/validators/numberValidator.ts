@@ -26,43 +26,40 @@ const numberFormatValidator: NumberValidator = (response) => {
  * Returns a validation function to check if number length is
  * less than the minimum length specified.
  */
-const minLengthValidator: NumberValidatorConstructor = (numberField) => (
-  response,
-) => {
-  const { answer } = response
-  const { customMin } = numberField.ValidationOptions
-  return !customMin || answer.length >= customMin
-    ? right(response)
-    : left(`NumberValidator:\t answer is shorter than custom minimum length`)
-}
+const minLengthValidator: NumberValidatorConstructor =
+  (numberField) => (response) => {
+    const { answer } = response
+    const { customMin } = numberField.ValidationOptions
+    return !customMin || answer.length >= customMin
+      ? right(response)
+      : left(`NumberValidator:\t answer is shorter than custom minimum length`)
+  }
 
 /**
  * Returns a validation function to check if number length is
  * more than the maximum length specified.
  */
-const maxLengthValidator: NumberValidatorConstructor = (numberField) => (
-  response,
-) => {
-  const { answer } = response
-  const { customMax } = numberField.ValidationOptions
-  return !customMax || answer.length <= customMax
-    ? right(response)
-    : left(`NumberValidator:\t answer is longer than custom maximum length`)
-}
+const maxLengthValidator: NumberValidatorConstructor =
+  (numberField) => (response) => {
+    const { answer } = response
+    const { customMax } = numberField.ValidationOptions
+    return !customMax || answer.length <= customMax
+      ? right(response)
+      : left(`NumberValidator:\t answer is longer than custom maximum length`)
+  }
 
 /**
  * Returns a validation function to check if number length is
  * equal to the exact length specified.
  */
-const exactLengthValidator: NumberValidatorConstructor = (numberField) => (
-  response,
-) => {
-  const { answer } = response
-  const { customVal } = numberField.ValidationOptions
-  return !customVal || answer.length === customVal
-    ? right(response)
-    : left(`NumberValidator:\t answer does not match custom exact length`)
-}
+const exactLengthValidator: NumberValidatorConstructor =
+  (numberField) => (response) => {
+    const { answer } = response
+    const { customVal } = numberField.ValidationOptions
+    return !customVal || answer.length === customVal
+      ? right(response)
+      : left(`NumberValidator:\t answer does not match custom exact length`)
+  }
 
 /**
  * Returns the appropriate validation function

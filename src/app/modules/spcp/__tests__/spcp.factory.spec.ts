@@ -27,12 +27,10 @@ describe('spcp.factory', () => {
     )
     const fetchLoginPageResult = await SpcpFactory.fetchLoginPage('')
     const validateLoginPageResult = SpcpFactory.validateLoginPage('')
-    const extractSingpassJwtPayloadResult = await SpcpFactory.extractSingpassJwtPayload(
-      '',
-    )
-    const extractCorppassJwtPayloadResult = await SpcpFactory.extractCorppassJwtPayload(
-      '',
-    )
+    const extractSingpassJwtPayloadResult =
+      await SpcpFactory.extractSingpassJwtPayload('')
+    const extractCorppassJwtPayloadResult =
+      await SpcpFactory.extractCorppassJwtPayload('')
     const parseOOBParamsResult = SpcpFactory.parseOOBParams('', '', AuthType.SP)
     const getSpcpAttributesResult = await SpcpFactory.getSpcpAttributes(
       '',
@@ -40,7 +38,7 @@ describe('spcp.factory', () => {
       AuthType.SP,
     )
     const createJWTResult = SpcpFactory.createJWT(
-      ({} as unknown) as JwtPayload,
+      {} as unknown as JwtPayload,
       0,
       AuthType.SP,
     )
@@ -77,12 +75,10 @@ describe('spcp.factory', () => {
     )
     const fetchLoginPageResult = await SpcpFactory.fetchLoginPage('')
     const validateLoginPageResult = SpcpFactory.validateLoginPage('')
-    const extractSingpassJwtPayloadResult = await SpcpFactory.extractSingpassJwtPayload(
-      '',
-    )
-    const extractCorppassJwtPayloadResult = await SpcpFactory.extractCorppassJwtPayload(
-      '',
-    )
+    const extractSingpassJwtPayloadResult =
+      await SpcpFactory.extractSingpassJwtPayload('')
+    const extractCorppassJwtPayloadResult =
+      await SpcpFactory.extractCorppassJwtPayload('')
     const parseOOBParamsResult = SpcpFactory.parseOOBParams('', '', AuthType.SP)
     const getSpcpAttributesResult = await SpcpFactory.getSpcpAttributes(
       '',
@@ -90,7 +86,7 @@ describe('spcp.factory', () => {
       AuthType.SP,
     )
     const createJWTResult = SpcpFactory.createJWT(
-      ({} as unknown) as JwtPayload,
+      {} as unknown as JwtPayload,
       0,
       AuthType.SP,
     )

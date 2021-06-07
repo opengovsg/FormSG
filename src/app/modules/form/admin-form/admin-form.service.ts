@@ -24,9 +24,12 @@ import {
   Permission,
 } from '../../../../types'
 import {
+  DuplicateFormBody,
+  EditFormFieldParams,
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
+  FormUpdateParams,
   SettingsUpdateDto,
   StartPageUpdateDto,
 } from '../../../../types/api'
@@ -62,11 +65,6 @@ import {
   FieldNotFoundError,
   InvalidFileTypeError,
 } from './admin-form.errors'
-import {
-  DuplicateFormBody,
-  EditFormFieldParams,
-  FormUpdateParams,
-} from './admin-form.types'
 import {
   getUpdatedFormFields,
   processDuplicateOverrideProps,

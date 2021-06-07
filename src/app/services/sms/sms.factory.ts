@@ -73,12 +73,8 @@ export const createSmsFactory = (
     }
   }
 
-  const {
-    twilioAccountSid,
-    twilioApiKey,
-    twilioApiSecret,
-    twilioMsgSrvcSid,
-  } = smsFeature.props
+  const { twilioAccountSid, twilioApiKey, twilioApiSecret, twilioMsgSrvcSid } =
+    smsFeature.props
 
   const twilioClient = Twilio(twilioApiKey, twilioApiSecret, {
     accountSid: twilioAccountSid,

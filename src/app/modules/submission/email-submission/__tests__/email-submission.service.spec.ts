@@ -51,14 +51,14 @@ describe('email-submission.service', () => {
     const MOCK_EMAIL = 'a@abc.com'
     const MOCK_RESPONSE_HASH = 'mockHash'
     const MOCK_RESPONSE_SALT = 'mockSalt'
-    const MOCK_FORM = ({
+    const MOCK_FORM = {
       admin: new ObjectId(),
       _id: new ObjectId(),
       title: 'mock title',
       getUniqueMyInfoAttrs: () => [],
       authType: 'NIL',
       emails: [MOCK_EMAIL],
-    } as unknown) as IPopulatedEmailForm
+    } as unknown as IPopulatedEmailForm
 
     it('should create a new submission without saving it to the database', async () => {
       const result = EmailSubmissionService.createEmailSubmissionWithoutSave(
@@ -227,7 +227,7 @@ describe('email-submission.service', () => {
         )
       const response = generateNewAttachmentResponse()
       const responseAsEmailField = generateSingleAnswerFormData(
-        (response as unknown) as ProcessedSingleAnswerResponse,
+        response as unknown as ProcessedSingleAnswerResponse,
       )
       const expectedBaseString = `${response.question} ${response.answer}; ${response.content}`
 
@@ -273,7 +273,7 @@ describe('email-submission.service', () => {
         content: Buffer.from('content1'),
       })
       const responseAsEmailField1 = generateSingleAnswerFormData(
-        (response1 as unknown) as ProcessedSingleAnswerResponse,
+        response1 as unknown as ProcessedSingleAnswerResponse,
       )
 
       const response2 = generateNewAttachmentResponse({
@@ -283,7 +283,7 @@ describe('email-submission.service', () => {
       })
       const expectedBaseString = `${response1.question} ${response1.answer}; ${response2.question} ${response2.answer}; ${response1.content}${response2.content}`
       const responseAsEmailField2 = generateSingleAnswerFormData(
-        (response2 as unknown) as ProcessedSingleAnswerResponse,
+        response2 as unknown as ProcessedSingleAnswerResponse,
       )
 
       const result = await EmailSubmissionService.hashSubmission(
@@ -333,7 +333,7 @@ describe('email-submission.service', () => {
       const createEmailSubmissionSpy = jest
         .spyOn(EmailSubmissionModel, 'create')
         .mockResolvedValueOnce(
-          (mockSubmission as unknown) as ResolvedValue<IEmailSubmissionSchema>,
+          mockSubmission as unknown as ResolvedValue<IEmailSubmissionSchema>,
         )
       const result = await EmailSubmissionService.saveSubmissionMetadata(
         MOCK_EMAIL_FORM as IPopulatedEmailForm,

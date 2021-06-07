@@ -44,9 +44,9 @@ jest.doMock('mongoose', () => ({
 
 const MOCK_NOTIFICATION = { notificationType: 'Bounce' } as IEmailNotification
 const MOCK_REQ = expressHandler.mockRequest({
-  body: ({
+  body: {
     Message: JSON.stringify(MOCK_NOTIFICATION),
-  } as unknown) as ISnsNotification,
+  } as unknown as ISnsNotification,
 })
 const MOCK_RES = expressHandler.mockResponse()
 const MOCK_EMAIL_RECIPIENTS = ['a@email.com', 'b@email.com']

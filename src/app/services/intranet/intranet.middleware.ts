@@ -1,13 +1,12 @@
-import { RequestHandler } from 'express-serve-static-core'
-
 import { createLoggerWithLabel } from '../../config/logger'
+import { ControllerHandler } from '../../modules/core/core.types'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 
 import { IntranetFactory } from './intranet.factory'
 
 const logger = createLoggerWithLabel(module)
 
-export const logIntranetUsage: RequestHandler = (req, _res, next) => {
+export const logIntranetUsage: ControllerHandler = (req, _res, next) => {
   const isIntranetResult = IntranetFactory.isIntranetIp(getRequestIp(req))
   // Ignore case where result is err, as this means intranet feature is not enabled
   if (isIntranetResult.isOk() && isIntranetResult.value) {

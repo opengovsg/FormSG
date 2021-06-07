@@ -234,9 +234,8 @@ describe('AdminVerification Model', () => {
         await expect(AdminVerification.countDocuments()).resolves.toEqual(1)
 
         // Act
-        const actualPromise = AdminVerification.incrementAttemptsByAdminId(
-          adminId,
-        )
+        const actualPromise =
+          AdminVerification.incrementAttemptsByAdminId(adminId)
 
         // Assert
         // Exactly the same as initial params, but with numOtpAttempts
@@ -256,9 +255,8 @@ describe('AdminVerification Model', () => {
         const freshAdminId = new ObjectID()
 
         // Act
-        const actualPromise = AdminVerification.incrementAttemptsByAdminId(
-          freshAdminId,
-        )
+        const actualPromise =
+          AdminVerification.incrementAttemptsByAdminId(freshAdminId)
 
         // Assert
         await expect(actualPromise).resolves.toBeNull()

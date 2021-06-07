@@ -268,7 +268,7 @@ describe('Table validation', () => {
         columns: [generateTableShortTextColumn()],
       })
       const response = generateNewTableResponse({
-        answerArray: [[(null as unknown) as string]],
+        answerArray: [[null as unknown as string]],
       })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)

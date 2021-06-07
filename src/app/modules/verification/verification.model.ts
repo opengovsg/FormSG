@@ -69,14 +69,11 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   })
 
   // Instance methods
-  VerificationSchema.methods.getPublicView = function (
-    this: IVerificationSchema,
-  ): PublicTransaction {
+  VerificationSchema.methods.getPublicView = function (): PublicTransaction {
     return pick(this, VERIFICATION_PUBLIC_FIELDS) as PublicTransaction
   }
 
   VerificationSchema.methods.getField = function (
-    this: IVerificationSchema,
     fieldId: string,
   ): IVerificationFieldSchema | undefined {
     return this.fields.find((field) => field._id === fieldId)
@@ -85,7 +82,6 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   // Static methods
   // Method to return non-sensitive fields
   VerificationSchema.statics.getPublicViewById = async function (
-    this: IVerificationModel,
     id: IVerificationSchema['_id'],
   ): Promise<PublicTransaction | null> {
     const document = await this.findById(id)
@@ -94,7 +90,6 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   }
 
   VerificationSchema.statics.createTransactionFromForm = async function (
-    this: IVerificationModel,
     form: IFormSchema,
   ): Promise<IVerificationSchema | null> {
     const { form_fields } = form
@@ -108,7 +103,6 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   }
 
   VerificationSchema.statics.incrementFieldRetries = async function (
-    this: IVerificationModel,
     transactionId: string,
     fieldId: string,
   ): Promise<IVerificationSchema | null> {
@@ -131,7 +125,6 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   }
 
   VerificationSchema.statics.resetField = async function (
-    this: IVerificationModel,
     transactionId: string,
     fieldId: string,
   ): Promise<IVerificationSchema | null> {
@@ -157,7 +150,6 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   }
 
   VerificationSchema.statics.updateHashForField = async function (
-    this: IVerificationModel,
     updateData: UpdateFieldData,
   ): Promise<IVerificationSchema | null> {
     return this.findOneAndUpdate(

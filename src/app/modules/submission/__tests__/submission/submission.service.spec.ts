@@ -137,10 +137,10 @@ describe('submission.service', () => {
 
       // Act
       const actualResult = SubmissionService.getProcessedResponses(
-        ({
+        {
           responseMode: ResponseMode.Encrypt,
           form_fields: [mobileField, emailField],
-        } as unknown) as IFormSchema,
+        } as unknown as IFormSchema,
         [mobileResponse, emailResponse],
       )
 
@@ -181,10 +181,10 @@ describe('submission.service', () => {
 
       // Act
       const actualResult = SubmissionService.getProcessedResponses(
-        ({
+        {
           responseMode: ResponseMode.Email,
           form_fields: [shortTextField, decimalField],
-        } as unknown) as IFormSchema,
+        } as unknown as IFormSchema,
         [shortTextResponse, decimalResponse],
       )
 
@@ -205,10 +205,10 @@ describe('submission.service', () => {
       // Act + Assert
 
       const actualResult = SubmissionService.getProcessedResponses(
-        ({
+        {
           responseMode: ResponseMode.Email,
           form_fields: [extraField],
-        } as unknown) as IEmailFormSchema,
+        } as unknown as IEmailFormSchema,
         [],
       )
 
@@ -225,10 +225,10 @@ describe('submission.service', () => {
       // Act + Assert
 
       const actualResult = SubmissionService.getProcessedResponses(
-        ({
+        {
           responseMode: ResponseMode.Encrypt,
           form_fields: [extraField],
-        } as unknown) as IEncryptedFormSchema,
+        } as unknown as IEncryptedFormSchema,
         [],
       )
 
@@ -268,10 +268,10 @@ describe('submission.service', () => {
 
       // Act
       const actualResult = SubmissionService.getProcessedResponses(
-        ({
+        {
           responseMode: ResponseMode.Encrypt,
           form_fields: [mobileField, emailField],
-        } as unknown) as IFormSchema,
+        } as unknown as IFormSchema,
         [mobileResponse, emailResponse],
       )
 
@@ -297,10 +297,10 @@ describe('submission.service', () => {
 
       // Act + Assert
       const actualResult = SubmissionService.getProcessedResponses(
-        ({
+        {
           responseMode: ResponseMode.Encrypt,
           form_fields: [mobileField],
-        } as unknown) as IEncryptedFormSchema,
+        } as unknown as IEncryptedFormSchema,
         [mobileResponse],
       )
 
@@ -318,10 +318,10 @@ describe('submission.service', () => {
 
       // Act + Assert
       const actualResult = SubmissionService.getProcessedResponses(
-        ({
+        {
           responseMode: ResponseMode.Email,
           form_fields: [nricField],
-        } as unknown) as IEmailFormSchema,
+        } as unknown as IEmailFormSchema,
         [nricResponse],
       )
 
@@ -336,19 +336,19 @@ describe('submission.service', () => {
       // Mock logic util to return non-empty to check if error is thrown
       jest
         .spyOn(LogicUtil, 'getLogicUnitPreventingSubmit')
-        .mockReturnValueOnce(({
+        .mockReturnValueOnce({
           preventSubmitMessage: 'mock prevent submit',
           conditions: [],
           logicType: LogicType.PreventSubmit,
           _id: 'some id',
-        } as unknown) as IPreventSubmitLogicSchema)
+        } as unknown as IPreventSubmitLogicSchema)
 
       // Act + Assert
       const actualResult = SubmissionService.getProcessedResponses(
-        ({
+        {
           responseMode: ResponseMode.Encrypt,
           form_fields: [],
-        } as unknown) as IEncryptedFormSchema,
+        } as unknown as IEncryptedFormSchema,
         [],
       )
 
@@ -361,12 +361,12 @@ describe('submission.service', () => {
     it('should return error when email form submission is prevented by logic', async () => {
       // Arrange
       // Mock logic util to return non-empty to check if error is thrown.
-      const mockReturnLogicUnit = ({
+      const mockReturnLogicUnit = {
         preventSubmitMessage: 'mock prevent submit',
         conditions: [],
         logicType: LogicType.PreventSubmit,
         _id: 'some id',
-      } as unknown) as IPreventSubmitLogicSchema
+      } as unknown as IPreventSubmitLogicSchema
 
       jest
         .spyOn(LogicUtil, 'getLogicUnitPreventingSubmit')
@@ -374,10 +374,10 @@ describe('submission.service', () => {
 
       // Act + Assert
       const actualResult = SubmissionService.getProcessedResponses(
-        ({
+        {
           responseMode: ResponseMode.Email,
           form_fields: [],
-        } as unknown) as IEmailFormSchema,
+        } as unknown as IEmailFormSchema,
         [],
       )
 
@@ -530,9 +530,9 @@ describe('submission.service', () => {
       // Arrange
       countSpy.mockImplementationOnce(
         () =>
-          (({
+          ({
             exec: () => Promise.reject(new Error('boom')),
-          } as unknown) as mongoose.Query<any>),
+          } as unknown as mongoose.Query<any>),
       )
 
       // Act
@@ -551,7 +551,7 @@ describe('submission.service', () => {
 
   describe('sendEmailConfirmations', () => {
     it('should call mail service and return true when email confirmations are sent successfully', async () => {
-      const mockForm = ({
+      const mockForm = {
         _id: MOCK_FORM_ID,
         form_fields: [
           {
@@ -563,7 +563,7 @@ describe('submission.service', () => {
             autoReplyOptions: AUTOREPLY_OPTIONS_2,
           },
         ],
-      } as unknown) as IFormSchema
+      } as unknown as IFormSchema
       MockMailService.sendAutoReplyEmails.mockResolvedValueOnce([
         {
           status: 'fulfilled',
@@ -617,10 +617,10 @@ describe('submission.service', () => {
     })
 
     it('should not call mail service when there are no email fields', async () => {
-      const mockForm = ({
+      const mockForm = {
         _id: MOCK_FORM_ID,
         form_fields: [generateDefaultField(BasicField.Number)],
-      } as unknown) as IFormSchema
+      } as unknown as IFormSchema
 
       const responses = [
         {
@@ -647,7 +647,7 @@ describe('submission.service', () => {
     })
 
     it('should not call mail service when there are email fields but all without email confirmation', async () => {
-      const mockForm = ({
+      const mockForm = {
         _id: MOCK_FORM_ID,
         form_fields: [
           {
@@ -659,7 +659,7 @@ describe('submission.service', () => {
             autoReplyOptions: { hasAutoReply: false },
           },
         ],
-      } as unknown) as IFormSchema
+      } as unknown as IFormSchema
 
       const responses = [
         {
@@ -692,7 +692,7 @@ describe('submission.service', () => {
     })
 
     it('should call mail service when there is a mix of email fields with and without confirmation', async () => {
-      const mockForm = ({
+      const mockForm = {
         _id: MOCK_FORM_ID,
         form_fields: [
           {
@@ -704,7 +704,7 @@ describe('submission.service', () => {
             autoReplyOptions: { hasAutoReply: false },
           },
         ],
-      } as unknown) as IFormSchema
+      } as unknown as IFormSchema
       MockMailService.sendAutoReplyEmails.mockResolvedValueOnce([
         {
           status: 'fulfilled',
@@ -751,7 +751,7 @@ describe('submission.service', () => {
     })
 
     it('should call mail service with responsesData empty when autoReplyData is undefined', async () => {
-      const mockForm = ({
+      const mockForm = {
         _id: MOCK_FORM_ID,
         form_fields: [
           {
@@ -763,7 +763,7 @@ describe('submission.service', () => {
             autoReplyOptions: AUTOREPLY_OPTIONS_2,
           },
         ],
-      } as unknown) as IFormSchema
+      } as unknown as IFormSchema
       MockMailService.sendAutoReplyEmails.mockResolvedValueOnce([
         {
           status: 'fulfilled',
@@ -817,7 +817,7 @@ describe('submission.service', () => {
     })
 
     it('should call mail service with attachments undefined when there are no attachments', async () => {
-      const mockForm = ({
+      const mockForm = {
         _id: MOCK_FORM_ID,
         form_fields: [
           {
@@ -829,7 +829,7 @@ describe('submission.service', () => {
             autoReplyOptions: AUTOREPLY_OPTIONS_2,
           },
         ],
-      } as unknown) as IFormSchema
+      } as unknown as IFormSchema
       MockMailService.sendAutoReplyEmails.mockResolvedValueOnce([
         {
           status: 'fulfilled',
@@ -883,7 +883,7 @@ describe('submission.service', () => {
     })
 
     it('should return SendEmailConfirmationError when mail service errors', async () => {
-      const mockForm = ({
+      const mockForm = {
         _id: MOCK_FORM_ID,
         form_fields: [
           {
@@ -895,7 +895,7 @@ describe('submission.service', () => {
             autoReplyOptions: AUTOREPLY_OPTIONS_2,
           },
         ],
-      } as unknown) as IFormSchema
+      } as unknown as IFormSchema
       MockMailService.sendAutoReplyEmails.mockImplementationOnce(() =>
         Promise.reject('rejected'),
       )
@@ -944,7 +944,7 @@ describe('submission.service', () => {
     })
 
     it('should return SendEmailConfirmationError when any email confirmations fail', async () => {
-      const mockForm = ({
+      const mockForm = {
         _id: MOCK_FORM_ID,
         form_fields: [
           {
@@ -956,7 +956,7 @@ describe('submission.service', () => {
             autoReplyOptions: AUTOREPLY_OPTIONS_2,
           },
         ],
-      } as unknown) as IFormSchema
+      } as unknown as IFormSchema
       const mockReason = 'reason'
       MockMailService.sendAutoReplyEmails.mockResolvedValueOnce([
         {

@@ -1,6 +1,6 @@
 import range from 'lodash/range'
 import { Document, LeanDocument, Model, ToObjectOptions, Types } from 'mongoose'
-import { Merge, SetRequired } from 'type-fest'
+import { SetRequired } from 'type-fest'
 
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
@@ -63,12 +63,9 @@ export type PublicFormValues = Pick<
   | 'responseMode'
 >
 
-export type PublicForm = Merge<
-  PublicFormValues,
-  {
-    admin: PublicUser
-  }
->
+export type PublicForm = Omit<PublicFormValues, 'admin'> & {
+  admin: PublicUser
+}
 
 export type FormOtpData = {
   form: IFormSchema['_id']

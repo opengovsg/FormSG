@@ -35,14 +35,14 @@ const twilioSuccessSpy = jest.fn().mockResolvedValue({
   sid: 'testSid',
 })
 
-const MOCK_VALID_CONFIG = ({
+const MOCK_VALID_CONFIG = {
   msgSrvcSid: MOCK_MSG_SRVC_SID,
   client: {
     messages: {
       create: twilioSuccessSpy,
     },
   },
-} as unknown) as TwilioConfig
+} as unknown as TwilioConfig
 
 const twilioFailureSpy = jest.fn().mockResolvedValue({
   status: 'testStatus',
@@ -50,14 +50,14 @@ const twilioFailureSpy = jest.fn().mockResolvedValue({
   errorCode: 21211,
 })
 
-const MOCK_INVALID_CONFIG = ({
+const MOCK_INVALID_CONFIG = {
   msgSrvcSid: MOCK_MSG_SRVC_SID,
   client: {
     messages: {
       create: twilioFailureSpy,
     },
   },
-} as unknown) as TwilioConfig
+} as unknown as TwilioConfig
 
 const smsCountSpy = jest.spyOn(SmsCountModel, 'logSms')
 

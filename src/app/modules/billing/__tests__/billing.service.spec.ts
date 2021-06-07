@@ -19,8 +19,8 @@ describe('billing.service', () => {
   describe('recordLoginByForm', () => {
     beforeEach(() => jest.restoreAllMocks())
     it('should call LoginModel.addLoginFromForm with the given form', async () => {
-      const mockForm = ({ authType: AuthType.SP } as unknown) as IPopulatedForm
-      const mockLogin = ({ esrvcId: 'esrvcId' } as unknown) as ILoginSchema
+      const mockForm = { authType: AuthType.SP } as unknown as IPopulatedForm
+      const mockLogin = { esrvcId: 'esrvcId' } as unknown as ILoginSchema
       const addLoginSpy = jest
         .spyOn(LoginModel, 'addLoginFromForm')
         .mockResolvedValueOnce(mockLogin)
@@ -30,8 +30,8 @@ describe('billing.service', () => {
     })
 
     it('should return FormHasNoAuthError when form has authType NIL', async () => {
-      const mockForm = ({ authType: AuthType.NIL } as unknown) as IPopulatedForm
-      const mockLogin = ({ esrvcId: 'esrvcId' } as unknown) as ILoginSchema
+      const mockForm = { authType: AuthType.NIL } as unknown as IPopulatedForm
+      const mockLogin = { esrvcId: 'esrvcId' } as unknown as ILoginSchema
       const addLoginSpy = jest
         .spyOn(LoginModel, 'addLoginFromForm')
         .mockResolvedValueOnce(mockLogin)
@@ -41,7 +41,7 @@ describe('billing.service', () => {
     })
 
     it('should return DatabaseError when adding login fails', async () => {
-      const mockForm = ({ authType: AuthType.SP } as unknown) as IPopulatedForm
+      const mockForm = { authType: AuthType.SP } as unknown as IPopulatedForm
       const addLoginSpy = jest
         .spyOn(LoginModel, 'addLoginFromForm')
         .mockRejectedValueOnce('')

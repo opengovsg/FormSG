@@ -78,9 +78,8 @@ function CreateFormModalController(
   }
 
   // Whether this operation should allow Storage Mode forms
-  const isEncryptModeEnabled = !FormFields.preventStorageModeDuplication(
-    FormToDuplicate,
-  )
+  const isEncryptModeEnabled =
+    !FormFields.preventStorageModeDuplication(FormToDuplicate)
 
   const { mode } = createFormModalOptions
   vm.mode = mode

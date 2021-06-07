@@ -1,5 +1,4 @@
 import { celebrate, Joi, Segments } from 'celebrate'
-import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { SALT_ROUNDS } from '../../../shared/util/verification'
@@ -7,6 +6,7 @@ import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta } from '../../utils/request'
+import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
 import { VerificationFactory } from './verification.factory'
@@ -25,7 +25,7 @@ const logger = createLoggerWithLabel(module)
  * @returns 201 - transaction is created
  * @returns 200 - transaction was not created as no fields were verifiable for the form
  */
-export const handleCreateTransaction: RequestHandler<
+export const handleCreateTransaction: ControllerHandler<
   never,
   Transaction | ErrorDto,
   { formId: string }
@@ -65,7 +65,7 @@ export const handleCreateTransaction: RequestHandler<
  * @returns 201 - transaction is created
  * @returns 200 - transaction was not created as no fields were verifiable for the form
  */
-export const handleCreateVerificationTransaction: RequestHandler<
+export const handleCreateVerificationTransaction: ControllerHandler<
   { formId: string },
   Transaction | ErrorDto
 > = async (req, res) => {
@@ -103,7 +103,7 @@ export const handleCreateVerificationTransaction: RequestHandler<
  * @param res
  * @deprecated in favour of handleGenerateOtp
  */
-export const handleResetField: RequestHandler<
+export const handleResetField: ControllerHandler<
   { transactionId: string },
   ErrorDto,
   { fieldId: string }
@@ -136,7 +136,7 @@ export const handleResetField: RequestHandler<
  * @param res
  * @deprecated in favour of handleGenerateOtp
  */
-export const handleGetOtp: RequestHandler<
+export const handleGetOtp: ControllerHandler<
   { transactionId: string },
   ErrorDto,
   { answer: string; fieldId: string }
@@ -193,7 +193,7 @@ export const handleGetOtp: RequestHandler<
  * @returns 500 when the otp could not be hashed
  * @returns 500 when there is a database error
  */
-export const _handleGenerateOtp: RequestHandler<
+export const _handleGenerateOtp: ControllerHandler<
   { transactionId: string; formId: string; fieldId: string },
   ErrorDto,
   { answer: string }
@@ -244,7 +244,7 @@ export const handleGenerateOtp = [
     }),
   }),
   _handleGenerateOtp,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * When user submits their otp for the field, the otp is validated.
@@ -254,7 +254,7 @@ export const handleGenerateOtp = [
  * @param res
  * @deprecated in favour of handleOtpVerification
  */
-export const handleVerifyOtp: RequestHandler<
+export const handleVerifyOtp: ControllerHandler<
   { transactionId: string },
   string | ErrorDto,
   { otp: string; fieldId: string }
@@ -300,7 +300,7 @@ export const handleVerifyOtp: RequestHandler<
  * @returns 500 when HashingError occurs
  * @returns 500 when DatabaseError occurs
  */
-export const _handleOtpVerification: RequestHandler<
+export const _handleOtpVerification: ControllerHandler<
   { transactionId: string; fieldId: string; formId: string },
   string | ErrorDto,
   { otp: string }
@@ -344,7 +344,7 @@ export const handleOtpVerification = [
     }),
   }),
   _handleOtpVerification,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for resetting the verification state of a field.
@@ -358,7 +358,7 @@ export const handleOtpVerification = [
  * @returns 404 when the field could not be found
  * @returns 500 when a database error occurs
  */
-export const handleResetFieldVerification: RequestHandler<
+export const handleResetFieldVerification: ControllerHandler<
   {
     formId: string
     fieldId: string

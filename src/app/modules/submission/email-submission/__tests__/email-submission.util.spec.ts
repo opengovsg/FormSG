@@ -96,12 +96,12 @@ const getResponse = (
   _id: string,
   answer: string,
 ): WithQuestion<ISingleAnswerResponse> =>
-  (({
+  ({
     _id,
     fieldType: BasicField.Attachment,
     question: 'mockQuestion',
     answer,
-  } as unknown) as WithQuestion<ISingleAnswerResponse>)
+  } as unknown as WithQuestion<ISingleAnswerResponse>)
 
 const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
   // Attachments are special cases, requiring filename and content
@@ -216,18 +216,18 @@ describe('email-submission.util', () => {
         [firstAttachment, secondAttachment],
       )
       expect(firstResponse.answer).toBe(firstAttachment.filename)
-      expect(((firstResponse as unknown) as IAttachmentResponse).filename).toBe(
+      expect((firstResponse as unknown as IAttachmentResponse).filename).toBe(
         firstAttachment.filename,
       )
-      expect(
-        ((firstResponse as unknown) as IAttachmentResponse).content,
-      ).toEqual(firstAttachment.content)
+      expect((firstResponse as unknown as IAttachmentResponse).content).toEqual(
+        firstAttachment.content,
+      )
       expect(secondResponse.answer).toBe(secondAttachment.filename)
+      expect((secondResponse as unknown as IAttachmentResponse).filename).toBe(
+        secondAttachment.filename,
+      )
       expect(
-        ((secondResponse as unknown) as IAttachmentResponse).filename,
-      ).toBe(secondAttachment.filename)
-      expect(
-        ((secondResponse as unknown) as IAttachmentResponse).content,
+        (secondResponse as unknown as IAttachmentResponse).content,
       ).toEqual(secondAttachment.content)
     })
 
@@ -236,10 +236,10 @@ describe('email-submission.util', () => {
       const response = getResponse(attachment.fieldId, MOCK_ANSWER)
       addAttachmentToResponses([response], [attachment])
       expect(response.answer).toBe(attachment.filename)
-      expect(((response as unknown) as IAttachmentResponse).filename).toBe(
+      expect((response as unknown as IAttachmentResponse).filename).toBe(
         attachment.filename,
       )
-      expect(((response as unknown) as IAttachmentResponse).content).toEqual(
+      expect((response as unknown as IAttachmentResponse).content).toEqual(
         attachment.content,
       )
     })
