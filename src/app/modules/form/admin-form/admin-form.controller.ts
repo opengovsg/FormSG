@@ -1437,7 +1437,7 @@ export const submitEncryptPreview: ControllerHandler<
       void SubmissionService.sendEmailConfirmations({
         form,
         submission,
-        autoReplyData:
+        recipientData:
           extractEmailConfirmationDataFromIncomingSubmission(
             incomingSubmission,
           ),
@@ -1584,7 +1584,7 @@ export const submitEmailPreview: ControllerHandler<
     submission,
     attachments,
     responsesData: emailData.autoReplyData,
-    autoReplyData: extractEmailConfirmationData(
+    recipientData: extractEmailConfirmationData(
       parsedResponses,
       form.form_fields,
     ),

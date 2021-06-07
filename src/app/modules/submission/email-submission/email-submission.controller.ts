@@ -311,7 +311,7 @@ const submitEmailModeForm: ControllerHandler<
             submission,
             attachments,
             responsesData: emailData.autoReplyData,
-            autoReplyData: extractEmailConfirmationData(
+            recipientData: extractEmailConfirmationData(
               parsedResponses,
               form.form_fields,
             ),

@@ -193,20 +193,20 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   submission,
   responsesData = [],
   attachments,
-  autoReplyData,
+  recipientData,
 }: {
   form: IPopulatedForm
   submission: S
   responsesData?: EmailRespondentConfirmationField[]
   attachments?: IAttachmentInfo[]
-  autoReplyData: AutoReplyMailData[]
+  recipientData: AutoReplyMailData[]
 }): ResultAsync<true, SendEmailConfirmationError> => {
   const logMeta = {
     action: 'sendEmailConfirmations',
     formId: form._id,
     submissionid: submission._id,
   }
-  if (autoReplyData.length === 0) {
+  if (recipientData.length === 0) {
     return okAsync(true)
   }
   const sentEmailsPromise = MailService.sendAutoReplyEmails({
@@ -214,7 +214,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
     submission,
     attachments,
     responsesData,
-    autoReplyMailDatas: autoReplyData,
+    autoReplyMailDatas: recipientData,
   })
   return ResultAsync.fromPromise(sentEmailsPromise, (error) => {
     logger.error({

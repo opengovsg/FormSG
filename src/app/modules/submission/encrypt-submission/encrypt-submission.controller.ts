@@ -357,7 +357,7 @@ const submitEncryptModeForm: ControllerHandler<
   return sendEmailConfirmations({
     form,
     submission: savedSubmission,
-    autoReplyData:
+    recipientData:
       extractEmailConfirmationDataFromIncomingSubmission(incomingSubmission),
   }).mapErr((error) => {
     logger.error({

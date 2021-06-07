@@ -589,13 +589,13 @@ describe('submission.service', () => {
           }),
         },
       ]
-      const autoReplyData = extractEmailConfirmationData(
+      const recipientData = extractEmailConfirmationData(
         responses,
         mockForm.form_fields,
       )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        autoReplyData,
+        recipientData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
@@ -629,14 +629,14 @@ describe('submission.service', () => {
           }),
         },
       ]
-      const autoReplyData = extractEmailConfirmationData(
+      const recipientData = extractEmailConfirmationData(
         responses,
         mockForm.form_fields,
       )
 
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        autoReplyData,
+        recipientData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
@@ -675,13 +675,13 @@ describe('submission.service', () => {
           }),
         },
       ]
-      const autoReplyData = extractEmailConfirmationData(
+      const recipientData = extractEmailConfirmationData(
         responses,
         mockForm.form_fields,
       )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        autoReplyData,
+        recipientData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
@@ -726,13 +726,13 @@ describe('submission.service', () => {
           }),
         },
       ]
-      const autoReplyData = extractEmailConfirmationData(
+      const recipientData = extractEmailConfirmationData(
         responses,
         mockForm.form_fields,
       )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        autoReplyData,
+        recipientData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
@@ -789,13 +789,13 @@ describe('submission.service', () => {
           }),
         },
       ]
-      const autoReplyData = extractEmailConfirmationData(
+      const recipientData = extractEmailConfirmationData(
         responses,
         mockForm.form_fields,
       )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        autoReplyData,
+        recipientData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: undefined,
@@ -855,13 +855,13 @@ describe('submission.service', () => {
           }),
         },
       ]
-      const autoReplyData = extractEmailConfirmationData(
+      const recipientData = extractEmailConfirmationData(
         responses,
         mockForm.form_fields,
       )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        autoReplyData,
+        recipientData,
         submission: MOCK_SUBMISSION,
         attachments: undefined,
         responsesData: MOCK_AUTOREPLY_DATA,
@@ -914,13 +914,13 @@ describe('submission.service', () => {
           }),
         },
       ]
-      const autoReplyData = extractEmailConfirmationData(
+      const recipientData = extractEmailConfirmationData(
         responses,
         mockForm.form_fields,
       )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        autoReplyData,
+        recipientData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
@@ -983,13 +983,13 @@ describe('submission.service', () => {
           }),
         },
       ]
-      const autoReplyData = extractEmailConfirmationData(
+      const recipientData = extractEmailConfirmationData(
         responses,
         mockForm.form_fields,
       )
       const result = await SubmissionService.sendEmailConfirmations({
         form: mockForm,
-        autoReplyData,
+        recipientData,
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
