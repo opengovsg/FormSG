@@ -1,7 +1,7 @@
 import axios from 'axios'
 import validator from 'validator'
 
-const ADMIN_AUTH_ENDPOINT = '/api/v3/auth'
+const AUTH_ENDPOINT = '/api/v3/auth'
 
 /**
  * Check whether the given email string is from an email domain.
@@ -16,7 +16,7 @@ export const checkIsEmailAllowed = async (email = ''): Promise<string> => {
   }
 
   return axios
-    .post(`${ADMIN_AUTH_ENDPOINT}/email/validate`, {
+    .post(`${AUTH_ENDPOINT}/email/validate`, {
       email: email.toLowerCase(),
     })
     .then(() => email)
@@ -43,7 +43,7 @@ export const sendLoginOtp = async (email = ''): Promise<string> => {
   }
 
   return axios
-    .post<string>(`${ADMIN_AUTH_ENDPOINT}/otp/generate`, {
+    .post<string>(`${AUTH_ENDPOINT}/otp/generate`, {
       email: email.toLowerCase(),
     })
     .then(({ data }) => data)

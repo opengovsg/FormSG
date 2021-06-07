@@ -1,7 +1,7 @@
 'use strict'
 
 const HttpStatus = require('http-status-codes')
-const AdminAuthService = require('../../../services/AdminAuthService')
+const AuthService = require('../../../services/AuthService')
 
 angular
   .module('users')
@@ -130,7 +130,7 @@ function AuthenticationController(
    */
   vm.login = function () {
     vm.buttonClicked = true
-    $q.when(AdminAuthService.checkIsEmailAllowed(vm.credentials.email))
+    $q.when(AuthService.checkIsEmailAllowed(vm.credentials.email))
       .then(() => vm.sendOtp())
       .catch((error) => {
         // Invalid agency
@@ -155,7 +155,7 @@ function AuthenticationController(
     vm.buttonClicked = true
     vm.showOtpDelayNotification = false
 
-    $q.when(AdminAuthService.sendLoginOtp(vm.credentials.email))
+    $q.when(AuthService.sendLoginOtp(vm.credentials.email))
       .then((success) => {
         vm.isOtpSending = false
         vm.buttonClicked = false
