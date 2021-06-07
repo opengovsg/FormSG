@@ -163,7 +163,7 @@ export const handleLoginVerifyOtp: RequestHandler<
         const { _id } = user.toObject() as SessionUser
         req.session.user = { _id }
         logger.info({
-          message: `Successfully logged in user ${user}`,
+          message: `Successfully logged in user ${user._id}`,
           meta: logMeta,
         })
 
