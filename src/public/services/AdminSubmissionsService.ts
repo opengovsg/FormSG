@@ -36,7 +36,7 @@ export const countFormSubmissions = async ({
  * @param pageNum The page number of the responses
  * @returns The metadata of the page of forms
  */
-export const getFormsMetadata = async ({
+export const getFormsMetadataByPage = async ({
   formId,
   pageNum,
 }: FormsSubmissionMetadataQueryDto): Promise<SubmissionMetadataList> => {
@@ -55,7 +55,7 @@ export const getFormsMetadata = async ({
  * @param submissionId The id of the specified submission to retrieve
  * @returns The metadata of the form
  */
-export const getFormMetadata = async ({
+export const getFormMetadataById = async ({
   formId,
   submissionId,
 }: FormSubmissionMetadataQueryDto): Promise<SubmissionMetadataList> => {

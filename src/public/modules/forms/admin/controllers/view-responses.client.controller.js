@@ -407,11 +407,11 @@ function ViewResponsesController(
         getData: (params) => {
           let { page } = params.url()
           const getMetadataPromise = vm.filterBySubmissionRefId
-            ? AdminSubmissionsService.getFormMetadata({
+            ? AdminSubmissionsService.getFormMetadataById({
                 formId: vm.myform._id,
                 submissionId: vm.filterBySubmissionRefId,
               })
-            : AdminSubmissionsService.getFormsMetadata({
+            : AdminSubmissionsService.getFormsMetadataByPage({
                 formId: vm.myform._id,
                 pageNum: page,
               })
