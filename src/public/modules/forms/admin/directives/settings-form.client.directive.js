@@ -356,7 +356,10 @@ function settingsFormDirective(
           }
         }
 
-        $scope.isWebhookRetryToggleDisabled = () => !$scope.tempForm.webhook.url
+        $scope.isWebhookRetryToggleDisabled = () => {
+          // disable if there is no valid saved webhook URL
+          return !get($scope.myform, 'webhook.url')
+        }
 
         $scope.saveWebhookUrl = () => {
           if (!get($scope, 'tempForm.webhook.url')) {
