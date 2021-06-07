@@ -61,7 +61,9 @@ describe('UpdateFormService', () => {
 
       // Assert
       await expect(actual).resolves.toEqual(MOCK_RESPONSE)
-      expect(MockAxios.post).toHaveBeenCalledWith(
+      expect(
+        MockAxios.post,
+      ).toHaveBeenCalledWith(
         `/api/v3/admin/forms/${MOCK_FORM_ID}/preview/submissions/email`,
         expectedFormData,
         { params: { captchaResponse: mockCaptcha } },
@@ -136,7 +138,9 @@ describe('UpdateFormService', () => {
 
       // Assert
       await expect(actual).resolves.toEqual(MOCK_RESPONSE)
-      expect(MockAxios.post).toHaveBeenCalledWith(
+      expect(
+        MockAxios.post,
+      ).toHaveBeenCalledWith(
         `/api/v3/admin/forms/${MOCK_FORM_ID}/preview/submissions/encrypt`,
         MOCK_CONTENT,
         { params: { captchaResponse: mockCaptcha } },
