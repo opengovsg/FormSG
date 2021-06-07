@@ -5213,7 +5213,7 @@ describe('admin-form.controller', () => {
           submission: MOCK_SUBMISSION,
           attachments: [],
           responsesData: MOCK_AUTOREPLY_DATA,
-          autoReplyData: [],
+          recipientData: [],
         },
       )
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -6051,7 +6051,7 @@ describe('admin-form.controller', () => {
           submission: MOCK_SUBMISSION,
           attachments: [],
           responsesData: MOCK_AUTOREPLY_DATA,
-          autoReplyData: [],
+          recipientData: [],
         },
       )
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -6173,7 +6173,7 @@ describe('admin-form.controller', () => {
         {
           form: MOCK_FORM,
           submission: MOCK_SUBMISSION,
-          autoReplyData: [],
+          recipientData: [],
         },
       )
       expect(mockRes.json).toHaveBeenCalledWith({
