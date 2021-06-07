@@ -3,14 +3,14 @@ import { ObjectId } from 'bson'
 import { StatusCodes } from 'http-status-codes'
 import MockAxios from 'jest-mock-axios'
 
-import { FormUpdateParams } from 'src/app/modules/form/admin-form/admin-form.types'
-import { BasicField, IPopulatedForm, IYesNoFieldSchema } from 'src/types'
 import {
   EmailSubmissionDto,
   EncryptSubmissionDto,
   SubmissionResponseDto,
 } from 'src/types/api'
 
+import { BasicField, IPopulatedForm, IYesNoFieldSchema } from '../../../types'
+import { FormUpdateParams } from '../../../types/api'
 import * as SubmissionUtil from '../../utils/submission'
 import {
   ADMIN_FORM_ENDPOINT,

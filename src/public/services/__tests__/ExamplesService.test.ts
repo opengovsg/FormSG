@@ -1,8 +1,7 @@
 import MockAxios from 'jest-mock-axios'
 
-import { DuplicateFormBody } from 'src/app/modules/form/admin-form/admin-form.types'
-import { IPopulatedUser, PublicForm, ResponseMode } from 'src/types'
-
+import { IPopulatedUser, PublicForm, ResponseMode } from '../../../types'
+import { DuplicateFormBody } from '../../../types/api'
 import * as ExamplesService from '../ExamplesService'
 
 jest.mock('axios', () => MockAxios)

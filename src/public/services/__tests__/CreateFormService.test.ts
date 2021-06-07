@@ -1,10 +1,9 @@
 import { ObjectId } from 'bson'
 import MockAxios from 'jest-mock-axios'
 
-import { DuplicateFormBody } from 'src/app/modules/form/admin-form/admin-form.types'
-import { IPopulatedUser, IYesNoFieldSchema } from 'src/types'
-import { ResponseMode } from 'src/types/form'
-
+import { IPopulatedUser, IYesNoFieldSchema } from '../../../types'
+import { DuplicateFormBody } from '../../../types/api'
+import { ResponseMode } from '../../../types/form'
 import {
   ADMIN_FORM_ENDPOINT,
   createForm,
