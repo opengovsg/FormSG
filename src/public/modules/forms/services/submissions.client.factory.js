@@ -7,6 +7,7 @@ const { ndjsonStream } = require('../helpers/ndjsonStream')
 const fetchStream = require('fetch-readablestream')
 
 const AdminSubmissionsService = require('../../../services/AdminSubmissionsService')
+const { WorkerErrorStates, WorkerSuccessStates } = require('../../../../types')
 
 const NUM_OF_METADATA_ROWS = 5
 
@@ -127,13 +128,27 @@ function SubmissionsFactory($q, $timeout, $window, GTag) {
                 const { data } = event
                 const { csvRecord } = data
 
-                if (csvRecord.status === 'ATTACHMENT_ERROR') {
-                  attachmentErrorCount++
-                  errorCount++
-                } else if (csvRecord.status === 'ERROR') {
-                  errorCount++
-                } else if (csvRecord.status === 'UNVERIFIED') {
+                // If the signature is not verified, it is not an error as there is still a valid result
+                // Otherwise, increment the error count (and the specific error count)
+                if (
+                  csvRecord.status ===
+                  WorkerErrorStates.UnverifiedSignatureError
+                ) {
                   unverifiedCount++
+                }
+
+                if (
+                  csvRecord.status !== WorkerSuccessStates.Success &&
+                  csvRecord.status !==
+                    WorkerErrorStates.UnverifiedSignatureError
+                ) {
+                  errorCount++
+                  if (
+                    csvRecord.status ===
+                    WorkerErrorStates.AttachmentDownloadError
+                  ) {
+                    attachmentErrorCount++
+                  }
                 }
 
                 if (csvRecord.submissionData) {
@@ -148,18 +163,6 @@ function SubmissionsFactory($q, $timeout, $window, GTag) {
                   )
                 }
               }
-              // When worker fails to decrypt a message
-              worker.onerror = (error) => {
-                errorCount++
-                console.error('EncryptionWorker Error', error)
-              }
-
-              // Initiate all workers with formsgSdkMode so they can spin up
-              // formsg sdk with the correct keys.
-              worker.postMessage({
-                init: true,
-                formsgSdkMode: $window.formsgSdkMode,
-              })
             })
 
             let downloadStartTime
@@ -182,6 +185,7 @@ function SubmissionsFactory($q, $timeout, $window, GTag) {
                           line: result.value,
                           secretKey,
                           downloadAttachments,
+                          sdkMode: $window.formsgSdkMode,
                         })
                         receivedRecordCount++
                       } catch (error) {
