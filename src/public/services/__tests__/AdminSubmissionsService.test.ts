@@ -25,13 +25,13 @@ describe('AdminSubmissionsService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: 123 })
 
       // Act
-      const actual = countFormSubmissions({
+      const actual = await countFormSubmissions({
         formId: MOCK_FORM_ID,
         dates: { startDate: MOCK_START_DATE, endDate: MOCK_END_DATE },
       })
 
       // Assert
-      await expect(actual).resolves.toEqual(123)
+      expect(actual).toEqual(123)
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/count`,
         {
@@ -48,12 +48,12 @@ describe('AdminSubmissionsService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: 123 })
 
       // Act
-      const actual = countFormSubmissions({
+      const actual = await countFormSubmissions({
         formId: MOCK_FORM_ID,
       })
 
       // Assert
-      await expect(actual).resolves.toEqual(123)
+      expect(actual).toEqual(123)
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/count`,
       )
@@ -79,13 +79,13 @@ describe('AdminSubmissionsService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: MOCK_RESPONSE })
 
       // Act
-      const actual = getFormsMetadataByPage({
+      const actual = await getFormsMetadataByPage({
         formId: MOCK_FORM_ID,
         pageNum: MOCK_PAGE_NUM,
       })
 
       // Assert
-      await expect(actual).resolves.toEqual(MOCK_RESPONSE)
+      expect(actual).toEqual(MOCK_RESPONSE)
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/metadata`,
         {
@@ -116,13 +116,13 @@ describe('AdminSubmissionsService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: MOCK_RESPONSE })
 
       // Act
-      const actual = getFormMetadataById({
+      const actual = await getFormMetadataById({
         formId: MOCK_FORM_ID,
         submissionId: MOCK_SUBMISSION_ID,
       })
 
       // Assert
-      await expect(actual).resolves.toEqual(MOCK_RESPONSE)
+      expect(actual).toEqual(MOCK_RESPONSE)
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/metadata`,
         {
@@ -150,13 +150,13 @@ describe('AdminSubmissionsService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: MOCK_RESPONSE })
 
       // Act
-      const actual = getEncryptedResponse({
+      const actual = await getEncryptedResponse({
         formId: MOCK_FORM_ID,
         submissionId: MOCK_SUBMISSION_ID,
       })
 
       // Assert
-      await expect(actual).resolves.toEqual(MOCK_RESPONSE)
+      expect(actual).toEqual(MOCK_RESPONSE)
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/${MOCK_SUBMISSION_ID}`,
       )
