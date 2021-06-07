@@ -20,6 +20,14 @@ const createNumberFieldSchema = () => {
         type: Number,
         default: null,
       },
+      customRangeMax: {
+        type: Number,
+        default: null,
+      },
+      customRangeMin: {
+        type: Number,
+        default: null,
+      },
       selectedValidation: {
         type: String,
         enum: [...Object.values(NumberSelectedValidation), null],
