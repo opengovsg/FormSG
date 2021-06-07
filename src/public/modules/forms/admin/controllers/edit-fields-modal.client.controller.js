@@ -81,9 +81,8 @@ function EditFieldsModalController(
 
     vm.field.allowedEmailDomainsPlaceholder = `${userEmailDomain}\n@agency.gov.sg`
     if (vm.field.hasAllowedEmailDomains) {
-      vm.field.allowedEmailDomainsFromText = vm.field.allowedEmailDomains.join(
-        '\n',
-      )
+      vm.field.allowedEmailDomainsFromText =
+        vm.field.allowedEmailDomains.join('\n')
     }
     $scope.$watch('vm.field.isVerifiable', (newValue) => {
       if (newValue) {
@@ -196,11 +195,8 @@ function EditFieldsModalController(
       return false
     }
 
-    const {
-      selectedDateValidation,
-      customMinDate,
-      customMaxDate,
-    } = dateValidation
+    const { selectedDateValidation, customMinDate, customMaxDate } =
+      dateValidation
 
     if (selectedDateValidation !== DateValidationOptions.Custom) {
       return false
