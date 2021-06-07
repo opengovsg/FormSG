@@ -14,7 +14,7 @@ type UnprocessedRecord = {
   record: ReturnType<typeof keyBy>
 }
 
-class CsvMergedHeadersGenerator extends CsvGenerator {
+export class CsvMergedHeadersGenerator extends CsvGenerator {
   hasBeenProcessed: boolean
   fieldIdToQuestion: Map<
     string,
@@ -38,12 +38,12 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
   /**
    * Returns current length of CSV file excluding header and meta-data
    */
-  length() {
+  length(): number {
     return this.unprocessed.length
   }
 
   /**
-   *
+   * Adds an UnprocessedRecord to this.unprocessed
    * @param {Object} decryptedContent
    * @param {DisplayedResponse[]} decryptedContent.record
    * @param {string} decryptedContent.created
@@ -57,14 +57,13 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
     record: DisplayedResponse[]
     created: string
     submissionId: string
-  }) {
+  }): void {
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
     const fieldRecords = record.map((content) => {
       const fieldRecord = getResponseInstance(content)
       if (!fieldRecord.isHeader) {
         const currentMapping = this.fieldIdToQuestion.get(fieldRecord.id)
-
         // Only set new mapping if it does not exist or this record is a later
         // submission.
         // Might need to differentiate the question headers if we allow
@@ -106,7 +105,7 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
     unprocessedRecord: Dictionary<Response>,
     fieldId: string,
     colIndex: number,
-  ) {
+  ): string {
     const fieldRecord = unprocessedRecord[fieldId]
     if (!fieldRecord) return ''
     return fieldRecord.getAnswer(colIndex)
@@ -117,7 +116,7 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
    * assigning each answer to their respective locations in each response row in
    * the csv data.
    */
-  process() {
+  process(): void {
     if (this.hasBeenProcessed) return
 
     // Create a header row in CSV using the fieldIdToQuestion map.
@@ -156,7 +155,7 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
    * Add meta-data as first three rows of the CSV. If there is already meta-data
    * added, it will be replaced by the latest counts.
    */
-  addMetaDataFromSubmission(errorCount: number, unverifiedCount: number) {
+  addMetaDataFromSubmission(errorCount: number, unverifiedCount: number): void {
     const metaDataRows = [
       ['Expected total responses', this.expectedNumberOfRecords],
       ['Success count', this.length()],
@@ -171,10 +170,8 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
    * Main method to call to retrieve a downloadable csv.
    * @param {string} filename
    */
-  downloadCsv(filename: string) {
+  downloadCsv(filename: string): void {
     this.process()
     this.triggerFileDownload(filename)
   }
 }
-
-module.exports = CsvMergedHeadersGenerator

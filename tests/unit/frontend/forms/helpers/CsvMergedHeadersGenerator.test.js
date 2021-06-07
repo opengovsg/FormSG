@@ -1,7 +1,7 @@
 import { stringify } from 'csv-string'
 import moment from 'moment-timezone'
 
-import CsvMergedHeadersGenerator from '../../../../../src/public/modules/forms/helpers/CsvMergedHeadersGenerator'
+import { CsvMergedHeadersGenerator } from '../../../../../src/public/modules/forms/helpers/CsvMergedHeadersGenerator'
 
 const UTF8_BYTE_ORDER_MARK = '\uFEFF'
 const BOM_LENGTH = 1
