@@ -6109,13 +6109,11 @@ describe('admin-form.controller', () => {
       )
       MockIncomingEncryptSubmission.init = mockIncomingEncryptSubmissionInit
       mockIncomingEncryptSubmissionInit.mockReturnValue(
-        ok(
-          new IncomingEncryptSubmission(
-            MOCK_RESPONSES,
-            MOCK_FORM,
-            MOCK_ENCRYPTED_CONTENT,
-          ),
-        ),
+        ok({
+          responses: MOCK_RESPONSES,
+          form: MOCK_FORM,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+        } as IncomingEncryptSubmission),
       )
       MockSubmissionUtils.extractEmailConfirmationDataFromIncomingSubmission.mockReturnValue(
         [],
