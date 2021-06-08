@@ -177,36 +177,6 @@ export const sendWebhook = (
           },
         ),
       )
-      .andThen((submissionWebhookView) => {
-        return ResultAsync.fromPromise(
-          axios.post<unknown>(webhookUrl, submissionWebhookView, {
-            headers: {
-              'X-FormSG-Signature': formsgSdk.webhooks.constructHeader({
-                epoch: now,
-                submissionId,
-                formId,
-                signature,
-              }),
-            },
-            maxRedirects: 0,
-          }),
-          (error) => {
-            logger.error({
-              message: 'Webhook POST failed',
-              meta: {
-                ...logMeta,
-                isAxiosError: axios.isAxiosError(error),
-                status: get(error, 'response.status'),
-              },
-              error,
-            })
-            if (axios.isAxiosError(error)) {
-              return new WebhookFailedWithAxiosError(error)
-            }
-            return new WebhookFailedWithUnknownError(error)
-          },
-        )
-      })
       .map((response) => {
         // Capture response for logging purposes
         logger.info({
@@ -225,6 +195,8 @@ export const sendWebhook = (
       .orElse((error) => {
         // Webhook was not posted
         if (error instanceof WebhookValidationError) return errAsync(error)
+
+        // S3 pre-signed URL generation failed
         if (error instanceof WebhookFailedWithPresignedUrlGenerationError)
           return errAsync(error)
 
