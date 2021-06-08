@@ -33,13 +33,13 @@ const createNumberFieldSchema = () => {
   // Virtuals to allow for backwards compatibility after customMin and customMax were removed as part of #408
   // TODO: Remove virtuals (#2039)
   ValidationOptionsSchema.virtual('customMin').get(function (
-    this: WithCustomMinMax<NumberValidationOptions>,
+    this: NumberValidationOptions,
   ) {
     return this.customVal
   })
 
   ValidationOptionsSchema.virtual('customMax').get(function (
-    this: WithCustomMinMax<NumberValidationOptions>,
+    this: NumberValidationOptions,
   ) {
     return this.customVal
   })
