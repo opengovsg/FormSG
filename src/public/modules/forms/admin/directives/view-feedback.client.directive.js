@@ -1,25 +1,19 @@
 'use strict'
 
 const FormFeedbackService = require('../../../../services/FormFeedbackService')
+const AdminSubmissionsService = require('../../../../services/AdminSubmissionsService')
 
 angular
   .module('forms')
   .directive('viewFeedbackDirective', [
-    '$timeout',
     '$q',
-    'Submissions',
+    '$timeout',
     'NgTableParams',
     'emoji',
     viewFeedbackDirective,
   ])
 
-function viewFeedbackDirective(
-  $timeout,
-  $q,
-  Submissions,
-  NgTableParams,
-  emoji,
-) {
+function viewFeedbackDirective($q, $timeout, NgTableParams, emoji) {
   return {
     templateUrl:
       'modules/forms/admin/directiveViews/view-feedback.client.view.html',
@@ -67,16 +61,17 @@ function viewFeedbackDirective(
         // When this route is initialized, call the count function
         $scope.$parent.$watch('vm.activeResultsTab', (newValue) => {
           if (newValue === 'feedback' && $scope.loading) {
-            Submissions.count({
-              formId: $scope.myform._id,
-            }).then(
-              function (response) {
-                $scope.createFeedbackTable(response)
-              },
-              function (error) {
-                console.error(error)
-              },
+            $q.when(
+              AdminSubmissionsService.countFormSubmissions({
+                formId: $scope.myform._id,
+              }),
             )
+              .then(function (response) {
+                $scope.createFeedbackTable(response)
+              })
+              .catch(function (error) {
+                console.error(error)
+              })
           }
         })
 

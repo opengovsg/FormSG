@@ -7,6 +7,7 @@ import {
   IEncryptedSubmissionSchema,
   ISubmissionSchema,
   IWebhookResponse,
+  WebhookView,
 } from '../../../types'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -18,9 +19,12 @@ import { SubmissionNotFoundError } from '../submission/submission.errors'
 import {
   WebhookFailedWithAxiosError,
   WebhookFailedWithUnknownError,
+  WebhookPushToQueueError,
   WebhookValidationError,
 } from './webhook.errors'
-import { formatWebhookResponse } from './webhook.utils'
+import { WebhookQueueMessage } from './webhook.message'
+import { WebhookProducer } from './webhook.producer'
+import { formatWebhookResponse, isSuccessfulResponse } from './webhook.utils'
 import { validateWebhookUrl } from './webhook.validation'
 
 const logger = createLoggerWithLabel(module)
@@ -69,17 +73,11 @@ export const saveWebhookRecord = (
 }
 
 export const sendWebhook = (
-  submission: IEncryptedSubmissionSchema,
+  webhookView: WebhookView,
   webhookUrl: string,
-): ResultAsync<
-  IWebhookResponse,
-  | WebhookValidationError
-  | WebhookFailedWithAxiosError
-  | WebhookFailedWithUnknownError
-> => {
+): ResultAsync<IWebhookResponse, WebhookValidationError> => {
   const now = Date.now()
-  const submissionWebhookView = submission.getWebhookView()
-  const { submissionId, formId } = submissionWebhookView.data
+  const { submissionId, formId } = webhookView.data
 
   const signature = formsgSdk.webhooks.generateSignature({
     uri: webhookUrl,
@@ -109,7 +107,7 @@ export const sendWebhook = (
   })
     .andThen(() =>
       ResultAsync.fromPromise(
-        axios.post<unknown>(webhookUrl, submissionWebhookView, {
+        axios.post<unknown>(webhookUrl, webhookView, {
           headers: {
             'X-FormSG-Signature': formsgSdk.webhooks.constructHeader({
               epoch: now,
@@ -119,6 +117,9 @@ export const sendWebhook = (
             }),
           },
           maxRedirects: 0,
+          // Timeout after 10 seconds to allow for cold starts in receiver,
+          // e.g. Lambdas
+          timeout: 10 * 1000,
         }),
         (error) => {
           logger.error({
@@ -175,3 +176,43 @@ export const sendWebhook = (
       })
     })
 }
+
+/**
+ * Creates a function which sends a webhook and saves the necessary records.
+ * This function sends the INITIAL webhook, which occurs immediately after
+ * a submission. If the initial webhook fails and retries are enabled, the
+ * webhook is queued for retries.
+ * @returns function which sends webhook and saves a record of it
+ */
+export const createInitialWebhookSender =
+  (producer?: WebhookProducer) =>
+  (
+    submission: IEncryptedSubmissionSchema,
+    webhookUrl: string,
+    isRetryEnabled: boolean,
+  ): ResultAsync<
+    true,
+    | WebhookValidationError
+    | PossibleDatabaseError
+    | SubmissionNotFoundError
+    | WebhookPushToQueueError
+  > => {
+    // Attempt to send webhook
+    return sendWebhook(submission.getWebhookView(), webhookUrl).andThen(
+      (webhookResponse) =>
+        // Save record of sending to database
+        saveWebhookRecord(submission._id, webhookResponse).andThen(() => {
+          // If webhook successful or retries not enabled, no further action
+          if (
+            isSuccessfulResponse(webhookResponse) ||
+            !producer ||
+            !isRetryEnabled
+          )
+            return okAsync(true)
+          // Webhook failed and retries enabled, so create initial message and enqueue
+          return WebhookQueueMessage.fromSubmissionId(
+            String(submission._id),
+          ).asyncAndThen((queueMessage) => producer.sendMessage(queueMessage))
+        }),
+    )
+  }
