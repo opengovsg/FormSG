@@ -8,12 +8,8 @@ import {
   sendLoginOtp,
   verifyLoginOtp,
 } from '../AuthService'
-import * as UserService from '../UserService'
 
 jest.mock('axios')
-jest.mock('../UserService')
-
-const MockUserService = mocked(UserService)
 const MockAxios = mocked(axios, true)
 
 // Duplicated here instead of exporting from AuthService to prevent production
@@ -67,7 +63,7 @@ describe('AuthService', () => {
     const MOCK_OTP = '123456'
     const MOCK_EMAIL = 'mockEmail@example.com'
 
-    it('should save returned user to localStorage and return user on success', async () => {
+    it('should return user on success', async () => {
       // Arrange
       const mockUser = {
         _id: 'some id',
@@ -81,9 +77,6 @@ describe('AuthService', () => {
 
       // Assert
       expect(actual).toEqual(mockUser)
-      expect(MockUserService.saveUserToLocalStorage).toHaveBeenCalledWith(
-        mockUser,
-      )
       expect(MockAxios.post).toHaveBeenCalledWith(
         EXPECTED_POST_ENDPOINT,
         expectedParams,

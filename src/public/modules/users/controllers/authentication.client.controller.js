@@ -4,6 +4,7 @@ const { StatusCodes } = require('http-status-codes')
 const get = require('lodash/get')
 const validator = require('validator').default
 const AuthService = require('../../../services/AuthService')
+const UserService = require('../../../services/UserService')
 
 angular
   .module('users')
@@ -222,7 +223,8 @@ function AuthenticationController(
         email: vm.credentials.email,
       }),
     )
-      .then(() => {
+      .then((user) => {
+        UserService.saveUserToLocalStorage(user)
         vm.buttonClicked = false
         // Configure message to be show
         vm.signInMsg = {

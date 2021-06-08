@@ -9,6 +9,6 @@ export const STORAGE_USER_KEY = 'user'
  *
  * @param user the user to save to local storage
  */
-export const saveUserToLocalStorage = (user: User | null): void => {
+export const saveUserToLocalStorage = (user: User): void => {
   localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user))
 }
