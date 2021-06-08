@@ -101,7 +101,7 @@ export const downloadAndDecryptAttachmentsAsZip = async (
     async ([questionNum, { url, filename }]) => {
       const bytesArray = await downloadAndDecryptAttachment(url, secretKey)
       const fileName = `Question ${questionNum} - ${filename}`
-      return zip.file(fileName, bytesArray || [])
+      return zip.file(fileName, bytesArray ?? [])
     },
   )
 
