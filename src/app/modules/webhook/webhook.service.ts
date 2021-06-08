@@ -98,14 +98,13 @@ export const sendWebhook = (
   webhookView: WebhookView,
   webhookUrl: string,
 ): ResultAsync<
-  IWebhookResponse, 
+  IWebhookResponse,
   | WebhookValidationError
   | WebhookFailedWithAxiosError
   | WebhookFailedWithPresignedUrlGenerationError
   | WebhookFailedWithUnknownError
 > => {
   const now = Date.now()
-  const rawSubmissionWebhookView = submission.getWebhookView()
   const { submissionId, formId } = webhookView.data
 
   const signature = formsgSdk.webhooks.generateSignature({
@@ -135,7 +134,7 @@ export const sendWebhook = (
       : new WebhookValidationError()
   }).andThen(() => {
     return ResultAsync.fromPromise(
-      createWebhookSubmissionView(rawSubmissionWebhookView),
+      createWebhookSubmissionView(webhookView),
       (error) => {
         logger.error({
           message: 'S3 attachment presigned URL generation failed',
@@ -145,39 +144,39 @@ export const sendWebhook = (
         return new WebhookFailedWithPresignedUrlGenerationError(error)
       },
     )
-    .andThen(() =>
-      ResultAsync.fromPromise(
-        axios.post<unknown>(webhookUrl, webhookView, {
-          headers: {
-            'X-FormSG-Signature': formsgSdk.webhooks.constructHeader({
-              epoch: now,
-              submissionId,
-              formId,
-              signature,
-            }),
-          },
-          maxRedirects: 0,
-          // Timeout after 10 seconds to allow for cold starts in receiver,
-          // e.g. Lambdas
-          timeout: 10 * 1000,
-        }),
-        (error) => {
-          logger.error({
-            message: 'Webhook POST failed',
-            meta: {
-              ...logMeta,
-              isAxiosError: axios.isAxiosError(error),
-              status: get(error, 'response.status'),
+      .andThen((submissionWebhookView) =>
+        ResultAsync.fromPromise(
+          axios.post<unknown>(webhookUrl, submissionWebhookView, {
+            headers: {
+              'X-FormSG-Signature': formsgSdk.webhooks.constructHeader({
+                epoch: now,
+                submissionId,
+                formId,
+                signature,
+              }),
             },
-            error,
-          })
-          if (axios.isAxiosError(error)) {
-            return new WebhookFailedWithAxiosError(error)
-          }
-          return new WebhookFailedWithUnknownError(error)
-        },
-      ),
-    )
+            maxRedirects: 0,
+            // Timeout after 10 seconds to allow for cold starts in receiver,
+            // e.g. Lambdas
+            timeout: 10 * 1000,
+          }),
+          (error) => {
+            logger.error({
+              message: 'Webhook POST failed',
+              meta: {
+                ...logMeta,
+                isAxiosError: axios.isAxiosError(error),
+                status: get(error, 'response.status'),
+              },
+              error,
+            })
+            if (axios.isAxiosError(error)) {
+              return new WebhookFailedWithAxiosError(error)
+            }
+            return new WebhookFailedWithUnknownError(error)
+          },
+        ),
+      )
       .andThen((submissionWebhookView) => {
         return ResultAsync.fromPromise(
           axios.post<unknown>(webhookUrl, submissionWebhookView, {
