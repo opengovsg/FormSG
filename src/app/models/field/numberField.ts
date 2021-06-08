@@ -8,14 +8,6 @@ const createNumberFieldSchema = () => {
   return new Schema<INumberFieldSchema>({
     myInfo: MyInfoSchema,
     ValidationOptions: {
-      customMax: {
-        type: Number,
-        default: null,
-      },
-      customMin: {
-        type: Number,
-        default: null,
-      },
       customVal: {
         type: Number,
         default: null,

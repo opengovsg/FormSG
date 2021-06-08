@@ -1,8 +1,6 @@
 import { IField, IFieldSchema, TextSelectedValidation } from './baseField'
 
 export type LongTextValidationOptions = {
-  customMax: number | null
-  customMin: number | null
   customVal: number | null
   selectedValidation: TextSelectedValidation | null
 }

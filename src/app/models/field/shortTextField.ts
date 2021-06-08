@@ -9,14 +9,6 @@ const createShortTextFieldSchema = () => {
   return new Schema<IShortTextFieldSchema>({
     myInfo: MyInfoSchema,
     ValidationOptions: {
-      customMax: {
-        type: Number,
-        default: null,
-      },
-      customMin: {
-        type: Number,
-        default: null,
-      },
       customVal: {
         type: Number,
         default: null,

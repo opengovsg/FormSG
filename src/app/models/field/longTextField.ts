@@ -6,14 +6,6 @@ import { TextSelectedValidation } from '../../../types/field/baseField'
 const createLongTextFieldSchema = () => {
   return new Schema<ILongTextFieldSchema>({
     ValidationOptions: {
-      customMax: {
-        type: Number,
-        default: null,
-      },
-      customMin: {
-        type: Number,
-        default: null,
-      },
       customVal: {
         type: Number,
         default: null,

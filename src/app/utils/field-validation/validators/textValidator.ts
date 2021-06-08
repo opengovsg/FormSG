@@ -17,52 +17,48 @@ type TextFieldValidatorConstructor = (
  * Returns a validator to check if
  * text length is less than the min length specified.
  */
-const minLengthValidator: TextFieldValidatorConstructor =
-  (textField) => (response) => {
-    const { customMin } = textField.ValidationOptions
-    const min = customMin !== null ? Number(customMin) : null
-    if (min === null) return right(response)
-    return response.answer.length >= min
-      ? right(response)
-      : left(`TextValidator.minLength:\tanswer is less than minimum of ${min}`)
-  }
+const minLengthValidator: TextFieldValidatorConstructor = (textField) => (
+  response,
+) => {
+  const { customVal } = textField.ValidationOptions
+  const min = customVal !== null ? Number(customVal) : null
+  if (min === null) return right(response)
+  return response.answer.length >= min
+    ? right(response)
+    : left(`TextValidator.minLength:\tanswer is less than minimum of ${min}`)
+}
 
 /**
  * Returns a validator to check if
  * text length is more than the max length specified.
  */
-const maxLengthValidator: TextFieldValidatorConstructor =
-  (textField) => (response) => {
-    const { customMax } = textField.ValidationOptions
-    const max = customMax !== null ? Number(customMax) : null
-    if (max === null) return right(response)
-    return response.answer.length <= max
-      ? right(response)
-      : left(
-          `TextValidator.maxLength:\tanswer is greater than maximum of ${max}`,
-        )
-  }
+const maxLengthValidator: TextFieldValidatorConstructor = (textField) => (
+  response,
+) => {
+  const { customVal } = textField.ValidationOptions
+  const max = customVal !== null ? Number(customVal) : null
+  if (max === null) return right(response)
+  return response.answer.length <= max
+    ? right(response)
+    : left(`TextValidator.maxLength:\tanswer is greater than maximum of ${max}`)
+}
 
 /**
  * Returns a validator to check if
  * text length is the exact length specified.
  */
-const exactLengthValidator: TextFieldValidatorConstructor =
-  (textField) => (response) => {
-    const { customMin, customMax } = textField.ValidationOptions
-    const exact =
-      customMin !== null
-        ? Number(customMin)
-        : customMax !== null
-        ? Number(customMax)
-        : null
-    if (exact === null) return right(response)
-    return response.answer.length === exact
-      ? right(response)
-      : left(
-          `TextValidator.exactLength:\tanswer is not exactly equal to ${exact}`,
-        )
-  }
+const exactLengthValidator: TextFieldValidatorConstructor = (textField) => (
+  response,
+) => {
+  const { customVal } = textField.ValidationOptions
+  const exact = customVal !== null ? Number(customVal) : null
+  if (exact === null) return right(response)
+  return response.answer.length === exact
+    ? right(response)
+    : left(
+        `TextValidator.exactLength:\tanswer is not exactly equal to ${exact}`,
+      )
+}
 
 /**
  * Returns the appropriate validator
