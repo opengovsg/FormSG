@@ -1,4 +1,5 @@
 export { SingleAnswerResponse } from './SingleAnswerResponse.class'
 export { ArrayAnswerResponse } from './ArrayAnswerResponse.class'
 export { TableResponse } from './TableResponse.class'
+export { ErrorResponse } from './ErrorResponse.class'
 export { Response } from './Response.class'
