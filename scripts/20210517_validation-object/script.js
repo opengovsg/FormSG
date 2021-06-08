@@ -198,6 +198,40 @@ db.forms.count({
   },
 })
 
+// Count number of form FIELDS which are NOT (short text, long text and number fields) and
+// with ValidationOptions.customMin
+// Expect unchanged after update
+
+db.forms.aggregate([
+  { $unwind: '$form_fields' },
+  {
+    $match: {
+      'form_fields.fieldType': { $nin: ['textfield', 'textarea', 'number'] },
+    },
+  },
+  {
+    $match: { 'form_fields.ValidationOptions.customMin': { $exists: true } },
+  },
+  { $count: 'numFormFields' },
+])
+
+// Count number of form FIELDS which are NOT (short text, long text and number fields) and
+// with ValidationOptions.customMax
+// Expect unchanged after update
+
+db.forms.aggregate([
+  { $unwind: '$form_fields' },
+  {
+    $match: {
+      'form_fields.fieldType': { $nin: ['textfield', 'textarea', 'number'] },
+    },
+  },
+  {
+    $match: { 'form_fields.ValidationOptions.customMax': { $exists: true } },
+  },
+  { $count: 'numFormFields' },
+])
+
 // ********** UPDATE **********
 
 // Remove customMin
@@ -294,6 +328,41 @@ db.forms.aggregate([
   {
     $match: {
       'form_fields.fieldType': { $in: ['textfield', 'textarea', 'number'] },
+    },
+  },
+  {
+    $match: { 'form_fields.ValidationOptions.customMax': { $exists: true } },
+  },
+  { $count: 'numFormFields' },
+])
+
+
+// Count number of form FIELDS which are NOT (short text, long text and number fields) and
+// with ValidationOptions.customMin
+// Expect unchanged after update
+
+db.forms.aggregate([
+  { $unwind: '$form_fields' },
+  {
+    $match: {
+      'form_fields.fieldType': { $nin: ['textfield', 'textarea', 'number'] },
+    },
+  },
+  {
+    $match: { 'form_fields.ValidationOptions.customMin': { $exists: true } },
+  },
+  { $count: 'numFormFields' },
+])
+
+// Count number of form FIELDS which are NOT (short text, long text and number fields) and
+// with ValidationOptions.customMax
+// Expect unchanged after update
+
+db.forms.aggregate([
+  { $unwind: '$form_fields' },
+  {
+    $match: {
+      'form_fields.fieldType': { $nin: ['textfield', 'textarea', 'number'] },
     },
   },
   {
