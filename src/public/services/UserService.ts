@@ -18,6 +18,14 @@ export const saveUserToLocalStorage = (user: User): void => {
 }
 
 /**
+ * Clear logged in user from localStorage.
+ * May not even be needed in React depending on implementation.
+ */
+export const clearUserFromLocalStorage = (): void => {
+  localStorage.removeItem(STORAGE_USER_KEY)
+}
+
+/**
  * Fetches the user from the server using the current session cookie.
  *
  * Side effect: Saves the retrieved user to localStorage

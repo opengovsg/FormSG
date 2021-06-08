@@ -44,6 +44,16 @@ describe('UserService', () => {
     })
   })
 
+  describe('clearUserFromLocalStorage', () => {
+    it('should successfully clear user from localStorage', () => {
+      // Act
+      UserService.clearUserFromLocalStorage()
+
+      // Assert
+      expect(localStorage.removeItem).toHaveBeenLastCalledWith(STORAGE_USER_KEY)
+    })
+  })
+
   describe('fetchUser', () => {
     it('should save returned user to localStorage when successfully fetched', async () => {
       // Arrange
