@@ -1,8 +1,7 @@
-import { keyBy } from 'lodash'
+import keyBy from 'lodash/keyBy'
 import moment from 'moment-timezone'
-import { Dictionary } from 'ts-essentials/dist/types'
 
-import { DisplayedResponse } from 'src/types/response'
+import { DisplayedResponseWithoutAnswer } from '../../../../types/response'
 
 import { Response } from './csv-response-classes'
 import { CsvGenerator } from './CsvGenerator'
@@ -11,7 +10,7 @@ import { getResponseInstance } from './response-factory'
 type UnprocessedRecord = {
   created: string
   submissionId: string
-  record: ReturnType<typeof keyBy>
+  record: { [fieldId: string]: Response }
 }
 
 export class CsvMergedHeadersGenerator extends CsvGenerator {
@@ -44,17 +43,17 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
 
   /**
    * Adds an UnprocessedRecord to this.unprocessed
-   * @param {Object} decryptedContent
-   * @param {DisplayedResponse[]} decryptedContent.record
-   * @param {string} decryptedContent.created
-   * @param {string} decryptedContent.submissionId
+   * @param decryptedContent
+   * @param decryptedContent.record
+   * @param decryptedContent.created
+   * @param decryptedContent.submissionId
    */
   addRecord({
     record,
     created,
     submissionId,
   }: {
-    record: DisplayedResponse[]
+    record: DisplayedResponseWithoutAnswer[]
     created: string
     submissionId: string
   }): void {
@@ -96,13 +95,13 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
 
   /**
    * Extracts the string representation from an unprocessed record.
-   * @param {Object} unprocessedRecord
-   * @param {string} fieldId
-   * @param {number} colIndex
-   * @returns {string}
+   * @param unprocessedRecord
+   * @param fieldId
+   * @param colIndex
+   * @returns string representation of unprocessed record
    */
   _extractAnswer(
-    unprocessedRecord: Dictionary<Response>,
+    unprocessedRecord: { [fieldId: string]: Response },
     fieldId: string,
     colIndex: number,
   ): string {
@@ -137,14 +136,12 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
         : createdAt.toString() // just convert to string if given date is not valid
       const row = [up.submissionId, formattedDate]
 
-      this.fieldIdToQuestion.forEach(
-        (_question: { created: string; question: string }, fieldId: string) => {
-          const numCols = this.fieldIdToNumCols[fieldId]
-          for (let colIndex = 0; colIndex < numCols; colIndex++) {
-            row.push(this._extractAnswer(up.record, fieldId, colIndex))
-          }
-        },
-      )
+      this.fieldIdToQuestion.forEach((_question, fieldId) => {
+        const numCols = this.fieldIdToNumCols[fieldId]
+        for (let colIndex = 0; colIndex < numCols; colIndex++) {
+          row.push(this._extractAnswer(up.record, fieldId, colIndex))
+        }
+      })
       this.addLine(row)
     })
 
@@ -168,7 +165,7 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
 
   /**
    * Main method to call to retrieve a downloadable csv.
-   * @param {string} filename
+   * @param filename name of csv file
    */
   downloadCsv(filename: string): void {
     this.process()
