@@ -99,8 +99,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -115,8 +113,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -184,8 +180,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -246,8 +240,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -261,8 +253,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: 6,
-          customMin: 6,
           customVal: 6,
           selectedValidation: 'Exact',
         },
@@ -323,8 +313,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -357,8 +345,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -543,8 +529,6 @@ const templates = [
     form_fields: [
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -624,8 +608,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -692,8 +674,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -735,8 +715,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -750,8 +728,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: 6,
-          customMin: 6,
           customVal: 6,
           selectedValidation: 'Exact',
         },
@@ -897,8 +873,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
