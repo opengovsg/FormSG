@@ -33,6 +33,8 @@
       ng-pattern="/^\d*$/"
       ng-maxlength="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.customMax : '' }}"
       ng-minlength="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.customMin : ''}}"
+      ng-max="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.rangeMax : '' }}"
+      ng-min="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.rangeMin : ''}}"
       ng-model-options="{ allowInvalid: true }"
       ng-keyup="vm.forms.myForm[(vm.field._id || 'defaultID')].$setTouched()"
       ng-attr-placeholder="{{ vm.placeholder }}"
@@ -73,6 +75,20 @@
           Maximum {{vm.field.ValidationOptions.customMax}} characters
           ({{vm.forms.myForm[(vm.field._id ||
           'defaultID')].$viewValue.length}}/{{vm.field.ValidationOptions.customMax}})
+        </div>
+      </div>
+      <div ng-message="min" class="alert-custom alert-error">
+        <div class="alert-msg">
+          <i class="bx bx-exclamation bx-md icon-spacing"></i>
+          Number must be at least {{vm.field.ValidationOptions.rangeMin}} or
+          greater.
+        </div>
+      </div>
+      <div ng-message="max" class="alert-custom alert-error">
+        <div class="alert-msg">
+          <i class="bx bx-exclamation bx-md icon-spacing"></i>
+          Number must be at most {{vm.field.ValidationOptions.rangeMin}} or
+          smaller.
         </div>
       </div>
     </div>
