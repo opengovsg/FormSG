@@ -102,6 +102,11 @@ function EditFieldsModalController(
       !field.ValidationOptions
     ) {
       vm.clearCustomValidation(field)
+    } else if (
+      FormFields.isNumberField(field.fieldType) &&
+      !field.ValidationOptions
+    ) {
+      vm.clearCustomNumberValidation(field)
     }
   }
 
@@ -243,6 +248,35 @@ function EditFieldsModalController(
     }
   }
 
+  vm.showCustomNumberValidationOptions = function (field) {
+    return FormFields.isNumberField(field.fieldType)
+  }
+
+  // Controls for custom validation
+  vm.customNumberValidationOptions = ['Maximum', 'Minimum', 'Exact', 'Range']
+  vm.clearCustomNumberValidation = function (field) {
+    field.ValidationOptions = {
+      selectedValidation: null,
+      customMax: null,
+      customMin: null,
+      customVal: null,
+      rangeMin: null,
+      rangeMax: null,
+    }
+  }
+  vm.resetCustomNumberValidationParams = function (field) {
+    let temp = field.ValidationOptions.selectedValidation
+    // Reset all custom validation params to null, keep selected validation option
+    field.ValidationOptions = {
+      customMax: null,
+      customMin: null,
+      customVal: null,
+      rangeMin: null,
+      rangeMax: null,
+      selectedValidation: temp,
+    }
+  }
+
   vm.changeFxn = function (field) {
     let selected = field.ValidationOptions.selectedValidation
     let val = field.ValidationOptions.customVal
@@ -253,7 +287,8 @@ function EditFieldsModalController(
   }
 
   vm.setFocus = function () {
-    angular.element('#customValInputBox').focus()
+    // for number it would be custom range input one
+    // angular.element('#customValInputBox').focus()
   }
 
   // Controls for date validation
