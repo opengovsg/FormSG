@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import { ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
+import { aws as AwsConfig } from 'src/app/config/config'
 import formsgSdk from 'src/app/config/formsg-sdk'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
@@ -94,6 +95,7 @@ describe('webhook.service', () => {
       formId: MOCK_FORM_ID,
       submissionId: MOCK_SUBMISSION_ID,
       verifiedContent: 'mockVerifiedContent',
+      attachmentDownloadUrls: {'some-field-id': 'https://mock.s3.url/some/s3/url/timeout=3600'},
       version: 1,
     },
   }

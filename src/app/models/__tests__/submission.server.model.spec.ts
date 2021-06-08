@@ -268,6 +268,7 @@ describe('Submission Model', () => {
             created: expect.any(Date),
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             verifiedContent: undefined,
+            attachmentDownloadUrls: {},
             version: 1,
           },
         })

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import Bluebird from 'bluebird'
 import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
@@ -9,6 +10,7 @@ import {
   IWebhookResponse,
   WebhookView,
 } from '../../../types'
+import { aws as AwsConfig } from '../../config/config'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 import { getEncryptSubmissionModel } from '../../models/submission.server.model'
@@ -18,6 +20,7 @@ import { SubmissionNotFoundError } from '../submission/submission.errors'
 
 import {
   WebhookFailedWithAxiosError,
+  WebhookFailedWithPresignedUrlGenerationError,
   WebhookFailedWithUnknownError,
   WebhookPushToQueueError,
   WebhookValidationError,
@@ -72,11 +75,37 @@ export const saveWebhookRecord = (
   })
 }
 
+const createWebhookSubmissionView = (
+  submissionWebhookView: WebhookView,
+): Promise<WebhookView> => {
+  // Generate S3 signed urls
+  const signedUrlPromises: Record<string, Promise<string>> = {}
+  for (const key in submissionWebhookView.data.attachmentDownloadUrls) {
+    signedUrlPromises[key] = AwsConfig.s3.getSignedUrlPromise('getObject', {
+      Bucket: AwsConfig.attachmentS3Bucket,
+      Key: submissionWebhookView.data.attachmentDownloadUrls[key],
+      Expires: 60 * 60, // one hour expiry
+    })
+  }
+
+  return Bluebird.props(signedUrlPromises).then((signedUrls) => {
+    submissionWebhookView.data.attachmentDownloadUrls = signedUrls
+    return submissionWebhookView
+  })
+}
+
 export const sendWebhook = (
   webhookView: WebhookView,
   webhookUrl: string,
-): ResultAsync<IWebhookResponse, WebhookValidationError> => {
+): ResultAsync<
+  IWebhookResponse, 
+  | WebhookValidationError
+  | WebhookFailedWithAxiosError
+  | WebhookFailedWithPresignedUrlGenerationError
+  | WebhookFailedWithUnknownError
+> => {
   const now = Date.now()
+  const rawSubmissionWebhookView = submission.getWebhookView()
   const { submissionId, formId } = webhookView.data
 
   const signature = formsgSdk.webhooks.generateSignature({
@@ -104,7 +133,18 @@ export const sendWebhook = (
     return error instanceof WebhookValidationError
       ? error
       : new WebhookValidationError()
-  })
+  }).andThen(() => {
+    return ResultAsync.fromPromise(
+      createWebhookSubmissionView(rawSubmissionWebhookView),
+      (error) => {
+        logger.error({
+          message: 'S3 attachment presigned URL generation failed',
+          meta: logMeta,
+          error,
+        })
+        return new WebhookFailedWithPresignedUrlGenerationError(error)
+      },
+    )
     .andThen(() =>
       ResultAsync.fromPromise(
         axios.post<unknown>(webhookUrl, webhookView, {
@@ -138,43 +178,76 @@ export const sendWebhook = (
         },
       ),
     )
-    .map((response) => {
-      // Capture response for logging purposes
-      logger.info({
-        message: 'Webhook POST succeeded',
-        meta: {
-          ...logMeta,
-          status: get(response, 'status'),
-        },
+      .andThen((submissionWebhookView) => {
+        return ResultAsync.fromPromise(
+          axios.post<unknown>(webhookUrl, submissionWebhookView, {
+            headers: {
+              'X-FormSG-Signature': formsgSdk.webhooks.constructHeader({
+                epoch: now,
+                submissionId,
+                formId,
+                signature,
+              }),
+            },
+            maxRedirects: 0,
+          }),
+          (error) => {
+            logger.error({
+              message: 'Webhook POST failed',
+              meta: {
+                ...logMeta,
+                isAxiosError: axios.isAxiosError(error),
+                status: get(error, 'response.status'),
+              },
+              error,
+            })
+            if (axios.isAxiosError(error)) {
+              return new WebhookFailedWithAxiosError(error)
+            }
+            return new WebhookFailedWithUnknownError(error)
+          },
+        )
       })
-      return {
-        signature,
-        webhookUrl,
-        response: formatWebhookResponse(response),
-      }
-    })
-    .orElse((error) => {
-      // Webhook was not posted
-      if (error instanceof WebhookValidationError) return errAsync(error)
+      .map((response) => {
+        // Capture response for logging purposes
+        logger.info({
+          message: 'Webhook POST succeeded',
+          meta: {
+            ...logMeta,
+            status: get(response, 'status'),
+          },
+        })
+        return {
+          signature,
+          webhookUrl,
+          response: formatWebhookResponse(response),
+        }
+      })
+      .orElse((error) => {
+        // Webhook was not posted
+        if (error instanceof WebhookValidationError) return errAsync(error)
+        if (error instanceof WebhookFailedWithPresignedUrlGenerationError)
+          return errAsync(error)
 
-      // Webhook was posted but failed
-      if (error instanceof WebhookFailedWithUnknownError) {
+        // Webhook was posted but failed
+        if (error instanceof WebhookFailedWithUnknownError) {
+          return okAsync({
+            signature,
+            webhookUrl,
+            // Not Axios error so no guarantee of having response.
+            // Hence allow formatting function to return default shape.
+            response: formatWebhookResponse(),
+          })
+        }
+
+        const axiosError = error.meta.originalError
         return okAsync({
           signature,
           webhookUrl,
-          // Not Axios error so no guarantee of having response.
-          // Hence allow formatting function to return default shape.
-          response: formatWebhookResponse(),
+          response: formatWebhookResponse(axiosError.response),
         })
-      }
-
-      const axiosError = error.meta.originalError
-      return okAsync({
-        signature,
-        webhookUrl,
-        response: formatWebhookResponse(axiosError.response),
       })
-    })
+  })
 }
 
 /**
