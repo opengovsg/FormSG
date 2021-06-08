@@ -11,6 +11,11 @@
 // Expect 0 records
 
 db.getCollection('forms').aggregate([
+  {
+    $match: {
+      'form_fields': {$elemMatch: {'fieldType': { $in: ['textfield', 'textarea', 'number'] }}},
+    },
+  },
   { $unwind: '$form_fields' },
   {
     $match: {
@@ -44,6 +49,11 @@ db.getCollection('forms').aggregate([
 // Expect 0 records
 
 db.getCollection('forms').aggregate([
+  {
+    $match: {
+      'form_fields': {$elemMatch: {'fieldType': { $in: ['textfield', 'textarea', 'number'] }}},
+    },
+  },
   { $unwind: '$form_fields' },
   {
     $match: {
@@ -77,6 +87,11 @@ db.getCollection('forms').aggregate([
 // Expect 0 records
 
 db.getCollection('forms').aggregate([
+  {
+    $match: {
+      'form_fields': {$elemMatch: {'fieldType': { $in: ['textfield', 'textarea', 'number'] }}},
+    },
+  },
   { $unwind: '$form_fields' },
   {
     $match: {
@@ -117,6 +132,11 @@ db.getCollection('forms').aggregate([
 // Expect 0 records
 
 db.getCollection('forms').aggregate([
+  {
+    $match: {
+      'form_fields': {$elemMatch: {'fieldType': { $in: ['textfield', 'textarea', 'number'] }}},
+    },
+  },
   { $unwind: '$form_fields' },
   {
     $match: {
