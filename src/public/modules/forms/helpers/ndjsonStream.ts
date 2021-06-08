@@ -34,7 +34,8 @@ export const ndjsonStream = (
                 return
               }
             }
-            return controller.close()
+            controller.close()
+            return
           }
 
           // Read the input in as a stream and split by newline and trim
@@ -51,7 +52,8 @@ export const ndjsonStream = (
               } catch (e) {
                 controller.error(e)
                 shouldCancel = true
-                return reader.cancel()
+                void reader.cancel()
+                return
               }
             }
           }
@@ -64,7 +66,7 @@ export const ndjsonStream = (
       console.log('Cancel registered due to ', reason)
       shouldCancel = true
       if (maybeReader) {
-        return maybeReader.cancel()
+        void maybeReader.cancel()
       }
     },
   })
