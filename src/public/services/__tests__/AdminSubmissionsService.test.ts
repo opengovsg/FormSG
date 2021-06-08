@@ -7,8 +7,8 @@ import { ADMIN_FORM_ENDPOINT } from '../AdminFormService'
 import {
   countFormSubmissions,
   getEncryptedResponse,
-  getFormMetadataById,
-  getFormsMetadataByPage,
+  getSubmissionMetadataById,
+  getSubmissionsMetadataByPage,
 } from '../AdminSubmissionsService'
 
 jest.mock('axios')
@@ -60,7 +60,7 @@ describe('AdminSubmissionsService', () => {
     })
   })
 
-  describe('getFormsMetadataByPage', () => {
+  describe('getSubmissionsMetadataByPage', () => {
     const MOCK_FORM_ID = 'mock–form-id'
     const MOCK_PAGE_NUM = 1
     const MOCK_RESPONSE: SubmissionMetadataList = {
@@ -79,7 +79,7 @@ describe('AdminSubmissionsService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: MOCK_RESPONSE })
 
       // Act
-      const actual = await getFormsMetadataByPage({
+      const actual = await getSubmissionsMetadataByPage({
         formId: MOCK_FORM_ID,
         pageNum: MOCK_PAGE_NUM,
       })
@@ -97,7 +97,7 @@ describe('AdminSubmissionsService', () => {
     })
   })
 
-  describe('getFormMetadataById', () => {
+  describe('getSubmissionMetadataById', () => {
     const MOCK_FORM_ID = 'mock–form-id'
     const MOCK_SUBMISSION_ID = 'fake'
     const MOCK_RESPONSE: SubmissionMetadataList = {
@@ -116,7 +116,7 @@ describe('AdminSubmissionsService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: MOCK_RESPONSE })
 
       // Act
-      const actual = await getFormMetadataById({
+      const actual = await getSubmissionMetadataById({
         formId: MOCK_FORM_ID,
         submissionId: MOCK_SUBMISSION_ID,
       })
