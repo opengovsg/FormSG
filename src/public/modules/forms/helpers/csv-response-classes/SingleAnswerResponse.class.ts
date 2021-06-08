@@ -1,10 +1,7 @@
-import { DisplayedResponseWithoutAnswer } from '../../../../../types/response'
+import { SingleResponse } from '../../../../../types/response'
 
 import { Response } from './Response.class'
 
-interface SingleResponse extends DisplayedResponseWithoutAnswer {
-  answer: string
-}
 export class SingleAnswerResponse extends Response {
   _data: SingleResponse
 

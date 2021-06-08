@@ -63,3 +63,14 @@ export type DisplayedResponseWithoutAnswer = {
   fieldType: string
   isHeader?: boolean
 }
+
+export interface ArrayResponse extends DisplayedResponseWithoutAnswer {
+  answerArray: string[]
+}
+
+export interface NestedResponse extends DisplayedResponseWithoutAnswer {
+  answerArray: string[][]
+}
+export interface SingleResponse extends DisplayedResponseWithoutAnswer {
+  answer: string
+}

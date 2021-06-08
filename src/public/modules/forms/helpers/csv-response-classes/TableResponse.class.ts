@@ -1,10 +1,6 @@
-import { DisplayedResponseWithoutAnswer } from '../../../../../types/response'
+import { NestedResponse } from '../../../../../types/response'
 
 import { Response } from './Response.class'
-
-interface NestedResponse extends DisplayedResponseWithoutAnswer {
-  answerArray: string[][]
-}
 
 export class TableResponse extends Response {
   _data: NestedResponse

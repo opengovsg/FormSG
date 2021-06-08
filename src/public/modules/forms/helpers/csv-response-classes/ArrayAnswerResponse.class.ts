@@ -1,10 +1,6 @@
-import { DisplayedResponseWithoutAnswer } from '../../../../../types/response'
+import { ArrayResponse } from '../../../../../types/response'
 
 import { Response } from './Response.class'
-
-interface ArrayResponse extends DisplayedResponseWithoutAnswer {
-  answerArray: string[]
-}
 
 export class ArrayAnswerResponse extends Response {
   _data: ArrayResponse
