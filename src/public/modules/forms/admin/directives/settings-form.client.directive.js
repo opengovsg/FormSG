@@ -14,6 +14,7 @@ const SETTINGS_PATH = [
   'inactiveMessage',
   'submissionLimit',
   'webhook.url',
+  'webhook.isRetryEnabled',
 ]
 
 const createTempSettings = (myform) => {
@@ -134,14 +135,6 @@ function settingsFormDirective(
 
         $scope.isFormMyInfo = () => {
           return $scope.tempForm.authType === 'MyInfo'
-        }
-
-        $scope.doesFormContainAttachments = () => {
-          return (
-            $scope.myform.form_fields.filter(
-              (field) => field.fieldType == 'attachment',
-            ).length > 0
-          )
         }
 
         // Warning message when turning off SP with MyInfo fields
@@ -364,6 +357,18 @@ function settingsFormDirective(
               updateFormStatusAndSave('Form deactivated!')
             }
           }
+        }
+
+        $scope.isWebhookRetryToggleDisabled = () => {
+          // disable if there is no valid saved webhook URL
+          return !get($scope.myform, 'webhook.url')
+        }
+
+        $scope.saveWebhookUrl = () => {
+          if (!get($scope, 'tempForm.webhook.url')) {
+            set($scope, 'tempForm.webhook.isRetryEnabled', false)
+          }
+          return $scope.saveForm()
         }
       },
     ],

@@ -379,25 +379,7 @@
             <span class="field-optional">(optional)</span>
           </label>
         </div>
-        <div
-          ng-if="isFormPublic()"
-          class="alert-custom alert-info spcp-warning"
-        >
-          <i class="bx bx-info-circle bx-md icon-spacing"></i>
-          <span class="alert-msg"
-            >Webhook cannot be changed unless your form is deactivated.</span
-          >
-        </div>
-        <div
-          ng-if="doesFormContainAttachments()"
-          class="alert-custom alert-info spcp-warning"
-        >
-          <i class="bx bx-info-circle bx-md icon-spacing"></i>
-          <span class="alert-msg"
-            >Webhook is not available for forms with attachment fields.</span
-          >
-        </div>
-        <div class="row feature-container">
+        <div class="row feature-container webhook-feature-container">
           <div
             class="settings-save col-xs-12"
             ng-class="(settingsForm.webhookUrl.$invalid) ? 'input-disabled' : ''"
@@ -410,13 +392,20 @@
               ng-model="tempForm.webhook.url"
               placeholder="https://your-webhook.com/url"
               ng-required="false"
-              ng-disabled="isFormPublic() || doesFormContainAttachments()"
+              ng-disabled="isFormPublic()"
               autocomplete="off"
-              ng-keyup="$event.keyCode === 13 && settingsForm.webhookUrl.$valid && saveForm()"
-              ng-blur="saveForm()"
+              ng-keyup="$event.keyCode === 13 && settingsForm.webhookUrl.$valid && saveWebhookUrl()"
+              ng-blur="saveWebhookUrl()"
               ng-class="settingsForm.webhookUrl.$valid ? '' : 'input-error'"
               validate-url
             />
+            <div ng-if="isFormPublic()" class="alert-custom alert-info">
+              <i class="bx bx-info-circle bx-md icon-spacing"></i>
+              <span class="alert-msg"
+                >Webhook URL cannot be changed unless your form is
+                deactivated.</span
+              >
+            </div>
             <div
               class="alert-custom alert-error"
               ng-if="settingsForm.webhookUrl.$invalid"
@@ -426,6 +415,46 @@
                 Please enter a valid URL (starting with https://)
               </span>
             </div>
+          </div>
+        </div>
+        <div class="settings-input" ng-if="myform.webhook.url">
+          <div class="row">
+            <div class="col-xs-9">
+              <span class="label-custom label-medium label-bottom"
+                >Enable retries</span
+              >
+            </div>
+            <div class="col-xs-3">
+              <label
+                class="toggle-selector pull-right"
+                ng-class="tempForm.webhook.isRetryEnabled ? 'toggle-selector-on' : ''"
+                ng-style="isWebhookRetryToggleDisabled() ? { 'cursor': 'not-allowed' } : ''"
+              >
+                <input
+                  type="checkbox"
+                  ng-model="tempForm.webhook.isRetryEnabled"
+                  ng-change="saveForm()"
+                  ng-disabled="isWebhookRetryToggleDisabled()"
+                />
+                <div class="toggle-selector-switch">
+                  <i
+                    ng-class="tempForm.webhook.isRetryEnabled ? 'bx bx-check' : 'bx bx-x'"
+                  ></i>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div class="alert-custom alert-info alert-margin spcp-warning">
+            <i class="bx bx-error-circle bx-md icon-spacing"></i>
+            <span class="alert-msg">
+              Your system must meet certain requirements before retries can be
+              safely enabled.
+              <a
+                translate-attr="{ href: 'LINKS.WEBHOOK_RETRIES' }"
+                target="_blank"
+                >Learn more</a
+              >
+            </span>
           </div>
         </div>
       </div>

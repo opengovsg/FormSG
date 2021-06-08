@@ -51,10 +51,25 @@ export interface WebhookData {
   verifiedContent: IEncryptedSubmissionSchema['verifiedContent']
   version: IEncryptedSubmissionSchema['version']
   created: IEncryptedSubmissionSchema['created']
+  attachmentDownloadUrls: Record<string, string>
 }
 
 export interface WebhookView {
   data: WebhookData
+}
+
+export type SubmissionWebhookInfo = {
+  webhookUrl: string
+  isRetryEnabled: boolean
+  webhookView: WebhookView
+}
+
+export interface IPopulatedWebhookSubmission
+  extends IEncryptedSubmissionSchema {
+  form: {
+    _id: IFormSchema['_id']
+    webhook: IFormSchema['webhook']
+  }
 }
 
 export interface ISubmissionSchema extends ISubmission, Document {}
@@ -192,6 +207,15 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       submissionId: string,
       webhookResponse: IWebhookResponse,
     ): Promise<IEncryptedSubmissionSchema | null>
+
+    /**
+     * Retrieves webhook-related info for a given submission.
+     * @param submissionId
+     * @returns Object containing webhook destination and data
+     */
+    retrieveWebhookInfoById(
+      submissionId: string,
+    ): Promise<SubmissionWebhookInfo | null>
   }
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}

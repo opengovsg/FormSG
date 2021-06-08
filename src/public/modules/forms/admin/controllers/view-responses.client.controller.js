@@ -262,7 +262,7 @@ function ViewResponsesController(
       startDate && endDate
         ? {
             formId: vm.myform._id,
-            date: {
+            dates: {
               startDate: moment(new Date(startDate)).format('YYYY-MM-DD'),
               endDate: moment(new Date(endDate)).format('YYYY-MM-DD'),
             },
@@ -407,11 +407,11 @@ function ViewResponsesController(
         getData: (params) => {
           let { page } = params.url()
           const getMetadataPromise = vm.filterBySubmissionRefId
-            ? AdminSubmissionsService.getFormMetadataById({
+            ? AdminSubmissionsService.getSubmissionMetadataById({
                 formId: vm.myform._id,
                 submissionId: vm.filterBySubmissionRefId,
               })
-            : AdminSubmissionsService.getFormsMetadataByPage({
+            : AdminSubmissionsService.getSubmissionsMetadataByPage({
                 formId: vm.myform._id,
                 pageNum: page,
               })
