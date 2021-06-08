@@ -20,11 +20,11 @@ const createNumberFieldSchema = () => {
         type: Number,
         default: null,
       },
-      customRangeMax: {
+      rangeMax: {
         type: Number,
         default: null,
       },
-      customRangeMin: {
+      rangeMin: {
         type: Number,
         default: null,
       },
