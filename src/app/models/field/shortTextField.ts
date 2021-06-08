@@ -23,6 +23,7 @@ const createShortTextFieldSchema = () => {
       },
     },
     {
+      // TODO: Remove virtuals (#2039)
       toJSON: {
         virtuals: true,
       },

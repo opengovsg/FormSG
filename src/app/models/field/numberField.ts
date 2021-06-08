@@ -16,15 +16,14 @@ const createNumberFieldSchema = () => {
     {
       customVal: {
         type: Number,
-        default: null,
       },
       selectedValidation: {
         type: String,
         enum: [...Object.values(NumberSelectedValidation), null],
-        default: null,
       },
     },
     {
+      // TODO: Remove virtuals (#2039)
       toJSON: {
         virtuals: true,
       },
