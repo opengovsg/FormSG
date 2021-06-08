@@ -10,6 +10,12 @@ const webhookVerifiedContentFeature: RegisterableFeature<FeatureNames.WebhookVer
         default: null,
         env: 'SIGNING_SECRET_KEY',
       },
+      webhookQueueUrl: {
+        doc: 'URL of AWS SQS queue for webhook retries',
+        format: String,
+        default: '',
+        env: 'WEBHOOK_SQS_URL',
+      },
     },
   }
 
