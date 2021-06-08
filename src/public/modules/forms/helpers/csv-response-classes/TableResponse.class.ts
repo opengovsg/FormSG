@@ -1,14 +1,17 @@
-import { AnswerArray, DisplayedResponse } from '../../../../../types/response'
+import { DisplayedResponseWithoutAnswer } from '../../../../../types/response'
 
 import { Response } from './Response.class'
 
-export interface TwoDimResponse extends Omit<DisplayedResponse, 'answerArray'> {
-  answerArray: Extract<AnswerArray, string[][]>
+interface NestedResponse extends DisplayedResponseWithoutAnswer {
+  answerArray: string[][]
 }
 
 export class TableResponse extends Response {
-  constructor(responseData: TwoDimResponse) {
+  _data: NestedResponse
+
+  constructor(responseData: NestedResponse) {
     super(responseData)
+    this._data = responseData
   }
 
   getAnswer(colIndex: number): string {
@@ -16,7 +19,7 @@ export class TableResponse extends Response {
     if (colIndex >= this._data.answerArray.length) {
       return ''
     }
-    return (this._data as TwoDimResponse).answerArray[colIndex].join(';')
+    return this._data.answerArray[colIndex].join(';')
   }
 
   get numCols(): number {

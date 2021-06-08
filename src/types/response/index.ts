@@ -57,13 +57,9 @@ export interface IClientEncryptSubmission extends IClientSubmission {
   version: number
 }
 
-export type DisplayedResponse = {
+export type DisplayedResponseWithoutAnswer = {
   _id: string
   question: string
-  answer?: string
-  answerArray: AnswerArray
   fieldType: string
   isHeader?: boolean
 }
-
-export type AnswerArray = string[] | string[][] // answer array can take in string arrays of different dimensions

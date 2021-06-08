@@ -1,9 +1,9 @@
-import { DisplayedResponse } from '../../../../../types/response'
+import { DisplayedResponseWithoutAnswer } from '../../../../../types/response'
 
 export abstract class Response {
-  _data: DisplayedResponse
+  _data: DisplayedResponseWithoutAnswer
 
-  constructor(responseData: DisplayedResponse) {
+  constructor(responseData: DisplayedResponseWithoutAnswer) {
     this._data = responseData
   }
 

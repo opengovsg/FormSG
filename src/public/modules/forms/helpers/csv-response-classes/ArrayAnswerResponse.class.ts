@@ -1,14 +1,17 @@
-import { AnswerArray, DisplayedResponse } from '../../../../../types/response'
+import { DisplayedResponseWithoutAnswer } from '../../../../../types/response'
 
 import { Response } from './Response.class'
 
-interface SingleDimResponse extends Omit<DisplayedResponse, 'answerArray'> {
-  answerArray: Extract<AnswerArray, string[]>
+interface ArrayResponse extends DisplayedResponseWithoutAnswer {
+  answerArray: string[]
 }
 
 export class ArrayAnswerResponse extends Response {
-  constructor(responseData: SingleDimResponse) {
+  _data: ArrayResponse
+
+  constructor(responseData: ArrayResponse) {
     super(responseData)
+    this._data = responseData
   }
 
   getAnswer(): string {
