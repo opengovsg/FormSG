@@ -287,8 +287,7 @@ function EditFieldsModalController(
   }
 
   vm.setFocus = function () {
-    // for number it would be custom range input one
-    // angular.element('#customValInputBox').focus()
+    angular.element('#customValInputBox').focus()
   }
 
   // Controls for date validation

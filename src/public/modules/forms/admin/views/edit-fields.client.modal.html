@@ -1135,7 +1135,7 @@
               ng-if="vm.field.ValidationOptions.selectedValidation !== 'Range'"
             >
               <input
-                id="customNumberInputBox0"
+                id="customValInputBox"
                 type="number"
                 ng-model="vm.field.ValidationOptions.customVal"
                 ng-min="1"
@@ -1152,9 +1152,10 @@
               ng-if="vm.field.ValidationOptions.selectedValidation === 'Range'"
             >
               <input
-                id="rangeInputMin"
+                id="customValInputBox"
                 type="number"
                 ng-model="vm.field.ValidationOptions.rangeMin"
+                min="0"
                 class="input-custom input-medium"
                 placeholder="Min"
                 ng-change="vm.changeFxn(vm.field)"
@@ -1166,9 +1167,9 @@
               ng-if="vm.field.ValidationOptions.selectedValidation === 'Range'"
             >
               <input
-                id="rangeInputMax"
                 type="number"
                 ng-model="vm.field.ValidationOptions.rangeMax"
+                min="0"
                 class="input-custom input-medium"
                 placeholder="Max"
                 ng-change="vm.changeFxn(vm.field)"
