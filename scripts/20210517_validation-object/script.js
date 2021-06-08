@@ -237,7 +237,18 @@ db.forms.aggregate([
 // Remove customMin
 
 db.forms.update(
-  { 'form_fields.ValidationOptions.customMin': { $exists: true } },
+  {
+    form_fields: {
+      $elemMatch: {
+        $and: [
+          {
+            fieldType: { $in: ['textfield', 'textarea', 'number'] },
+          },
+          { 'ValidationOptions.customMin': { $exists: true } },
+        ],
+      },
+    },
+  },
   { $unset: { 'form_fields.$[elem].ValidationOptions.customMin': '' } },
   {
     arrayFilters: [
@@ -253,7 +264,18 @@ db.forms.update(
 // Remove customMax
 
 db.forms.update(
-  { 'form_fields.ValidationOptions.customMax': { $exists: true } },
+  {
+    form_fields: {
+      $elemMatch: {
+        $and: [
+          {
+            fieldType: { $in: ['textfield', 'textarea', 'number'] },
+          },
+          { 'ValidationOptions.customMax': { $exists: true } },
+        ],
+      },
+    },
+  },
   { $unset: { 'form_fields.$[elem].ValidationOptions.customMax': '' } },
   {
     arrayFilters: [
