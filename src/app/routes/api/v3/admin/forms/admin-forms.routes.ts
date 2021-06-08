@@ -21,7 +21,7 @@ AdminFormsRouter.use(withUserAuthentication)
 AdminFormsRouter.use(denyRpSpStudentEmails)
 
 // Log all non-get admin form actions
-AdminFormsRouter.use('/:formId([a-fA-F0-9]{24})/', logAdminAction)
+AdminFormsRouter.use('/:formId([a-fA-F0-9]{24})', logAdminAction)
 
 AdminFormsRouter.use(AdminFormsSettingsRouter)
 AdminFormsRouter.use(AdminFormsFeedbackRouter)
