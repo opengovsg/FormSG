@@ -85,23 +85,21 @@ const getNumberLengthValidator: NumberValidatorConstructor = (numberField) => {
 const minRangeValidator: NumberValidatorConstructor =
   (numberField) => (response) => {
     const { answer } = response
-    const { customMin } = numberField.ValidationOptions
-    return !customMin || Number(answer) >= customMin
-      ? right(response)
-      : left(`NumberValidator:\t answer is smaller than custom minimum value`)
-  }
+    const { rangeMin, rangeMax } = numberField.ValidationOptions
 
-/**
- * Returns a validation function to check if number value is
- * less than the minimum value specified.
- */
-const maxRangeValidator: NumberValidatorConstructor =
-  (numberField) => (response) => {
-    const { answer } = response
-    const { customMax } = numberField.ValidationOptions
-    return !customMax || Number(answer) <= customMax
-      ? right(response)
-      : left(`NumberValidator:\t answer is larger than custom maximum value`)
+    if (rangeMin && Number(answer) < rangeMin) {
+      return left(
+        `NumberValidator:\t answer is smaller than custom minimum value`,
+      )
+    }
+
+    if (rangeMax && Number(answer) > rangeMax) {
+      return left(
+        `NumberValidator:\t answer is larger than custom maximum value`,
+      )
+    }
+
+    return right(response)
   }
 
 /**
@@ -110,10 +108,8 @@ const maxRangeValidator: NumberValidatorConstructor =
  */
 const getNumberRangeValidator: NumberValidatorConstructor = (numberField) => {
   switch (numberField.ValidationOptions.selectedValidation) {
-    case NumberSelectedValidation.Min:
+    case NumberSelectedValidation.Range:
       return minRangeValidator(numberField)
-    case NumberSelectedValidation.Max:
-      return maxRangeValidator(numberField)
     default:
       return right
   }
