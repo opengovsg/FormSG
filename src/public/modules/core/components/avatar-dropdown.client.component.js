@@ -41,11 +41,17 @@ function avatarDropdownController(
 
   async function retrieveUser() {
     try {
-      const trueUser = await UserService.fetchUser().then((user) => {
-        UserService.saveUserToLocalStorage(user)
-      })
+      const trueUser = await UserService.fetchUser()
+        .then((user) => {
+          UserService.saveUserToLocalStorage(user)
+          return user
+        })
+        .catch(() => {
+          UserService.clearUserFromLocalStorage()
+          return null
+        })
+
       if (!trueUser) {
-        UserService.clearUserFromLocalStorage()
         $state.go('signin')
         return
       }
