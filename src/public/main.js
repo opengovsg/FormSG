@@ -247,6 +247,7 @@ require('./modules/forms/base/directives/validate-checkbox.client.directive.js')
 require('./modules/forms/base/directives/validate-email-domain.client.directive.js')
 require('./modules/forms/base/directives/validate-email-format.client.directive.js')
 require('./modules/forms/base/directives/validate-nric.client.directive.js')
+require('./modules/forms/base/directives/validate-uen.client.directive.js')
 require('./modules/forms/base/directives/validate-url.client.directive.js')
 require('./modules/forms/base/directives/ng-intl-tel-input.js')
 require('./modules/forms/base/directives/submit-form.directive.js')
@@ -605,6 +606,10 @@ app.run([
     $templateCache.put(
       'modules/forms/base/componentViews/field-textarea.client.view.html',
       require('./modules/forms/base/componentViews/field-textarea.client.view.html'),
+    )
+    $templateCache.put(
+      'modules/forms/base/componentViews/field-uen.client.view.html',
+      require('./modules/forms/base/componentViews/field-uen.client.view.html'),
     )
 
     // Forms base directiveViews
