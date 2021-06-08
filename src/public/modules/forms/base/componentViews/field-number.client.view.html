@@ -24,7 +24,7 @@
   <div class="col-xs-12 field-input">
     <input
       id="{{ vm.field._id  || 'defaultID'}}"
-      type="tel"
+      type="number"
       name="{{ vm.field._id  || 'defaultID'}}"
       class="input-custom input-large"
       ng-model="vm.field.fieldValue"
@@ -33,8 +33,8 @@
       ng-pattern="/^\d*$/"
       ng-maxlength="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.customMax : '' }}"
       ng-minlength="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.customMin : ''}}"
-      ng-max="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.rangeMax : '' }}"
-      ng-min="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.rangeMin : ''}}"
+      max="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.rangeMax : '' }}"
+      min="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.rangeMin : ''}}"
       ng-model-options="{ allowInvalid: true }"
       ng-keyup="vm.forms.myForm[(vm.field._id || 'defaultID')].$setTouched()"
       ng-attr-placeholder="{{ vm.placeholder }}"
@@ -87,7 +87,7 @@
       <div ng-message="max" class="alert-custom alert-error">
         <div class="alert-msg">
           <i class="bx bx-exclamation bx-md icon-spacing"></i>
-          Number must be at most {{vm.field.ValidationOptions.rangeMin}} or
+          Number must be at most {{vm.field.ValidationOptions.rangeMax}} or
           smaller.
         </div>
       </div>
