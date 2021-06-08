@@ -55,7 +55,7 @@ describe('UserService', () => {
   })
 
   describe('fetchUser', () => {
-    it('should save returned user to localStorage when successfully fetched', async () => {
+    it('should return user successfully', async () => {
       // Arrange
       MockAxios.get.mockResolvedValueOnce({ data: MOCK_USER })
 
@@ -65,27 +65,6 @@ describe('UserService', () => {
       // Assert
       expect(actual).toEqual(MOCK_USER)
       expect(MockAxios.get).toHaveBeenLastCalledWith(USER_ENDPOINT)
-      expect(localStorage.setItem).toHaveBeenLastCalledWith(
-        STORAGE_USER_KEY,
-        // Should be stringified.
-        JSON.stringify(MOCK_USER),
-      )
-    })
-
-    it('should return null and save null user to localStorage on API rejection', async () => {
-      // Arrange
-      MockAxios.get.mockRejectedValueOnce(new Error('something error'))
-
-      // Act
-      const actual = await UserService.fetchUser()
-
-      // Assert
-      expect(actual).toEqual(null)
-      expect(MockAxios.get).toHaveBeenLastCalledWith(USER_ENDPOINT)
-      expect(localStorage.setItem).toHaveBeenLastCalledWith(
-        STORAGE_USER_KEY,
-        'null',
-      )
     })
   })
 })

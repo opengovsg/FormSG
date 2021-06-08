@@ -32,14 +32,5 @@ export const clearUserFromLocalStorage = (): void => {
  * @returns the logged in user if session is valid, `null` otherwise
  */
 export const fetchUser = async (): Promise<User | null> => {
-  return axios
-    .get<User>(USER_ENDPOINT)
-    .then(({ data: user }) => {
-      saveUserToLocalStorage(user)
-      return user
-    })
-    .catch(() => {
-      saveUserToLocalStorage(null)
-      return null
-    })
+  return axios.get<User>(USER_ENDPOINT).then(({ data }) => data)
 }
