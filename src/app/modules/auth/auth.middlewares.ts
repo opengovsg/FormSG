@@ -70,6 +70,7 @@ export const logAdminAction: ControllerHandler<{ formId: string }> = async (
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const body = req.body
   const method = req.method
+  const query = req.query
   const { formId } = req.params
 
   if (req.method.toLowerCase() !== 'get') {
@@ -81,6 +82,7 @@ export const logAdminAction: ControllerHandler<{ formId: string }> = async (
         ...createReqMeta(req),
         sessionUserId,
         formId,
+        query,
         body,
       },
     })
