@@ -17,7 +17,7 @@ import {
 } from '../../types/api'
 import { createEmailSubmissionFormData } from '../utils/submission'
 
-// endpoint exported for testing
+// Exported for testing
 export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
 
 export const updateFormSettings = async (

@@ -1,6 +1,8 @@
-import { ObjectID } from 'bson'
+import { ObjectId } from 'bson'
+import { promises as dns } from 'dns'
 import { times } from 'lodash'
 import mongoose from 'mongoose'
+import { mocked } from 'ts-jest/utils'
 
 import getSubmissionModel, {
   getEmailSubmissionModel,
@@ -16,19 +18,155 @@ import {
   SubmissionType,
 } from '../../../../src/types'
 
+jest.mock('dns', () => ({
+  promises: {
+    resolve: jest.fn(),
+  },
+}))
+const MockDns = mocked(dns, true)
+
 const Submission = getSubmissionModel(mongoose)
 const EncryptedSubmission = getEncryptSubmissionModel(mongoose)
 const EmailSubmission = getEmailSubmissionModel(mongoose)
 
 // TODO: Add more tests for the rest of the submission schema.
 describe('Submission Model', () => {
-  beforeAll(async () => await dbHandler.connect())
+  beforeAll(async () => {
+    await dbHandler.connect()
+    MockDns.resolve.mockResolvedValue(['1.1.1.1'])
+  })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
   const MOCK_ENCRYPTED_CONTENT = 'abcdefg encryptedContent'
+  const MOCK_VERIFIED_CONTENT = 'hijklmnop verifiedContent'
+  const MOCK_WEBHOOK_URL = 'https://test.web.site'
 
   describe('Statics', () => {
+    describe('retrieveWebhookInfoById', () => {
+      it('should return the populated submission when the submission and webhook URL exist', async () => {
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            webhook: {
+              url: MOCK_WEBHOOK_URL,
+              isRetryEnabled: true,
+            },
+          },
+        })
+        const submission = await EncryptedSubmission.create({
+          form: form._id,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 0,
+        })
+
+        const result = await EncryptedSubmission.retrieveWebhookInfoById(
+          String(submission._id),
+        )
+
+        expect(result).toEqual({
+          webhookUrl: MOCK_WEBHOOK_URL,
+          isRetryEnabled: true,
+          webhookView: {
+            data: {
+              formId: String(form._id),
+              submissionId: String(submission._id),
+              encryptedContent: MOCK_ENCRYPTED_CONTENT,
+              verifiedContent: undefined,
+              version: 0,
+              created: submission.created,
+            },
+          },
+        })
+      })
+
+      it('should return null when the submission ID does not exist', async () => {
+        // Create submission
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            webhook: {
+              url: MOCK_WEBHOOK_URL,
+              isRetryEnabled: true,
+            },
+          },
+        })
+        await EncryptedSubmission.create({
+          form: form._id,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 0,
+        })
+
+        // Attempt to find submission with a different ID
+        const result = await EncryptedSubmission.retrieveWebhookInfoById(
+          String(new ObjectId().toHexString()),
+        )
+
+        expect(result).toBeNull()
+      })
+
+      it('should return empty string for the webhook URL when the form does not have a webhook URL', async () => {
+        const { form } = await dbHandler.insertEncryptForm()
+        const submission = await EncryptedSubmission.create({
+          form: form._id,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 0,
+        })
+
+        const result = await EncryptedSubmission.retrieveWebhookInfoById(
+          String(submission._id),
+        )
+
+        expect(result).toEqual({
+          webhookUrl: '',
+          isRetryEnabled: false,
+          webhookView: {
+            data: {
+              formId: String(form._id),
+              submissionId: String(submission._id),
+              encryptedContent: MOCK_ENCRYPTED_CONTENT,
+              verifiedContent: undefined,
+              version: 0,
+              created: submission.created,
+            },
+          },
+        })
+      })
+
+      it('should return false for isRetryEnabled when the form does not have retries enabled', async () => {
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            webhook: {
+              url: MOCK_WEBHOOK_URL,
+              isRetryEnabled: false,
+            },
+          },
+        })
+        const submission = await EncryptedSubmission.create({
+          form: form._id,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 0,
+        })
+
+        const result = await EncryptedSubmission.retrieveWebhookInfoById(
+          String(submission._id),
+        )
+
+        expect(result).toEqual({
+          webhookUrl: MOCK_WEBHOOK_URL,
+          isRetryEnabled: false,
+          webhookView: {
+            data: {
+              formId: String(form._id),
+              submissionId: String(submission._id),
+              encryptedContent: MOCK_ENCRYPTED_CONTENT,
+              verifiedContent: undefined,
+              version: 0,
+              created: submission.created,
+            },
+          },
+        })
+      })
+    })
+
     describe('findFormsWithSubsAbove', () => {
       it('should return ids and counts of forms with more than given minimum submissions', async () => {
         // Arrange
@@ -105,9 +243,9 @@ describe('Submission Model', () => {
 
   describe('Methods', () => {
     describe('getWebhookView', () => {
-      it('should return non-null view with encryptedSubmission type (without verified content)', async () => {
+      it('should return non-null view with encryptedSubmission type when submission has no verified content', async () => {
         // Arrange
-        const formId = new ObjectID()
+        const formId = new ObjectId()
 
         const submission = await EncryptedSubmission.create({
           submissionType: SubmissionType.Encrypt,
@@ -135,9 +273,82 @@ describe('Submission Model', () => {
         })
       })
 
+      it('should return non-null view with encryptedSubmission type when submission has verified content', async () => {
+        // Arrange
+        const formId = new ObjectId()
+
+        const submission = await EncryptedSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: formId,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          verifiedContent: MOCK_VERIFIED_CONTENT,
+          version: 1,
+          authType: AuthType.NIL,
+          myInfoFields: [],
+          webhookResponses: [],
+        })
+
+        // Act
+        const actualWebhookView = submission.getWebhookView()
+
+        // Assert
+        expect(actualWebhookView).toEqual({
+          data: {
+            formId: expect.any(String),
+            submissionId: expect.any(String),
+            created: expect.any(Date),
+            encryptedContent: MOCK_ENCRYPTED_CONTENT,
+            verifiedContent: MOCK_VERIFIED_CONTENT,
+            version: 1,
+          },
+        })
+      })
+
+      it('should return non-null view with encryptedSubmission type when submission is populated with webhook info', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            webhook: {
+              url: MOCK_WEBHOOK_URL,
+              isRetryEnabled: false,
+            },
+          },
+        })
+
+        const submission = await EncryptedSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: form._id,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          verifiedContent: MOCK_VERIFIED_CONTENT,
+          version: 1,
+          authType: AuthType.NIL,
+          myInfoFields: [],
+          webhookResponses: [],
+        })
+
+        const populatedSubmission = await EncryptedSubmission.findById(
+          submission._id,
+        ).populate('form', 'webhook')
+
+        // Act
+        const actualWebhookView = populatedSubmission!.getWebhookView()
+
+        // Assert
+        expect(actualWebhookView).toEqual({
+          data: {
+            formId: expect.any(String),
+            submissionId: expect.any(String),
+            created: expect.any(Date),
+            encryptedContent: MOCK_ENCRYPTED_CONTENT,
+            verifiedContent: MOCK_VERIFIED_CONTENT,
+            version: 1,
+          },
+        })
+      })
+
       it('should return null view with non-encryptSubmission type', async () => {
         // Arrange
-        const formId = new ObjectID()
+        const formId = new ObjectId()
         const submission = await EmailSubmission.create({
           submissionType: SubmissionType.Email,
           form: formId,
@@ -162,7 +373,7 @@ describe('Submission Model', () => {
     describe('addWebhookResponse', () => {
       it('should return updated submission with webhook response when submission ID is valid', async () => {
         // Arrange
-        const formId = new ObjectID()
+        const formId = new ObjectId()
         const submission = await EncryptedSubmission.create({
           submissionType: SubmissionType.Encrypt,
           form: formId,
@@ -205,7 +416,7 @@ describe('Submission Model', () => {
 
       it('should return null when submission id is invalid', async () => {
         // Arrange
-        const formId = new ObjectID()
+        const formId = new ObjectId()
         const submission = await EncryptedSubmission.create({
           submissionType: SubmissionType.Encrypt,
           form: formId,
@@ -231,7 +442,7 @@ describe('Submission Model', () => {
           },
         } as IWebhookResponse
 
-        const invalidSubmissionId = new ObjectID().toHexString()
+        const invalidSubmissionId = new ObjectId().toHexString()
 
         // Act
         const actualSubmission = await EncryptedSubmission.addWebhookResponse(
