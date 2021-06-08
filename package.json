@@ -173,7 +173,7 @@
     "@types/dedent": "^0.7.0",
     "@types/ejs": "^3.0.6",
     "@types/express": "^4.17.12",
-    "@types/express-rate-limit": "^5.1.1",
+    "@types/express-rate-limit": "^5.1.2",
     "@types/express-request-id": "^1.4.1",
     "@types/express-session": "^1.17.0",
     "@types/has-ansi": "^3.0.0",
