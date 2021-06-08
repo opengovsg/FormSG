@@ -1,4 +1,3 @@
-import { RequestHandler } from 'express'
 import * as A from 'fp-ts/lib/Array'
 import * as F from 'fp-ts/lib/function'
 import * as TE from 'fp-ts/lib/TaskEither'
@@ -8,6 +7,7 @@ import { AnalyticStatsDto } from 'src/types/analytics'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
+import { ControllerHandler } from '../core/core.types'
 
 import {
   getFormCount,
@@ -20,7 +20,7 @@ const logger = createLoggerWithLabel(module)
 /**
  * Controller for returning application statistics
  */
-export const handleGetStatistics: RequestHandler = async (req, res) => {
+export const handleGetStatistics: ControllerHandler = async (req, res) => {
   return F.pipe(
     A.sequence(TE.taskEither)([
       getUserCount(),

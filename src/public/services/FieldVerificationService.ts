@@ -39,47 +39,55 @@ export const createTransactionForForm = async (
 
 /**
  * Sends an OTP to given answer.
+ * @param formId The id of the form to generate the otp for
  * @param transactionId The generated transaction id for the form
  * @param fieldId The id of the verification field
  * @param answer The value of the verification field to verify. Usually an email or phone number
+ * @param fieldType The kind of field to generate the otp for
  * @returns 201 Created status if successfully sent
  */
 export const triggerSendOtp = async ({
+  formId,
   transactionId,
   fieldId,
   answer,
 }: {
+  formId: string
   transactionId: string
   fieldId: string
   answer: string
 }): Promise<void> => {
-  return axios.post(`${TRANSACTION_ENDPOINT}/${transactionId}/otp`, {
-    fieldId,
-    answer,
-  })
+  return axios.post(
+    `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/fields/${fieldId}/otp/generate`,
+    {
+      answer,
+    },
+  )
 }
 
 /**
  * Verifies given OTP for given fieldId
+ * @param formId The id of the form
  * @param transactionId The generated transaction id for the form
  * @param fieldId The id of the verification field
  * @param otp The user-entered OTP value to verify against
  * @returns The verified signature on success
  */
 export const verifyOtp = async ({
+  formId,
   transactionId,
   fieldId,
   otp,
 }: {
+  formId: string
   transactionId: string
   fieldId: string
   otp: string
 }): Promise<VerifiedFieldSignature> => {
   return axios
     .post<VerifiedFieldSignature>(
-      `${TRANSACTION_ENDPOINT}/${transactionId}/otp/verify`,
+      `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/fields/${fieldId}/otp/verify`,
       {
-        fieldId,
         otp,
       },
     )

@@ -1,5 +1,3 @@
-import { ParamsDictionary } from 'express-serve-static-core'
-
 import { IFieldSchema, PublicForm } from 'src/types'
 
 import { SpcpSession } from '../../../../types/spcp'
@@ -13,7 +11,7 @@ export type Metatags = {
   twitterImage: string
 }
 
-export type RedirectParams = ParamsDictionary & {
+export type RedirectParams = {
   state?: 'preview' | 'template' | 'use-template'
   // TODO(#144): Rename Id to formId after all routes have been updated.
   Id: string

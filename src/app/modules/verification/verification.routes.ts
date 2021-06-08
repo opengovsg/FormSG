@@ -35,6 +35,9 @@ VfnRouter.post(
   VerificationController.handleResetField,
 )
 
+/**
+ * @deprecated in favour of POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/generate
+ */
 VfnRouter.post(
   '/:transactionId([a-fA-F0-9]{24})/otp',
   celebrate({
@@ -49,6 +52,9 @@ VfnRouter.post(
   VerificationController.handleGetOtp,
 )
 
+/**
+ * @deprecated in favour of POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/verify
+ */
 VfnRouter.post(
   '/:transactionId([a-fA-F0-9]{24})/otp/verify',
   celebrate({
