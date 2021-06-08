@@ -1,5 +1,6 @@
 import { left } from 'fp-ts/lib/Either'
 
+import { isUenValid } from '../../../shared/util/uen-validation'
 import { IField } from '../../../types/field/baseField'
 import {
   isAttachmentField,
@@ -43,6 +44,7 @@ import { constructRatingValidator } from './validators/ratingValidator'
 import { constructSectionValidator } from './validators/sectionValidator'
 import { constructTableValidator } from './validators/tableValidator'
 import constructTextValidator from './validators/textValidator'
+import { constructUenValidator } from './validators/uenValidator'
 import { constructYesNoValidator } from './validators/yesNoValidator'
 
 /**
@@ -76,6 +78,8 @@ export const constructSingleAnswerValidator = (
     return constructDropdownValidator(formField)
   } else if (isEmailField(formField)) {
     return constructEmailValidator(formField)
+  } else if (isUenValid(formField)) {
+    return constructUenValidator()
   } else if (isYesNoField(formField)) {
     return constructYesNoValidator()
   }

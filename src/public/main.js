@@ -237,6 +237,7 @@ require('./modules/forms/base/components/field-number.client.component.js')
 require('./modules/forms/base/components/field-rating.client.component.js')
 require('./modules/forms/base/components/field-section.client.component.js')
 require('./modules/forms/base/components/field-statement.client.component.js')
+require('./modules/forms/base/components/field-uen.client.component.js')
 require('./modules/forms/base/components/field-textarea.client.component.js')
 
 // forms base directives
