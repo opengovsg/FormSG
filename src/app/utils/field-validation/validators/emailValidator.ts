@@ -27,24 +27,20 @@ const emailFormatValidator: EmailValidator = (response) => {
  * Returns a validation function
  * to check if email domain is valid.
  */
-const makeEmailDomainValidator: EmailValidatorConstructor = (emailField) => (
-  response,
-) => {
-  const {
-    isVerifiable,
-    hasAllowedEmailDomains,
-    allowedEmailDomains,
-  } = emailField
-  const { answer } = response
-  const emailAddress = String(answer)
-  if (!(isVerifiable && hasAllowedEmailDomains && allowedEmailDomains.length))
-    return right(response)
-  const emailDomain = '@' + emailAddress.split('@').pop()
+const makeEmailDomainValidator: EmailValidatorConstructor =
+  (emailField) => (response) => {
+    const { isVerifiable, hasAllowedEmailDomains, allowedEmailDomains } =
+      emailField
+    const { answer } = response
+    const emailAddress = String(answer)
+    if (!(isVerifiable && hasAllowedEmailDomains && allowedEmailDomains.length))
+      return right(response)
+    const emailDomain = '@' + emailAddress.split('@').pop()
 
-  return allowedEmailDomains.includes(emailDomain)
-    ? right(response)
-    : left(`EmailValidator:\t answer is not a valid email domain`)
-}
+    return allowedEmailDomains.includes(emailDomain)
+      ? right(response)
+      : left(`EmailValidator:\t answer is not a valid email domain`)
+  }
 
 /**
  * Returns a validation function for a email field when called.

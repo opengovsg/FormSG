@@ -1,9 +1,6 @@
-import { LeanDocument } from 'mongoose'
-
 import {
   AuthType,
   Environment,
-  IFieldSchema,
   IFormSchema,
   IMyInfo,
   MyInfoAttribute,
@@ -21,10 +18,6 @@ export interface IMyInfoRedirectURLArgs {
   formId: string
   formEsrvcId: string
   requestedAttributes: MyInfoAttribute[]
-}
-
-export interface IPossiblyPrefilledField extends LeanDocument<IFieldSchema> {
-  fieldValue?: string
 }
 
 export type MyInfoHashPromises = Partial<

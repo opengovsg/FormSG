@@ -156,8 +156,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'IS_LOGIN_BANNER',
     },
     siteBannerContent: {
-      doc:
-        'The banner message to show on all pages. Allows for HTML. Will supersede all other banner content if it exists.',
+      doc: 'The banner message to show on all pages. Allows for HTML. Will supersede all other banner content if it exists.',
       format: String,
       default: '',
       env: 'SITE_BANNER_CONTENT',
@@ -170,8 +169,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
   },
   formsgSdkMode: {
-    doc:
-      'Inform SDK which public keys are to be used to sign, encrypt, or decrypt data that is passed to it',
+    doc: 'Inform SDK which public keys are to be used to sign, encrypt, or decrypt data that is passed to it',
     format: ['staging', 'production', 'development', 'test'],
     default: 'production' as PackageMode,
     env: 'FORMSG_SDK_MODE',
@@ -190,8 +188,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'MAIL_LOGGER',
     },
     debug: {
-      doc:
-        'If set to true, then logs SMTP traffic, otherwise logs only transaction events.',
+      doc: 'If set to true, then logs SMTP traffic, otherwise logs only transaction events.',
       format: 'Boolean',
       default: false,
       env: 'MAIL_DEBUG',
@@ -209,8 +206,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'CHROMIUM_BIN',
     },
     maxMessages: {
-      doc:
-        'Nodemailer config to help to keep the connection up-to-date for long-running messaging',
+      doc: 'Nodemailer config to help to keep the connection up-to-date for long-running messaging',
       format: 'int',
       default: 100,
       env: 'SES_MAX_MESSAGES',
@@ -236,8 +232,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'AWS_REGION',
     },
     customCloudWatchGroup: {
-      doc:
-        'Name of CloudWatch log group to store short-term logs. Log streams are separated by date.',
+      doc: 'Name of CloudWatch log group to store short-term logs. Log streams are separated by date.',
       format: String,
       default: '',
       env: 'CUSTOM_CLOUDWATCH_LOG_GROUP',
@@ -251,8 +246,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'PORT',
     },
     otpLifeSpan: {
-      doc:
-        'OTP Life Span for Login. (Should be in miliseconds, e.g. 1000 * 60 * 15 = 15 mins)',
+      doc: 'OTP Life Span for Login. (Should be in miliseconds, e.g. 1000 * 60 * 15 = 15 mins)',
       format: 'int',
       default: 900000,
       env: 'OTP_LIFE_SPAN',
@@ -272,15 +266,13 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
   },
   rateLimit: {
     submissions: {
-      doc:
-        'Per-minute, per-IP, per-instance request limit for submissions endpoints',
+      doc: 'Per-minute, per-IP, per-instance request limit for submissions endpoints',
       format: 'int',
       default: 80,
       env: 'SUBMISSIONS_RATE_LIMIT',
     },
     sendAuthOtp: {
-      doc:
-        'Per-minute, per-IP request limit for OTPs to log in to the admin console',
+      doc: 'Per-minute, per-IP request limit for OTPs to log in to the admin console',
       format: 'int',
       default: 60,
       env: 'SEND_AUTH_OTP_RATE_LIMIT',
@@ -361,8 +353,7 @@ export const loadS3BucketUrlSchema = ({
       env: 'AWS_ENDPOINT',
     },
     attachmentBucketUrl: {
-      doc:
-        'Url of attachment S3 bucket derived from S3 endpoint and bucket name',
+      doc: 'Url of attachment S3 bucket derived from S3 endpoint and bucket name',
       format: (val) =>
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: true, region }),
       default: null,

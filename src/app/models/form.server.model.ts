@@ -356,6 +356,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               'Webhook must be a valid URL over HTTPS and point to a public IP.',
           },
         },
+        isRetryEnabled: {
+          type: Boolean,
+          default: false,
+        },
       },
 
       msgSrvcName: {
@@ -499,7 +503,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
-  const FormDocumentSchema = (FormSchema as unknown) as Schema<IFormDocument>
+  const FormDocumentSchema = FormSchema as unknown as Schema<IFormDocument>
 
   FormDocumentSchema.methods.getSettings = function (): FormSettings {
     return pick(this, FORM_SETTING_FIELDS)

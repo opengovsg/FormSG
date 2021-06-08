@@ -6,22 +6,34 @@ import FeatureManager, {
 } from '../../config/feature-manager'
 import { MissingFeatureError } from '../core/core.errors'
 
+import { startWebhookConsumer } from './webhook.consumer'
+import { WebhookProducer } from './webhook.producer'
 import * as WebhookService from './webhook.service'
 
 interface IWebhookFactory {
-  sendWebhook: typeof WebhookService.sendWebhook
-  saveWebhookRecord: typeof WebhookService.saveWebhookRecord
+  sendInitialWebhook: ReturnType<
+    typeof WebhookService.createInitialWebhookSender
+  >
 }
 
 export const createWebhookFactory = ({
   isEnabled,
   props,
 }: RegisteredFeature<FeatureNames.WebhookVerifiedContent>): IWebhookFactory => {
-  if (isEnabled && props) return WebhookService
+  if (isEnabled && props) {
+    const { webhookQueueUrl } = props
+    let producer: WebhookProducer | undefined
+    if (webhookQueueUrl) {
+      producer = new WebhookProducer(webhookQueueUrl)
+      startWebhookConsumer(webhookQueueUrl, producer)
+    }
+    return {
+      sendInitialWebhook: WebhookService.createInitialWebhookSender(producer),
+    }
+  }
   const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
   return {
-    sendWebhook: () => errAsync(error),
-    saveWebhookRecord: () => errAsync(error),
+    sendInitialWebhook: () => errAsync(error),
   }
 }
 

@@ -15,22 +15,21 @@ type RatingValidatorConstructor = (ratingField: IRatingField) => RatingValidator
  * Returns a validation function to check if the
  * selected rating option is a valid option.
  */
-const makeRatingLimitsValidator: RatingValidatorConstructor = (ratingField) => (
-  response,
-) => {
-  const { answer } = response
-  const { steps } = ratingField.ratingOptions
+const makeRatingLimitsValidator: RatingValidatorConstructor =
+  (ratingField) => (response) => {
+    const { answer } = response
+    const { steps } = ratingField.ratingOptions
 
-  const isValid = isInt(answer, {
-    min: 1,
-    max: steps,
-    allow_leading_zeroes: false,
-  })
+    const isValid = isInt(answer, {
+      min: 1,
+      max: steps,
+      allow_leading_zeroes: false,
+    })
 
-  return isValid
-    ? right(response)
-    : left(`RatingValidator:\t answer is not a valid rating`)
-}
+    return isValid
+      ? right(response)
+      : left(`RatingValidator:\t answer is not a valid rating`)
+  }
 
 /**
  * Returns a validation function for a rating field when called.

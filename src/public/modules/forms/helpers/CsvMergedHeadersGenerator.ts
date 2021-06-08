@@ -15,6 +15,7 @@ type UnprocessedRecord = {
 
 export class CsvMergedHeadersGenerator extends CsvGenerator {
   hasBeenProcessed: boolean
+  hasBeenSorted: boolean
   fieldIdToQuestion: Map<
     string,
     {
@@ -29,6 +30,7 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
     super(expectedNumberOfRecords, numOfMetaDataRows)
 
     this.hasBeenProcessed = false
+    this.hasBeenSorted = false
     this.fieldIdToQuestion = new Map()
     this.fieldIdToNumCols = {}
     this.unprocessed = []
@@ -144,8 +146,16 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
       })
       this.addLine(row)
     })
-
     this.hasBeenProcessed = true
+  }
+
+  /**
+   * Sorts unprocessed records from oldest to newest
+   */
+  sort(): void {
+    if (this.hasBeenSorted) return
+    this.unprocessed.sort((a, b) => this._dateComparator(a.created, b.created))
+    this.hasBeenSorted = true
   }
 
   /**
@@ -168,7 +178,27 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
    * @param filename name of csv file
    */
   downloadCsv(filename: string): void {
+    this.sort()
     this.process()
     this.triggerFileDownload(filename)
+  }
+
+  /**
+   * Comparator for dates
+   * @param firstDate
+   * @param secondDate
+   */
+  _dateComparator(firstDate: string, secondDate: string): number {
+    // cast to Asia/Singapore to ensure both dates are of the same timezone
+    const first = moment(firstDate).tz('Asia/Singapore')
+    const second = moment(secondDate).tz('Asia/Singapore')
+    if (first.isBefore(second)) {
+      return -1
+    } else if (first.isAfter(second)) {
+      return 1
+    } else {
+      // dates are the same
+      return 0
+    }
   }
 }

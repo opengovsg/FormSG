@@ -12,7 +12,7 @@ export class ConflictError extends ApplicationError {
 }
 
 export class SubmissionNotFoundError extends ApplicationError {
-  constructor(message: string) {
+  constructor(message = 'Submission not found for given ID') {
     super(message)
   }
 }

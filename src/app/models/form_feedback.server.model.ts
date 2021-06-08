@@ -1,4 +1,4 @@
-import { Mongoose, Schema } from 'mongoose'
+import { Mongoose, QueryCursor, Schema } from 'mongoose'
 
 import { IFormFeedbackModel, IFormFeedbackSchema } from '../../types'
 
@@ -39,7 +39,9 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema, IFormFeedbackModel>(
  * @param formId the form id to return the submissions cursor for
  * @returns a cursor to the feedback retrieved
  */
-FormFeedbackSchema.statics.getFeedbackCursorByFormId = function (formId) {
+FormFeedbackSchema.statics.getFeedbackCursorByFormId = function (
+  formId: string,
+): QueryCursor<IFormFeedbackSchema> {
   return this.find({ formId }).batchSize(2000).read('secondary').lean().cursor()
 }
 

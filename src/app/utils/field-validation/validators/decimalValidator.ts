@@ -22,31 +22,30 @@ interface IIsFloatOptions {
  * Returns a validation function
  * to check if decimal is within the specified custom range.
  */
-const makeDecimalFloatRangeValidator: DecimalValidatorConstructor = (
-  decimalField,
-) => (response) => {
-  const { customMin, customMax } = decimalField.ValidationOptions // defaults to customMin: null, customMax: null
-  const { answer } = response
+const makeDecimalFloatRangeValidator: DecimalValidatorConstructor =
+  (decimalField) => (response) => {
+    const { customMin, customMax } = decimalField.ValidationOptions // defaults to customMin: null, customMax: null
+    const { answer } = response
 
-  const isFloatOptions: IIsFloatOptions = {}
-  // Necessary to add 'min' and 'max' property manually as
-  // isFloatOptions tests for presence of property
-  // See https://github.com/validatorjs/validator.js/blob/302d2957c924b515cb22f7e87b5e84fee8636d6e/src/lib/isFloat.js#L13
+    const isFloatOptions: IIsFloatOptions = {}
+    // Necessary to add 'min' and 'max' property manually as
+    // isFloatOptions tests for presence of property
+    // See https://github.com/validatorjs/validator.js/blob/302d2957c924b515cb22f7e87b5e84fee8636d6e/src/lib/isFloat.js#L13
 
-  if (customMin || customMin === 0) {
-    isFloatOptions['min'] = customMin
+    if (customMin || customMin === 0) {
+      isFloatOptions['min'] = customMin
+    }
+    if (customMax || customMax === 0) {
+      isFloatOptions['max'] = customMax
+    }
+
+    // isFloat validates range correctly for floats up to 15 decimal places
+    // (1.999999999999999 >= 2) is False
+    // (1.9999999999999999 >= 2) is True
+    return isFloat(answer, isFloatOptions)
+      ? right(response)
+      : left(`DecimalValidator:\t answer is not a valid float`)
   }
-  if (customMax || customMax === 0) {
-    isFloatOptions['max'] = customMax
-  }
-
-  // isFloat validates range correctly for floats up to 15 decimal places
-  // (1.999999999999999 >= 2) is False
-  // (1.9999999999999999 >= 2) is True
-  return isFloat(answer, isFloatOptions)
-    ? right(response)
-    : left(`DecimalValidator:\t answer is not a valid float`)
-}
 
 /**
  * Returns a validator to check if

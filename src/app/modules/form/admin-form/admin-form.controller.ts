@@ -26,12 +26,14 @@ import {
   ResponseMode,
 } from '../../../../types'
 import {
+  DuplicateFormBody,
   EncryptSubmissionDto,
   EndPageUpdateDto,
   ErrorDto,
   FieldCreateDto,
   FieldUpdateDto,
   FormFieldDto,
+  FormUpdateParams,
   PermissionsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
@@ -75,11 +77,7 @@ import {
 } from './admin-form.constants'
 import { EditFieldError } from './admin-form.errors'
 import * as AdminFormService from './admin-form.service'
-import {
-  DuplicateFormBody,
-  FormUpdateParams,
-  PermissionLevel,
-} from './admin-form.types'
+import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
@@ -497,7 +495,7 @@ const validateDateRange = celebrate({
  */
 export const countFormSubmissions: ControllerHandler<
   { formId: string },
-  unknown,
+  ErrorDto | number,
   unknown,
   { startDate?: string; endDate?: string }
 > = async (req, res) => {
@@ -1424,15 +1422,14 @@ export const submitEncryptPreview: ControllerHandler<
         }),
     )
     .map(({ parsedResponses, form }) => {
-      const submission = EncryptSubmissionService.createEncryptSubmissionWithoutSave(
-        {
+      const submission =
+        EncryptSubmissionService.createEncryptSubmissionWithoutSave({
           form,
           encryptedContent,
           // Don't bother encrypting and signing mock variables for previews
           verifiedContent: '',
           version,
-        },
-      )
+        })
 
       void SubmissionService.sendEmailConfirmations({
         form,
@@ -1507,9 +1504,10 @@ export const submitEmailPreview: ControllerHandler<
   }
   const form = formResult.value
 
-  const parsedResponsesResult = await EmailSubmissionService.validateAttachments(
-    responses,
-  ).andThen(() => SubmissionService.getProcessedResponses(form, responses))
+  const parsedResponsesResult =
+    await EmailSubmissionService.validateAttachments(responses).andThen(() =>
+      SubmissionService.getProcessedResponses(form, responses),
+    )
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',

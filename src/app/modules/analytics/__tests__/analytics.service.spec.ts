@@ -85,9 +85,9 @@ describe('analytics.service', () => {
     it('should return DatabaseError when error occurs whilst retrieving form count', async () => {
       // Arrange
       const execSpy = jest.fn().mockRejectedValueOnce(new Error('boom'))
-      jest.spyOn(FormModel, 'estimatedDocumentCount').mockReturnValueOnce(({
+      jest.spyOn(FormModel, 'estimatedDocumentCount').mockReturnValueOnce({
         exec: execSpy,
-      } as unknown) as Query<number>)
+      } as unknown as Query<number>)
 
       // Act
       const actualTE = await getFormCount()
@@ -146,9 +146,9 @@ describe('analytics.service', () => {
     it('should return DatabaseError when error occurs whilst retrieving user count', async () => {
       // Arrange
       const execSpy = jest.fn().mockRejectedValueOnce(new Error('boom'))
-      jest.spyOn(UserModel, 'estimatedDocumentCount').mockReturnValueOnce(({
+      jest.spyOn(UserModel, 'estimatedDocumentCount').mockReturnValueOnce({
         exec: execSpy,
-      } as unknown) as Query<number>)
+      } as unknown as Query<number>)
 
       // Act
       const actualTE = await getUserCount()
@@ -205,9 +205,9 @@ describe('analytics.service', () => {
       const execSpy = jest.fn().mockRejectedValueOnce(new Error('boom'))
       jest
         .spyOn(SubmissionModel, 'estimatedDocumentCount')
-        .mockReturnValueOnce(({
+        .mockReturnValueOnce({
           exec: execSpy,
-        } as unknown) as Query<number>)
+        } as unknown as Query<number>)
 
       // Act
       const actualTE = await getSubmissionCount()

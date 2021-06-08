@@ -65,7 +65,12 @@
           <button
             ng-disabled="!vm.contact.number || vm.vfnState !==
           vm.VERIFY_STATE.IDLE || vm.contact.isFetching"
-            class="ecm__vfn-button ecm__button vfn-btn btn-custom btn-large field-group"
+            class="
+              ecm__vfn-button ecm__button
+              vfn-btn
+              btn-custom btn-large
+              field-group
+            "
             ng-class="vm.vfnState === vm.VERIFY_STATE.SUCCESS ?
           'ecm__vfn-button--success' : ''"
             ng-click="vm.vfnState !== vm.VERIFY_STATE.SUCCESS && vm.sendOtp()"

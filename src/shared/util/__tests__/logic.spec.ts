@@ -828,7 +828,7 @@ describe('Logic validation', () => {
     let form: IFormDocument
 
     beforeEach(() => {
-      form = ({
+      form = {
         _id: new ObjectId(),
         form_logics: [
           {
@@ -860,7 +860,7 @@ describe('Logic validation', () => {
             logicType: LogicType.ShowFields,
           } as IShowFieldsLogicSchema,
         ],
-      } as unknown) as IFormDocument
+      } as unknown as IFormDocument
     })
 
     it('should compute the correct visibility for circular logic where all fields are hidden', () => {

@@ -107,7 +107,7 @@ export const MOCK_JWT_PAYLOAD = {
   rememberMe: true,
 }
 
-export const MOCK_SP_FORM = ({
+export const MOCK_SP_FORM = {
   authType: 'SP',
   title: 'Mock SP form',
   _id: new ObjectId().toHexString(),
@@ -116,9 +116,9 @@ export const MOCK_SP_FORM = ({
     agency: new ObjectId().toHexString(),
   },
   getPublicView: () => _.omit(this, 'admin'),
-} as unknown) as IPopulatedForm
+} as unknown as IPopulatedForm
 
-export const MOCK_CP_FORM = ({
+export const MOCK_CP_FORM = {
   authType: 'CP',
   title: 'Mock CP form',
   _id: new ObjectId().toHexString(),
@@ -127,9 +127,9 @@ export const MOCK_CP_FORM = ({
     agency: new ObjectId().toHexString(),
   },
   getPublicView: () => _.omit(this, 'admin'),
-} as unknown) as IPopulatedForm
+} as unknown as IPopulatedForm
 
-export const MOCK_MYINFO_FORM = ({
+export const MOCK_MYINFO_FORM = {
   authType: 'MyInfo',
   title: 'Mock MyInfo form',
   _id: new ObjectId().toHexString(),
@@ -137,7 +137,7 @@ export const MOCK_MYINFO_FORM = ({
     _id: new ObjectId().toHexString(),
     agency: new ObjectId().toHexString(),
   },
-} as unknown) as IPopulatedForm
+} as unknown as IPopulatedForm
 
 export const MOCK_LOGIN_DOC = {
   _id: new ObjectId().toHexString(),

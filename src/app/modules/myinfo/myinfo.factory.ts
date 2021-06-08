@@ -6,6 +6,7 @@ import {
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
+  IPossiblyPrefilledField,
 } from '../../../types'
 import config from '../../config/config'
 import FeatureManager, {
@@ -33,11 +34,7 @@ import {
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import { MyInfoService } from './myinfo.service'
-import {
-  IMyInfoRedirectURLArgs,
-  IPossiblyPrefilledField,
-  MyInfoParsedRelayState,
-} from './myinfo.types'
+import { IMyInfoRedirectURLArgs, MyInfoParsedRelayState } from './myinfo.types'
 
 interface IMyInfoFactory {
   createRedirectURL: (
