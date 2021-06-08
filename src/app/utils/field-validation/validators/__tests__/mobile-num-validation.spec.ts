@@ -17,7 +17,7 @@ describe('Mobile number validation tests', () => {
   beforeEach(() => {
     jest
       .spyOn(
-        (formsgSdk.verification as unknown) as VerificationMock,
+        formsgSdk.verification as unknown as VerificationMock,
         'authenticate',
       )
       .mockImplementation(() => true)
@@ -178,7 +178,7 @@ describe('Mobile number validation tests', () => {
     it('should reject mobile numbers if isVerifiable is true and signature is present but invalid', () => {
       jest
         .spyOn(
-          (formsgSdk.verification as unknown) as VerificationMock,
+          formsgSdk.verification as unknown as VerificationMock,
           'authenticate',
         )
         .mockImplementation(() => false)

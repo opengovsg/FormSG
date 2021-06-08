@@ -102,12 +102,8 @@ const getTwilio = async (
     try {
       const credentials = await getCredentials(msgSrvcName)
       if (credentials !== null) {
-        const {
-          accountSid,
-          apiKey,
-          apiSecret,
-          messagingServiceSid,
-        } = credentials
+        const { accountSid, apiKey, apiSecret, messagingServiceSid } =
+          credentials
         // Create twilioClient
         const result: TwilioConfig = {
           client: Twilio(apiKey, apiSecret, { accountSid }),

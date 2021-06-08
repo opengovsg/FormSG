@@ -17,19 +17,18 @@ type RadioButtonValidatorConstructor = (
  * Returns a validation function to check if the
  * selected radio option is one of the specified options.
  */
-const makeRadioOptionsValidator: RadioButtonValidatorConstructor = (
-  radioButtonField,
-) => (response) => {
-  const { answer } = response
-  const { fieldOptions, othersRadioButton } = radioButtonField
-  const isValid =
-    isOneOfOptions(fieldOptions, answer) ||
-    isOtherOption(othersRadioButton, answer)
+const makeRadioOptionsValidator: RadioButtonValidatorConstructor =
+  (radioButtonField) => (response) => {
+    const { answer } = response
+    const { fieldOptions, othersRadioButton } = radioButtonField
+    const isValid =
+      isOneOfOptions(fieldOptions, answer) ||
+      isOtherOption(othersRadioButton, answer)
 
-  return isValid
-    ? right(response)
-    : left(`RadioButtonValidator:\tanswer is not a valid radio button option`)
-}
+    return isValid
+      ? right(response)
+      : left(`RadioButtonValidator:\tanswer is not a valid radio button option`)
+  }
 
 /**
  * Returns a validation function for a radio button field when called.

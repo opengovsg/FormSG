@@ -19,6 +19,7 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
     super(expectedNumberOfRecords, numOfMetaDataRows)
 
     this.hasBeenProcessed = false
+    this.hasBeenSorted = false
     this.fieldIdToQuestion = new Map()
     this.fieldIdToNumCols = {}
     this.unprocessed = []
@@ -121,8 +122,16 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
       }
       this.addLine(row)
     })
-
     this.hasBeenProcessed = true
+  }
+
+  /**
+   * Sorts unprocessed records from oldest to newest
+   */
+  sort() {
+    if (this.hasBeenSorted) return
+    this.unprocessed.sort((a, b) => this._dateComparator(a.created, b.created))
+    this.hasBeenSorted = true
   }
 
   /**
@@ -145,8 +154,28 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
    * @param {string} filename
    */
   downloadCsv(filename) {
+    this.sort()
     this.process()
     this.triggerFileDownload(filename)
+  }
+
+  /**
+   * Comparator for dates
+   * @param string firstDate
+   * @param string secondDate
+   */
+  _dateComparator(firstDate, secondDate) {
+    // cast to Asia/Singapore to ensure both dates are of the same timezone
+    const first = moment(firstDate).tz('Asia/Singapore')
+    const second = moment(secondDate).tz('Asia/Singapore')
+    if (first.isBefore(second)) {
+      return -1
+    } else if (first.isAfter(second)) {
+      return 1
+    } else {
+      // dates are the same
+      return 0
+    }
   }
 }
 

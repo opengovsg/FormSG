@@ -39,3 +39,61 @@ export class WebhookFailedWithAxiosError extends ApplicationError {
     this.meta = { originalError: error }
   }
 }
+
+/**
+ * Webhook queue message incorrectly formatted and hence could not be parsed
+ */
+export class WebhookQueueMessageParsingError extends ApplicationError {
+  meta: {
+    originalError: unknown
+  }
+
+  constructor(
+    error: unknown,
+    message = 'Unable to parse body of webhook queue message',
+  ) {
+    super(message)
+    this.meta = { originalError: error }
+  }
+}
+
+/**
+ * Maximum retries exceeded for webhook.
+ */
+export class WebhookNoMoreRetriesError extends ApplicationError {
+  constructor(message = 'Maximum retries exceeded for webhook') {
+    super(message)
+  }
+}
+
+/**
+ * Failed to push message to SQS.
+ */
+export class WebhookPushToQueueError extends ApplicationError {
+  constructor(message = 'Failed to push webhook to message queue') {
+    super(message)
+  }
+}
+
+/**
+ * Cannot send webhook retry because form has no webhook URL or does not have
+ * retries enabled.
+ */
+export class WebhookRetriesNotEnabledError extends ApplicationError {
+  meta: {
+    webhookUrl: string
+    isRetryEnabled: boolean
+  }
+
+  constructor(
+    webhookUrl: string,
+    isRetryEnabled: boolean,
+    message = 'Unable to send webhook as form has no webhook URL or does not have retries enabled',
+  ) {
+    super(message)
+    this.meta = {
+      webhookUrl,
+      isRetryEnabled,
+    }
+  }
+}

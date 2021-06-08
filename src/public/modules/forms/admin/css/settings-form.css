@@ -171,6 +171,10 @@
   padding-bottom: 45px;
 }
 
+#settings-form .feature-container.webhook-feature-container {
+  padding-bottom: 30px;
+}
+
 #settings-form #enable-auth {
   padding-top: 45px;
   padding-bottom: 30px;

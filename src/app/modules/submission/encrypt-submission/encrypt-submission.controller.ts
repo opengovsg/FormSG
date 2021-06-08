@@ -149,9 +149,8 @@ const submitEncryptModeForm: ControllerHandler<
   }
 
   // Check that the form has not reached submission limits
-  const formSubmissionLimitResult = await FormService.checkFormSubmissionLimitAndDeactivateForm(
-    form,
-  )
+  const formSubmissionLimitResult =
+    await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
   if (formSubmissionLimitResult.isErr()) {
     logger.warn({
       message:
@@ -270,14 +269,16 @@ const submitEncryptModeForm: ControllerHandler<
   // Encrypt Verified SPCP Fields
   let verified
   if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
-    const encryptVerifiedContentResult = VerifiedContentFactory.getVerifiedContent(
-      { type: form.authType, data: { uinFin, userInfo } },
-    ).andThen((verifiedContent) =>
-      VerifiedContentFactory.encryptVerifiedContent({
-        verifiedContent,
-        formPublicKey: form.publicKey,
-      }),
-    )
+    const encryptVerifiedContentResult =
+      VerifiedContentFactory.getVerifiedContent({
+        type: form.authType,
+        data: { uinFin, userInfo },
+      }).andThen((verifiedContent) =>
+        VerifiedContentFactory.encryptVerifiedContent({
+          verifiedContent,
+          formPublicKey: form.publicKey,
+        }),
+      )
 
     if (encryptVerifiedContentResult.isErr()) {
       const { error } = encryptVerifiedContentResult
@@ -359,15 +360,14 @@ const submitEncryptModeForm: ControllerHandler<
   })
 
   // Fire webhooks if available
-  // Note that we push data to webhook endpoints on a best effort basis
-  // As such, we should not await on these post requests
+  // To avoid being coupled to latency of receiving system,
+  // do not await on webhook
   const webhookUrl = form.webhook?.url
   if (webhookUrl) {
-    void WebhookFactory.sendWebhook(
+    void WebhookFactory.sendInitialWebhook(
       submission,
       webhookUrl,
-    ).andThen((response) =>
-      WebhookFactory.saveWebhookRecord(submission._id, response),
+      !!form.webhook?.isRetryEnabled,
     )
   }
 

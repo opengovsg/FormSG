@@ -74,13 +74,11 @@ const bounceSmsCountSchema = {
   },
 }
 
-const FormDeactivatedSmsCountSchema = new Schema<IFormDeactivatedSmsCountSchema>(
-  bounceSmsCountSchema,
-)
+const FormDeactivatedSmsCountSchema =
+  new Schema<IFormDeactivatedSmsCountSchema>(bounceSmsCountSchema)
 
-const BouncedSubmissionSmsCountSchema = new Schema<IBouncedSubmissionSmsCountSchema>(
-  bounceSmsCountSchema,
-)
+const BouncedSubmissionSmsCountSchema =
+  new Schema<IBouncedSubmissionSmsCountSchema>(bounceSmsCountSchema)
 
 const compileSmsCountModel = (db: Mongoose) => {
   const SmsCountSchema = new Schema<ISmsCountSchema, ISmsCountModel>(
@@ -109,10 +107,12 @@ const compileSmsCountModel = (db: Mongoose) => {
     },
   )
 
-  SmsCountSchema.statics.logSms = async function (
-    this: ISmsCountModel,
-    { smsData, msgSrvcSid, smsType, logType }: LogSmsParams,
-  ) {
+  SmsCountSchema.statics.logSms = async function ({
+    smsData,
+    msgSrvcSid,
+    smsType,
+    logType,
+  }: LogSmsParams) {
     const schemaData: Omit<ISmsCount, '_id'> = {
       ...smsData,
       msgSrvcSid,

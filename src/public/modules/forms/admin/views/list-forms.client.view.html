@@ -20,7 +20,15 @@
           <div
             ng-click="vm.openCreateModal(); vm.clearFormBtns()"
             id="create-new"
-            class="col-xs-10 col-xs-offset-1 col-sm-4 col-sm-offset-1 col-md-3 col-md-offset-1 form-item"
+            class="
+              col-xs-10
+              col-xs-offset-1
+              col-sm-4
+              col-sm-offset-1
+              col-md-3
+              col-md-offset-1
+              form-item
+            "
           >
             <span id="create-plus" class="bx bx-plus"></span>
             <span id="create-plus-text">Create new form</span>
@@ -30,7 +38,10 @@
           <div
             ng-repeat="form in vm.myforms"
             data-formid="{{form._id}}"
-            class="col-xs-10 col-sm-4 col-sm-offset-1 col-md-3 col-md-offset-1 form-item"
+            class="
+              col-xs-10 col-sm-4 col-sm-offset-1 col-md-3 col-md-offset-1
+              form-item
+            "
             ng-class="{'inactive': form.status!=='PUBLIC', 'active': vm.showFormBtns[form._id], 'duplicated': vm.duplicatedForms[form._id]}"
             ng-click="vm.editForm(form)"
           >

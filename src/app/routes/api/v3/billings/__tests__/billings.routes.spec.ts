@@ -51,14 +51,12 @@ describe('billings.routes', () => {
       // Log in user.
       const session = await createAuthedSession(defaultUser.email, request)
       // Generate login statistics.
-      const {
-        generatedLoginTimes,
-        generatedForms,
-      } = await generateLoginStatistics({
-        user: defaultUser,
-        esrvcIdToCheck: VALID_ESRVCID_1,
-        altEsrvcId: VALID_ESRVCID_2,
-      })
+      const { generatedLoginTimes, generatedForms } =
+        await generateLoginStatistics({
+          user: defaultUser,
+          esrvcIdToCheck: VALID_ESRVCID_1,
+          altEsrvcId: VALID_ESRVCID_2,
+        })
 
       // Act
       const response = await session.get('/billings').query({

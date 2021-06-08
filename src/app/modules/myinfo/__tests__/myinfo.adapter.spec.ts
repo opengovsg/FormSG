@@ -206,10 +206,12 @@ describe('myinfo.adapter', () => {
 
         it('should correctly return single vehicle numbers', () => {
           // Grab first vehicle number
-          const expected = (MYINFO_VEHNO_AVAILABLE.vehicles![0] as SetRequired<
-            MyInfoVehicleFull,
-            'vehicleno'
-          >).vehicleno.value
+          const expected = (
+            MYINFO_VEHNO_AVAILABLE.vehicles![0] as SetRequired<
+              MyInfoVehicleFull,
+              'vehicleno'
+            >
+          ).vehicleno.value
           const response: IPersonResponse = {
             uinFin: MOCK_UINFIN,
             data: {

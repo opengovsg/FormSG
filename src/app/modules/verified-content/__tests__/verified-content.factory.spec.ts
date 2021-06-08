@@ -17,13 +17,13 @@ const MockVerifiedContentService = mocked(VerifiedContentService)
 
 describe('verified-content.factory', () => {
   describe('verified content feature disabled', () => {
-    const MOCK_DISABLED_FEAT: RegisteredFeature<FeatureNames.WebhookVerifiedContent> = {
-      isEnabled: false,
-    }
+    const MOCK_DISABLED_FEAT: RegisteredFeature<FeatureNames.WebhookVerifiedContent> =
+      {
+        isEnabled: false,
+      }
 
-    const VerifiedContentFactory = createVerifiedContentFactory(
-      MOCK_DISABLED_FEAT,
-    )
+    const VerifiedContentFactory =
+      createVerifiedContentFactory(MOCK_DISABLED_FEAT)
 
     it('should return MissingFeatureError when invoking getVerifiedContent', async () => {
       // Act
@@ -51,9 +51,10 @@ describe('verified-content.factory', () => {
   })
 
   describe('verified content feature enabled but missing signing secret key', () => {
-    const MOCK_ENABLED_FEAT_WO_KEY: RegisteredFeature<FeatureNames.WebhookVerifiedContent> = {
-      isEnabled: true,
-    }
+    const MOCK_ENABLED_FEAT_WO_KEY: RegisteredFeature<FeatureNames.WebhookVerifiedContent> =
+      {
+        isEnabled: true,
+      }
 
     const VerifiedContentFactory = createVerifiedContentFactory(
       MOCK_ENABLED_FEAT_WO_KEY,
@@ -85,16 +86,16 @@ describe('verified-content.factory', () => {
   })
 
   describe('verified content feature enabled with signing secret key', () => {
-    const MOCK_ENABLED_FEAT: RegisteredFeature<FeatureNames.WebhookVerifiedContent> = {
-      isEnabled: true,
-      props: {
-        signingSecretKey: 'some secret key',
-      },
-    }
+    const MOCK_ENABLED_FEAT: RegisteredFeature<FeatureNames.WebhookVerifiedContent> =
+      {
+        isEnabled: true,
+        props: {
+          signingSecretKey: 'some secret key',
+        },
+      }
 
-    const VerifiedContentFactory = createVerifiedContentFactory(
-      MOCK_ENABLED_FEAT,
-    )
+    const VerifiedContentFactory =
+      createVerifiedContentFactory(MOCK_ENABLED_FEAT)
 
     it('should invoke VerifiedContentService.getVerifiedContent', async () => {
       // Arrange

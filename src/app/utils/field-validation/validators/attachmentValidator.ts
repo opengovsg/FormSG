@@ -38,15 +38,14 @@ const attachmentContentValidator: AttachmentValidator = (response) => {
  * Returns a validation function to check if
  * attachment size is within the specified limit.
  */
-const makeAttachmentSizeValidator: AttachmentValidatorConstructor = (
-  attachmentField,
-) => (response) => {
-  const { attachmentSize } = attachmentField
-  const byteSizeLimit = parseInt(attachmentSize) * MILLION
-  return response.content.byteLength < byteSizeLimit
-    ? right(response)
-    : left(`AttachmentValidator:\t File size more than limit`)
-}
+const makeAttachmentSizeValidator: AttachmentValidatorConstructor =
+  (attachmentField) => (response) => {
+    const { attachmentSize } = attachmentField
+    const byteSizeLimit = parseInt(attachmentSize) * MILLION
+    return response.content.byteLength < byteSizeLimit
+      ? right(response)
+      : left(`AttachmentValidator:\t File size more than limit`)
+  }
 
 /**
  * Returns a validation function for an attachment field when called.

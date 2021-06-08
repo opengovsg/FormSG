@@ -163,9 +163,10 @@ function BillingController($q, $state, $timeout, Auth, NgTableParams) {
     })
 
     // Generate a file name without spaces
-    const fileName = `Billing-${vm.searchState.input}-${vm.selectedTimePeriod.name}.csv`
-      .split(' ')
-      .join('_')
+    const fileName =
+      `Billing-${vm.searchState.input}-${vm.selectedTimePeriod.name}.csv`
+        .split(' ')
+        .join('_')
 
     csvGenerator.triggerFileDownload(fileName)
   }

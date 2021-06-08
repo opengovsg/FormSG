@@ -45,7 +45,6 @@ MyInfoHashSchema.index({
 MyInfoHashSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
 MyInfoHashSchema.statics.updateHashes = async function (
-  this: IMyInfoHashModel,
   uinFin: string,
   formId: string,
   readOnlyHashes: IHashes,
@@ -71,7 +70,6 @@ MyInfoHashSchema.statics.updateHashes = async function (
 }
 
 MyInfoHashSchema.statics.findHashes = async function (
-  this: IMyInfoHashModel,
   uinFin: string,
   formId: string,
 ): Promise<IHashes | null> {

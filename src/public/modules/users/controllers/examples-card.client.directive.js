@@ -1,4 +1,5 @@
 'use strict'
+const BetaService = require('../../../services/BetaService')
 
 angular.module('users').directive('examplesCard', [examplesCard])
 
@@ -21,7 +22,6 @@ function examplesCard() {
       'GTag',
       'Auth',
       '$location',
-      'Betas',
       'Toastr',
       examplesCardController,
     ],
@@ -37,7 +37,6 @@ function examplesCardController(
   GTag,
   Auth,
   $location,
-  Betas,
   Toastr,
 ) {
   $scope.user = Auth.getUser()
@@ -79,7 +78,7 @@ function examplesCardController(
    */
 
   $scope.useTemplate = function () {
-    const missingBetaPermissions = Betas.getMissingFieldPermissions(
+    const missingBetaPermissions = BetaService.getMissingFieldPermissions(
       $scope.user,
       $scope.form,
     )

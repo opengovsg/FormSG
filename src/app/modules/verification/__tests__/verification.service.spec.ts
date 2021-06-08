@@ -83,11 +83,11 @@ describe('Verification service', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('createTransaction', () => {
-    const mockForm = ({
+    const mockForm = {
       _id: new ObjectId(),
       title: 'mockForm',
       form_fields: [],
-    } as unknown) as IFormSchema
+    } as unknown as IFormSchema
     let createTransactionFromFormSpy: jest.SpyInstance<
       Promise<IVerificationSchema | null>,
       [form: IFormSchema]
