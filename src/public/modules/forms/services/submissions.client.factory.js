@@ -124,7 +124,7 @@ function SubmissionsFactory($q, $http, $timeout, $window, GTag, FormSgSdk) {
         .when(
           AdminSubmissionsService.countFormSubmissions({
             formId,
-            date: { startDate, endDate },
+            dates: { startDate, endDate },
           }),
         )
         .then((expectedNumResponses) => {
