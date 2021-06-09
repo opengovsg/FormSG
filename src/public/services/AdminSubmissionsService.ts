@@ -8,7 +8,7 @@ import {
   SubmissionResponseQueryDto,
 } from 'src/types/api'
 
-import { ADMIN_FORM_ENDPOINT } from './AdminFormService'
+import { ADMIN_FORM_ENDPOINT } from './UpdateFormService'
 
 /**
  * Counts the number of submissions for a given form

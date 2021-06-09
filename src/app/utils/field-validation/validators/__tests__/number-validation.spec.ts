@@ -12,9 +12,7 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Max,
-        customMin: null,
-        customMax: 2,
-        customVal: null,
+        customVal: 2,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -30,9 +28,7 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Max,
-        customMin: null,
-        customMax: 2,
-        customVal: null,
+        customVal: 2,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -47,9 +43,7 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Max,
-        customMin: null,
-        customMax: 2,
-        customVal: null,
+        customVal: 2,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -66,9 +60,7 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Min,
-        customMin: 2,
-        customMax: null,
-        customVal: null,
+        customVal: 2,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -83,9 +75,7 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Min,
-        customMin: 2,
-        customMax: null,
-        customVal: null,
+        customVal: 2,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -100,8 +90,6 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Exact,
-        customMin: null,
-        customMax: null,
         customVal: 2,
       },
     })
@@ -117,8 +105,6 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Exact,
-        customMin: null,
-        customMax: null,
         customVal: 2,
       },
     })
@@ -136,8 +122,6 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Max,
-        customMin: null,
-        customMax: null,
         customVal: null,
       },
     })
@@ -153,8 +137,6 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Min,
-        customMin: null,
-        customMax: null,
         customVal: null,
       },
     })
@@ -170,8 +152,6 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Exact,
-        customMin: null,
-        customMax: null,
         customVal: null,
       },
     })
@@ -187,8 +167,6 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
-        customMin: null,
-        customMax: null,
         customVal: null,
       },
     })
@@ -204,8 +182,6 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
-        customMin: null,
-        customMax: null,
         customVal: null,
       },
       required: false,
@@ -222,8 +198,6 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
-        customMin: null,
-        customMax: null,
         customVal: null,
       },
     })
@@ -239,8 +213,6 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
-        customMin: null,
-        customMax: null,
         customVal: null,
       },
     })
@@ -258,8 +230,6 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
-        customMin: null,
-        customMax: null,
         customVal: null,
       },
     })
@@ -274,8 +244,6 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
-        customMin: null,
-        customMax: null,
         customVal: null,
       },
     })

@@ -3,13 +3,13 @@ import { mocked } from 'ts-jest/utils'
 
 import { SubmissionMetadataList } from 'src/types'
 
-import { ADMIN_FORM_ENDPOINT } from '../AdminFormService'
 import {
   countFormSubmissions,
   getEncryptedResponse,
   getSubmissionMetadataById,
   getSubmissionsMetadataByPage,
 } from '../AdminSubmissionsService'
+import { ADMIN_FORM_ENDPOINT } from '../UpdateFormService'
 
 jest.mock('axios')
 const MockAxios = mocked(axios, true)

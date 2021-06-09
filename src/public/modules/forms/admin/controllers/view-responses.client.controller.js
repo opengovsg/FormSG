@@ -1,6 +1,8 @@
 'use strict'
 
-const processDecryptedContent = require('../../helpers/process-decrypted-content')
+const {
+  processDecryptedContent,
+} = require('../../helpers/process-decrypted-content')
 const { triggerFileDownload } = require('../../helpers/util')
 
 const SHOW_PROGRESS_DELAY_MS = 3000
@@ -209,7 +211,7 @@ function ViewResponsesController(
       if (vm.encryptionKey !== null) {
         vm.attachmentDownloadUrls = new Map()
 
-        const { content, verified, attachmentMetadata } = response
+        const { content, verified, attachmentMetadata, version } = response
         let displayedContent
 
         try {
@@ -218,6 +220,7 @@ function ViewResponsesController(
             {
               encryptedContent: content,
               verifiedContent: verified,
+              version,
             },
           )
 
