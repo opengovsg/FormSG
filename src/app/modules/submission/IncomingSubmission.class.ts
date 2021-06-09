@@ -94,7 +94,7 @@ export abstract class IncomingSubmission {
    */
   private getVisibleResponseIds(): VisibleResponseIdSet {
     return this.responses.reduce<FieldIdSet>((acc, response) => {
-      const responseId = response._id
+      const responseId = String(response._id)
       if (this.responseVisibilityPredicate(response)) {
         acc.add(responseId)
       }
@@ -111,7 +111,7 @@ export abstract class IncomingSubmission {
    */
   private getVerifiableResponseIds(): VerifiableResponseIdSet {
     return this.responses.reduce<FieldIdSet>((acc, response) => {
-      const responseId = response._id
+      const responseId = String(response._id)
       const formField = this.fieldMap[responseId]
       if (formField.isVerifiable) {
         acc.add(responseId)
@@ -138,7 +138,7 @@ export abstract class IncomingSubmission {
   protected getLegacyProcessedFieldResponse(
     response: FieldResponse,
   ): ProcessedFieldResponse {
-    const responseId = response._id
+    const responseId = String(response._id)
     const formField = this.fieldMap[responseId]
     return {
       ...response,
@@ -164,7 +164,7 @@ export abstract class IncomingSubmission {
     }
 
     const validationResultList = this.responses.map((response) => {
-      const responseId = response._id
+      const responseId = String(response._id)
       const formField = this.fieldMap[responseId]
       return validateField(
         this.form._id,

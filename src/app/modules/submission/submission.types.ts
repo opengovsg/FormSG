@@ -7,7 +7,6 @@ import {
   ITableResponse,
 } from 'src/types/response'
 
-import { FieldIdSet } from '../../../shared/util/logic'
 import { BasicField, IFieldSchema } from '../../../types/field'
 
 export type ProcessedResponse = {
@@ -25,10 +24,10 @@ export type ValidatedFieldMap = Opaque<
   'ValidatedFieldMap'
 >
 
-export type VisibleResponseIdSet = Opaque<FieldIdSet, 'VisibleResponseIdSet'>
+export type VisibleResponseIdSet = Opaque<Set<string>, 'VisibleResponseIdSet'>
 
 export type VerifiableResponseIdSet = Opaque<
-  FieldIdSet,
+  Set<string>,
   'VerifiableResponseIdSet'
 >
 
