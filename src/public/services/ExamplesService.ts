@@ -9,7 +9,6 @@ import {
 } from '../../types/api'
 
 export const EXAMPLES_ENDPOINT = '/examples'
-export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
 
 /**
  * Gets example forms that matches the specified parameters for listing
@@ -52,10 +51,7 @@ export const useTemplate = async (
   overrideParams: DuplicateFormBody,
 ): Promise<FormMetaView> => {
   return axios
-    .post<FormMetaView>(
-      `${ADMIN_FORM_ENDPOINT}/${formId}/adminform/copy`,
-      overrideParams,
-    )
+    .post<FormMetaView>(`${formId}/adminform/copy`, overrideParams)
     .then(({ data }) => data)
 }
 
@@ -68,8 +64,6 @@ export const queryTemplate = async (
   formId: string,
 ): Promise<{ form: PublicForm }> => {
   return axios
-    .get<{ form: PublicForm }>(
-      `${ADMIN_FORM_ENDPOINT}/${formId}/adminform/template`,
-    )
+    .get<{ form: PublicForm }>(`${formId}/adminform/template`)
     .then(({ data }) => data)
 }

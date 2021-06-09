@@ -117,7 +117,7 @@ describe('ExamplesService', () => {
       // Assert
       expect(actual).toEqual(expected)
       expect(MockAxios.post).toHaveBeenCalledWith(
-        `${ExamplesService.ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/adminform/copy`,
+        `${MOCK_FORM_ID}/adminform/copy`,
         MOCK_DUPLICATE_FORM_BODY,
       )
     })
@@ -138,7 +138,7 @@ describe('ExamplesService', () => {
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
       expect(MockAxios.post).toHaveBeenCalledWith(
-        `${ExamplesService.ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/adminform/copy`,
+        `${MOCK_FORM_ID}/adminform/copy`,
         MOCK_DUPLICATE_FORM_BODY,
       )
     })
@@ -164,7 +164,7 @@ describe('ExamplesService', () => {
       // Assert
       expect(actual).toEqual(expected)
       expect(MockAxios.get).toHaveBeenCalledWith(
-        `${ExamplesService.ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/adminform/template`,
+        `${MOCK_FORM_ID}/adminform/template`,
       )
     })
 
@@ -180,7 +180,7 @@ describe('ExamplesService', () => {
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
       expect(MockAxios.get).toHaveBeenCalledWith(
-        `${ExamplesService.ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/adminform/template`,
+        `${MOCK_FORM_ID}/adminform/template`,
       )
     })
   })
