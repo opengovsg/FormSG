@@ -21,6 +21,7 @@ AuthRouter.post(
       email: Joi.string()
         .required()
         .email()
+        .lowercase()
         .message('Please enter a valid email'),
     }),
   }),
@@ -47,6 +48,7 @@ AuthRouter.post(
       email: Joi.string()
         .required()
         .email()
+        .lowercase()
         .message('Please enter a valid email'),
     }),
   }),
@@ -73,6 +75,7 @@ AuthRouter.post(
       email: Joi.string()
         .required()
         .email()
+        .lowercase()
         .message('Please enter a valid email'),
       otp: Joi.string()
         .required()
