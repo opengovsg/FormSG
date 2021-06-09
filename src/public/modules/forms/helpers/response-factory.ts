@@ -1,3 +1,5 @@
+import { hasProp } from 'src/shared/util/has-prop'
+
 import {
   ArrayResponse,
   DisplayedResponseWithoutAnswer,
@@ -7,7 +9,6 @@ import {
 
 import {
   ArrayAnswerResponse,
-  ErrorResponse,
   Response,
   SingleAnswerResponse,
   TableResponse,
@@ -16,39 +17,41 @@ import {
 export const getResponseInstance = (
   fieldRecordData: DisplayedResponseWithoutAnswer,
 ): Response => {
-  switch (fieldRecordData.fieldType) {
-    case 'table':
-      if (isNestedResponse(fieldRecordData)) {
-        return new TableResponse(fieldRecordData)
-      }
-      break
-    case 'checkbox':
-      if (isArrayResponse(fieldRecordData)) {
-        return new ArrayAnswerResponse(fieldRecordData)
-      }
-      break
-    default:
-      if (isSingleResponse(fieldRecordData)) {
-        return new SingleAnswerResponse(fieldRecordData)
-      }
-      break
+  if (isNestedResponse(fieldRecordData)) {
+    return new TableResponse(fieldRecordData)
+  } else if (isArrayResponse(fieldRecordData)) {
+    return new ArrayAnswerResponse(fieldRecordData)
+  } else if (isSingleResponse(fieldRecordData)) {
+    return new SingleAnswerResponse(fieldRecordData)
+  } else {
+    // eslint-disable-next-line typesafe/no-throw-sync-func
+    throw new Error('Response did not match any known type') // should be caught in submissions client factory
   }
-  return new ErrorResponse(fieldRecordData)
 }
 
-function isNestedResponse(
+const isNestedResponse = (
   response: DisplayedResponseWithoutAnswer,
-): response is NestedResponse {
-  return 'answerArray' in response
-}
-function isArrayResponse(
-  response: DisplayedResponseWithoutAnswer,
-): response is ArrayResponse {
-  return 'answerArray' in response
+): response is NestedResponse => {
+  return (
+    hasProp(response, 'answerArray') &&
+    Array.isArray(response.answerArray) &&
+    Array.isArray(response.answerArray[0]) &&
+    typeof response.answerArray[0][0] === 'string'
+  )
 }
 
-function isSingleResponse(
+const isArrayResponse = (
   response: DisplayedResponseWithoutAnswer,
-): response is SingleResponse {
-  return 'answer' in response
+): response is ArrayResponse => {
+  return (
+    hasProp(response, 'answerArray') &&
+    Array.isArray(response.answerArray) &&
+    typeof response.answerArray[0] === 'string'
+  )
+}
+
+const isSingleResponse = (
+  response: DisplayedResponseWithoutAnswer,
+): response is SingleResponse => {
+  return hasProp(response, 'answer') && typeof response.answer === 'string'
 }

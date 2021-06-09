@@ -181,8 +181,13 @@ function SubmissionsFactory($q, $http, $timeout, $window, GTag, FormSgSdk) {
                 }
 
                 if (csvRecord.submissionData) {
-                  // accumulate dataset if it exists, since we may have status columns available
-                  experimentalCsvGenerator.addRecord(csvRecord.submissionData)
+                  try {
+                    // accumulate dataset if it exists, since we may have status columns available
+                    experimentalCsvGenerator.addRecord(csvRecord.submissionData)
+                  } catch (error) {
+                    errorCount++
+                    console.error('Error in getResponseInstance', error)
+                  }
                 }
 
                 if (downloadAttachments && csvRecord.downloadBlob) {

@@ -62,7 +62,7 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
     const fieldRecords = record.map((content) => {
-      const fieldRecord = getResponseInstance(content)
+      const fieldRecord = getResponseInstance(content) // Could throw error, to be caught in submissions client factory
       if (!fieldRecord.isHeader) {
         const currentMapping = this.fieldIdToQuestion.get(fieldRecord.id)
         // Only set new mapping if it does not exist or this record is a later
