@@ -1081,7 +1081,6 @@
                 class="input-custom input-medium"
                 placeholder="No. of Characters"
                 ng-disabled="!vm.field.ValidationOptions.selectedValidation"
-                ng-change="vm.changeFxn(vm.field)"
               />
             </div>
           </div>
@@ -1329,7 +1328,13 @@
 
     <!-- Preview of field on the right -->
     <div
-      class="preview-field-panel col-md-7 hidden-sm hidden-xs container no-padding"
+      class="
+        preview-field-panel
+        col-md-7
+        hidden-sm hidden-xs
+        container
+        no-padding
+      "
     >
       <div class="modal-preview-content">
         <form name="vm.forms.myForm" novalidate class="public-form">
@@ -1380,6 +1385,8 @@
             >
           </p>
           <div id="email-preview-content">
+            <p id="response-id">Response ID: 123456789</p>
+            <hr />
             <p class="editable-text">
               {{vm.field.autoReplyOptions.autoReplyMessage ?
               vm.field.autoReplyOptions.autoReplyMessage : "Dear Sir or

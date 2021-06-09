@@ -1,4 +1,5 @@
 'use strict'
+const BetaService = require('../../../services/BetaService')
 
 angular.module('users').directive('examplesCard', [examplesCard])
 
@@ -21,8 +22,8 @@ function examplesCard() {
       'GTag',
       'Auth',
       '$location',
-      'Betas',
       'Toastr',
+      '$q',
       examplesCardController,
     ],
   }
@@ -37,8 +38,8 @@ function examplesCardController(
   GTag,
   Auth,
   $location,
-  Betas,
   Toastr,
+  $q,
 ) {
   $scope.user = Auth.getUser()
 
@@ -79,7 +80,7 @@ function examplesCardController(
    */
 
   $scope.useTemplate = function () {
-    const missingBetaPermissions = Betas.getMissingFieldPermissions(
+    const missingBetaPermissions = BetaService.getMissingFieldPermissions(
       $scope.user,
       $scope.form,
     )
@@ -99,9 +100,9 @@ function examplesCardController(
       controllerAs: 'vm',
       resolve: {
         FormToDuplicate: () => {
-          return FormApi.template({
-            formId: $scope.form._id,
-          }).$promise.then((res) => res.form)
+          return $q
+            .when(FormApi.queryTemplate($scope.form._id))
+            .then((res) => res.form)
         },
         createFormModalOptions: () => ({ mode: 'useTemplate' }),
         externalScope: () => ({

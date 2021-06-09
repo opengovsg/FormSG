@@ -1,5 +1,3 @@
-import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { IPopulatedUser } from '../../../types'
@@ -7,6 +5,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { SmsFactory } from '../../services/sms/sms.factory'
 import { getRequestIp } from '../../utils/request'
 import { getUserIdFromSession } from '../auth/auth.utils'
+import { ControllerHandler } from '../core/core.types'
 
 import {
   createContactOtp,
@@ -27,8 +26,8 @@ const logger = createLoggerWithLabel(module)
  * @returns 422 if user id does not exist in the database
  * @returns 500 if database errors occurs
  */
-export const handleContactSendOtp: RequestHandler<
-  ParamsDictionary,
+export const handleContactSendOtp: ControllerHandler<
+  unknown,
   string,
   { contact: string; userId: string }
 > = async (req, res) => {
@@ -101,8 +100,8 @@ export const handleContactSendOtp: RequestHandler<
  * @returns 422 when OTP is invalid
  * @returns 500 when OTP is malformed or for unknown errors
  */
-export const handleContactVerifyOtp: RequestHandler<
-  ParamsDictionary,
+export const handleContactVerifyOtp: ControllerHandler<
+  unknown,
   string | IPopulatedUser,
   {
     userId: string
@@ -166,7 +165,7 @@ export const handleContactVerifyOtp: RequestHandler<
  * @returns 401 if user is not currently logged in
  * @returns 500 when user cannot be found or database errors occurs
  */
-export const handleFetchUser: RequestHandler = async (req, res) => {
+export const handleFetchUser: ControllerHandler = async (req, res) => {
   const sessionUserId = getUserIdFromSession(req.session)
   if (!sessionUserId) {
     return res

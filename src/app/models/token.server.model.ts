@@ -33,7 +33,6 @@ TokenSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
  * Upserts given OTP into Token collection.
  */
 TokenSchema.statics.upsertOtp = async function (
-  this: ITokenModel,
   upsertParams: Omit<IToken, '_id' | 'numOtpSent'>,
 ) {
   return this.findOneAndUpdate(
@@ -51,10 +50,7 @@ TokenSchema.statics.upsertOtp = async function (
  * given email.
  * @param email the email to retrieve the related Token document
  */
-TokenSchema.statics.incrementAttemptsByEmail = async function (
-  this: ITokenModel,
-  email: string,
-) {
+TokenSchema.statics.incrementAttemptsByEmail = async function (email: string) {
   return this.findOneAndUpdate(
     { email: email },
     { $inc: { numOtpAttempts: 1 } },
@@ -67,7 +63,7 @@ TokenSchema.statics.incrementAttemptsByEmail = async function (
  * @param db - Active DB Connection
  * @returns Token model
  */
-const getTokenModel = (db: Mongoose) => {
+const getTokenModel = (db: Mongoose): ITokenModel => {
   try {
     return db.model(TOKEN_SCHEMA_ID) as ITokenModel
   } catch {

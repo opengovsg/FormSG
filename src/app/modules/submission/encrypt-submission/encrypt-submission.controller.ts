@@ -1,7 +1,5 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
-import { RequestHandler } from 'express'
-import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
@@ -12,7 +10,12 @@ import {
   EncryptedSubmissionDto,
   SubmissionMetadataList,
 } from '../../../../types'
-import { EncryptSubmissionDto, ErrorDto } from '../../../../types/api'
+import {
+  EncryptSubmissionDto,
+  ErrorDto,
+  SubmissionErrorDto,
+  SubmissionResponseDto,
+} from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
@@ -23,9 +26,9 @@ import {
   MalformedParametersError,
   MissingFeatureError,
 } from '../../core/core.errors'
+import { ControllerHandler } from '../../core/core.types'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
-import { isFormEncryptMode } from '../../form/form.utils'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
 import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
@@ -57,10 +60,27 @@ const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
 
-const submitEncryptModeForm: RequestHandler = async (req, res) => {
+const submitEncryptModeForm: ControllerHandler<
+  { formId: string },
+  SubmissionResponseDto | SubmissionErrorDto,
+  EncryptSubmissionDto,
+  { captchaResponse?: unknown }
+> = async (req, res) => {
   const { formId } = req.params
+
+  if ('isPreview' in req.body) {
+    logger.info({
+      message:
+        'isPreview is still being sent when submitting encrypt mode form',
+      meta: {
+        action: 'submitEncryptModeForm',
+        type: 'deprecatedCheck',
+      },
+    })
+  }
+
   const logMeta = {
-    action: 'handleEncryptedSubmission',
+    action: 'submitEncryptModeForm',
     ...createReqMeta(req),
     formId,
   }
@@ -76,7 +96,22 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
     const { errorMessage, statusCode } = mapRouteError(formResult.error)
     return res.status(statusCode).json({ message: errorMessage })
   }
-  const form = formResult.value
+
+  const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formResult.value)
+  if (checkFormIsEncryptModeResult.isErr()) {
+    logger.error({
+      message:
+        'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
+      meta: logMeta,
+    })
+    const { statusCode, errorMessage } = mapRouteError(
+      checkFormIsEncryptModeResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+  const form = checkFormIsEncryptModeResult.value
 
   // Check that form is public
   const formPublicResult = FormService.isFormPublic(form)
@@ -92,8 +127,6 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
     } else {
       return res.status(statusCode).json({
         message: form.inactiveMessage,
-        isPageFound: true,
-        formTitle: form.title,
       })
     }
   }
@@ -116,9 +149,8 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
   }
 
   // Check that the form has not reached submission limits
-  const formSubmissionLimitResult = await FormService.checkFormSubmissionLimitAndDeactivateForm(
-    form,
-  )
+  const formSubmissionLimitResult =
+    await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
   if (formSubmissionLimitResult.isErr()) {
     logger.warn({
       message:
@@ -129,8 +161,6 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
     const { statusCode } = mapRouteError(formSubmissionLimitResult.error)
     return res.status(statusCode).json({
       message: form.inactiveMessage,
-      isPageFound: true,
-      formTitle: form.title,
     })
   }
 
@@ -237,28 +267,18 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
   }
 
   // Encrypt Verified SPCP Fields
-  if (!isFormEncryptMode(form)) {
-    logger.error({
-      message:
-        'Trying to encrypt verified SpCp fields on non-encrypt mode form',
-      meta: logMeta,
-    })
-    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-      message:
-        'Unable to encrypt verified SPCP fields on non storage mode forms',
-    })
-  }
-
   let verified
   if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
-    const encryptVerifiedContentResult = VerifiedContentFactory.getVerifiedContent(
-      { type: form.authType, data: { uinFin, userInfo } },
-    ).andThen((verifiedContent) =>
-      VerifiedContentFactory.encryptVerifiedContent({
-        verifiedContent,
-        formPublicKey: form.publicKey,
-      }),
-    )
+    const encryptVerifiedContentResult =
+      VerifiedContentFactory.getVerifiedContent({
+        type: form.authType,
+        data: { uinFin, userInfo },
+      }).andThen((verifiedContent) =>
+        VerifiedContentFactory.encryptVerifiedContent({
+          verifiedContent,
+          formPublicKey: form.publicKey,
+        }),
+      )
 
     if (encryptVerifiedContentResult.isErr()) {
       const { error } = encryptVerifiedContentResult
@@ -328,7 +348,6 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
       message:
         'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
       submissionId: submission._id,
-      spcpSubmissionFailure: false,
     })
   }
 
@@ -341,15 +360,14 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
   })
 
   // Fire webhooks if available
-  // Note that we push data to webhook endpoints on a best effort basis
-  // As such, we should not await on these post requests
+  // To avoid being coupled to latency of receiving system,
+  // do not await on webhook
   const webhookUrl = form.webhook?.url
   if (webhookUrl) {
-    void WebhookFactory.sendWebhook(
+    void WebhookFactory.sendInitialWebhook(
       submission,
       webhookUrl,
-    ).andThen((response) =>
-      WebhookFactory.saveWebhookRecord(submission._id, response),
+      !!form.webhook?.isRetryEnabled,
     )
   }
 
@@ -377,7 +395,7 @@ const submitEncryptModeForm: RequestHandler = async (req, res) => {
 export const handleEncryptedSubmission = [
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   submitEncryptModeForm,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 // Validates that the ending date >= starting date
 const validateDateRange = celebrate({
@@ -405,11 +423,11 @@ const validateDateRange = celebrate({
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 if any errors occurs in stream pipeline or error retrieving form
  */
-export const streamEncryptedResponses: RequestHandler<
+export const streamEncryptedResponses: ControllerHandler<
   { formId: string },
   unknown,
   unknown,
-  Query & { startDate?: string; endDate?: string; downloadAttachments: boolean }
+  { startDate?: string; endDate?: string; downloadAttachments: boolean }
 > = async (req, res) => {
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { formId } = req.params
@@ -521,7 +539,7 @@ export const streamEncryptedResponses: RequestHandler<
 export const handleStreamEncryptedResponses = [
   validateDateRange,
   streamEncryptedResponses,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 const validateSubmissionId = celebrate({
   [Segments.QUERY]: {
@@ -545,7 +563,7 @@ const validateSubmissionId = celebrate({
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when any errors occurs in database query or generating signed URL
  */
-export const getEncryptedResponseUsingQueryParams: RequestHandler<
+export const getEncryptedResponseUsingQueryParams: ControllerHandler<
   { formId: string },
   EncryptedSubmissionDto | ErrorDto,
   unknown,
@@ -610,7 +628,7 @@ export const getEncryptedResponseUsingQueryParams: RequestHandler<
 export const handleGetEncryptedResponseUsingQueryParams = [
   validateSubmissionId,
   getEncryptedResponseUsingQueryParams,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for GET /:formId/submissions/:submissionId
@@ -625,11 +643,9 @@ export const handleGetEncryptedResponseUsingQueryParams = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when any errors occurs in database query or generating signed URL
  */
-export const handleGetEncryptedResponse: RequestHandler<
+export const handleGetEncryptedResponse: ControllerHandler<
   { formId: string; submissionId: string },
-  EncryptedSubmissionDto | ErrorDto,
-  unknown,
-  Query
+  EncryptedSubmissionDto | ErrorDto
 > = async (req, res) => {
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { formId, submissionId } = req.params
@@ -694,15 +710,14 @@ export const handleGetEncryptedResponse: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 if any errors occurs whilst querying database
  */
-export const getMetadata: RequestHandler<
+export const getMetadata: ControllerHandler<
   { formId: string },
   SubmissionMetadataList | ErrorDto,
   unknown,
-  Query &
-    RequireAtLeastOne<
-      { page?: number; submissionId?: string },
-      'page' | 'submissionId'
-    >
+  RequireAtLeastOne<
+    { page?: number; submissionId?: string },
+    'page' | 'submissionId'
+  >
 > = async (req, res) => {
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { formId } = req.params
@@ -773,4 +788,4 @@ export const handleGetMetadata = [
     },
   }),
   getMetadata,
-] as RequestHandler[]
+] as ControllerHandler[]

@@ -24,10 +24,14 @@ import {
   Permission,
 } from '../../../../types'
 import {
+  DuplicateFormBody,
+  EditFormFieldParams,
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
+  FormUpdateParams,
   SettingsUpdateDto,
+  StartPageUpdateDto,
 } from '../../../../types/api'
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -61,11 +65,6 @@ import {
   FieldNotFoundError,
   InvalidFileTypeError,
 } from './admin-form.errors'
-import {
-  DuplicateFormBody,
-  EditFormFieldParams,
-  FormUpdateParams,
-} from './admin-form.types'
 import {
   getUpdatedFormFields,
   processDuplicateOverrideProps,
@@ -469,6 +468,47 @@ export const updateFormField = (
 }
 
 /**
+ * Duplicates the form field of the corresponding fieldId
+ * @param form the original form to duplicate form field for
+ * @param fieldId fieldId of the the form field to duplicate
+ *
+ * @returns ok(duplicated field)
+ * @returns err(PossibleDatabaseError) when database errors arise
+ */
+export const duplicateFormField = (
+  form: IPopulatedForm,
+  fieldId: string,
+): ResultAsync<
+  IFieldSchema,
+  PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
+> => {
+  return ResultAsync.fromPromise(
+    form.duplicateFormFieldById(fieldId),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while duplicating form field',
+        meta: {
+          action: 'duplicateFormField',
+          formId: form._id,
+          fieldId,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    const updatedField = last(updatedForm.form_fields)
+    return updatedField
+      ? okAsync(updatedField)
+      : errAsync(new FieldNotFoundError())
+  })
+}
+
+/**
  * Inserts a new form field into given form's fields with the field provided
  * @param form the form to insert the new field into
  * @param newField the new field to insert
@@ -718,6 +758,42 @@ export const updateFormSettings = (
 }
 
 /**
+ * Creates form logic.
+ * @param form The original form to create logic in
+ * @param createLogicBody Object containing the created logic
+ * @returns ok(created logic dto) on success
+ * @returns err(database errors) if db error is thrown during logic update
+ */
+export const createFormLogic = (
+  form: IPopulatedForm,
+  createLogicBody: LogicDto,
+): ResultAsync<ILogicSchema, DatabaseError | FormNotFoundError> => {
+  // Create new form logic
+  return ResultAsync.fromPromise(
+    FormModel.createFormLogic(form._id, createLogicBody),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when creating form logic',
+        meta: {
+          action: 'createFormLogic',
+          formId: form._id,
+          createLogicBody,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+    // On success, return created form logic
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    const createdLogic = last(updatedForm.form_logics)
+    return createdLogic ? okAsync(createdLogic) : errAsync(new DatabaseError())
+  })
+}
+
+/**
  * Deletes form logic.
  * @param form The original form to delete logic in
  * @param logicId the logicId to delete
@@ -930,4 +1006,41 @@ export const getFormField = (
       ),
     )
   return ok(formField)
+}
+
+/**
+ * Update the start page of the given form
+ * @param formId the id of the form to update the end page for
+ * @param newStartPage the new start page object to replace the current one
+ * @returns ok(updated start page object) when update is successful
+ * @returns err(FormNotFoundError) if form cannot be found
+ * @returns err(PossibleDatabaseError) if start page update fails
+ */
+export const updateStartPage = (
+  formId: string,
+  newStartPage: StartPageUpdateDto,
+): ResultAsync<
+  IFormDocument['startPage'],
+  PossibleDatabaseError | FormNotFoundError
+> => {
+  return ResultAsync.fromPromise(
+    FormModel.updateStartPageById(formId, newStartPage),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating form start page',
+        meta: {
+          action: 'updateStartPage',
+          formId,
+          newStartPage,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.startPage)
+  })
 }

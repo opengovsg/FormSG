@@ -46,14 +46,11 @@ describe('myinfo.factory', () => {
     const parseMyInfoRelayStateResult = MyInfoFactory.parseMyInfoRelayState('')
     const extractUinFinResult = MyInfoFactory.extractUinFin('')
     const getMyInfoDataForFormResult = await MyInfoFactory.getMyInfoDataForForm(
-      ({} as unknown) as IPopulatedForm,
+      {} as unknown as IPopulatedForm,
       {},
     )
-    const prefillAndSaveMyInfoFieldsResult = await MyInfoFactory.prefillAndSaveMyInfoFields(
-      '',
-      {} as MyInfoData,
-      [],
-    )
+    const prefillAndSaveMyInfoFieldsResult =
+      await MyInfoFactory.prefillAndSaveMyInfoFields('', {} as MyInfoData, [])
     const saveMyInfoHashesResult = await MyInfoFactory.saveMyInfoHashes(
       '',
       '',
@@ -95,14 +92,11 @@ describe('myinfo.factory', () => {
     const parseMyInfoRelayStateResult = MyInfoFactory.parseMyInfoRelayState('')
     const extractUinFinResult = MyInfoFactory.extractUinFin('')
     const getMyInfoDataForFormResult = await MyInfoFactory.getMyInfoDataForForm(
-      ({} as unknown) as IPopulatedForm,
+      {} as unknown as IPopulatedForm,
       {},
     )
-    const prefillAndSaveMyInfoFieldsResult = await MyInfoFactory.prefillAndSaveMyInfoFields(
-      '',
-      {} as MyInfoData,
-      [],
-    )
+    const prefillAndSaveMyInfoFieldsResult =
+      await MyInfoFactory.prefillAndSaveMyInfoFields('', {} as MyInfoData, [])
     const saveMyInfoHashesResult = await MyInfoFactory.saveMyInfoHashes(
       '',
       '',
@@ -128,12 +122,12 @@ describe('myinfo.factory', () => {
   })
 
   it('should call the MyInfoService constructor when isEnabled is true and props is truthy', () => {
-    const mockProps = ({
+    const mockProps = {
       myInfoClientMode: 'mock1',
       myInfoKeyPath: 'mock2',
       spCookieMaxAge: 200,
       spEsrvcId: 'mock3',
-    } as unknown) as ISpcpMyInfo
+    } as unknown as ISpcpMyInfo
     createMyInfoFactory({
       isEnabled: true,
       props: mockProps,

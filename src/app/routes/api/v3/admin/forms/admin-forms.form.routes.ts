@@ -7,7 +7,6 @@ export const AdminFormsFormRouter = Router()
 AdminFormsFormRouter.route('/')
   /**
    * List the forms managed by the user
-   * @route GET /adminform
    * @security session
    *
    * @returns 200 with a list of forms managed by the user
@@ -19,7 +18,6 @@ AdminFormsFormRouter.route('/')
 
   /**
    * Create a new form
-   * @route POST /adminform
    * @security session
    *
    * @returns 200 with newly created form
@@ -33,27 +31,36 @@ AdminFormsFormRouter.route('/')
    */
   .post(AdminFormController.handleCreateForm)
 
-/**
- * Archive the specified form.
- * @route DELETE /:formId/adminform
- * @security session
- *
- * @returns 200 with success message when successfully archived
- * @returns 401 when user does not exist in session
- * @returns 403 when user does not have permissions to archive form
- * @returns 404 when form cannot be found
- * @returns 410 when form is already archived
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when database error occurs
- */
-AdminFormsFormRouter.delete(
-  '/:formId([a-fA-F0-9]{24})',
-  AdminFormController.handleArchiveForm,
-)
+AdminFormsFormRouter.route('/:formId([a-fA-F0-9]{24})')
+  /**
+   * Return the specified form to the user.
+   * @security session
+   *
+   * @returns 200 with retrieved form with formId if user has read permissions
+   * @returns 401 when user does not exist in session
+   * @returns 403 when user does not have permissions to access form
+   * @returns 404 when form cannot be found
+   * @returns 410 when form is archived
+   * @returns 422 when user in session cannot be retrieved from the database
+   * @returns 500 when database error occurs
+   */
+  .get(AdminFormController.handleGetAdminForm)
+  /**
+   * Archive the specified form.
+   * @security session
+   *
+   * @returns 200 with success message when successfully archived
+   * @returns 401 when user does not exist in session
+   * @returns 403 when user does not have permissions to archive form
+   * @returns 404 when form cannot be found
+   * @returns 410 when form is already archived
+   * @returns 422 when user in session cannot be retrieved from the database
+   * @returns 500 when database error occurs
+   */
+  .delete(AdminFormController.handleArchiveForm)
 
 /**
  * Duplicate the specified form.
- * @route POST /:formId/adminform
  * @security session
  *
  * @returns 200 with the duplicate form dashboard view
@@ -72,7 +79,6 @@ AdminFormsFormRouter.post(
 
 /**
  * Transfer form ownership to another user
- * @route POST /:formId/adminform/transfer-owner
  * @security session
  *
  * @returns 200 with updated form with transferred owners
@@ -99,7 +105,6 @@ AdminFormsFormRouter.route(
 )
   /**
    * Update form field according to given new body.
-   * @route PUT /admin/forms/:formId/fields/:fieldId
    *
    * @param body the new field to override current field
    * @returns 200 with updated form field
@@ -114,9 +119,9 @@ AdminFormsFormRouter.route(
    * @returns 500 when database error occurs
    */
   .put(AdminFormController.handleUpdateFormField)
+
   /**
    * Delete form field by fieldId of form corresponding to formId.
-   * @route DELETE /admin/forms/:formId/fields/:fieldId
    * @security session
    *
    * @returns 204 when deletion is successful
@@ -130,7 +135,6 @@ AdminFormsFormRouter.route(
   .delete(AdminFormController.handleDeleteFormField)
   /**
    * Retrives the form field using the fieldId from the specified form
-   * @route GET /admin/forms/:formId/fields/:fieldId
    * @security session
    *
    * @returns 200 with form field when retrieval is successful
@@ -142,6 +146,25 @@ AdminFormsFormRouter.route(
    * @returns 500 when database error occurs
    */
   .get(AdminFormController.handleGetFormField)
+
+/**
+ * Duplicates the form field with the fieldId from the specified form
+ * @security session
+ *
+ * @returns 200 with duplicated field
+ * @returns 400 when form field has invalid updates to be performed
+ * @returns 403 when current user does not have permissions to update form
+ * @returns 404 when form or field to duplicate cannot be found
+ * @returns 409 when saving updated form incurs a conflict in the database
+ * @returns 410 when form to update is archived
+ * @returns 413 when updated form is too large to be saved in the database
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+AdminFormsFormRouter.post(
+  '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/duplicate',
+  AdminFormController.handleDuplicateFormField,
+)
 
 AdminFormsFormRouter.post(
   '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/reorder',
@@ -156,4 +179,21 @@ AdminFormsFormRouter.post(
 AdminFormsFormRouter.put(
   '/:formId([a-fA-F0-9]{24})/end-page',
   AdminFormController.handleUpdateEndPage,
+)
+
+/**
+ * Replaces the startPage of the given form with what is given in the request
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated start page
+ * @returns 403 when current user does not have permissions to update the start page
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating the start page for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+AdminFormsFormRouter.put(
+  '/:formId([a-fA-F0-9]{24})/start-page',
+  AdminFormController.handleUpdateStartPage,
 )

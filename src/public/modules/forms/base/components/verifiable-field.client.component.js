@@ -8,6 +8,7 @@ angular.module('forms').component('verifiableFieldComponent', {
     transactionId: '<',
     field: '<', // The model that the input field is based on
     input: '<',
+    formId: '<',
   },
   controller: ['$q', '$timeout', '$interval', verifiableFieldController],
   controllerAs: 'vm',
@@ -47,6 +48,7 @@ function verifiableFieldController($q, $timeout, $interval) {
       }
 
       await FieldVerificationService.triggerSendOtp({
+        formId: vm.formId,
         transactionId: vm.transactionId,
         fieldId: vm.field._id,
         answer: lastRequested.value,
@@ -80,6 +82,7 @@ function verifiableFieldController($q, $timeout, $interval) {
 
       $q.resolve(
         FieldVerificationService.verifyOtp({
+          formId: vm.formId,
           transactionId: vm.transactionId,
           fieldId: vm.field._id,
           otp,
@@ -99,6 +102,7 @@ function verifiableFieldController($q, $timeout, $interval) {
     if (!vm.field.isVerifiable) {
       return
     }
+
     try {
       // Restores the verified state if input was not changed
       if (
@@ -111,6 +115,7 @@ function verifiableFieldController($q, $timeout, $interval) {
           // We don't await on reset because we don't care if it fails
           // The signature will be wrong anyway if it fails, and submission will be prevented
           FieldVerificationService.resetVerifiedField({
+            formId: vm.formId,
             transactionId: vm.transactionId,
             fieldId: vm.field._id,
           })

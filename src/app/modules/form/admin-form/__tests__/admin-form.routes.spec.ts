@@ -126,7 +126,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [MOCK_TEXTFIELD_RESPONSE],
           }),
         )
@@ -158,7 +157,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answer: '' }],
           }),
         )
@@ -188,7 +186,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [
               {
                 ...MOCK_ATTACHMENT_RESPONSE,
@@ -223,7 +220,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [{ ...MOCK_SECTION_RESPONSE, isHeader: true }],
           }),
         )
@@ -253,7 +249,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [{ ...MOCK_OPTIONAL_VERIFIED_RESPONSE, signature: '' }],
           }),
         )
@@ -283,7 +278,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [MOCK_CHECKBOX_RESPONSE],
           }),
         )
@@ -294,29 +288,6 @@ describe('admin-form.routes', () => {
         message: 'Form submission successful.',
         submissionId: expect.any(String),
       })
-    })
-
-    it('should return 400 when isPreview key is missing', async () => {
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          hasCaptcha: false,
-          status: Status.Public,
-          admin: defaultUser._id,
-        },
-        // Avoid default mail domain so that user emails in the database don't conflict
-        mailDomain: 'test2.gov.sg',
-      })
-
-      const response = await request
-        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-        // Note missing isPreview
-        .field('body', JSON.stringify({ responses: [] }))
-        .query({ captchaResponse: 'null' })
-
-      expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
     })
 
     it('should return 400 when responses key is missing', async () => {
@@ -333,7 +304,7 @@ describe('admin-form.routes', () => {
       const response = await request
         .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
         // Note missing responses
-        .field('body', JSON.stringify({ isPreview: false }))
+        .field('body', JSON.stringify({}))
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
@@ -358,7 +329,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_TEXTFIELD_RESPONSE, '_id')],
           }),
         )
@@ -386,7 +356,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'fieldType')],
           }),
         )
@@ -414,7 +383,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [
               { ...MOCK_TEXTFIELD_RESPONSE, fieldType: 'definitelyInvalid' },
             ],
@@ -444,7 +412,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'answer')],
           }),
         )
@@ -472,7 +439,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answerArray: [] }],
           }),
         )
@@ -500,7 +466,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'content'],
           }),
         )
@@ -528,7 +493,6 @@ describe('admin-form.routes', () => {
         .field(
           'body',
           JSON.stringify({
-            isPreview: false,
             responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'filename'],
           }),
         )
@@ -559,7 +523,7 @@ describe('admin-form.routes', () => {
       responses: [MOCK_RESPONSE],
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
       version: MOCK_VERSION,
-      isPreview: false,
+
       attachments: {
         [MOCK_ATTACHMENT_FIELD_ID]: {
           encryptedFile: {
@@ -3645,7 +3609,7 @@ describe('admin-form.routes', () => {
         encryptedContent: 'any encrypted content',
         verifiedContent: 'any verified content',
       }
-      const submission = await createSubmission({
+      const submission = await createEncryptSubmission({
         form: defaultForm,
         ...expectedSubmissionParams,
       })
@@ -3665,6 +3629,7 @@ describe('admin-form.routes', () => {
         refNo: String(submission._id),
         submissionTime: expect.any(String),
         verified: expectedSubmissionParams.verifiedContent,
+        version: submission.version,
       })
     })
 
@@ -3678,7 +3643,7 @@ describe('admin-form.routes', () => {
           ['fieldId2', 'some.other.attachment.url'],
         ]),
       }
-      const submission = await createSubmission({
+      const submission = await createEncryptSubmission({
         form: defaultForm,
         ...expectedSubmissionParams,
       })
@@ -3705,6 +3670,7 @@ describe('admin-form.routes', () => {
         refNo: String(submission._id),
         submissionTime: expect.any(String),
         verified: expectedSubmissionParams.verifiedContent,
+        version: submission.version,
       })
     })
 
@@ -3855,7 +3821,7 @@ describe('admin-form.routes', () => {
       jest
         .spyOn(EncryptSubmissionModel, 'findEncryptedSubmissionById')
         .mockRejectedValueOnce(new Error('ohno'))
-      const submission = await createSubmission({
+      const submission = await createEncryptSubmission({
         form: defaultForm,
         encryptedContent: 'any encrypted content',
         verifiedContent: 'any verified content',
@@ -3884,7 +3850,7 @@ describe('admin-form.routes', () => {
         .spyOn(aws.s3, 'getSignedUrlPromise')
         .mockRejectedValueOnce(new Error('something went wrong'))
 
-      const submission = await createSubmission({
+      const submission = await createEncryptSubmission({
         form: defaultForm,
         encryptedContent: 'any encrypted content',
         verifiedContent: 'any verified content',
@@ -4385,7 +4351,7 @@ describe('admin-form.routes', () => {
       // Create 11 submissions
       const submissions = await Promise.all(
         times(11, (count) =>
-          createSubmission({
+          createEncryptSubmission({
             form: defaultForm,
             encryptedContent: `any encrypted content ${count}`,
             verifiedContent: `any verified content ${count}`,
@@ -4420,7 +4386,7 @@ describe('admin-form.routes', () => {
     it('should return 200 with empty results if query.page does not have metadata', async () => {
       // Arrange
       // Create single submission
-      await createSubmission({
+      await createEncryptSubmission({
         form: defaultForm,
         encryptedContent: `any encrypted content`,
         verifiedContent: `any verified content`,
@@ -4448,7 +4414,7 @@ describe('admin-form.routes', () => {
       // Create 3 submissions
       const submissions = await Promise.all(
         times(3, (count) =>
-          createSubmission({
+          createEncryptSubmission({
             form: defaultForm,
             encryptedContent: `any encrypted content ${count}`,
             verifiedContent: `any verified content ${count}`,
@@ -4639,7 +4605,7 @@ describe('admin-form.routes', () => {
       // Arrange
       const submissions = await Promise.all(
         times(11, (count) =>
-          createSubmission({
+          createEncryptSubmission({
             form: defaultForm,
             encryptedContent: `any encrypted content ${count}`,
             verifiedContent: `any verified content ${count}`,
@@ -4675,6 +4641,7 @@ describe('admin-form.routes', () => {
             encryptedContent: s.encryptedContent,
             verifiedContent: s.verifiedContent,
             created: s.created,
+            version: s.version,
           }),
         )
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
@@ -4695,7 +4662,7 @@ describe('admin-form.routes', () => {
       // Arrange
       const submissions = await Promise.all(
         times(5, (count) =>
-          createSubmission({
+          createEncryptSubmission({
             form: defaultForm,
             encryptedContent: `any encrypted content ${count}`,
             verifiedContent: `any verified content ${count}`,
@@ -4731,6 +4698,7 @@ describe('admin-form.routes', () => {
             encryptedContent: s.encryptedContent,
             verifiedContent: s.verifiedContent,
             created: s.created,
+            version: s.version,
           }),
         )
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
@@ -4759,7 +4727,7 @@ describe('admin-form.routes', () => {
       // Arrange
       const submissions = await Promise.all(
         times(5, (count) =>
-          createSubmission({
+          createEncryptSubmission({
             form: defaultForm,
             encryptedContent: `any encrypted content ${count}`,
             verifiedContent: `any verified content ${count}`,
@@ -4810,6 +4778,7 @@ describe('admin-form.routes', () => {
             encryptedContent: s.encryptedContent,
             verifiedContent: s.verifiedContent,
             created: s.created,
+            version: s.version,
           }),
         )
         .filter((s) => expectedSubmissionIds.includes(s._id))
@@ -5421,7 +5390,7 @@ describe('admin-form.routes', () => {
 })
 
 // Helper utils
-const createSubmission = ({
+const createEncryptSubmission = ({
   form,
   encryptedContent,
   verifiedContent,
@@ -5434,7 +5403,7 @@ const createSubmission = ({
   verifiedContent?: string
   created?: Date
 }) => {
-  return SubmissionModel.create({
+  return EncryptSubmissionModel.create({
     submissionType: SubmissionType.Encrypt,
     form: form._id,
     authType: form.authType,

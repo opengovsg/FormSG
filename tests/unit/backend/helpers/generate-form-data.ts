@@ -315,7 +315,7 @@ export const generateTableResponse = (
           rowAnswer.push('answer')
           break
         case BasicField.Dropdown:
-          rowAnswer.push(((col as unknown) as IDropdownField).fieldOptions[0])
+          rowAnswer.push((col as unknown as IDropdownField).fieldOptions[0])
       }
     })
     answerArray = Array(field.minimumRows).fill(rowAnswer)
@@ -376,8 +376,6 @@ export const generateTableShortTextColumn = (
     required: true,
     _id: new ObjectId().toHexString(),
     ValidationOptions: {
-      customMax: null,
-      customMin: null,
       customVal: null,
       selectedValidation: null,
     },
@@ -390,8 +388,6 @@ export const generateTableShortTextColumn = (
         required: true,
         _id: new ObjectId().toHexString(),
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },

@@ -43,6 +43,7 @@ angular
     'FormSgSdk',
     'externalScope',
     'MailTo',
+    '$q',
     CreateFormModalController,
   ])
 
@@ -61,6 +62,7 @@ function CreateFormModalController(
   FormSgSdk,
   externalScope,
   MailTo,
+  $q,
 ) {
   const vm = this
 
@@ -78,9 +80,8 @@ function CreateFormModalController(
   }
 
   // Whether this operation should allow Storage Mode forms
-  const isEncryptModeEnabled = !FormFields.preventStorageModeDuplication(
-    FormToDuplicate,
-  )
+  const isEncryptModeEnabled =
+    !FormFields.preventStorageModeDuplication(FormToDuplicate)
 
   const { mode } = createFormModalOptions
   vm.mode = mode
@@ -256,11 +257,13 @@ function CreateFormModalController(
         const formMode = vm.mode
         switch (formMode) {
           case 'duplicate': {
-            FormFactory.generateForm(
-              formMode,
-              formParams,
-              FormToDuplicate._id,
-            ).$promise.then((data) => {
+            $q.when(
+              FormFactory.generateForm(
+                formMode,
+                formParams,
+                FormToDuplicate._id,
+              ),
+            ).then((data) => {
               vm.closeCreateModal()
               externalScope.onDuplicateSuccess(data)
             }, handleCreateFormError)
@@ -268,11 +271,9 @@ function CreateFormModalController(
           }
           case 'useTemplate': {
             const { form } = externalScope
-            FormFactory.generateForm(
-              formMode,
-              formParams,
-              form._id,
-            ).$promise.then((data) => {
+            $q.when(
+              FormFactory.generateForm(formMode, formParams, form._id),
+            ).then((data) => {
               vm.closeCreateModal()
               vm.goToWithId('viewForm', data._id + '')
               GTag.examplesClickCreateNewForm(form)
@@ -282,7 +283,7 @@ function CreateFormModalController(
           case 'createFromTemplate': {
             // Create new form from template selected
             const newForm = Object.assign({}, vm.template, formParams)
-            FormFactory.generateForm('create', newForm).$promise.then(
+            $q.when(FormFactory.generateForm('create', newForm)).then(
               (data) => {
                 vm.closeCreateModal()
                 vm.goToWithId('viewForm', data._id + '')
@@ -292,7 +293,7 @@ function CreateFormModalController(
             break
           }
           case 'create': // Create form
-            FormFactory.generateForm(formMode, formParams).$promise.then(
+            $q.when(FormFactory.generateForm(formMode, formParams)).then(
               (data) => {
                 vm.closeCreateModal()
                 vm.goToWithId('viewForm', data._id + '')

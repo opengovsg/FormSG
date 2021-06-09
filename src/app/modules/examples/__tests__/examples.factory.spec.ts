@@ -20,10 +20,11 @@ const MockExamplesService = mocked(ExamplesService)
 
 describe('examples.factory', () => {
   describe('aggregate-stats feature disabled', () => {
-    const MOCK_DISABLED_FEATURE: RegisteredFeature<FeatureNames.AggregateStats> = {
-      isEnabled: false,
-      props: {} as IAggregateStats,
-    }
+    const MOCK_DISABLED_FEATURE: RegisteredFeature<FeatureNames.AggregateStats> =
+      {
+        isEnabled: false,
+        props: {} as IAggregateStats,
+      }
     const ExamplesFactory = createExamplesFactory(MOCK_DISABLED_FEATURE)
 
     describe('getExampleForms', () => {
@@ -52,10 +53,11 @@ describe('examples.factory', () => {
   })
 
   describe('aggregate-stats feature enabled', () => {
-    const MOCK_ENABLED_FEATURE: RegisteredFeature<FeatureNames.AggregateStats> = {
-      isEnabled: true,
-      props: {} as IAggregateStats,
-    }
+    const MOCK_ENABLED_FEATURE: RegisteredFeature<FeatureNames.AggregateStats> =
+      {
+        isEnabled: true,
+        props: {} as IAggregateStats,
+      }
     const ExamplesFactory = createExamplesFactory(MOCK_ENABLED_FEATURE)
 
     describe('getExampleForms', () => {

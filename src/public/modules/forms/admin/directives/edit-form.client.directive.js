@@ -1,9 +1,9 @@
 'use strict'
-const { EditFieldActions } = require('shared/constants')
 const { groupLogicUnitsByField } = require('shared/util/logic')
 const { reorder } = require('shared/util/immutable-array-fns')
 const FieldFactory = require('../../helpers/field-factory')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
+const BetaService = require('../../../../services/BetaService')
 
 const newFields = new Set() // Adding a fieldTypes will add a "new" label.
 
@@ -29,13 +29,13 @@ function editFormDirective() {
       myform: '=',
       updateForm: '&',
       updateFormEndPage: '&',
+      updateFormStartPage: '&',
     },
     controller: [
       '$scope',
       'FormFields',
       '$uibModal',
       'responseModeEnum',
-      'Betas',
       '$window',
       'Attachment',
       editFormController,
@@ -48,7 +48,6 @@ function editFormController(
   FormFields,
   $uibModal,
   responseModeEnum,
-  Betas,
   $window,
   Attachment,
 ) {
@@ -56,7 +55,7 @@ function editFormController(
   $scope.responseModeEnum = responseModeEnum
 
   $scope.isBetaField = function (fieldType) {
-    return Betas.isBetaField(fieldType)
+    return BetaService.isBetaField(fieldType)
   }
 
   $scope.isNewField = function (fieldType) {
@@ -65,7 +64,7 @@ function editFormController(
 
   $scope.adminHasAccess = function (fieldType) {
     const user = $scope.myform.admin
-    return Betas.userHasAccessToFieldType(user, fieldType)
+    return BetaService.userHasAccessToFieldType(user, fieldType)
   }
 
   $scope.getFieldTitle = FormFields.getFieldTitle
@@ -98,13 +97,10 @@ function editFormController(
   let hiddenFieldSet = new Set() // To monitor which fields should be hidden because of form logic
   let conditionFieldSet = new Set() // To monitor which fields are conditions in the form logic
   // On change of form logic (scope.myform.form_logics), update our logic monitors
-  $scope.$watch(
-    (scope) => scope.myform.form_logics,
-    function (_newVal, _oldVal) {
-      updateHiddenFieldSet()
-      updateConditionFieldSet()
-    },
-  )
+  $scope.$watchCollection('myform.form_logics', function (_newVal, _oldVal) {
+    updateHiddenFieldSet()
+    updateConditionFieldSet()
+  })
 
   // Loop through form_logics to identify which fields should be hidden
   const updateHiddenFieldSet = function () {
@@ -307,7 +303,7 @@ function editFormController(
       controllerAs: 'vm',
       resolve: {
         myform: () => $scope.myform,
-        updateField: () => updateField,
+        updateStartPage: () => $scope.updateFormStartPage,
       },
     })
   }
@@ -341,9 +337,8 @@ function editFormController(
 
   $scope.isStorageForm = $scope.myform.responseMode === responseModeEnum.ENCRYPT
 
-  // Disable attachment fields when we have webhooks
-  $scope.isDisabledField = function (fieldType) {
-    return fieldType.name === 'attachment' && $scope.myform.webhook.url !== ''
+  $scope.isDisabledField = function () {
+    return false
   }
 
   /**
@@ -475,17 +470,9 @@ function editFormController(
       $scope.numMyInfoFields >= $scope.maxMyInfoFields
     )
       return
-    let duplicatedField = _.cloneDeep(fieldToDuplicate)
-    // Remove unique ids before saving
-    delete duplicatedField.globalId
-    delete duplicatedField._id
     updateField({
-      editFormField: {
-        action: {
-          name: EditFieldActions.Duplicate,
-        },
-        field: duplicatedField,
-      },
+      fieldId: fieldToDuplicate._id,
+      type: UPDATE_FORM_TYPES.DuplicateField,
     })
   }
 

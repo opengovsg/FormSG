@@ -1,5 +1,5 @@
 import BSON from 'bson-ext'
-import { compact, pick, uniq } from 'lodash'
+import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   Mongoose,
   Query,
@@ -29,14 +29,15 @@ import {
   IFormDocument,
   IFormModel,
   IFormSchema,
-  ILogicWithId,
   IPopulatedForm,
+  LogicDto,
   LogicType,
   Permission,
   PickDuplicateForm,
   PublicForm,
   PublicFormValues,
   ResponseMode,
+  StartPage,
   Status,
 } from '../../types'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
@@ -260,7 +261,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           enum: Object.values(Colors),
           default: Colors.Blue,
         },
-        logo: FormLogoSchema,
+        logo: {
+          type: FormLogoSchema,
+          default: () => ({}),
+        },
       },
 
       endPage: {
@@ -352,6 +356,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               'Webhook must be a valid URL over HTTPS and point to a public IP.',
           },
         },
+        isRetryEnabled: {
+          type: Boolean,
+          default: false,
+        },
       },
 
       msgSrvcName: {
@@ -431,10 +439,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormLogicPath.discriminator(LogicType.PreventSubmit, PreventSubmitLogicSchema)
 
   // Methods
-  FormSchema.methods.getDashboardView = function (
-    this: IFormSchema,
-    admin: IPopulatedUser,
-  ) {
+  FormSchema.methods.getDashboardView = function (admin: IPopulatedUser) {
     return {
       _id: this._id,
       title: this.title,
@@ -446,7 +451,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Method to return myInfo attributes
-  FormSchema.methods.getUniqueMyInfoAttrs = function (this: IFormSchema) {
+  FormSchema.methods.getUniqueMyInfoAttrs = function () {
     if (this.authType !== AuthType.MyInfo) {
       return []
     }
@@ -457,7 +462,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   // Return essential form creation parameters with the given properties
   FormSchema.methods.getDuplicateParams = function (
-    this: IFormSchema,
     overrideProps: OverrideProps,
   ) {
     const newForm = pick(this, [
@@ -473,7 +477,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return { ...newForm, ...overrideProps }
   }
 
-  FormSchema.methods.getPublicView = function (this: IFormSchema): PublicForm {
+  FormSchema.methods.getPublicView = function (): PublicForm {
     const basePublicView = pick(this, FORM_PUBLIC_FIELDS) as PublicFormValues
 
     // Return non-populated public fields of form if not populated.
@@ -489,7 +493,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Archives form.
-  FormSchema.methods.archive = function (this: IFormSchema) {
+  FormSchema.methods.archive = function () {
     // Return instantly when form is already archived.
     if (this.status === Status.Archived) {
       return Promise.resolve(this)
@@ -499,17 +503,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
-  const FormDocumentSchema = (FormSchema as unknown) as Schema<IFormDocument>
+  const FormDocumentSchema = FormSchema as unknown as Schema<IFormDocument>
 
-  FormDocumentSchema.methods.getSettings = function (
-    this: IFormDocument,
-  ): FormSettings {
+  FormDocumentSchema.methods.getSettings = function (): FormSettings {
     return pick(this, FORM_SETTING_FIELDS)
   }
 
   // Transfer ownership of the form to another user
   FormDocumentSchema.methods.transferOwner = async function (
-    this: IFormDocument,
     currentOwner: IUserSchema,
     newOwner: IUserSchema,
   ) {
@@ -526,7 +527,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   FormDocumentSchema.methods.updateFormCollaborators = async function (
-    this: IFormDocument,
     updatedPermissions: Permission[],
   ) {
     this.permissionList = updatedPermissions
@@ -534,7 +534,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   FormDocumentSchema.methods.updateFormFieldById = function (
-    this: IFormDocument,
     fieldId: string,
     newField: FormFieldWithId,
   ) {
@@ -550,17 +549,27 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
-  FormDocumentSchema.methods.insertFormField = function (
-    this: IFormDocument,
-    newField: FormField,
-  ) {
+  FormDocumentSchema.methods.insertFormField = function (newField: FormField) {
     // eslint-disable-next-line @typescript-eslint/no-extra-semi
     ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(newField)
     return this.save()
   }
 
+  FormDocumentSchema.methods.duplicateFormFieldById = function (
+    fieldId: string,
+  ) {
+    const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
+    if (!fieldToDuplicate) return Promise.resolve(null)
+    const duplicatedField = omit(fieldToDuplicate, ['_id', 'globalId'])
+
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
+    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(
+      duplicatedField,
+    )
+    return this.save()
+  }
+
   FormDocumentSchema.methods.reorderFormFieldById = function (
-    this: IFormDocument,
     fieldId: string,
     newPosition: number,
   ): Promise<IFormDocument | null> {
@@ -582,10 +591,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   // Statics
   // Method to retrieve data for OTP verification
-  FormSchema.statics.getOtpData = async function (
-    this: IFormModel,
-    formId: string,
-  ) {
+  FormSchema.statics.getOtpData = async function (formId: string) {
     try {
       const data = await this.findById(formId, 'msgSrvcName admin').populate({
         path: 'admin',
@@ -608,7 +614,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   // Returns the form with populated admin details
   FormSchema.statics.getFullFormById = async function (
-    this: IFormModel,
     formId: string,
     fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null> {
@@ -622,7 +627,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   // Deactivate form by ID
   FormSchema.statics.deactivateById = async function (
-    this: IFormModel,
     formId: string,
   ): Promise<IFormSchema | null> {
     const form = await this.findById(formId)
@@ -634,7 +638,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   FormSchema.statics.getMetaByUserIdOrEmail = async function (
-    this: IFormModel,
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
   ): Promise<FormMetaView[]> {
@@ -665,7 +668,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   // Deletes specified form logic.
   FormSchema.statics.deleteFormLogic = async function (
-    this: IFormModel,
     formId: string,
     logicId: string,
   ): Promise<IFormSchema | null> {
@@ -681,9 +683,23 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     ).exec()
   }
 
+  // Creates specified form logic.
+  FormSchema.statics.createFormLogic = async function (
+    formId: string,
+    createLogicBody: LogicDto,
+  ): Promise<IFormSchema | null> {
+    return this.findByIdAndUpdate(
+      formId,
+      { $push: { form_logics: createLogicBody } },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).exec()
+  }
+
   // Deletes specified form field by id.
   FormSchema.statics.deleteFormFieldById = async function (
-    this: IFormModel,
     formId: string,
     fieldId: string,
   ): Promise<IFormSchema | null> {
@@ -693,12 +709,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       { new: true, runValidators: true },
     ).exec()
   }
+
   // Updates specified form logic.
   FormSchema.statics.updateFormLogic = async function (
-    this: IFormModel,
     formId: string,
     logicId: string,
-    updatedLogic: ILogicWithId,
+    updatedLogic: LogicDto,
   ): Promise<IFormSchema | null> {
     return this.findByIdAndUpdate(
       formId,
@@ -714,13 +730,23 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   FormSchema.statics.updateEndPageById = async function (
-    this: IFormModel,
     formId: string,
     newEndPage: EndPage,
   ) {
     return this.findByIdAndUpdate(
       formId,
       { endPage: newEndPage },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+
+  FormSchema.statics.updateStartPageById = async function (
+    formId: string,
+    newStartPage: StartPage,
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { startPage: newStartPage },
       { new: true, runValidators: true },
     ).exec()
   }

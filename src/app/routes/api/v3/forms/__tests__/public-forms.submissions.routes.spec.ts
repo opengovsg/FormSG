@@ -103,7 +103,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [MOCK_TEXTFIELD_RESPONSE],
             }),
           )
@@ -135,7 +134,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answer: '' }],
             }),
           )
@@ -165,7 +163,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [
                 {
                   ...MOCK_ATTACHMENT_RESPONSE,
@@ -200,7 +197,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [{ ...MOCK_SECTION_RESPONSE, isHeader: true }],
             }),
           )
@@ -230,7 +226,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [
                 { ...MOCK_OPTIONAL_VERIFIED_RESPONSE, signature: '' },
               ],
@@ -262,7 +257,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [MOCK_CHECKBOX_RESPONSE],
             }),
           )
@@ -274,29 +268,6 @@ describe('public-form.submissions.routes', () => {
           message: 'Form submission successful.',
           submissionId: expect.any(String),
         })
-      })
-
-      it('should return 400 when isPreview key is missing', async () => {
-        // Arrange
-        const { form } = await dbHandler.insertEmailForm({
-          formOptions: {
-            hasCaptcha: false,
-            status: Status.Public,
-          },
-        })
-
-        // Act
-        const response = await request
-          .post(`/forms/${form._id}/submissions/email`)
-          // Note missing isPreview
-          .field('body', JSON.stringify({ responses: [] }))
-          .query({ captchaResponse: 'null' })
-
-        // Assert
-        expect(response.status).toBe(400)
-        expect(response.body.message).toEqual(
-          'celebrate request validation failed',
-        )
       })
 
       it('should return 400 when responses key is missing', async () => {
@@ -312,7 +283,7 @@ describe('public-form.submissions.routes', () => {
         const response = await request
           .post(`/forms/${form._id}/submissions/email`)
           // Note missing responses
-          .field('body', JSON.stringify({ isPreview: false }))
+          .field('body', JSON.stringify({}))
           .query({ captchaResponse: 'null' })
 
         // Assert
@@ -337,7 +308,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [omit(MOCK_TEXTFIELD_RESPONSE, '_id')],
             }),
           )
@@ -365,7 +335,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'fieldType')],
             }),
           )
@@ -393,7 +362,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [
                 { ...MOCK_TEXTFIELD_RESPONSE, fieldType: 'definitelyInvalid' },
               ],
@@ -423,7 +391,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'answer')],
             }),
           )
@@ -451,7 +418,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answerArray: [] }],
             }),
           )
@@ -479,7 +445,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'content'],
             }),
           )
@@ -507,7 +472,6 @@ describe('public-form.submissions.routes', () => {
           .field(
             'body',
             JSON.stringify({
-              isPreview: false,
               responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'filename'],
             }),
           )
@@ -1009,7 +973,7 @@ describe('public-form.submissions.routes', () => {
     const MOCK_SUBMISSION_BODY = {
       responses: [],
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
-      isPreview: false,
+
       version: 1,
     }
     describe('SPCP authentication', () => {

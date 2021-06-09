@@ -1,34 +1,42 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
-import { Request, RequestHandler } from 'express'
-import { ParamsDictionary, Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
-import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
+import {
+  MAX_UPLOAD_FILE_SIZE,
+  VALID_UPLOAD_FILE_TYPES,
+} from '../../../../shared/constants'
 import {
   AuthType,
   BasicField,
+  Colors,
   FieldResponse,
+  FormLogoState,
   FormMetaView,
   FormSettings,
   IForm,
   IFormDocument,
   IPopulatedForm,
+  LogicConditionState,
   LogicDto,
+  LogicIfValue,
   LogicType,
   ResponseMode,
 } from '../../../../types'
 import {
+  DuplicateFormBody,
   EncryptSubmissionDto,
   EndPageUpdateDto,
   ErrorDto,
   FieldCreateDto,
   FieldUpdateDto,
   FormFieldDto,
+  FormUpdateParams,
   PermissionsUpdateDto,
   SettingsUpdateDto,
+  StartPageUpdateDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
@@ -41,6 +49,7 @@ import {
   DatabasePayloadSizeError,
   DatabaseValidationError,
 } from '../../core/core.errors'
+import { ControllerHandler } from '../../core/core.types'
 import * as FeedbackService from '../../feedback/feedback.service'
 import {
   createCorppassParsedResponses,
@@ -68,11 +77,7 @@ import {
 } from './admin-form.constants'
 import { EditFieldError } from './admin-form.errors'
 import * as AdminFormService from './admin-form.service'
-import {
-  DuplicateFormBody,
-  FormUpdateParams,
-  PermissionLevel,
-} from './admin-form.types'
+import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
@@ -170,7 +175,7 @@ const fileUploadValidator = celebrate({
  * @returns 422 when user of given id cannnot be found in the database
  * @returns 500 when database errors occur
  */
-export const handleListDashboardForms: RequestHandler<
+export const handleListDashboardForms: ControllerHandler<
   unknown,
   FormMetaView[] | ErrorDto
 > = async (req, res) => {
@@ -203,7 +208,7 @@ export const handleListDashboardForms: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
+export const handleGetAdminForm: ControllerHandler<{ formId: string }> = (
   req,
   res,
 ) => {
@@ -249,7 +254,7 @@ export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleGetFormCollaborators: RequestHandler<
+export const handleGetFormCollaborators: ControllerHandler<
   { formId: string },
   PermissionsUpdateDto | ErrorDto
 > = (req, res) => {
@@ -297,7 +302,7 @@ export const handleGetFormCollaborators: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handlePreviewAdminForm: RequestHandler<{ formId: string }> = (
+export const handlePreviewAdminForm: ControllerHandler<{ formId: string }> = (
   req,
   res,
 ) => {
@@ -347,7 +352,7 @@ export const handlePreviewAdminForm: RequestHandler<{ formId: string }> = (
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  */
-export const createPresignedPostUrlForImages: RequestHandler<
+export const createPresignedPostUrlForImages: ControllerHandler<
   { formId: string },
   unknown,
   {
@@ -399,7 +404,7 @@ export const createPresignedPostUrlForImages: RequestHandler<
 export const handleCreatePresignedPostUrlForImages = [
   fileUploadValidator,
   createPresignedPostUrlForImages,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for POST /:formId([a-fA-F0-9]{24})/adminform/logos.
@@ -412,8 +417,8 @@ export const handleCreatePresignedPostUrlForImages = [
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  */
-export const createPresignedPostUrlForLogos: RequestHandler<
-  ParamsDictionary,
+export const createPresignedPostUrlForLogos: ControllerHandler<
+  { formId: string },
   unknown,
   {
     fileId: string
@@ -464,7 +469,7 @@ export const createPresignedPostUrlForLogos: RequestHandler<
 export const handleCreatePresignedPostUrlForLogos = [
   fileUploadValidator,
   createPresignedPostUrlForLogos,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 // Validates that the ending date >= starting date
 const validateDateRange = celebrate({
@@ -488,9 +493,9 @@ const validateDateRange = celebrate({
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const countFormSubmissions: RequestHandler<
+export const countFormSubmissions: ControllerHandler<
   { formId: string },
-  unknown,
+  ErrorDto | number,
   unknown,
   { startDate?: string; endDate?: string }
 > = async (req, res) => {
@@ -553,7 +558,7 @@ export const countFormSubmissions: RequestHandler<
 export const handleCountFormSubmissions = [
   validateDateRange,
   countFormSubmissions,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for GET /{formId}/adminform/feedback/count.
@@ -566,7 +571,7 @@ export const handleCountFormSubmissions = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleCountFormFeedback: RequestHandler<{
+export const handleCountFormFeedback: ControllerHandler<{
   formId: string
 }> = async (req, res) => {
   const { formId } = req.params
@@ -615,7 +620,7 @@ export const handleCountFormFeedback: RequestHandler<{
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database or stream error occurs
  */
-export const handleStreamFormFeedback: RequestHandler<{
+export const handleStreamFormFeedback: ControllerHandler<{
   formId: string
 }> = async (req, res) => {
   const { formId } = req.params
@@ -709,7 +714,7 @@ export const handleStreamFormFeedback: RequestHandler<{
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleGetFormFeedback: RequestHandler<{
+export const handleGetFormFeedback: ControllerHandler<{
   formId: string
 }> = (req, res) => {
   const { formId } = req.params
@@ -752,7 +757,7 @@ export const handleGetFormFeedback: RequestHandler<{
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
+export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
   req,
   res,
 ) => {
@@ -804,7 +809,7 @@ export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const duplicateAdminForm: RequestHandler<
+export const duplicateAdminForm: ControllerHandler<
   { formId: string },
   unknown,
   DuplicateFormBody
@@ -857,7 +862,7 @@ export const duplicateAdminForm: RequestHandler<
 export const handleDuplicateAdminForm = [
   duplicateFormValidator,
   duplicateAdminForm,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for GET /:formId/adminform/template
@@ -869,7 +874,7 @@ export const handleDuplicateAdminForm = [
  * @returns 410 when form is archived
  * @returns 500 when database error occurs
  */
-export const handleGetTemplateForm: RequestHandler<{ formId: string }> = (
+export const handleGetTemplateForm: ControllerHandler<{ formId: string }> = (
   req,
   res,
 ) => {
@@ -926,7 +931,7 @@ export const handleGetTemplateForm: RequestHandler<{ formId: string }> = (
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleCopyTemplateForm: RequestHandler<
+export const handleCopyTemplateForm: ControllerHandler<
   { formId: string },
   unknown,
   DuplicateFormBody
@@ -987,7 +992,7 @@ export const handleCopyTemplateForm: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const transferFormOwnership: RequestHandler<
+export const transferFormOwnership: ControllerHandler<
   { formId: string },
   unknown,
   { email: string }
@@ -1035,7 +1040,7 @@ export const transferFormOwnership: RequestHandler<
 export const handleTransferFormOwnership = [
   transferFormOwnershipValidator,
   transferFormOwnership,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for POST /adminform.
@@ -1047,8 +1052,8 @@ export const handleTransferFormOwnership = [
  * @returns 422 when user of given id cannnot be found in the database, or when form parameters are invalid
  * @returns 500 when database error occurs
  */
-export const createForm: RequestHandler<
-  ParamsDictionary,
+export const createForm: ControllerHandler<
+  unknown,
   unknown,
   { form: Omit<IForm, 'admin'> }
 > = async (req, res) => {
@@ -1082,7 +1087,7 @@ export const createForm: RequestHandler<
 export const handleCreateForm = [
   createFormValidator,
   createForm,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for PUT /:formId/adminform.
@@ -1099,7 +1104,7 @@ export const handleCreateForm = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleUpdateForm: RequestHandler<
+export const handleUpdateForm: ControllerHandler<
   { formId: string },
   unknown,
   { form: FormUpdateParams }
@@ -1156,6 +1161,56 @@ export const handleUpdateForm: RequestHandler<
 }
 
 /**
+ * Handler for POST /:formId/fields/:fieldId/duplicate
+ * @security session
+ *
+ * @returns 200 with duplicated field
+ * @returns 400 when form field has invalid updates to be performed
+ * @returns 403 when current user does not have permissions to update form
+ * @returns 404 when form or field to duplicate cannot be found
+ * @returns 409 when saving updated form incurs a conflict in the database
+ * @returns 410 when form to update is archived
+ * @returns 413 when updated form is too large to be saved in the database
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleDuplicateFormField: ControllerHandler<
+  { formId: string; fieldId: string },
+  FormFieldDto | ErrorDto
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((form) => AdminFormService.duplicateFormField(form, fieldId))
+    .map((duplicatedField) => res.status(StatusCodes.OK).json(duplicatedField))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when duplicating field',
+        meta: {
+          action: 'handleDuplicateFormField',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          fieldId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
  * Handler for PATCH /forms/:formId/settings.
  * @security session
  *
@@ -1170,7 +1225,7 @@ export const handleUpdateForm: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleUpdateSettings: RequestHandler<
+export const handleUpdateSettings: ControllerHandler<
   { formId: string },
   FormSettings | ErrorDto,
   SettingsUpdateDto
@@ -1215,7 +1270,7 @@ export const handleUpdateSettings: RequestHandler<
  * Private handler for PUT /forms/:formId/fields/:fieldId
  * @precondition Must be preceded by request validation
  */
-export const _handleUpdateFormField: RequestHandler<
+export const _handleUpdateFormField: ControllerHandler<
   {
     formId: string
     fieldId: string
@@ -1274,7 +1329,7 @@ export const _handleUpdateFormField: RequestHandler<
  * @returns 409 when saving form settings incurs a conflict in the database
  * @returns 500 when database error occurs
  */
-export const handleGetSettings: RequestHandler<
+export const handleGetSettings: ControllerHandler<
   { formId: string },
   FormSettings | ErrorDto
 > = (req, res) => {
@@ -1319,7 +1374,7 @@ export const handleGetSettings: RequestHandler<
  * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
-export const submitEncryptPreview: RequestHandler<
+export const submitEncryptPreview: ControllerHandler<
   { formId: string },
   { message: string; submissionId: string } | ErrorDto,
   EncryptSubmissionDto
@@ -1367,15 +1422,14 @@ export const submitEncryptPreview: RequestHandler<
         }),
     )
     .map(({ parsedResponses, form }) => {
-      const submission = EncryptSubmissionService.createEncryptSubmissionWithoutSave(
-        {
+      const submission =
+        EncryptSubmissionService.createEncryptSubmissionWithoutSave({
           form,
           encryptedContent,
           // Don't bother encrypting and signing mock variables for previews
           verifiedContent: '',
           version,
-        },
-      )
+        })
 
       void SubmissionService.sendEmailConfirmations({
         form,
@@ -1398,7 +1452,7 @@ export const submitEncryptPreview: RequestHandler<
 export const handleEncryptPreviewSubmission = [
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   submitEncryptPreview,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for POST /v2/submissions/encrypt/preview/:formId.
@@ -1412,10 +1466,10 @@ export const handleEncryptPreviewSubmission = [
  * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
-export const submitEmailPreview: RequestHandler<
+export const submitEmailPreview: ControllerHandler<
   { formId: string },
   { message: string; submissionId?: string },
-  { responses: FieldResponse[]; isPreview: boolean },
+  { responses: FieldResponse[] },
   { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
@@ -1425,7 +1479,7 @@ export const submitEmailPreview: RequestHandler<
   const logMeta = {
     action: 'submitEmailPreview',
     formId,
-    ...createReqMeta(req as Request),
+    ...createReqMeta(req),
   }
 
   const formResult = await UserService.getPopulatedUserById(sessionUserId)
@@ -1450,9 +1504,10 @@ export const submitEmailPreview: RequestHandler<
   }
   const form = formResult.value
 
-  const parsedResponsesResult = await EmailSubmissionService.validateAttachments(
-    responses,
-  ).andThen(() => SubmissionService.getProcessedResponses(form, responses))
+  const parsedResponsesResult =
+    await EmailSubmissionService.validateAttachments(responses).andThen(() =>
+      SubmissionService.getProcessedResponses(form, responses),
+    )
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',
@@ -1542,7 +1597,7 @@ export const handleEmailPreviewSubmission = [
   EmailSubmissionMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailPreview,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for PUT /forms/:formId/fields/:fieldId
@@ -1598,7 +1653,7 @@ export const handleUpdateFormField = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleCreateFormField: RequestHandler<
+export const _handleCreateFormField: ControllerHandler<
   { formId: string },
   FormFieldDto | ErrorDto,
   FieldCreateDto
@@ -1641,6 +1696,109 @@ export const _handleCreateFormField: RequestHandler<
 }
 
 /**
+ * NOTE: Exported for testing.
+ * Private handler for POST /forms/:formId/logic
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with created logic object when successfully created
+ * @returns 403 when user does not have permissions to create logic
+ * @returns 404 when form cannot be found
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleCreateLogic: ControllerHandler<
+  { formId: string },
+  LogicDto | ErrorDto,
+  LogicDto
+> = (req, res) => {
+  const { formId } = req.params
+  const createLogicBody = req.body
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: Create form logic
+      .andThen((retrievedForm) =>
+        AdminFormService.createFormLogic(retrievedForm, createLogicBody),
+      )
+      .map((createdLogic) => res.status(StatusCodes.OK).json(createdLogic))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when creating form logic',
+          meta: {
+            action: 'handleCreateLogic',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            createLogicBody,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Shape of request body used for joi validation for create and update logic
+ */
+const joiLogicBody = {
+  logicType: Joi.string()
+    .valid(...Object.values(LogicType))
+    .required(),
+  conditions: Joi.array()
+    .items(
+      Joi.object({
+        field: Joi.string().required(),
+        state: Joi.string()
+          .valid(...Object.values(LogicConditionState))
+          .required(),
+        value: Joi.alternatives()
+          .try(
+            Joi.number(),
+            Joi.string(),
+            Joi.array().items(Joi.string()),
+            Joi.array().items(Joi.number()),
+          )
+          .required(),
+        ifValueType: Joi.string()
+          .valid(...Object.values(LogicIfValue))
+          .required(),
+      }).unknown(true),
+    )
+    .required(),
+  show: Joi.alternatives().conditional('logicType', {
+    is: LogicType.ShowFields,
+    then: Joi.array().items(Joi.string()).required(),
+  }),
+  preventSubmitMessage: Joi.alternatives().conditional('logicType', {
+    is: LogicType.PreventSubmit,
+    then: Joi.string().required(),
+  }),
+}
+
+/**
+ * Handler for POST /forms/:formId/logic
+ */
+export const handleCreateLogic = [
+  celebrate({
+    [Segments.BODY]: joiLogicBody,
+  }),
+  _handleCreateLogic,
+] as ControllerHandler[]
+
+/**
  * Handler for DELETE /forms/:formId/logic/:logicId
  * @security session
  *
@@ -1650,7 +1808,10 @@ export const _handleCreateFormField: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleDeleteLogic: RequestHandler = (req, res) => {
+export const handleDeleteLogic: ControllerHandler<{
+  formId: string
+  logicId: string
+}> = (req, res) => {
   const { formId, logicId } = req.params
   const sessionUserId = (req.session as Express.AuthedSession).user._id
 
@@ -1726,11 +1887,11 @@ export const handleCreateFormField = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleReorderFormField: RequestHandler<
+export const _handleReorderFormField: ControllerHandler<
   { formId: string; fieldId: string },
   FormFieldDto[] | ErrorDto,
   unknown,
-  Query & { to: number }
+  { to: number }
 > = (req, res) => {
   const { formId, fieldId } = req.params
   const { to } = req.query
@@ -1781,7 +1942,7 @@ export const handleReorderFormField = [
     },
   }),
   _handleReorderFormField,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * NOTE: Exported for testing.
@@ -1789,13 +1950,13 @@ export const handleReorderFormField = [
  * @precondition Must be preceded by request validation
  * @security session
  *
- * @returns 200 with success message and updated logic object when successfully updated
+ * @returns 200 with updated logic object when successfully updated
  * @returns 403 when user does not have permissions to update logic
  * @returns 404 when form cannot be found
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleUpdateLogic: RequestHandler<
+export const _handleUpdateLogic: ControllerHandler<
   { formId: string; logicId: string },
   LogicDto | ErrorDto,
   LogicDto
@@ -1848,30 +2009,8 @@ export const handleUpdateLogic = [
       [Segments.BODY]: Joi.object({
         // Ensures given logic is same as accessed logic
         _id: Joi.string().valid(Joi.ref('$params.logicId')).required(),
-        logicType: Joi.string()
-          .valid(...Object.values(LogicType))
-          .required(),
-        conditions: Joi.array()
-          .items(
-            Joi.object({
-              field: Joi.string().required(),
-              state: Joi.string().required(),
-              value: Joi.string().required(),
-              ifValueType: Joi.string(),
-            }).unknown(true),
-          )
-          .required(),
-        show: Joi.alternatives().conditional('logicType', {
-          is: LogicType.ShowFields,
-          then: Joi.array().items(Joi.string()).required(),
-        }),
-        preventSubmitMessage: Joi.alternatives().conditional('logicType', {
-          is: LogicType.PreventSubmit,
-          then: Joi.string().required(),
-        }),
-        // Allow other field related key-values to be provided and let the model
-        // layer handle the validation.
-      }).unknown(true),
+        ...joiLogicBody,
+      }),
     },
     undefined,
     // Required so req.body can be validated against values in req.params.
@@ -1879,7 +2018,7 @@ export const handleUpdateLogic = [
     { reqContext: true },
   ),
   _handleUpdateLogic,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for DELETE /forms/:formId/fields/:fieldId
@@ -1893,7 +2032,7 @@ export const handleUpdateLogic = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs during deletion
  */
-export const handleDeleteFormField: RequestHandler<
+export const handleDeleteFormField: ControllerHandler<
   { formId: string; fieldId: string },
   ErrorDto | void
 > = (req, res) => {
@@ -1939,13 +2078,13 @@ export const handleDeleteFormField: RequestHandler<
  * @security session
  *
  * @returns 200 with updated end page
- * @returns 403 when current user does not have permissions to create a form field
+ * @returns 403 when current user does not have permissions to update the end page
  * @returns 404 when form cannot be found
  * @returns 410 when updating the end page for an archived form
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleUpdateEndPage: RequestHandler<
+export const _handleUpdateEndPage: ControllerHandler<
   { formId: string },
   IFormDocument['endPage'] | ErrorDto,
   EndPageUpdateDto
@@ -1990,15 +2129,16 @@ export const _handleUpdateEndPage: RequestHandler<
  */
 export const handleUpdateEndPage = [
   celebrate({
-    [Segments.BODY]: {
+    [Segments.BODY]: Joi.object({
       title: Joi.string(),
       paragraph: Joi.string().allow(''),
       buttonLink: Joi.string().uri().allow(''),
       buttonText: Joi.string().allow(''),
-    },
+      // TODO(#1895): Remove when deprecated `buttons` key is removed from all forms in the database
+    }).unknown(true),
   }),
   _handleUpdateEndPage,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Handler for GET /admin/forms/:formId/fields/:fieldId
@@ -2012,7 +2152,7 @@ export const handleUpdateEndPage = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleGetFormField: RequestHandler<
+export const handleGetFormField: ControllerHandler<
   {
     formId: string
     fieldId: string
@@ -2066,7 +2206,7 @@ export const handleGetFormField: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleUpdateCollaborators: RequestHandler<
+export const _handleUpdateCollaborators: ControllerHandler<
   { formId: string },
   PermissionsUpdateDto | ErrorDto,
   PermissionsUpdateDto
@@ -2126,4 +2266,97 @@ export const handleUpdateCollaborators = [
     ),
   }),
   _handleUpdateCollaborators,
-] as RequestHandler[]
+] as ControllerHandler[]
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/start-page
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated start page
+ * @returns 403 when current user does not have permissions to update the start page
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating the start page for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleUpdateStartPage: ControllerHandler<
+  { formId: string },
+  IFormDocument['startPage'] | ErrorDto,
+  StartPageUpdateDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, proceed to allow updating of start page
+      .andThen(() => AdminFormService.updateStartPage(formId, req.body))
+      .map((updatedStartPage) =>
+        res.status(StatusCodes.OK).json(updatedStartPage),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating start page',
+          meta: {
+            action: '_handleUpdateStartPage',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            body: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for PUT /forms/:formId/start-page
+ */
+export const handleUpdateStartPage = [
+  celebrate({
+    [Segments.BODY]: {
+      paragraph: Joi.string().allow('').optional(),
+      estTimeTaken: Joi.number().min(1).max(1000).required(),
+      colorTheme: Joi.string()
+        .valid(...Object.values(Colors))
+        .required(),
+      logo: Joi.object({
+        state: Joi.string().valid(...Object.values(FormLogoState)),
+        fileId: Joi.when('state', {
+          is: FormLogoState.Custom,
+          then: Joi.string().required(),
+          otherwise: Joi.any().forbidden(),
+        }),
+        fileName: Joi.when('state', {
+          is: FormLogoState.Custom,
+          then: Joi.string()
+            // Captures only the extensions below regardless of their case
+            // Refer to https://regex101.com/ with the below regex for a full explanation
+            .pattern(/\.(gif|png|jpeg|jpg)$/im)
+            .required(),
+          otherwise: Joi.any().forbidden(),
+        }),
+        fileSizeInBytes: Joi.when('state', {
+          is: FormLogoState.Custom,
+          then: Joi.number().max(MAX_UPLOAD_FILE_SIZE).required(),
+          otherwise: Joi.any().forbidden(),
+        }),
+      }).required(),
+    },
+  }),
+  _handleUpdateStartPage,
+] as ControllerHandler[]

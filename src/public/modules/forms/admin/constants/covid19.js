@@ -19,15 +19,13 @@ const templates = [
   {
     admin: {
       agency: {
-        logo:
-          'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
+        logo: 'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
       },
     },
     authType: 'NIL',
     endPage: {
       title: 'We appreciate your feedback!',
       buttonText: 'Submit another form',
-      buttons: [],
       buttonLink: '',
     },
     form_fields: [
@@ -101,8 +99,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -117,8 +113,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -165,15 +159,13 @@ const templates = [
   {
     admin: {
       agency: {
-        logo:
-          'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
+        logo: 'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
       },
     },
     authType: 'NIL',
     endPage: {
       title: 'Thank you for submitting your declaration.',
       buttonText: 'Submit another form',
-      buttons: [],
       buttonLink: '',
     },
     form_fields: [
@@ -188,8 +180,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -250,8 +240,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -265,8 +253,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: 6,
-          customMin: 6,
           customVal: 6,
           selectedValidation: 'Exact',
         },
@@ -327,8 +313,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -361,8 +345,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -533,15 +515,13 @@ const templates = [
   {
     admin: {
       agency: {
-        logo:
-          'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
+        logo: 'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
       },
     },
     authType: 'NIL',
     endPage: {
       title: 'Thank you for filling out the form.',
       buttonText: 'Submit another form',
-      buttons: [],
       buttonLink: '',
       paragraph:
         'Please be reminded that you are to submit your daily temperature taken via this form.',
@@ -549,8 +529,6 @@ const templates = [
     form_fields: [
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -630,8 +608,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -675,15 +651,13 @@ const templates = [
   {
     admin: {
       agency: {
-        logo:
-          'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
+        logo: 'https://s3-ap-southeast-1.amazonaws.com/agency-logo.form.sg/formsg-logo.svg',
       },
     },
     authType: 'NIL',
     endPage: {
       title: 'Thank you for registering your interest.',
       buttonText: 'Submit another form',
-      buttons: [],
       buttonLink: '',
       paragraph:
         'Our volunteer management team will be in touch with you shortly.',
@@ -700,8 +674,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -743,8 +715,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },
@@ -758,8 +728,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: 6,
-          customMin: 6,
           customVal: 6,
           selectedValidation: 'Exact',
         },
@@ -905,8 +873,6 @@ const templates = [
       },
       {
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },

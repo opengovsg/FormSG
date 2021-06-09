@@ -28,9 +28,9 @@ const MOCK_RETRY_COUNT = 10
 
 describe('mail.service', () => {
   const sendMailSpy = jest.fn()
-  const mockTransporter = ({
+  const mockTransporter = {
     sendMail: sendMailSpy,
-  } as unknown) as Mail
+  } as unknown as Mail
 
   // Set up mocks for MailUtils
   beforeAll(() => {
@@ -725,13 +725,15 @@ describe('mail.service', () => {
         },
       ],
     }
-    const DEFAULT_AUTO_REPLY_BODY = `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${MOCK_AUTOREPLY_PARAMS.form.admin.agency.fullName}`.split(
-      '\n',
-    )
+    const DEFAULT_AUTO_REPLY_BODY =
+      `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${MOCK_AUTOREPLY_PARAMS.form.admin.agency.fullName}`.split(
+        '\n',
+      )
 
     beforeAll(async () => {
       defaultHtml = (
         await MailUtils.generateAutoreplyHtml({
+          submissionId: MOCK_AUTOREPLY_PARAMS.submission.id,
           autoReplyBody: DEFAULT_AUTO_REPLY_BODY,
         })
       )._unsafeUnwrap()
@@ -911,6 +913,7 @@ describe('mail.service', () => {
       }
       const expectedMailBody = (
         await MailUtils.generateAutoreplyHtml({
+          submissionId: MOCK_AUTOREPLY_PARAMS.submission.id,
           autoReplyBody: DEFAULT_AUTO_REPLY_BODY,
           ...expectedRenderData,
         })

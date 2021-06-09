@@ -54,7 +54,6 @@ const LoginSchema = new Schema<ILoginSchema, ILoginModel>(
 )
 
 LoginSchema.statics.addLoginFromForm = function (
-  this: ILoginModel,
   form: IPopulatedForm,
 ): Promise<ILoginSchema> {
   if (!form.authType || !form.esrvcId) {
@@ -72,7 +71,6 @@ LoginSchema.statics.addLoginFromForm = function (
 }
 
 LoginSchema.statics.aggregateLoginStats = function (
-  this: ILoginModel,
   esrvcId: string,
   gte: Date,
   lte: Date,

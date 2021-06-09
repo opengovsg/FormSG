@@ -1,6 +1,7 @@
 'use strict'
 
 const get = require('lodash/get')
+const BetaService = require('../../../../services/BetaService')
 
 // Forms controller
 angular
@@ -15,7 +16,7 @@ angular
     '$timeout',
     '$window',
     'Toastr',
-    'Betas',
+    '$q',
     ListFormsController,
   ])
 
@@ -29,7 +30,7 @@ function ListFormsController(
   $timeout,
   $window,
   Toastr,
-  Betas,
+  $q,
 ) {
   const vm = this
 
@@ -75,7 +76,7 @@ function ListFormsController(
     // Massage user email into a name
     turnEmailToName()
 
-    FormApi.query(function (_forms) {
+    $q.when(FormApi.getDashboardView()).then((_forms) => {
       vm.myforms = _forms
     })
   }
@@ -172,7 +173,7 @@ function ListFormsController(
   }
 
   vm.duplicateForm = function (formIndex) {
-    const missingBetaPermissions = Betas.getMissingFieldPermissions(
+    const missingBetaPermissions = BetaService.getMissingFieldPermissions(
       vm.user,
       vm.myforms[formIndex],
     )
@@ -193,9 +194,9 @@ function ListFormsController(
       resolve: {
         FormToDuplicate: () => {
           // Retrieve the form so that we can populate the modal with any existing email recipients
-          return FormApi.preview({
-            formId: vm.myforms[formIndex]._id,
-          }).$promise.then((res) => res.form)
+          return $q
+            .when(FormApi.previewForm(vm.myforms[formIndex]._id))
+            .then((res) => res.form)
         },
         createFormModalOptions: () => ({ mode: 'duplicate' }),
         externalScope: () => ({

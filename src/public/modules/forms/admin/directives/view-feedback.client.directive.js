@@ -1,23 +1,19 @@
 'use strict'
 
+const FormFeedbackService = require('../../../../services/FormFeedbackService')
+const AdminSubmissionsService = require('../../../../services/AdminSubmissionsService')
+
 angular
   .module('forms')
   .directive('viewFeedbackDirective', [
+    '$q',
     '$timeout',
-    'FormFeedback',
-    'Submissions',
     'NgTableParams',
     'emoji',
     viewFeedbackDirective,
   ])
 
-function viewFeedbackDirective(
-  $timeout,
-  FormFeedback,
-  Submissions,
-  NgTableParams,
-  emoji,
-) {
+function viewFeedbackDirective($q, $timeout, NgTableParams, emoji) {
   return {
     templateUrl:
       'modules/forms/admin/directiveViews/view-feedback.client.view.html',
@@ -65,23 +61,22 @@ function viewFeedbackDirective(
         // When this route is initialized, call the count function
         $scope.$parent.$watch('vm.activeResultsTab', (newValue) => {
           if (newValue === 'feedback' && $scope.loading) {
-            Submissions.count({
-              formId: $scope.myform._id,
-            }).then(
-              function (response) {
-                $scope.createFeedbackTable(response)
-              },
-              function (error) {
-                console.error(error)
-              },
+            $q.when(
+              AdminSubmissionsService.countFormSubmissions({
+                formId: $scope.myform._id,
+              }),
             )
+              .then(function (response) {
+                $scope.createFeedbackTable(response)
+              })
+              .catch(function (error) {
+                console.error(error)
+              })
           }
         })
 
         $scope.createFeedbackTable = function (submissionCount) {
-          FormFeedback.getFeedback({
-            formId: $scope.myform._id,
-          }).then(
+          $q.when(FormFeedbackService.getFeedback($scope.myform._id)).then(
             function (response) {
               // Configure table
               $scope.tableParams = new NgTableParams(
@@ -121,13 +116,13 @@ function viewFeedbackDirective(
         }
 
         $scope.exportCsv = function () {
-          let params = {
-            formId: $scope.myform._id,
-            formTitle: $scope.myform.title,
-          }
+          const formId = $scope.myform._id
+          const formTitle = $scope.myform.title
 
           $scope.csvDownloading = true
-          FormFeedback.downloadFeedback(params).finally(function () {
+          $q.when(
+            FormFeedbackService.downloadFeedback(formId, formTitle),
+          ).finally(function () {
             $scope.csvDownloading = false
           })
         }

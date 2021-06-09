@@ -15,11 +15,12 @@ export type SubmissionMetadata = {
 }
 
 export type EncryptedSubmissionDto = {
-  refNo: IEncryptedSubmissionSchema['_id']
+  refNo: string
   submissionTime: string
-  content: IEncryptedSubmissionSchema['encryptedContent']
-  verified: IEncryptedSubmissionSchema['verifiedContent']
+  content: string
+  verified?: string
   attachmentMetadata: Record<string, string>
+  version: number
 }
 
 export type SubmissionMetadataList = {
@@ -51,10 +52,25 @@ export interface WebhookData {
   verifiedContent: IEncryptedSubmissionSchema['verifiedContent']
   version: IEncryptedSubmissionSchema['version']
   created: IEncryptedSubmissionSchema['created']
+  attachmentDownloadUrls: Record<string, string>
 }
 
 export interface WebhookView {
   data: WebhookData
+}
+
+export type SubmissionWebhookInfo = {
+  webhookUrl: string
+  isRetryEnabled: boolean
+  webhookView: WebhookView
+}
+
+export interface IPopulatedWebhookSubmission
+  extends IEncryptedSubmissionSchema {
+  form: {
+    _id: IFormSchema['_id']
+    webhook: IFormSchema['webhook']
+  }
 }
 
 export interface ISubmissionSchema extends ISubmission, Document {}
@@ -83,7 +99,7 @@ export interface IEmailSubmission extends ISubmission {
   getWebhookView(): null
 }
 
-export type IEmailSubmissionSchema = IEmailSubmission & ISubmissionSchema
+export interface IEmailSubmissionSchema extends IEmailSubmission, Document {}
 
 export interface IEncryptedSubmission extends ISubmission {
   recipientEmails: never
@@ -98,8 +114,9 @@ export interface IEncryptedSubmission extends ISubmission {
   getWebhookView(): WebhookView
 }
 
-export type IEncryptedSubmissionSchema = IEncryptedSubmission &
-  ISubmissionSchema
+export interface IEncryptedSubmissionSchema
+  extends IEncryptedSubmission,
+    Document {}
 
 export interface IWebhookResponse {
   webhookUrl: string
@@ -116,13 +133,18 @@ export interface IWebhookResponse {
 // Due to schema changes, some objects may not have attachmentMetadata key.
 export type SubmissionCursorData = Pick<
   IEncryptedSubmissionSchema,
-  'encryptedContent' | 'verifiedContent' | 'created' | 'id'
+  'encryptedContent' | 'verifiedContent' | 'created' | 'id' | 'version'
 > & { attachmentMetadata?: Record<string, string> } & Document
 
-export type SubmissionData = Omit<
+export type SubmissionData = Pick<
   IEncryptedSubmissionSchema,
-  'version' | 'webhookResponses'
->
+  | 'encryptedContent'
+  | 'verifiedContent'
+  | 'attachmentMetadata'
+  | 'created'
+  | 'version'
+> &
+  Document
 
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
   ISubmissionModel
@@ -187,6 +209,15 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       submissionId: string,
       webhookResponse: IWebhookResponse,
     ): Promise<IEncryptedSubmissionSchema | null>
+
+    /**
+     * Retrieves webhook-related info for a given submission.
+     * @param submissionId
+     * @returns Object containing webhook destination and data
+     */
+    retrieveWebhookInfoById(
+      submissionId: string,
+    ): Promise<SubmissionWebhookInfo | null>
   }
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}

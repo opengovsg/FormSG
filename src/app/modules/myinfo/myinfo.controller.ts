@@ -1,6 +1,4 @@
 import { celebrate, Joi, Segments } from 'celebrate'
-import { Request } from 'express'
-import { Query, RequestHandler } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { AuthType } from '../../../types'
@@ -8,6 +6,7 @@ import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { BillingFactory } from '../billing/billing.factory'
+import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import { SpcpFactory } from '../spcp/spcp.factory'
 
@@ -40,11 +39,11 @@ const validateRedirectURLRequest = celebrate({
  * @param req Express Request
  * @param res Express Response
  */
-export const respondWithRedirectURL: RequestHandler<
+export const respondWithRedirectURL: ControllerHandler<
   unknown,
   { redirectURL: string } | { message: string },
   unknown,
-  Query & { formId: string }
+  { formId: string }
 > = async (req, res) => {
   const { formId } = req.query
   return FormService.retrieveFormById(formId)
@@ -62,7 +61,7 @@ export const respondWithRedirectURL: RequestHandler<
         message: 'Error while creating MyInfo redirect URL',
         meta: {
           action: 'respondWithRedirectURL',
-          ...createReqMeta(req as Request),
+          ...createReqMeta(req),
           formId,
         },
         error,
@@ -78,7 +77,7 @@ export const respondWithRedirectURL: RequestHandler<
 export const handleRedirectURLRequest = [
   validateRedirectURLRequest,
   respondWithRedirectURL,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Validation middleware for requests to check that an
@@ -97,11 +96,11 @@ const validateEServiceIdCheck = celebrate({
  * @param req Express request
  * @param res Express response
  */
-export const checkMyInfoEServiceId: RequestHandler<
+export const checkMyInfoEServiceId: ControllerHandler<
   unknown,
   PublicFormAuthValidateEsrvcIdDto | { message: string },
   unknown,
-  Query & { formId: string }
+  { formId: string }
 > = async (req, res) => {
   const { formId } = req.query
   return FormService.retrieveFormById(formId)
@@ -117,7 +116,7 @@ export const checkMyInfoEServiceId: RequestHandler<
         message: 'Error while validating MyInfo e-service ID',
         meta: {
           action: 'checkMyInfoEServiceId',
-          ...createReqMeta(req as Request),
+          ...createReqMeta(req),
           formId,
         },
         error,
@@ -133,7 +132,7 @@ export const checkMyInfoEServiceId: RequestHandler<
 export const handleEServiceIdCheck = [
   validateEServiceIdCheck,
   checkMyInfoEServiceId,
-] as RequestHandler[]
+] as ControllerHandler[]
 
 /**
  * Validation middleware for the MyInfo redirect endpoint.
@@ -174,7 +173,7 @@ type MyInfoLoginQueryParams =
  * @param req Express request
  * @param res Express response
  */
-export const loginToMyInfo: RequestHandler<
+export const loginToMyInfo: ControllerHandler<
   unknown,
   unknown,
   unknown,
@@ -288,4 +287,4 @@ export const loginToMyInfo: RequestHandler<
 export const handleMyInfoLogin = [
   validateMyInfoLogin,
   loginToMyInfo,
-] as RequestHandler[]
+] as ControllerHandler[]

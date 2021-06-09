@@ -12,16 +12,13 @@ import {
   ResponseMode,
   Status,
 } from 'src/types'
+import { DuplicateFormBody, EditFormFieldParams } from 'src/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { ForbiddenFormError } from '../../form.errors'
 import { EditFieldError } from '../admin-form.errors'
-import {
-  DuplicateFormBody,
-  EditFormFieldParams,
-  OverrideProps,
-} from '../admin-form.types'
+import { OverrideProps } from '../admin-form.types'
 import {
   assertHasDeletePermissions,
   assertHasReadPermissions,
@@ -449,13 +446,13 @@ describe('admin-form.utils', () => {
       const initialField = generateDefaultField(BasicField.Email, {
         title: 'some old title',
       })
-      const desyncedEmailField = ({
+      const desyncedEmailField = {
         ...initialField,
         title: 'new title',
         hasAllowedEmailDomains: true,
         // true but empty array
         allowedEmailDomains: [],
-      } as unknown) as IEmailFieldSchema
+      } as unknown as IEmailFieldSchema
 
       const updateFieldParams: EditFormFieldParams = {
         action: {
@@ -484,12 +481,12 @@ describe('admin-form.utils', () => {
 
     it('should return synced email field when creating with desynced email field', async () => {
       // Arrange
-      const desyncedEmailField = ({
+      const desyncedEmailField = {
         ...generateDefaultField(BasicField.Email),
         hasAllowedEmailDomains: false,
         // False but contains domains.
         allowedEmailDomains: ['@example.com'],
-      } as unknown) as IEmailFieldSchema
+      } as unknown as IEmailFieldSchema
 
       const createFieldParams: EditFormFieldParams = {
         action: {

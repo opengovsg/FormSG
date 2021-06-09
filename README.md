@@ -113,14 +113,14 @@ The team uses macOS for development.
 
 Make you sure have the following node version & package manager on your machine:
 
-- `"node": ">=12.18.0"`
+- `"node": ">=14.17.0"`
 - `"npm": ">=6.0.0"`
-- `"mongo": ">=3.6.0"`
+- `"mongo": ">=4.0.0"`
 
 Run
 
 ```bash
-nvm install 12.18.0
+nvm install 14
 npm install
 pip install "localstack[full]"
 ```
@@ -206,11 +206,9 @@ FormSG acknowledges the work done by [Arielle Baldwynn](https://github.com/white
 Contributions have also been made by:  
 [@RyanAngJY](https://github.com/RyanAngJY)  
 [@jeantanzy](https://github.com/jeantanzy)  
-[@yong-jie](https://github.com/yong-jie)  
 [@pregnantboy](https://github.com/pregnantboy)  
 [@namnguyen08](https://github.com/namnguyen08)  
 [@zioul123](https://github.com/zioul123)  
 [@JoelWee](https://github.com/JoelWee)  
 [@limli](https://github.com/limli)  
 [@tankevan](https://github.com/tankevan)  
-[@LoneRifle](https://github.com/LoneRifle)

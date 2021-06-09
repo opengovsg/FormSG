@@ -2,7 +2,7 @@
 
 const { get } = require('lodash')
 const { StatusCodes } = require('http-status-codes')
-const AdminFormService = require('../../../../services/AdminFormService')
+const UpdateFormService = require('../../../../services/UpdateFormService')
 
 angular
   .module('forms')
@@ -73,17 +73,14 @@ function CollaboratorModalController(
       return
     }
 
-    FormApi.transferOwner(
-      { formId: $scope.myform._id },
-      { email: $scope.transferOwnerEmail },
-    )
-      .$promise.then((res) => {
+    $q.when(FormApi.transferOwner($scope.myform._id, $scope.transferOwnerEmail))
+      .then((res) => {
         $scope.myform = res.form
         externalScope.refreshFormDataFromCollab($scope.myform)
         Toastr.success('Form ownership transferred. You are now an Editor.')
       })
       .catch((err) => {
-        Toastr.error(err.data.message)
+        Toastr.error(err.response.data.message)
         return
       })
       .finally(() => {
@@ -92,13 +89,16 @@ function CollaboratorModalController(
   }
 
   /**
-   * Calls AdminFormService to update the permission list (collaborators) of a form
+   * Calls UpdateFormService to update the permission list (collaborators) of a form
    * @param {Array} permissionList - New permission list for the form
    */
   $scope.updatePermissionList = (permissionList) => {
     return $q
       .when(
-        AdminFormService.updateCollaborators($scope.myform._id, permissionList),
+        UpdateFormService.updateCollaborators(
+          $scope.myform._id,
+          permissionList,
+        ),
       )
       .then((updatedCollaborators) => {
         $scope.myform.permissionList = updatedCollaborators
@@ -237,8 +237,18 @@ function CollaboratorModalController(
     )
 
     $scope.btnStatus = 2 // pressed; loading
-    $scope.updatePermissionList(permissionList).catch((err) => {
-      if (err) {
+    $scope
+      .updatePermissionList(permissionList)
+      .then(() => {
+        // If no error, clear email input
+        $scope.btnStatus = 3 // pressed; saved
+        $scope.closeEditCollaboratorDropdowns()
+
+        $timeout(() => {
+          resetCollabForm()
+        }, 1000)
+      })
+      .catch((err) => {
         // Make the alert message correspond to the error code
         if (err.response.status === StatusCodes.BAD_REQUEST) {
           Toastr.error(
@@ -250,16 +260,7 @@ function CollaboratorModalController(
           Toastr.error('Error adding collaborator.')
         }
         resetCollabForm()
-        return
-      }
-      // If no error, clear email input
-      $scope.btnStatus = 3 // pressed; saved
-      $scope.closeEditCollaboratorDropdowns()
-
-      $timeout(() => {
-        resetCollabForm()
-      }, 1000)
-    })
+      })
   }
 
   /**

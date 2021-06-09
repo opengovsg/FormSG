@@ -1,10 +1,14 @@
 'use strict'
 
 const HttpStatus = require('http-status-codes')
+const get = require('lodash/get')
+const validator = require('validator').default
+const AuthService = require('../../../services/AuthService')
 
 angular
   .module('users')
   .controller('AuthenticationController', [
+    '$q',
     '$scope',
     '$state',
     '$timeout',
@@ -15,6 +19,7 @@ angular
   ])
 
 function AuthenticationController(
+  $q,
   $scope,
   $state,
   $timeout,
@@ -54,7 +59,7 @@ function AuthenticationController(
 
   vm.handleEmailKeyUp = function (e) {
     if (e.keyCode == 13) {
-      vm.isSubmitEmailDisabled === false && vm.checkEmail()
+      vm.isSubmitEmailDisabled === false && vm.login()
       // condition vm.isSubmitEmailDisabled == false is necessary to prevent retries using enter key
       // when submit button is disabled
     } else {
@@ -115,6 +120,16 @@ function AuthenticationController(
     }
   }
 
+  const setEmailSignInError = (errorMsg) => {
+    vm.buttonClicked = false
+    vm.signInMsg = {
+      isMsg: true,
+      isError: true,
+      msg: errorMsg,
+    }
+    vm.isSubmitEmailDisabled = true
+  }
+
   // Steps of sign-in process
   // 1 - Check if user email is in valid format
   // 2 - Check if user's email domain (i.e. agency) is valid
@@ -122,45 +137,28 @@ function AuthenticationController(
   // 4 - Verify OTP
 
   /**
-   * Conducts front-end check of user email format
+   * Checks validity of email domain (i.e. agency) and sends login OTP if email
+   * is valid.
    */
-  vm.checkEmail = function () {
+  vm.login = function () {
     vm.buttonClicked = true
-    if (/\S+@\S+\.\S+/.test(vm.credentials.email)) {
-      vm.credentials.email = vm.credentials.email.toLowerCase()
-      vm.checkUser()
-    } else {
-      // Invalid email
-      vm.buttonClicked = false
-      vm.signInMsg = {
-        isMsg: true,
-        isError: true,
-        msg: 'Please enter a valid email',
-      }
-      vm.isSubmitEmailDisabled = true
-    }
-  }
 
-  /**
-   * Checks validity of email domain (i.e. agency)
-   * Directs user to otp input page
-   */
-  vm.checkUser = function () {
-    Auth.checkUser(vm.credentials).then(
-      function () {
-        vm.sendOtp()
-      },
-      function (error) {
-        // Invalid agency
-        vm.buttonClicked = false
-        vm.signInMsg = {
-          isMsg: true,
-          isError: true,
-          msg: error,
-        }
-        vm.isSubmitEmailDisabled = true
-      },
-    )
+    const email = vm.credentials.email
+    if (!validator.isEmail(email)) {
+      setEmailSignInError('Please enter a valid email address')
+      return
+    }
+
+    $q.when(AuthService.checkIsEmailAllowed(vm.credentials.email))
+      .then(() => vm.sendOtp())
+      .catch((error) => {
+        const errorMsg = get(
+          error,
+          'response.data',
+          'Something went wrong while validating your email. Please refresh and try again',
+        )
+        setEmailSignInError(errorMsg)
+      })
   }
 
   /**
@@ -173,9 +171,9 @@ function AuthenticationController(
     vm.isOtpSending = true
     vm.buttonClicked = true
     vm.showOtpDelayNotification = false
-    const { email } = vm.credentials
-    Auth.sendOtp({ email }).then(
-      function (success) {
+
+    $q.when(AuthService.sendLoginOtp(vm.credentials.email))
+      .then((success) => {
         vm.isOtpSending = false
         vm.buttonClicked = false
         // Configure message to be show
@@ -195,21 +193,22 @@ function AuthenticationController(
           vm.signInMsg.isMsg = false
           vm.showOtpDelayNotification = true
         }, 20000)
-      },
-      function (error) {
+      })
+      .catch((error) => {
+        const errorMsg = get(
+          error,
+          'response.data.message',
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+        )
         vm.isOtpSending = false
         vm.buttonClicked = false
         // Configure message to be shown
-        const msg =
-          (error && error.data && error.data.message) ||
-          'Failed to send login OTP. Please try again later and if the problem persists, contact us.'
         vm.signInMsg = {
           isMsg: true,
           isError: true,
-          msg,
+          msg: errorMsg,
         }
-      },
-    )
+      })
   }
 
   /**

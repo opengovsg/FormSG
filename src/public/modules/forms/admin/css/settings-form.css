@@ -145,6 +145,13 @@
 #settings-form #enable-captcha {
   display: flex;
   align-items: center;
+}
+
+#settings-form #enable-captcha-infobox {
+  display: flex;
+  align-items: center;
+  margin-left: 0;
+  margin-right: 0;
   padding-bottom: 45px;
 }
 
@@ -162,6 +169,10 @@
 #settings-form .feature-container {
   padding-top: 20px;
   padding-bottom: 45px;
+}
+
+#settings-form .feature-container.webhook-feature-container {
+  padding-bottom: 30px;
 }
 
 #settings-form #enable-auth {

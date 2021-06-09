@@ -1,13 +1,18 @@
 'use strict'
 
-const processDecryptedContent = require('../../helpers/process-decrypted-content')
+const {
+  processDecryptedContent,
+} = require('../../helpers/process-decrypted-content')
 const { triggerFileDownload } = require('../../helpers/util')
 
 const SHOW_PROGRESS_DELAY_MS = 3000
 
+const AdminSubmissionsService = require('../../../../services/AdminSubmissionsService')
+
 angular
   .module('forms')
   .controller('ViewResponsesController', [
+    '$q',
     '$scope',
     'Submissions',
     'NgTableParams',
@@ -23,6 +28,7 @@ angular
   ])
 
 function ViewResponsesController(
+  $q,
   $scope,
   Submissions,
   NgTableParams,
@@ -196,14 +202,16 @@ function ViewResponsesController(
     vm.loading = true
     vm.currentView = 3
 
-    Submissions.getEncryptedResponse({
-      formId: vm.myform._id,
-      submissionId,
-    }).then((response) => {
+    $q.when(
+      AdminSubmissionsService.getEncryptedResponse({
+        formId: vm.myform._id,
+        submissionId,
+      }),
+    ).then((response) => {
       if (vm.encryptionKey !== null) {
         vm.attachmentDownloadUrls = new Map()
 
-        const { content, verified, attachmentMetadata } = response
+        const { content, verified, attachmentMetadata, version } = response
         let displayedContent
 
         try {
@@ -212,6 +220,7 @@ function ViewResponsesController(
             {
               encryptedContent: content,
               verifiedContent: verified,
+              version,
             },
           )
 
@@ -251,38 +260,41 @@ function ViewResponsesController(
   }
 
   vm.confirmSubmissionCountsBeforeDownload = function () {
-    let params = {
-      formId: vm.myform._id,
-      formTitle: vm.myform.title,
-    }
-    if (vm.datePicker.date.startDate && vm.datePicker.date.endDate) {
-      params.startDate = moment(new Date(vm.datePicker.date.startDate)).format(
-        'YYYY-MM-DD',
-      )
-      params.endDate = moment(new Date(vm.datePicker.date.endDate)).format(
-        'YYYY-MM-DD',
-      )
-    }
-    Submissions.count(params).then((responsesCount) => {
-      vm.attachmentsToDownload = responsesCount
-      $uibModal
-        .open({
-          backdrop: 'static',
-          resolve: { responsesCount },
-          controller: [
-            '$scope',
-            '$uibModalInstance',
-            'responsesCount',
-            function ($scope, $uibModalInstance, responsesCount) {
-              $scope.responsesCount = responsesCount
+    const { startDate, endDate } = vm.datePicker.date
+    const params =
+      startDate && endDate
+        ? {
+            formId: vm.myform._id,
+            dates: {
+              startDate: moment(new Date(startDate)).format('YYYY-MM-DD'),
+              endDate: moment(new Date(endDate)).format('YYYY-MM-DD'),
             },
-          ],
-          windowClass: 'pop-up-modal-window',
-          templateUrl:
-            'modules/forms/admin/views/download-all-attachments.client.modal.html',
-        })
-        .result.then(() => vm.exportCsv(true))
-    })
+          }
+        : {
+            formId: vm.myform._id,
+          }
+    $q.when(AdminSubmissionsService.countFormSubmissions(params)).then(
+      (responsesCount) => {
+        vm.attachmentsToDownload = responsesCount
+        $uibModal
+          .open({
+            backdrop: 'static',
+            resolve: { responsesCount },
+            controller: [
+              '$scope',
+              '$uibModalInstance',
+              'responsesCount',
+              function ($scope, $uibModalInstance, responsesCount) {
+                $scope.responsesCount = responsesCount
+              },
+            ],
+            windowClass: 'pop-up-modal-window',
+            templateUrl:
+              'modules/forms/admin/views/download-all-attachments.client.modal.html',
+          })
+          .result.then(() => vm.exportCsv(true))
+      },
+    )
   }
 
   vm.downloadAllAttachments = function () {
@@ -351,9 +363,9 @@ function ViewResponsesController(
   // When this route is initialized, call the responses count function
   $scope.$parent.$watch('vm.activeResultsTab', (newValue) => {
     if (newValue === 'responses' && vm.loading) {
-      Submissions.count({
-        formId: vm.myform._id,
-      })
+      $q.when(
+        AdminSubmissionsService.countFormSubmissions({ formId: vm.myform._id }),
+      )
         .then((responsesCount) => {
           vm.responsesCount = responsesCount
           $timeout(() => {
@@ -397,11 +409,17 @@ function ViewResponsesController(
       {
         getData: (params) => {
           let { page } = params.url()
-          return Submissions.getMetadata({
-            formId: vm.myform._id,
-            filterBySubmissionRefId: vm.filterBySubmissionRefId,
-            page,
-          })
+          const getMetadataPromise = vm.filterBySubmissionRefId
+            ? AdminSubmissionsService.getSubmissionMetadataById({
+                formId: vm.myform._id,
+                submissionId: vm.filterBySubmissionRefId,
+              })
+            : AdminSubmissionsService.getSubmissionsMetadataByPage({
+                formId: vm.myform._id,
+                pageNum: page,
+              })
+          return $q
+            .when(getMetadataPromise)
             .then((data) => {
               params.total(data.count)
               vm.responsesCount = data.count

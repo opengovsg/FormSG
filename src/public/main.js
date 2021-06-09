@@ -256,7 +256,6 @@ require('./modules/forms/config/forms.client.config.js')
 require('./modules/forms/config/forms.client.routes.js')
 
 // forms services
-require('./modules/forms/services/form-feedback.client.factory.js')
 require('./modules/forms/services/form-fields.client.service.js')
 require('./modules/forms/services/form-factory.client.service.js')
 require('./modules/forms/services/form-api.client.factory.js')
@@ -265,9 +264,6 @@ require('./modules/forms/services/spcp-session.client.factory.js')
 require('./modules/forms/services/submissions.client.factory.js')
 require('./modules/forms/services/toastr.client.factory.js')
 require('./modules/forms/services/attachment.client.service.js')
-require('./modules/forms/services/color-themes.client.service.js')
-require('./modules/forms/services/rating.client.service.js')
-require('./modules/forms/services/betas.client.factory.js')
 require('./modules/forms/services/captcha.client.service.js')
 require('./modules/forms/services/mailto.client.factory.js')
 

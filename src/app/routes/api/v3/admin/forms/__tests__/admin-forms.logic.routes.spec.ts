@@ -212,12 +212,12 @@ describe('admin-form.logic.routes', () => {
         },
       })
 
-      const updatedLogic = ({
+      const updatedLogic = {
         _id: formLogicId,
         logicType: LogicType.PreventSubmit,
         conditions: [],
         preventSubmitMessage: 'Some message',
-      } as unknown) as ILogicSchema
+      } as unknown as ILogicSchema
 
       const session = await createAuthedSession(user.email, request)
 
@@ -244,12 +244,12 @@ describe('admin-form.logic.routes', () => {
         },
       })
 
-      const updatedLogic = ({
+      const updatedLogic = {
         _id: formLogicId,
         logicType: LogicType.PreventSubmit,
         conditions: [],
         preventSubmitMessage: 'Some message',
-      } as unknown) as ILogicSchema
+      } as unknown as ILogicSchema
 
       const session = await createAuthedSession(user.email, request)
 
@@ -275,12 +275,12 @@ describe('admin-form.logic.routes', () => {
         },
       })
 
-      const updatedLogic = ({
+      const updatedLogic = {
         _id: formLogicId,
         logicType: LogicType.PreventSubmit,
         conditions: [],
         preventSubmitMessage: 'Some message',
-      } as unknown) as ILogicSchema
+      } as unknown as ILogicSchema
 
       const diffUser = await dbHandler.insertUser({
         mailName: 'newUser',
@@ -317,12 +317,12 @@ describe('admin-form.logic.routes', () => {
         },
       })
 
-      const updatedLogic = ({
+      const updatedLogic = {
         _id: wrongLogicId,
         logicType: LogicType.PreventSubmit,
         conditions: [],
         preventSubmitMessage: 'Some message',
-      } as unknown) as ILogicSchema
+      } as unknown as ILogicSchema
 
       const session = await createAuthedSession(user.email, request)
 
@@ -352,12 +352,12 @@ describe('admin-form.logic.routes', () => {
         },
       })
 
-      const updatedLogic = ({
+      const updatedLogic = {
         _id: formLogicId,
         logicType: LogicType.PreventSubmit,
         conditions: [],
         preventSubmitMessage: 'Some message',
-      } as unknown) as ILogicSchema
+      } as unknown as ILogicSchema
 
       const session = await createAuthedSession(user.email, request)
 
@@ -388,12 +388,12 @@ describe('admin-form.logic.routes', () => {
         },
       })
 
-      const updatedLogic = ({
+      const updatedLogic = {
         _id: formLogicId,
         logicType: LogicType.PreventSubmit,
         conditions: [],
         preventSubmitMessage: 'Some message',
-      } as unknown) as ILogicSchema
+      } as unknown as ILogicSchema
 
       const session = await createAuthedSession(user.email, request)
 

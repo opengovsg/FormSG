@@ -1,11 +1,10 @@
-import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
 import { BillingInfoDto, BillingQueryDto, ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
+import { ControllerHandler } from '../core/core.types'
 
 import { BillingFactory } from './billing.factory'
 
@@ -19,8 +18,8 @@ const logger = createLoggerWithLabel(module)
  * @return 401 when request does not contain a user session
  * @return 500 when error occurs whilst querying database
  */
-export const handleGetBillInfo: RequestHandler<
-  ParamsDictionary,
+export const handleGetBillInfo: ControllerHandler<
+  unknown,
   ErrorDto | BillingInfoDto,
   unknown,
   BillingQueryDto
@@ -56,7 +55,7 @@ export const handleGetBillInfo: RequestHandler<
 
   // Retrieved login stats successfully.
   logger.info({
-    message: `Billing search for ${esrvcId} by ${authedUser.email}`,
+    message: `Billing search for ${esrvcId} by ${authedUser._id}`,
     meta: {
       action: 'handleGetBillInfo',
       ...createReqMeta(req),

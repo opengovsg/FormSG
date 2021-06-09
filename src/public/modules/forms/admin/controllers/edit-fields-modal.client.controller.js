@@ -13,7 +13,7 @@ const { uploadImage } = require('../../../../services/FileHandlerService')
 const {
   DateSelectedValidation: DateValidationOptions,
 } = require('../../../../../shared/constants')
-
+const { Rating, RatingShape } = require('../../../../../types')
 const CancelToken = axios.CancelToken
 
 const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '7']
@@ -25,11 +25,9 @@ angular
     '$uibModalInstance',
     'externalScope',
     'responseModeEnum',
-    'Rating',
     'Attachment',
     'FormFields',
     '$q',
-    'Betas',
     'Auth',
     '$state',
     'Toastr',
@@ -41,11 +39,9 @@ function EditFieldsModalController(
   $uibModalInstance,
   externalScope,
   responseModeEnum,
-  Rating,
   Attachment,
   FormFields,
   $q,
-  Betas,
   Auth,
   $state,
   Toastr,
@@ -85,9 +81,8 @@ function EditFieldsModalController(
 
     vm.field.allowedEmailDomainsPlaceholder = `${userEmailDomain}\n@agency.gov.sg`
     if (vm.field.hasAllowedEmailDomains) {
-      vm.field.allowedEmailDomainsFromText = vm.field.allowedEmailDomains.join(
-        '\n',
-      )
+      vm.field.allowedEmailDomainsFromText =
+        vm.field.allowedEmailDomains.join('\n')
     }
     $scope.$watch('vm.field.isVerifiable', (newValue) => {
       if (newValue) {
@@ -162,8 +157,8 @@ function EditFieldsModalController(
     }
   }
 
-  vm.ratingSteps = Rating.steps
-  vm.ratingShapes = Rating.shapes
+  vm.ratingSteps = Rating
+  vm.ratingShapes = Object.values(RatingShape)
 
   vm.showDuplicateOptionsError = function (field) {
     // This function assumes that the txt file option for dropdown automatically removes duplicates
@@ -200,11 +195,8 @@ function EditFieldsModalController(
       return false
     }
 
-    const {
-      selectedDateValidation,
-      customMinDate,
-      customMaxDate,
-    } = dateValidation
+    const { selectedDateValidation, customMinDate, customMaxDate } =
+      dateValidation
 
     if (selectedDateValidation !== DateValidationOptions.Custom) {
       return false
@@ -235,8 +227,6 @@ function EditFieldsModalController(
   vm.clearCustomValidation = function (field) {
     field.ValidationOptions = {
       selectedValidation: null,
-      customMax: null,
-      customMin: null,
       customVal: null,
     }
   }
@@ -244,20 +234,9 @@ function EditFieldsModalController(
     let temp = field.ValidationOptions.selectedValidation
     // Reset all custom validation params to null, keep selected validation option
     field.ValidationOptions = {
-      customMax: null,
-      customMin: null,
       customVal: null,
       selectedValidation: temp,
     }
-  }
-
-  vm.changeFxn = function (field) {
-    let selected = field.ValidationOptions.selectedValidation
-    let val = field.ValidationOptions.customVal
-    field.ValidationOptions.customMax =
-      selected === 'Maximum' || selected === 'Exact' ? val : null
-    field.ValidationOptions.customMin =
-      selected === 'Minimum' || selected === 'Exact' ? val : null
   }
 
   vm.setFocus = function () {
