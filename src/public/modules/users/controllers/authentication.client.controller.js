@@ -197,7 +197,7 @@ function AuthenticationController(
       .catch((error) => {
         const errorMsg = get(
           error,
-          'response.data',
+          'response.data.message',
           'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
         )
         vm.isOtpSending = false
