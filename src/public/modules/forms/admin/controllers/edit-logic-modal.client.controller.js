@@ -3,7 +3,7 @@
 const { range } = require('lodash')
 const { LogicType } = require('../../../../../types')
 const FormLogic = require('../../services/form-logic/form-logic.client.service')
-const AdminFormService = require('../../../../services/AdminFormService')
+const UpdateFormService = require('../../../../services/UpdateFormService')
 
 angular
   .module('forms')
@@ -272,7 +272,7 @@ function EditLogicModalController(
   }
 
   vm.createNewLogic = function (newLogic) {
-    $q.when(AdminFormService.createFormLogic(vm.myform._id, newLogic))
+    $q.when(UpdateFormService.createFormLogic(vm.myform._id, newLogic))
       .then((createdLogic) => {
         vm.formLogics.push(createdLogic)
         externalScope.myform.form_logics.push(createdLogic) // update global myform
@@ -290,7 +290,7 @@ function EditLogicModalController(
   vm.updateExistingLogic = function (logicIndex, updatedLogic) {
     const logicIdToUpdate = vm.formLogics[logicIndex]._id
     $q.when(
-      AdminFormService.updateFormLogic(
+      UpdateFormService.updateFormLogic(
         vm.myform._id,
         logicIdToUpdate,
         updatedLogic,

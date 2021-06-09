@@ -15,11 +15,11 @@ function FormFactory(FormApi) {
   function generateForm(mode, params, formId) {
     switch (mode) {
       case 'create':
-        return FormApi.create({}, { form: params })
+        return FormApi.createForm(params)
       case 'duplicate':
-        return FormApi.save({ formId }, params)
+        return FormApi.duplicateForm(formId, params)
       case 'useTemplate':
-        return FormApi.useTemplate({ formId }, params)
+        return FormApi.useTemplate(formId, params)
       default:
         throw new Error('Unsupported mode of form generation.')
     }
