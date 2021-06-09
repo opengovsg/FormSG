@@ -140,22 +140,14 @@ export abstract class IncomingSubmission {
   ): ProcessedFieldResponse {
     const responseId = response._id
     const formField = this.fieldMap[responseId]
-    const processedResponse: ProcessedFieldResponse = {
+    return {
       ...response,
       isVisible: this.visibleResponseIds.has(responseId),
       question: formField.getQuestion(),
+      isUserVerified: this.verifiableResponseIds.has(responseId)
+        ? true
+        : undefined,
     }
-
-    /**
-     * This pattern of mutating processedResponse is copied from the original
-     * getProcessedResponse function. TODO: Check if can just move this into
-     * the object instantiation stage, preserving the possible undefined value.
-     */
-    if (this.verifiableResponseIds.has(responseId)) {
-      processedResponse.isUserVerified = true
-    }
-
-    return processedResponse
   }
 
   protected validate(): Result<true, ProcessingError | ValidateFieldError> {
