@@ -33,23 +33,35 @@ AdminFormsFormRouter.route('/')
    */
   .post(AdminFormController.handleCreateForm)
 
-/**
- * Archive the specified form.
- * @route DELETE /:formId/adminform
- * @security session
- *
- * @returns 200 with success message when successfully archived
- * @returns 401 when user does not exist in session
- * @returns 403 when user does not have permissions to archive form
- * @returns 404 when form cannot be found
- * @returns 410 when form is already archived
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when database error occurs
- */
-AdminFormsFormRouter.delete(
-  '/:formId([a-fA-F0-9]{24})',
-  AdminFormController.handleArchiveForm,
-)
+AdminFormsFormRouter.route('/:formId([a-fA-F0-9]{24})')
+  /**
+   * Return the specified form to the user.
+   * @route GET /:formId/adminform
+   * @security session
+   *
+   * @returns 200 with retrieved form with formId if user has read permissions
+   * @returns 401 when user does not exist in session
+   * @returns 403 when user does not have permissions to access form
+   * @returns 404 when form cannot be found
+   * @returns 410 when form is archived
+   * @returns 422 when user in session cannot be retrieved from the database
+   * @returns 500 when database error occurs
+   */
+  .get(AdminFormController.handleGetAdminForm)
+  /**
+   * Archive the specified form.
+   * @route DELETE /:formId/adminform
+   * @security session
+   *
+   * @returns 200 with success message when successfully archived
+   * @returns 401 when user does not exist in session
+   * @returns 403 when user does not have permissions to archive form
+   * @returns 404 when form cannot be found
+   * @returns 410 when form is already archived
+   * @returns 422 when user in session cannot be retrieved from the database
+   * @returns 500 when database error occurs
+   */
+  .delete(AdminFormController.handleArchiveForm)
 
 /**
  * Duplicate the specified form.

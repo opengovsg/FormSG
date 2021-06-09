@@ -523,6 +523,172 @@ describe('admin-form.form.routes', () => {
     })
   })
 
+  describe('GET /admin/forms/:formId', () => {
+    it('should return 200 with retrieved form when user is admin', async () => {
+      // Arrange
+      const ownForm = await EmailFormModel.create({
+        title: 'Own form',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
+
+      const response = await request.get(`/admin/forms/${ownForm._id}`)
+      // Act
+
+      // Assert
+      const expected = await FormModel.findById(ownForm._id)
+        .populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
+        .lean()
+      expect(response.status).toEqual(200)
+      expect(response.body).not.toBeNull()
+      expect(response.body).toEqual({
+        form: jsonParseStringify(expected),
+      })
+    })
+
+    it('should return 200 with retrieved form when user has read permissions', async () => {
+      // Arrange
+      // Create separate user
+      const collabUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'collab-user',
+          shortName: 'collabUser',
+        })
+      ).user
+
+      const collabForm = await EncryptFormModel.create({
+        title: 'Collab form',
+        publicKey: 'some public key',
+        admin: collabUser._id,
+        permissionList: [{ email: defaultUser.email, write: false }],
+      })
+
+      // Act
+      const response = await request.get(`/admin/forms/${collabForm._id}`)
+
+      // Assert
+      const expected = await FormModel.findById(collabForm._id)
+        .populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
+        .lean()
+      expect(response.status).toEqual(200)
+      expect(response.body).not.toBeNull()
+      expect(response.body).toEqual({
+        form: jsonParseStringify(expected),
+      })
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const response = await request.get(`/admin/forms/${new ObjectId()}`)
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user does not have read permissions to form', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      // Form that defaultUser has no access to.
+      const inaccessibleForm = await EncryptFormModel.create({
+        title: 'Collab form',
+        publicKey: 'some public key',
+        admin: anotherUser._id,
+        permissionList: [],
+      })
+
+      // Act
+      const response = await request.get(`/admin/forms/${inaccessibleForm._id}`)
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: expect.stringContaining(
+          'not authorized to perform read operation',
+        ),
+      })
+    })
+
+    it('should return 404 when form cannot be found', async () => {
+      // Arrange
+      const invalidFormId = new ObjectId().toHexString()
+
+      // Act
+      const response = await request.get(`/admin/forms/${invalidFormId}`)
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 410 when form to retrieve is archived', async () => {
+      // Arrange
+      const archivedForm = await EncryptFormModel.create({
+        title: 'archived form',
+        status: Status.Archived,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'does not matter',
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request.get(`/admin/forms/${archivedForm._id}`)
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      // Clear user collection
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.get(`/admin/forms/${new ObjectId()}`)
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving form', async () => {
+      // Arrange
+      jest
+        .spyOn(FormModel, 'getFullFormById')
+        .mockRejectedValueOnce(new Error('some error'))
+
+      // Act
+      const response = await request.get(`/admin/forms/${new ObjectId()}`)
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: 'Something went wrong. Please try again.',
+      })
+    })
+  })
+
   describe('DELETE /admin/forms/:formId', () => {
     it('should return 200 with success message when form is successfully archived', async () => {
       // Arrange
