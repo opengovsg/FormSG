@@ -1,15 +1,7 @@
-import { IField, IFieldSchema, TextSelectedValidation } from './baseField'
+import { ITextField } from './utils/textField'
+import { IFieldSchema } from './baseField'
 
-export type ShortTextValidationOptions = {
-  customMax: number | null
-  customMin: number | null
-  customVal: number | null
-  selectedValidation: TextSelectedValidation | null
-}
-
-export interface IShortTextField extends IField {
-  ValidationOptions: ShortTextValidationOptions
-}
+export type IShortTextField = ITextField
 
 export interface IShortTextFieldSchema extends IShortTextField, IFieldSchema {
   // Prefill flag
