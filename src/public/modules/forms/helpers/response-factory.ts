@@ -16,9 +16,16 @@ import {
 export const getResponseInstance = (
   fieldRecordData: DisplayedResponseWithoutAnswer,
 ): Response => {
-  if (isNestedResponse(fieldRecordData)) {
+  console.log(fieldRecordData)
+  if (
+    isNestedResponse(fieldRecordData) &&
+    fieldRecordData.fieldType === 'table'
+  ) {
     return new TableResponse(fieldRecordData)
-  } else if (isArrayResponse(fieldRecordData)) {
+  } else if (
+    isArrayResponse(fieldRecordData) &&
+    fieldRecordData.fieldType === 'checkbox'
+  ) {
     return new ArrayAnswerResponse(fieldRecordData)
   } else if (isSingleResponse(fieldRecordData)) {
     return new SingleAnswerResponse(fieldRecordData)
@@ -34,8 +41,10 @@ const isNestedResponse = (
   return (
     hasProp(response, 'answerArray') &&
     Array.isArray(response.answerArray) &&
-    Array.isArray(response.answerArray[0]) &&
-    typeof response.answerArray[0][0] === 'string'
+    response.answerArray.every((value) => Array.isArray(value)) && // or has at least one element that is an array
+    response.answerArray.every((arr) =>
+      arr.every((value: unknown) => typeof value === 'string'),
+    )
   )
 }
 
@@ -45,7 +54,7 @@ const isArrayResponse = (
   return (
     hasProp(response, 'answerArray') &&
     Array.isArray(response.answerArray) &&
-    typeof response.answerArray[0] === 'string'
+    response.answerArray.every((value) => typeof value === 'string')
   )
 }
 
