@@ -15,11 +15,12 @@ export type SubmissionMetadata = {
 }
 
 export type EncryptedSubmissionDto = {
-  refNo: IEncryptedSubmissionSchema['_id']
+  refNo: string
   submissionTime: string
-  content: IEncryptedSubmissionSchema['encryptedContent']
-  verified: IEncryptedSubmissionSchema['verifiedContent']
+  content: string
+  verified?: string
   attachmentMetadata: Record<string, string>
+  version: number
 }
 
 export type SubmissionMetadataList = {
