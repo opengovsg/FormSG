@@ -571,6 +571,7 @@ describe('admin-form.submissions.routes', () => {
             encryptedContent: s.encryptedContent,
             verifiedContent: s.verifiedContent,
             created: s.created,
+            version: s.version,
           }),
         )
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
@@ -627,6 +628,7 @@ describe('admin-form.submissions.routes', () => {
             encryptedContent: s.encryptedContent,
             verifiedContent: s.verifiedContent,
             created: s.created,
+            version: s.version,
           }),
         )
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
@@ -705,6 +707,7 @@ describe('admin-form.submissions.routes', () => {
             encryptedContent: s.encryptedContent,
             verifiedContent: s.verifiedContent,
             created: s.created,
+            version: s.version,
           }),
         )
         .filter((s) => expectedSubmissionIds.includes(s._id))
@@ -777,6 +780,7 @@ describe('admin-form.submissions.routes', () => {
             encryptedContent: s.encryptedContent,
             verifiedContent: s.verifiedContent,
             created: s.created,
+            version: s.version,
           }),
         )
         .filter((s) => expectedSubmissionIds.includes(s._id))
