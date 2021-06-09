@@ -27,14 +27,6 @@ const generateRecord = (append, answerArray, fieldType) => {
 
   return generated
 }
-const generateHeaderRow = (append) => {
-  return {
-    _id: `mock${append}`,
-    question: `mockQuestion${append}`,
-    fieldType: `mockFieldType${append}`,
-    isHeader: true,
-  }
-}
 
 /**
  * Reshapes a mock record to match the expected shape in generator.unprocessed.
@@ -171,30 +163,6 @@ describe('CsvMergedHeadersGenerator', () => {
         },
       ])
       expect(Object.values(generator.fieldIdToNumCols)).toEqual([2])
-    })
-
-    it('should handle adding of single header record', () => {
-      // Arrange
-      const mockDecryptedRecord = [generateHeaderRow(1)]
-      const mockRecord = {
-        record: mockDecryptedRecord,
-        created: mockCreatedEarly,
-        submissionId: 'mockSubmissionId',
-      }
-      expect(generator.unprocessed.length).toEqual(0)
-
-      // Act
-      generator.addRecord(mockRecord)
-
-      // Assert
-      // Generate new shape in unprocessed array
-      const expectedUnprocessed = [generateExpectedUnprocessed(mockRecord)]
-
-      expect(generator.unprocessed.length).toEqual(1)
-      // Check shape
-      expect(generator.unprocessed).toEqual(expectedUnprocessed)
-      // Check headers
-      expect(generator.fieldIdToQuestion.size).toEqual(0)
     })
 
     it('should override the question to the latest question', () => {
