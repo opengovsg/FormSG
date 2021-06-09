@@ -13,7 +13,7 @@
 db.getCollection('forms').aggregate([
   {
     $match: {
-      'form_fields': {$elemMatch: {'fieldType': { $in: ['textfield', 'textarea', 'number'] }}},
+      'form_fields.fieldType': { $in: ['textfield', 'textarea', 'number'] },
     },
   },
   { $unwind: '$form_fields' },
@@ -51,7 +51,7 @@ db.getCollection('forms').aggregate([
 db.getCollection('forms').aggregate([
   {
     $match: {
-      'form_fields': {$elemMatch: {'fieldType': { $in: ['textfield', 'textarea', 'number'] }}},
+      'form_fields.fieldType': { $in: ['textfield', 'textarea', 'number'] },
     },
   },
   { $unwind: '$form_fields' },
@@ -89,7 +89,7 @@ db.getCollection('forms').aggregate([
 db.getCollection('forms').aggregate([
   {
     $match: {
-      'form_fields': {$elemMatch: {'fieldType': { $in: ['textfield', 'textarea', 'number'] }}},
+      'form_fields.fieldType': { $in: ['textfield', 'textarea', 'number'] },
     },
   },
   { $unwind: '$form_fields' },
@@ -134,7 +134,7 @@ db.getCollection('forms').aggregate([
 db.getCollection('forms').aggregate([
   {
     $match: {
-      'form_fields': {$elemMatch: {'fieldType': { $in: ['textfield', 'textarea', 'number'] }}},
+      'form_fields.fieldType': { $in: ['textfield', 'textarea', 'number'] },
     },
   },
   { $unwind: '$form_fields' },
@@ -171,12 +171,8 @@ db.getCollection('forms').aggregate([
 db.forms.count({
   form_fields: {
     $elemMatch: {
-      $and: [
-        {
-          fieldType: { $in: ['textfield', 'textarea', 'number'] },
-        },
-        { 'ValidationOptions.customMin': { $exists: true } },
-      ],
+      fieldType: { $in: ['textfield', 'textarea', 'number'] },
+      'ValidationOptions.customMin': { $exists: true },
     },
   },
 })
@@ -188,12 +184,8 @@ db.forms.count({
 db.forms.count({
   form_fields: {
     $elemMatch: {
-      $and: [
-        {
-          fieldType: { $in: ['textfield', 'textarea', 'number'] },
-        },
-        { 'ValidationOptions.customMax': { $exists: true } },
-      ],
+      fieldType: { $in: ['textfield', 'textarea', 'number'] },
+      'ValidationOptions.customMax': { $exists: true },
     },
   },
 })
@@ -240,12 +232,8 @@ db.forms.update(
   {
     form_fields: {
       $elemMatch: {
-        $and: [
-          {
-            fieldType: { $in: ['textfield', 'textarea', 'number'] },
-          },
-          { 'ValidationOptions.customMin': { $exists: true } },
-        ],
+        fieldType: { $in: ['textfield', 'textarea', 'number'] },
+        'ValidationOptions.customMin': { $exists: true },
       },
     },
   },
@@ -267,12 +255,8 @@ db.forms.update(
   {
     form_fields: {
       $elemMatch: {
-        $and: [
-          {
-            fieldType: { $in: ['textfield', 'textarea', 'number'] },
-          },
-          { 'ValidationOptions.customMax': { $exists: true } },
-        ],
+        fieldType: { $in: ['textfield', 'textarea', 'number'] },
+        'ValidationOptions.customMax': { $exists: true },
       },
     },
   },
@@ -297,12 +281,8 @@ db.forms.update(
 db.forms.count({
   form_fields: {
     $elemMatch: {
-      $and: [
-        {
-          fieldType: { $in: ['textfield', 'textarea', 'number'] },
-        },
-        { 'ValidationOptions.customMin': { $exists: true } },
-      ],
+      fieldType: { $in: ['textfield', 'textarea', 'number'] },
+      'ValidationOptions.customMin': { $exists: true },
     },
   },
 })
@@ -314,12 +294,8 @@ db.forms.count({
 db.forms.count({
   form_fields: {
     $elemMatch: {
-      $and: [
-        {
-          fieldType: { $in: ['textfield', 'textarea', 'number'] },
-        },
-        { 'ValidationOptions.customMax': { $exists: true } },
-      ],
+      fieldType: { $in: ['textfield', 'textarea', 'number'] },
+      'ValidationOptions.customMax': { $exists: true },
     },
   },
 })
@@ -357,7 +333,6 @@ db.forms.aggregate([
   },
   { $count: 'numFormFields' },
 ])
-
 
 // Count number of form FIELDS which are NOT (short text, long text and number fields) and
 // with ValidationOptions.customMin
