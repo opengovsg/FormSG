@@ -56,7 +56,7 @@ export const handleGetBillInfo: RequestHandler<
 
   // Retrieved login stats successfully.
   logger.info({
-    message: `Billing search for ${esrvcId} by ${authedUser.email}`,
+    message: `Billing search for ${esrvcId} by ${authedUser._id}`,
     meta: {
       action: 'handleGetBillInfo',
       ...createReqMeta(req),
