@@ -1,5 +1,5 @@
 import 'focus-visible/dist/focus-visible'
-import './index.css'
+import './assets/fonts/inter.css'
 
 import * as React from 'react'
 import ReactDOM from 'react-dom'
