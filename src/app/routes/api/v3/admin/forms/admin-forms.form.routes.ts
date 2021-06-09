@@ -7,7 +7,6 @@ export const AdminFormsFormRouter = Router()
 AdminFormsFormRouter.route('/')
   /**
    * List the forms managed by the user
-   * @route GET /adminform
    * @security session
    *
    * @returns 200 with a list of forms managed by the user
@@ -19,7 +18,6 @@ AdminFormsFormRouter.route('/')
 
   /**
    * Create a new form
-   * @route POST /adminform
    * @security session
    *
    * @returns 200 with newly created form
@@ -36,7 +34,6 @@ AdminFormsFormRouter.route('/')
 AdminFormsFormRouter.route('/:formId([a-fA-F0-9]{24})')
   /**
    * Return the specified form to the user.
-   * @route GET /:formId/adminform
    * @security session
    *
    * @returns 200 with retrieved form with formId if user has read permissions
@@ -50,7 +47,6 @@ AdminFormsFormRouter.route('/:formId([a-fA-F0-9]{24})')
   .get(AdminFormController.handleGetAdminForm)
   /**
    * Archive the specified form.
-   * @route DELETE /:formId/adminform
    * @security session
    *
    * @returns 200 with success message when successfully archived
@@ -65,7 +61,6 @@ AdminFormsFormRouter.route('/:formId([a-fA-F0-9]{24})')
 
 /**
  * Duplicate the specified form.
- * @route POST /:formId/adminform
  * @security session
  *
  * @returns 200 with the duplicate form dashboard view
@@ -84,7 +79,6 @@ AdminFormsFormRouter.post(
 
 /**
  * Transfer form ownership to another user
- * @route POST /:formId/adminform/transfer-owner
  * @security session
  *
  * @returns 200 with updated form with transferred owners
@@ -111,7 +105,6 @@ AdminFormsFormRouter.route(
 )
   /**
    * Update form field according to given new body.
-   * @route PUT /admin/forms/:formId/fields/:fieldId
    *
    * @param body the new field to override current field
    * @returns 200 with updated form field
@@ -129,7 +122,6 @@ AdminFormsFormRouter.route(
 
   /**
    * Delete form field by fieldId of form corresponding to formId.
-   * @route DELETE /admin/forms/:formId/fields/:fieldId
    * @security session
    *
    * @returns 204 when deletion is successful
@@ -143,7 +135,6 @@ AdminFormsFormRouter.route(
   .delete(AdminFormController.handleDeleteFormField)
   /**
    * Retrives the form field using the fieldId from the specified form
-   * @route GET /admin/forms/:formId/fields/:fieldId
    * @security session
    *
    * @returns 200 with form field when retrieval is successful
@@ -158,7 +149,6 @@ AdminFormsFormRouter.route(
 
 /**
  * Duplicates the form field with the fieldId from the specified form
- * @route POST /:formId/fields/:fieldId/duplicate
  * @security session
  *
  * @returns 200 with duplicated field
