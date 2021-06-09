@@ -64,13 +64,13 @@ export type DisplayedResponseWithoutAnswer = {
   isHeader?: boolean
 }
 
-export interface ArrayResponse extends DisplayedResponseWithoutAnswer {
+export type ArrayResponse = DisplayedResponseWithoutAnswer & {
   answerArray: string[]
 }
 
-export interface NestedResponse extends DisplayedResponseWithoutAnswer {
+export type NestedResponse = DisplayedResponseWithoutAnswer & {
   answerArray: string[][]
 }
-export interface SingleResponse extends DisplayedResponseWithoutAnswer {
+export type SingleResponse = DisplayedResponseWithoutAnswer & {
   answer: string
 }
