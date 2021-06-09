@@ -58,7 +58,7 @@ angular.module('forms').config([
             'FormApi',
             '$transition$',
             function (FormApi, $transition$) {
-              return FormApi.template($transition$.params()).then(
+              return FormApi.queryTemplate($transition$.params().formId).then(
                 (FormData) => {
                   FormData.isTemplate = true
                   return FormData
