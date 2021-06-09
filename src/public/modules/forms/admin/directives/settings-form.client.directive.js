@@ -137,14 +137,6 @@ function settingsFormDirective(
           return $scope.tempForm.authType === 'MyInfo'
         }
 
-        $scope.doesFormContainAttachments = () => {
-          return (
-            $scope.myform.form_fields.filter(
-              (field) => field.fieldType == 'attachment',
-            ).length > 0
-          )
-        }
-
         // Warning message when turning off SP with MyInfo fields
         $scope.myInfoSPWarning = () => {
           return (

@@ -262,7 +262,7 @@ function ViewResponsesController(
       startDate && endDate
         ? {
             formId: vm.myform._id,
-            date: {
+            dates: {
               startDate: moment(new Date(startDate)).format('YYYY-MM-DD'),
               endDate: moment(new Date(endDate)).format('YYYY-MM-DD'),
             },

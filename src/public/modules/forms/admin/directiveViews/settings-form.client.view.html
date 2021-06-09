@@ -379,15 +379,6 @@
             <span class="field-optional">(optional)</span>
           </label>
         </div>
-        <div
-          ng-if="doesFormContainAttachments()"
-          class="alert-custom alert-info spcp-warning"
-        >
-          <i class="bx bx-info-circle bx-md icon-spacing"></i>
-          <span class="alert-msg"
-            >Webhook is not available for forms with attachment fields.</span
-          >
-        </div>
         <div class="row feature-container webhook-feature-container">
           <div
             class="settings-save col-xs-12"
@@ -401,7 +392,7 @@
               ng-model="tempForm.webhook.url"
               placeholder="https://your-webhook.com/url"
               ng-required="false"
-              ng-disabled="isFormPublic() || doesFormContainAttachments()"
+              ng-disabled="isFormPublic()"
               autocomplete="off"
               ng-keyup="$event.keyCode === 13 && settingsForm.webhookUrl.$valid && saveWebhookUrl()"
               ng-blur="saveWebhookUrl()"

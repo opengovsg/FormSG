@@ -13,6 +13,20 @@ export class WebhookValidationError extends ApplicationError {
 }
 
 /**
+ * Webhook failed to generate S3 presigned URLs for attachments
+ */
+export class WebhookFailedWithPresignedUrlGenerationError extends ApplicationError {
+  meta: {
+    originalError: unknown
+  }
+
+  constructor(error: unknown, message = 'Presigned Url Generation failed') {
+    super(message)
+    this.meta = { originalError: error }
+  }
+}
+
+/**
  * Webhook returned non-200 status, but error is not instance of AxiosError
  */
 export class WebhookFailedWithUnknownError extends ApplicationError {

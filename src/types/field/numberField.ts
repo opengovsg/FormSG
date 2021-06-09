@@ -4,12 +4,9 @@ export enum NumberSelectedValidation {
   Max = 'Maximum',
   Min = 'Minimum',
   Exact = 'Exact',
-  Range = 'Range',
 }
 
 export type NumberValidationOptions = {
-  customMax: number | null
-  customMin: number | null
   customVal: number | null
   rangeMin: number | null
   rangeMax: number | null

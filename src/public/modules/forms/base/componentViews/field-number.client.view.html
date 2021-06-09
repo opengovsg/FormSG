@@ -31,10 +31,10 @@
       ng-required="vm.field.required"
       ng-disabled="vm.field.disabled"
       ng-pattern="/^\d*$/"
-      ng-maxlength="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.customMax : '' }}"
-      ng-minlength="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.customMin : ''}}"
-      max="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.rangeMax : '' }}"
-      min="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.rangeMin : ''}}"
+      ng-maxlength="{{ vm.field.ValidationOptions && ['Exact', 'Maximum'].includes(vm.field.ValidationOptions.selectedValidation) ? vm.field.ValidationOptions.customVal : ''}}"
+      ng-minlength="{{ vm.field.ValidationOptions && ['Exact', 'Minimum'].includes(vm.field.ValidationOptions.selectedValidation) ? vm.field.ValidationOptions.customVal : ''}}"
+      max="{{ vm.field.ValidationOptions && vm.field.ValidationOptions.selectedValidation === 'Range' ? vm.field.ValidationOptions.rangeMax : '' }}"
+      min="{{ vm.field.ValidationOptions && vm.field.ValidationOptions.selectedValidation === 'Range' ? vm.field.ValidationOptions.rangeMin : ''}}"
       ng-model-options="{ allowInvalid: true }"
       ng-keyup="vm.forms.myForm[(vm.field._id || 'defaultID')].$setTouched()"
       ng-attr-placeholder="{{ vm.placeholder }}"
@@ -64,17 +64,17 @@
       <div ng-message="minlength" class="alert-custom alert-error">
         <div class="alert-msg">
           <i class="bx bx-exclamation bx-md icon-spacing"></i>
-          Minimum {{vm.field.ValidationOptions.customMin}} characters
+          Minimum {{vm.field.ValidationOptions.customVal}} characters
           ({{vm.forms.myForm[(vm.field._id ||
-          'defaultID')].$viewValue.length}}/{{vm.field.ValidationOptions.customMin}})
+          'defaultID')].$viewValue.length}}/{{vm.field.ValidationOptions.customVal}})
         </div>
       </div>
       <div ng-message="maxlength" class="alert-custom alert-error">
         <div class="alert-msg">
           <i class="bx bx-exclamation bx-md icon-spacing"></i>
-          Maximum {{vm.field.ValidationOptions.customMax}} characters
+          Maximum {{vm.field.ValidationOptions.customVal}} characters
           ({{vm.forms.myForm[(vm.field._id ||
-          'defaultID')].$viewValue.length}}/{{vm.field.ValidationOptions.customMax}})
+          'defaultID')].$viewValue.length}}/{{vm.field.ValidationOptions.customVal}})
         </div>
       </div>
       <div ng-message="min" class="alert-custom alert-error">

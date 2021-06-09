@@ -337,9 +337,8 @@ function editFormController(
 
   $scope.isStorageForm = $scope.myform.responseMode === responseModeEnum.ENCRYPT
 
-  // Disable attachment fields when we have webhooks
-  $scope.isDisabledField = function (fieldType) {
-    return fieldType.name === 'attachment' && $scope.myform.webhook.url !== ''
+  $scope.isDisabledField = function () {
+    return false
   }
 
   /**

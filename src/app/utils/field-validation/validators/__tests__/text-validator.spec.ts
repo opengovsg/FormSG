@@ -56,13 +56,11 @@ describe('Text validation', () => {
       )
     })
 
-    it('should disallow fewer characters than customMin if selectedValidation is Exact', () => {
+    it('should disallow fewer characters than customVal if selectedValidation is Exact', () => {
       const formField = generateDefaultField(BasicField.ShortText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Exact,
-          customMin: 10,
-          customMax: null,
-          customVal: null,
+          customVal: 10,
         },
       })
       const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
@@ -75,13 +73,11 @@ describe('Text validation', () => {
       )
     })
 
-    it('should disallow more characters than customMin if selectedValidation is Exact', () => {
+    it('should disallow more characters than customVal if selectedValidation is Exact', () => {
       const formField = generateDefaultField(BasicField.ShortText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Exact,
-          customMin: 10,
-          customMax: null,
-          customVal: null,
+          customVal: 10,
         },
       })
       const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
@@ -95,51 +91,11 @@ describe('Text validation', () => {
       )
     })
 
-    it('should disallow fewer characters than customMax if selectedValidation is Exact', () => {
-      const formField = generateDefaultField(BasicField.ShortText, {
-        ValidationOptions: {
-          selectedValidation: TextSelectedValidation.Exact,
-          customMin: null,
-          customMax: 10,
-          customVal: null,
-        },
-      })
-      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
-        answer: 'fewer',
-      })
-      const validateResult = validateField('formId', formField, response)
-      expect(validateResult.isErr()).toBe(true)
-      expect(validateResult._unsafeUnwrapErr()).toEqual(
-        new ValidateFieldError('Invalid answer submitted'),
-      )
-    })
-
-    it('should disallow more characters than customMax if selectedValidation is Exact', () => {
-      const formField = generateDefaultField(BasicField.ShortText, {
-        ValidationOptions: {
-          selectedValidation: TextSelectedValidation.Exact,
-          customMin: null,
-          customMax: 10,
-          customVal: null,
-        },
-      })
-      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
-        answer: 'more than 10 chars',
-      })
-      const validateResult = validateField('formId', formField, response)
-      expect(validateResult.isErr()).toBe(true)
-      expect(validateResult._unsafeUnwrapErr()).toEqual(
-        new ValidateFieldError('Invalid answer submitted'),
-      )
-    })
-
-    it('should disallow fewer characters than customMin if selectedValidation is Minimum', () => {
+    it('should disallow fewer characters than customVal if selectedValidation is Minimum', () => {
       const formField = generateDefaultField(BasicField.ShortText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Minimum,
-          customMin: 10,
-          customMax: null,
-          customVal: null,
+          customVal: 10,
         },
       })
       const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
@@ -152,13 +108,11 @@ describe('Text validation', () => {
       )
     })
 
-    it('should disallow more characters than customMax if selectedValidation is Maximum', () => {
+    it('should disallow more characters than customVal if selectedValidation is Maximum', () => {
       const formField = generateDefaultField(BasicField.ShortText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Maximum,
-          customMin: null,
-          customMax: 10,
-          customVal: null,
+          customVal: 10,
         },
       })
       const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
@@ -174,8 +128,6 @@ describe('Text validation', () => {
       const formField = generateDefaultField(BasicField.ShortText, {
         ValidationOptions: {
           selectedValidation: null,
-          customMin: null,
-          customMax: null,
           customVal: null,
         },
       })
@@ -198,8 +150,6 @@ describe('Text validation', () => {
       const formField = generateDefaultField(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: null,
-          customMin: null,
-          customMax: null,
           customVal: null,
         },
       })
@@ -217,8 +167,6 @@ describe('Text validation', () => {
       const formField = generateDefaultField(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: null,
-          customMin: null,
-          customMax: null,
           customVal: null,
         },
         required: false,
@@ -235,8 +183,6 @@ describe('Text validation', () => {
       const formField = generateDefaultField(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: null,
-          customMin: null,
-          customMax: null,
           customVal: null,
         },
       })
@@ -252,8 +198,6 @@ describe('Text validation', () => {
       const formField = generateDefaultField(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: null,
-          customMin: null,
-          customMax: null,
           customVal: null,
         },
       })
@@ -267,13 +211,11 @@ describe('Text validation', () => {
       )
     })
 
-    it('should disallow fewer characters than customMin if selectedValidation is Exact', () => {
+    it('should disallow fewer characters than customVal if selectedValidation is Exact', () => {
       const formField = generateDefaultField(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Exact,
-          customMin: 10,
-          customMax: null,
-          customVal: null,
+          customVal: 10,
         },
       })
       const response = generateNewSingleAnswerResponse(BasicField.LongText, {
@@ -286,13 +228,11 @@ describe('Text validation', () => {
       )
     })
 
-    it('should disallow more characters than customMin if selectedValidation is Exact', () => {
+    it('should disallow more characters than customVal if selectedValidation is Exact', () => {
       const formField = generateDefaultField(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Exact,
-          customMin: 10,
-          customMax: null,
-          customVal: null,
+          customVal: 10,
         },
       })
       const response = generateNewSingleAnswerResponse(BasicField.LongText, {
@@ -305,51 +245,11 @@ describe('Text validation', () => {
       )
     })
 
-    it('should disallow fewer characters than customMax if selectedValidation is Exact', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
-        ValidationOptions: {
-          selectedValidation: TextSelectedValidation.Exact,
-          customMin: null,
-          customMax: 10,
-          customVal: null,
-        },
-      })
-      const response = generateNewSingleAnswerResponse(BasicField.LongText, {
-        answer: 'less',
-      })
-      const validateResult = validateField('formId', formField, response)
-      expect(validateResult.isErr()).toBe(true)
-      expect(validateResult._unsafeUnwrapErr()).toEqual(
-        new ValidateFieldError('Invalid answer submitted'),
-      )
-    })
-
-    it('should disallow more characters than customMax if selectedValidation is Exact', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
-        ValidationOptions: {
-          selectedValidation: TextSelectedValidation.Exact,
-          customMin: null,
-          customMax: 10,
-          customVal: null,
-        },
-      })
-      const response = generateNewSingleAnswerResponse(BasicField.LongText, {
-        answer: 'more than 10 chars',
-      })
-      const validateResult = validateField('formId', formField, response)
-      expect(validateResult.isErr()).toBe(true)
-      expect(validateResult._unsafeUnwrapErr()).toEqual(
-        new ValidateFieldError('Invalid answer submitted'),
-      )
-    })
-
-    it('should disallow fewer characters than customMin if selectedValidation is Minimum', () => {
+    it('should disallow fewer characters than customVal if selectedValidation is Minimum', () => {
       const formField = generateDefaultField(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Minimum,
-          customMin: 10,
-          customMax: null,
-          customVal: null,
+          customVal: 10,
         },
       })
       const response = generateNewSingleAnswerResponse(BasicField.LongText, {
@@ -362,13 +262,11 @@ describe('Text validation', () => {
       )
     })
 
-    it('should disallow more characters than customMax if selectedValidation is Maximum', () => {
+    it('should disallow more characters than customVal if selectedValidation is Maximum', () => {
       const formField = generateDefaultField(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Maximum,
-          customMin: null,
-          customMax: 10,
-          customVal: null,
+          customVal: 10,
         },
       })
       const response = generateNewSingleAnswerResponse(BasicField.LongText, {
@@ -384,8 +282,6 @@ describe('Text validation', () => {
       const formField = generateDefaultField(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: null,
-          customMin: null,
-          customMax: null,
           customVal: null,
         },
       })
