@@ -257,13 +257,12 @@ function CreateFormModalController(
         const formMode = vm.mode
         switch (formMode) {
           case 'duplicate': {
-            $q.when(FormApi.save(FormToDuplicate._id, formParams)).then(
-              (data) => {
-                vm.closeCreateModal()
-                externalScope.onDuplicateSuccess(data)
-              },
-              handleCreateFormError,
-            )
+            $q.when(
+              FormApi.duplicateForm(FormToDuplicate._id, formParams),
+            ).then((data) => {
+              vm.closeCreateModal()
+              externalScope.onDuplicateSuccess(data)
+            }, handleCreateFormError)
             break
           }
           case 'useTemplate': {
@@ -278,14 +277,14 @@ function CreateFormModalController(
           case 'createFromTemplate': {
             // Create new form from template selected
             const newForm = Object.assign({}, vm.template, formParams)
-            $q.when(FormApi.create({ form: newForm })).then((data) => {
+            $q.when(FormApi.createForm(newForm)).then((data) => {
               vm.closeCreateModal()
               vm.goToWithId('viewForm', data._id + '')
             }, handleCreateFormError)
             break
           }
           case 'create': // Create form
-            $q.when(FormApi.create({ form: formParams })).then((data) => {
+            $q.when(FormApi.createForm(formParams)).then((data) => {
               vm.closeCreateModal()
               vm.goToWithId('viewForm', data._id + '')
             }, handleCreateFormError)
