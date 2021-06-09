@@ -23,8 +23,6 @@ export const checkIsEmailAllowed = async (email: string): Promise<Email> => {
  * Sends login OTP to given email
  * @param email email to send login OTP to
  * @returns success string if login OTP is sent successfully
- * @throws Error on invalid email
- * @throws Error on non 2xx response
  */
 export const sendLoginOtp = async (email: Email): Promise<string> => {
   return axios
