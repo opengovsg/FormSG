@@ -66,159 +66,157 @@ describe('examples.routes', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('GET /examples', () => {
-    describe('AggregateStats feature enabled', () => {
-      it('should return 200 with array of example forms for all agencies when query.agency is missing', async () => {
-        // Arrange
-        const session = await createAuthedSession(defaultUser.email, request)
+    it('should return 200 with array of example forms for all agencies when query.agency is missing', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
 
-        // Act
-        const response = await session.get('/examples').query({
-          pageNo: '0',
-        })
-
-        // Assert
-        // Should have both comTestData and orgTestData since searching by all
-        // agencies.
-        const expectedBody = keyBy(
-          [
-            ...stringifyFormInfoArray(comTestData.total.expectedFormInfo),
-            ...stringifyFormInfoArray(orgTestData.total.expectedFormInfo),
-          ],
-          '_id',
-        )
-        const actualBody = keyBy(response.body.forms, '_id')
-        expect(response.status).toEqual(200)
-        // Check shape.
-        expect(response.body).toEqual({
-          forms: expect.any(Array),
-        })
-        expect(actualBody).toEqual(expectedBody)
+      // Act
+      const response = await session.get('/examples').query({
+        pageNo: '0',
       })
 
-      it('should return 200 with array of example forms for a particular agency when query.agency is provided', async () => {
-        // Arrange
-        const session = await createAuthedSession(defaultUser.email, request)
+      // Assert
+      // Should have both comTestData and orgTestData since searching by all
+      // agencies.
+      const expectedBody = keyBy(
+        [
+          ...stringifyFormInfoArray(comTestData.total.expectedFormInfo),
+          ...stringifyFormInfoArray(orgTestData.total.expectedFormInfo),
+        ],
+        '_id',
+      )
+      const actualBody = keyBy(response.body.forms, '_id')
+      expect(response.status).toEqual(200)
+      // Check shape.
+      expect(response.body).toEqual({
+        forms: expect.any(Array),
+      })
+      expect(actualBody).toEqual(expectedBody)
+    })
 
-        // Act
-        const response = await session.get('/examples').query({
-          pageNo: '0',
-          agency: orgAgency._id.toString(),
-        })
+    it('should return 200 with array of example forms for a particular agency when query.agency is provided', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
 
-        // Assert
-        // Should only have orgTestData since its agency id is provided.
-        const expectedBody = keyBy(
-          stringifyFormInfoArray(orgTestData.total.expectedFormInfo),
-          '_id',
-        )
-        const actualBody = keyBy(response.body.forms, '_id')
-        // Check shape.
-        expect(response.status).toEqual(200)
-        expect(response.body).toEqual({
-          forms: expect.any(Array),
-        })
-        expect(actualBody).toEqual(expectedBody)
+      // Act
+      const response = await session.get('/examples').query({
+        pageNo: '0',
+        agency: orgAgency._id.toString(),
       })
 
-      it('should return 200 with empty array when no forms match the criterias', async () => {
-        // Arrange
-        const session = await createAuthedSession(defaultUser.email, request)
+      // Assert
+      // Should only have orgTestData since its agency id is provided.
+      const expectedBody = keyBy(
+        stringifyFormInfoArray(orgTestData.total.expectedFormInfo),
+        '_id',
+      )
+      const actualBody = keyBy(response.body.forms, '_id')
+      // Check shape.
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        forms: expect.any(Array),
+      })
+      expect(actualBody).toEqual(expectedBody)
+    })
 
-        // Act
-        const response = await session.get('/examples').query({
-          pageNo: '0',
-          agency: new ObjectId().toHexString(),
-        })
+    it('should return 200 with empty array when no forms match the criterias', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
 
-        // Assert
-        expect(response.status).toEqual(200)
-        // Check shape.
-        expect(response.body).toEqual({
-          forms: [],
-        })
+      // Act
+      const response = await session.get('/examples').query({
+        pageNo: '0',
+        agency: new ObjectId().toHexString(),
       })
 
-      it('should return 200 with array of example forms that match given query.searchTerm when that is provided', async () => {
-        // Arrange
-        const session = await createAuthedSession(defaultUser.email, request)
+      // Assert
+      expect(response.status).toEqual(200)
+      // Check shape.
+      expect(response.body).toEqual({
+        forms: [],
+      })
+    })
 
-        // Act
-        const response = await session.get('/examples').query({
-          pageNo: '0',
-          agency: comAgency._id.toString(),
-          shouldGetTotalNumResults: 'true',
-          searchTerm: SearchTerm.First,
-        })
+    it('should return 200 with array of example forms that match given query.searchTerm when that is provided', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
 
-        // Assert
-        // Should only have comTestData since its agency id is provided.
-        const expectedBody = keyBy(
-          stringifyFormInfoArray(comTestData.first.expectedFormInfo),
-          '_id',
-        )
-        const actualBody = keyBy(response.body.forms, '_id')
-        // Check shape.
-        expect(response.status).toEqual(200)
-        expect(response.body).toEqual({
-          forms: expect.any(Array),
-          // Should have total num results key value.
-          totalNumResults: comTestData.first.formCount,
-        })
-        expect(actualBody).toEqual(expectedBody)
+      // Act
+      const response = await session.get('/examples').query({
+        pageNo: '0',
+        agency: comAgency._id.toString(),
+        shouldGetTotalNumResults: 'true',
+        searchTerm: SearchTerm.First,
       })
 
-      it('should return 200 with correctly offset example forms according to query.pageNo when that is provided', async () => {
-        // Arrange
-        const session = await createAuthedSession(defaultUser.email, request)
+      // Assert
+      // Should only have comTestData since its agency id is provided.
+      const expectedBody = keyBy(
+        stringifyFormInfoArray(comTestData.first.expectedFormInfo),
+        '_id',
+      )
+      const actualBody = keyBy(response.body.forms, '_id')
+      // Check shape.
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        forms: expect.any(Array),
+        // Should have total num results key value.
+        totalNumResults: comTestData.first.formCount,
+      })
+      expect(actualBody).toEqual(expectedBody)
+    })
 
-        // Act
-        const response = await session.get('/examples').query({
-          pageNo: '1',
-          shouldGetTotalNumResults: 'true',
-        })
+    it('should return 200 with correctly offset example forms according to query.pageNo when that is provided', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
 
-        // Assert
-        const actualBody = keyBy(response.body.forms, '_id')
-        // Check shape.
-        expect(response.status).toEqual(200)
-        expect(response.body).toEqual({
-          forms: expect.any(Array),
-          // Should have total num results key value.
-          totalNumResults:
-            comTestData.total.formCount + orgTestData.total.formCount,
-        })
-        // Should have nothing since the number of results is less than the
-        // offset.
-        expect(actualBody).toEqual({})
+      // Act
+      const response = await session.get('/examples').query({
+        pageNo: '1',
+        shouldGetTotalNumResults: 'true',
       })
 
-      it('should return 200 with array of example forms and total count when query.shouldGetTotalNumResults is true', async () => {
-        // Arrange
-        const session = await createAuthedSession(defaultUser.email, request)
-
-        // Act
-        const response = await session.get('/examples').query({
-          pageNo: '0',
-          agency: comAgency._id.toString(),
-          shouldGetTotalNumResults: 'true',
-        })
-
-        // Assert
-        // Should only have comTestData since its agency id is provided.
-        const expectedBody = keyBy(
-          stringifyFormInfoArray(comTestData.total.expectedFormInfo),
-          '_id',
-        )
-        const actualBody = keyBy(response.body.forms, '_id')
-        // Check shape.
-        expect(response.status).toEqual(200)
-        expect(response.body).toEqual({
-          forms: expect.any(Array),
-          // Should have total num results key value.
-          totalNumResults: comTestData.total.formCount,
-        })
-        expect(actualBody).toEqual(expectedBody)
+      // Assert
+      const actualBody = keyBy(response.body.forms, '_id')
+      // Check shape.
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        forms: expect.any(Array),
+        // Should have total num results key value.
+        totalNumResults:
+          comTestData.total.formCount + orgTestData.total.formCount,
       })
+      // Should have nothing since the number of results is less than the
+      // offset.
+      expect(actualBody).toEqual({})
+    })
+
+    it('should return 200 with array of example forms and total count when query.shouldGetTotalNumResults is true', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
+
+      // Act
+      const response = await session.get('/examples').query({
+        pageNo: '0',
+        agency: comAgency._id.toString(),
+        shouldGetTotalNumResults: 'true',
+      })
+
+      // Assert
+      // Should only have comTestData since its agency id is provided.
+      const expectedBody = keyBy(
+        stringifyFormInfoArray(comTestData.total.expectedFormInfo),
+        '_id',
+      )
+      const actualBody = keyBy(response.body.forms, '_id')
+      // Check shape.
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        forms: expect.any(Array),
+        // Should have total num results key value.
+        totalNumResults: comTestData.total.formCount,
+      })
+      expect(actualBody).toEqual(expectedBody)
     })
 
     it('should return 400 when query.pageNo is not provided', async () => {
@@ -340,39 +338,37 @@ describe('examples.routes', () => {
   })
 
   describe('GET /examples/:formId', () => {
-    describe('AggregateStats feature enabled', () => {
-      it('should return 200 with the example information of the retrieved form', async () => {
-        // Arrange
-        const session = await createAuthedSession(defaultUser.email, request)
-        const validFormId = comTestData.second.forms[0]._id
+    it('should return 200 with the example information of the retrieved form', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
+      const validFormId = comTestData.second.forms[0]._id
 
-        // Act
-        const response = await session.get(`/examples/${validFormId}`)
+      // Act
+      const response = await session.get(`/examples/${validFormId}`)
 
-        // Assert
-        const expectedFormInfo = stringifyFormInfo(
-          comTestData.second.expectedFormInfo[0],
-        )
+      // Assert
+      const expectedFormInfo = stringifyFormInfo(
+        comTestData.second.expectedFormInfo[0],
+      )
 
-        expect(response.status).toEqual(200)
-        expect(response.body).toEqual({
-          form: expectedFormInfo,
-        })
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        form: expectedFormInfo,
       })
+    })
 
-      it('should return 404 when the form with the given formId does not exist in the database', async () => {
-        // Arrange
-        const session = await createAuthedSession(defaultUser.email, request)
-        const randomFormId = new ObjectId().toHexString()
+    it('should return 404 when the form with the given formId does not exist in the database', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
+      const randomFormId = new ObjectId().toHexString()
 
-        // Act
-        const response = await session.get(`/examples/${randomFormId}`)
+      // Act
+      const response = await session.get(`/examples/${randomFormId}`)
 
-        // Assert
-        expect(response.status).toEqual(404)
-        expect(response.body).toEqual({
-          message: 'Error in retrieving template form - form not found.',
-        })
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({
+        message: 'Error in retrieving template form - form not found.',
       })
     })
 
