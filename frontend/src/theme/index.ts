@@ -10,6 +10,7 @@ export const theme = extendTheme({
   textStyles,
   shadows,
   fonts: {
+    heading: 'Inter',
     body: 'Inter',
   },
   components,
