@@ -209,7 +209,7 @@ function ViewResponsesController(
       if (vm.encryptionKey !== null) {
         vm.attachmentDownloadUrls = new Map()
 
-        const { content, verified, attachmentMetadata } = response
+        const { content, verified, attachmentMetadata, version } = response
         let displayedContent
 
         try {
@@ -218,6 +218,7 @@ function ViewResponsesController(
             {
               encryptedContent: content,
               verifiedContent: verified,
+              version,
             },
           )
 
