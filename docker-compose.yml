@@ -71,7 +71,6 @@ services:
       - CORPPASS_IDP_ID
       - IS_SP_MAINTENANCE
       - IS_CP_MAINTENANCE
-      - AGGREGATE_COLLECTION
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
