@@ -82,7 +82,7 @@ const getNumberLengthValidator: NumberValidatorConstructor = (numberField) => {
  * Returns a validation function to check if number value is
  * less than the minimum value specified.
  */
-const minRangeValidator: NumberValidatorConstructor =
+const rangeValidator: NumberValidatorConstructor =
   (numberField) => (response) => {
     const { answer } = response
     const { rangeMin, rangeMax } = numberField.ValidationOptions
@@ -109,7 +109,7 @@ const minRangeValidator: NumberValidatorConstructor =
 const getNumberRangeValidator: NumberValidatorConstructor = (numberField) => {
   switch (numberField.ValidationOptions.selectedValidation) {
     case NumberSelectedValidation.Range:
-      return minRangeValidator(numberField)
+      return rangeValidator(numberField)
     default:
       return right
   }
