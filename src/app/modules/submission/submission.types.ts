@@ -1,6 +1,7 @@
 import { Opaque } from 'type-fest'
 
 import {
+  FieldResponse,
   IAttachmentResponse,
   ICheckboxResponse,
   ISingleAnswerResponse,
@@ -30,6 +31,13 @@ export type VerifiableResponseIdSet = Opaque<
   Set<string>,
   'VerifiableResponseIdSet'
 >
+
+/**
+ * Represents a response allowed by `getModeFilter`. When presented as a
+ * list, additionally guarantees that duplicates (if any) are removed.
+ * Instantiated ONLY via `getFilteredResponses`.
+ */
+export type FilteredResponse = Opaque<FieldResponse, 'FilteredResponse'>
 
 export type ColumnResponse = {
   fieldType: BasicField

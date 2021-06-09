@@ -8,7 +8,7 @@ import {
   ProcessingError,
   ValidateFieldError,
 } from '../submission.errors'
-import { ValidatedFieldMap } from '../submission.types'
+import { FilteredResponse, ValidatedFieldMap } from '../submission.types'
 import { getFilteredResponses } from '../submission.utils'
 
 export default class IncomingEncryptSubmission extends IncomingSubmission {
@@ -19,7 +19,7 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
     form,
     encryptedContent,
   }: {
-    responses: FieldResponse[]
+    responses: FilteredResponse[]
     fieldMap: ValidatedFieldMap
     form: IPopulatedEncryptedForm
     encryptedContent: string

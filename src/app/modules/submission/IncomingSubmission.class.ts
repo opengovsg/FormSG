@@ -15,6 +15,7 @@ import { validateField } from '../../utils/field-validation'
 
 import { ProcessingError, ValidateFieldError } from './submission.errors'
 import {
+  FilteredResponse,
   ProcessedFieldResponse,
   ValidatedFieldMap,
   VerifiableResponseIdSet,
@@ -26,7 +27,7 @@ export abstract class IncomingSubmission {
   private readonly visibleResponseIds: VisibleResponseIdSet
   private readonly verifiableResponseIds: VerifiableResponseIdSet
   protected constructor(
-    public readonly responses: FieldResponse[],
+    public readonly responses: FilteredResponse[],
     public readonly form: IPopulatedForm,
     private fieldMap: ValidatedFieldMap,
   ) {

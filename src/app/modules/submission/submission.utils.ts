@@ -14,6 +14,7 @@ import { AutoReplyMailData } from '../../services/mail/mail.types'
 
 import { IncomingSubmission } from './IncomingSubmission.class'
 import { ConflictError } from './submission.errors'
+import { FilteredResponse } from './submission.types'
 
 type ModeFilterParam = {
   fieldType: BasicField
@@ -103,7 +104,7 @@ export const extractEmailConfirmationDataFromIncomingSubmission = (
 export const getFilteredResponses = (
   form: IFormDocument,
   responses: FieldResponse[],
-): Result<FieldResponse[], ConflictError> => {
+): Result<FilteredResponse[], ConflictError> => {
   const modeFilter = getModeFilter(form.responseMode)
 
   if (!form.form_fields) {
@@ -127,5 +128,5 @@ export const getFilteredResponses = (
       }),
     )
   }
-  return ok(results)
+  return ok(results as FilteredResponse[])
 }
