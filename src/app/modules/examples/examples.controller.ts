@@ -10,7 +10,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 
-import { ExamplesFactory } from './examples.factory'
+import * as ExamplesService from './examples.service'
 import { mapRouteError } from './examples.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -29,7 +29,7 @@ export const handleGetExamples: ControllerHandler<
   unknown,
   ExampleFormsQueryDto
 > = (req, res) => {
-  return ExamplesFactory.getExampleForms(req.query)
+  return ExamplesService.getExampleForms(req.query)
     .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
       logger.error({
@@ -61,7 +61,7 @@ export const handleGetExampleByFormId: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
 
-  return ExamplesFactory.getSingleExampleForm(formId)
+  return ExamplesService.getSingleExampleForm(formId)
     .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
       logger.error({
