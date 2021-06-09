@@ -1,5 +1,4 @@
-import { hasProp } from 'src/shared/util/has-prop'
-
+import { hasProp } from '../../../../shared/util/has-prop'
 import {
   ArrayResponse,
   DisplayedResponseWithoutAnswer,
