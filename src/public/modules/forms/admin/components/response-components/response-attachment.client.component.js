@@ -24,12 +24,13 @@ function responseAttachmentComponentController($q, $timeout) {
       ),
     )
       .then((bytesArray) => {
-        if (bytesArray) {
-          // Construct a downloadable link and click on it to download the file
-          let blob = new Blob([bytesArray])
-          // field.answer is the filename
-          triggerFileDownload(blob, vm.field.answer)
+        if (!bytesArray) {
+          vm.hasDownloadError = true
         }
+        // Construct a downloadable link and click on it to download the file
+        let blob = new Blob([bytesArray])
+        // field.answer is the filename
+        triggerFileDownload(blob, vm.field.answer)
       })
       .catch(() => {
         // Use timeout to trigger digest cycle
