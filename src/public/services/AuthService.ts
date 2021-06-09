@@ -7,7 +7,7 @@ export const AUTH_ENDPOINT = '/api/v3/auth'
 type Email = Opaque<string, 'Email'>
 
 /**
- * Check whether the given email string is from an email domain.
+ * Check whether the given email string is from a whitelisted email domain.
  * @param email the email to check
  * @returns original email if email is valid
  */
