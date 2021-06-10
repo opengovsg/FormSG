@@ -15,11 +15,12 @@ export type SubmissionMetadata = {
 }
 
 export type EncryptedSubmissionDto = {
-  refNo: IEncryptedSubmissionSchema['_id']
+  refNo: string
   submissionTime: string
-  content: IEncryptedSubmissionSchema['encryptedContent']
-  verified: IEncryptedSubmissionSchema['verifiedContent']
+  content: string
+  verified?: string
   attachmentMetadata: Record<string, string>
+  version: number
 }
 
 export type SubmissionMetadataList = {
@@ -132,7 +133,7 @@ export interface IWebhookResponse {
 // Due to schema changes, some objects may not have attachmentMetadata key.
 export type SubmissionCursorData = Pick<
   IEncryptedSubmissionSchema,
-  'encryptedContent' | 'verifiedContent' | 'created' | 'id'
+  'encryptedContent' | 'verifiedContent' | 'created' | 'id' | 'version'
 > & { attachmentMetadata?: Record<string, string> } & Document
 
 export type SubmissionData = Pick<
@@ -141,8 +142,9 @@ export type SubmissionData = Pick<
   | 'verifiedContent'
   | 'attachmentMetadata'
   | 'created'
-  | '_id'
->
+  | 'version'
+> &
+  Document
 
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
   ISubmissionModel

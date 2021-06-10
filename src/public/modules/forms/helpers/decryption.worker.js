@@ -192,6 +192,7 @@ async function decryptIntoCsv(data) {
         formsgSdk.crypto.decrypt(secretKey, {
           encryptedContent: submission.encryptedContent,
           verifiedContent: submission.verifiedContent,
+          version: submission.version,
         }),
       )
 

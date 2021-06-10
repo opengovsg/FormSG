@@ -187,7 +187,7 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(mockUser.toObject())
+      expect(mockRes.json).toBeCalledWith(mockUser)
     })
 
     it('should return 401 when retrieving agency returns InvalidDomainError', async () => {

@@ -21,8 +21,6 @@ function Auth($q, $http, $state, $window) {
    */
 
   let authService = {
-    checkUser,
-    sendOtp,
     verifyOtp,
     getUser,
     setUser,
@@ -66,33 +64,6 @@ function Auth($q, $http, $state, $window) {
         return null
       })
   }
-
-  function checkUser(credentials) {
-    let deferred = $q.defer()
-    $http.post('/api/v3/auth/email/validate', credentials).then(
-      function (response) {
-        deferred.resolve(response.data)
-      },
-      function (error) {
-        deferred.reject(error.data)
-      },
-    )
-    return deferred.promise
-  }
-
-  function sendOtp(credentials) {
-    let deferred = $q.defer()
-    $http.post('/api/v3/auth/otp/generate', credentials).then(
-      function (response) {
-        deferred.resolve(response.data)
-      },
-      function (error) {
-        deferred.reject(error)
-      },
-    )
-    return deferred.promise
-  }
-
   function verifyOtp(credentials) {
     let deferred = $q.defer()
     $http.post('/api/v3/auth/otp/verify', credentials).then(

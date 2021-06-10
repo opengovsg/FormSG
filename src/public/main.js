@@ -145,8 +145,6 @@ require('./modules/core/controllers/edit-contact-number-modal.client.controller'
 // Core directives
 require('./modules/core/directives/on-click-outside.client.directive')
 require('./modules/core/directives/route-loading-indicator.client.directive.js')
-require('./modules/core/services/features.client.factory.js')
-require('./modules/core/directives/feature-toggle.client.directive.js')
 
 // Core config
 require('./modules/core/config/core.client.routes.js')
@@ -256,7 +254,6 @@ require('./modules/forms/config/forms.client.routes.js')
 
 // forms services
 require('./modules/forms/services/form-fields.client.service.js')
-require('./modules/forms/services/form-factory.client.service.js')
 require('./modules/forms/services/form-api.client.factory.js')
 require('./modules/forms/services/form-error.client.factory.js')
 require('./modules/forms/services/spcp-session.client.factory.js')
