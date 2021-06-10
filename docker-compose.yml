@@ -112,6 +112,8 @@ services:
       - './.localstack:/tmp/localstack'
       - '/var/run/docker.sock:/var/run/docker.sock'
     network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:4566 to localstack:4566
+    logging:
+      driver: none
 
   maildev:
     image: maildev/maildev
