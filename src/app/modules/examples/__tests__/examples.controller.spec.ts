@@ -8,11 +8,11 @@ import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { DatabaseError } from '../../core/core.errors'
 import * as ExamplesController from '../examples.controller'
 import { ResultsNotFoundError } from '../examples.errors'
-import { ExamplesFactory } from '../examples.factory'
+import * as ExamplesService from '../examples.service'
 import { ExamplesQueryParams, SingleFormResult } from '../examples.types'
 
-jest.mock('../examples.factory')
-const MockExamplesFactory = mocked(ExamplesFactory)
+jest.mock('../examples.service')
+const MockExamplesService = mocked(ExamplesService)
 
 describe('examples.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -38,7 +38,7 @@ describe('examples.controller', () => {
         forms: [],
         totalNumResults: 0,
       }
-      MockExamplesFactory.getExampleForms.mockReturnValueOnce(
+      MockExamplesService.getExampleForms.mockReturnValueOnce(
         okAsync(mockResult),
       )
 
@@ -46,7 +46,7 @@ describe('examples.controller', () => {
       await ExamplesController.handleGetExamples(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(MockExamplesFactory.getExampleForms).toHaveBeenCalledWith(
+      expect(MockExamplesService.getExampleForms).toHaveBeenCalledWith(
         MOCK_REQ_QUERY,
       )
       expect(mockRes.status).toBeCalledWith(200)
@@ -57,7 +57,7 @@ describe('examples.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       // Mock getExampleForms to return error.
-      MockExamplesFactory.getExampleForms.mockReturnValueOnce(
+      MockExamplesService.getExampleForms.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
 
@@ -65,7 +65,7 @@ describe('examples.controller', () => {
       await ExamplesController.handleGetExamples(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(MockExamplesFactory.getExampleForms).toHaveBeenCalledWith(
+      expect(MockExamplesService.getExampleForms).toHaveBeenCalledWith(
         MOCK_REQ_QUERY,
       )
       expect(mockRes.status).toBeCalledWith(500)
@@ -106,7 +106,7 @@ describe('examples.controller', () => {
           title: 'mockTitle',
         },
       }
-      MockExamplesFactory.getSingleExampleForm.mockReturnValueOnce(
+      MockExamplesService.getSingleExampleForm.mockReturnValueOnce(
         okAsync(mockResult),
       )
 
@@ -118,7 +118,7 @@ describe('examples.controller', () => {
       )
 
       // Assert
-      expect(MockExamplesFactory.getSingleExampleForm).toHaveBeenCalledWith(
+      expect(MockExamplesService.getSingleExampleForm).toHaveBeenCalledWith(
         MOCK_REQ_PARAMS.formId,
       )
       expect(mockRes.status).toBeCalledWith(200)
@@ -130,7 +130,7 @@ describe('examples.controller', () => {
       const mockRes = expressHandler.mockResponse()
       // Mock getSingleExampleForm to return not found error.
       const mockErrorString = 'not found error!'
-      MockExamplesFactory.getSingleExampleForm.mockReturnValueOnce(
+      MockExamplesService.getSingleExampleForm.mockReturnValueOnce(
         errAsync(new ResultsNotFoundError(mockErrorString)),
       )
 
@@ -142,7 +142,7 @@ describe('examples.controller', () => {
       )
 
       // Assert
-      expect(MockExamplesFactory.getSingleExampleForm).toHaveBeenCalledWith(
+      expect(MockExamplesService.getSingleExampleForm).toHaveBeenCalledWith(
         MOCK_REQ_PARAMS.formId,
       )
       expect(mockRes.status).toBeCalledWith(404)
@@ -154,7 +154,7 @@ describe('examples.controller', () => {
       const mockRes = expressHandler.mockResponse()
       // Mock getSingleExampleForm to return database error.
       const mockErrorString = 'database error!'
-      MockExamplesFactory.getSingleExampleForm.mockReturnValueOnce(
+      MockExamplesService.getSingleExampleForm.mockReturnValueOnce(
         errAsync(new DatabaseError(mockErrorString)),
       )
 
@@ -166,7 +166,7 @@ describe('examples.controller', () => {
       )
 
       // Assert
-      expect(MockExamplesFactory.getSingleExampleForm).toHaveBeenCalledWith(
+      expect(MockExamplesService.getSingleExampleForm).toHaveBeenCalledWith(
         MOCK_REQ_PARAMS.formId,
       )
       expect(mockRes.status).toBeCalledWith(500)
