@@ -2,6 +2,7 @@ module.exports = {
   preset: 'ts-jest/presets/js-with-ts',
   rootDir: '../../../',
   modulePaths: ['<rootDir>'],
+  testEnvironment: 'jsdom',
   roots: ['<rootDir>/src/public/', '<rootDir>/tests/unit/frontend/'],
   globals: {
     // Revert when memory leak in ts-jest is fixed.
@@ -12,4 +13,5 @@ module.exports = {
   },
   clearMocks: true,
   setupFilesAfterEnv: ['jest-extended'],
+  setupFiles: ['jest-localstorage-mock'],
 }

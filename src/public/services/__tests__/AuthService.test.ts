@@ -6,10 +6,10 @@ import {
   AUTH_ENDPOINT,
   checkIsEmailAllowed,
   sendLoginOtp,
+  verifyLoginOtp,
 } from '../AuthService'
 
 jest.mock('axios')
-
 const MockAxios = mocked(axios, true)
 
 // Duplicated here instead of exporting from AuthService to prevent production
@@ -55,6 +55,32 @@ describe('AuthService', () => {
       expect(MockAxios.post).toHaveBeenCalledWith(EXPECTED_POST_ENDPOINT, {
         email: mockEmail.toLowerCase(),
       })
+    })
+  })
+
+  describe('verifyLoginOtp', () => {
+    const EXPECTED_POST_ENDPOINT = `${AUTH_ENDPOINT}/otp/verify`
+    const MOCK_OTP = '123456'
+    const MOCK_EMAIL = 'mockEmail@example.com'
+
+    it('should return user on success', async () => {
+      // Arrange
+      const mockUser = {
+        _id: 'some id',
+        email: MOCK_EMAIL,
+      }
+      MockAxios.post.mockResolvedValueOnce({ data: mockUser })
+      const expectedParams = { otp: MOCK_OTP, email: MOCK_EMAIL }
+
+      // Act
+      const actual = await verifyLoginOtp(expectedParams)
+
+      // Assert
+      expect(actual).toEqual(mockUser)
+      expect(MockAxios.post).toHaveBeenCalledWith(
+        EXPECTED_POST_ENDPOINT,
+        expectedParams,
+      )
     })
   })
 })

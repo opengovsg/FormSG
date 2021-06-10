@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { Opaque } from 'type-fest'
 
+import { User } from '../../types/api/user'
+
 // Exported for testing.
 export const AUTH_ENDPOINT = '/api/v3/auth'
 
@@ -29,5 +31,21 @@ export const sendLoginOtp = async (email: Email): Promise<string> => {
     .post<string>(`${AUTH_ENDPOINT}/otp/generate`, {
       email: email.toLowerCase(),
     })
+    .then(({ data }) => data)
+}
+
+/**
+ * Verifies the login OTP and returns the user if OTP is valid.
+ * @param params.email the email to verify
+ * @param params.otp the OTP sent to the given email to verify
+ * @returns logged in user when successful
+ * @throws Error on non 2xx response
+ */
+export const verifyLoginOtp = async (params: {
+  otp: string
+  email: string
+}): Promise<User> => {
+  return axios
+    .post<User>(`${AUTH_ENDPOINT}/otp/verify`, params)
     .then(({ data }) => data)
 }
