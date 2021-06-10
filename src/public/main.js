@@ -146,8 +146,6 @@ require('./modules/core/controllers/edit-contact-number-modal.client.controller'
 // Core directives
 require('./modules/core/directives/on-click-outside.client.directive')
 require('./modules/core/directives/route-loading-indicator.client.directive.js')
-require('./modules/core/services/features.client.factory.js')
-require('./modules/core/directives/feature-toggle.client.directive.js')
 
 // Core config
 require('./modules/core/config/core.client.routes.js')
