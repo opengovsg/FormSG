@@ -3,6 +3,7 @@ import { get } from 'lodash'
 
 import config from '../../config/config'
 import featureManager, { FeatureNames } from '../../config/feature-manager'
+import { googleAnalyticsConfig } from '../../config/feature-manager/google-analytics.config'
 import { sentryConfig } from '../../config/feature-manager/sentry.config'
 
 // Construct js with environment variables needed by frontend
@@ -29,11 +30,7 @@ const frontendVars = {
     'isCPMaintenance',
     null,
   ), // Corppass maintenance message
-  GATrackingID: get(
-    featureManager.props(FeatureNames.GoogleAnalytics),
-    'GATrackingID',
-    null,
-  ),
+  GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: get(
     featureManager.props(FeatureNames.SpcpMyInfo),
     'spcpCookieDomain',
