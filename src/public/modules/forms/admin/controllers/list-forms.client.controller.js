@@ -3,6 +3,8 @@
 const get = require('lodash/get')
 const BetaService = require('../../../../services/BetaService')
 
+const UserService = require('../../../../services/UserService')
+
 // Forms controller
 angular
   .module('forms')
@@ -10,7 +12,6 @@ angular
     '$scope',
     'FormApi',
     '$uibModal',
-    'Auth',
     'moment',
     '$state',
     '$timeout',
@@ -24,7 +25,6 @@ function ListFormsController(
   $scope,
   FormApi,
   $uibModal,
-  Auth,
   moment,
   $state,
   $timeout,
@@ -41,7 +41,7 @@ function ListFormsController(
   // Duplicated form outline on newly dup forms
   vm.duplicatedForms = []
   // Redirect to signin if unable to get user
-  vm.user = Auth.getUser() || $state.go('signin')
+  vm.user = UserService.getUserFromLocalStorage() || $state.go('signin')
 
   // Brings user to edit form page
   vm.editForm = function (form) {

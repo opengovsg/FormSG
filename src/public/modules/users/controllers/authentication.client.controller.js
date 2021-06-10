@@ -1,9 +1,10 @@
 'use strict'
 
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const get = require('lodash/get')
 const validator = require('validator').default
 const AuthService = require('../../../services/AuthService')
+const UserService = require('../../../services/UserService')
 
 angular
   .module('users')
@@ -13,20 +14,11 @@ angular
     '$state',
     '$timeout',
     '$window',
-    'Auth',
     'GTag',
     AuthenticationController,
   ])
 
-function AuthenticationController(
-  $q,
-  $scope,
-  $state,
-  $timeout,
-  $window,
-  Auth,
-  GTag,
-) {
+function AuthenticationController($q, $scope, $state, $timeout, $window, GTag) {
   const vm = this
 
   let notifDelayTimeout
@@ -72,7 +64,7 @@ function AuthenticationController(
    * Redirects user with active session to target page
    */
   vm.redirectIfActiveSession = function () {
-    if (Auth.getUser()) {
+    if (UserService.getUserFromLocalStorage()) {
       $state.go($state.params.targetState)
     }
   }
@@ -216,8 +208,14 @@ function AuthenticationController(
    */
   vm.verifyOtp = function () {
     vm.buttonClicked = true
-    Auth.verifyOtp(vm.credentials).then(
-      function () {
+    $q.when(
+      AuthService.verifyLoginOtp({
+        otp: vm.credentials.otp,
+        email: vm.credentials.email,
+      }),
+    )
+      .then((user) => {
+        UserService.saveUserToLocalStorage(user)
         vm.buttonClicked = false
         // Configure message to be show
         vm.signInMsg = {
@@ -239,25 +237,32 @@ function AuthenticationController(
         }, 500)
 
         GTag.loginSuccess('otp')
-      },
-      function (error) {
+      })
+      .catch((error) => {
+        let errorMsg = get(
+          error,
+          'response.data',
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+        )
+        const errorStatus = get(error, 'response.status')
+        if (errorStatus >= StatusCodes.INTERNAL_SERVER_ERROR) {
+          errorMsg = 'An unknown error occurred'
+        }
+
         vm.buttonClicked = false
         // Configure message to be show
         vm.signInMsg = {
           isMsg: true,
           isError: true,
-          msg:
-            error.status >= HttpStatus.INTERNAL_SERVER_ERROR
-              ? 'An unknown error occurred'
-              : error.data,
+          msg: errorMsg,
         }
         $timeout(function () {
           angular.element('#otp-input').focus()
           angular.element('#otp-input').select()
         }, 100)
-        GTag.loginFailure('otp', String(error.status || error.data || ''))
-      },
-    )
+
+        GTag.loginFailure('otp', String(errorStatus || errorMsg))
+      })
   }
 
   const cancelNotifDelayTimeout = () => {

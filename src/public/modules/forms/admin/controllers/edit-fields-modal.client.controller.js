@@ -4,6 +4,8 @@ const axios = require('axios').default
 const values = require('lodash/values')
 const cloneDeep = require('lodash/cloneDeep')
 
+const UserService = require('../../../../services/UserService')
+
 const {
   VALID_UPLOAD_FILE_TYPES,
   MAX_UPLOAD_FILE_SIZE,
@@ -28,7 +30,6 @@ angular
     'Attachment',
     'FormFields',
     '$q',
-    'Auth',
     '$state',
     'Toastr',
     EditFieldsModalController,
@@ -42,7 +43,6 @@ function EditFieldsModalController(
   Attachment,
   FormFields,
   $q,
-  Auth,
   $state,
   Toastr,
 ) {
@@ -66,7 +66,7 @@ function EditFieldsModalController(
   }
 
   // Serialize allowed email domains
-  vm.user = Auth.getUser() || $state.go('signin')
+  vm.user = UserService.getUserFromLocalStorage() || $state.go('signin')
   if (vm.field.fieldType === 'email') {
     const userEmailDomain = '@' + vm.user.email.split('@').pop()
 

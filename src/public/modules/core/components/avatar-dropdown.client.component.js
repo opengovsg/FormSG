@@ -1,14 +1,17 @@
 const get = require('lodash/get')
 
+const AuthService = require('../../../services/AuthService')
+const UserService = require('../../../services/UserService')
+
 angular.module('core').component('avatarDropdownComponent', {
   templateUrl: 'modules/core/componentViews/avatar-dropdown.html',
   bindings: {},
   controller: [
+    '$q',
     '$scope',
     '$state',
     '$uibModal',
     '$window',
-    'Auth',
     'Toastr',
     avatarDropdownController,
   ],
@@ -16,17 +19,17 @@ angular.module('core').component('avatarDropdownComponent', {
 })
 
 function avatarDropdownController(
+  $q,
   $scope,
   $state,
   $uibModal,
   $window,
-  Auth,
   Toastr,
 ) {
   const vm = this
 
   // Preload user with current details, redirect to signin if unable to get user
-  vm.user = Auth.getUser() || $state.go('signin')
+  vm.user = UserService.getUserFromLocalStorage() || $state.go('signin')
   vm.avatarText = generateAvatarText()
 
   vm.isDropdownHover = false
@@ -37,7 +40,16 @@ function avatarDropdownController(
 
   async function retrieveUser() {
     try {
-      const trueUser = await Auth.refreshUser()
+      const trueUser = await UserService.fetchUser()
+        .then((user) => {
+          UserService.saveUserToLocalStorage(user)
+          return user
+        })
+        .catch(() => {
+          UserService.clearUserFromLocalStorage()
+          return null
+        })
+
       if (!trueUser) {
         $state.go('signin')
         return
@@ -74,7 +86,20 @@ function avatarDropdownController(
     },
   )
 
-  vm.signOut = () => Auth.signOut()
+  vm.logout = () => {
+    return $q
+      .when(AuthService.logout())
+      .then(() => {
+        // Clear user and contact banner on logout
+        UserService.clearUserFromLocalStorage()
+        $window.localStorage.removeItem('contactBannerDismissed')
+        // Redirect to landing page
+        $state.go('landing')
+      })
+      .catch((error) => {
+        console.error('sign out failed:', error)
+      })
+  }
 
   vm.openContactNumberModal = () => {
     $uibModal
@@ -91,7 +116,7 @@ function avatarDropdownController(
         // Update success, update user.
         if (returnVal) {
           vm.user = returnVal
-          Auth.setUser(returnVal)
+          UserService.saveUserToLocalStorage(returnVal)
           vm.showExclamation = !returnVal.contact
         }
       })

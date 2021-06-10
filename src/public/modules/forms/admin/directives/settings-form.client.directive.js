@@ -3,6 +3,8 @@ const dedent = require('dedent-js')
 const { get, set, isEqual } = require('lodash')
 const AdminSubmissionsService = require('../../../../services/AdminSubmissionsService')
 
+const UserService = require('../../../../services/UserService')
+
 const SETTINGS_PATH = [
   'title',
   'emails',
@@ -35,8 +37,6 @@ angular
     '$timeout',
     'responseModeEnum',
     '$uibModal',
-    'Auth',
-    'Submissions',
     settingsFormDirective,
   ])
 
@@ -46,7 +46,6 @@ function settingsFormDirective(
   $timeout,
   responseModeEnum,
   $uibModal,
-  Auth,
 ) {
   return {
     templateUrl:
@@ -59,7 +58,7 @@ function settingsFormDirective(
     controller: [
       '$scope',
       function ($scope) {
-        $scope.user = Auth.getUser()
+        $scope.user = UserService.getUserFromLocalStorage()
 
         $scope.responseModeEnum = responseModeEnum
         $scope.tempForm = createTempSettings($scope.myform)

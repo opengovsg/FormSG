@@ -272,9 +272,6 @@ require('./modules/forms/services/mailto.client.factory.js')
 require('./modules/users/config/users.client.config.js')
 require('./modules/users/config/users.client.routes.js')
 
-// User services
-require('./modules/users/services/auth.client.service.js')
-
 // User controllers
 require('./modules/users/controllers/authentication.client.controller.js')
 require('./modules/users/controllers/billing.client.controller.js')

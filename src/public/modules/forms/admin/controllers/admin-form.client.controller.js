@@ -4,6 +4,7 @@ const { StatusCodes } = require('http-status-codes')
 const get = require('lodash/get')
 const { LogicType } = require('../../../../../types')
 const UpdateFormService = require('../../../../services/UpdateFormService')
+const UserService = require('../../../../services/UserService')
 const FieldFactory = require('../../helpers/field-factory')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 
@@ -42,7 +43,6 @@ angular
     '$uibModal',
     'FormData',
     'FormFields',
-    'Auth',
     'moment',
     'Toastr',
     '$state',
@@ -58,7 +58,6 @@ function AdminFormController(
   $uibModal,
   FormData,
   FormFields,
-  Auth,
   moment,
   Toastr,
   $state,
@@ -71,7 +70,7 @@ function AdminFormController(
 
   // Redirect to signin if unable to get user
   $scope.user =
-    Auth.getUser() ||
+    UserService.getUserFromLocalStorage() ||
     $state.go(
       'signin',
       {

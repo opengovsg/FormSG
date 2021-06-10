@@ -1,5 +1,7 @@
 'use strict'
-let dedent = require('dedent-js')
+const dedent = require('dedent-js')
+
+const UserService = require('../../../../services/UserService')
 
 angular.module('forms').component('shareFormComponent', {
   templateUrl: 'modules/forms/admin/componentViews/share-form.client.view.html',
@@ -9,11 +11,11 @@ angular.module('forms').component('shareFormComponent', {
     status: '<',
     userCanEdit: '<',
   },
-  controller: ['$state', '$translate', 'Auth', shareFormController],
+  controller: ['$state', '$translate', shareFormController],
   controllerAs: 'vm',
 })
 
-function shareFormController($state, $translate, Auth) {
+function shareFormController($state, $translate) {
   const vm = this
 
   vm.$onInit = () => {
@@ -54,6 +56,6 @@ function shareFormController($state, $translate, Auth) {
   }
 
   // Show different pro tip for user depending on their email
-  const { email } = Auth.getUser()
-  vm.isGovOfficer = String(email).endsWith('.gov.sg')
+  const user = UserService.getUserFromLocalStorage()
+  vm.isGovOfficer = user && String(user.email).endsWith('.gov.sg')
 }
