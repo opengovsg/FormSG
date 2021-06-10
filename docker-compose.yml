@@ -39,6 +39,7 @@ services:
       - MYINFO_CLIENT_ID=mockClientId
       - MYINFO_CLIENT_SECRET=mockClientSecret
       - WEBHOOK_SQS_URL=http://localhost:4566/000000000000/local-webhooks-sqs-main
+      - INTRANET_IP_LIST_PATH
       - GA_TRACKING_ID
       - SENTRY_CONFIG_URL
       - TWILIO_ACCOUNT_SID
