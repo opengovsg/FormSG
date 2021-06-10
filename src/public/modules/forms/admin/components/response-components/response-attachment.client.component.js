@@ -26,6 +26,7 @@ function responseAttachmentComponentController($q, $timeout) {
       .then((bytesArray) => {
         if (!bytesArray) {
           vm.hasDownloadError = true
+          return
         }
         // Construct a downloadable link and click on it to download the file
         let blob = new Blob([bytesArray])
