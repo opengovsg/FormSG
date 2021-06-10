@@ -30,6 +30,8 @@
     "web-vitals": "^0.2.2"
   },
   "scripts": {
+    "gen:theme-typings": "chakra-cli tokens src/theme/index.ts",
+    "postinstall": "npm run gen:theme-typings",
     "start": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
     "build": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired test",
@@ -55,6 +57,7 @@
     ]
   },
   "devDependencies": {
+    "@chakra-ui/cli": "^1.3.1",
     "@storybook/addon-a11y": "^6.2.9",
     "@storybook/addon-actions": "^6.2.9",
     "@storybook/addon-essentials": "^6.2.9",
