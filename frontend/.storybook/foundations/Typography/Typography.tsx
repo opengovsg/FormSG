@@ -19,7 +19,7 @@ export const Typography: FC = () => {
     return (
       <Box display="grid" textStyle="body-2">
         {Object.entries(theme).map(([key, value]) => (
-          <Box display="inline-flex">
+          <Box display="inline-flex" key={key}>
             <Text color="secondary.400">{key}:&nbsp;</Text>
             <Text>{value}</Text>
           </Box>
@@ -45,6 +45,7 @@ export const Typography: FC = () => {
         px="5rem"
         justify="space-between"
         color="white"
+        align="center"
       >
         <Text textStyle="display-2">Inter</Text>
         <Box
