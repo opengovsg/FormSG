@@ -1,18 +1,31 @@
+import { decode } from '@stablelib/base64'
 import axios from 'axios'
+import JSZip from 'jszip'
 import { mocked } from 'ts-jest/utils'
 
 import { SubmissionMetadataList } from 'src/types'
 
-import {
-  countFormSubmissions,
-  getEncryptedResponse,
-  getSubmissionMetadataById,
-  getSubmissionsMetadataByPage,
-} from '../AdminSubmissionsService'
+import * as AdminSubmissionService from '../AdminSubmissionsService'
+import { FormSgSdk } from '../FormSgSdkService'
 import { ADMIN_FORM_ENDPOINT } from '../UpdateFormService'
 
 jest.mock('axios')
 const MockAxios = mocked(axios, true)
+
+jest.mock('../FormSgSdkService', () => {
+  return {
+    FormSgSdk: {
+      crypto: {
+        decryptFile: jest.fn().mockImplementation(() => 'great decryption'),
+      },
+    },
+  }
+})
+
+const mockFormSgSdk = mocked(FormSgSdk)
+
+jest.mock('@stablelib/base64')
+const mockDecodeBase64 = mocked(decode)
 
 describe('AdminSubmissionsService', () => {
   describe('countFormSubmissions', () => {
@@ -25,7 +38,7 @@ describe('AdminSubmissionsService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: 123 })
 
       // Act
-      const actual = await countFormSubmissions({
+      const actual = await AdminSubmissionService.countFormSubmissions({
         formId: MOCK_FORM_ID,
         dates: { startDate: MOCK_START_DATE, endDate: MOCK_END_DATE },
       })
@@ -48,7 +61,7 @@ describe('AdminSubmissionsService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: 123 })
 
       // Act
-      const actual = await countFormSubmissions({
+      const actual = await AdminSubmissionService.countFormSubmissions({
         formId: MOCK_FORM_ID,
       })
 
@@ -79,7 +92,7 @@ describe('AdminSubmissionsService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: MOCK_RESPONSE })
 
       // Act
-      const actual = await getSubmissionsMetadataByPage({
+      const actual = await AdminSubmissionService.getSubmissionsMetadataByPage({
         formId: MOCK_FORM_ID,
         pageNum: MOCK_PAGE_NUM,
       })
@@ -116,7 +129,7 @@ describe('AdminSubmissionsService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: MOCK_RESPONSE })
 
       // Act
-      const actual = await getSubmissionMetadataById({
+      const actual = await AdminSubmissionService.getSubmissionMetadataById({
         formId: MOCK_FORM_ID,
         submissionId: MOCK_SUBMISSION_ID,
       })
@@ -150,7 +163,7 @@ describe('AdminSubmissionsService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: MOCK_RESPONSE })
 
       // Act
-      const actual = await getEncryptedResponse({
+      const actual = await AdminSubmissionService.getEncryptedResponse({
         formId: MOCK_FORM_ID,
         submissionId: MOCK_SUBMISSION_ID,
       })
@@ -160,6 +173,104 @@ describe('AdminSubmissionsService', () => {
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM_ID}/submissions/${MOCK_SUBMISSION_ID}`,
       )
+    })
+  })
+
+  describe('downloadAndDecryptAttachment', () => {
+    const MOCK_URL = 'www.decryptme.com'
+    const MOCK_SECRET_KEY = 'this is a secret'
+    const MOCK_PUBLIC_KEY = 'some public key'
+    const MOCK_NONCE = 'use me once and throw away pls'
+    const MOCK_BINARY =
+      '01101001 00100000 01100001 01101101 00100000 01100001 00100000 01101000 01110101 01101101 01100001 01101110'
+
+    it('should decrypt successfully when there is data', async () => {
+      // Arrange
+      const MOCK_ENCRYPTED_ATTACHMENT = {
+        encryptedFile: {
+          submissionPublicKey: MOCK_PUBLIC_KEY,
+          nonce: MOCK_NONCE,
+          binary: MOCK_BINARY,
+        },
+      }
+      const MOCK_ARRAY = Uint8Array.from([1, 2, 3, 4])
+      MockAxios.get.mockResolvedValueOnce({ data: MOCK_ENCRYPTED_ATTACHMENT })
+      mockDecodeBase64.mockReturnValueOnce(MOCK_ARRAY)
+
+      // Act
+      const actual = await AdminSubmissionService.downloadAndDecryptAttachment(
+        MOCK_URL,
+        MOCK_SECRET_KEY,
+      )
+
+      // Arrange
+      expect(mockDecodeBase64).toHaveBeenCalledWith(MOCK_BINARY)
+      expect(mockFormSgSdk.crypto.decryptFile).toHaveBeenCalledWith(
+        MOCK_SECRET_KEY,
+        MOCK_ENCRYPTED_ATTACHMENT.encryptedFile,
+      )
+      expect(actual).toBe('great decryption')
+    })
+  })
+
+  describe('downloadAndDecryptAttachmentsAsZip', () => {
+    const MOCK_DOWNLOAD_URLS = new Map([
+      [1, { url: 'something', filename: '1' }],
+      [2, { url: 'something', filename: '1' }],
+    ])
+    const MOCK_SECRET_KEY = 'keep this secret'
+    const MOCK_ARRAY = Uint8Array.from([1, 2, 3])
+
+    it('should return the zipfile when downloads are successful', async () => {
+      // Arrange
+      const decryptSpy = jest.spyOn(
+        AdminSubmissionService,
+        'downloadAndDecryptAttachment',
+      )
+      decryptSpy.mockResolvedValue(MOCK_ARRAY)
+      const MOCK_ZIP = new JSZip()
+      const zipPromises = Array.from(MOCK_DOWNLOAD_URLS).map(
+        async ([questionNum, { filename }]) => {
+          const fileName = `Question ${questionNum} - ${filename}`
+          return MOCK_ZIP.file(fileName, MOCK_ARRAY)
+        },
+      )
+      const expected = await Promise.all(zipPromises).then(() => {
+        return MOCK_ZIP.generateAsync({ type: 'blob' })
+      })
+
+      // Act
+      const actual =
+        await AdminSubmissionService.downloadAndDecryptAttachmentsAsZip(
+          MOCK_DOWNLOAD_URLS,
+          MOCK_SECRET_KEY,
+        )
+
+      // Assert
+      // Check that function is called with correct params for each element in the map
+      MOCK_DOWNLOAD_URLS.forEach(({ url }) => {
+        expect(decryptSpy).toHaveBeenCalledWith(url, MOCK_SECRET_KEY)
+      })
+      expect(actual).toEqual(expected)
+    })
+
+    it('should reject when any single download failed', async () => {
+      // Arrange
+      const decryptSpy = jest.spyOn(
+        AdminSubmissionService,
+        'downloadAndDecryptAttachment',
+      )
+      // NOTE: 2 urls but only 1 single rejection
+      decryptSpy.mockRejectedValueOnce('oh no i failed')
+
+      // Act
+      const actual = AdminSubmissionService.downloadAndDecryptAttachmentsAsZip(
+        MOCK_DOWNLOAD_URLS,
+        MOCK_SECRET_KEY,
+      )
+
+      // Assert
+      await expect(actual).rejects.toEqual('oh no i failed')
     })
   })
 })
