@@ -9,21 +9,23 @@
       <a href="<%= formLink %>"> '<%= formTitle %>' </a>.
     </p>
     <p>
-      SMS OTP verification has been <b>automatically disabled</b>on your form as
-      you have reached the free tier limit of <%= smsVerificationLimit>
+      SMS OTP verification has been <b>automatically disabled</b> on your form
+      as you have reached the free tier limit of <%= smsVerificationLimit %>
       responses.
     </p>
 
     <p>
       We would have previously notified all form admins upon your account
-      reaching 2500, 5000 and 7500 responses, while free SMS OTP verification
-      was enabled.
+      reaching 2500, 5000 and 7500 responses while free SMS OTP verification was
+      enabled.
     </p>
     <p>
-      If you require SMS OTP verification for more than 10,000 responses, please
+      If you require SMS OTP verification for more than <%= smsVerificationLimit
+      %> responses, please
       <a
         href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-arrange-payment-for-verified-sms"
-        >arrange advance billing with us.
+      >
+        arrange advance billing with us.
       </a>
     </p>
     <p>
