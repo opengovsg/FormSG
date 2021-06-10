@@ -8,7 +8,7 @@ const intranetSchema: Schema<IIntranet> = {
   intranetIpListPath: {
     doc: 'Path to file containing list of intranet IP addresses, separated by newlines',
     format: String,
-    default: null,
+    default: '',
     env: 'INTRANET_IP_LIST_PATH',
   },
 }
