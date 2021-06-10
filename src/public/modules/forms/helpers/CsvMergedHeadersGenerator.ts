@@ -14,6 +14,15 @@ type UnprocessedRecord = {
 }
 
 export class CsvMergedHeadersGenerator extends CsvGenerator {
+  /**
+   * Extracts the string representation from a field response
+   */
+  #extractAnswer: (
+    unprocessedRecord: { [fieldId: string]: Response },
+    fieldId: string,
+    colIndex: number,
+  ) => string
+
   hasBeenProcessed: boolean
   hasBeenSorted: boolean
   fieldIdToQuestion: Map<
@@ -34,6 +43,23 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
     this.fieldIdToQuestion = new Map()
     this.fieldIdToNumCols = {}
     this.unprocessed = []
+
+    /**
+     * Extracts the string representation from a field response
+     * @param unprocessedRecord
+     * @param fieldId
+     * @param colIndex
+     * @returns string representation of unprocessed record
+     */
+    this.#extractAnswer = function (
+      unprocessedRecord,
+      fieldId,
+      colIndex,
+    ): string {
+      const fieldRecord = unprocessedRecord[fieldId]
+      if (!fieldRecord) return ''
+      return fieldRecord.getAnswer(colIndex)
+    }
   }
 
   /**
@@ -49,6 +75,7 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
    * @param decryptedContent.record
    * @param decryptedContent.created
    * @param decryptedContent.submissionId
+   * @throws Error when trying to convert record into a response instance. Should be caught in submissions client factory.
    */
   addRecord({
     record,
@@ -62,7 +89,7 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
     const fieldRecords = record.map((content) => {
-      const fieldRecord = getResponseInstance(content) // Could throw error, to be caught in submissions client factory
+      const fieldRecord = getResponseInstance(content)
       if (!fieldRecord.isHeader) {
         const currentMapping = this.fieldIdToQuestion.get(fieldRecord.id)
         // Only set new mapping if it does not exist or this record is a later
@@ -96,23 +123,6 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
   }
 
   /**
-   * Extracts the string representation from an unprocessed record.
-   * @param unprocessedRecord
-   * @param fieldId
-   * @param colIndex
-   * @returns string representation of unprocessed record
-   */
-  _extractAnswer(
-    unprocessedRecord: { [fieldId: string]: Response },
-    fieldId: string,
-    colIndex: number,
-  ): string {
-    const fieldRecord = unprocessedRecord[fieldId]
-    if (!fieldRecord) return ''
-    return fieldRecord.getAnswer(colIndex)
-  }
-
-  /**
    * Process the unprocessed records by creating the correct headers and
    * assigning each answer to their respective locations in each response row in
    * the csv data.
@@ -141,7 +151,7 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
       this.fieldIdToQuestion.forEach((_question, fieldId) => {
         const numCols = this.fieldIdToNumCols[fieldId]
         for (let colIndex = 0; colIndex < numCols; colIndex++) {
-          row.push(this._extractAnswer(up.record, fieldId, colIndex))
+          row.push(this.#extractAnswer(up.record, fieldId, colIndex))
         }
       })
       this.addLine(row)
