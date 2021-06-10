@@ -4,7 +4,6 @@ import { Schema } from 'convict'
 export enum FeatureNames {
   Captcha = 'captcha',
   GoogleAnalytics = 'google-analytics',
-  Sentry = 'sentry',
   Sms = 'sms',
   SpcpMyInfo = 'spcp-myinfo',
   VerifiedFields = 'verified-fields',
@@ -18,11 +17,6 @@ export interface ICaptcha {
 
 export interface IGoogleAnalytics {
   GATrackingID: string
-}
-
-export interface ISentry {
-  sentryConfigUrl: string
-  cspReportUri: string
 }
 
 export interface ISms {
@@ -79,7 +73,6 @@ export interface IWebhookVerifiedContent {
 export interface IFeatureManager {
   [FeatureNames.Captcha]: ICaptcha
   [FeatureNames.GoogleAnalytics]: IGoogleAnalytics
-  [FeatureNames.Sentry]: ISentry
   [FeatureNames.Sms]: ISms
   [FeatureNames.SpcpMyInfo]: ISpcpMyInfo
   [FeatureNames.VerifiedFields]: IVerifiedFields
