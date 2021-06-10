@@ -16,7 +16,6 @@ import {
 export const getResponseInstance = (
   fieldRecordData: DisplayedResponseWithoutAnswer,
 ): Response => {
-  console.log(fieldRecordData)
   if (
     isNestedResponse(fieldRecordData) &&
     fieldRecordData.fieldType === 'table'
