@@ -96,6 +96,23 @@ describe('auth.routes', () => {
       expect(response.text).toEqual('OK')
     })
 
+    it('should return 200 when domain of body.email has a case-insensitive match in Agency collection', async () => {
+      // Arrange
+      // Insert agency
+      const validDomain = 'example.com'
+      const validEmail = `test@${validDomain}`
+      await dbHandler.insertAgency({ mailDomain: validDomain })
+
+      // Act
+      const response = await request
+        .post('/auth/email/validate')
+        .send({ email: validEmail.toUpperCase() })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.text).toEqual('OK')
+    })
+
     it('should return 500 when validating domain returns a database error', async () => {
       // Arrange
       // Insert agency
@@ -244,6 +261,23 @@ describe('auth.routes', () => {
       const response = await request
         .post('/auth/otp/generate')
         .send({ email: VALID_EMAIL })
+
+      // Assert
+      expect(sendLoginOtpSpy).toHaveBeenCalled()
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(`OTP sent to ${VALID_EMAIL}`)
+    })
+
+    it('should return 200 when otp is sent successfully and email is non-lowercase', async () => {
+      // Arrange
+      const sendLoginOtpSpy = jest
+        .spyOn(MailService, 'sendLoginOtp')
+        .mockReturnValueOnce(okAsync(true))
+
+      // Act
+      const response = await request
+        .post('/auth/otp/generate')
+        .send({ email: VALID_EMAIL.toUpperCase() })
 
       // Assert
       expect(sendLoginOtpSpy).toHaveBeenCalled()
@@ -457,6 +491,33 @@ describe('auth.routes', () => {
       const response = await request
         .post('/auth/otp/verify')
         .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      // Body should be an user object.
+      expect(response.body).toMatchObject({
+        // Required since that's how the data is sent out from the application.
+        agency: JSON.parse(JSON.stringify(defaultAgency.toObject())),
+        _id: expect.any(String),
+        created: expect.any(String),
+        email: VALID_EMAIL,
+      })
+      // Should have session cookie returned.
+      const sessionCookie = request.cookies.find(
+        (cookie) => cookie.name === 'connect.sid',
+      )
+      expect(sessionCookie).toBeDefined()
+    })
+
+    it('should return 200 with user object when body.otp is a valid OTP and body.email is non-lowercase', async () => {
+      // Arrange
+      // Request for OTP so the hash exists.
+      await requestForOtp(VALID_EMAIL)
+
+      // Act
+      const response = await request
+        .post('/auth/otp/verify')
+        .send({ email: VALID_EMAIL.toUpperCase(), otp: MOCK_VALID_OTP })
 
       // Assert
       expect(response.status).toEqual(200)

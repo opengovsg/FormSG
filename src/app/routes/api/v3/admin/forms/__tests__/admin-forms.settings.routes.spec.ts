@@ -301,7 +301,9 @@ describe('admin-form.settings.routes', () => {
       })
       const session = await createAuthedSession(fakeUser.email, request)
       const expectedResponse = jsonParseStringify({
-        message: `User ${fakeUser.email} not authorized to perform write operation on Form ${form._id} with title: ${form.title}.`,
+        message: `User ${fakeUser.email.toLowerCase()} not authorized to perform write operation on Form ${
+          form._id
+        } with title: ${form.title}.`,
       })
 
       // Act
@@ -431,12 +433,14 @@ describe('admin-form.settings.routes', () => {
         },
       })
       const fakeUser = await dbHandler.insertUser({
-        mailName: 'fakeUser',
+        mailName: 'userWithoutReadPermissions',
         agencyId: new ObjectId(),
       })
       const session = await createAuthedSession(fakeUser.email, request)
       const expectedResponse = jsonParseStringify({
-        message: `User ${fakeUser.email} not authorized to perform read operation on Form ${form._id} with title: ${form.title}.`,
+        message: `User ${fakeUser.email.toLowerCase()} not authorized to perform read operation on Form ${
+          form._id
+        } with title: ${form.title}.`,
       })
 
       // Act
