@@ -2,6 +2,12 @@ import { MapRouteError, MapRouteErrors } from '../../types'
 import { ApplicationError } from '../modules/core/core.errors'
 import { EmptyErrorFieldError } from '../modules/submission/submission.errors'
 
+/**
+ * Used when a route-error mapper expects certain errors to be presented
+ * as lists. It takes the first element of an error list to pass into the
+ * mapper, with checks on the length for anomalies.
+ * @param mapRouteError The error mapper.
+ */
 export const genericMapRouteErrorTransform = (
   mapRouteError: MapRouteError,
 ): MapRouteErrors => {

@@ -184,7 +184,7 @@ export const getFormSubmissionsCount = (
  * @param param0.submission Submission object which was saved to database
  * @param param0.responsesData Subset of responses to be included in email confirmation
  * @param param0.attachments Attachments to be included in email
- * @param autoReplyData Array of objects that contains autoreply mail data to override with defaults
+ * @param recipientData Array of objects that contains autoreply mail data to override with defaults
  * @returns ok(true) if all emails were sent successfully
  * @returns err(SendEmailConfirmationError) if any email failed to be sent
  */
