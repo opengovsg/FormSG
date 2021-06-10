@@ -1,6 +1,8 @@
 'use strict'
 const BetaService = require('../../../services/BetaService')
 
+const UserService = require('../../../services/UserService')
+
 angular.module('users').directive('examplesCard', [examplesCard])
 
 function examplesCard() {
@@ -20,7 +22,6 @@ function examplesCard() {
       '$uibModal',
       '$state',
       'GTag',
-      'Auth',
       '$location',
       'Toastr',
       '$q',
@@ -36,12 +37,11 @@ function examplesCardController(
   $uibModal,
   $state,
   GTag,
-  Auth,
   $location,
   Toastr,
   $q,
 ) {
-  $scope.user = Auth.getUser()
+  $scope.user = UserService.getUserFromLocalStorage()
 
   $scope.openTemplateModal = () => {
     $scope.templateUrl = $state.href(

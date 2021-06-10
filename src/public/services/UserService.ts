@@ -8,6 +8,27 @@ export const STORAGE_USER_KEY = 'user'
 export const USER_ENDPOINT = '/api/v3/user'
 
 /**
+ * Get logged in user from localStorage.
+ * May not be needed in React depending on implementation.
+ *
+ * @returns user if available, null otherwise
+ */
+export const getUserFromLocalStorage = (): User | null => {
+  const userStringified = localStorage.getItem(STORAGE_USER_KEY)
+
+  if (userStringified) {
+    try {
+      return User.parse(JSON.parse(userStringified))
+    } catch (error) {
+      // Invalid shape, clear from storage.
+      clearUserFromLocalStorage()
+      return null
+    }
+  }
+  return null
+}
+
+/**
  * Save logged in user to localStorage.
  * May not be needed in React depending on implementation.
  *

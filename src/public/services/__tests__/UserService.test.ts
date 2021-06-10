@@ -30,6 +30,49 @@ describe('UserService', () => {
     jest.clearAllMocks()
   })
 
+  describe('getUserFromLocalStorage', () => {
+    it('should return user from localStorage when valid user exists', async () => {
+      // Arrange
+      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(MOCK_USER))
+
+      // Act
+      const actual = UserService.getUserFromLocalStorage()
+
+      // Assert
+      expect(actual).toEqual(MOCK_USER)
+      expect(localStorage.getItem).toHaveBeenLastCalledWith(STORAGE_USER_KEY)
+    })
+
+    it('should return null and clear user from localStorage when user is an invalid shape', async () => {
+      // Arrange
+      localStorage.setItem(
+        STORAGE_USER_KEY,
+        'this string is obviously not a well formed user',
+      )
+
+      // Act
+      const actual = UserService.getUserFromLocalStorage()
+
+      // Assert
+      expect(localStorage.getItem).toHaveBeenLastCalledWith(STORAGE_USER_KEY)
+      expect(actual).toEqual(null)
+      expect(localStorage.removeItem).toHaveBeenLastCalledWith(STORAGE_USER_KEY)
+    })
+
+    it('should return null and clear user from localStorage when JSON.parse throws', async () => {
+      // Arrange
+      localStorage.setItem(STORAGE_USER_KEY, '{ invalid JSON string')
+
+      // Act
+      const actual = UserService.getUserFromLocalStorage()
+
+      // Assert
+      expect(localStorage.getItem).toHaveBeenLastCalledWith(STORAGE_USER_KEY)
+      expect(actual).toEqual(null)
+      expect(localStorage.removeItem).toHaveBeenLastCalledWith(STORAGE_USER_KEY)
+    })
+  })
+
   describe('saveUserToLocalStorage', () => {
     it('should successfully save given user to localStorage', () => {
       // Act

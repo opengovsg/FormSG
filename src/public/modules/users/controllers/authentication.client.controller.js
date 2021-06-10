@@ -14,20 +14,11 @@ angular
     '$state',
     '$timeout',
     '$window',
-    'Auth',
     'GTag',
     AuthenticationController,
   ])
 
-function AuthenticationController(
-  $q,
-  $scope,
-  $state,
-  $timeout,
-  $window,
-  Auth,
-  GTag,
-) {
+function AuthenticationController($q, $scope, $state, $timeout, $window, GTag) {
   const vm = this
 
   let notifDelayTimeout
@@ -73,7 +64,7 @@ function AuthenticationController(
    * Redirects user with active session to target page
    */
   vm.redirectIfActiveSession = function () {
-    if (Auth.getUser()) {
+    if (UserService.getUserFromLocalStorage()) {
       $state.go($state.params.targetState)
     }
   }

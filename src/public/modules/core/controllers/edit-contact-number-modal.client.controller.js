@@ -1,3 +1,5 @@
+const UserService = require('../../../services/UserService')
+
 angular
   .module('core')
   .controller('EditContactNumberModalController', [
@@ -8,7 +10,6 @@ angular
     '$scope',
     '$uibModalInstance',
     '$window',
-    'Auth',
     'Toastr',
     EditContactNumberModalController,
   ])
@@ -21,7 +22,6 @@ function EditContactNumberModalController(
   $scope,
   $uibModalInstance,
   $window,
-  Auth,
   Toastr,
 ) {
   const vm = this
@@ -47,7 +47,7 @@ function EditContactNumberModalController(
   vm.VERIFY_STATE = VERIFY_STATE
 
   // Redirect to signin if unable to get user
-  vm.user = Auth.getUser() || $state.go('signin')
+  vm.user = UserService.getUserFromLocalStorage() || $state.go('signin')
 
   vm.vfnState = vm.user.contact ? VERIFY_STATE.SUCCESS : VERIFY_STATE.IDLE
 
