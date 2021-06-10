@@ -105,7 +105,7 @@ describe('auth.routes', () => {
 
       // Act
       const response = await request
-        .post('/auth/checkuser')
+        .post('/auth/email/validate')
         .send({ email: validEmail.toUpperCase() })
 
       // Assert
@@ -276,7 +276,7 @@ describe('auth.routes', () => {
 
       // Act
       const response = await request
-        .post('/auth/sendotp')
+        .post('/auth/otp/generate')
         .send({ email: VALID_EMAIL.toUpperCase() })
 
       // Assert
