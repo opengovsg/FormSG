@@ -38,10 +38,7 @@ describe('IncomingEncryptSubmission', () => {
       responses,
       '',
     )
-    if (initResult.isErr()) {
-      throw new Error('Init failed')
-    }
-    expect(initResult.value.responses).toEqual(responses)
+    expect(initResult._unsafeUnwrap().responses).toEqual(responses)
   })
 
   it('should fail when responses are missing', () => {
