@@ -1,6 +1,5 @@
 export const textStyles = {
   'display-1': {
-    fontFamily: 'Inter',
     fontStyle: 'normal',
     fontWeight: 700,
     fontSize: '4rem',
@@ -9,7 +8,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   'display-2': {
-    fontFamily: 'Inter',
     fontStyle: 'normal',
     fontWeight: 600,
     fontSize: '2.5rem',
@@ -18,7 +16,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   h1: {
-    fontFamily: 'Inter',
     fontStyle: 'normal',
     fontWeight: 300,
     fontSize: '3.375rem',
@@ -27,7 +24,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   'h1-mobile': {
-    fontFamily: 'Inter',
     fontStyle: 'normal',
     fontWeight: 300,
     fontSize: '2rem',
@@ -36,7 +32,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   h2: {
-    fontFamily: 'Inter',
     fontStyle: 'normal',
     fontWeight: 600,
     fontSize: '1.5rem',
@@ -45,8 +40,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   h3: {
-    fontFamily: 'Inter',
-    fontStyle: 'normal',
     fontWeight: 600,
     fontSize: '1.25rem',
     lineHeight: '2rem',
@@ -54,8 +47,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   h4: {
-    fontFamily: 'Inter',
-    fontStyle: 'normal',
     fontWeight: 500,
     fontSize: '1.125rem',
     lineHeight: '1.5rem',
@@ -63,8 +54,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   'subhead-1': {
-    fontFamily: 'Inter',
-    fontStyle: 'normal',
     fontWeight: 500,
     fontSize: '1rem',
     lineHeight: '1.5rem',
@@ -72,8 +61,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   'subhead-2': {
-    fontFamily: 'Inter',
-    fontStyle: 'normal',
     fontWeight: 500,
     fontSize: '0.875rem',
     lineHeight: '1.5rem',
@@ -81,8 +68,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   'subhead-3': {
-    fontFamily: 'Inter',
-    fontStyle: 'normal',
     fontWeight: 600,
     fontSize: '0.875rem',
     lineHeight: '1.5rem',
@@ -91,7 +76,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   'body-1': {
-    fontFamily: 'Inter',
     fontStyle: 'normal',
     fontWeight: 400,
     fontSize: '1rem',
@@ -100,7 +84,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   'body-2': {
-    fontFamily: 'Inter',
     fontStyle: 'normal',
     fontWeight: 400,
     fontSize: '0.875rem',
@@ -109,7 +92,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   'caption-1': {
-    fontFamily: 'Inter',
     fontStyle: 'normal',
     fontWeight: 400,
     fontSize: '0.75rem',
@@ -117,7 +99,6 @@ export const textStyles = {
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   legal: {
-    fontFamily: 'Inter',
     fontStyle: 'normal',
     fontWeight: 400,
     fontSize: '0.625rem',
