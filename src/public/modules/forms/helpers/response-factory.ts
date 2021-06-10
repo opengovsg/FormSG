@@ -44,11 +44,12 @@ const isNestedResponse = (
   response: DisplayedResponseWithoutAnswer,
 ): response is NestedResponse => {
   return (
-    hasProp(response, 'answerArray') &&
-    Array.isArray(response.answerArray) &&
+    hasAnswerArray(response) &&
     response.answerArray.every((value) => Array.isArray(value)) &&
-    response.answerArray.every((arr) =>
-      arr.every((value: unknown) => typeof value === 'string'),
+    response.answerArray.every(
+      (arr) =>
+        Array.isArray(arr) &&
+        arr.every((value: unknown) => typeof value === 'string'),
     )
   )
 }
@@ -57,8 +58,7 @@ const isArrayResponse = (
   response: DisplayedResponseWithoutAnswer,
 ): response is ArrayResponse => {
   return (
-    hasProp(response, 'answerArray') &&
-    Array.isArray(response.answerArray) &&
+    hasAnswerArray(response) &&
     response.answerArray.every((value) => typeof value === 'string')
   )
 }
@@ -67,4 +67,12 @@ const isSingleResponse = (
   response: DisplayedResponseWithoutAnswer,
 ): response is SingleResponse => {
   return hasProp(response, 'answer') && typeof response.answer === 'string'
+}
+
+type AnswerArrayObject = {
+  answerArray: Array<unknown>
+}
+
+const hasAnswerArray = (response: unknown): response is AnswerArrayObject => {
+  return hasProp(response, 'answerArray') && Array.isArray(response.answerArray)
 }
