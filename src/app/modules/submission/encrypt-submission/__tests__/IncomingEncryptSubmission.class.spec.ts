@@ -62,6 +62,5 @@ describe('IncomingEncryptSubmission', () => {
     expect(initResult._unsafeUnwrapErr()).toEqual(
       new ConflictError('Some form fields are missing'),
     )
-    expect(initResult.isErr()).toEqual(true)
   })
 })
