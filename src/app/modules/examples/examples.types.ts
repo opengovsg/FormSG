@@ -3,24 +3,14 @@ import {
   IForm,
   IFormFeedbackSchema,
   IFormStatisticsTotalModel,
-  ISubmissionModel,
   StartPage,
 } from 'src/types'
 
-export enum RetrievalType {
-  Stats = 'statistics',
-  Submissions = 'submissions',
-}
-
 export type QueryDataMap = {
-  generalQueryModel: IFormStatisticsTotalModel | ISubmissionModel
+  generalQueryModel: IFormStatisticsTotalModel
   lookUpMiddleware: Record<string, unknown>[]
   groupByMiddleware: Record<string, unknown>[]
   singleSearchPipeline: (formId: string) => Record<string, unknown>[]
-}
-
-export type QueryData = {
-  [k in RetrievalType]: QueryDataMap
 }
 
 export type QueryExecResult = {

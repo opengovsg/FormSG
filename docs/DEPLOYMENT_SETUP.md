@@ -251,16 +251,6 @@ If this feature is enabled, client-side error events will be piped to [sentry.io
 | `SENTRY_CONFIG_URL` | Sentry.io URL for configuring the Raven SDK.                                                          |
 | `CSP_REPORT_URI`    | Reporting URL for Content Security Policy violdations. Can be configured to use a Sentry.io endpoint. |
 
-#### Examples page Using Pre-Computed Results
-
-If this feature is enabled, the submission statistics associated with forms loaded on the examples page will be fetched from the pre-computed values in the FormStatisticsTotal collection. The FormStatisticsTotal collection only exists if the [batch jobs](https://github.com/datagovsg/formsg-batch-jobs/) needed to calculate the submission statistics are run daily.
-
-If this feature is not enabled, the submission statistics associated with forms loaded on the examples page will be calculated on the fly from the Submissions collection. This may be sub-optimal when submissions are in the millions.
-
-| Variable               | Description                                                           |
-| :--------------------- | --------------------------------------------------------------------- |
-| `AGGREGATE_COLLECTION` | Has to be defined (i.e. =true) if FormStats collection is to be used. |
-
 #### SMS with Twilio
 
 If this feature is enabled, the Mobile Number field will support form-fillers verifying their mobile numbers via a One-Time-Pin sent to their mobile phones and will also support an SMS confirmation of successful submission being sent out to their said mobile numbers. All messages are sent using [twilio](https://www.twilio.com/) messaging APIs.

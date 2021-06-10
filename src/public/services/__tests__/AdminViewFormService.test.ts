@@ -82,7 +82,9 @@ describe('AdminViewFormService', () => {
 
       // Assert
       expect(actual).toEqual(expected)
-      expect(MockAxios.get).toHaveBeenCalledWith(`/${expected._id}/adminform`)
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        `${ADMIN_FORM_ENDPOINT}/${expected._id}`,
+      )
     })
 
     it('should reject with error message when GET request fails', async () => {
@@ -96,7 +98,9 @@ describe('AdminViewFormService', () => {
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
-      expect(MockAxios.get).toHaveBeenCalledWith(`/${MOCK_FORM._id}/adminform`)
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM._id}`,
+      )
     })
   })
 

@@ -12,7 +12,6 @@ angular.module('core').component('avatarDropdownComponent', {
     '$state',
     '$uibModal',
     '$window',
-    'Features',
     'Toastr',
     avatarDropdownController,
   ],
@@ -25,7 +24,6 @@ function avatarDropdownController(
   $state,
   $uibModal,
   $window,
-  Features,
   Toastr,
 ) {
   const vm = this
@@ -62,13 +60,8 @@ function avatarDropdownController(
       // Early return if user already has contact information.
       if (trueUser.contact) return
 
-      const features = await Features.getFeatureStates()
-
       // Only show exclamation mark in avatar if sms feature is enabled.
-      vm.showExclamation = features.sms && !vm.user.contact
-
-      // Do not proceed if sms feature is not available.
-      if (!features.sms) return
+      vm.showExclamation = !vm.user.contact
 
       // If retrieved user does not have contact, prompt user to add one.
       // If user has the key in the browser's storage the modal will not be

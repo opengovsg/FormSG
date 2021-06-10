@@ -35,7 +35,7 @@ export const createAuthedSession = async (
 
   const sendOtpResponse = await request.post('/auth/sendotp').send({ email })
   expect(sendOtpResponse.status).toEqual(200)
-  expect(sendOtpResponse.body).toEqual(`OTP sent to ${email}`)
+  expect(sendOtpResponse.body).toEqual(`OTP sent to ${email.toLowerCase()}`)
 
   // Act
   await request.post('/auth/verifyotp').send({ email, otp: MOCK_VALID_OTP })

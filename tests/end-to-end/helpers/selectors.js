@@ -63,7 +63,7 @@ myInfoTypes.forEach((type) => {
 // Admin tab contents
 const buildTab = {
   basicTab: Selector('#add-field .nav-tabs li[heading="Basic"]'),
-  myInfoTab: Selector('#add-field .nav-tabs li[feature-name="spcp-myinfo"]'),
+  myInfoTab: Selector('#add-field .nav-tabs li').withText('MyInfo'),
   getFieldPanel: (fieldType) =>
     // We need withExactText otherwise Mobile Number will match Number
     Selector('.add-field-panel .add-field-text').withExactText(

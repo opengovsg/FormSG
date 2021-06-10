@@ -714,7 +714,7 @@ async function expectStartPage(t, testForm, testFormData, appUrl) {
   await t
     .navigateTo(`${appUrl}/${_id}`)
     .expect(getPageUrl())
-    .eql(`${appUrl}/#!/${_id}`)
+    .contains(_id)
     .expect(formPage.startTitle.textContent)
     .contains(formOptions.title)
 }

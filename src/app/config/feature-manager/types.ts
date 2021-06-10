@@ -2,7 +2,6 @@ import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import { Schema } from 'convict'
 
 export enum FeatureNames {
-  AggregateStats = 'aggregate-stats',
   Captcha = 'captcha',
   GoogleAnalytics = 'google-analytics',
   Sentry = 'sentry',
@@ -11,10 +10,6 @@ export enum FeatureNames {
   VerifiedFields = 'verified-fields',
   WebhookVerifiedContent = 'webhook-verified-content',
   Intranet = 'intranet',
-}
-
-export interface IAggregateStats {
-  aggregateCollection: string
 }
 
 export interface ICaptcha {
@@ -87,7 +82,6 @@ export interface IIntranet {
 }
 
 export interface IFeatureManager {
-  [FeatureNames.AggregateStats]: IAggregateStats
   [FeatureNames.Captcha]: ICaptcha
   [FeatureNames.GoogleAnalytics]: IGoogleAnalytics
   [FeatureNames.Sentry]: ISentry
