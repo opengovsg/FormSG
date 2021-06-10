@@ -1,5 +1,7 @@
 const get = require('lodash/get')
 
+const UserService = require('../../../services/UserService')
+
 angular.module('core').component('avatarDropdownComponent', {
   templateUrl: 'modules/core/componentViews/avatar-dropdown.html',
   bindings: {},
@@ -39,7 +41,16 @@ function avatarDropdownController(
 
   async function retrieveUser() {
     try {
-      const trueUser = await Auth.refreshUser()
+      const trueUser = await UserService.fetchUser()
+        .then((user) => {
+          UserService.saveUserToLocalStorage(user)
+          return user
+        })
+        .catch(() => {
+          UserService.clearUserFromLocalStorage()
+          return null
+        })
+
       if (!trueUser) {
         $state.go('signin')
         return
