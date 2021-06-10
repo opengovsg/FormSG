@@ -6,23 +6,15 @@ import { mocked } from 'ts-jest/utils'
 import { SubmissionMetadataList } from 'src/types'
 
 import * as AdminSubmissionService from '../AdminSubmissionsService'
-import { FormSgSdk } from '../FormSgSdkService'
+import * as formsSdk from '../FormSgSdkService'
 import { ADMIN_FORM_ENDPOINT } from '../UpdateFormService'
 
 jest.mock('axios')
 const MockAxios = mocked(axios, true)
 
-jest.mock('../FormSgSdkService', () => {
-  return {
-    FormSgSdk: {
-      crypto: {
-        decryptFile: jest.fn().mockImplementation(() => 'great decryption'),
-      },
-    },
-  }
-})
+jest.mock('../FormSgSdkService')
 
-const mockFormSgSdk = mocked(FormSgSdk)
+const mockFormSgSdk = mocked(formsSdk.FormSgSdk, true)
 
 jest.mock('@stablelib/base64')
 const mockDecodeBase64 = mocked(decode)
@@ -186,6 +178,7 @@ describe('AdminSubmissionsService', () => {
 
     it('should decrypt successfully when there is data', async () => {
       // Arrange
+      mockFormSgSdk.crypto.decryptFile.mockReturnValueOnce('great decryption')
       const MOCK_ENCRYPTED_ATTACHMENT = {
         encryptedFile: {
           submissionPublicKey: MOCK_PUBLIC_KEY,
@@ -210,6 +203,35 @@ describe('AdminSubmissionsService', () => {
         MOCK_ENCRYPTED_ATTACHMENT.encryptedFile,
       )
       expect(actual).toBe('great decryption')
+    })
+
+    it('should return null when the sdk returns null', async () => {
+      // Arrange
+      mockFormSgSdk.crypto.decryptFile.mockResolvedValueOnce(null)
+      const MOCK_ENCRYPTED_ATTACHMENT = {
+        encryptedFile: {
+          submissionPublicKey: MOCK_PUBLIC_KEY,
+          nonce: MOCK_NONCE,
+          binary: MOCK_BINARY,
+        },
+      }
+      const MOCK_ARRAY = Uint8Array.from([1, 2, 3, 4])
+      MockAxios.get.mockResolvedValueOnce({ data: MOCK_ENCRYPTED_ATTACHMENT })
+      mockDecodeBase64.mockReturnValueOnce(MOCK_ARRAY)
+
+      // Act
+      const actual = await AdminSubmissionService.downloadAndDecryptAttachment(
+        MOCK_URL,
+        MOCK_SECRET_KEY,
+      )
+
+      // Arrange
+      expect(mockDecodeBase64).toHaveBeenCalledWith(MOCK_BINARY)
+      expect(mockFormSgSdk.crypto.decryptFile).toHaveBeenCalledWith(
+        MOCK_SECRET_KEY,
+        MOCK_ENCRYPTED_ATTACHMENT.encryptedFile,
+      )
+      expect(actual).toBe(null)
     })
   })
 
