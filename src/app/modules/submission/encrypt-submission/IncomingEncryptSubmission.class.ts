@@ -34,7 +34,7 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
     encryptedContent: string,
   ): Result<
     IncomingEncryptSubmission,
-    ProcessingError | ConflictError | ValidateFieldError
+    ProcessingError | ConflictError | ValidateFieldError[]
   > {
     return checkIsEncryptedEncoding(encryptedContent)
       .andThen(() => getFilteredResponses(form, responses))

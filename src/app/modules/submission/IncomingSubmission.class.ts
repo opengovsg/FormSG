@@ -1,4 +1,4 @@
-import { combine, err, ok, Result } from 'neverthrow'
+import { combineWithAllErrors, err, ok, Result } from 'neverthrow'
 
 import {
   FieldIdSet,
@@ -151,7 +151,7 @@ export abstract class IncomingSubmission {
     }
   }
 
-  protected validate(): Result<true, ProcessingError | ValidateFieldError> {
+  protected validate(): Result<true, ProcessingError | ValidateFieldError[]> {
     // Guard against invalid form submissions that should have been prevented by
     // logic.
     if (
@@ -174,7 +174,7 @@ export abstract class IncomingSubmission {
       )
     })
 
-    const validationResultCombined = combine(validationResultList)
+    const validationResultCombined = combineWithAllErrors(validationResultList)
     if (validationResultCombined.isErr()) {
       return err(validationResultCombined.error)
     }
