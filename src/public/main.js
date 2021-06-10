@@ -257,7 +257,6 @@ require('./modules/forms/config/forms.client.routes.js')
 
 // forms services
 require('./modules/forms/services/form-fields.client.service.js')
-require('./modules/forms/services/form-factory.client.service.js')
 require('./modules/forms/services/form-api.client.factory.js')
 require('./modules/forms/services/form-error.client.factory.js')
 require('./modules/forms/services/spcp-session.client.factory.js')
