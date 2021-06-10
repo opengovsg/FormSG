@@ -11,6 +11,7 @@ import {
   ResponseMode,
 } from '../../../../../types'
 import { checkIsEncryptedEncoding } from '../../../../utils/encryption'
+import { ConflictError } from '../../submission.errors'
 import IncomingEncryptSubmission from '../IncomingEncryptSubmission.class'
 
 jest.mock('../../../../utils/encryption')
@@ -57,6 +58,9 @@ describe('IncomingEncryptSubmission', () => {
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
+    )
+    expect(initResult._unsafeUnwrapErr()).toEqual(
+      new ConflictError('Some form fields are missing'),
     )
     expect(initResult.isErr()).toEqual(true)
   })
