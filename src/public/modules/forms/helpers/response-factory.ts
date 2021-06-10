@@ -13,6 +13,12 @@ import {
   TableResponse,
 } from './csv-response-classes'
 
+/**
+ * Converts a field record into a custom response instance
+ * @param fieldRecordData Field record
+ * @returns Response instance
+ * @throws Error when data does not fit any known response type
+ */
 export const getResponseInstance = (
   fieldRecordData: DisplayedResponseWithoutAnswer,
 ): Response => {
@@ -30,7 +36,7 @@ export const getResponseInstance = (
     return new SingleAnswerResponse(fieldRecordData)
   } else {
     // eslint-disable-next-line typesafe/no-throw-sync-func
-    throw new Error('Response did not match any known type') // should be caught in submissions client factory
+    throw new Error('Response did not match any known type')
   }
 }
 
@@ -40,7 +46,7 @@ const isNestedResponse = (
   return (
     hasProp(response, 'answerArray') &&
     Array.isArray(response.answerArray) &&
-    response.answerArray.every((value) => Array.isArray(value)) && // or has at least one element that is an array
+    response.answerArray.every((value) => Array.isArray(value)) &&
     response.answerArray.every((arr) =>
       arr.every((value: unknown) => typeof value === 'string'),
     )
