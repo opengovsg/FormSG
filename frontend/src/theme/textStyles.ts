@@ -71,7 +71,7 @@ export const textStyles = {
     fontWeight: 600,
     fontSize: '0.875rem',
     lineHeight: '1.5rem',
-    letterSpacing: '0.008em',
+    letterSpacing: '0.08em',
     textTransform: 'uppercase',
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
