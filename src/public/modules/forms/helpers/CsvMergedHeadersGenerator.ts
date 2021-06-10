@@ -70,7 +70,7 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
   }
 
   /**
-   * Adds an UnprocessedRecord to this.unprocessed
+   * Extracts information from input record, rearranges record and then adds an UnprocessedRecord to this.unprocessed
    * @param decryptedContent
    * @param decryptedContent.record
    * @param decryptedContent.created
