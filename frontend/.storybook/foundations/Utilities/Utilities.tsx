@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { useCallback } from 'react'
 import {
   Box,
   Container,
@@ -6,10 +6,21 @@ import {
   Heading,
   Stack,
   Text,
-  Wrap,
-} from '@chakra-ui/layout'
+  useTheme,
+} from '@chakra-ui/react'
 
 export const Utilities = (): JSX.Element => {
+  const theme = useTheme()
+
+  const prettyPrint = useCallback((key: string, value: string) => {
+    return (
+      <>
+        <Text color="secondary.400">{key}:&nbsp;</Text>
+        <Text>{value}</Text>
+      </>
+    )
+  }, [])
+
   return (
     <Container maxW="container.xl">
       <Heading
@@ -24,7 +35,10 @@ export const Utilities = (): JSX.Element => {
         Shadows
       </Heading>
       <Stack spacing="2.5rem">
-        <Flex flexDir={{ base: 'column', md: 'row' }} align="center">
+        <Flex
+          flexDir={{ base: 'column', md: 'row' }}
+          align={{ base: 'start', md: 'center' }}
+        >
           <Text
             color="secondary.400"
             textStyle="subhead-3"
@@ -33,9 +47,14 @@ export const Utilities = (): JSX.Element => {
           >
             shadow-sm
           </Text>
-          <Box h="3.5rem" w="100%" shadow="sm"></Box>
+          <Flex h="3.5rem" w="100%" shadow="sm" align="center" justify="center">
+            {prettyPrint('sm', theme.shadows['sm'])}
+          </Flex>
         </Flex>
-        <Flex flexDir={{ base: 'column', md: 'row' }} align="center">
+        <Flex
+          flexDir={{ base: 'column', md: 'row' }}
+          align={{ base: 'start', md: 'center' }}
+        >
           <Text
             color="secondary.400"
             textStyle="subhead-3"
@@ -44,9 +63,14 @@ export const Utilities = (): JSX.Element => {
           >
             shadow-md
           </Text>
-          <Box h="3.5rem" w="100%" shadow="md"></Box>
+          <Flex h="3.5rem" w="100%" shadow="md" align="center" justify="center">
+            {prettyPrint('md', theme.shadows['md'])}
+          </Flex>
         </Flex>
-        <Flex flexDir={{ base: 'column', md: 'row' }} align="center">
+        <Flex
+          flexDir={{ base: 'column', md: 'row' }}
+          align={{ base: 'start', md: 'center' }}
+        >
           <Text
             color="secondary.400"
             textStyle="subhead-3"
@@ -55,7 +79,9 @@ export const Utilities = (): JSX.Element => {
           >
             shadow-lg
           </Text>
-          <Box h="3.5rem" w="100%" shadow="lg"></Box>
+          <Flex h="3.5rem" w="100%" shadow="lg" align="center" justify="center">
+            {prettyPrint('lg', theme.shadows['lg'])}
+          </Flex>
         </Flex>
       </Stack>
     </Container>
