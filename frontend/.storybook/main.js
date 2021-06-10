@@ -11,7 +11,7 @@ module.exports = {
   // Welcome story set first so it will show up first.
   stories: [
     './Welcome/Welcome.stories.tsx',
-    './foundations/**/*.stories.tsx',
+    './foundations/**/*.stories.@(mdx|js|jsx|ts|tsx)',
     '../src/**/*.stories.mdx',
     '../src/**/*.stories.@(js|jsx|ts|tsx)',
   ],
