@@ -5,8 +5,7 @@ const DecryptionWorker = require('../helpers/decryption.worker.js')
 const { fixParamsToUrl, triggerFileDownload } = require('../helpers/util')
 const { ndjsonStream } = require('../helpers/ndjsonStream')
 const fetchStream = require('fetch-readablestream')
-const { decode: decodeBase64 } = require('@stablelib/base64')
-const JSZip = require('jszip')
+
 const AdminSubmissionsService = require('../../../services/AdminSubmissionsService')
 
 const NUM_OF_METADATA_ROWS = 5
@@ -15,11 +14,9 @@ angular
   .module('forms')
   .factory('Submissions', [
     '$q',
-    '$http',
     '$timeout',
     '$window',
     'GTag',
-    'FormSgSdk',
     SubmissionsFactory,
   ])
 
@@ -31,7 +28,7 @@ function killWorkers(pool) {
   pool.forEach((worker) => worker.terminate())
 }
 
-function SubmissionsFactory($q, $http, $timeout, $window, GTag, FormSgSdk) {
+function SubmissionsFactory($q, $timeout, $window, GTag) {
   const ADMIN_FORMS_PREFIX = '/api/v3/admin/forms'
 
   const generateDownloadUrl = (params, downloadAttachments) => {
@@ -51,54 +48,14 @@ function SubmissionsFactory($q, $http, $timeout, $window, GTag, FormSgSdk) {
 
   const submissionService = {
     /**
-     * Triggers a download of a set of attachments as a zip file when given attachment metadata and a secret key
-     * @param {Map} attachmentDownloadUrls Map of question number to individual attachment metadata (object with url and filename properties)
-     * @param {String} secretKey An instance of EncryptionKey for decrypting the attachment
-     * @returns {Promise} A Promise containing the contents of the ZIP file as a blob
-     */
-    downloadAndDecryptAttachmentsAsZip: function (
-      attachmentDownloadUrls,
-      secretKey,
-    ) {
-      var zip = new JSZip()
-      let downloadPromises = []
-      for (const [questionNum, metadata] of attachmentDownloadUrls) {
-        downloadPromises.push(
-          this.downloadAndDecryptAttachment(metadata.url, secretKey).then(
-            (bytesArray) => {
-              zip.file(
-                'Question ' + questionNum + ' - ' + metadata.filename,
-                bytesArray,
-              )
-            },
-          ),
-        )
-      }
-      return Promise.all(downloadPromises).then(() => {
-        return zip.generateAsync({ type: 'blob' })
-      })
-    },
-    /**
-     * Triggers a download of a single attachment when given an S3 presigned url and a secretKey
-     * @param {String} url URL pointing to the location of the encrypted attachment
-     * @param {String} secretKey An instance of EncryptionKey for decrypting the attachment
-     * @returns {Promise} A Promise containing the contents of the file as a Blob
-     */
-    downloadAndDecryptAttachment: function (url, secretKey) {
-      return $http.get(url).then((response) => {
-        let data = response.data
-        data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
-        return FormSgSdk.crypto.decryptFile(secretKey, data.encryptedFile)
-      })
-    },
-    /**
-     * Cancels an existing on-going download
+     * Cancels an existing on-going download.
      */
     cancelDownloadEncryptedResponses: function () {
       downloadAbortController.abort()
       killWorkers(workerPool)
       workerPool = []
     },
+
     /**
      * Triggers a download of file responses when called
      * @param {String} params.formId ID of the form

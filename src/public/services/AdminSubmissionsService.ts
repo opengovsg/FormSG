@@ -1,4 +1,6 @@
+import { decode as decodeBase64 } from '@stablelib/base64'
 import axios from 'axios'
+import JSZip from 'jszip'
 
 import { EncryptedSubmissionDto, SubmissionMetadataList } from 'src/types'
 import {
@@ -8,6 +10,7 @@ import {
   SubmissionResponseQueryDto,
 } from 'src/types/api'
 
+import { FormSgSdk } from './FormSgSdkService'
 import { ADMIN_FORM_ENDPOINT } from './UpdateFormService'
 
 /**
@@ -81,4 +84,44 @@ export const getEncryptedResponse = async ({
   return axios
     .get(`${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}`)
     .then(({ data }) => data)
+}
+
+/**
+ * Triggers a download of a set of attachments as a zip file when given attachment metadata and a secret key
+ * @param {Map} attachmentDownloadUrls Map of question number to individual attachment metadata (object with url and filename properties)
+ * @param {String} secretKey An instance of EncryptionKey for decrypting the attachment
+ * @returns {Promise} A Promise containing the contents of the ZIP file as a blob
+ */
+export const downloadAndDecryptAttachmentsAsZip = async (
+  attachmentDownloadUrls: Map<number, { url: string; filename: string }>,
+  secretKey: string,
+): Promise<Blob> => {
+  const zip = new JSZip()
+  const downloadPromises = Array.from(attachmentDownloadUrls).map(
+    async ([questionNum, { url, filename }]) => {
+      const bytesArray = await downloadAndDecryptAttachment(url, secretKey)
+      const fileName = `Question ${questionNum} - ${filename}`
+      return zip.file(fileName, bytesArray ?? [])
+    },
+  )
+
+  return Promise.all(downloadPromises).then(() => {
+    return zip.generateAsync({ type: 'blob' })
+  })
+}
+
+/**
+ * Triggers a download of a single attachment when given an S3 presigned url and a secretKey
+ * @param {String} url URL pointing to the location of the encrypted attachment
+ * @param {String} secretKey An instance of EncryptionKey for decrypting the attachment
+ * @returns {Promise} A Promise containing the contents of the file as a Blob
+ */
+export const downloadAndDecryptAttachment = (
+  url: string,
+  secretKey: string,
+): Promise<Uint8Array | null> => {
+  return axios.get(url).then(({ data }) => {
+    data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
+    return FormSgSdk.crypto.decryptFile(secretKey, data.encryptedFile)
+  })
 }
