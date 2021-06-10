@@ -97,4 +97,5 @@ export type SmsVerificationWarningData = {
   formTitle: string
   formLink: string
   numAvailable: number
+  smsVerificationLimit: number
 }
