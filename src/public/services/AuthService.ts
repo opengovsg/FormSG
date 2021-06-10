@@ -49,3 +49,7 @@ export const verifyLoginOtp = async (params: {
     .post<User>(`${AUTH_ENDPOINT}/otp/verify`, params)
     .then(({ data }) => data)
 }
+
+export const logout = async (): Promise<void> => {
+  return axios.get(`${AUTH_ENDPOINT}/logout`)
+}

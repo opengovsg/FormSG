@@ -28,7 +28,8 @@ export const clearUserFromLocalStorage = (): void => {
 /**
  * Fetches the user from the server using the current session cookie.
  *
- * Side effect: Saves the retrieved user to localStorage
+ * Side effect: On success, save the retrieved user to localStorage.
+ * Side effect: On error, clear the user (if any) from localStorage.
  * @returns the logged in user if session is valid, `null` otherwise
  */
 export const fetchUser = async (): Promise<User | null> => {

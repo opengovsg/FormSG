@@ -1,11 +1,13 @@
 const get = require('lodash/get')
 
+const AuthService = require('../../../services/AuthService')
 const UserService = require('../../../services/UserService')
 
 angular.module('core').component('avatarDropdownComponent', {
   templateUrl: 'modules/core/componentViews/avatar-dropdown.html',
   bindings: {},
   controller: [
+    '$q',
     '$scope',
     '$state',
     '$uibModal',
@@ -19,6 +21,7 @@ angular.module('core').component('avatarDropdownComponent', {
 })
 
 function avatarDropdownController(
+  $q,
   $scope,
   $state,
   $uibModal,
@@ -92,7 +95,20 @@ function avatarDropdownController(
     },
   )
 
-  vm.signOut = () => Auth.signOut()
+  vm.logout = () => {
+    return $q
+      .when(AuthService.logout())
+      .then(() => {
+        // Clear user and contact banner on logout
+        UserService.clearUserFromLocalStorage()
+        $window.localStorage.removeItem('contactBannerDismissed')
+        // Redirect to landing page
+        $state.go('landing')
+      })
+      .catch((error) => {
+        console.error('sign out failed:', error)
+      })
+  }
 
   vm.openContactNumberModal = () => {
     $uibModal
@@ -109,7 +125,7 @@ function avatarDropdownController(
         // Update success, update user.
         if (returnVal) {
           vm.user = returnVal
-          Auth.setUser(returnVal)
+          UserService.saveUserToLocalStorage(returnVal)
           vm.showExclamation = !returnVal.contact
         }
       })

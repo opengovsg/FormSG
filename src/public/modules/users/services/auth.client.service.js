@@ -22,18 +22,8 @@ function Auth($q, $http, $state, $window) {
 
   let authService = {
     getUser,
-    setUser,
-    signOut,
   }
   return authService
-
-  /**
-   * User setter function
-   * @param {User} user
-   */
-  function setUser(user) {
-    $window.localStorage.setItem('user', JSON.stringify(user))
-  }
 
   /**
    * User getter function
@@ -48,18 +38,5 @@ function Auth($q, $http, $state, $window) {
     } catch (error) {
       return null
     }
-  }
-  function signOut() {
-    $http.get('/api/v3/auth/logout').then(
-      function () {
-        $window.localStorage.removeItem('user')
-        // Clear contact banner on logout
-        $window.localStorage.removeItem('contactBannerDismissed')
-        $state.go('landing')
-      },
-      function (error) {
-        console.error('sign out failed:', error)
-      },
-    )
   }
 }
