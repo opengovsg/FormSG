@@ -9,7 +9,6 @@ export enum FeatureNames {
   SpcpMyInfo = 'spcp-myinfo',
   VerifiedFields = 'verified-fields',
   WebhookVerifiedContent = 'webhook-verified-content',
-  Intranet = 'intranet',
 }
 
 export interface ICaptcha {
@@ -77,10 +76,6 @@ export interface IWebhookVerifiedContent {
   webhookQueueUrl: string
 }
 
-export interface IIntranet {
-  intranetIpListPath: string
-}
-
 export interface IFeatureManager {
   [FeatureNames.Captcha]: ICaptcha
   [FeatureNames.GoogleAnalytics]: IGoogleAnalytics
@@ -89,7 +84,6 @@ export interface IFeatureManager {
   [FeatureNames.SpcpMyInfo]: ISpcpMyInfo
   [FeatureNames.VerifiedFields]: IVerifiedFields
   [FeatureNames.WebhookVerifiedContent]: IWebhookVerifiedContent
-  [FeatureNames.Intranet]: IIntranet
 }
 
 export interface RegisteredFeature<T extends FeatureNames> {

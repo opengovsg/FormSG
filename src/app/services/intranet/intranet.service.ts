@@ -1,6 +1,9 @@
 import fs from 'fs'
 
-import { IIntranet } from '../../config/feature-manager'
+import {
+  IIntranet,
+  intranetConfig,
+} from '../../config/feature-manager/intranet.config'
 import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)
@@ -8,7 +11,7 @@ const logger = createLoggerWithLabel(module)
 /**
  * Handles intranet functionality based on a given list of intranet IPs.
  */
-export class IntranetService {
+class IntranetServiceClass {
   /**
    * List of IP addresses associated with intranet
    */
@@ -44,3 +47,5 @@ export class IntranetService {
     return this.intranetIps.includes(ip)
   }
 }
+
+export const IntranetService = new IntranetServiceClass(intranetConfig)

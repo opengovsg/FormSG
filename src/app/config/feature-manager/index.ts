@@ -1,7 +1,6 @@
 import FeatureManager from './util/FeatureManager.class'
 import captcha from './captcha.config'
 import googleAnalytics from './google-analytics.config'
-import { intranetFeature } from './intranet.config'
 import sentry from './sentry.config'
 import sms from './sms.config'
 import spcpMyInfo from './spcp-myinfo.config'
@@ -20,6 +19,5 @@ featureManager.register(spcpMyInfo)
 featureManager.register(webhookVerifiedContent)
 featureManager.register(sms)
 featureManager.register(verifiedFields)
-featureManager.register(intranetFeature)
 
 export default featureManager
