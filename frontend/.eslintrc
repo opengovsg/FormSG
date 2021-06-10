@@ -1,10 +1,7 @@
 {
   "root": true,
   "plugins": ["import", "simple-import-sort", "prettier"],
-<<<<<<< HEAD
   "extends": ["eslint:recommended", "plugin:prettier/recommended"],
-=======
->>>>>>> 5fbcb881 (feat(react): add base react app directory in root of the application (#1819))
   "overrides": [
     {
       "files": ["*.test.ts"],
