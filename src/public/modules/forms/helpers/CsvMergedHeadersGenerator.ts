@@ -14,15 +14,6 @@ type UnprocessedRecord = {
 }
 
 export class CsvMergedHeadersGenerator extends CsvGenerator {
-  /**
-   * Extracts the string representation from a field response
-   */
-  #extractAnswer: (
-    unprocessedRecord: { [fieldId: string]: Response },
-    fieldId: string,
-    colIndex: number,
-  ) => string
-
   hasBeenProcessed: boolean
   hasBeenSorted: boolean
   fieldIdToQuestion: Map<
@@ -43,23 +34,6 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
     this.fieldIdToQuestion = new Map()
     this.fieldIdToNumCols = {}
     this.unprocessed = []
-
-    /**
-     * Extracts the string representation from a field response
-     * @param unprocessedRecord
-     * @param fieldId
-     * @param colIndex
-     * @returns string representation of unprocessed record
-     */
-    this.#extractAnswer = function (
-      unprocessedRecord,
-      fieldId,
-      colIndex,
-    ): string {
-      const fieldRecord = unprocessedRecord[fieldId]
-      if (!fieldRecord) return ''
-      return fieldRecord.getAnswer(colIndex)
-    }
   }
 
   /**
@@ -151,12 +125,29 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
       this.fieldIdToQuestion.forEach((_question, fieldId) => {
         const numCols = this.fieldIdToNumCols[fieldId]
         for (let colIndex = 0; colIndex < numCols; colIndex++) {
-          row.push(this.#extractAnswer(up.record, fieldId, colIndex))
+          row.push(this._extractAnswer(up.record, fieldId, colIndex))
         }
       })
       this.addLine(row)
     })
     this.hasBeenProcessed = true
+  }
+
+  /**
+   * Extracts the string representation from a field response
+   * @param unprocessedRecord
+   * @param fieldId
+   * @param colIndex
+   * @returns string representation of unprocessed record
+   */
+  _extractAnswer(
+    unprocessedRecord: { [fieldId: string]: Response },
+    fieldId: string,
+    colIndex: number,
+  ): string {
+    const fieldRecord = unprocessedRecord[fieldId]
+    if (!fieldRecord) return ''
+    return fieldRecord.getAnswer(colIndex)
   }
 
   /**
