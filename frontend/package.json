@@ -78,7 +78,6 @@
     "puppeteer": "^9.1.1",
     "react-app-rewire-alias": "^1.0.3",
     "react-app-rewired": "^2.1.8",
-    "storybook-addon-pseudo-states": "^1.0.0",
     "ts-jest": "^26.5.6"
   }
 }
