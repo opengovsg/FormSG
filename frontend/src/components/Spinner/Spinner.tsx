@@ -1,8 +1,12 @@
 import { useMemo } from 'react'
 import { BiLoader } from 'react-icons/bi'
-import { Box } from '@chakra-ui/layout'
-import { usePrefersReducedMotion } from '@chakra-ui/media-query'
-import { keyframes } from '@chakra-ui/system'
+import {
+  Flex,
+  Icon,
+  IconProps,
+  keyframes,
+  usePrefersReducedMotion,
+} from '@chakra-ui/react'
 import VisuallyHidden from '@chakra-ui/visually-hidden'
 
 interface SpinnerProps {
@@ -27,7 +31,7 @@ interface SpinnerProps {
   /**
    * Font size of the spinner.
    */
-  fontSize?: string
+  fontSize?: IconProps['fontSize']
 }
 
 const spin = keyframes({
@@ -54,9 +58,9 @@ export const Spinner = ({
   )
 
   return (
-    <Box animation={animation} color={color}>
+    <Flex color={color} align="center">
       {label && <VisuallyHidden>{label}</VisuallyHidden>}
-      <BiLoader fontSize={fontSize} />
-    </Box>
+      <Icon animation={animation} as={BiLoader} fontSize={fontSize} />
+    </Flex>
   )
 }
