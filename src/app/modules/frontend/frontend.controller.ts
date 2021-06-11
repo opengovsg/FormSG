@@ -141,12 +141,12 @@ export const showFeaturesStates: ControllerHandler<
   Record<FeatureNames, boolean>
 > = (_req, res) => {
   return res.json({
-    captcha: true,
-    sms: true,
-    'spcp-myinfo': true,
-    'verified-fields': true,
-    'google-analytics': true,
-    'webhook-verified-content': true,
-    sentry: true,
+    [FeatureNames.Captcha]: true,
+    [FeatureNames.Sms]: true,
+    [FeatureNames.SpcpMyInfo]: true,
+    [FeatureNames.VerifiedFields]: true,
+    [FeatureNames.GoogleAnalytics]: true,
+    [FeatureNames.WebhookVerifiedContent]: true,
+    [FeatureNames.Sentry]: true,
   })
 }
