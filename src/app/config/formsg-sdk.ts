@@ -3,6 +3,7 @@ import { get } from 'lodash'
 
 import * as vfnConstants from '../../shared/util/verification'
 
+import { verifiedFieldsConfig } from './feature-manager/verified-fields.config'
 import { formsgSdkMode } from './config'
 import featureManager, { FeatureNames } from './feature-manager'
 
@@ -14,11 +15,7 @@ const formsgSdk = formsgSdkPackage({
   ),
   mode: formsgSdkMode,
   verificationOptions: {
-    secretKey: get(
-      featureManager.props(FeatureNames.VerifiedFields),
-      'verificationSecretKey',
-      undefined,
-    ),
+    secretKey: verifiedFieldsConfig.verificationSecretKey,
     transactionExpiry: vfnConstants.TRANSACTION_EXPIRE_AFTER_SECONDS,
   },
 })

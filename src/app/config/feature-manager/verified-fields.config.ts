@@ -1,16 +1,18 @@
-import { FeatureNames, RegisterableFeature } from './types'
+import convict, { Schema } from 'convict'
 
-const verifiedFieldsFeature: RegisterableFeature<FeatureNames.VerifiedFields> =
-  {
-    name: FeatureNames.VerifiedFields,
-    schema: {
-      verificationSecretKey: {
-        doc: 'The secret key for signing verified responses (email, mobile)',
-        format: String,
-        default: null,
-        env: 'VERIFICATION_SECRET_KEY',
-      },
-    },
-  }
+export interface IVerifiedFields {
+  verificationSecretKey: string
+}
 
-export default verifiedFieldsFeature
+const verifiedFieldsSchema: Schema<IVerifiedFields> = {
+  verificationSecretKey: {
+    doc: 'The secret key for signing verified responses (email, mobile)',
+    format: String,
+    default: null,
+    env: 'VERIFICATION_SECRET_KEY',
+  },
+}
+
+export const verifiedFieldsConfig = convict(verifiedFieldsSchema)
+  .validate({ allowed: 'strict' })
+  .getProperties()
