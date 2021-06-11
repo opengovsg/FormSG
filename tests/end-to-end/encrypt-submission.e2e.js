@@ -65,7 +65,7 @@ fixture('Storage mode submissions')
   })
 
 // Form with all field types available in storage mode
-test.meta('basic-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = cloneDeep(allFieldsEncrypt)
   t.ctx.formData = formData
@@ -75,7 +75,7 @@ test.meta('basic-env', 'true').before(async (t) => {
 })
 
 // Form where all basic field types are hidden by logic
-test.meta('basic-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = cloneDeep(hiddenFieldsDataEncrypt)
   formData.logicData = cloneDeep(hiddenFieldsLogicDataEncrypt)
@@ -86,7 +86,7 @@ test.meta('basic-env', 'true').before(async (t) => {
 })
 
 // Form where all fields are optional and no field is answered
-test.meta('basic-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = allFieldsEncrypt.map((field) => {
     return getBlankVersion(getOptionalVersion(field))
@@ -98,7 +98,7 @@ test.meta('basic-env', 'true').before(async (t) => {
 })
 
 // Form where submission is prevented using chained logic
-test.meta('basic-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = cloneDeep(chainDisabled.fields)
   formData.logicData = cloneDeep(chainDisabled.logicData)
@@ -114,7 +114,7 @@ test.meta('basic-env', 'true').before(async (t) => {
 })
 
 // Basic form with only one field and SP authentication
-test.meta('full-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions({
     authType: 'SP',
     status: 'PRIVATE',
@@ -135,7 +135,7 @@ test.meta('full-env', 'true').before(async (t) => {
 })
 
 // Basic form with only one field and CP authentication
-test.meta('full-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions({
     authType: 'CP',
     status: 'PRIVATE',
@@ -156,7 +156,7 @@ test.meta('full-env', 'true').before(async (t) => {
 })
 
 // Basic form with verifiable email field
-test.meta('full-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = cloneDeep(verifiableEmailField)
   t.ctx.formData = formData
@@ -166,7 +166,7 @@ test.meta('full-env', 'true').before(async (t) => {
 })
 
 // Basic form with only one field
-test.meta('full-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = [
     {

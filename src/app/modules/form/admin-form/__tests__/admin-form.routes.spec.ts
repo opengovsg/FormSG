@@ -3609,7 +3609,7 @@ describe('admin-form.routes', () => {
         encryptedContent: 'any encrypted content',
         verifiedContent: 'any verified content',
       }
-      const submission = await createSubmission({
+      const submission = await createEncryptSubmission({
         form: defaultForm,
         ...expectedSubmissionParams,
       })
@@ -3629,6 +3629,7 @@ describe('admin-form.routes', () => {
         refNo: String(submission._id),
         submissionTime: expect.any(String),
         verified: expectedSubmissionParams.verifiedContent,
+        version: submission.version,
       })
     })
 
@@ -3642,7 +3643,7 @@ describe('admin-form.routes', () => {
           ['fieldId2', 'some.other.attachment.url'],
         ]),
       }
-      const submission = await createSubmission({
+      const submission = await createEncryptSubmission({
         form: defaultForm,
         ...expectedSubmissionParams,
       })
@@ -3669,6 +3670,7 @@ describe('admin-form.routes', () => {
         refNo: String(submission._id),
         submissionTime: expect.any(String),
         verified: expectedSubmissionParams.verifiedContent,
+        version: submission.version,
       })
     })
 
@@ -3819,7 +3821,7 @@ describe('admin-form.routes', () => {
       jest
         .spyOn(EncryptSubmissionModel, 'findEncryptedSubmissionById')
         .mockRejectedValueOnce(new Error('ohno'))
-      const submission = await createSubmission({
+      const submission = await createEncryptSubmission({
         form: defaultForm,
         encryptedContent: 'any encrypted content',
         verifiedContent: 'any verified content',
@@ -3848,7 +3850,7 @@ describe('admin-form.routes', () => {
         .spyOn(aws.s3, 'getSignedUrlPromise')
         .mockRejectedValueOnce(new Error('something went wrong'))
 
-      const submission = await createSubmission({
+      const submission = await createEncryptSubmission({
         form: defaultForm,
         encryptedContent: 'any encrypted content',
         verifiedContent: 'any verified content',
@@ -4349,7 +4351,7 @@ describe('admin-form.routes', () => {
       // Create 11 submissions
       const submissions = await Promise.all(
         times(11, (count) =>
-          createSubmission({
+          createEncryptSubmission({
             form: defaultForm,
             encryptedContent: `any encrypted content ${count}`,
             verifiedContent: `any verified content ${count}`,
@@ -4384,7 +4386,7 @@ describe('admin-form.routes', () => {
     it('should return 200 with empty results if query.page does not have metadata', async () => {
       // Arrange
       // Create single submission
-      await createSubmission({
+      await createEncryptSubmission({
         form: defaultForm,
         encryptedContent: `any encrypted content`,
         verifiedContent: `any verified content`,
@@ -4412,7 +4414,7 @@ describe('admin-form.routes', () => {
       // Create 3 submissions
       const submissions = await Promise.all(
         times(3, (count) =>
-          createSubmission({
+          createEncryptSubmission({
             form: defaultForm,
             encryptedContent: `any encrypted content ${count}`,
             verifiedContent: `any verified content ${count}`,
@@ -4603,7 +4605,7 @@ describe('admin-form.routes', () => {
       // Arrange
       const submissions = await Promise.all(
         times(11, (count) =>
-          createSubmission({
+          createEncryptSubmission({
             form: defaultForm,
             encryptedContent: `any encrypted content ${count}`,
             verifiedContent: `any verified content ${count}`,
@@ -4639,6 +4641,7 @@ describe('admin-form.routes', () => {
             encryptedContent: s.encryptedContent,
             verifiedContent: s.verifiedContent,
             created: s.created,
+            version: s.version,
           }),
         )
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
@@ -4659,7 +4662,7 @@ describe('admin-form.routes', () => {
       // Arrange
       const submissions = await Promise.all(
         times(5, (count) =>
-          createSubmission({
+          createEncryptSubmission({
             form: defaultForm,
             encryptedContent: `any encrypted content ${count}`,
             verifiedContent: `any verified content ${count}`,
@@ -4695,6 +4698,7 @@ describe('admin-form.routes', () => {
             encryptedContent: s.encryptedContent,
             verifiedContent: s.verifiedContent,
             created: s.created,
+            version: s.version,
           }),
         )
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
@@ -4723,7 +4727,7 @@ describe('admin-form.routes', () => {
       // Arrange
       const submissions = await Promise.all(
         times(5, (count) =>
-          createSubmission({
+          createEncryptSubmission({
             form: defaultForm,
             encryptedContent: `any encrypted content ${count}`,
             verifiedContent: `any verified content ${count}`,
@@ -4774,6 +4778,7 @@ describe('admin-form.routes', () => {
             encryptedContent: s.encryptedContent,
             verifiedContent: s.verifiedContent,
             created: s.created,
+            version: s.version,
           }),
         )
         .filter((s) => expectedSubmissionIds.includes(s._id))
@@ -5385,7 +5390,7 @@ describe('admin-form.routes', () => {
 })
 
 // Helper utils
-const createSubmission = ({
+const createEncryptSubmission = ({
   form,
   encryptedContent,
   verifiedContent,
@@ -5398,7 +5403,7 @@ const createSubmission = ({
   verifiedContent?: string
   created?: Date
 }) => {
-  return SubmissionModel.create({
+  return EncryptSubmissionModel.create({
     submissionType: SubmissionType.Encrypt,
     form: form._id,
     authType: form.authType,

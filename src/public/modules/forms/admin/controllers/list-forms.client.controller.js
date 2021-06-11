@@ -3,6 +3,8 @@
 const get = require('lodash/get')
 const BetaService = require('../../../../services/BetaService')
 
+const UserService = require('../../../../services/UserService')
+
 // Forms controller
 angular
   .module('forms')
@@ -10,12 +12,12 @@ angular
     '$scope',
     'FormApi',
     '$uibModal',
-    'Auth',
     'moment',
     '$state',
     '$timeout',
     '$window',
     'Toastr',
+    '$q',
     ListFormsController,
   ])
 
@@ -23,12 +25,12 @@ function ListFormsController(
   $scope,
   FormApi,
   $uibModal,
-  Auth,
   moment,
   $state,
   $timeout,
   $window,
   Toastr,
+  $q,
 ) {
   const vm = this
 
@@ -39,7 +41,7 @@ function ListFormsController(
   // Duplicated form outline on newly dup forms
   vm.duplicatedForms = []
   // Redirect to signin if unable to get user
-  vm.user = Auth.getUser() || $state.go('signin')
+  vm.user = UserService.getUserFromLocalStorage() || $state.go('signin')
 
   // Brings user to edit form page
   vm.editForm = function (form) {
@@ -74,7 +76,7 @@ function ListFormsController(
     // Massage user email into a name
     turnEmailToName()
 
-    FormApi.query(function (_forms) {
+    $q.when(FormApi.getDashboardView()).then((_forms) => {
       vm.myforms = _forms
     })
   }
@@ -192,9 +194,9 @@ function ListFormsController(
       resolve: {
         FormToDuplicate: () => {
           // Retrieve the form so that we can populate the modal with any existing email recipients
-          return FormApi.preview({
-            formId: vm.myforms[formIndex]._id,
-          }).$promise.then((res) => res.form)
+          return $q
+            .when(FormApi.previewForm(vm.myforms[formIndex]._id))
+            .then((res) => res.form)
         },
         createFormModalOptions: () => ({ mode: 'duplicate' }),
         externalScope: () => ({

@@ -1,15 +1,17 @@
 const get = require('lodash/get')
 
+const AuthService = require('../../../services/AuthService')
+const UserService = require('../../../services/UserService')
+
 angular.module('core').component('avatarDropdownComponent', {
   templateUrl: 'modules/core/componentViews/avatar-dropdown.html',
   bindings: {},
   controller: [
+    '$q',
     '$scope',
     '$state',
     '$uibModal',
     '$window',
-    'Auth',
-    'Features',
     'Toastr',
     avatarDropdownController,
   ],
@@ -17,18 +19,17 @@ angular.module('core').component('avatarDropdownComponent', {
 })
 
 function avatarDropdownController(
+  $q,
   $scope,
   $state,
   $uibModal,
   $window,
-  Auth,
-  Features,
   Toastr,
 ) {
   const vm = this
 
   // Preload user with current details, redirect to signin if unable to get user
-  vm.user = Auth.getUser() || $state.go('signin')
+  vm.user = UserService.getUserFromLocalStorage() || $state.go('signin')
   vm.avatarText = generateAvatarText()
 
   vm.isDropdownHover = false
@@ -39,7 +40,16 @@ function avatarDropdownController(
 
   async function retrieveUser() {
     try {
-      const trueUser = await Auth.refreshUser()
+      const trueUser = await UserService.fetchUser()
+        .then((user) => {
+          UserService.saveUserToLocalStorage(user)
+          return user
+        })
+        .catch(() => {
+          UserService.clearUserFromLocalStorage()
+          return null
+        })
+
       if (!trueUser) {
         $state.go('signin')
         return
@@ -50,13 +60,8 @@ function avatarDropdownController(
       // Early return if user already has contact information.
       if (trueUser.contact) return
 
-      const features = await Features.getFeatureStates()
-
       // Only show exclamation mark in avatar if sms feature is enabled.
-      vm.showExclamation = features.sms && !vm.user.contact
-
-      // Do not proceed if sms feature is not available.
-      if (!features.sms) return
+      vm.showExclamation = !vm.user.contact
 
       // If retrieved user does not have contact, prompt user to add one.
       // If user has the key in the browser's storage the modal will not be
@@ -81,7 +86,20 @@ function avatarDropdownController(
     },
   )
 
-  vm.signOut = () => Auth.signOut()
+  vm.logout = () => {
+    return $q
+      .when(AuthService.logout())
+      .then(() => {
+        // Clear user and contact banner on logout
+        UserService.clearUserFromLocalStorage()
+        $window.localStorage.removeItem('contactBannerDismissed')
+        // Redirect to landing page
+        $state.go('landing')
+      })
+      .catch((error) => {
+        console.error('sign out failed:', error)
+      })
+  }
 
   vm.openContactNumberModal = () => {
     $uibModal
@@ -98,7 +116,7 @@ function avatarDropdownController(
         // Update success, update user.
         if (returnVal) {
           vm.user = returnVal
-          Auth.setUser(returnVal)
+          UserService.saveUserToLocalStorage(returnVal)
           vm.showExclamation = !returnVal.contact
         }
       })

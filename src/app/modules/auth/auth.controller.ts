@@ -158,16 +158,15 @@ export const handleLoginVerifyOtp: ControllerHandler<
             .json(coreErrorMessage)
         }
 
-        // TODO(#212): Should store only userId in session.
         // Add user info to session.
-        const userObj = user.toObject() as SessionUser
-        req.session.user = userObj
+        const { _id } = user.toObject() as SessionUser
+        req.session.user = { _id }
         logger.info({
-          message: `Successfully logged in user ${user.email}`,
+          message: `Successfully logged in user ${user._id}`,
           meta: logMeta,
         })
 
-        return res.status(StatusCodes.OK).json(userObj)
+        return res.status(StatusCodes.OK).json(user)
       })
       // Step 3b: Error occured in one of the steps.
       .mapErr((error) => {

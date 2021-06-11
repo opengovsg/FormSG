@@ -114,8 +114,7 @@ export const filterByAgencyId = (
 
 /**
  * Precondition: A group stage that produced a count field must be executed
- * beforehand, which can be done with groupSubmissionsByFormId or
- * lookupSubmissionInfo.
+ * beforehand, which can be done with lookupSubmissionInfo.
 
  * Aggregation step to filter forms with less than the minimum number of
  * submissions for the examples page. 
@@ -159,18 +158,6 @@ export const sortByRelevance: Record<string, unknown>[] = [
 export const sortByLastSubmitted: Record<string, unknown>[] = [
   {
     $sort: { lastSubmission: -1 },
-  },
-]
-
-/**
- * Precondition: `created` field must have already been retrieved from the
- * submissions collection via searchSubmissionsForForm.
- *
- * Aggregation step to sort forms by the creation date.
- */
-export const sortByCreated = [
-  {
-    $sort: { created: 1 },
   },
 ]
 
@@ -246,63 +233,6 @@ export const lookupFormStatisticsInfo: Record<string, unknown>[] = [
       agencyInfo: 1,
       lastSubmission: '$submissionInfo.lastSubmission',
       textScore: { $meta: 'textScore' }, // Used to sort by relevance
-    },
-  },
-]
-
-/**
- * Precondition: `_id` field corresponding to forms' ids must be retrieved
- * beforehand, which can be done using groupSubmissionsByFormId or
- * searchFormsForText.
- *
- * Aggregation step to retrieve submissionInfo by looking up, sorting and
- * grouping submissions with form ids specified.
- *
- */
-export const lookupSubmissionInfo = [
-  {
-    $lookup: {
-      from: 'submissions',
-      localField: '_id',
-      foreignField: 'form',
-      as: 'submissionInfo',
-    },
-  },
-  // Unwind results in multiple copies of each form, where each copy has its own submissionInfo
-  {
-    $unwind: '$submissionInfo',
-  },
-  {
-    $sort: { 'submissionInfo.created': 1 },
-  },
-  // Retrieve only the necessary information from the submissionInfo
-  {
-    $group: {
-      _id: '$_id',
-      count: { $sum: 1 },
-      formInfo: { $first: '$formInfo' },
-      agencyInfo: { $first: '$agencyInfo' },
-      lastSubmission: { $last: '$submissionInfo.created' },
-      textScore: { $first: { $meta: 'textScore' } }, // Used to sort by relevance
-    },
-  },
-]
-
-/**
- * Precondition: `_id` field corresponding to forms' ids must be retrieved
- * beforehand.
- *
- * !Note: Can only used on pipelines working with the Submissions collection.
- *
- * Aggregation step to group submissions by form id, count the number of
- * submissions, and get the last submission date.
- */
-export const groupSubmissionsByFormId = [
-  {
-    $group: {
-      _id: '$form',
-      count: { $sum: 1 },
-      lastSubmission: { $last: '$created' },
     },
   },
 ]
@@ -417,22 +347,6 @@ export const searchSubmissionsForForm = (
   {
     $match: {
       [key]: mongoose.Types.ObjectId(formId),
-    },
-  },
-]
-
-/**
- * Precondition: `formFeedbackInfo` must have been retrieved in a previous step,
- * which can be done using lookupFormFeedback.
- *
- * Aggregation step to add the average feedback field.
- */
-export const addAvgFeedback = [
-  {
-    $addFields: {
-      avgFeedback: {
-        $avg: '$formFeedbackInfo.rating',
-      },
     },
   },
 ]

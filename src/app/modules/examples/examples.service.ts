@@ -6,28 +6,23 @@ import { Except, Merge } from 'type-fest'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel from '../../models/form.server.model'
 import getFormStatisticsTotalModel from '../../models/form_statistics_total.server.model'
-import getSubmissionModel from '../../models/submission.server.model'
 import { DatabaseError } from '../core/core.errors'
 
 import { MIN_SUB_COUNT, PAGE_SIZE } from './examples.constants'
 import { ResultsNotFoundError } from './examples.errors'
 import {
-  groupSubmissionsByFormId,
   lookupFormStatisticsInfo,
-  lookupSubmissionInfo,
   projectSubmissionInfo,
   selectAndProjectCardInfo,
 } from './examples.queries'
 import {
   ExamplesQueryParams,
   FormInfo,
-  QueryData,
   QueryDataMap,
   QueryExecResult,
   QueryExecResultWithTotal,
   QueryPageResult,
   QueryPageResultWithTotal,
-  RetrievalType,
   RetrieveSubmissionsExecResult,
   SingleFormInfoQueryResult,
   SingleFormResult,
@@ -37,34 +32,13 @@ import {
   createGeneralQueryPipeline,
   createSearchQueryPipeline,
   createSingleSearchStatsPipeline,
-  createSingleSearchSubmissionPipeline,
   formatToRelativeString,
 } from './examples.utils'
 
 const FormModel = getFormModel(mongoose)
 const FormStatisticsModel = getFormStatisticsTotalModel(mongoose)
-const SubmissionModel = getSubmissionModel(mongoose)
 
 const logger = createLoggerWithLabel(module)
-
-/**
- * Maps retrieval type to the middlewares and query model used for general
- * queries to use when creating the aggregation pipeline
- */
-const RETRIEVAL_TO_QUERY_DATA_MAP: QueryData = {
-  [RetrievalType.Stats]: {
-    generalQueryModel: FormStatisticsModel,
-    lookUpMiddleware: lookupFormStatisticsInfo,
-    groupByMiddleware: projectSubmissionInfo,
-    singleSearchPipeline: createSingleSearchStatsPipeline,
-  },
-  [RetrievalType.Submissions]: {
-    generalQueryModel: SubmissionModel,
-    lookUpMiddleware: lookupSubmissionInfo,
-    groupByMiddleware: groupSubmissionsByFormId,
-    singleSearchPipeline: createSingleSearchSubmissionPipeline,
-  },
-}
 
 /**
  * Creates and returns the query builder to execute some example fetch query.
@@ -239,28 +213,23 @@ const getFormInfo = (
  * @returns ok(list of retrieved example forms) if `shouldGetTotalNumResults` is not of string `"true"`
  * @returns err(DatabaseError) if any errors occurs whilst running the pipeline on the database
  */
-export const getExampleForms =
-  (type: RetrievalType) =>
-  (
-    query: ExamplesQueryParams,
-  ): ResultAsync<QueryPageResultWithTotal | QueryPageResult, DatabaseError> => {
-    const { lookUpMiddleware, groupByMiddleware, generalQueryModel } =
-      RETRIEVAL_TO_QUERY_DATA_MAP[type]
+export const getExampleForms = (
+  query: ExamplesQueryParams,
+): ResultAsync<QueryPageResultWithTotal | QueryPageResult, DatabaseError> => {
+  const queryBuilder = getExamplesQueryBuilder({
+    query,
+    lookUpMiddleware: lookupFormStatisticsInfo,
+    groupByMiddleware: projectSubmissionInfo,
+    generalQueryModel: FormStatisticsModel,
+  })
 
-    const queryBuilder = getExamplesQueryBuilder({
-      query,
-      lookUpMiddleware,
-      groupByMiddleware,
-      generalQueryModel,
-    })
+  const { pageNo, shouldGetTotalNumResults } = query
+  const offset = pageNo * PAGE_SIZE || 0
 
-    const { pageNo, shouldGetTotalNumResults } = query
-    const offset = pageNo * PAGE_SIZE || 0
-
-    return shouldGetTotalNumResults
-      ? execExamplesQueryWithTotal(queryBuilder, offset)
-      : execExamplesQuery(queryBuilder, offset)
-  }
+  return shouldGetTotalNumResults
+    ? execExamplesQueryWithTotal(queryBuilder, offset)
+    : execExamplesQuery(queryBuilder, offset)
+}
 
 /**
  * Retrieves a single form for examples from either the FormStatisticsTotal
@@ -272,63 +241,57 @@ export const getExampleForms =
  * @returns err(DatabaseError) if any errors occurs whilst running the pipeline on the database
  * @returns err(ResultsNotFoundError) if form info cannot be retrieved with the given form id
  */
-export const getSingleExampleForm =
-  (type: RetrievalType) =>
-  (
-    formId: string,
-  ): ResultAsync<SingleFormResult, DatabaseError | ResultsNotFoundError> => {
-    const { singleSearchPipeline, generalQueryModel } =
-      RETRIEVAL_TO_QUERY_DATA_MAP[type]
+export const getSingleExampleForm = (
+  formId: string,
+): ResultAsync<SingleFormResult, DatabaseError | ResultsNotFoundError> => {
+  return (
+    // Step 1: Retrieve base form info to augment.
+    getFormInfo(formId)
+      // Step 2a: Execute aggregate query with relevant single search pipeline.
+      .andThen((formInfo) =>
+        ResultAsync.fromPromise(
+          FormStatisticsModel.aggregate(createSingleSearchStatsPipeline(formId))
+            .read('secondary')
+            .exec() as Promise<RetrieveSubmissionsExecResult>,
+          (error) => {
+            logger.error({
+              message: 'Failed to retrieve a single example form',
+              meta: {
+                action: 'getSingleExampleForm',
+              },
+              error,
+            })
 
-    return (
-      // Step 1: Retrieve base form info to augment.
-      getFormInfo(formId)
-        // Step 2a: Execute aggregate query with relevant single search pipeline.
-        .andThen((formInfo) =>
-          ResultAsync.fromPromise(
-            generalQueryModel
-              .aggregate(singleSearchPipeline(formId))
-              .read('secondary')
-              .exec() as Promise<RetrieveSubmissionsExecResult>,
-            (error) => {
-              logger.error({
-                message: 'Failed to retrieve a single example form',
-                meta: {
-                  action: 'getSingleExampleForm',
-                },
-                error,
-              })
-
-              return new DatabaseError()
-            },
-            // Step 2b: Augment the initial base form info with the retrieved
-            // statistics from the aggregate pipeline.
-          ).map((queryResult) => {
-            // Process result depending on whether search pipeline returned
-            // results.
-            // If the statistics cannot be found, add default "null" fields.
-            if (!queryResult || queryResult.length === 0) {
-              const emptyStatsExampleInfo: FormInfo = {
-                ...formInfo,
-                count: 0,
-                lastSubmission: null,
-                timeText: '-',
-                avgFeedback: null,
-              }
-              return { form: emptyStatsExampleInfo }
-            }
-
-            // Statistics can be found.
-            const [statistics] = queryResult
-            const processedExampleInfo: FormInfo = {
+            return new DatabaseError()
+          },
+          // Step 2b: Augment the initial base form info with the retrieved
+          // statistics from the aggregate pipeline.
+        ).map((queryResult) => {
+          // Process result depending on whether search pipeline returned
+          // results.
+          // If the statistics cannot be found, add default "null" fields.
+          if (!queryResult || queryResult.length === 0) {
+            const emptyStatsExampleInfo: FormInfo = {
               ...formInfo,
-              count: statistics.count,
-              lastSubmission: statistics.lastSubmission,
-              avgFeedback: statistics.avgFeedback,
-              timeText: formatToRelativeString(statistics.lastSubmission),
+              count: 0,
+              lastSubmission: null,
+              timeText: '-',
+              avgFeedback: null,
             }
-            return { form: processedExampleInfo }
-          }),
-        )
-    )
-  }
+            return { form: emptyStatsExampleInfo }
+          }
+
+          // Statistics can be found.
+          const [statistics] = queryResult
+          const processedExampleInfo: FormInfo = {
+            ...formInfo,
+            count: statistics.count,
+            lastSubmission: statistics.lastSubmission,
+            avgFeedback: statistics.avgFeedback,
+            timeText: formatToRelativeString(statistics.lastSubmission),
+          }
+          return { form: processedExampleInfo }
+        }),
+      )
+  )
+}

@@ -2,6 +2,7 @@
 
 const { CsvGenerator } = require('../../forms/helpers/CsvGenerator')
 const BillingService = require('../../../services/BillingService')
+const UserService = require('../../../services/UserService')
 
 angular
   .module('users')
@@ -9,15 +10,14 @@ angular
     '$q',
     '$state',
     '$timeout',
-    'Auth',
     'NgTableParams',
     BillingController,
   ])
 
-function BillingController($q, $state, $timeout, Auth, NgTableParams) {
+function BillingController($q, $state, $timeout, NgTableParams) {
   const vm = this
 
-  vm.user = Auth.getUser()
+  vm.user = UserService.getUserFromLocalStorage()
 
   // Send non-logged in personnel to sign in page
   if (!vm.user) {

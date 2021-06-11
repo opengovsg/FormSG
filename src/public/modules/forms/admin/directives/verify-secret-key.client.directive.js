@@ -1,11 +1,10 @@
+const { FormSgSdk } = require('../../../../services/FormSgSdkService')
+
 angular
   .module('forms')
-  .directive('verifySecretKeyDirective', [
-    'FormSgSdk',
-    verifySecretKeyDirective,
-  ])
+  .directive('verifySecretKeyDirective', verifySecretKeyDirective)
 
-function verifySecretKeyDirective(FormSgSdk) {
+function verifySecretKeyDirective() {
   return {
     templateUrl: (elem, attr) => {
       const isActivationModal = attr.isActivationModal === 'true'

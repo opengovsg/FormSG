@@ -1,13 +1,13 @@
 'use strict'
 
 const ExamplesService = require('../../../services/ExamplesService')
+const UserService = require('../../../services/UserService')
 
 const PAGE_SIZE = 16
 
 angular.module('users').controller('ExamplesController', [
   '$q',
   '$scope',
-  'Auth',
   'GTag',
   '$state',
   '$timeout',
@@ -18,18 +18,10 @@ angular.module('users').controller('ExamplesController', [
   ExamplesController,
 ])
 
-function ExamplesController(
-  $q,
-  $scope,
-  Auth,
-  GTag,
-  $state,
-  $timeout,
-  FormData,
-) {
+function ExamplesController($q, $scope, GTag, $state, $timeout, FormData) {
   const vm = this
 
-  vm.user = Auth.getUser()
+  vm.user = UserService.getUserFromLocalStorage()
 
   // Send non-logged in personnel to sign in page
   if (!vm.user) {

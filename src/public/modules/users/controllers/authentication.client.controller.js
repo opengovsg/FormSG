@@ -1,27 +1,24 @@
 'use strict'
 
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
+const get = require('lodash/get')
+const validator = require('validator').default
+const AuthService = require('../../../services/AuthService')
+const UserService = require('../../../services/UserService')
 
 angular
   .module('users')
   .controller('AuthenticationController', [
+    '$q',
     '$scope',
     '$state',
     '$timeout',
     '$window',
-    'Auth',
     'GTag',
     AuthenticationController,
   ])
 
-function AuthenticationController(
-  $scope,
-  $state,
-  $timeout,
-  $window,
-  Auth,
-  GTag,
-) {
+function AuthenticationController($q, $scope, $state, $timeout, $window, GTag) {
   const vm = this
 
   let notifDelayTimeout
@@ -54,7 +51,7 @@ function AuthenticationController(
 
   vm.handleEmailKeyUp = function (e) {
     if (e.keyCode == 13) {
-      vm.isSubmitEmailDisabled === false && vm.checkEmail()
+      vm.isSubmitEmailDisabled === false && vm.login()
       // condition vm.isSubmitEmailDisabled == false is necessary to prevent retries using enter key
       // when submit button is disabled
     } else {
@@ -67,7 +64,7 @@ function AuthenticationController(
    * Redirects user with active session to target page
    */
   vm.redirectIfActiveSession = function () {
-    if (Auth.getUser()) {
+    if (UserService.getUserFromLocalStorage()) {
       $state.go($state.params.targetState)
     }
   }
@@ -115,6 +112,16 @@ function AuthenticationController(
     }
   }
 
+  const setEmailSignInError = (errorMsg) => {
+    vm.buttonClicked = false
+    vm.signInMsg = {
+      isMsg: true,
+      isError: true,
+      msg: errorMsg,
+    }
+    vm.isSubmitEmailDisabled = true
+  }
+
   // Steps of sign-in process
   // 1 - Check if user email is in valid format
   // 2 - Check if user's email domain (i.e. agency) is valid
@@ -122,45 +129,28 @@ function AuthenticationController(
   // 4 - Verify OTP
 
   /**
-   * Conducts front-end check of user email format
+   * Checks validity of email domain (i.e. agency) and sends login OTP if email
+   * is valid.
    */
-  vm.checkEmail = function () {
+  vm.login = function () {
     vm.buttonClicked = true
-    if (/\S+@\S+\.\S+/.test(vm.credentials.email)) {
-      vm.credentials.email = vm.credentials.email.toLowerCase()
-      vm.checkUser()
-    } else {
-      // Invalid email
-      vm.buttonClicked = false
-      vm.signInMsg = {
-        isMsg: true,
-        isError: true,
-        msg: 'Please enter a valid email',
-      }
-      vm.isSubmitEmailDisabled = true
-    }
-  }
 
-  /**
-   * Checks validity of email domain (i.e. agency)
-   * Directs user to otp input page
-   */
-  vm.checkUser = function () {
-    Auth.checkUser(vm.credentials).then(
-      function () {
-        vm.sendOtp()
-      },
-      function (error) {
-        // Invalid agency
-        vm.buttonClicked = false
-        vm.signInMsg = {
-          isMsg: true,
-          isError: true,
-          msg: error,
-        }
-        vm.isSubmitEmailDisabled = true
-      },
-    )
+    const email = vm.credentials.email
+    if (!validator.isEmail(email)) {
+      setEmailSignInError('Please enter a valid email address')
+      return
+    }
+
+    $q.when(AuthService.checkIsEmailAllowed(vm.credentials.email))
+      .then(() => vm.sendOtp())
+      .catch((error) => {
+        const errorMsg = get(
+          error,
+          'response.data',
+          'Something went wrong while validating your email. Please refresh and try again',
+        )
+        setEmailSignInError(errorMsg)
+      })
   }
 
   /**
@@ -173,9 +163,9 @@ function AuthenticationController(
     vm.isOtpSending = true
     vm.buttonClicked = true
     vm.showOtpDelayNotification = false
-    const { email } = vm.credentials
-    Auth.sendOtp({ email }).then(
-      function (success) {
+
+    $q.when(AuthService.sendLoginOtp(vm.credentials.email))
+      .then((success) => {
         vm.isOtpSending = false
         vm.buttonClicked = false
         // Configure message to be show
@@ -195,21 +185,22 @@ function AuthenticationController(
           vm.signInMsg.isMsg = false
           vm.showOtpDelayNotification = true
         }, 20000)
-      },
-      function (error) {
+      })
+      .catch((error) => {
+        const errorMsg = get(
+          error,
+          'response.data.message',
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+        )
         vm.isOtpSending = false
         vm.buttonClicked = false
         // Configure message to be shown
-        const msg =
-          (error && error.data && error.data.message) ||
-          'Failed to send login OTP. Please try again later and if the problem persists, contact us.'
         vm.signInMsg = {
           isMsg: true,
           isError: true,
-          msg,
+          msg: errorMsg,
         }
-      },
-    )
+      })
   }
 
   /**
@@ -217,8 +208,14 @@ function AuthenticationController(
    */
   vm.verifyOtp = function () {
     vm.buttonClicked = true
-    Auth.verifyOtp(vm.credentials).then(
-      function () {
+    $q.when(
+      AuthService.verifyLoginOtp({
+        otp: vm.credentials.otp,
+        email: vm.credentials.email,
+      }),
+    )
+      .then((user) => {
+        UserService.saveUserToLocalStorage(user)
         vm.buttonClicked = false
         // Configure message to be show
         vm.signInMsg = {
@@ -240,25 +237,32 @@ function AuthenticationController(
         }, 500)
 
         GTag.loginSuccess('otp')
-      },
-      function (error) {
+      })
+      .catch((error) => {
+        let errorMsg = get(
+          error,
+          'response.data',
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+        )
+        const errorStatus = get(error, 'response.status')
+        if (errorStatus >= StatusCodes.INTERNAL_SERVER_ERROR) {
+          errorMsg = 'An unknown error occurred'
+        }
+
         vm.buttonClicked = false
         // Configure message to be show
         vm.signInMsg = {
           isMsg: true,
           isError: true,
-          msg:
-            error.status >= HttpStatus.INTERNAL_SERVER_ERROR
-              ? 'An unknown error occurred'
-              : error.data,
+          msg: errorMsg,
         }
         $timeout(function () {
           angular.element('#otp-input').focus()
           angular.element('#otp-input').select()
         }, 100)
-        GTag.loginFailure('otp', String(error.status || error.data || ''))
-      },
-    )
+
+        GTag.loginFailure('otp', String(errorStatus || errorMsg))
+      })
   }
 
   const cancelNotifDelayTimeout = () => {

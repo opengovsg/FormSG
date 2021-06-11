@@ -6,10 +6,16 @@ angular
     '$uibModalInstance',
     'externalScope',
     'FormApi',
+    '$q',
     DeleteFormModalController,
   ])
 
-function DeleteFormModalController($uibModalInstance, externalScope, FormApi) {
+function DeleteFormModalController(
+  $uibModalInstance,
+  externalScope,
+  FormApi,
+  $q,
+) {
   const vm = this
 
   vm.cancel = function () {
@@ -28,9 +34,7 @@ function DeleteFormModalController($uibModalInstance, externalScope, FormApi) {
         }`,
       )
     }
-    FormApi.delete({
-      formId: vm.myforms[formIndex]._id,
-    }).$promise.then(
+    $q.when(FormApi.deleteForm(vm.myforms[formIndex]._id)).then(
       function () {
         vm.myforms.splice(formIndex, 1)
         vm.cancel()

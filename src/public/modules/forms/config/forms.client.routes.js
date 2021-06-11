@@ -1,6 +1,7 @@
 'use strict'
 
 const ExamplesService = require('../../../services/ExamplesService')
+const UserService = require('../../../services/UserService')
 
 // Setting up route
 angular.module('forms').config([
@@ -22,7 +23,7 @@ angular.module('forms').config([
             'FormApi',
             '$transition$',
             function (FormApi, $transition$) {
-              return FormApi.getPublic($transition$.params()).$promise
+              return FormApi.getPublicForm($transition$.params().formId)
             },
           ],
         },
@@ -37,7 +38,7 @@ angular.module('forms').config([
             'FormApi',
             '$transition$',
             function (FormApi, $transition$) {
-              return FormApi.preview($transition$.params()).$promise.then(
+              return FormApi.previewForm($transition$.params().formId).then(
                 (FormData) => {
                   FormData.isTemplate = true
                   FormData.isPreview = true
@@ -58,7 +59,7 @@ angular.module('forms').config([
             'FormApi',
             '$transition$',
             function (FormApi, $transition$) {
-              return FormApi.template($transition$.params()).$promise.then(
+              return FormApi.queryTemplate($transition$.params().formId).then(
                 (FormData) => {
                   FormData.isTemplate = true
                   return FormData
@@ -74,22 +75,18 @@ angular.module('forms').config([
         url: '/{formId:[0-9a-fA-F]{24}}/use-template',
         templateUrl: 'modules/users/views/examples.client.view.html',
         resolve: {
-          Auth: 'Auth',
           FormErrorService: 'FormErrorService',
           // If the user is logged in, this field will contain the form data of the provided formId,
           // otherwise it will only contain the formId itself.
           FormData: [
-            '$q',
-            'Auth',
             'FormErrorService',
             '$stateParams',
-            function ($q, Auth, FormErrorService, $stateParams) {
-              if (!Auth.getUser()) {
+            function (FormErrorService, $stateParams) {
+              if (!UserService.getUserFromLocalStorage()) {
                 return $stateParams.formId
               }
 
-              return $q
-                .when(ExamplesService.getSingleExampleForm($stateParams.formId))
+              return ExamplesService.getSingleExampleForm($stateParams.formId)
                 .then(function (response) {
                   response.form.isTemplate = true
                   return response.form
@@ -114,7 +111,7 @@ angular.module('forms').config([
             'FormApi',
             '$transition$',
             function (FormApi, $transition$) {
-              return FormApi.getAdmin($transition$.params()).$promise
+              return FormApi.getAdminForm($transition$.params().formId)
             },
           ],
         },

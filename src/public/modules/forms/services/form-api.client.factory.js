@@ -1,12 +1,16 @@
 'use strict'
-
 const { get } = require('lodash')
 const Form = require('../viewmodels/Form.class')
+const CreateFormService = require('../../../services/CreateFormService')
+const UpdateFormService = require('../../../services/UpdateFormService')
+const ExamplesService = require('../../../services/ExamplesService')
+const AdminViewFormService = require('../../../services/AdminViewFormService')
+const PublicFormService = require('../../../services/PublicFormService')
 
 // Forms service used for communicating with the forms REST endpoints
 angular
   .module('forms')
-  .factory('FormApi', ['$resource', 'FormErrorService', 'FormFields', FormApi])
+  .factory('FormApi', ['FormErrorService', 'FormFields', FormApi])
 
 // Helper function for getting formID from path starting with /:formId/.
 // If form ID is not found, returns an empty string.
@@ -25,129 +29,170 @@ const extractFormId = (path) => {
  * Service for making API calls to /:formId/:accessMode endpoint, which is used
  * for all CRUD operations for forms.
  */
-function FormApi($resource, FormErrorService, FormFields) {
+function FormApi(FormErrorService, FormFields) {
   /**
-   * Used to generate interceptors for all API calls. These interceptors have the
-   * following responsibilities:
-   * 1) Stripping MyInfo data when saving forms to the database.
-   * 2) Injecting MyInfo data when forms are received from the database.
-   * 3) Converting plain form objects to smart Form class instances before returning
-   * them to controllers.
-   * 4) Redirecting users using FormErrorService if redirectOnError is true.
-   * @param {boolean} redirectOnError Whether to use FormErrorService to redirect
-   * to errorTargetState when an error is encountered.
-   * @param {string} [errorTargetState] If redirectOnError is true, this is the
-   * redirect state which will be passed to FormErrorService
+   * Handles data passed into API calls. In charge of stripping of
+   * MyInfo data when saving forms to the database.
+   * @param {*} input API service data input
+   * @returns Transformed input
    */
-  const getInterceptor = (redirectOnError, errorTargetState) => {
-    const interceptor = {
-      request: (config) => {
-        if (get(config, 'data.form')) {
-          FormFields.removeMyInfoFromForm(config.data.form)
-        }
-        return config
-      },
-      response: (response) => {
-        // The backend returns different shapes for different request types. For GET
-        // requests, it returns a $resource instance with a form attribute containing
-        // all the form data; for PUT requests, it returns a $resource instance with
-        // all the form data at the top level. We need to ensure that the postprocessing
-        // is done in both cases.
-        if (get(response, 'resource.form.form_fields')) {
-          FormFields.injectMyInfoIntoForm(response.resource.form)
-          // Convert plain form object to smart Form instance
-          response.resource.form = new Form(response.resource.form)
-        } else if (get(response, 'resource.form_fields')) {
-          FormFields.injectMyInfoIntoForm(response.resource)
-          response.resource = new Form(response.resource)
-        }
-        return response.resource
-      },
-    }
-    if (redirectOnError) {
-      interceptor.responseError = (response) => {
-        return FormErrorService.redirect({
-          response,
-          targetState: errorTargetState,
-          targetFormId: extractFormId(get(response, 'config.url')),
-        })
-      }
-    }
-    return interceptor
+  const stripMyInfo = (input) => {
+    FormFields.removeMyInfoFromForm(input)
+    return input
   }
 
-  // accessMode is either adminForm or publicForm
-  let resourceUrl = '/:formId/:accessMode'
-  const V3_PUBLICFORM_URL = '/api/v3/forms/:formId'
+  /**
+   * Handles data returned from API calls. Responsibilities include:
+   * 1) Injecting MyInfo data when forms are received from the database.
+   * 2) Converting plain form objects to smart Form class instances before returning
+   * them to controllers.
+   * @param {*} data Data returned from API call
+   * @returns Transformed data
+   */
+  const injectMyInfo = (data) => {
+    // The backend returns different shapes for different request types. For GET
+    // requests, it returns an object with a form attribute containing
+    // all the form data; for PUT requests, it returns an object with
+    // all the form data at the top level. We need to ensure that the postprocessing
+    // is done in both cases.
+    if (get(data, 'form.form_fields')) {
+      FormFields.injectMyInfoIntoForm(data.form)
+      // Convert plain form object to smart Form instance
+      data.form = new Form(data.form)
+    } else if (get(data, 'form_fields')) {
+      FormFields.injectMyInfoIntoForm(data)
+      data = new Form(data)
+    }
+    return data
+  }
 
-  return $resource(
-    resourceUrl,
-    // default to admin for access mode, since that applies to most methods
-    { accessMode: 'adminform' },
-    {
-      query: {
-        url: '/api/v3/admin/forms',
-        method: 'GET',
-        isArray: true,
-        headers: { 'If-Modified-Since': '0' },
-        interceptor: getInterceptor(true, 'listForms'),
-        // disable IE ajax request caching (so new forms show on dashboard)
-      },
-      getAdmin: {
-        method: 'GET',
-        headers: { 'If-Modified-Since': '0' },
-        interceptor: getInterceptor(true, 'viewForm'),
-        // disable IE ajax request caching (so new fields show on build panel)
-      },
-      getPublic: {
-        url: V3_PUBLICFORM_URL,
-        method: 'GET',
-        // disable IE ajax request caching (so new fields show on build panel)
-        headers: { 'If-Modified-Since': '0' },
-        interceptor: getInterceptor(true),
-      },
-      update: {
-        method: 'PUT',
-        interceptor: getInterceptor(false),
-      },
-      save: {
-        url: '/api/v3/admin/forms/:formId/duplicate',
-        method: 'POST',
-        interceptor: getInterceptor(false),
-      },
-      delete: {
-        url: '/api/v3/admin/forms/:formId',
-        method: 'DELETE',
-        interceptor: getInterceptor(false),
-      },
-      // create is called without formId, so the endpoint is just /adminform
-      create: {
-        url: '/api/v3/admin/forms',
-        method: 'POST',
-        interceptor: getInterceptor(true, 'listForms'),
-      },
-      // Used for viewing templates with use-template or examples listing. Any logged in officer is authorized.
-      template: {
-        url: resourceUrl + '/template',
-        method: 'GET',
-        interceptor: getInterceptor(true, 'templateForm'),
-      },
-      // Used for previewing the form from the form admin page. Must be a viewer, collaborator or admin.
-      preview: {
-        url: '/api/v3/admin/forms/:formId/preview',
-        method: 'GET',
-        interceptor: getInterceptor(true, 'previewForm'),
-      },
-      useTemplate: {
-        url: resourceUrl + '/copy',
-        method: 'POST',
-        interceptor: getInterceptor(true, 'useTemplate'),
-      },
-      transferOwner: {
-        url: '/api/v3/admin/forms/:formId/collaborators/transfer-owner',
-        method: 'POST',
-        interceptor: getInterceptor(false),
-      },
-    },
-  )
+  /**
+   * Handles error returned from API calls. In charge of redirecting users using FormErrorService
+   * if redirectOnError is true.
+   * @param {Error} err Error returned from API calls
+   * @param {{redirectOnError: boolean, errorTargetState: string }} errorParams redirectOnError specifies
+   * whether to use FormErrorService to redirect to errorTargetState when an error is encountered.
+   * If redirectOnError is true, this is the redirect state which will be passed to FormErrorService
+   */
+  const handleError = (err, errorParams) => {
+    const { redirectOnError, errorTargetState } = errorParams
+    if (redirectOnError) {
+      FormErrorService.redirect({
+        response: err.response,
+        targetState: errorTargetState,
+        targetFormId: extractFormId(get(err.response, 'config.url')),
+      })
+    } else {
+      throw err // just pass error on
+    }
+  }
+
+  const generateService = (
+    service,
+    handleInput,
+    handleResponse,
+    errorParams,
+    ...inputs
+  ) => {
+    const input = handleInput
+      ? inputs.map((input) => handleInput(input))
+      : inputs
+    return service(...input)
+      .then((data) => {
+        return handleResponse ? handleResponse(data) : data
+      })
+      .catch((err) => handleError(err, errorParams))
+  }
+
+  return {
+    getDashboardView: () =>
+      generateService(AdminViewFormService.getDashboardView, null, null, {
+        redirectOnError: true,
+        errorTargetState: 'listForms',
+      }),
+    getAdminForm: (formId) =>
+      generateService(
+        AdminViewFormService.getAdminFormView,
+        null,
+        injectMyInfo,
+        { redirectOnError: true, errorTargetState: 'viewForm' },
+        formId,
+      ),
+    getPublicForm: (formId) =>
+      generateService(
+        PublicFormService.getPublicFormView,
+        null,
+        injectMyInfo,
+        { redirectOnError: true },
+        formId,
+      ),
+    updateForm: (formId, update) =>
+      generateService(
+        UpdateFormService.updateForm,
+        stripMyInfo,
+        injectMyInfo,
+        { redirectOnError: false },
+        formId,
+        update,
+      ),
+    duplicateForm: (formId, duplicateFormBody) =>
+      generateService(
+        CreateFormService.duplicateForm,
+        null,
+        injectMyInfo,
+        { redirectOnError: false },
+        formId,
+        duplicateFormBody,
+      ),
+    deleteForm: (formId) =>
+      generateService(
+        UpdateFormService.deleteForm,
+        null,
+        null,
+        { redirectOnError: false },
+        formId,
+      ),
+    createForm: (newForm) =>
+      generateService(
+        CreateFormService.createForm,
+        stripMyInfo,
+        injectMyInfo,
+        { redirectOnError: true, errorTargetState: 'listForms' },
+        newForm,
+      ),
+    queryTemplate: (formId) =>
+      generateService(
+        ExamplesService.queryTemplate,
+        null,
+        injectMyInfo,
+        { redirectOnError: true, errorTargetState: 'templateForm' },
+        formId,
+      ),
+    previewForm: (formId) =>
+      generateService(
+        AdminViewFormService.previewForm,
+        null,
+        injectMyInfo,
+        { redirectOnError: true, errorTargetState: 'previewForm' },
+        formId,
+      ),
+    useTemplate: (formId, overrideParams) =>
+      generateService(
+        ExamplesService.useTemplate,
+        null,
+        null,
+        { redirectOnError: true, errorTargetState: 'useTemplate' },
+        formId,
+        overrideParams,
+      ),
+    transferOwner: (formId, newOwner) =>
+      generateService(
+        UpdateFormService.transferOwner,
+        null,
+        injectMyInfo,
+        { redirectOnError: false },
+        formId,
+        newOwner,
+      ),
+  }
 }

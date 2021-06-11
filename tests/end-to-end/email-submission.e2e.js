@@ -65,7 +65,7 @@ fixture('Email mode submissions')
 // the form and reach the end page.
 
 // Form with all basic field types
-test.meta('basic-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = cloneDeep(allFields)
   t.ctx.formData = formData
@@ -75,7 +75,7 @@ test.meta('basic-env', 'true').before(async (t) => {
 })
 
 // Form where all basic field types are hidden by logic
-test.meta('basic-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = cloneDeep(hiddenFieldsData)
   formData.logicData = cloneDeep(hiddenFieldsLogicData)
@@ -86,7 +86,7 @@ test.meta('basic-env', 'true').before(async (t) => {
 })
 
 // Form where all fields are optional and no field is answered
-test.meta('basic-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = allFields.map((field) => {
     return getBlankVersion(getOptionalVersion(field))
@@ -98,7 +98,7 @@ test.meta('basic-env', 'true').before(async (t) => {
 })
 
 // Form with three attachments to test de-duplication of attachment names
-test.meta('basic-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = cloneDeep(tripleAttachment)
   t.ctx.formData = formData
@@ -108,7 +108,7 @@ test.meta('basic-env', 'true').before(async (t) => {
 })
 
 // Form with optional attachment in between mandatory ones
-test.meta('basic-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = cloneDeep(tripleAttachment)
   // Modify middle attachment field to be optional and unfilled
@@ -127,7 +127,7 @@ test.meta('basic-env', 'true').before(async (t) => {
 )
 
 // Form where submission is prevented using chained logic
-test.meta('basic-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = cloneDeep(chainDisabled.fields)
   formData.logicData = cloneDeep(chainDisabled.logicData)
@@ -142,7 +142,7 @@ test.meta('basic-env', 'true').before(async (t) => {
   )
 })
 
-test.meta('basic-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   t.ctx.formData = formData
   // cloneDeep in case other tests in future import and modify templateFields
@@ -159,7 +159,7 @@ test.meta('basic-env', 'true').before(async (t) => {
 })
 
 // Basic form with only one field and CP authentication
-test.meta('full-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions({
     authType: 'CP',
     status: 'PRIVATE',
@@ -180,7 +180,7 @@ test.meta('full-env', 'true').before(async (t) => {
 })
 
 // Basic form with only one field and SP authentication
-test.meta('full-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions({
     authType: 'SP',
     status: 'PRIVATE',
@@ -201,7 +201,7 @@ test.meta('full-env', 'true').before(async (t) => {
 })
 
 // Form with a mix of autofilled and non-autofilled MyInfo fields
-test.meta('full-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions({
     authType: 'MyInfo',
     esrvcId: 'Test-eServiceId-Sp',
@@ -214,7 +214,7 @@ test.meta('full-env', 'true').before(async (t) => {
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData, authData)
 })
 
-test.meta('full-env', 'true').before(async (t) => {
+test.before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = cloneDeep(verifiableEmailField)
   t.ctx.formData = formData
