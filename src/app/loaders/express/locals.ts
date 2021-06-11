@@ -3,6 +3,7 @@ import { get } from 'lodash'
 
 import config from '../../config/config'
 import featureManager, { FeatureNames } from '../../config/feature-manager'
+import { sentryConfig } from '../../config/feature-manager/sentry.config'
 
 // Construct js with environment variables needed by frontend
 const frontendVars = {
@@ -17,11 +18,7 @@ const frontendVars = {
     'captchaPublicKey',
     null,
   ), // Recaptcha
-  sentryConfigUrl: get(
-    featureManager.props(FeatureNames.Sentry),
-    'sentryConfigUrl',
-    null,
-  ), // Sentry.IO
+  sentryConfigUrl: sentryConfig.sentryConfigUrl, // Sentry.IO
   isSPMaintenance: get(
     featureManager.props(FeatureNames.SpcpMyInfo),
     'isSPMaintenance',

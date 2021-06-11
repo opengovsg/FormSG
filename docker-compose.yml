@@ -40,8 +40,9 @@ services:
       - MYINFO_CLIENT_SECRET=mockClientSecret
       - WEBHOOK_SQS_URL=http://localhost:4566/000000000000/local-webhooks-sqs-main
       - INTRANET_IP_LIST_PATH
+      - SENTRY_CONFIG_URL=https://random@sentry.io/123456
+      - CSP_REPORT_URI=https://random@sentry.io/123456
       - GA_TRACKING_ID
-      - SENTRY_CONFIG_URL
       - TWILIO_ACCOUNT_SID
       - TWILIO_API_KEY
       - TWILIO_API_SECRET
