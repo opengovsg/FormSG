@@ -3,6 +3,7 @@ import { get } from 'lodash'
 
 import config from '../../config/config'
 import featureManager, { FeatureNames } from '../../config/feature-manager'
+import { captchaConfig } from '../../config/feature-manager/captcha.config'
 import { googleAnalyticsConfig } from '../../config/feature-manager/google-analytics.config'
 import { sentryConfig } from '../../config/feature-manager/sentry.config'
 
@@ -14,11 +15,7 @@ const frontendVars = {
   adminBannerContent: config.adminBannerContent,
   logoBucketUrl: config.aws.logoBucketUrl, // S3 bucket
   formsgSdkMode: config.formsgSdkMode,
-  captchaPublicKey: get(
-    featureManager.props(FeatureNames.Captcha),
-    'captchaPublicKey',
-    null,
-  ), // Recaptcha
+  captchaPublicKey: captchaConfig.captchaPublicKey, // Recaptcha
   sentryConfigUrl: sentryConfig.sentryConfigUrl, // Sentry.IO
   isSPMaintenance: get(
     featureManager.props(FeatureNames.SpcpMyInfo),

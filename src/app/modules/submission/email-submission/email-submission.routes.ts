@@ -1,7 +1,7 @@
 import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../config/config'
-import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
+import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import { limitRate } from '../../../utils/limit-rate'
 
 import { handleEmailSubmission } from './email-submission.controller'
@@ -29,6 +29,6 @@ export const EmailSubmissionRouter = Router()
 EmailSubmissionRouter.post(
   '/:formId([a-fA-F0-9]{24})',
   limitRate({ max: rateLimitConfig.submissions }),
-  CaptchaFactory.validateCaptchaParams,
+  CaptchaMiddleware.validateCaptchaParams,
   handleEmailSubmission,
 )

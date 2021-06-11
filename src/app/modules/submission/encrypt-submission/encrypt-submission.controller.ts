@@ -18,7 +18,7 @@ import {
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
-import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
+import * as CaptchaService from '../../../services/captcha/captcha.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import {
@@ -131,7 +131,7 @@ const submitEncryptModeForm: ControllerHandler<
 
   // Check captcha
   if (form.hasCaptcha) {
-    const captchaResult = await CaptchaFactory.verifyCaptchaResponse(
+    const captchaResult = await CaptchaService.verifyCaptchaResponse(
       req.query.captchaResponse,
       getRequestIp(req),
     )
