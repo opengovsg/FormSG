@@ -237,11 +237,11 @@ The app applies per-minute, per-IP rate limits at specific API endpoints as a se
 
 ### Additional Features
 
-The app supports a number of additional features like Captcha protection, Sentry reporting and Google Analytics. Each of these features requires specific environment variables which are detailed below. To deploy a bare bones application without these additional features, one can safely exclude the respective environment variables without any extra configuration.
+The app contains a number of additional features like Captcha protection, Sentry reporting and Google Analytics. Each of these features requires specific environment variables which are detailed below.
 
 #### Google Captcha
 
-If this feature is enabled, forms with be protected with [recaptcha](https://www.google.com/recaptcha/about/), preventing submissions from being made by bots.
+Forms can be protected with [recaptcha](https://www.google.com/recaptcha/about/), preventing submissions from being made by bots.
 
 | Variable                | Description                |
 | :---------------------- | -------------------------- |
@@ -250,7 +250,7 @@ If this feature is enabled, forms with be protected with [recaptcha](https://www
 
 #### Google Analytics
 
-If this feature is enabled, [google analytics](https://analytics.google.com/analytics/web) will be used to track website traffic. Examples of events include number of visits to various forms, number of successful submissions and number of submission failures.
+[Google Analytics](https://analytics.google.com/analytics/web) is used to track website traffic. Examples of events include number of visits to various forms, number of successful submissions and number of submission failures.
 
 | Variable         | Description                   |
 | :--------------- | ----------------------------- |
@@ -258,7 +258,7 @@ If this feature is enabled, [google analytics](https://analytics.google.com/anal
 
 #### Sentry.io
 
-If this feature is enabled, client-side error events will be piped to [sentry.io](https://sentry.io/welcome/) for monitoring purposes.
+Client-side error events are piped to [sentry.io](https://sentry.io/welcome/) for monitoring purposes.
 
 | Variable            | Description                                                                                           |
 | :------------------ | ----------------------------------------------------------------------------------------------------- |
@@ -268,9 +268,9 @@ If this feature is enabled, client-side error events will be piped to [sentry.io
 
 #### SMS with Twilio
 
-If this feature is enabled, the Mobile Number field will support form-fillers verifying their mobile numbers via a One-Time-Pin sent to their mobile phones and will also support an SMS confirmation of successful submission being sent out to their said mobile numbers. All messages are sent using [twilio](https://www.twilio.com/) messaging APIs.
+The Mobile Number field supports form-fillers verifying their mobile numbers via a One-Time-Pin sent to their mobile phones. All messages are sent using [Twilio](https://www.twilio.com/) messaging APIs.
 
-Note that verifiying mobile numbers also requires [Verified Emails/SMSes](#verified-emailssmses) to be enabled.
+Note that verifying mobile numbers also requires the environment variables for [verified Emails/SMSes](#verified-emailssmses).
 
 | Variable                       | Description              |
 | :----------------------------- | ------------------------ |
@@ -281,8 +281,8 @@ Note that verifiying mobile numbers also requires [Verified Emails/SMSes](#verif
 
 #### SingPass/CorpPass and MyInfo
 
-If this feature is enabled, forms will support authentication via [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus) (Singapore's Digital Identity for Citizens) and
-[CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus) (Singapore's Digital Identity for Organizations). Forms will also support pre-filling using [MyInfo](https://www.singpass.gov.sg/myinfo/intro) after a citizen has successfully authenticated using SingPass.
+Submissions can be authenticated via [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus) (Singapore's Digital Identity for Citizens) and
+[CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus) (Singapore's Digital Identity for Organizations). Forms can also be pre-filled using [MyInfo](https://www.singpass.gov.sg/myinfo/intro) after a citizen has successfully authenticated using SingPass.
 
 Note that MyInfo is currently not supported for storage mode forms and enabling SingPass/CorpPass on storage mode forms also requires [SingPass/CorpPass for Storage Mode](#webhooks-and-singpasscorppass-for-storage-mode) to be enabled.
 
@@ -317,9 +317,9 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 
 #### Verified Emails/SMSes
 
-If this feature is enabled, the Mobile Number field will support form-fillers verifying their mobile numbers via a One-Time-Pin sent to their mobile phones and the Email field will support form-fillers verifying their email addresses via a One-Time-Pin sent to their email boxes.
+The Mobile Number and Email fields support form-fillers verifying their contact details via a One-Time-Pin.
 
-Note that verified SMSes also requires [SMS with Twilio](#sms-with-twilio) to be enabled.
+Note that verified SMSes also require [SMS with Twilio](#sms-with-twilio) to be enabled.
 
 | Variable                  | Description                                                    |
 | :------------------------ | -------------------------------------------------------------- |
@@ -327,9 +327,9 @@ Note that verified SMSes also requires [SMS with Twilio](#sms-with-twilio) to be
 
 #### Webhooks and SingPass/CorpPass for Storage Mode
 
-If this feature is enabled, storage mode forms will support posting encrypted form submissions to a REST API supplied by the form creator. The [FormSG SDK](https://github.com/opengovsg/formsg-javascript-sdk) can then be used to verify the signed posted data and decrypt the encrypted submission contained within.
+Form admins can configure their Storage mode forms to POST encrypted form submissions to a REST API supplied by the form creator. The [FormSG SDK](https://github.com/opengovsg/formsg-javascript-sdk) can then be used to verify the signed posted data and decrypt the encrypted submission contained within.
 
-If this feature is enabled, storage mode forms will also support authentication via SingPass or CorpPass. Note that this also requires [SingPass/CorpPass and MyInfo](#singpasscorppass-and-myinfo) to be enabled.
+These environment variables also allow Storage mode forms to support authentication via SingPass or CorpPass. Note that this also requires [SingPass/CorpPass and MyInfo](#singpasscorppass-and-myinfo) to be enabled.
 
 | Variable             | Description                                                           |
 | :------------------- | --------------------------------------------------------------------- |
