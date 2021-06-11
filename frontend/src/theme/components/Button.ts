@@ -17,6 +17,7 @@ export const Button: ComponentStyleConfig = {
     borderRadius: '4px',
     border: '1px solid',
     textStyle: 'subhead-1',
+    fontWeight: 'medium',
     px: '8px',
     py: '16px',
   },
