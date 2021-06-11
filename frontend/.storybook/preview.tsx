@@ -1,5 +1,5 @@
 import 'focus-visible/dist/focus-visible'
-import '../src/index.css'
+import '../src/assets/fonts/inter.css'
 
 import { ChakraProvider } from '@chakra-ui/react'
 import { DecoratorFn } from '@storybook/react'
