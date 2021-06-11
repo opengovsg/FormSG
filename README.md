@@ -41,11 +41,11 @@ Notable features include:
 
 The current product roadmap includes:
 
-- (in progress) Migrating backend code from JavaScript to [TypeScript](https://www.typescriptlang.org/)
-- (in progress) Refactoring backend code to use [Domain-driven Design](https://en.wikipedia.org/wiki/Domain-driven_design)
-- (in progress) Migrating backend tests from [Jasmine](https://jasmine.github.io/) to [Jest](https://jestjs.io/) and expanding unit vs integration tests
-- (yet to start) Support for webhooks attachments
-- (yet to start) Frontend rewrite from [AngularJS](https://angularjs.org/) to [React](https://reactjs.org/)
+- (in progress) Frontend rewrite from [AngularJS](https://angularjs.org/) to [React](https://reactjs.org/)
+- Enabling payments on forms
+- Electronic signatures
+- Notifications to form admins for Storage mode submissions
+- Integration with vault.gov.sg
 
 ## Local Development (Docker)
 
@@ -211,4 +211,4 @@ Contributions have also been made by:
 [@zioul123](https://github.com/zioul123)  
 [@JoelWee](https://github.com/JoelWee)  
 [@limli](https://github.com/limli)  
-[@tankevan](https://github.com/tankevan)  
+[@tankevan](https://github.com/tankevan)
