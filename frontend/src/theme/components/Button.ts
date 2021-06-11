@@ -26,6 +26,12 @@ export const Button: ComponentStyleConfig = {
       bg: 'primary.500',
       borderColor: 'primary.500',
       color: 'white',
+      _active: {
+        bg: 'primary.700',
+        _disabled: {
+          bg: 'primary.300',
+        },
+      },
       _focus: {
         borderColor: 'transparent',
         boxShadow: '0 0 0 4px var(--chakra-colors-primary-300)',
@@ -46,6 +52,12 @@ export const Button: ComponentStyleConfig = {
       bg: 'danger.500',
       borderColor: 'danger.500',
       color: 'white',
+      _active: {
+        bg: 'danger.700',
+        _disabled: {
+          bg: 'danger.300',
+        },
+      },
       _focus: {
         borderColor: 'transparent',
         boxShadow: '0 0 0 4px var(--chakra-colors-danger-300)',
@@ -75,6 +87,12 @@ export const Button: ComponentStyleConfig = {
         borderColor: 'success.300',
         opacity: 1,
       },
+      _active: {
+        bg: 'success.800',
+        _disabled: {
+          bg: 'success.300',
+        },
+      },
       _hover: {
         bg: 'success.800',
         _disabled: {
@@ -92,6 +110,12 @@ export const Button: ComponentStyleConfig = {
       _disabled: {
         color: 'primary.400',
         opacity: 1,
+      },
+      _active: {
+        bg: 'primary.200',
+        _disabled: {
+          bg: 'transparent',
+        },
       },
       _hover: {
         bg: 'primary.100',
@@ -112,6 +136,12 @@ export const Button: ComponentStyleConfig = {
         color: 'primary.400',
         opacity: 1,
       },
+      _active: {
+        bg: 'primary.200',
+        _disabled: {
+          bg: 'transparent',
+        },
+      },
       _hover: {
         bg: 'primary.100',
         _disabled: {
@@ -129,6 +159,12 @@ export const Button: ComponentStyleConfig = {
       _disabled: {
         color: 'secondary.300',
         opacity: 1,
+      },
+      _active: {
+        bg: 'secondary.200',
+        _disabled: {
+          bg: 'transparent',
+        },
       },
       _hover: {
         bg: 'secondary.100',
