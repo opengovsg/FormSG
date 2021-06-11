@@ -42,7 +42,9 @@ services:
       - INTRANET_IP_LIST_PATH
       - SENTRY_CONFIG_URL=https://random@sentry.io/123456
       - CSP_REPORT_URI=https://random@sentry.io/123456
-      - GA_TRACKING_ID
+      # This needs to be removed and replaced with a real tracking ID in a local .env file
+      # in order to enable GA in a local environment
+      - GA_TRACKING_ID=mockGATrackingId
       - TWILIO_ACCOUNT_SID
       - TWILIO_API_KEY
       - TWILIO_API_SECRET
