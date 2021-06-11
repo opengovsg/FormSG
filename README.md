@@ -168,29 +168,6 @@ An overview of the architecture can be found [here](docs/ARCHITECTURE.md).
 
 Scripts for common tasks in MongoDB can be found [here](docs/MONGODB.md).
 
-## Maintenance Banners
-
-Banners providing form-fillers with useful information can shown at the top of
-forms and configured using the environment variables below.
-
-| Environment Variable     | Value will be shown as a banner at the bottom of                                                                                                                                   |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ADMIN_BANNER_CONTENT`   | private form routes such as `/forms` and `/{formId}/admin`                                                                                                                         |
-| `SITE_BANNER_CONTENT`    | both private routes that `ADMIN_BANNER_CONTENT` covers **and** public form routes that `IS_GENERAL_MAINTENANCE` covers. This supersedes **ALL** other banner environment variables |
-| `IS_GENERAL_MAINTENANCE` | all public forms                                                                                                                                                                   |
-| `IS_SP_MAINTENANCE`      | all public **SingPass-enabled** forms                                                                                                                                              |
-| `IS_CP_MAINTENANCE`      | all public **CorpPass-enabled** forms                                                                                                                                              |
-
-> Note that if more than one of the above environment variables are defined,
-> only one environment variable will be used to display the given values.
->
-> For public form routes, only one environment variable will be read in the
-> following precedence: `SITE_BANNER_CONTENT` > `IS_GENERAL_MAINTENANCE` >
-> `IS_SP_MAINTENANCE` > `IS_CP_MAINTENANCE`
->
-> For private form routes, only one environment variable will be read in the
-> following precendence: `SITE_BANNER_CONTENT` > `ADMIN_BANNER_CONTENT`
-
 ## Contributing
 
 We welcome all contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas to code open sourced by the Government Technology Agency of Singapore. Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md) and will also be asked to sign a Contributor License Agreement (CLA) in order to ensure that everybody is free to use their contributions.
