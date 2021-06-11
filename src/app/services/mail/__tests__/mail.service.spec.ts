@@ -11,6 +11,7 @@ import {
   SendAutoReplyEmailsArgs,
 } from 'src/app/services/mail/mail.types'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
+import { HASH_EXPIRE_AFTER_SECONDS } from 'src/shared/util/verification'
 import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
@@ -78,7 +79,7 @@ describe('mail.service', () => {
         html: MailUtils.generateVerificationOtpHtml({
           appName: MOCK_APP_NAME,
           otp: MOCK_OTP,
-          minutesToExpiry: 10,
+          minutesToExpiry: HASH_EXPIRE_AFTER_SECONDS / 60,
         }),
         headers: {
           // Hardcode in tests in case something changes this.

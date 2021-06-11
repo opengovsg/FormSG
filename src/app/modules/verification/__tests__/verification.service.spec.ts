@@ -612,8 +612,8 @@ describe('Verification service', () => {
         signedData: MOCK_SIGNED_DATA,
         hashRetries: 0,
         hashedOtp: MOCK_HASHED_OTP,
-        // hash created 15min ago
-        hashCreatedAt: subMinutes(new Date(), 15),
+        // hash created 60min ago
+        hashCreatedAt: subMinutes(new Date(), 60),
       })
       const expiredOtpTransaction = await VerificationModel.create({
         formId: mockFormId,
