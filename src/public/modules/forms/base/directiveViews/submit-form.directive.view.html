@@ -128,7 +128,7 @@
         <div
           vc-recaptcha
           key="captchaService.publicKey"
-          ng-if="captchaService.create(feature.captcha) && form.hasCaptcha && !disableSubmitButton"
+          ng-if="form.hasCaptcha && !disableSubmitButton"
           size="invisible"
           on-create="captchaService.setWidget(widgetId)"
           on-success="captchaService.onSuccess(response, submitForm)"
