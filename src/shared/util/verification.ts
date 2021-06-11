@@ -3,7 +3,7 @@ import { BasicField } from '../../types'
 export const VERIFIED_FIELDTYPES = [BasicField.Email, BasicField.Mobile]
 export const SALT_ROUNDS = 10
 export const TRANSACTION_EXPIRE_AFTER_SECONDS = 14400 // 4 hours
-export const HASH_EXPIRE_AFTER_SECONDS = 600 // 10 minutes
+export const HASH_EXPIRE_AFTER_SECONDS = 60 * 30 // 30 minutes
 export const WAIT_FOR_OTP_SECONDS = 30
 /**
  * WAIT_FOR_OTP_SECONDS tolerance. Server allows OTPs to be requested every
