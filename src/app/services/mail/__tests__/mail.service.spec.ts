@@ -1354,4 +1354,113 @@ describe('mail.service', () => {
       expect(sendMailSpy).toHaveBeenCalledTimes(0)
     })
   })
+
+  describe('sendSmsVerificationWarningEmail', () => {
+    const MOCK_FORM_ID = 'mockFormId'
+    const MOCK_FORM_TITLE = 'You are all individuals!'
+    const MOCK_INVALID_EMAIL = 'something wrong@a'
+
+    const MOCK_FORM: IPopulatedForm = {
+      permissionList: [
+        { email: MOCK_VALID_EMAIL },
+        { email: MOCK_VALID_EMAIL_2 },
+      ],
+      admin: {
+        email: MOCK_VALID_EMAIL_3,
+      },
+      title: MOCK_FORM_TITLE,
+      _id: MOCK_FORM_ID,
+    } as unknown as IPopulatedForm
+
+    const MOCK_INVALID_EMAIL_FORM: IPopulatedForm = {
+      permissionList: [],
+      admin: {
+        email: MOCK_INVALID_EMAIL,
+      },
+      title: MOCK_FORM_TITLE,
+      _id: MOCK_FORM_ID,
+    } as unknown as IPopulatedForm
+
+    const generateExpectedMailOptions = async (
+      count: number,
+      emailRecipients: string | string[],
+    ) => {
+      const result = await MailUtils.generateSmsVerificationWarningHtml({
+        formTitle: MOCK_FORM_TITLE,
+        formLink: `${MOCK_APP_URL}/${MOCK_FORM_ID}`,
+        numAvailable: SMS_VERIFICATION_LIMIT - count,
+        smsVerificationLimit: SMS_VERIFICATION_LIMIT,
+      }).map((emailHtml) => {
+        return {
+          to: emailRecipients,
+          from: MOCK_SENDER_STRING,
+          html: emailHtml,
+          subject: '[FormSG] SMS Verification - Free Tier Limit Alert',
+          replyTo: MOCK_SENDER_EMAIL,
+          bcc: MOCK_SENDER_EMAIL,
+        }
+      })
+      return result._unsafeUnwrap()
+    }
+
+    it('should send verified sms warning emails successfully', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      // Act
+      const actualResult = await mailService.sendSmsVerificationWarningEmail(
+        MOCK_FORM,
+        1000,
+      )
+      const expectedMailOptions = await generateExpectedMailOptions(1000, [
+        MOCK_VALID_EMAIL,
+        MOCK_VALID_EMAIL_2,
+        MOCK_VALID_EMAIL_3,
+      ])
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedMailOptions)
+    })
+
+    it('should return MailSendError when the provided email is invalid', async () => {
+      // Act
+      const actualResult = await mailService.sendSmsVerificationWarningEmail(
+        MOCK_INVALID_EMAIL_FORM,
+        1000,
+      )
+
+      // Assert
+      expect(actualResult).toEqual(
+        err(new MailSendError('Invalid email error')),
+      )
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(0)
+    })
+
+    it('should return MailGenerationError when the html template could not be created', async () => {
+      // Arrange
+      jest.spyOn(ejs, 'renderFile').mockRejectedValueOnce('no.')
+
+      // Act
+      const actualResult = await mailService.sendSmsVerificationWarningEmail(
+        MOCK_INVALID_EMAIL_FORM,
+        1000,
+      )
+
+      // Assert
+      expect(actualResult).toEqual(
+        err(
+          new MailGenerationError(
+            'Error occurred whilst rendering mail template',
+          ),
+        ),
+      )
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(0)
+    })
+  })
 })
