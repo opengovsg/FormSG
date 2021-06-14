@@ -10,10 +10,12 @@ import {
   BounceType,
   EmailAdminDataField,
   IEmailFormSchema,
+  IPopulatedForm,
   ISubmissionSchema,
 } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { SMS_VERIFICATION_LIMIT } from '../../modules/verification/verification.constants'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
 import { MailGenerationError, MailSendError } from './mail.errors'
@@ -25,12 +27,14 @@ import {
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
+  SmsVerificationDisabledData,
 } from './mail.types'
 import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
   generateBounceNotificationHtml,
   generateLoginOtpHtml,
+  generateSmsVerificationDisabledHtml,
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
   isToFieldValid,
@@ -571,6 +575,41 @@ export class MailService {
         })
       }),
     )
+  }
+
+  /**
+   * Sends a email to the admin and collaborators of the form when the verified sms feature will be disabled.
+   * This happens only when the admin has hit a certain limit of sms verifications on his account
+   * @param form The form whose admin and collaborators will be issued the email
+   * @returns ok(true) when mail sending is successful
+   * @returns err(MailGenerationError) when there was an error in generating the html data for the mail
+   * @returns err(MailSendError) when there was an error in sending the mail
+   */
+  sendSmsVerificationDisabledEmail = (
+    form: Pick<IPopulatedForm, 'permissionList' | 'admin' | 'title' | '_id'>,
+  ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const htmlData: SmsVerificationDisabledData = {
+      formTitle: form.title,
+      formLink: `${this.#appUrl}/${form._id}`,
+      smsVerificationLimit: SMS_VERIFICATION_LIMIT,
+    }
+
+    return generateSmsVerificationDisabledHtml(htmlData).andThen((mailHtml) => {
+      const emailRecipients = form.permissionList
+        .map(({ email }) => email)
+        .concat(form.admin.email)
+
+      const mailOptions: MailOptions = {
+        to: emailRecipients,
+        from: this.#senderFromString,
+        html: mailHtml,
+        subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
+        replyTo: this.#senderMail,
+        bcc: this.#senderMail,
+      }
+
+      return this.#sendNodeMail(mailOptions, { formId: form._id })
+    })
   }
 }
 
