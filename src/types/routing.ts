@@ -10,3 +10,14 @@ type ErrorResponseData = {
 export interface MapRouteError {
   (error: ApplicationError, coreErrorMessage?: string): ErrorResponseData
 }
+
+/**
+ * Used when mapping route errors that might present themselves as
+ * lists.
+ */
+export interface MapRouteErrors {
+  (
+    error: ApplicationError | ApplicationError[],
+    coreErrorMessage?: string,
+  ): ErrorResponseData
+}

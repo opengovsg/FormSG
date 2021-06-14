@@ -25,6 +25,7 @@ import {
 } from '../../spcp/spcp.util'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as SubmissionService from '../submission.service'
+import { extractEmailConfirmationData } from '../submission.utils'
 
 import * as EmailSubmissionService from './email-submission.service'
 import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.types'
@@ -307,10 +308,13 @@ const submitEmailModeForm: ControllerHandler<
           // Send email confirmations
           void SubmissionService.sendEmailConfirmations({
             form,
-            parsedResponses,
             submission,
             attachments,
-            autoReplyData: emailData.autoReplyData,
+            responsesData: emailData.autoReplyData,
+            recipientData: extractEmailConfirmationData(
+              parsedResponses,
+              form.form_fields,
+            ),
           }).mapErr((error) => {
             // NOTE: MyInfo access token is not cleared here.
             // This is because if the reason for failure is not on the users' end,
