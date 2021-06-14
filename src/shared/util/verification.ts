@@ -22,4 +22,10 @@ export enum VfnErrors {
   InvalidMobileNumber = 'INVALID_MOBILE_NUMBER',
 }
 
+export enum ADMIN_VERIFIED_SMS_STATES {
+  limitExceeded = 'LIMIT_EXCEEDED',
+  belowLimit = 'BELOW_LIMIT',
+  hasMessageServiceId = 'MESSAGE_SERVICE_ID_OBTAINED',
+}
+
 export const SMS_VERIFICATION_LIMIT = 10000

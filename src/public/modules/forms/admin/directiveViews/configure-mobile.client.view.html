@@ -11,7 +11,7 @@
     <div class="col-xs-4 field-input">
       <label
         class="toggle-selector pull-right"
-        ng-class="field.isVerifiable? 'toggle-selector-on' : ''"
+        ng-class="field.isVerifiable && !field.hasAdminExceededSmsLimit ? 'toggle-selector-on' : ''"
         onclick=""
       >
         <input
@@ -20,10 +20,26 @@
           ng-click="openVerifiedSMSModal()"
         />
         <div class="toggle-selector-switch">
-          <i ng-class="field.isVerifiable ? 'bx bx-check' : 'bx bx-x' "></i>
+          <i
+            ng-class="field.isVerifiable && !field.hasAdminExceededSmsLimit ? 'bx bx-check' : 'bx bx-x' "
+          ></i>
         </div>
       </label>
     </div>
   </div>
   <br />
+  <div
+    ng-if="adminVerifiedSmsState == 'LIMIT_EXCEEDED'"
+    class="alert-custom alert-info alert-margin"
+  >
+    <small>
+      <i class="bx bx-info-circle bx-md icon-spacing"></i>
+      <span class="alert-msg">
+        You have exceeded the limit for sms verification!
+        <a href="{{twilioSetupLink}}" target="_blank" class="">
+          Please arrange advance billing with us.
+        </a>
+      </span>
+    </small>
+  </div>
 </div>
