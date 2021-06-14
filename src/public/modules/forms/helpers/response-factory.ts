@@ -45,7 +45,6 @@ const isNestedResponse = (
 ): response is NestedResponse => {
   return (
     hasAnswerArray(response) &&
-    response.answerArray.every((value) => Array.isArray(value)) &&
     response.answerArray.every(
       (arr) =>
         Array.isArray(arr) &&
