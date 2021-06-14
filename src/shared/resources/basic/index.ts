@@ -117,6 +117,12 @@ export const types: IBasicFieldType[] = [
     answerArray: false,
   },
   {
+    name: BasicField.Uen,
+    value: 'UEN',
+    submitted: true,
+    answerArray: false,
+  },
+  {
     name: BasicField.Table,
     value: 'Table',
     submitted: true,
