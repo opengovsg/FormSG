@@ -6,6 +6,8 @@ import { DecoratorFn } from '@storybook/react'
 
 import { theme } from '../src/theme'
 
+import { StorybookTheme } from './themes'
+
 const withChakra: DecoratorFn = (storyFn) => (
   <ChakraProvider resetCSS theme={theme}>
     {storyFn()}
@@ -13,3 +15,10 @@ const withChakra: DecoratorFn = (storyFn) => (
 )
 
 export const decorators = [withChakra]
+
+export const parameters = {
+  docs: {
+    theme: StorybookTheme.docs,
+    inlineStories: true,
+  },
+}
