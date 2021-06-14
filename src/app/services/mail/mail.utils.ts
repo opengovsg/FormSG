@@ -14,6 +14,7 @@ import {
   AutoreplyHtmlData,
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
+  SmsVerificationDisabledData,
   SubmissionToAdminHtmlData,
 } from './mail.types'
 
@@ -168,4 +169,11 @@ export const isToFieldValid = (addresses: string | string[]): boolean => {
 
   // Every address must be an email to be valid.
   return mails.every((addr) => validator.isEmail(addr))
+}
+
+export const generateSmsVerificationDisabledHtml = (
+  htmlData: SmsVerificationDisabledData,
+): ResultAsync<string, MailGenerationError> => {
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-disabled.server.view.html`
+  return safeRenderFile(pathToTemplate, htmlData)
 }

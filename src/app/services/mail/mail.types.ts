@@ -86,3 +86,9 @@ export type BounceNotificationHtmlData = {
   bouncedRecipients: string
   appName: string
 }
+
+export type SmsVerificationDisabledData = {
+  formLink: string
+  formTitle: string
+  smsVerificationLimit: number
+}
