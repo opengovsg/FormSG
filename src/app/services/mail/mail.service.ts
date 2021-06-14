@@ -28,6 +28,7 @@ import {
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
   SmsVerificationDisabledData,
+  SmsVerificationWarningData,
 } from './mail.types'
 import {
   generateAutoreplyHtml,
@@ -35,6 +36,7 @@ import {
   generateBounceNotificationHtml,
   generateLoginOtpHtml,
   generateSmsVerificationDisabledHtml,
+  generateSmsVerificationWarningHtml,
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
   isToFieldValid,
@@ -604,6 +606,43 @@ export class MailService {
         from: this.#senderFromString,
         html: mailHtml,
         subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
+        replyTo: this.#senderMail,
+        bcc: this.#senderMail,
+      }
+
+      return this.#sendNodeMail(mailOptions, { formId: form._id })
+    })
+  }
+
+  /**
+   * Sends a warning email to the admin and collaborators of the form when their current verified sms counts hits a limit
+   * @param form The form whose admin and collaborators will be issued a warning
+   * @param smsVerifications The current total sms verifications for the form
+   * @returns ok(true) when mail sending is successful
+   * @returns err(MailGenerationError) when there was an error in generating the html data for the mail
+   * @returns err(MailSendError) when there was an error in sending the mail
+   */
+  sendSmsVerificationWarningEmail = (
+    form: Pick<IPopulatedForm, 'permissionList' | 'admin' | 'title' | '_id'>,
+    smsVerifications: number,
+  ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const htmlData: SmsVerificationWarningData = {
+      formTitle: form.title,
+      formLink: `${this.#appUrl}/${form._id}`,
+      numAvailable: SMS_VERIFICATION_LIMIT - smsVerifications,
+      smsVerificationLimit: SMS_VERIFICATION_LIMIT,
+    }
+
+    return generateSmsVerificationWarningHtml(htmlData).andThen((mailHtml) => {
+      const emailRecipients = form.permissionList
+        .map(({ email }) => email)
+        .concat(form.admin.email)
+
+      const mailOptions: MailOptions = {
+        to: emailRecipients,
+        from: this.#senderFromString,
+        html: mailHtml,
+        subject: '[FormSG] SMS Verification - Free Tier Limit Alert',
         replyTo: this.#senderMail,
         bcc: this.#senderMail,
       }
