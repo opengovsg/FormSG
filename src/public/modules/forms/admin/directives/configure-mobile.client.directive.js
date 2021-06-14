@@ -20,8 +20,8 @@ function configureMobileDirective() {
       '$translate',
       function ($uibModal, $scope, $translate) {
         // Get support form link from translation json.
-        $translate('LINKS.SUPPORT_FORM_LINK').then((supportFormLink) => {
-          $scope.supportFormLink = supportFormLink
+        $translate('LINKS.TWILIO_SETUP_LINK').then((twilioSetupLink) => {
+          $scope.twilioSetupLink = twilioSetupLink
         })
 
         $scope.openVerifiedSMSModal = function () {
@@ -39,13 +39,19 @@ function configureMobileDirective() {
               resolve: {
                 externalScope: function () {
                   return {
-                    title: 'Verified SMS charges',
-                    confirmButtonText: 'OK, Noted',
+                    title:
+                      'OTP verification will be disabled at 10,000 responses',
+                    confirmButtonText: 'Accept',
                     description: `
-                      Under 10,000 form responses: Free verified SMS
-                      <br><br>
-                      Above 10,000 form responses: <b>~US$0.0395 per SMS - <a href=${$scope.supportFormLink} target="_blank" class="">contact us</a> 
-                      for billing</b>. Forms exceeding the free tier without billing will be deactivated.
+                    We provide SMS OTP verification for free up to 10,000 responses. OTP verification will be automatically disabled when your account reaches 10,000 responses. 
+                    <br></br>
+                    If you require OTP verification for more than 10,000 responses,
+                    <a href=${
+                      $scope.twilioSetupLink
+                    } target="_blank" class=""> please arrange advance billing with us. </a>  
+
+                    <br></br>
+                    <small>Current response count: ${0}/${0}</small>
                     `,
                   }
                 },
