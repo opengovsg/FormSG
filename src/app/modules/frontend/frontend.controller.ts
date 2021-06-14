@@ -1,7 +1,6 @@
 import ejs from 'ejs'
 import { StatusCodes } from 'http-status-codes'
 
-import featureManager from '../../config/feature-manager'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
@@ -116,15 +115,38 @@ export const generateRedirectUrl: ControllerHandler<
   }
 }
 
+// Duplicated here since the feature manager is being deprecated.
+// TODO (#2147): delete this.
+enum FeatureNames {
+  Captcha = 'captcha',
+  GoogleAnalytics = 'google-analytics',
+  Sentry = 'sentry',
+  Sms = 'sms',
+  SpcpMyInfo = 'spcp-myinfo',
+  VerifiedFields = 'verified-fields',
+  WebhookVerifiedContent = 'webhook-verified-content',
+}
+
 /**
  * Handler for GET /frontend/features endpoint.
  * @param _req - Express request object
  * @param res - Express response object
  * @returns Current featureManager states
+ * @deprecated as the feature manager has been deprecated. This endpoint
+ * now hardcodes the feature states to support old clients.
+ * TODO (#2147): delete this
  */
 export const showFeaturesStates: ControllerHandler<
   unknown,
-  typeof featureManager.states
+  Record<FeatureNames, boolean>
 > = (_req, res) => {
-  return res.json(featureManager.states)
+  return res.json({
+    [FeatureNames.Captcha]: true,
+    [FeatureNames.Sms]: true,
+    [FeatureNames.SpcpMyInfo]: true,
+    [FeatureNames.VerifiedFields]: true,
+    [FeatureNames.GoogleAnalytics]: true,
+    [FeatureNames.WebhookVerifiedContent]: true,
+    [FeatureNames.Sentry]: true,
+  })
 }

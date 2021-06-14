@@ -27,6 +27,8 @@ FrontendRouter.get('/environment', FrontendServerController.addEnvVarData)
  * Generate a json of current activated features
  * @route GET /frontend/features
  * @return json with featureManager.states
+ * @deprecated
+ * TODO (#2147): delete this
  */
 FrontendRouter.get('/features', FrontendServerController.showFeaturesStates)
 
