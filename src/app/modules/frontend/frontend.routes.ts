@@ -2,7 +2,6 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as FrontendServerController from './frontend.controller'
-import { GoogleAnalyticsFactory } from './google-analytics.factory'
 
 export const FrontendRouter = Router()
 
@@ -13,7 +12,10 @@ export const FrontendRouter = Router()
  * @return 200 when code generation is successful
  * @return 400 when code generation fails
  */
-FrontendRouter.get('/datalayer', GoogleAnalyticsFactory.addGoogleAnalyticsData)
+FrontendRouter.get(
+  '/datalayer',
+  FrontendServerController.addGoogleAnalyticsData,
+)
 
 /**
  * Generate the templated Javascript code with environment variables for the frontend

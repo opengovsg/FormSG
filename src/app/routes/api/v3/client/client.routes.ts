@@ -2,7 +2,6 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as FrontendServerController from '../../../../modules/frontend/frontend.controller'
-import { GoogleAnalyticsFactory } from '../../../../modules/frontend/google-analytics.factory'
 
 export const ClientRouter = Router()
 
@@ -15,7 +14,7 @@ export const ClientRouter = Router()
  */
 ClientRouter.get(
   '/analytics/google',
-  GoogleAnalyticsFactory.addGoogleAnalyticsData,
+  FrontendServerController.addGoogleAnalyticsData,
 )
 
 /**
