@@ -1,6 +1,8 @@
 import { MapRouteError, MapRouteErrors } from '../../types'
-import { ApplicationError } from '../modules/core/core.errors'
-import { EmptyErrorFieldError } from '../modules/submission/submission.errors'
+import {
+  ApplicationError,
+  EmptyErrorFieldError,
+} from '../modules/core/core.errors'
 
 /**
  * Used when a route-error mapper expects certain errors to be presented

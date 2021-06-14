@@ -45,16 +45,6 @@ export class ValidateFieldError extends ApplicationError {
 }
 
 /**
- * A custom error class returned when a method explicitly returns a list of errors
- * but the list itself is empty.
- */
-export class EmptyErrorFieldError extends ApplicationError {
-  constructor(message = 'Errors were returned but list is empty.') {
-    super(message)
-  }
-}
-
-/**
  * Error while sending confirmation email to recipients.
  */
 export class SendEmailConfirmationError extends ApplicationError {

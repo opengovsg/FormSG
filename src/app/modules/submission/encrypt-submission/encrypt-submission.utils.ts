@@ -21,6 +21,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  EmptyErrorFieldError,
   MalformedParametersError,
   MissingFeatureError,
 } from '../../core/core.errors'
@@ -42,7 +43,6 @@ import {
 import { MissingUserError } from '../../user/user.errors'
 import {
   ConflictError,
-  EmptyErrorFieldError,
   InvalidEncodingError,
   ProcessingError,
   ResponseModeError,
