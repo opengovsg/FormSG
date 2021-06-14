@@ -1,6 +1,8 @@
 'use strict'
 
 const get = require('lodash/get')
+const moment = require('moment-timezone')
+
 const BetaService = require('../../../../services/BetaService')
 
 const UserService = require('../../../../services/UserService')
@@ -12,7 +14,6 @@ angular
     '$scope',
     'FormApi',
     '$uibModal',
-    'moment',
     '$state',
     '$timeout',
     '$window',
@@ -25,7 +26,6 @@ function ListFormsController(
   $scope,
   FormApi,
   $uibModal,
-  moment,
   $state,
   $timeout,
   $window,

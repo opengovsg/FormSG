@@ -13,7 +13,6 @@ const moduleDependencies = [
   'ngResource',
   'ui.router',
   'ui.bootstrap',
-  'angularMoment',
   'vcRecaptcha',
   'users',
   'ngFileUpload',
@@ -55,7 +54,6 @@ require('angular-permission/dist/angular-permission')
 require('@opengovsg/angular-recaptcha-fallback')
 require('angular-resource')
 require('angular-sanitize')
-require('angular-moment')
 require('angular-messages')
 
 require('angular-ui-bootstrap')
@@ -84,9 +82,6 @@ require('@opengovsg/angular-daterangepicker-webpack')
 const appName = 'FormSG'
 // Add module dependencies
 const app = angular.module(appName, moduleDependencies)
-
-// Override moment using Angular's dependency injection
-app.constant('moment', require('moment-timezone'))
 
 // Setting HTML5 Location Mode
 angular.module(appName).config([

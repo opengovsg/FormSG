@@ -2,6 +2,7 @@
 
 const { StatusCodes } = require('http-status-codes')
 const get = require('lodash/get')
+const moment = require('moment-timezone')
 const { LogicType } = require('../../../../../types')
 const UpdateFormService = require('../../../../services/UpdateFormService')
 const UserService = require('../../../../services/UserService')
@@ -43,7 +44,6 @@ angular
     '$uibModal',
     'FormData',
     'FormFields',
-    'moment',
     'Toastr',
     '$state',
     '$window',
@@ -58,7 +58,6 @@ function AdminFormController(
   $uibModal,
   FormData,
   FormFields,
-  moment,
   Toastr,
   $state,
   $window,
