@@ -15,6 +15,7 @@ import {
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
   SmsVerificationDisabledData,
+  SmsVerificationWarningData,
   SubmissionToAdminHtmlData,
 } from './mail.types'
 
@@ -175,5 +176,12 @@ export const generateSmsVerificationDisabledHtml = (
   htmlData: SmsVerificationDisabledData,
 ): ResultAsync<string, MailGenerationError> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-disabled.server.view.html`
+  return safeRenderFile(pathToTemplate, htmlData)
+}
+
+export const generateSmsVerificationWarningHtml = (
+  htmlData: SmsVerificationWarningData,
+): ResultAsync<string, MailGenerationError> => {
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-warning.view.html`
   return safeRenderFile(pathToTemplate, htmlData)
 }
