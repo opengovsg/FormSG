@@ -3,6 +3,7 @@ export type ThemeColorScheme =
   | 'secondary'
   | 'danger'
   | 'warning'
+  | 'success'
   | 'neutral'
   | 'theme-green'
   | 'theme-teal'
