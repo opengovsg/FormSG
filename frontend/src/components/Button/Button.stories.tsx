@@ -91,6 +91,7 @@ Default.args = {
   children: 'Button',
   colorScheme: 'primary',
   size: 'md',
+  textStyle: 'subhead-1',
 }
 
 export const FullWidth = ButtonTemplate.bind({})
@@ -99,6 +100,7 @@ FullWidth.args = {
   children: 'Button',
   colorScheme: 'primary',
   isFullWidth: true,
+  textStyle: 'subhead-1',
 }
 
 export const SolidPrimary = ButtonGroupTemplate.bind({})

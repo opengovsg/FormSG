@@ -130,15 +130,19 @@ export const Button: ComponentStyleConfig = {
     border: '1px solid',
     textStyle: 'subhead-1',
     fontWeight: 'medium',
-    px: '0.5rem',
-    py: '1rem',
+    h: 'auto',
+    // -1px for border
+    px: '15px',
+    py: '9px',
   },
   sizes: {
     md: {
+      h: 'auto',
       minH: '2.75rem',
       minW: '2.75rem',
     },
     lg: {
+      h: 'auto',
       minH: '3rem',
       minW: '3rem',
     },

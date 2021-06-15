@@ -1,4 +1,5 @@
 import {
+  Box,
   Button as ChakraButton,
   ButtonProps as ChakraButtonProps,
   IconProps,
@@ -30,6 +31,7 @@ export const Button = ({
   children,
   spinnerFontSize,
   isFullWidth,
+  textStyle = 'subhead-1',
   ...props
 }: ButtonProps): JSX.Element => {
   return (
@@ -37,9 +39,10 @@ export const Button = ({
       spinner={<Spinner fontSize={spinnerFontSize ?? '1.5rem'} />}
       isFullWidth={isFullWidth}
       {...props}
-      {...(isFullWidth ? { p: '1rem', h: 'auto' } : {})}
+      // 15px due to 1px border
+      {...(isFullWidth ? { p: '15px', h: 'auto' } : {})}
     >
-      {children}
+      <Box textStyle={textStyle}>{children}</Box>
     </ChakraButton>
   )
 }
