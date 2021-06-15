@@ -21,14 +21,14 @@ describe('form-logic.client.service', () => {
   describe('getApplicableIfFields', () => {
     it('should not filter fields suitable as an if-conditional', () => {
       const validIfFields: IField[] = VALID_IF_CONDITION_FIELDS.map(
-        (fieldType) => (({ fieldType } as unknown) as IField),
+        (fieldType) => ({ fieldType } as unknown as IField),
       )
       const fields = FormLogic.getApplicableIfFields(validIfFields)
       validIfFields.forEach((v, i) => expect(v).toStrictEqual(fields[i]))
     })
     it('should filter fields not suitable as an if-conditional', () => {
       const invalidIfFields: IField[] = INVALID_IF_CONDITION_FIELDS.map(
-        (x) => (x as unknown) as IField,
+        (x) => x as unknown as IField,
       )
       const fields = FormLogic.getApplicableIfFields(invalidIfFields)
       expect(fields).toStrictEqual([])

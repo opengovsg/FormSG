@@ -65,14 +65,14 @@ describe('FormService', () => {
     it('should return full populated form successfully', async () => {
       // Arrange
       const formId = new ObjectId().toHexString()
-      const expectedForm = ({
+      const expectedForm = {
         _id: formId,
         title: 'mock title',
         admin: {
           _id: new ObjectId(),
           email: 'mockEmail@example.com',
         },
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       const retrieveFormSpy = jest
         .spyOn(Form, 'getFullFormById')
         .mockResolvedValueOnce(expectedForm)
@@ -106,11 +106,11 @@ describe('FormService', () => {
     it('should return FormNotFoundError when retrieved form does not contain admin', async () => {
       // Arrange
       const formId = new ObjectId().toHexString()
-      const expectedForm = ({
+      const expectedForm = {
         _id: formId,
         title: 'mock title',
         // Note no admin key-value.
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       const retrieveFormSpy = jest
         .spyOn(Form, 'getFullFormById')
         .mockResolvedValueOnce(expectedForm)
@@ -146,14 +146,14 @@ describe('FormService', () => {
     it('should return form successfully', async () => {
       // Arrange
       const formId = new ObjectId().toHexString()
-      const expectedForm = ({
+      const expectedForm = {
         _id: formId,
         title: 'mock title',
         admin: {
           _id: new ObjectId(),
           email: 'mockEmail@example.com',
         },
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       const retrieveFormSpy = jest
         .spyOn(Form, 'getFullFormById')
         .mockResolvedValueOnce(expectedForm)
@@ -193,11 +193,11 @@ describe('FormService', () => {
     it('should still return retrieved form even when it does not contain admin', async () => {
       // Arrange
       const formId = new ObjectId().toHexString()
-      const expectedForm = ({
+      const expectedForm = {
         _id: formId,
         title: 'mock title',
         // Note no admin key-value.
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       const retrieveFormSpy = jest
         .spyOn(Form, 'getFullFormById')
         .mockResolvedValueOnce(expectedForm)
@@ -243,11 +243,9 @@ describe('FormService', () => {
         title: 'mock title',
         admin: new ObjectId(),
       } as IFormSchema
-      const retrieveFormSpy = jest
-        .spyOn(Form, 'findById')
-        .mockReturnValueOnce(({
-          exec: jest.fn().mockResolvedValue(expectedForm),
-        } as unknown) as mongoose.Query<any>)
+      const retrieveFormSpy = jest.spyOn(Form, 'findById').mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(expectedForm),
+      } as unknown as mongoose.Query<any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -262,11 +260,9 @@ describe('FormService', () => {
       // Arrange
       const formId = new ObjectId().toHexString()
       // Resolve query to null.
-      const retrieveFormSpy = jest
-        .spyOn(Form, 'findById')
-        .mockReturnValueOnce(({
-          exec: jest.fn().mockResolvedValue(null),
-        } as unknown) as mongoose.Query<any>)
+      const retrieveFormSpy = jest.spyOn(Form, 'findById').mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(null),
+      } as unknown as mongoose.Query<any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -285,11 +281,9 @@ describe('FormService', () => {
         title: 'mock title',
         // Note no admin key-value.
       } as IFormSchema
-      const retrieveFormSpy = jest
-        .spyOn(Form, 'findById')
-        .mockReturnValueOnce(({
-          exec: jest.fn().mockResolvedValue(expectedForm),
-        } as unknown) as mongoose.Query<any>)
+      const retrieveFormSpy = jest.spyOn(Form, 'findById').mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(expectedForm),
+      } as unknown as mongoose.Query<any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -304,11 +298,9 @@ describe('FormService', () => {
       // Arrange
       const formId = new ObjectId().toHexString()
       // Mock rejection.
-      const retrieveFormSpy = jest
-        .spyOn(Form, 'findById')
-        .mockReturnValueOnce(({
-          exec: jest.fn().mockRejectedValue(new Error('some error')),
-        } as unknown) as mongoose.Query<any>)
+      const retrieveFormSpy = jest.spyOn(Form, 'findById').mockReturnValueOnce({
+        exec: jest.fn().mockRejectedValue(new Error('some error')),
+      } as unknown as mongoose.Query<any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -329,9 +321,8 @@ describe('FormService', () => {
       } as IPopulatedForm
 
       // Act
-      const actual = await FormService.checkFormSubmissionLimitAndDeactivateForm(
-        form,
-      )
+      const actual =
+        await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
 
       // Assert
       expect(actual._unsafeUnwrap()).toEqual(form)
@@ -359,9 +350,10 @@ describe('FormService', () => {
       await Promise.all(submissionPromises)
 
       // Act
-      const actual = await FormService.checkFormSubmissionLimitAndDeactivateForm(
-        form as IPopulatedForm,
-      )
+      const actual =
+        await FormService.checkFormSubmissionLimitAndDeactivateForm(
+          form as IPopulatedForm,
+        )
 
       // Assert
       expect(actual._unsafeUnwrap()).toEqual(validForm)
@@ -389,9 +381,8 @@ describe('FormService', () => {
       await Promise.all(submissionPromises)
 
       // Act
-      const actual = await FormService.checkFormSubmissionLimitAndDeactivateForm(
-        form,
-      )
+      const actual =
+        await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toEqual(

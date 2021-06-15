@@ -106,7 +106,7 @@ export const customFormat = format.printf((info) => {
   // e.g. logger.info('param1', 'param2')
   // The second parameter onwards will be passed into the `splat` key and
   // require formatting (because that is just how the library is written).
-  const splatSymbol = (Symbol.for('splat') as unknown) as string
+  const splatSymbol = Symbol.for('splat') as unknown as string
   const splatArgs = info[splatSymbol] || []
   const rest = splatArgs.map((data: any) => formatWithInspect(data)).join(' ')
   const msg = formatWithInspect(info.message)

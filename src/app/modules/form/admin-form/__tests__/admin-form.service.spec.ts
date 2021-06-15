@@ -44,6 +44,8 @@ import {
   Status,
 } from 'src/types'
 import {
+  DuplicateFormBody,
+  EditFormFieldParams,
   FieldCreateDto,
   FieldUpdateDto,
   SettingsUpdateDto,
@@ -86,11 +88,7 @@ import {
   updateFormSettings,
   updateStartPage,
 } from '../admin-form.service'
-import {
-  DuplicateFormBody,
-  EditFormFieldParams,
-  OverrideProps,
-} from '../admin-form.types'
+import { OverrideProps } from '../admin-form.types'
 import * as AdminFormUtils from '../admin-form.utils'
 
 const FormModel = getFormModel(mongoose)
@@ -370,9 +368,9 @@ describe('admin-form.service', () => {
         status: Status.Archived,
       } as IEmailFormSchema
       const mockArchiveFn = jest.fn().mockResolvedValue(mockArchivedForm)
-      const mockInitialForm = ({
+      const mockInitialForm = {
         archive: mockArchiveFn,
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       // Act
       const actual = await archiveForm(mockInitialForm)
@@ -388,9 +386,9 @@ describe('admin-form.service', () => {
       const mockArchiveFn = jest
         .fn()
         .mockRejectedValue(new Error(mockErrorString))
-      const mockInitialForm = ({
+      const mockInitialForm = {
         archive: mockArchiveFn,
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       // Act
       const actual = await archiveForm(mockInitialForm)
@@ -405,7 +403,7 @@ describe('admin-form.service', () => {
 
   describe('duplicateForm', () => {
     const MOCK_NEW_ADMIN_ID = new ObjectId().toHexString()
-    const MOCK_VALID_FORM = ({
+    const MOCK_VALID_FORM = {
       _id: new ObjectId(),
       admin: new ObjectId(),
       endPage: {
@@ -419,7 +417,7 @@ describe('admin-form.service', () => {
           fileSizeInBytes: 10000,
         } as ICustomFormLogo,
       },
-    } as unknown) as IFormDocument
+    } as unknown as IFormDocument
     const MOCK_EMAIL_OVERRIDE_PARAMS: DuplicateFormBody = {
       responseMode: ResponseMode.Email,
       title: 'mock new title',
@@ -587,7 +585,7 @@ describe('admin-form.service', () => {
         title: 'mock populated form',
       } as IPopulatedForm
 
-      const mockUpdatedForm = ({
+      const mockUpdatedForm = {
         _id: new ObjectId(),
         admin: MOCK_CURRENT_OWNER,
         emails: [MOCK_NEW_OWNER_EMAIL],
@@ -596,13 +594,13 @@ describe('admin-form.service', () => {
         populate: jest.fn().mockReturnValue({
           execPopulate: jest.fn().mockResolvedValue(expectedPopulateResult),
         }),
-      } as unknown) as IFormSchema
+      } as unknown as IFormSchema
 
-      const mockValidForm = ({
+      const mockValidForm = {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn().mockResolvedValue(mockUpdatedForm),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       MockUserService.findUserById.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
@@ -636,11 +634,11 @@ describe('admin-form.service', () => {
       MockUserService.findUserByEmail.mockReturnValueOnce(
         errAsync(new MissingUserError()),
       )
-      const mockValidForm = ({
+      const mockValidForm = {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn(),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       // Act
       const actualResult = await transferFormOwnership(
@@ -661,11 +659,11 @@ describe('admin-form.service', () => {
 
     it('should return MissingUserError when current form owner cannot be found in the database', async () => {
       // Arrange
-      const mockValidForm = ({
+      const mockValidForm = {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn(),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       MockUserService.findUserById.mockReturnValueOnce(
         errAsync(new MissingUserError()),
       )
@@ -685,11 +683,11 @@ describe('admin-form.service', () => {
 
     it('should return DatabaseError when database error occurs whilst retrieving current form owner', async () => {
       // Arrange
-      const mockValidForm = ({
+      const mockValidForm = {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn(),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       MockUserService.findUserById.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
@@ -715,11 +713,11 @@ describe('admin-form.service', () => {
       MockUserService.findUserByEmail.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
-      const mockValidForm = ({
+      const mockValidForm = {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn(),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       // Act
       const actualResult = await transferFormOwnership(
@@ -739,11 +737,11 @@ describe('admin-form.service', () => {
       MockUserService.findUserById.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
       )
-      const mockValidForm = ({
+      const mockValidForm = {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn(),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       // Act
       const actualResult = await transferFormOwnership(
@@ -764,7 +762,7 @@ describe('admin-form.service', () => {
     it('should return DatabaseError when database error occurs during populating the updated form', async () => {
       // Arrange
       const mockPopulateErrorStr = 'population failed!'
-      const mockUpdatedForm = ({
+      const mockUpdatedForm = {
         _id: new ObjectId(),
         admin: MOCK_CURRENT_OWNER,
         emails: [MOCK_NEW_OWNER_EMAIL],
@@ -776,13 +774,13 @@ describe('admin-form.service', () => {
             .fn()
             .mockRejectedValue(new Error(mockPopulateErrorStr)),
         }),
-      } as unknown) as IFormSchema
+      } as unknown as IFormSchema
 
-      const mockValidForm = ({
+      const mockValidForm = {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn().mockResolvedValue(mockUpdatedForm),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       MockUserService.findUserById.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
@@ -935,7 +933,7 @@ describe('admin-form.service', () => {
   })
 
   describe('editFormFields', () => {
-    const MOCK_UPDATED_FORM = ({
+    const MOCK_UPDATED_FORM = {
       _id: new ObjectId(),
       admin: new ObjectId(),
       form_fields: [
@@ -943,9 +941,9 @@ describe('admin-form.service', () => {
         generateDefaultField(BasicField.Mobile),
         generateDefaultField(BasicField.Dropdown),
       ],
-    } as unknown) as IPopulatedForm
+    } as unknown as IPopulatedForm
 
-    const MOCK_INTIAL_FORM = mocked(({
+    const MOCK_INTIAL_FORM = mocked({
       _id: MOCK_UPDATED_FORM._id,
       admin: MOCK_UPDATED_FORM.admin,
       form_fields: [
@@ -953,7 +951,7 @@ describe('admin-form.service', () => {
         generateDefaultField(BasicField.Mobile),
       ],
       save: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
-    } as unknown) as IPopulatedForm)
+    } as unknown as IPopulatedForm)
 
     it('should return updated form', async () => {
       // Arrange
@@ -1029,7 +1027,7 @@ describe('admin-form.service', () => {
   })
 
   describe('updateForm', () => {
-    const MOCK_UPDATED_FORM = ({
+    const MOCK_UPDATED_FORM = {
       _id: new ObjectId(),
       admin: new ObjectId(),
       status: Status.Private,
@@ -1037,15 +1035,15 @@ describe('admin-form.service', () => {
         generateDefaultField(BasicField.Mobile),
         generateDefaultField(BasicField.Dropdown),
       ],
-    } as unknown) as IPopulatedForm
+    } as unknown as IPopulatedForm
 
-    const MOCK_INITIAL_FORM = mocked(({
+    const MOCK_INITIAL_FORM = mocked({
       _id: MOCK_UPDATED_FORM._id,
       admin: MOCK_UPDATED_FORM.admin,
       status: Status.Public,
       form_fields: MOCK_UPDATED_FORM.form_fields,
       save: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
-    } as unknown) as IPopulatedForm)
+    } as unknown as IPopulatedForm)
 
     it('should successfully update given form keys', async () => {
       // Arrange
@@ -1101,23 +1099,23 @@ describe('admin-form.service', () => {
       },
     }
 
-    const MOCK_UPDATED_FORM = ({
+    const MOCK_UPDATED_FORM = {
       ...MOCK_UPDATED_SETTINGS,
       responseMode: ResponseMode.Encrypt,
       publicKey: 'some public key',
       getSettings: jest.fn().mockReturnValue(MOCK_UPDATED_SETTINGS),
-    } as unknown) as IFormDocument
+    } as unknown as IFormDocument
 
-    const MOCK_EMAIL_FORM = mocked(({
+    const MOCK_EMAIL_FORM = mocked({
       _id: new ObjectId(),
       status: Status.Public,
       responseMode: ResponseMode.Email,
-    } as unknown) as IPopulatedForm)
-    const MOCK_ENCRYPT_FORM = mocked(({
+    } as unknown as IPopulatedForm)
+    const MOCK_ENCRYPT_FORM = mocked({
       _id: new ObjectId(),
       status: Status.Public,
       responseMode: ResponseMode.Encrypt,
-    } as unknown) as IPopulatedForm)
+    } as unknown as IPopulatedForm)
 
     const EMAIL_UPDATE_SPY = jest
       .spyOn(EmailFormModel, 'findByIdAndUpdate')
@@ -1231,11 +1229,11 @@ describe('admin-form.service', () => {
         title: 'some mock form',
         form_fields: [mockNewField],
       }
-      const mockForm = ({
+      const mockForm = {
         ...mockUpdatedForm,
         form_fields: [fieldToUpdate],
         updateFormFieldById: jest.fn().mockResolvedValue(mockUpdatedForm),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       // Act
       const actual = await updateFormField(
@@ -1254,11 +1252,11 @@ describe('admin-form.service', () => {
 
     it('should return FieldNotFoundError when field update returns null', async () => {
       // Arrange
-      const mockForm = ({
+      const mockForm = {
         title: 'another mock form',
         form_fields: [],
         updateFormFieldById: jest.fn().mockResolvedValue(null),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       const invalidFieldId = new ObjectId().toHexString()
       const mockNewField = generateDefaultField(
@@ -1278,14 +1276,14 @@ describe('admin-form.service', () => {
 
     it('should return DatabaseValidationError when field model update throws a validation error', async () => {
       // Arrange
-      const mockForm = ({
+      const mockForm = {
         title: 'another another mock form',
         form_fields: [],
         updateFormFieldById: jest.fn().mockRejectedValue(
           // @ts-ignore
           new mongoose.Error.ValidationError(),
         ),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       const invalidFieldId = new ObjectId().toHexString()
       const mockNewField = generateDefaultField(
@@ -1319,11 +1317,11 @@ describe('admin-form.service', () => {
         // Append created field to end of form_fields.
         form_fields: [...initialFields, expectedCreatedField],
       }
-      const mockForm = ({
+      const mockForm = {
         title: 'some mock form',
         form_fields: initialFields,
         insertFormField: jest.fn().mockResolvedValue(mockUpdatedForm),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       const formCreateParams = pick(expectedCreatedField, [
         'title',
         'fieldType',
@@ -1343,14 +1341,14 @@ describe('admin-form.service', () => {
         generateDefaultField(BasicField.Mobile),
         generateDefaultField(BasicField.Image),
       ]
-      const mockForm = ({
+      const mockForm = {
         title: 'some mock form',
         form_fields: initialFields,
         insertFormField: jest.fn().mockRejectedValue(
           // @ts-ignore
           new mongoose.Error.ValidationError({ errors: 'does not matter' }),
         ),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       const formCreateParams = {
         fieldType: BasicField.ShortText,
         title: 'some title',
@@ -1380,18 +1378,18 @@ describe('admin-form.service', () => {
     let mockEmailForm: IPopulatedForm, mockEncryptForm: IPopulatedForm
 
     beforeEach(() => {
-      mockEmailForm = ({
+      mockEmailForm = {
         _id: new ObjectId(),
         status: Status.Public,
         responseMode: ResponseMode.Email,
         ...mockFormLogic,
-      } as unknown) as IPopulatedForm
-      mockEncryptForm = ({
+      } as unknown as IPopulatedForm
+      mockEncryptForm = {
         _id: new ObjectId(),
         status: Status.Public,
         responseMode: ResponseMode.Encrypt,
         ...mockFormLogic,
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
     })
 
     it('should return ok(form) on successful form logic delete for email mode form', async () => {
@@ -1484,12 +1482,12 @@ describe('admin-form.service', () => {
         // Append duplicated field to end of form_fields.
         form_fields: [fieldToDuplicate, duplicatedField],
       } as IFormSchema
-      const mockForm = ({
+      const mockForm = {
         title: 'some mock form',
         form_fields: [fieldToDuplicate],
         _id: new ObjectId(),
         duplicateFormFieldById: jest.fn().mockResolvedValue(mockUpdatedForm),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       // Act
       const actual = await duplicateFormField(
@@ -1514,12 +1512,12 @@ describe('admin-form.service', () => {
     it('should return FormNotFoundError when field duplication returns null', async () => {
       // Arrange
       const fieldToDuplicate = generateDefaultField(BasicField.Mobile)
-      const mockForm = ({
+      const mockForm = {
         title: 'some mock form',
         form_fields: [fieldToDuplicate],
         _id: new ObjectId(),
         duplicateFormFieldById: jest.fn().mockResolvedValue(null),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       // Act
       const actual = await duplicateFormField(mockForm, fieldToDuplicate._id)
@@ -1531,14 +1529,14 @@ describe('admin-form.service', () => {
     it('should return DatabaseValidationError when field model update throws a validation error', async () => {
       // Arrange
       const initialFields = [generateDefaultField(BasicField.Mobile)]
-      const mockForm = ({
+      const mockForm = {
         title: 'some mock form',
         form_fields: initialFields,
         duplicateFormFieldById: jest.fn().mockRejectedValue(
           // @ts-ignore
           new mongoose.Error.ValidationError({ errors: 'does not matter' }),
         ),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       // Act
       const actual = await duplicateFormField(mockForm, initialFields[0]._id)
@@ -1558,10 +1556,10 @@ describe('admin-form.service', () => {
       const mockUpdatedForm = {
         form_fields: [mockFormFields[1], mockFormFields[0]],
       }
-      const mockForm = ({
+      const mockForm = {
         form_fields: mockFormFields,
         reorderFormFieldById: jest.fn().mockResolvedValue(mockUpdatedForm),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       const fieldToReorder = String(mockFormFields[0]._id)
       const newPosition = 1
 
@@ -1582,10 +1580,10 @@ describe('admin-form.service', () => {
 
     it('should return FieldNotFoundError when null is returned from the model instance method', async () => {
       // Arrange
-      const mockForm = ({
+      const mockForm = {
         form_fields: [generateDefaultField(BasicField.YesNo)],
         reorderFormFieldById: jest.fn().mockResolvedValue(null),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       const fieldToReorder = new ObjectId().toHexString()
       const newPosition = 2
 
@@ -1606,13 +1604,13 @@ describe('admin-form.service', () => {
 
     it('should return database error when error occurs whilst reordering fields', async () => {
       // Arrange
-      const mockForm = ({
+      const mockForm = {
         form_fields: [generateDefaultField(BasicField.YesNo)],
         // Rejection
         reorderFormFieldById: jest
           .fn()
           .mockRejectedValue(new Error('some error')),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       const fieldToReorder = new ObjectId().toHexString()
       const newPosition = 2
 
@@ -1643,12 +1641,12 @@ describe('admin-form.service', () => {
           write: false,
         },
       ]
-      const mockForm = ({
+      const mockForm = {
         title: 'some mock form',
         updateFormCollaborators: jest
           .fn()
           .mockResolvedValue({ permissionList: newCollaborators }),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       // Act
       const actual = await updateFormCollaborators(mockForm, newCollaborators)
@@ -1668,12 +1666,12 @@ describe('admin-form.service', () => {
           write: false,
         },
       ]
-      const mockForm = ({
+      const mockForm = {
         title: 'some mock form',
         updateFormCollaborators: jest
           .fn()
           .mockRejectedValue(new DatabaseError()),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       // Act
       const actual = await updateFormCollaborators(mockForm, newCollaborators)
@@ -1735,26 +1733,26 @@ describe('admin-form.service', () => {
       mockEncryptFormUpdated: IPopulatedForm
 
     beforeEach(() => {
-      mockEmailForm = ({
+      mockEmailForm = {
         _id: mockEmailFormId,
         status: Status.Public,
         responseMode: ResponseMode.Email,
         ...mockFormLogicOld,
-      } as unknown) as IPopulatedForm
-      mockEncryptForm = ({
+      } as unknown as IPopulatedForm
+      mockEncryptForm = {
         _id: mockEncryptFormId,
         status: Status.Public,
         responseMode: ResponseMode.Encrypt,
         ...mockFormLogicOld,
-      } as unknown) as IPopulatedForm
-      mockEmailFormUpdated = ({
+      } as unknown as IPopulatedForm
+      mockEmailFormUpdated = {
         ...mockEmailForm,
         ...mockFormLogicUpdated,
-      } as unknown) as IPopulatedForm
-      mockEncryptFormUpdated = ({
+      } as unknown as IPopulatedForm
+      mockEncryptFormUpdated = {
         ...mockEncryptForm,
         ...mockFormLogicUpdated,
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
     })
 
     it('should return ok(created logic) on successful form logic create for email mode form', async () => {
@@ -1800,7 +1798,7 @@ describe('admin-form.service', () => {
 
     it('should return err(FormNotFoundError) if db does not return form object', async () => {
       // Arrange
-      CREATE_SPY.mockResolvedValue((undefined as unknown) as IFormSchema)
+      CREATE_SPY.mockResolvedValue(undefined as unknown as IFormSchema)
 
       // Act
       const actualResult = await createFormLogic(
@@ -1885,11 +1883,11 @@ describe('admin-form.service', () => {
         // Append created field to end of form_fields.
         form_fields: [initialFields[1]],
       } as IFormSchema
-      const mockForm = ({
+      const mockForm = {
         title: 'some mock form',
         form_fields: initialFields,
         _id: new ObjectId(),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       deleteSpy.mockResolvedValueOnce(mockUpdatedForm)
 
       // Act
@@ -1905,11 +1903,11 @@ describe('admin-form.service', () => {
 
     it("should return FieldNotFoundError when the fieldId does not exist in the form's fields", async () => {
       // Arrange
-      const mockForm = ({
+      const mockForm = {
         title: 'some mock form',
         form_fields: [generateDefaultField(BasicField.Nric)],
         _id: new ObjectId(),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       // Act
       const actual = await deleteFormField(
@@ -1925,11 +1923,11 @@ describe('admin-form.service', () => {
     it('should return FormNotFoundError when field deletion returns null', async () => {
       // Arrange
       const fieldToDelete = generateDefaultField(BasicField.Mobile)
-      const mockForm = ({
+      const mockForm = {
         title: 'some mock form',
         form_fields: [fieldToDelete],
         _id: new ObjectId(),
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
       deleteSpy.mockResolvedValueOnce(null)
 
       // Act
@@ -2093,26 +2091,26 @@ describe('admin-form.service', () => {
       mockEncryptFormUpdated: IPopulatedForm
 
     beforeEach(() => {
-      mockEmailForm = ({
+      mockEmailForm = {
         _id: mockEmailFormId,
         status: Status.Public,
         responseMode: ResponseMode.Email,
         ...mockFormLogicOld,
-      } as unknown) as IPopulatedForm
-      mockEncryptForm = ({
+      } as unknown as IPopulatedForm
+      mockEncryptForm = {
         _id: mockEncryptFormId,
         status: Status.Public,
         responseMode: ResponseMode.Encrypt,
         ...mockFormLogicOld,
-      } as unknown) as IPopulatedForm
-      mockEmailFormUpdated = ({
+      } as unknown as IPopulatedForm
+      mockEmailFormUpdated = {
         ...mockEmailForm,
         ...mockFormLogicUpdated,
-      } as unknown) as IPopulatedForm
-      mockEncryptFormUpdated = ({
+      } as unknown as IPopulatedForm
+      mockEncryptFormUpdated = {
         ...mockEncryptForm,
         ...mockFormLogicUpdated,
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
     })
 
     it('should return ok(updated logic) on successful form logic update for email mode form', async () => {
@@ -2196,12 +2194,12 @@ describe('admin-form.service', () => {
     it("should return FieldNotFoundError when the fieldId does not exist in the form's fields", async () => {
       // Arrange
       const MOCK_ID = new ObjectId().toHexString()
-      const MOCK_FORM = ({
+      const MOCK_FORM = {
         title: 'some mock form',
         // Append created field to end of form_fields.
         form_fields: [],
         _id: new ObjectId(),
-      } as unknown) as IFormSchema
+      } as unknown as IFormSchema
       const expectedError = new FieldNotFoundError(
         `Attempted to retrieve field ${MOCK_ID} from ${MOCK_FORM._id} but field was not present`,
       )

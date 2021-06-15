@@ -298,10 +298,8 @@ describe('BounceService', () => {
         ],
       })
 
-      const notifiedRecipients = await BounceService.sendEmailBounceNotification(
-        bounceDoc,
-        form,
-      )
+      const notifiedRecipients =
+        await BounceService.sendEmailBounceNotification(bounceDoc, form)
 
       expect(MockMailService.sendBounceNotification).toHaveBeenCalledWith({
         emailRecipients: [testUser.email],
@@ -329,10 +327,8 @@ describe('BounceService', () => {
         ],
       })
 
-      const notifiedRecipients = await BounceService.sendEmailBounceNotification(
-        bounceDoc,
-        form,
-      )
+      const notifiedRecipients =
+        await BounceService.sendEmailBounceNotification(bounceDoc, form)
 
       expect(MockMailService.sendBounceNotification).toHaveBeenCalledWith({
         emailRecipients: [collabEmail],
@@ -358,10 +354,8 @@ describe('BounceService', () => {
         ],
       })
 
-      const notifiedRecipients = await BounceService.sendEmailBounceNotification(
-        bounceDoc,
-        form,
-      )
+      const notifiedRecipients =
+        await BounceService.sendEmailBounceNotification(bounceDoc, form)
 
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
       expect(notifiedRecipients._unsafeUnwrap()).toEqual([])
@@ -384,10 +378,8 @@ describe('BounceService', () => {
         ],
       })
 
-      const notifiedRecipients = await BounceService.sendEmailBounceNotification(
-        bounceDoc,
-        form,
-      )
+      const notifiedRecipients =
+        await BounceService.sendEmailBounceNotification(bounceDoc, form)
 
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
       expect(notifiedRecipients._unsafeUnwrap()).toEqual([])

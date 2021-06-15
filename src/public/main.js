@@ -264,7 +264,6 @@ require('./modules/forms/services/spcp-session.client.factory.js')
 require('./modules/forms/services/submissions.client.factory.js')
 require('./modules/forms/services/toastr.client.factory.js')
 require('./modules/forms/services/attachment.client.service.js')
-require('./modules/forms/services/betas.client.factory.js')
 require('./modules/forms/services/captcha.client.service.js')
 require('./modules/forms/services/mailto.client.factory.js')
 

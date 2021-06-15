@@ -83,11 +83,11 @@ describe('Verification service', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('createTransaction', () => {
-    const mockForm = ({
+    const mockForm = {
       _id: new ObjectId(),
       title: 'mockForm',
       form_fields: [],
-    } as unknown) as IFormSchema
+    } as unknown as IFormSchema
     let createTransactionFromFormSpy: jest.SpyInstance<
       Promise<IVerificationSchema | null>,
       [form: IFormSchema]
@@ -612,8 +612,8 @@ describe('Verification service', () => {
         signedData: MOCK_SIGNED_DATA,
         hashRetries: 0,
         hashedOtp: MOCK_HASHED_OTP,
-        // hash created 15min ago
-        hashCreatedAt: subMinutes(new Date(), 15),
+        // hash created 60min ago
+        hashCreatedAt: subMinutes(new Date(), 60),
       })
       const expiredOtpTransaction = await VerificationModel.create({
         formId: mockFormId,

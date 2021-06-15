@@ -145,7 +145,7 @@ export const MOCK_SERVICE_PARAMS: IMyInfoServiceConfig = {
   } as ISpcpMyInfo,
 }
 
-export const MOCK_MYINFO_FORM = ({
+export const MOCK_MYINFO_FORM = {
   _id: MOCK_FORM_ID,
   esrvcId: MOCK_ESRVC_ID,
   authType: AuthType.MyInfo,
@@ -161,7 +161,7 @@ export const MOCK_MYINFO_FORM = ({
     return this
   },
   form_fields: [],
-} as unknown) as IFormSchema
+} as unknown as IFormSchema
 
 export const MOCK_SUCCESSFUL_COOKIE: MyInfoSuccessfulCookiePayload = {
   accessToken: MOCK_ACCESS_TOKEN,

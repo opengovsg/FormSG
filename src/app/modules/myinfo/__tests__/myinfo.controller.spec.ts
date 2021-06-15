@@ -294,7 +294,7 @@ describe('MyInfoController', () => {
       )
       // Return value is ignored
       MockBillingFactory.recordLoginByForm.mockReturnValue(
-        okAsync(({} as unknown) as ILoginSchema),
+        okAsync({} as unknown as ILoginSchema),
       )
     })
 

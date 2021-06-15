@@ -28,8 +28,8 @@ describe('captcha.factory', () => {
       undefined,
     )
     captchaFactory.validateCaptchaParams(
-      ({} as unknown) as Request,
-      ({} as unknown) as Response,
+      {} as unknown as Request,
+      {} as unknown as Response,
       nextSpy,
     )
     expect(verifyResult._unsafeUnwrap()).toBe(true)
@@ -48,8 +48,8 @@ describe('captcha.factory', () => {
       undefined,
     )
     captchaFactory.validateCaptchaParams(
-      ({} as unknown) as Request,
-      ({} as unknown) as Response,
+      {} as unknown as Request,
+      {} as unknown as Response,
       nextSpy,
     )
     expect(verifyResult._unsafeUnwrap()).toBe(true)

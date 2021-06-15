@@ -291,9 +291,10 @@ export class MyInfoData {
    * Retrieves the fieldValue for the given internal MyInfo attribute.
    * @param attr Internal FormSG MyInfo attribute
    */
-  getFieldValueForAttr(
-    attr: InternalAttr,
-  ): { fieldValue: string | undefined; isReadOnly: boolean } {
+  getFieldValueForAttr(attr: InternalAttr): {
+    fieldValue: string | undefined
+    isReadOnly: boolean
+  } {
     const externalAttr = internalAttrToExternal(attr)
     const fieldValue = this._formatFieldValue(externalAttr)
     return {

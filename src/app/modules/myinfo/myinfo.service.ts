@@ -16,6 +16,7 @@ import {
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
+  IPossiblyPrefilledField,
   MyInfoAttribute,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -47,7 +48,6 @@ import {
 import {
   IMyInfoRedirectURLArgs,
   IMyInfoServiceConfig,
-  IPossiblyPrefilledField,
   MyInfoParsedRelayState,
 } from './myinfo.types'
 import {
@@ -302,9 +302,8 @@ export class MyInfoService {
       if (!field.myInfo?.attr) return field
 
       const myInfoAttr = field.myInfo.attr
-      const { fieldValue, isReadOnly } = myInfoData.getFieldValueForAttr(
-        myInfoAttr,
-      )
+      const { fieldValue, isReadOnly } =
+        myInfoData.getFieldValueForAttr(myInfoAttr)
       const prefilledField = cloneDeep(field) as IPossiblyPrefilledField
       prefilledField.fieldValue = fieldValue
 
