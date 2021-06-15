@@ -1,19 +1,30 @@
 import { Schema } from 'mongoose'
 
 import { IShortTextFieldSchema } from '../../../types'
+import { TextSelectedValidation } from '../../../types/field/baseField'
 
-import { TextValidationOptionsSchema } from './common/textValidationOptionsSchema'
 import { MyInfoSchema } from './baseField'
 
 const createShortTextFieldSchema = () => {
-  const ShortTextFieldSchema = new Schema<IShortTextFieldSchema>({
+  return new Schema<IShortTextFieldSchema>({
     myInfo: MyInfoSchema,
     ValidationOptions: {
-      type: TextValidationOptionsSchema,
-      default: {
-        // Defaults are defined here because subdocument paths are undefined by default, and Mongoose does not apply subdocument defaults unless you set the subdocument path to a non-nullish value (see https://mongoosejs.com/docs/subdocs.html)
-        customVal: null,
-        selectedValidation: null,
+      customMax: {
+        type: Number,
+        default: null,
+      },
+      customMin: {
+        type: Number,
+        default: null,
+      },
+      customVal: {
+        type: Number,
+        default: null,
+      },
+      selectedValidation: {
+        type: String,
+        enum: [...Object.values(TextSelectedValidation), null],
+        default: null,
       },
     },
     allowPrefill: {
@@ -22,8 +33,6 @@ const createShortTextFieldSchema = () => {
       default: false,
     },
   })
-
-  return ShortTextFieldSchema
 }
 
 export default createShortTextFieldSchema

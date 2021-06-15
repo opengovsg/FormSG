@@ -28,8 +28,8 @@
       name="{{ vm.field._id  || 'defaultID' }}"
       class="input-custom input-large"
       ng-model="vm.field.fieldValue"
-      ng-maxlength="{{ vm.field.ValidationOptions && ['Exact', 'Maximum'].includes(vm.field.ValidationOptions.selectedValidation) ? vm.field.ValidationOptions.customVal : ''}}"
-      ng-minlength="{{ vm.field.ValidationOptions && ['Exact', 'Minimum'].includes(vm.field.ValidationOptions.selectedValidation) ? vm.field.ValidationOptions.customVal : ''}}"
+      ng-maxlength="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.customMax : ''}}"
+      ng-minlength="{{ vm.field.ValidationOptions ? vm.field.ValidationOptions.customMin : ''}}"
       ng-model-options="{ allowInvalid: true }"
       ng-required="vm.field.required"
       ng-disabled="vm.field.disabled"
@@ -58,18 +58,18 @@
         <div
           ng-if="vm.field.ValidationOptions.selectedValidation === 'Minimum'"
         >
-          Minimum {{vm.field.ValidationOptions.customVal}} characters
-          ({{vm.field.fieldValue.length}}/{{vm.field.ValidationOptions.customVal}})
+          Minimum {{vm.field.ValidationOptions.customMin}} characters
+          ({{vm.field.fieldValue.length}}/{{vm.field.ValidationOptions.customMin}})
         </div>
         <div
           ng-if="vm.field.ValidationOptions.selectedValidation === 'Maximum'"
         >
-          Maximum {{vm.field.ValidationOptions.customVal}} characters
-          ({{vm.field.fieldValue.length}}/{{vm.field.ValidationOptions.customVal}})
+          Maximum {{vm.field.ValidationOptions.customMax}} characters
+          ({{vm.field.fieldValue.length}}/{{vm.field.ValidationOptions.customMax}})
         </div>
         <div ng-if="vm.field.ValidationOptions.selectedValidation === 'Exact'">
-          Must be exactly {{vm.field.ValidationOptions.customVal}} characters
-          ({{vm.field.fieldValue.length}}/{{vm.field.ValidationOptions.customVal}})
+          Must be exactly {{vm.field.ValidationOptions.customMax}} characters
+          ({{vm.field.fieldValue.length}}/{{vm.field.ValidationOptions.customMax}})
         </div>
       </div>
     </div>

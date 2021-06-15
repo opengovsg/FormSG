@@ -32,6 +32,8 @@ const CustomValidation = (Base) =>
     getDefaultBasicData() {
       const fieldData = super.getDefaultBasicData()
       fieldData.ValidationOptions = {
+        customMax: null,
+        customMin: null,
         customVal: null,
         selectedValidation: null,
       }
