@@ -68,7 +68,6 @@ describe('Submission Model', () => {
           isRetryEnabled: true,
           webhookView: {
             data: {
-              attachmentDownloadUrls: {},
               formId: String(form._id),
               submissionId: String(submission._id),
               encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -121,7 +120,6 @@ describe('Submission Model', () => {
           isRetryEnabled: false,
           webhookView: {
             data: {
-              attachmentDownloadUrls: {},
               formId: String(form._id),
               submissionId: String(submission._id),
               encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -157,7 +155,6 @@ describe('Submission Model', () => {
           isRetryEnabled: false,
           webhookView: {
             data: {
-              attachmentDownloadUrls: {},
               formId: String(form._id),
               submissionId: String(submission._id),
               encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -271,7 +268,6 @@ describe('Submission Model', () => {
             created: expect.any(Date),
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             verifiedContent: undefined,
-            attachmentDownloadUrls: {},
             version: 1,
           },
         })
@@ -298,7 +294,6 @@ describe('Submission Model', () => {
         // Assert
         expect(actualWebhookView).toEqual({
           data: {
-            attachmentDownloadUrls: {},
             formId: expect.any(String),
             submissionId: expect.any(String),
             created: expect.any(Date),
@@ -341,7 +336,6 @@ describe('Submission Model', () => {
         // Assert
         expect(actualWebhookView).toEqual({
           data: {
-            attachmentDownloadUrls: {},
             formId: expect.any(String),
             submissionId: expect.any(String),
             created: expect.any(Date),

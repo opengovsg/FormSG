@@ -73,7 +73,6 @@ const getClass = (fieldType) => {
     case 'textfield':
       return TextField
     case 'nric':
-    case 'uen':
     case 'yes_no':
       return SingleAnswerField
     case 'image':

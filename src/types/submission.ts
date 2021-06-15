@@ -52,7 +52,6 @@ export interface WebhookData {
   verifiedContent: IEncryptedSubmissionSchema['verifiedContent']
   version: IEncryptedSubmissionSchema['version']
   created: IEncryptedSubmissionSchema['created']
-  attachmentDownloadUrls: Record<string, string>
 }
 
 export interface WebhookView {

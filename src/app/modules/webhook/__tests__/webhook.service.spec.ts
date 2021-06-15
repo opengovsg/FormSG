@@ -94,9 +94,6 @@ describe('webhook.service', () => {
       formId: MOCK_FORM_ID,
       submissionId: MOCK_SUBMISSION_ID,
       verifiedContent: 'mockVerifiedContent',
-      attachmentDownloadUrls: {
-        'some-field-id': 'https://mock.s3.url/some/s3/url/timeout=3600',
-      },
       version: 1,
     },
   }

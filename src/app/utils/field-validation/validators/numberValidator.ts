@@ -29,8 +29,8 @@ const numberFormatValidator: NumberValidator = (response) => {
 const minLengthValidator: NumberValidatorConstructor =
   (numberField) => (response) => {
     const { answer } = response
-    const { customVal } = numberField.ValidationOptions
-    return !customVal || answer.length >= customVal
+    const { customMin } = numberField.ValidationOptions
+    return !customMin || answer.length >= customMin
       ? right(response)
       : left(`NumberValidator:\t answer is shorter than custom minimum length`)
   }
@@ -42,8 +42,8 @@ const minLengthValidator: NumberValidatorConstructor =
 const maxLengthValidator: NumberValidatorConstructor =
   (numberField) => (response) => {
     const { answer } = response
-    const { customVal } = numberField.ValidationOptions
-    return !customVal || answer.length <= customVal
+    const { customMax } = numberField.ValidationOptions
+    return !customMax || answer.length <= customMax
       ? right(response)
       : left(`NumberValidator:\t answer is longer than custom maximum length`)
   }

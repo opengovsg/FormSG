@@ -18,7 +18,6 @@ export enum BasicField {
   Rating = 'rating',
   Nric = 'nric',
   Table = 'table',
-  Uen = 'uen',
 }
 
 export enum MyInfoAttribute {
