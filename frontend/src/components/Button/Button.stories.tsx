@@ -1,6 +1,5 @@
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
-import { ButtonGroup } from '@chakra-ui/button'
-import { SimpleGrid, Text } from '@chakra-ui/layout'
+import { ButtonGroup, SimpleGrid, Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { centerDecorator } from '~utils/storybook'
@@ -11,6 +10,7 @@ export default {
   title: 'Components/Button',
   component: Button,
   decorators: [centerDecorator],
+  parameters: { backgrounds: { default: 'light' } },
 } as Meta
 
 const ButtonTemplate: Story<ButtonProps> = (args) => <Button {...args} />
