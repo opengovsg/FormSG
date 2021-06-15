@@ -15,7 +15,6 @@ const iconTypeMap = {
   decimal: 'bx bx-calculator',
   image: 'bx bx-image',
   nric: 'bx bx-user',
-  uen: 'bx bx-building',
   attachment: 'bx bx-cloud-download',
   radiobutton: 'bx bx-radio-circle-marked',
   table: 'bx bx-table',

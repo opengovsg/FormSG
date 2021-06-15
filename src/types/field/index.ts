@@ -16,7 +16,6 @@ import { ISectionField, ISectionFieldSchema } from './sectionField'
 import { IShortTextField, IShortTextFieldSchema } from './shortTextField'
 import { IStatementField, IStatementFieldSchema } from './statementField'
 import { ITableField, ITableFieldSchema } from './tableField'
-import { IUenField, IUenFieldSchema } from './uenField'
 import { IYesNoField, IYesNoFieldSchema } from './yesNoField'
 
 export * from './fieldTypes'
@@ -40,7 +39,6 @@ export * from './sectionField'
 export * from './shortTextField'
 export * from './statementField'
 export * from './tableField'
-export * from './uenField'
 export * from './yesNoField'
 
 export type FormFieldSchema =
@@ -62,7 +60,6 @@ export type FormFieldSchema =
   | IShortTextFieldSchema
   | IStatementFieldSchema
   | ITableFieldSchema
-  | IUenFieldSchema
   | IYesNoFieldSchema
 
 export type FormField =
@@ -84,7 +81,6 @@ export type FormField =
   | IShortTextField
   | IStatementField
   | ITableField
-  | IUenField
   | IYesNoField
 
 /**
