@@ -193,7 +193,7 @@
       </div>
 
       <!-- Form Options -->
-      <div feature-toggle feature-name="spcp-myinfo">
+      <div>
         <div class="settings-divider"></div>
         <fieldset>
           <div id="enable-auth">
@@ -315,7 +315,7 @@
         </fieldset>
       </div>
 
-      <div feature-toggle feature-name="captcha">
+      <div>
         <edit-captcha-directive
           temp-form="tempForm"
           update-settings="updateSettingsByPath"
@@ -359,11 +359,7 @@
       <div class="settings-divider feature-divider"></div>
 
       <!-- Webhooks for encrypted forms -->
-      <div
-        ng-if="isFormEncrypt()"
-        feature-toggle
-        feature-name="webhook-verified-content"
-      >
+      <div ng-if="isFormEncrypt()">
         <div class="row enable-features">
           <label
             for="settings-webhook-url"

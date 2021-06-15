@@ -4,12 +4,11 @@ import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 
 import getSubmissionModel, {
+  getEmailSubmissionModel,
   getEncryptSubmissionModel,
 } from 'src/app/models/submission.server.model'
 import {
-  IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
-  ISubmissionSchema,
   SubmissionMetadata,
   SubmissionType,
 } from 'src/types'
@@ -17,6 +16,7 @@ import {
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const Submission = getSubmissionModel(mongoose)
+const EmailSubmission = getEmailSubmissionModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 describe('Encrypt Submission Model', () => {
@@ -33,15 +33,14 @@ describe('Encrypt Submission Model', () => {
         const validFormId = new ObjectId().toHexString()
         const createdDate = new Date()
         // Add valid encrypt submission.
-        const validSubmission =
-          await Submission.create<IEncryptedSubmissionSchema>({
-            form: validFormId,
-            myInfoFields: [],
-            submissionType: SubmissionType.Encrypt,
-            encryptedContent: MOCK_ENCRYPTED_CONTENT,
-            version: 1,
-            created: createdDate,
-          })
+        const validSubmission = await EncryptSubmission.create({
+          form: validFormId,
+          myInfoFields: [],
+          submissionType: SubmissionType.Encrypt,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          created: createdDate,
+        })
 
         // Act
         const result = await EncryptSubmission.findSingleMetadata(
@@ -110,7 +109,7 @@ describe('Encrypt Submission Model', () => {
         // Arrange
         // Add 3 valid encrypt submission.
         const validSubmissionPromises = times(3, (idx) =>
-          Submission.create<IEncryptedSubmissionSchema>({
+          EncryptSubmission.create({
             form: VALID_FORM_ID,
             myInfoFields: [],
             submissionType: SubmissionType.Encrypt,
@@ -119,9 +118,8 @@ describe('Encrypt Submission Model', () => {
             created: MOCK_CREATED_DATES_ASC[idx],
           }),
         )
-        const validSubmissions: ISubmissionSchema[] = await Promise.all(
-          validSubmissionPromises,
-        )
+        const validSubmissions: IEncryptedSubmissionSchema[] =
+          await Promise.all(validSubmissionPromises)
 
         // Act
         const actual = await EncryptSubmission.findAllMetadataByFormId(
@@ -149,7 +147,7 @@ describe('Encrypt Submission Model', () => {
         // Arrange
         // Add 3 valid encrypt submission.
         const validSubmissionPromises = times(3, (idx) =>
-          Submission.create<IEncryptedSubmissionSchema>({
+          EncryptSubmission.create({
             form: VALID_FORM_ID,
             myInfoFields: [],
             submissionType: SubmissionType.Encrypt,
@@ -158,9 +156,8 @@ describe('Encrypt Submission Model', () => {
             created: MOCK_CREATED_DATES_ASC[idx],
           }),
         )
-        const validSubmissions: ISubmissionSchema[] = await Promise.all(
-          validSubmissionPromises,
-        )
+        const validSubmissions: IEncryptedSubmissionSchema[] =
+          await Promise.all(validSubmissionPromises)
 
         // Act
         const actual = await EncryptSubmission.findAllMetadataByFormId(
@@ -192,7 +189,7 @@ describe('Encrypt Submission Model', () => {
         // Arrange
         // Add 3 valid encrypt submission.
         const validSubmissionPromises = times(3, (idx) =>
-          Submission.create<IEncryptedSubmissionSchema>({
+          EncryptSubmission.create({
             form: VALID_FORM_ID,
             myInfoFields: [],
             submissionType: SubmissionType.Encrypt,
@@ -201,9 +198,8 @@ describe('Encrypt Submission Model', () => {
             created: MOCK_CREATED_DATES_ASC[idx],
           }),
         )
-        const validSubmissions: ISubmissionSchema[] = await Promise.all(
-          validSubmissionPromises,
-        )
+        const validSubmissions: IEncryptedSubmissionSchema[] =
+          await Promise.all(validSubmissionPromises)
 
         // Act
         const actual = await EncryptSubmission.findAllMetadataByFormId(
@@ -235,7 +231,7 @@ describe('Encrypt Submission Model', () => {
         // Arrange
         // Add 3 valid encrypt submission.
         const validSubmissionPromises = times(3, (idx) =>
-          Submission.create<IEncryptedSubmissionSchema>({
+          EncryptSubmission.create({
             form: VALID_FORM_ID,
             myInfoFields: [],
             submissionType: SubmissionType.Encrypt,
@@ -244,9 +240,8 @@ describe('Encrypt Submission Model', () => {
             created: MOCK_CREATED_DATES_ASC[idx],
           }),
         )
-        const validSubmissions: ISubmissionSchema[] = await Promise.all(
-          validSubmissionPromises,
-        )
+        const validSubmissions: IEncryptedSubmissionSchema[] =
+          await Promise.all(validSubmissionPromises)
 
         // Act
         const actual = await EncryptSubmission.findAllMetadataByFormId(
@@ -288,11 +283,11 @@ describe('Encrypt Submission Model', () => {
       it('should return cursor that contains all the submissions', async () => {
         // Arrange
         const validFormId = new ObjectId().toHexString()
-        const validSubmission = await Submission.create({
+        const validSubmission = await EncryptSubmission.create({
           submissionType: SubmissionType.Encrypt,
           form: validFormId,
           encryptedContent: 'mock encrypted content abc',
-          version: 1,
+          version: 3,
         })
         const expectedSubmission = pick(
           validSubmission,
@@ -301,6 +296,7 @@ describe('Encrypt Submission Model', () => {
           'verifiedContent',
           'encryptedContent',
           'submissionType',
+          'version',
         )
 
         // Act
@@ -344,11 +340,11 @@ describe('Encrypt Submission Model', () => {
       it('should return correct submission by its id', async () => {
         // Arrange
         const validFormId = new ObjectId().toHexString()
-        const validSubmission = await Submission.create({
+        const validSubmission = await EncryptSubmission.create({
           submissionType: SubmissionType.Encrypt,
           form: validFormId,
           encryptedContent: 'mock encrypted content abc',
-          version: 1,
+          version: 33,
           attachmentMetadata: { someFileName: 'some url of attachment' },
         })
 
@@ -360,15 +356,16 @@ describe('Encrypt Submission Model', () => {
 
         // Assert
         const expected = pick(
-          validSubmission.toObject(),
+          validSubmission.toJSON(),
           '_id',
           'attachmentMetadata',
           'created',
           'encryptedContent',
           'submissionType',
+          'version',
         )
         expect(actual).not.toBeNull()
-        expect(actual?.toObject()).toEqual(expected)
+        expect(actual?.toJSON()).toEqual(expected)
       })
 
       it('should return null when submission id does not exist', async () => {
@@ -390,14 +387,13 @@ describe('Encrypt Submission Model', () => {
       it('should return null when type of submission with given id is not SubmissionType.Encrypt', async () => {
         // Arrange
         const validFormId = new ObjectId().toHexString()
-        const validEmailSubmission =
-          await Submission.create<IEmailSubmissionSchema>({
-            submissionType: SubmissionType.Email,
-            form: validFormId,
-            recipientEmails: ['any@example.com'],
-            responseHash: 'any hash',
-            responseSalt: 'any salt',
-          })
+        const validEmailSubmission = await EmailSubmission.create({
+          submissionType: SubmissionType.Email,
+          form: validFormId,
+          recipientEmails: ['any@example.com'],
+          responseHash: 'any hash',
+          responseSalt: 'any salt',
+        })
 
         // Act
         const actual = await EncryptSubmission.findEncryptedSubmissionById(

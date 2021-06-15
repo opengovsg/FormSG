@@ -355,6 +355,7 @@ EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
         verifiedContent: 1,
         attachmentMetadata: 1,
         created: 1,
+        version: 1,
         id: 1,
       })
       .batchSize(2000)
@@ -379,6 +380,7 @@ EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
       verifiedContent: 1,
       attachmentMetadata: 1,
       created: 1,
+      version: 1,
     })
     .exec()
 }

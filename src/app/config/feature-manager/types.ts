@@ -2,33 +2,16 @@ import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import { Schema } from 'convict'
 
 export enum FeatureNames {
-  AggregateStats = 'aggregate-stats',
   Captcha = 'captcha',
-  GoogleAnalytics = 'google-analytics',
-  Sentry = 'sentry',
   Sms = 'sms',
   SpcpMyInfo = 'spcp-myinfo',
   VerifiedFields = 'verified-fields',
   WebhookVerifiedContent = 'webhook-verified-content',
-  Intranet = 'intranet',
-}
-
-export interface IAggregateStats {
-  aggregateCollection: string
 }
 
 export interface ICaptcha {
   captchaPrivateKey: string
   captchaPublicKey: string
-}
-
-export interface IGoogleAnalytics {
-  GATrackingID: string
-}
-
-export interface ISentry {
-  sentryConfigUrl: string
-  cspReportUri: string
 }
 
 export interface ISms {
@@ -82,20 +65,12 @@ export interface IWebhookVerifiedContent {
   webhookQueueUrl: string
 }
 
-export interface IIntranet {
-  intranetIpListPath: string
-}
-
 export interface IFeatureManager {
-  [FeatureNames.AggregateStats]: IAggregateStats
   [FeatureNames.Captcha]: ICaptcha
-  [FeatureNames.GoogleAnalytics]: IGoogleAnalytics
-  [FeatureNames.Sentry]: ISentry
   [FeatureNames.Sms]: ISms
   [FeatureNames.SpcpMyInfo]: ISpcpMyInfo
   [FeatureNames.VerifiedFields]: IVerifiedFields
   [FeatureNames.WebhookVerifiedContent]: IWebhookVerifiedContent
-  [FeatureNames.Intranet]: IIntranet
 }
 
 export interface RegisteredFeature<T extends FeatureNames> {

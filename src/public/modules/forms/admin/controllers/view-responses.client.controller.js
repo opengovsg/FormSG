@@ -1,7 +1,13 @@
 'use strict'
 
-const processDecryptedContent = require('../../helpers/process-decrypted-content')
+const moment = require('moment-timezone')
+
+const {
+  processDecryptedContent,
+} = require('../../helpers/process-decrypted-content')
 const { triggerFileDownload } = require('../../helpers/util')
+
+const { FormSgSdk } = require('../../../../services/FormSgSdkService')
 
 const SHOW_PROGRESS_DELAY_MS = 3000
 
@@ -20,8 +26,6 @@ angular
     '$timeout',
     '$location',
     '$anchorScroll',
-    'moment',
-    'FormSgSdk',
     ViewResponsesController,
   ])
 
@@ -36,8 +40,6 @@ function ViewResponsesController(
   $timeout,
   $location,
   $anchorScroll,
-  moment,
-  FormSgSdk,
 ) {
   const vm = this
 
@@ -209,7 +211,7 @@ function ViewResponsesController(
       if (vm.encryptionKey !== null) {
         vm.attachmentDownloadUrls = new Map()
 
-        const { content, verified, attachmentMetadata } = response
+        const { content, verified, attachmentMetadata, version } = response
         let displayedContent
 
         try {
@@ -218,6 +220,7 @@ function ViewResponsesController(
             {
               encryptedContent: content,
               verifiedContent: verified,
+              version,
             },
           )
 
@@ -295,9 +298,11 @@ function ViewResponsesController(
   }
 
   vm.downloadAllAttachments = function () {
-    Submissions.downloadAndDecryptAttachmentsAsZip(
-      vm.attachmentDownloadUrls,
-      vm.encryptionKey.secretKey,
+    $q.when(
+      AdminSubmissionsService.downloadAndDecryptAttachmentsAsZip(
+        vm.attachmentDownloadUrls,
+        vm.encryptionKey.secretKey,
+      ),
     )
       .then((blob) => {
         triggerFileDownload(

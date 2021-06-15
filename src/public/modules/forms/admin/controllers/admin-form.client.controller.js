@@ -2,8 +2,10 @@
 
 const { StatusCodes } = require('http-status-codes')
 const get = require('lodash/get')
+const moment = require('moment-timezone')
 const { LogicType } = require('../../../../../types')
-const AdminFormService = require('../../../../services/AdminFormService')
+const UpdateFormService = require('../../../../services/UpdateFormService')
+const UserService = require('../../../../services/UserService')
 const FieldFactory = require('../../helpers/field-factory')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 
@@ -42,8 +44,6 @@ angular
     '$uibModal',
     'FormData',
     'FormFields',
-    'Auth',
-    'moment',
     'Toastr',
     '$state',
     '$window',
@@ -58,8 +58,6 @@ function AdminFormController(
   $uibModal,
   FormData,
   FormFields,
-  Auth,
-  moment,
   Toastr,
   $state,
   $window,
@@ -71,7 +69,7 @@ function AdminFormController(
 
   // Redirect to signin if unable to get user
   $scope.user =
-    Auth.getUser() ||
+    UserService.getUserFromLocalStorage() ||
     $state.go(
       'signin',
       {
@@ -191,7 +189,9 @@ function AdminFormController(
       case UPDATE_FORM_TYPES.CreateField: {
         const { body } = update
         return $q
-          .when(AdminFormService.createSingleFormField($scope.myform._id, body))
+          .when(
+            UpdateFormService.createSingleFormField($scope.myform._id, body),
+          )
           .then((updatedFormField) => {
             // !!! Convert retrieved form field objects into their class counterparts.
             const updatedFieldClass =
@@ -210,7 +210,7 @@ function AdminFormController(
         const { fieldId } = update
         return $q
           .when(
-            AdminFormService.deleteSingleFormField($scope.myform._id, fieldId),
+            UpdateFormService.deleteSingleFormField($scope.myform._id, fieldId),
           )
           .then(() => {
             // Success, remove deleted form field
@@ -225,7 +225,7 @@ function AdminFormController(
         const { fieldId, body } = update
         return $q
           .when(
-            AdminFormService.updateSingleFormField(
+            UpdateFormService.updateSingleFormField(
               $scope.myform._id,
               fieldId,
               body,
@@ -253,7 +253,7 @@ function AdminFormController(
         const { fieldId } = update
         return $q
           .when(
-            AdminFormService.duplicateSingleFormField(
+            UpdateFormService.duplicateSingleFormField(
               $scope.myform._id,
               fieldId,
             ),
@@ -277,7 +277,7 @@ function AdminFormController(
 
         return $q
           .when(
-            AdminFormService.reorderSingleFormField(
+            UpdateFormService.reorderSingleFormField(
               $scope.myform._id,
               fieldId,
               newPosition,
@@ -295,8 +295,10 @@ function AdminFormController(
           .catch(handleUpdateError)
       }
       default:
-        return FormApi.update({ formId: $scope.myform._id }, { form: update })
-          .$promise.then((savedForm) => {
+        // This block should not be reached. All updateForm calls should have an update type.
+        return $q
+          .when(FormApi.updateForm($scope.myform._id, update))
+          .then((savedForm) => {
             // Updating this form updates lastModified
             // and also updates myform if a formToUse is passed in
             $scope.myform = savedForm
@@ -307,7 +309,7 @@ function AdminFormController(
 
   $scope.updateFormEndPage = (newEndPage) => {
     return $q
-      .when(AdminFormService.updateFormEndPage($scope.myform._id, newEndPage))
+      .when(UpdateFormService.updateFormEndPage($scope.myform._id, newEndPage))
       .then((updatedEndPage) => {
         $scope.myform.endPage = updatedEndPage
       })
@@ -317,7 +319,7 @@ function AdminFormController(
   $scope.updateFormStartPage = (newStartPage) => {
     return $q
       .when(
-        AdminFormService.updateFormStartPage($scope.myform._id, newStartPage),
+        UpdateFormService.updateFormStartPage($scope.myform._id, newStartPage),
       )
       .then((updatedStartPage) => {
         $scope.myform.startPage = updatedStartPage
@@ -333,7 +335,7 @@ function AdminFormController(
   $scope.updateFormSettings = (settingsToUpdate) => {
     return $q
       .when(
-        AdminFormService.updateFormSettings(
+        UpdateFormService.updateFormSettings(
           $scope.myform._id,
           settingsToUpdate,
         ),

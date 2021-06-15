@@ -16,7 +16,7 @@ import getFormModel, {
   getEncryptedFormModel,
 } from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
-import { IntranetFactory } from '../../services/intranet/intranet.factory'
+import { IntranetService } from '../../services/intranet/intranet.service'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -285,27 +285,21 @@ export const checkIsIntranetFormAccess = (
   ip: string,
   form: IPopulatedForm,
 ): boolean => {
-  return (
-    IntranetFactory.isIntranetIp(ip)
-      .andThen((isIntranetUser) => {
-        // Warn if form is being accessed from within intranet
-        // and the form has authentication set
-        if (
-          isIntranetUser &&
-          [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(form.authType)
-        ) {
-          logger.warn({
-            message:
-              'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
-            meta: {
-              action: 'checkIsIntranetFormAccess',
-              formId: form._id,
-            },
-          })
-        }
-        return ok(isIntranetUser)
-      })
-      // This is required becausing the factory can throw missing feature error on initialization
-      .unwrapOr(false)
-  )
+  const isIntranetUser = IntranetService.isIntranetIp(ip)
+  // Warn if form is being accessed from within intranet
+  // and the form has authentication set
+  if (
+    isIntranetUser &&
+    [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(form.authType)
+  ) {
+    logger.warn({
+      message:
+        'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
+      meta: {
+        action: 'checkIsIntranetFormAccess',
+        formId: form._id,
+      },
+    })
+  }
+  return isIntranetUser
 }

@@ -7,11 +7,9 @@ import { DatabaseError } from '../core/core.errors'
 
 import { ResultsNotFoundError } from './examples.errors'
 import {
-  addAvgFeedback,
   filterByAgencyId,
   filterBySubmissionCount,
   filterInactiveAndUnlistedForms,
-  groupSubmissionsByFormId,
   lookupAgencyInfo,
   lookupFormFeedback,
   lookupFormInfo,
@@ -21,7 +19,6 @@ import {
   searchFormsById,
   searchFormsWithText,
   searchSubmissionsForForm,
-  sortByCreated,
   sortByLastSubmitted,
   sortByRelevance,
 } from './examples.queries'
@@ -166,35 +163,6 @@ export const createFormIdInfoPipeline = (
     lookupAgencyInfo,
     // Project form information without submission/feedback information.
     projectFormDetails,
-  )
-}
-
-/**
- * Creates a query pipeline that can be used to retrieve a single example form
- * for the /examples page using the submission collection.
- *
- * This pipeline will return the average feedback for the form id referenced to
- * be shown in the example form.
- * @param formId. The id of the form to retrieve data for
- */
-export const createSingleSearchSubmissionPipeline = (
-  formId: string,
-): Record<string, unknown>[] => {
-  // Retrieve all submissions with the specified formId.
-  // This pipeline using the submission collection, and `form` is the foreign
-  // key of the form collection in that collection.
-  return searchSubmissionsForForm('form', formId).concat(
-    // Sort forms by the creation date.
-    sortByCreated,
-    // Group submissions by form id, count the number of submissions, and get
-    // the last submission date.
-    groupSubmissionsByFormId,
-    // Sort all submissions by their last submission date.
-    sortByLastSubmitted,
-    // Retrieve form feedbacks for the submissions.
-    lookupFormFeedback,
-    // Calculate and add the average feedback.
-    addAvgFeedback,
   )
 }
 

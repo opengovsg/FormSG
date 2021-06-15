@@ -1,7 +1,11 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
-import { EncryptedSubmissionDto, SubmissionData } from '../../../../types'
+import {
+  EncryptedSubmissionDto,
+  MapRouteErrors,
+  SubmissionData,
+} from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { MalformedVerifiedContentError } from '../../../modules/verified-content/verified-content.errors'
@@ -10,12 +14,14 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
+import { genericMapRouteErrorTransform } from '../../../utils/error'
 import {
   AttachmentUploadError,
   DatabaseConflictError,
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  EmptyErrorFieldError,
   MalformedParametersError,
   MissingFeatureError,
 } from '../../core/core.errors'
@@ -51,7 +57,7 @@ const logger = createLoggerWithLabel(module)
  * messages.
  * @param error The error to retrieve the status codes and error messages
  */
-export const mapRouteError: MapRouteError = (
+const errorMapper: MapRouteError = (
   error,
   coreErrorMessage = 'Sorry, something went wrong. Please try again.',
 ) => {
@@ -172,6 +178,7 @@ export const mapRouteError: MapRouteError = (
       }
     case CreatePresignedUrlError:
     case DatabaseError:
+    case EmptyErrorFieldError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
@@ -192,6 +199,9 @@ export const mapRouteError: MapRouteError = (
   }
 }
 
+export const mapRouteError: MapRouteErrors =
+  genericMapRouteErrorTransform(errorMapper)
+
 /**
  * Creates and returns an EncryptedSubmissionDto object from submissionData and
  * attachment presigned urls.
@@ -208,5 +218,6 @@ export const createEncryptedSubmissionDto = (
     content: submissionData.encryptedContent,
     verified: submissionData.verifiedContent,
     attachmentMetadata: attachmentPresignedUrls,
+    version: submissionData.version,
   }
 }

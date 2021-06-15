@@ -1,17 +1,43 @@
+import { Opaque } from 'type-fest'
+
 import {
+  FieldResponse,
   IAttachmentResponse,
   ICheckboxResponse,
   ISingleAnswerResponse,
   ITableResponse,
 } from 'src/types/response'
 
-import { BasicField } from '../../../types/field'
+import { BasicField, IFieldSchema } from '../../../types/field'
 
 export type ProcessedResponse = {
   question: string
   isVisible?: boolean
   isUserVerified?: boolean
 }
+
+/**
+ * Represents a field map that is guaranteed to contain the id of
+ * ALL field responses in an incoming submission.
+ */
+export type ValidatedFieldMap = Opaque<
+  { [p: string]: IFieldSchema },
+  'ValidatedFieldMap'
+>
+
+export type VisibleResponseIdSet = Opaque<Set<string>, 'VisibleResponseIdSet'>
+
+export type VerifiableResponseIdSet = Opaque<
+  Set<string>,
+  'VerifiableResponseIdSet'
+>
+
+/**
+ * Represents a response allowed by `getModeFilter`. When presented as a
+ * list, additionally guarantees that duplicates (if any) are removed.
+ * Instantiated ONLY via `getFilteredResponses`.
+ */
+export type FilteredResponse = Opaque<FieldResponse, 'FilteredResponse'>
 
 export type ColumnResponse = {
   fieldType: BasicField

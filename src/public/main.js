@@ -13,7 +13,6 @@ const moduleDependencies = [
   'ngResource',
   'ui.router',
   'ui.bootstrap',
-  'angularMoment',
   'vcRecaptcha',
   'users',
   'ngFileUpload',
@@ -55,7 +54,6 @@ require('angular-permission/dist/angular-permission')
 require('@opengovsg/angular-recaptcha-fallback')
 require('angular-resource')
 require('angular-sanitize')
-require('angular-moment')
 require('angular-messages')
 
 require('angular-ui-bootstrap')
@@ -84,9 +82,6 @@ require('@opengovsg/angular-daterangepicker-webpack')
 const appName = 'FormSG'
 // Add module dependencies
 const app = angular.module(appName, moduleDependencies)
-
-// Override moment using Angular's dependency injection
-app.constant('moment', require('moment-timezone'))
 
 // Setting HTML5 Location Mode
 angular.module(appName).config([
@@ -137,7 +132,6 @@ app.requires.push('ngIntlTelInput')
 
 // Core services
 require('./modules/core/services/gtag.client.service.js')
-require('./modules/core/services/formsgSdk.client.factory')
 
 // Core controllers
 require('./modules/core/controllers/landing.client.controller.js')
@@ -146,8 +140,6 @@ require('./modules/core/controllers/edit-contact-number-modal.client.controller'
 // Core directives
 require('./modules/core/directives/on-click-outside.client.directive')
 require('./modules/core/directives/route-loading-indicator.client.directive.js')
-require('./modules/core/services/features.client.factory.js')
-require('./modules/core/directives/feature-toggle.client.directive.js')
 
 // Core config
 require('./modules/core/config/core.client.routes.js')
@@ -257,7 +249,6 @@ require('./modules/forms/config/forms.client.routes.js')
 
 // forms services
 require('./modules/forms/services/form-fields.client.service.js')
-require('./modules/forms/services/form-factory.client.service.js')
 require('./modules/forms/services/form-api.client.factory.js')
 require('./modules/forms/services/form-error.client.factory.js')
 require('./modules/forms/services/spcp-session.client.factory.js')
@@ -274,9 +265,6 @@ require('./modules/forms/services/mailto.client.factory.js')
 // User configuration
 require('./modules/users/config/users.client.config.js')
 require('./modules/users/config/users.client.routes.js')
-
-// User services
-require('./modules/users/services/auth.client.service.js')
 
 // User controllers
 require('./modules/users/controllers/authentication.client.controller.js')

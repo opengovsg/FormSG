@@ -45,23 +45,20 @@ fixture('login')
     await db.close()
   })
 
-test.meta('basic-env', 'true').meta('full-env', 'true')(
-  'Reject emails that do not have white-listed domains',
-  async (t) => {
-    // Enter email
-    await enterEmail(t, 'user@non-white-listed-agency.com')
+test('Reject emails that do not have white-listed domains', async (t) => {
+  // Enter email
+  await enterEmail(t, 'user@non-white-listed-agency.com')
 
-    // Ensure error message is seen
-    await t
-      .expect(signInPage.emailErrorMsg.textContent)
-      .contains(
-        'Please log in with your official government or government-linked email address.',
-      )
-  },
-)
+  // Ensure error message is seen
+  await t
+    .expect(signInPage.emailErrorMsg.textContent)
+    .contains(
+      'Please log in with your official government or government-linked email address.',
+    )
+})
 
 test
-  .meta('basic-env', 'true')
+
   .before(async (t) => {
     t.ctx.user = await createUser('existinguser@data.gov.sg')
   })
@@ -85,7 +82,7 @@ test
 )
 
 test
-  .meta('basic-env', 'true')
+
   .before((t) => {
     t.ctx.email = 'newuser@data.gov.sg'
   })
@@ -108,7 +105,7 @@ test
 )
 
 test
-  .meta('basic-env', 'true')
+
   .before(async (t) => {
     t.ctx.user = await createUser('preventuseremail@data.gov.sg')
   })
@@ -140,7 +137,7 @@ test
 })
 
 test
-  .meta('basic-env', 'true')
+
   .before(async (t) => {
     t.ctx.user = await createUser('resenduseremail@data.gov.sg')
   })
@@ -174,7 +171,7 @@ test
 })
 
 test
-  .meta('basic-env', 'true')
+
   .before(async (t) => {
     t.ctx.user = await createUser('logoutuseremail@data.gov.sg')
   })

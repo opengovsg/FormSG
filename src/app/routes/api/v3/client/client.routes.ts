@@ -2,7 +2,6 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as FrontendServerController from '../../../../modules/frontend/frontend.controller'
-import { GoogleAnalyticsFactory } from '../../../../modules/frontend/google-analytics.factory'
 
 export const ClientRouter = Router()
 
@@ -15,7 +14,7 @@ export const ClientRouter = Router()
  */
 ClientRouter.get(
   '/analytics/google',
-  GoogleAnalyticsFactory.addGoogleAnalyticsData,
+  FrontendServerController.addGoogleAnalyticsData,
 )
 
 /**
@@ -30,6 +29,8 @@ ClientRouter.get('/environment', FrontendServerController.addEnvVarData)
  * Generate a json of current activated features
  * @route GET /api/v3/client/features
  * @return json with featureManager.states
+ * @deprecated
+ * TODO (#2147): delete this
  */
 ClientRouter.get('/features', FrontendServerController.showFeaturesStates)
 
