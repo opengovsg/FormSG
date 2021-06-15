@@ -1,4 +1,4 @@
-import 'focus-visible/dist/focus-visible'
+import 'focus-visible/dist/focus-visible.min.js'
 import './assets/fonts/inter.css'
 
 import * as React from 'react'

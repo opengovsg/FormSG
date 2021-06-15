@@ -89,7 +89,7 @@ const variantReverse: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
       boxShadow: `0 0 0 4px var(--chakra-colors-${c}-300)`,
     },
     _disabled: {
-      color: `${c}.400`,
+      color: `${c}.300`,
       bg: 'white',
       opacity: 1,
     },
@@ -117,16 +117,19 @@ const variantOutline: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
     ...reverseStyle,
     borderColor: `${c}.500`,
     _disabled: {
-      color: `${c}.400`,
+      color: `${c}.300`,
       bg: 'white',
       opacity: 1,
-      borderColor: `${c}.400`,
+      borderColor: `${c}.300`,
     },
   }
 }
 
 export const Button: ComponentStyleConfig = {
   baseStyle: {
+    // Required to prevent buggy outline colors from showing up due to
+    // transitions caused by `focus-visible`
+    outlineColor: 'transparent !important',
     borderRadius: '4px',
     border: '1px solid',
     textStyle: 'subhead-1',
