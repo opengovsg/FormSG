@@ -1,3 +1,18 @@
+export type ThemeColorScheme =
+  | 'primary'
+  | 'secondary'
+  | 'danger'
+  | 'warning'
+  | 'neutral'
+  | 'theme-green'
+  | 'theme-teal'
+  | 'theme-purple'
+  | 'theme-grey'
+  | 'theme-yellow'
+  | 'theme-orange'
+  | 'theme-red'
+  | 'theme-brown'
+
 export const colours = {
   primary: {
     100: '#F6F7FC',

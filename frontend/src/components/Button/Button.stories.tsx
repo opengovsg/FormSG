@@ -13,346 +13,106 @@ export default {
   decorators: [centerDecorator],
 } as Meta
 
-const Template: Story<ButtonProps> = (args) => <Button {...args} />
-export const Default = Template.bind({})
+const ButtonTemplate: Story<ButtonProps> = (args) => <Button {...args} />
+
+const ButtonGroupTemplate: Story = (args) => {
+  return (
+    <SimpleGrid
+      columns={2}
+      spacing={8}
+      templateColumns="min-content auto"
+      alignItems="center"
+    >
+      <Text>Default</Text>
+      <ButtonGroup {...args}>
+        <Button>Button</Button>
+        <Button leftIcon={<BiUpload fontSize="1.5rem" />}>Leading</Button>
+        <Button rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
+          Trailing
+        </Button>
+      </ButtonGroup>
+      <Text>Active</Text>
+      <ButtonGroup {...args}>
+        <Button isActive>Button</Button>
+        <Button isActive leftIcon={<BiUpload fontSize="1.5rem" />}>
+          Leading
+        </Button>
+        <Button isActive rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
+          Trailing
+        </Button>
+      </ButtonGroup>
+      <Text>Disabled</Text>
+      <ButtonGroup {...args}>
+        <Button isDisabled>Button</Button>
+        <Button isDisabled leftIcon={<BiUpload fontSize="1.5rem" />}>
+          Leading
+        </Button>
+        <Button isDisabled rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
+          Trailing
+        </Button>
+      </ButtonGroup>
+      <Text>Loading</Text>
+      <ButtonGroup {...args}>
+        <Button isLoading>Button</Button>
+        <Button
+          isLoading
+          leftIcon={<BiUpload fontSize="1.5rem" />}
+          loadingText="Leading"
+        ></Button>
+        <Button
+          isLoading
+          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+          loadingText="Trailing"
+          spinnerPlacement="end"
+        ></Button>
+      </ButtonGroup>
+    </SimpleGrid>
+  )
+}
+
+export const Default = ButtonTemplate.bind({})
 Default.args = {
   variant: 'primary',
   children: 'Button',
+  colorScheme: 'primary',
 }
 
-export const FullWidth = Template.bind({})
+export const FullWidth = ButtonTemplate.bind({})
 FullWidth.args = {
   variant: 'primary',
   children: 'Button',
   isFullWidth: true,
 }
 
-export const Primary: Story = () => {
-  return (
-    <SimpleGrid
-      columns={2}
-      spacing={8}
-      templateColumns="min-content auto"
-      alignItems="center"
-    >
-      <Text>Default</Text>
-      <ButtonGroup>
-        <Button>Button</Button>
-        <Button leftIcon={<BiUpload fontSize="1.5rem" />}>Leading</Button>
-        <Button rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Active</Text>
-      <ButtonGroup>
-        <Button isActive>Button</Button>
-        <Button isActive leftIcon={<BiUpload fontSize="1.5rem" />}>
-          Leading
-        </Button>
-        <Button isActive rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Disabled</Text>
-      <ButtonGroup>
-        <Button isDisabled>Button</Button>
-        <Button isDisabled leftIcon={<BiUpload fontSize="1.5rem" />}>
-          Leading
-        </Button>
-        <Button isDisabled rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Loading</Text>
-      <ButtonGroup>
-        <Button isLoading>Button</Button>
-        <Button
-          isLoading
-          leftIcon={<BiUpload fontSize="1.5rem" />}
-          loadingText="Leading"
-        ></Button>
-        <Button
-          isLoading
-          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-          loadingText="Trailing"
-          spinnerPlacement="end"
-        ></Button>
-      </ButtonGroup>
-    </SimpleGrid>
-  )
+export const Primary = ButtonGroupTemplate.bind({})
+Primary.args = {
+  variant: 'primary',
 }
 
-export const Danger: Story = () => {
-  return (
-    <SimpleGrid
-      columns={2}
-      spacing={8}
-      templateColumns="min-content auto"
-      alignItems="center"
-    >
-      <Text>Default</Text>
-      <ButtonGroup variant="danger">
-        <Button>Button</Button>
-        <Button leftIcon={<BiUpload fontSize="1.5rem" />}>Leading</Button>
-        <Button rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Active</Text>
-      <ButtonGroup variant="danger">
-        <Button isActive>Button</Button>
-        <Button isActive leftIcon={<BiUpload fontSize="1.5rem" />}>
-          Leading
-        </Button>
-        <Button isActive rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Disabled</Text>
-      <ButtonGroup variant="danger">
-        <Button isDisabled>Button</Button>
-        <Button isDisabled leftIcon={<BiUpload fontSize="1.5rem" />}>
-          Leading
-        </Button>
-        <Button isDisabled rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Loading</Text>
-      <ButtonGroup variant="danger">
-        <Button isLoading>Button</Button>
-        <Button
-          isLoading
-          leftIcon={<BiUpload fontSize="1.5rem" />}
-          loadingText="Leading"
-        ></Button>
-        <Button
-          isLoading
-          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-          loadingText="Trailing"
-          spinnerPlacement="end"
-        ></Button>
-      </ButtonGroup>
-    </SimpleGrid>
-  )
+export const Danger = ButtonGroupTemplate.bind({})
+Danger.args = {
+  variant: 'danger',
 }
 
-export const Success: Story = () => {
-  return (
-    <SimpleGrid
-      columns={2}
-      spacing={8}
-      templateColumns="min-content auto"
-      alignItems="center"
-    >
-      <Text>Default</Text>
-      <ButtonGroup variant="success">
-        <Button>Button</Button>
-        <Button leftIcon={<BiUpload fontSize="1.5rem" />}>Leading</Button>
-        <Button rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Active</Text>
-      <ButtonGroup variant="success">
-        <Button isActive>Button</Button>
-        <Button isActive leftIcon={<BiUpload fontSize="1.5rem" />}>
-          Leading
-        </Button>
-        <Button isActive rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Disabled</Text>
-      <ButtonGroup variant="success">
-        <Button isDisabled>Button</Button>
-        <Button isDisabled leftIcon={<BiUpload fontSize="1.5rem" />}>
-          Leading
-        </Button>
-        <Button isDisabled rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Loading</Text>
-      <ButtonGroup variant="success">
-        <Button isLoading>Button</Button>
-        <Button
-          isLoading
-          leftIcon={<BiUpload fontSize="1.5rem" />}
-          loadingText="Leading"
-        ></Button>
-        <Button
-          isLoading
-          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-          loadingText="Trailing"
-          spinnerPlacement="end"
-        ></Button>
-      </ButtonGroup>
-    </SimpleGrid>
-  )
+export const Success = ButtonGroupTemplate.bind({})
+Success.args = {
+  variant: 'success',
 }
 
-export const Reverse: Story = () => {
-  return (
-    <SimpleGrid
-      columns={2}
-      spacing={8}
-      templateColumns="min-content auto"
-      alignItems="center"
-    >
-      <Text>Default</Text>
-      <ButtonGroup variant="reverse">
-        <Button>Button</Button>
-        <Button leftIcon={<BiUpload fontSize="1.5rem" />}>Leading</Button>
-        <Button rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Active</Text>
-      <ButtonGroup variant="reverse">
-        <Button isActive>Button</Button>
-        <Button isActive leftIcon={<BiUpload fontSize="1.5rem" />}>
-          Leading
-        </Button>
-        <Button isActive rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Disabled</Text>
-      <ButtonGroup variant="reverse">
-        <Button isDisabled>Button</Button>
-        <Button isDisabled leftIcon={<BiUpload fontSize="1.5rem" />}>
-          Leading
-        </Button>
-        <Button isDisabled rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Loading</Text>
-      <ButtonGroup variant="reverse">
-        <Button isLoading>Button</Button>
-        <Button
-          isLoading
-          leftIcon={<BiUpload fontSize="1.5rem" />}
-          loadingText="Leading"
-        ></Button>
-        <Button
-          isLoading
-          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-          loadingText="Trailing"
-          spinnerPlacement="end"
-        ></Button>
-      </ButtonGroup>
-    </SimpleGrid>
-  )
+export const Reverse = ButtonGroupTemplate.bind({})
+Reverse.args = {
+  variant: 'reverse',
+  colorScheme: 'primary',
 }
 
-export const Outline: Story = () => {
-  return (
-    <SimpleGrid
-      columns={2}
-      spacing={8}
-      templateColumns="min-content auto"
-      alignItems="center"
-    >
-      <Text>Default</Text>
-      <ButtonGroup variant="outline">
-        <Button>Button</Button>
-        <Button leftIcon={<BiUpload fontSize="1.5rem" />}>Leading</Button>
-        <Button rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Active</Text>
-      <ButtonGroup variant="outline">
-        <Button isActive>Button</Button>
-        <Button isActive leftIcon={<BiUpload fontSize="1.5rem" />}>
-          Leading
-        </Button>
-        <Button isActive rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Disabled</Text>
-      <ButtonGroup variant="outline">
-        <Button isDisabled>Button</Button>
-        <Button isDisabled leftIcon={<BiUpload fontSize="1.5rem" />}>
-          Leading
-        </Button>
-        <Button isDisabled rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Loading</Text>
-      <ButtonGroup variant="outline">
-        <Button isLoading>Button</Button>
-        <Button
-          isLoading
-          leftIcon={<BiUpload fontSize="1.5rem" />}
-          loadingText="Leading"
-        ></Button>
-        <Button
-          isLoading
-          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-          loadingText="Trailing"
-          spinnerPlacement="end"
-        ></Button>
-      </ButtonGroup>
-    </SimpleGrid>
-  )
+export const Outline = ButtonGroupTemplate.bind({})
+Outline.args = {
+  variant: 'outline',
+  colorScheme: 'primary',
 }
 
-export const Clear: Story = () => {
-  return (
-    <SimpleGrid
-      columns={2}
-      spacing={8}
-      templateColumns="min-content auto"
-      alignItems="center"
-    >
-      <Text>Default</Text>
-      <ButtonGroup variant="clear">
-        <Button>Button</Button>
-        <Button leftIcon={<BiUpload fontSize="1.5rem" />}>Leading</Button>
-        <Button rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Active</Text>
-      <ButtonGroup variant="clear">
-        <Button isActive>Button</Button>
-        <Button isActive leftIcon={<BiUpload fontSize="1.5rem" />}>
-          Leading
-        </Button>
-        <Button isActive rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Disabled</Text>
-      <ButtonGroup variant="clear">
-        <Button isDisabled>Button</Button>
-        <Button isDisabled leftIcon={<BiUpload fontSize="1.5rem" />}>
-          Leading
-        </Button>
-        <Button isDisabled rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
-          Trailing
-        </Button>
-      </ButtonGroup>
-      <Text>Loading</Text>
-      <ButtonGroup variant="clear">
-        <Button isLoading>Button</Button>
-        <Button
-          isLoading
-          leftIcon={<BiUpload fontSize="1.5rem" />}
-          loadingText="Leading"
-        ></Button>
-        <Button
-          isLoading
-          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-          loadingText="Trailing"
-          spinnerPlacement="end"
-        ></Button>
-      </ButtonGroup>
-    </SimpleGrid>
-  )
+export const Clear = ButtonGroupTemplate.bind({})
+Clear.args = {
+  variant: 'clear',
+  colorScheme: 'secondary',
 }
