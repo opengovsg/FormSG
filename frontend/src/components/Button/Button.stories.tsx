@@ -12,7 +12,7 @@ export default {
 
 const ButtonTemplate: Story<ButtonProps> = (args) => <Button {...args} />
 
-const ButtonGroupTemplate: Story = (args) => {
+const ButtonGroupTemplate: Story<ButtonProps> = (args) => {
   return (
     <SimpleGrid
       columns={2}
@@ -21,46 +21,64 @@ const ButtonGroupTemplate: Story = (args) => {
       alignItems="center"
     >
       <Text>Default</Text>
-      <ButtonGroup {...args}>
-        <Button>Button</Button>
-        <Button leftIcon={<BiUpload fontSize="1.5rem" />}>Leading</Button>
-        <Button rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
+      <ButtonGroup>
+        <Button {...args}>Button</Button>
+        <Button leftIcon={<BiUpload fontSize="1.5rem" />} {...args}>
+          Leading
+        </Button>
+        <Button rightIcon={<BiRightArrowAlt fontSize="1.5rem" />} {...args}>
           Trailing
         </Button>
       </ButtonGroup>
       <Text>Active</Text>
-      <ButtonGroup {...args}>
-        <Button isActive>Button</Button>
-        <Button isActive leftIcon={<BiUpload fontSize="1.5rem" />}>
+      <ButtonGroup>
+        <Button isActive {...args}>
+          Button
+        </Button>
+        <Button isActive leftIcon={<BiUpload fontSize="1.5rem" />} {...args}>
           Leading
         </Button>
-        <Button isActive rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
+        <Button
+          isActive
+          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+          {...args}
+        >
           Trailing
         </Button>
       </ButtonGroup>
       <Text>Disabled</Text>
-      <ButtonGroup {...args}>
-        <Button isDisabled>Button</Button>
-        <Button isDisabled leftIcon={<BiUpload fontSize="1.5rem" />}>
+      <ButtonGroup>
+        <Button isDisabled {...args}>
+          Button
+        </Button>
+        <Button isDisabled leftIcon={<BiUpload fontSize="1.5rem" />} {...args}>
           Leading
         </Button>
-        <Button isDisabled rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}>
+        <Button
+          isDisabled
+          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+          {...args}
+        >
           Trailing
         </Button>
       </ButtonGroup>
       <Text>Loading</Text>
-      <ButtonGroup {...args}>
-        <Button isLoading>Button</Button>
+      <ButtonGroup>
+        <Button isLoading {...args}>
+          Button
+        </Button>
         <Button
           isLoading
           leftIcon={<BiUpload fontSize="1.5rem" />}
           loadingText="Leading"
+          {...args}
         ></Button>
         <Button
           isLoading
           rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
           loadingText="Trailing"
           spinnerPlacement="end"
+          {...args}
         ></Button>
       </ButtonGroup>
     </SimpleGrid>
@@ -69,47 +87,51 @@ const ButtonGroupTemplate: Story = (args) => {
 
 export const Default = ButtonTemplate.bind({})
 Default.args = {
-  variant: 'primary',
+  variant: 'solid',
   children: 'Button',
   colorScheme: 'primary',
 }
 
 export const FullWidth = ButtonTemplate.bind({})
 FullWidth.args = {
-  variant: 'primary',
+  variant: 'solid',
   children: 'Button',
+  colorScheme: 'primary',
   isFullWidth: true,
 }
 
-export const Primary = ButtonGroupTemplate.bind({})
-Primary.args = {
-  variant: 'primary',
+export const SolidPrimary = ButtonGroupTemplate.bind({})
+SolidPrimary.args = {
+  variant: 'solid',
+  colorScheme: 'primary',
 }
 
-export const Danger = ButtonGroupTemplate.bind({})
-Danger.args = {
-  variant: 'danger',
+export const SolidDanger = ButtonGroupTemplate.bind({})
+SolidDanger.args = {
+  variant: 'solid',
+  colorScheme: 'danger',
 }
 
-export const Success = ButtonGroupTemplate.bind({})
-Success.args = {
-  variant: 'success',
+export const SolidSuccess = ButtonGroupTemplate.bind({})
+SolidSuccess.args = {
+  variant: 'solid',
+  colorScheme: 'success',
 }
 
-export const Reverse = ButtonGroupTemplate.bind({})
-Reverse.args = {
+export const ReversePrimary = ButtonGroupTemplate.bind({})
+ReversePrimary.args = {
   variant: 'reverse',
   colorScheme: 'primary',
 }
 
-export const Outline = ButtonGroupTemplate.bind({})
-Outline.args = {
+export const OutlinePrimary = ButtonGroupTemplate.bind({})
+OutlinePrimary.args = {
   variant: 'outline',
   colorScheme: 'primary',
 }
 
-export const Clear = ButtonGroupTemplate.bind({})
-Clear.args = {
+export const ClearSecondary = ButtonGroupTemplate.bind({})
+ClearSecondary.args = {
   variant: 'clear',
   colorScheme: 'secondary',
 }
