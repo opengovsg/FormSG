@@ -14,7 +14,7 @@ export type ThemeColorScheme =
   | 'theme-red'
   | 'theme-brown'
 
-export const colours = {
+export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
   primary: {
     100: '#F6F7FC',
     200: '#E4E7F6',

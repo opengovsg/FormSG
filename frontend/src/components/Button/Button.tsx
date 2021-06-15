@@ -22,7 +22,6 @@ export interface ButtonProps extends ChakraButtonProps {
 
   /**
    * Color scheme of button.
-   * Only applies to `reverse`, `outline`, and `clear` variant.
    */
   colorScheme?: ThemeColorScheme
 }
