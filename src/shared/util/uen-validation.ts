@@ -1,5 +1,3 @@
-import validator from 'validator'
-
 /**
  * Validate entity-type indicators, as per
  * https://www.uen.gov.sg/ueninternet/faces/pages/admin/aboutUEN.jspx
@@ -50,7 +48,14 @@ const VALID_ENTITY_TYPE_INDICATORS = new Set([
  * @param s String
  * @returns True if string is numeric
  */
-const isNumeric = (s: string): boolean => !isNaN(Number(s))
+const isNumeric = (s: string): boolean => !!s.match(/^[0-9]+$/)
+
+/**
+ * Helper to check whether a string is alphabetic
+ * @param s string
+ * @returns True if string is alphabetic
+ */
+const isAlphabetic = (s: string): boolean => !!s.match(/^[a-zA-Z]+$/)
 
 /**
  * Validates whether a provided string value adheres to the UIN/FIN format
@@ -70,7 +75,7 @@ export const isUenValid = (uen: string): boolean => {
   if (uen.length === 9) {
     // check that last character is a letter
     const lastChar = uen[uen.length - 1]
-    if (!validator.isAlpha(lastChar)) {
+    if (!isAlphabetic(lastChar)) {
       return false
     }
 
@@ -87,7 +92,7 @@ export const isUenValid = (uen: string): boolean => {
   // Length is 10
   // check that last character is a letter
   const lastChar = uen[uen.length - 1]
-  if (!validator.isAlpha(lastChar)) {
+  if (!isAlphabetic(lastChar)) {
     return false
   }
 
