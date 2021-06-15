@@ -127,13 +127,22 @@ const variantOutline: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
 
 export const Button: ComponentStyleConfig = {
   baseStyle: {
-    minH: '2.75rem',
     borderRadius: '4px',
     border: '1px solid',
     textStyle: 'subhead-1',
     fontWeight: 'medium',
     px: '0.5rem',
     py: '1rem',
+  },
+  sizes: {
+    md: {
+      minH: '2.75rem',
+      minW: '2.75rem',
+    },
+    lg: {
+      minH: '3rem',
+      minW: '3rem',
+    },
   },
   variants: {
     solid: variantSolid,
@@ -144,5 +153,6 @@ export const Button: ComponentStyleConfig = {
   defaultProps: {
     variant: 'primary',
     colorScheme: 'primary',
+    size: 'md',
   },
 }

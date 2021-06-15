@@ -90,6 +90,7 @@ Default.args = {
   variant: 'solid',
   children: 'Button',
   colorScheme: 'primary',
+  size: 'md',
 }
 
 export const FullWidth = ButtonTemplate.bind({})
