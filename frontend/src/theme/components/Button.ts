@@ -4,7 +4,7 @@ import {
   ThemingPropsThunk,
 } from '@chakra-ui/react'
 
-export type ThemeButtonVariants =
+export type ThemeButtonVariant =
   | 'primary'
   | 'danger'
   | 'success'
@@ -100,81 +100,84 @@ export const Button: ComponentStyleConfig = {
         },
       },
     },
-    reverse: {
+    reverse: ({ colorScheme: c }) => ({
+      bg: 'white',
+      borderColor: 'transparent',
+      color: `${c}.500`,
+      _focus: {
+        boxShadow: `0 0 0 4px var(--chakra-colors-${c}-300)`,
+      },
+      _disabled: {
+        color: `${c}.400`,
+        bg: 'white',
+        opacity: 1,
+      },
+      _active: {
+        bg: `${c}.200`,
+        _disabled: {
+          bg: 'white',
+        },
+      },
+      _hover: {
+        bg: `${c}.100`,
+        _disabled: {
+          bg: 'white',
+        },
+      },
+    }),
+    outline: ({ colorScheme: c }) => ({
+      bg: 'white',
+      borderColor: `${c}.500`,
+      color: `${c}.500`,
+      _focus: {
+        boxShadow: `0 0 0 4px var(--chakra-colors-${c}-300)`,
+      },
+      _disabled: {
+        borderColor: `${c}.400`,
+        color: `${c}.400`,
+        bg: 'white',
+        opacity: 1,
+      },
+      _active: {
+        bg: `${c}.200`,
+        _disabled: {
+          bg: 'white',
+        },
+      },
+      _hover: {
+        bg: `${c}.100`,
+        _disabled: {
+          bg: 'white',
+        },
+      },
+    }),
+    clear: ({ colorScheme: c }) => ({
       bg: 'transparent',
       borderColor: 'transparent',
-      color: 'primary.500',
+      color: `${c}.500`,
       _focus: {
-        boxShadow: '0 0 0 4px var(--chakra-colors-primary-300)',
+        boxShadow: `0 0 0 4px var(--chakra-colors-${c}-300)`,
       },
       _disabled: {
-        color: 'primary.400',
+        color: `${c}.300`,
         opacity: 1,
       },
       _active: {
-        bg: 'primary.200',
+        bg: `${c}.200`,
         _disabled: {
           bg: 'transparent',
         },
       },
       _hover: {
-        bg: 'primary.100',
+        bg: `${c}.100`,
         _disabled: {
           bg: 'transparent',
         },
       },
-    },
-    outline: {
-      bg: 'transparent',
-      borderColor: 'primary.500',
-      color: 'primary.500',
-      _focus: {
-        boxShadow: '0 0 0 4px var(--chakra-colors-primary-300)',
-      },
-      _disabled: {
-        borderColor: 'primary.400',
-        color: 'primary.400',
-        opacity: 1,
-      },
-      _active: {
-        bg: 'primary.200',
-        _disabled: {
-          bg: 'transparent',
-        },
-      },
-      _hover: {
-        bg: 'primary.100',
-        _disabled: {
-          bg: 'transparent',
-        },
-      },
-    },
-    clear: {
-      bg: 'transparent',
-      borderColor: 'transparent',
-      color: 'secondary.500',
-      _focus: {
-        boxShadow: '0 0 0 4px var(--chakra-colors-secondary-300)',
-      },
-      _disabled: {
-        color: 'secondary.300',
-        opacity: 1,
-      },
-      _active: {
-        bg: 'secondary.200',
-        _disabled: {
-          bg: 'transparent',
-        },
-      },
-      _hover: {
-        bg: 'secondary.100',
-        _disabled: {
-          bg: 'transparent',
-        },
-      },
-    },
-  } as Record<ThemeButtonVariants, ThemingPropsThunk<SystemStyleObject>>,
+    }),
+  } as Record<ThemeButtonVariant, ThemingPropsThunk<SystemStyleObject>>,
   defaultProps: {
     variant: 'primary',
+    colorScheme: 'primary',
   },
 }
