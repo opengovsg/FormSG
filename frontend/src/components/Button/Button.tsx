@@ -29,12 +29,15 @@ export interface ButtonProps extends ChakraButtonProps {
 export const Button = ({
   children,
   spinnerFontSize,
+  isFullWidth,
   ...props
 }: ButtonProps): JSX.Element => {
   return (
     <ChakraButton
       spinner={<Spinner fontSize={spinnerFontSize ?? '1.5rem'} />}
+      isFullWidth={isFullWidth}
       {...props}
+      {...(isFullWidth ? { p: '1rem', h: 'auto' } : {})}
     >
       {children}
     </ChakraButton>
