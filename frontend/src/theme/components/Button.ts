@@ -24,12 +24,14 @@ const variantSolid: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
 
   return {
     bg,
-    borderColor: 'transparent',
+    borderColor: bg,
     color: 'white',
     _active: {
       bg: activeBg,
+      borderColor: activeBg,
       _disabled: {
         bg: `${c}.300`,
+        borderColor: `${c}.300`,
       },
     },
     _focus: {
@@ -38,12 +40,15 @@ const variantSolid: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
     },
     _disabled: {
       bg: `${c}.300`,
+      borderColor: `${c}.300`,
       opacity: 1,
     },
     _hover: {
       bg: hoverBg,
+      borderColor: hoverBg,
       _disabled: {
         bg: `${c}.300`,
+        borderColor: `${c}.300`,
       },
     },
   }
@@ -78,49 +83,40 @@ const variantClear: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
   }
 }
 
-const variantReverse: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
-  const { colorScheme: c } = props
+const variantOutlineReverse: ThemingPropsThunk<CSSObject, ChakraTheme> = (
+  props,
+) => {
+  const { colorScheme: c, variant } = props
+  const showBorder = variant === 'outline'
 
   return {
     bg: 'white',
-    borderColor: 'transparent',
+    borderColor: showBorder ? `${c}.500` : 'white',
     color: `${c}.500`,
     _focus: {
       boxShadow: `0 0 0 4px var(--chakra-colors-${c}-300)`,
     },
     _disabled: {
       color: `${c}.300`,
+      borderColor: showBorder ? `${c}.300` : 'white',
       bg: 'white',
       opacity: 1,
     },
     _active: {
       bg: `${c}.200`,
+      borderColor: showBorder ? `${c}.500` : `${c}.200`,
       _disabled: {
         bg: 'white',
+        borderColor: showBorder ? `${c}.300` : 'white',
       },
     },
     _hover: {
       bg: `${c}.100`,
+      borderColor: showBorder ? `${c}.500` : `${c}.100`,
       _disabled: {
         bg: 'white',
+        borderColor: showBorder ? `${c}.300` : 'white',
       },
-    },
-  }
-}
-
-const variantOutline: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
-  const { colorScheme: c } = props
-
-  const reverseStyle = variantReverse(props)
-
-  return {
-    ...reverseStyle,
-    borderColor: `${c}.500`,
-    _disabled: {
-      color: `${c}.300`,
-      bg: 'white',
-      opacity: 1,
-      borderColor: `${c}.300`,
     },
   }
 }
@@ -149,8 +145,8 @@ export const Button: ComponentStyleConfig = {
   },
   variants: {
     solid: variantSolid,
-    reverse: variantReverse,
-    outline: variantOutline,
+    reverse: variantOutlineReverse,
+    outline: variantOutlineReverse,
     clear: variantClear,
   } as Record<ThemeButtonVariant, ThemingPropsThunk<SystemStyleObject>>,
   defaultProps: {
