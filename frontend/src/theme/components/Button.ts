@@ -126,7 +126,7 @@ export const Button: ComponentStyleConfig = {
     // Required to prevent buggy outline colors from showing up due to
     // transitions caused by `focus-visible`
     outlineColor: 'transparent !important',
-    borderRadius: '4px',
+    borderRadius: '0.25rem',
     border: '1px solid',
     textStyle: 'subhead-1',
     fontWeight: 'medium',
