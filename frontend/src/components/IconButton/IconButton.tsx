@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import {
   IconButton as ChakraIconButton,
   IconButtonProps as ChakraIconButtonProps,
-  useTheme,
 } from '@chakra-ui/react'
 
 import { ThemeButtonVariant } from '~theme/components/Button'
@@ -27,13 +26,12 @@ export interface IconButtonProps extends ChakraIconButtonProps {
 }
 
 export const IconButton = (props: IconButtonProps): JSX.Element => {
-  const theme = useTheme()
   const iconSize = useMemo(() => {
     if (props.fontSize) return props.fontSize
 
-    if (props.size === 'lg') return theme.fontSizes.xl
-    return theme.fontSizes[props.size ?? 'md']
-  }, [props.fontSize, props.size, theme.fontSizes])
+    if (props.size === 'lg') return '1.5rem'
+    return '1.25rem'
+  }, [props.fontSize, props.size])
 
   return (
     <ChakraIconButton
