@@ -1,6 +1,11 @@
 import { Document, Schema } from 'mongoose'
 
-import { AttachmentSize, IAttachmentField, IFormSchema } from '../../../types'
+import {
+  AttachmentSize,
+  IAttachmentField,
+  IFormSchema,
+  ResponseMode,
+} from '../../../types'
 
 // Manual override since mongoose types don't have generics yet.
 interface IAttachmentFieldSchema extends IAttachmentField, Document {
@@ -18,6 +23,22 @@ const createAttachmentFieldSchema = () => {
       enum: Object.values(AttachmentSize),
     },
   })
+
+  // Prevent attachments from being saved on a webhooked form.
+  AttachmentFieldSchema.pre<IAttachmentFieldSchema>(
+    'validate',
+    function (next) {
+      const { webhook, responseMode } = this.parent()
+
+      if (responseMode === ResponseMode.Encrypt && webhook?.url) {
+        return next(
+          Error('Attachments are not allowed when a form has a webhook url'),
+        )
+      }
+
+      return next()
+    },
+  )
 
   return AttachmentFieldSchema
 }
