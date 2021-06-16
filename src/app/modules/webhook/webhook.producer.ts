@@ -58,6 +58,7 @@ export class WebhookProducer {
           message: `Failed to push webhook to queue`,
           meta: {
             action: 'sendMessage',
+            webhookMessage: queueMessage.prettify(),
             attemptNum,
           },
           error,
@@ -70,6 +71,7 @@ export class WebhookProducer {
         message: 'All attempts to push webhook to queue failed',
         meta: {
           action: 'sendMessage',
+          webhookMessage: queueMessage.prettify(),
         },
         error,
       })
