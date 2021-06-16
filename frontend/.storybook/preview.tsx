@@ -1,4 +1,4 @@
-import 'focus-visible/dist/focus-visible'
+import 'focus-visible/dist/focus-visible.min.js'
 import '../src/assets/fonts/inter.css'
 
 import { ChakraProvider } from '@chakra-ui/react'

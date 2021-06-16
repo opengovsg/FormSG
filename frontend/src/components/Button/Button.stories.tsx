@@ -1,78 +1,140 @@
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
-import { ButtonGroup } from '@chakra-ui/button'
+import { ButtonGroup, SimpleGrid, Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
-
-import { centerDecorator } from '~utils/storybook'
 
 import { Button, ButtonProps } from './Button'
 
 export default {
   title: 'Components/Button',
   component: Button,
-  decorators: [centerDecorator],
+  parameters: { backgrounds: { default: 'light' } },
 } as Meta
 
-const Template: Story<ButtonProps> = (args) => <Button {...args} />
-export const Default = Template.bind({})
+const ButtonTemplate: Story<ButtonProps> = (args) => <Button {...args} />
+
+const ButtonGroupTemplate: Story<ButtonProps> = (args) => {
+  return (
+    <SimpleGrid
+      columns={2}
+      spacing={8}
+      templateColumns="min-content auto"
+      alignItems="center"
+    >
+      <Text>Default</Text>
+      <ButtonGroup>
+        <Button {...args}>Button</Button>
+        <Button leftIcon={<BiUpload fontSize="1.5rem" />} {...args}>
+          Leading
+        </Button>
+        <Button rightIcon={<BiRightArrowAlt fontSize="1.5rem" />} {...args}>
+          Trailing
+        </Button>
+      </ButtonGroup>
+      <Text>Active</Text>
+      <ButtonGroup>
+        <Button isActive {...args}>
+          Button
+        </Button>
+        <Button isActive leftIcon={<BiUpload fontSize="1.5rem" />} {...args}>
+          Leading
+        </Button>
+        <Button
+          isActive
+          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+          {...args}
+        >
+          Trailing
+        </Button>
+      </ButtonGroup>
+      <Text>Disabled</Text>
+      <ButtonGroup>
+        <Button isDisabled {...args}>
+          Button
+        </Button>
+        <Button isDisabled leftIcon={<BiUpload fontSize="1.5rem" />} {...args}>
+          Leading
+        </Button>
+        <Button
+          isDisabled
+          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+          {...args}
+        >
+          Trailing
+        </Button>
+      </ButtonGroup>
+      <Text>Loading</Text>
+      <ButtonGroup>
+        <Button isLoading {...args}>
+          Button
+        </Button>
+        <Button
+          isLoading
+          leftIcon={<BiUpload fontSize="1.5rem" />}
+          loadingText="Leading"
+          {...args}
+        ></Button>
+        <Button
+          isLoading
+          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+          loadingText="Trailing"
+          spinnerPlacement="end"
+          {...args}
+        ></Button>
+      </ButtonGroup>
+    </SimpleGrid>
+  )
+}
+
+export const Default = ButtonTemplate.bind({})
 Default.args = {
-  variant: 'primary',
+  variant: 'solid',
   children: 'Button',
+  colorScheme: 'primary',
+  size: 'md',
+  textStyle: 'subhead-1',
 }
 
-export const Variants = () => (
-  <ButtonGroup>
-    <Button>Primary</Button>
-    <Button variant="success">Success</Button>
-    <Button variant="danger">Danger</Button>
-    <Button variant="reverse">Reverse</Button>
-    <Button variant="outline">Outline</Button>
-    <Button variant="clear">Clear</Button>
-  </ButtonGroup>
-)
-
-export const Disable = () => (
-  <ButtonGroup>
-    <Button isDisabled>Primary</Button>
-    <Button isDisabled variant="success">
-      Success
-    </Button>
-    <Button isDisabled variant="danger">
-      Danger
-    </Button>
-    <Button isDisabled variant="reverse">
-      Reverse
-    </Button>
-    <Button isDisabled variant="outline">
-      Outline
-    </Button>
-    <Button isDisabled variant="clear">
-      Clear
-    </Button>
-  </ButtonGroup>
-)
-
-export const WithIcon = () => (
-  <ButtonGroup>
-    <Button leftIcon={<BiUpload fontSize="24px" />}>Leading</Button>
-    <Button rightIcon={<BiRightArrowAlt fontSize="24px" />}>Trailing</Button>
-  </ButtonGroup>
-)
-
-export const Loading = () => (
-  <ButtonGroup>
-    <Button isLoading minW="84px" />
-    <Button isLoading loadingText="With Text" />
-  </ButtonGroup>
-)
-
-export const FocusTab = Template.bind({})
-FocusTab.args = {
+export const FullWidth = ButtonTemplate.bind({})
+FullWidth.args = {
+  variant: 'solid',
   children: 'Button',
+  colorScheme: 'primary',
+  isFullWidth: true,
+  textStyle: 'subhead-1',
 }
-FocusTab.parameters = { pseudo: { focus: true } }
 
-export const Hover = Template.bind({})
-Hover.args = {
-  children: 'Button',
+export const SolidPrimary = ButtonGroupTemplate.bind({})
+SolidPrimary.args = {
+  variant: 'solid',
+  colorScheme: 'primary',
 }
-Hover.parameters = { pseudo: { hover: true } }
+
+export const SolidDanger = ButtonGroupTemplate.bind({})
+SolidDanger.args = {
+  variant: 'solid',
+  colorScheme: 'danger',
+}
+
+export const SolidSuccess = ButtonGroupTemplate.bind({})
+SolidSuccess.args = {
+  variant: 'solid',
+  colorScheme: 'success',
+}
+
+export const ReversePrimary = ButtonGroupTemplate.bind({})
+ReversePrimary.args = {
+  variant: 'reverse',
+  colorScheme: 'primary',
+}
+
+export const OutlinePrimary = ButtonGroupTemplate.bind({})
+OutlinePrimary.args = {
+  variant: 'outline',
+  colorScheme: 'primary',
+}
+
+export const ClearSecondary = ButtonGroupTemplate.bind({})
+ClearSecondary.args = {
+  variant: 'clear',
+  colorScheme: 'secondary',
+}
