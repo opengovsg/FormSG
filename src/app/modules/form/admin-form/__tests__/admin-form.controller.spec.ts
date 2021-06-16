@@ -5260,7 +5260,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5309,7 +5309,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5362,7 +5362,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5415,7 +5415,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5468,7 +5468,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5521,7 +5521,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5574,7 +5574,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5627,7 +5627,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5680,7 +5680,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
