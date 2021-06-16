@@ -453,7 +453,7 @@ export class MailService {
     // Unshift is not used as it mutates the array.
     const fullDataCollationData = [
       {
-        question: 'Reference Number',
+        question: 'Response ID',
         answer: refNo,
       },
       {

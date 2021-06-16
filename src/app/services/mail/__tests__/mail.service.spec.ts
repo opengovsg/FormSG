@@ -396,7 +396,7 @@ describe('mail.service', () => {
     // Should include the metadata in the front.
     const EXPECTED_JSON_DATA = [
       {
-        question: 'Reference Number',
+        question: 'Response ID',
         answer: MOCK_VALID_SUBMISSION_PARAMS.submission.id,
       },
       {
