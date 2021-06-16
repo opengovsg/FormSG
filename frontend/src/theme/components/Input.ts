@@ -18,6 +18,10 @@ export const Input: ComponentStyleConfig = {
           background: 'neutral.200',
           borderColor: 'neutral.400',
         },
+        _invalid: {
+          // Remove extra 1px of outline.
+          boxShadow: 'none',
+        },
       },
     }),
   },

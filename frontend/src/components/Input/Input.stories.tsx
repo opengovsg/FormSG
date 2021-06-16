@@ -17,6 +17,7 @@ Default.args = {
 export const Error = Template.bind({})
 Error.args = {
   isInvalid: true,
+  value: 'Field error',
 }
 export const Disabled = Template.bind({})
 Disabled.args = {
