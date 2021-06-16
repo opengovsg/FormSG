@@ -7,6 +7,7 @@ import {
   SubmissionResponseDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
+import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
 import MailService from '../../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -345,6 +346,7 @@ const submitEmailModeForm: ControllerHandler<
 }
 
 export const handleEmailSubmission = [
+  CaptchaMiddleware.validateCaptchaParams,
   EmailSubmissionMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailModeForm,

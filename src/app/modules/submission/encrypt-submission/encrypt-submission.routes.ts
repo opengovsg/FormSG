@@ -1,7 +1,6 @@
 import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../config/config'
-import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import { limitRate } from '../../../utils/limit-rate'
 
 import * as EncryptSubmissionController from './encrypt-submission.controller'
@@ -24,6 +23,5 @@ export const EncryptSubmissionRouter = Router()
 EncryptSubmissionRouter.post(
   '/:formId([a-fA-F0-9]{24})',
   limitRate({ max: rateLimitConfig.submissions }),
-  CaptchaMiddleware.validateCaptchaParams,
   EncryptSubmissionController.handleEncryptedSubmission,
 )
