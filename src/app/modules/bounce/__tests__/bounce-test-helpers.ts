@@ -50,7 +50,7 @@ const makeEmailNotification = (
         },
       ],
       commonHeaders: {
-        subject: `Title (Ref: ${submissionId})`,
+        subject: `Title (#${submissionId})`,
         to: recipientList,
         from: 'donotreply@form.gov.sg',
       },

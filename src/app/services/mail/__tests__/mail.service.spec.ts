@@ -410,7 +410,7 @@ describe('mail.service', () => {
       return {
         to: toField,
         from: MOCK_SENDER_STRING,
-        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
+        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (#${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
         html: expectedHtml,
         attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
         headers: {

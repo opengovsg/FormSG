@@ -44,7 +44,7 @@ const verifySubmission = async (t, testFormData, authData) => {
   await t.expect(from).eql('FormSG <donotreply@mail.form.gov.sg>')
 
   // Verify subject of email
-  await t.expect(subject).contains(`formsg-auto: ${title} (Ref:`)
+  await t.expect(subject).contains(`formsg-auto: ${title} (#`)
   // Verify form content in email
   for (let field of formFields) {
     const contained = [

@@ -476,7 +476,7 @@ export class MailService {
       const mail: MailOptions = {
         to: form.emails,
         from: this.#senderFromString,
-        subject: `formsg-auto: ${formTitle} (Ref: ${refNo})`,
+        subject: `formsg-auto: ${formTitle} (#${refNo})`,
         html: mailHtml,
         attachments,
         headers: {
