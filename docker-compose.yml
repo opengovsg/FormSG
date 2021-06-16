@@ -45,6 +45,10 @@ services:
       # This needs to be removed and replaced with a real tracking ID in a local .env file
       # in order to enable GA in a local environment
       - GA_TRACKING_ID=mockGATrackingId
+      # Test credentials from reCAPTCHA docs
+      # https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
+      - GOOGLE_CAPTCHA=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+      - GOOGLE_CAPTCHA_PUBLIC=6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
       - TWILIO_ACCOUNT_SID
       - TWILIO_API_KEY
       - TWILIO_API_SECRET
@@ -53,8 +57,6 @@ services:
       - SES_USER
       - OTP_LIFE_SPAN
       - AWS_REGION
-      - GOOGLE_CAPTCHA
-      - GOOGLE_CAPTCHA_PUBLIC
       - SIGNING_SECRET_KEY
       - VERIFICATION_SECRET_KEY
       - SP_FORMSG_KEY_PATH
