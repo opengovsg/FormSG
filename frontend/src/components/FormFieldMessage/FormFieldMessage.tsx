@@ -1,57 +1,43 @@
-import { useMemo } from 'react'
 import { FormHelperText, HelpTextProps, Icon } from '@chakra-ui/react'
 
-import { CheckCircleSolid, ErrorCircleSolid } from '~assets/icons'
+import { CheckCircleSolid } from '~assets/icons'
 
 export interface FormFieldMessageProps extends HelpTextProps {
   /**
    * Variant of input message, determines the styling. Defaults to `info`.
    */
-  variant?: 'error' | 'success' | 'info'
-
-  /**
-   * Font size of the icon (if any). Defaults to `md`.
-   */
-  iconFontSize?: HelpTextProps['fontSize']
+  variant?: 'success' | 'info'
 }
 
+/**
+ * @precondition This element should be instantiated as a child of ChakraUI's `FormControl` element.
+ *
+ * An assistive component that conveys additional guidance about the field, such
+ * as how it will be used and what types in values should be provided.
+ */
 export const FormFieldMessage = ({
   children,
-  variant: type = 'info',
-  iconFontSize = 'md',
-  ...args
+  variant = 'info',
+  ...props
 }: FormFieldMessageProps): JSX.Element => {
-  const fontColor = useMemo(() => {
-    switch (type) {
-      case 'error':
-        return 'danger.500'
-      case 'success':
-        return 'success.700'
-      case 'info':
-        return 'secondary.400'
-    }
-  }, [type])
-
-  const icon = useMemo(() => {
-    switch (type) {
-      case 'error':
-        return <Icon fontSize={iconFontSize} as={ErrorCircleSolid} mr={2} />
-      case 'success':
-        return <Icon fontSize={iconFontSize} as={CheckCircleSolid} mr={2} />
-      case 'info':
-        return undefined
-    }
-  }, [iconFontSize, type])
-
+  const fontColor = variant === 'success' ? 'success.700' : 'secondary.400'
   return (
     <FormHelperText
       display="flex"
-      alignItems="center"
-      textStyle="body-2"
+      alignItems="top"
       color={fontColor}
-      {...args}
+      {...props}
     >
-      {icon}
+      {variant === 'success' && (
+        <Icon
+          marginEnd="0.5em"
+          color={fontColor}
+          fontSize="1rem"
+          h="1.5rem"
+          as={CheckCircleSolid}
+          mr={2}
+        />
+      )}
       {children}
     </FormHelperText>
   )
