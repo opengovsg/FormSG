@@ -174,48 +174,6 @@ describe('CsvMergedHeadersGenerator', () => {
       expect(Object.values(generator.fieldIdToNumCols)).toEqual([2])
     })
 
-    it('should override the question to the latest question', () => {
-      // Arrange
-      const expectedQuestionHeader = 'this should override the old question'
-      const mockDecryptedRecordEarlier = [generateRecord(1), generateRecord(2)]
-
-      // Later record has `mock1` id, same as earlier record.
-      const mockDecryptedRecordLater = [
-        {
-          _id: 'mock1',
-          question: expectedQuestionHeader,
-          answer: 'mockAnswer1',
-          fieldType: 'mockFieldType1',
-        },
-      ]
-      const mockRecordEarlier = {
-        record: mockDecryptedRecordEarlier,
-        created: mockCreatedEarly,
-        submissionId: 'mockSubmissionId',
-      }
-      const mockRecordLater = {
-        record: mockDecryptedRecordLater,
-        created: mockCreatedLater,
-        submissionId: 'mockSubmissionId',
-      }
-      expect(generator.unprocessed.length).toEqual(0)
-
-      // Act
-      // Add record, order should not matter
-      generator.addRecord(mockRecordLater)
-      generator.addRecord(mockRecordEarlier)
-
-      // Assert
-      expect(generator.unprocessed.length).toEqual(2)
-      // Should also have 2 headers since `mockDecryptedRecordEarlier` had 2
-      // answers.
-      expect(generator.fieldIdToQuestion.size).toEqual(2)
-
-      expect(generator.fieldIdToQuestion.get('mock1').question).toEqual(
-        expectedQuestionHeader,
-      )
-    })
-
     it('should handle adding of single header record', () => {
       // Arrange
       const mockDecryptedRecord = [generateHeaderRow(1)]
