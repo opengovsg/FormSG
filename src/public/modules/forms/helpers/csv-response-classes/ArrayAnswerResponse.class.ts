@@ -3,15 +3,15 @@ import { ArrayResponse } from '../../../../../types/response'
 import { Response } from './Response.class'
 
 export class ArrayAnswerResponse extends Response {
-  _data: ArrayResponse
+  #data: ArrayResponse
 
   constructor(responseData: ArrayResponse) {
     super(responseData)
-    this._data = responseData
+    this.#data = responseData
   }
 
   getAnswer(): string {
-    return this._data.answerArray.join(';')
+    return this.#data.answerArray.join(';')
   }
 
   get numCols(): number {
