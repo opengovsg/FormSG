@@ -25,7 +25,9 @@ export const getDashboardView = async (): Promise<FormMetaView[]> => {
 export const getAdminFormView = async (
   formId: string,
 ): Promise<FormViewDto> => {
-  return axios.get<FormViewDto>(`/${formId}/adminform`).then(({ data }) => data)
+  return axios
+    .get<FormViewDto>(`${ADMIN_FORM_ENDPOINT}/${formId}`)
+    .then(({ data }) => data)
 }
 
 /**
