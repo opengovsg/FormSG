@@ -18,3 +18,4 @@ export const Default = Template.bind({})
 Default.args = {
   children: 'This is an error message.',
 }
+Default.storyName = 'FormErrorMessage'
