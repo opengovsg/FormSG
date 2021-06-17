@@ -138,7 +138,7 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
    * @param colIndex
    * @returns string representation of unprocessed record
    */
-  _extractAnswer(
+  private _extractAnswer(
     unprocessedRecord: { [fieldId: string]: Response },
     fieldId: string,
     colIndex: number,

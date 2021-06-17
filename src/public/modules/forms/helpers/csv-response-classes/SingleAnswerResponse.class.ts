@@ -3,15 +3,15 @@ import { SingleResponse } from '../../../../../types/response'
 import { Response } from './Response.class'
 
 export class SingleAnswerResponse extends Response {
-  #data: SingleResponse
+  private response: SingleResponse
 
   constructor(responseData: SingleResponse) {
     super(responseData)
-    this.#data = responseData
+    this.response = responseData
   }
 
   getAnswer(): string {
-    return this.#data.answer
+    return this.response.answer
   }
 
   get numCols(): number {

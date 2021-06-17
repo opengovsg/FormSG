@@ -1,14 +1,14 @@
 import { DisplayedResponseWithoutAnswer } from '../../../../../types/response'
 
 export abstract class Response {
-  #data: DisplayedResponseWithoutAnswer
+  private _data: DisplayedResponseWithoutAnswer
 
   constructor(responseData: DisplayedResponseWithoutAnswer) {
-    this.#data = responseData
+    this._data = responseData
   }
 
   get id(): string {
-    return this.#data._id
+    return this._data._id
   }
 
   /**
@@ -16,11 +16,11 @@ export abstract class Response {
    * @returns {string}
    */
   get question(): string {
-    return this.#data.question
+    return this._data.question
   }
 
   get isHeader(): boolean {
-    return this.#data.isHeader ?? false
+    return this._data.isHeader ?? false
   }
 
   abstract get numCols(): number
