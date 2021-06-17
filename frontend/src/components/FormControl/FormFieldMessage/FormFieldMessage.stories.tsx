@@ -4,7 +4,7 @@ import { Meta, Story } from '@storybook/react'
 import { FormFieldMessage, FormFieldMessageProps } from './FormFieldMessage'
 
 export default {
-  title: 'Components/Form/FormFieldMessage',
+  title: 'Components/FormControl/FormFieldMessage',
   component: FormFieldMessage,
   decorators: [],
 } as Meta

@@ -4,7 +4,7 @@ import { Meta, Story } from '@storybook/react'
 import { FormErrorMessage, FormErrorMessageProps } from './FormErrorMessage'
 
 export default {
-  title: 'Components/Form/FormErrorMessage',
+  title: 'Components/FormControl/FormErrorMessage',
   component: FormErrorMessage,
   decorators: [],
 } as Meta
