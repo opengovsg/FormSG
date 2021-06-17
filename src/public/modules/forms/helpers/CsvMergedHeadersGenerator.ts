@@ -13,6 +13,12 @@ type UnprocessedRecord = {
   record: { [fieldId: string]: Response }
 }
 
+type SubmissionRecord = {
+  record: DisplayedResponseWithoutAnswer[]
+  created: string
+  submissionId: string
+}
+
 export class CsvMergedHeadersGenerator extends CsvGenerator {
   hasBeenProcessed: boolean
   hasBeenSorted: boolean
@@ -51,15 +57,7 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
    * @param decryptedContent.submissionId
    * @throws Error when trying to convert record into a response instance. Should be caught in submissions client factory.
    */
-  addRecord({
-    record,
-    created,
-    submissionId,
-  }: {
-    record: DisplayedResponseWithoutAnswer[]
-    created: string
-    submissionId: string
-  }): void {
+  addRecord({ record, created, submissionId }: SubmissionRecord): void {
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
     const fieldRecords = record.map((content) => {
