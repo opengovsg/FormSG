@@ -4,6 +4,7 @@ import {
   CheckboxGroup,
   CheckboxGroupProps as ChakraCheckboxProps,
   Flex,
+  Input,
   StylesProvider,
   useMultiStyleConfig,
   useStyles,
@@ -12,8 +13,11 @@ import {
 
 export interface CheckboxProps extends ChakraCheckboxProps {
   options?: string[]
+  other: boolean
   otherComponent?: JSX.Element // TODO: change type to disjunction of acceptable components
 }
+
+const defaultOtherComponent = <Input placeholder="Please specify"></Input> // TODO: replace with custom input component
 
 const CheckboxOption = ({ option }: { option: string }): JSX.Element => {
   const styles = useStyles()
@@ -45,7 +49,8 @@ const OtherOption = ({
 
 export const Checkbox = ({
   options,
-  otherComponent,
+  other = false,
+  otherComponent = defaultOtherComponent,
   ...props
 }: CheckboxProps): JSX.Element => {
   const styles = useMultiStyleConfig('Checkbox', {})
@@ -57,9 +62,7 @@ export const Checkbox = ({
           {options?.map((option) => (
             <CheckboxOption option={option} />
           ))}
-          {otherComponent && (
-            <OtherOption component={otherComponent}></OtherOption>
-          )}
+          {other && <OtherOption component={otherComponent}></OtherOption>}
         </VStack>
       </StylesProvider>
     </CheckboxGroup>

@@ -16,5 +16,5 @@ Default.args = { options: ['Option 1', 'Option 2', 'Option 3'] }
 export const Others = Template.bind({})
 Others.args = {
   options: ['Option 1', 'Option 2', 'Option 3'],
-  otherComponent: <Input placeholder="Please specify"></Input>, // TODO: replace with input component
+  other: true,
 }
