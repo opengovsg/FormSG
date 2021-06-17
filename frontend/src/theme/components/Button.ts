@@ -154,7 +154,7 @@ export const Button: ComponentStyleConfig = {
     clear: variantClear,
   } as Record<ThemeButtonVariant, ThemingPropsThunk<SystemStyleObject>>,
   defaultProps: {
-    variant: 'primary',
+    variant: 'solid',
     colorScheme: 'primary',
     size: 'md',
   },
