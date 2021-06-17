@@ -1,6 +1,6 @@
 import { stringify } from 'csv-string'
 import moment from 'moment-timezone'
-
+import { getResponseInstance } from '../../../../../src/public/modules/forms/helpers/response-factory'
 import { CsvMergedHeadersGenerator } from '../../../../../src/public/modules/forms/helpers/CsvMergedHeadersGenerator'
 
 const UTF8_BYTE_ORDER_MARK = '\uFEFF'
@@ -27,6 +27,15 @@ const generateRecord = (append, answerArray, fieldType) => {
 
   return generated
 }
+const generateHeaderRow = (append) => {
+  return {
+    _id: `mock${append}`,
+    question: `mockQuestion${append}`,
+    fieldType: `mockFieldType${append}`,
+    isHeader: true,
+    answer: '',
+  }
+}
 
 /**
  * Reshapes a mock record to match the expected shape in generator.unprocessed.
@@ -38,7 +47,7 @@ const generateRecord = (append, answerArray, fieldType) => {
 const generateExpectedUnprocessed = (mockRecord) => {
   const reshapedRecord = {}
   mockRecord.record.forEach((fieldRecord) => {
-    reshapedRecord[fieldRecord._id] = { _data: fieldRecord }
+    reshapedRecord[fieldRecord._id] = getResponseInstance(fieldRecord)
   })
   return {
     created: mockRecord.created,
@@ -163,6 +172,72 @@ describe('CsvMergedHeadersGenerator', () => {
         },
       ])
       expect(Object.values(generator.fieldIdToNumCols)).toEqual([2])
+    })
+
+    it('should override the question to the latest question', () => {
+      // Arrange
+      const expectedQuestionHeader = 'this should override the old question'
+      const mockDecryptedRecordEarlier = [generateRecord(1), generateRecord(2)]
+
+      // Later record has `mock1` id, same as earlier record.
+      const mockDecryptedRecordLater = [
+        {
+          _id: 'mock1',
+          question: expectedQuestionHeader,
+          answer: 'mockAnswer1',
+          fieldType: 'mockFieldType1',
+        },
+      ]
+      const mockRecordEarlier = {
+        record: mockDecryptedRecordEarlier,
+        created: mockCreatedEarly,
+        submissionId: 'mockSubmissionId',
+      }
+      const mockRecordLater = {
+        record: mockDecryptedRecordLater,
+        created: mockCreatedLater,
+        submissionId: 'mockSubmissionId',
+      }
+      expect(generator.unprocessed.length).toEqual(0)
+
+      // Act
+      // Add record, order should not matter
+      generator.addRecord(mockRecordLater)
+      generator.addRecord(mockRecordEarlier)
+
+      // Assert
+      expect(generator.unprocessed.length).toEqual(2)
+      // Should also have 2 headers since `mockDecryptedRecordEarlier` had 2
+      // answers.
+      expect(generator.fieldIdToQuestion.size).toEqual(2)
+
+      expect(generator.fieldIdToQuestion.get('mock1').question).toEqual(
+        expectedQuestionHeader,
+      )
+    })
+
+    it('should handle adding of single header record', () => {
+      // Arrange
+      const mockDecryptedRecord = [generateHeaderRow(1)]
+      const mockRecord = {
+        record: mockDecryptedRecord,
+        created: mockCreatedEarly,
+        submissionId: 'mockSubmissionId',
+      }
+      expect(generator.unprocessed.length).toEqual(0)
+
+      // Act
+      generator.addRecord(mockRecord)
+
+      // Assert
+      // Generate new shape in unprocessed array
+      const expectedUnprocessed = [generateExpectedUnprocessed(mockRecord)]
+
+      expect(generator.unprocessed.length).toEqual(1)
+      // Check shape
+      expect(generator.unprocessed).toEqual(expectedUnprocessed)
+      // Check headers
+      expect(generator.fieldIdToQuestion.size).toEqual(0)
     })
 
     it('should override the question to the latest question', () => {
