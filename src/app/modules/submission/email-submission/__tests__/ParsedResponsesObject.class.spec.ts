@@ -21,47 +21,6 @@ import { ProcessedFieldResponse } from '../../submission.types'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 
 describe('ParsedResponsesObject', () => {
-  it('should return list of parsed responses for encrypted form submission successfully', async () => {
-    // Only mobile and email fields are parsed, since the other fields are
-    // e2e encrypted from the browser.
-    const mobileField = generateDefaultField(BasicField.Mobile)
-    const emailField = generateDefaultField(BasicField.Email)
-    // Add answers to both mobile and email fields
-    const mobileResponse = generateSingleAnswerResponse(
-      mobileField,
-      '+6587654321',
-    )
-    const emailResponse = generateSingleAnswerResponse(
-      emailField,
-      'test@example.com',
-    )
-
-    const mobileProcessedResponse = generateProcessedSingleAnswerResponse(
-      mobileField,
-      '+6587654321',
-    )
-    const emailProcessedResponse = generateProcessedSingleAnswerResponse(
-      emailField,
-      'test@example.com',
-    )
-
-    const result = ParsedResponsesObject.parseResponses(
-      {
-        responseMode: ResponseMode.Encrypt,
-        form_fields: [mobileField, emailField],
-      } as unknown as IFormSchema,
-      [mobileResponse, emailResponse],
-    )
-
-    const expectedParsed: ProcessedFieldResponse[] = [
-      { ...mobileProcessedResponse, isVisible: true },
-      { ...emailProcessedResponse, isVisible: true },
-    ]
-
-    expect(result.isOk()).toEqual(true)
-    expect(result._unsafeUnwrap().getAllResponses()).toEqual(expectedParsed)
-  })
-
   it('should return list of parsed responses for email form submission successfully', async () => {
     // Add answer to subset of field types
     const shortTextField = generateDefaultField(BasicField.ShortText)
