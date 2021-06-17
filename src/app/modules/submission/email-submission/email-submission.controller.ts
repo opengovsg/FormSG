@@ -7,7 +7,8 @@ import {
   SubmissionResponseDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
+import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
+import * as CaptchaService from '../../../services/captcha/captcha.service'
 import MailService from '../../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
@@ -102,7 +103,7 @@ const submitEmailModeForm: ControllerHandler<
       .andThen((form) => {
         // Check the captcha
         if (form.hasCaptcha) {
-          return CaptchaFactory.verifyCaptchaResponse(
+          return CaptchaService.verifyCaptchaResponse(
             req.query.captchaResponse,
             getRequestIp(req),
           )
@@ -345,6 +346,7 @@ const submitEmailModeForm: ControllerHandler<
 }
 
 export const handleEmailSubmission = [
+  CaptchaMiddleware.validateCaptchaParams,
   EmailSubmissionMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailModeForm,

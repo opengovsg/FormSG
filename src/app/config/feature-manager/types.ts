@@ -2,16 +2,10 @@ import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import { Schema } from 'convict'
 
 export enum FeatureNames {
-  Captcha = 'captcha',
   Sms = 'sms',
   SpcpMyInfo = 'spcp-myinfo',
   VerifiedFields = 'verified-fields',
   WebhookVerifiedContent = 'webhook-verified-content',
-}
-
-export interface ICaptcha {
-  captchaPrivateKey: string
-  captchaPublicKey: string
 }
 
 export interface ISms {
@@ -66,7 +60,6 @@ export interface IWebhookVerifiedContent {
 }
 
 export interface IFeatureManager {
-  [FeatureNames.Captcha]: ICaptcha
   [FeatureNames.Sms]: ISms
   [FeatureNames.SpcpMyInfo]: ISpcpMyInfo
   [FeatureNames.VerifiedFields]: IVerifiedFields
