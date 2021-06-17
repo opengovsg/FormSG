@@ -82,3 +82,13 @@ export class AttachmentUploadError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * A custom error class returned when a method explicitly returns a list of errors
+ * but the list itself is empty.
+ */
+export class EmptyErrorFieldError extends ApplicationError {
+  constructor(message = 'Errors were returned but list is empty.') {
+    super(message)
+  }
+}

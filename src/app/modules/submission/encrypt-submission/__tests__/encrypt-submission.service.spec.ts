@@ -43,13 +43,13 @@ describe('encrypt-submission.service', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('createEncryptSubmissionWithoutSave', () => {
-    const MOCK_FORM = ({
+    const MOCK_FORM = {
       admin: new ObjectId(),
       _id: new ObjectId(),
       title: 'mock title',
       getUniqueMyInfoAttrs: () => [],
       authType: 'NIL',
-    } as unknown) as IPopulatedEncryptedForm
+    } as unknown as IPopulatedEncryptedForm
     const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
     const MOCK_VERIFIED_CONTENT = 'mockVerifiedContent'
     const MOCK_VERSION = 1
@@ -81,7 +81,7 @@ describe('encrypt-submission.service', () => {
   describe('getSubmissionCursor', () => {
     it('should return cursor successfully when date range is not provided', async () => {
       // Arrange
-      const mockCursor = (jest.fn() as unknown) as mongoose.QueryCursor<any>
+      const mockCursor = jest.fn() as unknown as mongoose.QueryCursor<any>
       const getSubmissionSpy = jest
         .spyOn(EncryptSubmission, 'getSubmissionCursorByFormId')
         .mockReturnValueOnce(mockCursor)
@@ -99,7 +99,7 @@ describe('encrypt-submission.service', () => {
 
     it('should return cursor successfully when date range is provided', async () => {
       // Arrange
-      const mockCursor = (jest.fn() as unknown) as mongoose.QueryCursor<any>
+      const mockCursor = jest.fn() as unknown as mongoose.QueryCursor<any>
       const getSubmissionSpy = jest
         .spyOn(EncryptSubmission, 'getSubmissionCursorByFormId')
         .mockReturnValueOnce(mockCursor)
@@ -361,27 +361,31 @@ describe('encrypt-submission.service', () => {
       const awsSpy = jest
         .spyOn(aws.s3, 'getSignedUrl')
         // @ts-ignore
-        .mockImplementationOnce((_operation, _params, callback) =>
-          callback(expectedError),
-        )
+        .mockImplementationOnce((_operation, _params, callback) => {
+          return callback(expectedError)
+        })
       const mockInput = new PassThrough()
-      const actualErrors: any[] = []
 
       // Act
-      // Build pipeline.
-      mockInput
-        .pipe(
-          transformAttachmentMetaStream({
-            enabled: true,
-            urlValidDuration: expectedExpiry,
-          }),
-        )
-        .on('error', (error) => actualErrors.push(error))
+      // Build (promisified) pipeline for testing.
+      const streamPromise = new Promise((resolve, reject) => {
+        mockInput
+          .pipe(
+            transformAttachmentMetaStream({
+              enabled: true,
+              urlValidDuration: expectedExpiry,
+            }),
+          )
+          .on('finish', resolve)
+          .on('error', reject)
+      })
 
       // Emit events.
       mockInput.emit('data', clone(MOCK_SUB_CURSOR_DATA_2))
 
       // Assert
+      // Should reject since error is returned from callback.
+      await expect(streamPromise).rejects.toEqual(expectedError)
       expect(awsSpy).toHaveBeenCalledWith(
         'getObject',
         {
@@ -393,7 +397,6 @@ describe('encrypt-submission.service', () => {
         // @ts-ignore
         expect.any(Function),
       )
-      expect(actualErrors).toEqual([expectedError])
     })
   })
 

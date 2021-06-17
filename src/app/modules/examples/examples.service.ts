@@ -6,28 +6,23 @@ import { Except, Merge } from 'type-fest'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel from '../../models/form.server.model'
 import getFormStatisticsTotalModel from '../../models/form_statistics_total.server.model'
-import getSubmissionModel from '../../models/submission.server.model'
 import { DatabaseError } from '../core/core.errors'
 
 import { MIN_SUB_COUNT, PAGE_SIZE } from './examples.constants'
 import { ResultsNotFoundError } from './examples.errors'
 import {
-  groupSubmissionsByFormId,
   lookupFormStatisticsInfo,
-  lookupSubmissionInfo,
   projectSubmissionInfo,
   selectAndProjectCardInfo,
 } from './examples.queries'
 import {
   ExamplesQueryParams,
   FormInfo,
-  QueryData,
   QueryDataMap,
   QueryExecResult,
   QueryExecResultWithTotal,
   QueryPageResult,
   QueryPageResultWithTotal,
-  RetrievalType,
   RetrieveSubmissionsExecResult,
   SingleFormInfoQueryResult,
   SingleFormResult,
@@ -37,34 +32,13 @@ import {
   createGeneralQueryPipeline,
   createSearchQueryPipeline,
   createSingleSearchStatsPipeline,
-  createSingleSearchSubmissionPipeline,
   formatToRelativeString,
 } from './examples.utils'
 
 const FormModel = getFormModel(mongoose)
 const FormStatisticsModel = getFormStatisticsTotalModel(mongoose)
-const SubmissionModel = getSubmissionModel(mongoose)
 
 const logger = createLoggerWithLabel(module)
-
-/**
- * Maps retrieval type to the middlewares and query model used for general
- * queries to use when creating the aggregation pipeline
- */
-const RETRIEVAL_TO_QUERY_DATA_MAP: QueryData = {
-  [RetrievalType.Stats]: {
-    generalQueryModel: FormStatisticsModel,
-    lookUpMiddleware: lookupFormStatisticsInfo,
-    groupByMiddleware: projectSubmissionInfo,
-    singleSearchPipeline: createSingleSearchStatsPipeline,
-  },
-  [RetrievalType.Submissions]: {
-    generalQueryModel: SubmissionModel,
-    lookUpMiddleware: lookupSubmissionInfo,
-    groupByMiddleware: groupSubmissionsByFormId,
-    singleSearchPipeline: createSingleSearchSubmissionPipeline,
-  },
-}
 
 /**
  * Creates and returns the query builder to execute some example fetch query.
@@ -239,20 +213,14 @@ const getFormInfo = (
  * @returns ok(list of retrieved example forms) if `shouldGetTotalNumResults` is not of string `"true"`
  * @returns err(DatabaseError) if any errors occurs whilst running the pipeline on the database
  */
-export const getExampleForms = (type: RetrievalType) => (
+export const getExampleForms = (
   query: ExamplesQueryParams,
 ): ResultAsync<QueryPageResultWithTotal | QueryPageResult, DatabaseError> => {
-  const {
-    lookUpMiddleware,
-    groupByMiddleware,
-    generalQueryModel,
-  } = RETRIEVAL_TO_QUERY_DATA_MAP[type]
-
   const queryBuilder = getExamplesQueryBuilder({
     query,
-    lookUpMiddleware,
-    groupByMiddleware,
-    generalQueryModel,
+    lookUpMiddleware: lookupFormStatisticsInfo,
+    groupByMiddleware: projectSubmissionInfo,
+    generalQueryModel: FormStatisticsModel,
   })
 
   const { pageNo, shouldGetTotalNumResults } = query
@@ -273,22 +241,16 @@ export const getExampleForms = (type: RetrievalType) => (
  * @returns err(DatabaseError) if any errors occurs whilst running the pipeline on the database
  * @returns err(ResultsNotFoundError) if form info cannot be retrieved with the given form id
  */
-export const getSingleExampleForm = (type: RetrievalType) => (
+export const getSingleExampleForm = (
   formId: string,
 ): ResultAsync<SingleFormResult, DatabaseError | ResultsNotFoundError> => {
-  const {
-    singleSearchPipeline,
-    generalQueryModel,
-  } = RETRIEVAL_TO_QUERY_DATA_MAP[type]
-
   return (
     // Step 1: Retrieve base form info to augment.
     getFormInfo(formId)
       // Step 2a: Execute aggregate query with relevant single search pipeline.
       .andThen((formInfo) =>
         ResultAsync.fromPromise(
-          generalQueryModel
-            .aggregate(singleSearchPipeline(formId))
+          FormStatisticsModel.aggregate(createSingleSearchStatsPipeline(formId))
             .read('secondary')
             .exec() as Promise<RetrieveSubmissionsExecResult>,
           (error) => {

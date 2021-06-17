@@ -23,13 +23,10 @@ describe('verification.factory', () => {
     const createTransactionResult = await verificationFactory.createTransaction(
       '',
     )
-    const getTransactionMetadataResult = await verificationFactory.getTransactionMetadata(
-      '',
-    )
-    const resetFieldForTransactionResult = await verificationFactory.resetFieldForTransaction(
-      '',
-      '',
-    )
+    const getTransactionMetadataResult =
+      await verificationFactory.getTransactionMetadata('')
+    const resetFieldForTransactionResult =
+      await verificationFactory.resetFieldForTransaction('', '')
     const sendNewOtpResult = await verificationFactory.sendNewOtp({
       transactionId: '',
       fieldId: '',
@@ -57,13 +54,10 @@ describe('verification.factory', () => {
     const createTransactionResult = await verificationFactory.createTransaction(
       '',
     )
-    const getTransactionMetadataResult = await verificationFactory.getTransactionMetadata(
-      '',
-    )
-    const resetFieldForTransactionResult = await verificationFactory.resetFieldForTransaction(
-      '',
-      '',
-    )
+    const getTransactionMetadataResult =
+      await verificationFactory.getTransactionMetadata('')
+    const resetFieldForTransactionResult =
+      await verificationFactory.resetFieldForTransaction('', '')
     const sendNewOtpResult = await verificationFactory.sendNewOtp({
       transactionId: '',
       fieldId: '',

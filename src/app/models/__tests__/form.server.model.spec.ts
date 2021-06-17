@@ -12,6 +12,7 @@ import {
   BasicField,
   EndPage,
   FormFieldWithId,
+  FormLogoState,
   IEncryptedForm,
   IFieldSchema,
   IFormSchema,
@@ -57,6 +58,9 @@ const FORM_DEFAULTS = {
   isListed: true,
   startPage: {
     colorTheme: 'blue',
+    logo: {
+      state: FormLogoState.Default,
+    },
   },
   endPage: {
     title: 'Thank you for filling out the form.',
@@ -68,6 +72,7 @@ const FORM_DEFAULTS = {
   permissionList: [],
   webhook: {
     url: '',
+    isRetryEnabled: false,
   },
   status: 'PRIVATE',
   submissionLimit: null,
@@ -388,9 +393,9 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
 
         // Remove indeterministic id from actual permission list
-        const actualPermissionList = ((saved.toObject() as unknown) as IEncryptedForm).permissionList?.map(
-          (permission) => omit(permission, '_id'),
-        )
+        const actualPermissionList = (
+          saved.toObject() as unknown as IEncryptedForm
+        ).permissionList?.map((permission) => omit(permission, '_id'))
         expect(actualPermissionList).toEqual(permissionList)
       })
 
@@ -1070,9 +1075,9 @@ describe('Form Model', () => {
         ],
       }
 
-      const mockNewFormLogic = ({
+      const mockNewFormLogic = {
         logicType: LogicType.PreventSubmit,
-      } as unknown) as ILogicSchema
+      } as unknown as ILogicSchema
 
       it('should return form upon successful create logic if form_logic is currently empty', async () => {
         // arrange
@@ -1620,7 +1625,7 @@ describe('Form Model', () => {
           lastModified: expect.any(Date),
           startPage: { ...form.startPage, ...updatedStartPage },
         })
-        expect(actual.lastModified! > prevModifiedDate!).toBe(true)
+        expect((actual?.lastModified ?? 0) > (prevModifiedDate ?? 0)).toBe(true)
       })
 
       it('should update start page with defaults when optional values are not provided', async () => {
@@ -1648,6 +1653,9 @@ describe('Form Model', () => {
             ...updatedStartPage,
             // Defaults should be populated and returned
             colorTheme: 'blue',
+            logo: {
+              state: FormLogoState.Default,
+            },
           },
         })
       })
@@ -1950,7 +1958,9 @@ describe('Form Model', () => {
 
       it('should return updated form when successfully updating form field', async () => {
         // Arrange
-        const originalFormFields = (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject()
+        const originalFormFields = (
+          form.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
 
         const newField = {
           ...originalFormFields[1],
@@ -1987,7 +1997,9 @@ describe('Form Model', () => {
 
       it('should return validation error if field type of new field does not match the field to update', async () => {
         // Arrange
-        const originalFormFields = (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject()
+        const originalFormFields = (
+          form.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
 
         const newField: FormFieldWithId = {
           ...originalFormFields[1],
@@ -2010,7 +2022,9 @@ describe('Form Model', () => {
 
       it('should return validation error if model validation fails whilst updating field', async () => {
         // Arrange
-        const originalFormFields = (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject()
+        const originalFormFields = (
+          form.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
 
         const newField: FormFieldWithId = {
           ...originalFormFields[2],
@@ -2142,7 +2156,9 @@ describe('Form Model', () => {
         // Assert
         expect(updatedForm).not.toBeNull()
         expect(
-          (updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
+          (
+            updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>
+          ).toObject(),
         ).toEqual([
           // Should be rearranged to the 0th index position, and the previously
           // 0th index field should be pushed to 1st index.
@@ -2167,7 +2183,9 @@ describe('Form Model', () => {
         // Assert
         expect(updatedForm).not.toBeNull()
         expect(
-          (updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
+          (
+            updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>
+          ).toObject(),
         ).toEqual([
           originalFields[0],
           originalFields[2],

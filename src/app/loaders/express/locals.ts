@@ -3,6 +3,9 @@ import { get } from 'lodash'
 
 import config from '../../config/config'
 import featureManager, { FeatureNames } from '../../config/feature-manager'
+import { captchaConfig } from '../../config/feature-manager/captcha.config'
+import { googleAnalyticsConfig } from '../../config/feature-manager/google-analytics.config'
+import { sentryConfig } from '../../config/feature-manager/sentry.config'
 
 // Construct js with environment variables needed by frontend
 const frontendVars = {
@@ -12,16 +15,8 @@ const frontendVars = {
   adminBannerContent: config.adminBannerContent,
   logoBucketUrl: config.aws.logoBucketUrl, // S3 bucket
   formsgSdkMode: config.formsgSdkMode,
-  captchaPublicKey: get(
-    featureManager.props(FeatureNames.Captcha),
-    'captchaPublicKey',
-    null,
-  ), // Recaptcha
-  sentryConfigUrl: get(
-    featureManager.props(FeatureNames.Sentry),
-    'sentryConfigUrl',
-    null,
-  ), // Sentry.IO
+  captchaPublicKey: captchaConfig.captchaPublicKey, // Recaptcha
+  sentryConfigUrl: sentryConfig.sentryConfigUrl, // Sentry.IO
   isSPMaintenance: get(
     featureManager.props(FeatureNames.SpcpMyInfo),
     'isSPMaintenance',
@@ -32,11 +27,7 @@ const frontendVars = {
     'isCPMaintenance',
     null,
   ), // Corppass maintenance message
-  GATrackingID: get(
-    featureManager.props(FeatureNames.GoogleAnalytics),
-    'GATrackingID',
-    null,
-  ),
+  GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: get(
     featureManager.props(FeatureNames.SpcpMyInfo),
     'spcpCookieDomain',

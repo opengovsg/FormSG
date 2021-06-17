@@ -57,7 +57,6 @@ export const isUserInSession = (
   return !!session?.user?._id
 }
 
-// TODO(#212): Save userId instead of entire user collection in session.
 export const getUserIdFromSession = (
   session?: Express.Session,
 ): string | undefined => {

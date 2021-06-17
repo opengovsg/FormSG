@@ -8,9 +8,9 @@ import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { GetFormFeedbackDto } from '../../../../types/api/form_feedback'
 import { DatabaseError } from '../../core/core.errors'
 import * as FeedbackService from '../feedback.service'
-import { FeedbackResponse } from '../feedback.types'
 
 const FormFeedback = getFormFeedbackModel(mongoose)
 
@@ -70,9 +70,9 @@ describe('feedback.service', () => {
       const validFormId = new ObjectId().toHexString()
       countSpy.mockImplementationOnce(
         () =>
-          (({
+          ({
             exec: () => Promise.reject(new Error('boom')),
-          } as unknown) as mongoose.Query<any>),
+          } as unknown as mongoose.Query<any>),
       )
 
       // Act
@@ -93,7 +93,7 @@ describe('feedback.service', () => {
     it('should return stream successfully', async () => {
       // Arrange
       const mockFormId = 'some form id'
-      const mockCursor = ('some cursor' as unknown) as mongoose.QueryCursor<any>
+      const mockCursor = 'some cursor' as unknown as mongoose.QueryCursor<any>
       const streamSpy = jest
         .spyOn(FormFeedback, 'getFeedbackCursorByFormId')
         .mockReturnValue(mockCursor)
@@ -182,7 +182,7 @@ describe('feedback.service', () => {
       const actualResult = await FeedbackService.getFormFeedbacks(mockFormId)
 
       // Assert
-      const expectedResult: FeedbackResponse = {
+      const expectedResult: GetFormFeedbackDto = {
         count: 1,
         average: '3.00',
         feedback: [
@@ -211,10 +211,10 @@ describe('feedback.service', () => {
       const sortSpy = jest.fn().mockReturnThis()
       const findSpy = jest.spyOn(FormFeedback, 'find').mockImplementationOnce(
         () =>
-          (({
+          ({
             sort: sortSpy,
             exec: () => Promise.reject(new Error('boom')),
-          } as unknown) as mongoose.Query<any>),
+          } as unknown as mongoose.Query<any>),
       )
 
       // Act

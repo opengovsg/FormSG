@@ -1,15 +1,18 @@
-import { FeatureNames, RegisterableFeature } from './types'
+import convict, { Schema } from 'convict'
 
-const googleAnalyticsFeature: RegisterableFeature<FeatureNames.GoogleAnalytics> = {
-  name: FeatureNames.GoogleAnalytics,
-  schema: {
-    GATrackingID: {
-      doc: 'Google Analytics tracking ID',
-      format: String,
-      default: null,
-      env: 'GA_TRACKING_ID',
-    },
+export interface IGoogleAnalytics {
+  GATrackingID: string | null
+}
+
+const googleAnalyticsSchema: Schema<IGoogleAnalytics> = {
+  GATrackingID: {
+    doc: 'Google Analytics tracking ID',
+    format: String,
+    default: null,
+    env: 'GA_TRACKING_ID',
   },
 }
 
-export default googleAnalyticsFeature
+export const googleAnalyticsConfig = convict(googleAnalyticsSchema)
+  .validate({ allowed: 'strict' })
+  .getProperties()

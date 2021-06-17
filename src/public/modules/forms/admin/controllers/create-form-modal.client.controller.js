@@ -2,6 +2,7 @@
 const { triggerFileDownload } = require('../../helpers/util')
 const { templates } = require('../constants/covid19')
 const Form = require('../../viewmodels/Form.class')
+const { FormSgSdk } = require('../../../../services/FormSgSdkService')
 
 /**
  * Determine the form title when duplicating a form
@@ -37,12 +38,12 @@ angular
     'responseModeEnum',
     'createFormModalOptions',
     'FormToDuplicate',
-    'FormFactory',
+    'FormApi',
     'FormFields',
     'GTag',
-    'FormSgSdk',
     'externalScope',
     'MailTo',
+    '$q',
     CreateFormModalController,
   ])
 
@@ -55,12 +56,12 @@ function CreateFormModalController(
   responseModeEnum,
   createFormModalOptions,
   FormToDuplicate,
-  FormFactory,
+  FormApi,
   FormFields,
   GTag,
-  FormSgSdk,
   externalScope,
   MailTo,
+  $q,
 ) {
   const vm = this
 
@@ -78,9 +79,8 @@ function CreateFormModalController(
   }
 
   // Whether this operation should allow Storage Mode forms
-  const isEncryptModeEnabled = !FormFields.preventStorageModeDuplication(
-    FormToDuplicate,
-  )
+  const isEncryptModeEnabled =
+    !FormFields.preventStorageModeDuplication(FormToDuplicate)
 
   const { mode } = createFormModalOptions
   vm.mode = mode
@@ -256,11 +256,9 @@ function CreateFormModalController(
         const formMode = vm.mode
         switch (formMode) {
           case 'duplicate': {
-            FormFactory.generateForm(
-              formMode,
-              formParams,
-              FormToDuplicate._id,
-            ).$promise.then((data) => {
+            $q.when(
+              FormApi.duplicateForm(FormToDuplicate._id, formParams),
+            ).then((data) => {
               vm.closeCreateModal()
               externalScope.onDuplicateSuccess(data)
             }, handleCreateFormError)
@@ -268,11 +266,7 @@ function CreateFormModalController(
           }
           case 'useTemplate': {
             const { form } = externalScope
-            FormFactory.generateForm(
-              formMode,
-              formParams,
-              form._id,
-            ).$promise.then((data) => {
+            $q.when(FormApi.useTemplate(form._id, formParams)).then((data) => {
               vm.closeCreateModal()
               vm.goToWithId('viewForm', data._id + '')
               GTag.examplesClickCreateNewForm(form)
@@ -282,23 +276,17 @@ function CreateFormModalController(
           case 'createFromTemplate': {
             // Create new form from template selected
             const newForm = Object.assign({}, vm.template, formParams)
-            FormFactory.generateForm('create', newForm).$promise.then(
-              (data) => {
-                vm.closeCreateModal()
-                vm.goToWithId('viewForm', data._id + '')
-              },
-              handleCreateFormError,
-            )
+            $q.when(FormApi.createForm(newForm)).then((data) => {
+              vm.closeCreateModal()
+              vm.goToWithId('viewForm', data._id + '')
+            }, handleCreateFormError)
             break
           }
           case 'create': // Create form
-            FormFactory.generateForm(formMode, formParams).$promise.then(
-              (data) => {
-                vm.closeCreateModal()
-                vm.goToWithId('viewForm', data._id + '')
-              },
-              handleCreateFormError,
-            )
+            $q.when(FormApi.createForm(formParams)).then((data) => {
+              vm.closeCreateModal()
+              vm.goToWithId('viewForm', data._id + '')
+            }, handleCreateFormError)
             break
         }
       }

@@ -1,11 +1,9 @@
 import ejs from 'ejs'
-import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
-import featureManager from '../../config/feature-manager'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
+import { ControllerHandler } from '../core/core.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -13,10 +11,10 @@ const logger = createLoggerWithLabel(module)
  * Handler for GET /frontend/datalayer endpoint.
  * @param req - Express request object
  * @param res - Express response object
- * @returns {String} Templated Javascript code for the frontend to initialise Google Tag Manager
+ * @returns Templated Javascript code for the frontend to initialise Google Tag Manager
  */
-export const addGoogleAnalyticsData: RequestHandler<
-  ParamsDictionary,
+export const addGoogleAnalyticsData: ControllerHandler<
+  unknown,
   string | { message: string }
 > = (req, res) => {
   const js = `
@@ -51,12 +49,12 @@ export const addGoogleAnalyticsData: RequestHandler<
  * Handler for GET /frontend/environment endpoint.
  * @param req - Express request object
  * @param res - Express response object
- * @returns {String} Templated Javascript code with environment variables for the frontend
+ * @returns Templated Javascript code with environment variables for the frontend
  */
-export const addEnvVarData: RequestHandler<
-  ParamsDictionary,
-  { message: string }
-> = (req, res) => {
+export const addEnvVarData: ControllerHandler<unknown, { message: string }> = (
+  req,
+  res,
+) => {
   try {
     return res
       .type('text/javascript')
@@ -81,11 +79,13 @@ export const addEnvVarData: RequestHandler<
  * Handler for GET /frontend/redirect endpoint.
  * @param req - Express request object
  * @param res - Express response object
- * @returns {String} Templated Javascript code for the frontend that redirects to specific form url
+ * @returns Templated Javascript code for the frontend that redirects to specific form url
  */
-export const generateRedirectUrl: RequestHandler<
-  ParamsDictionary,
-  string | { message: string }
+export const generateRedirectUrl: ControllerHandler<
+  unknown,
+  string | { message: string },
+  unknown,
+  { redirectPath: string }
 > = (req, res) => {
   const js = `
     // Update hash to match form id
@@ -115,15 +115,38 @@ export const generateRedirectUrl: RequestHandler<
   }
 }
 
+// Duplicated here since the feature manager is being deprecated.
+// TODO (#2147): delete this.
+enum FeatureNames {
+  Captcha = 'captcha',
+  GoogleAnalytics = 'google-analytics',
+  Sentry = 'sentry',
+  Sms = 'sms',
+  SpcpMyInfo = 'spcp-myinfo',
+  VerifiedFields = 'verified-fields',
+  WebhookVerifiedContent = 'webhook-verified-content',
+}
+
 /**
  * Handler for GET /frontend/features endpoint.
- * @param req - Express request object
+ * @param _req - Express request object
  * @param res - Express response object
- * @returns {String} Current featureManager states
+ * @returns Current featureManager states
+ * @deprecated as the feature manager has been deprecated. This endpoint
+ * now hardcodes the feature states to support old clients.
+ * TODO (#2147): delete this
  */
-export const showFeaturesStates: RequestHandler<
+export const showFeaturesStates: ControllerHandler<
   unknown,
-  typeof featureManager.states
-> = (req, res) => {
-  return res.json(featureManager.states)
+  Record<FeatureNames, boolean>
+> = (_req, res) => {
+  return res.json({
+    [FeatureNames.Captcha]: true,
+    [FeatureNames.Sms]: true,
+    [FeatureNames.SpcpMyInfo]: true,
+    [FeatureNames.VerifiedFields]: true,
+    [FeatureNames.GoogleAnalytics]: true,
+    [FeatureNames.WebhookVerifiedContent]: true,
+    [FeatureNames.Sentry]: true,
+  })
 }

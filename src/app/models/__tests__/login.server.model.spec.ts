@@ -126,7 +126,7 @@ describe('login.server.model', () => {
       const agencyId = new ObjectId()
       const mockEsrvcId = 'esrvcid'
       const mockAuthType = 'SP'
-      const fullForm = ({
+      const fullForm = {
         _id: formId,
         admin: {
           _id: adminId,
@@ -136,7 +136,7 @@ describe('login.server.model', () => {
         },
         authType: mockAuthType,
         esrvcId: mockEsrvcId,
-      } as unknown) as IPopulatedForm
+      } as unknown as IPopulatedForm
 
       it('should save the correct form data', async () => {
         const saved = await LoginModel.addLoginFromForm(fullForm)

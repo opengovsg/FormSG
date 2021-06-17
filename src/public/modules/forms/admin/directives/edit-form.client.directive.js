@@ -3,6 +3,7 @@ const { groupLogicUnitsByField } = require('shared/util/logic')
 const { reorder } = require('shared/util/immutable-array-fns')
 const FieldFactory = require('../../helpers/field-factory')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
+const BetaService = require('../../../../services/BetaService')
 
 const newFields = new Set() // Adding a fieldTypes will add a "new" label.
 
@@ -35,7 +36,6 @@ function editFormDirective() {
       'FormFields',
       '$uibModal',
       'responseModeEnum',
-      'Betas',
       '$window',
       'Attachment',
       editFormController,
@@ -48,7 +48,6 @@ function editFormController(
   FormFields,
   $uibModal,
   responseModeEnum,
-  Betas,
   $window,
   Attachment,
 ) {
@@ -56,7 +55,7 @@ function editFormController(
   $scope.responseModeEnum = responseModeEnum
 
   $scope.isBetaField = function (fieldType) {
-    return Betas.isBetaField(fieldType)
+    return BetaService.isBetaField(fieldType)
   }
 
   $scope.isNewField = function (fieldType) {
@@ -65,7 +64,7 @@ function editFormController(
 
   $scope.adminHasAccess = function (fieldType) {
     const user = $scope.myform.admin
-    return Betas.userHasAccessToFieldType(user, fieldType)
+    return BetaService.userHasAccessToFieldType(user, fieldType)
   }
 
   $scope.getFieldTitle = FormFields.getFieldTitle

@@ -9,8 +9,7 @@ const spcpMyInfoFeature: RegisterableFeature<FeatureNames.SpcpMyInfo> = {
   name: FeatureNames.SpcpMyInfo,
   schema: {
     isSPMaintenance: {
-      doc:
-        'If set, displays a banner message on SingPass forms. Overrides IS_CP_MAINTENANCE',
+      doc: 'If set, displays a banner message on SingPass forms. Overrides IS_CP_MAINTENANCE',
       format: '*',
       default: null,
       env: 'IS_SP_MAINTENANCE',
@@ -46,29 +45,25 @@ const spcpMyInfoFeature: RegisterableFeature<FeatureNames.SpcpMyInfo> = {
       env: 'CP_COOKIE_MAX_AGE',
     },
     spIdpId: {
-      doc:
-        'Partner ID of National Digital Identity Office for SingPass authentication',
+      doc: 'Partner ID of National Digital Identity Office for SingPass authentication',
       format: 'url',
       default: null,
       env: 'SINGPASS_IDP_ID',
     },
     cpIdpId: {
-      doc:
-        'Partner ID of National Digital Identity Office for CorpPass authentication',
+      doc: 'Partner ID of National Digital Identity Office for CorpPass authentication',
       format: 'url',
       default: null,
       env: 'CORPPASS_IDP_ID',
     },
     spPartnerEntityId: {
-      doc:
-        'Partner ID registered with National Digital Identity Office for SingPass authentication',
+      doc: 'Partner ID registered with National Digital Identity Office for SingPass authentication',
       format: 'url',
       default: null,
       env: 'SINGPASS_PARTNER_ENTITY_ID',
     },
     cpPartnerEntityId: {
-      doc:
-        'Partner ID registered with National Digital Identity Office for CorpPass authentication',
+      doc: 'Partner ID registered with National Digital Identity Office for CorpPass authentication',
       format: 'url',
       default: null,
       env: 'CORPPASS_PARTNER_ENTITY_ID',
@@ -98,78 +93,67 @@ const spcpMyInfoFeature: RegisterableFeature<FeatureNames.SpcpMyInfo> = {
       env: 'CORPPASS_IDP_ENDPOINT',
     },
     spEsrvcId: {
-      doc:
-        'e-service ID registered with National Digital Identity office for SingPass authentication',
+      doc: 'e-service ID registered with National Digital Identity office for SingPass authentication',
       format: String,
       default: null,
       env: 'SINGPASS_ESRVC_ID',
     },
     cpEsrvcId: {
-      doc:
-        'e-service ID registered with National Digital Identity office for CorpPass authentication',
+      doc: 'e-service ID registered with National Digital Identity office for CorpPass authentication',
       format: String,
       default: null,
       env: 'CORPPASS_ESRVC_ID',
     },
     spFormSgKeyPath: {
-      doc:
-        'Path to X.509 key used for SingPass related communication with National Digital Identity office',
+      doc: 'Path to X.509 key used for SingPass related communication with National Digital Identity office',
       format: String,
       default: null,
       env: 'SP_FORMSG_KEY_PATH',
     },
     cpFormSgKeyPath: {
-      doc:
-        'Path to X.509 key used for CorpPass related communication with National Digital Identity office',
+      doc: 'Path to X.509 key used for CorpPass related communication with National Digital Identity office',
       format: String,
       default: null,
       env: 'CP_FORMSG_KEY_PATH',
     },
     spFormSgCertPath: {
-      doc:
-        'Path to X.509 cert used for SingPass related communication with National Digital Identity office',
+      doc: 'Path to X.509 cert used for SingPass related communication with National Digital Identity office',
       format: String,
       default: null,
       env: 'SP_FORMSG_CERT_PATH',
     },
     cpFormSgCertPath: {
-      doc:
-        'Path to X.509 cert used for CorpPass related communication with National Digital Identity office',
+      doc: 'Path to X.509 cert used for CorpPass related communication with National Digital Identity office',
       format: String,
       default: null,
       env: 'CP_FORMSG_CERT_PATH',
     },
     spIdpCertPath: {
-      doc:
-        'Path to National Digital Identity offices X.509 cert used for SingPass related communication',
+      doc: 'Path to National Digital Identity offices X.509 cert used for SingPass related communication',
       format: String,
       default: null,
       env: 'SP_IDP_CERT_PATH',
     },
     cpIdpCertPath: {
-      doc:
-        'Path to National Digital Identity offices X.509 cert used for CorpPass related communication',
+      doc: 'Path to National Digital Identity offices X.509 cert used for CorpPass related communication',
       format: String,
       default: null,
       env: 'CP_IDP_CERT_PATH',
     },
     myInfoClientMode: {
-      doc:
-        'Configures MyInfoGovClient. Set this to either `stg` or `prod` to fetch MyInfo data from the corresponding endpoints.',
+      doc: 'Configures MyInfoGovClient. Set this to either `stg` or `prod` to fetch MyInfo data from the corresponding endpoints.',
       format: Object.values(MyInfoMode),
       default: MyInfoMode.Production,
       env: 'MYINFO_CLIENT_CONFIG',
     },
     myInfoKeyPath: {
-      doc:
-        'Filepath to MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.',
+      doc: 'Filepath to MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.',
       format: String,
       default: null,
       env: 'MYINFO_FORMSG_KEY_PATH',
     },
     myInfoCertPath: {
-      doc:
-        "Path to MyInfo's public certificate, which is used to verify their signature.",
+      doc: "Path to MyInfo's public certificate, which is used to verify their signature.",
       format: String,
       default: null,
       env: 'MYINFO_CERT_PATH',

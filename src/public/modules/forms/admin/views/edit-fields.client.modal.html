@@ -556,12 +556,7 @@
         <!-- End table -->
 
         <!-- Email -->
-        <div
-          class="row"
-          ng-if="vm.field.fieldType === 'email'"
-          feature-toggle
-          feature-name="verified-fields"
-        >
+        <div class="row" ng-if="vm.field.fieldType === 'email'">
           <br />
           <div class="toggle-option">
             <div class="col-xs-8 label-custom label-medium">
@@ -593,12 +588,7 @@
           </div>
         </div>
 
-        <div
-          class="row"
-          ng-show="vm.field.fieldType === 'email'"
-          feature-toggle
-          feature-name="verified-fields"
-        >
+        <div class="row" ng-show="vm.field.fieldType === 'email'">
           <br />
           <div class="toggle-option">
             <div
@@ -861,8 +851,6 @@
           field="vm.field"
           name="'SMS'"
           character-limit="300"
-          feature-toggle
-          feature-name="sms"
         >
         </configure-mobile-directive>
         <!-- End mobile field directive ---->
@@ -1329,7 +1317,13 @@
 
     <!-- Preview of field on the right -->
     <div
-      class="preview-field-panel col-md-7 hidden-sm hidden-xs container no-padding"
+      class="
+        preview-field-panel
+        col-md-7
+        hidden-sm hidden-xs
+        container
+        no-padding
+      "
     >
       <div class="modal-preview-content">
         <form name="vm.forms.myForm" novalidate class="public-form">

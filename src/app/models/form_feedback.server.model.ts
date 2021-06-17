@@ -1,4 +1,4 @@
-import { Mongoose, Schema } from 'mongoose'
+import { Mongoose, QueryCursor, Schema } from 'mongoose'
 
 import { IFormFeedbackModel, IFormFeedbackSchema } from '../../types'
 
@@ -7,7 +7,7 @@ import { FORM_SCHEMA_ID } from './form.server.model'
 export const FORM_FEEDBACK_SCHEMA_ID = 'FormFeedback'
 export const FORM_FEEDBACK_COLLECTION_NAME = 'formfeedback'
 
-const FormFeedbackSchema = new Schema<IFormFeedbackSchema>(
+const FormFeedbackSchema = new Schema<IFormFeedbackSchema, IFormFeedbackModel>(
   {
     formId: {
       type: Schema.Types.ObjectId,
@@ -39,14 +39,11 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema>(
  * @param formId the form id to return the submissions cursor for
  * @returns a cursor to the feedback retrieved
  */
-const getFeedbackCursorByFormId: IFormFeedbackModel['getFeedbackCursorByFormId'] = function (
-  this: IFormFeedbackModel,
-  formId,
-) {
+FormFeedbackSchema.statics.getFeedbackCursorByFormId = function (
+  formId: string,
+): QueryCursor<IFormFeedbackSchema> {
   return this.find({ formId }).batchSize(2000).read('secondary').lean().cursor()
 }
-
-FormFeedbackSchema.statics.getFeedbackCursorByFormId = getFeedbackCursorByFormId
 
 /**
  * Form Feedback Schema
@@ -57,7 +54,7 @@ const getFormFeedbackModel = (db: Mongoose): IFormFeedbackModel => {
   try {
     return db.model(FORM_FEEDBACK_SCHEMA_ID) as IFormFeedbackModel
   } catch {
-    return db.model<IFormFeedbackSchema>(
+    return db.model(
       FORM_FEEDBACK_SCHEMA_ID,
       FormFeedbackSchema,
       FORM_FEEDBACK_COLLECTION_NAME,

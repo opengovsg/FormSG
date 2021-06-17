@@ -1,5 +1,3 @@
-import { RequestHandler } from 'express'
-import { ParamsDictionary, Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import {
@@ -10,8 +8,9 @@ import {
 } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
+import { ControllerHandler } from '../core/core.types'
 
-import { ExamplesFactory } from './examples.factory'
+import * as ExamplesService from './examples.service'
 import { mapRouteError } from './examples.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -24,13 +23,13 @@ const logger = createLoggerWithLabel(module)
  * @returns 401 when user does not exist in session
  * @returns 500 when error occurs whilst querying the database
  */
-export const handleGetExamples: RequestHandler<
-  ParamsDictionary,
+export const handleGetExamples: ControllerHandler<
+  unknown,
   ErrorDto | ExampleFormsResult,
   unknown,
-  Query & ExampleFormsQueryDto
+  ExampleFormsQueryDto
 > = (req, res) => {
-  return ExamplesFactory.getExampleForms(req.query)
+  return ExamplesService.getExampleForms(req.query)
     .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
       logger.error({
@@ -56,13 +55,13 @@ export const handleGetExamples: RequestHandler<
  * @returns 404 when the form with given formId does not exist in the database
  * @returns 500 when error occurs whilst querying the database
  */
-export const handleGetExampleByFormId: RequestHandler<
+export const handleGetExampleByFormId: ControllerHandler<
   { formId: string },
   ExampleSingleFormResult | ErrorDto
 > = (req, res) => {
   const { formId } = req.params
 
-  return ExamplesFactory.getSingleExampleForm(formId)
+  return ExamplesService.getSingleExampleForm(formId)
     .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
       logger.error({

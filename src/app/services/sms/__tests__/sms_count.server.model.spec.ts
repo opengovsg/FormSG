@@ -561,9 +561,8 @@ const createVerificationSmsCountParams = ({
   logType?: LogType
   smsType?: SmsType
 } = {}) => {
-  const smsCountParams: Partial<IVerificationSmsCount> = cloneDeep(
-    MOCK_SMSCOUNT_PARAMS,
-  )
+  const smsCountParams: Partial<IVerificationSmsCount> =
+    cloneDeep(MOCK_SMSCOUNT_PARAMS)
   smsCountParams.logType = logType
   smsCountParams.smsType = smsType
   smsCountParams.msgSrvcSid = MOCK_MSG_SRVC_SID

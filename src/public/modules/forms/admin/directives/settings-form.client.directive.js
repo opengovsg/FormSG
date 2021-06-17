@@ -1,6 +1,9 @@
 'use strict'
 const dedent = require('dedent-js')
 const { get, set, isEqual } = require('lodash')
+const AdminSubmissionsService = require('../../../../services/AdminSubmissionsService')
+
+const UserService = require('../../../../services/UserService')
 
 const SETTINGS_PATH = [
   'title',
@@ -13,6 +16,7 @@ const SETTINGS_PATH = [
   'inactiveMessage',
   'submissionLimit',
   'webhook.url',
+  'webhook.isRetryEnabled',
 ]
 
 const createTempSettings = (myform) => {
@@ -28,22 +32,20 @@ const createTempSettings = (myform) => {
 angular
   .module('forms')
   .directive('settingsFormDirective', [
+    '$q',
     'Toastr',
     '$timeout',
     'responseModeEnum',
     '$uibModal',
-    'Auth',
-    'Submissions',
     settingsFormDirective,
   ])
 
 function settingsFormDirective(
+  $q,
   Toastr,
   $timeout,
   responseModeEnum,
   $uibModal,
-  Auth,
-  Submissions,
 ) {
   return {
     templateUrl:
@@ -56,7 +58,7 @@ function settingsFormDirective(
     controller: [
       '$scope',
       function ($scope) {
-        $scope.user = Auth.getUser()
+        $scope.user = UserService.getUserFromLocalStorage()
 
         $scope.responseModeEnum = responseModeEnum
         $scope.tempForm = createTempSettings($scope.myform)
@@ -64,11 +66,20 @@ function settingsFormDirective(
         $scope.submissionLimitUnlimited = null
 
         $scope.currentResponsesCount = 0
-        Submissions.count({ formId: $scope.myform._id }).then(
-          (responsesCount) => {
-            $scope.currentResponsesCount = responsesCount
-          },
+        $q.when(
+          AdminSubmissionsService.countFormSubmissions({
+            formId: $scope.myform._id,
+          }),
         )
+          .then((responsesCount) => {
+            $scope.currentResponsesCount = responsesCount
+          })
+          .catch((error) => {
+            Toastr.error(
+              `There was an error in displaying the number of responses. Please refresh and try again.`,
+            )
+            console.log(error)
+          })
 
         const getCurrentSettings = () => {
           // Detect difference between the new form (tempForm) and the old form (myform),
@@ -353,6 +364,18 @@ function settingsFormDirective(
               updateFormStatusAndSave('Form deactivated!')
             }
           }
+        }
+
+        $scope.isWebhookRetryToggleDisabled = () => {
+          // disable if there is no valid saved webhook URL
+          return !get($scope.myform, 'webhook.url')
+        }
+
+        $scope.saveWebhookUrl = () => {
+          if (!get($scope, 'tempForm.webhook.url')) {
+            set($scope, 'tempForm.webhook.isRetryEnabled', false)
+          }
+          return $scope.saveForm()
         }
       },
     ],

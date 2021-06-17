@@ -1,4 +1,4 @@
-FROM node:12-alpine3.12
+FROM node:fermium-alpine3.13
 LABEL maintainer=FormSG<formsg@data.gov.sg>
 
 WORKDIR /opt/formsg
@@ -26,9 +26,12 @@ RUN apk update && apk upgrade && \
     ttf-freefont \
     tini \
     # Localstack - these are necessary in order to initialise local S3 buckets
+    # jq is a package for easily parsing Localstack health endpoint's JSON output
+    jq \
     py-pip && \
     npm install --quiet node-gyp -g && \
-    pip install awscli-local
+    # [ver1] ensures that the underlying AWS CLI version is also installed
+    pip install awscli-local[ver1]
 
 # Chinese fonts
 RUN echo @edge http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && apk add wqy-zenhei@edge
@@ -41,5 +44,5 @@ EXPOSE 5000
 # tini is the init process that will adopt orphaned zombie processes
 # e.g. chromium when launched to create a new PDF
 ENTRYPOINT [ "tini", "--" ]
-# Create local S3 buckets before building the app
-CMD npm run docker-dev
+# Create local AWS resources before building the app
+CMD sh init-localstack.sh && npm run docker-dev

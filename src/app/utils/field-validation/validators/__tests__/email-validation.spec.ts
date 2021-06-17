@@ -14,7 +14,7 @@ describe('Email field validation', () => {
   beforeEach(() => {
     jest
       .spyOn(
-        (formsgSdk.verification as unknown) as VerificationMock,
+        formsgSdk.verification as unknown as VerificationMock,
         'authenticate',
       )
       .mockImplementation(() => true)
@@ -174,7 +174,7 @@ describe('Email field validation', () => {
     } as ISingleAnswerResponse
     const validateResult = validateField(
       'formId',
-      (formField as unknown) as IFieldSchema,
+      formField as unknown as IFieldSchema,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isOk()).toBe(true)
@@ -203,7 +203,7 @@ describe('Email field validation', () => {
     } as ISingleAnswerResponse
     const validateResult = validateField(
       'formId',
-      (formField as unknown) as IFieldSchema,
+      formField as unknown as IFieldSchema,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isErr()).toBe(true)
@@ -234,7 +234,7 @@ describe('Email field validation', () => {
     } as ISingleAnswerResponse
     const validateResult = validateField(
       'formId',
-      (formField as unknown) as IFieldSchema,
+      formField as unknown as IFieldSchema,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isOk()).toBe(true)
@@ -262,7 +262,7 @@ describe('Email field validation', () => {
     } as ISingleAnswerResponse
     const validateResult = validateField(
       'formId',
-      (formField as unknown) as IFieldSchema,
+      formField as unknown as IFieldSchema,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isOk()).toBe(true)
@@ -290,7 +290,7 @@ describe('Email field validation', () => {
     } as ISingleAnswerResponse
     const validateResult = validateField(
       'formId',
-      (formField as unknown) as IFieldSchema,
+      formField as unknown as IFieldSchema,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isErr()).toBe(true)
@@ -331,7 +331,7 @@ describe('Email field validation', () => {
   it('should reject email addresses if isVerifiable is true but signature is invalid', () => {
     jest
       .spyOn(
-        (formsgSdk.verification as unknown) as VerificationMock,
+        formsgSdk.verification as unknown as VerificationMock,
         'authenticate',
       )
       .mockImplementation(() => false)

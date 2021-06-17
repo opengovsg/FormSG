@@ -9,6 +9,7 @@ import {
   ResponseMode,
   Status,
 } from '../../../../types'
+import { DuplicateFormBody, EditFormFieldParams } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   ApplicationError,
@@ -37,8 +38,6 @@ import {
 } from './admin-form.errors'
 import {
   AssertFormFn,
-  DuplicateFormBody,
-  EditFormFieldParams,
   EditFormFieldResult,
   OverrideProps,
   PermissionLevel,

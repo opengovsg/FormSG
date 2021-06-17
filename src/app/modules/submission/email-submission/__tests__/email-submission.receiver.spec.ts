@@ -26,9 +26,9 @@ const RealBusboy = jest.requireActual('busboy') as typeof Busboy
 const MOCK_HEADERS = { key: 'value' }
 
 const MOCK_BUSBOY_ON = jest.fn().mockReturnThis()
-const MOCK_BUSBOY = ({
+const MOCK_BUSBOY = {
   on: MOCK_BUSBOY_ON,
-} as unknown) as busboy.Busboy
+} as unknown as busboy.Busboy
 
 const VALID_FILE_PATH = 'tests/unit/backend/resources/'
 const VALID_FILENAME_1 = 'valid.txt'
@@ -102,9 +102,8 @@ describe('email-submission.receiver', () => {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
       })
-      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
-        realBusboy,
-      )
+      const resultPromise =
+        EmailSubmissionReceiver.configureMultipartReceiver(realBusboy)
       form.pipe(realBusboy)
 
       fileStream.emit('data', VALID_FILE_CONTENT_1)
@@ -150,9 +149,8 @@ describe('email-submission.receiver', () => {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
       })
-      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
-        realBusboy,
-      )
+      const resultPromise =
+        EmailSubmissionReceiver.configureMultipartReceiver(realBusboy)
       form.pipe(realBusboy)
 
       fileStream.emit('data', VALID_FILE_CONTENT_1)
@@ -212,9 +210,8 @@ describe('email-submission.receiver', () => {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
       })
-      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
-        realBusboy,
-      )
+      const resultPromise =
+        EmailSubmissionReceiver.configureMultipartReceiver(realBusboy)
       form.pipe(realBusboy)
 
       fileStream1.emit('data', VALID_FILE_CONTENT_1)
@@ -278,9 +275,8 @@ describe('email-submission.receiver', () => {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
       })
-      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
-        realBusboy,
-      )
+      const resultPromise =
+        EmailSubmissionReceiver.configureMultipartReceiver(realBusboy)
       form.pipe(realBusboy)
 
       fileStream1.emit('data', VALID_FILE_CONTENT_1)
@@ -336,9 +332,8 @@ describe('email-submission.receiver', () => {
           fileSize: 7 * MB,
         },
       })
-      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
-        realBusboy,
-      )
+      const resultPromise =
+        EmailSubmissionReceiver.configureMultipartReceiver(realBusboy)
       form.pipe(realBusboy)
 
       fileStream.emit('data', Buffer.alloc(7 * MB + 1))
@@ -357,9 +352,8 @@ describe('email-submission.receiver', () => {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
       })
-      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
-        realBusboy,
-      )
+      const resultPromise =
+        EmailSubmissionReceiver.configureMultipartReceiver(realBusboy)
       form.pipe(realBusboy)
 
       realBusboy.emit('error', new Error())
@@ -376,9 +370,8 @@ describe('email-submission.receiver', () => {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
       })
-      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
-        realBusboy,
-      )
+      const resultPromise =
+        EmailSubmissionReceiver.configureMultipartReceiver(realBusboy)
       form.pipe(realBusboy)
       form.emit('end')
 

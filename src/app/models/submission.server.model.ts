@@ -9,14 +9,17 @@ import {
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
   IEncryptSubmissionModel,
+  IPopulatedWebhookSubmission,
   ISubmissionModel,
   ISubmissionSchema,
   IWebhookResponse,
   IWebhookResponseSchema,
   MyInfoAttribute,
   SubmissionCursorData,
+  SubmissionData,
   SubmissionMetadata,
   SubmissionType,
+  SubmissionWebhookInfo,
   WebhookData,
   WebhookView,
 } from '../../types'
@@ -71,7 +74,6 @@ SubmissionSchema.index({
 
 // Base schema static methods
 SubmissionSchema.statics.findFormsWithSubsAbove = function (
-  this: ISubmissionModel,
   minSubCount: number,
 ): Promise<FindFormsWithSubsAboveResult[]> {
   return this.aggregate<FindFormsWithSubsAboveResult>([
@@ -180,10 +182,13 @@ const EncryptSubmissionSchema = new Schema<
  * which will be posted to the webhook URL.
  */
 EncryptSubmissionSchema.methods.getWebhookView = function (
-  this: IEncryptedSubmissionSchema,
+  this: IEncryptedSubmissionSchema | IPopulatedWebhookSubmission,
 ): WebhookView {
+  const formId = this.populated('form')
+    ? String(this.form._id)
+    : String(this.form)
   const webhookData: WebhookData = {
-    formId: String(this.form),
+    formId,
     submissionId: String(this._id),
     encryptedContent: this.encryptedContent,
     verifiedContent: this.verifiedContent,
@@ -197,7 +202,6 @@ EncryptSubmissionSchema.methods.getWebhookView = function (
 }
 
 EncryptSubmissionSchema.statics.addWebhookResponse = function (
-  this: IEncryptSubmissionModel,
   submissionId: string,
   webhookResponse: IWebhookResponse,
 ): Promise<IEncryptedSubmissionSchema | null> {
@@ -208,8 +212,23 @@ EncryptSubmissionSchema.statics.addWebhookResponse = function (
   ).exec()
 }
 
-EncryptSubmissionSchema.statics.findSingleMetadata = function (
+EncryptSubmissionSchema.statics.retrieveWebhookInfoById = function (
   this: IEncryptSubmissionModel,
+  submissionId: string,
+): Promise<SubmissionWebhookInfo | null> {
+  return this.findById(submissionId)
+    .populate('form', 'webhook')
+    .then((populatedSubmission: IPopulatedWebhookSubmission | null) => {
+      if (!populatedSubmission) return null
+      return {
+        webhookUrl: populatedSubmission.form.webhook?.url ?? '',
+        isRetryEnabled: !!populatedSubmission.form.webhook?.isRetryEnabled,
+        webhookView: populatedSubmission.getWebhookView(),
+      }
+    })
+}
+
+EncryptSubmissionSchema.statics.findSingleMetadata = function (
   formId: string,
   submissionId: string,
 ): Promise<SubmissionMetadata | null> {
@@ -254,7 +273,6 @@ type MetadataAggregateResult = {
 }
 
 EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
-  this: IEncryptSubmissionModel,
   formId: string,
   {
     page = 1,
@@ -319,11 +337,13 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   )
 }
 
-const getSubmissionCursorByFormId: IEncryptSubmissionModel['getSubmissionCursorByFormId'] = function (
-  this: IEncryptSubmissionModel,
-  formId,
-  dateRange = {},
-) {
+EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
+  formId: string,
+  dateRange: {
+    startDate?: string
+    endDate?: string
+  } = {},
+): QueryCursor<SubmissionCursorData> {
   const streamQuery = {
     form: formId,
     ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
@@ -335,6 +355,7 @@ const getSubmissionCursorByFormId: IEncryptSubmissionModel['getSubmissionCursorB
         verifiedContent: 1,
         attachmentMetadata: 1,
         created: 1,
+        version: 1,
         id: 1,
       })
       .batchSize(2000)
@@ -345,13 +366,10 @@ const getSubmissionCursorByFormId: IEncryptSubmissionModel['getSubmissionCursorB
   )
 }
 
-EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = getSubmissionCursorByFormId
-
 EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
-  this: IEncryptSubmissionModel,
   formId: string,
   submissionId: string,
-) {
+): Promise<SubmissionData | null> {
   return this.findOne({
     _id: submissionId,
     form: formId,
@@ -362,6 +380,7 @@ EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
       verifiedContent: 1,
       attachmentMetadata: 1,
       created: 1,
+      version: 1,
     })
     .exec()
 }

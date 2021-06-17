@@ -50,7 +50,7 @@ describe('billing.factory', () => {
       it('should return MissingFeatureError when spcp-myinfo feature is disabled', async () => {
         // Argument here does not matter, as the function should always return a MissingFeatureError
         const result = await BillingFactory.recordLoginByForm(
-          ({} as unknown) as IPopulatedForm,
+          {} as unknown as IPopulatedForm,
         )
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
         expect(result._unsafeUnwrapErr()).toEqual(
@@ -80,9 +80,10 @@ describe('billing.factory', () => {
             total: 100,
           },
         ]
-        const serviceGetStatsSpy = MockBillingService.getSpLoginStats.mockReturnValue(
-          okAsync(mockLoginStats),
-        )
+        const serviceGetStatsSpy =
+          MockBillingService.getSpLoginStats.mockReturnValue(
+            okAsync(mockLoginStats),
+          )
 
         // Act
         const actualResults = await BillingFactory.getSpLoginStats(
@@ -100,12 +101,12 @@ describe('billing.factory', () => {
 
     describe('recordLoginByForm', () => {
       it('should call BillingService.recordLoginByForm', async () => {
-        const mockLoginDoc = ({
+        const mockLoginDoc = {
           mockKey: 'mockValue',
-        } as unknown) as ILoginSchema
-        const mockForm = ({
+        } as unknown as ILoginSchema
+        const mockForm = {
           mockFormKey: 'mockFormvalue',
-        } as unknown) as IPopulatedForm
+        } as unknown as IPopulatedForm
         MockBillingService.recordLoginByForm.mockResolvedValueOnce(
           okAsync(mockLoginDoc),
         )

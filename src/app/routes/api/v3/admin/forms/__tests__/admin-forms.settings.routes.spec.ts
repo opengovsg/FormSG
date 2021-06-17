@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson-ext'
+import { merge } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
@@ -85,11 +86,8 @@ describe('admin-form.settings.routes', () => {
 
       // Assert
       const expectedResponse = JSON.parse(
-        JSON.stringify({
-          ...formToUpdate.getSettings(),
-          // Should get updated with new settings
-          ...settingsToUpdate,
-        }),
+        // Should get updated with new settings
+        JSON.stringify(merge(formToUpdate.getSettings(), settingsToUpdate)),
       )
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(expectedResponse)
@@ -303,7 +301,9 @@ describe('admin-form.settings.routes', () => {
       })
       const session = await createAuthedSession(fakeUser.email, request)
       const expectedResponse = jsonParseStringify({
-        message: `User ${fakeUser.email} not authorized to perform write operation on Form ${form._id} with title: ${form.title}.`,
+        message: `User ${fakeUser.email.toLowerCase()} not authorized to perform write operation on Form ${
+          form._id
+        } with title: ${form.title}.`,
       })
 
       // Act
@@ -433,12 +433,14 @@ describe('admin-form.settings.routes', () => {
         },
       })
       const fakeUser = await dbHandler.insertUser({
-        mailName: 'fakeUser',
+        mailName: 'userWithoutReadPermissions',
         agencyId: new ObjectId(),
       })
       const session = await createAuthedSession(fakeUser.email, request)
       const expectedResponse = jsonParseStringify({
-        message: `User ${fakeUser.email} not authorized to perform read operation on Form ${form._id} with title: ${form.title}.`,
+        message: `User ${fakeUser.email.toLowerCase()} not authorized to perform read operation on Form ${
+          form._id
+        } with title: ${form.title}.`,
       })
 
       // Act

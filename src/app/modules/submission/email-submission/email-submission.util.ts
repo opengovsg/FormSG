@@ -267,9 +267,8 @@ export const getInvalidFileExtensions = (
 ): Promise<string[]> => {
   // Turn it into an array of promises that each resolve
   // to an array of file extensions that are invalid (if any)
-  const getInvalidFileExtensionsInZip = FileValidation.getInvalidFileExtensionsInZip(
-    FilePlatforms.Server,
-  )
+  const getInvalidFileExtensionsInZip =
+    FileValidation.getInvalidFileExtensionsInZip(FilePlatforms.Server)
   const promises = attachments.map((attachment) => {
     const extension = FileValidation.getFileExtension(attachment.filename)
     if (FileValidation.isInvalidFileExtension(extension)) {
@@ -492,13 +491,11 @@ export const addAttachmentToResponses = (
   attachments: IAttachmentInfo[],
 ): void => {
   // Create a map of the attachments with fieldId as keys
-  const attachmentMap: Record<
-    IAttachmentInfo['fieldId'],
-    IAttachmentInfo
-  > = attachments.reduce<Record<string, IAttachmentInfo>>((acc, attachment) => {
-    acc[attachment.fieldId] = attachment
-    return acc
-  }, {})
+  const attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo> =
+    attachments.reduce<Record<string, IAttachmentInfo>>((acc, attachment) => {
+      acc[attachment.fieldId] = attachment
+      return acc
+    }, {})
 
   if (responses) {
     // matches responses to attachments using id, adding filename and content to response

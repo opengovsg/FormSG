@@ -1,6 +1,9 @@
 import fs from 'fs'
 
-import { IIntranet } from '../../config/feature-manager'
+import {
+  IIntranet,
+  intranetConfig,
+} from '../../config/feature-manager/intranet.config'
 import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)
@@ -8,7 +11,7 @@ const logger = createLoggerWithLabel(module)
 /**
  * Handles intranet functionality based on a given list of intranet IPs.
  */
-export class IntranetService {
+class IntranetServiceClass {
   /**
    * List of IP addresses associated with intranet
    */
@@ -19,6 +22,10 @@ export class IntranetService {
     // e.g. intranet-only forms, then this try-catch should be removed so that
     // an error is thrown if the intranet IP list file does not exist.
     // For now, the functionality is not crucial, so we can default to an empty array.
+    if (!intranetConfig.intranetIpListPath) {
+      this.intranetIps = []
+      return
+    }
     try {
       this.intranetIps = fs
         .readFileSync(intranetConfig.intranetIpListPath)
@@ -44,3 +51,5 @@ export class IntranetService {
     return this.intranetIps.includes(ip)
   }
 }
+
+export const IntranetService = new IntranetServiceClass(intranetConfig)

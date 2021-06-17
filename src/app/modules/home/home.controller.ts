@@ -1,10 +1,10 @@
-import { RequestHandler } from 'express'
+import { ControllerHandler } from '../core/core.types'
 
 /**
- * Renders the root page of the application
- * @param  {Object} req - Express request object
- * @param  {Object} res - Express response object
+ * Renders the root page of the application.
+ * @param  req - Express request object
+ * @param  res - Express response object
  */
-export const home: RequestHandler = (_req, res) => {
+export const home: ControllerHandler = (_req, res) => {
   return res.render('index')
 }

@@ -1,4 +1,3 @@
-import { Request, RequestHandler } from 'express'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import { AuthType, IPopulatedEmailForm } from '../../../../types'
@@ -8,9 +7,11 @@ import {
   SubmissionResponseDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
+import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
+import * as CaptchaService from '../../../services/captcha/captcha.service'
 import MailService from '../../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
+import { ControllerHandler } from '../../core/core.types'
 import * as FormService from '../../form/form.service'
 import {
   MYINFO_COOKIE_NAME,
@@ -25,6 +26,7 @@ import {
 } from '../../spcp/spcp.util'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as SubmissionService from '../submission.service'
+import { extractEmailConfirmationData } from '../submission.utils'
 
 import * as EmailSubmissionService from './email-submission.service'
 import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.types'
@@ -36,7 +38,7 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
-const submitEmailModeForm: RequestHandler<
+const submitEmailModeForm: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
   EmailSubmissionDto,
@@ -59,7 +61,7 @@ const submitEmailModeForm: RequestHandler<
 
   const logMeta = {
     action: 'handleEmailSubmission',
-    ...createReqMeta(req as Request),
+    ...createReqMeta(req),
     formId,
   }
 
@@ -101,9 +103,9 @@ const submitEmailModeForm: RequestHandler<
       .andThen((form) => {
         // Check the captcha
         if (form.hasCaptcha) {
-          return CaptchaFactory.verifyCaptchaResponse(
+          return CaptchaService.verifyCaptchaResponse(
             req.query.captchaResponse,
-            getRequestIp(req as Request),
+            getRequestIp(req),
           )
             .map(() => form)
             .mapErr((error) => {
@@ -272,9 +274,8 @@ const submitEmailModeForm: RequestHandler<
         // NOTE: This should short circuit in the event of an error.
         // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
         return MailService.sendSubmissionToAdmin({
-          replyToEmails: EmailSubmissionService.extractEmailAnswers(
-            parsedResponses,
-          ),
+          replyToEmails:
+            EmailSubmissionService.extractEmailAnswers(parsedResponses),
           form,
           submission,
           attachments,
@@ -308,10 +309,13 @@ const submitEmailModeForm: RequestHandler<
           // Send email confirmations
           void SubmissionService.sendEmailConfirmations({
             form,
-            parsedResponses,
             submission,
             attachments,
-            autoReplyData: emailData.autoReplyData,
+            responsesData: emailData.autoReplyData,
+            recipientData: extractEmailConfirmationData(
+              parsedResponses,
+              form.form_fields,
+            ),
           }).mapErr((error) => {
             // NOTE: MyInfo access token is not cleared here.
             // This is because if the reason for failure is not on the users' end,
@@ -342,7 +346,8 @@ const submitEmailModeForm: RequestHandler<
 }
 
 export const handleEmailSubmission = [
+  CaptchaMiddleware.validateCaptchaParams,
   EmailSubmissionMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailModeForm,
-] as RequestHandler[]
+] as ControllerHandler[]

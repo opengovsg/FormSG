@@ -11,6 +11,7 @@ import {
   SendAutoReplyEmailsArgs,
 } from 'src/app/services/mail/mail.types'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
+import { HASH_EXPIRE_AFTER_SECONDS } from 'src/shared/util/verification'
 import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
@@ -28,9 +29,9 @@ const MOCK_RETRY_COUNT = 10
 
 describe('mail.service', () => {
   const sendMailSpy = jest.fn()
-  const mockTransporter = ({
+  const mockTransporter = {
     sendMail: sendMailSpy,
-  } as unknown) as Mail
+  } as unknown as Mail
 
   // Set up mocks for MailUtils
   beforeAll(() => {
@@ -78,7 +79,7 @@ describe('mail.service', () => {
         html: MailUtils.generateVerificationOtpHtml({
           appName: MOCK_APP_NAME,
           otp: MOCK_OTP,
-          minutesToExpiry: 10,
+          minutesToExpiry: HASH_EXPIRE_AFTER_SECONDS / 60,
         }),
         headers: {
           // Hardcode in tests in case something changes this.
@@ -725,9 +726,10 @@ describe('mail.service', () => {
         },
       ],
     }
-    const DEFAULT_AUTO_REPLY_BODY = `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${MOCK_AUTOREPLY_PARAMS.form.admin.agency.fullName}`.split(
-      '\n',
-    )
+    const DEFAULT_AUTO_REPLY_BODY =
+      `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${MOCK_AUTOREPLY_PARAMS.form.admin.agency.fullName}`.split(
+        '\n',
+      )
 
     beforeAll(async () => {
       defaultHtml = (

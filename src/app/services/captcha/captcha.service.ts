@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
+import { captchaConfig } from '../../config/feature-manager/captcha.config'
 import { createLoggerWithLabel } from '../../config/logger'
 
 import { GOOGLE_RECAPTCHA_URL } from './captcha.constants'
@@ -12,7 +13,7 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
-export const makeCaptchaResponseVerifier = (captchaPrivateKey: string) => (
+export const verifyCaptchaResponse = (
   response?: unknown,
   remoteip?: string,
 ): ResultAsync<
@@ -26,7 +27,7 @@ export const makeCaptchaResponseVerifier = (captchaPrivateKey: string) => (
     GOOGLE_RECAPTCHA_URL,
     {
       params: {
-        secret: captchaPrivateKey,
+        secret: captchaConfig.captchaPrivateKey,
         response,
         remoteip,
       },

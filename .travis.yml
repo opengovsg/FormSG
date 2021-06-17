@@ -5,7 +5,7 @@ services:
   - xvfb
 
 language: node_js
-node_js: '12'
+node_js: '14'
 install: true # skip installation, perform in build stage.
 
 notifications:
