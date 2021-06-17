@@ -30,6 +30,7 @@ export const FormFieldMessage = ({
     >
       {variant === 'success' && (
         <Icon
+          aria-hidden
           marginEnd="0.5em"
           color={fontColor}
           fontSize="1rem"
