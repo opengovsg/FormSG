@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { BiCheck, BiX } from 'react-icons/bi'
 import {
   Box,
@@ -15,6 +15,10 @@ import {
 } from '@chakra-ui/react'
 
 export interface YesNoProps {
+  /**
+   * Whether YesNo component is disabled.
+   */
+  isDisabled?: boolean
   /**
    * Function called once a radio is checked
    * @param nextValue the value of the checked radio
@@ -43,7 +47,10 @@ interface YesNoOptionProps extends UseRadioProps {
 
 const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
   ({ children, order, ...props }, ref) => {
-    const { getInputProps, getCheckboxProps } = useRadio(props)
+    const { getInputProps, getCheckboxProps } = useRadio({
+      ...props,
+      isDisabled: props.disabled,
+    })
     const input = getInputProps({}, ref)
 
     const checkbox = getCheckboxProps({})
@@ -52,17 +59,16 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
       'primary.500',
     ])
 
+    const handleSelect = useCallback(() => {
+      if (props.isChecked && input.onChange) {
+        // eslint-disable-next-line @typescript-eslint/no-extra-semi
+        ;(input.onChange as UseRadioGroupReturn['onChange'])('')
+      }
+    }, [input.onChange, props.isChecked])
+
     return (
       <Box as="label" w="100%" zIndex={props.isChecked ? 1 : 'initial'}>
-        <input
-          {...input}
-          onClick={(e) => {
-            if (props.isChecked && input.onChange) {
-              // eslint-disable-next-line @typescript-eslint/no-extra-semi
-              ;(input.onChange as UseRadioGroupReturn['onChange'])('')
-            }
-          }}
-        />
+        <input {...input} onClick={handleSelect} />
         <Flex
           {...checkbox}
           aria-hidden={false}
@@ -75,6 +81,27 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
           border={`1px solid ${neutral500}`}
           borderRadius={order === 'left' ? '4px 0 0 4px' : '0 4px 4px 0'}
           p="15px"
+          _disabled={{
+            bg: 'neutral.200',
+            cursor: 'not-allowed',
+            color: 'neutral.500',
+            _active: {
+              boxShadow: 'none',
+              borderColor: 'neutral.500',
+            },
+            _hover: {
+              bg: 'neutral.200',
+            },
+            _checked: {
+              boxShadow: 'none',
+              _hover: {
+                bg: 'primary.200',
+              },
+              _active: {
+                borderColor: 'primary.500',
+              },
+            },
+          }}
           _hover={{
             bg: 'primary.200',
           }}
@@ -107,10 +134,10 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
     const groupProps = getRootProps()
     const [noProps, yesProps] = useMemo(() => {
       return [
-        getRadioProps({ value: 'no', enterKeyHint: '' }),
-        getRadioProps({ value: 'yes', enterKeyHint: '' }),
+        getRadioProps({ value: 'no', enterKeyHint: '', disabled: isDisabled }),
+        getRadioProps({ value: 'yes', enterKeyHint: '', disabled: isDisabled }),
       ]
-    }, [getRadioProps])
+    }, [getRadioProps, isDisabled])
 
     return (
       <HStack spacing="-px" {...groupProps} maxW="100%">

@@ -29,6 +29,13 @@ Selected.args = {
   defaultValue: 'yes',
 }
 
+export const Disabled = Template.bind({})
+Disabled.args = {
+  name: 'testInput',
+  isDisabled: true,
+  value: 'no',
+}
+
 export const Mobile = Template.bind({})
 Mobile.args = {
   name: 'testMobileInput',
@@ -51,7 +58,7 @@ Tablet.parameters = {
   chromatic: { viewports: [viewports.md] },
 }
 
-export const Playground: Story = ({ name, label, isRequired }) => {
+export const Playground: Story = ({ name, label, isDisabled, isRequired }) => {
   const { handleSubmit, control } = useForm()
   const onSubmit = (data: any) => alert(JSON.stringify(data))
   const {
@@ -67,9 +74,14 @@ export const Playground: Story = ({ name, label, isRequired }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <FormControl isRequired={isRequired} isInvalid={!!errors[name]} mb={6}>
+      <FormControl
+        isRequired={isRequired}
+        isDisabled={isDisabled}
+        isInvalid={!!errors[name]}
+        mb={6}
+      >
         <FormLabel>{label}</FormLabel>
-        <YesNo {...field} />
+        <YesNo {...field} isDisabled={isDisabled} />
         <FormErrorMessage>
           {errors[name] && errors[name].message}
         </FormErrorMessage>
@@ -82,4 +94,5 @@ Playground.args = {
   name: 'Test playground input',
   label: 'YesNo field label',
   isRequired: false,
+  isDisabled: false,
 }
