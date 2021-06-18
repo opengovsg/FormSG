@@ -12,7 +12,7 @@ import Button from '~components/Button'
 import { YesNo, YesNoProps } from './YesNo'
 
 export default {
-  title: 'Components/YesNo',
+  title: 'Components/Field/YesNo',
   component: YesNo,
   decorators: [],
 } as Meta
@@ -47,8 +47,8 @@ Tablet.args = {
 Tablet.parameters = {
   viewport: {
     defaultViewport: 'tablet',
-    chromatic: { viewports: [viewports.md] },
   },
+  chromatic: { viewports: [viewports.md] },
 }
 
 export const Playground: Story = ({ name, label, isRequired }) => {
