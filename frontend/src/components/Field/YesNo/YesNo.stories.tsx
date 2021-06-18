@@ -58,7 +58,13 @@ Tablet.parameters = {
   chromatic: { viewports: [viewports.md] },
 }
 
-export const Playground: Story = ({ name, label, isDisabled, isRequired }) => {
+export const Playground: Story = ({
+  name,
+  label,
+  isDisabled,
+  isRequired,
+  ...args
+}) => {
   const { handleSubmit, control } = useForm()
   const onSubmit = (data: unknown) => alert(JSON.stringify(data))
   const {
@@ -81,7 +87,7 @@ export const Playground: Story = ({ name, label, isDisabled, isRequired }) => {
         mb={6}
       >
         <FormLabel>{label}</FormLabel>
-        <YesNo {...field} isDisabled={isDisabled} />
+        <YesNo {...args} isDisabled={isDisabled} {...field} />
         <FormErrorMessage>
           {errors[name] && errors[name].message}
         </FormErrorMessage>

@@ -2,7 +2,6 @@ import { KeyboardEvent, useCallback, useMemo } from 'react'
 import { BiCheck, BiX } from 'react-icons/bi'
 import {
   Box,
-  Flex,
   forwardRef,
   HStack,
   Icon,
@@ -11,8 +10,11 @@ import {
   UseRadioGroupProps,
   UseRadioGroupReturn,
   UseRadioProps,
-  useToken,
+  useStyleConfig,
 } from '@chakra-ui/react'
+
+import { YESNO_THEME_KEY } from '~theme/components/Field/YesNo'
+import { ThemeColorScheme } from '~theme/foundations/colours'
 
 export interface YesNoProps {
   /**
@@ -38,15 +40,31 @@ export interface YesNoProps {
    * The `name` attribute forwarded to each `radio` element
    */
   name: string
+
+  /**
+   * Color scheme of the component to render. Defaults to `primary`.
+   */
+  colorScheme?: ThemeColorScheme
 }
 
 interface YesNoOptionProps extends UseRadioProps {
   children: React.ReactNode
-  order: 'left' | 'right'
+
+  /**
+   * Variant of the option for styling to be used for styling.
+   */
+  variant: 'left' | 'right'
+
+  /**
+   * Color scheme of the component to render. Defaults to `primary`.
+   */
+  colorScheme?: ThemeColorScheme
 }
 
 const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
-  ({ children, order, ...props }, ref) => {
+  ({ children, variant, colorScheme = 'primary', ...props }, ref) => {
+    const style = useStyleConfig(YESNO_THEME_KEY, { variant, colorScheme })
+
     const { getInputProps, getCheckboxProps } = useRadio({
       ...props,
       isDisabled: props.disabled,
@@ -54,10 +72,6 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
     const input = getInputProps({}, ref)
 
     const checkbox = getCheckboxProps({})
-    const [neutral500, primary500] = useToken('colors', [
-      'neutral.500',
-      'primary.500',
-    ])
 
     const handleSelect = useCallback(() => {
       if (props.isChecked && input.onChange) {
@@ -80,68 +94,16 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
     return (
       <Box as="label" w="100%" zIndex={props.isChecked ? 1 : 'initial'}>
         <input {...input} onClick={handleSelect} onKeyDown={handleSpacebar} />
-        <Flex
-          {...checkbox}
-          aria-hidden={false}
-          transitionProperty="common"
-          transitionDuration="normal"
-          cursor="pointer"
-          textStyle="subhead-1"
-          justify="center"
-          bg="neutral.100"
-          border={`1px solid ${neutral500}`}
-          borderRadius={order === 'left' ? '4px 0 0 4px' : '0 4px 4px 0'}
-          p="15px"
-          _disabled={{
-            bg: 'neutral.200',
-            cursor: 'not-allowed',
-            color: 'neutral.500',
-            _active: {
-              boxShadow: 'none',
-              borderColor: 'neutral.500',
-            },
-            _hover: {
-              bg: 'neutral.200',
-            },
-            _checked: {
-              bg: 'neutral.300',
-              boxShadow: `0 0 0 2px ${neutral500}`,
-              borderColor: 'neutral.500',
-              _hover: {
-                bg: 'neutral.300',
-              },
-              _active: {
-                borderColor: 'neutral.500',
-              },
-            },
-          }}
-          _hover={{
-            bg: 'primary.200',
-          }}
-          _active={{
-            borderColor: 'primary.500',
-            boxShadow: `0 0 0 2px ${primary500}`,
-          }}
-          _focus={{
-            borderColor: 'primary.500',
-            boxShadow: `0 0 0 1px ${primary500}`,
-          }}
-          _checked={{
-            bg: 'primary.200',
-            borderColor: 'primary.500',
-            boxShadow: `0 0 0 2px ${primary500}`,
-          }}
-          align="center"
-        >
+        <Box {...checkbox} aria-hidden={false} __css={style}>
           {children}
-        </Flex>
+        </Box>
       </Box>
     )
   },
 )
 
 export const YesNo = forwardRef<YesNoProps, 'input'>(
-  ({ isDisabled, ...props }, ref) => {
+  ({ isDisabled, colorScheme = 'primary', ...props }, ref) => {
     const { getRootProps, getRadioProps } = useRadioGroup(props)
 
     const groupProps = getRootProps()
@@ -153,9 +115,14 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
     }, [getRadioProps, isDisabled])
 
     return (
-      <HStack spacing="-px" {...groupProps} maxW="100%">
+      <HStack spacing="-px" {...groupProps}>
         {/* Ref is set here so any errors can focus this input */}
-        <YesNoOption order="left" {...noProps} ref={ref}>
+        <YesNoOption
+          variant="left"
+          colorScheme={colorScheme}
+          {...noProps}
+          ref={ref}
+        >
           <Icon
             display={['none', 'none', 'initial']}
             as={BiX}
@@ -165,7 +132,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           />
           No
         </YesNoOption>
-        <YesNoOption order="right" {...yesProps}>
+        <YesNoOption variant="right" colorScheme={colorScheme} {...yesProps}>
           <Icon
             display={['none', 'none', 'initial']}
             as={BiCheck}
