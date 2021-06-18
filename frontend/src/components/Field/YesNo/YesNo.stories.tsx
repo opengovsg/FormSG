@@ -33,7 +33,7 @@ export const Disabled = Template.bind({})
 Disabled.args = {
   name: 'testInput',
   isDisabled: true,
-  value: 'no',
+  defaultValue: 'no',
 }
 
 export const Mobile = Template.bind({})

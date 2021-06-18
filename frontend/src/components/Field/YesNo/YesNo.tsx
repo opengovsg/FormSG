@@ -104,12 +104,14 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
               bg: 'neutral.200',
             },
             _checked: {
-              boxShadow: 'none',
+              bg: 'neutral.300',
+              boxShadow: `0 0 0 2px ${neutral500}`,
+              borderColor: 'neutral.500',
               _hover: {
-                bg: 'primary.200',
+                bg: 'neutral.300',
               },
               _active: {
-                borderColor: 'primary.500',
+                borderColor: 'neutral.500',
               },
             },
           }}
