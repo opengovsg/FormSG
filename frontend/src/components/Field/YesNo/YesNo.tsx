@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { KeyboardEvent, useCallback, useMemo } from 'react'
 import { BiCheck, BiX } from 'react-icons/bi'
 import {
   Box,
@@ -66,9 +66,20 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
       }
     }, [input.onChange, props.isChecked])
 
+    const handleSpacebar = useCallback(
+      (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.key !== ' ') return
+        if (props.isChecked) {
+          e.preventDefault()
+          handleSelect()
+        }
+      },
+      [handleSelect, props.isChecked],
+    )
+
     return (
       <Box as="label" w="100%" zIndex={props.isChecked ? 1 : 'initial'}>
-        <input {...input} onClick={handleSelect} />
+        <input {...input} onClick={handleSelect} onKeyDown={handleSpacebar} />
         <Flex
           {...checkbox}
           aria-hidden={false}

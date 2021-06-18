@@ -60,7 +60,7 @@ Tablet.parameters = {
 
 export const Playground: Story = ({ name, label, isDisabled, isRequired }) => {
   const { handleSubmit, control } = useForm()
-  const onSubmit = (data: any) => alert(JSON.stringify(data))
+  const onSubmit = (data: unknown) => alert(JSON.stringify(data))
   const {
     field,
     formState: { errors },
