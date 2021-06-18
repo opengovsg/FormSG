@@ -26,7 +26,7 @@ Default.args = {
 export const Selected = Template.bind({})
 Selected.args = {
   name: 'testInput',
-  value: 'yes',
+  defaultValue: 'yes',
 }
 
 export const Mobile = Template.bind({})

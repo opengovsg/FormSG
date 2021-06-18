@@ -8,14 +8,31 @@ import {
   Icon,
   useRadio,
   useRadioGroup,
+  UseRadioGroupProps,
   UseRadioGroupReturn,
   UseRadioProps,
   useToken,
 } from '@chakra-ui/react'
 
 export interface YesNoProps {
-  onChange?: UseRadioGroupReturn['onChange']
+  /**
+   * Function called once a radio is checked
+   * @param nextValue the value of the checked radio
+   */
+  onChange?: UseRadioGroupProps['onChange']
+  /**
+   * The value of the radio to be `checked`
+   * (in controlled mode)
+   */
   value?: 'yes' | 'no'
+  /**
+   * The value of the radio to be `checked`
+   * initially (in uncontrolled mode)
+   */
+  defaultValue?: 'yes' | 'no'
+  /**
+   * The `name` attribute forwarded to each `radio` element
+   */
   name: string
 }
 
@@ -84,12 +101,8 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
 )
 
 export const YesNo = forwardRef<YesNoProps, 'input'>(
-  ({ name, onChange, value }, ref) => {
-    const { getRootProps, getRadioProps } = useRadioGroup({
-      name,
-      onChange,
-      value,
-    })
+  ({ isDisabled, ...props }, ref) => {
+    const { getRootProps, getRadioProps } = useRadioGroup(props)
 
     const groupProps = getRootProps()
     const [noProps, yesProps] = useMemo(() => {
