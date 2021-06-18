@@ -7,11 +7,14 @@ export const centerDecorator: DecoratorFn = (storyFn) => (
   <Center>{storyFn()}</Center>
 )
 
-type BreakpointKey = keyof typeof theme.breakpoints
-const breakpointKeys = Object.keys(theme.breakpoints) as BreakpointKey[]
 /**
  * Viewports mapping viewport key to their width in (pixel) number.
+ * Used for Chromatic viewpoint snapshots which requires the numbers in pixels.
  */
-export const viewports = breakpointKeys.reduce((acc, k: BreakpointKey) => {
-  return { ...acc, k: parseInt(theme.breakpoints[k]) }
-}, {} as Record<BreakpointKey, number>)
+export const viewports = {
+  xs: parseInt(theme.breakpoints['xs']),
+  sm: parseInt(theme.breakpoints['sm']),
+  md: parseInt(theme.breakpoints['md']),
+  lg: parseInt(theme.breakpoints['lg']),
+  xl: parseInt(theme.breakpoints['xl']),
+}
