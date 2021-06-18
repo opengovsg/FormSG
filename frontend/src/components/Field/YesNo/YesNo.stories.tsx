@@ -6,6 +6,7 @@ import {
 } from '@chakra-ui/form-control'
 import { Meta, Story } from '@storybook/react'
 
+import { viewports } from '~utils/storybook'
 import Button from '~components/Button'
 
 import { YesNo, YesNoProps } from './YesNo'
@@ -36,6 +37,7 @@ Mobile.parameters = {
   viewport: {
     defaultViewport: 'mobile1',
   },
+  chromatic: { viewports: [viewports.xs] },
 }
 
 export const Tablet = Template.bind({})
@@ -45,6 +47,7 @@ Tablet.args = {
 Tablet.parameters = {
   viewport: {
     defaultViewport: 'tablet',
+    chromatic: { viewports: [viewports.md] },
   },
 }
 
