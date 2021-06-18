@@ -52,6 +52,9 @@ services:
       # Keep in sync with the development key in
       # https://github.com/opengovsg/formsg-javascript-sdk/blob/develop/src/resource/verification-keys.ts
       - VERIFICATION_SECRET_KEY=iGkfOuI6uxrlfw+7CZFFUZBwk86I+pu6v+g7EWA6qJpJnilXQleCPx2EVTr24eWWphzFO2WJiaL53oyXnqWdBQ==
+      # Keep in sync with the development key in
+      # https://github.com/opengovsg/formsg-javascript-sdk/blob/develop/src/resource/signing-keys.ts
+      - SIGNING_SECRET_KEY=HDBXpu+2/gu10bLHpy8HjpN89xbA6boH9GwibPGJA8BOXmB+zOUpxCP33/S5p8vBWlPokC7gLR0ca8urVwfMUQ==
       - TWILIO_ACCOUNT_SID
       - TWILIO_API_KEY
       - TWILIO_API_SECRET
@@ -60,7 +63,6 @@ services:
       - SES_USER
       - OTP_LIFE_SPAN
       - AWS_REGION
-      - SIGNING_SECRET_KEY
       - SP_FORMSG_KEY_PATH
       - SP_FORMSG_CERT_PATH
       - SP_IDP_CERT_PATH
