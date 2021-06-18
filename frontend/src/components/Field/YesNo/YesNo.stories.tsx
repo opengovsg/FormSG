@@ -25,7 +25,7 @@ Default.args = {
 export const Selected = Template.bind({})
 Selected.args = {
   name: 'testInput',
-  currentValue: 'yes',
+  value: 'yes',
 }
 
 export const Mobile = Template.bind({})
@@ -57,18 +57,16 @@ export const Playground: Story = ({ name, label, isRequired }) => {
   } = useController({
     control,
     name,
-    rules: { required: { value: true, message: 'Required field' } },
+    rules: {
+      required: isRequired ? { value: true, message: 'Required field' } : false,
+    },
   })
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <FormControl isRequired={isRequired} isInvalid={!!errors[name]} mb={6}>
         <FormLabel>{label}</FormLabel>
-        <YesNo
-          name={name}
-          onChange={field.onChange}
-          currentValue={field.value}
-        />
+        <YesNo {...field} />
         <FormErrorMessage>
           {errors[name] && errors[name].message}
         </FormErrorMessage>
