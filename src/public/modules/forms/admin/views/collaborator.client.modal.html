@@ -36,7 +36,36 @@
       </button>
     </div>
 
-    <div ng-if="!isDisplayTransferOwnerModal">
+    <div ng-if="isDisplayRemoveSelfFromCollabModal">
+      <div class="label-custom" id="invite-title">
+        Remove myself as a collaborator from this form
+      </div>
+      <div class="" id="collab-title">
+        You will be removed as a collaborator and will lose access to this form.
+        You cannot undo this.
+      </div>
+      <button
+        type="submit"
+        id="transfer-owner-btn"
+        class="btn-custom red-bg-dark btn-medium"
+        ng-click="removeSelfFromCollab()"
+        ng-class="btnStatus >= 2 ? 'btn-pressed' : ''"
+      >
+        Remove me
+      </button>
+      <button
+        type="submit"
+        id="transfer-owner-cancel-btn"
+        class="btn-medium"
+        ng-click="toggleRemoveSelfFromCollabModal()"
+      >
+        Cancel
+      </button>
+    </div>
+
+    <div
+      ng-if="!isDisplayTransferOwnerModal && !isDisplayRemoveSelfFromCollabModal"
+    >
       <!-- Top section contains the title and functionality to add new collaborators -->
       <div id="top-section" ng-if="userCanEdit">
         <div class="top-section-label">
@@ -296,6 +325,13 @@
                   class="btn-delete"
                   ng-if="user.email !== userObj.email.toLowerCase() && userCanEdit"
                   ng-click="deleteCollabEmail(userObj.email);closeEditCollaboratorDropdowns()"
+                >
+                  <i class="bx bx-trash bx-md"></i>
+                </button>
+                <button
+                  class="btn-delete"
+                  ng-if="user.email === userObj.email.toLowerCase()"
+                  ng-click="handleRemoveSelfFromCollabButtonClick()"
                 >
                   <i class="bx bx-trash bx-md"></i>
                 </button>

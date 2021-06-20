@@ -7,10 +7,12 @@ const UpdateFormService = require('../../../../services/UpdateFormService')
 angular
   .module('forms')
   .controller('CollaboratorModalController', [
+    '$location',
     '$q',
     '$scope',
     '$timeout',
     '$uibModalInstance',
+    '$window',
     'externalScope',
     'Toastr',
     'FormApi',
@@ -30,10 +32,12 @@ const ROLES = {
 }
 
 function CollaboratorModalController(
+  $location,
   $q,
   $scope,
   $timeout,
   $uibModalInstance,
+  $window,
   externalScope,
   Toastr,
   FormApi,
@@ -62,6 +66,8 @@ function CollaboratorModalController(
 
   $scope.isDisplayTransferOwnerModal = false
   $scope.transferOwnerEmail = undefined
+
+  $scope.isDisplayRemoveSelfFromCollabModal = false
 
   /**
    * Transfers ownership of the form to the selected user, reset UI messages
@@ -134,6 +140,33 @@ function CollaboratorModalController(
         return err
       })
     }
+  }
+
+  /**
+   * Removes the current user from the collaborator list and bounces the user back to the forms select page
+   */
+  $scope.removeSelfFromCollab = () => {
+    return $q
+      .when(UpdateFormService.removeSelfFromCollaborators($scope.myform._id))
+      .then(() => {
+        // redirects the user back to the home page now that they have lost access to this form
+        $window.location.href = $window.location.origin
+      })
+  }
+
+  /**
+   * Toggles the remove self from collaboration modal
+   */
+  $scope.toggleRemoveSelfFromCollabModal = () => {
+    $scope.isDisplayRemoveSelfFromCollabModal =
+      !$scope.isDisplayRemoveSelfFromCollabModal
+  }
+
+  /**
+   * Remove the current user from the permissionList, prompting the user first before confirming the action.
+   */
+  $scope.handleRemoveSelfFromCollabButtonClick = () => {
+    $scope.isDisplayRemoveSelfFromCollabModal = true
   }
 
   /**
