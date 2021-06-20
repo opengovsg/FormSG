@@ -82,7 +82,7 @@ export const removeSelfFromCollaborators = async (
   formId: string,
 ): Promise<PermissionsUpdateDto> => {
   return axios
-    .delete<PermissionUpdateDto>(
+    .delete<PermissionsUpdateDto>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/self`,
     )
     .then(({ data }) => data)
