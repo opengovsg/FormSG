@@ -22,6 +22,7 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
     cursor: 'pointer',
     textStyle: 'subhead-1',
     justifyContent: 'center',
+    color: 'secondary.700',
     bg: 'neutral.100',
     border: `1px solid ${neutral500}`,
     p: '15px',
@@ -49,7 +50,7 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
       },
     },
     _hover: {
-      bg: `${c}.200`,
+      bg: `${c}.100`,
     },
     _active: {
       borderColor: `${c}.500`,
@@ -60,7 +61,7 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
       boxShadow: `0 0 0 1px ${theme500}`,
     },
     _checked: {
-      bg: `${c}.200`,
+      bg: `${c}.300`,
       borderColor: `${c}.500`,
       boxShadow: `0 0 0 2px ${theme500}`,
     },
