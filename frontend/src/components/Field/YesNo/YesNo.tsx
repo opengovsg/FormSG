@@ -13,10 +13,8 @@ import {
   useStyleConfig,
 } from '@chakra-ui/react'
 
-import {
-  YESNO_THEME_KEY,
-  YesNoColorScheme,
-} from '~theme/components/Field/YesNo'
+import { YESNO_THEME_KEY } from '~theme/components/Field/YesNo'
+import { FieldColorScheme } from '~theme/foundations/colours'
 
 export interface YesNoProps {
   /**
@@ -46,7 +44,7 @@ export interface YesNoProps {
   /**
    * Color scheme of the component to render. Defaults to `primary`.
    */
-  colorScheme?: YesNoColorScheme
+  colorScheme?: FieldColorScheme
 }
 
 interface YesNoOptionProps extends UseRadioProps {
@@ -60,7 +58,7 @@ interface YesNoOptionProps extends UseRadioProps {
   /**
    * Color scheme of the component to render. Defaults to `primary`.
    */
-  colorScheme?: YesNoColorScheme
+  colorScheme?: FieldColorScheme
 }
 
 const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(

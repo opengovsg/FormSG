@@ -6,21 +6,7 @@ import {
 } from '@chakra-ui/theme'
 import { getColor } from '@chakra-ui/theme-tools'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
-
 export const YESNO_THEME_KEY = 'YesNoField'
-export type YesNoColorScheme = Extract<
-  ThemeColorScheme,
-  | 'primary'
-  | 'theme-green'
-  | 'theme-teal'
-  | 'theme-purple'
-  | 'theme-grey'
-  | 'theme-yellow'
-  | 'theme-orange'
-  | 'theme-red'
-  | 'theme-brown'
->
 
 const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
   const { colorScheme: c = 'primary', theme } = props
