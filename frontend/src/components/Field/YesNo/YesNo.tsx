@@ -116,11 +116,22 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
 
     const groupProps = getRootProps()
     const [noProps, yesProps] = useMemo(() => {
+      const baseProps = {
+        enterKeyHint: '',
+        disabled: isDisabled,
+        id: props.name,
+      }
       return [
-        getRadioProps({ value: 'no', enterKeyHint: '', disabled: isDisabled }),
-        getRadioProps({ value: 'yes', enterKeyHint: '', disabled: isDisabled }),
+        getRadioProps({
+          value: 'no',
+          ...baseProps,
+        }),
+        getRadioProps({
+          value: 'yes',
+          ...baseProps,
+        }),
       ]
-    }, [getRadioProps, isDisabled])
+    }, [getRadioProps, isDisabled, props.name])
 
     return (
       <HStack spacing="-px" {...groupProps}>
