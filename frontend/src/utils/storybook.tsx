@@ -12,9 +12,9 @@ export const centerDecorator: DecoratorFn = (storyFn) => (
  * Used for Chromatic viewpoint snapshots which requires the numbers in pixels.
  */
 export const viewports = {
-  xs: parseInt(theme.breakpoints['xs']),
-  sm: parseInt(theme.breakpoints['sm']),
-  md: parseInt(theme.breakpoints['md']),
-  lg: parseInt(theme.breakpoints['lg']),
-  xl: parseInt(theme.breakpoints['xl']),
+  xs: parseInt(theme.breakpoints['xs']) * 16,
+  sm: parseInt(theme.breakpoints['sm']) * 16,
+  md: parseInt(theme.breakpoints['md']) * 16,
+  lg: parseInt(theme.breakpoints['lg']) * 16,
+  xl: parseInt(theme.breakpoints['xl']) * 16,
 }
