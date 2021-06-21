@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson-ext'
-import compareAsc from 'date-fns/compareAsc'
+import { compareAsc } from 'date-fns'
 import { times } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
@@ -139,6 +139,7 @@ describe('feedback.service', () => {
         }))
       // Act
       const actualResult = await FeedbackService.getFormFeedbacks(mockFormId)
+      const actual = actualResult._unsafeUnwrap()
 
       // Assert
       // Should only average from the feedbacks for given formId.
@@ -146,12 +147,19 @@ describe('feedback.service', () => {
         expectedCreatedFbs.reduce((acc, curr) => acc + curr.rating, 0) /
         expectedCount
       ).toFixed(2)
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual({
+      expect(actual).toEqual({
         average: expectedAverage,
         count: expectedCount,
-        feedback: expectedFeedbackList,
+        // Feedback may not be returned in same order, so perform unordered check
+        feedback: expect.arrayContaining(expectedFeedbackList),
       })
+      // Check that there are no extra elements
+      expect(actual.feedback.length).toBe(expectedFeedbackList.length)
+      // Check that feedback is returned in date order. We cannot simply sort the arrays
+      // as the order is non-deterministic if the timestamps are identical.
+      expect(expectedFeedbackList.map((f) => f.timestamp)).toEqual(
+        actual.feedback.map((f) => f.timestamp),
+      )
     })
 
     it('should return feedback response with zero count and empty array when no feedback is available', async () => {
