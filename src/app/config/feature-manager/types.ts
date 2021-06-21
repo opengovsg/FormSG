@@ -4,7 +4,6 @@ import { Schema } from 'convict'
 export enum FeatureNames {
   Sms = 'sms',
   SpcpMyInfo = 'spcp-myinfo',
-  VerifiedFields = 'verified-fields',
   WebhookVerifiedContent = 'webhook-verified-content',
 }
 
@@ -50,10 +49,6 @@ export interface IMyInfoConfig {
 
 export type ISpcpMyInfo = ISpcpConfig & IMyInfoConfig
 
-export interface IVerifiedFields {
-  verificationSecretKey: string
-}
-
 export interface IWebhookVerifiedContent {
   signingSecretKey: string
   webhookQueueUrl: string
@@ -62,7 +57,6 @@ export interface IWebhookVerifiedContent {
 export interface IFeatureManager {
   [FeatureNames.Sms]: ISms
   [FeatureNames.SpcpMyInfo]: ISpcpMyInfo
-  [FeatureNames.VerifiedFields]: IVerifiedFields
   [FeatureNames.WebhookVerifiedContent]: IWebhookVerifiedContent
 }
 

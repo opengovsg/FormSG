@@ -49,6 +49,9 @@ services:
       # https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
       - GOOGLE_CAPTCHA=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
       - GOOGLE_CAPTCHA_PUBLIC=6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
+      # Keep in sync with the development key in
+      # https://github.com/opengovsg/formsg-javascript-sdk/blob/develop/src/resource/verification-keys.ts
+      - VERIFICATION_SECRET_KEY=iGkfOuI6uxrlfw+7CZFFUZBwk86I+pu6v+g7EWA6qJpJnilXQleCPx2EVTr24eWWphzFO2WJiaL53oyXnqWdBQ==
       - TWILIO_ACCOUNT_SID
       - TWILIO_API_KEY
       - TWILIO_API_SECRET
@@ -58,7 +61,6 @@ services:
       - OTP_LIFE_SPAN
       - AWS_REGION
       - SIGNING_SECRET_KEY
-      - VERIFICATION_SECRET_KEY
       - SP_FORMSG_KEY_PATH
       - SP_FORMSG_CERT_PATH
       - SP_IDP_CERT_PATH
