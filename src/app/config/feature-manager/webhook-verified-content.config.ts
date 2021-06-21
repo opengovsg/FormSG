@@ -15,6 +15,7 @@ const webhooksAndVerifiedContentSchema: Schema<IWebhooksAndVerifiedContent> = {
   webhookQueueUrl: {
     doc: 'URL of AWS SQS queue for webhook retries',
     format: String,
+    // Allow this to default to empty string so retries can be disabled easily
     default: '',
     env: 'WEBHOOK_SQS_URL',
   },
