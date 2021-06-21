@@ -150,13 +150,14 @@ describe('feedback.service', () => {
       expect(actual).toEqual({
         average: expectedAverage,
         count: expectedCount,
-        // Feedback may not be returned in same order, so perform unordered check
+        // Feedback may not be returned in same order, so perform unordered check.
+        // We cannot simply sort the arrays and expect them to be equal, as the order
+        // is non-deterministic if the timestamps are identical.
         feedback: expect.arrayContaining(expectedFeedbackList),
       })
       // Check that there are no extra elements
       expect(actual.feedback.length).toBe(expectedFeedbackList.length)
-      // Check that feedback is returned in date order. We cannot simply sort the arrays
-      // as the order is non-deterministic if the timestamps are identical.
+      // Check that feedback is returned in date order.
       expect(expectedFeedbackList.map((f) => f.timestamp)).toEqual(
         actual.feedback.map((f) => f.timestamp),
       )
