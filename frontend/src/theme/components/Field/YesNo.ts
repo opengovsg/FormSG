@@ -6,13 +6,38 @@ import {
 } from '@chakra-ui/theme'
 import { getColor } from '@chakra-ui/theme-tools'
 
+import { ThemeColorScheme } from '~theme/foundations/colours'
+
 export const YESNO_THEME_KEY = 'YesNoField'
+export type YesNoColorScheme = Extract<
+  ThemeColorScheme,
+  | 'primary'
+  | 'theme-green'
+  | 'theme-teal'
+  | 'theme-purple'
+  | 'theme-grey'
+  | 'theme-yellow'
+  | 'theme-orange'
+  | 'theme-red'
+  | 'theme-brown'
+>
 
 const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
-  const { colorScheme: c, theme } = props
+  const { colorScheme: c = 'primary', theme } = props
+
+  const isLighterTheme = ['theme-yellow', 'theme-orange', 'theme-red'].includes(
+    c,
+  )
+
+  // Change colors according to colorScheme.
+  const activeBgVar = c === 'primary' ? `${c}.200` : `${c}.300`
+  const activeBorderColorVar = isLighterTheme ? `${c}.700` : `${c}.500`
+  const focusBorderColorVar = isLighterTheme ? `${c}.700` : `${c}.500`
 
   const neutral500 = getColor(theme, 'neutral.500')
-  const theme500 = getColor(theme, `${c}.500`)
+  const activeBg = getColor(theme, activeBgVar)
+  const activeBorderColor = getColor(theme, activeBorderColorVar)
+  const focusBorderColor = getColor(theme, focusBorderColorVar)
 
   return {
     display: 'flex',
@@ -53,17 +78,18 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
       bg: `${c}.100`,
     },
     _active: {
-      borderColor: `${c}.500`,
-      boxShadow: `0 0 0 2px ${theme500}`,
+      bg: activeBg,
+      borderColor: activeBorderColor,
+      boxShadow: `0 0 0 2px ${activeBorderColor} inset`,
     },
     _focus: {
-      borderColor: `${c}.500`,
-      boxShadow: `0 0 0 1px ${theme500}`,
+      borderColor: focusBorderColor,
+      boxShadow: `0 0 0 1px ${focusBorderColor}`,
     },
     _checked: {
-      bg: `${c}.300`,
-      borderColor: `${c}.500`,
-      boxShadow: `0 0 0 2px ${theme500}`,
+      bg: activeBg,
+      borderColor: activeBorderColor,
+      boxShadow: `0 0 0 2px ${activeBorderColor} inset`,
     },
   }
 }

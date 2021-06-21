@@ -13,8 +13,10 @@ import {
   useStyleConfig,
 } from '@chakra-ui/react'
 
-import { YESNO_THEME_KEY } from '~theme/components/Field/YesNo'
-import { ThemeColorScheme } from '~theme/foundations/colours'
+import {
+  YESNO_THEME_KEY,
+  YesNoColorScheme,
+} from '~theme/components/Field/YesNo'
 
 export interface YesNoProps {
   /**
@@ -44,7 +46,7 @@ export interface YesNoProps {
   /**
    * Color scheme of the component to render. Defaults to `primary`.
    */
-  colorScheme?: ThemeColorScheme
+  colorScheme?: YesNoColorScheme
 }
 
 interface YesNoOptionProps extends UseRadioProps {
@@ -58,7 +60,7 @@ interface YesNoOptionProps extends UseRadioProps {
   /**
    * Color scheme of the component to render. Defaults to `primary`.
    */
-  colorScheme?: ThemeColorScheme
+  colorScheme?: YesNoColorScheme
 }
 
 const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
@@ -92,7 +94,13 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
     )
 
     return (
-      <Box as="label" w="100%" zIndex={props.isChecked ? 1 : 'initial'}>
+      <Box
+        as="label"
+        w="100%"
+        zIndex={props.isChecked ? 1 : 'initial'}
+        _active={{ zIndex: 1 }}
+        _focusWithin={{ zIndex: 1 }}
+      >
         <input {...input} onClick={handleSelect} onKeyDown={handleSpacebar} />
         <Box {...checkbox} aria-hidden={false} __css={style}>
           {children}
