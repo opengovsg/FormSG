@@ -50,10 +50,6 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
       type: Boolean,
       default: false,
     },
-    hasAllowedEmailDomains: {
-      type: Boolean,
-      default: false,
-    },
     allowedEmailDomains: {
       type: [
         {
