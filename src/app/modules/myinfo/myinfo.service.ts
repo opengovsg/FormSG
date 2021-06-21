@@ -20,7 +20,7 @@ import {
   MyInfoAttribute,
 } from '../../../types'
 import config from '../../config/config'
-import { spcpMyInfoConfig } from '../../config/feature-manager/spcp-myinfo.config'
+import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError } from '../core/core.errors'
 import {

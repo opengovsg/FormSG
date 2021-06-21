@@ -4,7 +4,7 @@ import fs from 'fs'
 import { omit } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
-import { ISpcpMyInfo } from 'src/app/config/feature-manager/spcp-myinfo.config'
+import { ISpcpMyInfo } from 'src/app/config/features/spcp-myinfo.config'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 import { AuthType } from 'src/types'
 

@@ -9,7 +9,7 @@ import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
 import {
   ISpcpMyInfo,
   spcpMyInfoConfig,
-} from '../../config/feature-manager/spcp-myinfo.config'
+} from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
 
