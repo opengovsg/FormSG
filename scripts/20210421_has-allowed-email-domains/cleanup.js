@@ -188,7 +188,7 @@ db.getCollection('forms').count({
     $elemMatch: {
       fieldType: 'email',
       isVerifiable: true,
-      allowedEmailDomains: { $ne: [] }
+      allowedEmailDomains: { $exists: true, $ne: [] }
     }
   }
 })
@@ -203,7 +203,7 @@ db.getCollection('forms').count({
     $elemMatch: {
       fieldType: 'email',
       isVerifiable: true,
-      allowedEmailDomains: { $eq: [] }
+      allowedEmailDomains: { $exists: true, $eq: [] }
     }
   }
 })
