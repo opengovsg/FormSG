@@ -19,6 +19,8 @@ import {
   IPossiblyPrefilledField,
   MyInfoAttribute,
 } from '../../../types'
+import config from '../../config/config'
+import { spcpMyInfoConfig } from '../../config/feature-manager/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import {
@@ -72,7 +74,11 @@ const BREAKER_PARAMS = {
   volumeThreshold: 5, // min number of requests within statistical window before breaker trips
 }
 
-export class MyInfoService {
+/**
+ * Class for managing MyInfo-related functionality.
+ * Exported for testing.
+ */
+export class MyInfoServiceClass {
   /**
    * Instance of MyInfoGovClient configured with Form credentials.
    */
@@ -519,3 +525,9 @@ export class MyInfoService {
       )
   }
 }
+
+export const MyInfoService = new MyInfoServiceClass({
+  spcpMyInfoConfig,
+  appUrl: config.app.appUrl,
+  nodeEnv: config.nodeEnv,
+})
