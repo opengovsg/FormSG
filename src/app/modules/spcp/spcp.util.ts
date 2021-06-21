@@ -12,7 +12,6 @@ import {
   SPCPFieldTitle,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
-import { MissingFeatureError } from '../core/core.errors'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
@@ -256,7 +255,6 @@ export const mapRouteError: MapRouteError = (
   coreErrorMessage = 'Sorry, something went wrong. Please try again.',
 ) => {
   switch (error.constructor) {
-    case MissingFeatureError:
     case CreateRedirectUrlError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,

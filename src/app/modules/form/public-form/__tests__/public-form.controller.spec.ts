@@ -6,15 +6,12 @@ import { err, errAsync, ok, okAsync } from 'neverthrow'
 import querystring from 'querystring'
 import { mocked } from 'ts-jest/utils'
 
-import { FeatureNames } from 'src/app/config/feature-manager/types'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
-import {
-  DatabaseError,
-  MissingFeatureError,
-} from 'src/app/modules/core/core.errors'
+import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
 import {
   MyInfoCookieAccessError,
+  MyInfoFetchError,
   MyInfoMissingAccessTokenError,
 } from 'src/app/modules/myinfo/myinfo.errors'
 import {
@@ -794,11 +791,7 @@ describe('public-form.controller', () => {
         })
 
         MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
-          errAsync(
-            new MissingFeatureError(
-              'testing is the missing feature' as FeatureNames,
-            ),
-          ),
+          errAsync(new MyInfoFetchError()),
         )
 
         // Act
@@ -1445,35 +1438,6 @@ describe('public-form.controller', () => {
       )
       MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         err(new CreateRedirectUrlError()),
-      )
-
-      // Act
-      await PublicFormController._handleFormAuthRedirect(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({
-        message: 'Sorry, something went wrong. Please try again.',
-      })
-    })
-
-    it('should return 500 when the redirectURL feature is not implemented', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        esrvcId: '234',
-        authType: AuthType.MyInfo,
-        getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
-      } as unknown as SpcpForm<IFormSchema>
-      const mockRes = expressHandler.mockResponse()
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      MockMyInfoService.createRedirectURL.mockReturnValueOnce(
-        err(new MissingFeatureError('Redirect url')),
       )
 
       // Act

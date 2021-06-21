@@ -2,7 +2,6 @@ import { StatusCodes } from 'http-status-codes'
 
 import { MapRouteError } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
-import { MissingFeatureError } from '../../modules/core/core.errors'
 
 import {
   CaptchaConnectionError,
@@ -29,12 +28,6 @@ export const mapRouteError: MapRouteError = (error) => {
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Captcha was missing. Please refresh and submit again.',
-      }
-    case MissingFeatureError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage:
-          'Captcha verification unavailable. Please try again later.',
       }
     default:
       logger.error({
