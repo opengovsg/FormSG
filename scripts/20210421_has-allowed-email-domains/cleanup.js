@@ -1,6 +1,7 @@
 /* eslint-disable */
 
 // Optional: Retrieve forms with fields that has a populated allowedEmailDomains but has no allowed email domains.
+// For sampling to check if form has been fixed properly after migration.
 db.getCollection('forms').aggregate([
   { $unwind: '$form_fields' },
   {
@@ -25,10 +26,14 @@ db.getCollection('forms').aggregate([
 // COUNT_A =
 
 db.getCollection('forms').count({
-  'form_fields.fieldType': 'email',
-  'form_fields.isVerifiable': true,
-  'form_fields.hasAllowedEmailDomains': true,
-  'form_fields.allowedEmailDomains': { $ne: [] },
+  'form_fields': {
+    $elemMatch: {
+      fieldType: 'email',
+      isVerifiable: true,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: { $ne: [] }
+    }
+  }
 })
 
 // Count forms with isVerifiable=true, but hasAllowedEmailDomains=false
@@ -37,9 +42,13 @@ db.getCollection('forms').count({
 // COUNT_B = 
 
 db.getCollection('forms').count({
-  'form_fields.fieldType': 'email',
-  'form_fields.isVerifiable': true,
-  'form_fields.hasAllowedEmailDomains': false,
+  'form_fields': {
+    $elemMatch: {
+      fieldType: 'email',
+      isVerifiable: true,
+      hasAllowedEmailDomains: false,
+    }
+  }
 })
 
 // Count forms with non-empty allowed email domains even if hasAllowedEmailDomains is false, 
@@ -48,9 +57,13 @@ db.getCollection('forms').count({
 // COUNT_C = 
 
 db.getCollection('forms').count({
-  'form_fields.fieldType': 'email',
-  'form_fields.hasAllowedEmailDomains': false,
-  'form_fields.allowedEmailDomains': { $ne: [] },
+  'form_fields': {
+    $elemMatch: {
+      fieldType: 'email',
+      hasAllowedEmailDomains: false,
+      allowedEmailDomains: { $ne: [] }
+    }
+  }
 })
 
 // Count forms with inconsistent email states
@@ -60,9 +73,13 @@ db.getCollection('forms').count({
 // COUNT_D = 
 
 db.getCollection('forms').count({
-  'form_fields.fieldType': 'email',
-  'form_fields.hasAllowedEmailDomains': true,
-  'form_fields.allowedEmailDomains': { $eq: [] },
+  'form_fields': {
+    $elemMatch: {
+      fieldType: 'email',
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: { $eq: [] }
+    }
+  }
 })
 
 
@@ -73,9 +90,13 @@ db.getCollection('forms').count({
 
 db.getCollection('forms').updateMany(
   {
-    'form_fields.fieldType': 'email',
-    'form_fields.hasAllowedEmailDomains': false,
-    'form_fields.allowedEmailDomains': { $ne: [] },
+    'form_fields': {
+      $elemMatch: {
+        fieldType: 'email',
+        hasAllowedEmailDomains: false,
+        allowedEmailDomains: { $ne: [] }
+      }
+    }
   },
   {
     $set: {
@@ -99,9 +120,13 @@ db.getCollection('forms').updateMany(
 
 // Should now have 0 non-empty domains if hasAllowedEmailDomains is false
 db.getCollection('forms').count({
-  'form_fields.fieldType': 'email',
-  'form_fields.hasAllowedEmailDomains': false,
-  'form_fields.allowedEmailDomains': { $ne: [] },
+  'form_fields': {
+    $elemMatch: {
+      fieldType: 'email',
+      hasAllowedEmailDomains: false,
+      allowedEmailDomains: { $ne: [] }
+    }
+  }
 })
 
 // Retrieve remaining email fields with hasAllowedEmailDomains key
@@ -109,17 +134,25 @@ db.getCollection('forms').count({
 // COUNT_D = 
 
 db.getCollection('forms').count({
-  'form_fields.fieldType': 'email',
-  'form_fields.hasAllowedEmailDomains': { $exists: true },
+  'form_fields': {
+    $elemMatch: {
+      fieldType: 'email',
+      hasAllowedEmailDomains: { $exists: true }
+    }
+  }
 })
 
 // !!! Secondary update to remove hasAllowedEmailDomains key
-// updateCount sohuld === COUNT_D
+// updateCount should === COUNT_D
 // updateCount =
 db.getCollection('forms').updateMany(
   {
-    'form_fields.fieldType': 'email',
-    'form_fields.hasAllowedEmailDomains': { $exists: true },
+    'form_fields': {
+      $elemMatch: {
+        fieldType: 'email',
+        hasAllowedEmailDomains: { $exists: true },
+      }
+    }
   },
   {
     $unset: {
@@ -139,8 +172,12 @@ db.getCollection('forms').updateMany(
 
 // Should be 0
 db.getCollection('forms').count({
-  'form_fields.fieldType': 'email',
-  'form_fields.hasAllowedEmailDomains': { $exists: true },
+  'form_fields': {
+    $elemMatch: {
+      fieldType: 'email',
+      hasAllowedEmailDomains: { $exists: true },
+    }
+  }
 })
 
 // !!! Verification checks
@@ -150,9 +187,13 @@ db.getCollection('forms').count({
 // finalCount = 
 
 db.getCollection('forms').count({
-  'form_fields.fieldType': 'email',
-  'form_fields.isVerifiable': true,
-  'form_fields.allowedEmailDomains': { $ne: [] },
+  'form_fields': {
+    $elemMatch: {
+      fieldType: 'email',
+      isVerifiable: true,
+      allowedEmailDomains: { $ne: [] }
+    }
+  }
 })
 
 // Retrieve final counts of fields with isVerifiable but empty allowedEmailDomains
@@ -161,7 +202,11 @@ db.getCollection('forms').count({
 // finalCount = 
 
 db.getCollection('forms').count({
-  'form_fields.fieldType': 'email',
-  'form_fields.isVerifiable': true,
-  'form_fields.allowedEmailDomains': { $eq: [] },
+  'form_fields': {
+    $elemMatch: {
+      fieldType: 'email',
+      isVerifiable: true,
+      allowedEmailDomains: { $eq: [] }
+    }
+  }
 })
