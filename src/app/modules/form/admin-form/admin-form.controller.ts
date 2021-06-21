@@ -50,10 +50,6 @@ import {
 } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import * as FeedbackService from '../../feedback/feedback.service'
-import {
-  createCorppassParsedResponses,
-  createSingpassParsedResponses,
-} from '../../spcp/spcp.util'
 import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
@@ -1530,17 +1526,18 @@ export const submitEmailPreview: ControllerHandler<
   const attachments = mapAttachmentsFromResponses(req.body.responses)
 
   // Handle SingPass, CorpPass and MyInfo authentication and validation
-  if (form.authType === AuthType.SP || form.authType === AuthType.MyInfo) {
-    parsedResponses.addNdiResponses(
-      createSingpassParsedResponses(PREVIEW_SINGPASS_UINFIN),
-    )
-  } else if (form.authType === AuthType.CP) {
-    parsedResponses.addNdiResponses(
-      createCorppassParsedResponses(
-        PREVIEW_CORPPASS_UINFIN,
-        PREVIEW_CORPPASS_UID,
-      ),
-    )
+  const { authType } = form
+  if (authType === AuthType.SP || authType === AuthType.MyInfo) {
+    parsedResponses.addNdiResponses({
+      authType,
+      uinFin: PREVIEW_SINGPASS_UINFIN,
+    })
+  } else if (authType === AuthType.CP) {
+    parsedResponses.addNdiResponses({
+      authType,
+      uinFin: PREVIEW_CORPPASS_UINFIN,
+      userInfo: PREVIEW_CORPPASS_UID,
+    })
   }
 
   const emailData = new SubmissionEmailObj(

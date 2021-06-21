@@ -5,12 +5,17 @@ import {
   getVisibleFieldIds,
 } from '../../../../shared/util/logic'
 import {
+  AuthType,
   FieldResponse,
   IFieldSchema,
   IFormDocument,
   ResponseMode,
 } from '../../../../types'
 import { validateField } from '../../../utils/field-validation'
+import {
+  createCorppassParsedResponses,
+  createSingpassParsedResponses,
+} from '../../spcp/spcp.util'
 import {
   ConflictError,
   ProcessingError,
@@ -23,11 +28,38 @@ export default class ParsedResponsesObject {
   public ndiResponses: ProcessedFieldResponse[] = []
   private constructor(public responses: ProcessedFieldResponse[]) {}
 
-  addNdiResponses(
-    ndiResponses: ProcessedFieldResponse[],
-  ): ParsedResponsesObject {
-    this.ndiResponses = ndiResponses
-    return this
+  addNdiResponses({
+    authType,
+    uinFin,
+    userInfo,
+  }: {
+    authType: AuthType
+    uinFin: string
+    userInfo?: string
+  }): Result<ParsedResponsesObject, ProcessingError> {
+    switch (authType) {
+      case AuthType.SP:
+      case AuthType.MyInfo:
+        this.ndiResponses = createSingpassParsedResponses(uinFin)
+        break
+      case AuthType.CP:
+        if (!userInfo) {
+          return err(
+            new ProcessingError(
+              'Corppass response is missing userInfo object.',
+            ),
+          )
+        }
+        this.ndiResponses = createCorppassParsedResponses(uinFin, userInfo)
+        break
+      default:
+        return err(
+          new ProcessingError(
+            'Adding NDI responses to a form with an invalid auth type.',
+          ),
+        )
+    }
+    return ok(this)
   }
 
   getAllResponses(): ProcessedFieldResponse[] {

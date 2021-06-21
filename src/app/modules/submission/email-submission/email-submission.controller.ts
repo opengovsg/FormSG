@@ -19,11 +19,8 @@ import {
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
 import * as MyInfoUtil from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
-import {
-  createCorppassParsedResponses,
-  createSingpassParsedResponses,
-} from '../../spcp/spcp.util'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
+import { ProcessingError } from '../submission.errors'
 import * as SubmissionService from '../submission.service'
 import { extractEmailConfirmationData } from '../submission.utils'
 
@@ -155,12 +152,18 @@ const submitEmailModeForm: ControllerHandler<
           case AuthType.CP:
             return SpcpFactory.extractJwt(req.cookies, authType)
               .asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
-              .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
-                form,
-                parsedResponses: parsedResponses.addNdiResponses(
-                  createCorppassParsedResponses(jwt.userName, jwt.userInfo),
-                ),
-              }))
+              .andThen<
+                IPopulatedEmailFormWithResponsesAndHash,
+                ProcessingError
+              >((jwt) =>
+                parsedResponses
+                  .addNdiResponses({
+                    authType,
+                    uinFin: jwt.userName,
+                    userInfo: jwt.userInfo,
+                  })
+                  .map(() => ({ form, parsedResponses })),
+              )
               .mapErr((error) => {
                 spcpSubmissionFailure = true
                 logger.error({
@@ -173,12 +176,17 @@ const submitEmailModeForm: ControllerHandler<
           case AuthType.SP:
             return SpcpFactory.extractJwt(req.cookies, authType)
               .asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
-              .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
-                form,
-                parsedResponses: parsedResponses.addNdiResponses(
-                  createSingpassParsedResponses(jwt.userName),
-                ),
-              }))
+              .andThen<
+                IPopulatedEmailFormWithResponsesAndHash,
+                ProcessingError
+              >((jwt) =>
+                parsedResponses
+                  .addNdiResponses({
+                    authType,
+                    uinFin: jwt.userName,
+                  })
+                  .map(() => ({ form, parsedResponses })),
+              )
               .mapErr((error) => {
                 spcpSubmissionFailure = true
                 logger.error({
@@ -202,14 +210,16 @@ const submitEmailModeForm: ControllerHandler<
                       hashes,
                     ),
                   )
-                  .map<IPopulatedEmailFormWithResponsesAndHash>(
-                    (hashedFields) => ({
-                      form,
-                      hashedFields,
-                      parsedResponses: parsedResponses.addNdiResponses(
-                        createSingpassParsedResponses(uinFin),
-                      ),
-                    }),
+                  .andThen<
+                    IPopulatedEmailFormWithResponsesAndHash,
+                    ProcessingError
+                  >((hashedFields) =>
+                    parsedResponses
+                      .addNdiResponses({
+                        authType,
+                        uinFin,
+                      })
+                      .map(() => ({ form, hashedFields, parsedResponses })),
                   ),
               )
               .mapErr((error) => {
