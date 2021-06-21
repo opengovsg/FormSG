@@ -102,9 +102,6 @@ db.getCollection('forms').updateMany(
     $set: {
       'form_fields.$[elem].allowedEmailDomains': [],
     },
-    $unset: {
-      'form_fields.$[elem].hasAllowedEmailDomains': 1,
-    }
   },
   {
     arrayFilters: [
