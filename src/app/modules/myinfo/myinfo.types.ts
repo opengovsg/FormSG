@@ -5,7 +5,7 @@ import {
   IMyInfo,
   MyInfoAttribute,
 } from '../../../types'
-import { ISpcpMyInfo } from '../../config/feature-manager/spcp-myinfo.config'
+import { ISpcpMyInfo } from '../../config/features/spcp-myinfo.config'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 export interface IMyInfoServiceConfig {

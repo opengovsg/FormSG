@@ -1,6 +1,6 @@
 import Twilio from 'twilio'
 
-import { ISms, smsConfig } from '../../config/feature-manager/sms.config'
+import { ISms, smsConfig } from '../../config/features/sms.config'
 
 import {
   sendAdminContactOtp,

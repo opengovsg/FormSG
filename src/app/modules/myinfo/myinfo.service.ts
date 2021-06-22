@@ -20,9 +20,9 @@ import {
   MyInfoAttribute,
 } from '../../../types'
 import config from '../../config/config'
-import { spcpMyInfoConfig } from '../../config/feature-manager/spcp-myinfo.config'
+import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { DatabaseError, MissingFeatureError } from '../core/core.errors'
+import { DatabaseError } from '../core/core.errors'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
@@ -495,7 +495,6 @@ export class MyInfoServiceClass {
    * @returns err(AuthTypeMismatchError) if the client was not authenticated using MyInfo
    * @returns err(MyInfoCircuitBreakerError) if circuit breaker was active
    * @returns err(MyInfoFetchError) if validated but the data could not be retrieved
-   * @returns err(MissingFeatureError) if using an outdated version that does not support myInfo
    */
   getMyInfoDataForForm(
     form: IPopulatedForm,
@@ -508,7 +507,6 @@ export class MyInfoServiceClass {
     | AuthTypeMismatchError
     | MyInfoCircuitBreakerError
     | MyInfoFetchError
-    | MissingFeatureError
     | MyInfoCookieAccessError
   > {
     const requestedAttributes = form.getUniqueMyInfoAttrs()

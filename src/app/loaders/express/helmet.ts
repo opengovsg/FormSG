@@ -3,7 +3,7 @@ import helmet from 'helmet'
 import { ContentSecurityPolicyOptions } from 'helmet/dist/middlewares/content-security-policy'
 
 import config from '../../config/config'
-import { sentryConfig } from '../../config/feature-manager/sentry.config'
+import { sentryConfig } from '../../config/features/sentry.config'
 
 const helmetMiddlewares = () => {
   // Only add the "Strict-Transport-Security" header if request is https.

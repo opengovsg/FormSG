@@ -23,7 +23,6 @@ import {
   DatabaseValidationError,
   EmptyErrorFieldError,
   MalformedParametersError,
-  MissingFeatureError,
 } from '../../core/core.errors'
 import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
 import {
@@ -68,7 +67,6 @@ const errorMapper: MapRouteError = (
         errorMessage:
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
       }
-    case MissingFeatureError:
     case CreateRedirectUrlError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,

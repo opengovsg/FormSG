@@ -22,10 +22,7 @@ import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware
 import * as CaptchaService from '../../../services/captcha/captcha.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
-import {
-  MalformedParametersError,
-  MissingFeatureError,
-} from '../../core/core.errors'
+import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
@@ -269,12 +266,9 @@ const submitEncryptModeForm: ControllerHandler<
         error,
       })
 
-      // Passthrough if feature is not activated.
-      if (!(error instanceof MissingFeatureError)) {
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .json({ message: 'Invalid data was found. Please submit again.' })
-      }
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: 'Invalid data was found. Please submit again.' })
     } else {
       // No errors, set local variable to the encrypted string.
       verified = encryptVerifiedContentResult.value

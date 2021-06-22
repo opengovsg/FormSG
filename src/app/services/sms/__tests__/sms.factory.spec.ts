@@ -3,7 +3,7 @@ import { okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 import Twilio from 'twilio'
 
-import { ISms } from 'src/app/config/feature-manager/sms.config'
+import { ISms } from 'src/app/config/features/sms.config'
 
 import { createSmsFactory } from '../sms.factory'
 import * as SmsService from '../sms.service'

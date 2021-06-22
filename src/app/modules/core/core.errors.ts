@@ -1,5 +1,3 @@
-import { FeatureNames } from '../../config/feature-manager'
-
 /**
  * A custom base error class that encapsulates the name, message, status code,
  * and logging meta string (if any) for the error.
@@ -59,18 +57,6 @@ export type PossibleDatabaseError =
 export class MalformedParametersError extends ApplicationError {
   constructor(message: string, meta?: unknown) {
     super(message, meta)
-  }
-}
-
-/**
- * Error thrown when feature-specific functions are called
- * despite those features not being activated.
- */
-export class MissingFeatureError extends ApplicationError {
-  constructor(missingFeature: FeatureNames) {
-    super(
-      `${missingFeature} is not activated, but a feature-specific function was called.`,
-    )
   }
 }
 

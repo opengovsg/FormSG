@@ -1,10 +1,10 @@
 import ejs from 'ejs'
 
 import config from '../../config/config'
-import { captchaConfig } from '../../config/feature-manager/captcha.config'
-import { googleAnalyticsConfig } from '../../config/feature-manager/google-analytics.config'
-import { sentryConfig } from '../../config/feature-manager/sentry.config'
-import { spcpMyInfoConfig } from '../../config/feature-manager/spcp-myinfo.config'
+import { captchaConfig } from '../../config/features/captcha.config'
+import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
+import { sentryConfig } from '../../config/features/sentry.config'
+import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
 // Construct js with environment variables needed by frontend
 const frontendVars = {
