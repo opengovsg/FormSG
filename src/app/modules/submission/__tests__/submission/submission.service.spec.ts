@@ -9,40 +9,26 @@ import {
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
-import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import MailService from 'src/app/services/mail/mail.service'
 import { createQueryWithDateParam } from 'src/app/utils/date'
-import * as LogicUtil from 'src/shared/util/logic'
 import {
   AutoReplyOptions,
   BasicField,
   IAttachmentInfo,
-  IEmailFormSchema,
   IEmailSubmissionSchema,
-  IEncryptedFormSchema,
   IEncryptedSubmissionSchema,
   IFormSchema,
-  IPreventSubmitLogicSchema,
   ISubmissionSchema,
-  LogicType,
-  ResponseMode,
   SubmissionType,
 } from 'src/types'
 
 import {
   generateDefaultField,
   generateNewSingleAnswerResponse,
-  generateProcessedSingleAnswerResponse,
-  generateSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import {
-  ConflictError,
-  ProcessingError,
-  SendEmailConfirmationError,
-  ValidateFieldError,
-} from '../../submission.errors'
+import { SendEmailConfirmationError } from '../../submission.errors'
 import { extractEmailConfirmationData } from '../../submission.utils'
 
 jest.mock('src/app/services/mail/mail.service')
@@ -108,285 +94,6 @@ describe('submission.service', () => {
   beforeAll(async () => await dbHandler.connect())
   afterAll(async () => await dbHandler.closeDatabase())
   beforeEach(() => jest.clearAllMocks())
-
-  describe('getProcessedResponses', () => {
-    it('should return list of parsed responses for encrypted form submission successfully', async () => {
-      // Arrange
-      // Only mobile and email fields are parsed, since the other fields are
-      // e2e encrypted from the browser.
-      const mobileField = generateDefaultField(BasicField.Mobile)
-      const emailField = generateDefaultField(BasicField.Email)
-      // Add answers to both mobile and email fields
-      const mobileResponse = generateSingleAnswerResponse(
-        mobileField,
-        '+6587654321',
-      )
-      const emailResponse = generateSingleAnswerResponse(
-        emailField,
-        'test@example.com',
-      )
-
-      const mobileProcessedResponse = generateProcessedSingleAnswerResponse(
-        mobileField,
-        '+6587654321',
-      )
-      const emailProcessedResponse = generateProcessedSingleAnswerResponse(
-        emailField,
-        'test@example.com',
-      )
-
-      // Act
-      const actualResult = SubmissionService.getProcessedResponses(
-        {
-          responseMode: ResponseMode.Encrypt,
-          form_fields: [mobileField, emailField],
-        } as unknown as IFormSchema,
-        [mobileResponse, emailResponse],
-      )
-
-      // Assert
-      const expectedParsed: ProcessedFieldResponse[] = [
-        { ...mobileProcessedResponse, isVisible: true },
-        { ...emailProcessedResponse, isVisible: true },
-      ]
-      // Should only have email and mobile fields for encrypted forms.
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(expectedParsed)
-    })
-
-    it('should return list of parsed responses for email form submission successfully', async () => {
-      // Arrange
-      // Add answer to subset of field types
-      const shortTextField = generateDefaultField(BasicField.ShortText)
-      const decimalField = generateDefaultField(BasicField.Decimal)
-
-      // Add answers to both mobile and email fields
-      const shortTextResponse = generateSingleAnswerResponse(
-        shortTextField,
-        'the quick brown fox jumps over the lazy dog',
-      )
-      const decimalResponse = generateSingleAnswerResponse(
-        decimalField,
-        '3.142',
-      )
-
-      const shortTextProcessedResponse = generateProcessedSingleAnswerResponse(
-        shortTextField,
-        'the quick brown fox jumps over the lazy dog',
-      )
-      const decimalProcessedResponse = generateProcessedSingleAnswerResponse(
-        decimalField,
-        '3.142',
-      )
-
-      // Act
-      const actualResult = SubmissionService.getProcessedResponses(
-        {
-          responseMode: ResponseMode.Email,
-          form_fields: [shortTextField, decimalField],
-        } as unknown as IFormSchema,
-        [shortTextResponse, decimalResponse],
-      )
-
-      // Assert
-      const expectedParsed: ProcessedFieldResponse[] = [
-        { ...shortTextProcessedResponse, isVisible: true },
-        { ...decimalProcessedResponse, isVisible: true },
-      ]
-
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(expectedParsed)
-    })
-
-    it('should return error when email form has more fields than responses', async () => {
-      // Arrange
-      const extraField = generateDefaultField(BasicField.Mobile)
-
-      // Act + Assert
-
-      const actualResult = SubmissionService.getProcessedResponses(
-        {
-          responseMode: ResponseMode.Email,
-          form_fields: [extraField],
-        } as unknown as IEmailFormSchema,
-        [],
-      )
-
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new ConflictError('Some form fields are missing'),
-      )
-    })
-
-    it('should return error when encrypt form has more fields than responses', async () => {
-      // Arrange
-      const extraField = generateDefaultField(BasicField.Mobile)
-
-      // Act + Assert
-
-      const actualResult = SubmissionService.getProcessedResponses(
-        {
-          responseMode: ResponseMode.Encrypt,
-          form_fields: [extraField],
-        } as unknown as IEncryptedFormSchema,
-        [],
-      )
-
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new ConflictError('Some form fields are missing'),
-      )
-    })
-    it('should allow responses for encrypt mode hidden fields', async () => {
-      // Arrange
-      // Only check for mobile and email fields, since the other fields are
-      // e2e encrypted from the browser.
-      const mobileField = generateDefaultField(BasicField.Mobile)
-      const emailField = generateDefaultField(BasicField.Email)
-      // Add answers to both mobile and email fields
-      const mobileResponse = generateSingleAnswerResponse(
-        mobileField,
-        '+6587654321',
-      )
-
-      const emailResponse = generateSingleAnswerResponse(
-        emailField,
-        'test@example.com',
-      )
-
-      const mobileProcessedResponse = generateProcessedSingleAnswerResponse(
-        mobileField,
-        '+6587654321',
-      )
-      mobileProcessedResponse.isVisible = false
-
-      const emailProcessedResponse = generateProcessedSingleAnswerResponse(
-        emailField,
-        'test@example.com',
-      )
-      emailProcessedResponse.isVisible = false
-
-      // Act
-      const actualResult = SubmissionService.getProcessedResponses(
-        {
-          responseMode: ResponseMode.Encrypt,
-          form_fields: [mobileField, emailField],
-        } as unknown as IFormSchema,
-        [mobileResponse, emailResponse],
-      )
-
-      // Assert
-      const expectedParsed: ProcessedFieldResponse[] = [
-        { ...mobileProcessedResponse, isVisible: true }, //getProcessedResponses sets isVisible to be true for encrypt mode
-        { ...emailProcessedResponse, isVisible: true },
-      ]
-      // Should only have email and mobile fields for encrypted forms.
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(expectedParsed)
-    })
-
-    it('should return error when any responses are not valid for encrypted form submission', async () => {
-      // Arrange
-      // Only mobile and email fields are parsed, since the other fields are
-      // e2e encrypted from the browser.
-      const mobileField = generateDefaultField(BasicField.Mobile)
-      const mobileResponse = generateSingleAnswerResponse(
-        mobileField,
-        'invalid',
-      )
-
-      // Act + Assert
-      const actualResult = SubmissionService.getProcessedResponses(
-        {
-          responseMode: ResponseMode.Encrypt,
-          form_fields: [mobileField],
-        } as unknown as IEncryptedFormSchema,
-        [mobileResponse],
-      )
-
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new ValidateFieldError('Invalid answer submitted'),
-      )
-    })
-
-    it('should return error when any responses are not valid for email form submission', async () => {
-      // Arrange
-      // Set NRIC field in form as required.
-      const nricField = generateDefaultField(BasicField.Nric)
-      const nricResponse = generateSingleAnswerResponse(nricField, 'invalid')
-
-      // Act + Assert
-      const actualResult = SubmissionService.getProcessedResponses(
-        {
-          responseMode: ResponseMode.Email,
-          form_fields: [nricField],
-        } as unknown as IEmailFormSchema,
-        [nricResponse],
-      )
-
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new ValidateFieldError('Invalid answer submitted'),
-      )
-    })
-
-    it('should return error when encrypted form submission is prevented by logic', async () => {
-      // Arrange
-      // Mock logic util to return non-empty to check if error is thrown
-      jest
-        .spyOn(LogicUtil, 'getLogicUnitPreventingSubmit')
-        .mockReturnValueOnce({
-          preventSubmitMessage: 'mock prevent submit',
-          conditions: [],
-          logicType: LogicType.PreventSubmit,
-          _id: 'some id',
-        } as unknown as IPreventSubmitLogicSchema)
-
-      // Act + Assert
-      const actualResult = SubmissionService.getProcessedResponses(
-        {
-          responseMode: ResponseMode.Encrypt,
-          form_fields: [],
-        } as unknown as IEncryptedFormSchema,
-        [],
-      )
-
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new ProcessingError('Submission prevented by form logic'),
-      )
-    })
-
-    it('should return error when email form submission is prevented by logic', async () => {
-      // Arrange
-      // Mock logic util to return non-empty to check if error is thrown.
-      const mockReturnLogicUnit = {
-        preventSubmitMessage: 'mock prevent submit',
-        conditions: [],
-        logicType: LogicType.PreventSubmit,
-        _id: 'some id',
-      } as unknown as IPreventSubmitLogicSchema
-
-      jest
-        .spyOn(LogicUtil, 'getLogicUnitPreventingSubmit')
-        .mockReturnValueOnce(mockReturnLogicUnit)
-
-      // Act + Assert
-      const actualResult = SubmissionService.getProcessedResponses(
-        {
-          responseMode: ResponseMode.Email,
-          form_fields: [],
-        } as unknown as IEmailFormSchema,
-        [],
-      )
-
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new ProcessingError('Submission prevented by form logic'),
-      )
-    })
-  })
 
   describe('getFormSubmissionsCount', () => {
     const countSpy = jest.spyOn(Submission, 'countDocuments')
