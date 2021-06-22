@@ -1,72 +1,111 @@
-import { cloneElement } from 'react'
+import { cloneElement, isValidElement, useCallback, useMemo } from 'react'
 import {
   Flex,
+  forwardRef,
   Input,
   Radio as ChakraRadio,
   RadioGroup,
-  RadioGroupProps as ChakraRadioProps,
-  StylesProvider,
-  useMultiStyleConfig,
-  useStyles,
+  RadioGroupProps as ChakraRadioGroupProps,
+  useRadio,
+  useRadioGroup,
+  UseRadioGroupProps,
+  UseRadioGroupReturn,
+  UseRadioProps,
   VStack,
 } from '@chakra-ui/react'
 
-export interface RadioProps extends Omit<ChakraRadioProps, 'children'> {
-  children?: React.ReactNode // Children should be optional as radio components should be created in here
+export interface RadioProps extends Omit<ChakraRadioGroupProps, 'children'> {
+  children?: React.ReactNode
   options?: string[]
   other: boolean
-  otherComponent?: JSX.Element // TODO: change type to disjunction of acceptable components
+  /**
+   * Function called once a radio is checked
+   * @param nextValue the value of the checked radio
+   */
+  onChange?: UseRadioGroupProps['onChange']
+  /**
+   * The value of the radio to be `checked`
+   * (in controlled mode)
+   *
+   */
+  value?: string
+  /**
+   * The value of the radio to be `checked` initially
+   * (in uncontrolled mode)
+   */
+  defaultValue?: string
+  /**
+   * The `name` attribute forwarded to each `radio` element
+   */
+  name: string
+}
+
+interface RadioOther extends UseRadioProps {
+  children?: React.ReactNode
 }
 
 const defaultOtherComponent = <Input placeholder="Please specify"></Input> // TODO: replace with custom input component
 
 const RadioOption = ({ option }: { option: string }): JSX.Element => {
-  const styles = useStyles()
-  return (
-    <ChakraRadio value={option} __css={styles.row}>
-      {option}
-    </ChakraRadio>
-  )
+  return <ChakraRadio value={option}>{option}</ChakraRadio>
 }
 
-const OtherOption = ({
-  component,
-}: {
-  component: JSX.Element
-}): JSX.Element => {
-  const styles = useStyles()
-  return (
-    <Flex direction="column">
-      <RadioOption option="Other" />
-      <Flex pl="48px" mt="2px">
-        {cloneElement(component, {
-          isRequired: true,
-          __css: styles.others,
-        })}
+const OtherOption = forwardRef<RadioOther, 'input'>(
+  ({ children, ...props }, ref) => {
+    const { getInputProps } = useRadio(props)
+    const input = getInputProps({}, ref)
+
+    const handleChange = useCallback(() => {
+      if (!props.isChecked && input.onChange) {
+        // eslint-disable-next-line @typescript-eslint/no-extra-semi
+        ;(input.onChange as UseRadioGroupReturn['onChange'])('Other')
+      }
+    }, [props.isChecked, input.onChange])
+
+    return (
+      <Flex direction="column">
+        <RadioOption option="Other" />
+        <Flex pl="48px" mt="2px">
+          {isValidElement(children) &&
+            cloneElement(children, {
+              onClick: handleChange,
+            })}
+        </Flex>
       </Flex>
-    </Flex>
-  )
-}
+    )
+  },
+)
 
-export const Radio = ({
-  children,
-  options,
-  other = false,
-  otherComponent = defaultOtherComponent,
-  ...props
-}: RadioProps): JSX.Element => {
-  const styles = useMultiStyleConfig('Radio', {})
+export const Radio = forwardRef<RadioProps, 'input'>(
+  (
+    { children = defaultOtherComponent, options, other = false, ...props },
+    ref,
+  ) => {
+    const { getRadioProps } = useRadioGroup(props)
+    const radio = useMemo(() => {
+      const baseProps = {
+        enterKeyHint: '',
+        id: props.name,
+      }
+      return getRadioProps({
+        value: 'Other',
+        ...baseProps,
+      })
+    }, [getRadioProps, props.name])
 
-  return (
-    <RadioGroup {...props}>
-      <StylesProvider value={styles}>
+    return (
+      <RadioGroup {...props}>
         <VStack align="left">
           {options?.map((option) => (
             <RadioOption option={option} />
           ))}
-          {other && <OtherOption component={otherComponent}></OtherOption>}
+          {other && (
+            <OtherOption {...radio} ref={ref}>
+              {children}
+            </OtherOption>
+          )}
         </VStack>
-      </StylesProvider>
-    </RadioGroup>
-  )
-}
+      </RadioGroup>
+    )
+  },
+)
