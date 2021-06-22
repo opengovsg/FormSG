@@ -1,10 +1,9 @@
 import { RequestHandler } from 'express'
 import helmet from 'helmet'
 import { ContentSecurityPolicyOptions } from 'helmet/dist/middlewares/content-security-policy'
-import { get } from 'lodash'
 
 import config from '../../config/config'
-import featureManager, { FeatureNames } from '../../config/feature-manager'
+import { sentryConfig } from '../../config/feature-manager/sentry.config'
 
 const helmetMiddlewares = () => {
   // Only add the "Strict-Transport-Security" header if request is https.
@@ -79,11 +78,7 @@ const helmetMiddlewares = () => {
     formAction: ["'self'"],
   }
 
-  const reportUri = get(
-    featureManager.props(FeatureNames.Sentry),
-    'cspReportUri',
-    undefined,
-  )
+  const reportUri = sentryConfig.cspReportUri
 
   const cspOptionalDirectives: ContentSecurityPolicyOptions['directives'] = {}
 

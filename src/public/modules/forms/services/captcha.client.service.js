@@ -27,22 +27,6 @@ function captchaService($window, vcRecaptchaService, Toastr, GTag) {
   this.widgetId = null
 
   /**
-   * Flag indicating if captcha feature is enabled on app
-   */
-  this.enabled = false
-
-  /**
-   * Set enabled flag
-   * @param {Boolean} enabled
-   */
-  this.create = function (enabled) {
-    // We cannot use setWidget() as an indication that captcha is enabled/disabled because setWidget() will not be called
-    // when captcha is enabled but captcha is blocked
-    this.enabled = enabled
-    return this.enabled
-  }
-
-  /**
    * Set widgetId
    * @param {String} widgetId
    */
@@ -77,20 +61,18 @@ function captchaService($window, vcRecaptchaService, Toastr, GTag) {
   }
 
   /**
-   * Expire captcha if captcha enabled
+   * Expire captcha
    */
   this.expire = function () {
-    if (this.enabled) {
-      vcRecaptchaService.reload(this.widgetId)
-      this.response = null
-    }
+    vcRecaptchaService.reload(this.widgetId)
+    this.response = null
   }
 
   /**
-   * Check if response has been set, assuming captcha is enabled
+   * Check if response has been set
    */
   this.isValid = function () {
-    if (this.response || !this.enabled) {
+    if (this.response) {
       return true
     } else {
       return false

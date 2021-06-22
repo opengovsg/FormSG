@@ -11,7 +11,7 @@ import {
 } from '../../types'
 
 type GroupedLogic = Record<string, IConditionSchema[][]>
-type FieldIdSet = Set<IClientFieldSchema['_id']>
+export type FieldIdSet = Set<IClientFieldSchema['_id']>
 // This module handles logic on both the client side (IFieldSchema[])
 // and server side (FieldResponse[])
 type LogicFieldSchemaOrResponse = IClientFieldSchema | FieldResponse

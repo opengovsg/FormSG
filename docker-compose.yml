@@ -39,8 +39,12 @@ services:
       - MYINFO_CLIENT_ID=mockClientId
       - MYINFO_CLIENT_SECRET=mockClientSecret
       - WEBHOOK_SQS_URL=http://localhost:4566/000000000000/local-webhooks-sqs-main
-      - GA_TRACKING_ID
-      - SENTRY_CONFIG_URL
+      - INTRANET_IP_LIST_PATH
+      - SENTRY_CONFIG_URL=https://random@sentry.io/123456
+      - CSP_REPORT_URI=https://random@sentry.io/123456
+      # This needs to be removed and replaced with a real tracking ID in a local .env file
+      # in order to enable GA in a local environment
+      - GA_TRACKING_ID=mockGATrackingId
       - TWILIO_ACCOUNT_SID
       - TWILIO_API_KEY
       - TWILIO_API_SECRET
@@ -71,7 +75,6 @@ services:
       - CORPPASS_IDP_ID
       - IS_SP_MAINTENANCE
       - IS_CP_MAINTENANCE
-      - AGGREGATE_COLLECTION
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
@@ -112,6 +115,8 @@ services:
       - './.localstack:/tmp/localstack'
       - '/var/run/docker.sock:/var/run/docker.sock'
     network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:4566 to localstack:4566
+    logging:
+      driver: none
 
   maildev:
     image: maildev/maildev

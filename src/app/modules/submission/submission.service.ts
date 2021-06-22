@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -19,6 +18,7 @@ import {
 import { createLoggerWithLabel } from '../../config/logger'
 import getSubmissionModel from '../../models/submission.server.model'
 import MailService from '../../services/mail/mail.service'
+import { AutoReplyMailData } from '../../services/mail/mail.types'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import { validateField } from '../../utils/field-validation'
 import { DatabaseError, MalformedParametersError } from '../core/core.errors'
@@ -30,49 +30,10 @@ import {
   ValidateFieldError,
 } from './submission.errors'
 import { ProcessedFieldResponse } from './submission.types'
-import { extractEmailConfirmationData, getModeFilter } from './submission.utils'
+import { getFilteredResponses } from './submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
-
-/**
- * Filter allowed form field responses from given responses and return the
- * array of responses with duplicates removed.
- *
- * @param form The form document
- * @param responses the responses that corresponds to the given form
- * @returns neverthrow ok() filtered list of allowed responses with duplicates (if any) removed
- * @returns neverthrow err(ConflictError) if the given form's form field ids count do not match given responses'
- */
-const getFilteredResponses = (
-  form: IFormDocument,
-  responses: FieldResponse[],
-): Result<FieldResponse[], ConflictError> => {
-  const modeFilter = getModeFilter(form.responseMode)
-
-  if (!form.form_fields) {
-    return err(new ConflictError('Form fields are missing'))
-  }
-  // _id must be transformed to string as form response is jsonified.
-  const fieldIds = modeFilter(form.form_fields).map((field) => ({
-    _id: String(field._id),
-  }))
-  const uniqueResponses = _.uniqBy(modeFilter(responses), '_id')
-  const results = _.intersectionBy(uniqueResponses, fieldIds, '_id')
-
-  if (results.length < fieldIds.length) {
-    const onlyInForm = _.differenceBy(fieldIds, results, '_id').map(
-      ({ _id }) => _id,
-    )
-    return err(
-      new ConflictError('Some form fields are missing', {
-        formId: form._id,
-        onlyInForm,
-      }),
-    )
-  }
-  return ok(results)
-}
 
 /**
  * Injects response metadata such as the question, visibility state. In
@@ -221,43 +182,39 @@ export const getFormSubmissionsCount = (
  * @param param0 Data to include in email confirmations
  * @param param0.form Form object
  * @param param0.submission Submission object which was saved to database
- * @param param0.parsedResponses Responses for each field
- * @param param0.autoReplyData Subset of responses to be included in email confirmation
+ * @param param0.responsesData Subset of responses to be included in email confirmation
  * @param param0.attachments Attachments to be included in email
+ * @param recipientData Array of objects that contains autoreply mail data to override with defaults
  * @returns ok(true) if all emails were sent successfully
  * @returns err(SendEmailConfirmationError) if any email failed to be sent
  */
 export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   form,
   submission,
-  parsedResponses,
-  autoReplyData,
+  responsesData = [],
   attachments,
+  recipientData,
 }: {
   form: IPopulatedForm
   submission: S
-  parsedResponses: ProcessedFieldResponse[]
-  autoReplyData?: EmailRespondentConfirmationField[]
+  responsesData?: EmailRespondentConfirmationField[]
   attachments?: IAttachmentInfo[]
+  recipientData: AutoReplyMailData[]
 }): ResultAsync<true, SendEmailConfirmationError> => {
   const logMeta = {
     action: 'sendEmailConfirmations',
     formId: form._id,
     submissionid: submission._id,
   }
-  const confirmationData = extractEmailConfirmationData(
-    parsedResponses,
-    form.form_fields,
-  )
-  if (confirmationData.length === 0) {
+  if (recipientData.length === 0) {
     return okAsync(true)
   }
   const sentEmailsPromise = MailService.sendAutoReplyEmails({
     form,
     submission,
     attachments,
-    responsesData: autoReplyData ?? [],
-    autoReplyMailDatas: confirmationData,
+    responsesData,
+    autoReplyMailDatas: recipientData,
   })
   return ResultAsync.fromPromise(sentEmailsPromise, (error) => {
     logger.error({

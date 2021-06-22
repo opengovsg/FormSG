@@ -40,7 +40,6 @@ import {
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
-import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {
@@ -65,7 +64,12 @@ import {
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
+import IncomingEncryptSubmission from '../../submission/encrypt-submission/IncomingEncryptSubmission.class'
 import * as SubmissionService from '../../submission/submission.service'
+import {
+  extractEmailConfirmationData,
+  extractEmailConfirmationDataFromIncomingSubmission,
+} from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -1409,23 +1413,22 @@ export const submitEncryptPreview: ControllerHandler<
       }),
     )
     .andThen((form) =>
-      checkIsEncryptedEncoding(encryptedContent)
-        .andThen(() => SubmissionService.getProcessedResponses(form, responses))
-        .map((parsedResponses) => ({ parsedResponses, form }))
+      IncomingEncryptSubmission.init(form, responses, encryptedContent)
+        .map((incomingSubmission) => ({ incomingSubmission, form }))
         .mapErr((error) => {
           logger.error({
-            message: 'Error while parsing responses for preview submission',
+            message: 'Error while processing incoming preview submission.',
             meta: logMeta,
             error,
           })
           return error
         }),
     )
-    .map(({ parsedResponses, form }) => {
+    .map(({ incomingSubmission, form }) => {
       const submission =
         EncryptSubmissionService.createEncryptSubmissionWithoutSave({
           form,
-          encryptedContent,
+          encryptedContent: incomingSubmission.encryptedContent,
           // Don't bother encrypting and signing mock variables for previews
           verifiedContent: '',
           version,
@@ -1433,8 +1436,11 @@ export const submitEncryptPreview: ControllerHandler<
 
       void SubmissionService.sendEmailConfirmations({
         form,
-        parsedResponses,
         submission,
+        recipientData:
+          extractEmailConfirmationDataFromIncomingSubmission(
+            incomingSubmission,
+          ),
       })
 
       // Return the reply early to the submitter
@@ -1455,7 +1461,7 @@ export const handleEncryptPreviewSubmission = [
 ] as ControllerHandler[]
 
 /**
- * Handler for POST /v2/submissions/encrypt/preview/:formId.
+ * Handler for POST /v2/submissions/email/preview/:formId.
  * @security session
  *
  * @returns 200 with a mock submission ID
@@ -1575,10 +1581,13 @@ export const submitEmailPreview: ControllerHandler<
   // this fails
   void SubmissionService.sendEmailConfirmations({
     form,
-    parsedResponses,
     submission,
     attachments,
-    autoReplyData: emailData.autoReplyData,
+    responsesData: emailData.autoReplyData,
+    recipientData: extractEmailConfirmationData(
+      parsedResponses,
+      form.form_fields,
+    ),
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',
@@ -2261,6 +2270,8 @@ export const handleUpdateCollaborators = [
           .email()
           .message('Please enter a valid email'),
         write: Joi.bool().optional(),
+        // TODO(#2177): Deprecated field in very old documents, remove when migration happens.
+        read: Joi.bool().optional(),
         _id: Joi.string().optional(),
       }),
     ),

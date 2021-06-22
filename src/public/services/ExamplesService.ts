@@ -1,6 +1,8 @@
 import axios from 'axios'
 
+import { FormMetaView, PublicForm } from '../../types'
 import {
+  DuplicateFormBody,
   ExampleFormsQueryDto,
   ExampleFormsResult,
   ExampleSingleFormResult,
@@ -20,7 +22,6 @@ export const getExampleForms = (
   return axios
     .get<ExampleFormsResult>(EXAMPLES_ENDPOINT, {
       params: exampleFormsSearchParams,
-      // disable IE ajax request caching (so search requests don't get cached)
       headers: { 'If-Modified-Since': '0' },
     })
     .then(({ data }) => data)
@@ -35,8 +36,34 @@ export const getSingleExampleForm = (
 ): Promise<ExampleSingleFormResult> => {
   return axios
     .get<ExampleSingleFormResult>(`${EXAMPLES_ENDPOINT}/${formId}`, {
-      // disable IE ajax request caching (so search requests don't get cached)
       headers: { 'If-Modified-Since': '0' },
     })
+    .then(({ data }) => data)
+}
+
+/**
+ * Used to create a new form from an existing template.
+ * @param formId formId of template to base the new form on
+ * @returns Metadata for newly created form in dashboard view
+ */
+export const useTemplate = async (
+  formId: string,
+  overrideParams: DuplicateFormBody,
+): Promise<FormMetaView> => {
+  return axios
+    .post<FormMetaView>(`${formId}/adminform/copy`, overrideParams)
+    .then(({ data }) => data)
+}
+
+/**
+ * Queries templates with use-template or examples listings. Any logged in officer is authorized.
+ * @param formId formId of template in question
+ * @returns Public view of a template
+ */
+export const queryTemplate = async (
+  formId: string,
+): Promise<{ form: PublicForm }> => {
+  return axios
+    .get<{ form: PublicForm }>(`${formId}/adminform/template`)
     .then(({ data }) => data)
 }
