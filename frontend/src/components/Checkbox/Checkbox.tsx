@@ -9,7 +9,6 @@ import {
   Input,
   useCheckbox,
   useCheckboxGroup,
-  UseCheckboxGroupProps,
   UseCheckboxGroupReturn,
   UseCheckboxProps,
   VStack,
@@ -24,26 +23,6 @@ export interface CheckboxProps extends ChakraCheckboxGroupProps {
    * Whether other option is activated. Added to allow for a default other component and will be false by default.
    */
   other: boolean
-  /**
-   * Function called once a checkbox is checked
-   * @param nextValue the value of the checked checkbox
-   */
-  onChange?: UseCheckboxGroupProps['onChange']
-  /**
-   * The value of the checkbox to be `checked`
-   * (in controlled mode)
-   *
-   */
-  value?: string[]
-  /**
-   * The value of the checkbox to be `checked` initially
-   * (in uncontrolled mode)
-   */
-  defaultValue?: string[]
-  /**
-   * The `name` attribute forwarded to each `checkbox` element
-   */
-  name: string
 }
 
 interface OthersProps extends UseCheckboxProps {

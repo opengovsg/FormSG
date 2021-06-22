@@ -8,36 +8,25 @@ import {
   RadioGroupProps as ChakraRadioGroupProps,
   useRadio,
   useRadioGroup,
-  UseRadioGroupProps,
   UseRadioGroupReturn,
   UseRadioProps,
   VStack,
 } from '@chakra-ui/react'
 
 export interface RadioProps extends Omit<ChakraRadioGroupProps, 'children'> {
+  /**
+   * Child components will be used as the other's component if other is toggled to true.
+   * This is specified here as ChakraRadioGroupProps requires children to be non-optional.
+   */
   children?: React.ReactNode
+  /**
+   * Radio options.
+   */
   options?: string[]
+  /**
+   * Whether other option is activated. Added to allow for a default other component and will be false by default.
+   */
   other: boolean
-  /**
-   * Function called once a radio is checked
-   * @param nextValue the value of the checked radio
-   */
-  onChange?: UseRadioGroupProps['onChange']
-  /**
-   * The value of the radio to be `checked`
-   * (in controlled mode)
-   *
-   */
-  value?: string
-  /**
-   * The value of the radio to be `checked` initially
-   * (in uncontrolled mode)
-   */
-  defaultValue?: string
-  /**
-   * The `name` attribute forwarded to each `radio` element
-   */
-  name: string
 }
 
 interface RadioOther extends UseRadioProps {
