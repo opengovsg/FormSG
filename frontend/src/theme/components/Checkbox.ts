@@ -3,7 +3,7 @@ import { getColor } from '@chakra-ui/theme-tools'
 
 export const Checkbox: ComponentStyleConfig = {
   parts: ['row', 'others'],
-  baseStyle: (props) => ({
+  baseStyle: ({ theme }) => ({
     control: {
       borderRadius: '0.19rem',
       border: '2px solid',
@@ -33,7 +33,7 @@ export const Checkbox: ComponentStyleConfig = {
       },
       _focusWithin: {
         borderColor: 'primary.500',
-        boxShadow: `0 0 0 2px ${getColor(props.theme, 'primary.500')}`,
+        boxShadow: `0 0 0 2px ${getColor(theme, 'primary.500')}`,
       },
     },
     others: {
