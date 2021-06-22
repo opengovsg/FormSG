@@ -16,12 +16,10 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
   )
 
   // Change colors according to colorScheme.
-  const activeBgVar = c === 'primary' ? `${c}.200` : `${c}.300`
-  const activeBorderColorVar = isLighterTheme ? `${c}.700` : `${c}.500`
-  const focusBorderColorVar = isLighterTheme ? `${c}.700` : `${c}.500`
+  const activeBorderColorVar = isLighterTheme ? `${c}.600` : `${c}.500`
+  const focusBorderColorVar = isLighterTheme ? `${c}.600` : `${c}.500`
 
   const neutral500 = getColor(theme, 'neutral.500')
-  const activeBg = getColor(theme, activeBgVar)
   const activeBorderColor = getColor(theme, activeBorderColorVar)
   const focusBorderColor = getColor(theme, focusBorderColorVar)
 
@@ -50,7 +48,7 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
       },
       _checked: {
         bg: 'neutral.300',
-        boxShadow: `0 0 0 2px ${neutral500}`,
+        boxShadow: `0 0 0 2px ${neutral500} inset`,
         borderColor: 'neutral.500',
         _hover: {
           bg: 'neutral.300',
@@ -64,16 +62,16 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
       bg: `${c}.100`,
     },
     _active: {
-      bg: activeBg,
+      bg: `${c}.300`,
       borderColor: activeBorderColor,
       boxShadow: `0 0 0 2px ${activeBorderColor} inset`,
     },
     _focus: {
       borderColor: focusBorderColor,
-      boxShadow: `0 0 0 1px ${focusBorderColor}`,
+      boxShadow: `0 0 0 1px ${focusBorderColor} inset`,
     },
     _checked: {
-      bg: activeBg,
+      bg: `${c}.200`,
       borderColor: activeBorderColor,
       boxShadow: `0 0 0 2px ${activeBorderColor} inset`,
     },
