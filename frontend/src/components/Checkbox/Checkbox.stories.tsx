@@ -4,7 +4,6 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
-  Select,
 } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
@@ -26,19 +25,6 @@ export const OthersInput = Template.bind({})
 OthersInput.args = {
   options: ['Option 1', 'Option 2', 'Option 3'],
   other: true,
-}
-
-export const OthersDropdown = Template.bind({})
-OthersDropdown.args = {
-  options: ['Option 1', 'Option 2', 'Option 3'],
-  other: true,
-  children: (
-    <Select placeholder="Select option">
-      <option value="option1">Option 1</option>
-      <option value="option2">Option 2</option>
-      <option value="option3">Option 3</option>
-    </Select>
-  ), // TODO: replace with custom dropdown component
 }
 
 export const Playground: Story = ({
@@ -77,7 +63,7 @@ export const Playground: Story = ({
           isDisabled={isDisabled}
           {...field}
         >
-          <Input placeholder="Please specify"></Input>
+          <Input placeholder="Please specify" />
         </Checkbox>
         <FormErrorMessage>
           {errors[name] && errors[name].message}

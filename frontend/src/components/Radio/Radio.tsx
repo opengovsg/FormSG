@@ -16,9 +16,9 @@ import {
 export interface RadioProps extends Omit<ChakraRadioGroupProps, 'children'> {
   /**
    * Child components will be used as the other's component if other is toggled to true.
-   * This is specified here as ChakraRadioGroupProps requires children to be non-optional.
+   * Only input components are allowed.
    */
-  children?: React.ReactNode
+  children?: ReturnType<typeof Input>
   /**
    * Radio options.
    */
@@ -57,7 +57,7 @@ const OtherOption = forwardRef<RadioOther, 'input'>(
         <Flex pl="48px" mt="2px">
           {isValidElement(children) &&
             cloneElement(children, {
-              onClick: handleChange,
+              onChange: handleChange,
             })}
         </Flex>
       </Flex>

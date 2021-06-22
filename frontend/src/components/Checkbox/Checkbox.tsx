@@ -14,7 +14,13 @@ import {
   VStack,
 } from '@chakra-ui/react'
 
-export interface CheckboxProps extends ChakraCheckboxGroupProps {
+export interface CheckboxProps
+  extends Omit<ChakraCheckboxGroupProps, 'children'> {
+  /**
+   * Child components will be used as the other's component if other is toggled to true.
+   * Only input components are allowed.
+   */
+  children?: ReturnType<typeof Input>
   /**
    * Checkbox options
    */
@@ -57,7 +63,7 @@ const OtherOption = forwardRef<OthersProps, 'input'>(
         <Flex pl="48px" mt="2px">
           {isValidElement(children) &&
             cloneElement(children, {
-              onClick: handleChange,
+              onChange: handleChange,
             })}
         </Flex>
       </Flex>
