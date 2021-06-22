@@ -59,8 +59,21 @@ export const Rating = forwardRef<RatingProps, 'input'>(
     },
     ref,
   ) => {
-    const [currentValue, setCurrentValue] =
-      useState<number | undefined>(defaultValue)
+    /**
+     * Process given defaultValue and prevents invalid numbers from being used.
+     * @param val the number to process
+     * @returns given value if value is in range [1, numberOfRatings], undefined otherwise.
+     */
+    const processDefaultValue = (val: number | undefined) => {
+      if (!val || val > numberOfRatings || val < 1) {
+        return undefined
+      }
+      return val
+    }
+
+    const [currentValue, setCurrentValue] = useState<number | undefined>(
+      processDefaultValue(defaultValue),
+    )
 
     // Call onChange everytime currentValue changes.
     useEffect(() => {
