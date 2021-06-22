@@ -19,6 +19,13 @@ Default.args = {
   name: 'some',
 }
 
+export const Selected = Template.bind({})
+Selected.args = {
+  defaultValue: 4,
+  numberOfRatings: 10,
+  name: 'some',
+}
+
 export const Playground: Story = ({
   name,
   label,
@@ -59,7 +66,9 @@ export const Playground: Story = ({
           {errors[name] && errors[name].message}
         </FormErrorMessage>
       </FormControl>
-      <Button type="submit">Submit</Button>
+      <Button type="submit" colorScheme={args.colorScheme}>
+        Submit
+      </Button>
     </form>
   )
 }
@@ -68,5 +77,6 @@ Playground.args = {
   label: 'Rating field label',
   isRequired: false,
   isDisabled: false,
+  defaultValue: 3,
   numberOfRatings: 10,
 }

@@ -1,4 +1,11 @@
-import { Fragment, KeyboardEvent, useCallback, useMemo, useState } from 'react'
+import {
+  Fragment,
+  KeyboardEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import {
   Box,
   forwardRef,
@@ -12,18 +19,32 @@ import {
 import { FieldColorScheme } from '~theme/foundations/colours'
 
 export interface RatingProps {
+  /**
+   * The `name` attribute forwarded to each rating `radio` element
+   */
   name: string
+  /**
+   * Number of rating options to render.
+   */
   numberOfRatings: number
+  /**
+   * Color scheme of the component to render. Defaults to `primary`.
+   */
   colorScheme?: FieldColorScheme
+  /**
+   * Function called once a rating is selected.
+   * @param newRating the value of the checked radio
+   */
   onChange?: (newRating: number | undefined) => void
-
   /**
    * Number of rating components to show per row when unable to display all
    * components on a single line. Defaults to `5`.
    */
   wrapComponentsPerRow?: number
-
-  initialValue?: number
+  /**
+   * The value of the rating to be `checked` initially.
+   */
+  defaultValue?: number
 }
 
 interface RatingOptionProps {
@@ -31,13 +52,26 @@ interface RatingOptionProps {
    * Color scheme of the component to render. Defaults to `primary`.
    */
   colorScheme?: FieldColorScheme
+  /**
+   * Value of the option.
+   */
   value: number
+  /**
+   * Function called once a rating is selected.
+   * @param newRating the value of the checked radio
+   */
   onChange?: (newRating: number | undefined) => void
+  /**
+   * The current selected value in the rating group.
+   */
   selectedValue?: number
+  /**
+   * The `name` attribute forwarded to the rating `radio` element
+   */
   name: string
 }
 
-const NumericalRatingOption = forwardRef<RatingOptionProps, 'div'>(
+const RatingOption = forwardRef<RatingOptionProps, 'input'>(
   (
     { colorScheme = 'primary', value, onChange, selectedValue, name, children },
     ref,
@@ -126,6 +160,10 @@ const NumericalRatingOption = forwardRef<RatingOptionProps, 'div'>(
             _hover: {
               bg: 'white',
             },
+            _active: {
+              color: 'neutral.500',
+              bg: 'white',
+            },
           }}
           _hover={{
             bg: `${colorScheme}.200`,
@@ -157,17 +195,21 @@ export const Rating = forwardRef<RatingProps, 'input'>(
       onChange,
       wrapComponentsPerRow = 5,
       name,
-      initialValue,
+      defaultValue,
     },
     ref,
   ) => {
     const [currentValue, setCurrentValue] =
-      useState<number | undefined>(initialValue)
+      useState<number | undefined>(defaultValue)
+
+    // Call onChange everytime currentValue changes.
+    useEffect(() => {
+      onChange?.(currentValue)
+    }, [currentValue, onChange])
 
     /**
-     * Used to force a breakpoint to new row on smaller screens.
-     * Unable to separate components due to weird behaviour when selecting or
-     * deselecting options.
+     * Used to check whether a new row should be created when rendering rating
+     * options.
      */
     const isSplitRows = useBreakpointValue({
       base: true,
@@ -182,35 +224,31 @@ export const Rating = forwardRef<RatingProps, 'input'>(
       [numberOfRatings],
     )
 
-    const updateCurrentValue = useCallback(
-      (value: number | undefined) => {
-        setCurrentValue(value)
-        onChange?.(value)
-      },
-      [onChange],
-    )
-
     return (
       <Wrap as="fieldset" spacing="-px">
         {options.map((value, i) => {
           return (
             <Fragment key={value}>
               <WrapItem>
-                <NumericalRatingOption
+                <RatingOption
                   name={name}
                   colorScheme={colorScheme}
                   value={value}
                   numberOfRatings={numberOfRatings}
-                  onChange={updateCurrentValue}
+                  onChange={setCurrentValue}
                   selectedValue={currentValue}
+                  // Pass in ref if first item so it can be focused.
                   {...(i === 0 ? { ref } : {})}
                 >
                   {value}
-                </NumericalRatingOption>
+                </RatingOption>
               </WrapItem>
-              {value % wrapComponentsPerRow === 0 && isSplitRows && (
-                <Box flexBasis="100%" h="0.5rem" />
-              )}
+              {
+                // Force component to begin on a new line.
+                value % wrapComponentsPerRow === 0 && isSplitRows && (
+                  <Box flexBasis="100%" h="0.5rem" />
+                )
+              }
             </Fragment>
           )
         })}
