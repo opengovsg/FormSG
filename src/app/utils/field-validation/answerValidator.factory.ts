@@ -18,6 +18,7 @@ import {
   isSectionField,
   isShortTextField,
   isTableField,
+  isUenField,
   isYesNoField,
 } from '../../../types/field/utils/guards'
 import { ResponseValidator } from '../../../types/field/utils/validation'
@@ -43,6 +44,7 @@ import { constructRatingValidator } from './validators/ratingValidator'
 import { constructSectionValidator } from './validators/sectionValidator'
 import { constructTableValidator } from './validators/tableValidator'
 import constructTextValidator from './validators/textValidator'
+import { constructUenValidator } from './validators/uenValidator'
 import { constructYesNoValidator } from './validators/yesNoValidator'
 
 /**
@@ -76,6 +78,8 @@ export const constructSingleAnswerValidator = (
     return constructDropdownValidator(formField)
   } else if (isEmailField(formField)) {
     return constructEmailValidator(formField)
+  } else if (isUenField(formField)) {
+    return constructUenValidator()
   } else if (isYesNoField(formField)) {
     return constructYesNoValidator()
   }

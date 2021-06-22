@@ -3,7 +3,6 @@ import { Router } from 'express'
 import { rateLimitConfig } from '../../../../config/config'
 import * as EmailSubmissionController from '../../../../modules/submission/email-submission/email-submission.controller'
 import * as EncryptSubmissionController from '../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
-import { CaptchaFactory } from '../../../../services/captcha/captcha.factory'
 import { limitRate } from '../../../../utils/limit-rate'
 
 export const PublicFormsSubmissionsRouter = Router()
@@ -28,7 +27,6 @@ PublicFormsSubmissionsRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/email',
 ).post(
   limitRate({ max: rateLimitConfig.submissions }),
-  CaptchaFactory.validateCaptchaParams,
   EmailSubmissionController.handleEmailSubmission,
 )
 
@@ -48,6 +46,5 @@ PublicFormsSubmissionsRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/encrypt',
 ).post(
   limitRate({ max: rateLimitConfig.submissions }),
-  CaptchaFactory.validateCaptchaParams,
   EncryptSubmissionController.handleEncryptedSubmission,
 )

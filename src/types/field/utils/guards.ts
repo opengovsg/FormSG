@@ -19,6 +19,7 @@ import {
   ISectionFieldSchema,
   IShortTextField,
   ITableFieldSchema,
+  IUenField,
   IYesNoField,
 } from '..'
 
@@ -86,6 +87,10 @@ export const isDecimalField = (
   formField: IField,
 ): formField is IDecimalField => {
   return formField.fieldType === BasicField.Decimal
+}
+
+export const isUenField = (formField: IField): formField is IUenField => {
+  return formField.fieldType === BasicField.Uen
 }
 
 export const isYesNoField = (formField: IField): formField is IYesNoField => {

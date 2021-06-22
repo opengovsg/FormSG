@@ -6,7 +6,7 @@ import { Consumer } from 'sqs-consumer'
 
 import { SubmissionWebhookInfo } from '../../../types'
 import config from '../../config/config'
-import { createLoggerWithLabel } from '../../config/logger'
+import { createLoggerWithLabel, CustomLoggerParams } from '../../config/logger'
 import { getEncryptSubmissionModel } from '../../models/submission.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { PossibleDatabaseError } from '../core/core.errors'
@@ -94,7 +94,7 @@ export const createWebhookQueueHandler =
   (producer: WebhookProducer) =>
   async (sqsMessage: aws.SQS.Message): Promise<void> => {
     const { Body, MessageId } = sqsMessage
-    const logMeta = {
+    let logMeta: CustomLoggerParams['meta'] = {
       action: 'createWebhookQueueHandler',
       MessageId,
     }
@@ -123,6 +123,10 @@ export const createWebhookQueueHandler =
       return Promise.reject()
     }
     const webhookMessage = webhookMessageResult.value
+    logMeta = {
+      ...logMeta,
+      webhookMessage: webhookMessage.prettify(),
+    }
 
     // If not due, requeue
     if (!webhookMessage.isDue()) {
@@ -134,10 +138,7 @@ export const createWebhookQueueHandler =
       if (requeueResult.isErr()) {
         logger.error({
           message: 'Webhook queue message could not be requeued',
-          meta: {
-            ...logMeta,
-            webhookMessage: webhookMessage.prettify(),
-          },
+          meta: logMeta,
           error: requeueResult.error,
         })
         // Reject so message is moved to DLQ
@@ -159,6 +160,10 @@ export const createWebhookQueueHandler =
       | WebhookPushToQueueError
     >((webhookInfo) => {
       const { webhookUrl, isRetryEnabled } = webhookInfo
+      logMeta = {
+        ...logMeta,
+        formId: webhookInfo.webhookView.data.formId,
+      }
       // Webhook URL was deleted or retries disabled
       if (!webhookUrl || !isRetryEnabled)
         return errAsync(
@@ -191,10 +196,10 @@ export const createWebhookQueueHandler =
     // Special handling for max retries exceeded - log a separate message
     // and resolve Promise so that message is removed from queue
     if (retryResult.error instanceof WebhookNoMoreRetriesError) {
-      logger.warn({
+      logger.error({
         message: 'Maximum retries exceeded for webhook',
         meta: {
-          action: 'createWebhookQueueHandler',
+          ...logMeta,
           webhookMessage: webhookMessage.getRetriesFailedState(),
         },
       })
@@ -205,20 +210,14 @@ export const createWebhookQueueHandler =
     if (retryResult.error instanceof WebhookRetriesNotEnabledError) {
       logger.warn({
         message: 'Webhook retries no longer enabled on form',
-        meta: {
-          action: 'createWebhookQueueHandler',
-          webhookMessage: webhookMessage.prettify(),
-        },
+        meta: logMeta,
       })
       return Promise.resolve()
     }
     // Remaining cases are unexpected errors, move to DLQ
     logger.error({
       message: 'Error while attempting to retry webhook',
-      meta: {
-        action: 'createWebhookQueueHandler',
-        webhookMessage: webhookMessage.prettify(),
-      },
+      meta: logMeta,
       error: retryResult.error,
     })
     // Reject so retry can be moved to dead-letter queue

@@ -2270,8 +2270,6 @@ export const handleUpdateCollaborators = [
           .email()
           .message('Please enter a valid email'),
         write: Joi.bool().optional(),
-        // TODO(#2177): Deprecated field in very old documents, remove when migration happens.
-        read: Joi.bool().optional(),
         _id: Joi.string().optional(),
       }),
     ),

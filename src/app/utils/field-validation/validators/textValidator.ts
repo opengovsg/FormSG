@@ -19,8 +19,7 @@ type TextFieldValidatorConstructor = (
  */
 const minLengthValidator: TextFieldValidatorConstructor =
   (textField) => (response) => {
-    const { customMin } = textField.ValidationOptions
-    const min = customMin !== null ? Number(customMin) : null
+    const { customVal: min } = textField.ValidationOptions
     if (min === null) return right(response)
     return response.answer.length >= min
       ? right(response)
@@ -33,8 +32,7 @@ const minLengthValidator: TextFieldValidatorConstructor =
  */
 const maxLengthValidator: TextFieldValidatorConstructor =
   (textField) => (response) => {
-    const { customMax } = textField.ValidationOptions
-    const max = customMax !== null ? Number(customMax) : null
+    const { customVal: max } = textField.ValidationOptions
     if (max === null) return right(response)
     return response.answer.length <= max
       ? right(response)
@@ -49,13 +47,7 @@ const maxLengthValidator: TextFieldValidatorConstructor =
  */
 const exactLengthValidator: TextFieldValidatorConstructor =
   (textField) => (response) => {
-    const { customMin, customMax } = textField.ValidationOptions
-    const exact =
-      customMin !== null
-        ? Number(customMin)
-        : customMax !== null
-        ? Number(customMax)
-        : null
+    const { customVal: exact } = textField.ValidationOptions
     if (exact === null) return right(response)
     return response.answer.length === exact
       ? right(response)

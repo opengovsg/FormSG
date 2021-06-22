@@ -18,7 +18,8 @@ import {
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
-import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
+import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
+import * as CaptchaService from '../../../services/captcha/captcha.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import {
@@ -30,7 +31,7 @@ import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
-import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
+import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import { sendEmailConfirmations } from '../submission.service'
@@ -131,7 +132,7 @@ const submitEncryptModeForm: ControllerHandler<
 
   // Check captcha
   if (form.hasCaptcha) {
-    const captchaResult = await CaptchaFactory.verifyCaptchaResponse(
+    const captchaResult = await CaptchaService.verifyCaptchaResponse(
       req.query.captchaResponse,
       getRequestIp(req),
     )
@@ -250,11 +251,11 @@ const submitEncryptModeForm: ControllerHandler<
   let verified
   if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
     const encryptVerifiedContentResult =
-      VerifiedContentFactory.getVerifiedContent({
+      VerifiedContentService.getVerifiedContent({
         type: form.authType,
         data: { uinFin, userInfo },
       }).andThen((verifiedContent) =>
-        VerifiedContentFactory.encryptVerifiedContent({
+        VerifiedContentService.encryptVerifiedContent({
           verifiedContent,
           formPublicKey: form.publicKey,
         }),
@@ -373,6 +374,7 @@ const submitEncryptModeForm: ControllerHandler<
 }
 
 export const handleEncryptedSubmission = [
+  CaptchaMiddleware.validateCaptchaParams,
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   submitEncryptModeForm,
 ] as ControllerHandler[]

@@ -162,7 +162,18 @@
   margin-left: 20px;
 }
 
-#landing #landing-hero #landing-banner #main #main-left #stats .stat-counts div,
+#landing
+  #landing-hero
+  #landing-banner
+  #main
+  #main-left
+  #stats
+  .stat-counts
+  div {
+  text-align: right;
+  margin-bottom: 25px;
+}
+
 #landing
   #landing-hero
   #landing-banner
