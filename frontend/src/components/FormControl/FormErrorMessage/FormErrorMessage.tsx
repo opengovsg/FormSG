@@ -4,7 +4,7 @@ import {
   FormErrorMessageProps as ChakraFormErrorMessageProps,
 } from '@chakra-ui/react'
 
-import { ErrorCircleSolid } from '~assets/icons'
+import { BxsErrorCircle } from '~assets/icons'
 
 export type FormErrorMessageProps = ChakraFormErrorMessageProps
 
@@ -21,7 +21,7 @@ export const FormErrorMessage = ({
 }: FormErrorMessageProps): JSX.Element => {
   return (
     <ChakraFormErrorMessage alignItems="top" {...props}>
-      <FormErrorIcon h="1.5rem" as={ErrorCircleSolid} />
+      <FormErrorIcon h="1.5rem" as={BxsErrorCircle} />
       {children}
     </ChakraFormErrorMessage>
   )

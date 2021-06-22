@@ -1,6 +1,6 @@
 // Retrieved from https://reactsvgicons.com/boxicons
 
-export const CheckCircleSolid = (
+export const BxsErrorCircle = (
   props: React.SVGProps<SVGSVGElement>,
 ): JSX.Element => {
   return (
@@ -11,7 +11,7 @@ export const CheckCircleSolid = (
       width="1em"
       {...props}
     >
-      <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm-1.999 14.413l-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706z" />
+      <path d="M11.953 2C6.465 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.493 2 11.953 2zM13 17h-2v-2h2v2zm0-4h-2V7h2v6z" />
     </svg>
   )
 }

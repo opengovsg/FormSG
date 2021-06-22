@@ -1,2 +1,2 @@
-export * from './CheckCircleSolid'
-export * from './ErrorCircleSolid'
+export * from './BxsCheckCircle'
+export * from './BxsErrorCircle'

@@ -1,6 +1,6 @@
 import { FormHelperText, HelpTextProps, Icon } from '@chakra-ui/react'
 
-import { CheckCircleSolid } from '~assets/icons'
+import { BxsCheckCircle } from '~assets/icons'
 
 export interface FormFieldMessageProps extends HelpTextProps {
   /**
@@ -35,7 +35,7 @@ export const FormFieldMessage = ({
           color={fontColor}
           fontSize="1rem"
           h="1.5rem"
-          as={CheckCircleSolid}
+          as={BxsCheckCircle}
           mr={2}
         />
       )}
