@@ -6,6 +6,7 @@ import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
 import { types as myInfoTypes } from '../../../shared/resources/myinfo'
+import { hasProp } from '../../../shared/util/has-prop'
 import {
   AuthType,
   BasicField,
@@ -16,7 +17,6 @@ import {
   MapRouteError,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
-import { hasProp } from '../../utils/has-prop'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import {
   AuthTypeMismatchError,
