@@ -7,10 +7,12 @@ import { Response } from './csv-response-classes'
 import { CsvGenerator } from './CsvGenerator'
 import { getResponseInstance } from './response-factory'
 
+type KeyedResponse = { [fieldId: string]: Response }
+
 type UnprocessedRecord = {
   created: string
   submissionId: string
-  record: { [fieldId: string]: Response }
+  record: KeyedResponse
 }
 
 type SubmissionRecord = {
@@ -139,7 +141,7 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
    * @returns string representation of unprocessed record
    */
   private _extractAnswer(
-    unprocessedRecord: { [fieldId: string]: Response },
+    unprocessedRecord: KeyedResponse,
     fieldId: string,
     colIndex: number,
   ): string {
