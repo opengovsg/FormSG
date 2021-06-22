@@ -1,5 +1,6 @@
 import {
   Fragment,
+  HTMLProps,
   KeyboardEvent,
   useCallback,
   useEffect,
@@ -17,6 +18,104 @@ import {
 } from '@chakra-ui/react'
 
 import { FieldColorScheme } from '~theme/foundations/colours'
+
+interface RatingComponent {
+  /**
+   * Radio styling props to spread on container.
+   */
+  checkbox: Omit<HTMLProps<any>, never>
+  /**
+   * Whether component is checked.
+   */
+  isChecked: boolean
+  /**
+   * ID of the input this component is rendering for.
+   */
+  inputId: string | undefined
+  /**
+   * Color scheme of the component to render. Defaults to `primary`.
+   */
+  colorScheme?: FieldColorScheme
+
+  children?: React.ReactNode
+}
+const NumberRating = ({
+  checkbox,
+  inputId,
+  isChecked,
+  colorScheme = 'primary',
+  children,
+}: RatingComponent): JSX.Element => {
+  const themeColorVar = useMemo(() => {
+    switch (colorScheme) {
+      case 'theme-red':
+      case 'theme-orange':
+      case 'theme-yellow':
+        return `${colorScheme}.700`
+      default:
+        return `${colorScheme}.500`
+    }
+  }, [colorScheme])
+
+  const themeColor = useToken('colors', themeColorVar)
+
+  return (
+    <Box
+      {...checkbox}
+      as="label"
+      htmlFor={inputId}
+      aria-hidden={false}
+      {...(isChecked ? { 'data-checked': '' } : {})}
+      minW="3.25rem"
+      display="flex"
+      justifyContent="center"
+      transitionProperty="common"
+      transitionDuration="normal"
+      cursor="pointer"
+      py="10px"
+      px="14px"
+      bg="white"
+      borderWidth="1px"
+      borderColor={themeColor}
+      color={themeColor}
+      _disabled={{
+        borderColor: 'neutral.500',
+        color: 'neutral.500',
+        cursor: 'not-allowed',
+
+        _checked: {
+          bg: 'neutral.500',
+          _hover: {
+            bg: 'neutral.500',
+          },
+        },
+        _hover: {
+          bg: 'white',
+        },
+        _active: {
+          color: 'neutral.500',
+          bg: 'white',
+        },
+      }}
+      _hover={{
+        bg: `${colorScheme}.200`,
+      }}
+      _active={{
+        bg: themeColor,
+        color: 'white',
+      }}
+      _focus={{
+        boxShadow: `0 0 0 4px var(--chakra-colors-${colorScheme}-300)`,
+      }}
+      _checked={{
+        bg: themeColor,
+        color: 'white',
+      }}
+    >
+      {children}
+    </Box>
+  )
+}
 
 export interface RatingProps {
   /**
@@ -45,6 +144,11 @@ export interface RatingProps {
    * The value of the rating to be `checked` initially.
    */
   defaultValue?: number
+
+  /**
+   * Variant of rating field to render
+   */
+  variant: 'Heart' | 'Star' | 'Number'
 }
 
 interface RatingOptionProps {
@@ -69,11 +173,24 @@ interface RatingOptionProps {
    * The `name` attribute forwarded to the rating `radio` element
    */
   name: string
+
+  /**
+   * Variant of rating field to render
+   */
+  variant: 'Heart' | 'Star' | 'Number'
 }
 
 const RatingOption = forwardRef<RatingOptionProps, 'input'>(
   (
-    { colorScheme = 'primary', value, onChange, selectedValue, name, children },
+    {
+      children,
+      colorScheme = 'primary',
+      name,
+      onChange,
+      selectedValue,
+      value,
+      variant,
+    },
     ref,
   ) => {
     const handleSelect = useCallback(() => {
@@ -105,18 +222,15 @@ const RatingOption = forwardRef<RatingOptionProps, 'input'>(
     const input = getInputProps()
     const checkbox = getCheckboxProps()
 
-    const themeColorVar = useMemo(() => {
-      switch (colorScheme) {
-        case 'theme-red':
-        case 'theme-orange':
-        case 'theme-yellow':
-          return `${colorScheme}.700`
+    const ComponentToRender = useMemo(() => {
+      switch (variant) {
+        case 'Number':
+        case 'Heart':
+        case 'Star':
         default:
-          return `${colorScheme}.500`
+          return NumberRating
       }
-    }, [colorScheme])
-
-    const themeColor = useToken('colors', themeColorVar)
+    }, [variant])
 
     return (
       <Box _active={{ zIndex: 1 }} _focusWithin={{ zIndex: 1 }}>
@@ -128,60 +242,14 @@ const RatingOption = forwardRef<RatingOptionProps, 'input'>(
           onKeyDown={handleSpacebar}
           ref={ref}
         />
-        <Box
-          as="label"
-          htmlFor={input.id}
-          {...checkbox}
-          aria-hidden={false}
-          {...(selectedValue === value ? { 'data-checked': '' } : {})}
-          minW="3.25rem"
-          display="flex"
-          justifyContent="center"
-          transitionProperty="common"
-          transitionDuration="normal"
-          cursor="pointer"
-          py="10px"
-          px="14px"
-          bg="white"
-          borderWidth="1px"
-          borderColor={themeColor}
-          color={themeColor}
-          _disabled={{
-            borderColor: 'neutral.500',
-            color: 'neutral.500',
-            cursor: 'not-allowed',
-
-            _checked: {
-              bg: 'neutral.500',
-              _hover: {
-                bg: 'neutral.500',
-              },
-            },
-            _hover: {
-              bg: 'white',
-            },
-            _active: {
-              color: 'neutral.500',
-              bg: 'white',
-            },
-          }}
-          _hover={{
-            bg: `${colorScheme}.200`,
-          }}
-          _active={{
-            bg: themeColor,
-            color: 'white',
-          }}
-          _focus={{
-            boxShadow: `0 0 0 4px var(--chakra-colors-${colorScheme}-300)`,
-          }}
-          _checked={{
-            bg: themeColor,
-            color: 'white',
-          }}
+        <ComponentToRender
+          checkbox={checkbox}
+          isChecked={selectedValue === value}
+          colorScheme={colorScheme}
+          inputId={input.id}
         >
           {children}
-        </Box>
+        </ComponentToRender>
       </Box>
     )
   },
@@ -190,12 +258,13 @@ const RatingOption = forwardRef<RatingOptionProps, 'input'>(
 export const Rating = forwardRef<RatingProps, 'input'>(
   (
     {
-      numberOfRatings,
       colorScheme = 'primary',
-      onChange,
-      wrapComponentsPerRow = 5,
-      name,
       defaultValue,
+      name,
+      numberOfRatings,
+      onChange,
+      variant,
+      wrapComponentsPerRow = 5,
     },
     ref,
   ) => {
@@ -232,6 +301,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
               <WrapItem>
                 <RatingOption
                   name={name}
+                  variant={variant}
                   colorScheme={colorScheme}
                   value={value}
                   numberOfRatings={numberOfRatings}

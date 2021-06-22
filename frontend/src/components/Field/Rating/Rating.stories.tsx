@@ -16,6 +16,7 @@ const Template: Story<RatingProps> = (args) => <Rating {...args} />
 export const Default = Template.bind({})
 Default.args = {
   numberOfRatings: 10,
+  variant: 'Number',
   name: 'some',
 }
 
@@ -23,6 +24,7 @@ export const Selected = Template.bind({})
 Selected.args = {
   defaultValue: 4,
   numberOfRatings: 10,
+  variant: 'Number',
   name: 'some',
 }
 
@@ -31,6 +33,7 @@ export const Playground: Story = ({
   label,
   isDisabled,
   isRequired,
+  variant,
   numberOfRatings,
   ...args
 }) => {
@@ -57,6 +60,7 @@ export const Playground: Story = ({
       >
         <FormLabel htmlFor={name}>{label}</FormLabel>
         <Rating
+          variant={variant}
           numberOfRatings={numberOfRatings}
           {...args}
           isDisabled={isDisabled}
@@ -79,4 +83,5 @@ Playground.args = {
   isDisabled: false,
   defaultValue: 3,
   numberOfRatings: 10,
+  variant: 'Number',
 }
