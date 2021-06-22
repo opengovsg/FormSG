@@ -1,3 +1,5 @@
+import { BasicField } from 'src/types/field'
+
 import { hasProp } from '../../../../shared/util/has-prop'
 import {
   ArrayResponse,
@@ -24,12 +26,12 @@ export const getResponseInstance = (
 ): Response => {
   if (
     isNestedResponse(fieldRecordData) &&
-    fieldRecordData.fieldType === 'table'
+    fieldRecordData.fieldType === BasicField.Table
   ) {
     return new TableResponse(fieldRecordData)
   } else if (
     isArrayResponse(fieldRecordData) &&
-    fieldRecordData.fieldType === 'checkbox'
+    fieldRecordData.fieldType === BasicField.Checkbox
   ) {
     return new ArrayAnswerResponse(fieldRecordData)
   } else if (isSingleResponse(fieldRecordData)) {
