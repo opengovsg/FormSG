@@ -33,18 +33,13 @@
     </div>
   </div>
   <br />
-  <div
-    ng-if="adminVerifiedSmsState == 'LIMIT_EXCEEDED'"
-    class="alert-custom alert-info alert-margin"
-  >
-    <small>
-      <i class="bx bx-info-circle bx-md icon-spacing"></i>
-      <span class="alert-msg">
-        You have exceeded the limit for sms verification!
-        <a href="{{twilioSetupLink}}" target="_blank" class="">
-          Please arrange advance billing with us.
-        </a>
-      </span>
-    </small>
+  <div class="alert-custom alert-error">
+    <i class="bx bx-exclamation bx-md icon-spacing"></i>
+    <span class="alert-msg"
+      >You have exceeded the limit for sms verification!
+      <a href="{{twilioSetupLink}}" target="_blank" class="">
+        Please arrange advance billing with us.
+      </a></span
+    >
   </div>
 </div>
