@@ -2,15 +2,7 @@ import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import { Schema } from 'convict'
 
 export enum FeatureNames {
-  Sms = 'sms',
   SpcpMyInfo = 'spcp-myinfo',
-}
-
-export interface ISms {
-  twilioAccountSid: string
-  twilioApiKey: string
-  twilioApiSecret: string
-  twilioMsgSrvcSid: string
 }
 
 export interface ISpcpConfig {
@@ -49,7 +41,6 @@ export interface IMyInfoConfig {
 export type ISpcpMyInfo = ISpcpConfig & IMyInfoConfig
 
 export interface IFeatureManager {
-  [FeatureNames.Sms]: ISms
   [FeatureNames.SpcpMyInfo]: ISpcpMyInfo
 }
 
