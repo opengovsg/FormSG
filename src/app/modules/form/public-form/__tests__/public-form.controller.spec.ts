@@ -35,14 +35,14 @@ import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import * as AuthService from '../../../auth/auth.service'
 import { MyInfoCookieStateError } from '../../../myinfo/myinfo.errors'
-import { MyInfoFactory } from '../../../myinfo/myinfo.factory'
+import { MyInfoService } from '../../../myinfo/myinfo.service'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
   LoginPageValidationError,
   MissingJwtError,
 } from '../../../spcp/spcp.errors'
-import { SpcpFactory } from '../../../spcp/spcp.factory'
+import { SpcpService } from '../../../spcp/spcp.service'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
@@ -58,14 +58,14 @@ import { Metatags } from '../public-form.types'
 jest.mock('../public-form.service')
 jest.mock('../../form.service')
 jest.mock('../../../auth/auth.service')
-jest.mock('../../../spcp/spcp.factory')
-jest.mock('../../../myinfo/myinfo.factory')
+jest.mock('../../../spcp/spcp.service')
+jest.mock('../../../myinfo/myinfo.service')
 
 const MockFormService = mocked(FormService)
 const MockPublicFormService = mocked(PublicFormService)
 const MockAuthService = mocked(AuthService)
-const MockSpcpFactory = mocked(SpcpFactory, true)
-const MockMyInfoFactory = mocked(MyInfoFactory, true)
+const MockSpcpService = mocked(SpcpService, true)
+const MockMyInfoService = mocked(MyInfoService, true)
 
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
 
@@ -531,7 +531,7 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
         )
-        MockSpcpFactory.extractJwtPayloadFromRequest.mockReturnValueOnce(
+        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
           okAsync(MOCK_SPCP_SESSION),
         )
 
@@ -565,7 +565,7 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
-        MockSpcpFactory.extractJwtPayloadFromRequest.mockReturnValueOnce(
+        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
           okAsync(MOCK_SPCP_SESSION),
         )
         // Act
@@ -605,10 +605,10 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
-        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_DATA),
         )
-        MockMyInfoFactory.prefillAndSaveMyInfoFields.mockReturnValueOnce(
+        MockMyInfoService.prefillAndSaveMyInfoFields.mockReturnValueOnce(
           okAsync([]),
         )
 
@@ -658,7 +658,7 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
           errAsync(new MyInfoMissingAccessTokenError()),
         )
 
@@ -685,7 +685,7 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
           errAsync(new MyInfoCookieAccessError()),
         )
 
@@ -712,7 +712,7 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
           errAsync(new MyInfoCookieStateError()),
         )
 
@@ -739,7 +739,7 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
           errAsync(new AuthTypeMismatchError()),
         )
 
@@ -766,7 +766,7 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
           errAsync(new FormAuthNoEsrvcIdError()),
         )
 
@@ -793,7 +793,7 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
           errAsync(
             new MissingFeatureError(
               'testing is the missing feature' as FeatureNames,
@@ -827,10 +827,10 @@ describe('public-form.controller', () => {
         const mockRes = expressHandler.mockResponse({
           clearCookie: jest.fn().mockReturnThis(),
         })
-        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_DATA),
         )
-        MockMyInfoFactory.prefillAndSaveMyInfoFields.mockReturnValueOnce(
+        MockMyInfoService.prefillAndSaveMyInfoFields.mockReturnValueOnce(
           errAsync(expected),
         )
 
@@ -867,7 +867,7 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SPCP_FORM),
         )
-        MockSpcpFactory.extractJwtPayloadFromRequest.mockReturnValueOnce(
+        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
           errAsync(new MissingJwtError()),
         )
 
@@ -1037,7 +1037,7 @@ describe('public-form.controller', () => {
 
         const mockRes = expressHandler.mockResponse()
 
-        MockSpcpFactory.extractJwtPayloadFromRequest.mockReturnValueOnce(
+        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
           okAsync(MOCK_SPCP_SESSION),
         )
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
@@ -1073,7 +1073,7 @@ describe('public-form.controller', () => {
         const mockRes = expressHandler.mockResponse()
 
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
-        MockSpcpFactory.extractJwtPayloadFromRequest.mockReturnValueOnce(
+        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
           okAsync(MOCK_SPCP_SESSION),
         )
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
@@ -1122,10 +1122,10 @@ describe('public-form.controller', () => {
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
-        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_DATA),
         )
-        MockMyInfoFactory.prefillAndSaveMyInfoFields.mockReturnValueOnce(
+        MockMyInfoService.prefillAndSaveMyInfoFields.mockReturnValueOnce(
           okAsync([]),
         )
 
@@ -1169,7 +1169,7 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
 
@@ -1200,7 +1200,7 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
 
@@ -1234,7 +1234,7 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
 
@@ -1261,7 +1261,7 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
 
@@ -1289,7 +1289,7 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockMyInfoFactory.createRedirectURL.mockReturnValueOnce(
+      MockMyInfoService.createRedirectURL.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
 
@@ -1443,7 +1443,7 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         err(new CreateRedirectUrlError()),
       )
 
@@ -1472,7 +1472,7 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockMyInfoFactory.createRedirectURL.mockReturnValueOnce(
+      MockMyInfoService.createRedirectURL.mockReturnValueOnce(
         err(new MissingFeatureError('Redirect url')),
       )
 
@@ -1508,13 +1508,13 @@ describe('public-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const expectedResBody = { isValid: true }
       MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
-      MockSpcpFactory.fetchLoginPage.mockReturnValueOnce(
+      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
         okAsync('this is raw html'),
       )
-      MockSpcpFactory.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
+      MockSpcpService.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
 
       // Act
       await PublicFormController.handleValidateFormEsrvcId(
@@ -1537,13 +1537,13 @@ describe('public-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const expectedResBody = { isValid: true }
       MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
-      MockSpcpFactory.fetchLoginPage.mockReturnValueOnce(
+      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
         okAsync('this is raw html'),
       )
-      MockSpcpFactory.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
+      MockSpcpService.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
 
       // Act
       await PublicFormController.handleValidateFormEsrvcId(
@@ -1565,13 +1565,13 @@ describe('public-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const expectedResBody = { isValid: false, errorCode: '138' }
       MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
-      MockSpcpFactory.fetchLoginPage.mockReturnValueOnce(
+      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
         okAsync('this is raw html'),
       )
-      MockSpcpFactory.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
+      MockSpcpService.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
 
       // Act
       await PublicFormController.handleValidateFormEsrvcId(
@@ -1594,13 +1594,13 @@ describe('public-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const expectedResBody = { isValid: false, errorCode: '138' }
       MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
-      MockSpcpFactory.fetchLoginPage.mockReturnValueOnce(
+      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
         okAsync('this is raw html'),
       )
-      MockSpcpFactory.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
+      MockSpcpService.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
 
       // Act
       await PublicFormController.handleValidateFormEsrvcId(
@@ -1722,11 +1722,11 @@ describe('public-form.controller', () => {
         message: 'Error while contacting SingPass. Please try again.',
       }
       MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
-      MockSpcpFactory.fetchLoginPage.mockReturnValue(okAsync(''))
-      MockSpcpFactory.validateLoginPage.mockReturnValueOnce(
+      MockSpcpService.fetchLoginPage.mockReturnValue(okAsync(''))
+      MockSpcpService.validateLoginPage.mockReturnValueOnce(
         err(new LoginPageValidationError()),
       )
 
@@ -1775,7 +1775,7 @@ describe('public-form.controller', () => {
         message: 'Sorry, something went wrong. Please try again.',
       }
       MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         err(new CreateRedirectUrlError()),
       )
 
@@ -1802,10 +1802,10 @@ describe('public-form.controller', () => {
         message: 'Failed to contact SingPass. Please try again.',
       }
       MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
-      MockSpcpFactory.fetchLoginPage.mockReturnValue(
+      MockSpcpService.fetchLoginPage.mockReturnValue(
         errAsync(new FetchLoginPageError()),
       )
 

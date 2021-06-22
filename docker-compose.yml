@@ -33,11 +33,6 @@ services:
       - SEND_AUTH_OTP_RATE_LIMIT=60
       - SES_PORT=25
       - SES_HOST=maildev
-      - MYINFO_CLIENT_CONFIG=dev
-      - MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-      - MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
-      - MYINFO_CLIENT_ID=mockClientId
-      - MYINFO_CLIENT_SECRET=mockClientSecret
       - WEBHOOK_SQS_URL=http://localhost:4566/000000000000/local-webhooks-sqs-main
       - INTRANET_IP_LIST_PATH
       - SENTRY_CONFIG_URL=https://random@sentry.io/123456
@@ -60,28 +55,34 @@ services:
       - TWILIO_API_KEY=mockTwilioApiKey
       - TWILIO_API_SECRET=mockTwilioApiSecret
       - TWILIO_MESSAGING_SERVICE_SID=mockTwilioMsgSrvcSid
+      # Use mockpass key pairs and endpoints
+      - SP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
+      - SP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
+      - SP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
+      - SINGPASS_IDP_LOGIN_URL=http://localhost:5156/singpass/logininitial
+      - SINGPASS_IDP_ENDPOINT=http://localhost:5156/singpass/soap
+      - SINGPASS_ESRVC_ID=spEsrvcId
+      - SINGPASS_PARTNER_ENTITY_ID=https://localhost:5000/singpass
+      - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
+      - CP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
+      - CP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
+      - CP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
+      - CORPPASS_IDP_LOGIN_URL=http://localhost:5156/corppass/logininitial
+      - CORPPASS_IDP_ENDPOINT=http://localhost:5156/corppass/soap
+      - CORPPASS_PARTNER_ENTITY_ID=https://localhost:5000/corppass
+      - CORPPASS_ESRVC_ID=cpEsrvcId
+      - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
+      - IS_SP_MAINTENANCE
+      - IS_CP_MAINTENANCE
+      - MYINFO_CLIENT_CONFIG=dev
+      - MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
+      - MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
+      - MYINFO_CLIENT_ID=mockClientId
+      - MYINFO_CLIENT_SECRET=mockClientSecret
       - SES_PASS
       - SES_USER
       - OTP_LIFE_SPAN
       - AWS_REGION
-      - SP_FORMSG_KEY_PATH
-      - SP_FORMSG_CERT_PATH
-      - SP_IDP_CERT_PATH
-      - SINGPASS_IDP_LOGIN_URL
-      - SINGPASS_IDP_ENDPOINT
-      - SINGPASS_ESRVC_ID
-      - SINGPASS_PARTNER_ENTITY_ID
-      - SINGPASS_IDP_ID
-      - CP_FORMSG_KEY_PATH
-      - CP_FORMSG_CERT_PATH
-      - CP_IDP_CERT_PATH
-      - CORPPASS_IDP_LOGIN_URL
-      - CORPPASS_IDP_ENDPOINT
-      - CORPPASS_PARTNER_ENTITY_ID
-      - CORPPASS_ESRVC_ID
-      - CORPPASS_IDP_ID
-      - IS_SP_MAINTENANCE
-      - IS_CP_MAINTENANCE
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git

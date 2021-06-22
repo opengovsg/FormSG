@@ -5,13 +5,13 @@ import { AuthType } from '../../../types'
 import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
-import { BillingFactory } from '../billing/billing.factory'
+import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
-import { SpcpFactory } from '../spcp/spcp.factory'
+import { SpcpService } from '../spcp/spcp.service'
 
 import { MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS } from './myinfo.constants'
-import { MyInfoFactory } from './myinfo.factory'
+import { MyInfoService } from './myinfo.service'
 import { MyInfoCookiePayload, MyInfoCookieState } from './myinfo.types'
 import {
   mapEServiceIdCheckError,
@@ -49,7 +49,7 @@ export const respondWithRedirectURL: ControllerHandler<
   return FormService.retrieveFormById(formId)
     .andThen((form) => validateMyInfoForm(form))
     .andThen((form) =>
-      MyInfoFactory.createRedirectURL({
+      MyInfoService.createRedirectURL({
         formEsrvcId: form.esrvcId,
         formId,
         requestedAttributes: form.getUniqueMyInfoAttrs(),
@@ -106,10 +106,10 @@ export const checkMyInfoEServiceId: ControllerHandler<
   return FormService.retrieveFormById(formId)
     .andThen((form) => validateMyInfoForm(form))
     .andThen((form) =>
-      SpcpFactory.createRedirectUrl(AuthType.SP, formId, form.esrvcId),
+      SpcpService.createRedirectUrl(AuthType.SP, formId, form.esrvcId),
     )
-    .andThen(SpcpFactory.fetchLoginPage)
-    .andThen(SpcpFactory.validateLoginPage)
+    .andThen(SpcpService.fetchLoginPage)
+    .andThen(SpcpService.validateLoginPage)
     .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
       logger.error({
@@ -184,7 +184,7 @@ export const loginToMyInfo: ControllerHandler<
     action: 'loginToMyInfo',
     state,
   }
-  const parseStateResult = MyInfoFactory.parseMyInfoRelayState(state)
+  const parseStateResult = MyInfoService.parseMyInfoRelayState(state)
   if (parseStateResult.isErr()) {
     logger.error({
       message: 'Invalid MyInfo login query parameters',
@@ -239,7 +239,7 @@ export const loginToMyInfo: ControllerHandler<
   }
 
   // Consent flow successful, hence code is present
-  const accessTokenResult = await MyInfoFactory.retrieveAccessToken(
+  const accessTokenResult = await MyInfoService.retrieveAccessToken(
     req.query.code,
   )
   if (accessTokenResult.isErr()) {
@@ -255,7 +255,7 @@ export const loginToMyInfo: ControllerHandler<
 
   // Once access token is retrieved, the request is assured to be legitimate,
   // so add the login
-  return BillingFactory.recordLoginByForm(form)
+  return BillingService.recordLoginByForm(form)
     .map(() => {
       const cookiePayload: MyInfoCookiePayload = {
         accessToken,

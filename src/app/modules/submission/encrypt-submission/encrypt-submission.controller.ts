@@ -29,7 +29,7 @@ import {
 import { ControllerHandler } from '../../core/core.types'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
-import { SpcpFactory } from '../../spcp/spcp.factory'
+import { SpcpService } from '../../spcp/spcp.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { WebhookFactory } from '../../webhook/webhook.factory'
@@ -201,10 +201,10 @@ const submitEncryptModeForm: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     }
     case AuthType.SP: {
-      const jwtPayloadResult = await SpcpFactory.extractJwt(
+      const jwtPayloadResult = await SpcpService.extractJwt(
         req.cookies,
         authType,
-      ).asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
+      ).asyncAndThen((jwt) => SpcpService.extractSingpassJwtPayload(jwt))
       if (jwtPayloadResult.isErr()) {
         const { statusCode, errorMessage } = mapRouteError(
           jwtPayloadResult.error,
@@ -223,10 +223,10 @@ const submitEncryptModeForm: ControllerHandler<
       break
     }
     case AuthType.CP: {
-      const jwtPayloadResult = await SpcpFactory.extractJwt(
+      const jwtPayloadResult = await SpcpService.extractJwt(
         req.cookies,
         authType,
-      ).asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
+      ).asyncAndThen((jwt) => SpcpService.extractCorppassJwtPayload(jwt))
       if (jwtPayloadResult.isErr()) {
         const { statusCode, errorMessage } = mapRouteError(
           jwtPayloadResult.error,

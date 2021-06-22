@@ -5,10 +5,7 @@ import { err, errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
-import {
-  DatabaseError,
-  MissingFeatureError,
-} from 'src/app/modules/core/core.errors'
+import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { getRedirectTarget } from 'src/app/modules/spcp/spcp.util'
 import { AuthType, Status } from 'src/types'
 
@@ -18,12 +15,11 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import * as FormService from '../../../../../modules/form/form.service'
-import { MyInfoFactory } from '../../../../../modules/myinfo/myinfo.factory'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
 } from '../../../../../modules/spcp/spcp.errors'
-import { SpcpFactory } from '../../../../../modules/spcp/spcp.factory'
+import { SpcpService } from '../../../../../modules/spcp/spcp.service'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 // NOTE: Mocking axios here because there is a network call to an external service
@@ -235,33 +231,6 @@ describe('public-form.auth.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 500 when the redirect url feature is not enabled', async () => {
-      // Arrange
-      const MOCK_FEATURE_NAME = 'no direct only direct'
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          authType: AuthType.MyInfo,
-          status: Status.Public,
-          esrvcId: new ObjectId().toHexString(),
-        },
-      })
-      const expectedResponse = jsonParseStringify({
-        message: `Sorry, something went wrong. Please try again.`,
-      })
-      jest
-        .spyOn(MyInfoFactory, 'createRedirectURL')
-        .mockReturnValueOnce(err(new MissingFeatureError(MOCK_FEATURE_NAME)))
-
-      // Act
-      const response = await request
-        .get(`/forms/${form._id}/auth/redirect`)
-        .query({ isPersistentLogin: false })
-
-      // Assert
-      expect(response.status).toEqual(StatusCodes.INTERNAL_SERVER_ERROR)
-      expect(response.body).toEqual(expectedResponse)
-    })
-
     it('should return 500 when the redirect url could not be created', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
@@ -275,7 +244,7 @@ describe('public-form.auth.routes', () => {
         message: 'Sorry, something went wrong. Please try again.',
       })
       jest
-        .spyOn(SpcpFactory, 'createRedirectUrl')
+        .spyOn(SpcpService, 'createRedirectUrl')
         .mockReturnValueOnce(err(new CreateRedirectUrlError()))
 
       // Act

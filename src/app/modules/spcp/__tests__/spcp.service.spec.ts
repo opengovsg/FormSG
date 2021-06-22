@@ -4,7 +4,7 @@ import fs from 'fs'
 import { omit } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
-import { ISpcpMyInfo } from 'src/app/config/feature-manager'
+import { ISpcpMyInfo } from 'src/app/config/feature-manager/spcp-myinfo.config'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 import { AuthType } from 'src/types'
 
@@ -21,7 +21,7 @@ import {
   RetrieveAttributesError,
   VerifyJwtError,
 } from '../spcp.errors'
-import { SpcpService } from '../spcp.service'
+import { SpcpServiceClass } from '../spcp.service'
 import { JwtName } from '../spcp.types'
 
 import {
@@ -63,8 +63,8 @@ describe('spcp.service', () => {
   afterAll(async () => await dbHandler.closeDatabase())
   describe('class constructor', () => {
     it('should instantiate auth clients with the correct params', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      expect(spcpService).toBeTruthy()
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
+      expect(spcpServiceClass).toBeTruthy()
       expect(MockAuthClient).toHaveBeenCalledTimes(2)
       expect(MockAuthClient).toHaveBeenCalledWith({
         partnerEntityId: MOCK_PARAMS.spPartnerEntityId,
@@ -91,11 +91,11 @@ describe('spcp.service', () => {
 
   describe('createRedirectUrl', () => {
     it('should call SP auth client createRedirectUrl with the correct params', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[0], true)
       mockClient.createRedirectURL.mockReturnValueOnce(MOCK_REDIRECT_URL)
-      const redirectUrl = spcpService.createRedirectUrl(
+      const redirectUrl = spcpServiceClass.createRedirectUrl(
         AuthType.SP,
         MOCK_TARGET,
         MOCK_ESRVCID,
@@ -109,11 +109,11 @@ describe('spcp.service', () => {
     })
 
     it('should call CP auth client createRedirectUrl with the correct params', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.createRedirectURL.mockReturnValueOnce(MOCK_REDIRECT_URL)
-      const redirectUrl = spcpService.createRedirectUrl(
+      const redirectUrl = spcpServiceClass.createRedirectUrl(
         AuthType.CP,
         MOCK_TARGET,
         MOCK_ESRVCID,
@@ -127,11 +127,11 @@ describe('spcp.service', () => {
     })
 
     it('should return CreateRedirectUrlError if auth client returns error', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.createRedirectURL.mockReturnValueOnce(new Error())
-      const redirectUrl = spcpService.createRedirectUrl(
+      const redirectUrl = spcpServiceClass.createRedirectUrl(
         AuthType.CP,
         MOCK_TARGET,
         MOCK_ESRVCID,
@@ -149,12 +149,12 @@ describe('spcp.service', () => {
 
   describe('fetchLoginPage', () => {
     it('should GET the correct URL and return the response when request succeeds', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       MockAxios.get.mockResolvedValueOnce({
         data: MOCK_LOGIN_HTML,
       })
 
-      const result = await spcpService.fetchLoginPage(MOCK_REDIRECT_URL)
+      const result = await spcpServiceClass.fetchLoginPage(MOCK_REDIRECT_URL)
 
       expect(MockAxios.get).toHaveBeenCalledWith(
         MOCK_REDIRECT_URL,
@@ -170,10 +170,10 @@ describe('spcp.service', () => {
     })
 
     it('should return FetchLoginPageError when request fails', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       MockAxios.get.mockRejectedValueOnce('')
 
-      const result = await spcpService.fetchLoginPage(MOCK_REDIRECT_URL)
+      const result = await spcpServiceClass.fetchLoginPage(MOCK_REDIRECT_URL)
 
       expect(MockAxios.get).toHaveBeenCalledWith(
         MOCK_REDIRECT_URL,
@@ -191,16 +191,16 @@ describe('spcp.service', () => {
 
   describe('validateLoginPage', () => {
     it('should return null when there is a title and no error', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockHtml = `<title>${MOCK_TITLE}</title>`
-      const result = spcpService.validateLoginPage(mockHtml)
+      const result = spcpServiceClass.validateLoginPage(mockHtml)
       expect(result._unsafeUnwrap()).toEqual({ isValid: true })
     })
 
     it('should return error code when there is error in title', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockHtml = `<title>Error</title>System Code:&nbsp;<b>${MOCK_ERROR_CODE}</b>`
-      const result = spcpService.validateLoginPage(mockHtml)
+      const result = spcpServiceClass.validateLoginPage(mockHtml)
       expect(result._unsafeUnwrap()).toEqual({
         isValid: false,
         errorCode: MOCK_ERROR_CODE,
@@ -208,46 +208,46 @@ describe('spcp.service', () => {
     })
 
     it('should return LoginPageValidationError when there is no title', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockHtml = 'mock'
-      const result = spcpService.validateLoginPage(mockHtml)
+      const result = spcpServiceClass.validateLoginPage(mockHtml)
       expect(result._unsafeUnwrapErr()).toEqual(new LoginPageValidationError())
     })
   })
 
   describe('extractSingpassJwtPayload', () => {
     it('should return the correct payload for Singpass when JWT is valid', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[0], true)
       mockClient.verifyJWT.mockImplementationOnce((jwt, cb) =>
         cb(null, MOCK_SP_JWT_PAYLOAD),
       )
-      const result = await spcpService.extractSingpassJwtPayload(MOCK_JWT)
+      const result = await spcpServiceClass.extractSingpassJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrap()).toEqual(MOCK_SP_JWT_PAYLOAD)
     })
 
     it('should return VerifyJwtError when SingPass JWT could not be verified', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[0], true)
       mockClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
         cb(new Error(), null),
       )
-      const result = await spcpService.extractSingpassJwtPayload(MOCK_JWT)
+      const result = await spcpServiceClass.extractSingpassJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrapErr()).toEqual(new VerifyJwtError())
     })
 
     it('should return InvalidJwtError when SP JWT has invalid shape', async () => {
       // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[0], true)
       mockClient.verifyJWT.mockImplementationOnce((jwt, cb) => cb(null, {}))
       const expected = new InvalidJwtError()
 
       // Act
-      const result = await spcpService.extractSingpassJwtPayload(MOCK_JWT)
+      const result = await spcpServiceClass.extractSingpassJwtPayload(MOCK_JWT)
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(expected)
@@ -256,37 +256,37 @@ describe('spcp.service', () => {
 
   describe('extractCorppassJwtPayload', () => {
     it('should return the correct payload for Corppass when JWT is valid', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.verifyJWT.mockImplementationOnce((jwt, cb) =>
         cb(null, MOCK_CP_JWT_PAYLOAD),
       )
-      const result = await spcpService.extractCorppassJwtPayload(MOCK_JWT)
+      const result = await spcpServiceClass.extractCorppassJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrap()).toEqual(MOCK_CP_JWT_PAYLOAD)
     })
 
     it('should return VerifyJwtError when CorpPass JWT could not be verified', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
         cb(new Error(), null),
       )
-      const result = await spcpService.extractCorppassJwtPayload(MOCK_JWT)
+      const result = await spcpServiceClass.extractCorppassJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrapErr()).toEqual(new VerifyJwtError())
     })
 
     it('should return InvalidJwtError when CorpPass JWT has invalid shape', async () => {
       // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.verifyJWT.mockImplementationOnce((jwt, cb) => cb(null, {}))
       const expected = new InvalidJwtError()
 
       // Act
-      const result = await spcpService.extractCorppassJwtPayload(MOCK_JWT)
+      const result = await spcpServiceClass.extractCorppassJwtPayload(MOCK_JWT)
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(expected)
@@ -295,10 +295,10 @@ describe('spcp.service', () => {
 
   describe('parseOOBParams', () => {
     it('should parse SP params correctly when rememberMe is true', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET},true`
 
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
         AuthType.SP,
@@ -312,10 +312,10 @@ describe('spcp.service', () => {
     })
 
     it('should parse CP params correctly when rememberMe is true', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET},true`
 
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
         AuthType.CP,
@@ -329,10 +329,10 @@ describe('spcp.service', () => {
     })
 
     it('should parse SP params correctly when rememberMe is false', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET},false`
 
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
         AuthType.SP,
@@ -346,10 +346,10 @@ describe('spcp.service', () => {
     })
 
     it('should parse CP params correctly when rememberMe is false', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET},false`
 
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
         AuthType.CP,
@@ -363,10 +363,10 @@ describe('spcp.service', () => {
     })
 
     it('should parse SP params correctly when rememberMe is malformed', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET},asdf`
 
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
         AuthType.SP,
@@ -380,10 +380,10 @@ describe('spcp.service', () => {
     })
 
     it('should parse CP params correctly when rememberMe is malformed', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET},asdf`
 
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
         AuthType.CP,
@@ -397,10 +397,10 @@ describe('spcp.service', () => {
     })
 
     it('should parse SP params correctly when target has trailing slash', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET}/,true`
 
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
         AuthType.SP,
@@ -414,10 +414,10 @@ describe('spcp.service', () => {
     })
 
     it('should parse CP params correctly when target has trailing slash', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET}/,true`
 
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
         AuthType.CP,
@@ -431,9 +431,9 @@ describe('spcp.service', () => {
     })
 
     it('should return InvalidOOBParamsError when SP relay state has 0 commas', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET}true`
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
         AuthType.SP,
@@ -444,9 +444,9 @@ describe('spcp.service', () => {
     })
 
     it('should return InvalidOOBParamsError when CP relay state has 0 commas', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET}true`
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
         AuthType.CP,
@@ -457,9 +457,9 @@ describe('spcp.service', () => {
     })
 
     it('should return InvalidOOBParamsError when SP relay state has >1 commas', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET},t,rue`
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
         AuthType.SP,
@@ -470,9 +470,9 @@ describe('spcp.service', () => {
     })
 
     it('should return InvalidOOBParamsError when CP relay state has >1 commas', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET},t,rue`
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
         AuthType.CP,
@@ -483,9 +483,9 @@ describe('spcp.service', () => {
     })
 
     it('should return InvalidOOBParamsError when SP formId is malformed', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/-,true`
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
         AuthType.SP,
@@ -496,9 +496,9 @@ describe('spcp.service', () => {
     })
 
     it('should return InvalidOOBParamsError when CP formId is malformed', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/-,true`
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
         AuthType.CP,
@@ -509,9 +509,9 @@ describe('spcp.service', () => {
     })
 
     it('should return InvalidOOBParamsError when SP typecode does not match', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET},true`
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML_WRONG_TYPECODE,
         mockRelayState,
         AuthType.SP,
@@ -522,9 +522,9 @@ describe('spcp.service', () => {
     })
 
     it('should return InvalidOOBParamsError when CP typecode does not match', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET},true`
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML_WRONG_TYPECODE,
         mockRelayState,
         AuthType.CP,
@@ -535,9 +535,9 @@ describe('spcp.service', () => {
     })
 
     it('should return InvalidOOBParamsError when SP hash does not match', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET},true`
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML_WRONG_HASH,
         mockRelayState,
         AuthType.SP,
@@ -548,9 +548,9 @@ describe('spcp.service', () => {
     })
 
     it('should return InvalidOOBParamsError when CP hash does not match', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET},true`
-      const parsedResult = spcpService.parseOOBParams(
+      const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML_WRONG_HASH,
         mockRelayState,
         AuthType.CP,
@@ -563,14 +563,14 @@ describe('spcp.service', () => {
 
   describe('getSpcpAttributes', () => {
     it('should call SingPass auth client correctly and return the result', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[0], true)
       mockClient.getAttributes.mockImplementationOnce((_samlArt, _dest, cb) =>
         cb(null, MOCK_GET_ATTRIBUTES_RETURN_VALUE),
       )
 
-      const result = await spcpService.getSpcpAttributes(
+      const result = await spcpServiceClass.getSpcpAttributes(
         MOCK_SP_SAML,
         MOCK_DESTINATION,
         AuthType.SP,
@@ -587,14 +587,14 @@ describe('spcp.service', () => {
     })
 
     it('should call CorpPass auth client correctly and return the result', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.getAttributes.mockImplementationOnce((_samlArt, _dest, cb) =>
         cb(null, MOCK_GET_ATTRIBUTES_RETURN_VALUE),
       )
 
-      const result = await spcpService.getSpcpAttributes(
+      const result = await spcpServiceClass.getSpcpAttributes(
         MOCK_CP_SAML,
         MOCK_DESTINATION,
         AuthType.CP,
@@ -611,14 +611,14 @@ describe('spcp.service', () => {
     })
 
     it('should return RetrieveAttributesError if SingPass client errors', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[0], true)
       mockClient.getAttributes.mockImplementationOnce(() => {
         throw new Error()
       })
 
-      const result = await spcpService.getSpcpAttributes(
+      const result = await spcpServiceClass.getSpcpAttributes(
         MOCK_SP_SAML,
         MOCK_DESTINATION,
         AuthType.SP,
@@ -633,14 +633,14 @@ describe('spcp.service', () => {
     })
 
     it('should return RetrieveAttributesError if CorpPass client errors', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.getAttributes.mockImplementationOnce(() => {
         throw new Error()
       })
 
-      const result = await spcpService.getSpcpAttributes(
+      const result = await spcpServiceClass.getSpcpAttributes(
         MOCK_CP_SAML,
         MOCK_DESTINATION,
         AuthType.CP,
@@ -657,11 +657,11 @@ describe('spcp.service', () => {
 
   describe('createJWT', () => {
     it('should call SingPass auth client with the correct params', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[0], true)
       mockClient.createJWT.mockReturnValueOnce(MOCK_JWT)
-      const jwtResult = spcpService.createJWT(
+      const jwtResult = spcpServiceClass.createJWT(
         MOCK_JWT_PAYLOAD,
         MOCK_COOKIE_AGE,
         AuthType.SP,
@@ -674,11 +674,11 @@ describe('spcp.service', () => {
     })
 
     it('should call CorpPass auth client with the correct params', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.createJWT.mockReturnValueOnce(MOCK_JWT)
-      const jwtResult = spcpService.createJWT(
+      const jwtResult = spcpServiceClass.createJWT(
         MOCK_JWT_PAYLOAD,
         MOCK_COOKIE_AGE,
         AuthType.CP,
@@ -693,8 +693,8 @@ describe('spcp.service', () => {
 
   describe('createJWTPayload', () => {
     it('should return the correct SingPass attributes', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const result = spcpService.createJWTPayload(
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
+      const result = spcpServiceClass.createJWTPayload(
         { UserName: MOCK_JWT_PAYLOAD.userName },
         true,
         AuthType.SP,
@@ -706,14 +706,14 @@ describe('spcp.service', () => {
     })
 
     it('should return MissingAttributesError if SP UserName does not exist', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const result = spcpService.createJWTPayload({}, true, AuthType.SP)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
+      const result = spcpServiceClass.createJWTPayload({}, true, AuthType.SP)
       expect(result._unsafeUnwrapErr()).toEqual(new MissingAttributesError())
     })
 
     it('should return the correct CorpPass attributes', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const result = spcpService.createJWTPayload(
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
+      const result = spcpServiceClass.createJWTPayload(
         {
           UserInfo: {
             CPEntID: MOCK_JWT_PAYLOAD.userName,
@@ -731,14 +731,14 @@ describe('spcp.service', () => {
     })
 
     it('should return MissingAttributesError if CorpPass UserInfo is missing', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const result = spcpService.createJWTPayload({}, true, AuthType.SP)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
+      const result = spcpServiceClass.createJWTPayload({}, true, AuthType.SP)
       expect(result._unsafeUnwrapErr()).toEqual(new MissingAttributesError())
     })
 
     it('should return MissingAttributesError if CorpPass CPEntID is missing', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const result = spcpService.createJWTPayload(
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
+      const result = spcpServiceClass.createJWTPayload(
         {
           UserInfo: {
             CPUID: MOCK_JWT_PAYLOAD.userInfo,
@@ -751,8 +751,8 @@ describe('spcp.service', () => {
     })
 
     it('should return MissingAttributesError if CorpPass CPUID is missing', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const result = spcpService.createJWTPayload(
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
+      const result = spcpServiceClass.createJWTPayload(
         {
           UserInfo: {
             CPEntID: MOCK_JWT_PAYLOAD.userName,
@@ -767,37 +767,37 @@ describe('spcp.service', () => {
 
   describe('getCookieSettings', () => {
     it('should return the correct cookie settings if spcpCookieDomain is truthy', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      expect(spcpService.getCookieSettings()).toEqual({
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
+      expect(spcpServiceClass.getCookieSettings()).toEqual({
         domain: MOCK_PARAMS.spcpCookieDomain,
         path: '/',
       })
     })
 
     it('should return empty object if spcpCookieDomain is falsy', () => {
-      const spcpService = new SpcpService(
+      const spcpServiceClass = new SpcpServiceClass(
         omit(MOCK_PARAMS, 'spcpCookieDomain') as ISpcpMyInfo,
       )
-      expect(spcpService.getCookieSettings()).toEqual({})
+      expect(spcpServiceClass.getCookieSettings()).toEqual({})
     })
   })
 
   describe('extractJwt', () => {
     it('should return SingPass JWT correctly', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const result = spcpService.extractJwt(MOCK_COOKIES, AuthType.SP)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
+      const result = spcpServiceClass.extractJwt(MOCK_COOKIES, AuthType.SP)
       expect(result._unsafeUnwrap()).toEqual(MOCK_COOKIES[JwtName.SP])
     })
 
     it('should return CorpPass JWT correctly', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const result = spcpService.extractJwt(MOCK_COOKIES, AuthType.CP)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
+      const result = spcpServiceClass.extractJwt(MOCK_COOKIES, AuthType.CP)
       expect(result._unsafeUnwrap()).toEqual(MOCK_COOKIES[JwtName.CP])
     })
 
     it('should return MissingJwtError if there is no JWT', () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const result = spcpService.extractJwt({}, AuthType.CP)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
+      const result = spcpServiceClass.extractJwt({}, AuthType.CP)
       expect(result._unsafeUnwrapErr()).toEqual(new MissingJwtError())
     })
   })
@@ -805,7 +805,7 @@ describe('spcp.service', () => {
   describe('extractJwtPayloadFromRequest', () => {
     it('should return a SP JWT payload when there is a valid JWT in the request', async () => {
       // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[0], true)
       mockClient.verifyJWT.mockImplementationOnce((jwt, cb) =>
@@ -813,7 +813,7 @@ describe('spcp.service', () => {
       )
 
       // Act
-      const result = await spcpService.extractJwtPayloadFromRequest(
+      const result = await spcpServiceClass.extractJwtPayloadFromRequest(
         AuthType.SP,
         MOCK_COOKIES,
       )
@@ -824,7 +824,7 @@ describe('spcp.service', () => {
 
     it('should return a CP JWT payload when there is a valid JWT in the request', async () => {
       // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that CP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.verifyJWT.mockImplementationOnce((jwt, cb) =>
@@ -832,7 +832,7 @@ describe('spcp.service', () => {
       )
 
       // Act
-      const result = await spcpService.extractJwtPayloadFromRequest(
+      const result = await spcpServiceClass.extractJwtPayloadFromRequest(
         AuthType.CP,
         MOCK_COOKIES,
       )
@@ -843,11 +843,11 @@ describe('spcp.service', () => {
 
     it('should return MissingJwtError if there is no JWT when client authenticates using SP', async () => {
       // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const expected = new MissingJwtError()
 
       // Act
-      const result = await spcpService.extractJwtPayloadFromRequest(
+      const result = await spcpServiceClass.extractJwtPayloadFromRequest(
         AuthType.SP,
         {},
       )
@@ -858,11 +858,11 @@ describe('spcp.service', () => {
 
     it('should return MissingJwtError when client authenticates using CP and there is no JWT', async () => {
       // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const expected = new MissingJwtError()
 
       // Act
-      const result = await spcpService.extractJwtPayloadFromRequest(
+      const result = await spcpServiceClass.extractJwtPayloadFromRequest(
         AuthType.CP,
         {},
       )
@@ -873,7 +873,7 @@ describe('spcp.service', () => {
 
     it('should return InvalidJwtError when the client authenticates using SP and the JWT has wrong shape', async () => {
       // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[0], true)
       mockClient.verifyJWT.mockImplementationOnce((jwt, cb) =>
@@ -882,7 +882,7 @@ describe('spcp.service', () => {
       const expected = new VerifyJwtError()
 
       // Act
-      const result = await spcpService.extractJwtPayloadFromRequest(
+      const result = await spcpServiceClass.extractJwtPayloadFromRequest(
         AuthType.SP,
         MOCK_COOKIES,
       )
@@ -893,7 +893,7 @@ describe('spcp.service', () => {
 
     it('should return VerifyJwtError when the client authenticates using CP and the JWT has wrong shape', async () => {
       // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.verifyJWT.mockImplementationOnce((jwt, cb) =>
@@ -902,7 +902,7 @@ describe('spcp.service', () => {
       const expected = new VerifyJwtError()
 
       // Act
-      const result = await spcpService.extractJwtPayloadFromRequest(
+      const result = await spcpServiceClass.extractJwtPayloadFromRequest(
         AuthType.CP,
         MOCK_COOKIES,
       )
@@ -912,14 +912,14 @@ describe('spcp.service', () => {
     })
     it('should return InvalidJwtError when the client authenticates using SP and the JWT has invalid shape', async () => {
       // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[0], true)
       mockClient.verifyJWT.mockImplementationOnce((jwt, cb) => cb(null, {}))
       const expected = new InvalidJwtError()
 
       // Act
-      const result = await spcpService.extractJwtPayloadFromRequest(
+      const result = await spcpServiceClass.extractJwtPayloadFromRequest(
         AuthType.SP,
         MOCK_COOKIES,
       )
@@ -930,14 +930,14 @@ describe('spcp.service', () => {
 
     it('should return InvalidJwtError when the client authenticates using CP and the JWT has invalid shape', async () => {
       // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.verifyJWT.mockImplementationOnce((jwt, cb) => cb(null, {}))
       const expected = new InvalidJwtError()
 
       // Act
-      const result = await spcpService.extractJwtPayloadFromRequest(
+      const result = await spcpServiceClass.extractJwtPayloadFromRequest(
         AuthType.CP,
         MOCK_COOKIES,
       )

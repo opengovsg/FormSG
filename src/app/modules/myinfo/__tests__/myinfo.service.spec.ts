@@ -1,10 +1,11 @@
+import { MyInfoGovClient } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 import { v4 as uuidv4 } from 'uuid'
 
-import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
+import { MyInfoServiceClass } from 'src/app/modules/myinfo/myinfo.service'
 import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import {
@@ -52,34 +53,35 @@ import {
 
 const MyInfoHash = getMyInfoHashModel(mongoose)
 
-const mockGetPerson = jest.fn()
-const mockCreateRedirectURL = jest.fn()
-const mockGetAccessToken = jest.fn()
-const mockExtractUinFin = jest.fn()
-
-jest.mock('@opengovsg/myinfo-gov-client', () => ({
-  MyInfoGovClient: jest.fn().mockImplementation(() => ({
-    getPerson: mockGetPerson,
-    createRedirectURL: mockCreateRedirectURL,
-    getAccessToken: mockGetAccessToken,
-    extractUinFin: mockExtractUinFin,
-  })),
-  MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
-  MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
-  MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
-    .MyInfoAddressType,
-  MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
-    .MyInfoAttribute,
-}))
+jest.mock('@opengovsg/myinfo-gov-client')
+const MockMyInfoGovClient = mocked(MyInfoGovClient, true)
 
 jest.mock('bcrypt')
 const MockBcrypt = mocked(bcrypt, true)
 
-describe('MyInfoService', () => {
-  let myInfoService = new MyInfoService(MOCK_SERVICE_PARAMS)
+describe('MyInfoServiceClass', () => {
+  let myInfoService: MyInfoServiceClass = new MyInfoServiceClass(
+    MOCK_SERVICE_PARAMS,
+  )
+  const mockGetPerson = jest.fn()
+  const mockCreateRedirectURL = jest.fn()
+  const mockGetAccessToken = jest.fn()
+  const mockExtractUinFin = jest.fn()
 
   beforeAll(async () => await dbHandler.connect())
-  beforeEach(() => jest.clearAllMocks())
+  beforeEach(() => {
+    jest.clearAllMocks()
+    MockMyInfoGovClient.mockImplementation(
+      () =>
+        ({
+          getPerson: mockGetPerson,
+          createRedirectURL: mockCreateRedirectURL,
+          getAccessToken: mockGetAccessToken,
+          extractUinFin: mockExtractUinFin,
+        } as unknown as MyInfoGovClient),
+    )
+    myInfoService = new MyInfoServiceClass(MOCK_SERVICE_PARAMS)
+  })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -99,15 +101,12 @@ describe('MyInfoService', () => {
         requestedAttributes: MOCK_REQUESTED_ATTRS,
       })
 
-      const actualArgs = mockCreateRedirectURL.mock.calls[0][0]
-      const actualParsedRelayState = JSON.parse(actualArgs.relayState)
-
-      expect(actualArgs.purpose).toBe(MYINFO_CONSENT_PAGE_PURPOSE)
-      expect(actualParsedRelayState.formId).toBe(MOCK_FORM_ID)
-      expect(actualArgs.requestedAttributes).toEqual(
-        expect.arrayContaining(MOCK_REQUESTED_ATTRS),
-      )
-      expect(actualArgs.singpassEserviceId).toEqual(MOCK_ESRVC_ID)
+      expect(mockCreateRedirectURL).toHaveBeenCalledWith({
+        purpose: MYINFO_CONSENT_PAGE_PURPOSE,
+        relayState: expect.stringContaining(MOCK_FORM_ID),
+        requestedAttributes: expect.arrayContaining(MOCK_REQUESTED_ATTRS),
+        singpassEserviceId: MOCK_ESRVC_ID,
+      })
       expect(result._unsafeUnwrap()).toBe(MOCK_REDIRECT_URL)
     })
   })
@@ -157,7 +156,7 @@ describe('MyInfoService', () => {
 
   describe('retrieveAccessToken', () => {
     beforeEach(() => {
-      myInfoService = new MyInfoService(MOCK_SERVICE_PARAMS)
+      myInfoService = new MyInfoServiceClass(MOCK_SERVICE_PARAMS)
     })
 
     it('should call MyInfoGovClient.getAccessToken with the correct parameters', async () => {
@@ -383,7 +382,7 @@ describe('MyInfoService', () => {
   describe('getMyInfoDataForForm', () => {
     // NOTE: Mocks the underlying circuit breaker implementation to avoid network calls
     beforeEach(() => {
-      myInfoService = new MyInfoService(MOCK_SERVICE_PARAMS)
+      myInfoService = new MyInfoServiceClass(MOCK_SERVICE_PARAMS)
     })
 
     it('should return myInfo data when the provided form and cookie is valid', async () => {
