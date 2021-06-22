@@ -11,6 +11,7 @@ import {
   UseRadioGroupReturn,
   UseRadioProps,
   useStyleConfig,
+  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { YESNO_THEME_KEY } from '~theme/components/Field/YesNo'
@@ -100,7 +101,10 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
         _focusWithin={{ zIndex: 1 }}
       >
         <input {...input} onClick={handleSelect} onKeyDown={handleSpacebar} />
-        <Box {...checkbox} aria-hidden={false} __css={style}>
+        <VisuallyHidden>
+          "{children}" option {props.isChecked ? 'selected' : 'unselected'}
+        </VisuallyHidden>
+        <Box {...checkbox} __css={style}>
           {children}
         </Box>
       </Box>
