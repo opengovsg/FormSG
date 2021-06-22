@@ -24,42 +24,33 @@ import {
 import { ProcessedFieldResponse } from '../submission.types'
 import { getFilteredResponses } from '../submission.utils'
 
+type NdiUserInfo =
+  | { authType: AuthType.SP | AuthType.MyInfo; uinFin: string }
+  | { authType: AuthType.CP; uinFin: string; userInfo: string }
+
 export default class ParsedResponsesObject {
   public ndiResponses: ProcessedFieldResponse[] = []
   private constructor(public responses: ProcessedFieldResponse[]) {}
 
-  addNdiResponses({
-    authType,
-    uinFin,
-    userInfo,
-  }: {
-    authType: AuthType
-    uinFin: string
-    userInfo?: string
-  }): Result<ParsedResponsesObject, ProcessingError> {
-    switch (authType) {
+  addNdiResponses(info: NdiUserInfo): ParsedResponsesObject {
+    /**
+     * No typescript destructuring being done in switch statement
+     * because typescript isn't smart enough to do narrowing with
+     * destructured variable switch cases.
+     */
+    switch (info.authType) {
       case AuthType.SP:
       case AuthType.MyInfo:
-        this.ndiResponses = createSingpassParsedResponses(uinFin)
+        this.ndiResponses = createSingpassParsedResponses(info.uinFin)
         break
       case AuthType.CP:
-        if (!userInfo) {
-          return err(
-            new ProcessingError(
-              'Corppass response is missing userInfo object.',
-            ),
-          )
-        }
-        this.ndiResponses = createCorppassParsedResponses(uinFin, userInfo)
-        break
-      default:
-        return err(
-          new ProcessingError(
-            'Adding NDI responses to a form with an invalid auth type.',
-          ),
+        this.ndiResponses = createCorppassParsedResponses(
+          info.uinFin,
+          info.userInfo,
         )
+        break
     }
-    return ok(this)
+    return this
   }
 
   getAllResponses(): ProcessedFieldResponse[] {
