@@ -1,6 +1,9 @@
 <div class="row">
   <div class="toggle-option">
-    <div class="col-xs-8 label-custom label-medium label-bottom">
+    <div
+      ng-class="{'toggle-option--disabled' : field.hasAdminExceededSmsLimit}"
+      class="col-xs-8 label-custom label-medium label-bottom"
+    >
       OTP verification
       <i
         class="glyphicon glyphicon-question-sign"
@@ -11,7 +14,7 @@
     <div class="col-xs-4 field-input">
       <label
         class="toggle-selector pull-right"
-        ng-class="field.isVerifiable && !field.hasAdminExceededSmsLimit ? 'toggle-selector-on' : ''"
+        ng-class="{'toggle-selector-on': field.isVerifiable && !field.hasAdminExceededSmsLimit, 'toggle-selector--disabled': field.hasAdminExceededSmsLimit}"
         onclick=""
       >
         <input
@@ -21,8 +24,10 @@
         />
         <div class="toggle-selector-switch">
           <i
-            ng-class="field.isVerifiable && !field.hasAdminExceededSmsLimit ? 'bx bx-check' : 'bx bx-x' "
+            ng-show="!field.hasAdminExceededSmsLimit"
+            ng-class="field.isVerifiable ? 'bx bx-check' : 'bx bx-x'"
           ></i>
+          <i ng-show="field.hasAdminExceededSmsLimit" class="bx bxs-lock"></i>
         </div>
       </label>
     </div>
