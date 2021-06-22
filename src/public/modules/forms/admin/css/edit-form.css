@@ -1431,3 +1431,9 @@ a.modal-cancel-btn:hover {
   /* margin is set so that the error message appears to be in the same block as the toggle options */
   margin: 0 15px;
 }
+
+/* Spinner */
+.loading-spinner {
+  display: flex;
+  justify-content: flex-end;
+}

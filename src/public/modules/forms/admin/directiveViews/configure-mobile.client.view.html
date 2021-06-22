@@ -12,7 +12,11 @@
       ></i>
     </div>
     <div class="col-xs-4 field-input">
+      <div ng-show="isLoading" class="loading-spinner">
+        <i class="bx bx-loader bx-spin bx-lg icon-spacing"></i>
+      </div>
       <label
+        ng-show="!isLoading"
         class="toggle-selector pull-right"
         ng-class="{'toggle-selector-on': field.isVerifiable && !field.hasAdminExceededSmsLimit, 'toggle-selector--disabled': field.hasAdminExceededSmsLimit}"
         onclick=""

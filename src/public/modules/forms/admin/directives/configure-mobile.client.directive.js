@@ -5,14 +5,6 @@ const {
   SMS_VERIFICATION_LIMIT,
 } = require('../../../../../shared/util/verification')
 
-// TODO: Implement this
-const getSmsCounts = () => {
-  return Promise.resolve({
-    verifiedSmsCount: 1000000,
-    messageServiceId: 'asdf',
-  })
-}
-
 angular
   .module('forms')
   .directive('configureMobileDirective', [configureMobileDirective])
@@ -26,17 +18,31 @@ function configureMobileDirective() {
       field: '<',
       name: '=',
       characterLimit: '=',
+      isLoading: '<',
     },
     controller: [
       '$q',
       '$uibModal',
       '$scope',
       '$translate',
-      function ($q, $uibModal, $scope, $translate) {
+      '$timeout',
+      function ($q, $uibModal, $scope, $translate, $timeout) {
         // Get support form link from translation json.
         $translate('LINKS.TWILIO_SETUP_LINK').then((twilioSetupLink) => {
           $scope.twilioSetupLink = twilioSetupLink
         })
+
+        // TODO: Implement this
+        const getSmsCounts = () =>
+          $timeout(() => {
+            return {
+              verifiedSmsCount: 20000035,
+              messageServiceId: '',
+            }
+          }, 1000)
+
+        // NOTE: This is set on scope as it is used by the UI to determine if the toggle is loading
+        $scope.isLoading = true
 
         const getAdminVerifiedSmsState = (verifiedSmsCount, msgSrvcId) => {
           if (msgSrvcId) {
@@ -60,6 +66,7 @@ function configureMobileDirective() {
             $scope.field.hasAdminExceededSmsLimit =
               $scope.adminVerifiedSmsState ===
               ADMIN_VERIFIED_SMS_STATES.limitExceeded
+            $scope.isLoading = false
           },
         )
 
