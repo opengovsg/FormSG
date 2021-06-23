@@ -51,33 +51,22 @@ export const FormLabel = ({
   children,
 }: FormLabelProps): JSX.Element => {
   return (
-    <FormLabel.Label d="flex" requiredIndicator={<Box />}>
+    <FormLabel.Label requiredIndicator={<Box />}>
       {questionNumber && (
         <FormLabel.QuestionNumber>{questionNumber}</FormLabel.QuestionNumber>
       )}
-      <Box>
-        {children}
-        <FormLabel.OptionalIndicator isRequired={isRequired} />
-        {tooltipText && (
-          <Tooltip label={tooltipText} aria-label="Label tooltip">
-            <Icon ml="0.5rem" color="secondary.500" as={BxsHelpCircle} />
-          </Tooltip>
-        )}
-      </Box>
+      {children}
+      <FormLabel.OptionalIndicator isRequired={isRequired} />
+      {tooltipText && (
+        <Tooltip label={tooltipText} aria-label="Label tooltip">
+          <Icon ml="0.5rem" color="secondary.500" as={BxsHelpCircle} />
+        </Tooltip>
+      )}
     </FormLabel.Label>
   )
 }
 
-FormLabel.Label = ({
-  children,
-  ...props
-}: ChakraFormLabelProps): JSX.Element => {
-  return (
-    <ChakraFormLabel d="flex" {...props}>
-      {children}
-    </ChakraFormLabel>
-  )
-}
+FormLabel.Label = ChakraFormLabel
 
 FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
   return (
