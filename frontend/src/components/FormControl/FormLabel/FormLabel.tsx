@@ -7,6 +7,7 @@ import {
   TextProps,
   Tooltip,
   useFormControlContext,
+  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { BxsHelpCircle } from '~/assets/icons/BxsHelpCircle'
@@ -58,8 +59,8 @@ export const FormLabel = ({
         {children}
         <FormLabel.OptionalIndicator isRequired={isRequired} />
         {tooltipText && (
-          <Tooltip label={tooltipText}>
-            <Icon ml="0.5rem" as={BxsHelpCircle} />
+          <Tooltip label={tooltipText} aria-label="Label tooltip">
+            <Icon ml="0.5rem" color="secondary.500" as={BxsHelpCircle} />
           </Tooltip>
         )}
       </Box>
@@ -78,7 +79,7 @@ FormLabel.Label = ({
   )
 }
 
-FormLabel.QuestionNumber = (props: TextProps): JSX.Element => {
+FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
   return (
     <Text
       as="span"
@@ -87,7 +88,10 @@ FormLabel.QuestionNumber = (props: TextProps): JSX.Element => {
       mr="0.5rem"
       lineHeight="1.5rem"
       {...props}
-    />
+    >
+      <VisuallyHidden>Question number:</VisuallyHidden>
+      {children}
+    </Text>
   )
 }
 
