@@ -2,10 +2,10 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import {
   Box,
   forwardRef,
+  Grid,
   Text,
   useBreakpointValue,
   Wrap,
-  WrapItem,
 } from '@chakra-ui/react'
 
 import { FieldColorScheme } from '~theme/foundations/colours'
@@ -44,6 +44,11 @@ export interface RatingProps {
    * Variant of rating field to render
    */
   variant: 'Heart' | 'Star' | 'Number'
+
+  /**
+   * Helper text to be displayed to quantify the ratings, if any.
+   */
+  helperText?: string
 }
 
 export const Rating = forwardRef<RatingProps, 'input'>(
@@ -56,6 +61,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
       onChange,
       variant,
       wrapComponentsPerRow = 5,
+      helperText,
     },
     ref,
   ) => {
@@ -107,17 +113,24 @@ export const Rating = forwardRef<RatingProps, 'input'>(
     }, [variant])
 
     return (
-      <Wrap
-        as="fieldset"
-        align="center"
-        shouldWrapChildren
-        spacing={['0.5rem', '0.5rem', '1rem']}
+      <Grid
+        rowGap="0.5rem"
+        templateAreas={[
+          `'caption' 'rating'`,
+          `'caption' 'rating'`,
+          `'rating' 'caption'`,
+        ]}
       >
-        <Wrap spacing={ratingLayout.spacing}>
-          {options.map((value, i) => {
-            return (
-              <Fragment key={value}>
-                <WrapItem>
+        <Wrap
+          gridArea="rating"
+          as="fieldset"
+          align="center"
+          spacing={['0.5rem', '0.5rem', '1rem']}
+        >
+          <Wrap spacing={ratingLayout.spacing}>
+            {options.map((value, i) => {
+              return (
+                <Fragment key={value}>
                   <RatingOption
                     name={name}
                     variant={variant}
@@ -131,21 +144,31 @@ export const Rating = forwardRef<RatingProps, 'input'>(
                   >
                     {value}
                   </RatingOption>
-                </WrapItem>
-                {
-                  // Force component to begin on a new line.
-                  value % wrapComponentsPerRow === 0 && isSplitRows && (
-                    <Box flexBasis="100%" h={ratingLayout.rowHeight} />
-                  )
-                }
-              </Fragment>
-            )
-          })}
+                  {
+                    // Force component to begin on a new line.
+                    value % wrapComponentsPerRow === 0 && isSplitRows && (
+                      <Box flexBasis="100%" h={ratingLayout.rowHeight} />
+                    )
+                  }
+                </Fragment>
+              )
+            })}
+          </Wrap>
+          {currentValue && variant !== 'Number' && (
+            <Text textStyle="subhead-2">{currentValue} selected</Text>
+          )}
         </Wrap>
-        {currentValue && variant !== 'Number' && (
-          <Text textStyle="subhead-2">{currentValue} selected</Text>
+        {helperText && (
+          <Text
+            id={`${name}-caption`}
+            gridArea="caption"
+            textStyle="caption-1"
+            color="secondary.500"
+          >
+            {helperText}
+          </Text>
         )}
-      </Wrap>
+      </Grid>
     )
   },
 )

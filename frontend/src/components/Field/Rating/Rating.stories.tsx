@@ -129,6 +129,14 @@ Default.args = {
   name: 'Test rating input',
 }
 
+export const WithHelperText = Template.bind({})
+WithHelperText.args = {
+  numberOfRatings: 10,
+  variant: 'Number',
+  name: 'Test rating input',
+  helperText: '1: Strongly agree, 10: Strongly disagree',
+}
+
 export const VariantNumber = TemplateGroup.bind({})
 VariantNumber.args = {
   name: 'Test rating input',
@@ -155,28 +163,30 @@ VariantHeart.storyName = 'Variant/Heart'
 
 export const Mobile = ResponsiveGroup.bind({})
 Mobile.args = {
-  name: 'testMobileInput',
+  name: 'Test rating input',
+  helperText: '1: Strongly agree, 10: Strongly disagree',
 }
 Mobile.parameters = {
   viewport: {
     defaultViewport: 'mobile1',
   },
   controls: {
-    include: ['name', 'colorScheme', 'wrapComponentsPerRow'],
+    include: ['name', 'colorScheme', 'wrapComponentsPerRow', 'helperText'],
   },
   chromatic: { viewports: [viewports.xs] },
 }
 
 export const Tablet = ResponsiveGroup.bind({})
 Tablet.args = {
-  name: 'testMobileInput',
+  name: 'Test rating input',
+  helperText: '1: Strongly agree, 10: Strongly disagree',
 }
 Tablet.parameters = {
   viewport: {
     defaultViewport: 'tablet',
   },
   controls: {
-    include: ['name', 'colorScheme', 'wrapComponentsPerRow'],
+    include: ['name', 'colorScheme', 'wrapComponentsPerRow', 'helperText'],
   },
   chromatic: { viewports: [viewports.md] },
 }
