@@ -9,8 +9,28 @@ export default {
 } as Meta
 
 const Template: Story<FormLabelProps> = (args) => <FormLabel {...args} />
-export const Label = Template.bind({})
-Label.args = {
-  children: 'This is a label',
+export const Default = Template.bind({})
+Default.args = {
+  children: 'This is a label that is very very very long',
 }
-Label.storyName = 'FormLabel'
+
+export const WithQuestionNumber = Template.bind({})
+WithQuestionNumber.args = {
+  questionNumber: '1.',
+  children: 'This is a label that is very very very long',
+}
+
+export const WithIsRequired = Template.bind({})
+WithIsRequired.args = {
+  questionNumber: '1.',
+  isRequired: true,
+  children: 'This is a label that is very very very long',
+}
+WithIsRequired.storyName = 'With isRequired'
+
+export const WithTooltipText = Template.bind({})
+WithTooltipText.args = {
+  questionNumber: '1.',
+  tooltipText: 'This is a tooltip',
+  children: 'This is a label that is very very very long',
+}
