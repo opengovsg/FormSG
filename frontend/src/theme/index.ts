@@ -6,6 +6,13 @@ import { components } from './components'
 import { textStyles } from './textStyles'
 
 export const theme = extendTheme({
+  styles: {
+    global: {
+      body: {
+        fontFeatureSettings: "'tnum' on, 'cv05' on",
+      },
+    },
+  },
   colors: colours,
   textStyles,
   shadows,
