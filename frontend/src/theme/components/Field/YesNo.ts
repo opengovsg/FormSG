@@ -16,12 +16,7 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
   )
 
   // Change colors according to colorScheme.
-  const activeBorderColorVar = isLighterTheme ? `${c}.600` : `${c}.500`
-  const focusBorderColorVar = isLighterTheme ? `${c}.600` : `${c}.500`
-
-  const neutral500 = getColor(theme, 'neutral.500')
-  const activeBorderColor = getColor(theme, activeBorderColorVar)
-  const focusBorderColor = getColor(theme, focusBorderColorVar)
+  const activeBorderColor = isLighterTheme ? `${c}.600` : `${c}.500`
 
   return {
     display: 'flex',
@@ -33,7 +28,8 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
     justifyContent: 'center',
     color: 'secondary.700',
     bg: 'neutral.100',
-    border: `1px solid ${neutral500}`,
+    border: '1px solid',
+    borderColor: 'neutral.500',
     p: '15px',
     _disabled: {
       bg: 'neutral.200',
@@ -48,7 +44,6 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
       },
       _checked: {
         bg: 'neutral.300',
-        boxShadow: `0 0 0 2px ${neutral500} inset`,
         borderColor: 'neutral.500',
         _hover: {
           bg: 'neutral.300',
@@ -64,16 +59,18 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
     _active: {
       bg: `${c}.300`,
       borderColor: activeBorderColor,
-      boxShadow: `0 0 0 2px ${activeBorderColor} inset`,
     },
     _focus: {
-      borderColor: focusBorderColor,
-      boxShadow: `0 0 0 1px ${focusBorderColor} inset`,
+      boxShadow: `0 0 0 3px ${getColor(theme, `${c}.300`)}`,
     },
     _checked: {
       bg: `${c}.200`,
+      p: '13px',
+      border: '3px solid',
       borderColor: activeBorderColor,
-      boxShadow: `0 0 0 2px ${activeBorderColor} inset`,
+      _active: {
+        bg: `${c}.300`,
+      },
     },
   }
 }
