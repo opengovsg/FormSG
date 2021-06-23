@@ -13,6 +13,10 @@
     {
       "HostDirectory": "/certs",
       "ContainerDirectory": "/certs"
+    },
+    {
+      "HostDirectory": "/etc/formsg/.env",
+      "ContainerDirectory": "/opt/formsg/.env"
     }
   ]
 }
