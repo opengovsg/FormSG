@@ -1,3 +1,5 @@
+import { BiRightArrowAlt } from 'react-icons/bi'
+import Icon from '@chakra-ui/icon'
 import { Meta, Story } from '@storybook/react'
 
 import { Link, LinkProps } from './Link'
@@ -37,6 +39,12 @@ VariantInline.args = {
 export const VariantStandalone = Template.bind({})
 VariantStandalone.args = {
   variant: 'standalone',
-  children: 'Standalone variant link',
+  children: (
+    <>
+      Standalone variant link
+      <Icon as={BiRightArrowAlt} fontSize="1.5rem" ml="0.5rem" />
+    </>
+  ),
   isExternal: false,
+  href: '',
 }

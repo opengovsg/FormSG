@@ -22,6 +22,7 @@ export const Link: ComponentStyleConfig = {
       textUnderlineOffset: '0.125rem',
     },
     standalone: {
+      p: '0.25rem',
       _hover: {
         textDecorationLine: 'underline',
         textUnderlineOffset: '0.125rem',
