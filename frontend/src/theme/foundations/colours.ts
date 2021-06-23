@@ -93,7 +93,7 @@ export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
   'theme-teal': {
     100: '#F3F6F8',
     200: '#D9E5EA',
-    300: '#D0DEE4',
+    300: '#B3CBD6',
     400: '#7AA5B7',
     500: '#417E98',
     600: '#1B6483',
@@ -111,7 +111,7 @@ export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
   'theme-grey': {
     100: '#F6F6F6',
     200: '#DBDEE0',
-    300: '#CCD2D6',
+    300: '#C8CED1',
     400: '#929DA3',
     500: '#495C66',
     600: '#2C373D',
@@ -120,8 +120,8 @@ export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
   'theme-yellow': {
     100: '#F5F4EE',
     200: '#F2EACB',
-    300: '#EADCA8',
-    400: '#EEE3B9',
+    300: '#EEE3B9',
+    400: '#F0DD97',
     500: '#F9D651',
     600: '#847642',
     700: '#6C5D21',
@@ -129,7 +129,7 @@ export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
   'theme-orange': {
     100: '#FAF7F4',
     200: '#F9E6D8',
-    300: '#F0C09D',
+    300: '#FCD4BD',
     400: '#FBB791',
     500: '#F66F23',
     600: '#BF5200',
@@ -138,7 +138,7 @@ export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
   'theme-red': {
     100: '#FAF7F7',
     200: '#FBE5E5',
-    300: '#F5BFBF',
+    300: '#F8D4D4',
     400: '#F1AAAA',
     500: '#DC2A2A',
     600: '#B22222',
@@ -147,7 +147,7 @@ export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
   'theme-brown': {
     100: '#F6F5F3',
     200: '#E5E2DF',
-    300: '#C6BDB4',
+    300: '#D9D4CF',
     400: '#B2A99E',
     500: '#7F6F5E',
     600: '#635649',
