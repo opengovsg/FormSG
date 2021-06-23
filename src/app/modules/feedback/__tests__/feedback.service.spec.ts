@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson-ext'
 import { compareAsc } from 'date-fns'
-import { times } from 'lodash'
+import { omit, times } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 
@@ -126,11 +126,14 @@ describe('feedback.service', () => {
         rating: 1,
       })
       const expectedCreatedFbs = await Promise.all(expectedFbPromises)
-      const expectedFeedbackList = expectedCreatedFbs
+      // The returned feedback also has an `index` key. However, its value is
+      // nondeterministic as feedback with identical timestamps can be returned
+      // in any order. Hence omit the `index` key when checking for the expected
+      // feedback.
+      const expectedFeedbackListWithoutIndex = expectedCreatedFbs
         // Feedback is returned in date order
         .sort((a, b) => compareAsc(a.created!, b.created!))
-        .map((fb, idx) => ({
-          index: idx + 1,
+        .map((fb) => ({
           timestamp: moment(fb.created).valueOf(),
           rating: fb.rating,
           comment: fb.comment,
@@ -140,6 +143,9 @@ describe('feedback.service', () => {
       // Act
       const actualResult = await FeedbackService.getFormFeedbacks(mockFormId)
       const actual = actualResult._unsafeUnwrap()
+      const actualFeedbackWithoutIndex = actual.feedback.map((f) =>
+        omit(f, 'index'),
+      )
 
       // Assert
       // Should only average from the feedbacks for given formId.
@@ -147,18 +153,22 @@ describe('feedback.service', () => {
         expectedCreatedFbs.reduce((acc, curr) => acc + curr.rating, 0) /
         expectedCount
       ).toFixed(2)
-      expect(actual).toEqual({
-        average: expectedAverage,
-        count: expectedCount,
-        // Feedback may not be returned in same order, so perform unordered check.
-        // We cannot simply sort the arrays and expect them to be equal, as the order
-        // is non-deterministic if the timestamps are identical.
-        feedback: expect.arrayContaining(expectedFeedbackList),
-      })
+      expect(actual.average).toBe(expectedAverage)
+      expect(actual.count).toBe(expectedCount)
+      // Feedback may not be returned in same order, so perform unordered check.
+      // We cannot simply sort the arrays and expect them to be equal, as the order
+      // is non-deterministic if the timestamps are identical.
+      expect(actualFeedbackWithoutIndex).toEqual(
+        expect.arrayContaining(expectedFeedbackListWithoutIndex),
+      )
       // Check that there are no extra elements
-      expect(actual.feedback.length).toBe(expectedFeedbackList.length)
-      // Check that feedback is returned in date order.
-      expect(expectedFeedbackList.map((f) => f.timestamp)).toEqual(
+      expect(actualFeedbackWithoutIndex.length).toBe(
+        expectedFeedbackListWithoutIndex.length,
+      )
+      // Check that feedback is returned in date order. This works even if there are
+      // elements with identical timestamps, as we are purely checking for the timestamp order,
+      // without checking any other keys.
+      expect(expectedFeedbackListWithoutIndex.map((f) => f.timestamp)).toEqual(
         actual.feedback.map((f) => f.timestamp),
       )
     })
