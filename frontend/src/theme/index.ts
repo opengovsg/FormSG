@@ -11,6 +11,15 @@ export const theme = extendTheme({
       body: {
         fontFeatureSettings: "'tnum' on, 'cv05' on",
       },
+      /**
+       * This will hide the focus indicator if the element receives focus via
+       * the mouse,but it will still show up on keyboard focus.
+       * Part of the steps needed to get focus-visible working.
+       * See https://www.npmjs.com/package/focus-visible#2-update-your-css.
+       */
+      '.js-focus-visible :focus:not([data-focus-visible-added])': {
+        outline: 'none',
+      },
     },
   },
   colors: colours,
