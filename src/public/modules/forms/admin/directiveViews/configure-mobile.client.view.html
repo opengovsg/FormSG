@@ -37,7 +37,10 @@
     </div>
   </div>
   <br />
-  <div class="alert-custom alert-error inline-padding">
+  <div
+    class="alert-custom alert-error inline-padding"
+    ng-show="field.hasAdminExceededSmsLimit"
+  >
     <i class="bx bx-exclamation bx-md icon-spacing"></i>
     <span class="alert-msg">
       You have reached the free tier limit for SMS verification. To continue
