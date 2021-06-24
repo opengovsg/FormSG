@@ -30,7 +30,7 @@ PublicFormsAuthRouter.route('/:formId([a-fA-F0-9]{24})/auth/redirect').get(
  * @returns 400 if authType is invalid
  */
 PublicFormsAuthRouter.route('/auth/:authType/logout').get(
-  PublicFormController.handleFormAuthLogout,
+  PublicFormController.handleSpcpLogout,
 )
 
 /**

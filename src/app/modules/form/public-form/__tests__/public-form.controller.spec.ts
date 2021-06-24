@@ -1489,7 +1489,7 @@ describe('public-form.controller', () => {
     })
   })
 
-  describe('handleFormAuthLogout', () => {
+  describe('handleSpcpLogout', () => {
     it('should return 200 if authType is SP and call clearCookie()', async () => {
       const authType = AuthType.SP
       const MOCK_REQ = expressHandler.mockRequest({
@@ -1499,11 +1499,7 @@ describe('public-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse({ clearCookie: jest.fn() })
 
-      await PublicFormController._handleFormAuthLogout(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
+      await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
 
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
@@ -1521,11 +1517,7 @@ describe('public-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse({ clearCookie: jest.fn() })
 
-      await PublicFormController._handleFormAuthLogout(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
+      await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
 
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
