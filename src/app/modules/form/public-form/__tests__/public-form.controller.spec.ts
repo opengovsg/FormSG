@@ -39,7 +39,9 @@ import {
   LoginPageValidationError,
   MissingJwtError,
 } from '../../../spcp/spcp.errors'
+import { SpcpFactory } from '../../../spcp/spcp.factory'
 import { SpcpService } from '../../../spcp/spcp.service'
+import { JwtName } from '../../../spcp/spcp.types'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
@@ -1485,6 +1487,71 @@ describe('public-form.controller', () => {
       expect(mockRes.json).toBeCalledWith({
         message: 'Sorry, something went wrong. Please try again.',
       })
+    })
+  })
+
+  describe('handleFormAuthLogout', () => {
+    it('should return 200 if authType is SP and call clearCookie()', async () => {
+      const authType = AuthType.SP
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          authType,
+        },
+      })
+      const mockRes = expressHandler.mockResponse({ clearCookie: jest.fn() })
+
+      await PublicFormController._handleFormAuthLogout(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Successfully logged out.',
+      })
+    })
+
+    it('should return 200 if authType is CP and call clearCookie()', async () => {
+      const authType = AuthType.CP
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          authType,
+        },
+      })
+      const mockRes = expressHandler.mockResponse({ clearCookie: jest.fn() })
+
+      await PublicFormController._handleFormAuthLogout(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Successfully logged out.',
+      })
+    })
+
+    it('should return 400 if authType is invalid and not clear cookie', async () => {
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          authType: AuthType.NIL,
+        },
+      })
+      const mockRes = expressHandler.mockResponse({ clearCookie: jest.fn() })
+
+      await PublicFormController._handleFormAuthLogout(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.status).toBeCalledWith(400)
+      expect(mockRes.json).toBeCalledWith({ message: 'Invalid authType.' })
+      expect(mockRes.clearCookie).not.toHaveBeenCalled()
     })
   })
 
