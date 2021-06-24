@@ -274,6 +274,15 @@ export const handleGetPublicForm: ControllerHandler<
     case AuthType.CP:
       return SpcpService.extractJwtPayloadFromRequest(authType, req.cookies)
         .map(({ userName, exp, iat, rememberMe }) => {
+          if (!exp) {
+            {
+              logger.error({
+                message: 'Invalid expiry time for cookie',
+                meta: logMeta,
+              })
+            }
+            return res.json({ form: publicForm, isIntranetUser })
+          }
           return res.json({
             form: publicForm,
             isIntranetUser,
