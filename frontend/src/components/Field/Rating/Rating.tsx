@@ -119,15 +119,16 @@ export const Rating = forwardRef<RatingProps, 'input'>(
         templateAreas={[
           `'caption' 'rating'`,
           `'caption' 'rating'`,
+          `'caption' 'rating'`,
           `'rating' 'caption'`,
         ]}
       >
         <Stack
           gridArea="rating"
           as="fieldset"
-          direction={['column', 'column', 'row']}
-          spacing={['0.5rem', '0.5rem', '1rem']}
-          align={['flex-start', 'flex-start', 'center']}
+          direction={['column', 'column', 'column', 'row']}
+          spacing={['0.5rem', '0.5rem', '0.5rem', '1rem']}
+          align={['flex-start', 'flex-start', 'flex-start', 'center']}
         >
           <Wrap spacing={ratingLayout.spacing}>
             {options.map((value, i) => {
