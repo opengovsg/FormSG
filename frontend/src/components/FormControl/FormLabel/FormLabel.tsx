@@ -72,6 +72,7 @@ FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
   return (
     <Text
       as="span"
+      verticalAlign="top"
       textStyle="caption-1"
       color="secondary.700"
       mr="0.5rem"
