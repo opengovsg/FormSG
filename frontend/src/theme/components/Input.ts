@@ -15,7 +15,7 @@ const size = {
 export const Input = {
   parts: ['field', 'addon'],
   variants: {
-    outline: (props: Record<string, never>) => {
+    outline: (props: Record<string, any>) => {
       const { theme } = props
       const { focusBorderColor: fc, errorBorderColor: ec } = props
 
