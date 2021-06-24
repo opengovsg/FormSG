@@ -273,7 +273,7 @@ export const handleGetPublicForm: ControllerHandler<
     case AuthType.SP:
     case AuthType.CP:
       return SpcpService.extractJwtPayloadFromRequest(authType, req.cookies)
-        .map(({ userName, exp, iat, rememberMe }) => {
+        .map((spcpSession) => {
           if (!exp) {
             {
               logger.error({
@@ -286,12 +286,7 @@ export const handleGetPublicForm: ControllerHandler<
           return res.json({
             form: publicForm,
             isIntranetUser,
-            spcpSession: {
-              userName,
-              iat,
-              exp,
-              rememberMe,
-            },
+            spcpSession,
           })
         })
         .mapErr((error) => {

@@ -549,12 +549,7 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_SP_AUTH_FORM.getPublicView(),
           isIntranetUser: false,
-          spcpSession: {
-            userName: MOCK_SPCP_SESSION.userName,
-            iat: MOCK_SPCP_SESSION.iat,
-            rememberMe: MOCK_SPCP_SESSION.rememberMe,
-            exp: MOCK_SPCP_SESSION.exp,
-          },
+          spcpSession: MOCK_SPCP_SESSION,
         })
       })
 
@@ -592,12 +587,7 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_CP_AUTH_FORM.getPublicView(),
           isIntranetUser: false,
-          spcpSession: {
-            userName: MOCK_SPCP_SESSION.userName,
-            iat: MOCK_SPCP_SESSION.iat,
-            rememberMe: MOCK_SPCP_SESSION.rememberMe,
-            exp: MOCK_SPCP_SESSION.exp,
-          },
+          spcpSession: MOCK_SPCP_SESSION,
         })
       })
 
@@ -1075,12 +1065,7 @@ describe('public-form.controller', () => {
         // Assert
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_SP_AUTH_FORM.getPublicView(),
-          spcpSession: {
-            userName: MOCK_SPCP_SESSION.userName,
-            iat: MOCK_SPCP_SESSION.iat,
-            rememberMe: MOCK_SPCP_SESSION.rememberMe,
-            exp: MOCK_SPCP_SESSION.exp,
-          },
+          spcpSession: MOCK_SPCP_SESSION,
           isIntranetUser: true,
         })
       })
@@ -1115,12 +1100,7 @@ describe('public-form.controller', () => {
         // Assert
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_CP_AUTH_FORM.getPublicView(),
-          spcpSession: {
-            userName: MOCK_SPCP_SESSION.userName,
-            iat: MOCK_SPCP_SESSION.iat,
-            rememberMe: MOCK_SPCP_SESSION.rememberMe,
-            exp: MOCK_SPCP_SESSION.exp,
-          },
+          spcpSession: MOCK_SPCP_SESSION,
           isIntranetUser: true,
         })
       })
