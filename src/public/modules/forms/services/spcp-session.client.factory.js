@@ -4,9 +4,16 @@ const PublicFormAuthService = require('../../../services/PublicFormAuthService')
 
 angular
   .module('forms')
-  .factory('SpcpSession', ['$interval', '$window', '$cookies', SpcpSession])
+  .factory('SpcpSession', [
+    '$interval',
+    '$q',
+    'Toastr',
+    '$window',
+    '$cookies',
+    SpcpSession,
+  ])
 
-function SpcpSession($interval, $window, $cookies) {
+function SpcpSession($interval, $q, Toastr, $window, $cookies) {
   let session = {
     userName: null,
     cookieName: null,
@@ -33,9 +40,14 @@ function SpcpSession($interval, $window, $cookies) {
       session.userName = undefined
     },
     logout: function (authType) {
-      PublicFormAuthService.logoutOfSpcpSession(authType)
-      $cookies.put('isJustLogOut', true)
-      $window.location.reload()
+      $q.when(PublicFormAuthService.logoutOfSpcpSession(authType))
+        .then(() => {
+          $cookies.put('isJustLogOut', true)
+          $window.location.reload()
+        })
+        .catch(() => {
+          Toastr.error('Failed to log out, please refresh and try again!')
+        })
     },
     isJustLogOut: function () {
       let val = $cookies.get('isJustLogOut')
