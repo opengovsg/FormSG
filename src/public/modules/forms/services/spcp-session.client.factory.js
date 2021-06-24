@@ -37,7 +37,7 @@ function SpcpSession($timeout, $window, $cookies) {
       session.userName = undefined
     },
     logout: function (authType) {
-      PublicFormAuthService.spcpLogout(authType)
+      PublicFormAuthService.logoutOfSpcpSession(authType)
       $cookies.put('isJustLogOut', true)
       $window.location.reload()
     },

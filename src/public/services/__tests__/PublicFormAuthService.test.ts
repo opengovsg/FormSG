@@ -103,14 +103,14 @@ describe('PublicFormAuthService', () => {
     })
   })
 
-  describe('spcpLogout', () => {
+  describe('logoutOfSpcpSession', () => {
     it('should call logout endpoint successfully', async () => {
       const authType = AuthType.SP
 
       const mockData = { message: 'Successfully logged out.' }
       MockAxios.get.mockResolvedValueOnce({ data: mockData })
 
-      const result = await PublicFormAuthService.spcpLogout(authType)
+      const result = await PublicFormAuthService.logoutOfSpcpSession(authType)
 
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${authType}/logout`,
@@ -124,7 +124,7 @@ describe('PublicFormAuthService', () => {
       const mockData = { message: 'Invalid authType.' }
       MockAxios.get.mockResolvedValueOnce({ data: mockData })
 
-      const result = await PublicFormAuthService.spcpLogout(authType)
+      const result = await PublicFormAuthService.logoutOfSpcpSession(authType)
 
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${authType}/logout`,

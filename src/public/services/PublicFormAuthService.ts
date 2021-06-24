@@ -34,7 +34,7 @@ export const validateEsrvcId = (
     .then(({ data }) => data)
 }
 
-export const spcpLogout = (
+export const logoutOfSpcpSession = (
   authType: AuthType,
 ): Promise<PublicFormAuthLogoutDto> => {
   return axios
