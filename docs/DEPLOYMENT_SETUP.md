@@ -19,6 +19,7 @@ Infrastructure
 - AWS Elastic Beanstalk / EC2 for hosting and deployment
 - AWS Elastic File System for mounting files (i.e. SingPass/MyInfo private keys into the `/certs` directory)
 - AWS S3 for image and logo hosting, attachments for Storage Mode forms
+- AWS Service Manager - Parameter Store, for holding environment variable configuration
 
 DevOps
 
@@ -104,7 +105,21 @@ The following env variables are set in Travis:
 
 ## Environment Variables
 
+These are configured by creating groups of environment variables formatted like `.env` files in the Parameter
+Store of AWS Service Manager. These groups have names formatted as `<environment>-<category>`. 
+
+The environment for each group is user-defined, and should be specified in the Elastic Beanstalk configuration
+as the environment variable `SSM_PREFIX`.
+
+The list of categories can be inferred by looking at the file `.ebextensions/env-file-creation.config`.
+
 ### Core Features
+
+#### AWS Service Manager
+
+| Variable            | Description                                                                                                      |
+| :------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `SSM_PREFIX`        | String prefix (typically the environment name) for AWS SSM parameter names to create a .env file for FormSG.     |
 
 #### App Config
 
