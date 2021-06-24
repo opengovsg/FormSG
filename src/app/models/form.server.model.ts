@@ -751,6 +751,24 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     ).exec()
   }
 
+  FormSchema.statics.disableSmsVerificationsForUser = async function (
+    userId: IUserSchema['_id'],
+  ) {
+    return this.updateMany(
+      // Filter the collection so that only speciified user is selected
+      {
+        admin: userId,
+      },
+      // Next, set the isVerifiable property for each field in form_fields
+      // Refer here for $[identifier] syntax: https://docs.mongodb.com/manual/reference/operator/update/positional-filtered/
+      { $set: { 'form_fields.$[field].isVerifiable': false } },
+      {
+        // Only set if the field has fieldType equal to mobile
+        arrayFilters: [{ 'field.fieldType': 'mobile' }],
+      },
+    ).exec()
+  }
+
   // Hooks
   FormSchema.pre<IFormSchema>('validate', function (next) {
     // Reject save if form document is too large
