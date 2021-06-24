@@ -26,12 +26,13 @@ import {
 } from './spcp.errors'
 import {
   CorppassAttributes,
-  CorppassJwtPayload,
+  CorppassJwtPayloadFromCookie,
   JwtName,
   JwtPayload,
+  JwtPayloadFromCookie,
   ParsedSpcpParams,
   SingpassAttributes,
-  SingpassJwtPayload,
+  SingpassJwtPayloadFromCookie,
   SpcpCookies,
   SpcpDomainSettings,
 } from './spcp.types'
@@ -221,7 +222,10 @@ export class SpcpServiceClass {
    */
   extractSingpassJwtPayload(
     jwt: string,
-  ): ResultAsync<SingpassJwtPayload, VerifyJwtError | InvalidJwtError> {
+  ): ResultAsync<
+    SingpassJwtPayloadFromCookie,
+    VerifyJwtError | InvalidJwtError
+  > {
     const logMeta = {
       action: 'extractSingpassJwtPayload',
     }
@@ -261,7 +265,10 @@ export class SpcpServiceClass {
    */
   extractCorppassJwtPayload(
     jwt: string,
-  ): ResultAsync<CorppassJwtPayload, VerifyJwtError | InvalidJwtError> {
+  ): ResultAsync<
+    CorppassJwtPayloadFromCookie,
+    VerifyJwtError | InvalidJwtError
+  > {
     const logMeta = {
       action: 'extractCorppassJwtPayload',
     }
@@ -453,7 +460,7 @@ export class SpcpServiceClass {
     authType: AuthType.SP | AuthType.CP,
     cookies: SpcpCookies,
   ): ResultAsync<
-    JwtPayload,
+    JwtPayloadFromCookie,
     VerifyJwtError | InvalidJwtError | MissingJwtError
   > {
     return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) => {

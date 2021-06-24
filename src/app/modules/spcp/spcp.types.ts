@@ -10,19 +10,27 @@ export type SpcpCookies = Partial<Record<JwtName, string>>
 export type SingpassJwtPayload = {
   userName: string
   rememberMe: boolean
-  iat?: number // iat and exp are present if the payload is received from client, not present when payload is first created by server
-  exp?: number
 }
 
 export type CorppassJwtPayload = {
   userName: string
   userInfo: string
   rememberMe: boolean
-  iat?: number // iat and exp are present if the payload is received from client, not present when payload is first created by server
-  exp?: number
 }
 
 export type JwtPayload = SingpassJwtPayload | CorppassJwtPayload
+
+type Timestamp = {
+  iat: number // iat and exp are present after cookie has been set
+  exp: number
+}
+
+export type SingpassJwtPayloadFromCookie = SingpassJwtPayload & Timestamp
+export type CorppassJwtPayloadFromCookie = CorppassJwtPayload & Timestamp
+
+export type JwtPayloadFromCookie =
+  | SingpassJwtPayloadFromCookie
+  | CorppassJwtPayloadFromCookie
 
 export interface SingpassAttributes {
   UserName?: string
