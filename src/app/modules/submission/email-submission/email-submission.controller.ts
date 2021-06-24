@@ -20,6 +20,10 @@ import {
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import * as MyInfoUtil from '../../myinfo/myinfo.util'
 import { SpcpService } from '../../spcp/spcp.service'
+import {
+  createCorppassParsedResponses,
+  createSingpassParsedResponses,
+} from '../../spcp/spcp.util'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as SubmissionService from '../submission.service'
 import { extractEmailConfirmationData } from '../submission.utils'
@@ -31,7 +35,6 @@ import {
   mapRouteError,
   SubmissionEmailObj,
 } from './email-submission.util'
-import ParsedResponsesObject from './ParsedResponsesObject.class'
 
 const logger = createLoggerWithLabel(module)
 
@@ -134,7 +137,7 @@ const submitEmailModeForm: ControllerHandler<
         // Validate responses
         EmailSubmissionService.validateAttachments(req.body.responses)
           .andThen(() =>
-            ParsedResponsesObject.parseResponses(form, req.body.responses),
+            SubmissionService.getProcessedResponses(form, req.body.responses),
           )
           .map((parsedResponses) => ({ parsedResponses, form }))
           .mapErr((error) => {
@@ -154,11 +157,10 @@ const submitEmailModeForm: ControllerHandler<
               .asyncAndThen((jwt) => SpcpService.extractCorppassJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
-                parsedResponses: parsedResponses.addNdiResponses({
-                  authType,
-                  uinFin: jwt.userName,
-                  userInfo: jwt.userInfo,
-                }),
+                parsedResponses: [
+                  ...parsedResponses,
+                  ...createCorppassParsedResponses(jwt.userName, jwt.userInfo),
+                ],
               }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
@@ -174,10 +176,10 @@ const submitEmailModeForm: ControllerHandler<
               .asyncAndThen((jwt) => SpcpService.extractSingpassJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
-                parsedResponses: parsedResponses.addNdiResponses({
-                  authType,
-                  uinFin: jwt.userName,
-                }),
+                parsedResponses: [
+                  ...parsedResponses,
+                  ...createSingpassParsedResponses(jwt.userName),
+                ],
               }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
@@ -197,19 +199,16 @@ const submitEmailModeForm: ControllerHandler<
               .asyncAndThen((uinFin) =>
                 MyInfoService.fetchMyInfoHashes(uinFin, formId)
                   .andThen((hashes) =>
-                    MyInfoService.checkMyInfoHashes(
-                      parsedResponses.responses,
-                      hashes,
-                    ),
+                    MyInfoService.checkMyInfoHashes(parsedResponses, hashes),
                   )
                   .map<IPopulatedEmailFormWithResponsesAndHash>(
                     (hashedFields) => ({
                       form,
                       hashedFields,
-                      parsedResponses: parsedResponses.addNdiResponses({
-                        authType,
-                        uinFin,
-                      }),
+                      parsedResponses: [
+                        ...parsedResponses,
+                        ...createSingpassParsedResponses(uinFin),
+                      ],
                     }),
                   ),
               )
@@ -232,7 +231,7 @@ const submitEmailModeForm: ControllerHandler<
       .andThen(({ form, parsedResponses, hashedFields }) => {
         // Create data for response email as well as email confirmation
         const emailData = new SubmissionEmailObj(
-          parsedResponses.getAllResponses(),
+          parsedResponses,
           hashedFields,
           form.authType,
         )
@@ -275,9 +274,8 @@ const submitEmailModeForm: ControllerHandler<
         // NOTE: This should short circuit in the event of an error.
         // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
         return MailService.sendSubmissionToAdmin({
-          replyToEmails: EmailSubmissionService.extractEmailAnswers(
-            parsedResponses.getAllResponses(),
-          ),
+          replyToEmails:
+            EmailSubmissionService.extractEmailAnswers(parsedResponses),
           form,
           submission,
           attachments,
@@ -315,7 +313,7 @@ const submitEmailModeForm: ControllerHandler<
             attachments,
             responsesData: emailData.autoReplyData,
             recipientData: extractEmailConfirmationData(
-              parsedResponses.getAllResponses(),
+              parsedResponses,
               form.form_fields,
             ),
           }).mapErr((error) => {
