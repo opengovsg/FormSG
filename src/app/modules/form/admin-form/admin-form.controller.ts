@@ -50,6 +50,10 @@ import {
 } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import * as FeedbackService from '../../feedback/feedback.service'
+import {
+  createCorppassParsedResponses,
+  createSingpassParsedResponses,
+} from '../../spcp/spcp.util'
 import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
@@ -57,7 +61,6 @@ import {
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
-import ParsedResponsesObject from '../../submission/email-submission/ParsedResponsesObject.class'
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
@@ -1509,7 +1512,7 @@ export const submitEmailPreview: ControllerHandler<
 
   const parsedResponsesResult =
     await EmailSubmissionService.validateAttachments(responses).andThen(() =>
-      ParsedResponsesObject.parseResponses(form, responses),
+      SubmissionService.getProcessedResponses(form, responses),
     )
   if (parsedResponsesResult.isErr()) {
     logger.error({
@@ -1526,22 +1529,21 @@ export const submitEmailPreview: ControllerHandler<
   const attachments = mapAttachmentsFromResponses(req.body.responses)
 
   // Handle SingPass, CorpPass and MyInfo authentication and validation
-  const { authType } = form
-  if (authType === AuthType.SP || authType === AuthType.MyInfo) {
-    parsedResponses.addNdiResponses({
-      authType,
-      uinFin: PREVIEW_SINGPASS_UINFIN,
-    })
-  } else if (authType === AuthType.CP) {
-    parsedResponses.addNdiResponses({
-      authType,
-      uinFin: PREVIEW_CORPPASS_UINFIN,
-      userInfo: PREVIEW_CORPPASS_UID,
-    })
+  if (form.authType === AuthType.SP || form.authType === AuthType.MyInfo) {
+    parsedResponses.push(
+      ...createSingpassParsedResponses(PREVIEW_SINGPASS_UINFIN),
+    )
+  } else if (form.authType === AuthType.CP) {
+    parsedResponses.push(
+      ...createCorppassParsedResponses(
+        PREVIEW_CORPPASS_UINFIN,
+        PREVIEW_CORPPASS_UID,
+      ),
+    )
   }
 
   const emailData = new SubmissionEmailObj(
-    parsedResponses.getAllResponses(),
+    parsedResponses,
     // All MyInfo fields are verified in preview
     new Set(AdminFormService.extractMyInfoFieldIds(form.form_fields)),
     form.authType,
@@ -1554,9 +1556,7 @@ export const submitEmailPreview: ControllerHandler<
   )
 
   const sendAdminEmailResult = await MailService.sendSubmissionToAdmin({
-    replyToEmails: EmailSubmissionService.extractEmailAnswers(
-      parsedResponses.getAllResponses(),
-    ),
+    replyToEmails: EmailSubmissionService.extractEmailAnswers(parsedResponses),
     form,
     submission,
     attachments,
@@ -1585,7 +1585,7 @@ export const submitEmailPreview: ControllerHandler<
     attachments,
     responsesData: emailData.autoReplyData,
     recipientData: extractEmailConfirmationData(
-      parsedResponses.getAllResponses(),
+      parsedResponses,
       form.form_fields,
     ),
   }).mapErr((error) => {
