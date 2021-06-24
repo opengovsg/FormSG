@@ -113,7 +113,7 @@ describe('PublicFormAuthService', () => {
       const result = await PublicFormAuthService.logoutOfSpcpSession(authType)
 
       expect(MockAxios.get).toHaveBeenCalledWith(
-        `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${authType}/logout`,
+        `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/auth/${authType}/logout`,
       )
       expect(result).toEqual(mockData)
     })
@@ -127,7 +127,7 @@ describe('PublicFormAuthService', () => {
       const result = await PublicFormAuthService.logoutOfSpcpSession(authType)
 
       expect(MockAxios.get).toHaveBeenCalledWith(
-        `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${authType}/logout`,
+        `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/auth/${authType}/logout`,
       )
       expect(result).toEqual(mockData)
     })

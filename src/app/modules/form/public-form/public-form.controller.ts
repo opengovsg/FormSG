@@ -491,7 +491,7 @@ export const _handleFormAuthLogout: ControllerHandler<
 }
 
 /**
- * Handler for /forms/:authType/logout
+ * Handler for /forms/auth/:authType/logout
  * Valid AuthTypes are SP or CP
  */
 export const handleFormAuthLogout = [

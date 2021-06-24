@@ -38,6 +38,8 @@ export const logoutOfSpcpSession = (
   authType: AuthType,
 ): Promise<PublicFormAuthLogoutDto> => {
   return axios
-    .get<PublicFormAuthLogoutDto>(`${PUBLIC_FORMS_ENDPOINT}/${authType}/logout`)
+    .get<PublicFormAuthLogoutDto>(
+      `${PUBLIC_FORMS_ENDPOINT}/auth/${authType}/logout`,
+    )
     .then(({ data }) => data)
 }
