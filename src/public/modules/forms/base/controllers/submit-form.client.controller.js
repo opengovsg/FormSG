@@ -30,10 +30,12 @@ function SubmitFormController(
   // For SP / CP forms, also include the spcpSession details
   // This allows the log out button to be correctly populated with the UID
   // Also provides time to cookie expiry so that client can refresh page
-  if (['SP', 'CP'].includes(vm.myform.authType)) {
-    if (FormData.spcpSession && FormData.spcpSession.userName) {
-      SpcpSession.setUser(FormData.spcpSession)
-    }
+  if (
+    ['SP', 'CP'].includes(vm.myform.authType) &&
+    FormData.spcpSession &&
+    FormData.spcpSession.userName
+  ) {
+    SpcpSession.setUser(FormData.spcpSession)
   }
 
   // Set MyInfo login status
