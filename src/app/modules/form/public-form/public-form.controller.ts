@@ -8,6 +8,7 @@ import { AuthType } from '../../../../types'
 import {
   ErrorDto,
   PrivateFormErrorDto,
+  PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
   PublicFormAuthValidateEsrvcIdDto,
   PublicFormViewDto,
@@ -31,7 +32,9 @@ import {
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
+import { SpcpFactory } from '../../spcp/spcp.factory'
 import { SpcpService } from '../../spcp/spcp.service'
+import { JwtName } from '../../spcp/spcp.types'
 import { getRedirectTarget, validateSpcpForm } from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -449,6 +452,42 @@ export const handleFormAuthRedirect = [
     }),
   }),
   _handleFormAuthRedirect,
+] as ControllerHandler[]
+
+/**
+ * NOTE: This is exported only for testing
+ * Logs user out of SP / CP By deleting cookie
+ * @param authType type of authentication
+ *
+ * @returns 200 with success message when user logs out successfully
+ * @returns 400 if authType is invalid
+ */
+export const _handleFormAuthLogout: ControllerHandler<
+  { authType: AuthType },
+  PublicFormAuthLogoutDto
+> = (req, res) => {
+  const { authType } = req.params
+
+  if (authType !== AuthType.SP && authType !== AuthType.CP) {
+    return res.status(400).json({ message: 'Invalid authType.' })
+  }
+
+  res.clearCookie(JwtName[authType])
+
+  return res.status(200).json({ message: 'Successfully logged out.' })
+}
+
+/**
+ * Handler for /forms/:authType/logout
+ * Valid AuthTypes are SP or CP
+ */
+export const handleFormAuthLogout = [
+  celebrate({
+    [Segments.PARAMS]: Joi.object({
+      authType: Joi.string().valid(AuthType.SP, AuthType.CP).required(),
+    }),
+  }),
+  _handleFormAuthLogout,
 ] as ControllerHandler[]
 
 /**

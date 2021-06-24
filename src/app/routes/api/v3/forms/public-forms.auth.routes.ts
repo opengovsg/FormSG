@@ -23,6 +23,17 @@ PublicFormsAuthRouter.route('/:formId([a-fA-F0-9]{24})/auth/redirect').get(
 )
 
 /**
+ * Removes SP/CP JWT cookie when called to logout user from SP/CP
+ * @route /:authType/logout
+ *
+ * @returns 200 with success message when user logs out successfully
+ * @returns 400 if authType is invalid
+ */
+PublicFormsAuthRouter.route('/:authType/logout').get(
+  PublicFormController.handleFormAuthLogout,
+)
+
+/**
  * Validates a form's eServiceId through parsing the returned html of the spcp login page
  * @route /:formId/auth/validate
  *
