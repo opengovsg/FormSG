@@ -1,6 +1,7 @@
 'use strict'
 
 const jwtDecode = require('jwt-decode').default
+const PublicFormAuthService = require('../../../services/PublicFormAuthService')
 
 angular
   .module('forms')
@@ -36,11 +37,8 @@ function SpcpSession($window, $cookies) {
     clearUserName: function () {
       session.userName = undefined
     },
-    logout: function () {
-      $cookies.remove(
-        session.cookieName,
-        $window.spcpCookieDomain ? { domain: $window.spcpCookieDomain } : {},
-      )
+    logout: function (authType) {
+      PublicFormAuthService.spcpLogout(authType)
       $cookies.put('isJustLogOut', true)
       $window.location.reload()
     },
