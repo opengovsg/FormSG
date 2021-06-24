@@ -1,4 +1,4 @@
-import { ComponentStyleConfig } from '@chakra-ui/react'
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { getColor } from '@chakra-ui/theme-tools'
 
 /**
@@ -12,9 +12,10 @@ const size = {
   },
 }
 
-export const Input: ComponentStyleConfig = {
+export const Input = {
+  parts: ['field', 'addon'],
   variants: {
-    outline: (props) => {
+    outline: (props: Record<string, never>) => {
       const { theme } = props
       const { focusBorderColor: fc, errorBorderColor: ec } = props
 
