@@ -476,14 +476,10 @@ export const handleFormAuthRedirect = [
  * @returns 400 if authType is invalid
  */
 export const _handleFormAuthLogout: ControllerHandler<
-  { authType: AuthType },
+  { authType: AuthType.SP | AuthType.CP },
   PublicFormAuthLogoutDto
 > = (req, res) => {
   const { authType } = req.params
-
-  if (authType !== AuthType.SP && authType !== AuthType.CP) {
-    return res.status(400).json({ message: 'Invalid authType.' })
-  }
 
   res.clearCookie(JwtName[authType])
 

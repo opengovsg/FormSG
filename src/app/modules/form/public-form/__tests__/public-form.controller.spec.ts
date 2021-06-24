@@ -1533,25 +1533,6 @@ describe('public-form.controller', () => {
         message: 'Successfully logged out.',
       })
     })
-
-    it('should return 400 if authType is invalid and not clear cookie', async () => {
-      const MOCK_REQ = expressHandler.mockRequest({
-        params: {
-          authType: AuthType.NIL,
-        },
-      })
-      const mockRes = expressHandler.mockResponse({ clearCookie: jest.fn() })
-
-      await PublicFormController._handleFormAuthLogout(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith({ message: 'Invalid authType.' })
-      expect(mockRes.clearCookie).not.toHaveBeenCalled()
-    })
   })
 
   describe('handleValidateFormEsrvcId', () => {
