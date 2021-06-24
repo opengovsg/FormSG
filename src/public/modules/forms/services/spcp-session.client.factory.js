@@ -1,13 +1,12 @@
 'use strict'
 
-const jwtDecode = require('jwt-decode').default
 const PublicFormAuthService = require('../../../services/PublicFormAuthService')
 
 angular
   .module('forms')
-  .factory('SpcpSession', ['$window', '$cookies', SpcpSession])
+  .factory('SpcpSession', ['$timeout', '$window', '$cookies', SpcpSession])
 
-function SpcpSession($window, $cookies) {
+function SpcpSession($timeout, $window, $cookies) {
   let session = {
     userName: null,
     cookieName: null,
@@ -17,18 +16,18 @@ function SpcpSession($window, $cookies) {
       SP: 'jwtSp',
       CP: 'jwtCp',
     },
-    setUser: function (authType) {
-      if (session.cookieNames[authType]) {
-        session.cookieName = session.cookieNames[authType]
-        const cookie = $cookies.get(session.cookieName)
-        if (cookie) {
-          const decoded = jwtDecode(cookie)
-          session.userName = decoded.userName
-          session.rememberMe = decoded.rememberMe
-          session.issuedAt = parseInt(decoded.iat)
-          // Every 5 seconds, check if cookie exists and log out if cookie does not exist
-          setInterval(session.checkCookie, 5000)
-        }
+    setUser: function ({ userName, rememberMe, iat, msToExpiry }) {
+      session.userName = userName
+      session.rememberMe = rememberMe
+      session.issuedAt = iat
+      if (!rememberMe) {
+        $timeout(function () {
+          $window.location.reload()
+        }, msToExpiry)
+        // Refresh page after cookie expiry time
+        // Timeout is not set when rememberMe === true because cookie expiry is 30 days
+        // i.e. 2592000000 ms which exceeds the maximum delay value of
+        // 2147483647 ms (see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
       }
     },
     setUserName: function (userName) {
@@ -41,12 +40,6 @@ function SpcpSession($window, $cookies) {
       PublicFormAuthService.spcpLogout(authType)
       $cookies.put('isJustLogOut', true)
       $window.location.reload()
-    },
-    checkCookie: function () {
-      let cookie = $cookies.get(session.cookieName)
-      if (!cookie) {
-        session.logout()
-      }
     },
     isJustLogOut: function () {
       let val = $cookies.get('isJustLogOut')

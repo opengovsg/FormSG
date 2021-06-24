@@ -27,6 +27,15 @@ function SubmitFormController(
   // The form attribute of the FormData object contains the form fields, logic etc
   vm.myform = FormData.form
 
+  // For SP / CP forms, also include the spcpSession details
+  // This allows the log out button to be correctly populated with the UID
+  // Also provides time to cookie expiry so that client can refresh page
+  if (['SP', 'CP'].includes(vm.myform.authType)) {
+    if (FormData.spcpSession && FormData.spcpSession.userName) {
+      SpcpSession.setUser(FormData.spcpSession)
+    }
+  }
+
   // Set MyInfo login status
   if (!FormData.isTemplate && vm.myform.authType === 'MyInfo') {
     if (FormData.spcpSession && FormData.spcpSession.userName) {
@@ -70,8 +79,6 @@ function SubmitFormController(
   } else {
     vm.banner = {}
   }
-
-  SpcpSession.setUser(vm.myform.authType)
 
   angular.element($document[0]).on('touchstart', function (e) {
     let activeElement = angular.element($document[0].activeElement)[0]
