@@ -333,6 +333,10 @@ export interface IFormModel extends Model<IFormSchema> {
     userEmail: IUserSchema['email'],
   ): Promise<FormMetaView[]>
 
+  disableSmsVerificationsForUser(
+    userId: IUserSchema['_id'],
+  ): Promise<IFormDocument[]>
+
   /**
    * Update the end page of form with given endpage object.
    * @param formId the id of the form to update
