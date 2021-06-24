@@ -10,16 +10,16 @@ export type SpcpCookies = Partial<Record<JwtName, string>>
 export type SingpassJwtPayload = {
   userName: string
   rememberMe: boolean
-  iat?: number
-  exp?: number
+  iat: number
+  exp: number
 }
 
 export type CorppassJwtPayload = {
   userName: string
   userInfo: string
   rememberMe: boolean
-  iat?: number
-  exp?: number
+  iat: number
+  exp: number
 }
 
 export type JwtPayload = SingpassJwtPayload | CorppassJwtPayload

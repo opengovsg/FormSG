@@ -4,9 +4,9 @@ const PublicFormAuthService = require('../../../services/PublicFormAuthService')
 
 angular
   .module('forms')
-  .factory('SpcpSession', ['$timeout', '$window', '$cookies', SpcpSession])
+  .factory('SpcpSession', ['$interval', '$window', '$cookies', SpcpSession])
 
-function SpcpSession($timeout, $window, $cookies) {
+function SpcpSession($interval, $window, $cookies) {
   let session = {
     userName: null,
     cookieName: null,
@@ -16,19 +16,15 @@ function SpcpSession($timeout, $window, $cookies) {
       SP: 'jwtSp',
       CP: 'jwtCp',
     },
-    setUser: function ({ userName, rememberMe, iat, msToExpiry }) {
+    setUser: function ({ userName, rememberMe, iat, exp }) {
       session.userName = userName
       session.rememberMe = rememberMe
       session.issuedAt = iat
-      if (!rememberMe) {
-        $timeout(function () {
+      $interval(() => {
+        if (Date.now() > exp * 1000) {
           $window.location.reload()
-        }, msToExpiry)
-        // Refresh page after cookie expiry time
-        // Timeout is not set when rememberMe === true because cookie expiry is 30 days
-        // i.e. 2592000000 ms which exceeds the maximum delay value of
-        // 2147483647 ms (see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
-      }
+        }
+      }, 5000) // Every 5s, check cookie expiry time and refresh if necessary
     },
     setUserName: function (userName) {
       session.userName = userName

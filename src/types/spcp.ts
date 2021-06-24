@@ -1,6 +1,6 @@
 export interface SpcpSession {
   userName: string
-  iat?: number
+  iat?: number // Optional as these are not returned for MyInfo forms
   rememberMe?: boolean
-  msToExpiry?: number
+  exp?: number
 }
