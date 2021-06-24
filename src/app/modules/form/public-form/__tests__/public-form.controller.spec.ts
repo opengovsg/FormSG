@@ -553,7 +553,7 @@ describe('public-form.controller', () => {
             userName: MOCK_SPCP_SESSION.userName,
             iat: MOCK_SPCP_SESSION.iat,
             rememberMe: MOCK_SPCP_SESSION.rememberMe,
-            msToExpiry: expect.toBeNumber(),
+            exp: MOCK_SPCP_SESSION.exp,
           },
         })
       })
@@ -596,7 +596,7 @@ describe('public-form.controller', () => {
             userName: MOCK_SPCP_SESSION.userName,
             iat: MOCK_SPCP_SESSION.iat,
             rememberMe: MOCK_SPCP_SESSION.rememberMe,
-            msToExpiry: expect.toBeNumber(),
+            exp: MOCK_SPCP_SESSION.exp,
           },
         })
       })
@@ -1079,7 +1079,7 @@ describe('public-form.controller', () => {
             userName: MOCK_SPCP_SESSION.userName,
             iat: MOCK_SPCP_SESSION.iat,
             rememberMe: MOCK_SPCP_SESSION.rememberMe,
-            msToExpiry: expect.toBeNumber(),
+            exp: MOCK_SPCP_SESSION.exp,
           },
           isIntranetUser: true,
         })
@@ -1119,7 +1119,7 @@ describe('public-form.controller', () => {
             userName: MOCK_SPCP_SESSION.userName,
             iat: MOCK_SPCP_SESSION.iat,
             rememberMe: MOCK_SPCP_SESSION.rememberMe,
-            msToExpiry: expect.toBeNumber(),
+            exp: MOCK_SPCP_SESSION.exp,
           },
           isIntranetUser: true,
         })
