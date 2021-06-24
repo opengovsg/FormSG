@@ -165,7 +165,7 @@ export const handleLogin: (
     .map(() => {
       res.cookie(JwtName[authType], jwtResult.value, {
         maxAge: cookieDuration,
-        httpOnly: true,
+        httpOnly: false, // the JWT needs to be read by client-side JS
         sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
         secure: !config.isDev,
         ...SpcpService.getCookieSettings(),

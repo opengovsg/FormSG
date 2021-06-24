@@ -307,7 +307,7 @@ describe('spcp.controller', () => {
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('jwtSp', MOCK_JWT, {
           maxAge: MOCK_COOKIE_AGE,
-          httpOnly: true,
+          httpOnly: false,
           sameSite: 'lax',
           secure: !MockConfig.isDev,
           ...MOCK_COOKIE_SETTINGS,
@@ -566,7 +566,7 @@ describe('spcp.controller', () => {
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('jwtCp', MOCK_JWT, {
           maxAge: MOCK_COOKIE_AGE,
-          httpOnly: true,
+          httpOnly: false,
           sameSite: 'lax',
           secure: !MockConfig.isDev,
           ...MOCK_COOKIE_SETTINGS,
