@@ -83,7 +83,9 @@ describe('public-form.routes', () => {
       mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
         cb(null, {
           userName: MOCK_COOKIE_PAYLOAD.userName,
+          iat: 100000000,
           exp: 1000000000,
+          rememberMe: false,
         }),
       )
       const { form } = await dbHandler.insertEmailForm({
@@ -99,9 +101,12 @@ describe('public-form.routes', () => {
       const fullForm = await dbHandler.getFullFormById(formId)
       const expectedResponseBody = {
         form: JSON.parse(JSON.stringify(fullForm?.getPublicView())),
-        spcpSession: expect.objectContaining({
+        spcpSession: {
           userName: MOCK_COOKIE_PAYLOAD.userName,
-        }),
+          iat: 100000000,
+          exp: 1000000000,
+          rememberMe: false,
+        },
         isIntranetUser: false,
       }
 
@@ -121,7 +126,9 @@ describe('public-form.routes', () => {
         cb(null, {
           userName: MOCK_COOKIE_PAYLOAD.userName,
           userInfo: 'MyCorpPassUEN',
+          iat: 100000000,
           exp: 1000000000,
+          rememberMe: false,
         }),
       )
       const { form } = await dbHandler.insertEmailForm({
@@ -137,9 +144,13 @@ describe('public-form.routes', () => {
       const fullForm = await dbHandler.getFullFormById(formId)
       const expectedResponseBody = {
         form: JSON.parse(JSON.stringify(fullForm?.getPublicView())),
-        spcpSession: expect.objectContaining({
+        spcpSession: {
           userName: MOCK_COOKIE_PAYLOAD.userName,
-        }),
+          userInfo: 'MyCorpPassUEN',
+          iat: 100000000,
+          exp: 1000000000,
+          rememberMe: false,
+        },
         isIntranetUser: false,
       }
 
