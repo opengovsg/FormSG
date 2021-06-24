@@ -515,7 +515,12 @@ describe('public-form.controller', () => {
 
       it('should return 200 when client authenticates using SP', async () => {
         // Arrange
-        const MOCK_SPCP_SESSION = { userName: MOCK_JWT_PAYLOAD.userName }
+        const MOCK_SPCP_SESSION = {
+          userName: MOCK_JWT_PAYLOAD.userName,
+          exp: 1000000000,
+          iat: 100000000,
+          rememberMe: false,
+        }
         const MOCK_SP_AUTH_FORM = {
           ...BASE_FORM,
           authType: AuthType.SP,
@@ -543,13 +548,23 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_SP_AUTH_FORM.getPublicView(),
           isIntranetUser: false,
-          spcpSession: MOCK_SPCP_SESSION,
+          spcpSession: {
+            userName: MOCK_SPCP_SESSION.userName,
+            iat: MOCK_SPCP_SESSION.iat,
+            rememberMe: MOCK_SPCP_SESSION.rememberMe,
+            msToExpiry: expect.toBeNumber(),
+          },
         })
       })
 
       it('should return 200 when client authenticates using CP', async () => {
         // Arrange
-        const MOCK_SPCP_SESSION = { userName: MOCK_JWT_PAYLOAD.userName }
+        const MOCK_SPCP_SESSION = {
+          userName: MOCK_JWT_PAYLOAD.userName,
+          exp: 1000000000,
+          iat: 100000000,
+          rememberMe: false,
+        }
         const MOCK_CP_AUTH_FORM = {
           ...BASE_FORM,
           authType: AuthType.CP,
@@ -576,7 +591,12 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_CP_AUTH_FORM.getPublicView(),
           isIntranetUser: false,
-          spcpSession: MOCK_SPCP_SESSION,
+          spcpSession: {
+            userName: MOCK_SPCP_SESSION.userName,
+            iat: MOCK_SPCP_SESSION.iat,
+            rememberMe: MOCK_SPCP_SESSION.rememberMe,
+            msToExpiry: expect.toBeNumber(),
+          },
         })
       })
 
@@ -989,6 +1009,9 @@ describe('public-form.controller', () => {
     describe('errors in form access', () => {
       const MOCK_SPCP_SESSION = {
         userName: 'mock',
+        exp: 1000000000,
+        iat: 100000000,
+        rememberMe: false,
       }
 
       it('should return 200 with isIntranetUser set to false when a user accesses a form from outside intranet', async () => {
@@ -1051,7 +1074,12 @@ describe('public-form.controller', () => {
         // Assert
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_SP_AUTH_FORM.getPublicView(),
-          spcpSession: MOCK_SPCP_SESSION,
+          spcpSession: {
+            userName: MOCK_SPCP_SESSION.userName,
+            iat: MOCK_SPCP_SESSION.iat,
+            rememberMe: MOCK_SPCP_SESSION.rememberMe,
+            msToExpiry: expect.toBeNumber(),
+          },
           isIntranetUser: true,
         })
       })
@@ -1086,7 +1114,12 @@ describe('public-form.controller', () => {
         // Assert
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_CP_AUTH_FORM.getPublicView(),
-          spcpSession: MOCK_SPCP_SESSION,
+          spcpSession: {
+            userName: MOCK_SPCP_SESSION.userName,
+            iat: MOCK_SPCP_SESSION.iat,
+            rememberMe: MOCK_SPCP_SESSION.rememberMe,
+            msToExpiry: expect.toBeNumber(),
+          },
           isIntranetUser: true,
         })
       })
