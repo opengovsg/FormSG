@@ -109,7 +109,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
         case 'Number':
           return { spacing: '-px', rowHeight: '0.5rem' }
         default:
-          return { spacing: '0.25rem', rowHeight: 0 }
+          return { spacing: 0, rowHeight: 0 }
       }
     }, [variant])
 
@@ -148,9 +148,11 @@ export const Rating = forwardRef<RatingProps, 'input'>(
                   </RatingOption>
                   {
                     // Force component to begin on a new line.
-                    value % wrapComponentsPerRow === 0 && isSplitRows && (
-                      <Box flexBasis="100%" h={ratingLayout.rowHeight} />
-                    )
+                    i !== numberOfRatings - 1 &&
+                      value % wrapComponentsPerRow === 0 &&
+                      isSplitRows && (
+                        <Box flexBasis="100%" h={ratingLayout.rowHeight} />
+                      )
                   }
                 </Fragment>
               )
