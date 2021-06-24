@@ -3,6 +3,7 @@ import {
   Box,
   forwardRef,
   Grid,
+  Stack,
   Text,
   useBreakpointValue,
   Wrap,
@@ -121,11 +122,12 @@ export const Rating = forwardRef<RatingProps, 'input'>(
           `'rating' 'caption'`,
         ]}
       >
-        <Wrap
+        <Stack
           gridArea="rating"
           as="fieldset"
-          align="center"
+          direction={['column', 'column', 'row']}
           spacing={['0.5rem', '0.5rem', '1rem']}
+          align={['flex-start', 'flex-start', 'center']}
         >
           <Wrap spacing={ratingLayout.spacing}>
             {options.map((value, i) => {
@@ -157,7 +159,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
           {currentValue && variant !== 'Number' && (
             <Text textStyle="subhead-2">{currentValue} selected</Text>
           )}
-        </Wrap>
+        </Stack>
         {helperText && (
           <Text
             id={`${name}-caption`}
