@@ -32,7 +32,6 @@ import {
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
-import { SpcpFactory } from '../../spcp/spcp.factory'
 import { SpcpService } from '../../spcp/spcp.service'
 import { JwtName } from '../../spcp/spcp.types'
 import { getRedirectTarget, validateSpcpForm } from '../../spcp/spcp.util'
@@ -273,7 +272,7 @@ export const handleGetPublicForm: ControllerHandler<
       return res.json({ form: publicForm, isIntranetUser })
     case AuthType.SP:
     case AuthType.CP:
-      return SpcpFactory.extractJwtPayloadFromRequest(authType, req.cookies)
+      return SpcpService.extractJwtPayloadFromRequest(authType, req.cookies)
         .map(({ userName, exp, iat, rememberMe }) => {
           if (!exp) {
             {

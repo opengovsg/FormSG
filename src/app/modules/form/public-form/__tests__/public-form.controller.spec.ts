@@ -39,7 +39,6 @@ import {
   LoginPageValidationError,
   MissingJwtError,
 } from '../../../spcp/spcp.errors'
-import { SpcpFactory } from '../../../spcp/spcp.factory'
 import { SpcpService } from '../../../spcp/spcp.service'
 import { JwtName } from '../../../spcp/spcp.types'
 import {
