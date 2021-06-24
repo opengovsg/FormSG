@@ -767,6 +767,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       {
         // Only set if the field has fieldType equal to mobile
         arrayFilters: [{ 'field.fieldType': 'mobile' }],
+        // NOTE: Not updating the timestamp because we should preserve ordering due to user-level modifications
+        timestamps: false,
       },
     ).exec()
   }
