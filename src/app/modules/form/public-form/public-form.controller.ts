@@ -273,14 +273,28 @@ export const handleGetPublicForm: ControllerHandler<
       return res.json({ form: publicForm, isIntranetUser })
     case AuthType.SP:
     case AuthType.CP:
-      return SpcpService.extractJwtPayloadFromRequest(authType, req.cookies)
-        .map(({ userName }) =>
-          res.json({
+      return SpcpFactory.extractJwtPayloadFromRequest(authType, req.cookies)
+        .map(({ userName, exp, iat, rememberMe }) => {
+          if (!exp) {
+            {
+              logger.error({
+                message: 'Invalid expiry time for cookie',
+                meta: logMeta,
+              })
+            }
+            return res.json({ form: publicForm, isIntranetUser })
+          }
+          return res.json({
             form: publicForm,
             isIntranetUser,
-            spcpSession: { userName },
-          }),
-        )
+            spcpSession: {
+              userName,
+              iat,
+              rememberMe,
+              msToExpiry: exp * 1000 - Date.now(), // Used to tell browser when to refresh page upon cookie expiry
+            },
+          })
+        })
         .mapErr((error) => {
           // Report only relevant errors - verification failed for user here
           if (
