@@ -1,4 +1,5 @@
 import { YESNO_THEME_KEY, YesNoField } from './Field/YesNo'
+import { Banner } from './Banner'
 import { Button } from './Button'
 import { Form } from './Form'
 import { FormError } from './FormError'
@@ -16,4 +17,5 @@ export const components = {
   FormError,
   FormLabel,
   [YESNO_THEME_KEY]: YesNoField,
+  Banner,
 }
