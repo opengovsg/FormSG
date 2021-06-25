@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { SimpleGrid, Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
@@ -6,24 +7,27 @@ import Button from '~components/Button'
 
 import { Toast, ToastProps } from './Toast'
 
-const ToastStateProps = {
+const ToastStateProps: Record<string, ToastProps> = {
   Warning: {
     status: 'warning',
     title: 'Warning',
     description: 'This is a toast for warning states',
     isClosable: true,
+    onClose: () => {},
   },
   Success: {
     status: 'success',
     title: 'Success',
     description: 'This is a toast for success states',
     isClosable: true,
+    onClose: () => {},
   },
   Error: {
     status: 'danger',
     title: 'Error',
     description: 'This is a toast for error states',
     isClosable: true,
+    onClose: () => {},
   },
 }
 export default {
