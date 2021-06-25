@@ -1,100 +1,120 @@
-import { cloneElement, isValidElement, useCallback } from 'react'
+import {
+  cloneElement,
+  createContext,
+  createRef,
+  isValidElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import {
   Checkbox as ChakraCheckbox,
-  CheckboxGroup,
-  CheckboxGroupProps as ChakraCheckboxGroupProps,
-  CheckboxProps as ChakraCheckboxProps,
+  CheckboxProps,
   Flex,
   forwardRef,
   Input,
-  useCheckbox,
+  Text,
   useCheckboxGroup,
-  UseCheckboxGroupReturn,
-  UseCheckboxProps,
+  useMergeRefs,
   VStack,
 } from '@chakra-ui/react'
 
-export interface CheckboxProps
-  extends Omit<ChakraCheckboxGroupProps, 'children'> {
-  /**
-   * Child components will be used as the other's component if other is toggled to true.
-   * Only input components are allowed.
-   */
-  children?: ReturnType<typeof Input>
-  /**
-   * Checkbox options
-   */
-  options?: string[]
-  /**
-   * Whether other option is activated. Added to allow for a default other component and will be false by default.
-   */
-  other: boolean
+const CheckboxContext = createContext<undefined | any>(undefined)
+
+const useCheckboxState = () => {
+  const value = useContext(CheckboxContext)
+
+  if (!value) {
+    throw new Error('useCheckboxState must be used within a checkbox')
+  }
+  return value
 }
-
-interface OthersProps extends UseCheckboxProps {
-  children?: React.ReactNode
-}
-
-const defaultOtherComponent = (
-  <Input required={true} placeholder="Please specify"></Input>
-) // TODO: replace with custom input component
-
-const CheckboxOption = ({
-  option,
-}: { option: string } & ChakraCheckboxProps): JSX.Element => {
-  return <ChakraCheckbox value={option}>{option}</ChakraCheckbox>
-}
-
-const OtherOption = forwardRef<OthersProps, 'input'>(
-  ({ children, ...props }, ref) => {
-    const { getInputProps } = useCheckbox(props)
-    const input = getInputProps({}, ref)
-
-    const handleChange = useCallback(() => {
-      if (!props.isChecked && input.onChange) {
-        // eslint-disable-next-line @typescript-eslint/no-extra-semi
-        ;(input.onChange as UseCheckboxGroupReturn['onChange'])('Other')
-      }
-    }, [props.isChecked, input.onChange])
-
-    return (
-      <Flex direction="column">
-        <CheckboxOption option="Other" />
-        <Flex pl="48px" mt="2px">
-          {isValidElement(children) &&
-            cloneElement(children, {
-              onChange: handleChange,
-            })}
-        </Flex>
-      </Flex>
-    )
-  },
-)
 
 export const Checkbox = forwardRef<CheckboxProps, 'input'>(
-  (
-    { children = defaultOtherComponent, options, other = false, ...props },
-    ref,
-  ) => {
-    const { getCheckboxProps } = useCheckboxGroup(props)
-    const checkbox = getCheckboxProps({
-      value: 'Other',
-      id: props.name,
-    })
+  ({ children, ...props }, ref) => {
+    // useCheckbox
+    // expose useCheckbox props using context
+    // pass into chakracheckbox so it's identical
+
+    // ref is used for react forms to determine the current state of the input
+    const outsideRef = useRef<HTMLInputElement>()
+
+    // Merge forwarded ref with own ref so that we can access chakra checkbox's internal state
+    const mergedRef = useMergeRefs(ref, outsideRef)
+
+    const [isChecked, setIsChecked] = useState(false)
+
+    const handleClick = () => {
+      if (!isChecked) {
+        setIsChecked(true)
+      }
+    }
+
+    const select = () => {
+      setIsChecked((isPreviouslyChecked) => !isPreviouslyChecked)
+    }
 
     return (
-      <CheckboxGroup {...props}>
+      // give children access to checkbox props and state then let them toggle it
+      <CheckboxContext.Provider value={{ ...props, outsideRef }}>
         <VStack align="left">
-          {options?.map((option) => (
-            <CheckboxOption option={option} />
-          ))}
-          {other && (
-            <OtherOption {...checkbox} ref={ref}>
-              {children}
-            </OtherOption>
-          )}
+          {/* <Text>{text}</Text> */}
+          <ChakraCheckbox
+            isChecked={isChecked}
+            onChange={select}
+            {...props}
+            ref={mergedRef}
+          >
+            {props.value}
+          </ChakraCheckbox>
+          {children}
         </VStack>
-      </CheckboxGroup>
+      </CheckboxContext.Provider>
     )
   },
 )
+
+export const Others = ({
+  children,
+}: {
+  children: React.ReactNode
+}): JSX.Element => {
+  const { outsideRef } = useCheckboxState()
+  return (
+    <Flex pl="48px" mt="2px">
+      {isValidElement(children) &&
+        cloneElement(children, {
+          onClick: () => {
+            console.log('OUTSIDE REF', outsideRef.current)
+            if (outsideRef.current) {
+              outsideRef.current.checked = true
+            }
+          },
+        })}
+    </Flex>
+  )
+}
+
+// Checkbox.Others = Others
+
+export const CheckboxOthers = () => {
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const [isChecked, setIsChecked] = useState(false)
+
+  useEffect(() => {
+    console.log('inputref')
+    console.log(inputRef?.current?.value)
+    if (isChecked && !!inputRef?.current?.value) {
+      setIsChecked(true)
+    }
+  }, [isChecked, setIsChecked])
+
+  return (
+    <>
+      <ChakraCheckbox isChecked={isChecked} />
+      <Input ref={inputRef} />
+    </>
+  )
+}

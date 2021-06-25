@@ -26,6 +26,7 @@ export const Checkbox: ComponentStyleConfig = {
     },
     container: {
       h: '44px',
+      w: '100%',
       px: '0.25rem',
       py: '0.5rem',
       _hover: {
@@ -35,9 +36,6 @@ export const Checkbox: ComponentStyleConfig = {
         borderColor: 'primary.500',
         boxShadow: `0 0 0 2px ${getColor(theme, 'primary.500')}`,
       },
-    },
-    others: {
-      alignSelf: 'flex-end',
     },
   }),
   sizes: {
