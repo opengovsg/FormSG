@@ -7,6 +7,7 @@ import {
   Text,
   useBreakpointValue,
   Wrap,
+  WrapItem,
 } from '@chakra-ui/react'
 
 import { FieldColorScheme } from '~theme/foundations/colours'
@@ -134,25 +135,29 @@ export const Rating = forwardRef<RatingProps, 'input'>(
             {options.map((value, i) => {
               return (
                 <Fragment key={value}>
-                  <RatingOption
-                    name={name}
-                    variant={variant}
-                    colorScheme={colorScheme}
-                    value={value}
-                    numberOfRatings={numberOfRatings}
-                    onChange={setCurrentValue}
-                    selectedValue={currentValue}
-                    // Pass in ref if first item so it can be focused.
-                    {...(i === 0 ? { ref } : {})}
-                  >
-                    {value}
-                  </RatingOption>
+                  <WrapItem>
+                    <RatingOption
+                      name={name}
+                      variant={variant}
+                      colorScheme={colorScheme}
+                      value={value}
+                      numberOfRatings={numberOfRatings}
+                      onChange={setCurrentValue}
+                      selectedValue={currentValue}
+                      // Pass in ref if first item so it can be focused.
+                      {...(i === 0 ? { ref } : {})}
+                    >
+                      {value}
+                    </RatingOption>
+                  </WrapItem>
                   {
                     // Force component to begin on a new line.
-                    i !== numberOfRatings - 1 &&
+                    value !== numberOfRatings &&
                       value % wrapComponentsPerRow === 0 &&
                       isSplitRows && (
-                        <Box flexBasis="100%" h={ratingLayout.rowHeight} />
+                        <WrapItem display="contents" aria-hidden>
+                          <Box flexBasis="100%" h={ratingLayout.rowHeight} />
+                        </WrapItem>
                       )
                   }
                 </Fragment>
