@@ -165,7 +165,9 @@ export const Rating = forwardRef<RatingProps, 'input'>(
             })}
           </Wrap>
           {currentValue && variant !== 'Number' && (
-            <Text textStyle="subhead-2">{currentValue} selected</Text>
+            <Text color="secondary.700" textStyle="subhead-2">
+              {currentValue} selected
+            </Text>
           )}
         </Stack>
         {helperText && (
