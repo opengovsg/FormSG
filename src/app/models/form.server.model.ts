@@ -718,17 +718,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     logicId: string,
     updatedLogic: LogicDto,
   ): Promise<IFormSchema | null> {
-    return this.findByIdAndUpdate(
-      formId,
-      {
-        $set: { 'form_logics.$[object]': updatedLogic },
-      },
-      {
-        arrayFilters: [{ 'object._id': logicId }],
-        new: true,
-        runValidators: true,
-      },
-    ).exec()
+    const form = await this.findById(formId).exec()
+    if (!form?.form_logics) return null
+    form.form_logics = form.form_logics.map((logic) => {
+      if (logic._id.toHexString() === logicId) {
+        logic.set(updatedLogic)
+      }
+      return logic
+    })
+    return form.save()
   }
 
   FormSchema.statics.updateEndPageById = async function (
