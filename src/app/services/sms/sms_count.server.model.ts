@@ -39,6 +39,15 @@ const VerificationSmsCountSchema = new Schema<IVerificationSmsCountSchema>({
   },
 })
 
+VerificationSmsCountSchema.pre<IVerificationSmsCountSchema>(
+  'save',
+  function (next) {
+    const formTwilioId = process.env.TWILIO_MESSAGING_SERVICE_SID
+    this.isOnboardedAccount = !(this.msgSrvcSid === formTwilioId)
+    return next()
+  },
+)
+
 const AdminContactSmsCountSchema = new Schema<IAdminContactSmsCountSchema>({
   admin: {
     type: Schema.Types.ObjectId,
