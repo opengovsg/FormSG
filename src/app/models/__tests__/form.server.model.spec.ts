@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
-import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
+import _, { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 
 import getFormModel, {
@@ -1676,6 +1676,131 @@ describe('Form Model', () => {
         // Assert
         expect(actual).toEqual(null)
         await expect(Form.countDocuments()).resolves.toEqual(0)
+      })
+    })
+
+    describe('disableSmsVerificationsForUser', () => {
+      it('should disable sms verifications for all forms belonging to a user successfully', async () => {
+        // Arrange
+        const mockFormPromises = _.range(3).map(() => {
+          return Form.create({
+            admin: populatedAdmin._id,
+            responseMode: ResponseMode.Email,
+            title: 'mock mobile form',
+            emails: [populatedAdmin.email],
+            form_fields: [
+              generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+            ],
+          })
+        })
+        await Promise.all(mockFormPromises)
+
+        // Act
+        await Form.disableSmsVerificationsForUser(populatedAdmin._id)
+
+        // Assert
+        // Find all forms that match admin id
+        const updatedForms = await Form.find({ admin: populatedAdmin._id })
+        updatedForms.map(({ form_fields }) =>
+          form_fields!.map((field) => {
+            expect(field.isVerifiable).toBe(false)
+          }),
+        )
+      })
+
+      it('should not disable non mobile fields for a user', async () => {
+        // Arrange
+        const mockFormPromises = _.range(3).map(() => {
+          return Form.create({
+            admin: populatedAdmin._id,
+            responseMode: ResponseMode.Email,
+            title: 'mock email form',
+            emails: [populatedAdmin.email],
+            form_fields: [
+              generateDefaultField(BasicField.Email, { isVerifiable: true }),
+            ],
+          })
+        })
+        await Promise.all(mockFormPromises)
+
+        // Act
+        await Form.disableSmsVerificationsForUser(populatedAdmin._id)
+
+        // Assert
+        // Find all forms that match admin id
+        const updatedForms = await Form.find({ admin: populatedAdmin._id })
+        updatedForms.map(({ form_fields }) =>
+          form_fields!.map((field) => {
+            expect(field.isVerifiable).toBe(true)
+          }),
+        )
+      })
+
+      it('should only disable sms verifications for a particular user', async () => {
+        // Arrange
+        const MOCK_USER_ID = new ObjectId()
+        await dbHandler.insertFormCollectionReqs({
+          userId: MOCK_USER_ID,
+          mailDomain: 'something.com',
+        })
+        await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: ResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields: [
+            generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+          ],
+        })
+        await Form.create({
+          admin: MOCK_USER_ID,
+          responseMode: ResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields: [
+            generateDefaultField(BasicField.Email, { isVerifiable: true }),
+          ],
+        })
+
+        // Act
+        await Form.disableSmsVerificationsForUser(populatedAdmin._id)
+
+        // Assert
+        // Find all forms that match admin id
+        const updatedMobileForm = await Form.find({ admin: populatedAdmin._id })
+        expect(updatedMobileForm[0]!.form_fields[0].isVerifiable).toBe(false)
+        const updatedEmailForm = await Form.find({ admin: MOCK_USER_ID })
+        expect(updatedEmailForm[0]!.form_fields[0].isVerifiable).toBe(true)
+      })
+
+      it('should not update when a db error occurs', async () => {
+        // Arrange
+        const disableSpy = jest.spyOn(Form, 'disableSmsVerificationsForUser')
+        disableSpy.mockResolvedValueOnce(new Error('tee hee db crashed'))
+        const mockFormPromises = _.range(3).map(() => {
+          return Form.create({
+            admin: populatedAdmin._id,
+            responseMode: ResponseMode.Email,
+            title: 'mock mobile form',
+            emails: [populatedAdmin.email],
+            form_fields: [
+              generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+            ],
+          })
+        })
+        await Promise.all(mockFormPromises)
+
+        // Act
+        await Form.disableSmsVerificationsForUser(populatedAdmin._id)
+
+        // Assert
+        // Find all forms that match admin id
+        const updatedForms = await Form.find({ admin: populatedAdmin._id })
+        updatedForms.map(({ form_fields }) =>
+          form_fields!.map((field) => {
+            expect(field.isVerifiable).toBe(true)
+          }),
+        )
       })
     })
   })
