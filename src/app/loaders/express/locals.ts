@@ -4,6 +4,7 @@ import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
 import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
 import { sentryConfig } from '../../config/features/sentry.config'
+import { smsConfig } from '../../config/features/sms.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
 // Construct js with environment variables needed by frontend
@@ -22,6 +23,7 @@ const frontendVars = {
   GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
   oldSpcpCookieDomain: spcpMyInfoConfig.oldSpcpCookieDomain, // Old cookie domain used for backward compatibility. TODO (#2329): Delete env var
+  smsVerificationLimit: smsConfig.smsVerificationLimit,
 }
 const environment = ejs.render(
   `
@@ -47,6 +49,8 @@ const environment = ejs.render(
     var spcpCookieDomain = "<%= spcpCookieDomain%>"
     // Old SPCP Cookie
     var oldSpcpCookieDomain = "<%= oldSpcpCookieDomain%>"
+    // Sms verification limit
+    var smsVerificationLimit = "<%= smsVerificationLimit%>"
   `,
   frontendVars,
 )

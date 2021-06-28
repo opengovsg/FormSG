@@ -28,7 +28,7 @@ import {
 } from '../../shared/types/form/form'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
-import { PublicView } from './database'
+import { PublicView, UpdateManyMeta } from './database'
 import {
   FormField,
   FormFieldSchema,

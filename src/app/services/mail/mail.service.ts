@@ -14,8 +14,8 @@ import {
   ISubmissionSchema,
 } from '../../../types'
 import config from '../../config/config'
+import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { SMS_VERIFICATION_LIMIT } from '../../modules/verification/verification.constants'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
 import { MailGenerationError, MailSendError } from './mail.errors'
@@ -593,7 +593,7 @@ export class MailService {
     const htmlData: SmsVerificationDisabledData = {
       formTitle: form.title,
       formLink: `${this.#appUrl}/${form._id}`,
-      smsVerificationLimit: SMS_VERIFICATION_LIMIT,
+      smsVerificationLimit: smsConfig.smsVerificationLimit,
     }
 
     return generateSmsVerificationDisabledHtml(htmlData).andThen((mailHtml) => {
@@ -629,8 +629,8 @@ export class MailService {
     const htmlData: SmsVerificationWarningData = {
       formTitle: form.title,
       formLink: `${this.#appUrl}/${form._id}`,
-      numAvailable: SMS_VERIFICATION_LIMIT - smsVerifications,
-      smsVerificationLimit: SMS_VERIFICATION_LIMIT,
+      numAvailable: smsConfig.smsVerificationLimit - smsVerifications,
+      smsVerificationLimit: smsConfig.smsVerificationLimit,
     }
 
     return generateSmsVerificationWarningHtml(htmlData).andThen((mailHtml) => {
