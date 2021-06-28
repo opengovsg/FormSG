@@ -6,7 +6,6 @@ import {
   Box,
   CloseButton,
   Collapse,
-  Container,
   Flex,
   Icon,
   useDisclosure,
@@ -46,7 +45,7 @@ export const Banner = ({ variant, children }: BannerProps): JSX.Element => {
   return (
     <Collapse in={isOpen} animateOpacity>
       <Box __css={styles.banner}>
-        <Container sx={styles.item}>
+        <Flex sx={styles.item}>
           <Flex>
             <Icon as={BxsInfoCircle} __css={styles.icon} />
             <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
@@ -58,7 +57,7 @@ export const Banner = ({ variant, children }: BannerProps): JSX.Element => {
               onClick={onToggle}
             />
           )}
-        </Container>
+        </Flex>
       </Box>
     </Collapse>
   )
