@@ -62,7 +62,9 @@ export interface IVerificationSmsCount extends ISmsCount {
   }
 }
 
-export type IVerificationSmsCountSchema = ISmsCountSchema
+export type IVerificationSmsCountSchema = ISmsCountSchema & {
+  isOnboardedAccount: boolean
+}
 
 export interface IAdminContactSmsCount extends ISmsCount {
   admin: IUserSchema['_id']
