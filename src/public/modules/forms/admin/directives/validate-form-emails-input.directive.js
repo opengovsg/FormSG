@@ -1,6 +1,7 @@
 'use strict'
 
 const validator = require('validator')
+const get = require('lodash/get')
 
 angular
   .module('forms')
@@ -10,19 +11,28 @@ function validateFormEmailsInput() {
   return {
     restrict: 'A',
     require: 'ngModel',
-    link: (scope, elem, attr, ngModel) => {
+    link: (scope, _elem, _attr, ngModel) => {
       ngModel.$validators.validEmails = (rawInput) => {
         const emails = String(rawInput).split(',')
-        return emails.every((email) => validator.isEmail(email.trim()))
+        return (
+          get(scope, 'vm.formData.responseMode') !== 'email' ||
+          emails.every((email) => validator.isEmail(email.trim()))
+        )
       }
       ngModel.$validators.duplicateEmails = (rawInput) => {
         const emails = String(rawInput).split(',')
         const trimmed = emails.map((email) => email.trim())
-        return new Set(trimmed).size === emails.length
+        return (
+          get(scope, 'vm.formData.responseMode') !== 'email' ||
+          new Set(trimmed).size === emails.length
+        )
       }
       ngModel.$validators.maxNumEmails = (rawInput) => {
         const emails = String(rawInput).split(',')
-        return emails.length <= 30
+        return (
+          get(scope, 'vm.formData.responseMode') !== 'email' ||
+          emails.length <= 30
+        )
       }
     },
   }
