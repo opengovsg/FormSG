@@ -4,7 +4,7 @@ import { SetRequired } from 'type-fest'
 
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
-import { PublicView } from './database'
+import { PublicView, UpdateManyMeta } from './database'
 import {
   FormField,
   FormFieldWithId,
@@ -335,7 +335,7 @@ export interface IFormModel extends Model<IFormSchema> {
 
   disableSmsVerificationsForUser(
     userId: IUserSchema['_id'],
-  ): Promise<IFormDocument[]>
+  ): Promise<UpdateManyMeta>
 
   /**
    * Update the end page of form with given endpage object.

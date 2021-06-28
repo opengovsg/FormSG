@@ -1048,14 +1048,14 @@ export const updateStartPage = (
 /**
  * Disables sms verifications for all forms belonging to the specified user
  * @param userId the id of the user whose sms verifications should be disabled
- * @returns ok(IFormDocument[]) when the forms have been successfully disabled
+ * @returns ok(true) when the forms have been successfully disabled
  * @returns err(PossibleDatabaseError) when an error occurred while attempting to disable sms verifications
  */
 export const disableSmsVerificationsForUser = (
   userId: string,
-): ResultAsync<IFormDocument[], PossibleDatabaseError> =>
+): ResultAsync<true, PossibleDatabaseError> =>
   ResultAsync.fromPromise(
-    FormModel.disableSmsVerificationsForUser(userId),
+    FormModel.disableSmsVerificationsForUser(userId).then(() => true),
     (error) => {
       logger.error({
         message:
