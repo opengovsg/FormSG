@@ -47,7 +47,7 @@ export const Banner = ({ variant, children }: BannerProps): JSX.Element => {
     <Collapse in={isOpen} animateOpacity>
       <Box __css={styles.banner}>
         <Container sx={styles.item}>
-          <Flex align="center">
+          <Flex>
             <Icon as={BxsInfoCircle} __css={styles.icon} />
             <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
           </Flex>
