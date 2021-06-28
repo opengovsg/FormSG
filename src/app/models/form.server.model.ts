@@ -718,13 +718,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     logicId: string,
     updatedLogic: LogicDto,
   ): Promise<IFormSchema | null> {
-    const form = await this.findById(formId).exec()
+    let form = await this.findById(formId).exec()
     if (!form?.form_logics) return null
-    form.form_logics = form.form_logics.map((logic) => {
-      if (logic._id.toHexString() === logicId) {
-        logic.set(updatedLogic)
-      }
-      return logic
+    const index = form.form_logics.findIndex(
+      (logic) => logic._id.toHexString() === logicId,
+    )
+    form = form.set(`form_logics.${index}`, updatedLogic, {
+      new: true,
     })
     return form.save()
   }
