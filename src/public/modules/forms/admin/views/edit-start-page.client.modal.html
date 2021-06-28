@@ -114,6 +114,28 @@
 
         <div class="row"><br /></div>
 
+        <div class="row description">
+          <div class="col-md-12 label-custom label-medium label-bottom">
+            Color Theme
+          </div>
+          <div class="col-md-12 color-field">
+            <div ng-repeat="color in vm.colorThemes">
+              <label
+                ng-class="vm.myform.startPage.colorTheme === '{{color}}' ? 'selected-color-field' : ''"
+                class="{{color}}"
+              >
+                <input
+                  type="radio"
+                  value="{{color}}"
+                  ng-model="vm.myform.startPage.colorTheme"
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row"><br /></div>
+
         <div class="row question">
           <div class="col-md-12 label-custom label-medium label-bottom">
             Time Taken for Form (in minutes)
@@ -164,29 +186,8 @@
               ng-model="vm.myform.startPage.paragraph"
               placeholder="e.g. 1) You will require your sales receipt to fill this reimbursement form."
               name="paragraph"
+              rows="12"
             ></textarea>
-          </div>
-        </div>
-
-        <div class="row"><br /></div>
-
-        <div class="row description">
-          <div class="col-md-12 label-custom label-medium label-bottom">
-            Color Theme
-          </div>
-          <div class="col-md-12 color-field">
-            <div ng-repeat="color in vm.colorThemes">
-              <label
-                ng-class="vm.myform.startPage.colorTheme === '{{color}}' ? 'selected-color-field' : ''"
-                class="{{color}}"
-              >
-                <input
-                  type="radio"
-                  value="{{color}}"
-                  ng-model="vm.myform.startPage.colorTheme"
-                />
-              </label>
-            </div>
           </div>
         </div>
 
