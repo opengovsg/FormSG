@@ -60,6 +60,7 @@ export interface IVerificationSmsCount extends ISmsCount {
     email: string
     userId: IUserSchema['_id']
   }
+  isOnboardedAccount: boolean
 }
 
 export type IVerificationSmsCountSchema = ISmsCountSchema & {
