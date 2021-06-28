@@ -4,11 +4,13 @@ import {
   CheckboxGroup,
   // Checkbox,
   CheckboxProps,
+  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
   forwardRef,
   Input,
+  Text,
   useCheckbox,
   useCheckboxGroup,
   UseCheckboxGroupReturn,
@@ -19,7 +21,14 @@ import { Meta, Story } from '@storybook/react'
 // import CheckboxOthers from '~/components/Checkbox/CheckboxOthers'
 import Button from '~components/Button'
 
-import { Checkbox, CheckboxOthers, Others } from './Checkbox'
+import {
+  Checkbox,
+  CheckboxInput,
+  CheckboxOthers,
+  CheckboxWrapper,
+  ComposableCheckbox,
+  Others,
+} from './Checkbox'
 
 export default {
   title: 'Components/Checkbox',
@@ -48,18 +57,6 @@ export const TemplateGroupOthers: Story<CheckboxProps> = (args) => {
   )
 }
 
-export const TemplateGroupOthers2: Story = (args) => {
-  return (
-    <VStack align="left">
-      <CheckboxOthers {...args} />
-      {/* <CheckboxOthers placeholder="Please Specify" /> */}
-    </VStack>
-  )
-}
-
-export const Test = TemplateGroupOthers2.bind({})
-Test.args = {}
-
 // export const OthersInput = Template.bind({})
 // OthersInput.args = {
 //   options: ['Option 1', 'Option 2', 'Option 3'],
@@ -73,121 +70,40 @@ export const Playground: Story = ({
   isRequired,
   ...args
 }) => {
-  const { register, handleSubmit, control } = useForm()
+  const { register, handleSubmit } = useForm()
   const onSubmit = (data: Record<string, string>) => {
     alert(JSON.stringify(data))
   }
-  // const { fields } = useFieldArray({
-  //   control,
-  //   name,
-  // })
-  const {
-    field,
-    formState: { errors },
-  } = useController({
-    control,
-    name,
-    rules: {
-      required: isRequired ? { value: true, message: 'Required field' } : false,
-    },
-  })
-
-  const [isChecked, setIsChecked] = useState(false)
-
-  const handleClick = () => {
-    if (!isChecked) {
-      setIsChecked(true)
-    }
-  }
-
-  const selectOther = () => {
-    setIsChecked(!isChecked)
-  }
-
-  // const test = useCheckbox()
-
-  // const modularInput = () => {
-  //   const { setOnFocus } = useCheckboxState()
-  //   setOnFocus(handleClick)
-  //   return (
-  //     <Checkbox>
-  //       <Checkbox.Others>
-  //         <Input placeholder="Please specify" />
-  //       </Checkbox.Others>
-  //     </Checkbox>
-  //   )
-  // }
-
-  // takes same props as checkbox but with additional placeholder prop for input
-  // behaviour changes because this is not controllable
-  const CheckboxInput = forwardRef<CheckboxProps, 'input'>(
-    ({ value, placeholder, ...props }, ref) => {
-      // const [isChecked, setIsChecked] = useState(false)
-
-      // const handleClick = () => {
-      //   if (!isChecked) {
-      //     setIsChecked(true)
-      //   }
-      // }
-
-      // const selectOther = () => {
-      //   setIsChecked(!isChecked)
-      // }
-      return (
-        <Checkbox
-          //   isChecked={isChecked}
-          //   onChange={selectOther}
-          value={value}
-          {...props}
-        >
-          <Others>
-            <Input
-              placeholder={placeholder}
-              ref={ref}
-              // onClick={handleClick}
-            ></Input>
-          </Others>
-        </Checkbox>
-      )
-    },
-  )
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <FormControl
-        isRequired={isRequired}
-        isDisabled={isDisabled}
-        isInvalid={!!errors[name]}
-        mb={6}
-      >
+      <FormControl isRequired={isRequired} isDisabled={isDisabled} mb={6}>
         <FormLabel htmlFor={name}>{label}</FormLabel>
         <VStack align="left">
-          <Checkbox value="Option 1" {...register('Option 1')} />
-          <Checkbox value="Option 2" {...register('Option 2')} />
-          <Checkbox value="Option 3" {...register('Option 3')} />
-          <CheckboxInput
-            value="something"
-            placeholder="specify me"
-            {...register('othersValue')}
-          />
-          {/* expose context on checkbox */}
-          <Checkbox value="Others" {...register('composed')}>
-            <Others>
-              <Input
+          <CheckboxGroup isDisabled={isDisabled}>
+            <Checkbox {...register('Option 1')} value="Option 1">
+              Span 1
+            </Checkbox>
+            <Checkbox {...register('Option 2')} value="Option 2">
+              Span 2
+            </Checkbox>
+            <Checkbox {...register('Option 3')} value="Option 3">
+              Span 3
+            </Checkbox>
+            <Checkbox value="Others" {...register('Others')}>
+              <CheckboxInput
                 placeholder="Please specify"
                 {...register('nested input')}
-              ></Input>
-            </Others>
-          </Checkbox>
+              />
+            </Checkbox>
+          </CheckboxGroup>
         </VStack>
-        <FormErrorMessage>
-          {errors[name] && errors[name].message}
-        </FormErrorMessage>
       </FormControl>
       <Button type="submit">Submit</Button>
     </form>
   )
 }
+
 Playground.args = {
   name: 'Test playground input',
   label: 'Checkbox Field',
