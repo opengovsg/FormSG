@@ -233,6 +233,9 @@ describe('SmsCount', () => {
     it('should create and save successfully', async () => {
       // Arrange
       const smsCountParams = createVerificationSmsCountParams()
+      const expected = merge(smsCountParams, {
+        isOnboardedAccount: true,
+      })
 
       // Act
       const validSmsCount = new SmsCount(smsCountParams)
@@ -249,7 +252,7 @@ describe('SmsCount', () => {
         'createdAt',
         '__v',
       ])
-      expect(actualSavedObject).toEqual(smsCountParams)
+      expect(actualSavedObject).toEqual(expected)
     })
 
     it('should save successfully, but not save fields that is not defined in the schema', async () => {
@@ -260,6 +263,9 @@ describe('SmsCount', () => {
           extra: 'somethingExtra',
         },
       )
+      const expected = merge(omit(smsCountParamsWithExtra, 'extra'), {
+        isOnboardedAccount: true,
+      })
 
       // Act
       const validSmsCount = new SmsCount(smsCountParamsWithExtra)
@@ -278,7 +284,37 @@ describe('SmsCount', () => {
         'createdAt',
         '__v',
       ])
-      expect(actualSavedObject).toEqual(omit(smsCountParamsWithExtra, 'extra'))
+      expect(actualSavedObject).toEqual(expected)
+    })
+
+    it('should save successfully and set isOnboarded to false when sms is sent using default credentials', async () => {
+      // Arrange
+      const formTwilioSid = process.env.TWILIO_MESSAGING_SERVICE_SID
+      const verificationParams = createVerificationSmsCountParams({
+        logType: LogType.success,
+        smsType: SmsType.Verification,
+      })
+      verificationParams.msgSrvcSid = formTwilioSid
+      verificationParams.isOnboardedAccount = false
+
+      // Act
+      const validSmsCount = new SmsCount(
+        omit(verificationParams, 'isOnboardedAccount'),
+      )
+      const saved = await validSmsCount.save()
+
+      // Assert
+      // All fields should exist
+      // Object Id should be defined when successfully saved to MongoDB.
+      expect(saved._id).toBeDefined()
+      expect(saved.createdAt).toBeInstanceOf(Date)
+      // Retrieve object and compare to params, remove indeterministic keys
+      const actualSavedObject = omit(saved.toObject(), [
+        '_id',
+        'createdAt',
+        '__v',
+      ])
+      expect(actualSavedObject).toEqual(verificationParams)
     })
 
     it('should reject if form key is missing', async () => {
@@ -566,7 +602,6 @@ const createVerificationSmsCountParams = ({
   smsCountParams.logType = logType
   smsCountParams.smsType = smsType
   smsCountParams.msgSrvcSid = MOCK_MSG_SRVC_SID
-
   return smsCountParams
 }
 
@@ -589,6 +624,7 @@ const logAndReturnExpectedLog = async ({
     msgSrvcSid: MOCK_MSG_SRVC_SID,
     smsType,
     logType,
+    ...(smsType === SmsType.Verification && { isOnboardedAccount: true }),
   }
 
   return expectedLog
