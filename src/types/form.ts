@@ -21,7 +21,7 @@ import {
 } from '../../shared/types/form/form'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
-import { PublicView } from './database'
+import { PublicView, UpdateManyMeta } from './database'
 import {
   FormField,
   FormFieldSchema,
@@ -293,6 +293,10 @@ export interface IFormModel extends Model<IFormSchema> {
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
   ): Promise<AdminDashboardFormMetaDto[]>
+
+  disableSmsVerificationsForUser(
+    userId: IUserSchema['_id'],
+  ): Promise<UpdateManyMeta>
 
   /**
    * Update the end page of form with given endpage object.

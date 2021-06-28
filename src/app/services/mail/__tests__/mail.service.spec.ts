@@ -18,7 +18,7 @@ import * as MailUtils from 'src/app/services/mail/mail.utils'
 import { HASH_EXPIRE_AFTER_SECONDS } from 'src/shared/util/verification'
 import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
 
-import { SMS_VERIFICATION_LIMIT } from '../../../modules/verification/verification.constants'
+import { smsConfig } from '../../../config/features/sms.config'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
@@ -1283,7 +1283,7 @@ describe('mail.service', () => {
       const result = await MailUtils.generateSmsVerificationDisabledHtml({
         formTitle: MOCK_FORM_TITLE,
         formLink: `${MOCK_APP_URL}/${MOCK_FORM_ID}`,
-        smsVerificationLimit: SMS_VERIFICATION_LIMIT,
+        smsVerificationLimit: smsConfig.smsVerificationLimit,
       }).map((emailHtml) => {
         return {
           to: emailRecipients,
@@ -1388,8 +1388,8 @@ describe('mail.service', () => {
       const result = await MailUtils.generateSmsVerificationWarningHtml({
         formTitle: MOCK_FORM_TITLE,
         formLink: `${MOCK_APP_URL}/${MOCK_FORM_ID}`,
-        numAvailable: SMS_VERIFICATION_LIMIT - count,
-        smsVerificationLimit: SMS_VERIFICATION_LIMIT,
+        numAvailable: smsConfig.smsVerificationLimit - count,
+        smsVerificationLimit: smsConfig.smsVerificationLimit,
       }).map((emailHtml) => {
         return {
           to: emailRecipients,
