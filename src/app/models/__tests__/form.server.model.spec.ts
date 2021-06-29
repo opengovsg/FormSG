@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
-import _, { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
+import { cloneDeep, map, merge, omit, orderBy, pick, range } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 
 import getFormModel, {
@@ -1682,7 +1682,7 @@ describe('Form Model', () => {
     describe('disableSmsVerificationsForUser', () => {
       it('should disable sms verifications for all forms belonging to a user successfully', async () => {
         // Arrange
-        const mockFormPromises = _.range(3).map(() => {
+        const mockFormPromises = range(3).map(() => {
           return Form.create({
             admin: populatedAdmin._id,
             responseMode: ResponseMode.Email,
@@ -1710,7 +1710,7 @@ describe('Form Model', () => {
 
       it('should not disable non mobile fields for a user', async () => {
         // Arrange
-        const mockFormPromises = _.range(3).map(() => {
+        const mockFormPromises = range(3).map(() => {
           return Form.create({
             admin: populatedAdmin._id,
             responseMode: ResponseMode.Email,
@@ -1777,7 +1777,7 @@ describe('Form Model', () => {
         // Arrange
         const disableSpy = jest.spyOn(Form, 'disableSmsVerificationsForUser')
         disableSpy.mockResolvedValueOnce(new Error('tee hee db crashed'))
-        const mockFormPromises = _.range(3).map(() => {
+        const mockFormPromises = range(3).map(() => {
           return Form.create({
             admin: populatedAdmin._id,
             responseMode: ResponseMode.Email,

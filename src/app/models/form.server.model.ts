@@ -757,7 +757,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     userId: IUserSchema['_id'],
   ) {
     return this.updateMany(
-      // Filter the collection so that only speciified user is selected
+      // Filter the collection so that only specified user is selected
       {
         admin: userId,
       },

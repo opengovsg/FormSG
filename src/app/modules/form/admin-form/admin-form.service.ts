@@ -1055,7 +1055,7 @@ export const disableSmsVerificationsForUser = (
   userId: string,
 ): ResultAsync<true, PossibleDatabaseError> =>
   ResultAsync.fromPromise(
-    FormModel.disableSmsVerificationsForUser(userId).then(() => true),
+    FormModel.disableSmsVerificationsForUser(userId),
     (error) => {
       logger.error({
         message:
@@ -1068,4 +1068,4 @@ export const disableSmsVerificationsForUser = (
       })
       return transformMongoError(error)
     },
-  )
+  ).map(() => true)
