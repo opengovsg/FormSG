@@ -28,6 +28,13 @@ WithIsRequired.args = {
 }
 WithIsRequired.storyName = 'With isRequired'
 
+export const WithDescription = Template.bind({})
+WithDescription.args = {
+  questionNumber: '1.',
+  description: 'Additional description',
+  children: 'This is a label that is very very very long',
+}
+
 export const WithTooltipText = Template.bind({})
 WithTooltipText.args = {
   questionNumber: '1.',

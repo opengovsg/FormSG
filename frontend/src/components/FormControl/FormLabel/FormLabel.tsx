@@ -10,24 +10,25 @@ import {
   VisuallyHidden,
 } from '@chakra-ui/react'
 
-import { BxsHelpCircle } from '~/assets/icons/BxsHelpCircle'
+import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 
 export interface FormLabelProps extends ChakraFormLabelProps {
   /**
    * Question number to be prefixed before each label, if any.
    */
   questionNumber?: string
-
   /**
    * Tooltip text to be postfixed at the end of each label, if any.
    */
   tooltipText?: string
-
+  /**
+   * Description text to be shown below the label text, if any.
+   */
+  description?: string
   /**
    * Label text.
    */
-  children: React.ReactNode
-
+  children: string
   /**
    * Whether form label is required. This is optional; if this prop is not
    * provided, the value from it's parent `FormContext` (if any) will be used.
@@ -48,25 +49,43 @@ export const FormLabel = ({
   isRequired,
   tooltipText,
   questionNumber,
+  description,
   children,
 }: FormLabelProps): JSX.Element => {
   return (
-    <FormLabel.Label requiredIndicator={<Box />}>
-      {questionNumber && (
-        <FormLabel.QuestionNumber>{questionNumber}</FormLabel.QuestionNumber>
-      )}
-      {children}
-      <FormLabel.OptionalIndicator isRequired={isRequired} />
-      {tooltipText && (
-        <Tooltip label={tooltipText} aria-label="Label tooltip">
-          <Icon ml="0.5rem" color="secondary.500" as={BxsHelpCircle} />
-        </Tooltip>
+    <FormLabel.Label
+      requiredIndicator={<Box />}
+      display="flex"
+      flexDir="column"
+    >
+      <Box display="block">
+        {questionNumber && (
+          <FormLabel.QuestionNumber>{questionNumber}</FormLabel.QuestionNumber>
+        )}
+        {children}
+        <FormLabel.OptionalIndicator isRequired={isRequired} />
+        {tooltipText && (
+          <Tooltip label={tooltipText} aria-label="Label tooltip">
+            <Icon ml="0.5rem" color="secondary.500" as={BxsHelpCircle} />
+          </Tooltip>
+        )}
+      </Box>
+      {description && (
+        <FormLabel.Description>{description}</FormLabel.Description>
       )}
     </FormLabel.Label>
   )
 }
 
 FormLabel.Label = ChakraFormLabel
+
+FormLabel.Description = ({ children, ...props }: TextProps): JSX.Element => {
+  return (
+    <Text textStyle="body-2" color="secondary.400">
+      {children}
+    </Text>
+  )
+}
 
 FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
   return (
