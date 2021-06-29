@@ -25,13 +25,13 @@ import {
   MyInfoCookieAccessError,
   MyInfoMissingAccessTokenError,
 } from '../../myinfo/myinfo.errors'
-import { MyInfoFactory } from '../../myinfo/myinfo.factory'
+import { MyInfoService } from '../../myinfo/myinfo.service'
 import {
   extractAndAssertMyInfoCookieValidity,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
-import { SpcpFactory } from '../../spcp/spcp.factory'
+import { SpcpService } from '../../spcp/spcp.service'
 import { getRedirectTarget, validateSpcpForm } from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -270,7 +270,7 @@ export const handleGetPublicForm: ControllerHandler<
       return res.json({ form: publicForm, isIntranetUser })
     case AuthType.SP:
     case AuthType.CP:
-      return SpcpFactory.extractJwtPayloadFromRequest(authType, req.cookies)
+      return SpcpService.extractJwtPayloadFromRequest(authType, req.cookies)
         .map(({ userName }) =>
           res.json({
             form: publicForm,
@@ -295,9 +295,9 @@ export const handleGetPublicForm: ControllerHandler<
     case AuthType.MyInfo: {
       // Step 1. Fetch required data and fill the form based off data retrieved
       return (
-        MyInfoFactory.getMyInfoDataForForm(form, req.cookies)
+        MyInfoService.getMyInfoDataForForm(form, req.cookies)
           .andThen((myInfoData) => {
-            return MyInfoFactory.prefillAndSaveMyInfoFields(
+            return MyInfoService.prefillAndSaveMyInfoFields(
               form._id,
               myInfoData,
               form.toJSON().form_fields,
@@ -391,7 +391,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
       switch (form.authType) {
         case AuthType.MyInfo:
           return validateMyInfoForm(form).andThen((form) =>
-            MyInfoFactory.createRedirectURL({
+            MyInfoService.createRedirectURL({
               formEsrvcId: form.esrvcId,
               formId,
               requestedAttributes: form.getUniqueMyInfoAttrs(),
@@ -407,7 +407,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
               form.authType,
               isPersistentLogin,
             )
-            return SpcpFactory.createRedirectUrl(
+            return SpcpService.createRedirectUrl(
               form.authType,
               target,
               form.esrvcId,
@@ -476,11 +476,11 @@ export const handleValidateFormEsrvcId: ControllerHandler<
       switch (form.authType) {
         case AuthType.MyInfo:
           return validateMyInfoForm(form).andThen((form) =>
-            SpcpFactory.createRedirectUrl(AuthType.SP, formId, form.esrvcId),
+            SpcpService.createRedirectUrl(AuthType.SP, formId, form.esrvcId),
           )
         case AuthType.SP:
           return validateSpcpForm(form).andThen((form) =>
-            SpcpFactory.createRedirectUrl(form.authType, formId, form.esrvcId),
+            SpcpService.createRedirectUrl(form.authType, formId, form.esrvcId),
           )
         default:
           return err<never, AuthTypeMismatchError>(
@@ -488,8 +488,8 @@ export const handleValidateFormEsrvcId: ControllerHandler<
           )
       }
     })
-    .andThen(SpcpFactory.fetchLoginPage)
-    .andThen(SpcpFactory.validateLoginPage)
+    .andThen(SpcpService.fetchLoginPage)
+    .andThen(SpcpService.validateLoginPage)
     .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
       logger.error({

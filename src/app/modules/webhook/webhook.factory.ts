@@ -1,4 +1,4 @@
-import { webhooksAndVerifiedContentConfig } from '../../config/feature-manager/webhook-verified-content.config'
+import { webhooksAndVerifiedContentConfig } from '../../config/features/webhook-verified-content.config'
 
 import { startWebhookConsumer } from './webhook.consumer'
 import { WebhookProducer } from './webhook.producer'

@@ -17,9 +17,9 @@ import {
   MYINFO_COOKIE_NAME,
   MYINFO_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
-import { MyInfoFactory } from '../../myinfo/myinfo.factory'
+import { MyInfoService } from '../../myinfo/myinfo.service'
 import * as MyInfoUtil from '../../myinfo/myinfo.util'
-import { SpcpFactory } from '../../spcp/spcp.factory'
+import { SpcpService } from '../../spcp/spcp.service'
 import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
@@ -153,8 +153,8 @@ const submitEmailModeForm: ControllerHandler<
         const { authType } = form
         switch (authType) {
           case AuthType.CP:
-            return SpcpFactory.extractJwt(req.cookies, authType)
-              .asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
+            return SpcpService.extractJwt(req.cookies, authType)
+              .asyncAndThen((jwt) => SpcpService.extractCorppassJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: [
@@ -172,8 +172,8 @@ const submitEmailModeForm: ControllerHandler<
                 return error
               })
           case AuthType.SP:
-            return SpcpFactory.extractJwt(req.cookies, authType)
-              .asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
+            return SpcpService.extractJwt(req.cookies, authType)
+              .asyncAndThen((jwt) => SpcpService.extractSingpassJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: [
@@ -194,12 +194,12 @@ const submitEmailModeForm: ControllerHandler<
             return MyInfoUtil.extractMyInfoCookie(req.cookies)
               .andThen(MyInfoUtil.extractAccessTokenFromCookie)
               .andThen((accessToken) =>
-                MyInfoFactory.extractUinFin(accessToken),
+                MyInfoService.extractUinFin(accessToken),
               )
               .asyncAndThen((uinFin) =>
-                MyInfoFactory.fetchMyInfoHashes(uinFin, formId)
+                MyInfoService.fetchMyInfoHashes(uinFin, formId)
                   .andThen((hashes) =>
-                    MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
+                    MyInfoService.checkMyInfoHashes(parsedResponses, hashes),
                   )
                   .map<IPopulatedEmailFormWithResponsesAndHash>(
                     (hashedFields) => ({

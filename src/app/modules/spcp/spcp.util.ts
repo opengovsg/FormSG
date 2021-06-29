@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
+import { hasProp } from '../../../shared/util/has-prop'
 import {
   AuthType,
   BasicField,
@@ -11,8 +12,6 @@ import {
   SPCPFieldTitle,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
-import { hasProp } from '../../utils/has-prop'
-import { MissingFeatureError } from '../core/core.errors'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
@@ -256,7 +255,6 @@ export const mapRouteError: MapRouteError = (
   coreErrorMessage = 'Sorry, something went wrong. Please try again.',
 ) => {
   switch (error.constructor) {
-    case MissingFeatureError:
     case CreateRedirectUrlError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,

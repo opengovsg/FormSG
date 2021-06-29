@@ -10,6 +10,7 @@ import {
   ResultAsync,
 } from 'neverthrow'
 
+import { hasProp } from '../../../shared/util/has-prop'
 import {
   BounceType,
   IBounceSchema,
@@ -25,7 +26,6 @@ import { EMAIL_HEADERS, EmailType } from '../../services/mail/mail.constants'
 import MailService from '../../services/mail/mail.service'
 import { SmsFactory } from '../../services/sms/sms.factory'
 import { transformMongoError } from '../../utils/handle-mongo-error'
-import { hasProp } from '../../utils/has-prop'
 import { PossibleDatabaseError } from '../core/core.errors'
 import { getCollabEmailsWithPermission } from '../form/form.utils'
 import * as UserService from '../user/user.service'

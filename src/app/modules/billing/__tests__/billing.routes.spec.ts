@@ -13,8 +13,8 @@ import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { DatabaseError } from '../../core/core.errors'
-import { BillingFactory } from '../billing.factory'
 import { BillingRouter } from '../billing.routes'
+import * as BillingService from '../billing.service'
 
 const app = setupApp('/billing', BillingRouter, {
   setupWithAuth: true,
@@ -191,7 +191,7 @@ describe('billing.routes', () => {
 
       // Mock database error from service call.
       const retrieveStatsSpy = jest
-        .spyOn(BillingFactory, 'getSpLoginStats')
+        .spyOn(BillingService, 'getSpLoginStats')
         .mockReturnValueOnce(errAsync(new DatabaseError()))
 
       // Act

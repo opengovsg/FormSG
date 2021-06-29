@@ -1,6 +1,8 @@
 'use strict'
 
-const CsvMHGenerator = require('../helpers/CsvMergedHeadersGenerator')
+const {
+  CsvMergedHeadersGenerator,
+} = require('../helpers/CsvMergedHeadersGenerator')
 const DecryptionWorker = require('../helpers/decryption.worker.js')
 const { fixParamsToUrl, triggerFileDownload } = require('../helpers/util')
 const { ndjsonStream } = require('../helpers/ndjsonStream')
@@ -96,7 +98,7 @@ function SubmissionsFactory($q, $timeout, $window, GTag) {
             }
 
             let resUrl = generateDownloadUrl(params, downloadAttachments)
-            let experimentalCsvGenerator = new CsvMHGenerator(
+            let csvGenerator = new CsvMergedHeadersGenerator(
               expectedNumResponses,
               NUM_OF_METADATA_ROWS,
             )
@@ -136,8 +138,13 @@ function SubmissionsFactory($q, $timeout, $window, GTag) {
                 }
 
                 if (csvRecord.submissionData) {
-                  // accumulate dataset if it exists, since we may have status columns available
-                  experimentalCsvGenerator.addRecord(csvRecord.submissionData)
+                  try {
+                    // accumulate dataset if it exists, since we may have status columns available
+                    csvGenerator.addRecord(csvRecord.submissionData)
+                  } catch (error) {
+                    errorCount++
+                    console.error('Error in getResponseInstance', error)
+                  }
                 }
 
                 if (downloadAttachments && csvRecord.downloadBlob) {
@@ -230,7 +237,7 @@ function SubmissionsFactory($q, $timeout, $window, GTag) {
                         GTag.partialDecryptionFailure(
                           params,
                           numWorkers,
-                          experimentalCsvGenerator.length(),
+                          csvGenerator.length(),
                           errorCount,
                           attachmentErrorCount,
                           timeDifference,
@@ -240,7 +247,7 @@ function SubmissionsFactory($q, $timeout, $window, GTag) {
                           new Error(
                             JSON.stringify({
                               expectedCount: expectedNumResponses,
-                              successCount: experimentalCsvGenerator.length(),
+                              successCount: csvGenerator.length(),
                               errorCount,
                               unverifiedCount,
                             }),
@@ -248,18 +255,16 @@ function SubmissionsFactory($q, $timeout, $window, GTag) {
                         )
                       } else if (
                         // All results have been decrypted
-                        experimentalCsvGenerator.length() +
-                          errorCount +
-                          unverifiedCount >=
+                        csvGenerator.length() + errorCount + unverifiedCount >=
                         expectedNumResponses
                       ) {
                         killWorkers(workerPool)
                         // Generate first three rows of meta-data before download
-                        experimentalCsvGenerator.addMetaDataFromSubmission(
+                        csvGenerator.addMetaDataFromSubmission(
                           errorCount,
                           unverifiedCount,
                         )
-                        experimentalCsvGenerator.downloadCsv(
+                        csvGenerator.downloadCsv(
                           `${params.formTitle}-${params.formId}.csv`,
                         )
 
@@ -271,18 +276,18 @@ function SubmissionsFactory($q, $timeout, $window, GTag) {
                         GTag.downloadResponseSuccess(
                           params,
                           numWorkers,
-                          experimentalCsvGenerator.length(),
+                          csvGenerator.length(),
                           timeDifference,
                         )
 
                         resolve({
                           expectedCount: expectedNumResponses,
-                          successCount: experimentalCsvGenerator.length(),
+                          successCount: csvGenerator.length(),
                           errorCount,
                           unverifiedCount,
                         })
                         // Kill class instance and reclaim the memory.
-                        experimentalCsvGenerator = null
+                        csvGenerator = null
                       } else {
                         $timeout(checkComplete, 100)
                       }

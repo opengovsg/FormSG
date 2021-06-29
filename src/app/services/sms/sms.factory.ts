@@ -1,11 +1,6 @@
-import { errAsync } from 'neverthrow'
 import Twilio from 'twilio'
 
-import FeatureManager, {
-  FeatureNames,
-  RegisteredFeature,
-} from '../../config/feature-manager'
-import { MissingFeatureError } from '../../modules/core/core.errors'
+import { ISms, smsConfig } from '../../config/features/sms.config'
 
 import {
   sendAdminContactOtp,
@@ -56,25 +51,10 @@ interface ISmsFactory {
   ) => ReturnType<typeof sendBouncedSubmissionSms>
 }
 
-const smsFeature = FeatureManager.get(FeatureNames.Sms)
-
 // Exported for testing.
-export const createSmsFactory = (
-  smsFeature: RegisteredFeature<FeatureNames.Sms>,
-): ISmsFactory => {
-  if (!smsFeature.isEnabled || !smsFeature.props) {
-    // Not enabled, return passthrough functions.
-    const error = new MissingFeatureError(FeatureNames.Sms)
-    return {
-      sendAdminContactOtp: () => errAsync(error),
-      sendVerificationOtp: () => errAsync(error),
-      sendFormDeactivatedSms: () => errAsync(error),
-      sendBouncedSubmissionSms: () => errAsync(error),
-    }
-  }
-
+export const createSmsFactory = (smsConfig: ISms): ISmsFactory => {
   const { twilioAccountSid, twilioApiKey, twilioApiSecret, twilioMsgSrvcSid } =
-    smsFeature.props
+    smsConfig
 
   const twilioClient = Twilio(twilioApiKey, twilioApiSecret, {
     accountSid: twilioAccountSid,
@@ -96,4 +76,4 @@ export const createSmsFactory = (
   }
 }
 
-export const SmsFactory = createSmsFactory(smsFeature)
+export const SmsFactory = createSmsFactory(smsConfig)

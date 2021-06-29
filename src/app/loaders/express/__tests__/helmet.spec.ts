@@ -2,7 +2,7 @@ import helmet from 'helmet'
 import { mocked } from 'ts-jest/utils'
 
 import config from 'src/app/config/config'
-import { sentryConfig } from 'src/app/config/feature-manager/sentry.config'
+import { sentryConfig } from 'src/app/config/features/sentry.config'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -13,7 +13,7 @@ describe('helmetMiddlewares', () => {
   const mockHelmet = mocked(helmet, true)
   jest.mock('src/app/config/config')
   const mockConfig = mocked(config, true)
-  jest.mock('src/app/config/feature-manager/sentry.config')
+  jest.mock('src/app/config/features/sentry.config')
   const mockSentryConfig = mocked(sentryConfig, true)
 
   const cspCoreDirectives = {
