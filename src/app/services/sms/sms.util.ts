@@ -1,4 +1,20 @@
 import dedent from 'dedent-js'
+import { StatusCodes } from 'http-status-codes'
+
+import {
+  ApplicationError,
+  DatabaseConflictError,
+  DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
+} from 'src/app/modules/core/core.errors'
+import { ErrorResponseData } from 'src/app/modules/core/core.types'
+import { FormNotFoundError } from 'src/app/modules/form/form.errors'
+import { MissingUserError } from 'src/app/modules/user/user.errors'
+
+import { createLoggerWithLabel } from '../../config/logger'
+
+const logger = createLoggerWithLabel(module)
 
 export const renderFormDeactivatedSms = (formTitle: string): string => dedent`
   Due to responses bouncing from all recipient inboxes, your form "${formTitle}" has been automatically deactivated to prevent further response loss.
@@ -18,3 +34,63 @@ export const renderVerificationSms = (
 ): string => dedent`Use the OTP ${otp} to submit on ${appHost}.
 
   Never share your OTP with anyone else. If you did not request this OTP, you can safely ignore this SMS.`
+
+/**
+ * Handler to map ApplicationErrors to their correct status code and error
+ * messages for SmsController.
+ * @param error The error to retrieve the status codes and error messages
+ * @param defaultErrorMessage Any error message to return instead of the default error message, if any
+ */
+export const mapRouteError = (
+  error: ApplicationError,
+  defaultErrorMessage = 'Sorry, something went wrong. Please try again.',
+): ErrorResponseData => {
+  switch (error.constructor) {
+    case MissingUserError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage:
+          'Could not find the user requested. Please refresh and try again.',
+      }
+    case FormNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage:
+          'Could not find the form requested. Please refresh and try again.',
+      }
+    case DatabaseError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: defaultErrorMessage,
+      }
+
+    case DatabaseValidationError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: defaultErrorMessage,
+      }
+    case DatabaseConflictError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: defaultErrorMessage,
+      }
+    case DatabasePayloadSizeError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: defaultErrorMessage,
+      }
+    default:
+      logger.error({
+        message: 'Unknown route error observed in SmsController',
+        meta: {
+          action: 'mapRouteError',
+        },
+        error,
+      })
+
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: defaultErrorMessage,
+      }
+  }
+}
