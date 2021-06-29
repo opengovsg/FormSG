@@ -200,7 +200,7 @@
     "concurrently": "^6.2.0",
     "copy-webpack-plugin": "^6.0.2",
     "core-js": "^3.15.2",
-    "coveralls": "^3.1.0",
+    "coveralls": "^3.1.1",
     "css-loader": "^2.1.1",
     "csv-parse": "^4.16.0",
     "env-cmd": "^10.1.0",
