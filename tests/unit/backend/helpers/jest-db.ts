@@ -1,4 +1,5 @@
 import { ObjectID } from 'bson'
+import _ from 'lodash'
 import mongoose from 'mongoose'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
@@ -7,6 +8,11 @@ import {
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
+import {
+  ISmsCountSchema,
+  LogType,
+  SmsType,
+} from 'src/app/services/sms/sms.types'
 import {
   IAgencySchema,
   IEmailForm,
@@ -19,6 +25,8 @@ import {
 } from 'src/types'
 
 import MemoryDatabaseServer from 'tests/database'
+
+import getSmsCountModel from '../../../../src/app/services/sms/sms_count.server.model'
 
 /**
  * Connect to the in-memory database
@@ -222,6 +230,37 @@ const getFullFormById = async (
 ): Promise<IPopulatedForm | null> =>
   await getEmailFormModel(mongoose).getFullFormById(formId)
 
+const insertVerifiedSms = async ({
+  formId,
+  formAdmin,
+  msgSrvcSid = 'MOCK MESSAGE SERVICE ID',
+  logType = LogType.success,
+  isOnboarded = false,
+}: {
+  formId: ObjectID
+  formAdmin: { email: string; userId: ObjectID }
+  msgSrvcSid?: string
+  logType?: LogType
+  isOnboarded?: boolean
+}): Promise<ISmsCountSchema> => {
+  const SmsModel = getSmsCountModel(mongoose)
+  const sms = await SmsModel.create({
+    smsType: SmsType.Verification,
+    logType,
+    msgSrvcSid,
+    form: formId,
+    formAdmin,
+    isOnboarded,
+  })
+
+  // Workaround because the isOnboarded property is set onSave.
+  // Hence, use an updateOperation to set it
+  return sms
+    .update({ isOnboardedAccount: isOnboarded })
+    .exec()
+    .then(() => _.assign(sms, { isOnboardedAccount: isOnboarded }))
+}
+
 const dbHandler = {
   connect,
   closeDatabase,
@@ -229,6 +268,7 @@ const dbHandler = {
   insertAgency,
   insertUser,
   insertFormCollectionReqs,
+  insertVerifiedSms,
   clearCollection,
   insertEmailForm,
   insertEncryptForm,
