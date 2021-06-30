@@ -1,44 +1,5 @@
-import {
-  BasicField,
-  IField,
-  LogicCondition,
-  LogicConditionState,
-} from '../../../../../types'
-
-const LOGIC_CONDITIONS: LogicCondition[] = [
-  [
-    BasicField.Dropdown,
-    [LogicConditionState.Equal, LogicConditionState.Either],
-  ],
-  [
-    BasicField.Number,
-    [
-      LogicConditionState.Equal,
-      LogicConditionState.Lte,
-      LogicConditionState.Gte,
-    ],
-  ],
-  [
-    BasicField.Decimal,
-    [
-      LogicConditionState.Equal,
-      LogicConditionState.Lte,
-      LogicConditionState.Gte,
-    ],
-  ],
-  [
-    BasicField.Rating,
-    [
-      LogicConditionState.Equal,
-      LogicConditionState.Lte,
-      LogicConditionState.Gte,
-    ],
-  ],
-  [BasicField.YesNo, [LogicConditionState.Equal]],
-  [BasicField.Radio, [LogicConditionState.Equal, LogicConditionState.Either]],
-]
-
-const LOGIC_MAP = new Map<BasicField, LogicConditionState[]>(LOGIC_CONDITIONS)
+import { LOGIC_MAP } from '../../../../../shared/util/logic'
+import { BasicField, IField, LogicConditionState } from '../../../../../types'
 
 /**
  * Given a list of form fields, returns only the fields that are
