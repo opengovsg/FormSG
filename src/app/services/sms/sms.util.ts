@@ -1,17 +1,16 @@
 import dedent from 'dedent-js'
 import { StatusCodes } from 'http-status-codes'
 
+import { createLoggerWithLabel } from '../../config/logger'
 import {
   ApplicationError,
   DatabaseConflictError,
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
-} from 'src/app/modules/core/core.errors'
-import { ErrorResponseData } from 'src/app/modules/core/core.types'
-import { FormNotFoundError } from 'src/app/modules/form/form.errors'
-
-import { createLoggerWithLabel } from '../../config/logger'
+} from '../../modules/core/core.errors'
+import { ErrorResponseData } from '../../modules/core/core.types'
+import { FormNotFoundError } from '../../modules/form/form.errors'
 
 const logger = createLoggerWithLabel(module)
 

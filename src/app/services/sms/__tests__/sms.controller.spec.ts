@@ -2,12 +2,11 @@ import { ObjectId } from 'bson-ext'
 import _ from 'lodash'
 import { errAsync } from 'neverthrow'
 
-import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { IFormSchema, IUserSchema } from 'src/types'
-
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import dbHandler from '../../../../../tests/unit/backend/helpers/jest-db'
+import { IFormSchema, IUserSchema } from '../../../../types'
+import { DatabaseError } from '../../../modules/core/core.errors'
 import * as FormService from '../../../modules/form/form.service'
 import * as SmsService from '../../../services/sms/sms.service'
 import * as SmsController from '../sms.controller'
