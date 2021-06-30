@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { BiCaretDown, BiCaretUp } from 'react-icons/bi'
 import {
   forwardRef,
@@ -10,10 +9,11 @@ import {
   NumberInputField,
   NumberInputProps as ChakraNumberInputProps,
   NumberInputStepper,
+  useMultiStyleConfig,
 } from '@chakra-ui/react'
+import { omit } from '@chakra-ui/utils'
 
 import { BxsCheckCircle } from '~assets/icons/BxsCheckCircle'
-import { SX_STEPPER_WIDTH } from '~theme/components/NumberInput'
 
 export interface NumberInputProps extends ChakraNumberInputProps {
   /**
@@ -27,38 +27,19 @@ export interface NumberInputProps extends ChakraNumberInputProps {
 }
 
 export const NumberInput = forwardRef<NumberInputProps, 'input'>(
-  ({ isPrefilled, isSuccess, ...props }, ref) => {
-    const extraInputProps = useMemo(() => {
-      let extraProps = {}
-      if (isSuccess) {
-        extraProps = {
-          borderColor: 'success.700',
-          _hover: {
-            borderColor: 'success.700',
-          },
-          paddingInlineEnd: `calc(var(${SX_STEPPER_WIDTH}) + 2.5rem)`,
-        }
-      }
-      // Add background if isPrefilled.
-      if (isPrefilled) {
-        extraProps = {
-          ...extraProps,
-          bg: 'warning.100',
-        }
-      }
-      return extraProps
-    }, [isPrefilled, isSuccess])
+  (props, ref) => {
+    const { isSuccess } = props
+    const inputStyles = useMultiStyleConfig('NumberInput', props)
+    // Omit extra props so they will not be passed into the DOM and trigger
+    // React warnings.
+    const inputProps = omit(props, ['isSuccess', 'isPrefilled'])
 
     return (
-      <ChakraNumberInput {...props} ref={ref}>
-        <NumberInputField {...extraInputProps} />
+      <ChakraNumberInput {...inputProps} ref={ref}>
+        <NumberInputField sx={inputStyles.field} />
         {isSuccess && (
-          <InputRightElement
-            pointerEvents="none"
-            fontSize="1.25rem"
-            mr={`var(${SX_STEPPER_WIDTH})`}
-          >
-            <Icon as={BxsCheckCircle} color="success.700" />
+          <InputRightElement sx={inputStyles.success}>
+            <Icon as={BxsCheckCircle} />
           </InputRightElement>
         )}
         <NumberInputStepper>
