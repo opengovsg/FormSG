@@ -16,6 +16,15 @@ export interface TextareaProps extends ChakraTextareaProps {
    * Defaults to `6`.
    */
   maxAutosizeRows?: TextareaAutosizeProps['maxRows']
+
+  /**
+   * Whether the input is in a prefilled state.
+   */
+  isPrefilled?: boolean
+  /**
+   * Whether the input is in a success state.
+   */
+  isSuccess?: boolean
 }
 
 export const Textarea = forwardRef<TextareaProps, 'textarea'>(
