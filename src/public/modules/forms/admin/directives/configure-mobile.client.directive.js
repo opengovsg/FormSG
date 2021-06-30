@@ -1,9 +1,12 @@
 'use strict'
+const { get } = require('lodash')
 
 const {
   ADMIN_VERIFIED_SMS_STATES,
   SMS_VERIFICATION_LIMIT,
 } = require('../../../../../shared/util/verification')
+
+const SmsService = require('../../../../services/SmsService')
 
 angular
   .module('forms')
@@ -16,6 +19,7 @@ function configureMobileDirective() {
     restrict: 'E',
     scope: {
       field: '<',
+      form: '<',
       name: '=',
       characterLimit: '=',
       isLoading: '<',
@@ -25,21 +29,12 @@ function configureMobileDirective() {
       '$uibModal',
       '$scope',
       '$translate',
-      '$timeout',
-      function ($q, $uibModal, $scope, $translate, $timeout) {
+      'Toastr',
+      function ($q, $uibModal, $scope, $translate, Toastr) {
         // Get support form link from translation json.
         $translate('LINKS.TWILIO_SETUP_LINK').then((twilioSetupLink) => {
           $scope.twilioSetupLink = twilioSetupLink
         })
-
-        // TODO: Implement this
-        const getSmsCounts = () =>
-          $timeout(() => {
-            return {
-              verifiedSmsCount: 20000035,
-              messageServiceId: '',
-            }
-          }, 1000)
 
         // NOTE: This is set on scope as it is used by the UI to determine if the toggle is loading
         $scope.isLoading = true
@@ -54,21 +49,29 @@ function configureMobileDirective() {
           return ADMIN_VERIFIED_SMS_STATES.limitExceeded
         }
 
-        $q.when(getSmsCounts()).then(
-          ({ verifiedSmsCount, messageServiceId }) => {
-            $scope.verifiedSmsCount = verifiedSmsCount
-            $scope.messageServiceId = messageServiceId
+        $q.when(SmsService.getSmsVerificationStateForFormAdmin($scope.form._id))
+          .then(({ msgSrvcSid, freeSmsCount }) => {
+            $scope.verifiedSmsCount = freeSmsCount
+            $scope.messageServiceId = msgSrvcSid
             $scope.adminVerifiedSmsState = getAdminVerifiedSmsState(
-              verifiedSmsCount,
-              messageServiceId,
+              freeSmsCount,
+              msgSrvcSid,
             )
             // NOTE: This links into the verifiable field component and hence, is used by both email and mobile
             $scope.field.hasAdminExceededSmsLimit =
               $scope.adminVerifiedSmsState ===
               ADMIN_VERIFIED_SMS_STATES.limitExceeded
-            $scope.isLoading = false
-          },
-        )
+          })
+          .catch((error) => {
+            Toastr.error(
+              get(
+                error,
+                'response.data.message',
+                'Sorry, an error occurred. Please refresh the page and try again later.',
+              ),
+            )
+          })
+          .finally(() => ($scope.isLoading = false))
 
         // Only open if the admin has sms counts below the limit.
         // If the admin has counts above limit without a message id, the toggle should be disabled anyway.
