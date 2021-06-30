@@ -690,14 +690,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     formId: string,
     createLogicBody: LogicDto,
   ): Promise<IFormSchema | null> {
-    return this.findByIdAndUpdate(
-      formId,
-      { $push: { form_logics: createLogicBody } },
-      {
-        new: true,
-        runValidators: true,
-      },
-    ).exec()
+    let form = await this.findById(formId).exec()
+    form.form_logics?.push(createLogicBody)
+    return form.save()
   }
 
   // Deletes specified form field by id.
