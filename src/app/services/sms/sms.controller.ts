@@ -3,6 +3,7 @@ import { Types } from 'mongoose'
 
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
+import { withUserAuthentication } from '../../modules/auth/auth.middlewares'
 import { ControllerHandler } from '../../modules/core/core.types'
 import * as FormService from '../../modules/form/form.service'
 import * as SmsService from '../../services/sms/sms.service'
@@ -14,16 +15,14 @@ import { mapRouteError } from './sms.util'
 const logger = createLoggerWithLabel(module)
 
 /**
- * Handler to retrieve the free sms counts remaining for a user and a form belonging to the user
+ * Private handler to retrieve the free sms counts remaining for a user and a form belonging to the user
  * This is the controller for GET /:userId/:formId endpoint
  * @param formId The id of the form to retrieve the message service id for
- * @param userId The user id of the form to retrieve sms counts for
  * @returns 200 with msgSrvcId and free sms counts when successful
- * @returns 404 when the userId is not found in the database
  * @returns 404 when the formId is not found in the database
  * @returns 500 when a database error occurs during retrieval
  */
-export const handleGetFreeSmsCountForUser: ControllerHandler<
+export const _handleGetFreeSmsCountForFormAdmin: ControllerHandler<
   {
     formId: string
   },
@@ -31,7 +30,7 @@ export const handleGetFreeSmsCountForUser: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const logMeta = {
-    action: 'handleGetFreeSmsCountForUser',
+    action: 'handleGetFreeSmsCountForFormAdmin',
     ...createReqMeta(req),
     formId,
   }
@@ -41,6 +40,8 @@ export const handleGetFreeSmsCountForUser: ControllerHandler<
     FormService.retrieveFormById(formId)
       // Step 2: Retrieve the free sms count
       .andThen(({ msgSrvcName, admin }) => {
+        // This casting is required because no type parameter is specified on the document.
+        // Hence, this defaults to any but on the schema, this is defined as an ObjectId
         const adminId = (admin as Types.ObjectId).toHexString()
         return SmsService.retrieveFreeSmsCounts(adminId).map(
           (freeSmsCount) => ({
@@ -62,3 +63,10 @@ export const handleGetFreeSmsCountForUser: ControllerHandler<
       })
   )
 }
+
+// Public handler for GET /:userId/:formId endpoint
+// Only authenticated users should be able to retrieve the free sms counts
+export const handleGetFreeSmsCountForFormAdmin = [
+  withUserAuthentication,
+  _handleGetFreeSmsCountForFormAdmin,
+] as ControllerHandler[]

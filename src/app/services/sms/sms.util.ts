@@ -10,7 +10,6 @@ import {
 } from 'src/app/modules/core/core.errors'
 import { ErrorResponseData } from 'src/app/modules/core/core.types'
 import { FormNotFoundError } from 'src/app/modules/form/form.errors'
-import { MissingUserError } from 'src/app/modules/user/user.errors'
 
 import { createLoggerWithLabel } from '../../config/logger'
 
@@ -46,12 +45,6 @@ export const mapRouteError = (
   defaultErrorMessage = 'Sorry, something went wrong. Please try again.',
 ): ErrorResponseData => {
   switch (error.constructor) {
-    case MissingUserError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage:
-          'Could not find the user requested. Please refresh and try again.',
-      }
     case FormNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
