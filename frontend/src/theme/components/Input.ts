@@ -16,19 +16,25 @@ export const Input = {
   parts: ['field', 'addon'],
   variants: {
     outline: (props: Record<string, any>) => {
-      const { theme } = props
-      const { focusBorderColor: fc, errorBorderColor: ec } = props
+      const {
+        theme,
+        focusBorderColor: fc,
+        errorBorderColor: ec,
+        isSuccess,
+        isPrefilled,
+      } = props
 
       return {
         field: {
+          bg: isPrefilled ? 'warning.100' : 'white',
           textStyle: 'body-1',
           border: '1px solid',
-          borderColor: 'neutral.400',
+          borderColor: isSuccess ? 'success.700' : 'neutral.400',
           _placeholder: {
             color: 'neutral.500',
           },
           _hover: {
-            borderColor: 'neutral.400',
+            borderColor: isSuccess ? 'success.700' : 'neutral.400',
           },
           _disabled: {
             background: 'neutral.200',

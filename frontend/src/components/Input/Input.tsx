@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import {
   forwardRef,
   Icon,
@@ -21,44 +20,24 @@ export interface InputProps extends ChakraInputProps {
   isSuccess?: boolean
 }
 
-export const Input = forwardRef<InputProps, 'input'>(
-  ({ isSuccess, isPrefilled, ...props }, ref) => {
-    const extraInputProps = useMemo(() => {
-      let extraProps = {}
-      if (isSuccess) {
-        extraProps = {
-          borderColor: 'success.700',
-          _hover: {
-            borderColor: 'success.700',
-          },
-        }
-      }
-      // Add background if isPrefilled.
-      if (isPrefilled) {
-        extraProps = {
-          ...extraProps,
-          bg: 'warning.100',
-        }
-      }
-      return extraProps
-    }, [isPrefilled, isSuccess])
+export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
+  const { isSuccess } = props
 
-    if (!isSuccess) {
-      return <ChakraInput ref={ref} {...extraInputProps} {...props} />
-    }
+  if (!isSuccess) {
+    return <ChakraInput ref={ref} {...props} />
+  }
 
-    return (
-      <InputGroup>
-        <ChakraInput ref={ref} {...extraInputProps} {...props} />
-        {isSuccess && (
-          <InputRightElement pointerEvents="none" fontSize="1.25rem">
-            <Icon as={BxsCheckCircle} color="success.700" />
-          </InputRightElement>
-        )}
-      </InputGroup>
-    )
-  },
-)
+  return (
+    <InputGroup>
+      <ChakraInput ref={ref} {...props} />
+      {isSuccess && (
+        <InputRightElement pointerEvents="none" fontSize="1.25rem">
+          <Icon as={BxsCheckCircle} color="success.700" />
+        </InputRightElement>
+      )}
+    </InputGroup>
+  )
+})
 
 /**
  * This is used in by Chakra's `InputGroup` component to remove border radii
