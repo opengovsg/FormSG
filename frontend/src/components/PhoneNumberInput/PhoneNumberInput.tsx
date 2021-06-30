@@ -5,6 +5,7 @@
  * application's needs.
  */
 import {
+  ChangeEvent,
   FC,
   useCallback,
   useLayoutEffect,
@@ -14,22 +15,25 @@ import {
 } from 'react'
 import { BiChevronDown } from 'react-icons/bi'
 import {
-  Box,
   chakra,
   Flex,
   forwardRef,
   Icon,
   InputGroup,
   InputLeftAddon,
-  InputProps,
+  useFormControl,
   useMergeRefs,
+  useMultiStyleConfig,
 } from '@chakra-ui/react'
 import Flags from 'country-flag-icons/react/3x2'
 import { AsYouType, CountryCode } from 'libphonenumber-js/min'
 
-import Input from '../Input'
+import Input, { InputProps } from '../Input'
 
-import { COUNTRY_CODE_TO_NAME } from './utils/mapCountryCodeToName'
+import {
+  COUNTRY_CODE_TO_NAME,
+  getCountrySelectOptions,
+} from './utils/countrySelectUtils'
 
 export interface PhoneNumberInputProps
   extends Omit<InputProps, 'defaultValue' | 'value' | 'onChange'> {
@@ -56,9 +60,18 @@ export interface PhoneNumberInputProps
 
 export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
   (
-    { defaultCountry = 'SG', onChange, onBlur, value: propsValue, ...props },
+    {
+      defaultCountry = 'SG',
+      onChange,
+      onBlur,
+      value: propsValue,
+      isDisabled,
+      ...props
+    },
     ref,
   ) => {
+    const styles = useMultiStyleConfig('PhoneNumberInput', props)
+
     // Internal states of the component.
     const [inputValue, setInputValue] = useState(propsValue ?? '')
     const [country, setCountry] = useState(defaultCountry)
@@ -170,14 +183,19 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
 
     return (
       <InputGroup>
-        <CountrySelect value={country} onChange={onCountryChange} />
+        <CountrySelect
+          isDisabled={isDisabled}
+          value={country}
+          onChange={onCountryChange}
+        />
         <Input
           onBlur={onInputBlur}
-          borderLeftRadius={0}
           ref={inputRef}
           value={inputValue}
           onChange={(e) => onInputChange(e.target.value)}
           type="tel"
+          isDisabled={isDisabled}
+          sx={styles.field}
           {...props}
         />
       </InputGroup>
@@ -188,51 +206,53 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
 interface CountrySelectProps {
   value: CountryCode
   onChange: (val: CountryCode) => void
+  isDisabled?: boolean
 }
 
-const CountrySelect: FC<CountrySelectProps> = ({ value, onChange }) => {
+const CountrySelect: FC<CountrySelectProps> = (props) => {
+  const { value, onChange } = props
+  const styles = useMultiStyleConfig('PhoneNumberInput', props)
+
+  const handleCountryChange = useCallback(
+    (e: ChangeEvent<HTMLSelectElement>) => {
+      onChange(e.target.value as CountryCode)
+    },
+    [onChange],
+  )
+
+  const inputProps = useFormControl<HTMLSelectElement>(props)
+
+  const selectOptions = useMemo(() => getCountrySelectOptions(), [])
+
   return (
     <InputLeftAddon
+      aria-disabled={inputProps.disabled}
       title={COUNTRY_CODE_TO_NAME[value]}
       as="label"
-      transitionProperty="common"
-      transitionDuration="normal"
-      bg="white"
-      border="1px solid"
-      borderColor="neutral.400"
-      _active={{
-        borderColor: 'primary.500',
-        boxShadow: `0 0 0 1px var(--chakra-colors-primary-500)`,
-      }}
-      _focusWithin={{
-        borderColor: 'primary.500',
-        zIndex: 1,
-        boxShadow: `0 0 0 1px var(--chakra-colors-primary-500)`,
-      }}
-      _hover={{ bg: 'neutral.200' }}
-      pos="relative"
-      p="0.5rem"
-      width="4rem"
+      sx={styles.country}
     >
       <Flex>
-        {value ? <Icon as={Flags[value]} w="1.5em" /> : <Box w="1.5em" />}
-        <Icon ml="0.5rem" as={BiChevronDown} />
+        <Icon
+          aria-disabled={inputProps.disabled}
+          // Show FLags if available. If value does not exist for any reason,
+          // a default fallback icon will be used by ChakraUI.
+          // See https://chakra-ui.com/docs/media-and-icons/icon#fallback-icon.
+          as={Flags[value]}
+          sx={styles.icon}
+        />
+        <Icon as={BiChevronDown} />
       </Flex>
       <chakra.select
         aria-label="Country selector"
-        cursor="pointer"
-        opacity={0}
-        pos="absolute"
-        w="100%"
-        h="100%"
-        left={0}
-        top={0}
-        value={value}
-        onChange={(event) => onChange(event.target.value as CountryCode)}
+        sx={styles.selector}
+        {...inputProps}
+        id={`${inputProps.id}-country`}
+        // Override props on change with one that takes in ChangeEvent as a param.
+        onChange={handleCountryChange}
       >
-        {Object.keys(COUNTRY_CODE_TO_NAME).map((country) => (
-          <option key={country} value={country}>
-            {COUNTRY_CODE_TO_NAME[country as CountryCode]}
+        {selectOptions.map(({ value, label }) => (
+          <option key={value} value={value}>
+            {label}
           </option>
         ))}
       </chakra.select>
