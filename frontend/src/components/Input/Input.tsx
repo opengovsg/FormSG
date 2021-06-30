@@ -5,6 +5,7 @@ import {
   InputGroup,
   InputProps as ChakraInputProps,
   InputRightElement,
+  useMultiStyleConfig,
 } from '@chakra-ui/react'
 
 import { BxsCheckCircle } from '~assets/icons/BxsCheckCircle'
@@ -22,19 +23,21 @@ export interface InputProps extends ChakraInputProps {
 
 export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
   const { isSuccess } = props
+  const inputStyles = useMultiStyleConfig('Input', props)
 
+  // Return normal input component if not success state.
   if (!isSuccess) {
     return <ChakraInput ref={ref} {...props} />
   }
 
   return (
+    // InputGroup is required for InputRightElement to retrieve the correct
+    // style props. Will crash if not included.
     <InputGroup>
       <ChakraInput ref={ref} {...props} />
-      {isSuccess && (
-        <InputRightElement pointerEvents="none" fontSize="1.25rem">
-          <Icon as={BxsCheckCircle} color="success.700" />
-        </InputRightElement>
-      )}
+      <InputRightElement sx={inputStyles.success}>
+        <Icon as={BxsCheckCircle} />
+      </InputRightElement>
     </InputGroup>
   )
 })

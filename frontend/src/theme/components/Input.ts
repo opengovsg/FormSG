@@ -13,7 +13,7 @@ const size = {
 }
 
 export const Input = {
-  parts: ['field', 'addon'],
+  parts: ['field', 'addon', 'success'],
   variants: {
     outline: (props: Record<string, any>) => {
       const {
@@ -52,6 +52,11 @@ export const Input = {
             borderColor: getColor(theme, fc),
             boxShadow: `0 0 0 1px ${getColor(theme, fc)}`,
           },
+        },
+        success: {
+          pointerEvents: 'none',
+          fontSize: '1.25rem',
+          color: 'success.700',
         },
       }
     },
