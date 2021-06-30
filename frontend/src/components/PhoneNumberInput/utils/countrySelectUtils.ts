@@ -1,10 +1,12 @@
-// Simple mapping constant retrieved from
-// https://github.com/catamphetamine/react-phone-number-input/blob/master/locale/en.json
-// Duplicated here (with unsupported codes removed) instead of installing
-// another dependency.
-
 import { CountryCode } from 'libphonenumber-js/types'
 
+/**
+ * Simple mapping constant retrieved from
+ * https://github.com/catamphetamine/react-phone-number-input/blob/master/locale/en.json.
+ *
+ * Duplicated here (with unsupported codes removed) instead of installing
+ * another dependency.
+ */
 export const COUNTRY_CODE_TO_NAME: { [str in CountryCode]: string } = {
   AC: 'Ascension Island',
   AD: 'Andorra',
@@ -251,4 +253,19 @@ export const COUNTRY_CODE_TO_NAME: { [str in CountryCode]: string } = {
   ZA: 'South Africa',
   ZM: 'Zambia',
   ZW: 'Zimbabwe',
+}
+
+type CountrySelectOption = { value: CountryCode; label: string }
+
+export const getCountrySelectOptions = (): CountrySelectOption[] => {
+  const countries = Object.keys(COUNTRY_CODE_TO_NAME) as CountryCode[]
+  const countrySelectOptions = countries.map((country) => ({
+    value: country,
+    label: COUNTRY_CODE_TO_NAME[country],
+  }))
+
+  // Sort the list of countries alphabetically.
+  countrySelectOptions.sort((a, b) => a.label.localeCompare(b.label))
+
+  return countrySelectOptions
 }
