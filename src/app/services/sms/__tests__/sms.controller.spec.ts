@@ -1,5 +1,6 @@
-import { ObjectId } from 'bson-ext'
+import { ObjectID, ObjectId } from 'bson-ext'
 import _ from 'lodash'
+import mongoose from 'mongoose'
 import { errAsync } from 'neverthrow'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
@@ -10,7 +11,8 @@ import { DatabaseError } from '../../../modules/core/core.errors'
 import * as FormService from '../../../modules/form/form.service'
 import * as SmsService from '../../../services/sms/sms.service'
 import * as SmsController from '../sms.controller'
-import { SmsCountsMeta } from '../sms.types'
+import { ISmsCountSchema, LogType, SmsCountsMeta, SmsType } from '../sms.types'
+import getSmsCountModel from '../sms_count.server.model'
 
 describe('sms.controller', () => {
   let mockUser: IUserSchema
@@ -19,44 +21,6 @@ describe('sms.controller', () => {
 
   afterEach(() => {
     jest.clearAllMocks()
-  })
-
-  afterAll(async () => {
-    await dbHandler.clearDatabase()
-    await dbHandler.closeDatabase()
-  })
-
-  beforeAll(async () => {
-    await dbHandler.connect()
-    const { user: createdUser } = await dbHandler.insertFormCollectionReqs()
-    mockUser = createdUser
-    const { form: createdForm } = await dbHandler.insertEmailForm({
-      formOptions: {
-        hasCaptcha: false,
-        admin: mockUser._id,
-      },
-      // Avoid default mail domain so that user emails in the database don't conflict
-      mailDomain: 'test2.gov.sg',
-    })
-
-    mockForm = createdForm
-    const mockAdminDetails = { userId: mockUser._id, email: mockUser.email }
-
-    await Promise.all(
-      _.range(VERIFICATION_SMS_COUNT).map(async () => {
-        await Promise.all([
-          dbHandler.insertVerifiedSms({
-            formId: mockForm._id,
-            formAdmin: mockAdminDetails,
-          }),
-          dbHandler.insertVerifiedSms({
-            formId: mockForm._id,
-            formAdmin: mockAdminDetails,
-            isOnboarded: true,
-          }),
-        ])
-      }),
-    )
   })
 
   describe('handleGetFreeSmsCountForFormAdmin', () => {
@@ -182,4 +146,25 @@ describe('sms.controller', () => {
       expect(mockRes.json).toBeCalledWith(expected)
     })
   })
+
+  const insertVerifiedSms = async ({
+    formId,
+    formAdmin,
+    msgSrvcSid = 'MOCK MESSAGE SERVICE ID',
+    logType = LogType.success,
+  }: {
+    formId: ObjectID
+    formAdmin: { email: string; userId: ObjectID }
+    msgSrvcSid?: string
+    logType?: LogType
+  }): Promise<ISmsCountSchema> => {
+    const SmsModel = getSmsCountModel(mongoose)
+    return SmsModel.create({
+      smsType: SmsType.Verification,
+      logType,
+      msgSrvcSid,
+      form: formId,
+      formAdmin,
+    })
+  }
 })
