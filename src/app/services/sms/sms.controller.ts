@@ -2,7 +2,6 @@ import { StatusCodes } from 'http-status-codes'
 
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
-import { withUserAuthentication } from '../../modules/auth/auth.middlewares'
 import { ControllerHandler } from '../../modules/core/core.types'
 import * as FormService from '../../modules/form/form.service'
 import * as SmsService from '../../services/sms/sms.service'
@@ -14,14 +13,14 @@ import { mapRouteError } from './sms.util'
 const logger = createLoggerWithLabel(module)
 
 /**
- * Private handler to retrieve the free sms counts remaining for a user and a form belonging to the user
- * This is the controller for GET /:userId/:formId endpoint
+ * Handler to retrieve the free sms counts remaining for a user and a form belonging to the user
+ * This is the controller for GET /admin/forms/:formId/verified-sms/count/free
  * @param formId The id of the form to retrieve the message service id for
  * @returns 200 with msgSrvcId and free sms counts when successful
  * @returns 404 when the formId is not found in the database
  * @returns 500 when a database error occurs during retrieval
  */
-export const _handleGetFreeSmsCountForFormAdmin: ControllerHandler<
+export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
   {
     formId: string
   },
@@ -59,10 +58,3 @@ export const _handleGetFreeSmsCountForFormAdmin: ControllerHandler<
       })
   )
 }
-
-// Public handler for GET /:userId/:formId endpoint
-// Only authenticated users should be able to retrieve the free sms counts
-export const handleGetFreeSmsCountForFormAdmin = [
-  withUserAuthentication,
-  _handleGetFreeSmsCountForFormAdmin,
-] as ControllerHandler[]
