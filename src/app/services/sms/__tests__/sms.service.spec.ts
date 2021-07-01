@@ -1,9 +1,12 @@
 import { ObjectId } from 'bson'
-import _ from 'lodash'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
-import { MalformedParametersError } from 'src/app/modules/core/core.errors'
+import {
+  DatabaseError,
+  MalformedParametersError,
+} from 'src/app/modules/core/core.errors'
+import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
 import { VfnErrors } from 'src/shared/util/verification'
 import { FormOtpData, IFormSchema, IUserSchema, ResponseMode } from 'src/types'
 
@@ -353,84 +356,33 @@ describe('sms.service', () => {
   })
 
   describe('retrieveFreeSmsCounts', () => {
-    let mockOtpData: FormOtpData
-    let mockForm: IFormSchema
     const VERIFICATION_SMS_COUNT = 3
 
-    beforeEach(async () => {
-      mockForm = await FormModel.create({
-        title: 'Test Form',
-        emails: [testUser.email],
-        admin: testUser._id,
-        responseMode: ResponseMode.Email,
-      })
-
-      mockOtpData = {
-        form: mockForm._id,
-        formAdmin: {
-          email: testUser.email,
-          userId: testUser._id,
-        },
-      }
-
-      await Promise.all(
-        _.range(VERIFICATION_SMS_COUNT).map(async () => {
-          await Promise.all([
-            dbHandler.insertVerifiedSms({
-              formId: mockForm._id,
-              formAdmin: mockOtpData.formAdmin,
-            }),
-            dbHandler.insertVerifiedSms({
-              formId: mockForm._id,
-              formAdmin: mockOtpData.formAdmin,
-              isOnboarded: true,
-            }),
-          ])
-        }),
-      )
-    })
-
     it('should retrieve sms counts correctly for a specified user', async () => {
+      //Arrange
+      const retrieveSpy = jest.spyOn(SmsCountModel, 'retrieveFreeSmsCounts')
+      retrieveSpy.mockResolvedValueOnce(VERIFICATION_SMS_COUNT)
+
       // Act
       const actual = await SmsService.retrieveFreeSmsCounts(testUser._id)
+
       // Assert
       // should retrieve counts of users that are NOT onboarded
       expect(actual._unsafeUnwrap()).toBe(VERIFICATION_SMS_COUNT)
     })
 
-    it('should not include other forms of sms verifications', async () => {
+    it('should return a database error when retrieval fails', async () => {
       // Arrange
-      await SmsService.sendAdminContactOtp(
-        /* recipient= */ TWILIO_TEST_NUMBER,
-        /* otp= */ '111111',
-        /* userId= */ testUser._id,
-        /* defaultConfig= */ MOCK_VALID_CONFIG,
+      const retrieveSpy = jest.spyOn(SmsCountModel, 'retrieveFreeSmsCounts')
+      retrieveSpy.mockRejectedValueOnce('ohno')
+
+      // Act
+      const actual = await SmsService.retrieveFreeSmsCounts(testUser._id)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(getMongoErrorMessage('ohno')),
       )
-
-      // Act
-      const actual = await SmsService.retrieveFreeSmsCounts(testUser._id)
-
-      // Assert
-      expect(actual._unsafeUnwrap()).toBe(VERIFICATION_SMS_COUNT)
-    })
-
-    it('should not include other users verifications', async () => {
-      // Arrange
-      const MOCK_USER_ID = new ObjectId()
-      // Insert a new sms sent under the new user
-      await dbHandler.insertVerifiedSms({
-        formId: mockForm._id,
-        formAdmin: {
-          email: 'someone@mock.com',
-          userId: MOCK_USER_ID,
-        },
-      })
-
-      // Act
-      const actual = await SmsService.retrieveFreeSmsCounts(testUser._id)
-
-      // Assert
-      expect(actual._unsafeUnwrap()).toBe(VERIFICATION_SMS_COUNT)
     })
   })
 
