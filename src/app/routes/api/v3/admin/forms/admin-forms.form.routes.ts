@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
+import * as SmsController from '../../../../../services/sms/sms.controller'
 
 export const AdminFormsFormRouter = Router()
 
@@ -196,4 +197,9 @@ AdminFormsFormRouter.put(
 AdminFormsFormRouter.put(
   '/:formId([a-fA-F0-9]{24})/start-page',
   AdminFormController.handleUpdateStartPage,
+)
+
+AdminFormsFormRouter.get(
+  '/:formId([a-fA-F0-9]{24})/verified-sms/count/free',
+  SmsController.handleGetFreeSmsCountForFormAdmin,
 )
