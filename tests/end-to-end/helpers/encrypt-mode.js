@@ -22,7 +22,7 @@ const ngrok = require('ngrok')
 // Index of the column headers in the exported CSV. The first 4 rows are
 // metadata about the number of responses decrypted.
 const CSV_HEADER_ROW_INDEX = 5
-// The first two columns are "Reference number" and "Timestamp", so the
+// The first two columns are "Response ID" and "Timestamp", so the
 // fields to check only start from the third column.
 const CSV_ANSWER_COL_INDEX = 3
 
@@ -131,13 +131,12 @@ async function checkDownloadCsv(t, formData, authData, formId) {
     `${getDownloadsFolder()}/${formOptions.title}-${formId}.csv`,
   )
   const records = parse(csvContent, { relax_column_count: true })
-  const headers = ['Reference number', 'Timestamp', 'Download Status']
+  const headers = ['Response ID', 'Timestamp', 'Download Status']
   const answers = []
   formFields.forEach((field) => addExpectedCsvResponse(field, headers, answers))
   await t.expect(records[CSV_HEADER_ROW_INDEX]).eql(headers)
-  const actualAnswers = records[CSV_HEADER_ROW_INDEX + 1].slice(
-    CSV_ANSWER_COL_INDEX,
-  )
+  const actualAnswers =
+    records[CSV_HEADER_ROW_INDEX + 1].slice(CSV_ANSWER_COL_INDEX)
   await t.expect(actualAnswers).eql(answers)
 }
 
