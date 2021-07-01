@@ -38,6 +38,7 @@ function configureMobileDirective() {
 
         // NOTE: This is set on scope as it is used by the UI to determine if the toggle is loading
         $scope.isLoading = true
+        $scope.field.hasRetrievalError = false
 
         const getAdminVerifiedSmsState = (verifiedSmsCount, msgSrvcId) => {
           if (msgSrvcId) {
@@ -61,13 +62,15 @@ function configureMobileDirective() {
             $scope.field.hasAdminExceededSmsLimit =
               $scope.adminVerifiedSmsState ===
               ADMIN_VERIFIED_SMS_STATES.limitExceeded
+            $scope.field.hasRetrievalError = false
           })
           .catch((error) => {
+            $scope.field.hasRetrievalError = true
             Toastr.error(
               get(
                 error,
                 'response.data.message',
-                'Sorry, an error occurred. Please refresh the page and try again later.',
+                'Sorry, an error occurred. Please refresh the page to toggle OTP verification.',
               ),
             )
           })
@@ -78,10 +81,15 @@ function configureMobileDirective() {
         // Otherwise, if the admin has a message id, just enable it without the modal
         $scope.openVerifiedSMSModal = function () {
           const isTogglingOnVerifiedSms = !$scope.field.isVerifiable
-          $scope.verifiedSMSModal =
-            isTogglingOnVerifiedSms &&
+          const isAdminBelowLimit =
             $scope.adminVerifiedSmsState ===
-              ADMIN_VERIFIED_SMS_STATES.belowLimit &&
+            ADMIN_VERIFIED_SMS_STATES.belowLimit
+          const shouldShowModal =
+            isTogglingOnVerifiedSms &&
+            isAdminBelowLimit &&
+            !$scope.field.hasRetrievalError
+          $scope.verifiedSMSModal =
+            shouldShowModal &&
             $uibModal.open({
               animation: true,
               backdrop: 'static',

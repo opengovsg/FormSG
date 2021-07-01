@@ -1,7 +1,7 @@
 <div class="row">
   <div class="toggle-option">
     <div
-      ng-class="{'toggle-option--disabled' : field.hasAdminExceededSmsLimit}"
+      ng-class="{'toggle-option--disabled' : field.hasAdminExceededSmsLimit || field.hasRetrievalError}"
       class="col-xs-8 label-custom label-medium label-bottom"
     >
       OTP verification
@@ -18,7 +18,7 @@
       <label
         ng-show="!isLoading"
         class="toggle-selector pull-right"
-        ng-class="{'toggle-selector-on': field.isVerifiable && !field.hasAdminExceededSmsLimit, 'toggle-selector--disabled': field.hasAdminExceededSmsLimit}"
+        ng-class="{'toggle-selector-on': field.isVerifiable && !field.hasAdminExceededSmsLimit && !field.hasRetrievalError, 'toggle-selector--disabled': field.hasAdminExceededSmsLimit || field.hasRetrievalError}"
         onclick=""
       >
         <input
@@ -28,10 +28,13 @@
         />
         <div class="toggle-selector-switch">
           <i
-            ng-show="!field.hasAdminExceededSmsLimit"
+            ng-show="!field.hasAdminExceededSmsLimit && !field.hasRetrievalError"
             ng-class="field.isVerifiable ? 'bx bx-check' : 'bx bx-x'"
           ></i>
-          <i ng-show="field.hasAdminExceededSmsLimit" class="bx bxs-lock"></i>
+          <i
+            ng-show="field.hasAdminExceededSmsLimit || field.hasRetrievalError"
+            class="bx bxs-lock"
+          ></i>
         </div>
       </label>
     </div>
