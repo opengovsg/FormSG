@@ -690,7 +690,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     formId: string,
     createLogicBody: LogicDto,
   ): Promise<IFormSchema | null> {
-    let form = await this.findById(formId).exec()
+    const form = await this.findById(formId).exec()
     form.form_logics?.push(createLogicBody)
     return form.save()
   }
