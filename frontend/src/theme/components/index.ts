@@ -9,6 +9,7 @@ import { Input } from './Input'
 import { Link } from './Link'
 import { NumberInput } from './NumberInput'
 import { PhoneNumberInput } from './PhoneNumberInput'
+import { Tabs } from './Tabs'
 import { Textarea } from './Textarea'
 
 export const components = {
@@ -22,6 +23,7 @@ export const components = {
   NumberInput,
   PhoneNumberInput,
   Textarea,
+  Tabs,
   [RATING_THEME_KEY]: RatingField,
   [YESNO_THEME_KEY]: YesNoField,
 }
