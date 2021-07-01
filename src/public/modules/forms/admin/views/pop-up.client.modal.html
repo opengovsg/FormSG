@@ -6,7 +6,8 @@
       <button
         type="submit"
         ng-click="vm.confirm()"
-        class="btn-custom red-bg-dark btn-medium"
+        ng-class="vm.isImportant ? 'red-bg-dark' : 'modal-save-btn'"
+        class="btn-custom btn-medium"
       >
         {{ vm.confirmButtonText || 'OK' }}
       </button>

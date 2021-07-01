@@ -105,6 +105,7 @@ function configureMobileDirective() {
                     <br></br>
                     <small>Current response count: ${$scope.verifiedSmsCount}/${SMS_VERIFICATION_LIMIT}</small>
                     `,
+                    isImportant: true,
                   }
                 },
               },
