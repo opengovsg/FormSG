@@ -105,7 +105,7 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
     if (this.hasBeenProcessed) return
 
     // Create a header row in CSV using the fieldIdToQuestion map.
-    const headers = ['Reference number', 'Timestamp']
+    const headers = ['Response ID', 'Timestamp']
     this.fieldIdToQuestion.forEach((value, fieldId) => {
       for (let i = 0; i < this.fieldIdToNumCols[fieldId]; i++) {
         headers.push(value.question)
