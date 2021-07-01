@@ -37,16 +37,11 @@ export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
   return (
     FormService.retrieveFormById(formId)
       // Step 2: Retrieve the free sms count
-      .andThen(({ msgSrvcName, admin }) => {
-        return SmsService.retrieveFreeSmsCounts(String(admin)).map(
-          (freeSmsCount) => ({
-            msgSrvcSid: msgSrvcName,
-            freeSmsCount,
-          }),
-        )
+      .andThen(({ admin }) => {
+        return SmsService.retrieveFreeSmsCounts(String(admin))
       })
       // Step 3: Map/MapErr accordingly
-      .map((smsCountMeta) => res.status(StatusCodes.OK).json(smsCountMeta))
+      .map((freeSmsCount) => res.status(StatusCodes.OK).json({ freeSmsCount }))
       .mapErr((error) => {
         logger.error({
           message: 'Error while retrieving sms counts for user',

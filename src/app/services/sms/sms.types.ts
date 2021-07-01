@@ -116,6 +116,5 @@ export interface BounceNotificationSmsParams {
 }
 
 export interface SmsCountsMeta {
-  msgSrvcSid?: string
   freeSmsCount: number
 }
