@@ -476,11 +476,7 @@ export const retrieveFreeSmsCounts = (
   userId: string,
 ): ResultAsync<number, PossibleDatabaseError> => {
   return ResultAsync.fromPromise(
-    SmsCount.countDocuments({
-      'formAdmin.userId': userId,
-      smsType: SmsType.Verification,
-      isOnboardedAccount: false,
-    }).exec(),
+    SmsCount.retrieveFreeSmsCounts(userId),
     (error) => {
       logger.error({
         message: `Retrieving free sms counts failed for ${userId}`,

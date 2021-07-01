@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes'
-import { Types } from 'mongoose'
 
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -40,10 +39,7 @@ export const _handleGetFreeSmsCountForFormAdmin: ControllerHandler<
     FormService.retrieveFormById(formId)
       // Step 2: Retrieve the free sms count
       .andThen(({ msgSrvcName, admin }) => {
-        // This casting is required because no type parameter is specified on the document.
-        // Hence, this defaults to any but on the schema, this is defined as an ObjectId
-        const adminId = (admin as Types.ObjectId).toHexString()
-        return SmsService.retrieveFreeSmsCounts(adminId).map(
+        return SmsService.retrieveFreeSmsCounts(String(admin)).map(
           (freeSmsCount) => ({
             msgSrvcSid: msgSrvcName,
             freeSmsCount,

@@ -137,6 +137,16 @@ const compileSmsCountModel = (db: Mongoose) => {
     return smsCount.save()
   }
 
+  SmsCountSchema.statics.retrieveFreeSmsCounts = async function (
+    userId: string,
+  ) {
+    return this.countDocuments({
+      'formAdmin.userId': userId,
+      smsType: SmsType.Verification,
+      isOnboardedAccount: false,
+    }).exec()
+  }
+
   const SmsCountModel = db.model<ISmsCountSchema, ISmsCountModel>(
     SMS_COUNT_SCHEMA_NAME,
     SmsCountSchema,

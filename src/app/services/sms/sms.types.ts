@@ -91,6 +91,7 @@ export interface IBouncedSubmissionSmsCountSchema
 
 export interface ISmsCountModel extends Model<ISmsCountSchema> {
   logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>
+  retrieveFreeSmsCounts: (userId: string) => Promise<number>
 }
 
 export type TwilioCredentials = {
