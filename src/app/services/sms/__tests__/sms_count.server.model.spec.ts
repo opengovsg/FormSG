@@ -5,6 +5,7 @@ import mongoose from 'mongoose'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { smsConfig } from '../../../config/features/sms.config'
 import { IVerificationSmsCount, LogType, SmsType } from '../sms.types'
 import getSmsCountModel from '../sms_count.server.model'
 
@@ -296,7 +297,7 @@ describe('SmsCount', () => {
           logType: LogType.success,
           smsType: SmsType.Verification,
         }),
-        { msgSrvcSid: process.env.TWILIO_MESSAGING_SERVICE_SID },
+        { msgSrvcSid: smsConfig.twilioMsgSrvcSid },
       )
 
       // Act
