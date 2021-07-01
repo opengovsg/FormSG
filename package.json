@@ -103,7 +103,7 @@
     "ejs": "^3.1.6",
     "express": "^4.16.4",
     "express-device": "~0.4.2",
-    "express-rate-limit": "^5.2.6",
+    "express-rate-limit": "^5.3.0",
     "express-request-id": "^1.4.1",
     "express-session": "^1.17.2",
     "express-winston": "^4.1.0",
