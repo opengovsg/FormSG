@@ -59,7 +59,7 @@ describe('sms.controller', () => {
     )
   })
 
-  describe('_handleGetFreeSmsCountForFormAdmin', () => {
+  describe('handleGetFreeSmsCountForFormAdmin', () => {
     it('should retrieve counts and msgSrvcId when the user and the form exist', async () => {
       // Arrange
       const MOCK_REQ = expressHandler.mockRequest({
@@ -79,7 +79,7 @@ describe('sms.controller', () => {
       }
 
       // Act
-      await SmsController._handleGetFreeSmsCountForFormAdmin(
+      await SmsController.handleGetFreeSmsCountForFormAdmin(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -109,7 +109,7 @@ describe('sms.controller', () => {
       }
 
       // Act
-      await SmsController._handleGetFreeSmsCountForFormAdmin(
+      await SmsController.handleGetFreeSmsCountForFormAdmin(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -140,7 +140,7 @@ describe('sms.controller', () => {
       }
 
       // Act
-      await SmsController._handleGetFreeSmsCountForFormAdmin(
+      await SmsController.handleGetFreeSmsCountForFormAdmin(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -171,7 +171,7 @@ describe('sms.controller', () => {
       }
 
       // Act
-      await SmsController._handleGetFreeSmsCountForFormAdmin(
+      await SmsController.handleGetFreeSmsCountForFormAdmin(
         MOCK_REQ,
         mockRes,
         jest.fn(),
