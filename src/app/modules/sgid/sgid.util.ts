@@ -24,7 +24,7 @@ export const validateSgidForm = <T extends IFormSchema>(
     : err(new AuthTypeMismatchError(AuthType.SGID, form.authType))
 }
 
-// Typeguard to ensure that form has eserviceId and correct authType
+// Typeguard to ensure that form has the correct authType
 const isSgidForm = <F extends IFormSchema>(form: F): form is SgidForm<F> => {
   return form.authType === AuthType.SGID
 }

@@ -18,10 +18,10 @@ import { isSgidJwtPayload } from './sgid.util'
 
 const logger = createLoggerWithLabel(module)
 
-export class SgidService {
+export class SgidServiceClass {
   private client: SgidClient
 
-  private publicKey: string | Buffer
+  private publicKeyPath: string | Buffer
 
   private cookieDomain: string
   private cookieMaxAge: number
@@ -31,15 +31,15 @@ export class SgidService {
     cookieDomain,
     cookieMaxAge,
     cookieMaxAgePreserved,
-    privateKey,
-    publicKey,
+    privateKeyPath,
+    publicKeyPath,
     ...sgidOptions
   }: {
     endpoint: string
     clientId: string
     clientSecret: string
-    privateKey: string
-    publicKey: string
+    privateKeyPath: string
+    publicKeyPath: string
     redirectUri: string
     cookieDomain: string
     cookieMaxAge: number
@@ -47,15 +47,25 @@ export class SgidService {
   }) {
     this.client = new SgidClient({
       ...sgidOptions,
-      privateKey: fs.readFileSync(privateKey),
+      privateKey: fs.readFileSync(privateKeyPath),
     })
-    this.publicKey = fs.readFileSync(publicKey)
+    this.publicKeyPath = fs.readFileSync(publicKeyPath)
     this.cookieDomain = cookieDomain
     this.cookieMaxAge = cookieMaxAge
     this.cookieMaxAgePreserved = cookieMaxAgePreserved
   }
 
-  createRedirectUrl(state: string): Result<string, SgidCreateRedirectUrlError> {
+  /**
+   * Create a URL to sgID which is used to redirect the user for authentication
+   * @param formId - the form id to redirect to after authentication
+   * @param rememberMe - whether we create a JWT that remembers the user
+   * for an extended period of time
+   */
+  createRedirectUrl(
+    formId: string,
+    rememberMe: boolean,
+  ): Result<string, SgidCreateRedirectUrlError> {
+    const state = `${formId},${rememberMe}`
     const logMeta = {
       action: 'createRedirectUrl',
       state,
@@ -73,6 +83,15 @@ export class SgidService {
     }
   }
 
+  /**
+   * Parses the string serialization containing the form id and if the
+   * user should be remembered, both needed when redirecting the user back to
+   * the form post-authentication
+   * @param state - a comma-separated string of the form id and a boolean flag
+   * indicating if the user should be remembered
+   * @returns {Result<{ formId: string; rememberMe: boolean }, SgidInvalidStateError>}
+   *   the form id and whether the user should be remembered
+   */
   parseState(
     state: string,
   ): Result<{ formId: string; rememberMe: boolean }, SgidInvalidStateError> {
@@ -83,7 +102,12 @@ export class SgidService {
       : err(new SgidInvalidStateError())
   }
 
-  token(
+  /**
+   * Given the OIDC authorization code from sgID, obtain the corresponding
+   * access token, which will be used later to retrieve user information
+   * @param code - the authorization code
+   */
+  retrieveAccessToken(
     code: string,
   ): ResultAsync<
     { sub: string; accessToken: string },
@@ -102,7 +126,12 @@ export class SgidService {
     })
   }
 
-  userInfo({
+  /**
+   * Given the OIDC access token from sgID, obtain the
+   * user's NRIC number and proxy id
+   * @param accessToken - the access token
+   */
+  retrieveUserInfo({
     accessToken,
   }: {
     accessToken: string
@@ -129,7 +158,12 @@ export class SgidService {
     )
   }
 
-  createJWT(
+  /**
+   * Create a JWT based on the userinfo from sgID
+   * @param data - the userinfo as obtained from sgID
+   * @param rememberMe - determines how long the JWT is valid for
+   */
+  createJwt(
     data: { 'myinfo.nric_number': string },
     rememberMe: boolean,
   ): Result<{ jwt: string; maxAge: number }, ApplicationError> {
@@ -146,14 +180,14 @@ export class SgidService {
    * Verifies a sgID JWT and extracts its payload.
    * @param jwtSgid The contents of the JWT cookie
    */
-  extractJWTInfo(
+  extractSgidJwtPayload(
     jwtSgid: string,
   ): Result<{ userName: string }, SgidVerifyJwtError | SgidInvalidJwtError> {
     const logMeta = {
       action: 'extractSingpassJwtPayload',
     }
     try {
-      const payload = this.client.verifyJWT(jwtSgid, this.publicKey)
+      const payload = this.client.verifyJWT(jwtSgid, this.publicKeyPath)
 
       if (isSgidJwtPayload(payload)) {
         return ok(payload)
@@ -191,4 +225,4 @@ export class SgidService {
   }
 }
 
-export const sgidService = new SgidService(sgid)
+export const SgidService = new SgidServiceClass(sgid)

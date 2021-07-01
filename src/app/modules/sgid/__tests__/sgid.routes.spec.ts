@@ -17,7 +17,7 @@ import {
   SgidInvalidStateError,
 } from '../sgid.errors'
 import { SgidRouter } from '../sgid.routes'
-import { sgidService as realSgidService } from '../sgid.service'
+import { SgidService as RealSgidService } from '../sgid.service'
 
 import {
   MOCK_AUTH_CODE,
@@ -34,7 +34,7 @@ import {
 } from './sgid.test.constants'
 
 jest.mock('../sgid.service')
-const sgidService = mocked(realSgidService, true)
+const sgidService = mocked(RealSgidService, true)
 jest.mock('src/app/modules/form/form.service')
 const FormService = mocked(RealFormService, true)
 jest.mock('src/app/config/config')
@@ -58,9 +58,11 @@ describe('sgid.controller', () => {
         }),
       )
       FormService.retrieveFullFormById.mockReturnValue(okAsync(MOCK_SGID_FORM))
-      sgidService.token.mockReturnValue(okAsync(MOCK_TOKEN_RESULT))
-      sgidService.userInfo.mockReturnValue(okAsync(MOCK_USER_INFO))
-      sgidService.createJWT.mockReturnValue(
+      sgidService.retrieveAccessToken.mockReturnValue(
+        okAsync(MOCK_TOKEN_RESULT),
+      )
+      sgidService.retrieveUserInfo.mockReturnValue(okAsync(MOCK_USER_INFO))
+      sgidService.createJwt.mockReturnValue(
         ok({ jwt: MOCK_JWT, maxAge: MOCK_COOKIE_AGE }),
       )
       sgidService.getCookieSettings.mockReturnValue(MOCK_COOKIE_SETTINGS)
@@ -79,9 +81,9 @@ describe('sgid.controller', () => {
 
       expect(sgidService.parseState).not.toHaveBeenCalled()
       expect(FormService.retrieveFullFormById).not.toHaveBeenCalled()
-      expect(sgidService.token).not.toHaveBeenCalled()
-      expect(sgidService.userInfo).not.toHaveBeenCalled()
-      expect(sgidService.createJWT).not.toHaveBeenCalled()
+      expect(sgidService.retrieveAccessToken).not.toHaveBeenCalled()
+      expect(sgidService.retrieveUserInfo).not.toHaveBeenCalled()
+      expect(sgidService.createJwt).not.toHaveBeenCalled()
       expect(sgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
@@ -98,9 +100,9 @@ describe('sgid.controller', () => {
 
       expect(sgidService.parseState).not.toHaveBeenCalled()
       expect(FormService.retrieveFullFormById).not.toHaveBeenCalled()
-      expect(sgidService.token).not.toHaveBeenCalled()
-      expect(sgidService.userInfo).not.toHaveBeenCalled()
-      expect(sgidService.createJWT).not.toHaveBeenCalled()
+      expect(sgidService.retrieveAccessToken).not.toHaveBeenCalled()
+      expect(sgidService.retrieveUserInfo).not.toHaveBeenCalled()
+      expect(sgidService.createJwt).not.toHaveBeenCalled()
       expect(sgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
@@ -114,9 +116,9 @@ describe('sgid.controller', () => {
 
       expect(sgidService.parseState).toHaveBeenCalledWith(MOCK_STATE)
       expect(FormService.retrieveFullFormById).not.toHaveBeenCalled()
-      expect(sgidService.token).not.toHaveBeenCalled()
-      expect(sgidService.userInfo).not.toHaveBeenCalled()
-      expect(sgidService.createJWT).not.toHaveBeenCalled()
+      expect(sgidService.retrieveAccessToken).not.toHaveBeenCalled()
+      expect(sgidService.retrieveUserInfo).not.toHaveBeenCalled()
+      expect(sgidService.createJwt).not.toHaveBeenCalled()
       expect(sgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
@@ -132,15 +134,15 @@ describe('sgid.controller', () => {
 
       expect(sgidService.parseState).toHaveBeenCalledWith(MOCK_STATE)
       expect(FormService.retrieveFullFormById).toHaveBeenCalledWith(MOCK_TARGET)
-      expect(sgidService.token).not.toHaveBeenCalled()
-      expect(sgidService.userInfo).not.toHaveBeenCalled()
-      expect(sgidService.createJWT).not.toHaveBeenCalled()
+      expect(sgidService.retrieveAccessToken).not.toHaveBeenCalled()
+      expect(sgidService.retrieveUserInfo).not.toHaveBeenCalled()
+      expect(sgidService.createJwt).not.toHaveBeenCalled()
       expect(sgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
     it('should set isLoginError cookie and redirect when form has wrong auth type', async () => {
       FormService.retrieveFullFormById.mockReturnValue(
-        // Note that this is a CorpPass form
+        // Note that this is a SingPass form
         okAsync(MOCK_SP_FORM),
       )
       const response = await session(app)
@@ -155,14 +157,14 @@ describe('sgid.controller', () => {
 
       expect(sgidService.parseState).toHaveBeenCalledWith(MOCK_STATE)
       expect(FormService.retrieveFullFormById).toHaveBeenCalledWith(MOCK_TARGET)
-      expect(sgidService.token).not.toHaveBeenCalled()
-      expect(sgidService.userInfo).not.toHaveBeenCalled()
-      expect(sgidService.createJWT).not.toHaveBeenCalled()
+      expect(sgidService.retrieveAccessToken).not.toHaveBeenCalled()
+      expect(sgidService.retrieveUserInfo).not.toHaveBeenCalled()
+      expect(sgidService.createJwt).not.toHaveBeenCalled()
       expect(sgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
     it('should set isLoginError cookie and redirect when sgidService.token errors', async () => {
-      sgidService.token.mockReturnValue(
+      sgidService.retrieveAccessToken.mockReturnValue(
         errAsync(new SgidFetchAccessTokenError()),
       )
       const response = await session(app)
@@ -177,14 +179,16 @@ describe('sgid.controller', () => {
 
       expect(sgidService.parseState).toHaveBeenCalledWith(MOCK_STATE)
       expect(FormService.retrieveFullFormById).toHaveBeenCalledWith(MOCK_TARGET)
-      expect(sgidService.token).toHaveBeenCalledWith(MOCK_AUTH_CODE)
-      expect(sgidService.userInfo).not.toHaveBeenCalled()
-      expect(sgidService.createJWT).not.toHaveBeenCalled()
+      expect(sgidService.retrieveAccessToken).toHaveBeenCalledWith(
+        MOCK_AUTH_CODE,
+      )
+      expect(sgidService.retrieveUserInfo).not.toHaveBeenCalled()
+      expect(sgidService.createJwt).not.toHaveBeenCalled()
       expect(sgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
     it('should set isLoginError cookie and redirect when sgidService.userinfo errors', async () => {
-      sgidService.userInfo.mockReturnValue(
+      sgidService.retrieveUserInfo.mockReturnValue(
         errAsync(new SgidFetchUserInfoError()),
       )
       const response = await session(app)
@@ -199,14 +203,18 @@ describe('sgid.controller', () => {
 
       expect(sgidService.parseState).toHaveBeenCalledWith(MOCK_STATE)
       expect(FormService.retrieveFullFormById).toHaveBeenCalledWith(MOCK_TARGET)
-      expect(sgidService.token).toHaveBeenCalledWith(MOCK_AUTH_CODE)
-      expect(sgidService.userInfo).toHaveBeenCalledWith(MOCK_TOKEN_RESULT)
-      expect(sgidService.createJWT).not.toHaveBeenCalled()
+      expect(sgidService.retrieveAccessToken).toHaveBeenCalledWith(
+        MOCK_AUTH_CODE,
+      )
+      expect(sgidService.retrieveUserInfo).toHaveBeenCalledWith(
+        MOCK_TOKEN_RESULT,
+      )
+      expect(sgidService.createJwt).not.toHaveBeenCalled()
       expect(sgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
     it('should set isLoginError cookie and redirect when createJWT errors', async () => {
-      sgidService.createJWT.mockReturnValue(err(new ApplicationError()))
+      sgidService.createJwt.mockReturnValue(err(new ApplicationError()))
       const response = await session(app)
         .get(LOGIN_ROUTE)
         .query(MOCK_LOGIN_QUERY)
@@ -219,9 +227,13 @@ describe('sgid.controller', () => {
 
       expect(sgidService.parseState).toHaveBeenCalledWith(MOCK_STATE)
       expect(FormService.retrieveFullFormById).toHaveBeenCalledWith(MOCK_TARGET)
-      expect(sgidService.token).toHaveBeenCalledWith(MOCK_AUTH_CODE)
-      expect(sgidService.userInfo).toHaveBeenCalledWith(MOCK_TOKEN_RESULT)
-      expect(sgidService.createJWT).toHaveBeenCalledWith(
+      expect(sgidService.retrieveAccessToken).toHaveBeenCalledWith(
+        MOCK_AUTH_CODE,
+      )
+      expect(sgidService.retrieveUserInfo).toHaveBeenCalledWith(
+        MOCK_TOKEN_RESULT,
+      )
+      expect(sgidService.createJwt).toHaveBeenCalledWith(
         MOCK_USER_INFO.data,
         MOCK_REMEMBER_ME,
       )
@@ -240,9 +252,13 @@ describe('sgid.controller', () => {
 
       expect(sgidService.parseState).toHaveBeenCalledWith(MOCK_STATE)
       expect(FormService.retrieveFullFormById).toHaveBeenCalledWith(MOCK_TARGET)
-      expect(sgidService.token).toHaveBeenCalledWith(MOCK_AUTH_CODE)
-      expect(sgidService.userInfo).toHaveBeenCalledWith(MOCK_TOKEN_RESULT)
-      expect(sgidService.createJWT).toHaveBeenCalledWith(
+      expect(sgidService.retrieveAccessToken).toHaveBeenCalledWith(
+        MOCK_AUTH_CODE,
+      )
+      expect(sgidService.retrieveUserInfo).toHaveBeenCalledWith(
+        MOCK_TOKEN_RESULT,
+      )
+      expect(sgidService.createJwt).toHaveBeenCalledWith(
         MOCK_USER_INFO.data,
         MOCK_REMEMBER_ME,
       )

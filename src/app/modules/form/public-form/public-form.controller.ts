@@ -31,7 +31,7 @@ import {
   extractAndAssertMyInfoCookieValidity,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
-import { sgidService } from '../../sgid/sgid.service'
+import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpService } from '../../spcp/spcp.service'
@@ -423,8 +423,10 @@ export const _handleFormAuthRedirect: ControllerHandler<
         }
         case AuthType.SGID:
           return validateSgidForm(form).andThen(() => {
-            const state = `${formId},${isPersistentLogin}`
-            return sgidService.createRedirectUrl(state)
+            return SgidService.createRedirectUrl(
+              formId,
+              Boolean(isPersistentLogin),
+            )
           })
         default:
           return err<never, AuthTypeMismatchError>(

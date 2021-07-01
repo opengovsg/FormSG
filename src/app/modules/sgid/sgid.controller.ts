@@ -1,16 +1,17 @@
-import { ParamsDictionary, RequestHandler } from 'express-serve-static-core'
+import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { AuthType } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
-import { sgidService } from './sgid.service'
+import { SgidService } from './sgid.service'
 
 const logger = createLoggerWithLabel(module)
 
-export const handleLogin: RequestHandler<
+export const handleLogin: ControllerHandler<
   ParamsDictionary,
   unknown,
   unknown,
@@ -19,7 +20,7 @@ export const handleLogin: RequestHandler<
   const { code, state } = req.query
   const meta = { action: 'handleLogin', code, state }
 
-  const parsedState = sgidService.parseState(state)
+  const parsedState = SgidService.parseState(state)
 
   if (parsedState.isErr()) {
     logger.error({
@@ -55,10 +56,9 @@ export const handleLogin: RequestHandler<
     return res.redirect(`/${formId}`)
   }
 
-  const jwtResult = await sgidService
-    .token(code)
-    .andThen((data) => sgidService.userInfo(data))
-    .andThen(({ data }) => sgidService.createJWT(data, rememberMe))
+  const jwtResult = await SgidService.retrieveAccessToken(code)
+    .andThen((data) => SgidService.retrieveUserInfo(data))
+    .andThen(({ data }) => SgidService.createJwt(data, rememberMe))
 
   if (jwtResult.isErr()) {
     logger.error({
@@ -76,7 +76,7 @@ export const handleLogin: RequestHandler<
     httpOnly: false, // the JWT needs to be read by client-side JS
     sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
     secure: !config.isDev,
-    ...sgidService.getCookieSettings(),
+    ...SgidService.getCookieSettings(),
   })
   return res.redirect(`/${formId}`)
 }
