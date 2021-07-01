@@ -1,26 +1,38 @@
-import { ObjectID, ObjectId } from 'bson-ext'
-import _ from 'lodash'
-import mongoose from 'mongoose'
-import { errAsync } from 'neverthrow'
+import { ObjectId } from 'bson-ext'
+import { errAsync, okAsync } from 'neverthrow'
+import { mocked } from 'ts-jest/utils'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
-import dbHandler from '../../../../../tests/unit/backend/helpers/jest-db'
-import { IFormSchema, IUserSchema } from '../../../../types'
+import { IFormSchema } from '../../../../types'
 import { DatabaseError } from '../../../modules/core/core.errors'
+import { FormNotFoundError } from '../../../modules/form/form.errors'
 import * as FormService from '../../../modules/form/form.service'
 import * as SmsService from '../../../services/sms/sms.service'
 import * as SmsController from '../sms.controller'
-import { ISmsCountSchema, LogType, SmsCountsMeta, SmsType } from '../sms.types'
-import getSmsCountModel from '../sms_count.server.model'
+import { SmsCountsMeta } from '../sms.types'
+
+jest.mock('../../../modules/form/form.service')
+const MockFormService = mocked(FormService)
+
+jest.mock('../../../services/sms/sms.service')
+const MockSmsService = mocked(SmsService)
 
 describe('sms.controller', () => {
-  let mockUser: IUserSchema
-  let mockForm: IFormSchema
+  const mockForm = {
+    admin: new ObjectId().toHexString(),
+  } as unknown as IFormSchema
   const VERIFICATION_SMS_COUNT = 3
 
   afterEach(() => {
     jest.clearAllMocks()
+  })
+
+  beforeAll(() => {
+    MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
+    MockSmsService.retrieveFreeSmsCounts.mockReturnValue(
+      okAsync(VERIFICATION_SMS_COUNT),
+    )
   })
 
   describe('handleGetFreeSmsCountForFormAdmin', () => {
@@ -38,7 +50,6 @@ describe('sms.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
       const expected: SmsCountsMeta = {
-        msgSrvcSid: mockForm.msgSrvcName,
         freeSmsCount: VERIFICATION_SMS_COUNT,
       }
 
@@ -66,6 +77,9 @@ describe('sms.controller', () => {
           },
         },
       })
+      MockFormService.retrieveFormById.mockReturnValueOnce(
+        errAsync(new FormNotFoundError()),
+      )
       const mockRes = expressHandler.mockResponse()
       const expected = {
         message:
@@ -146,25 +160,4 @@ describe('sms.controller', () => {
       expect(mockRes.json).toBeCalledWith(expected)
     })
   })
-
-  const insertVerifiedSms = async ({
-    formId,
-    formAdmin,
-    msgSrvcSid = 'MOCK MESSAGE SERVICE ID',
-    logType = LogType.success,
-  }: {
-    formId: ObjectID
-    formAdmin: { email: string; userId: ObjectID }
-    msgSrvcSid?: string
-    logType?: LogType
-  }): Promise<ISmsCountSchema> => {
-    const SmsModel = getSmsCountModel(mongoose)
-    return SmsModel.create({
-      smsType: SmsType.Verification,
-      logType,
-      msgSrvcSid,
-      form: formId,
-      formAdmin,
-    })
-  }
 })
