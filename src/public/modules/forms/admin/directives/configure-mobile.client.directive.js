@@ -6,7 +6,7 @@ const {
   SMS_VERIFICATION_LIMIT,
 } = require('../../../../../shared/util/verification')
 
-const SmsService = require('../../../../services/SmsService')
+const AdminMetaService = require('../../../../services/AdminMetaService')
 
 angular
   .module('forms')
@@ -50,13 +50,14 @@ function configureMobileDirective() {
           return ADMIN_VERIFIED_SMS_STATES.limitExceeded
         }
 
-        $q.when(SmsService.getSmsVerificationStateForFormAdmin($scope.form._id))
-          .then(({ msgSrvcSid, freeSmsCount }) => {
-            $scope.verifiedSmsCount = freeSmsCount
-            $scope.messageServiceId = msgSrvcSid
+        $q.when(
+          AdminMetaService.getSmsVerificationStateForFormAdmin($scope.form._id),
+        )
+          .then(({ smsCounts }) => {
+            $scope.verifiedSmsCount = smsCounts
             $scope.adminVerifiedSmsState = getAdminVerifiedSmsState(
-              freeSmsCount,
-              msgSrvcSid,
+              smsCounts,
+              $scope.form.msgSrvcName,
             )
             // NOTE: This links into the verifiable field component and hence, is used by both email and mobile
             $scope.field.hasAdminExceededSmsLimit =

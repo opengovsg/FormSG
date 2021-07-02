@@ -3,25 +3,25 @@ import axios from 'axios'
 import { ObjectId } from 'bson-ext'
 import { mocked } from 'ts-jest/utils'
 
-import * as SmsService from '../SmsService'
+import * as AdminMetaService from '../AdminMetaService'
 
 jest.mock('axios')
 const MockAxios = mocked(axios, true)
 
-describe('SmsService', () => {
+describe('AdminMetaService', () => {
   describe('getSmsVerificationStateForFormAdmin', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
     it('should call the endpoint successfully when parameters are provided', async () => {
       // Arrange
       MockAxios.get.mockResolvedValueOnce({ data: 'some data' })
       // Act
-      const actual = await SmsService.getSmsVerificationStateForFormAdmin(
+      const actual = await AdminMetaService.getSmsVerificationStateForFormAdmin(
         MOCK_FORM_ID,
       )
 
       // Assert
       expect(MockAxios.get).toBeCalledWith(
-        `${SmsService.FORM_API_PREFIX}/${SmsService.SMS_ENDPOINT}/${MOCK_FORM_ID}`,
+        `${AdminMetaService.FORM_API_PREFIX}/${MOCK_FORM_ID}/verified-sms/count/free`,
       )
       expect(actual).toBe('some data')
     })
