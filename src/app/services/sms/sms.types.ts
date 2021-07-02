@@ -114,7 +114,3 @@ export interface BounceNotificationSmsParams {
   formId: string
   formTitle: string
 }
-
-export interface SmsCountsMeta {
-  freeSmsCount: number
-}

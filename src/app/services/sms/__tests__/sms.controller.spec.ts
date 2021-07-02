@@ -5,12 +5,12 @@ import { mocked } from 'ts-jest/utils'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { IFormSchema } from '../../../../types'
+import { SmsCountsDto } from '../../../../types/api'
 import { DatabaseError } from '../../../modules/core/core.errors'
 import { FormNotFoundError } from '../../../modules/form/form.errors'
 import * as FormService from '../../../modules/form/form.service'
 import * as SmsService from '../../../services/sms/sms.service'
 import * as SmsController from '../sms.controller'
-import { SmsCountsMeta } from '../sms.types'
 
 jest.mock('../../../modules/form/form.service')
 const MockFormService = mocked(FormService)
@@ -49,8 +49,8 @@ describe('sms.controller', () => {
         },
       })
       const mockRes = expressHandler.mockResponse()
-      const expected: SmsCountsMeta = {
-        freeSmsCount: VERIFICATION_SMS_COUNT,
+      const expected: SmsCountsDto = {
+        smsCounts: VERIFICATION_SMS_COUNT,
       }
 
       // Act
