@@ -9,13 +9,13 @@ jest.mock('axios')
 const MockAxios = mocked(axios, true)
 
 describe('AdminMetaService', () => {
-  describe('getSmsVerificationStateForFormAdmin', () => {
+  describe('getFreeSmsCountsUsedByFormAdmin', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
     it('should call the endpoint successfully when parameters are provided', async () => {
       // Arrange
       MockAxios.get.mockResolvedValueOnce({ data: 'some data' })
       // Act
-      const actual = await AdminMetaService.getSmsVerificationStateForFormAdmin(
+      const actual = await AdminMetaService.getFreeSmsCountsUsedByFormAdmin(
         MOCK_FORM_ID,
       )
 

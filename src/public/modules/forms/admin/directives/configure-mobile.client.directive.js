@@ -51,7 +51,7 @@ function configureMobileDirective() {
         }
 
         $q.when(
-          AdminMetaService.getSmsVerificationStateForFormAdmin($scope.form._id),
+          AdminMetaService.getFreeSmsCountsUsedByFormAdmin($scope.form._id),
         )
           .then(({ smsCounts }) => {
             $scope.verifiedSmsCount = smsCounts

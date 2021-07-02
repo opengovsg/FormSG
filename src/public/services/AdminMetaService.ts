@@ -10,7 +10,7 @@ export const FORM_API_PREFIX = '/api/v3/admin/forms'
  * @param formId
  * @returns The amount of free sms counts used by the admin of the form
  */
-export const getSmsVerificationStateForFormAdmin = (
+export const getFreeSmsCountsUsedByFormAdmin = (
   formId: string,
 ): Promise<SmsCountsDto> =>
   axios
