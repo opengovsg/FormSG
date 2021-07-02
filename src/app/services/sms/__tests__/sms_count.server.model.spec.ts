@@ -231,6 +231,16 @@ describe('SmsCount', () => {
   })
 
   describe('VerificationCount Schema', () => {
+    const twilioMsgSrvcSid = smsConfig.twilioMsgSrvcSid
+
+    beforeAll(() => {
+      smsConfig.twilioMsgSrvcSid = 'all hail twilio, twilight of io'
+    })
+
+    afterAll(() => {
+      smsConfig.twilioMsgSrvcSid = twilioMsgSrvcSid
+    })
+
     it('should create and save successfully', async () => {
       // Arrange
       const smsCountParams = createVerificationSmsCountParams()

@@ -359,7 +359,7 @@ describe('sms.service', () => {
     const VERIFICATION_SMS_COUNT = 3
 
     it('should retrieve sms counts correctly for a specified user', async () => {
-      //Arrange
+      // Arrange
       const retrieveSpy = jest.spyOn(SmsCountModel, 'retrieveFreeSmsCounts')
       retrieveSpy.mockResolvedValueOnce(VERIFICATION_SMS_COUNT)
 
@@ -367,7 +367,6 @@ describe('sms.service', () => {
       const actual = await SmsService.retrieveFreeSmsCounts(testUser._id)
 
       // Assert
-      // should retrieve counts of users that are NOT onboarded
       expect(actual._unsafeUnwrap()).toBe(VERIFICATION_SMS_COUNT)
     })
 
