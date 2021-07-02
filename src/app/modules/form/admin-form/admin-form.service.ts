@@ -1081,7 +1081,10 @@ export const disableSmsVerificationsForUser = (
  */
 export const isAdminOverFreeSmsLimit = (
   form: IPopulatedForm,
-): ResultAsync<IPopulatedForm, SmsLimitExceededError> => {
+): ResultAsync<
+  IPopulatedForm,
+  PossibleDatabaseError | SmsLimitExceededError
+> => {
   const formAdminId = String(form.admin._id)
   return SmsService.retrieveFreeSmsCounts(formAdminId).andThen((freeSmsSent) =>
     hasAdminExceededFreeSmsLimit(freeSmsSent)

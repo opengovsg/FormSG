@@ -20,6 +20,7 @@ import {
 } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
+import { SmsLimitExceededError } from 'src/app/modules/verification/verification.errors'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import {
@@ -53,6 +54,8 @@ import {
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
+import { SMS_VERIFICATION_LIMIT } from '../../../../../shared/util/verification'
+import * as SmsService from '../../../../services/sms/sms.service'
 import {
   FormNotFoundError,
   LogicNotFoundError,
@@ -79,6 +82,7 @@ import {
   editFormFields,
   getDashboardForms,
   getFormField,
+  isAdminOverFreeSmsLimit,
   reorderFormField,
   transferFormOwnership,
   updateEndPage,
@@ -2240,6 +2244,51 @@ describe('admin-form.service', () => {
       // Assert
       expect(disableSpy).toHaveBeenCalledWith(MOCK_ADMIN_ID)
       expect(expected._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
+
+  describe('isAdminOverFreeSmsLimit', () => {
+    const MOCK_FORM = {
+      admin: {
+        _id: new ObjectId(),
+      },
+    } as unknown as IPopulatedForm
+
+    const countSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+
+    it('should return the form when admin is under the limit', async () => {
+      // Arrange
+      countSpy.mockReturnValueOnce(okAsync(SMS_VERIFICATION_LIMIT))
+
+      // Act
+      const actual = await isAdminOverFreeSmsLimit(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(MOCK_FORM)
+    })
+
+    it('should return sms retrieval error when admin has exceeded the free sms limit', async () => {
+      // Arrange
+      countSpy.mockReturnValueOnce(okAsync(SMS_VERIFICATION_LIMIT + 1))
+
+      // Act
+      const actual = await isAdminOverFreeSmsLimit(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new SmsLimitExceededError())
+    })
+
+    it('should propagate any database errors encountered during retrieval', async () => {
+      // Arrange
+      const MOCK_ERROR_STRING = 'something went oopsie'
+      const expectedError = new DatabaseError(MOCK_ERROR_STRING)
+      countSpy.mockReturnValueOnce(errAsync(expectedError))
+
+      // Act
+      const actual = await isAdminOverFreeSmsLimit(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBe(expectedError)
     })
   })
 })
