@@ -7,7 +7,6 @@ import { BillingsRouter } from './billings'
 import { ClientRouter } from './client'
 import { PublicFormsRouter } from './forms'
 import { NotificationsRouter } from './notifications'
-import { SmsRouter } from './sms'
 import { UserRouter } from './user'
 
 export const V3Router = Router()
@@ -20,4 +19,3 @@ V3Router.use('/notifications', NotificationsRouter)
 V3Router.use('/billings', BillingsRouter)
 V3Router.use('/analytics', AnalyticsRouter)
 V3Router.use('/forms', PublicFormsRouter)
-V3Router.use('/sms', SmsRouter)
