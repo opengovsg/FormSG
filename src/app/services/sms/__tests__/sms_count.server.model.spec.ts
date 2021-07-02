@@ -290,14 +290,14 @@ describe('SmsCount', () => {
 
     it('should save successfully and set isOnboarded to false when sms is sent using default credentials', async () => {
       // Arrange
-      // NOTE: As the isOnboardedAccount property is set based on TWILIO_MESSAGING_SERVICE_SID,
-      // even if the key is absent, this will still pass
+      // NOTE: The isOnboardedAccount property is set based on twilioMsgSrvcSid.
+      const initialMsgSrvcSid = smsConfig.twilioMsgSrvcSid
+      smsConfig.twilioMsgSrvcSid = MOCK_MSG_SRVC_SID
       const verificationParams = merge(
         createVerificationSmsCountParams({
           logType: LogType.success,
           smsType: SmsType.Verification,
         }),
-        { msgSrvcSid: smsConfig.twilioMsgSrvcSid },
       )
 
       // Act
@@ -319,6 +319,9 @@ describe('SmsCount', () => {
         verificationParams,
       )
       expect(actualSavedObject.isOnboardedAccount).toBe(false)
+
+      // NOTE: set msgSrvcSid back to initial one so that it doesn't affect other tests
+      smsConfig.twilioMsgSrvcSid = initialMsgSrvcSid
     })
 
     it('should reject if form key is missing', async () => {
@@ -628,7 +631,9 @@ const logAndReturnExpectedLog = async ({
     msgSrvcSid: MOCK_MSG_SRVC_SID,
     smsType,
     logType,
-    ...(smsType === SmsType.Verification && { isOnboardedAccount: true }),
+    ...(smsType === SmsType.Verification && {
+      isOnboardedAccount: !(MOCK_MSG_SRVC_SID === smsConfig.twilioMsgSrvcSid),
+    }),
   }
 
   return expectedLog
