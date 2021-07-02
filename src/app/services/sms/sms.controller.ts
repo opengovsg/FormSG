@@ -14,8 +14,8 @@ const logger = createLoggerWithLabel(module)
 /**
  * Handler to retrieve the free sms counts used by a form's administrator
  * This is the controller for GET /admin/forms/:formId/verified-sms/count/free
- * @param formId The id of the form to retrieve the message service id for
- * @returns 200 with msgSrvcId and free sms counts when successful
+ * @param formId The id of the form to retrieve the free sms counts for
+ * @returns 200 with free sms counts when successful
  * @returns 404 when the formId is not found in the database
  * @returns 500 when a database error occurs during retrieval
  */
