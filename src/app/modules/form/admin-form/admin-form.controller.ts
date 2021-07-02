@@ -1308,7 +1308,9 @@ export const _handleUpdateFormField: ControllerHandler<
           level: PermissionLevel.Write,
         }),
       )
-      // Step 3: User has permissions, update form field of retrieved form.
+      // Step 3: Check if the user has exceeded the allowable limit for sms.
+      .andThen((form) => AdminFormService.isAdminOverFreeSmsLimit(form))
+      // Step 4: User has permissions, update form field of retrieved form.
       .andThen((form) =>
         AdminFormService.updateFormField(form, fieldId, req.body),
       )
@@ -1693,7 +1695,9 @@ export const _handleCreateFormField: ControllerHandler<
           level: PermissionLevel.Write,
         }),
       )
-      // Step 3: User has permissions, proceed to create form field with provided body.
+      // Step 3: Check if the user has exceeded the allowable limit for sms.
+      .andThen((form) => AdminFormService.isAdminOverFreeSmsLimit(form))
+      // Step 4: User has permissions, proceed to create form field with provided body.
       .andThen((form) => AdminFormService.createFormField(form, req.body))
       .map((createdFormField) =>
         res.status(StatusCodes.OK).json(createdFormField),

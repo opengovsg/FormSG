@@ -36,6 +36,7 @@ import {
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
+import * as SmsService from '../../../services/sms/sms.service'
 import { dotifyObject } from '../../../utils/dotify-object'
 import {
   getMongoErrorMessage,
@@ -50,6 +51,8 @@ import {
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
+import { SmsLimitExceededError } from '../../verification/verification.errors'
+import { hasAdminExceededFreeSmsLimit } from '../../verification/verification.util'
 import {
   FormNotFoundError,
   LogicNotFoundError,
@@ -1069,3 +1072,20 @@ export const disableSmsVerificationsForUser = (
       return transformMongoError(error)
     },
   ).map(() => true)
+
+/**
+ * Checks if the admin of the given form has exceeded the free sms limit
+ * @param form The form whose admin may potentially have exceeded the limit
+ * @returns ok(form) when the admin has not exceeded limit
+ * @returns err(SmsLimitExceededError) when the admin has exceeded
+ */
+export const isAdminOverFreeSmsLimit = (
+  form: IPopulatedForm,
+): ResultAsync<IPopulatedForm, SmsLimitExceededError> => {
+  const formAdminId = String(form.admin._id)
+  return SmsService.retrieveFreeSmsCounts(formAdminId).andThen((freeSmsSent) =>
+    hasAdminExceededFreeSmsLimit(freeSmsSent)
+      ? errAsync(new SmsLimitExceededError())
+      : okAsync(form),
+  )
+}
