@@ -88,7 +88,7 @@ export class NonVerifiedFieldTypeError extends ApplicationError {
  */
 export class SmsLimitExceededError extends ApplicationError {
   constructor(
-    message = 'You have exceeded the free sms limit. Please contact the FormSG team for further steps on how to resolve this issue.',
+    message = 'You have exceeded the free sms limit. Please refresh and try again.',
   ) {
     super(message)
   }

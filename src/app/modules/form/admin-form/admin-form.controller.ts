@@ -1207,6 +1207,12 @@ export const handleDuplicateFormField: ControllerHandler<
         level: PermissionLevel.Write,
       }),
     )
+    .andThen((form) => {
+      return AdminFormService.getFormField(form, fieldId).asyncAndThen(
+        (formFieldToDuplicate) =>
+          AdminFormService.shouldUpdateFormField(form, formFieldToDuplicate),
+      )
+    })
     .andThen((form) => AdminFormService.duplicateFormField(form, fieldId))
     .map((duplicatedField) => res.status(StatusCodes.OK).json(duplicatedField))
     .mapErr((error) => {
@@ -1295,6 +1301,7 @@ export const _handleUpdateFormField: ControllerHandler<
   FieldUpdateDto
 > = (req, res) => {
   const { formId, fieldId } = req.params
+  const updatedFormField = req.body
   const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   // Step 1: Retrieve currently logged in user.
@@ -1308,11 +1315,13 @@ export const _handleUpdateFormField: ControllerHandler<
           level: PermissionLevel.Write,
         }),
       )
-      // Step 3: Check if the user has exceeded the allowable limit for sms.
-      .andThen((form) => AdminFormService.isAdminOverFreeSmsLimit(form))
+      // Step 3: Check if the user has exceeded the allowable limit for sms if the fieldType is mobile
+      .andThen((form) =>
+        AdminFormService.shouldUpdateFormField(form, updatedFormField),
+      )
       // Step 4: User has permissions, update form field of retrieved form.
       .andThen((form) =>
-        AdminFormService.updateFormField(form, fieldId, req.body),
+        AdminFormService.updateFormField(form, fieldId, updatedFormField),
       )
       .map((updatedFormField) =>
         res.status(StatusCodes.OK).json(updatedFormField),
@@ -1326,7 +1335,7 @@ export const _handleUpdateFormField: ControllerHandler<
             userId: sessionUserId,
             formId,
             fieldId,
-            updateFieldBody: req.body,
+            updateFieldBody: updatedFormField,
           },
           error,
         })
@@ -1682,6 +1691,7 @@ export const _handleCreateFormField: ControllerHandler<
   FieldCreateDto
 > = (req, res) => {
   const { formId } = req.params
+  const formFieldToCreate = req.body
   const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   // Step 1: Retrieve currently logged in user.
@@ -1695,10 +1705,14 @@ export const _handleCreateFormField: ControllerHandler<
           level: PermissionLevel.Write,
         }),
       )
-      // Step 3: Check if the user has exceeded the allowable limit for sms.
-      .andThen((form) => AdminFormService.isAdminOverFreeSmsLimit(form))
+      // Step 3: Check if the user has exceeded the allowable limit for sms if the fieldType is mobile
+      .andThen((form) =>
+        AdminFormService.shouldUpdateFormField(form, formFieldToCreate),
+      )
       // Step 4: User has permissions, proceed to create form field with provided body.
-      .andThen((form) => AdminFormService.createFormField(form, req.body))
+      .andThen((form) =>
+        AdminFormService.createFormField(form, formFieldToCreate),
+      )
       .map((createdFormField) =>
         res.status(StatusCodes.OK).json(createdFormField),
       )
@@ -1710,7 +1724,7 @@ export const _handleCreateFormField: ControllerHandler<
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,
-            createFieldBody: req.body,
+            createFieldBody: formFieldToCreate,
           },
           error,
         })

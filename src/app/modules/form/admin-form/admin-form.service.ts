@@ -4,6 +4,8 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
+import { isVerifiableMobileField } from 'src/types/field/utils/guards'
+
 import {
   EditFieldActions,
   MAX_UPLOAD_FILE_SIZE,
@@ -13,6 +15,7 @@ import {
   FormLogoState,
   FormMetaView,
   FormSettings,
+  IField,
   IFieldSchema,
   IForm,
   IFormDocument,
@@ -59,7 +62,7 @@ import {
   TransferOwnershipError,
 } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
-import { getFormFieldById, getLogicById } from '../form.utils'
+import { getFormFieldById, getLogicById, isOnboardedForm } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -1074,20 +1077,33 @@ export const disableSmsVerificationsForUser = (
   ).map(() => true)
 
 /**
- * Checks if the admin of the given form has exceeded the free sms limit
- * @param form The form whose admin may potentially have exceeded the limit
- * @returns ok(form) when the admin has not exceeded limit
- * @returns err(SmsLimitExceededError) when the admin has exceeded
+ * Checks if the given form field should be updated.
+ * This currently checks if the admin has exceeded their free sms limit.
+ * @param form The form which the specified field belongs to
+ * @param formField The field which we should perform the update for
+ * @returns ok(form) If the field can be updated
+ * @return err(PossibleDatabaseError) if an error occurred while performing the required checks
+ * @return err(SmsLimitExceededError) if the form admin went over the free sm limit
+ * while attempting to toggle verification on for a mobile form field
  */
-export const isAdminOverFreeSmsLimit = (
+export const shouldUpdateFormField = (
   form: IPopulatedForm,
+  formField: IField,
 ): ResultAsync<
   IPopulatedForm,
   PossibleDatabaseError | SmsLimitExceededError
 > => {
   const formAdminId = String(form.admin._id)
+
+  // Field can always update if it's not a verifiable field
+  if (!isVerifiableMobileField(formField)) {
+    return okAsync(form)
+  }
+
+  // If the form admin has exceeded the sms limit
+  // And the form is not onboarded, refuse to update the field
   return SmsService.retrieveFreeSmsCounts(formAdminId).andThen((freeSmsSent) =>
-    hasAdminExceededFreeSmsLimit(freeSmsSent)
+    hasAdminExceededFreeSmsLimit(freeSmsSent) && !isOnboardedForm(form)
       ? errAsync(new SmsLimitExceededError())
       : okAsync(form),
   )
