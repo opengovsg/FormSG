@@ -1095,16 +1095,18 @@ export const shouldUpdateFormField = (
 > => {
   const formAdminId = String(form.admin._id)
 
-  // Field can always update if it's not a verifiable field
-  if (!isVerifiableMobileField(formField)) {
+  // Field can always update if it's not a verifiable field or if the form has been onboarded
+  if (!isVerifiableMobileField(formField) || isOnboardedForm(form)) {
     return okAsync(form)
   }
 
   // If the form admin has exceeded the sms limit
   // And the form is not onboarded, refuse to update the field
-  return SmsService.retrieveFreeSmsCounts(formAdminId).andThen((freeSmsSent) =>
-    hasAdminExceededFreeSmsLimit(freeSmsSent) && !isOnboardedForm(form)
-      ? errAsync(new SmsLimitExceededError())
-      : okAsync(form),
+  return SmsService.retrieveFreeSmsCounts(formAdminId).andThen(
+    (freeSmsSent) => {
+      return hasAdminExceededFreeSmsLimit(freeSmsSent)
+        ? errAsync(new SmsLimitExceededError())
+        : okAsync(form)
+    },
   )
 }
