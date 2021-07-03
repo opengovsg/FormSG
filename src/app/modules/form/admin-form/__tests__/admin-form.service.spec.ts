@@ -82,8 +82,8 @@ import {
   editFormFields,
   getDashboardForms,
   getFormField,
-  isAdminOverFreeSmsLimit,
   reorderFormField,
+  shouldUpdateFormField,
   transferFormOwnership,
   updateEndPage,
   updateForm,
@@ -2247,12 +2247,20 @@ describe('admin-form.service', () => {
     })
   })
 
-  describe('isAdminOverFreeSmsLimit', () => {
+  describe('shouldUpdateFormField', () => {
     const MOCK_FORM = {
       admin: {
         _id: new ObjectId(),
       },
     } as unknown as IPopulatedForm
+
+    const MOCK_UNVERIFIABLE_MOBILE_FIELD = generateDefaultField(
+      BasicField.Mobile,
+    )
+    const MOCK_VERIFIABLE_MOBILE_FIELD = generateDefaultField(
+      BasicField.Mobile,
+      { isVerifiable: true },
+    )
 
     const countSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
 
@@ -2261,18 +2269,64 @@ describe('admin-form.service', () => {
       countSpy.mockReturnValueOnce(okAsync(SMS_VERIFICATION_LIMIT))
 
       // Act
-      const actual = await isAdminOverFreeSmsLimit(MOCK_FORM)
+      const actual = await shouldUpdateFormField(
+        MOCK_FORM,
+        MOCK_VERIFIABLE_MOBILE_FIELD,
+      )
 
       // Assert
       expect(actual._unsafeUnwrap()).toEqual(MOCK_FORM)
     })
 
-    it('should return sms retrieval error when admin has exceeded the free sms limit', async () => {
+    it('should return the form when the form has a message service name', async () => {
+      // Arrange
+      const MOCK_ONBOARDED_FORM = { ...MOCK_FORM, msgSrvcName: 'form a form' }
+
+      // Act
+      const actual = await shouldUpdateFormField(
+        MOCK_ONBOARDED_FORM,
+        MOCK_VERIFIABLE_MOBILE_FIELD,
+      )
+
+      // Assert
+      expect(countSpy).not.toHaveBeenCalled()
+      expect(actual._unsafeUnwrap()).toEqual(MOCK_ONBOARDED_FORM)
+    })
+
+    it('should return the form when mobile field is not verifiable', async () => {
+      // Act
+      const actual = await shouldUpdateFormField(
+        MOCK_FORM,
+        MOCK_UNVERIFIABLE_MOBILE_FIELD,
+      )
+
+      // Assert
+      expect(countSpy).not.toHaveBeenCalled()
+      expect(actual._unsafeUnwrap()).toEqual(MOCK_FORM)
+    })
+
+    it('should return the form when the field provided is not a mobile field', async () => {
+      // Arrange
+      const MOCK_NUMBER_FIELD = generateDefaultField(BasicField.Number)
+
+      // Act
+      const actual = await shouldUpdateFormField(MOCK_FORM, MOCK_NUMBER_FIELD)
+
+      // Assert
+      // The sms counts check is only executed when it is a mobile field
+      expect(countSpy).not.toHaveBeenCalled()
+      expect(actual._unsafeUnwrap()).toEqual(MOCK_FORM)
+    })
+
+    it('should return sms retrieval error when sms limit exceeded and admin is attempting to toggle sms verification for mobile field on', async () => {
       // Arrange
       countSpy.mockReturnValueOnce(okAsync(SMS_VERIFICATION_LIMIT + 1))
 
       // Act
-      const actual = await isAdminOverFreeSmsLimit(MOCK_FORM)
+      const actual = await shouldUpdateFormField(
+        MOCK_FORM,
+        MOCK_VERIFIABLE_MOBILE_FIELD,
+      )
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toEqual(new SmsLimitExceededError())
@@ -2285,7 +2339,10 @@ describe('admin-form.service', () => {
       countSpy.mockReturnValueOnce(errAsync(expectedError))
 
       // Act
-      const actual = await isAdminOverFreeSmsLimit(MOCK_FORM)
+      const actual = await shouldUpdateFormField(
+        MOCK_FORM,
+        MOCK_VERIFIABLE_MOBILE_FIELD,
+      )
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBe(expectedError)
