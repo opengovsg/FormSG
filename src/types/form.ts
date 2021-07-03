@@ -150,6 +150,8 @@ export interface IForm {
   emails?: string[] | string
 }
 
+export type IOnboardedForm<T extends IForm> = SetRequired<T, 'msgSrvcName'>
+
 export type FormSettings = Pick<
   IFormDocument,
   | 'authType'

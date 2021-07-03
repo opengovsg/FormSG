@@ -1,8 +1,10 @@
 import {
   IEncryptedFormSchema,
   IFieldSchema,
+  IForm,
   IFormSchema,
   ILogicSchema,
+  IOnboardedForm,
   IPopulatedEmailForm,
   IPopulatedForm,
   Permission,
@@ -120,4 +122,9 @@ export const getLogicById = (
   }
 
   return form_logics.find((logic) => logicId === String(logic._id)) ?? null
+}
+
+// Typeguard to check if a form has a message service id
+export const isOnboardedForm = (form: IForm): form is IOnboardedForm<IForm> => {
+  return !!form.msgSrvcName
 }
