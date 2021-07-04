@@ -7,12 +7,11 @@ const UpdateFormService = require('../../../../services/UpdateFormService')
 angular
   .module('forms')
   .controller('CollaboratorModalController', [
-    '$location',
     '$q',
     '$scope',
+    '$state',
     '$timeout',
     '$uibModalInstance',
-    '$window',
     'externalScope',
     'Toastr',
     'FormApi',
@@ -32,12 +31,11 @@ const ROLES = {
 }
 
 function CollaboratorModalController(
-  $location,
   $q,
   $scope,
+  $state,
   $timeout,
   $uibModalInstance,
-  $window,
   externalScope,
   Toastr,
   FormApi,
@@ -150,7 +148,9 @@ function CollaboratorModalController(
       .when(UpdateFormService.removeSelfFromCollaborators($scope.myform._id))
       .then(() => {
         // redirects the user back to the home page now that they have lost access to this form
-        $window.location.href = $window.location.origin
+        $scope.toggleRemoveSelfFromCollabModal()
+        $scope.closeModal()
+        $state.go('listForms')
       })
   }
 

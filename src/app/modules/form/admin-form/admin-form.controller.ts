@@ -2319,7 +2319,7 @@ export const handleRemoveSelfFromCollaborators: ControllerHandler<
           level: PermissionLevel.Read,
         })
       })
-      // Step 2: Update the form collaborators
+      // Step 3: Update the form collaborators
       .andThen((form) => {
         const updatedPermissionList = form.permissionList.filter(
           (user) => user.email.toLowerCase() !== currentUserEmail.toLowerCase(),
