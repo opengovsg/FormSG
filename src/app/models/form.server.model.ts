@@ -1,4 +1,4 @@
-import BSON from 'bson-ext'
+import BSON, { ObjectId } from 'bson-ext'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   Mongoose,
@@ -10,6 +10,7 @@ import mongoose, {
 import validator from 'validator'
 
 import { reorder } from '../../shared/util/immutable-array-fns'
+import { getApplicableIfStates } from '../../shared/util/logic'
 import {
   AuthType,
   BasicField,
@@ -29,7 +30,9 @@ import {
   IFormDocument,
   IFormModel,
   IFormSchema,
+  ILogicSchema,
   IPopulatedForm,
+  LogicConditionState,
   LogicDto,
   LogicType,
   Permission,
@@ -208,7 +211,69 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             'Check that your form is MyInfo-authenticated, is an email mode form and has 30 or fewer MyInfo fields.',
         },
       },
-      form_logics: [LogicSchema],
+      form_logics: {
+        type: [LogicSchema],
+        validate: {
+          validator(v: ILogicSchema[]) {
+            /**
+             * `this` variable points to the parent document object when we use
+             * save().
+             */
+            const form = this as IFormSchema
+
+            /**
+             * A condition object is said to be validatable if it contains the two
+             * necessary for validation: fieldType and state
+             */
+            type ValidatableCondition = IncompleteValidatableCondition & {
+              fieldType: BasicField
+            }
+
+            /**
+             * A validatable condition is incomplete if there is a possibility
+             * that its fieldType is null, which is a sign that a condition's
+             * field property references a non-existent form_field.
+             */
+            type IncompleteValidatableCondition = {
+              state: LogicConditionState
+              fieldType?: BasicField
+            }
+
+            const isAllConditionsReferenceExistingFields = (
+              conditions: IncompleteValidatableCondition[],
+            ): conditions is ValidatableCondition[] =>
+              !conditions.some((condition) => !condition.fieldType)
+
+            const conditions = v.flatMap((logic) => {
+              return logic.conditions.map<IncompleteValidatableCondition>(
+                (condition) => {
+                  const {
+                    field,
+                    state,
+                  }: { field: ObjectId; state: LogicConditionState } = condition
+                  return {
+                    state,
+                    fieldType: form.form_fields?.find(
+                      (f: IFieldSchema) =>
+                        f._id.toHexString() === field.toHexString(),
+                    )?.fieldType,
+                  }
+                },
+              )
+            })
+            if (!isAllConditionsReferenceExistingFields(conditions))
+              return false
+
+            const validationResults = conditions.map((condition) => {
+              const { fieldType, state } = condition
+              const applicableIfStates = getApplicableIfStates(fieldType)
+              return applicableIfStates.includes(state)
+            })
+            return validationResults.every((r) => r)
+          },
+          message: 'Form logic condition validation failed.',
+        },
+      },
 
       admin: {
         type: Schema.Types.ObjectId,
