@@ -219,7 +219,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
              * `this` variable points to the parent document object when we use
              * save().
              */
-            const form = this as IFormSchema
+            const form = this as unknown as IFormSchema
 
             /**
              * A condition object is said to be validatable if it contains the two
