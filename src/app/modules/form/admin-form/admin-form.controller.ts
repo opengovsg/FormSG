@@ -1184,6 +1184,7 @@ export const handleUpdateForm: ControllerHandler<
  * @returns 400 when form field has invalid updates to be performed
  * @returns 403 when current user does not have permissions to update form
  * @returns 404 when form or field to duplicate cannot be found
+ * @returns 409 when saving updated form field causes sms limit to be exceeded
  * @returns 409 when saving updated form incurs a conflict in the database
  * @returns 410 when form to update is archived
  * @returns 413 when updated form is too large to be saved in the database
@@ -1639,6 +1640,7 @@ export const handleEmailPreviewSubmission = [
  * @returns 403 when current user does not have permissions to update form field
  * @returns 404 when form cannot be found
  * @returns 404 when form field cannot be found
+ * @returns 409 when form field update conflicts with database state
  * @returns 410 when updating form field of an archived form
  * @returns 413 when updating form field causes form to be too large to be saved in the database
  * @returns 422 when an invalid form field update is attempted on the form
@@ -1679,6 +1681,7 @@ export const handleUpdateFormField = [
  * @returns 200 with created form field
  * @returns 403 when current user does not have permissions to create a form field
  * @returns 404 when form cannot be found
+ * @returns 409 when form field update conflicts with database state
  * @returns 410 when creating form field for an archived form
  * @returns 413 when creating form field causes form to be too large to be saved in the database
  * @returns 422 when an invalid form field creation is attempted on the form
