@@ -2289,6 +2289,68 @@ export const handleUpdateCollaborators = [
 ] as ControllerHandler[]
 
 /**
+ * Handler for DELETE /api/v3/admin/forms/:formId/collaborators/self
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated collaborators and permissions
+ * @returns 403 when current user does not have permissions to remove themselves from the collaborators list
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating collaborators for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleRemoveSelfFromCollaborators: ControllerHandler<
+  { formId: string },
+  PermissionsUpdateDto | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  let currentUserEmail = ''
+  // Step 1: Get the form after permission checks
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) => {
+        // Step 2: Retrieve form with read permission check, since we are only removing the user themselves
+        currentUserEmail = user.email
+        return AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        })
+      })
+      // Step 3: Update the form collaborators
+      .andThen((form) => {
+        const updatedPermissionList = form.permissionList.filter(
+          (user) => user.email.toLowerCase() !== currentUserEmail.toLowerCase(),
+        )
+        return AdminFormService.updateFormCollaborators(
+          form,
+          updatedPermissionList,
+        )
+      })
+      .map((updatedCollaborators) =>
+        res.status(StatusCodes.OK).json(updatedCollaborators),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating collaborators',
+          meta: {
+            action: 'handleRemoveSelfFromCollaborators',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            formCollaborators: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
  * NOTE: Exported for testing.
  * Private handler for PUT /forms/:formId/start-page
  * @precondition Must be preceded by request validation

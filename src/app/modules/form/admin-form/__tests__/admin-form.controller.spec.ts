@@ -9467,6 +9467,264 @@ describe('admin-form.controller', () => {
     })
   })
 
+  describe('handleRemoveSelfFromCollaborators', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+
+    const MOCK_WRITER_ID = new ObjectId().toHexString()
+    const MOCK_WRITER = {
+      _id: MOCK_WRITER_ID,
+      email: 'mockwriter@example.com',
+    }
+
+    const MOCK_READER_ID = new ObjectId().toHexString()
+    const MOCK_READER = {
+      _id: MOCK_READER_ID,
+      email: 'mockreader@example.com',
+    }
+
+    const MOCK_RANDOM_USER_ID = new ObjectId().toHexString()
+    const MOCK_RANDOM_USER = {
+      _id: MOCK_RANDOM_USER_ID,
+      email: 'mockrandomuser@example.com',
+    }
+
+    const MOCK_COLLABORATORS = [
+      {
+        email: MOCK_READER.email,
+        write: false,
+      },
+      {
+        email: MOCK_WRITER.email,
+        write: true,
+      },
+    ]
+    const MOCK_COLLABORATORS_ONLY_READER = [
+      {
+        email: MOCK_READER.email,
+        write: false,
+      },
+    ]
+    const MOCK_COLLABORATORS_ONLY_WRITER = [
+      {
+        email: MOCK_WRITER.email,
+        write: true,
+      },
+    ]
+
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      permissionList: MOCK_COLLABORATORS,
+    } as IPopulatedForm
+
+    const MOCK_READER_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_READER_ID,
+        },
+      },
+    })
+    const MOCK_WRITER_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_WRITER_ID,
+        },
+      },
+    })
+    const MOCK_RANDOM_USER_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_RANDOM_USER_ID,
+        },
+      },
+    })
+
+    beforeEach(() => {
+      // Mock various services to return expected results.
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+    })
+    it('should return 200 when the current writer is removed successfully', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_WRITER))
+      MockAdminFormService.updateFormCollaborators.mockReturnValueOnce(
+        okAsync(MOCK_COLLABORATORS_ONLY_READER),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_WRITER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
+      expect(mockRes.json).toBeCalledWith(MOCK_COLLABORATORS_ONLY_READER)
+    })
+
+    it('should return 200 when the current reader is removed successfully', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_READER))
+      MockAdminFormService.updateFormCollaborators.mockReturnValueOnce(
+        okAsync(MOCK_COLLABORATORS_ONLY_WRITER),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_READER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
+      expect(mockRes.json).toBeCalledWith(MOCK_COLLABORATORS_ONLY_WRITER)
+    })
+
+    it('should return 403 when the user does not have sufficient permissions to update the form', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValue(
+        okAsync(MOCK_RANDOM_USER),
+      )
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(ERROR_MESSAGE)),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expectedResponse = { message: ERROR_MESSAGE }
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_RANDOM_USER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.FORBIDDEN)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when the form could not be found', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_WRITER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(ERROR_MESSAGE)),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expectedResponse = { message: ERROR_MESSAGE }
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_WRITER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 410 when the form has been archived', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_WRITER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(ERROR_MESSAGE)),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expectedResponse = { message: ERROR_MESSAGE }
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_WRITER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.GONE)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 when the session user could not be retrieved from the database', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(ERROR_MESSAGE)),
+      )
+      const expectedResponse = { message: ERROR_MESSAGE }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_RANDOM_USER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.UNPROCESSABLE_ENTITY)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when a database error occurs', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(ERROR_MESSAGE)),
+      )
+      const expectedResponse = { message: ERROR_MESSAGE }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_RANDOM_USER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+  })
+
   describe('handleGetFormCollaborators', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER_ID = new ObjectId().toHexString()

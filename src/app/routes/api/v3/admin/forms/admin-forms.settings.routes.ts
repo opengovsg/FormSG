@@ -97,3 +97,20 @@ AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/collaborators')
    * @returns 500 when database error occurs
    */
   .get(AdminFormController.handleGetFormCollaborators)
+
+AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/collaborators/self')
+  /**
+   * Removes the current user from the collaborator list
+   * @route DELETE /admin/forms/:formId/collaborators/self
+   * @group admin
+   * @precondition Must be preceded by request validation
+   * @security session
+   *
+   * @returns 200 with updated collaborators and permissions
+   * @returns 403 when current user does not have permissions to remove themselves the collaborators list
+   * @returns 404 when form cannot be found
+   * @returns 410 when updating collaborators for an archived form
+   * @returns 422 when user in session cannot be retrieved from the database
+   * @returns 500 when database error occurs
+   */
+  .delete(AdminFormController.handleRemoveSelfFromCollaborators)
