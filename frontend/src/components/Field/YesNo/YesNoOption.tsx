@@ -45,9 +45,8 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
     })
     // Empty object needed here as ref is the second argument,
     // and ref is required so that any refs passed in gets forwarded.
-    const input = getInputProps(undefined, ref)
-
-    const checkbox = getCheckboxProps()
+    const inputProps = getInputProps(undefined, ref)
+    const checkboxProps = getCheckboxProps()
 
     const handleSelect = useCallback(() => {
       if (props.isChecked) {
@@ -68,11 +67,15 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
 
     return (
       <Box as="label" __css={styles.container}>
-        <input {...input} onClick={handleSelect} onKeyDown={handleSpacebar} />
+        <input
+          {...inputProps}
+          onClick={handleSelect}
+          onKeyDown={handleSpacebar}
+        />
         <VisuallyHidden>
           "{children}" option {props.isChecked ? 'selected' : 'unselected'}
         </VisuallyHidden>
-        <Box {...checkbox} __css={styles.option}>
+        <Box {...checkboxProps} __css={styles.option}>
           {children}
         </Box>
       </Box>
