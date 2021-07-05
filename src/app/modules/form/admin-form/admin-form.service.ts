@@ -499,7 +499,11 @@ export const duplicateFormField = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      // Null return could be due to form or field not existing.
+      // Hence, check if field exists in form and return the appropriate error
+      return getFormField(form, fieldId).asyncAndThen(() =>
+        errAsync(new FormNotFoundError()),
+      )
     }
     const updatedField = last(updatedForm.form_fields)
     return updatedField
