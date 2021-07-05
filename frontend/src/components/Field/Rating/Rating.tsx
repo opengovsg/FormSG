@@ -108,7 +108,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
     const ratingLayout = useMemo(() => {
       switch (variant) {
         case 'Number':
-          return { spacing: '-px', rowHeight: '0.5rem' }
+          return { spacing: '-1px', rowHeight: '0.5rem' }
         default:
           return { spacing: 0, rowHeight: 0 }
       }
