@@ -4,8 +4,6 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
-import { isVerifiableMobileField } from 'src/types/field/utils/guards'
-
 import {
   EditFieldActions,
   MAX_UPLOAD_FILE_SIZE,
@@ -36,6 +34,7 @@ import {
   SettingsUpdateDto,
   StartPageUpdateDto,
 } from '../../../../types/api'
+import { isVerifiableMobileField } from '../../../../types/field/utils/guards'
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
