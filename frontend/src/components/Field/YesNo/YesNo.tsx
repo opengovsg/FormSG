@@ -100,13 +100,7 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
     )
 
     return (
-      <Box
-        as="label"
-        w="100%"
-        zIndex={props.isChecked ? 1 : 'initial'}
-        _active={{ zIndex: 1 }}
-        _focusWithin={{ zIndex: 1 }}
-      >
+      <Box as="label" __css={styles.container}>
         <input {...input} onClick={handleSelect} onKeyDown={handleSpacebar} />
         <VisuallyHidden>
           "{children}" option {props.isChecked ? 'selected' : 'unselected'}
@@ -120,14 +114,14 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
 )
 
 export const YesNo = forwardRef<YesNoProps, 'input'>(
-  ({ isDisabled, colorScheme = 'primary', ...props }, ref) => {
+  ({ colorScheme, ...props }, ref) => {
     const { getRootProps, getRadioProps } = useRadioGroup(props)
 
     const groupProps = getRootProps()
     const [noProps, yesProps] = useMemo(() => {
       const baseProps = {
         enterKeyHint: '',
-        isDisabled,
+        isDisabled: props.isDisabled,
       }
       return [
         getRadioProps({
@@ -139,16 +133,16 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           ...baseProps,
         }),
       ]
-    }, [getRadioProps, isDisabled])
+    }, [getRadioProps, props.isDisabled])
 
     return (
-      // -1px so borders collapse
+      // -1px so borders collapse.
       <HStack spacing="-1px" {...groupProps}>
-        {/* Ref is set here so any errors can focus this input */}
         <YesNoOption
           side="left"
           colorScheme={colorScheme}
           {...noProps}
+          // Ref is set here so any errors can focus this input
           ref={ref}
         >
           <Icon
