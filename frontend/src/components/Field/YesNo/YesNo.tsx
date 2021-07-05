@@ -59,6 +59,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
         enterKeyHint: '',
         isDisabled: props.isDisabled,
       }
+
       return [
         getRadioProps({
           value: 'no',
@@ -78,13 +79,19 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           side="left"
           colorScheme={colorScheme}
           {...noProps}
-          // Ref is set here so any errors can focus this input
+          // Ref is set here so any errors can focus this input.
           ref={ref}
         >
           <Icon as={BiX} __css={styles.icon} />
           No
         </YesNoOption>
-        <YesNoOption side="right" colorScheme={colorScheme} {...yesProps}>
+        <YesNoOption
+          side="right"
+          colorScheme={colorScheme}
+          {...yesProps}
+          // Ref is set here so any errors can focus this input.
+          ref={ref}
+        >
           <Icon as={BiCheck} __css={styles.icon} />
           Yes
         </YesNoOption>
