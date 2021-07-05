@@ -50,6 +50,13 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
 
     const handleSelect = useCallback(() => {
       if (props.isChecked) {
+        /**
+         * onChange prop is meant to be called when the current value of the
+         * checkbox group is updated.
+         * Here onChange is being called to reset the current checkbox value by
+         * setting the current value to an empty value if the current checkbox
+         * is already checked, effectively allowing toggling of the checkbox.
+         */
         props.onChange?.('')
       }
     }, [props])
