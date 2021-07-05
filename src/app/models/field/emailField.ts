@@ -29,19 +29,9 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
       includeFormSummary: {
         type: Boolean,
         default: false,
-        validate: {
-          validator: function (this: IEmailFieldSchema, v: boolean) {
-            // always ok to set to false
-            return (
-              !v ||
-              // either true or false is okay if not in storage mode
-              this.parent().responseMode !== ResponseMode.Encrypt ||
-              // in storage mode, we can ignore this field if email confirmation is not enabled anyway
-              !this.autoReplyOptions.hasAutoReply
-            )
-          },
-          message:
-            'PDF response summaries are not allowed for email confirmations in storage mode forms',
+        set: function (this: IEmailFieldSchema, v: boolean) {
+          // Set to false if encrypt mode regardless of initial value.
+          return this.parent().responseMode === ResponseMode.Encrypt ? false : v
         },
       },
     },
