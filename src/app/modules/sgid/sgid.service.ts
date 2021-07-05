@@ -2,7 +2,7 @@ import { SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
-import { sgid } from '../../config/config'
+import { sgid } from '../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
 
@@ -12,6 +12,7 @@ import {
   SgidFetchUserInfoError,
   SgidInvalidJwtError,
   SgidInvalidStateError,
+  SgidMissingJwtError,
   SgidVerifyJwtError,
 } from './sgid.errors'
 import { isSgidJwtPayload } from './sgid.util'
@@ -182,11 +183,18 @@ export class SgidServiceClass {
    */
   extractSgidJwtPayload(
     jwtSgid: string,
-  ): Result<{ userName: string }, SgidVerifyJwtError | SgidInvalidJwtError> {
+  ): Result<
+    { userName: string },
+    SgidVerifyJwtError | SgidInvalidJwtError | SgidMissingJwtError
+  > {
     const logMeta = {
-      action: 'extractSingpassJwtPayload',
+      action: 'extractSgidJwtPayload',
     }
     try {
+      if (!jwtSgid) {
+        return err(new SgidMissingJwtError())
+      }
+
       const payload = this.client.verifyJWT(jwtSgid, this.publicKeyPath)
 
       if (isSgidJwtPayload(payload)) {

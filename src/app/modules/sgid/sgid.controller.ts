@@ -73,7 +73,7 @@ export const handleLogin: ControllerHandler<
   const { maxAge, jwt } = jwtResult.value
   res.cookie('jwtSgid', jwt, {
     maxAge,
-    httpOnly: false, // the JWT needs to be read by client-side JS
+    httpOnly: true,
     sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
     secure: !config.isDev,
     ...SgidService.getCookieSettings(),

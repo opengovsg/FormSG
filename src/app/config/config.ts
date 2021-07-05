@@ -14,7 +14,6 @@ import {
   MailConfig,
 } from '../../types'
 
-import { sgid } from './features/sgid.config'
 import {
   compulsoryVarsSchema,
   loadS3BucketUrlSchema,
@@ -207,7 +206,6 @@ const config: Config = {
   db: dbConfig,
   aws: awsConfig,
   mail: mailConfig,
-  sgid,
   cookieSettings,
   isDev,
   nodeEnv,

@@ -56,7 +56,6 @@ export type Config = {
   db: DbConfig
   aws: AwsConfig
   mail: MailConfig
-  sgid: ISgidVarsSchema
 
   cookieSettings: SessionOptions['cookie']
   // Consts

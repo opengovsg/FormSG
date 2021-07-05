@@ -360,8 +360,28 @@ export const handleGetPublicForm: ControllerHandler<
       )
     }
     case AuthType.SGID:
-      // Do nothing - JWT already in place, nothing to do for MyInfo
-      return res.json({ form: publicForm, isIntranetUser })
+      return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
+        .map((spcpSession) => {
+          return res.json({
+            form: publicForm,
+            isIntranetUser,
+            spcpSession,
+          })
+        })
+        .mapErr((error) => {
+          // Report only relevant errors - verification failed for user here
+          if (
+            error instanceof VerifyJwtError ||
+            error instanceof InvalidJwtError
+          ) {
+            logger.error({
+              message: 'Error getting public form',
+              meta: logMeta,
+              error,
+            })
+          }
+          return res.json({ form: publicForm, isIntranetUser })
+        })
     default:
       return new UnreachableCaseError(authType)
   }
@@ -472,7 +492,7 @@ export const handleFormAuthRedirect = [
  * @returns 400 if authType is invalid
  */
 export const _handleSpcpLogout: ControllerHandler<
-  { authType: AuthType.SP | AuthType.CP },
+  { authType: AuthType.SP | AuthType.CP | AuthType.SGID },
   PublicFormAuthLogoutDto
 > = (req, res) => {
   const { authType } = req.params
@@ -490,7 +510,9 @@ export const _handleSpcpLogout: ControllerHandler<
 export const handleSpcpLogout = [
   celebrate({
     [Segments.PARAMS]: Joi.object({
-      authType: Joi.string().valid(AuthType.SP, AuthType.CP).required(),
+      authType: Joi.string()
+        .valid(AuthType.SP, AuthType.CP, AuthType.SGID)
+        .required(),
     }),
   }),
   _handleSpcpLogout,

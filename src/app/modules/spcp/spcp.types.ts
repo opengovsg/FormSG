@@ -3,6 +3,7 @@ import { AuthType, IFormSchema } from '../../../types'
 export enum JwtName {
   SP = 'jwtSp',
   CP = 'jwtCp',
+  SGID = 'jwtSgid',
 }
 
 export type SpcpCookies = Partial<Record<JwtName, string>>
@@ -18,7 +19,15 @@ export type CorppassJwtPayload = {
   rememberMe: boolean
 }
 
-export type JwtPayload = SingpassJwtPayload | CorppassJwtPayload
+export type SgidJwtPayload = {
+  userName: string
+  rememberMe: boolean
+}
+
+export type JwtPayload =
+  | SingpassJwtPayload
+  | CorppassJwtPayload
+  | SgidJwtPayload
 
 type CookieTimestamp = {
   iat: number // iat and exp are present after cookie has been set
@@ -27,10 +36,12 @@ type CookieTimestamp = {
 
 export type SingpassJwtPayloadFromCookie = SingpassJwtPayload & CookieTimestamp
 export type CorppassJwtPayloadFromCookie = CorppassJwtPayload & CookieTimestamp
+export type SgidJwtPayloadFromCookie = SgidJwtPayload & CookieTimestamp
 
 export type JwtPayloadFromCookie =
   | SingpassJwtPayloadFromCookie
   | CorppassJwtPayloadFromCookie
+  | SgidJwtPayloadFromCookie
 
 export interface SingpassAttributes {
   UserName?: string

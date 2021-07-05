@@ -184,7 +184,7 @@ describe('sgid.controller', () => {
       )
       expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('jwtSgid', MOCK_JWT, {
         maxAge: MOCK_COOKIE_AGE,
-        httpOnly: false,
+        httpOnly: true,
         sameSite: 'lax',
         secure: !MockConfig.isDev,
         ...MOCK_COOKIE_SETTINGS,

@@ -31,7 +31,7 @@ function SubmitFormController(
   // This allows the log out button to be correctly populated with the UID
   // Also provides time to cookie expiry so that client can refresh page
   if (
-    ['SP', 'CP'].includes(vm.myform.authType) &&
+    ['SP', 'CP', 'SGID'].includes(vm.myform.authType) &&
     FormData.spcpSession &&
     FormData.spcpSession.userName
   ) {
@@ -52,7 +52,7 @@ function SubmitFormController(
   vm.myInfoError = Boolean(FormData.myInfoError)
   if (
     FormData.isIntranetUser &&
-    ['SP', 'CP', 'MyInfo'].includes(vm.myform.authType)
+    ['SP', 'CP', 'SGID', 'MyInfo'].includes(vm.myform.authType)
   ) {
     Toastr.permanentError(
       'SingPass/CorpPass login is not supported from WOG Intranet. Please use an Internet-enabled device to submit this form.',

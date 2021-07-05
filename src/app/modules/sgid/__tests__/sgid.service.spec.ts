@@ -8,6 +8,7 @@ import {
   SgidFetchUserInfoError,
   SgidInvalidJwtError,
   SgidInvalidStateError,
+  SgidMissingJwtError,
   SgidVerifyJwtError,
 } from '../sgid.errors'
 import { SgidServiceClass } from '../sgid.service'
@@ -195,6 +196,17 @@ describe('sgid.service', () => {
         MOCK_JWT,
         MOCK_OPTIONS.publicKeyPath,
       )
+    })
+
+    it('should return SgidMissingJwtError on malformed payload', () => {
+      const SgidService = new SgidServiceClass(MOCK_OPTIONS)
+      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
+      sgidClient.verifyJWT.mockReturnValue({})
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const result = SgidService.extractSgidJwtPayload(undefined)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(SgidMissingJwtError)
+      expect(sgidClient.verifyJWT).not.toHaveBeenCalled()
     })
 
     it('should return SgidInvalidJwtError on malformed payload', () => {
