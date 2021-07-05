@@ -34,7 +34,7 @@ export const Banner: ComponentMultiStyleConfig = {
       link: {
         color: 'white',
         _hover: {
-          color: 'secondary.100',
+          color: 'white',
         },
         _focus: {
           boxShadow: '0 0 0 2px var(--chakra-colors-white)',
@@ -54,7 +54,7 @@ export const Banner: ComponentMultiStyleConfig = {
       link: {
         color: 'secondary.700',
         _hover: {
-          color: 'primary.700',
+          color: 'secondary.700',
         },
       },
     },
@@ -66,7 +66,7 @@ export const Banner: ComponentMultiStyleConfig = {
       link: {
         color: 'white',
         _hover: {
-          color: 'secondary.100',
+          color: 'white',
         },
         _focus: {
           boxShadow: '0 0 0 2px var(--chakra-colors-white)',
