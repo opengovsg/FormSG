@@ -4,12 +4,13 @@ import {
   forwardRef,
   Icon,
   Text,
+  useMultiStyleConfig,
   useRadio,
-  useToken,
   VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { BxHeart, BxsHeart, BxsStar, BxStar } from '~assets/icons'
+import { RATING_THEME_KEY } from '~theme/components/Field/Rating'
 import { FieldColorScheme } from '~theme/foundations/colours'
 
 interface BaseRatingComponent {
@@ -17,7 +18,7 @@ interface BaseRatingComponent {
    * Radio styling props to spread on container.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  checkbox: Omit<HTMLProps<any>, never>
+  radioProps: Omit<HTMLProps<any>, never>
   /**
    * Value of the option.
    */
@@ -42,81 +43,27 @@ interface IconRatingComponent extends BaseRatingComponent {
 }
 
 const NumberRating = ({
-  checkbox,
+  radioProps,
   inputId,
   value,
   selectedValue,
   colorScheme = 'primary',
 }: BaseRatingComponent): JSX.Element => {
-  const themeColorVar = useMemo(() => {
-    switch (colorScheme) {
-      case 'theme-red':
-      case 'theme-orange':
-      case 'theme-yellow':
-        return `${colorScheme}.700`
-      default:
-        return `${colorScheme}.500`
-    }
-  }, [colorScheme])
-
-  const themeColor = useToken('colors', themeColorVar)
+  const styles = useMultiStyleConfig(RATING_THEME_KEY, {
+    colorScheme,
+    variant: 'number',
+  })
 
   const isChecked = value === (selectedValue ?? 0)
 
   return (
     <Box
-      {...checkbox}
+      {...radioProps}
       as="label"
       htmlFor={inputId}
       aria-hidden={false}
       {...(isChecked ? { 'data-checked': '' } : {})}
-      minW="3.25rem"
-      display="flex"
-      justifyContent="center"
-      transitionProperty="common"
-      transitionDuration="normal"
-      cursor="pointer"
-      py="10px"
-      px="14px"
-      bg="white"
-      borderWidth="1px"
-      borderColor={themeColor}
-      color={themeColor}
-      _disabled={{
-        borderColor: 'neutral.500',
-        color: 'neutral.500',
-        cursor: 'not-allowed',
-        _checked: {
-          bg: 'neutral.500',
-          _hover: {
-            bg: 'neutral.500',
-          },
-          _active: {
-            color: 'white',
-          },
-        },
-        _hover: {
-          bg: 'white',
-        },
-        _active: {
-          color: 'neutral.500',
-          bg: 'white',
-        },
-      }}
-      _hover={{
-        bg: `${colorScheme}.200`,
-      }}
-      _active={{
-        bg: themeColor,
-        color: 'white',
-      }}
-      _focus={{
-        boxShadow: `0 0 0 4px var(--chakra-colors-${colorScheme}-300)`,
-      }}
-      _checked={{
-        bg: themeColor,
-        color: 'white',
-      }}
+      __css={styles.option}
     >
       <VisuallyHidden>
         {value} {isChecked ? 'selected' : 'unselected'}
@@ -127,7 +74,7 @@ const NumberRating = ({
 }
 
 const IconRating = ({
-  checkbox,
+  radioProps,
   inputId,
   value,
   selectedValue,
@@ -135,49 +82,21 @@ const IconRating = ({
   emptyIcon,
   fullIcon,
 }: IconRatingComponent): JSX.Element => {
-  const themeColorVar = useMemo(() => {
-    switch (colorScheme) {
-      case 'theme-red':
-      case 'theme-orange':
-      case 'theme-yellow':
-        return `${colorScheme}.700`
-      default:
-        return `${colorScheme}.500`
-    }
-  }, [colorScheme])
-
-  const themeColor = useToken('colors', themeColorVar)
+  const styles = useMultiStyleConfig(RATING_THEME_KEY, {
+    colorScheme,
+    variant: 'icon',
+  })
 
   const isChecked = value <= (selectedValue ?? 0)
 
   return (
     <Box
-      {...checkbox}
+      {...radioProps}
       as="label"
       htmlFor={inputId}
       aria-hidden={false}
       {...(isChecked ? { 'data-checked': '' } : {})}
-      display="flex"
-      p="0.125rem"
-      borderRadius="0.25rem"
-      color={themeColor}
-      transitionProperty="common"
-      transitionDuration="normal"
-      cursor="pointer"
-      _focus={{
-        boxShadow: `0 0 0 2px ${themeColor}`,
-      }}
-      _hover={{
-        color: `${colorScheme}.700`,
-      }}
-      _disabled={{
-        borderColor: 'neutral.500',
-        color: 'neutral.500',
-        cursor: 'not-allowed',
-        _active: {
-          color: 'neutral.500',
-        },
-      }}
+      __css={styles.option}
     >
       <VisuallyHidden>
         {value} {isChecked ? 'selected' : 'unselected'}
@@ -247,16 +166,16 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
       value,
     })
 
-    const input = getInputProps()
-    const checkbox = getCheckboxProps()
+    const inputProps = getInputProps()
+    const radioProps = getCheckboxProps()
 
     const componentToRender = useMemo(() => {
       const props = {
-        checkbox,
+        radioProps,
         value,
         selectedValue,
         colorScheme,
-        inputId: input.id,
+        inputId: inputProps.id,
       }
       switch (variant) {
         case 'Number':
@@ -268,14 +187,14 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
         case 'Star':
           return <IconRating {...props} emptyIcon={BxStar} fullIcon={BxsStar} />
       }
-    }, [checkbox, colorScheme, input.id, selectedValue, value, variant])
+    }, [radioProps, colorScheme, inputProps.id, selectedValue, value, variant])
 
     return (
       <Box _active={{ zIndex: 1 }} _focusWithin={{ zIndex: 1 }}>
         <input
           type="radio"
           aria-checked={selectedValue === value}
-          {...input}
+          {...inputProps}
           onChange={handleSelect}
           onKeyDown={handleSpacebar}
           ref={ref}
