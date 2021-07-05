@@ -756,9 +756,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     createLogicBody: LogicDto,
   ): Promise<IFormSchema | null> {
     const form = await this.findById(formId).exec()
-    if (!(form?.form_logics && form.form_logics instanceof Types.DocumentArray))
-      return null
-    const newLogic = form.form_logics.create(createLogicBody)
+    if (!form?.form_logics) return null
+    const newLogic = (
+      form.form_logics as Types.DocumentArray<ILogicSchema>
+    ).create(createLogicBody)
     form.form_logics.push(newLogic)
     return form.save()
   }
