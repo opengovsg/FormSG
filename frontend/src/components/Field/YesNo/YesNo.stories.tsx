@@ -1,4 +1,4 @@
-import { useController, useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import {
   FormControl,
   FormErrorMessage,
@@ -104,18 +104,12 @@ export const Playground: Story = ({
   isRequired,
   ...args
 }) => {
-  const { handleSubmit, control } = useForm()
-  const onSubmit = (data: unknown) => alert(JSON.stringify(data))
   const {
-    field,
-    formState: { errors },
-  } = useController({
+    handleSubmit,
     control,
-    name,
-    rules: {
-      required: isRequired ? { value: true, message: 'Required field' } : false,
-    },
-  })
+    formState: { errors },
+  } = useForm()
+  const onSubmit = (data: unknown) => alert(JSON.stringify(data))
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -126,7 +120,18 @@ export const Playground: Story = ({
         mb={6}
       >
         <FormLabel>{label}</FormLabel>
-        <YesNo {...args} isDisabled={isDisabled} {...field} />
+        <Controller
+          control={control}
+          rules={{
+            required: isRequired
+              ? { value: true, message: 'Required field' }
+              : false,
+          }}
+          name={name}
+          render={({ field }) => (
+            <YesNo {...args} isDisabled={isDisabled} {...field} />
+          )}
+        />
         <FormErrorMessage>
           {errors[name] && errors[name].message}
         </FormErrorMessage>
