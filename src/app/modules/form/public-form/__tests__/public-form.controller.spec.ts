@@ -1477,7 +1477,9 @@ describe('public-form.controller', () => {
           authType,
         },
       })
-      const mockRes = expressHandler.mockResponse({ clearCookie: jest.fn() })
+      const mockRes = expressHandler.mockResponse({
+        clearCookie: jest.fn().mockReturnThis(),
+      })
 
       await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
 
@@ -1495,7 +1497,9 @@ describe('public-form.controller', () => {
           authType,
         },
       })
-      const mockRes = expressHandler.mockResponse({ clearCookie: jest.fn() })
+      const mockRes = expressHandler.mockResponse({
+        clearCookie: jest.fn().mockReturnThis(),
+      })
 
       await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
 
