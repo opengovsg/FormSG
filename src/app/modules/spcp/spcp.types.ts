@@ -20,13 +20,13 @@ export type CorppassJwtPayload = {
 
 export type JwtPayload = SingpassJwtPayload | CorppassJwtPayload
 
-type Timestamp = {
+type CookieTimestamp = {
   iat: number // iat and exp are present after cookie has been set
   exp: number
 }
 
-export type SingpassJwtPayloadFromCookie = SingpassJwtPayload & Timestamp
-export type CorppassJwtPayloadFromCookie = CorppassJwtPayload & Timestamp
+export type SingpassJwtPayloadFromCookie = SingpassJwtPayload & CookieTimestamp
+export type CorppassJwtPayloadFromCookie = CorppassJwtPayload & CookieTimestamp
 
 export type JwtPayloadFromCookie =
   | SingpassJwtPayloadFromCookie

@@ -92,6 +92,7 @@ describe('public-form.form.routes', () => {
       mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
         cb(null, {
           userName: MOCK_COOKIE_PAYLOAD.userName,
+          iat: 100000000,
           exp: 1000000000,
         }),
       )
@@ -110,6 +111,8 @@ describe('public-form.form.routes', () => {
         form: JSON.parse(JSON.stringify(fullForm?.getPublicView())),
         spcpSession: expect.objectContaining({
           userName: MOCK_COOKIE_PAYLOAD.userName,
+          iat: 100000000,
+          exp: 1000000000,
         }),
         isIntranetUser: false,
       }
@@ -130,6 +133,7 @@ describe('public-form.form.routes', () => {
         cb(null, {
           userName: MOCK_COOKIE_PAYLOAD.userName,
           userInfo: 'MyCorpPassUEN',
+          iat: 100000000,
           exp: 1000000000,
         }),
       )
@@ -148,6 +152,8 @@ describe('public-form.form.routes', () => {
         form: JSON.parse(JSON.stringify(fullForm?.getPublicView())),
         spcpSession: expect.objectContaining({
           userName: MOCK_COOKIE_PAYLOAD.userName,
+          iat: 100000000,
+          exp: 1000000000,
         }),
         isIntranetUser: false,
       }
