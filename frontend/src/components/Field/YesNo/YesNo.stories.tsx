@@ -125,7 +125,7 @@ export const Playground: Story = ({
         isInvalid={!!errors[name]}
         mb={6}
       >
-        <FormLabel htmlFor={name}>{label}</FormLabel>
+        <FormLabel>{label}</FormLabel>
         <YesNo {...args} isDisabled={isDisabled} {...field} />
         <FormErrorMessage>
           {errors[name] && errors[name].message}

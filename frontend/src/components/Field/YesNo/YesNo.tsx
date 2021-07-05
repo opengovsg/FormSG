@@ -5,12 +5,12 @@ import {
   forwardRef,
   HStack,
   Icon,
+  useMultiStyleConfig,
   useRadio,
   useRadioGroup,
   UseRadioGroupProps,
   UseRadioGroupReturn,
   UseRadioProps,
-  useStyleConfig,
   VisuallyHidden,
 } from '@chakra-ui/react'
 
@@ -52,9 +52,9 @@ interface YesNoOptionProps extends UseRadioProps {
   children: React.ReactNode
 
   /**
-   * Variant of the option for styling to be used for styling.
+   * Side of the option for styling to be used for styling.
    */
-  variant: 'left' | 'right'
+  side: 'left' | 'right'
 
   /**
    * Color scheme of the component to render. Defaults to `primary`.
@@ -63,8 +63,8 @@ interface YesNoOptionProps extends UseRadioProps {
 }
 
 const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
-  ({ children, variant, colorScheme = 'primary', ...props }, ref) => {
-    const style = useStyleConfig(YESNO_THEME_KEY, { variant, colorScheme })
+  ({ children, ...props }, ref) => {
+    const styles = useMultiStyleConfig(YESNO_THEME_KEY, props)
 
     const { getInputProps, getCheckboxProps } = useRadio({
       ...props,
@@ -104,7 +104,7 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
         <VisuallyHidden>
           "{children}" option {props.isChecked ? 'selected' : 'unselected'}
         </VisuallyHidden>
-        <Box {...checkbox} __css={style}>
+        <Box {...checkbox} __css={styles.option}>
           {children}
         </Box>
       </Box>
@@ -136,10 +136,11 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
     }, [getRadioProps, isDisabled, props.name])
 
     return (
-      <HStack spacing="-px" {...groupProps}>
+      // -1px so borders collapse
+      <HStack spacing="-1px" {...groupProps}>
         {/* Ref is set here so any errors can focus this input */}
         <YesNoOption
-          variant="left"
+          side="left"
           colorScheme={colorScheme}
           {...noProps}
           ref={ref}
@@ -153,7 +154,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           />
           No
         </YesNoOption>
-        <YesNoOption variant="right" colorScheme={colorScheme} {...yesProps}>
+        <YesNoOption side="right" colorScheme={colorScheme} {...yesProps}>
           <Icon
             display={['none', 'none', 'initial']}
             as={BiCheck}

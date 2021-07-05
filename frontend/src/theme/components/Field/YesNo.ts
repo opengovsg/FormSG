@@ -1,15 +1,12 @@
-import { CSSObject } from '@chakra-ui/styled-system'
-import {
-  ChakraTheme,
-  ComponentStyleConfig,
-  ThemingPropsThunk,
-} from '@chakra-ui/theme'
+import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
 import { getColor } from '@chakra-ui/theme-tools'
 
 export const YESNO_THEME_KEY = 'YesNoField'
 
-const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
-  const { colorScheme: c = 'primary', theme } = props
+const parts = ['option', 'field']
+
+const outlineOptionStyle = (props: Record<string, any>) => {
+  const { colorScheme: c = 'primary', theme, side } = props
 
   const isLighterTheme = ['theme-yellow', 'theme-orange', 'theme-red'].includes(
     c,
@@ -20,6 +17,7 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
 
   return {
     display: 'flex',
+    borderRadius: side === 'left' ? '4px 0 0 4px' : '0 4px 4px 0',
     transitionProperty: 'common',
     transitionDuration: 'normal',
     alignItems: 'center',
@@ -75,14 +73,17 @@ const baseStyle: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
   }
 }
 
-export const YesNoField: ComponentStyleConfig = {
-  baseStyle,
+export const YesNoField: ComponentMultiStyleConfig = {
+  parts,
   variants: {
-    left: {
-      borderRadius: '4px 0 0 4px',
+    outline: (props) => {
+      return {
+        option: outlineOptionStyle(props),
+      }
     },
-    right: {
-      borderRadius: '0 4px 4px 0',
-    },
+  },
+  defaultProps: {
+    variant: 'outline',
+    colorScheme: 'primary',
   },
 }
