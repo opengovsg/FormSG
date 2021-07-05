@@ -1,12 +1,19 @@
 'use strict'
 
-const jwtDecode = require('jwt-decode').default
+const PublicFormAuthService = require('../../../services/PublicFormAuthService')
 
 angular
   .module('forms')
-  .factory('SpcpSession', ['$window', '$cookies', SpcpSession])
+  .factory('SpcpSession', [
+    '$interval',
+    '$q',
+    'Toastr',
+    '$window',
+    '$cookies',
+    SpcpSession,
+  ])
 
-function SpcpSession($window, $cookies) {
+function SpcpSession($interval, $q, Toastr, $window, $cookies) {
   let session = {
     userName: null,
     cookieName: null,
@@ -16,19 +23,15 @@ function SpcpSession($window, $cookies) {
       SP: 'jwtSp',
       CP: 'jwtCp',
     },
-    setUser: function (authType) {
-      if (session.cookieNames[authType]) {
-        session.cookieName = session.cookieNames[authType]
-        const cookie = $cookies.get(session.cookieName)
-        if (cookie) {
-          const decoded = jwtDecode(cookie)
-          session.userName = decoded.userName
-          session.rememberMe = decoded.rememberMe
-          session.issuedAt = parseInt(decoded.iat)
-          // Every 5 seconds, check if cookie exists and log out if cookie does not exist
-          setInterval(session.checkCookie, 5000)
+    setUser: function ({ userName, rememberMe, iat, exp }) {
+      session.userName = userName
+      session.rememberMe = rememberMe
+      session.issuedAt = iat
+      $interval(() => {
+        if (Date.now() > exp * 1000) {
+          $window.location.reload()
         }
-      }
+      }, 5000) // Every 5s, check cookie expiry time and refresh if necessary
     },
     setUserName: function (userName) {
       session.userName = userName
@@ -36,19 +39,15 @@ function SpcpSession($window, $cookies) {
     clearUserName: function () {
       session.userName = undefined
     },
-    logout: function () {
-      $cookies.remove(
-        session.cookieName,
-        $window.spcpCookieDomain ? { domain: $window.spcpCookieDomain } : {},
-      )
-      $cookies.put('isJustLogOut', true)
-      $window.location.reload()
-    },
-    checkCookie: function () {
-      let cookie = $cookies.get(session.cookieName)
-      if (!cookie) {
-        session.logout()
-      }
+    logout: function (authType) {
+      $q.when(PublicFormAuthService.logoutOfSpcpSession(authType))
+        .then(() => {
+          $cookies.put('isJustLogOut', true)
+          $window.location.reload()
+        })
+        .catch(() => {
+          Toastr.error('Failed to log out, please refresh and try again!')
+        })
     },
     isJustLogOut: function () {
       let val = $cookies.get('isJustLogOut')

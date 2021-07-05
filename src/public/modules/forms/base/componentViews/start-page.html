@@ -5,7 +5,7 @@
       <span
         ng-if="vm.authType!=='NIL' && (vm.isTemplate || vm.userName)"
         class="start-page-header-nav-item"
-        ng-click="!vm.isTemplate? vm.formLogout() : null"
+        ng-click="!vm.isTemplate? vm.formLogout(vm.authType) : null"
       >
         Log out<i class="bx bx-log-out"></i>
       </span>
@@ -74,7 +74,7 @@
           <button
             type="button"
             class="start-page-btn {{ vm.colorTheme }}-font"
-            ng-click="vm.formLogout()"
+            ng-click="vm.formLogout(vm.authType)"
             ng-if="vm.authType!=='NIL' && vm.userName && !vm.isTemplate"
           >
             <span>{{ vm.userName }} - Log out</span>
