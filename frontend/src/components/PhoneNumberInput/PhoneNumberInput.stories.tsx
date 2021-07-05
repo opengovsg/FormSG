@@ -33,13 +33,10 @@ const Template: Story<PhoneNumberInputProps> = (args) => {
   )
 }
 export const Default = Template.bind({})
-Default.args = {
-  placeholder: 'Enter number',
-}
+Default.args = {}
 
 export const Prefilled = Template.bind({})
 Prefilled.args = {
-  placeholder: 'Enter number',
   value: '+6598765432',
   isPrefilled: true,
 }
@@ -47,7 +44,6 @@ Prefilled.args = {
 export const Error = Template.bind({})
 Error.args = {
   isInvalid: true,
-  placeholder: 'Enter number',
   value: '999',
 }
 
@@ -61,7 +57,6 @@ Success.args = {
 export const Disabled = Template.bind({})
 Disabled.args = {
   value: '123',
-  placeholder: 'Enter number',
   isDisabled: true,
 }
 
@@ -115,7 +110,6 @@ export const Playground: Story = ({
 Playground.args = {
   name: 'Test playground input',
   label: 'Field label',
-  placeholder: 'Enter number',
   isRequired: true,
   isDisabled: false,
   defaultValue: '98765432',

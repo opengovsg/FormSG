@@ -26,7 +26,13 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import Flags from 'country-flag-icons/react/3x2'
-import { AsYouType, CountryCode } from 'libphonenumber-js/min'
+import defaultExamples from 'libphonenumber-js/examples.mobile.json'
+import {
+  AsYouType,
+  CountryCode,
+  getExampleNumber,
+  NationalNumber,
+} from 'libphonenumber-js/min'
 
 import Input, { InputProps } from '../Input'
 
@@ -56,6 +62,23 @@ export interface PhoneNumberInputProps
    * The current value of the controlled component.
    */
   value: string | undefined
+
+  /**
+   * Set the input's placeholder to an example number for the selected country,
+   * and update it if the country changes.
+   *
+   * By default it is set to "polite", which means it will only set the
+   * placeholder if the input doesn't already have one. You can also set it to
+   * "aggressive", which will replace any existing placeholder, or "off" to not
+   * show any example numbers in the placeholder.
+   */
+  examplePlaceholder?: 'polite' | 'aggressive' | 'off'
+
+  /**
+   * Examples to retrieve placeholder number from, if any. Defaults to
+   * `libphonenumber-js/examples.mobile.json` if none provided.
+   */
+  examples?: { [country in CountryCode]: NationalNumber }
 }
 
 export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
@@ -66,6 +89,8 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
       onBlur,
       value: propsValue,
       isDisabled,
+      examples = defaultExamples,
+      examplePlaceholder = 'polite',
       ...props
     },
     ref,
@@ -83,6 +108,23 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
     const inputRef = useMergeRefs(innerInputRef, ref)
 
     const formatter = useMemo(() => new AsYouType(country), [country])
+
+    const inputPlaceholder = useMemo(() => {
+      if (examplePlaceholder === 'off') {
+        return props.placeholder
+      }
+
+      const exampleNumber = getExampleNumber(
+        country,
+        examples,
+      )?.formatInternational()
+
+      if (examplePlaceholder === 'aggressive') {
+        return exampleNumber ?? props.placeholder
+      }
+
+      return props.placeholder ?? exampleNumber
+    }, [country, examplePlaceholder, examples, props.placeholder])
 
     const onInputChange = useCallback(
       (newValue: string) => {
@@ -197,6 +239,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
           isDisabled={isDisabled}
           sx={styles.field}
           {...props}
+          placeholder={inputPlaceholder}
         />
       </InputGroup>
     )
