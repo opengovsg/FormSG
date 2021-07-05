@@ -115,6 +115,7 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
 
 export const YesNo = forwardRef<YesNoProps, 'input'>(
   ({ colorScheme, ...props }, ref) => {
+    const styles = useMultiStyleConfig(YESNO_THEME_KEY, props)
     const { getRootProps, getRadioProps } = useRadioGroup(props)
 
     const groupProps = getRootProps()
@@ -145,23 +146,11 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           // Ref is set here so any errors can focus this input
           ref={ref}
         >
-          <Icon
-            display={['none', 'none', 'initial']}
-            as={BiX}
-            fontSize="1.5rem"
-            mr="0.5rem"
-            aria-hidden
-          />
+          <Icon as={BiX} __css={styles.icon} />
           No
         </YesNoOption>
         <YesNoOption side="right" colorScheme={colorScheme} {...yesProps}>
-          <Icon
-            display={['none', 'none', 'initial']}
-            as={BiCheck}
-            fontSize="1.5rem"
-            mr="0.5rem"
-            aria-hidden
-          />
+          <Icon as={BiCheck} __css={styles.icon} />
           Yes
         </YesNoOption>
       </HStack>

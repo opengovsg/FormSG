@@ -3,7 +3,7 @@ import { getColor } from '@chakra-ui/theme-tools'
 
 export const YESNO_THEME_KEY = 'YesNoField'
 
-const parts = ['option', 'container']
+const parts = ['option', 'container', 'icon']
 
 const outlineOptionStyle = (props: Record<string, any>) => {
   const { colorScheme: c = 'primary', theme, side } = props
@@ -91,6 +91,11 @@ export const YesNoField: ComponentMultiStyleConfig = {
       return {
         option: outlineOptionStyle(props),
         container: outlineContainerStyle(props),
+        icon: {
+          display: ['none', 'none', 'initial'],
+          fontSize: '1.5rem',
+          mr: '0.5rem',
+        },
       }
     },
   },
