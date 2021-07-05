@@ -1,21 +1,18 @@
-import { KeyboardEvent, useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { BiCheck, BiX } from 'react-icons/bi'
 import {
-  Box,
   forwardRef,
   HStack,
   Icon,
   useMultiStyleConfig,
-  useRadio,
   useRadioGroup,
   UseRadioGroupProps,
-  UseRadioGroupReturn,
-  UseRadioProps,
-  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { YESNO_THEME_KEY } from '~theme/components/Field/YesNo'
 import { FieldColorScheme } from '~theme/foundations/colours'
+
+import { YesNoOption } from './YesNoOption'
 
 export interface YesNoProps {
   /**
@@ -48,71 +45,9 @@ export interface YesNoProps {
   colorScheme?: FieldColorScheme
 }
 
-interface YesNoOptionProps extends UseRadioProps {
-  children: React.ReactNode
-
-  /**
-   * Side of the option for styling to be used for styling.
-   */
-  side: 'left' | 'right'
-
-  /**
-   * Color scheme of the component to render. Defaults to `primary`.
-   */
-  colorScheme?: FieldColorScheme
-
-  /**
-   * Callback to be invoked when selection changes.
-   * @note Overridden since this component must be encapsulated by a
-   * `RadioGroup` component and will pass in its `onChange` callback as a prop.
-   */
-  onChange?: UseRadioGroupReturn['onChange']
-}
-
-const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
-  ({ children, ...props }, ref) => {
-    const styles = useMultiStyleConfig(YESNO_THEME_KEY, props)
-
-    const { getInputProps, getCheckboxProps } = useRadio({
-      ...props,
-    })
-    // Empty object needed here as ref is the second argument,
-    // and ref is required so that any refs passed in gets forwarded.
-    const input = getInputProps(undefined, ref)
-
-    const checkbox = getCheckboxProps()
-
-    const handleSelect = useCallback(() => {
-      if (props.isChecked) {
-        props.onChange?.('')
-      }
-    }, [props])
-
-    const handleSpacebar = useCallback(
-      (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key !== ' ') return
-        if (props.isChecked) {
-          e.preventDefault()
-          handleSelect()
-        }
-      },
-      [handleSelect, props.isChecked],
-    )
-
-    return (
-      <Box as="label" __css={styles.container}>
-        <input {...input} onClick={handleSelect} onKeyDown={handleSpacebar} />
-        <VisuallyHidden>
-          "{children}" option {props.isChecked ? 'selected' : 'unselected'}
-        </VisuallyHidden>
-        <Box {...checkbox} __css={styles.option}>
-          {children}
-        </Box>
-      </Box>
-    )
-  },
-)
-
+/**
+ * YesNo field component.
+ */
 export const YesNo = forwardRef<YesNoProps, 'input'>(
   ({ colorScheme, ...props }, ref) => {
     const styles = useMultiStyleConfig(YESNO_THEME_KEY, props)
