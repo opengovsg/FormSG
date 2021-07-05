@@ -60,6 +60,13 @@ interface YesNoOptionProps extends UseRadioProps {
    * Color scheme of the component to render. Defaults to `primary`.
    */
   colorScheme?: FieldColorScheme
+
+  /**
+   * Callback to be invoked when selection changes.
+   * @note Overridden since this component must be encapsulated by a
+   * `RadioGroup` component and will pass in its `onChange` callback as a prop.
+   */
+  onChange?: UseRadioGroupReturn['onChange']
 }
 
 const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
@@ -68,18 +75,18 @@ const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
 
     const { getInputProps, getCheckboxProps } = useRadio({
       ...props,
-      isDisabled: props.disabled,
     })
-    const input = getInputProps({}, ref)
+    // Empty object needed here as ref is the second argument,
+    // and ref is required so that any refs passed in gets forwarded.
+    const input = getInputProps(undefined, ref)
 
-    const checkbox = getCheckboxProps({})
+    const checkbox = getCheckboxProps()
 
     const handleSelect = useCallback(() => {
-      if (props.isChecked && input.onChange) {
-        // eslint-disable-next-line @typescript-eslint/no-extra-semi
-        ;(input.onChange as UseRadioGroupReturn['onChange'])('')
+      if (props.isChecked) {
+        props.onChange?.('')
       }
-    }, [input.onChange, props.isChecked])
+    }, [props])
 
     const handleSpacebar = useCallback(
       (e: KeyboardEvent<HTMLInputElement>) => {
@@ -120,8 +127,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
     const [noProps, yesProps] = useMemo(() => {
       const baseProps = {
         enterKeyHint: '',
-        disabled: isDisabled,
-        id: props.name,
+        isDisabled,
       }
       return [
         getRadioProps({
@@ -133,7 +139,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           ...baseProps,
         }),
       ]
-    }, [getRadioProps, isDisabled, props.name])
+    }, [getRadioProps, isDisabled])
 
     return (
       // -1px so borders collapse
