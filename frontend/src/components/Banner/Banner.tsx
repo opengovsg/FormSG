@@ -22,7 +22,10 @@ export interface BannerProps {
   children: string
 }
 
-export const Banner = ({ variant, children }: BannerProps): JSX.Element => {
+export const Banner = ({
+  variant = 'info',
+  children,
+}: BannerProps): JSX.Element => {
   const { isOpen, onToggle } = useDisclosure({
     defaultIsOpen: true,
   })
