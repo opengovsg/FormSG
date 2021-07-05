@@ -31,10 +31,12 @@ function configureMobileDirective() {
       '$translate',
       'Toastr',
       function ($q, $uibModal, $scope, $translate, Toastr) {
-        // Get support form link from translation json.
-        $translate('LINKS.TWILIO_SETUP_LINK').then((twilioSetupLink) => {
-          $scope.twilioSetupLink = twilioSetupLink
-        })
+        // Get the link for onboarding the form from the translation json
+        $translate('LINKS.VERIFIED_SMS_SETUP_LINK').then(
+          (verifiedSmsSetupLink) => {
+            $scope.verifiedSmsSetupLink = verifiedSmsSetupLink
+          },
+        )
 
         // NOTE: This is set on scope as it is used by the UI to determine if the toggle is loading
         $scope.isLoading = true
@@ -63,7 +65,6 @@ function configureMobileDirective() {
             $scope.field.hasAdminExceededSmsLimit =
               $scope.adminVerifiedSmsState ===
               ADMIN_VERIFIED_SMS_STATES.limitExceeded
-            $scope.field.hasRetrievalError = false
           })
           .catch((error) => {
             $scope.field.hasRetrievalError = true
@@ -109,7 +110,7 @@ function configureMobileDirective() {
                     We provide SMS OTP verification for free up to 10,000 responses. OTP verification will be automatically disabled when your account reaches 10,000 responses. 
                     <br></br>
                     If you require OTP verification for more than 10,000 responses,
-                    <a href=${$scope.twilioSetupLink} target="_blank" class=""> please arrange advance billing with us. </a>  
+                    <a href=${$scope.verifiedSmsSetupLink} target="_blank" class=""> please arrange advance billing with us. </a>  
 
                     <br></br>
                     <small>Current response count: ${$scope.verifiedSmsCount}/${SMS_VERIFICATION_LIMIT}</small>

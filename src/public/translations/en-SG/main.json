@@ -18,7 +18,7 @@
     "GO_GOV": "https://go.gov.sg",
     "POSTMAN_GOV": "https://postman.gov.sg",
     "SUPPORT_FORM_LINK": "https://go.gov.sg/formsg-support",
-    "TWILIO_SETUP_LINK": "https://go.gov.sg/form-twilio-setup",
+    "VERIFIED_SMS_SETUP_LINK": "https://go.gov.sg/form-twilio-setup",
     "WHITELISTED_ATTACHMENT_TYPES": "https://go.gov.sg/formsg-cwl",
     "SINGPASS_ELIGIBILITY_FAQ": "https://www.ifaq.gov.sg/SINGPASS/apps/Fcd_faqmain.aspx#FAQ_2101385",
     "ESERVICE_ID_FAQ": "https://go.gov.sg/formsg-spcp",
