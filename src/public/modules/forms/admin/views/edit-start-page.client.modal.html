@@ -79,7 +79,7 @@
                   >
                   <span id="image-size"
                     >{{
-                    (vm.myform.startPage.logo.fileSizeInBytes/1000000).toFixed(2)
+                    (vm.myform.startPage.logo.fileSizeInBytes/vm.MB).toFixed(2)
                     }} MB</span
                   >
                 </div>
@@ -110,6 +110,28 @@
         >
           <i class="bx bx-exclamation bx-md icon-spacing"></i>
           <span class="alert-msg">Please upload a logo</span>
+        </div>
+
+        <div class="row"><br /></div>
+
+        <div class="row description">
+          <div class="col-md-12 label-custom label-medium label-bottom">
+            Color Theme
+          </div>
+          <div class="col-md-12 color-field">
+            <div ng-repeat="color in vm.colorThemes">
+              <label
+                ng-class="vm.myform.startPage.colorTheme === '{{color}}' ? 'selected-color-field' : ''"
+                class="{{color}}"
+              >
+                <input
+                  type="radio"
+                  value="{{color}}"
+                  ng-model="vm.myform.startPage.colorTheme"
+                />
+              </label>
+            </div>
+          </div>
         </div>
 
         <div class="row"><br /></div>
@@ -164,29 +186,8 @@
               ng-model="vm.myform.startPage.paragraph"
               placeholder="e.g. 1) You will require your sales receipt to fill this reimbursement form."
               name="paragraph"
+              rows="12"
             ></textarea>
-          </div>
-        </div>
-
-        <div class="row"><br /></div>
-
-        <div class="row description">
-          <div class="col-md-12 label-custom label-medium label-bottom">
-            Color Theme
-          </div>
-          <div class="col-md-12 color-field">
-            <div ng-repeat="color in vm.colorThemes">
-              <label
-                ng-class="vm.myform.startPage.colorTheme === '{{color}}' ? 'selected-color-field' : ''"
-                class="{{color}}"
-              >
-                <input
-                  type="radio"
-                  value="{{color}}"
-                  ng-model="vm.myform.startPage.colorTheme"
-                />
-              </label>
-            </div>
           </div>
         </div>
 

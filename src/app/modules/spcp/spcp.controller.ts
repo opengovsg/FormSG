@@ -5,11 +5,11 @@ import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
-import { BillingFactory } from '../billing/billing.factory'
+import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
-import { SpcpFactory } from './spcp.factory'
+import { SpcpService } from './spcp.service'
 import { JwtName } from './spcp.types'
 import { mapRouteError } from './spcp.util'
 
@@ -38,7 +38,7 @@ export const handleRedirect: ControllerHandler<
     target,
     esrvcId,
   }
-  return SpcpFactory.createRedirectUrl(authType, target, esrvcId)
+  return SpcpService.createRedirectUrl(authType, target, esrvcId)
     .map((redirectURL) => {
       return res.status(StatusCodes.OK).json({ redirectURL })
     })
@@ -69,9 +69,9 @@ export const handleValidate: ControllerHandler<
   }
 > = (req, res) => {
   const { target, authType, esrvcId } = req.query
-  return SpcpFactory.createRedirectUrl(authType, target, esrvcId)
-    .asyncAndThen(SpcpFactory.fetchLoginPage)
-    .andThen(SpcpFactory.validateLoginPage)
+  return SpcpService.createRedirectUrl(authType, target, esrvcId)
+    .asyncAndThen(SpcpService.fetchLoginPage)
+    .andThen(SpcpService.validateLoginPage)
     .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
       logger.error({
@@ -109,7 +109,7 @@ export const handleLogin: (
     samlArt: SAMLart,
     relayState: RelayState,
   }
-  const parseResult = SpcpFactory.parseOOBParams(SAMLart, RelayState, authType)
+  const parseResult = SpcpService.parseOOBParams(SAMLart, RelayState, authType)
   if (parseResult.isErr()) {
     logger.error({
       message: 'Invalid SPCP login parameters',
@@ -141,16 +141,16 @@ export const handleLogin: (
     res.cookie('isLoginError', true)
     return res.redirect(destination)
   }
-  const jwtResult = await SpcpFactory.getSpcpAttributes(
+  const jwtResult = await SpcpService.getSpcpAttributes(
     SAMLart,
     destination,
     authType,
   )
     .andThen((attributes) =>
-      SpcpFactory.createJWTPayload(attributes, rememberMe, authType),
+      SpcpService.createJWTPayload(attributes, rememberMe, authType),
     )
     .andThen((jwtPayload) =>
-      SpcpFactory.createJWT(jwtPayload, cookieDuration, authType),
+      SpcpService.createJWT(jwtPayload, cookieDuration, authType),
     )
   if (jwtResult.isErr()) {
     logger.error({
@@ -161,14 +161,14 @@ export const handleLogin: (
     res.cookie('isLoginError', true)
     return res.redirect(destination)
   }
-  return BillingFactory.recordLoginByForm(form)
+  return BillingService.recordLoginByForm(form)
     .map(() => {
       res.cookie(JwtName[authType], jwtResult.value, {
         maxAge: cookieDuration,
         httpOnly: false, // the JWT needs to be read by client-side JS
         sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
         secure: !config.isDev,
-        ...SpcpFactory.getCookieSettings(),
+        ...SpcpService.getCookieSettings(),
       })
       return res.redirect(destination)
     })

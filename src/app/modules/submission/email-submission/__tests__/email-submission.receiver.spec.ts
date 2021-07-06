@@ -5,7 +5,7 @@ import { IncomingHttpHeaders } from 'http'
 import { pick } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
-import { MB } from 'src/app/constants/filesize'
+import { MB } from 'src/shared/constants'
 import { BasicField } from 'src/types'
 
 import {
@@ -52,8 +52,8 @@ describe('email-submission.receiver', () => {
       expect(MockBusboy).toHaveBeenCalledWith({
         headers: MOCK_HEADERS,
         limits: {
-          fieldSize: 3 * 1048576,
-          fileSize: 7 * 1048576,
+          fieldSize: 3 * MB,
+          fileSize: 7 * MB,
         },
       })
       expect(result._unsafeUnwrap()).toEqual(MOCK_BUSBOY)
@@ -71,8 +71,8 @@ describe('email-submission.receiver', () => {
       expect(MockBusboy).toHaveBeenCalledWith({
         headers: MOCK_HEADERS,
         limits: {
-          fieldSize: 3 * 1048576,
-          fileSize: 7 * 1048576,
+          fieldSize: 3 * MB,
+          fileSize: 7 * MB,
         },
       })
       expect(result._unsafeUnwrapErr()).toEqual(

@@ -34,12 +34,12 @@
       placeholder="e.g. leo@data.gov.sg, john@data.gov.sg"
       ng-model="vm.formData.emails"
       name="emailList"
-      ng-required="true"
-      ng-change="vm.validateEmails(vm.formData.emails)"
+      ng-required="vm.formData.responseMode === 'email'"
       autocomplete="off"
       ng-keyup="($event.keyCode === 13 && vm.formController.emailList.$valid) && vm.saveForm()"
       ng-blur="vm.saveForm()"
       ng-class="vm.formController.emailList.$valid ? '' : 'input-error'"
+      validate-form-emails-input
     />
   </div>
 
@@ -52,9 +52,29 @@
   </div>
   <div
     ng-show="vm.formController.emailList.$invalid && vm.formController.emailList.$dirty"
+    ng-messages="vm.formController.emailList.$error"
     class="alert-custom alert-error"
   >
-    <i class="bx bx-exclamation bx-md icon-spacing"></i>
-    <span class="alert-msg">{{vm.emailErrorMsg}}</span>
+    <div ng-message="required">
+      <i class="bx bx-exclamation bx-md icon-spacing"></i>
+      <span class="alert-msg"
+        >You must at least enter one email to receive responses</span
+      >
+    </div>
+    <div ng-message="validEmails">
+      <i class="bx bx-exclamation bx-md icon-spacing"></i>
+      <span class="alert-msg"
+        >Please enter valid email(s) (e.g. me@example.com) separated by
+        commas</span
+      >
+    </div>
+    <div ng-message="duplicateEmails">
+      <i class="bx bx-exclamation bx-md icon-spacing"></i>
+      <span class="alert-msg">Please remove duplicate emails</span>
+    </div>
+    <div ng-message="maxNumEmails">
+      <i class="bx bx-exclamation bx-md icon-spacing"></i>
+      <span class="alert-msg">Please limit number of emails to 30</span>
+    </div>
   </div>
 </div>

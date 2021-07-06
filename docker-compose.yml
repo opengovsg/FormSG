@@ -33,11 +33,6 @@ services:
       - SEND_AUTH_OTP_RATE_LIMIT=60
       - SES_PORT=25
       - SES_HOST=maildev
-      - MYINFO_CLIENT_CONFIG=dev
-      - MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-      - MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
-      - MYINFO_CLIENT_ID=mockClientId
-      - MYINFO_CLIENT_SECRET=mockClientSecret
       - WEBHOOK_SQS_URL=http://localhost:4566/000000000000/local-webhooks-sqs-main
       - INTRANET_IP_LIST_PATH
       - SENTRY_CONFIG_URL=https://random@sentry.io/123456
@@ -45,36 +40,49 @@ services:
       # This needs to be removed and replaced with a real tracking ID in a local .env file
       # in order to enable GA in a local environment
       - GA_TRACKING_ID=mockGATrackingId
-      - TWILIO_ACCOUNT_SID
-      - TWILIO_API_KEY
-      - TWILIO_API_SECRET
-      - TWILIO_MESSAGING_SERVICE_SID
+      # Test credentials from reCAPTCHA docs
+      # https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
+      - GOOGLE_CAPTCHA=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+      - GOOGLE_CAPTCHA_PUBLIC=6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
+      # Keep in sync with the development key in
+      # https://github.com/opengovsg/formsg-javascript-sdk/blob/develop/src/resource/verification-keys.ts
+      - VERIFICATION_SECRET_KEY=iGkfOuI6uxrlfw+7CZFFUZBwk86I+pu6v+g7EWA6qJpJnilXQleCPx2EVTr24eWWphzFO2WJiaL53oyXnqWdBQ==
+      # Keep in sync with the development key in
+      # https://github.com/opengovsg/formsg-javascript-sdk/blob/develop/src/resource/signing-keys.ts
+      - SIGNING_SECRET_KEY=HDBXpu+2/gu10bLHpy8HjpN89xbA6boH9GwibPGJA8BOXmB+zOUpxCP33/S5p8vBWlPokC7gLR0ca8urVwfMUQ==
+      # Mock Twilio credentials. SMSes do not work in dev environment.
+      - TWILIO_ACCOUNT_SID=ACmockTwilioAccountSid
+      - TWILIO_API_KEY=mockTwilioApiKey
+      - TWILIO_API_SECRET=mockTwilioApiSecret
+      - TWILIO_MESSAGING_SERVICE_SID=mockTwilioMsgSrvcSid
+      # Use mockpass key pairs and endpoints
+      - SP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
+      - SP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
+      - SP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
+      - SINGPASS_IDP_LOGIN_URL=http://localhost:5156/singpass/logininitial
+      - SINGPASS_IDP_ENDPOINT=http://localhost:5156/singpass/soap
+      - SINGPASS_ESRVC_ID=spEsrvcId
+      - SINGPASS_PARTNER_ENTITY_ID=https://localhost:5000/singpass
+      - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
+      - CP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
+      - CP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
+      - CP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
+      - CORPPASS_IDP_LOGIN_URL=http://localhost:5156/corppass/logininitial
+      - CORPPASS_IDP_ENDPOINT=http://localhost:5156/corppass/soap
+      - CORPPASS_PARTNER_ENTITY_ID=https://localhost:5000/corppass
+      - CORPPASS_ESRVC_ID=cpEsrvcId
+      - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
+      - IS_SP_MAINTENANCE
+      - IS_CP_MAINTENANCE
+      - MYINFO_CLIENT_CONFIG=dev
+      - MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
+      - MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
+      - MYINFO_CLIENT_ID=mockClientId
+      - MYINFO_CLIENT_SECRET=mockClientSecret
       - SES_PASS
       - SES_USER
       - OTP_LIFE_SPAN
       - AWS_REGION
-      - GOOGLE_CAPTCHA
-      - GOOGLE_CAPTCHA_PUBLIC
-      - SIGNING_SECRET_KEY
-      - VERIFICATION_SECRET_KEY
-      - SP_FORMSG_KEY_PATH
-      - SP_FORMSG_CERT_PATH
-      - SP_IDP_CERT_PATH
-      - SINGPASS_IDP_LOGIN_URL
-      - SINGPASS_IDP_ENDPOINT
-      - SINGPASS_ESRVC_ID
-      - SINGPASS_PARTNER_ENTITY_ID
-      - SINGPASS_IDP_ID
-      - CP_FORMSG_KEY_PATH
-      - CP_FORMSG_CERT_PATH
-      - CP_IDP_CERT_PATH
-      - CORPPASS_IDP_LOGIN_URL
-      - CORPPASS_IDP_ENDPOINT
-      - CORPPASS_PARTNER_ENTITY_ID
-      - CORPPASS_ESRVC_ID
-      - CORPPASS_IDP_ID
-      - IS_SP_MAINTENANCE
-      - IS_CP_MAINTENANCE
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git

@@ -18,19 +18,17 @@ import {
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
-import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
+import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
+import * as CaptchaService from '../../../services/captcha/captcha.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
-import {
-  MalformedParametersError,
-  MissingFeatureError,
-} from '../../core/core.errors'
+import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
-import { SpcpFactory } from '../../spcp/spcp.factory'
+import { SpcpService } from '../../spcp/spcp.service'
 import { getPopulatedUserById } from '../../user/user.service'
-import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
+import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import { sendEmailConfirmations } from '../submission.service'
@@ -131,7 +129,7 @@ const submitEncryptModeForm: ControllerHandler<
 
   // Check captcha
   if (form.hasCaptcha) {
-    const captchaResult = await CaptchaFactory.verifyCaptchaResponse(
+    const captchaResult = await CaptchaService.verifyCaptchaResponse(
       req.query.captchaResponse,
       getRequestIp(req),
     )
@@ -200,10 +198,10 @@ const submitEncryptModeForm: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     }
     case AuthType.SP: {
-      const jwtPayloadResult = await SpcpFactory.extractJwt(
+      const jwtPayloadResult = await SpcpService.extractJwt(
         req.cookies,
         authType,
-      ).asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
+      ).asyncAndThen((jwt) => SpcpService.extractSingpassJwtPayload(jwt))
       if (jwtPayloadResult.isErr()) {
         const { statusCode, errorMessage } = mapRouteError(
           jwtPayloadResult.error,
@@ -222,10 +220,10 @@ const submitEncryptModeForm: ControllerHandler<
       break
     }
     case AuthType.CP: {
-      const jwtPayloadResult = await SpcpFactory.extractJwt(
+      const jwtPayloadResult = await SpcpService.extractJwt(
         req.cookies,
         authType,
-      ).asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
+      ).asyncAndThen((jwt) => SpcpService.extractCorppassJwtPayload(jwt))
       if (jwtPayloadResult.isErr()) {
         const { statusCode, errorMessage } = mapRouteError(
           jwtPayloadResult.error,
@@ -250,11 +248,11 @@ const submitEncryptModeForm: ControllerHandler<
   let verified
   if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
     const encryptVerifiedContentResult =
-      VerifiedContentFactory.getVerifiedContent({
+      VerifiedContentService.getVerifiedContent({
         type: form.authType,
         data: { uinFin, userInfo },
       }).andThen((verifiedContent) =>
-        VerifiedContentFactory.encryptVerifiedContent({
+        VerifiedContentService.encryptVerifiedContent({
           verifiedContent,
           formPublicKey: form.publicKey,
         }),
@@ -268,12 +266,9 @@ const submitEncryptModeForm: ControllerHandler<
         error,
       })
 
-      // Passthrough if feature is not activated.
-      if (!(error instanceof MissingFeatureError)) {
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .json({ message: 'Invalid data was found. Please submit again.' })
-      }
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: 'Invalid data was found. Please submit again.' })
     } else {
       // No errors, set local variable to the encrypted string.
       verified = encryptVerifiedContentResult.value
@@ -373,6 +368,7 @@ const submitEncryptModeForm: ControllerHandler<
 }
 
 export const handleEncryptedSubmission = [
+  CaptchaMiddleware.validateCaptchaParams,
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   submitEncryptModeForm,
 ] as ControllerHandler[]

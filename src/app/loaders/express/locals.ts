@@ -1,10 +1,10 @@
 import ejs from 'ejs'
-import { get } from 'lodash'
 
 import config from '../../config/config'
-import featureManager, { FeatureNames } from '../../config/feature-manager'
-import { googleAnalyticsConfig } from '../../config/feature-manager/google-analytics.config'
-import { sentryConfig } from '../../config/feature-manager/sentry.config'
+import { captchaConfig } from '../../config/features/captcha.config'
+import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
+import { sentryConfig } from '../../config/features/sentry.config'
+import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
 // Construct js with environment variables needed by frontend
 const frontendVars = {
@@ -14,28 +14,12 @@ const frontendVars = {
   adminBannerContent: config.adminBannerContent,
   logoBucketUrl: config.aws.logoBucketUrl, // S3 bucket
   formsgSdkMode: config.formsgSdkMode,
-  captchaPublicKey: get(
-    featureManager.props(FeatureNames.Captcha),
-    'captchaPublicKey',
-    null,
-  ), // Recaptcha
+  captchaPublicKey: captchaConfig.captchaPublicKey, // Recaptcha
   sentryConfigUrl: sentryConfig.sentryConfigUrl, // Sentry.IO
-  isSPMaintenance: get(
-    featureManager.props(FeatureNames.SpcpMyInfo),
-    'isSPMaintenance',
-    null,
-  ), // Singpass maintenance message
-  isCPMaintenance: get(
-    featureManager.props(FeatureNames.SpcpMyInfo),
-    'isCPMaintenance',
-    null,
-  ), // Corppass maintenance message
+  isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
+  isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
   GATrackingID: googleAnalyticsConfig.GATrackingID,
-  spcpCookieDomain: get(
-    featureManager.props(FeatureNames.SpcpMyInfo),
-    'spcpCookieDomain',
-    null,
-  ), // Cookie domain used for removing spcp cookies
+  spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
 }
 const environment = ejs.render(
   `

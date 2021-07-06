@@ -17,6 +17,7 @@ import createSectionFieldSchema from './sectionField'
 import createShortTextFieldSchema from './shortTextField'
 import createStatementFieldSchema from './statementField'
 import createTableFieldSchema from './tableField'
+import createUenFieldSchema from './uenField'
 import createYesNoFieldSchema from './yesNoField'
 
 export {
@@ -38,6 +39,7 @@ export {
   createShortTextFieldSchema,
   createStatementFieldSchema,
   createTableFieldSchema,
+  createUenFieldSchema,
   createYesNoFieldSchema,
   BaseFieldSchema,
 }

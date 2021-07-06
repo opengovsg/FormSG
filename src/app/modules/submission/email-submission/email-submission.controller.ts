@@ -7,7 +7,8 @@ import {
   SubmissionResponseDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
+import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
+import * as CaptchaService from '../../../services/captcha/captcha.service'
 import MailService from '../../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
@@ -16,9 +17,9 @@ import {
   MYINFO_COOKIE_NAME,
   MYINFO_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
-import { MyInfoFactory } from '../../myinfo/myinfo.factory'
+import { MyInfoService } from '../../myinfo/myinfo.service'
 import * as MyInfoUtil from '../../myinfo/myinfo.util'
-import { SpcpFactory } from '../../spcp/spcp.factory'
+import { SpcpService } from '../../spcp/spcp.service'
 import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
@@ -102,7 +103,7 @@ const submitEmailModeForm: ControllerHandler<
       .andThen((form) => {
         // Check the captcha
         if (form.hasCaptcha) {
-          return CaptchaFactory.verifyCaptchaResponse(
+          return CaptchaService.verifyCaptchaResponse(
             req.query.captchaResponse,
             getRequestIp(req),
           )
@@ -152,8 +153,8 @@ const submitEmailModeForm: ControllerHandler<
         const { authType } = form
         switch (authType) {
           case AuthType.CP:
-            return SpcpFactory.extractJwt(req.cookies, authType)
-              .asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
+            return SpcpService.extractJwt(req.cookies, authType)
+              .asyncAndThen((jwt) => SpcpService.extractCorppassJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: [
@@ -171,8 +172,8 @@ const submitEmailModeForm: ControllerHandler<
                 return error
               })
           case AuthType.SP:
-            return SpcpFactory.extractJwt(req.cookies, authType)
-              .asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
+            return SpcpService.extractJwt(req.cookies, authType)
+              .asyncAndThen((jwt) => SpcpService.extractSingpassJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: [
@@ -193,12 +194,12 @@ const submitEmailModeForm: ControllerHandler<
             return MyInfoUtil.extractMyInfoCookie(req.cookies)
               .andThen(MyInfoUtil.extractAccessTokenFromCookie)
               .andThen((accessToken) =>
-                MyInfoFactory.extractUinFin(accessToken),
+                MyInfoService.extractUinFin(accessToken),
               )
               .asyncAndThen((uinFin) =>
-                MyInfoFactory.fetchMyInfoHashes(uinFin, formId)
+                MyInfoService.fetchMyInfoHashes(uinFin, formId)
                   .andThen((hashes) =>
-                    MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
+                    MyInfoService.checkMyInfoHashes(parsedResponses, hashes),
                   )
                   .map<IPopulatedEmailFormWithResponsesAndHash>(
                     (hashedFields) => ({
@@ -345,6 +346,7 @@ const submitEmailModeForm: ControllerHandler<
 }
 
 export const handleEmailSubmission = [
+  CaptchaMiddleware.validateCaptchaParams,
   EmailSubmissionMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailModeForm,

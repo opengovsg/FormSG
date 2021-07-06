@@ -102,12 +102,19 @@ const createFormValidator = celebrate({
         title: Joi.string().min(4).max(200).required(),
         // Require emails string (for backwards compatibility) or string
         // array if form to be created in Email mode.
-        emails: Joi.alternatives()
-          .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-          .when('responseMode', {
-            is: ResponseMode.Email,
-            then: Joi.required(),
-          }),
+        emails: Joi.when('responseMode', {
+          is: ResponseMode.Email,
+          then: Joi.alternatives()
+            .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+            .required(),
+          // TODO (#2264): disallow the 'emails' key when responseMode is not Email
+          // Allow old clients to send this key but optionally and without restrictions
+          // on array length or type
+          otherwise: Joi.alternatives().try(
+            Joi.array(),
+            Joi.string().allow(''),
+          ),
+        }),
         // Require publicKey field if form to be created in Storage mode.
         publicKey: Joi.string()
           .allow('')
@@ -132,12 +139,16 @@ const duplicateFormValidator = celebrate({
     title: Joi.string().min(4).max(200).required(),
     // Require emails string (for backwards compatibility) or string array
     // if form to be duplicated in Email mode.
-    emails: Joi.alternatives()
-      .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-      .when('responseMode', {
-        is: ResponseMode.Email,
-        then: Joi.required(),
-      }),
+    emails: Joi.when('responseMode', {
+      is: ResponseMode.Email,
+      then: Joi.alternatives()
+        .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+        .required(),
+      // TODO (#2264): disallow the 'emails' key when responseMode is not Email
+      // Allow old clients to send this key but optionally and without restrictions
+      // on array length or type
+      otherwise: Joi.alternatives().try(Joi.array(), Joi.string().allow('')),
+    }),
     // Require publicKey field if form to be duplicated in Storage mode.
     publicKey: Joi.string()
       .allow('')
@@ -2270,8 +2281,6 @@ export const handleUpdateCollaborators = [
           .email()
           .message('Please enter a valid email'),
         write: Joi.bool().optional(),
-        // TODO(#2177): Deprecated field in very old documents, remove when migration happens.
-        read: Joi.bool().optional(),
         _id: Joi.string().optional(),
       }),
     ),

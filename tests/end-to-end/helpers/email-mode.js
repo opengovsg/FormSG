@@ -44,7 +44,7 @@ const verifySubmission = async (t, testFormData, authData) => {
   await t.expect(from).eql('FormSG <donotreply@mail.form.gov.sg>')
 
   // Verify subject of email
-  await t.expect(subject).contains(`formsg-auto: ${title} (Ref:`)
+  await t.expect(subject).contains(`formsg-auto: ${title} (#`)
   // Verify form content in email
   for (let field of formFields) {
     const contained = [
@@ -66,7 +66,7 @@ const verifySubmission = async (t, testFormData, authData) => {
   await t.expect(emailJSONStr).notEql(null)
   const emailJSON = JSON.parse(decodeHtmlEntities(emailJSONStr))
   const response = emailJSON.filter(
-    ({ question }) => !/(Reference Number|Timestamp)/.test(question),
+    ({ question }) => !/(Response ID|Timestamp)/.test(question),
   )
   await t.expect(response.length).notEql(0)
   let rowIdx = 0 // A table could result in multiple rows of answers, so there might be more answers than form fields

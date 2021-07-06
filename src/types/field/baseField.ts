@@ -54,5 +54,4 @@ export enum TextSelectedValidation {
   Maximum = 'Maximum',
   Minimum = 'Minimum',
   Exact = 'Exact',
-  Range = 'Range', // TODO(#408) - questionable value
 }

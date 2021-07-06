@@ -9,6 +9,7 @@ const UserService = require('../../../../services/UserService')
 const {
   VALID_UPLOAD_FILE_TYPES,
   MAX_UPLOAD_FILE_SIZE,
+  MB,
 } = require('shared/constants')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 const { uploadImage } = require('../../../../services/FileHandlerService')
@@ -227,8 +228,6 @@ function EditFieldsModalController(
   vm.clearCustomValidation = function (field) {
     field.ValidationOptions = {
       selectedValidation: null,
-      customMax: null,
-      customMin: null,
       customVal: null,
     }
   }
@@ -236,20 +235,9 @@ function EditFieldsModalController(
     let temp = field.ValidationOptions.selectedValidation
     // Reset all custom validation params to null, keep selected validation option
     field.ValidationOptions = {
-      customMax: null,
-      customMin: null,
       customVal: null,
       selectedValidation: temp,
     }
-  }
-
-  vm.changeFxn = function (field) {
-    let selected = field.ValidationOptions.selectedValidation
-    let val = field.ValidationOptions.customVal
-    field.ValidationOptions.customMax =
-      selected === 'Maximum' || selected === 'Exact' ? val : null
-    field.ValidationOptions.customMin =
-      selected === 'Minimum' || selected === 'Exact' ? val : null
   }
 
   vm.setFocus = function () {
@@ -559,8 +547,8 @@ function EditFieldsModalController(
       field.uploadedFile = ''
       switch (ngfError.$error) {
         case 'maxSize':
-          vm.uploadError = `${(ngfError.size / 1000000).toFixed(2)} MB / ${
-            vm.maxImageSize / 1000000
+          vm.uploadError = `${(ngfError.size / MB).toFixed(2)} MB / ${
+            vm.maxImageSize / MB
           } MB: File size exceeded`
           break
         case 'resize':
@@ -585,7 +573,7 @@ function EditFieldsModalController(
           field.url = result.url
           field.fileMd5Hash = result.fileMd5Hash
           field.name = result.name
-          field.size = `${(result.size / 1000000).toFixed(2)} MB`
+          field.size = `${(result.size / MB).toFixed(2)} MB`
         })
         .catch((uploadError) => {
           // This is a reference to the ng-model of the upload button, which points to the uploaded file

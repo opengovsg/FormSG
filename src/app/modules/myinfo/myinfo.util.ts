@@ -6,6 +6,7 @@ import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
 import { types as myInfoTypes } from '../../../shared/resources/myinfo'
+import { hasProp } from '../../../shared/util/has-prop'
 import {
   AuthType,
   BasicField,
@@ -16,8 +17,7 @@ import {
   MapRouteError,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
-import { hasProp } from '../../utils/has-prop'
-import { DatabaseError, MissingFeatureError } from '../core/core.errors'
+import { DatabaseError } from '../core/core.errors'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
@@ -127,7 +127,6 @@ export const compareHashedValues = (
  */
 export const mapVerifyMyInfoError: MapRouteError = (error) => {
   switch (error.constructor) {
-    case MissingFeatureError:
     case MyInfoHashingError:
     case DatabaseError:
       return {
@@ -184,7 +183,6 @@ export const mapRedirectURLError: MapRouteError = (
           'This form does not have MyInfo enabled. Please refresh and try again.',
       }
     case DatabaseError:
-    case MissingFeatureError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,
@@ -239,7 +237,6 @@ export const mapEServiceIdCheckError: MapRouteError = (
         errorMessage: 'Failed to contact SingPass. Please try again.',
       }
     case DatabaseError:
-    case MissingFeatureError:
     case CreateRedirectUrlError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,

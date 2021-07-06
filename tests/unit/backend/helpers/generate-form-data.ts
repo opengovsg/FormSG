@@ -376,8 +376,6 @@ export const generateTableShortTextColumn = (
     required: true,
     _id: new ObjectId().toHexString(),
     ValidationOptions: {
-      customMax: null,
-      customMin: null,
       customVal: null,
       selectedValidation: null,
     },
@@ -390,8 +388,6 @@ export const generateTableShortTextColumn = (
         required: true,
         _id: new ObjectId().toHexString(),
         ValidationOptions: {
-          customMax: null,
-          customMin: null,
           customVal: null,
           selectedValidation: null,
         },

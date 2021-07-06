@@ -21,7 +21,6 @@ import {
   DatabasePayloadSizeError,
   DatabaseValidationError,
   MalformedParametersError,
-  MissingFeatureError,
 } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 
@@ -193,7 +192,6 @@ export const mapRouteError: MapRouteError = (
       }
     case HashingError:
     case DatabaseError:
-    case MissingFeatureError:
       return {
         errorMessage: coreErrorMsg,
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
