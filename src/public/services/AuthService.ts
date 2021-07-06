@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Opaque } from 'type-fest'
 
-import { User } from '../../types/api/user'
+import { UserDto } from '~shared/types/user'
 
 // Exported for testing.
 export const AUTH_ENDPOINT = '/api/v3/auth'
@@ -44,9 +44,9 @@ export const sendLoginOtp = async (email: Email): Promise<string> => {
 export const verifyLoginOtp = async (params: {
   otp: string
   email: string
-}): Promise<User> => {
+}): Promise<UserDto> => {
   return axios
-    .post<User>(`${AUTH_ENDPOINT}/otp/verify`, params)
+    .post<UserDto>(`${AUTH_ENDPOINT}/otp/verify`, params)
     .then(({ data }) => data)
 }
 

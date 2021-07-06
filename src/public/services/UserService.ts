@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { User } from '../../types/api/user'
+import { UserDto } from '~shared/types/user'
 
 /** Exported for testing */
 export const STORAGE_USER_KEY = 'user'
@@ -13,12 +13,12 @@ export const USER_ENDPOINT = '/api/v3/user'
  *
  * @returns user if available, null otherwise
  */
-export const getUserFromLocalStorage = (): User | null => {
+export const getUserFromLocalStorage = (): UserDto | null => {
   const userStringified = localStorage.getItem(STORAGE_USER_KEY)
 
   if (userStringified) {
     try {
-      return User.parse(JSON.parse(userStringified))
+      return UserDto.parse(JSON.parse(userStringified))
     } catch (error) {
       // Invalid shape, clear from storage.
       clearUserFromLocalStorage()
@@ -34,7 +34,7 @@ export const getUserFromLocalStorage = (): User | null => {
  *
  * @param user the user to save to local storage
  */
-export const saveUserToLocalStorage = (user: User): void => {
+export const saveUserToLocalStorage = (user: UserDto): void => {
   localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user))
 }
 
@@ -53,6 +53,6 @@ export const clearUserFromLocalStorage = (): void => {
  * Side effect: On error, clear the user (if any) from localStorage.
  * @returns the logged in user if session is valid, `null` otherwise
  */
-export const fetchUser = async (): Promise<User | null> => {
-  return axios.get<User>(USER_ENDPOINT).then(({ data }) => data)
+export const fetchUser = async (): Promise<UserDto | null> => {
+  return axios.get<UserDto>(USER_ENDPOINT).then(({ data }) => data)
 }
