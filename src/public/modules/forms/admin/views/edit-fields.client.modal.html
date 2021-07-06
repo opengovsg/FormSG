@@ -1188,7 +1188,7 @@
               <input
                 type="number"
                 ng-model="vm.field.ValidationOptions.rangeMax"
-                min="0"
+                min="{{ vm.field.ValidationOptions.rangeMin || 0 }}"
                 class="input-custom input-medium"
                 placeholder="Max"
                 ng-change="vm.changeFxn(vm.field)"
