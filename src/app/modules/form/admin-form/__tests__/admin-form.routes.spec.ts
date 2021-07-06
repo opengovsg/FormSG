@@ -2529,7 +2529,9 @@ describe('admin-form.routes', () => {
 
       // Assert
       expect(response.status).toEqual(410)
-      expect(response.body).toEqual({ message: 'Form has been deleted' })
+      expect(response.body).toEqual({
+        message: 'This form is no longer active',
+      })
     })
 
     it('should return 500 when database error occurs whilst retrieving form', async () => {
@@ -2879,7 +2881,7 @@ describe('admin-form.routes', () => {
       // Assert
       expect(response.status).toEqual(410)
       expect(response.body).toEqual({
-        message: 'Form has been deleted',
+        message: 'This form is no longer active',
       })
     })
 
