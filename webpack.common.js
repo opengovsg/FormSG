@@ -42,7 +42,6 @@ module.exports = [
     resolve: {
       alias: {
         shared: path.resolve(__dirname, 'src/shared/'),
-        '~shared': path.resolve(__dirname, 'shared/'),
       },
       extensions: ['.ts', '.js'],
     },

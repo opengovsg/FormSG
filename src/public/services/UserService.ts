@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { UserDto } from '~shared/types/user'
+import { UserDto } from '../../../shared/types/user'
 
 /** Exported for testing */
 export const STORAGE_USER_KEY = 'user'

@@ -11,9 +11,6 @@ module.exports = {
       isolatedModules: true,
     },
   },
-  moduleNameMapper: {
-    '^~shared(.*)$': '<rootDir>/shared$1',
-  },
   clearMocks: true,
   setupFilesAfterEnv: ['jest-extended'],
   setupFiles: ['jest-localstorage-mock'],

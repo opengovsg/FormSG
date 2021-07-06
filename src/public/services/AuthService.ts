@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Opaque } from 'type-fest'
 
-import { UserDto } from '~shared/types/user'
+import { UserDto } from '../../../shared/types/user'
 
 // Exported for testing.
 export const AUTH_ENDPOINT = '/api/v3/auth'

@@ -1,8 +1,8 @@
 import { EnforceDocument, Model } from 'mongoose'
 
-import { PublicView } from './database'
+import { AgencyBase, PublicAgencyDto } from '../../shared/types/agency'
 
-import { AgencyBase, PublicAgencyDto } from '~shared/types/agency'
+import { PublicView } from './database'
 
 export type PublicAgency = PublicAgencyDto
 
