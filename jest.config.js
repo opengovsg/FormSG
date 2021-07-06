@@ -24,5 +24,8 @@ module.exports = {
       isolatedModules: true,
     },
   },
+  moduleNameMapper: {
+    '^~shared(.*)$': '<rootDir>/shared$1',
+  },
   setupFilesAfterEnv: ['jest-extended'],
 }
