@@ -4,13 +4,18 @@ export enum NumberSelectedValidation {
   Max = 'Maximum',
   Min = 'Minimum',
   Exact = 'Exact',
-  Range = 'Range',
+}
+
+export enum NumberValidationType {
+  Length = 'Length',
+  Value = 'Value',
 }
 
 export type NumberValidationOptions = {
   customVal: number | null
   rangeMin: number | null
   rangeMax: number | null
+  selectedValidationType: NumberValidationType | null
   selectedValidation: NumberSelectedValidation | null
 }
 

@@ -5,7 +5,10 @@ import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submis
 import { INumberField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 
-import { NumberSelectedValidation } from '../../../../types/field'
+import {
+  NumberSelectedValidation,
+  NumberValidationType,
+} from '../../../../types'
 
 import { notEmptySingleAnswerResponse } from './common'
 
@@ -107,8 +110,8 @@ const rangeValidator: NumberValidatorConstructor =
  * based on the number range validation option selected.
  */
 const getNumberRangeValidator: NumberValidatorConstructor = (numberField) => {
-  switch (numberField.ValidationOptions.selectedValidation) {
-    case NumberSelectedValidation.Range:
+  switch (numberField.ValidationOptions.selectedValidationType) {
+    case NumberValidationType.Value:
       return rangeValidator(numberField)
     default:
       return right

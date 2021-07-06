@@ -250,23 +250,49 @@ function EditFieldsModalController(
   }
 
   // Controls for custom validation
-  vm.customNumberValidationOptions = ['Maximum', 'Minimum', 'Exact', 'Range']
-  vm.clearCustomNumberValidation = function (field) {
+  vm.customNumberValidationTypes = ['Length', 'Value']
+  vm.customNumberValidationOptions = ['Maximum', 'Minimum', 'Exact']
+  vm.clearCustomNumberValidationType = function (field) {
     field.ValidationOptions = {
+      selectedValidationType: null,
       selectedValidation: null,
       customVal: null,
       rangeMin: null,
       rangeMax: null,
     }
   }
-  vm.resetCustomNumberValidationParams = function (field) {
-    let temp = field.ValidationOptions.selectedValidation
+  vm.clearCustomNumberValidation = function (field) {
+    const selectedValidationType =
+      field.ValidationOptions.selectedValidationType
+    field.ValidationOptions = {
+      selectedValidationType,
+      selectedValidation: null,
+      customVal: null,
+      rangeMin: null,
+      rangeMax: null,
+    }
+  }
+  vm.resetCustomNumberValidationParamsType = function (field) {
+    let selectedValidationType = field.ValidationOptions.selectedValidationType
     // Reset all custom validation params to null, keep selected validation option
     field.ValidationOptions = {
       customVal: null,
       rangeMin: null,
       rangeMax: null,
-      selectedValidation: temp,
+      selectedValidation: null,
+      selectedValidationType,
+    }
+  }
+  vm.resetCustomNumberValidationParams = function (field) {
+    let selectedValidation = field.ValidationOptions.selectedValidation
+    let selectedValidationType = field.ValidationOptions.selectedValidationType
+    // Reset all custom validation params to null, keep selected validation option
+    field.ValidationOptions = {
+      customVal: null,
+      rangeMin: null,
+      rangeMax: null,
+      selectedValidation,
+      selectedValidationType,
     }
   }
 
