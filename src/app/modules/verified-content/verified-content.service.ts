@@ -1,6 +1,7 @@
 import { err, ok, Result } from 'neverthrow'
 
 import { AuthType } from '../../../types'
+import { webhooksAndVerifiedContentConfig } from '../../config/features/webhook-verified-content.config'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 
@@ -35,21 +36,27 @@ export const getVerifiedContent = ({
       return getSpVerifiedContent(data)
     case AuthType.CP:
       return getCpVerifiedContent(data)
+    case AuthType.SGID:
+      return err(
+        new EncryptVerifiedContentError(
+          'Fields from sgID not currently supported',
+        ),
+      )
   }
 }
 
 export const encryptVerifiedContent = ({
   verifiedContent,
   formPublicKey,
-  signingSecretKey,
-}: EncryptVerificationContentParams & {
-  signingSecretKey: string
-}): Result<string, EncryptVerifiedContentError> => {
+}: EncryptVerificationContentParams): Result<
+  string,
+  EncryptVerifiedContentError
+> => {
   try {
     const encryptedContent = formsgSdk.crypto.encrypt(
       verifiedContent,
       formPublicKey,
-      signingSecretKey,
+      webhooksAndVerifiedContentConfig.signingSecretKey,
     )
     return ok(encryptedContent)
   } catch (error) {

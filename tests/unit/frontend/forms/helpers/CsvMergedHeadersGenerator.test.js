@@ -1,7 +1,7 @@
 import { stringify } from 'csv-string'
 import moment from 'moment-timezone'
-
-import CsvMergedHeadersGenerator from '../../../../../src/public/modules/forms/helpers/CsvMergedHeadersGenerator'
+import { getResponseInstance } from '../../../../../src/public/modules/forms/helpers/response-factory'
+import { CsvMergedHeadersGenerator } from '../../../../../src/public/modules/forms/helpers/CsvMergedHeadersGenerator'
 
 const UTF8_BYTE_ORDER_MARK = '\uFEFF'
 const BOM_LENGTH = 1
@@ -33,8 +33,19 @@ const generateHeaderRow = (append) => {
     question: `mockQuestion${append}`,
     fieldType: `mockFieldType${append}`,
     isHeader: true,
+    answer: '',
   }
 }
+
+const generateEmptyRecord = (append) => {
+  return {
+    _id: `mock${append}`,
+    question: `mockQuestion${append}`,
+    fieldType: `mockFieldType${append}`,
+  }
+}
+
+const expectedErrorMessage = 'Response did not match any known type'
 
 /**
  * Reshapes a mock record to match the expected shape in generator.unprocessed.
@@ -46,7 +57,7 @@ const generateHeaderRow = (append) => {
 const generateExpectedUnprocessed = (mockRecord) => {
   const reshapedRecord = {}
   mockRecord.record.forEach((fieldRecord) => {
-    reshapedRecord[fieldRecord._id] = { _data: fieldRecord }
+    reshapedRecord[fieldRecord._id] = getResponseInstance(fieldRecord)
   })
   return {
     created: mockRecord.created,
@@ -238,6 +249,79 @@ describe('CsvMergedHeadersGenerator', () => {
         expectedQuestionHeader,
       )
     })
+
+    it('should reject response without answer and answerArray', () => {
+      // Arrange
+      const mockDecryptedRecord = [generateEmptyRecord(1)]
+      const mockRecord = {
+        record: mockDecryptedRecord,
+        created: mockCreatedEarly,
+        submissionId: 'mockSubmissionId',
+      }
+      expect(generator.unprocessed.length).toEqual(0)
+
+      // Act
+      const addRecord = () => generator.addRecord(mockRecord)
+
+      // Assert
+      // Check error
+      expect(addRecord).toThrow(Error)
+      expect(addRecord).toThrow(expectedErrorMessage)
+      // Record should not be added
+      expect(generator.unprocessed.length).toEqual(0)
+      // Check headers
+      expect(generator.fieldIdToQuestion.size).toEqual(0)
+    })
+
+    it('should reject response with non-string answer', () => {
+      // Arrange
+      const invalidResponse = generateEmptyRecord(1)
+      invalidResponse.answer = 1
+      const mockDecryptedRecord = [invalidResponse]
+      const mockRecord = {
+        record: mockDecryptedRecord,
+        created: mockCreatedEarly,
+        submissionId: 'mockSubmissionId',
+      }
+      expect(generator.unprocessed.length).toEqual(0)
+
+      // Act
+      const addRecord = () => generator.addRecord(mockRecord)
+
+      // Assert
+      // Check error
+      expect(addRecord).toThrow(Error)
+      expect(addRecord).toThrow(expectedErrorMessage)
+      // Record should not be added
+      expect(generator.unprocessed.length).toEqual(0)
+      // Check headers
+      expect(generator.fieldIdToQuestion.size).toEqual(0)
+    })
+
+    it('should reject response with non-string answerArray', () => {
+      // Arrange
+      const invalidResponse = generateEmptyRecord(1)
+      invalidResponse.answerArray = [1, 2, 3]
+      const mockDecryptedRecord = [invalidResponse]
+      const mockRecord = {
+        record: mockDecryptedRecord,
+        created: mockCreatedEarly,
+        submissionId: 'mockSubmissionId',
+      }
+      expect(generator.unprocessed.length).toEqual(0)
+
+      // Act
+      const addRecord = () => generator.addRecord(mockRecord)
+
+      // Assert
+      // Check error
+      expect(addRecord).toThrow(Error)
+      expect(addRecord).toThrow(expectedErrorMessage)
+      // Record should not be added
+      expect(generator.unprocessed.length).toEqual(0)
+      // Check headers
+      expect(generator.fieldIdToQuestion.size).toEqual(0)
+    })
   })
 
   describe('process()', () => {
@@ -274,7 +358,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Should have 1 header row and 1 submission row
         expect(generator.records.length).toEqual(2 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
-          'Reference number',
+          'Response ID',
           'Timestamp',
           mockDecryptedRecord[0].question,
           mockDecryptedRecord[1].question,
@@ -336,7 +420,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Should have 1 header row and 2 submission row
         expect(generator.records.length).toEqual(3 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
-          'Reference number',
+          'Response ID',
           'Timestamp',
           mockFirstDecryptedRecord[0].question,
           mockFirstDecryptedRecord[1].question,
@@ -409,7 +493,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Should have 1 header row and 2 submission row
         expect(generator.records.length).toEqual(3 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
-          'Reference number',
+          'Response ID',
           'Timestamp',
           mockDecryptedRecord[0].question,
           mockDecryptedRecord[1].question,
@@ -477,7 +561,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Should have 1 header row and 1 submission row
         expect(generator.records.length).toEqual(2 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
-          'Reference number',
+          'Response ID',
           'Timestamp',
           mockDecryptedRecord[0].question,
         ])
@@ -525,7 +609,7 @@ describe('CsvMergedHeadersGenerator', () => {
         expect(generator.records.length).toEqual(2 + BOM_LENGTH)
         // Question is repeated for two columns
         const expectedHeaderRow = stringify([
-          'Reference number',
+          'Response ID',
           'Timestamp',
           mockDecryptedRecord[0].question,
           mockDecryptedRecord[0].question,
@@ -572,7 +656,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Should have 1 header row and 2 submission rows
         expect(generator.records.length).toEqual(3 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
-          'Reference number',
+          'Response ID',
           'Timestamp',
           mockAnswerArray[0].question,
         ])

@@ -2,7 +2,7 @@ import helmet from 'helmet'
 import { mocked } from 'ts-jest/utils'
 
 import config from 'src/app/config/config'
-import featureManager from 'src/app/config/feature-manager'
+import { sentryConfig } from 'src/app/config/features/sentry.config'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -11,10 +11,10 @@ import helmetMiddlewares from '../helmet'
 describe('helmetMiddlewares', () => {
   jest.mock('helmet')
   const mockHelmet = mocked(helmet, true)
-  jest.mock('src/app/config/feature-manager')
-  const mockFeatureManager = mocked(featureManager, true)
   jest.mock('src/app/config/config')
   const mockConfig = mocked(config, true)
+  jest.mock('src/app/config/features/sentry.config')
+  const mockSentryConfig = mocked(sentryConfig, true)
 
   const cspCoreDirectives = {
     defaultSrc: ["'self'"],
@@ -136,9 +136,7 @@ describe('helmetMiddlewares', () => {
   })
 
   it('should call helmet.contentSecurityPolicy() with the correct directives if cspReportUri and !isDev', () => {
-    mockFeatureManager.props = jest
-      .fn()
-      .mockReturnValue({ cspReportUri: 'value' })
+    mockSentryConfig.cspReportUri = 'value'
     mockConfig.isDev = false
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith({
@@ -151,7 +149,7 @@ describe('helmetMiddlewares', () => {
   })
 
   it('should call helmet.contentSecurityPolicy() with the correct directives if !cspReportUri and isDev', () => {
-    mockFeatureManager.props = jest.fn()
+    mockSentryConfig.cspReportUri = ''
     mockConfig.isDev = true
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith({

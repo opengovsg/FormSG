@@ -11,6 +11,7 @@ import {
   SendAutoReplyEmailsArgs,
 } from 'src/app/services/mail/mail.types'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
+import { HASH_EXPIRE_AFTER_SECONDS } from 'src/shared/util/verification'
 import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
@@ -78,7 +79,7 @@ describe('mail.service', () => {
         html: MailUtils.generateVerificationOtpHtml({
           appName: MOCK_APP_NAME,
           otp: MOCK_OTP,
-          minutesToExpiry: 10,
+          minutesToExpiry: HASH_EXPIRE_AFTER_SECONDS / 60,
         }),
         headers: {
           // Hardcode in tests in case something changes this.
@@ -395,7 +396,7 @@ describe('mail.service', () => {
     // Should include the metadata in the front.
     const EXPECTED_JSON_DATA = [
       {
-        question: 'Reference Number',
+        question: 'Response ID',
         answer: MOCK_VALID_SUBMISSION_PARAMS.submission.id,
       },
       {
@@ -409,7 +410,7 @@ describe('mail.service', () => {
       return {
         to: toField,
         from: MOCK_SENDER_STRING,
-        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
+        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (#${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
         html: expectedHtml,
         attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
         headers: {

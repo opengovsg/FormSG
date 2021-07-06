@@ -7,21 +7,19 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../captcha.errors'
-import { makeCaptchaResponseVerifier } from '../captcha.service'
+import { verifyCaptchaResponse } from '../captcha.service'
 
-const MOCK_PRIVATE_KEY = 'privateKey'
+const MOCK_PRIVATE_KEY = process.env.GOOGLE_CAPTCHA
 const MOCK_RESPONSE = 'captchaResponse'
 const MOCK_REMOTE_IP = 'remoteIp'
 jest.mock('axios')
 const MockAxios = mocked(axios, true)
 
 describe('captcha.service', () => {
-  describe('makeCaptchaResponseVerifier', () => {
+  describe('verifyCaptchaResponse', () => {
     beforeEach(() => jest.clearAllMocks())
 
     it('should return MissingCaptchaError when response is falsy', async () => {
-      const verifyCaptchaResponse =
-        makeCaptchaResponseVerifier(MOCK_PRIVATE_KEY)
       const result = await verifyCaptchaResponse(null, undefined)
 
       expect(result._unsafeUnwrapErr()).toEqual(new MissingCaptchaError())
@@ -30,8 +28,6 @@ describe('captcha.service', () => {
     it('should return VerifyCaptchaError when captcha response is incorrect', async () => {
       MockAxios.get.mockResolvedValueOnce({ data: { success: false } })
 
-      const verifyCaptchaResponse =
-        makeCaptchaResponseVerifier(MOCK_PRIVATE_KEY)
       const result = await verifyCaptchaResponse(MOCK_RESPONSE, MOCK_REMOTE_IP)
 
       expect(MockAxios.get).toHaveBeenCalledWith(GOOGLE_RECAPTCHA_URL, {
@@ -47,8 +43,6 @@ describe('captcha.service', () => {
     it('should return true when captcha response is correct', async () => {
       MockAxios.get.mockResolvedValueOnce({ data: { success: true } })
 
-      const verifyCaptchaResponse =
-        makeCaptchaResponseVerifier(MOCK_PRIVATE_KEY)
       const result = await verifyCaptchaResponse(MOCK_RESPONSE, MOCK_REMOTE_IP)
 
       expect(MockAxios.get).toHaveBeenCalledWith(GOOGLE_RECAPTCHA_URL, {
@@ -64,8 +58,6 @@ describe('captcha.service', () => {
     it('should return CaptchaConnectionError when connection with captcha server fails', async () => {
       MockAxios.get.mockRejectedValueOnce(false)
 
-      const verifyCaptchaResponse =
-        makeCaptchaResponseVerifier(MOCK_PRIVATE_KEY)
       const result = await verifyCaptchaResponse(MOCK_RESPONSE, MOCK_REMOTE_IP)
 
       expect(MockAxios.get).toHaveBeenCalledWith(GOOGLE_RECAPTCHA_URL, {

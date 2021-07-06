@@ -136,7 +136,7 @@ function AuthenticationController($q, $scope, $state, $timeout, $window, GTag) {
     vm.buttonClicked = true
 
     const email = vm.credentials.email
-    if (!validator.isEmail(email)) {
+    if (!email || !validator.isEmail(email)) {
       setEmailSignInError('Please enter a valid email address')
       return
     }

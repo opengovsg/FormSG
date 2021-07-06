@@ -66,6 +66,13 @@ MONGO_BINARY_VERSION=4.0.22
 MOCK_WEBHOOK_CONFIG_FILE=webhook-server-config.csv
 MOCK_WEBHOOK_PORT=4000
 
+SGID_ENDPOINT=http://localhost:5156/sgid/v1/oauth
+SGID_CLIENT_ID=sgidclientid
+SGID_CLIENT_SECRET=sgidclientsecret
+SGID_REDIRECT_URI=http://localhost:5000/sgid/login
+SGID_PRIVATE_KEY=./node_modules/@opengovsg/mockpass/static/certs/key.pem
+SGID_PUBLIC_KEY=./node_modules/@opengovsg/mockpass/static/certs/server.crt
+
 AWS_ACCESS_KEY_ID=fakeAccessKeyId
 AWS_SECRET_ACCESS_KEY=fakeSecretAccessKey
 

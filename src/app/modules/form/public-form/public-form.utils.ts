@@ -3,11 +3,7 @@ import { getReasonPhrase, StatusCodes } from 'http-status-codes'
 import { MapRouteError } from 'src/types'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import {
-  ApplicationError,
-  DatabaseError,
-  MissingFeatureError,
-} from '../../core/core.errors'
+import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
 import {
   CreateRedirectUrlError,
@@ -105,7 +101,6 @@ export const mapFormAuthError: MapRouteError = (
       }
     case DatabaseError:
     case CreateRedirectUrlError:
-    case MissingFeatureError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,

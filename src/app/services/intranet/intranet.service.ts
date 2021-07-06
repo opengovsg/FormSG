@@ -3,7 +3,7 @@ import fs from 'fs'
 import {
   IIntranet,
   intranetConfig,
-} from '../../config/feature-manager/intranet.config'
+} from '../../config/features/intranet.config'
 import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)

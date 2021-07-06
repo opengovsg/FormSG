@@ -21,6 +21,14 @@ const BETA_FEATURES_FIELD: BetaFeaturesDictionary = {
   //     field.fieldType === 'mobile' &&
   //     (field.isVerifiable === true),
   // },
+  // sgID: an authentication mechanism similar to Singpass
+  sgid: {
+    flag: 'sgid',
+    // Given that it's a _form_ level feature and not a
+    // _field_ level feature, always return true regardless
+    // of form field presented
+    matches: () => true,
+  },
 }
 
 const getBetaFeaturesForFields = (

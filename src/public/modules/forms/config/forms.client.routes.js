@@ -109,9 +109,9 @@ angular.module('forms').config([
         resolve: {
           FormData: [
             'FormApi',
-            '$transition$',
-            function (FormApi, $transition$) {
-              return FormApi.getAdminForm($transition$.params().formId)
+            '$stateParams',
+            function (FormApi, $stateParams) {
+              return FormApi.getAdminForm($stateParams.formId)
             },
           ],
         },

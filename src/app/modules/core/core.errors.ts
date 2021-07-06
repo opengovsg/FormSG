@@ -1,5 +1,3 @@
-import { FeatureNames } from '../../config/feature-manager'
-
 /**
  * A custom base error class that encapsulates the name, message, status code,
  * and logging meta string (if any) for the error.
@@ -63,22 +61,20 @@ export class MalformedParametersError extends ApplicationError {
 }
 
 /**
- * Error thrown when feature-specific functions are called
- * despite those features not being activated.
- */
-export class MissingFeatureError extends ApplicationError {
-  constructor(missingFeature: FeatureNames) {
-    super(
-      `${missingFeature} is not activated, but a feature-specific function was called.`,
-    )
-  }
-}
-
-/**
  * Error thrown when attachment upload fails
  */
 export class AttachmentUploadError extends ApplicationError {
   constructor(message = 'Error while uploading encrypted attachments to S3') {
+    super(message)
+  }
+}
+
+/**
+ * A custom error class returned when a method explicitly returns a list of errors
+ * but the list itself is empty.
+ */
+export class EmptyErrorFieldError extends ApplicationError {
+  constructor(message = 'Errors were returned but list is empty.') {
     super(message)
   }
 }

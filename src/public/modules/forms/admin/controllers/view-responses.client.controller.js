@@ -1,5 +1,7 @@
 'use strict'
 
+const moment = require('moment-timezone')
+
 const {
   processDecryptedContent,
 } = require('../../helpers/process-decrypted-content')
@@ -24,7 +26,6 @@ angular
     '$timeout',
     '$location',
     '$anchorScroll',
-    'moment',
     ViewResponsesController,
   ])
 
@@ -39,7 +40,6 @@ function ViewResponsesController(
   $timeout,
   $location,
   $anchorScroll,
-  moment,
 ) {
   const vm = this
 

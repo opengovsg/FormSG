@@ -6,7 +6,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 
-import { BillingFactory } from './billing.factory'
+import * as BillingService from './billing.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -32,7 +32,7 @@ export const handleGetBillInfo: ControllerHandler<
     .startOf('month')
   const endOfMonth = moment(startOfMonth).endOf('month')
 
-  const loginStatsResult = await BillingFactory.getSpLoginStats(
+  const loginStatsResult = await BillingService.getSpLoginStats(
     esrvcId,
     startOfMonth.toDate(),
     endOfMonth.toDate(),

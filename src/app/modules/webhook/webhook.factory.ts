@@ -1,10 +1,4 @@
-import { errAsync } from 'neverthrow'
-
-import FeatureManager, {
-  FeatureNames,
-  RegisteredFeature,
-} from '../../config/feature-manager'
-import { MissingFeatureError } from '../core/core.errors'
+import { webhooksAndVerifiedContentConfig } from '../../config/features/webhook-verified-content.config'
 
 import { startWebhookConsumer } from './webhook.consumer'
 import { WebhookProducer } from './webhook.producer'
@@ -16,26 +10,19 @@ interface IWebhookFactory {
   >
 }
 
-export const createWebhookFactory = ({
-  isEnabled,
-  props,
-}: RegisteredFeature<FeatureNames.WebhookVerifiedContent>): IWebhookFactory => {
-  if (isEnabled && props) {
-    const { webhookQueueUrl } = props
-    let producer: WebhookProducer | undefined
-    if (webhookQueueUrl) {
-      producer = new WebhookProducer(webhookQueueUrl)
-      startWebhookConsumer(webhookQueueUrl, producer)
-    }
-    return {
-      sendInitialWebhook: WebhookService.createInitialWebhookSender(producer),
-    }
+export const createWebhookFactory = (
+  webhookQueueUrl: string,
+): IWebhookFactory => {
+  let producer: WebhookProducer | undefined
+  if (webhookQueueUrl) {
+    producer = new WebhookProducer(webhookQueueUrl)
+    startWebhookConsumer(webhookQueueUrl, producer)
   }
-  const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
   return {
-    sendInitialWebhook: () => errAsync(error),
+    sendInitialWebhook: WebhookService.createInitialWebhookSender(producer),
   }
 }
 
-const webhookFeature = FeatureManager.get(FeatureNames.WebhookVerifiedContent)
-export const WebhookFactory = createWebhookFactory(webhookFeature)
+export const WebhookFactory = createWebhookFactory(
+  webhooksAndVerifiedContentConfig.webhookQueueUrl,
+)

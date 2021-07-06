@@ -13,7 +13,6 @@ const moduleDependencies = [
   'ngResource',
   'ui.router',
   'ui.bootstrap',
-  'angularMoment',
   'vcRecaptcha',
   'users',
   'ngFileUpload',
@@ -55,7 +54,6 @@ require('angular-permission/dist/angular-permission')
 require('@opengovsg/angular-recaptcha-fallback')
 require('angular-resource')
 require('angular-sanitize')
-require('angular-moment')
 require('angular-messages')
 
 require('angular-ui-bootstrap')
@@ -84,9 +82,6 @@ require('@opengovsg/angular-daterangepicker-webpack')
 const appName = 'FormSG'
 // Add module dependencies
 const app = angular.module(appName, moduleDependencies)
-
-// Override moment using Angular's dependency injection
-app.constant('moment', require('moment-timezone'))
 
 // Setting HTML5 Location Mode
 angular.module(appName).config([
@@ -178,6 +173,7 @@ require('./modules/forms/admin/controllers/pop-up-modal.client.controller.js')
 
 // forms admin directives
 require('./modules/forms/admin/directives/settings-form.client.directive.js')
+require('./modules/forms/admin/directives/validate-form-emails-input.directive.js')
 require('./modules/forms/admin/directives/edit-form.client.directive.js')
 require('./modules/forms/admin/directives/is-verifiable-save-interceptor.directive.js')
 require('./modules/forms/admin/directives/validate-email-domain-from-text.directive.js')
@@ -234,6 +230,7 @@ require('./modules/forms/base/components/field-number.client.component.js')
 require('./modules/forms/base/components/field-rating.client.component.js')
 require('./modules/forms/base/components/field-section.client.component.js')
 require('./modules/forms/base/components/field-statement.client.component.js')
+require('./modules/forms/base/components/field-uen.client.component.js')
 require('./modules/forms/base/components/field-textarea.client.component.js')
 
 // forms base directives
@@ -244,6 +241,7 @@ require('./modules/forms/base/directives/validate-checkbox.client.directive.js')
 require('./modules/forms/base/directives/validate-email-domain.client.directive.js')
 require('./modules/forms/base/directives/validate-email-format.client.directive.js')
 require('./modules/forms/base/directives/validate-nric.client.directive.js')
+require('./modules/forms/base/directives/validate-uen.client.directive.js')
 require('./modules/forms/base/directives/validate-url.client.directive.js')
 require('./modules/forms/base/directives/ng-intl-tel-input.js')
 require('./modules/forms/base/directives/submit-form.directive.js')
@@ -598,6 +596,10 @@ app.run([
     $templateCache.put(
       'modules/forms/base/componentViews/field-textarea.client.view.html',
       require('./modules/forms/base/componentViews/field-textarea.client.view.html'),
+    )
+    $templateCache.put(
+      'modules/forms/base/componentViews/field-uen.client.view.html',
+      require('./modules/forms/base/componentViews/field-uen.client.view.html'),
     )
 
     // Forms base directiveViews

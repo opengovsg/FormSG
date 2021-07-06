@@ -18,6 +18,7 @@ export enum BasicField {
   Rating = 'rating',
   Nric = 'nric',
   Table = 'table',
+  Uen = 'uen',
 }
 
 export enum MyInfoAttribute {
@@ -51,4 +52,8 @@ export enum SPCPFieldTitle {
   SpNric = 'SingPass Validated NRIC',
   CpUid = 'CorpPass Validated UID',
   CpUen = 'CorpPass Validated UEN',
+}
+
+export enum SgidFieldTitle {
+  SgidNric = 'sgID Validated NRIC',
 }

@@ -19,8 +19,10 @@ import {
   IPossiblyPrefilledField,
   MyInfoAttribute,
 } from '../../../types'
+import config from '../../config/config'
+import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { DatabaseError, MissingFeatureError } from '../core/core.errors'
+import { DatabaseError } from '../core/core.errors'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
@@ -72,7 +74,11 @@ const BREAKER_PARAMS = {
   volumeThreshold: 5, // min number of requests within statistical window before breaker trips
 }
 
-export class MyInfoService {
+/**
+ * Class for managing MyInfo-related functionality.
+ * Exported for testing.
+ */
+export class MyInfoServiceClass {
   /**
    * Instance of MyInfoGovClient configured with Form credentials.
    */
@@ -489,7 +495,6 @@ export class MyInfoService {
    * @returns err(AuthTypeMismatchError) if the client was not authenticated using MyInfo
    * @returns err(MyInfoCircuitBreakerError) if circuit breaker was active
    * @returns err(MyInfoFetchError) if validated but the data could not be retrieved
-   * @returns err(MissingFeatureError) if using an outdated version that does not support myInfo
    */
   getMyInfoDataForForm(
     form: IPopulatedForm,
@@ -502,7 +507,6 @@ export class MyInfoService {
     | AuthTypeMismatchError
     | MyInfoCircuitBreakerError
     | MyInfoFetchError
-    | MissingFeatureError
     | MyInfoCookieAccessError
   > {
     const requestedAttributes = form.getUniqueMyInfoAttrs()
@@ -519,3 +523,9 @@ export class MyInfoService {
       )
   }
 }
+
+export const MyInfoService = new MyInfoServiceClass({
+  spcpMyInfoConfig,
+  appUrl: config.app.appUrl,
+  nodeEnv: config.nodeEnv,
+})

@@ -22,6 +22,7 @@ import {
 import * as EmailSubmissionService from 'src/app/modules/submission/email-submission/email-submission.service'
 import * as EmailSubmissionUtil from 'src/app/modules/submission/email-submission/email-submission.util'
 import * as EncryptSubmissionService from 'src/app/modules/submission/encrypt-submission/encrypt-submission.service'
+import IncomingEncryptSubmission from 'src/app/modules/submission/encrypt-submission/IncomingEncryptSubmission.class'
 import {
   ConflictError,
   InvalidEncodingError,
@@ -31,13 +32,13 @@ import {
   ValidateFieldError,
 } from 'src/app/modules/submission/submission.errors'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
+import * as SubmissionUtils from 'src/app/modules/submission/submission.utils'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import {
   MailGenerationError,
   MailSendError,
 } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
-import * as EncryptionUtils from 'src/app/utils/encryption'
 import { EditFieldActions } from 'src/shared/constants'
 import {
   AuthType,
@@ -76,6 +77,7 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import ParsedResponsesObject from '../../../submission/email-submission/ParsedResponsesObject.class'
 import * as UserService from '../../../user/user.service'
 import {
   ForbiddenFormError,
@@ -109,11 +111,25 @@ const MockEncryptSubmissionService = mocked(EncryptSubmissionService)
 jest.mock(
   'src/app/modules/submission/email-submission/email-submission.service',
 )
+jest.mock(
+  'src/app/modules/submission/encrypt-submission/IncomingEncryptSubmission.class',
+)
+const MockIncomingEncryptSubmission = mocked(IncomingEncryptSubmission)
+jest.mock(
+  'src/app/modules/submission/encrypt-submission/encrypt-submission.utils',
+  () => ({
+    ...jest.requireActual(
+      'src/app/modules/submission/encrypt-submission/encrypt-submission.utils',
+    ),
+  }),
+)
 const MockEmailSubmissionService = mocked(EmailSubmissionService)
-jest.mock('src/app/utils/encryption')
-const MockEncryptionUtils = mocked(EncryptionUtils)
+jest.mock('src/app/modules/submission/submission.utils')
+const MockSubmissionUtils = mocked(SubmissionUtils)
 jest.mock('../admin-form.service')
 const MockAdminFormService = mocked(AdminFormService)
+jest.mock('../../../submission/email-submission/ParsedResponsesObject.class')
+const MockParsedResponsesObject = mocked(ParsedResponsesObject)
 jest.mock('../../form.service')
 const MockFormService = mocked(FormService)
 jest.mock('../../../user/user.service')
@@ -5117,12 +5133,17 @@ describe('admin-form.controller', () => {
       MockEmailSubmissionService.validateAttachments.mockReturnValue(
         okAsync(true),
       )
-      MockSubmissionService.getProcessedResponses.mockReturnValue(
-        ok(MOCK_PARSED_RESPONSES),
+      MockParsedResponsesObject.mockClear()
+      MockParsedResponsesObject.parseResponses.mockReturnValue(
+        ok(new ParsedResponsesObject(MOCK_PARSED_RESPONSES)),
+      )
+      MockParsedResponsesObject.mock.instances[0].getAllResponses.mockReturnValue(
+        MOCK_PARSED_RESPONSES,
       )
       MockEmailSubmissionService.createEmailSubmissionWithoutSave.mockReturnValue(
         MOCK_SUBMISSION,
       )
+      MockSubmissionUtils.extractEmailConfirmationData.mockReturnValue([])
       MockEmailSubmissionService.extractEmailAnswers.mockReturnValue([
         MOCK_RESPONSES[0].answer,
       ])
@@ -5172,7 +5193,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -5196,10 +5217,10 @@ describe('admin-form.controller', () => {
       expect(MockSubmissionService.sendEmailConfirmations).toHaveBeenCalledWith(
         {
           form: MOCK_FORM,
-          parsedResponses: MOCK_PARSED_RESPONSES,
           submission: MOCK_SUBMISSION,
           attachments: [],
-          autoReplyData: MOCK_AUTOREPLY_DATA,
+          responsesData: MOCK_AUTOREPLY_DATA,
+          recipientData: [],
         },
       )
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -5239,7 +5260,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5288,7 +5309,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5341,7 +5362,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5394,7 +5415,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5447,7 +5468,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5500,7 +5521,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5553,7 +5574,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5606,7 +5627,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5659,7 +5680,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
         MockEmailSubmissionService.createEmailSubmissionWithoutSave,
@@ -5678,7 +5699,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 400 when responses cannot be processed', async () => {
-      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+      MockParsedResponsesObject.parseResponses.mockReturnValueOnce(
         err(new ProcessingError()),
       )
       const mockReq = expressHandler.mockRequest({
@@ -5712,7 +5733,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -5734,7 +5755,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 409 when the submitted field IDs do not match the form field IDs', async () => {
-      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+      MockParsedResponsesObject.parseResponses.mockReturnValueOnce(
         err(new ConflictError('')),
       )
       const mockReq = expressHandler.mockRequest({
@@ -5768,7 +5789,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -5790,7 +5811,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 400 when any answer is invalid', async () => {
-      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+      MockParsedResponsesObject.parseResponses.mockReturnValueOnce(
         err(new ValidateFieldError()),
       )
       const mockReq = expressHandler.mockRequest({
@@ -5824,7 +5845,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -5880,7 +5901,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -5945,7 +5966,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -6010,7 +6031,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.validateAttachments,
       ).toHaveBeenCalledWith(MOCK_RESPONSES)
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
       )
@@ -6034,10 +6055,10 @@ describe('admin-form.controller', () => {
       expect(MockSubmissionService.sendEmailConfirmations).toHaveBeenCalledWith(
         {
           form: MOCK_FORM,
-          parsedResponses: MOCK_PARSED_RESPONSES,
           submission: MOCK_SUBMISSION,
           attachments: [],
-          autoReplyData: MOCK_AUTOREPLY_DATA,
+          responsesData: MOCK_AUTOREPLY_DATA,
+          recipientData: [],
         },
       )
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -6050,9 +6071,6 @@ describe('admin-form.controller', () => {
   describe('submitEncryptPreview', () => {
     const MOCK_RESPONSES = [
       generateUnprocessedSingleAnswerResponse(BasicField.Email),
-    ]
-    const MOCK_PARSED_RESPONSES = [
-      generateNewSingleAnswerResponse(BasicField.Email),
     ]
     const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
     const MOCK_VERSION = 1
@@ -6086,6 +6104,7 @@ describe('admin-form.controller', () => {
       _id: MOCK_SUBMISSION_ID,
       created: new Date(),
     } as IEncryptedSubmissionSchema
+    const mockIncomingEncryptSubmissionInit = jest.fn()
 
     beforeEach(() => {
       MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
@@ -6095,9 +6114,16 @@ describe('admin-form.controller', () => {
       MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValue(
         ok(MOCK_FORM),
       )
-      MockEncryptionUtils.checkIsEncryptedEncoding.mockReturnValue(ok(true))
-      MockSubmissionService.getProcessedResponses.mockReturnValue(
-        ok(MOCK_PARSED_RESPONSES),
+      MockIncomingEncryptSubmission.init = mockIncomingEncryptSubmissionInit
+      mockIncomingEncryptSubmissionInit.mockReturnValue(
+        ok({
+          responses: MOCK_RESPONSES,
+          form: MOCK_FORM,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+        } as IncomingEncryptSubmission),
+      )
+      MockSubmissionUtils.extractEmailConfirmationDataFromIncomingSubmission.mockReturnValue(
+        [],
       )
       MockEncryptSubmissionService.createEncryptSubmissionWithoutSave.mockReturnValue(
         MOCK_SUBMISSION,
@@ -6137,12 +6163,10 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockEncryptionUtils.checkIsEncryptedEncoding).toHaveBeenCalledWith(
-        MOCK_ENCRYPTED_CONTENT,
-      )
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
+        MOCK_ENCRYPTED_CONTENT,
       )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
@@ -6155,8 +6179,8 @@ describe('admin-form.controller', () => {
       expect(MockSubmissionService.sendEmailConfirmations).toHaveBeenCalledWith(
         {
           form: MOCK_FORM,
-          parsedResponses: MOCK_PARSED_RESPONSES,
           submission: MOCK_SUBMISSION,
+          recipientData: [],
         },
       )
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -6197,10 +6221,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEncryptionUtils.checkIsEncryptedEncoding,
-      ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6245,10 +6266,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEncryptionUtils.checkIsEncryptedEncoding,
-      ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6297,10 +6315,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEncryptionUtils.checkIsEncryptedEncoding,
-      ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6349,10 +6364,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEncryptionUtils.checkIsEncryptedEncoding,
-      ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6401,10 +6413,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEncryptionUtils.checkIsEncryptedEncoding,
-      ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6453,10 +6462,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEncryptionUtils.checkIsEncryptedEncoding,
-      ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6505,10 +6511,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEncryptionUtils.checkIsEncryptedEncoding,
-      ).not.toHaveBeenCalled()
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(IncomingEncryptSubmission.init).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6522,7 +6525,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 400 when encrypted content encoding is invalid', async () => {
-      MockEncryptionUtils.checkIsEncryptedEncoding.mockReturnValueOnce(
+      mockIncomingEncryptSubmissionInit.mockReturnValueOnce(
         err(new InvalidEncodingError()),
       )
       const mockReq = expressHandler.mockRequest({
@@ -6557,10 +6560,11 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockEncryptionUtils.checkIsEncryptedEncoding).toHaveBeenCalledWith(
+      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
         MOCK_ENCRYPTED_CONTENT,
       )
-      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
@@ -6574,7 +6578,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 400 when responses cannot be processed', async () => {
-      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+      mockIncomingEncryptSubmissionInit.mockReturnValueOnce(
         err(new ProcessingError()),
       )
       const mockReq = expressHandler.mockRequest({
@@ -6609,12 +6613,10 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockEncryptionUtils.checkIsEncryptedEncoding).toHaveBeenCalledWith(
-        MOCK_ENCRYPTED_CONTENT,
-      )
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
+        MOCK_ENCRYPTED_CONTENT,
       )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
@@ -6629,7 +6631,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 409 when form fields submitted are not updated', async () => {
-      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+      mockIncomingEncryptSubmissionInit.mockReturnValueOnce(
         err(new ConflictError('')),
       )
       const mockReq = expressHandler.mockRequest({
@@ -6664,12 +6666,10 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockEncryptionUtils.checkIsEncryptedEncoding).toHaveBeenCalledWith(
-        MOCK_ENCRYPTED_CONTENT,
-      )
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
+        MOCK_ENCRYPTED_CONTENT,
       )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
@@ -6684,7 +6684,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 400 when responses cannot be validated', async () => {
-      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+      mockIncomingEncryptSubmissionInit.mockReturnValueOnce(
         err(new ValidateFieldError()),
       )
       const mockReq = expressHandler.mockRequest({
@@ -6719,12 +6719,10 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockEncryptionUtils.checkIsEncryptedEncoding).toHaveBeenCalledWith(
-        MOCK_ENCRYPTED_CONTENT,
-      )
-      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
+        MOCK_ENCRYPTED_CONTENT,
       )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
@@ -9456,6 +9454,264 @@ describe('admin-form.controller', () => {
       // Act
       await AdminFormController._handleUpdateCollaborators(
         MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleRemoveSelfFromCollaborators', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+
+    const MOCK_WRITER_ID = new ObjectId().toHexString()
+    const MOCK_WRITER = {
+      _id: MOCK_WRITER_ID,
+      email: 'mockwriter@example.com',
+    }
+
+    const MOCK_READER_ID = new ObjectId().toHexString()
+    const MOCK_READER = {
+      _id: MOCK_READER_ID,
+      email: 'mockreader@example.com',
+    }
+
+    const MOCK_RANDOM_USER_ID = new ObjectId().toHexString()
+    const MOCK_RANDOM_USER = {
+      _id: MOCK_RANDOM_USER_ID,
+      email: 'mockrandomuser@example.com',
+    }
+
+    const MOCK_COLLABORATORS = [
+      {
+        email: MOCK_READER.email,
+        write: false,
+      },
+      {
+        email: MOCK_WRITER.email,
+        write: true,
+      },
+    ]
+    const MOCK_COLLABORATORS_ONLY_READER = [
+      {
+        email: MOCK_READER.email,
+        write: false,
+      },
+    ]
+    const MOCK_COLLABORATORS_ONLY_WRITER = [
+      {
+        email: MOCK_WRITER.email,
+        write: true,
+      },
+    ]
+
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      permissionList: MOCK_COLLABORATORS,
+    } as IPopulatedForm
+
+    const MOCK_READER_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_READER_ID,
+        },
+      },
+    })
+    const MOCK_WRITER_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_WRITER_ID,
+        },
+      },
+    })
+    const MOCK_RANDOM_USER_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_RANDOM_USER_ID,
+        },
+      },
+    })
+
+    beforeEach(() => {
+      // Mock various services to return expected results.
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+    })
+    it('should return 200 when the current writer is removed successfully', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_WRITER))
+      MockAdminFormService.updateFormCollaborators.mockReturnValueOnce(
+        okAsync(MOCK_COLLABORATORS_ONLY_READER),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_WRITER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
+      expect(mockRes.json).toBeCalledWith(MOCK_COLLABORATORS_ONLY_READER)
+    })
+
+    it('should return 200 when the current reader is removed successfully', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_READER))
+      MockAdminFormService.updateFormCollaborators.mockReturnValueOnce(
+        okAsync(MOCK_COLLABORATORS_ONLY_WRITER),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_READER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
+      expect(mockRes.json).toBeCalledWith(MOCK_COLLABORATORS_ONLY_WRITER)
+    })
+
+    it('should return 403 when the user does not have sufficient permissions to update the form', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValue(
+        okAsync(MOCK_RANDOM_USER),
+      )
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(ERROR_MESSAGE)),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expectedResponse = { message: ERROR_MESSAGE }
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_RANDOM_USER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.FORBIDDEN)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when the form could not be found', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_WRITER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(ERROR_MESSAGE)),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expectedResponse = { message: ERROR_MESSAGE }
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_WRITER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 410 when the form has been archived', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_WRITER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(ERROR_MESSAGE)),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expectedResponse = { message: ERROR_MESSAGE }
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_WRITER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.GONE)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 when the session user could not be retrieved from the database', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(ERROR_MESSAGE)),
+      )
+      const expectedResponse = { message: ERROR_MESSAGE }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_RANDOM_USER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.UNPROCESSABLE_ENTITY)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when a database error occurs', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(ERROR_MESSAGE)),
+      )
+      const expectedResponse = { message: ERROR_MESSAGE }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_RANDOM_USER_REQ,
         mockRes,
         jest.fn(),
       )

@@ -5,7 +5,7 @@ import { ProcessedAttachmentResponse } from 'src/app/modules/submission/submissi
 import { IAttachmentField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 
-const MILLION = 1000000
+import { MB } from '../../../../shared/constants'
 
 type AttachmentValidator = ResponseValidator<ProcessedAttachmentResponse>
 type AttachmentValidatorConstructor = (
@@ -41,7 +41,7 @@ const attachmentContentValidator: AttachmentValidator = (response) => {
 const makeAttachmentSizeValidator: AttachmentValidatorConstructor =
   (attachmentField) => (response) => {
     const { attachmentSize } = attachmentField
-    const byteSizeLimit = parseInt(attachmentSize) * MILLION
+    const byteSizeLimit = parseInt(attachmentSize) * MB
     return response.content.byteLength < byteSizeLimit
       ? right(response)
       : left(`AttachmentValidator:\t File size more than limit`)

@@ -40,7 +40,6 @@ import {
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
-import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {
@@ -51,10 +50,6 @@ import {
 } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import * as FeedbackService from '../../feedback/feedback.service'
-import {
-  createCorppassParsedResponses,
-  createSingpassParsedResponses,
-} from '../../spcp/spcp.util'
 import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
@@ -62,10 +57,16 @@ import {
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
+import ParsedResponsesObject from '../../submission/email-submission/ParsedResponsesObject.class'
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
+import IncomingEncryptSubmission from '../../submission/encrypt-submission/IncomingEncryptSubmission.class'
 import * as SubmissionService from '../../submission/submission.service'
+import {
+  extractEmailConfirmationData,
+  extractEmailConfirmationDataFromIncomingSubmission,
+} from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -98,12 +99,19 @@ const createFormValidator = celebrate({
         title: Joi.string().min(4).max(200).required(),
         // Require emails string (for backwards compatibility) or string
         // array if form to be created in Email mode.
-        emails: Joi.alternatives()
-          .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-          .when('responseMode', {
-            is: ResponseMode.Email,
-            then: Joi.required(),
-          }),
+        emails: Joi.when('responseMode', {
+          is: ResponseMode.Email,
+          then: Joi.alternatives()
+            .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+            .required(),
+          // TODO (#2264): disallow the 'emails' key when responseMode is not Email
+          // Allow old clients to send this key but optionally and without restrictions
+          // on array length or type
+          otherwise: Joi.alternatives().try(
+            Joi.array(),
+            Joi.string().allow(''),
+          ),
+        }),
         // Require publicKey field if form to be created in Storage mode.
         publicKey: Joi.string()
           .allow('')
@@ -128,12 +136,16 @@ const duplicateFormValidator = celebrate({
     title: Joi.string().min(4).max(200).required(),
     // Require emails string (for backwards compatibility) or string array
     // if form to be duplicated in Email mode.
-    emails: Joi.alternatives()
-      .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-      .when('responseMode', {
-        is: ResponseMode.Email,
-        then: Joi.required(),
-      }),
+    emails: Joi.when('responseMode', {
+      is: ResponseMode.Email,
+      then: Joi.alternatives()
+        .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+        .required(),
+      // TODO (#2264): disallow the 'emails' key when responseMode is not Email
+      // Allow old clients to send this key but optionally and without restrictions
+      // on array length or type
+      otherwise: Joi.alternatives().try(Joi.array(), Joi.string().allow('')),
+    }),
     // Require publicKey field if form to be duplicated in Storage mode.
     publicKey: Joi.string()
       .allow('')
@@ -1409,23 +1421,22 @@ export const submitEncryptPreview: ControllerHandler<
       }),
     )
     .andThen((form) =>
-      checkIsEncryptedEncoding(encryptedContent)
-        .andThen(() => SubmissionService.getProcessedResponses(form, responses))
-        .map((parsedResponses) => ({ parsedResponses, form }))
+      IncomingEncryptSubmission.init(form, responses, encryptedContent)
+        .map((incomingSubmission) => ({ incomingSubmission, form }))
         .mapErr((error) => {
           logger.error({
-            message: 'Error while parsing responses for preview submission',
+            message: 'Error while processing incoming preview submission.',
             meta: logMeta,
             error,
           })
           return error
         }),
     )
-    .map(({ parsedResponses, form }) => {
+    .map(({ incomingSubmission, form }) => {
       const submission =
         EncryptSubmissionService.createEncryptSubmissionWithoutSave({
           form,
-          encryptedContent,
+          encryptedContent: incomingSubmission.encryptedContent,
           // Don't bother encrypting and signing mock variables for previews
           verifiedContent: '',
           version,
@@ -1433,8 +1444,11 @@ export const submitEncryptPreview: ControllerHandler<
 
       void SubmissionService.sendEmailConfirmations({
         form,
-        parsedResponses,
         submission,
+        recipientData:
+          extractEmailConfirmationDataFromIncomingSubmission(
+            incomingSubmission,
+          ),
       })
 
       // Return the reply early to the submitter
@@ -1455,7 +1469,7 @@ export const handleEncryptPreviewSubmission = [
 ] as ControllerHandler[]
 
 /**
- * Handler for POST /v2/submissions/encrypt/preview/:formId.
+ * Handler for POST /v2/submissions/email/preview/:formId.
  * @security session
  *
  * @returns 200 with a mock submission ID
@@ -1506,7 +1520,7 @@ export const submitEmailPreview: ControllerHandler<
 
   const parsedResponsesResult =
     await EmailSubmissionService.validateAttachments(responses).andThen(() =>
-      SubmissionService.getProcessedResponses(form, responses),
+      ParsedResponsesObject.parseResponses(form, responses),
     )
   if (parsedResponsesResult.isErr()) {
     logger.error({
@@ -1523,21 +1537,22 @@ export const submitEmailPreview: ControllerHandler<
   const attachments = mapAttachmentsFromResponses(req.body.responses)
 
   // Handle SingPass, CorpPass and MyInfo authentication and validation
-  if (form.authType === AuthType.SP || form.authType === AuthType.MyInfo) {
-    parsedResponses.push(
-      ...createSingpassParsedResponses(PREVIEW_SINGPASS_UINFIN),
-    )
-  } else if (form.authType === AuthType.CP) {
-    parsedResponses.push(
-      ...createCorppassParsedResponses(
-        PREVIEW_CORPPASS_UINFIN,
-        PREVIEW_CORPPASS_UID,
-      ),
-    )
+  const { authType } = form
+  if (authType === AuthType.SP || authType === AuthType.MyInfo) {
+    parsedResponses.addNdiResponses({
+      authType,
+      uinFin: PREVIEW_SINGPASS_UINFIN,
+    })
+  } else if (authType === AuthType.CP) {
+    parsedResponses.addNdiResponses({
+      authType,
+      uinFin: PREVIEW_CORPPASS_UINFIN,
+      userInfo: PREVIEW_CORPPASS_UID,
+    })
   }
 
   const emailData = new SubmissionEmailObj(
-    parsedResponses,
+    parsedResponses.getAllResponses(),
     // All MyInfo fields are verified in preview
     new Set(AdminFormService.extractMyInfoFieldIds(form.form_fields)),
     form.authType,
@@ -1550,7 +1565,9 @@ export const submitEmailPreview: ControllerHandler<
   )
 
   const sendAdminEmailResult = await MailService.sendSubmissionToAdmin({
-    replyToEmails: EmailSubmissionService.extractEmailAnswers(parsedResponses),
+    replyToEmails: EmailSubmissionService.extractEmailAnswers(
+      parsedResponses.getAllResponses(),
+    ),
     form,
     submission,
     attachments,
@@ -1575,10 +1592,13 @@ export const submitEmailPreview: ControllerHandler<
   // this fails
   void SubmissionService.sendEmailConfirmations({
     form,
-    parsedResponses,
     submission,
     attachments,
-    autoReplyData: emailData.autoReplyData,
+    responsesData: emailData.autoReplyData,
+    recipientData: extractEmailConfirmationData(
+      parsedResponses.getAllResponses(),
+      form.form_fields,
+    ),
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',
@@ -2267,6 +2287,68 @@ export const handleUpdateCollaborators = [
   }),
   _handleUpdateCollaborators,
 ] as ControllerHandler[]
+
+/**
+ * Handler for DELETE /api/v3/admin/forms/:formId/collaborators/self
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated collaborators and permissions
+ * @returns 403 when current user does not have permissions to remove themselves from the collaborators list
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating collaborators for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleRemoveSelfFromCollaborators: ControllerHandler<
+  { formId: string },
+  PermissionsUpdateDto | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  let currentUserEmail = ''
+  // Step 1: Get the form after permission checks
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) => {
+        // Step 2: Retrieve form with read permission check, since we are only removing the user themselves
+        currentUserEmail = user.email
+        return AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        })
+      })
+      // Step 3: Update the form collaborators
+      .andThen((form) => {
+        const updatedPermissionList = form.permissionList.filter(
+          (user) => user.email.toLowerCase() !== currentUserEmail.toLowerCase(),
+        )
+        return AdminFormService.updateFormCollaborators(
+          form,
+          updatedPermissionList,
+        )
+      })
+      .map((updatedCollaborators) =>
+        res.status(StatusCodes.OK).json(updatedCollaborators),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating collaborators',
+          meta: {
+            action: 'handleRemoveSelfFromCollaborators',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            formCollaborators: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
 
 /**
  * NOTE: Exported for testing.

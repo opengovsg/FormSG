@@ -6,7 +6,10 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { AuthType } from '../../../types'
 import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
-import { ISpcpMyInfo } from '../../config/feature-manager'
+import {
+  ISpcpMyInfo,
+  spcpMyInfoConfig,
+} from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
 
@@ -23,12 +26,13 @@ import {
 } from './spcp.errors'
 import {
   CorppassAttributes,
-  CorppassJwtPayload,
+  CorppassJwtPayloadFromCookie,
   JwtName,
   JwtPayload,
+  JwtPayloadFromCookie,
   ParsedSpcpParams,
   SingpassAttributes,
-  SingpassJwtPayload,
+  SingpassJwtPayloadFromCookie,
   SpcpCookies,
   SpcpDomainSettings,
 } from './spcp.types'
@@ -47,7 +51,12 @@ const logger = createLoggerWithLabel(module)
 const LOGIN_PAGE_HEADERS =
   'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3'
 const LOGIN_PAGE_TIMEOUT = 10000 // 10 seconds
-export class SpcpService {
+
+/**
+ * Class for executing Singpass/Corppass-related services.
+ * Exported for testing.
+ */
+export class SpcpServiceClass {
   #singpassAuthClient: SPCPAuthClient
   #corppassAuthClient: SPCPAuthClient
   #spcpProps: ISpcpMyInfo
@@ -213,7 +222,10 @@ export class SpcpService {
    */
   extractSingpassJwtPayload(
     jwt: string,
-  ): ResultAsync<SingpassJwtPayload, VerifyJwtError | InvalidJwtError> {
+  ): ResultAsync<
+    SingpassJwtPayloadFromCookie,
+    VerifyJwtError | InvalidJwtError
+  > {
     const logMeta = {
       action: 'extractSingpassJwtPayload',
     }
@@ -253,7 +265,10 @@ export class SpcpService {
    */
   extractCorppassJwtPayload(
     jwt: string,
-  ): ResultAsync<CorppassJwtPayload, VerifyJwtError | InvalidJwtError> {
+  ): ResultAsync<
+    CorppassJwtPayloadFromCookie,
+    VerifyJwtError | InvalidJwtError
+  > {
     const logMeta = {
       action: 'extractCorppassJwtPayload',
     }
@@ -445,7 +460,7 @@ export class SpcpService {
     authType: AuthType.SP | AuthType.CP,
     cookies: SpcpCookies,
   ): ResultAsync<
-    JwtPayload,
+    JwtPayloadFromCookie,
     VerifyJwtError | InvalidJwtError | MissingJwtError
   > {
     return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) => {
@@ -458,3 +473,5 @@ export class SpcpService {
     })
   }
 }
+
+export const SpcpService = new SpcpServiceClass(spcpMyInfoConfig)

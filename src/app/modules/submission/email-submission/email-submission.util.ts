@@ -36,7 +36,6 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
-  MissingFeatureError,
 } from '../../core/core.errors'
 import {
   ForbiddenFormError,
@@ -365,7 +364,6 @@ export const mapRouteError: MapRouteError = (error) => {
       }
     case DatabaseError:
     case SubmissionHashError:
-    case MissingFeatureError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage:

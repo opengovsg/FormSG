@@ -4,6 +4,7 @@ const axios = require('axios').default
 const {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
+  MB,
 } = require('shared/constants')
 const { uploadLogo } = require('../../../../services/FileHandlerService')
 const { FormLogoState } = require('../../../../../types')
@@ -32,6 +33,7 @@ function EditStartPageController(
 
   vm.maxLogoSize = MAX_UPLOAD_FILE_SIZE
   vm.validLogoExtensions = VALID_UPLOAD_FILE_TYPES
+  vm.MB = MB
   vm.FormLogoState = FormLogoState
 
   vm.logoUrl = getFormLogo(myform)
@@ -116,8 +118,8 @@ function EditStartPageController(
       vm.uploaded.file = ''
       switch (ngfError.$error) {
         case 'maxSize':
-          vm.uploadError = `${(ngfError.size / 1000000).toFixed(2)} MB / ${
-            vm.maxLogoSize / 1000000
+          vm.uploadError = `${(ngfError.size / MB).toFixed(2)} MB / ${
+            vm.maxLogoSize / MB
           } MB: File size exceeded`
           break
         case 'resize':
