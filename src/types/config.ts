@@ -99,6 +99,18 @@ export interface ICompulsoryVarsSchema {
   }
 }
 
+export interface ISgidVarsSchema {
+  endpoint: string
+  clientId: string
+  clientSecret: string
+  privateKeyPath: string
+  publicKeyPath: string
+  redirectUri: string
+  cookieMaxAge: number
+  cookieMaxAgePreserved: number
+  cookieDomain: string
+}
+
 export interface IOptionalVarsSchema {
   appConfig: AppConfig
   formsgSdkMode: PackageMode

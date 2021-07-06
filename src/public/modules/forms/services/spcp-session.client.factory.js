@@ -22,6 +22,7 @@ function SpcpSession($interval, $q, Toastr, $window, $cookies) {
     cookieNames: {
       SP: 'jwtSp',
       CP: 'jwtCp',
+      SGID: 'jwtSgid',
     },
     setUser: function ({ userName, rememberMe, iat, exp }) {
       session.userName = userName

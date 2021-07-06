@@ -20,6 +20,7 @@ export enum AuthType {
   SP = 'SP',
   CP = 'CP',
   MyInfo = 'MyInfo',
+  SGID = 'SGID',
 }
 
 export enum Status {

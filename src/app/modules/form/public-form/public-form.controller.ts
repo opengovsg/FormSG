@@ -31,6 +31,8 @@ import {
   extractAndAssertMyInfoCookieValidity,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
+import { SgidService } from '../../sgid/sgid.service'
+import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpService } from '../../spcp/spcp.service'
 import { JwtName } from '../../spcp/spcp.types'
@@ -357,6 +359,29 @@ export const handleGetPublicForm: ControllerHandler<
           })
       )
     }
+    case AuthType.SGID:
+      return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
+        .map((spcpSession) => {
+          return res.json({
+            form: publicForm,
+            isIntranetUser,
+            spcpSession,
+          })
+        })
+        .mapErr((error) => {
+          // Report only relevant errors - verification failed for user here
+          if (
+            error instanceof VerifyJwtError ||
+            error instanceof InvalidJwtError
+          ) {
+            logger.error({
+              message: 'Error getting public form',
+              meta: logMeta,
+              error,
+            })
+          }
+          return res.json({ form: publicForm, isIntranetUser })
+        })
     default:
       return new UnreachableCaseError(authType)
   }
@@ -416,8 +441,13 @@ export const _handleFormAuthRedirect: ControllerHandler<
             )
           })
         }
-        // NOTE: Only MyInfo and SPCP should have redirects as the point of a redirect is
-        // to provide auth for users from a third party
+        case AuthType.SGID:
+          return validateSgidForm(form).andThen(() => {
+            return SgidService.createRedirectUrl(
+              formId,
+              Boolean(isPersistentLogin),
+            )
+          })
         default:
           return err<never, AuthTypeMismatchError>(
             new AuthTypeMismatchError(form.authType),
@@ -462,7 +492,7 @@ export const handleFormAuthRedirect = [
  * @returns 400 if authType is invalid
  */
 export const _handleSpcpLogout: ControllerHandler<
-  { authType: AuthType.SP | AuthType.CP },
+  { authType: AuthType.SP | AuthType.CP | AuthType.SGID },
   PublicFormAuthLogoutDto
 > = (req, res) => {
   const { authType } = req.params
@@ -480,7 +510,9 @@ export const _handleSpcpLogout: ControllerHandler<
 export const handleSpcpLogout = [
   celebrate({
     [Segments.PARAMS]: Joi.object({
-      authType: Joi.string().valid(AuthType.SP, AuthType.CP).required(),
+      authType: Joi.string()
+        .valid(AuthType.SP, AuthType.CP, AuthType.SGID)
+        .required(),
     }),
   }),
   _handleSpcpLogout,

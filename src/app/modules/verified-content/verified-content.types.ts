@@ -33,6 +33,6 @@ export type EncryptVerificationContentParams = {
 }
 
 export type GetVerifiedContentParams = {
-  type: AuthType.SP | AuthType.CP
+  type: AuthType.SP | AuthType.CP | AuthType.SGID
   data: Record<string, unknown>
 }

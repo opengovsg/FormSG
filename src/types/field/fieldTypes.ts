@@ -53,3 +53,7 @@ export enum SPCPFieldTitle {
   CpUid = 'CorpPass Validated UID',
   CpUen = 'CorpPass Validated UEN',
 }
+
+export enum SgidFieldTitle {
+  SgidNric = 'sgID Validated NRIC',
+}

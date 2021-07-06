@@ -2,6 +2,7 @@
 const dedent = require('dedent-js')
 const { get, set, isEqual } = require('lodash')
 const AdminSubmissionsService = require('../../../../services/AdminSubmissionsService')
+const BetaService = require('../../../../services/BetaService')
 
 const UserService = require('../../../../services/UserService')
 
@@ -143,9 +144,11 @@ function settingsFormDirective(
           )
         }
 
-        $scope.isDisableAuthType = () => {
+        $scope.isDisableAuthType = (authType) => {
           return (
             $scope.isFormPublic() ||
+            (authType.val === 'SGID' &&
+              !BetaService.userHasAccessToFieldType($scope.user, 'sgid')) ||
             ($scope.isFormPrivate() && $scope.myInfoSPWarning())
           )
         }
@@ -186,6 +189,11 @@ function settingsFormDirective(
             val: 'CP',
             name: 'Singpass (Corporate)',
             isEnabledInStorageMode: true,
+          },
+          {
+            val: 'SGID',
+            name: 'Singpass App-only Login (Free)',
+            isEnabledInStorageMode: false,
           },
         ]
 
