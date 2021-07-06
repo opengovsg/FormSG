@@ -1,25 +1,28 @@
-import { Document, Model } from 'mongoose'
+import { EnforceDocument, Model } from 'mongoose'
 
 import { PublicView } from './database'
 
-export interface IAgency {
-  shortName: string
-  fullName: string
-  emailDomain: string[]
-  logo: string
+import { AgencyBase, PublicAgencyDto } from '~shared/types/agency'
+
+export type PublicAgency = PublicAgencyDto
+
+export type AgencyInstanceMethods = PublicView<PublicAgency>
+
+export interface IAgencySchema extends AgencyBase {
   created?: Date
   lastModified?: Date
 }
 
-// Make sure this is kept in sync with agency.server.model#AGENCY_PUBLIC_FIELDS.
-export type PublicAgency = Pick<
-  IAgencySchema,
-  'shortName' | 'fullName' | 'emailDomain' | 'logo'
+export interface IAgencyDocument extends IAgencySchema {
+  created: Date
+  lastModified: Date
+}
+
+// Used to cast created documents whenever needed.
+export type AgencyDocument = EnforceDocument<
+  IAgencyDocument,
+  AgencyInstanceMethods
 >
 
-export interface IAgencySchema
-  extends IAgency,
-    Document,
-    PublicView<PublicAgency> {}
-
-export type IAgencyModel = Model<IAgencySchema>
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type IAgencyModel = Model<IAgencyDocument, {}, AgencyInstanceMethods>

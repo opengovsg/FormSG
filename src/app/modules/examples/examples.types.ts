@@ -1,5 +1,5 @@
 import {
-  IAgency,
+  IAgencyDocument,
   IForm,
   IFormFeedbackSchema,
   IFormStatisticsTotalModel,
@@ -19,8 +19,8 @@ export type QueryExecResult = {
   lastSubmission: Date | null
   title: IForm['title']
   form_fields: IForm['form_fields']
-  logo: IAgency['logo']
-  agency: IAgency['shortName']
+  logo: IAgencyDocument['logo']
+  agency: IAgencyDocument['shortName']
   colorTheme: StartPage['colorTheme']
   avgFeedback: number | null
 }

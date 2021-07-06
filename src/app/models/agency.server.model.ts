@@ -1,7 +1,14 @@
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
-import { IAgencyModel, IAgencySchema, PublicAgency } from '../../types'
+import {
+  AgencyInstanceMethods,
+  IAgencyDocument,
+  IAgencyModel,
+  PublicAgency,
+} from '../../types'
+
+import { PublicAgencyDto } from '~shared/types/agency'
 
 export const AGENCY_SCHEMA_ID = 'Agency'
 
@@ -13,7 +20,12 @@ export const AGENCY_PUBLIC_FIELDS = [
   'logo',
 ]
 
-const AgencySchema = new Schema<IAgencySchema>(
+const AgencySchema = new Schema<
+  IAgencyDocument,
+  IAgencyModel,
+  undefined,
+  AgencyInstanceMethods
+>(
   {
     shortName: {
       type: String,
@@ -51,11 +63,12 @@ const AgencySchema = new Schema<IAgencySchema>(
 
 // Methods
 AgencySchema.methods.getPublicView = function (): PublicAgency {
-  return pick(this, AGENCY_PUBLIC_FIELDS) as PublicAgency
+  return pick(this, Object.keys(PublicAgencyDto.shape)) as PublicAgency
 }
 
-const compileAgencyModel = (db: Mongoose): IAgencyModel =>
-  db.model<IAgencySchema>(AGENCY_SCHEMA_ID, AgencySchema)
+const compileAgencyModel = (db: Mongoose): IAgencyModel => {
+  return db.model(AGENCY_SCHEMA_ID, AgencySchema)
+}
 
 /**
  * Retrieves the Agency model on the given Mongoose instance. If the model is
