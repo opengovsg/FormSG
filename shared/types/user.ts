@@ -2,26 +2,29 @@ import { z } from 'zod'
 import { Opaque } from 'type-fest'
 
 import { DateString } from './generic'
-import { AgencyDocument, AgencyId } from './agency'
+import { AgencyBase, AgencyDto } from './agency'
 
 type UserId = Opaque<string, 'UserId'>
 type UserContact = Opaque<string, 'UserContact'>
 
-export const UserDocument = z.object({
-  _id: z.string() as unknown as z.Schema<UserId>,
+// Base used for being referenced by schema/model in the backend.
+// Note the lack of typing of _id.
+export const UserBase = z.object({
+  _id: z.any(),
   email: z.string().email(),
-  agency: AgencyId,
+  agency: AgencyBase.shape._id,
   betaFlags: z.record(z.boolean()).optional(),
   created: z.date(),
   lastAccessed: z.date().optional(),
   updatedAt: z.date(),
   contact: (z.string() as unknown as z.Schema<UserContact>).optional(),
 })
-export type UserDocument = z.infer<typeof UserDocument>
+export type UserBase = z.infer<typeof UserBase>
 
 // Convert to serialized versions.
-export const UserDto = UserDocument.extend({
-  agency: AgencyDocument.extend({
+export const UserDto = UserBase.extend({
+  _id: z.string() as unknown as z.Schema<UserId>,
+  agency: AgencyDto.extend({
     created: DateString,
     lastModified: DateString,
   }),
