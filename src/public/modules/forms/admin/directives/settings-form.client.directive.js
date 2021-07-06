@@ -181,19 +181,19 @@ function settingsFormDirective(
             isEnabledInStorageMode: true,
           },
           {
+            val: 'SGID',
+            name: 'Singpass App-only Login (Free)',
+            isEnabledInStorageMode: false,
+          },
+          {
             val: 'MyInfo',
-            name: 'Singpass (MyInfo)',
+            name: 'Singpass with MyInfo',
             isEnabledInStorageMode: false,
           },
           {
             val: 'CP',
-            name: 'Singpass (Corporate)',
+            name: 'Singpass Corporate',
             isEnabledInStorageMode: true,
-          },
-          {
-            val: 'SGID',
-            name: 'Singpass App-only Login (Free)',
-            isEnabledInStorageMode: false,
           },
         ]
 

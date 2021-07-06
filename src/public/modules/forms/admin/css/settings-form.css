@@ -240,3 +240,8 @@
 #settings-form input.input-error {
   border: 2px solid #a94442;
 }
+
+#settings-form .sgid-formsg-contact {
+  padding-left: 15px;
+  text-decoration: underline;
+}
