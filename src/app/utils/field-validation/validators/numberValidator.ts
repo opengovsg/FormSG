@@ -70,9 +70,9 @@ const exactLengthValidator: NumberValidatorConstructor =
  */
 const getNumberLengthValidator: NumberValidatorConstructor = (numberField) => {
   switch (numberField.ValidationOptions.selectedValidation) {
-    case NumberSelectedValidation.Min:
+    case NumberSelectedValidation.Minimum:
       return minLengthValidator(numberField)
-    case NumberSelectedValidation.Max:
+    case NumberSelectedValidation.Maximum:
       return maxLengthValidator(numberField)
     case NumberSelectedValidation.Exact:
       return exactLengthValidator(numberField)

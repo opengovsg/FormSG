@@ -1,6 +1,10 @@
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField } from 'src/app/utils/field-validation'
-import { BasicField, NumberSelectedValidation } from 'src/types'
+import {
+  BasicField,
+  NumberSelectedValidation,
+  NumberValidationType,
+} from 'src/types'
 
 import {
   generateDefaultField,
@@ -11,8 +15,11 @@ describe('Number field validation', () => {
   it('should allow number with valid maximum', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Max,
+        selectedValidationType: NumberValidationType.Length,
+        selectedValidation: NumberSelectedValidation.Maximum,
         customVal: 2,
+        rangeMax: null,
+        rangeMin: null,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -27,8 +34,11 @@ describe('Number field validation', () => {
   it('should allow number with valid maximum (inclusive)', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Max,
+        selectedValidationType: NumberValidationType.Length,
+        selectedValidation: NumberSelectedValidation.Maximum,
         customVal: 2,
+        rangeMax: null,
+        rangeMin: null,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -42,8 +52,11 @@ describe('Number field validation', () => {
   it('should disallow number with invalid maximum', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Max,
+        selectedValidationType: NumberValidationType.Length,
+        selectedValidation: NumberSelectedValidation.Maximum,
         customVal: 2,
+        rangeMax: null,
+        rangeMin: null,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -59,8 +72,11 @@ describe('Number field validation', () => {
   it('should allow number with valid minimum', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Min,
+        selectedValidationType: NumberValidationType.Length,
+        selectedValidation: NumberSelectedValidation.Minimum,
         customVal: 2,
+        rangeMax: null,
+        rangeMin: null,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -74,8 +90,11 @@ describe('Number field validation', () => {
   it('should allow number with valid minimum (inclusive)', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Min,
+        selectedValidationType: NumberValidationType.Length,
+        selectedValidation: NumberSelectedValidation.Minimum,
         customVal: 2,
+        rangeMax: null,
+        rangeMin: null,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -89,8 +108,11 @@ describe('Number field validation', () => {
   it('should allow number with valid exact', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
+        selectedValidationType: NumberValidationType.Length,
         selectedValidation: NumberSelectedValidation.Exact,
         customVal: 2,
+        rangeMax: null,
+        rangeMin: null,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -104,8 +126,11 @@ describe('Number field validation', () => {
   it('should disallow number with invalid exact', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
+        selectedValidationType: NumberValidationType.Length,
         selectedValidation: NumberSelectedValidation.Exact,
         customVal: 2,
+        rangeMax: null,
+        rangeMin: null,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -121,8 +146,11 @@ describe('Number field validation', () => {
   it('should allow number with maximum left undefined', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Max,
+        selectedValidationType: NumberValidationType.Length,
+        selectedValidation: NumberSelectedValidation.Maximum,
         customVal: null,
+        rangeMax: null,
+        rangeMin: null,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -136,8 +164,11 @@ describe('Number field validation', () => {
   it('should allow number with minimum left undefined', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Min,
+        selectedValidationType: NumberValidationType.Length,
+        selectedValidation: NumberSelectedValidation.Minimum,
         customVal: null,
+        rangeMax: null,
+        rangeMin: null,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -151,8 +182,11 @@ describe('Number field validation', () => {
   it('should allow number with exact undefined', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
+        selectedValidationType: NumberValidationType.Length,
         selectedValidation: NumberSelectedValidation.Exact,
         customVal: null,
+        rangeMax: null,
+        rangeMin: null,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {

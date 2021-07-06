@@ -1,8 +1,8 @@
 import { IField, IFieldSchema } from './baseField'
 
 export enum NumberSelectedValidation {
-  Max = 'Maximum',
-  Min = 'Minimum',
+  Maximum = 'Maximum',
+  Minimum = 'Minimum',
   Exact = 'Exact',
 }
 
