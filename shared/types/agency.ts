@@ -1,8 +1,6 @@
 import { Opaque } from 'type-fest'
 import { z } from 'zod'
 
-import { DateString } from './generic'
-
 export type AgencyId = Opaque<string, 'AgencyId'>
 export const AgencyId = z.string() as unknown as z.Schema<AgencyId>
 
@@ -12,8 +10,8 @@ export const AgencyDocument = z.object({
   fullName: z.string(),
   shortName: z.string(),
   logo: z.string(),
-  created: DateString,
-  lastModified: DateString,
+  created: z.date(),
+  lastModified: z.date(),
 })
 
 export type AgencyDocument = z.infer<typeof AgencyDocument>

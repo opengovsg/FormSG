@@ -11,15 +11,22 @@ export const UserDocument = z.object({
   _id: z.string() as unknown as z.Schema<UserId>,
   email: z.string().email(),
   agency: AgencyId,
-  created: DateString,
   betaFlags: z.record(z.boolean()).optional(),
-  lastAccessed: DateString,
-  updatedAt: DateString,
+  created: z.date(),
+  lastAccessed: z.date().optional(),
+  updatedAt: z.date(),
   contact: (z.string() as unknown as z.Schema<UserContact>).optional(),
 })
 export type UserDocument = z.infer<typeof UserDocument>
 
+// Convert to serialized versions.
 export const UserDto = UserDocument.extend({
-  agency: AgencyDocument,
+  agency: AgencyDocument.extend({
+    created: DateString,
+    lastModified: DateString,
+  }),
+  created: DateString,
+  lastAccessed: DateString.optional(),
+  updatedAt: DateString,
 })
 export type UserDto = z.infer<typeof UserDto>
