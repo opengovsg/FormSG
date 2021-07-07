@@ -5,10 +5,7 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
-import {
-  HASH_EXPIRE_AFTER_SECONDS,
-  SMS_VERIFICATION_LIMIT,
-} from '../../../shared/util/verification'
+import { HASH_EXPIRE_AFTER_SECONDS } from '../../../shared/util/verification'
 import {
   BounceType,
   EmailAdminDataField,
