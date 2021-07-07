@@ -144,12 +144,18 @@ function AuthenticationController($q, $scope, $state, $timeout, $window, GTag) {
     $q.when(AuthService.checkIsEmailAllowed(vm.credentials.email))
       .then(() => vm.sendOtp())
       .catch((error) => {
-        const errorMsg = get(
+        const validationMsgInBody = get(
           error,
-          'response.data',
-          'Something went wrong while validating your email. Please refresh and try again',
+          'response.data.validation.body.message',
         )
-        setEmailSignInError(errorMsg)
+        const errorMsgInBody = get(error, 'response.data.message')
+        const errorMsgAsPlain = get(error, 'response.data')
+        setEmailSignInError(
+          validationMsgInBody ||
+            errorMsgInBody ||
+            errorMsgAsPlain ||
+            'Something went wrong while validating your email. Please refresh and try again',
+        )
       })
   }
 
