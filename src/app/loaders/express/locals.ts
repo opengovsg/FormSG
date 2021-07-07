@@ -4,6 +4,7 @@ import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
 import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
 import { sentryConfig } from '../../config/features/sentry.config'
+import { smsConfig } from '../../config/features/sms.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
 // Construct js with environment variables needed by frontend
@@ -20,6 +21,7 @@ const frontendVars = {
   isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
   GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
+  smsVerificationLimit: smsConfig.smsVerificationLimit,
 }
 const environment = ejs.render(
   `
@@ -42,6 +44,8 @@ const environment = ejs.render(
     var formsgSdkMode = "<%= formsgSdkMode%>"
     // SPCP Cookie
     var spcpCookieDomain = "<%= spcpCookieDomain%>"
+    // Sms verification limit
+    var smsVerificationLimit = "<%= smsVerificationLimit%>"
   `,
   frontendVars,
 )

@@ -1,10 +1,13 @@
 import convict, { Schema } from 'convict'
 
+import { SMS_VERIFICATION_LIMIT } from '../../../shared/util/verification'
+
 export interface ISms {
   twilioAccountSid: string
   twilioApiKey: string
   twilioApiSecret: string
   twilioMsgSrvcSid: string
+  smsVerificationLimit: number
 }
 
 const smsSchema: Schema<ISms> = {
@@ -31,6 +34,13 @@ const smsSchema: Schema<ISms> = {
     format: String,
     default: null,
     env: 'TWILIO_MESSAGING_SERVICE_SID',
+  },
+  smsVerificationLimit: {
+    doc: 'Sms verification limit for an admin',
+    // Positive int
+    format: 'nat',
+    default: SMS_VERIFICATION_LIMIT,
+    env: 'SMS_VERIFICATION_LIMIT',
   },
 }
 
