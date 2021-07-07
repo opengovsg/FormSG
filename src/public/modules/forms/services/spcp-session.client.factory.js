@@ -41,6 +41,10 @@ function SpcpSession($interval, $q, Toastr, $window, $cookies) {
       session.userName = undefined
     },
     logout: function (authType) {
+      $cookies.remove(
+        session.cookieName,
+        $window.spcpCookieDomain ? { domain: $window.spcpCookieDomain } : {},
+      )
       $q.when(PublicFormAuthService.logoutOfSpcpSession(authType))
         .then(() => {
           $cookies.put('isJustLogOut', true)
