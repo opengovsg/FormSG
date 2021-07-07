@@ -91,6 +91,10 @@ export interface IBouncedSubmissionSmsCountSchema
 
 export interface ISmsCountModel extends Model<ISmsCountSchema> {
   logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>
+  /**
+   * Counts the number of sms which an admin has sent using default (formSG) credentials.
+   * NOTE: This counts across all forms which an admin has.
+   */
   retrieveFreeSmsCounts: (userId: string) => Promise<number>
 }
 
