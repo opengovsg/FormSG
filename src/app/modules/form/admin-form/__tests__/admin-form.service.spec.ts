@@ -54,7 +54,7 @@ import {
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
-import { SMS_VERIFICATION_LIMIT } from '../../../../../shared/util/verification'
+import { smsConfig } from '../../../../config/features/sms.config'
 import * as SmsService from '../../../../services/sms/sms.service'
 import {
   FormNotFoundError,
@@ -2266,7 +2266,7 @@ describe('admin-form.service', () => {
 
     it('should return the form when admin is under the limit', async () => {
       // Arrange
-      countSpy.mockReturnValueOnce(okAsync(SMS_VERIFICATION_LIMIT))
+      countSpy.mockReturnValueOnce(okAsync(smsConfig.smsVerificationLimit))
 
       // Act
       const actual = await shouldUpdateFormField(
@@ -2320,7 +2320,7 @@ describe('admin-form.service', () => {
 
     it('should return sms retrieval error when sms limit exceeded and admin is attempting to toggle sms verification for mobile field on', async () => {
       // Arrange
-      countSpy.mockReturnValueOnce(okAsync(SMS_VERIFICATION_LIMIT + 1))
+      countSpy.mockReturnValueOnce(okAsync(smsConfig.smsVerificationLimit + 1))
 
       // Act
       const actual = await shouldUpdateFormField(

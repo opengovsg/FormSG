@@ -21,5 +21,3 @@ export enum VfnErrors {
   TransactionNotFound = 'TRANSACTION_NOT_FOUND',
   InvalidMobileNumber = 'INVALID_MOBILE_NUMBER',
 }
-
-export const SMS_VERIFICATION_LIMIT = 10000
