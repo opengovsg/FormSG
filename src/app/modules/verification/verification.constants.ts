@@ -1,1 +1,0 @@
-export const SMS_VERIFICATION_LIMIT = 10000
