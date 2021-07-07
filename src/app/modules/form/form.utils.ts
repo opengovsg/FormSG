@@ -125,6 +125,8 @@ export const getLogicById = (
 }
 
 // Typeguard to check if a form has a message service id
-export const isOnboardedForm = (form: IForm): form is IOnboardedForm<IForm> => {
+export const isOnboardedForm = <T extends IForm = IForm>(
+  form: T,
+): form is IOnboardedForm<T> => {
   return !!form.msgSrvcName
 }

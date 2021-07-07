@@ -1092,12 +1092,12 @@ export const shouldUpdateFormField = (
   IPopulatedForm,
   PossibleDatabaseError | SmsLimitExceededError
 > => {
-  const formAdminId = String(form.admin._id)
-
   // Field can always update if it's not a verifiable field or if the form has been onboarded
   if (!isVerifiableMobileField(formField) || isOnboardedForm(form)) {
     return okAsync(form)
   }
+
+  const formAdminId = String(form.admin._id)
 
   // If the form admin has exceeded the sms limit
   // And the form is not onboarded, refuse to update the field
