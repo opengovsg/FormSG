@@ -201,7 +201,7 @@ test
 })
 
 test('Prevent sign-in if email is invalid', async (t) => {
-  let email = t.ctx.user.email
+  let email = 'ani@open.gov.rg'
   // Enter email
   await enterEmail(t, email)
 
