@@ -42,6 +42,7 @@ function SpcpSession($interval, $q, Toastr, $window, $cookies) {
     },
     logout: function (authType) {
       $cookies.remove(
+        // TODO (#2329): To remove after old cookies have expired
         session.cookieName,
         $window.oldSpcpCookieDomain
           ? { domain: $window.oldSpcpCookieDomain }
