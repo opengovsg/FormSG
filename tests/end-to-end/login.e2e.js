@@ -205,7 +205,7 @@ test('Prevent sign-in if email is invalid', async (t) => {
   // Enter email
   await enterEmail(t, email)
 
-  t.expect(signInPage.emailErrorMsg().textContent).contains(
-    'Please enter a valid email',
-  )
+  await t
+    .expect(signInPage.emailErrorMsg().textContent)
+    .contains('Please enter a valid email')
 })
