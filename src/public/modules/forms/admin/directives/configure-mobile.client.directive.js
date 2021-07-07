@@ -3,10 +3,11 @@ const { get } = require('lodash')
 
 const {
   ADMIN_VERIFIED_SMS_STATES,
-  SMS_VERIFICATION_LIMIT,
 } = require('../../../../../shared/util/verification')
 
 const AdminMetaService = require('../../../../services/AdminMetaService')
+
+const { injectedVariables } = require('../../../../utils/injectedVariables')
 
 angular
   .module('forms')
@@ -42,11 +43,15 @@ function configureMobileDirective() {
         $scope.isLoading = true
         $scope.field.hasRetrievalError = false
 
+        const formattedSmsVerificationLimit =
+          // Format so that it has commas; conversion is required because it's string initially
+          Number(injectedVariables.smsVerificationLimit).toLocaleString('en-US')
+
         const getAdminVerifiedSmsState = (verifiedSmsCount, msgSrvcId) => {
           if (msgSrvcId) {
             return ADMIN_VERIFIED_SMS_STATES.hasMessageServiceId
           }
-          if (verifiedSmsCount < SMS_VERIFICATION_LIMIT) {
+          if (verifiedSmsCount < injectedVariables.smsVerificationLimit) {
             return ADMIN_VERIFIED_SMS_STATES.belowLimit
           }
           return ADMIN_VERIFIED_SMS_STATES.limitExceeded
@@ -103,17 +108,16 @@ function configureMobileDirective() {
               resolve: {
                 externalScope: function () {
                   return {
-                    title:
-                      'OTP verification will be disabled at 10,000 responses',
+                    title: `OTP verification will be disabled at ${formattedSmsVerificationLimit} responses`,
                     confirmButtonText: 'Accept',
                     description: `
-                    We provide SMS OTP verification for free up to 10,000 responses. OTP verification will be automatically disabled when your account reaches 10,000 responses. 
+                    We provide SMS OTP verification for free up to ${formattedSmsVerificationLimit} responses. OTP verification will be automatically disabled when your account reaches ${formattedSmsVerificationLimit} responses. 
                     <br></br>
-                    If you require OTP verification for more than 10,000 responses,
+                    If you require OTP verification for more than ${formattedSmsVerificationLimit} responses,
                     <a href=${$scope.verifiedSmsSetupLink} target="_blank" class=""> please arrange advance billing with us. </a>  
 
                     <br></br>
-                    <small>Current response count: ${$scope.verifiedSmsCount}/${SMS_VERIFICATION_LIMIT}</small>
+                    <small>Current response count: ${$scope.verifiedSmsCount}/${formattedSmsVerificationLimit}</small>
                     `,
                     isImportant: true,
                   }
