@@ -117,7 +117,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
       const exampleNumber = getExampleNumber(
         country,
         examples,
-      )?.formatInternational()
+      )?.formatNational()
 
       if (examplePlaceholder === 'aggressive') {
         return exampleNumber ?? props.placeholder
