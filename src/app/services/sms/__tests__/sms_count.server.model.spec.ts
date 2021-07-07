@@ -234,7 +234,7 @@ describe('SmsCount', () => {
     const twilioMsgSrvcSid = smsConfig.twilioMsgSrvcSid
 
     beforeAll(() => {
-      smsConfig.twilioMsgSrvcSid = 'all hail twilio, twilight of io'
+      smsConfig.twilioMsgSrvcSid = MOCK_MSG_SRVC_SID
     })
 
     afterAll(() => {
@@ -245,7 +245,7 @@ describe('SmsCount', () => {
       // Arrange
       const smsCountParams = createVerificationSmsCountParams()
       const expected = merge(smsCountParams, {
-        isOnboardedAccount: true,
+        isOnboardedAccount: false,
       })
 
       // Act
@@ -275,7 +275,7 @@ describe('SmsCount', () => {
         },
       )
       const expected = merge(omit(smsCountParamsWithExtra, 'extra'), {
-        isOnboardedAccount: true,
+        isOnboardedAccount: false,
       })
 
       // Act
@@ -298,16 +298,14 @@ describe('SmsCount', () => {
       expect(actualSavedObject).toEqual(expected)
     })
 
-    it('should save successfully and set isOnboarded to false when sms is sent using default credentials', async () => {
+    it('should save successfully and set isOnboarded to true when the credentials are different from default', async () => {
       // Arrange
-      // NOTE: The isOnboardedAccount property is set based on twilioMsgSrvcSid.
-      const initialMsgSrvcSid = smsConfig.twilioMsgSrvcSid
-      smsConfig.twilioMsgSrvcSid = MOCK_MSG_SRVC_SID
       const verificationParams = merge(
         createVerificationSmsCountParams({
           logType: LogType.success,
           smsType: SmsType.Verification,
         }),
+        { msgSrvcSid: 'i am different' },
       )
 
       // Act
@@ -328,10 +326,7 @@ describe('SmsCount', () => {
       expect(omit(actualSavedObject, 'isOnboardedAccount')).toEqual(
         verificationParams,
       )
-      expect(actualSavedObject.isOnboardedAccount).toBe(false)
-
-      // NOTE: set msgSrvcSid back to initial one so that it doesn't affect other tests
-      smsConfig.twilioMsgSrvcSid = initialMsgSrvcSid
+      expect(actualSavedObject.isOnboardedAccount).toBe(true)
     })
 
     it('should reject if form key is missing', async () => {
