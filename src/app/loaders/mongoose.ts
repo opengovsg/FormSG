@@ -28,7 +28,7 @@ export default async (): Promise<Connection> => {
       process.exit(1)
     }
 
-    const mongod = new MongoMemoryServer({
+    const mongod = await MongoMemoryServer.create({
       binary: { version: String(process.env.MONGO_BINARY_VERSION) },
       instance: {
         port: 3000,
@@ -38,7 +38,7 @@ export default async (): Promise<Connection> => {
     })
 
     // Store the uri to connect to later on
-    config.db.uri = await mongod.getConnectionString()
+    config.db.uri = mongod.getUri()
   }
 
   // Actually connect to the database
