@@ -7154,7 +7154,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController._handleUpdateFormField(
+      await AdminFormController._handleCreateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -7540,7 +7540,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController._handleUpdateFormField(
+      await AdminFormController.handleDuplicateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -7560,7 +7560,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleDeleteFormField(
+      await AdminFormController.handleDuplicateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),
