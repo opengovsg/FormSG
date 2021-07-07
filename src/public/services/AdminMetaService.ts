@@ -1,7 +1,5 @@
 import axios from 'axios'
 
-import { SmsCountsDto } from '../../types/api'
-
 /** Exported for testing */
 export const FORM_API_PREFIX = '/api/v3/admin/forms'
 
@@ -12,7 +10,7 @@ export const FORM_API_PREFIX = '/api/v3/admin/forms'
  */
 export const getFreeSmsCountsUsedByFormAdmin = (
   formId: string,
-): Promise<SmsCountsDto> =>
+): Promise<number> =>
   axios
-    .get<SmsCountsDto>(`${FORM_API_PREFIX}/${formId}/verified-sms/count/free`)
+    .get<number>(`${FORM_API_PREFIX}/${formId}/verified-sms/count/free`)
     .then(({ data }) => data)
