@@ -43,6 +43,8 @@ const environment = ejs.render(
     var formsgSdkMode = "<%= formsgSdkMode%>"
     // SPCP Cookie
     var spcpCookieDomain = "<%= spcpCookieDomain%>"
+    // Old SPCP Cookie
+    var oldSpcpCookieDomain = "<%= oldSpcpCookieDomain%>"
   `,
   frontendVars,
 )
