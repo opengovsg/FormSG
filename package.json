@@ -171,7 +171,7 @@
     "@types/cookie-parser": "^1.4.2",
     "@types/dedent": "^0.7.0",
     "@types/ejs": "^3.0.6",
-    "@types/express": "^4.17.12",
+    "@types/express": "^4.17.13",
     "@types/express-rate-limit": "^5.1.2",
     "@types/express-request-id": "^1.4.1",
     "@types/express-session": "^1.17.0",
