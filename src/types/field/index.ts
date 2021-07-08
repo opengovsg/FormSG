@@ -1,6 +1,6 @@
 import {
   BasicField,
-  FormField as SharedFormField,
+  FormField,
   FormFieldDto,
   MyInfoAttribute,
 } from '../../../shared/types/field'
@@ -38,7 +38,7 @@ export enum SgidFieldTitle {
   SgidNric = 'sgID Validated NRIC',
 }
 
-export { BasicField, MyInfoAttribute }
+export { BasicField, MyInfoAttribute, FormField }
 
 export * from './baseField'
 export * from './attachmentField'
@@ -84,8 +84,6 @@ export type FormFieldSchema =
   | ITableFieldSchema
   | IUenFieldSchema
   | IYesNoFieldSchema
-
-export type FormField = SharedFormField
 
 /**
  * Form field POJO with id
