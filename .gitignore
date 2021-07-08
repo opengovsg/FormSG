@@ -63,3 +63,4 @@ tmp/
 # Tests
 # =======
 coverage/
+frontend/.eslintcache
