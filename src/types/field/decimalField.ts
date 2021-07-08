@@ -1,13 +1,7 @@
-import { IField, IFieldSchema } from './baseField'
+import { DecimalFieldBase } from '../../../shared/types/field'
 
-export type DecimalValidationOptions = {
-  customMax: number | null
-  customMin: number | null
-}
+import { IFieldSchema } from './baseField'
 
-export interface IDecimalField extends IField {
-  ValidationOptions: DecimalValidationOptions
-  validateByValue: boolean
-}
+export type IDecimalField = DecimalFieldBase
 
 export interface IDecimalFieldSchema extends IDecimalField, IFieldSchema {}

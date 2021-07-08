@@ -1,15 +1,7 @@
-import { IField, IFieldSchema } from './baseField'
+import { CheckboxFieldBase } from '../../../shared/types/field'
 
-export type CheckboxValidationOptions = {
-  customMax: number | null
-  customMin: number | null
-}
+import { IFieldSchema } from './baseField'
 
-export interface ICheckboxField extends IField {
-  fieldOptions: string[]
-  othersRadioButton: boolean
-  ValidationOptions: CheckboxValidationOptions
-  validateByValue: boolean
-}
+export type ICheckboxField = CheckboxFieldBase
 
 export interface ICheckboxFieldSchema extends ICheckboxField, IFieldSchema {}

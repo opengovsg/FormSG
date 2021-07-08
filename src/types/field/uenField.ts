@@ -1,5 +1,7 @@
-import { IField, IFieldSchema } from './baseField'
+import { UenFieldBase } from '../../../shared/types/field'
 
-export type IUenField = IField
+import { IFieldSchema } from './baseField'
+
+export type IUenField = UenFieldBase
 
 export interface IUenFieldSchema extends IUenField, IFieldSchema {}

@@ -1,18 +1,13 @@
-import { IField, IFieldSchema } from './baseField'
+import {
+  AttachmentFieldBase,
+  AttachmentSize,
+} from '../../../shared/types/field'
 
-export enum AttachmentSize {
-  OneMb = '1',
-  TwoMb = '2',
-  ThreeMb = '3',
-  SevenMb = '7',
-  TenMb = '10',
-  TwentyMb = '20',
-}
+import { IFieldSchema } from './baseField'
 
-export interface IAttachmentField extends IField {
-  attachmentSize: AttachmentSize
-}
+export { AttachmentSize }
 
+export type IAttachmentField = AttachmentFieldBase
 export interface IAttachmentFieldSchema
   extends IAttachmentField,
     IFieldSchema {}

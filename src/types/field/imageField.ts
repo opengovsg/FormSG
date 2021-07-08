@@ -1,10 +1,7 @@
-import { IField, IFieldSchema } from './baseField'
+import { ImageFieldBase } from '../../../shared/types/field'
 
-export interface IImageField extends IField {
-  url: string
-  fileMd5Hash: string
-  name: string
-  size: string
-}
+import { IFieldSchema } from './baseField'
+
+export type IImageField = ImageFieldBase
 
 export interface IImageFieldSchema extends IImageField, IFieldSchema {}

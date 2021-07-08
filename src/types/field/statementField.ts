@@ -1,5 +1,6 @@
-import { IField, IFieldSchema } from './baseField'
+import { StatementFieldBase } from '../../../shared/types/field'
 
-export type IStatementField = IField
+import { IFieldSchema } from './baseField'
 
+export type IStatementField = StatementFieldBase
 export interface IStatementFieldSchema extends IStatementField, IFieldSchema {}

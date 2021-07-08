@@ -1,9 +1,6 @@
-import { ITextField } from './utils/textField'
+import { ShortTextFieldBase } from '../../../shared/types/field'
+
 import { IFieldSchema } from './baseField'
 
-export type IShortTextField = ITextField
-
-export interface IShortTextFieldSchema extends IShortTextField, IFieldSchema {
-  // Prefill flag
-  allowPrefill?: boolean
-}
+export type IShortTextField = ShortTextFieldBase
+export interface IShortTextFieldSchema extends IShortTextField, IFieldSchema {}

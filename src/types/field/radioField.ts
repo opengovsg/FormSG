@@ -1,8 +1,6 @@
-import { IField, IFieldSchema } from './baseField'
+import { RadioFieldBase } from '../../../shared/types/field'
 
-export interface IRadioField extends IField {
-  fieldOptions: string[]
-  othersRadioButton: boolean
-}
+import { IFieldSchema } from './baseField'
 
+export type IRadioField = RadioFieldBase
 export interface IRadioFieldSchema extends IRadioField, IFieldSchema {}
