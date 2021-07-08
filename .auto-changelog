@@ -1,4 +1,4 @@
 {
 	"package": true,
-	"ignoreCommitPattern": "^chore(\\(deps(-dev)?\\))?: bump.*"
+	"ignoreCommitPattern": "^((chore)|(fix))(\\(deps(-dev)?\\))?: bump.*"
 }
