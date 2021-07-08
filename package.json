@@ -165,7 +165,7 @@
     "@opengovsg/mockpass": "^2.7.4",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.36",
-    "@types/busboy": "^0.2.3",
+    "@types/busboy": "^0.2.4",
     "@types/compression": "^1.7.1",
     "@types/convict": "^6.1.1",
     "@types/cookie-parser": "^1.4.2",
