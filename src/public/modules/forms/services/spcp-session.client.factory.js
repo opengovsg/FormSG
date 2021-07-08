@@ -16,7 +16,6 @@ angular
 function SpcpSession($interval, $q, Toastr, $window, $cookies) {
   let session = {
     userName: null,
-    cookieName: null,
     rememberMe: null,
     issuedAt: null,
     cookieNames: {
@@ -41,6 +40,13 @@ function SpcpSession($interval, $q, Toastr, $window, $cookies) {
       session.userName = undefined
     },
     logout: function (authType) {
+      $cookies.remove(
+        // TODO (#2329): To remove after old cookies have expired
+        session.cookieNames[authType],
+        $window.oldSpcpCookieDomain
+          ? { domain: $window.oldSpcpCookieDomain }
+          : {},
+      )
       $q.when(PublicFormAuthService.logoutOfSpcpSession(authType))
         .then(() => {
           $cookies.put('isJustLogOut', true)

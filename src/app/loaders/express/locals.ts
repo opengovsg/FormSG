@@ -20,6 +20,7 @@ const frontendVars = {
   isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
   GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
+  oldSpcpCookieDomain: spcpMyInfoConfig.oldSpcpCookieDomain, // Old cookie domain used for backward compatibility. TODO (#2329): Delete env var
 }
 const environment = ejs.render(
   `
@@ -42,6 +43,8 @@ const environment = ejs.render(
     var formsgSdkMode = "<%= formsgSdkMode%>"
     // SPCP Cookie
     var spcpCookieDomain = "<%= spcpCookieDomain%>"
+    // Old SPCP Cookie
+    var oldSpcpCookieDomain = "<%= oldSpcpCookieDomain%>"
   `,
   frontendVars,
 )
