@@ -8,6 +8,7 @@ import { FormLabel } from './FormLabel'
 import { Input } from './Input'
 import { Link } from './Link'
 import { Textarea } from './Textarea'
+import { Toast } from './Toast'
 
 export const components = {
   Button,
@@ -20,4 +21,5 @@ export const components = {
   [YESNO_THEME_KEY]: YesNoField,
   Banner,
   Alert,
+  Toast,
 }

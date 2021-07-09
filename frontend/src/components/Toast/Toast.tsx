@@ -1,3 +1,4 @@
+import { BiX } from 'react-icons/bi'
 import {
   Alert,
   AlertDescription,
@@ -6,7 +7,7 @@ import {
   AlertTitle,
   Box,
   CloseButton,
-  useMediaQuery,
+  useMultiStyleConfig,
   UseToastOptions,
 } from '@chakra-ui/react'
 
@@ -37,46 +38,29 @@ export const Toast = ({
   onClose,
   onCloseComplete,
 }: ToastProps): JSX.Element => {
-  // Dynamically determine the size of the modal based on screen breakpoints
-  const [isDesktop] = useMediaQuery('(min-width: 1080px)')
-  const width = isDesktop ? '680px' : 'auto'
-  const horizontalMargins = isDesktop ? 'inherit' : 2
+  const styles = useMultiStyleConfig('Toast', {})
 
   return (
     <Alert
+      sx={styles.alert}
       status={getChakraAlertStatus(status)}
       variant="toast"
       colorScheme={status}
-      padding={4}
       id={String(id)}
-      // Padding right is 4 rem (normal padding) + width of the button.
-      // This is to prevent the button overlapping the text on resize.
-      pr={10}
-      width={width}
-      mx={horizontalMargins}
-      mt={2}
     >
       <AlertIcon />
       <Box>
         {title && <AlertTitle>{title}</AlertTitle>}
-        {description && (
-          <AlertDescription display="block">{description}</AlertDescription>
-        )}
+        {description && <AlertDescription>{description}</AlertDescription>}
       </Box>
       {isClosable && (
         <CloseButton
-          position="absolute"
-          right={4}
-          top={4}
-          size="sm"
+          children={<BiX />}
           onClick={() => {
-            if (onClose) {
-              onClose()
-            }
-            if (onCloseComplete) {
-              onCloseComplete()
-            }
+            onClose?.()
+            onCloseComplete?.()
           }}
+          sx={styles.close}
         />
       )}
     </Alert>
