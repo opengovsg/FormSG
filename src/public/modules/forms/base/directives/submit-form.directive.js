@@ -9,6 +9,8 @@ const UpdateFormService = require('../../../../services/UpdateFormService')
 const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
+} = require('../../../../../shared/util/logic')
+const {
   formatFieldsForLogic,
 } = require('../../../../../shared/util/logic-utils')
 

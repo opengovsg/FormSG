@@ -1,11 +1,10 @@
 import { err, ok, Result } from 'neverthrow'
 
-import { formatFieldsForLogic } from 'src/shared/util/logic-utils'
-
 import {
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
 } from '../../../../shared/util/logic'
+import { formatFieldsForLogic } from '../../../../shared/util/logic-utils'
 import {
   AuthType,
   FieldResponse,
