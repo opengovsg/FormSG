@@ -8,12 +8,14 @@ export enum LogicConditionState {
   Lte = 'is less than or equal to',
   Gte = 'is more than or equal to',
   Either = 'is either',
+  AnyOf = 'is one of the following',
 }
 
 export enum LogicIfValue {
   Number = 'number',
   SingleSelect = 'single-select',
   MultiSelect = 'multi-select',
+  MultiValue = 'multi-value',
 }
 
 export enum LogicType {
@@ -61,12 +63,21 @@ type LogicField = Extract<
   | BasicField.Number
   | BasicField.Decimal
   | BasicField.Rating
+  | BasicField.Checkbox
 >
 
 type LogicAssociation<K extends LogicField, VS extends LogicConditionState> = [
   K,
   Array<VS>,
 ]
+
+// Logic fields that are multi-valued
+type MultiValuedLogicField = Extract<BasicField, BasicField.Checkbox>
+type MultiValuedLogicStates = LogicConditionState.AnyOf
+type MultiValuedLogicCondition = LogicAssociation<
+  MultiValuedLogicField,
+  MultiValuedLogicStates
+>
 
 // Logic fields that are categorical
 type CategoricalLogicField = Extract<
@@ -107,6 +118,7 @@ export type LogicCondition =
   | CategoricalLogicCondition
   | BinaryLogicCondition
   | NumericalLogicCondition
+  | MultiValuedLogicCondition
 
 /**
  * Logic POJO with functions removed
