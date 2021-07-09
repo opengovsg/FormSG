@@ -1,6 +1,6 @@
 'use strict'
 
-const { range } = require('lodash')
+const { range, cloneDeep } = require('lodash')
 const {
   LogicType,
   LogicIfValue,
@@ -9,6 +9,10 @@ const {
 } = require('../../../../../types')
 const FormLogic = require('../../services/form-logic/form-logic.client.service')
 const UpdateFormService = require('../../../../services/UpdateFormService')
+const {
+  transformBackendLogic,
+  transformFrontendLogic,
+} = require('../../services/form-logic/form-logic.client.service')
 
 angular
   .module('forms')
@@ -298,21 +302,29 @@ function EditLogicModalController(
       delete vm.logic.show
     }
 
+    const clonedLogic = cloneDeep(vm.logic) // clone to avoid changes to existing logic
+
     // Decide whether to add to formLogics or replace current one
     const { isNew, logicIndex } = externalScope
 
     if (isNew) {
-      vm.createNewLogic(vm.logic)
+      vm.createNewLogic(clonedLogic)
     } else if (logicIndex !== -1) {
-      vm.updateExistingLogic(logicIndex, vm.logic)
+      vm.updateExistingLogic(logicIndex, clonedLogic)
     }
   }
 
   vm.createNewLogic = function (newLogic) {
-    $q.when(UpdateFormService.createFormLogic(vm.myform._id, newLogic))
+    $q.when(
+      UpdateFormService.createFormLogic(
+        vm.myform._id,
+        transformFrontendLogic(newLogic, vm.myform.form_fields),
+      ),
+    )
       .then((createdLogic) => {
-        vm.formLogics.push(createdLogic)
-        externalScope.myform.form_logics.push(createdLogic) // update global myform
+        const transformedLogic = transformBackendLogic(createdLogic)
+        vm.formLogics.push(transformedLogic)
+        externalScope.myform.form_logics.push(transformedLogic) // update global myform
         $uibModalInstance.close()
       })
       .catch(() => {
@@ -330,12 +342,13 @@ function EditLogicModalController(
       UpdateFormService.updateFormLogic(
         vm.myform._id,
         logicIdToUpdate,
-        updatedLogic,
+        transformFrontendLogic(updatedLogic, vm.myform.form_fields),
       ),
     )
       .then((updatedLogic) => {
-        vm.formLogics[logicIndex] = updatedLogic
-        externalScope.myform.form_logics[logicIndex] = updatedLogic // update global myform
+        const transformedLogic = transformBackendLogic(updatedLogic)
+        vm.formLogics[logicIndex] = transformedLogic
+        externalScope.myform.form_logics[logicIndex] = transformedLogic // update global myform
         $uibModalInstance.close()
       })
       .catch(() => {

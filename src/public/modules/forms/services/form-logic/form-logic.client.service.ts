@@ -1,11 +1,21 @@
+import { isLogicCheckboxCondition } from '../../../../../shared/util/logic'
 import {
   BasicField,
   IField,
+  ILogicSchema,
+  IPopulatedForm,
   LogicCondition,
   LogicConditionState,
 } from '../../../../../types'
 
+import {
+  convertArrayCheckboxCondition,
+  convertObjectCheckboxCondition,
+  isClientCheckboxCondition,
+} from './form-logic-checkbox.client.service'
+
 const LOGIC_CONDITIONS: LogicCondition[] = [
+  [BasicField.Checkbox, [LogicConditionState.AnyOf]],
   [
     BasicField.Dropdown,
     [LogicConditionState.Equal, LogicConditionState.Either],
@@ -53,3 +63,47 @@ export const getApplicableIfFields = (formFields: IField[]): IField[] =>
 export const getApplicableIfStates = (
   fieldType: BasicField,
 ): LogicConditionState[] => LOGIC_MAP.get(fieldType) ?? []
+
+/**
+ * Transforms logic conditions retrieved from the backend into frontend representation.
+ * This function should be used when retrieving logic objects from the backend.
+ * @param formLogic Logic object
+ * @returns Transformed logic object
+ */
+export const transformBackendLogic = (
+  formLogic: ILogicSchema,
+): ILogicSchema => {
+  formLogic.conditions = formLogic.conditions.map((condition) => {
+    if (isLogicCheckboxCondition(condition)) {
+      return convertObjectCheckboxCondition(condition)
+    } else {
+      return condition
+    }
+  })
+
+  return formLogic
+}
+
+/**
+ * Transforms logic conditions retrieved from the frontend into backend representation.
+ * This function should be used before sending logic objects to the backend.
+ * @param formLogic Logic object
+ * @param formFields Form fields of the form.
+ * @returns Tranformed logic object
+ */
+export const transformFrontendLogic = (
+  formLogic: ILogicSchema,
+  formFields: IPopulatedForm['form_fields'],
+): ILogicSchema => {
+  formLogic.conditions = formLogic.conditions.map((condition) => {
+    if (isClientCheckboxCondition(condition)) {
+      const conditionField = formFields.find(
+        (field) => String(field._id) === String(condition.field),
+      )
+      return convertArrayCheckboxCondition(condition, conditionField)
+    } else {
+      return condition
+    }
+  })
+  return formLogic
+}

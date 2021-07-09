@@ -26,7 +26,13 @@ export enum LogicType {
 export interface ICondition {
   field: IFieldSchema['_id']
   state: LogicConditionState
-  value: string | number | string[] | number[]
+  value:
+    | string
+    | number
+    | string[]
+    | number[]
+    | CheckboxConditionValue[]
+    | string[][] // frontend representation of checkbox condition value, will not be added to backend (ensured by Joi validators)
   ifValueType?: LogicIfValue
 }
 
@@ -120,6 +126,15 @@ export type LogicCondition =
   | NumericalLogicCondition
   | MultiValuedLogicCondition
 
+// Types for checkbox logic field
+export type CheckboxConditionValue = {
+  options: string[]
+  others: boolean
+}
+export interface LogicCheckboxCondition
+  extends Omit<IConditionSchema, 'value'> {
+  value: CheckboxConditionValue[]
+}
 /**
  * Logic POJO with functions removed
  */
