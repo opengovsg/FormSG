@@ -30,14 +30,14 @@ const ToastStateProps: Record<string, ToastProps> = {
     onClose: () => {},
   },
 }
+
 export default {
   title: 'Components/Toast',
   component: Toast,
   parameters: { backgrounds: { default: 'light' } },
   decorators: [
-    // NOTE: The toast component requires this to display properly with theming
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    (Story: Function) => (
+    // NOTE: The toast component requires this to display properly with theming.
+    (Story) => (
       <>
         <Story />
       </>
@@ -46,6 +46,7 @@ export default {
 } as Meta
 
 const ToastTemplate: Story<ToastProps> = (args) => <Toast {...args} />
+
 const ButtonWithToastTemplate: Story<UseToastProps> = (args) => {
   const toast = useToast()
   return (
@@ -67,6 +68,7 @@ Success.args = ToastStateProps.Success
 
 export const Error = ToastTemplate.bind({})
 Error.args = ToastStateProps.Error
+
 export const Warning = ToastTemplate.bind({})
 Warning.args = ToastStateProps.Warning
 

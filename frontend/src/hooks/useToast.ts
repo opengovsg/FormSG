@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react'
+import React from 'react'
 import {
   RenderProps,
   useToast as useChakraToast,
@@ -25,14 +25,14 @@ export const useToast: UseToast = () => {
     position = 'top',
     render,
     ...rest
-  }: UseToastProps) => {
+  }: UseToastProps) =>
     toast({
       duration,
       position,
-      render:
-        render ??
-        ((props: PropsWithChildren<RenderProps>) =>
-          Toast({ ...rest, ...props })),
+      render: (props: RenderProps) =>
+        // NOTE: Because chakra expects this to be JSX, this has to be called with createElement.
+        // Omitting the createElement causes a visual bug, where our own theme providers are not used.
+        // Using createElement also allows the file to be pure ts rather than tsx.
+        React.createElement(() => Toast({ ...rest, ...props })),
     })
-  }
 }
