@@ -17,7 +17,7 @@ export type UseToastProps = Omit<ToastBehaviourProps & ToastProps, 'onClose'>
 
 type UseToast = (
   // NOTE: Chakra's toast status is different from ours, hence we need to omit it for type compatibility
-  initialProps: Omit<UseToastProps, 'status'>,
+  initialProps?: Omit<UseToastProps, 'status'>,
 ) => (props: UseToastProps) => void
 
 export const useToast: UseToast = (initialProps) => {
