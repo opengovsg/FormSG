@@ -34,6 +34,8 @@ function EditLogicModalController(
   vm.myform = angular.copy(externalScope.myform)
   vm.logic = angular.copy(externalScope.currLogic)
 
+  vm.checkIfHasInvalidValues = externalScope.checkIfHasInvalidValues
+
   /**
    * The current logic being edited in the modal
    * @typedef {Object} Logic
