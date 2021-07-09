@@ -1,7 +1,14 @@
 import { Document } from 'mongoose'
 
-import { IFieldSchema } from './field/baseField'
+import { IClientFieldSchema, IFieldSchema } from './field/baseField'
 import { BasicField } from './field/fieldTypes'
+import {
+  FieldResponse,
+  IAttachmentResponse,
+  ICheckboxResponse,
+  ISingleAnswerResponse,
+  ITableResponse,
+} from '.'
 
 export enum LogicConditionState {
   Equal = 'is equals to',
@@ -131,11 +138,33 @@ export type CheckboxConditionValue = {
   options: string[]
   others: boolean
 }
+export type ILogicCheckboxResponse = Omit<ICheckboxResponse, 'answerArray'> & {
+  answerArray: CheckboxConditionValue
+}
 export interface LogicCheckboxCondition
   extends Omit<IConditionSchema, 'value'> {
   value: CheckboxConditionValue[]
 }
+
+// Types for condition values of fields that have to be transformed before inserting into logic module
+export type ConditionValueTypes = CheckboxConditionValue
+
 /**
  * Logic POJO with functions removed
  */
 export type LogicDto = ILogic & { _id?: Document['_id'] }
+
+// Type for fields before being transformed and passed into the logic module
+export type FieldSchemaOrResponse = IClientFieldSchema | FieldResponse
+
+// Type for client fields after being transformed and passed into the logic module
+export type ILogicClientFieldSchema = Omit<IClientFieldSchema, 'fieldValue'> & {
+  fieldValue: IClientFieldSchema['fieldValue'] | ConditionValueTypes
+}
+
+// Type for backend fields after being transformed and passed into the logic module
+export type LogicFieldResponse =
+  | ISingleAnswerResponse
+  | ILogicCheckboxResponse
+  | ITableResponse
+  | IAttachmentResponse
