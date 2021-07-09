@@ -1,4 +1,4 @@
-import { IField, IForm, IUser } from '../../../types'
+import { AuthType, IField, IForm, IUser } from '../../../types'
 import * as BetaService from '../BetaService'
 
 describe('BetaService', () => {
@@ -63,12 +63,13 @@ describe('BetaService', () => {
   describe('getBetaFeaturesForFields', () => {
     const form = {
       form_fields: [{ title: featureTwo }],
+      authType: AuthType.NIL,
     } as IForm
     it('lists the beta features that the user lacks', () => {
-      const result = BetaService.getMissingFieldPermissions(
+      const result = BetaService.getMissingPermissions(
         userWithFeatureOne,
         form,
-        betaFeaturesField,
+        { field: betaFeaturesField },
       )
       expect(result).toStrictEqual([featureTwo])
     })
