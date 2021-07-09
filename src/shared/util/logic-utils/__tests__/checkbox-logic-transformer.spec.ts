@@ -4,8 +4,8 @@ import {
   BasicField,
   FieldSchemaOrResponse,
   ICheckboxFieldSchema,
-} from '../../../types'
-import { transformCheckboxForLogic } from '../logic/checkbox/checkbox-response-value-transformer'
+} from '../../../../types'
+import { transformCheckboxForLogic } from '../checkbox/checkbox-response-value-transformer'
 
 describe('transformCheckboxForLogic', () => {
   describe('Frontend Checkbox value with others option', () => {

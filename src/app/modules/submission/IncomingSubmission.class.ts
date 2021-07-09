@@ -2,10 +2,10 @@ import { combineWithAllErrors, err, ok, Result } from 'neverthrow'
 
 import {
   FieldIdSet,
-  formatFieldsForLogic,
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
 } from '../../../shared/util/logic'
+import { formatFieldsForLogic } from '../../../shared/util/logic-utils'
 import {
   FieldResponse,
   IFieldSchema,

@@ -1,4 +1,4 @@
-import { isLogicCheckboxCondition } from '../../../../../shared/util/logic'
+import { isLogicCheckboxCondition } from '../../../../../shared/util/logic-utils'
 import {
   BasicField,
   IField,

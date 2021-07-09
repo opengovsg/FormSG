@@ -10,7 +10,7 @@ const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
   formatFieldsForLogic,
-} = require('../../../../../shared/util/logic')
+} = require('../../../../../shared/util/logic-utils')
 
 /**
  * @typedef {number} FormState

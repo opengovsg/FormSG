@@ -5,9 +5,9 @@ import {
   FieldSchemaOrResponse,
   IPopulatedForm,
 } from '../../../types'
+import { LogicFieldSchemaOrResponse } from '../logic'
 
 import { transformCheckboxForLogic } from './checkbox/checkbox-response-value-transformer'
-import { LogicFieldSchemaOrResponse } from './logic'
 
 /**
  * Transforms fields into the correct shape for logic module
