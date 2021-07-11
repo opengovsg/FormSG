@@ -250,12 +250,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
                   const {
                     field,
                     state,
-                  }: { field: ObjectId; state: LogicConditionState } = condition
+                  }: { field: ObjectId | string; state: LogicConditionState } =
+                    condition
                   return {
                     state,
                     fieldType: form.form_fields?.find(
-                      (f: IFieldSchema) =>
-                        f._id.toHexString() === field.toHexString(),
+                      (f: IFieldSchema) => String(f._id) === String(field),
                     )?.fieldType,
                   }
                 },
@@ -785,7 +785,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     let form = await this.findById(formId).exec()
     if (!form?.form_logics) return null
     const index = form.form_logics.findIndex(
-      (logic) => logic._id.toHexString() === logicId,
+      (logic) => String(logic._id) === logicId,
     )
     form = form.set(`form_logics.${index}`, updatedLogic, {
       new: true,
