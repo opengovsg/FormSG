@@ -216,14 +216,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         validate: {
           validator(this: IFormSchema, v: ILogicSchema[]) {
             /**
-             * A condition object is said to be validatable if it contains the two
-             * necessary for validation: fieldType and state
-             */
-            type ValidatableCondition = IncompleteValidatableCondition & {
-              fieldType: BasicField
-            }
-
-            /**
              * A validatable condition is incomplete if there is a possibility
              * that its fieldType is null, which is a sign that a condition's
              * field property references a non-existent form_field.
@@ -231,6 +223,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             type IncompleteValidatableCondition = {
               state: LogicConditionState
               fieldType?: BasicField
+            }
+
+            /**
+             * A condition object is said to be validatable if it contains the two
+             * necessary for validation: fieldType and state
+             */
+            type ValidatableCondition = IncompleteValidatableCondition & {
+              fieldType: BasicField
             }
 
             const isAllConditionsReferenceExistingFields = (
