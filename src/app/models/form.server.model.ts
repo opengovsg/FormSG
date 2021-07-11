@@ -233,10 +233,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               fieldType: BasicField
             }
 
-            const isAllConditionsReferenceExistingFields = (
-              conditions: IncompleteValidatableCondition[],
-            ): conditions is ValidatableCondition[] =>
-              !conditions.some((condition) => !condition.fieldType)
+            const isConditionReferencesExistingField = (
+              condition: IncompleteValidatableCondition,
+            ): condition is ValidatableCondition => !!condition.fieldType
 
             const conditions = v.flatMap((logic) => {
               return logic.conditions.map<IncompleteValidatableCondition>(
@@ -255,15 +254,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
                 },
               )
             })
-            if (!isAllConditionsReferenceExistingFields(conditions))
-              return false
 
-            const validationResults = conditions.map((condition) => {
+            return conditions.every((condition) => {
+              // Conditions don't necessarily need to reference existing fields
+              if (!isConditionReferencesExistingField(condition)) return true
+
               const { fieldType, state } = condition
               const applicableIfStates = getApplicableIfStates(fieldType)
               return applicableIfStates.includes(state)
             })
-            return validationResults.every((r) => r)
           },
           message: 'Form logic condition validation failed.',
         },
