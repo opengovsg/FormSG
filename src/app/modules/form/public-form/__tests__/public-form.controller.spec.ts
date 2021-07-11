@@ -1509,6 +1509,46 @@ describe('public-form.controller', () => {
         message: 'Successfully logged out.',
       })
     })
+
+    it('should return 200 if authType is MyInfo and call clearCookie()', async () => {
+      const authType = AuthType.MyInfo
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          authType,
+        },
+      })
+      const mockRes = expressHandler.mockResponse({
+        clearCookie: jest.fn().mockReturnThis(),
+      })
+
+      await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
+
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Successfully logged out.',
+      })
+    })
+
+    it('should return 200 if authType is SGID and call clearCookie()', async () => {
+      const authType = AuthType.SGID
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          authType,
+        },
+      })
+      const mockRes = expressHandler.mockResponse({
+        clearCookie: jest.fn().mockReturnThis(),
+      })
+
+      await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
+
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Successfully logged out.',
+      })
+    })
   })
 
   describe('handleValidateFormEsrvcId', () => {
