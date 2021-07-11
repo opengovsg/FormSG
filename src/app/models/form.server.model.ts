@@ -214,13 +214,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       form_logics: {
         type: [LogicSchema],
         validate: {
-          validator(v: ILogicSchema[]) {
-            /**
-             * `this` variable points to the parent document object when we use
-             * save().
-             */
-            const form = this as unknown as IFormSchema
-
+          validator(this: IFormSchema, v: ILogicSchema[]) {
             /**
              * A condition object is said to be validatable if it contains the two
              * necessary for validation: fieldType and state
@@ -254,7 +248,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
                     condition
                   return {
                     state,
-                    fieldType: form.form_fields?.find(
+                    fieldType: this.form_fields?.find(
                       (f: IFieldSchema) => String(f._id) === String(field),
                     )?.fieldType,
                   }
