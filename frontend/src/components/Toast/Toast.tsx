@@ -38,17 +38,17 @@ export const Toast = ({
   onClose,
   onCloseComplete,
 }: ToastProps): JSX.Element => {
-  const styles = useMultiStyleConfig('Toast', {})
+  const styles = useMultiStyleConfig('Toast', {
+    variant: status,
+  })
 
   return (
     <Alert
-      sx={styles.alert}
+      sx={styles.container}
       status={getChakraAlertStatus(status)}
-      variant="toast"
-      colorScheme={status}
       id={String(id)}
     >
-      <AlertIcon />
+      <AlertIcon sx={styles.icon} />
       <Box>
         {title && <AlertTitle>{title}</AlertTitle>}
         {description && <AlertDescription>{description}</AlertDescription>}
