@@ -132,7 +132,7 @@ interface RatingOptionProps {
   /**
    * Variant of rating field to render
    */
-  variant: 'Heart' | 'Star' | 'Number'
+  variant: 'heart' | 'star' | 'number'
 }
 
 export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
@@ -179,13 +179,13 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
         inputId: inputProps.id,
       }
       switch (variant) {
-        case 'Number':
+        case 'number':
           return <NumberRating {...props} />
-        case 'Heart':
+        case 'heart':
           return (
             <IconRating {...props} emptyIcon={BxHeart} fullIcon={BxsHeart} />
           )
-        case 'Star':
+        case 'star':
           return <IconRating {...props} emptyIcon={BxStar} fullIcon={BxsStar} />
       }
     }, [radioProps, colorScheme, inputProps.id, selectedValue, value, variant])

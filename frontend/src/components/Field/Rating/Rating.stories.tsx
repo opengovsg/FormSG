@@ -30,19 +30,19 @@ const ResponsiveGroup: Story<RatingProps> = (args) => (
       name={`${args.name}-1`}
       defaultValue={3}
       numberOfRatings={10}
-      variant="Heart"
+      variant="heart"
     />
     <Rating
       {...args}
       name={`${args.name}-2`}
       numberOfRatings={4}
       defaultValue={1}
-      variant="Star"
+      variant="star"
     />
     <Rating
       {...args}
       name={`${args.name}-3`}
-      variant="Number"
+      variant="number"
       defaultValue={3}
       numberOfRatings={8}
     />
@@ -125,14 +125,14 @@ const TemplateGroup: Story<RatingProps> = (args) => (
 export const Default = Template.bind({})
 Default.args = {
   numberOfRatings: 10,
-  variant: 'Number',
+  variant: 'number',
   name: 'Test rating input',
 }
 
 export const WithHelperText = Template.bind({})
 WithHelperText.args = {
   numberOfRatings: 10,
-  variant: 'Number',
+  variant: 'number',
   name: 'Test rating input',
   helperText: '1: Strongly agree, 10: Strongly disagree',
 }
@@ -141,7 +141,7 @@ export const VariantNumber = TemplateGroup.bind({})
 VariantNumber.args = {
   name: 'Test rating input',
   numberOfRatings: 5,
-  variant: 'Number',
+  variant: 'number',
 }
 VariantNumber.storyName = 'Variant/Number'
 
@@ -149,7 +149,7 @@ export const VariantStar = TemplateGroup.bind({})
 VariantStar.args = {
   name: 'Test rating input',
   numberOfRatings: 5,
-  variant: 'Star',
+  variant: 'star',
 }
 VariantStar.storyName = 'Variant/Star'
 
@@ -157,7 +157,7 @@ export const VariantHeart = TemplateGroup.bind({})
 VariantHeart.args = {
   name: 'Test rating input',
   numberOfRatings: 5,
-  variant: 'Heart',
+  variant: 'heart',
 }
 VariantHeart.storyName = 'Variant/Heart'
 
@@ -208,6 +208,7 @@ export const Playground: Story = ({
   } = useController({
     control,
     name,
+    defaultValue: args.defaultValue,
     rules: {
       required: isRequired ? { value: true, message: 'Required field' } : false,
     },
@@ -246,5 +247,5 @@ Playground.args = {
   isDisabled: false,
   defaultValue: 3,
   numberOfRatings: 10,
-  variant: 'Number',
+  variant: 'number',
 }

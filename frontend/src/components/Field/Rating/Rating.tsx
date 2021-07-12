@@ -45,7 +45,7 @@ export interface RatingProps {
   /**
    * Variant of rating field to render
    */
-  variant: 'Heart' | 'Star' | 'Number'
+  variant: 'heart' | 'star' | 'number'
 
   /**
    * Helper text to be displayed to quantify the ratings, if any.
@@ -110,7 +110,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
 
     const ratingLayout = useMemo(() => {
       switch (variant) {
-        case 'Number':
+        case 'number':
           return { spacing: '-1px', rowHeight: '0.5rem' }
         default:
           return { spacing: 0, rowHeight: 0 }
@@ -167,7 +167,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
               )
             })}
           </Wrap>
-          {currentValue && variant !== 'Number' && (
+          {currentValue && variant !== 'number' && (
             <Text color="secondary.700" textStyle="subhead-2">
               {currentValue} selected
             </Text>
