@@ -434,11 +434,10 @@ function AdminFormController(
         return options.concat(val)
       }, [])
       return flattenedValues.some((val) => {
-        if (val === 'Others') {
-          return !field.othersRadioButton
-        } else {
-          return !field.fieldOptions.includes(val)
+        if (field.fieldOptions.includes(val)) {
+          return false
         }
+        return val === 'Others' ? !field.othersRadioButton : true
       })
     } else if (field.fieldType === BasicField.Rating) {
       return values > field.ratingOptions.steps
