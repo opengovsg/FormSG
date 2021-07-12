@@ -1,15 +1,17 @@
+import React from 'react'
 import { BiX } from 'react-icons/bi'
 import {
   Alert,
   AlertDescription,
-  AlertIcon,
-  AlertProps,
   AlertTitle,
   Box,
   CloseButton,
+  Icon,
   useMultiStyleConfig,
   UseToastOptions,
 } from '@chakra-ui/react'
+
+import { BxsCheckCircle, BxsErrorCircle } from '~assets/icons'
 
 type ToastStatus = 'danger' | 'success' | 'warning'
 
@@ -26,8 +28,8 @@ export interface ToastProps
   onClose: () => void
 }
 
-const getChakraAlertStatus = (status: ToastStatus): AlertProps['status'] =>
-  status === 'danger' ? 'error' : status
+const getIconForStatus = (status: ToastStatus) =>
+  status === 'success' ? BxsCheckCircle : BxsErrorCircle
 
 export const Toast = ({
   status,
@@ -43,19 +45,15 @@ export const Toast = ({
   })
 
   return (
-    <Alert
-      sx={styles.container}
-      status={getChakraAlertStatus(status)}
-      id={String(id)}
-    >
-      <AlertIcon sx={styles.icon} />
-      <Box>
+    <Alert sx={styles.container} id={String(id)}>
+      <Icon sx={styles.icon} as={getIconForStatus(status)} />
+      <Box sx={styles.content}>
         {title && <AlertTitle>{title}</AlertTitle>}
         {description && <AlertDescription>{description}</AlertDescription>}
       </Box>
       {isClosable && (
         <CloseButton
-          children={<BiX />}
+          as={BiX}
           onClick={() => {
             onClose?.()
             onCloseComplete?.()
