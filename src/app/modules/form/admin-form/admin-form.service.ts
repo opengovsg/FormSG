@@ -10,6 +10,7 @@ import {
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../shared/constants'
 import {
+  BasicField,
   FormLogoState,
   FormMetaView,
   FormSettings,
@@ -19,6 +20,7 @@ import {
   IFormDocument,
   IFormSchema,
   ILogicSchema,
+  IMobileField,
   IPopulatedForm,
   IUserSchema,
   LogicDto,
@@ -1092,8 +1094,34 @@ export const shouldUpdateFormField = (
   IPopulatedForm,
   PossibleDatabaseError | SmsLimitExceededError
 > => {
+  switch (formField.fieldType) {
+    case BasicField.Mobile: {
+      // NOTE: This casting is safe and we require this casting because we do not declare explicit discriminants on the extended type
+      return isMobileFieldUpdateAllowed(formField as IMobileField, form)
+    }
+    default:
+      return okAsync(form)
+  }
+}
+
+/**
+ * Checks whether the mobile update should be allowed based on whether the mobile field is verified
+ * and (if verified), the admin's free sms counts
+ * @param mobileField The mobile field to check
+ * @param form The form that the field belongs to
+ * @returns ok(form) if the update is valid
+ * @returns err(PossibleDatabaseError) if an error occurred while retrieving counts from database
+ * @returns err(SmsLimitExceededError) if the admin of the form has exceeded their free sms quota
+ */
+const isMobileFieldUpdateAllowed = (
+  mobileField: IMobileField,
+  form: IPopulatedForm,
+): ResultAsync<
+  IPopulatedForm,
+  PossibleDatabaseError | SmsLimitExceededError
+> => {
   // Field can always update if it's not a verifiable field or if the form has been onboarded
-  if (!isVerifiableMobileField(formField) || isOnboardedForm(form)) {
+  if (!isVerifiableMobileField(mobileField) || isOnboardedForm(form)) {
     return okAsync(form)
   }
 
