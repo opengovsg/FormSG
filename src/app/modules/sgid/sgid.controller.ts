@@ -7,6 +7,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
+import { SGID_COOKIE_NAME } from './sgid.constants'
 import { SgidService } from './sgid.service'
 
 const logger = createLoggerWithLabel(module)
@@ -71,7 +72,7 @@ export const handleLogin: ControllerHandler<
   }
 
   const { maxAge, jwt } = jwtResult.value
-  res.cookie('jwtSgid', jwt, {
+  res.cookie(SGID_COOKIE_NAME, jwt, {
     maxAge,
     httpOnly: true,
     sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox

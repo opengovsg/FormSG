@@ -35,7 +35,6 @@ import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpService } from '../../spcp/spcp.service'
-import { JwtName } from '../../spcp/spcp.types'
 import { getRedirectTarget, validateSpcpForm } from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -485,37 +484,39 @@ export const handleFormAuthRedirect = [
 
 /**
  * NOTE: This is exported only for testing
- * Logs user out of SP / CP By deleting cookie
+ * Logs user out of SP / CP / MyInfo / SGID by deleting cookie
  * @param authType type of authentication
  *
  * @returns 200 with success message when user logs out successfully
  * @returns 400 if authType is invalid
  */
-export const _handleSpcpLogout: ControllerHandler<
-  { authType: AuthType.SP | AuthType.CP | AuthType.SGID },
+export const _handlePublicAuthLogout: ControllerHandler<
+  { authType: AuthType.SP | AuthType.CP | AuthType.MyInfo | AuthType.SGID },
   PublicFormAuthLogoutDto
 > = (req, res) => {
   const { authType } = req.params
 
+  const cookieName = PublicFormService.getCookieNameByAuthType(authType)
+
   return res
-    .clearCookie(JwtName[authType])
+    .clearCookie(cookieName)
     .status(200)
     .json({ message: 'Successfully logged out.' })
 }
 
 /**
  * Handler for /forms/auth/:authType/logout
- * Valid AuthTypes are SP or CP
+ * Valid AuthTypes are SP / CP / MyInfo / SGID
  */
-export const handleSpcpLogout = [
+export const handlePublicAuthLogout = [
   celebrate({
     [Segments.PARAMS]: Joi.object({
       authType: Joi.string()
-        .valid(AuthType.SP, AuthType.CP, AuthType.SGID)
+        .valid(AuthType.SP, AuthType.CP, AuthType.MyInfo, AuthType.SGID)
         .required(),
     }),
   }),
-  _handleSpcpLogout,
+  _handlePublicAuthLogout,
 ] as ControllerHandler[]
 
 /**
