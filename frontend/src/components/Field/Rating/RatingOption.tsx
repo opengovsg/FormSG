@@ -141,6 +141,7 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
     ref,
   ) => {
     const handleSelect = useCallback(() => {
+      // Deselect if current value is re-selected value.
       if (selectedValue === value) {
         onChange?.(undefined)
       } else {
