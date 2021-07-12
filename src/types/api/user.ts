@@ -16,7 +16,11 @@ export const User = z.object({
   _id: z.string() as unknown as z.Schema<UserId>,
   email: z.string().email(),
   agency: Agency,
-  betaFlags: z.record(z.boolean()).optional(),
+  betaFlags: z
+    .object({
+      sgid: z.boolean().optional(),
+    })
+    .optional(),
   created: DateString,
   lastAccessed: DateString,
   updatedAt: DateString,
