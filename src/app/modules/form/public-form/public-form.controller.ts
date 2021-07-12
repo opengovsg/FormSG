@@ -498,17 +498,22 @@ export const _handleSpcpLogout: ControllerHandler<
 > = (req, res) => {
   const { authType } = req.params
 
-  const cookieName =
-    authType === AuthType.MyInfo
-      ? MYINFO_COOKIE_NAME
-      : authType === AuthType.SGID
-      ? SGID_COOKIE_NAME
-      : JwtName[authType]
-
-  return res
-    .clearCookie(cookieName)
-    .status(200)
-    .json({ message: 'Successfully logged out.' })
+  if (authType === AuthType.MyInfo) {
+    return res
+      .clearCookie(MYINFO_COOKIE_NAME)
+      .status(200)
+      .json({ message: 'Successfully logged out.' })
+  } else if (authType === AuthType.SGID) {
+    return res
+      .clearCookie(SGID_COOKIE_NAME)
+      .status(200)
+      .json({ message: 'Successfully logged out.' })
+  } else {
+    return res
+      .clearCookie(JwtName[authType])
+      .status(200)
+      .json({ message: 'Successfully logged out.' })
+  }
 }
 
 /**
