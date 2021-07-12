@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 import {
   Box,
   forwardRef,
@@ -83,10 +83,13 @@ export const Rating = forwardRef<RatingProps, 'input'>(
       processDefaultValue(defaultValue),
     )
 
-    // Call onChange everytime currentValue changes.
-    useEffect(() => {
-      onChange?.(currentValue)
-    }, [currentValue, onChange])
+    const handleRatingChange = useCallback(
+      (newRating?: number) => {
+        setCurrentValue(newRating)
+        onChange?.(newRating)
+      },
+      [onChange],
+    )
 
     /**
      * Used to check whether a new row should be created when rendering rating
@@ -142,7 +145,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
                       colorScheme={colorScheme}
                       value={value}
                       numberOfRatings={numberOfRatings}
-                      onChange={setCurrentValue}
+                      onChange={handleRatingChange}
                       selectedValue={currentValue}
                       // Pass in ref if first item so it can be focused.
                       {...(i === 0 ? { ref } : {})}
