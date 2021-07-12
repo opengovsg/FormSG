@@ -74,7 +74,7 @@ export const isClientCheckboxCondition = (
         val.every(
           (option) =>
             typeof option.value === 'string' &&
-            typeof option.others === 'boolean',
+            typeof option.other === 'boolean',
         )
       )
     })
