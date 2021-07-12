@@ -1,11 +1,10 @@
 import { omit } from 'lodash'
 
 import {
+  ClientCheckboxConditionOption,
   IConditionSchema,
-  IField,
   LogicCheckboxCondition,
 } from '../../../../../types'
-import { isCheckboxField } from '../../../../../types/field/utils/guards'
 
 /**
  * Converts checkbox condition value with backend representation to frontend 2D array representation.
@@ -16,11 +15,16 @@ import { isCheckboxField } from '../../../../../types/field/utils/guards'
 export const convertObjectCheckboxCondition = (
   condition: LogicCheckboxCondition,
 ): ClientCheckboxCondition => {
-  const convertedValue = condition.value.map((value) => {
+  const convertedValue: ClientCheckboxConditionOption[][] = []
+  condition.value.forEach((value) => {
+    const combination = []
     if (value.others) {
-      value.options.push('Others')
+      combination.push({ value: 'Others', other: true })
     }
-    return value.options
+    value.options.forEach((option) => {
+      combination.push({ value: option, other: false })
+    })
+    convertedValue.push(combination)
   })
   return {
     ...omit(condition, ['value']),
@@ -37,24 +41,14 @@ export const convertObjectCheckboxCondition = (
  */
 export const convertArrayCheckboxCondition = (
   condition: ClientCheckboxCondition,
-  field: IField | undefined,
 ): LogicCheckboxCondition => {
   const convertedValue = condition.value.map((options) => {
-    if (!field) {
-      // eslint-disable-next-line typesafe/no-throw-sync-func
-      throw new Error('Field is undefined')
-    }
-    if (!isCheckboxField(field)) {
-      // eslint-disable-next-line typesafe/no-throw-sync-func
-      throw new Error(`${JSON.stringify(field)} is not a checkbox field`)
-    }
-    const shouldHaveOthers = field.othersRadioButton
-    const indexOfOthers = options.indexOf('Others')
-    const others = shouldHaveOthers && indexOfOthers > -1
+    const indexOfOthers = options.findIndex((option) => option.other)
+    const others = indexOfOthers > -1
     if (others) {
       options.splice(indexOfOthers, 1)
     }
-    return { options, others }
+    return { options: options.map((option) => option.value), others }
   })
   return {
     ...omit(condition, ['value']),
@@ -65,7 +59,7 @@ export const convertArrayCheckboxCondition = (
 // exported for testing
 export interface ClientCheckboxCondition
   extends Omit<IConditionSchema, 'value'> {
-  value: string[][]
+  value: ClientCheckboxConditionOption[][]
 }
 
 export const isClientCheckboxCondition = (
@@ -76,7 +70,12 @@ export const isClientCheckboxCondition = (
     Array.isArray(conditionValue) &&
     (conditionValue as unknown[]).every((val) => {
       return (
-        Array.isArray(val) && val.every((option) => typeof option === 'string')
+        Array.isArray(val) &&
+        val.every(
+          (option) =>
+            typeof option.value === 'string' &&
+            typeof option.others === 'boolean',
+        )
       )
     })
   )

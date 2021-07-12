@@ -39,7 +39,7 @@ export interface ICondition {
     | string[]
     | number[]
     | CheckboxConditionValue[]
-    | string[][] // frontend representation of checkbox condition value, will not be added to backend (ensured by Joi validators)
+    | ClientCheckboxConditionOption[][] // frontend representation of checkbox condition value, will not be added to backend (ensured by Joi validators)
   ifValueType?: LogicIfValue
 }
 
@@ -133,17 +133,36 @@ export type LogicCondition =
   | NumericalLogicCondition
   | MultiValuedLogicCondition
 
-// Types for checkbox logic field
-export type CheckboxConditionValue = {
-  options: string[]
-  others: boolean
+/**
+ * Types for checkbox logic field
+ */
+// Representation of an option in the logic tab
+export type ClientCheckboxConditionOption = {
+  value: string
+  other: boolean
 }
+
+// Representation of frontend checkbox response after being transformed
+export type ClientLogicCheckboxResponse = Omit<
+  IClientFieldSchema,
+  'fieldValue'
+> & {
+  fieldValue: CheckboxConditionValue
+}
+
+// Representation of backend checkbox response after being transformed
 export type ILogicCheckboxResponse = Omit<ICheckboxResponse, 'answerArray'> & {
   answerArray: CheckboxConditionValue
 }
+// Representation of a Checkbox condition
 export interface LogicCheckboxCondition
   extends Omit<IConditionSchema, 'value'> {
   value: CheckboxConditionValue[]
+}
+// Representation of a checkbox condition value
+export type CheckboxConditionValue = {
+  options: string[]
+  others: boolean
 }
 
 // Types for condition values of fields that have to be transformed before inserting into logic module
@@ -154,13 +173,16 @@ export type ConditionValueTypes = CheckboxConditionValue
  */
 export type LogicDto = ILogic & { _id?: Document['_id'] }
 
+/**
+ * Types needed for logic module inputs
+ */
 // Type for fields before being transformed and passed into the logic module
 export type FieldSchemaOrResponse = IClientFieldSchema | FieldResponse
 
 // Type for client fields after being transformed and passed into the logic module
-export type ILogicClientFieldSchema = Omit<IClientFieldSchema, 'fieldValue'> & {
-  fieldValue: IClientFieldSchema['fieldValue'] | ConditionValueTypes
-}
+export type ILogicClientFieldSchema =
+  | IClientFieldSchema
+  | ClientLogicCheckboxResponse
 
 // Type for backend fields after being transformed and passed into the logic module
 export type LogicFieldResponse =

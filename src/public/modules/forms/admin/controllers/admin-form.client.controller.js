@@ -427,8 +427,7 @@ function AdminFormController(
     }
     if (
       field.fieldType === BasicField.Dropdown ||
-      field.fieldType === BasicField.Radio ||
-      field.fieldType === BasicField.Checkbox
+      field.fieldType === BasicField.Radio
     ) {
       const flattenedValues = [].concat(values).reduce((options, val) => {
         return options.concat(val)
@@ -438,6 +437,16 @@ function AdminFormController(
           return false
         }
         return val === 'Others' ? !field.othersRadioButton : true
+      })
+    } else if (field.fieldType === BasicField.Checkbox) {
+      const flattenedValues = [].concat(values).reduce((options, val) => {
+        return options.concat(val)
+      }, [])
+      return flattenedValues.some((val) => {
+        if (field.fieldOptions.includes(val.value)) {
+          return false
+        }
+        return val.others ? !field.othersRadioButton : true
       })
     } else if (field.fieldType === BasicField.Rating) {
       return values > field.ratingOptions.steps

@@ -1,8 +1,4 @@
-import {
-  BasicField,
-  IFieldSchema,
-  LogicCheckboxCondition,
-} from '../../../../../../types'
+import { LogicCheckboxCondition } from '../../../../../../types'
 import {
   ClientCheckboxCondition,
   convertArrayCheckboxCondition,
@@ -23,7 +19,13 @@ describe('convertObjectCheckboxCondition', () => {
         ],
       } as unknown as LogicCheckboxCondition // only care about the value portion of the condition
       const expected = {
-        value: [[OPTIONS[0], OPTIONS[2], 'Others']],
+        value: [
+          [
+            { value: OPTIONS[0], other: false },
+            { value: OPTIONS[2], other: false },
+            { value: 'Others', other: true },
+          ],
+        ],
       }
 
       // Act
@@ -32,7 +34,8 @@ describe('convertObjectCheckboxCondition', () => {
       )
 
       // Assert
-      expect(transformed).toEqual(expected)
+      expect(transformed.value.length).toEqual(1) // should only have one condition
+      expect(new Set(transformed.value[0])).toEqual(new Set(expected.value[0]))
     })
     it('should correctly convert condition value with others false into array representation', () => {
       // Arrange
@@ -45,7 +48,12 @@ describe('convertObjectCheckboxCondition', () => {
         ],
       } as unknown as LogicCheckboxCondition // only care about the value portion of the condition
       const expected = {
-        value: [[OPTIONS[0], OPTIONS[2]]],
+        value: [
+          [
+            { value: OPTIONS[0], other: false },
+            { value: OPTIONS[2], other: false },
+          ],
+        ],
       }
 
       // Act
@@ -54,26 +62,27 @@ describe('convertObjectCheckboxCondition', () => {
       )
 
       // Assert
-      expect(transformed).toEqual(expected)
+      expect(transformed.value.length).toEqual(1) // should only have one condition
+      expect(new Set(transformed.value[0])).toEqual(new Set(expected.value[0]))
     })
   })
   describe('condition value with array representation', () => {
-    const OPTIONS = ['Option 1', 'Option 2', 'Option 3']
-    it('should correctly convert condition value with others string and othersRadioButton true into object representation', () => {
+    const OPTIONS = [
+      { value: 'Option 1', others: false },
+      { value: 'Option 2', others: false },
+      { value: 'Option 3', others: false },
+    ]
+    const OTHERS = { value: 'Others', other: true }
+    it('should correctly convert condition value with others into object representation', () => {
       // Arrange
-      const field = {
-        fieldType: BasicField.Checkbox,
-        fieldOptions: OPTIONS,
-        othersRadioButton: true,
-      } as unknown as IFieldSchema
       const conditionWithArrayRepresentation = {
-        value: [[OPTIONS[0], OPTIONS[2], 'Others']],
+        value: [[OPTIONS[0], OPTIONS[2], OTHERS]],
       } as unknown as ClientCheckboxCondition // only care about the value portion of the condition
 
       const expected = {
         value: [
           {
-            options: [OPTIONS[0], OPTIONS[2]],
+            options: [OPTIONS[0].value, OPTIONS[2].value],
             others: true,
           },
         ],
@@ -82,19 +91,13 @@ describe('convertObjectCheckboxCondition', () => {
       // Act
       const transformed = convertArrayCheckboxCondition(
         conditionWithArrayRepresentation,
-        field,
       )
 
       // Assert
       expect(transformed).toEqual(expected)
     })
-    it('should correctly convert condition value with othersRadioButton false into object representation', () => {
+    it('should correctly convert condition value without others into object representation', () => {
       // Arrange
-      const field = {
-        fieldType: BasicField.Checkbox,
-        fieldOptions: OPTIONS,
-        othersRadioButton: false,
-      } as unknown as IFieldSchema
       const conditionWithArrayRepresentation = {
         value: [[OPTIONS[0], OPTIONS[2]]],
       } as unknown as ClientCheckboxCondition // only care about the value portion of the condition
@@ -102,7 +105,7 @@ describe('convertObjectCheckboxCondition', () => {
       const expected = {
         value: [
           {
-            options: [OPTIONS[0], OPTIONS[2]],
+            options: [OPTIONS[0].value, OPTIONS[2].value],
             others: false,
           },
         ],
@@ -111,7 +114,6 @@ describe('convertObjectCheckboxCondition', () => {
       // Act
       const transformed = convertArrayCheckboxCondition(
         conditionWithArrayRepresentation,
-        field,
       )
 
       // Assert

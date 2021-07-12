@@ -3,19 +3,18 @@ import { omit } from 'lodash'
 
 import {
   BasicField,
-  CheckboxConditionValue,
+  ClientLogicCheckboxResponse,
   FieldSchemaOrResponse,
   ICheckboxField,
   ICheckboxResponse,
   IClientFieldSchema,
   IField,
   ILogicCheckboxResponse,
-  ILogicClientFieldSchema,
   IPopulatedForm,
 } from '../../../../types'
 import { isCheckboxField } from '../../../../types/field/utils/guards'
 import { hasProp } from '../../has-prop'
-import { LogicFieldSchemaOrResponse } from '../logic'
+import { LogicFieldSchemaOrResponse } from '../../logic'
 
 /**
  * Adaptor function to transform checkbox field response values into checkbox condition shape
@@ -42,12 +41,7 @@ type ClientCheckboxField = Omit<IClientFieldSchema, 'fieldValue'> & {
   fieldValue: boolean[]
 }
 
-type TransformedClientCheckboxField = Omit<
-  ILogicClientFieldSchema,
-  'fieldValue'
-> & {
-  fieldValue: CheckboxConditionValue
-}
+type TransformedClientCheckboxField = ClientLogicCheckboxResponse
 
 const isClientCheckboxValue = (
   field: FieldSchemaOrResponse,
@@ -67,9 +61,7 @@ const convertClientCheckboxValue = (
   formFields: IPopulatedForm['form_fields'],
 ): TransformedClientCheckboxField => {
   const completeField = getCheckboxField(field, formFields)
-  const others =
-    field.fieldValue[completeField.fieldOptions.length] &&
-    completeField.othersRadioButton
+  const others = field.fieldValue[completeField.fieldOptions.length]
   const options = completeField.fieldOptions.filter(
     (_, i) => field.fieldValue[i],
   )
@@ -111,10 +103,10 @@ const convertServerCheckboxValue = (
     (value) => !completeField.fieldOptions.includes(value),
   )
 
-  const others = inBuiltOthers !== undefined && completeField.othersRadioButton
+  let others = false
   if (inBuiltOthers) {
-    // remove others option that is not part of field options
     field.answerArray.splice(field.answerArray.indexOf(inBuiltOthers), 1)
+    others = true
   }
 
   return {

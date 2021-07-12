@@ -167,19 +167,6 @@ function EditLogicModalController(
   }
 
   /**
-   * Adds an others option to the condition's ifValues.
-   * @param {Condition} condition
-   */
-  const addOthers = function (condition) {
-    // prevent duplicate 'Others' option when reload or the question is with an existing 'Others' option
-    if (condition.ifValues.indexOf('Others') === -1) {
-      // prevent changing the original field options
-      condition.ifValues = condition.ifValues.slice()
-      condition.ifValues.push('Others')
-    }
-  }
-
-  /**
    * Loads the possible values based on the field type (e.g. yes/no) and field values (e.g. dropdown options, rating steps)
    * @param {Condition} condition
    * @param {Boolean} reset - flag to reset or not
@@ -201,7 +188,12 @@ function EditLogicModalController(
       condition.ifValues = field.fieldOptions
 
       if (field.fieldType === BasicField.Radio && field.othersRadioButton) {
-        addOthers(condition)
+        // prevent duplicate 'Others' option when reload or the question is with an existing 'Others' option
+        if (condition.ifValues.indexOf('Others') === -1) {
+          // prevent changing the original field options
+          condition.ifValues = condition.ifValues.slice()
+          condition.ifValues.push('Others')
+        }
       }
 
       if (condition.state === LogicConditionState.Equal) {
@@ -210,9 +202,14 @@ function EditLogicModalController(
         condition.ifValueType = LogicIfValue.MultiSelect
       }
     } else if (field.fieldType === BasicField.Checkbox) {
-      condition.ifValues = field.fieldOptions
+      condition.ifValues = field.fieldOptions.map((option) => {
+        return {
+          value: option,
+          other: false,
+        }
+      })
       if (field.fieldType === BasicField.Checkbox && field.othersRadioButton) {
-        addOthers(condition)
+        condition.ifValues.push({ value: 'Others', other: true })
       }
       condition.ifValueType = LogicIfValue.MultiValue
     } else if (field.fieldType === BasicField.Rating) {
@@ -318,7 +315,7 @@ function EditLogicModalController(
     $q.when(
       UpdateFormService.createFormLogic(
         vm.myform._id,
-        transformFrontendLogic(newLogic, vm.myform.form_fields),
+        transformFrontendLogic(newLogic),
       ),
     )
       .then((createdLogic) => {
@@ -342,7 +339,7 @@ function EditLogicModalController(
       UpdateFormService.updateFormLogic(
         vm.myform._id,
         logicIdToUpdate,
-        transformFrontendLogic(updatedLogic, vm.myform.form_fields),
+        transformFrontendLogic(updatedLogic),
       ),
     )
       .then((updatedLogic) => {

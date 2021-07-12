@@ -3,7 +3,6 @@ import {
   BasicField,
   IField,
   ILogicSchema,
-  IPopulatedForm,
   LogicCondition,
   LogicConditionState,
 } from '../../../../../types'
@@ -93,14 +92,10 @@ export const transformBackendLogic = (
  */
 export const transformFrontendLogic = (
   formLogic: ILogicSchema,
-  formFields: IPopulatedForm['form_fields'],
 ): ILogicSchema => {
   formLogic.conditions = formLogic.conditions.map((condition) => {
     if (isClientCheckboxCondition(condition)) {
-      const conditionField = formFields.find(
-        (field) => String(field._id) === String(condition.field),
-      )
-      return convertArrayCheckboxCondition(condition, conditionField)
+      return convertArrayCheckboxCondition(condition)
     } else {
       return condition
     }

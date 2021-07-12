@@ -199,7 +199,7 @@
                   >
                     <ui-select-match
                       placeholder="Click to add up to multiple values"
-                      >{{ $item }}</ui-select-match
+                      >{{ $item.value }}</ui-select-match
                     >
                     <ui-select-choices
                       refresh="vm.filterOptions($select.search, condition.ifValues)"
@@ -209,7 +209,7 @@
                       infinite-scroll-container="'#multi-select .ui-select-choices-content'"
                       infinite-scroll-distance="3"
                     >
-                      <span ng-bind="value"></span>
+                      <span ng-bind="value.value"></span>
                     </ui-select-choices>
                   </ui-select>
                   <div class="inline-btn">
