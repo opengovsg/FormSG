@@ -37,9 +37,6 @@ const BETA_FEATURES: BetaFeature[] = [
   {
     name: 'SGID',
     flag: 'sgid',
-    // Given that it's a _form_ level feature and not a
-    // _field_ level feature, always return true regardless
-    // of form field presented
     matches: (form) => form.authType === AuthType.SGID,
     // SGID is associated with entire form, not individual field
     fieldType: null,
