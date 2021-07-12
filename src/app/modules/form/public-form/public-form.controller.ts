@@ -31,17 +31,16 @@ import {
   extractAndAssertMyInfoCookieValidity,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
-import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpService } from '../../spcp/spcp.service'
-import { JwtName } from '../../spcp/spcp.types'
 import { getRedirectTarget, validateSpcpForm } from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
+import { getCookieNameByAuthType } from './public-form.service'
 import { RedirectParams } from './public-form.types'
 import { mapFormAuthError, mapRouteError } from './public-form.utils'
 
@@ -498,23 +497,12 @@ export const _handlePublicAuthLogout: ControllerHandler<
 > = (req, res) => {
   const { authType } = req.params
 
-  switch (authType) {
-    case AuthType.MyInfo:
-      return res
-        .clearCookie(MYINFO_COOKIE_NAME)
-        .status(200)
-        .json({ message: 'Successfully logged out.' })
-    case AuthType.SGID:
-      return res
-        .clearCookie(SGID_COOKIE_NAME)
-        .status(200)
-        .json({ message: 'Successfully logged out.' })
-    default:
-      return res
-        .clearCookie(JwtName[authType])
-        .status(200)
-        .json({ message: 'Successfully logged out.' })
-  }
+  const cookieName = getCookieNameByAuthType(authType)
+
+  return res
+    .clearCookie(cookieName)
+    .status(200)
+    .json({ message: 'Successfully logged out.' })
 }
 
 /**
