@@ -146,7 +146,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
           }
         } else {
           // Reset the formatter, but do not reformat.
-          // Doing so now will cause the user to loose their cursor position
+          // Doing so now will cause the user to lose their cursor position
           // Wait until blur or append to reformat.
           formatter.reset()
           formatter.input(newValue)
@@ -179,6 +179,11 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
       const number = formatter.getNumber()
       onBlur?.()
 
+      // Trigger on change again in case formatted number changes.
+      // This can happen in the following scenario:
+      // 1. `onInputChange` gets called when user types for example "65aabvcd123"
+      // 2. `formatter.getNumber().number` will transform that into "65" and cut out the remaining characters since the remaining string is not a valid number
+      // 3. Will need to call onChange on this new number.
       onChange(number?.number as string | undefined)
       // Check and update possibility
       const possible = number?.isPossible()
@@ -277,7 +282,7 @@ const CountrySelect: FC<CountrySelectProps> = (props) => {
       <Flex>
         <Icon
           aria-disabled={inputProps.disabled}
-          // Show FLags if available. If value does not exist for any reason,
+          // Show Flags if available. If value does not exist for any reason,
           // a default fallback icon will be used by ChakraUI.
           // See https://chakra-ui.com/docs/media-and-icons/icon#fallback-icon.
           as={Flags[value]}
