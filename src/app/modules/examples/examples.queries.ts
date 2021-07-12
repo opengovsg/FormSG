@@ -290,6 +290,7 @@ export const projectFormDetails: Record<string, unknown>[] = [
       logo: '$agencyInfo.logo',
       agency: '$agencyInfo.shortName',
       colorTheme: '$formInfo.startPage.colorTheme',
+      authType: '$formInfo.authType',
     },
   },
 ]
