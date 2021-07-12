@@ -9,6 +9,7 @@ import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { ApplicationError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
+import { SGID_COOKIE_NAME } from '../sgid.constants'
 import * as SgidController from '../sgid.controller'
 import {
   SgidFetchAccessTokenError,
@@ -182,13 +183,17 @@ describe('sgid.controller', () => {
         MOCK_USER_INFO.data,
         MOCK_REMEMBER_ME,
       )
-      expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('jwtSgid', MOCK_JWT, {
-        maxAge: MOCK_COOKIE_AGE,
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: !MockConfig.isDev,
-        ...MOCK_COOKIE_SETTINGS,
-      })
+      expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith(
+        SGID_COOKIE_NAME,
+        MOCK_JWT,
+        {
+          maxAge: MOCK_COOKIE_AGE,
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: !MockConfig.isDev,
+          ...MOCK_COOKIE_SETTINGS,
+        },
+      )
       expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
     })
   })
