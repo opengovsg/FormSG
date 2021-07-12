@@ -22,6 +22,12 @@ Default.args = {
   placeholder: 'Test placeholder',
 }
 
+export const HideSteppers = Template.bind({})
+HideSteppers.args = {
+  placeholder: 'This field has no steppers',
+  showSteppers: false,
+}
+
 export const Prefilled = Template.bind({})
 Prefilled.args = {
   placeholder: 'Test placeholder',

@@ -1,19 +1,17 @@
-import { BiCaretDown, BiCaretUp } from 'react-icons/bi'
+import { useRef } from 'react'
+import { BiMinus, BiPlus } from 'react-icons/bi'
 import {
+  Box,
+  chakra,
+  Divider,
   forwardRef,
-  Icon,
-  InputRightElement,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput as ChakraNumberInput,
-  NumberInputField,
   NumberInputProps as ChakraNumberInputProps,
-  NumberInputStepper,
+  useFormControlProps,
   useMultiStyleConfig,
+  useNumberInput,
 } from '@chakra-ui/react'
-import { omit } from '@chakra-ui/utils'
 
-import { BxsCheckCircle } from '~assets/icons/BxsCheckCircle'
+import IconButton from '../IconButton'
 
 export interface NumberInputProps extends ChakraNumberInputProps {
   /**
@@ -24,33 +22,76 @@ export interface NumberInputProps extends ChakraNumberInputProps {
    * Whether the input is in a success state.
    */
   isSuccess?: boolean
+  /**
+   * Whether to show the increment and decrement steppers. Defaults to true.
+   */
+  showSteppers?: boolean
 }
 
-export const NumberInput = forwardRef<NumberInputProps, 'input'>(
-  (props, ref) => {
-    const { isSuccess } = props
-    const inputStyles = useMultiStyleConfig('NumberInput', props)
-    // Omit extra props so they will not be passed into the DOM and trigger
-    // React warnings.
-    const inputProps = omit(props, ['isSuccess', 'isPrefilled'])
+export const NumberInput = forwardRef<NumberInputProps, 'div'>(
+  (
+    {
+      showSteppers = true,
+      clampValueOnBlur = false,
+      isSuccess,
+      isPrefilled,
+      ...props
+    },
+    ref,
+  ) => {
+    const styles = useMultiStyleConfig('NumberInput', {
+      ...props,
+      isSuccess,
+      isPrefilled,
+    })
+
+    const stepperWrapperRef = useRef<HTMLDivElement | null>(null)
+
+    const controlProps = useFormControlProps(props)
+    const {
+      htmlProps,
+      getInputProps,
+      getIncrementButtonProps,
+      getDecrementButtonProps,
+    } = useNumberInput({ ...controlProps, clampValueOnBlur })
+
+    const inputProps = getInputProps({ placeholder: props.placeholder })
+    const incProps = getIncrementButtonProps()
+    const decProps = getDecrementButtonProps()
+
+    const inputEndPadding = showSteppers
+      ? stepperWrapperRef.current?.offsetWidth
+      : undefined
 
     return (
-      <ChakraNumberInput {...inputProps} ref={ref}>
-        <NumberInputField sx={inputStyles.field} />
-        {isSuccess && (
-          <InputRightElement sx={inputStyles.success}>
-            <Icon as={BxsCheckCircle} />
-          </InputRightElement>
+      <Box {...htmlProps} ref={ref} __css={styles.root}>
+        <chakra.input
+          {...inputProps}
+          paddingInlineEnd={inputEndPadding}
+          __css={styles.field}
+        />
+        {showSteppers && (
+          <Box __css={styles.stepperWrapper} ref={stepperWrapperRef}>
+            <IconButton
+              sx={styles.stepperButton}
+              aria-hidden
+              aria-label="Decrement number"
+              variant="clear"
+              icon={<BiMinus />}
+              {...decProps}
+            />
+            <Divider __css={styles.stepperDivider} orientation="vertical" />
+            <IconButton
+              sx={styles.stepperButton}
+              aria-hidden
+              aria-label="Increment number"
+              variant="clear"
+              icon={<BiPlus />}
+              {...incProps}
+            />
+          </Box>
         )}
-        <NumberInputStepper>
-          <NumberIncrementStepper>
-            <Icon as={BiCaretUp} transform="translate(0, 3px)" />
-          </NumberIncrementStepper>
-          <NumberDecrementStepper>
-            <Icon as={BiCaretDown} transform="translate(0, -3px)" />
-          </NumberDecrementStepper>
-        </NumberInputStepper>
-      </ChakraNumberInput>
+      </Box>
     )
   },
 )
