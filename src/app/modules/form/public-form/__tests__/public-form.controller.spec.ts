@@ -1474,6 +1474,9 @@ describe('public-form.controller', () => {
   describe('handlePublicAuthLogout', () => {
     it('should return 200 if authType is SP and call clearCookie()', async () => {
       const authType = AuthType.SP
+      MockPublicFormService.getCookieNameByAuthType.mockReturnValueOnce(
+        JwtName[authType],
+      )
       const MOCK_REQ = expressHandler.mockRequest({
         params: {
           authType,
@@ -1498,6 +1501,9 @@ describe('public-form.controller', () => {
 
     it('should return 200 if authType is CP and call clearCookie()', async () => {
       const authType = AuthType.CP
+      MockPublicFormService.getCookieNameByAuthType.mockReturnValueOnce(
+        JwtName[authType],
+      )
       const MOCK_REQ = expressHandler.mockRequest({
         params: {
           authType,
@@ -1522,6 +1528,9 @@ describe('public-form.controller', () => {
 
     it('should return 200 if authType is MyInfo and call clearCookie()', async () => {
       const authType = AuthType.MyInfo
+      MockPublicFormService.getCookieNameByAuthType.mockReturnValueOnce(
+        MYINFO_COOKIE_NAME,
+      )
       const MOCK_REQ = expressHandler.mockRequest({
         params: {
           authType,
@@ -1546,6 +1555,9 @@ describe('public-form.controller', () => {
 
     it('should return 200 if authType is SGID and call clearCookie()', async () => {
       const authType = AuthType.SGID
+      MockPublicFormService.getCookieNameByAuthType.mockReturnValueOnce(
+        SGID_COOKIE_NAME,
+      )
       const MOCK_REQ = expressHandler.mockRequest({
         params: {
           authType,
