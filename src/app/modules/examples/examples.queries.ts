@@ -324,6 +324,7 @@ export const selectAndProjectCardInfo = (
       agency: '$agencyInfo.shortName',
       colorTheme: '$formInfo.startPage.colorTheme',
       avgFeedback: { $avg: '$formFeedbackInfo.rating' },
+      authType: '$formInfo.authType',
     },
   },
 ]
