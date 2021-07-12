@@ -148,7 +148,7 @@ function settingsFormDirective(
           return (
             $scope.isFormPublic() ||
             (authType.val === 'SGID' &&
-              !BetaService.userHasAccessToFieldType($scope.user, 'sgid')) ||
+              !BetaService.userHasAccessToFeature($scope.user, 'sgid')) ||
             ($scope.isFormPrivate() && $scope.myInfoSPWarning())
           )
         }
