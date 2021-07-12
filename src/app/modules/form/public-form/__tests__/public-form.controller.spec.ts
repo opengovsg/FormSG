@@ -31,8 +31,10 @@ import {
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import * as AuthService from '../../../auth/auth.service'
+import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
 import { MyInfoCookieStateError } from '../../../myinfo/myinfo.errors'
 import { MyInfoService } from '../../../myinfo/myinfo.service'
+import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
@@ -1524,7 +1526,7 @@ describe('public-form.controller', () => {
       await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
 
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(MYINFO_COOKIE_NAME)
       expect(mockRes.json).toBeCalledWith({
         message: 'Successfully logged out.',
       })
@@ -1544,7 +1546,7 @@ describe('public-form.controller', () => {
       await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
 
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(SGID_COOKIE_NAME)
       expect(mockRes.json).toBeCalledWith({
         message: 'Successfully logged out.',
       })

@@ -3,8 +3,6 @@ import { AuthType, IFormSchema } from '../../../types'
 export enum JwtName {
   SP = 'jwtSp',
   CP = 'jwtCp',
-  SGID = 'jwtSgid',
-  MyInfo = 'MyInfoCookie',
 }
 
 export type SpcpCookies = Partial<Record<JwtName, string>>

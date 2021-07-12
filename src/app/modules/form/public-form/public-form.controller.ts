@@ -31,6 +31,7 @@ import {
   extractAndAssertMyInfoCookieValidity,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
+import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
@@ -497,8 +498,15 @@ export const _handleSpcpLogout: ControllerHandler<
 > = (req, res) => {
   const { authType } = req.params
 
+  const cookieName =
+    authType === AuthType.MyInfo
+      ? MYINFO_COOKIE_NAME
+      : authType === AuthType.SGID
+      ? SGID_COOKIE_NAME
+      : JwtName[authType]
+
   return res
-    .clearCookie(JwtName[authType])
+    .clearCookie(cookieName)
     .status(200)
     .json({ message: 'Successfully logged out.' })
 }
