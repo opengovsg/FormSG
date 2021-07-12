@@ -35,14 +35,6 @@ jobs:
         create:
           name: build
           paths: .
-    - stage: Tests
-      name: End-to-end tests
-      workspaces:
-        use: build
-      addons:
-        chrome: stable
-      script:
-        - npm run test-e2e-ci
     - stage: Deploy
       services:
         - docker
