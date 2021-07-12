@@ -40,7 +40,6 @@ import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
-import { getCookieNameByAuthType } from './public-form.service'
 import { RedirectParams } from './public-form.types'
 import { mapFormAuthError, mapRouteError } from './public-form.utils'
 
@@ -497,7 +496,7 @@ export const _handlePublicAuthLogout: ControllerHandler<
 > = (req, res) => {
   const { authType } = req.params
 
-  const cookieName = getCookieNameByAuthType(authType)
+  const cookieName = PublicFormService.getCookieNameByAuthType(authType)
 
   return res
     .clearCookie(cookieName)
