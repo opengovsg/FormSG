@@ -1471,7 +1471,7 @@ describe('public-form.controller', () => {
     })
   })
 
-  describe('handleSpcpLogout', () => {
+  describe('handlePublicAuthLogout', () => {
     it('should return 200 if authType is SP and call clearCookie()', async () => {
       const authType = AuthType.SP
       const MOCK_REQ = expressHandler.mockRequest({
@@ -1483,7 +1483,11 @@ describe('public-form.controller', () => {
         clearCookie: jest.fn().mockReturnThis(),
       })
 
-      await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
+      await PublicFormController._handlePublicAuthLogout(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
 
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
@@ -1503,7 +1507,11 @@ describe('public-form.controller', () => {
         clearCookie: jest.fn().mockReturnThis(),
       })
 
-      await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
+      await PublicFormController._handlePublicAuthLogout(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
 
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
@@ -1523,7 +1531,11 @@ describe('public-form.controller', () => {
         clearCookie: jest.fn().mockReturnThis(),
       })
 
-      await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
+      await PublicFormController._handlePublicAuthLogout(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
 
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(MYINFO_COOKIE_NAME)
@@ -1543,7 +1555,11 @@ describe('public-form.controller', () => {
         clearCookie: jest.fn().mockReturnThis(),
       })
 
-      await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
+      await PublicFormController._handlePublicAuthLogout(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
 
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(SGID_COOKIE_NAME)

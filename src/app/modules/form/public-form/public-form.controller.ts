@@ -492,7 +492,7 @@ export const handleFormAuthRedirect = [
  * @returns 200 with success message when user logs out successfully
  * @returns 400 if authType is invalid
  */
-export const _handleSpcpLogout: ControllerHandler<
+export const _handlePublicAuthLogout: ControllerHandler<
   { authType: AuthType.SP | AuthType.CP | AuthType.MyInfo | AuthType.SGID },
   PublicFormAuthLogoutDto
 > = (req, res) => {
@@ -521,7 +521,7 @@ export const _handleSpcpLogout: ControllerHandler<
  * Handler for /forms/auth/:authType/logout
  * Valid AuthTypes are SP / CP / MyInfo / SGID
  */
-export const handleSpcpLogout = [
+export const handlePublicAuthLogout = [
   celebrate({
     [Segments.PARAMS]: Joi.object({
       authType: Joi.string()
@@ -529,7 +529,7 @@ export const handleSpcpLogout = [
         .required(),
     }),
   }),
-  _handleSpcpLogout,
+  _handlePublicAuthLogout,
 ] as ControllerHandler[]
 
 /**
