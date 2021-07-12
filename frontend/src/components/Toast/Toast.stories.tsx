@@ -10,21 +10,21 @@ import { Toast, ToastProps } from './Toast'
 const ToastStateProps: Record<string, ToastProps> = {
   Warning: {
     status: 'warning',
-    title: 'Warning',
+    title: '',
     description: 'This is a toast for warning states',
     isClosable: true,
     onClose: () => {},
   },
   Success: {
     status: 'success',
-    title: 'Success',
+    title: '',
     description: 'This is a toast for success states',
     isClosable: true,
     onClose: () => {},
   },
   Error: {
     status: 'danger',
-    title: 'Error',
+    title: '',
     description: 'This is a toast for error states',
     isClosable: true,
     onClose: () => {},
@@ -74,7 +74,7 @@ Warning.args = ToastStateProps.Warning
 
 export const ButtonWithToast = ButtonWithToastTemplate.bind({})
 ButtonWithToast.args = {
-  title: 'Some title',
+  title: '',
   description: 'Some description',
   duration: 6000,
   isClosable: true,
