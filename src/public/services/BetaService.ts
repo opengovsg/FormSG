@@ -92,3 +92,7 @@ export const userHasAccessToFieldType = (
     (Boolean(flag) && get(user, ['betaFlags', flag], false))
   )
 }
+
+export const userHasAccessToFeature = (user: IUser, flag: string): boolean => {
+  return get(user, ['betaFlags', flag], false)
+}
