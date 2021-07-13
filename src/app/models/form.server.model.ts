@@ -10,6 +10,7 @@ import mongoose, {
 import validator from 'validator'
 
 import {
+  ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
   EMAIL_PUBLIC_FORM_FIELDS,
   STORAGE_FORM_SETTINGS_FIELDS,
@@ -27,7 +28,6 @@ import {
   FormField,
   FormFieldWithId,
   FormLogoState,
-  FormMetaView,
   FormOtpData,
   FormSettings,
   IEmailFormModel,
@@ -51,6 +51,7 @@ import {
   Status,
   StorageFormSettings,
 } from '../../types'
+import { AdminDashboardFormMetaDto } from '../../types/api/form'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
@@ -688,10 +689,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return form.save()
   }
 
-  FormSchema.statics.getMetaByUserIdOrEmail = async function (
+  FormDocumentSchema.statics.getMetaByUserIdOrEmail = async function (
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
-  ): Promise<FormMetaView[]> {
+  ): Promise<AdminDashboardFormMetaDto[]> {
     return (
       this.find()
         // List forms when either the user is an admin or collaborator.
@@ -704,7 +705,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         // selection is made for explicitness.
         // `_id` is also returned regardless and selection is made for
         // explicitness.
-        .select('_id title admin lastModified status responseMode')
+        .select(ADMIN_FORM_META_FIELDS.join(' '))
         .sort('-lastModified')
         .populate({
           path: 'admin',
