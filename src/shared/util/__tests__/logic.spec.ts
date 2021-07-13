@@ -24,7 +24,14 @@ import {
 describe('Logic validation', () => {
   /** Mock a field's bare essentials */
   const makeField = (fieldId: string) => ({ _id: fieldId } as IFieldSchema)
-
+  it('should return valid logic states for multi-value field types', () => {
+    const multiValueFields = [BasicField.Checkbox]
+    multiValueFields.forEach((fieldType) => {
+      const states = FormLogic.getApplicableIfStates(fieldType)
+      expect(states).toIncludeSameMembers([LogicConditionState.AnyOf])
+      expect(states).toBeArrayOfSize(1)
+    })
+  })
   /**
    *  Mock a response
    * @param fieldId field id of the field that this response is meant for
@@ -1071,6 +1078,14 @@ describe('Logic util', () => {
           LogicConditionState.Gte,
         ])
         expect(states).toBeArrayOfSize(3)
+      })
+    })
+    it('should return valid logic states for multi-value field types', () => {
+      const multiValueFields = [BasicField.Checkbox]
+      multiValueFields.forEach((fieldType) => {
+        const states = getApplicableIfStates(fieldType)
+        expect(states).toIncludeSameMembers([LogicConditionState.AnyOf])
+        expect(states).toBeArrayOfSize(1)
       })
     })
     it('should return empty array for invalid conditional fields', () => {
