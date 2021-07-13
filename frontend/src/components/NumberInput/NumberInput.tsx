@@ -47,6 +47,11 @@ export const NumberInput = forwardRef<NumberInputProps, 'div'>(
 
     const stepperWrapperRef = useRef<HTMLDivElement | null>(null)
 
+    /**
+     * Used here so this component can retrieve a parent FormControl's props, if
+     * any. This allows a FormControl parent component to pass props such as
+     * isInvalid, isDisabled, etc, to this component.
+     */
     const controlProps = useFormControlProps(props)
     const {
       htmlProps,
@@ -65,6 +70,9 @@ export const NumberInput = forwardRef<NumberInputProps, 'div'>(
 
     return (
       <Box {...htmlProps} ref={ref} __css={styles.root}>
+        {/* Using base input wrapper instead of `Input` component as the Input 
+        component strips out some props such as `aria-invalid`, resulting in
+        incorrect styling */}
         <chakra.input
           {...inputProps}
           paddingInlineEnd={inputEndPadding}
