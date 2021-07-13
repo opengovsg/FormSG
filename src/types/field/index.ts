@@ -4,7 +4,7 @@ import { ConditionalExcept, Merge } from 'type-fest'
 import {
   BasicField,
   FormField,
-  FormFieldDto,
+  FormFieldWithId,
   MyInfoAttribute,
 } from '../../../shared/types/field'
 
