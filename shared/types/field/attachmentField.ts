@@ -1,4 +1,4 @@
-import { FieldBase } from './base'
+import { BasicField, FieldBase } from './base'
 
 export enum AttachmentSize {
   OneMb = '1',
@@ -10,5 +10,6 @@ export enum AttachmentSize {
 }
 
 export interface AttachmentFieldBase extends FieldBase {
+  fieldType: BasicField.Attachment
   attachmentSize: AttachmentSize
 }

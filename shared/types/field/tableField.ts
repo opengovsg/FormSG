@@ -12,6 +12,7 @@ export interface DropdownColumnBase extends DropdownFieldBase {
 export type Column = ShortTextColumnBase | DropdownColumnBase
 
 export interface TableFieldBase extends FieldBase {
+  fieldType: BasicField.Table
   minimumRows: number
   addMoreRows?: boolean
   maximumRows?: number

@@ -1,3 +1,5 @@
-import { FieldBase } from './base'
+import { BasicField, FieldBase } from './base'
 
-export type YesNoFieldBase = FieldBase
+export interface YesNoFieldBase extends FieldBase {
+  fieldType: BasicField.YesNo
+}

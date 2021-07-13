@@ -9,8 +9,12 @@ import {
   ProcessedTableResponse,
 } from '../../../app/modules/submission/submission.types'
 import { FIELDS_TO_REJECT } from '../../../shared/resources/basic'
-import { IFieldSchema, ITableFieldSchema } from '../../../types/field'
-import { isTableField } from '../../../types/field/utils/guards'
+import {
+  BasicField,
+  FormFieldSchema,
+  IFieldSchema,
+  ITableFieldSchema,
+} from '../../../types/field'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
@@ -176,7 +180,7 @@ const validateResponseWithValidator = <T extends ProcessedFieldResponse>(
  */
 export const validateField = (
   formId: string,
-  formField: IFieldSchema,
+  formField: FormFieldSchema,
   response: ProcessedFieldResponse,
 ): Result<true, ValidateFieldError> => {
   if (!isValidResponseFieldType(response)) {
@@ -227,7 +231,10 @@ export const validateField = (
         response,
       )
     }
-  } else if (isProcessedTableResponse(response) && isTableField(formField)) {
+  } else if (
+    isProcessedTableResponse(response) &&
+    formField.fieldType === BasicField.Table
+  ) {
     if (tableRequiresValidation(formField, response)) {
       const validator = constructTableFieldValidator(formField)
       return validateResponseWithValidator(

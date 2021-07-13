@@ -1,3 +1,5 @@
-import { FieldBase } from './base'
+import { BasicField, FieldBase } from './base'
 
-export type UenFieldBase = FieldBase
+export interface UenFieldBase extends FieldBase {
+  fieldType: BasicField.Uen
+}

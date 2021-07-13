@@ -1,3 +1,5 @@
-import { FieldBase } from './base'
+import { BasicField, FieldBase } from './base'
 
-export type StatementFieldBase = FieldBase
+export interface StatementFieldBase extends FieldBase {
+  fieldType: BasicField.Statement
+}

@@ -1,3 +1,5 @@
-import { FieldBase } from './base'
+import { BasicField, FieldBase } from './base'
 
-export type NricFieldBase = FieldBase
+export interface NricFieldBase extends FieldBase {
+  fieldType: BasicField.Nric
+}

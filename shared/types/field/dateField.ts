@@ -1,4 +1,4 @@
-import { MyInfoableFieldBase } from './base'
+import { BasicField, MyInfoableFieldBase } from './base'
 
 // Enum of date validation options
 export enum DateSelectedValidation {
@@ -14,5 +14,6 @@ export type DateValidationOptions = {
 }
 
 export interface DateFieldBase extends MyInfoableFieldBase {
+  fieldType: BasicField.Date
   dateValidation: DateValidationOptions
 }

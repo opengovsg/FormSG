@@ -1,4 +1,4 @@
-import { FieldBase } from './base'
+import { BasicField, FieldBase } from './base'
 
 export type DecimalValidationOptions = {
   customMax: number | null
@@ -6,6 +6,7 @@ export type DecimalValidationOptions = {
 }
 
 export interface DecimalFieldBase extends FieldBase {
+  fieldType: BasicField.Decimal
   ValidationOptions: DecimalValidationOptions
   validateByValue: boolean
 }

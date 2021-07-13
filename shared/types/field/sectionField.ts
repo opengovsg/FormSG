@@ -1,3 +1,5 @@
-import { FieldBase } from './base'
+import { BasicField, FieldBase } from './base'
 
-export type SectionFieldBase = FieldBase
+export interface SectionFieldBase extends FieldBase {
+  fieldType: BasicField.Section
+}

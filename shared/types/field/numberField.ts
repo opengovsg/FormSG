@@ -1,4 +1,4 @@
-import { MyInfoableFieldBase } from './base'
+import { BasicField, MyInfoableFieldBase } from './base'
 
 export enum NumberSelectedValidation {
   Max = 'Maximum',
@@ -12,5 +12,6 @@ export type NumberValidationOptions = {
 }
 
 export interface NumberFieldBase extends MyInfoableFieldBase {
+  fieldType: BasicField.Number
   ValidationOptions: NumberValidationOptions
 }

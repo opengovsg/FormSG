@@ -1,4 +1,4 @@
-import { FieldBase, VerifiableFieldBase } from './base'
+import { BasicField, FieldBase, VerifiableFieldBase } from './base'
 
 export type AutoReplyOptions = {
   hasAutoReply: boolean
@@ -9,6 +9,7 @@ export type AutoReplyOptions = {
 }
 
 export interface EmailFieldBase extends FieldBase, VerifiableFieldBase {
+  fieldType: BasicField.Email
   autoReplyOptions: AutoReplyOptions
   hasAllowedEmailDomains: boolean
   allowedEmailDomains: string[]

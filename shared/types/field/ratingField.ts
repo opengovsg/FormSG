@@ -1,4 +1,4 @@
-import { FieldBase } from './base'
+import { BasicField, FieldBase } from './base'
 
 export enum RatingShape {
   Heart = 'Heart',
@@ -6,6 +6,7 @@ export enum RatingShape {
 }
 
 export interface RatingFieldBase extends FieldBase {
+  fieldType: BasicField.Rating
   ratingOptions: {
     steps: number
     shape: RatingShape
