@@ -25,6 +25,7 @@ import {
 } from './logic-utils'
 
 const LOGIC_CONDITIONS: LogicCondition[] = [
+  [BasicField.Checkbox, [LogicConditionState.AnyOf]],
   [
     BasicField.Dropdown,
     [LogicConditionState.Equal, LogicConditionState.Either],
@@ -290,11 +291,7 @@ const isLogicUnitSatisfied = (
 }
 
 const getCurrentValue = (
-<<<<<<< HEAD
   field: FieldSchemaOrResponse,
-=======
-  field: LogicFieldSchemaOrResponse,
->>>>>>> 4c2ffe1b (feat: add checkbox to logic module with tests)
 ):
   | string
   | string[]
