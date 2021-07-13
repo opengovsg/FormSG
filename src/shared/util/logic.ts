@@ -3,6 +3,7 @@ import { isEqual } from 'lodash'
 import {
   BasicField,
   CheckboxConditionValue,
+  FieldSchemaOrResponse,
   IClientFieldSchema,
   IConditionSchema,
   IField,
@@ -81,6 +82,7 @@ export type FieldIdSet = Set<IClientFieldSchema['_id']>
 export type LogicFieldSchemaOrResponse =
   | ILogicClientFieldSchema
   | LogicFieldResponse
+  | FieldSchemaOrResponse // TODO: remove after applying transformations outside this module
 
 // Returns typed ShowFields logic unit
 const isShowFieldsLogic = (
