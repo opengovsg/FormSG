@@ -147,6 +147,56 @@ describe('Form Model', () => {
         expect(Object.keys(saved)).not.toContain('extra')
       })
 
+      it('should create and save successfully with form_logics that reference nonexistent form_fields', async () => {
+        // Arrange
+        const FORM_LOGICS = {
+          form_logics: [
+            {
+              conditions: [
+                {
+                  _id: '',
+                  field: new ObjectId(),
+                  state: 'is equals to',
+                  value: '',
+                  ifValueType: 'number',
+                },
+              ],
+              logicType: 'preventSubmit',
+              preventSubmitMessage: '',
+            },
+          ],
+        }
+        const formParamsWithLogic = merge({}, MOCK_FORM_PARAMS, FORM_LOGICS)
+
+        // Act
+        const validForm = new Form(formParamsWithLogic)
+        const saved = await validForm.save()
+
+        // Assert
+        // All fields should exist
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        actualSavedObject.form_logics = actualSavedObject.form_logics?.map(
+          (logic) => omit(logic, '_id'),
+        )
+        const expectedObject = merge(
+          {},
+          FORM_DEFAULTS,
+          MOCK_FORM_PARAMS,
+          FORM_LOGICS,
+        )
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
       it('should create and save successfully with valid permissionList emails', async () => {
         // Arrange
         // permissionList has email with valid domain
