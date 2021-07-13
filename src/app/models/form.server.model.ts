@@ -9,6 +9,12 @@ import mongoose, {
 } from 'mongoose'
 import validator from 'validator'
 
+import {
+  EMAIL_FORM_SETTINGS_FIELDS,
+  EMAIL_PUBLIC_FORM_FIELDS,
+  STORAGE_FORM_SETTINGS_FIELDS,
+  STORAGE_PUBLIC_FORM_FIELDS,
+} from '../../../shared/constants/form'
 import { MB } from '../../shared/constants'
 import { reorder } from '../../shared/util/immutable-array-fns'
 import { getApplicableIfStates } from '../../shared/util/logic'
@@ -16,6 +22,7 @@ import {
   AuthType,
   BasicField,
   Colors,
+  EmailFormSettings,
   EndPage,
   FormField,
   FormFieldWithId,
@@ -39,10 +46,10 @@ import {
   Permission,
   PickDuplicateForm,
   PublicForm,
-  PublicFormValues,
   ResponseMode,
   StartPage,
   Status,
+  StorageFormSettings,
 } from '../../types'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
@@ -81,35 +88,6 @@ import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
 import getUserModel from './user.server.model'
 
 export const FORM_SCHEMA_ID = 'Form'
-
-// Exported for testing.
-export const FORM_PUBLIC_FIELDS: (keyof PublicFormValues)[] = [
-  'admin',
-  'authType',
-  'endPage',
-  'esrvcId',
-  'form_fields',
-  'form_logics',
-  'hasCaptcha',
-  'publicKey',
-  'startPage',
-  'status',
-  'title',
-  '_id',
-  'responseMode',
-]
-
-export const FORM_SETTING_FIELDS: (keyof FormSettings)[] = [
-  'authType',
-  'emails',
-  'esrvcId',
-  'hasCaptcha',
-  'inactiveMessage',
-  'status',
-  'submissionLimit',
-  'title',
-  'webhook',
-]
 
 const bson = new BSON([
   BSON.Binary,
@@ -542,21 +520,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return { ...newForm, ...overrideProps }
   }
 
-  FormSchema.methods.getPublicView = function (): PublicForm {
-    const basePublicView = pick(this, FORM_PUBLIC_FIELDS) as PublicFormValues
-
-    // Return non-populated public fields of form if not populated.
-    if (!this.populated('admin')) {
-      return basePublicView
-    }
-
-    // Populated, return public view with user's public view.
-    return {
-      ...basePublicView,
-      admin: (this.admin as IUserSchema).getPublicView(),
-    }
-  }
-
   // Archives form.
   FormSchema.methods.archive = function () {
     // Return instantly when form is already archived.
@@ -571,7 +534,30 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   const FormDocumentSchema = FormSchema as unknown as Schema<IFormDocument>
 
   FormDocumentSchema.methods.getSettings = function (): FormSettings {
-    return pick(this, FORM_SETTING_FIELDS)
+    const formSettings =
+      this.responseMode === ResponseMode.Encrypt
+        ? (pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings)
+        : (pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings)
+
+    return formSettings
+  }
+
+  FormDocumentSchema.methods.getPublicView = function (): PublicForm {
+    const basePublicView =
+      this.responseMode === ResponseMode.Encrypt
+        ? (pick(this, STORAGE_PUBLIC_FORM_FIELDS) as PublicForm)
+        : (pick(this, EMAIL_PUBLIC_FORM_FIELDS) as PublicForm)
+
+    // Return non-populated public fields of form if not populated.
+    if (!this.populated('admin')) {
+      return basePublicView
+    }
+
+    // Populated, return public view with user's public view.
+    return {
+      ...basePublicView,
+      admin: (this.admin as IUserSchema).getPublicView(),
+    }
   }
 
   // Transfer ownership of the form to another user
