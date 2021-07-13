@@ -256,7 +256,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             })
 
             return conditions.every((condition) => {
-              // Conditions don't necessarily need to reference existing fields
+              /**
+               * Form fields can get deleted by form admins, which causes logic
+               * conditions to reference invalid fields. Here we bypass validation
+               * and allow these conditions to be saved, so we don't make life
+               * difficult for form admins.
+               */
               if (!isConditionReferencesExistingField(condition)) return true
 
               const { fieldType, state } = condition
