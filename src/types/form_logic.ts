@@ -1,19 +1,28 @@
 import { Document } from 'mongoose'
 
-import { IFieldSchema } from './field/baseField'
+import { IClientFieldSchema, IFieldSchema } from './field/baseField'
 import { BasicField } from './field/fieldTypes'
+import {
+  FieldResponse,
+  IAttachmentResponse,
+  ICheckboxResponse,
+  ISingleAnswerResponse,
+  ITableResponse,
+} from '.'
 
 export enum LogicConditionState {
   Equal = 'is equals to',
   Lte = 'is less than or equal to',
   Gte = 'is more than or equal to',
   Either = 'is either',
+  AnyOf = 'is one of the following',
 }
 
 export enum LogicIfValue {
   Number = 'number',
   SingleSelect = 'single-select',
   MultiSelect = 'multi-select',
+  MultiValue = 'multi-value',
 }
 
 export enum LogicType {
@@ -24,7 +33,13 @@ export enum LogicType {
 export interface ICondition {
   field: IFieldSchema['_id']
   state: LogicConditionState
-  value: string | number | string[] | number[]
+  value:
+    | string
+    | number
+    | string[]
+    | number[]
+    | CheckboxConditionValue[]
+    | ClientCheckboxConditionOption[][] // frontend representation of checkbox condition value, will not be added to backend (ensured by Joi validators)
   ifValueType?: LogicIfValue
 }
 
@@ -61,12 +76,21 @@ type LogicField = Extract<
   | BasicField.Number
   | BasicField.Decimal
   | BasicField.Rating
+  | BasicField.Checkbox
 >
 
 type LogicAssociation<K extends LogicField, VS extends LogicConditionState> = [
   K,
   Array<VS>,
 ]
+
+// Logic fields that are multi-valued
+type MultiValuedLogicField = Extract<BasicField, BasicField.Checkbox>
+type MultiValuedLogicStates = LogicConditionState.AnyOf
+type MultiValuedLogicCondition = LogicAssociation<
+  MultiValuedLogicField,
+  MultiValuedLogicStates
+>
 
 // Logic fields that are categorical
 type CategoricalLogicField = Extract<
@@ -107,6 +131,57 @@ export type LogicCondition =
   | CategoricalLogicCondition
   | BinaryLogicCondition
   | NumericalLogicCondition
+  | MultiValuedLogicCondition
+
+/**
+ * Types for checkbox logic field
+ */
+// Representation of an option in the logic tab
+export type ClientCheckboxConditionOption = {
+  value: string
+  other: boolean
+}
+
+// Representation of frontend checkbox response after being transformed
+export type ClientLogicCheckboxResponse = Omit<
+  IClientFieldSchema,
+  'fieldValue'
+> & {
+  fieldValue: CheckboxConditionValue
+}
+
+// Representation of backend checkbox response after being transformed
+export type ILogicCheckboxResponse = Omit<ICheckboxResponse, 'answerArray'> & {
+  answerArray: CheckboxConditionValue
+}
+// Representation of a Checkbox condition
+export interface LogicCheckboxCondition
+  extends Omit<IConditionSchema, 'value'> {
+  value: CheckboxConditionValue[]
+}
+// Representation of a checkbox condition value
+export type CheckboxConditionValue = {
+  options: string[]
+  others: boolean
+}
+
+/**
+ * Types needed for logic module inputs
+ */
+// Type for fields before being transformed and passed into the logic module
+export type FieldSchemaOrResponse = IClientFieldSchema | FieldResponse
+
+// Type for client fields after being transformed and passed into the logic module
+export type ILogicClientFieldSchema =
+  | IClientFieldSchema
+  | ClientLogicCheckboxResponse
+
+// Type for backend fields after being transformed and passed into the logic module
+export type LogicFieldResponse =
+  | ISingleAnswerResponse
+  | ILogicCheckboxResponse
+  | ITableResponse
+  | IAttachmentResponse
 
 /**
  * Logic POJO with functions removed
