@@ -35,5 +35,5 @@ export interface IFieldSchema extends AllowMyInfoBase, FieldBase, Document {
 // needs it as a variable to store the client's answer to a field.
 // Hence we need this interface for client-side fields.
 export interface IClientFieldSchema extends IFieldSchema {
-  fieldValue: string
+  fieldValue: string | string[] | boolean[]
 }
