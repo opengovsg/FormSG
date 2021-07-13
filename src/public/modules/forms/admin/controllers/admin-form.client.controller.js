@@ -443,10 +443,10 @@ function AdminFormController(
         return options.concat(val)
       }, [])
       return flattenedValues.some((val) => {
-        if (field.fieldOptions.includes(val.value)) {
-          return false
+        if (val.other) {
+          return !field.othersRadioButton
         }
-        return val.others ? !field.othersRadioButton : true
+        return !field.fieldOptions.includes(val.value)
       })
     } else if (field.fieldType === BasicField.Rating) {
       return values > field.ratingOptions.steps
