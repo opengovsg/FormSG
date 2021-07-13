@@ -289,7 +289,11 @@ const isLogicUnitSatisfied = (
 }
 
 const getCurrentValue = (
+<<<<<<< HEAD
   field: FieldSchemaOrResponse,
+=======
+  field: LogicFieldSchemaOrResponse,
+>>>>>>> 4c2ffe1b (feat: add checkbox to logic module with tests)
 ):
   | string
   | string[]
