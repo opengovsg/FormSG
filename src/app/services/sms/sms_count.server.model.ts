@@ -2,6 +2,7 @@ import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
 import { Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
+import { smsConfig } from '../../../app/config/features/sms.config'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 import { USER_SCHEMA_ID } from '../../models/user.server.model'
 
@@ -34,7 +35,19 @@ const VerificationSmsCountSchema = new Schema<IVerificationSmsCountSchema>({
       required: true,
     },
   },
+  isOnboardedAccount: {
+    type: Boolean,
+  },
 })
+
+VerificationSmsCountSchema.pre<IVerificationSmsCountSchema>(
+  'save',
+  function (next) {
+    const formTwilioId = smsConfig.twilioMsgSrvcSid
+    this.isOnboardedAccount = !(this.msgSrvcSid === formTwilioId)
+    return next()
+  },
+)
 
 const AdminContactSmsCountSchema = new Schema<IAdminContactSmsCountSchema>({
   admin: {
@@ -123,6 +136,16 @@ const compileSmsCountModel = (db: Mongoose) => {
     const smsCount: ISmsCountSchema = new this(schemaData)
 
     return smsCount.save()
+  }
+
+  SmsCountSchema.statics.retrieveFreeSmsCounts = async function (
+    userId: string,
+  ) {
+    return this.countDocuments({
+      'formAdmin.userId': userId,
+      smsType: SmsType.Verification,
+      isOnboardedAccount: false,
+    }).exec()
   }
 
   const SmsCountModel = db.model<ISmsCountSchema, ISmsCountModel>(
