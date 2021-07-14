@@ -257,7 +257,7 @@ describe('public-form.routes', () => {
       })
       const expectedResponseBody = JSON.parse(
         JSON.stringify({
-          message: 'Gone',
+          message: 'This form is no longer active',
         }),
       )
 

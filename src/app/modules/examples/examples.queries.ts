@@ -290,6 +290,7 @@ export const projectFormDetails: Record<string, unknown>[] = [
       logo: '$agencyInfo.logo',
       agency: '$agencyInfo.shortName',
       colorTheme: '$formInfo.startPage.colorTheme',
+      authType: '$formInfo.authType',
     },
   },
 ]
@@ -323,6 +324,7 @@ export const selectAndProjectCardInfo = (
       agency: '$agencyInfo.shortName',
       colorTheme: '$formInfo.startPage.colorTheme',
       avgFeedback: { $avg: '$formFeedbackInfo.rating' },
+      authType: '$formInfo.authType',
     },
   },
 ]

@@ -15,7 +15,9 @@ export interface IUser {
   email: string
   agency: AgencyDocument['_id']
   contact?: string
-  betaFlags?: Record<string, never>
+  betaFlags?: {
+    sgid?: boolean
+  }
   lastAccessed?: Date
   updatedAt?: Date
 }

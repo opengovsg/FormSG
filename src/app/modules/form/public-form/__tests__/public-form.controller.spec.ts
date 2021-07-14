@@ -31,8 +31,10 @@ import {
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import * as AuthService from '../../../auth/auth.service'
+import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
 import { MyInfoCookieStateError } from '../../../myinfo/myinfo.errors'
 import { MyInfoService } from '../../../myinfo/myinfo.service'
+import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
@@ -221,7 +223,9 @@ describe('public-form.controller', () => {
       expect(MockFormService.isFormPublic).toHaveBeenCalledWith(MOCK_FORM)
       expect(MockPublicFormService.insertFormFeedback).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(410)
-      expect(mockRes.json).toHaveBeenCalledWith({ message: 'Gone' })
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'This form is no longer active',
+      })
     })
 
     it('should return 500 when database errors occur', async () => {
@@ -1469,9 +1473,12 @@ describe('public-form.controller', () => {
     })
   })
 
-  describe('handleSpcpLogout', () => {
+  describe('handlePublicAuthLogout', () => {
     it('should return 200 if authType is SP and call clearCookie()', async () => {
       const authType = AuthType.SP
+      MockPublicFormService.getCookieNameByAuthType.mockReturnValueOnce(
+        JwtName[authType],
+      )
       const MOCK_REQ = expressHandler.mockRequest({
         params: {
           authType,
@@ -1481,7 +1488,11 @@ describe('public-form.controller', () => {
         clearCookie: jest.fn().mockReturnThis(),
       })
 
-      await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
+      await PublicFormController._handlePublicAuthLogout(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
 
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
@@ -1492,6 +1503,9 @@ describe('public-form.controller', () => {
 
     it('should return 200 if authType is CP and call clearCookie()', async () => {
       const authType = AuthType.CP
+      MockPublicFormService.getCookieNameByAuthType.mockReturnValueOnce(
+        JwtName[authType],
+      )
       const MOCK_REQ = expressHandler.mockRequest({
         params: {
           authType,
@@ -1501,10 +1515,68 @@ describe('public-form.controller', () => {
         clearCookie: jest.fn().mockReturnThis(),
       })
 
-      await PublicFormController._handleSpcpLogout(MOCK_REQ, mockRes, jest.fn())
+      await PublicFormController._handlePublicAuthLogout(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
 
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Successfully logged out.',
+      })
+    })
+
+    it('should return 200 if authType is MyInfo and call clearCookie()', async () => {
+      const authType = AuthType.MyInfo
+      MockPublicFormService.getCookieNameByAuthType.mockReturnValueOnce(
+        MYINFO_COOKIE_NAME,
+      )
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          authType,
+        },
+      })
+      const mockRes = expressHandler.mockResponse({
+        clearCookie: jest.fn().mockReturnThis(),
+      })
+
+      await PublicFormController._handlePublicAuthLogout(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(MYINFO_COOKIE_NAME)
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Successfully logged out.',
+      })
+    })
+
+    it('should return 200 if authType is SGID and call clearCookie()', async () => {
+      const authType = AuthType.SGID
+      MockPublicFormService.getCookieNameByAuthType.mockReturnValueOnce(
+        SGID_COOKIE_NAME,
+      )
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          authType,
+        },
+      })
+      const mockRes = expressHandler.mockResponse({
+        clearCookie: jest.fn().mockReturnThis(),
+      })
+
+      await PublicFormController._handlePublicAuthLogout(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(SGID_COOKIE_NAME)
       expect(mockRes.json).toBeCalledWith({
         message: 'Successfully logged out.',
       })

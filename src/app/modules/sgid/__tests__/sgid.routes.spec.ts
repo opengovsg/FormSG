@@ -11,6 +11,7 @@ import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 
 import { ApplicationError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
+import { SGID_COOKIE_NAME } from '../sgid.constants'
 import {
   SgidFetchAccessTokenError,
   SgidFetchUserInfoError,
@@ -245,7 +246,7 @@ describe('sgid.controller', () => {
         .query(MOCK_LOGIN_QUERY)
 
       expect(response.headers['set-cookie']).toEqual([
-        expect.stringContaining(`jwtSgid=${MOCK_JWT}`),
+        expect.stringContaining(`${SGID_COOKIE_NAME}=${MOCK_JWT}`),
       ])
       expect(response.status).toBe(302)
       expect(response.headers['location']).toEqual(MOCK_DESTINATION)

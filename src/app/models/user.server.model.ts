@@ -68,7 +68,9 @@ const compileUserModel = (db: Mongoose) => {
         type: Date,
         default: () => Date.now(),
       },
-      betaFlags: {},
+      betaFlags: {
+        sgid: Boolean,
+      },
     },
     {
       timestamps: {
