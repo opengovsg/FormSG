@@ -483,6 +483,7 @@ export const retrieveFreeSmsCounts = (
         meta: {
           action: 'retrieveFreeSmsCounts',
           userId,
+          error,
         },
       })
 
