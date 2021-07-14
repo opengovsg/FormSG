@@ -10,7 +10,7 @@ type UserContact = Opaque<string, 'UserContact'>
 // Base used for being referenced by schema/model in the backend.
 // Note the lack of typing of _id.
 export const UserBase = z.object({
-  _id: z.any(),
+  _id: z.unknown(),
   email: z.string().email(),
   agency: AgencyBase.shape._id,
   betaFlags: z.record(z.boolean()).optional(),
