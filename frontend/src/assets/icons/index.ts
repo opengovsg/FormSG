@@ -1,2 +1,6 @@
+export * from './BxHeart'
 export * from './BxsCheckCircle'
 export * from './BxsErrorCircle'
+export * from './BxsHeart'
+export * from './BxsStar'
+export * from './BxStar'
