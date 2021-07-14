@@ -51,7 +51,7 @@ function configureMobileDirective() {
           if (msgSrvcId) {
             return ADMIN_VERIFIED_SMS_STATES.hasMessageServiceId
           }
-          if (verifiedSmsCount < injectedVariables.smsVerificationLimit) {
+          if (verifiedSmsCount <= injectedVariables.smsVerificationLimit) {
             return ADMIN_VERIFIED_SMS_STATES.belowLimit
           }
           return ADMIN_VERIFIED_SMS_STATES.limitExceeded
