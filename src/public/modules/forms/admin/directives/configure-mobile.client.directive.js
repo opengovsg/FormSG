@@ -39,13 +39,18 @@ function configureMobileDirective() {
           },
         )
 
+        // Formats a given string as a number by setting it to US locale.
+        // Concretely, this adds commas between every thousand.
+        const formatStringAsNumber = (num) =>
+          Number(num).toLocaleString('en-US')
+
         // NOTE: This is set on scope as it is used by the UI to determine if the toggle is loading
         $scope.isLoading = true
         $scope.field.hasRetrievalError = false
 
         const formattedSmsVerificationLimit =
           // Format so that it has commas; conversion is required because it's string initially
-          Number(injectedVariables.smsVerificationLimit).toLocaleString('en-US')
+          formatStringAsNumber(injectedVariables.smsVerificationLimit)
 
         const getAdminVerifiedSmsState = (verifiedSmsCount, msgSrvcId) => {
           if (msgSrvcId) {
@@ -114,10 +119,14 @@ function configureMobileDirective() {
                     We provide SMS OTP verification for free up to ${formattedSmsVerificationLimit} responses. OTP verification will be automatically disabled when your account reaches ${formattedSmsVerificationLimit} responses. 
                     <br></br>
                     If you require OTP verification for more than ${formattedSmsVerificationLimit} responses,
-                    <a href=${$scope.verifiedSmsSetupLink} target="_blank" class=""> please arrange advance billing with us. </a>  
+                    <a href=${
+                      $scope.verifiedSmsSetupLink
+                    } target="_blank" class=""> please arrange advance billing with us. </a>  
 
                     <br></br>
-                    <small>Current response count: ${$scope.verifiedSmsCount}/${formattedSmsVerificationLimit}</small>
+                    <small>Current response count: ${formatStringAsNumber(
+                      $scope.verifiedSmsCount,
+                    )}/${formattedSmsVerificationLimit}</small>
                     `,
                     isImportant: true,
                   }
