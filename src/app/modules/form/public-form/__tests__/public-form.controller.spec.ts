@@ -223,7 +223,9 @@ describe('public-form.controller', () => {
       expect(MockFormService.isFormPublic).toHaveBeenCalledWith(MOCK_FORM)
       expect(MockPublicFormService.insertFormFeedback).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(410)
-      expect(mockRes.json).toHaveBeenCalledWith({ message: 'Gone' })
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'This form is no longer active',
+      })
     })
 
     it('should return 500 when database errors occur', async () => {
