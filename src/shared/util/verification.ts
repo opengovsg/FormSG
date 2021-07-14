@@ -21,3 +21,9 @@ export enum VfnErrors {
   TransactionNotFound = 'TRANSACTION_NOT_FOUND',
   InvalidMobileNumber = 'INVALID_MOBILE_NUMBER',
 }
+
+export enum ADMIN_VERIFIED_SMS_STATES {
+  limitExceeded = 'LIMIT_EXCEEDED',
+  belowLimit = 'BELOW_LIMIT',
+  hasMessageServiceId = 'MESSAGE_SERVICE_ID_OBTAINED',
+}
