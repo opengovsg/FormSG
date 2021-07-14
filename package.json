@@ -132,7 +132,7 @@
     "ngclipboard": "^2.0.0",
     "nocache": "^3.0.1",
     "node-cache": "^5.1.2",
-    "nodemailer": "^6.6.2",
+    "nodemailer": "^6.6.3",
     "opossum": "^6.2.0",
     "p-queue": "^6.6.2",
     "promise-retry": "^2.0.1",
