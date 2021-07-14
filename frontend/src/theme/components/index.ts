@@ -1,3 +1,4 @@
+import { RATING_THEME_KEY, RatingField } from './Field/Rating'
 import { YESNO_THEME_KEY, YesNoField } from './Field/YesNo'
 import { Banner } from './Banner'
 import { Button } from './Button'
@@ -21,5 +22,6 @@ export const components = {
   NumberInput,
   PhoneNumberInput,
   Textarea,
+  [RATING_THEME_KEY]: RatingField,
   [YESNO_THEME_KEY]: YesNoField,
 }
