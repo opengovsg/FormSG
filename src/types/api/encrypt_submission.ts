@@ -1,20 +1,5 @@
-import { FieldResponse } from '../response'
+import { StorageModeSubmissionContentDto } from '../../../shared/types/submission'
 
-export type EncryptSubmissionDto = {
-  responses: ({ question: string } & FieldResponse)[]
-  encryptedContent: string
-  attachments?: EncryptedAttachmentsDto
-  version: number
-}
+export { StorageModeAttachmentsMap } from '../../../shared/types/submission'
 
-export type EncryptedAttachmentsDto = {
-  [fieldId: string]: {
-    encryptedFile:
-      | {
-          binary: string
-          nonce: string
-          submissionPublicKey: string
-        }
-      | undefined
-  }
-}
+export type EncryptSubmissionDto = StorageModeSubmissionContentDto

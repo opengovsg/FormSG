@@ -1,6 +1,6 @@
 import { Opaque, RequireAtLeastOne } from 'type-fest'
 import { ErrorDto } from './core'
-import { MyInfoAttribute } from './field'
+import { FormFieldDto, MyInfoAttribute } from './field'
 import { FormAuthType, FormDto } from './form/form'
 import { DateString } from './generic'
 import { FieldResponse } from './response'
@@ -103,3 +103,22 @@ type SubmissionContentBase = {
  * Shape of email form submissions
  */
 export type EmailModeSubmissionContentDto = SubmissionContentBase
+
+type StorageModeAttachment = {
+  encryptedFile?: {
+    binary: string
+    nonce: string
+    submissionPublicKey: string
+  }
+}
+
+export type StorageModeAttachmentsMap = Record<
+  FormFieldDto['_id'],
+  StorageModeAttachment
+>
+
+export type StorageModeSubmissionContentDto = SubmissionContentBase & {
+  encryptedContent: string
+  attachments?: StorageModeAttachmentsMap
+  version: number
+}

@@ -3,10 +3,9 @@ import { ObjectId } from 'bson'
 import { StatusCodes } from 'http-status-codes'
 import MockAxios from 'jest-mock-axios'
 
-import { EncryptSubmissionDto } from 'src/types/api'
-
 import {
   EmailModeSubmissionContentDto,
+  StorageModeSubmissionContentDto,
   SubmissionResponseDto,
 } from '../../../../shared/types/submission'
 import { BasicField, IPopulatedForm, IYesNoFieldSchema } from '../../../types'
@@ -109,7 +108,7 @@ describe('UpdateFormService', () => {
       message: 'some mock response again',
       submissionId: 'created submission id again',
     }
-    const MOCK_CONTENT: EncryptSubmissionDto = {
+    const MOCK_CONTENT: StorageModeSubmissionContentDto = {
       responses: [
         {
           question: 'some question',

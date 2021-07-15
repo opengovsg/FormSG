@@ -14,10 +14,10 @@ import {
 import { LogicDto } from '../../../shared/types/form/form_logic'
 import {
   EmailModeSubmissionContentDto,
+  StorageModeSubmissionContentDto,
   SubmissionResponseDto,
 } from '../../../shared/types/submission'
 import {
-  EncryptSubmissionDto,
   EndPageUpdateDto,
   FormUpdateParams,
   PermissionsUpdateDto,
@@ -260,7 +260,7 @@ export const submitStorageModeFormPreview = async ({
   captchaResponse = null,
 }: {
   formId: string
-  content: EncryptSubmissionDto
+  content: StorageModeSubmissionContentDto
   captchaResponse?: string | null
 }): Promise<SubmissionResponseDto> => {
   return axios
