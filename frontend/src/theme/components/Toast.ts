@@ -36,6 +36,7 @@ export const Toast: ComponentMultiStyleConfig = {
       top: '1rem',
       position: 'absolute',
       boxSize: '1.5rem',
+      cursor: 'pointer',
     },
   },
   variants: {
