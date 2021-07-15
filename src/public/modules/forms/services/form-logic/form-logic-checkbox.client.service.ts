@@ -2,9 +2,15 @@ import { cloneDeep, omit } from 'lodash'
 
 import {
   ClientCheckboxConditionOption,
-  IConditionSchema,
+  IClientConditionSchema,
   LogicCheckboxCondition,
 } from '../../../../../types'
+
+// exported for testing
+export interface ClientCheckboxCondition
+  extends Omit<IClientConditionSchema, 'value'> {
+  value: ClientCheckboxConditionOption[][]
+}
 
 /**
  * Converts checkbox condition value with backend representation to frontend 2D array representation.
@@ -58,14 +64,8 @@ export const convertArrayCheckboxCondition = (
   }
 }
 
-// exported for testing
-export interface ClientCheckboxCondition
-  extends Omit<IConditionSchema, 'value'> {
-  value: ClientCheckboxConditionOption[][]
-}
-
 export const isClientCheckboxCondition = (
-  condition: IConditionSchema,
+  condition: IClientConditionSchema,
 ): condition is ClientCheckboxCondition => {
   const conditionValue = condition.value
   return (
