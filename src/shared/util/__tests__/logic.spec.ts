@@ -8,7 +8,7 @@ import {
 } from 'src/shared/util/logic'
 import {
   BasicField,
-  CheckboxConditionValue,
+  FieldResponse,
   IField,
   IFieldSchema,
   IFormDocument,
@@ -17,7 +17,6 @@ import {
   IShortTextFieldSchema,
   IShowFieldsLogicSchema,
   LogicConditionState,
-  LogicFieldResponse,
   LogicIfValue,
   LogicType,
 } from 'src/types'
@@ -35,19 +34,18 @@ describe('Logic validation', () => {
    */
   const makeResponse = (
     fieldId: string,
-    answer: string | number | null = null,
-    answerArray: string[] | CheckboxConditionValue | null = null,
-    fieldType: string | null = null,
+    answer: string | number,
+    answerArray: string[] | null = null,
     isVisible = true,
-  ): LogicFieldResponse => {
-    const response: Record<string, any> = { _id: fieldId, isVisible, fieldType }
+  ): FieldResponse => {
+    const response: Record<string, any> = { _id: fieldId, answer, isVisible }
     if (answer !== null) {
       response.answer = answer
     }
     if (answerArray) {
       response.answerArray = answerArray
     }
-    return response as LogicFieldResponse
+    return response as FieldResponse
   }
 
   describe('visibility for different states', () => {
@@ -219,83 +217,6 @@ describe('Logic validation', () => {
       expect(
         getVisibleFieldIds(
           [makeResponse(CONDITION_FIELD._id, 'invalid option'), LOGIC_RESPONSE],
-          form,
-        ).has(LOGIC_FIELD._id),
-      ).toEqual(false)
-    })
-    it('should compute the correct visibility for checkbox fields with state "is one of the following"', () => {
-      // Arrange
-      const validOptions = ['Option 1', 'Option 2', 'Option 3']
-      const conditions = [
-        { options: [validOptions[0], validOptions[1]], others: false },
-        { options: [validOptions[2]], others: true },
-      ]
-      const anyOfCondition = {
-        show: [LOGIC_FIELD._id],
-        conditions: [
-          {
-            ifValueType: LogicIfValue.MultiValue,
-            _id: '58169',
-            field: CONDITION_FIELD._id,
-            state: LogicConditionState.AnyOf,
-            value: conditions,
-          },
-        ],
-        _id: MOCK_LOGIC_ID,
-        logicType: LogicType.ShowFields,
-      } as IShowFieldsLogicSchema
-
-      form.form_logics = [anyOfCondition]
-
-      // Act + Assert
-      expect(
-        getVisibleFieldIds(
-          [
-            makeResponse(
-              CONDITION_FIELD._id,
-              null,
-              conditions[1],
-              BasicField.Checkbox,
-            ),
-            LOGIC_RESPONSE,
-          ],
-          form,
-        ).has(LOGIC_FIELD._id),
-      ).toEqual(true)
-
-      // should be able to match condition even if options in different order
-      expect(
-        getVisibleFieldIds(
-          [
-            makeResponse(
-              CONDITION_FIELD._id,
-              null,
-              {
-                options: [validOptions[1], validOptions[0]],
-                others: false,
-              },
-              BasicField.Checkbox,
-            ),
-            LOGIC_RESPONSE,
-          ],
-          form,
-        ).has(LOGIC_FIELD._id),
-      ).toEqual(true)
-
-      expect(
-        getVisibleFieldIds(
-          [
-            makeResponse(
-              CONDITION_FIELD._id,
-              null,
-              {
-                options: [validOptions[2], validOptions[0]],
-                others: true,
-              },
-              BasicField.Checkbox,
-            ),
-            LOGIC_RESPONSE,
-          ],
           form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(false)
@@ -472,83 +393,6 @@ describe('Logic validation', () => {
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(CONDITION_FIELD._id, 'Option 3'), LOGIC_RESPONSE],
-          form,
-        ),
-      ).toBeUndefined()
-    })
-    it('should compute that submission should be prevented for checkbox fields with state "is one of the following"', () => {
-      // Arrange
-      const validOptions = ['Option 1', 'Option 2', 'Option 3']
-      const conditions = [
-        { options: [validOptions[0], validOptions[1]], others: false },
-        { options: [validOptions[2]], others: true },
-      ]
-      const anyOfCondition = {
-        conditions: [
-          {
-            ifValueType: LogicIfValue.MultiValue,
-            _id: '58169',
-            field: CONDITION_FIELD._id,
-            state: LogicConditionState.AnyOf,
-            value: conditions,
-          },
-        ],
-        _id: MOCK_LOGIC_ID,
-        logicType: LogicType.PreventSubmit,
-        preventSubmitMessage: 'you shall not pass',
-      } as IPreventSubmitLogicSchema
-
-      form.form_logics = [anyOfCondition]
-
-      // Act + Assert
-      // Should be able to match even if options are in different order
-      expect(
-        getLogicUnitPreventingSubmit(
-          [
-            makeResponse(
-              CONDITION_FIELD._id,
-              null,
-              {
-                options: [validOptions[1], validOptions[0]],
-                others: false,
-              },
-              BasicField.Checkbox,
-            ),
-            LOGIC_RESPONSE,
-          ],
-          form,
-        ),
-      ).toEqual(form.form_logics[0])
-
-      expect(
-        getLogicUnitPreventingSubmit(
-          [
-            makeResponse(
-              CONDITION_FIELD._id,
-              null,
-              conditions[1],
-              BasicField.Checkbox,
-            ),
-            LOGIC_RESPONSE,
-          ],
-          form,
-        ),
-      ).toEqual(form.form_logics[0])
-
-      expect(
-        getLogicUnitPreventingSubmit(
-          [
-            makeResponse(
-              CONDITION_FIELD._id,
-              null,
-              {
-                options: [validOptions[2]],
-                others: false,
-              },
-              BasicField.Checkbox,
-            ),
-            LOGIC_RESPONSE,
-          ],
           form,
         ),
       ).toBeUndefined()
