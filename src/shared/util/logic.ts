@@ -83,7 +83,6 @@ export type FieldIdSet = Set<ILogicInputClientSchema['_id']>
 export type LogicFieldSchemaOrResponse =
   | ILogicClientFieldSchema
   | LogicFieldResponse
-  | FieldSchemaOrResponse // TODO: remove after applying transformations outside this module
 
 // Returns typed ShowFields logic unit
 const isShowFieldsLogic = (
