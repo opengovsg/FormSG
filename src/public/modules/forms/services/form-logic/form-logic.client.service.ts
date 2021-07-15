@@ -1,5 +1,12 @@
+import { omit } from 'lodash'
+
 import { isLogicCheckboxCondition } from '../../../../../shared/util/logic-utils'
-import { ILogicSchema } from '../../../../../types'
+import {
+  IClientConditionSchema,
+  IClientLogicSchema,
+  IConditionSchema,
+  ILogicSchema,
+} from '../../../../../types'
 
 import {
   convertArrayCheckboxCondition,
@@ -15,16 +22,16 @@ import {
  */
 export const transformBackendLogic = (
   formLogic: ILogicSchema,
-): ILogicSchema => {
-  formLogic.conditions = formLogic.conditions.map((condition) => {
+): IClientLogicSchema => {
+  const transformedLogic = formLogic.conditions.map((condition) => {
     if (isLogicCheckboxCondition(condition)) {
       return convertObjectCheckboxCondition(condition)
     } else {
-      return condition
+      return condition as IClientConditionSchema
     }
   })
 
-  return formLogic
+  return { ...omit(formLogic, ['conditions']), conditions: transformedLogic }
 }
 
 /**
@@ -35,14 +42,14 @@ export const transformBackendLogic = (
  * @returns Tranformed logic object
  */
 export const transformFrontendLogic = (
-  formLogic: ILogicSchema,
+  formLogic: IClientLogicSchema,
 ): ILogicSchema => {
-  formLogic.conditions = formLogic.conditions.map((condition) => {
+  const transformedLogic = formLogic.conditions.map((condition) => {
     if (isClientCheckboxCondition(condition)) {
       return convertArrayCheckboxCondition(condition)
     } else {
-      return condition
+      return condition as IConditionSchema
     }
   })
-  return formLogic
+  return { ...omit(formLogic, ['conditions']), conditions: transformedLogic }
 }
