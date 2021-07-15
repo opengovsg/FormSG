@@ -4,15 +4,14 @@ import {
   BasicField,
   CheckboxConditionValue,
   FieldSchemaOrResponse,
-  IClientFieldSchema,
   IConditionSchema,
   IField,
   IFormDocument,
   ILogicClientFieldSchema,
+  ILogicInputClientSchema,
   ILogicSchema,
   IPreventSubmitLogicSchema,
   IShowFieldsLogicSchema,
-  ITableRow,
   LogicCondition,
   LogicConditionState,
   LogicFieldResponse,
@@ -76,7 +75,7 @@ export const getApplicableIfStates = (
 ): LogicConditionState[] => LOGIC_MAP.get(fieldType) ?? []
 
 type GroupedLogic = Record<string, IConditionSchema[][]>
-export type FieldIdSet = Set<IClientFieldSchema['_id']>
+export type FieldIdSet = Set<ILogicInputClientSchema['_id']>
 // This module handles logic on both the client side (IFieldSchema[])
 // and server side (FieldResponse[])
 export type LogicFieldSchemaOrResponse =
@@ -295,7 +294,6 @@ const getCurrentValue = (
   | string[]
   | boolean[]
   | CheckboxConditionValue
-  | ITableRow[]
   | undefined
   | null => {
   if ('fieldValue' in field) {
@@ -377,9 +375,7 @@ const isConditionFulfilled = (
         obj.options = obj.options.sort()
       })
       currentValue.options = currentValue.options.sort()
-      return condition.value.some((val) =>
-        isEqual(JSON.stringify(currentValue), JSON.stringify(val)),
-      )
+      return condition.value.some((val) => isEqual(currentValue, val))
     } else {
       return false
     }
