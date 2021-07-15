@@ -33,6 +33,10 @@ export const NumberInput: ComponentMultiStyleConfig = {
       color: 'secondary.500',
       borderRadius: 0,
       minH: '100%',
+      _disabled: {
+        color: 'neutral.500',
+        cursor: 'not-allowed',
+      },
     },
     stepperDivider: {
       h: '1.25rem',
