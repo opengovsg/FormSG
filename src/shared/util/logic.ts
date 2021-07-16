@@ -294,7 +294,7 @@ const getCurrentValue = (
   | string
   | string[]
   | boolean[]
-  | ITableRow[] // TODO: will be removed after transformer functions are inserted
+  | ITableRow[]
   | CheckboxConditionValue
   | undefined
   | null => {
