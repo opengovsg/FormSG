@@ -2,7 +2,13 @@ import { Document } from 'mongoose'
 
 import { IFieldSchema } from './field/baseField'
 import { BasicField } from './field/fieldTypes'
-import { FieldResponse, ICheckboxResponse, ISingleAnswerResponse } from '.'
+import {
+  FieldResponse,
+  IAttachmentResponse,
+  ICheckboxResponse,
+  ISingleAnswerResponse,
+  ITableResponse,
+} from '.'
 
 export enum LogicConditionState {
   Equal = 'is equals to',
@@ -144,7 +150,11 @@ export interface ILogicClientFieldSchema
 }
 
 // Type for server logic fields after being transformation
-export type LogicFieldResponse = ISingleAnswerResponse | ILogicCheckboxResponse
+export type LogicFieldResponse =
+  | ISingleAnswerResponse
+  | ILogicCheckboxResponse
+  | ITableResponse
+  | IAttachmentResponse
 
 /**
  * Types for checkbox logic field
