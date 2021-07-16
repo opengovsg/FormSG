@@ -1,7 +1,7 @@
 import { Document } from 'mongoose'
 
 import { BasicField, IFieldSchema } from './field'
-import { ICheckboxResponse, ISingleAnswerResponse } from '.'
+import { FieldResponse, ICheckboxResponse, ISingleAnswerResponse } from '.'
 
 export enum LogicConditionState {
   Equal = 'is equals to',
@@ -131,13 +131,8 @@ export interface ILogicInputClientSchema extends IFieldSchema {
   fieldValue: string | boolean[]
 }
 
-// Type of server logic fields (passed into the logic module)
-export type LogicInputFieldResponse = ISingleAnswerResponse | ICheckboxResponse
-
 // Type for fields that are passed into the logic module
-export type FieldSchemaOrResponse =
-  | ILogicInputClientSchema
-  | LogicInputFieldResponse
+export type FieldSchemaOrResponse = ILogicInputClientSchema | FieldResponse
 
 // Type for client logic fields after transformation
 export interface ILogicClientFieldSchema
