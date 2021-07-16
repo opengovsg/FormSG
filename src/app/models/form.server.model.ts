@@ -483,16 +483,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormLogicPath.discriminator(LogicType.PreventSubmit, PreventSubmitLogicSchema)
 
   // Methods
-  FormSchema.methods.getDashboardView = function (admin: IPopulatedUser) {
-    return {
-      _id: this._id,
-      title: this.title,
-      status: this.status,
-      lastModified: this.lastModified,
-      responseMode: this.responseMode,
-      admin,
-    }
-  }
 
   // Method to return myInfo attributes
   FormSchema.methods.getUniqueMyInfoAttrs = function () {
@@ -533,6 +523,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   const FormDocumentSchema = FormSchema as unknown as Schema<IFormDocument>
+
+  FormDocumentSchema.methods.getDashboardView = function (
+    admin: IPopulatedUser,
+  ) {
+    return {
+      _id: this._id,
+      title: this.title,
+      status: this.status,
+      lastModified: this.lastModified,
+      responseMode: this.responseMode,
+      admin,
+    }
+  }
 
   FormDocumentSchema.methods.getSettings = function (): FormSettings {
     const formSettings =
