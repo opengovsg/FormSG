@@ -71,7 +71,7 @@ export interface IPreventSubmitLogicSchema
   extends IPreventSubmitLogic,
     Document {}
 
-type LogicField = Extract<
+export type LogicField = Extract<
   BasicField,
   | BasicField.Dropdown
   | BasicField.Radio
@@ -88,11 +88,11 @@ type LogicAssociation<K extends LogicField, VS extends LogicConditionState> = [
 ]
 
 // Logic fields that are multi-valued
-type MultiValuedLogicField = Extract<BasicField, BasicField.Checkbox>
-type MultiValuedLogicStates = LogicConditionState.AnyOf
-type MultiValuedLogicCondition = LogicAssociation<
-  MultiValuedLogicField,
-  MultiValuedLogicStates
+type MultiCombiLogicField = Extract<BasicField, BasicField.Checkbox>
+type MultiCombiLogicStates = LogicConditionState.AnyOf
+type MultiCombiLogicCondition = LogicAssociation<
+  MultiCombiLogicField,
+  MultiCombiLogicStates
 >
 
 // Logic fields that are categorical
@@ -134,7 +134,7 @@ export type LogicCondition =
   | CategoricalLogicCondition
   | BinaryLogicCondition
   | NumericalLogicCondition
-  | MultiValuedLogicCondition
+  | MultiCombiLogicCondition
 
 /**
  * Types needed for logic module inputs
@@ -179,11 +179,18 @@ export type ILogicCheckboxResponse = Omit<ICheckboxResponse, 'answerArray'> & {
   answerArray: CheckboxConditionValue
 }
 
-// Representation of a Checkbox condition
+// Representation of frontend checkbox condition
+export interface ClientCheckboxCondition
+  extends Omit<IClientConditionSchema, 'value'> {
+  value: ClientCheckboxConditionOption[][]
+}
+
+// Representation of backend/logic checkbox condition
 export interface LogicCheckboxCondition
   extends Omit<IConditionSchema, 'value'> {
   value: CheckboxConditionValue[]
 }
+
 // Representation of a checkbox condition value
 export type CheckboxConditionValue = {
   options: string[]
