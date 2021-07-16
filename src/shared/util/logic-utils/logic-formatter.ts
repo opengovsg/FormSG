@@ -24,7 +24,7 @@ export const formatFieldsForLogic = (
     if (field.fieldType === BasicField.Checkbox) {
       return transformCheckboxForLogic(field, formFields)
     } else {
-      return cloneDeep(field)
+      return cloneDeep(field) as LogicFieldSchemaOrResponse
     }
   })
 }
