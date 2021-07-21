@@ -5,6 +5,9 @@ const UpdateFormService = require('../../../../services/UpdateFormService')
 const {
   transformBackendLogic,
 } = require('../../services/form-logic/form-logic.client.service')
+const {
+  checkIfHasInvalidValues,
+} = require('../../../../../shared/util/logic-utils')
 
 angular.module('forms').component('editLogicComponent', {
   templateUrl: 'modules/forms/admin/componentViews/edit-logic.client.view.html',
@@ -26,6 +29,7 @@ angular.module('forms').component('editLogicComponent', {
 function editLogicComponentController($uibModal, FormFields, Toastr, $q) {
   const vm = this
   vm.LogicType = LogicType
+  vm.checkIfHasInvalidValues = checkIfHasInvalidValues
 
   vm.$onInit = () => {
     vm.myform.form_logics = vm.myform.form_logics.map(transformBackendLogic)
