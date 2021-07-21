@@ -1,4 +1,4 @@
-import { Result } from 'neverthrow'
+import { err, Result } from 'neverthrow'
 
 import { FieldResponse, IPopulatedEncryptedForm } from '../../../../types'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
@@ -36,22 +36,29 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
     IncomingEncryptSubmission,
     ProcessingError | ConflictError | ValidateFieldError[]
   > {
-    return checkIsEncryptedEncoding(encryptedContent)
-      .andThen(() => getFilteredResponses(form, responses))
-      .andThen((filteredResponses) =>
-        this.getFieldMap(form, filteredResponses).map((fieldMap) => ({
-          responses: filteredResponses,
-          fieldMap,
-          form,
-          encryptedContent,
-        })),
+    try {
+      return checkIsEncryptedEncoding(encryptedContent)
+        .andThen(() => getFilteredResponses(form, responses))
+        .andThen((filteredResponses) =>
+          this.getFieldMap(form, filteredResponses).map((fieldMap) => ({
+            responses: filteredResponses,
+            fieldMap,
+            form,
+            encryptedContent,
+          })),
+        )
+        .map((metadata) => new IncomingEncryptSubmission(metadata))
+        .andThen((incomingEncryptSubmission) =>
+          incomingEncryptSubmission
+            .validate()
+            .map(() => incomingEncryptSubmission),
+        )
+    } catch (error) {
+      console.log('here :(')
+      return err(
+        new ProcessingError('Something went wrong when processing submission'),
       )
-      .map((metadata) => new IncomingEncryptSubmission(metadata))
-      .andThen((incomingEncryptSubmission) =>
-        incomingEncryptSubmission
-          .validate()
-          .map(() => incomingEncryptSubmission),
-      )
+    }
   }
 
   responseVisibilityPredicate(response: FieldResponse): boolean {

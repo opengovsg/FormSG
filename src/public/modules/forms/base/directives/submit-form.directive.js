@@ -9,7 +9,7 @@ const UpdateFormService = require('../../../../services/UpdateFormService')
 const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
-} = require('../../../../../shared/util/logic')
+} = require('../../helpers/logic-adaptor')
 
 /**
  * @typedef {number} FormState

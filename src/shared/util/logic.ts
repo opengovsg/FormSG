@@ -3,7 +3,6 @@ import { isEqual } from 'lodash'
 import {
   BasicField,
   CheckboxConditionValue,
-  FieldSchemaOrResponse,
   IConditionSchema,
   IField,
   IFormDocument,
@@ -19,7 +18,6 @@ import {
   LogicType,
 } from '../../types'
 
-import { formatFieldsForLogic } from './logic-utils/logic-formatter'
 import {
   isCheckboxConditionValue,
   isLogicCheckboxCondition,
@@ -193,7 +191,7 @@ const getPreventSubmitConditions = (
  * @returns a condition if submission is to prevented, otherwise `undefined`
  */
 export const getLogicUnitPreventingSubmit = (
-  submission: FieldSchemaOrResponse[],
+  submission: LogicFieldSchemaOrResponse[],
   form: IFormDocument,
   visibleFieldIds?: FieldIdSet,
 ): IPreventSubmitLogicSchema | undefined => {
@@ -202,7 +200,7 @@ export const getLogicUnitPreventingSubmit = (
   const preventSubmitConditions = getPreventSubmitConditions(form)
   return preventSubmitConditions.find((logicUnit) =>
     isLogicUnitSatisfied(
-      formatFieldsForLogic(submission, form.form_fields),
+      submission,
       logicUnit.conditions,
       definedVisibleFieldIds,
     ),
@@ -234,7 +232,7 @@ const allConditionsExist = (
  * @returns a set of IDs of visible fields in the submission
  */
 export const getVisibleFieldIds = (
-  submission: FieldSchemaOrResponse[],
+  submission: LogicFieldSchemaOrResponse[],
   form: IFormDocument,
 ): FieldIdSet => {
   const logicUnitsGroupedByField = groupLogicUnitsByField(form)
@@ -257,11 +255,7 @@ export const getVisibleFieldIds = (
         !visibleFieldIds.has(field._id.toString()) &&
         (!logicUnits ||
           logicUnits.some((logicUnit) =>
-            isLogicUnitSatisfied(
-              formatFieldsForLogic(submission, form.form_fields),
-              logicUnit,
-              visibleFieldIds,
-            ),
+            isLogicUnitSatisfied(submission, logicUnit, visibleFieldIds),
           ))
       ) {
         visibleFieldIds.add(field._id.toString())
