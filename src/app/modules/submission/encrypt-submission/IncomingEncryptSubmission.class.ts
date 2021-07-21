@@ -54,7 +54,6 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
             .map(() => incomingEncryptSubmission),
         )
     } catch (error) {
-      console.log('here :(')
       return err(
         new ProcessingError('Something went wrong when processing submission'),
       )
