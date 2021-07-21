@@ -1,13 +1,8 @@
 import { Document } from 'mongoose'
 
+import { ClientCheckboxConditionOption } from '../shared/util/logic-utils'
+
 import { BasicField, IFieldSchema } from './field'
-import {
-  FieldResponse,
-  IAttachmentResponse,
-  ICheckboxResponse,
-  ISingleAnswerResponse,
-  ITableResponse,
-} from '.'
 
 export enum LogicConditionState {
   Equal = 'is equals to',
@@ -29,6 +24,12 @@ export enum LogicType {
   PreventSubmit = 'preventSubmit',
 }
 
+// Representation of a checkbox condition value
+export type CheckboxConditionValue = {
+  options: string[]
+  others: boolean
+}
+
 export interface ICondition {
   field: IFieldSchema['_id']
   state: LogicConditionState
@@ -39,6 +40,7 @@ export interface ICondition {
 // Override ObjectId with String type since the field id passed in is in
 // String form.
 export interface IConditionSchema extends ICondition, Document<string> {}
+
 export interface IClientConditionSchema
   extends Omit<IConditionSchema, 'value'> {
   value:
@@ -48,6 +50,7 @@ export interface IClientConditionSchema
     | number[]
     | ClientCheckboxConditionOption[][]
 }
+
 export interface ILogic {
   conditions: IConditionSchema[]
   logicType: LogicType
@@ -71,7 +74,7 @@ export interface IPreventSubmitLogicSchema
   extends IPreventSubmitLogic,
     Document {}
 
-export type LogicField = Extract<
+type LogicField = Extract<
   BasicField,
   | BasicField.Dropdown
   | BasicField.Radio
@@ -135,67 +138,6 @@ export type LogicCondition =
   | BinaryLogicCondition
   | NumericalLogicCondition
   | MultiCombiLogicCondition
-
-/**
- * Types needed for logic module inputs
- */
-
-// Type of client logic fields before transformation (passed into logic module).
-// We don't store a fieldValue in the database, but the client
-// needs it as a variable to store the client's answer to a field.
-export interface ILogicInputClientSchema extends IFieldSchema {
-  fieldValue: string | boolean[]
-}
-
-// Type for fields that are passed into the logic module
-export type FieldSchemaOrResponse = ILogicInputClientSchema | FieldResponse
-
-// Type for client logic fields after transformation
-export interface ILogicClientFieldSchema
-  extends Omit<ILogicInputClientSchema, 'fieldValue'> {
-  // Use omit instead of directly extending IFieldSchema
-  // to prevent typescript from complaining about return type in adaptor function
-  fieldValue: string | CheckboxConditionValue
-}
-
-// Type for server logic fields after being transformation
-export type LogicFieldResponse =
-  | ISingleAnswerResponse
-  | ILogicCheckboxResponse
-  | ITableResponse
-  | IAttachmentResponse
-
-/**
- * Types for checkbox logic field
- */
-// Representation of an option in the logic tab
-export type ClientCheckboxConditionOption = {
-  value: string
-  other: boolean
-}
-
-// Representation of backend checkbox response after being transformed
-export type ILogicCheckboxResponse = Omit<ICheckboxResponse, 'answerArray'> & {
-  answerArray: CheckboxConditionValue
-}
-
-// Representation of frontend checkbox condition
-export interface ClientCheckboxCondition
-  extends Omit<IClientConditionSchema, 'value'> {
-  value: ClientCheckboxConditionOption[][]
-}
-
-// Representation of backend/logic checkbox condition
-export interface LogicCheckboxCondition
-  extends Omit<IConditionSchema, 'value'> {
-  value: CheckboxConditionValue[]
-}
-
-// Representation of a checkbox condition value
-export type CheckboxConditionValue = {
-  options: string[]
-  others: boolean
-}
 
 /**
  * Logic POJO with functions removed

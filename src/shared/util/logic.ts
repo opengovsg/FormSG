@@ -1,24 +1,26 @@
-import { isEqual } from 'lodash'
+import { cloneDeep, isEmpty, isEqual } from 'lodash'
 
 import {
   BasicField,
   CheckboxConditionValue,
+  FieldResponse,
+  IAttachmentResponse,
   IConditionSchema,
   IField,
+  IFieldSchema,
   IFormDocument,
-  ILogicClientFieldSchema,
-  ILogicInputClientSchema,
   ILogicSchema,
   IPreventSubmitLogicSchema,
   IShowFieldsLogicSchema,
-  ITableRow,
+  ISingleAnswerResponse,
+  ITableResponse,
   LogicCondition,
   LogicConditionState,
-  LogicFieldResponse,
   LogicType,
 } from '../../types'
 
 import {
+  ILogicCheckboxResponse,
   isCheckboxConditionValue,
   isLogicCheckboxCondition,
 } from './logic-utils'
@@ -75,13 +77,38 @@ export const getApplicableIfStates = (
   fieldType: BasicField,
 ): LogicConditionState[] => LOGIC_MAP.get(fieldType) ?? []
 
+export type LogicFieldResponse =
+  | Extract<
+      FieldResponse,
+      ISingleAnswerResponse | IAttachmentResponse | ITableResponse
+    >
+  | ILogicCheckboxResponse
+
+// This is the schema for field responses on the client's end that will be input into the logic module.
+// This will not be saved in the backend.
+export interface IClientFieldSchema extends IFieldSchema {
+  fieldValue: string | boolean[]
+}
+export interface ILogicClientFieldSchema
+  extends Omit<IClientFieldSchema, 'fieldValue'> {
+  // Use omit instead of directly extending IFieldSchema
+  // to prevent typescript from complaining about return type in adaptor function
+  fieldValue: string | CheckboxConditionValue
+}
+
 type GroupedLogic = Record<string, IConditionSchema[][]>
-export type FieldIdSet = Set<ILogicInputClientSchema['_id']>
-// This module handles logic on both the client side (IFieldSchema[])
-// and server side (FieldResponse[])
+export type FieldIdSet = Set<ILogicClientFieldSchema['_id']>
+
+// This module handles logic on both the client side (ILogicClientFieldSchema[])
+// and server side (LogicFieldResponse[]).
+// This type represents the input to the logic module (including non-logic supported fields) that have been transformed.
 export type LogicFieldSchemaOrResponse =
   | ILogicClientFieldSchema
   | LogicFieldResponse
+
+type LogicSupportedFieldSchemaOrResponse =
+  | ILogicClientFieldSchema
+  | Extract<LogicFieldResponse, ISingleAnswerResponse | ILogicCheckboxResponse>
 
 // Returns typed ShowFields logic unit
 const isShowFieldsLogic = (
@@ -289,15 +316,8 @@ const isLogicUnitSatisfied = (
 }
 
 const getCurrentValue = (
-  field: LogicFieldSchemaOrResponse,
-):
-  | string
-  | string[]
-  | boolean[]
-  | ITableRow[]
-  | CheckboxConditionValue
-  | undefined
-  | null => {
+  field: LogicSupportedFieldSchemaOrResponse,
+): string | string[] | CheckboxConditionValue | undefined | null => {
   if ('fieldValue' in field) {
     // client
     return field.fieldValue
@@ -310,9 +330,16 @@ const getCurrentValue = (
   }
   return null
 }
+
+const isLogicField = (
+  field: LogicFieldSchemaOrResponse,
+): field is LogicSupportedFieldSchemaOrResponse => {
+  return LOGIC_MAP.has(field.fieldType)
+}
+
 /**
  * Checks if the field's value matches the condition
- * @param {Object} field
+ * @param {Object} field Logic field
  * @param {Object} condition
  * @param {String} condition.state - The type of condition
  */
@@ -320,15 +347,14 @@ const isConditionFulfilled = (
   field: LogicFieldSchemaOrResponse,
   condition: IConditionSchema,
 ): boolean => {
-  if (!field || !condition) {
+  if (!field || !condition || !isLogicField(field)) {
     return false
   }
   let currentValue = getCurrentValue(field)
   if (
     currentValue === null ||
     currentValue === undefined ||
-    ((Array.isArray(currentValue) || typeof currentValue === 'string') &&
-      currentValue.length === 0)
+    (typeof currentValue !== 'number' && isEmpty(currentValue))
   ) {
     return false
   }
@@ -373,11 +399,18 @@ const isConditionFulfilled = (
       isLogicCheckboxCondition(condition) &&
       isCheckboxConditionValue(currentValue)
     ) {
-      condition.value.forEach((obj) => {
-        obj.options = obj.options.sort()
+      // sort condition and current value
+      const sortedConditionValue = condition.value.map((obj) => {
+        const clonedObj = cloneDeep(obj)
+        clonedObj.options = clonedObj.options.sort()
+        return clonedObj
       })
-      currentValue.options = currentValue.options.sort()
-      return condition.value.some((val) => isEqual(currentValue, val))
+      const sortedCurrentValue = cloneDeep(currentValue)
+      sortedCurrentValue.options = sortedCurrentValue.options.sort()
+
+      return sortedConditionValue.some((val) =>
+        isEqual(sortedCurrentValue, val),
+      )
     } else {
       return false
     }

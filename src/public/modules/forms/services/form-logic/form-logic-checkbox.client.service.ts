@@ -1,12 +1,12 @@
 import { cloneDeep, omit } from 'lodash'
 
-import { isClientCheckboxConditionValue } from '../../../../../shared/util/logic-utils'
 import {
   ClientCheckboxCondition,
   ClientCheckboxConditionOption,
-  IClientConditionSchema,
+  isClientCheckboxConditionValue,
   LogicCheckboxCondition,
-} from '../../../../../types'
+} from '../../../../../shared/util/logic-utils'
+import { IClientConditionSchema } from '../../../../../types'
 
 /**
  * Converts checkbox condition value with backend representation to frontend 2D array representation.
@@ -18,6 +18,7 @@ export const convertObjectCheckboxCondition = (
   condition: LogicCheckboxCondition,
 ): ClientCheckboxCondition => {
   condition = cloneDeep(condition) // clone to prevent changes to original
+
   const convertedValue: ClientCheckboxConditionOption[][] = []
   condition.value.forEach((value) => {
     const combination = []

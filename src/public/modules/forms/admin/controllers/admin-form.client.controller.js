@@ -10,7 +10,7 @@ const FieldFactory = require('../../helpers/field-factory')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 const {
   checkIfHasInvalidValues,
-} = require('../../../../../shared/util/logic-utils/logic-values-checker')
+} = require('../../../../../shared/util/logic-utils')
 
 // All viewable tabs. readOnly is true if that tab cannot be used to edit form.
 const VIEW_TABS = [

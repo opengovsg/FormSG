@@ -1,5 +1,4 @@
 import {
-  ClientCheckboxCondition,
   IClientConditionSchema,
   IField,
   LogicConditionState,
@@ -12,7 +11,10 @@ import {
   isRatingField,
 } from '../../../types/field/utils/guards'
 
-import { isClientCheckboxConditionValue } from './checkbox'
+import {
+  ClientCheckboxCondition,
+  isClientCheckboxConditionValue,
+} from './checkbox'
 
 /**
  * Checks if any of the values specified in logic are invalid.

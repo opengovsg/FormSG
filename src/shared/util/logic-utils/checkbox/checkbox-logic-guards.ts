@@ -1,10 +1,10 @@
-import {
-  CheckboxConditionValue,
-  ClientCheckboxCondition,
-  IConditionSchema,
-  LogicCheckboxCondition,
-} from '../../../../types'
+import { CheckboxConditionValue, IConditionSchema } from '../../../../types'
 import { hasProp } from '../../has-prop'
+
+import {
+  ClientCheckboxCondition,
+  LogicCheckboxCondition,
+} from './checkbox-logic-types'
 
 /**
  * Typeguard to check if the condition has the backend/logic representation for checkbox condition values
