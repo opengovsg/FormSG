@@ -182,7 +182,7 @@
     "@types/json-stringify-safe": "^5.0.0",
     "@types/mongodb": "^3.6.20",
     "@types/mongodb-uri": "^0.9.1",
-    "@types/node": "^14.17.5",
+    "@types/node": "^14.17.6",
     "@types/nodemailer": "^6.4.4",
     "@types/opossum": "^4.1.2",
     "@types/promise-retry": "^1.1.3",
