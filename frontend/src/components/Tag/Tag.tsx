@@ -1,7 +1,7 @@
 import React from 'react'
 import { Tag as ChakraTag, TagProps as ChakraTagProps } from '@chakra-ui/react'
 
-type TagVariants = 'primary' | 'secondary'
+import { TagVariants } from '~/theme/components/Tag'
 
 // colorScheme is omitted because the tag uses variants to select colours
 export interface TagProps extends Omit<ChakraTagProps, 'colorScheme'> {

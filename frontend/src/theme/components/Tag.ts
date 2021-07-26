@@ -1,15 +1,17 @@
 import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
 
+export type TagVariants = 'solid' | 'light'
+
 export const Tag: ComponentMultiStyleConfig = {
   parts: [],
   variants: {
-    primary: {
+    solid: {
       container: {
         textColor: 'secondary.700',
         bgColor: 'success.400',
       },
     },
-    secondary: {
+    light: {
       container: {
         bgColor: 'primary.100',
         textColor: 'primary.400',
