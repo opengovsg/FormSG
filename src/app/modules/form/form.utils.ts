@@ -125,21 +125,14 @@ export const getLogicById = (
   return form_logics.find((logic) => logicId === String(logic._id)) ?? null
 }
 
-// Typeguard to check if a form has a message service id
-export const isOnboardedForm = <T extends IForm = IForm>(
-  form: T,
-): form is IOnboardedForm<T> => {
-  return !!form.msgSrvcName
-}
-
 /**
  * Checks if a given form is onboarded (the form's message service name is defined and different from the default)
  * @param form The form to check
  * @returns boolean indicating if the form is/is not onboarded
  */
-export const isFormOnboarded = (
-  form: Pick<IPopulatedForm, 'msgSrvcName'>,
-): boolean => {
+export const isFormOnboarded = <T extends IForm = IForm>(
+  form: Pick<T, 'msgSrvcName'>,
+): form is IOnboardedForm<T> => {
   return form.msgSrvcName
     ? !(form.msgSrvcName === smsConfig.twilioMsgSrvcSid)
     : false
