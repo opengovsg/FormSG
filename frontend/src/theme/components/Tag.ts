@@ -19,6 +19,6 @@ export const Tag: ComponentMultiStyleConfig = {
     },
   },
   defaultProps: {
-    variant: 'primary',
+    variant: 'solid',
   },
 }
