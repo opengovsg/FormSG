@@ -26,8 +26,11 @@ const baseContainerStyle = {
   bgColor: 'white',
   border: '1px solid',
   borderColor: 'neutral.300',
+  whiteSpace: 'pre-line',
   flexDir: 'column',
   alignItems: 'flex-start',
+  maxWidth: 'inherit',
+  textAlign: 'left',
 }
 
 export const Tile: ComponentMultiStyleConfig = {
