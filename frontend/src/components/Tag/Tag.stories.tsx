@@ -11,14 +11,14 @@ export default {
 const Template: Story<TagProps> = (args) => {
   return <Tag {...args}>Tag Name</Tag>
 }
-export const Primary = Template.bind({})
-Primary.args = {
-  variant: 'primary',
+export const Solid = Template.bind({})
+Solid.args = {
+  variant: 'solid',
 }
 
-export const Secondary = Template.bind({})
-Secondary.args = {
-  variant: 'secondary',
+export const Light = Template.bind({})
+Light.args = {
+  variant: 'light',
 }
 export const Playground: Story = ({ variant, label }) => {
   return <Tag variant={variant}>{label}</Tag>
@@ -26,5 +26,5 @@ export const Playground: Story = ({ variant, label }) => {
 
 Playground.args = {
   label: "Tag you're it",
-  variant: 'primary',
+  variant: 'light',
 }
