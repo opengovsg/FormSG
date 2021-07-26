@@ -16,6 +16,7 @@
     "npm": "~6.4.0"
   },
   "scripts": {
+    "postinstall": "cd shared && npm install",
     "test-backend": "env-cmd -f tests/.test-env jest --coverage --maxWorkers=4",
     "test-backend:watch": "env-cmd -f tests/.test-env jest --watch",
     "test-frontend": "jest --config=tests/unit/frontend/jest.config.js",
