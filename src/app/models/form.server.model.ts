@@ -27,6 +27,7 @@ import {
   EndPage,
   FormField,
   FormFieldWithId,
+  FormLogicSchema,
   FormLogoState,
   FormOtpData,
   FormSettings,
@@ -746,7 +747,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     const form = await this.findById(formId).exec()
     if (!form?.form_logics) return null
     const newLogic = (
-      form.form_logics as Types.DocumentArray<ILogicSchema>
+      form.form_logics as Types.DocumentArray<FormLogicSchema>
     ).create(createLogicBody)
     form.form_logics.push(newLogic)
     return form.save()
