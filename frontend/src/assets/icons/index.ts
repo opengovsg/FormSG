@@ -1,5 +1,6 @@
 export * from './BxHeart'
 export * from './BxsCheckCircle'
+export * from './BxsCloudUpload'
 export * from './BxsErrorCircle'
 export * from './BxsHeart'
 export * from './BxsStar'
