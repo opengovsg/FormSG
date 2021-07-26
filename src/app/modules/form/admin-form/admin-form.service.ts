@@ -10,13 +10,16 @@ import {
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../shared/constants'
 import {
+  BasicField,
   FormFieldSchema,
   FormLogicSchema,
   FormLogoState,
   FormSettings,
+  IField,
   IForm,
   IFormDocument,
   IFormSchema,
+  IMobileField,
   IPopulatedForm,
   IUserSchema,
   LogicDto,
@@ -36,7 +39,9 @@ import {
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
+import * as SmsService from '../../../services/sms/sms.service'
 import { dotifyObject } from '../../../utils/dotify-object'
+import { isVerifiableMobileField } from '../../../utils/field-validation/field-validation.guards'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -50,13 +55,15 @@ import {
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
+import { SmsLimitExceededError } from '../../verification/verification.errors'
+import { hasAdminExceededFreeSmsLimit } from '../../verification/verification.util'
 import {
   FormNotFoundError,
   LogicNotFoundError,
   TransferOwnershipError,
 } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
-import { getFormFieldById, getLogicById } from '../form.utils'
+import { getFormFieldById, getLogicById, isOnboardedForm } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -1083,3 +1090,64 @@ export const disableSmsVerificationsForUser = (
       return transformMongoError(error)
     },
   ).map(() => true)
+
+/**
+ * Checks if the given form field should be updated.
+ * This currently checks if the admin has exceeded their free sms limit.
+ * @param form The form which the specified field belongs to
+ * @param formField The field which we should perform the update for
+ * @returns ok(form) If the field can be updated
+ * @return err(PossibleDatabaseError) if an error occurred while performing the required checks
+ * @return err(SmsLimitExceededError) if the form admin went over the free sms limit
+ * while attempting to toggle verification on for a mobile form field
+ */
+export const shouldUpdateFormField = (
+  form: IPopulatedForm,
+  formField: IField,
+): ResultAsync<
+  IPopulatedForm,
+  PossibleDatabaseError | SmsLimitExceededError
+> => {
+  switch (formField.fieldType) {
+    case BasicField.Mobile: {
+      // NOTE: This casting is safe and we require this casting because we do not declare explicit discriminants on the extended type
+      return isMobileFieldUpdateAllowed(formField as IMobileField, form)
+    }
+    default:
+      return okAsync(form)
+  }
+}
+
+/**
+ * Checks whether the mobile update should be allowed based on whether the mobile field is verified
+ * and (if verified), the admin's free sms counts
+ * @param mobileField The mobile field to check
+ * @param form The form that the field belongs to
+ * @returns ok(form) if the update is valid
+ * @returns err(PossibleDatabaseError) if an error occurred while retrieving counts from database
+ * @returns err(SmsLimitExceededError) if the admin of the form has exceeded their free sms quota
+ */
+const isMobileFieldUpdateAllowed = (
+  mobileField: IMobileField,
+  form: IPopulatedForm,
+): ResultAsync<
+  IPopulatedForm,
+  PossibleDatabaseError | SmsLimitExceededError
+> => {
+  // Field can always update if it's not a verifiable field or if the form has been onboarded
+  if (!isVerifiableMobileField(mobileField) || isOnboardedForm(form)) {
+    return okAsync(form)
+  }
+
+  const formAdminId = String(form.admin._id)
+
+  // If the form admin has exceeded the sms limit
+  // And the form is not onboarded, refuse to update the field
+  return SmsService.retrieveFreeSmsCounts(formAdminId).andThen(
+    (freeSmsSent) => {
+      return hasAdminExceededFreeSmsLimit(freeSmsSent)
+        ? errAsync(new SmsLimitExceededError())
+        : okAsync(form)
+    },
+  )
+}

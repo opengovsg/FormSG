@@ -336,3 +336,7 @@ export interface IFormModel extends Model<IFormSchema> {
 
 export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>
 export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
+
+export type IOnboardedForm<T extends IForm> = T & {
+  msgSrvcName: string
+}
