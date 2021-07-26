@@ -1,10 +1,6 @@
 import { err, ok, Result } from 'neverthrow'
 
 import {
-  getLogicUnitPreventingSubmit,
-  getVisibleFieldIds,
-} from '../../../../shared/util/logic'
-import {
   AuthType,
   FieldResponse,
   IFieldSchema,
@@ -12,6 +8,10 @@ import {
   ResponseMode,
 } from '../../../../types'
 import { validateField } from '../../../utils/field-validation'
+import {
+  getLogicUnitPreventingSubmit,
+  getVisibleFieldIds,
+} from '../../../utils/logic-adaptor'
 import { createSgidParsedResponses } from '../../sgid/sgid.util'
 import {
   createCorppassParsedResponses,
@@ -86,12 +86,21 @@ export default class ParsedResponsesObject {
 
     // Set of all visible fields
     const visibleFieldIds = getVisibleFieldIds(filteredResponses, form)
+    if (visibleFieldIds.isErr()) {
+      return err(visibleFieldIds.error)
+    }
 
-    // Guard against invalid form submissions that should have been prevented by
-    // logic.
-    if (
-      getLogicUnitPreventingSubmit(filteredResponses, form, visibleFieldIds)
-    ) {
+    const logicUnitPreventingSubmit = getLogicUnitPreventingSubmit(
+      filteredResponses,
+      form,
+      visibleFieldIds.value,
+    )
+
+    if (logicUnitPreventingSubmit.isErr()) {
+      return err(logicUnitPreventingSubmit.error)
+    } else if (logicUnitPreventingSubmit.value) {
+      // Guard against invalid form submissions that should have been prevented by
+      // logic.
       return err(new ProcessingError('Submission prevented by form logic'))
     }
 
@@ -132,7 +141,7 @@ export default class ParsedResponsesObject {
             ? 'answer' in response &&
               typeof response.answer === 'string' &&
               response.answer.trim() !== ''
-            : visibleFieldIds.has(responseId),
+            : visibleFieldIds.value.has(responseId),
         question: formField.getQuestion(),
       }
 
