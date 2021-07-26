@@ -1,12 +1,19 @@
 import { useState } from 'react'
 import { BiLockAlt, BiMailSend } from 'react-icons/bi'
-import { ListItem, Stack, UnorderedList } from '@chakra-ui/react'
+import { Stack, UnorderedList } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 import _ from 'lodash'
 
 import Tag from '~components/Tag'
 
-import { Tile, TileProps, TileSubtitle, TileText, TileTitle } from './Tile'
+import {
+  Tile,
+  TileListItem,
+  TileProps,
+  TileSubtitle,
+  TileText,
+  TileTitle,
+} from './Tile'
 
 export default {
   title: 'Components/Tiles',
@@ -25,11 +32,9 @@ const List = ({
     <TileText textStyle="subhead-2">{listTitle}</TileText>
     <UnorderedList>
       {listItems.map((text) => (
-        <ListItem>
-          <TileText textStyle="body-2" textAlign="left">
-            {text}
-          </TileText>
-        </ListItem>
+        <TileListItem textStyle="body-2" textAlign="left">
+          {text}
+        </TileListItem>
       ))}
     </UnorderedList>
   </>

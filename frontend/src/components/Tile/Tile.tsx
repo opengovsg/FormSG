@@ -6,6 +6,7 @@ import {
   forwardRef,
   HStack,
   Icon,
+  ListItem,
   StylesProvider,
   Text,
   TextProps,
@@ -82,4 +83,12 @@ export const TileSubtitle = (props: TextProps): JSX.Element => {
 
 export const TileText = (props: TextProps): JSX.Element => {
   return <Text color="secondary.400" {...props} />
+}
+
+export const TileListItem = (props: TextProps): JSX.Element => {
+  return (
+    <ListItem>
+      <TileText textStyle="body-2" textAlign="left" {...props} />
+    </ListItem>
+  )
 }
