@@ -1,63 +1,53 @@
 import { Document } from 'mongoose'
 
+import {
+  FormCondition,
+  FormLogicBase,
+  LogicConditionState,
+  LogicDto,
+  LogicIfValue,
+  LogicType,
+  PreventSubmitLogic,
+  ShowFieldLogic,
+} from '../../shared/types/form/form_logic'
+
 import { BasicField, IFieldSchema } from './field'
 
-export enum LogicConditionState {
-  Equal = 'is equals to',
-  Lte = 'is less than or equal to',
-  Gte = 'is more than or equal to',
-  Either = 'is either',
-  AnyOf = 'is one of the following',
-}
+export { LogicConditionState, LogicIfValue, LogicType, LogicDto }
 
-export enum LogicIfValue {
-  Number = 'number',
-  SingleSelect = 'single-select',
-  MultiSelect = 'multi-select',
-  MultiCombination = 'multi-combination',
-}
-
-export enum LogicType {
-  ShowFields = 'showFields',
-  PreventSubmit = 'preventSubmit',
-}
-
-// Representation of a checkbox condition value
-export type CheckboxConditionValue = {
-  options: string[]
-  others: boolean
-}
-
-export interface ICondition {
+export interface ICondition extends FormCondition {
   field: IFieldSchema['_id']
-  state: LogicConditionState
-  value: string | number | string[] | number[] | CheckboxConditionValue[]
-  ifValueType?: LogicIfValue
 }
 
 // Override ObjectId with String type since the field id passed in is in
 // String form.
 export interface IConditionSchema extends ICondition, Document<string> {}
 
-export interface ILogic {
+export type ILogic = FormLogicBase
+
+export interface ILogicSchema extends ILogic, Document {
   conditions: IConditionSchema[]
-  logicType: LogicType
 }
 
-export interface ILogicSchema extends ILogic, Document {}
-export interface IShowFieldsLogic extends ILogic {
-  show: IFieldSchema['_id'][]
+export type IShowFieldsLogic = ShowFieldLogic
+export interface IShowFieldsLogicSchema
+  extends ILogicSchema,
+    IShowFieldsLogic,
+    Document {
+  logicType: LogicType.ShowFields
+  conditions: IConditionSchema[]
 }
 
-export interface IShowFieldsLogicSchema extends IShowFieldsLogic, Document {}
-
-export interface IPreventSubmitLogic extends ILogic {
-  preventSubmitMessage?: string
-}
-
+export type IPreventSubmitLogic = PreventSubmitLogic
 export interface IPreventSubmitLogicSchema
-  extends IPreventSubmitLogic,
-    Document {}
+  extends ILogicSchema,
+    IPreventSubmitLogic,
+    Document {
+  logicType: LogicType.PreventSubmit
+  conditions: IConditionSchema[]
+}
+
+export type FormLogicSchema = IShowFieldsLogicSchema | IPreventSubmitLogicSchema
 
 type LogicField = Extract<
   BasicField,
@@ -123,8 +113,3 @@ export type LogicCondition =
   | BinaryLogicCondition
   | NumericalLogicCondition
   | MultiCombiLogicCondition
-
-/**
- * Logic POJO with functions removed
- */
-export type LogicDto = ILogic & { _id?: Document['_id'] }

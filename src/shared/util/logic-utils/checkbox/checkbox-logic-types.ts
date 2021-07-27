@@ -1,9 +1,5 @@
-import {
-  CheckboxConditionValue,
-  ICheckboxResponse,
-  IConditionSchema,
-} from '../../../../types'
-
+import { CheckboxConditionValue } from '../../../../../shared/types/form/form_logic'
+import { ICheckboxResponse, IConditionSchema } from '../../../../types'
 /**
  * Types for checkbox logic field
  */

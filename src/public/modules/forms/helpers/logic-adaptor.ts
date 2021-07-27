@@ -56,7 +56,8 @@ const convertClientCheckboxValue = (
   }
 }
 
-const adaptSubmissionForLogicModule = (
+// exported for testing
+export const adaptSubmissionForLogicModule = (
   submission: IClientFieldSchema[],
   form: IFormDocument,
 ): ILogicClientFieldSchema[] => {

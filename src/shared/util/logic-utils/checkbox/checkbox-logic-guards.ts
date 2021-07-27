@@ -1,4 +1,5 @@
-import { CheckboxConditionValue, IConditionSchema } from '../../../../types'
+import { CheckboxConditionValue } from '../../../../../shared/types/form/form_logic'
+import { IConditionSchema } from '../../../../types'
 import { hasProp } from '../../has-prop'
 
 import { LogicCheckboxCondition } from './checkbox-logic-types'

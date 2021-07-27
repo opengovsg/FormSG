@@ -1,8 +1,8 @@
 import { cloneDeep, isEmpty, isEqual } from 'lodash'
 
+import { CheckboxConditionValue } from '../../../shared/types/form/form_logic'
 import {
   BasicField,
-  CheckboxConditionValue,
   FieldResponse,
   IAttachmentResponse,
   IConditionSchema,
@@ -199,9 +199,10 @@ const getPreventSubmitConditions = (
   const formFieldIds = new Set(
     form.form_fields?.map((field) => String(field._id)),
   )
+
   const preventFormLogics =
     form.form_logics?.filter(
-      (formLogic) =>
+      (formLogic): formLogic is IPreventSubmitLogicSchema =>
         isPreventSubmitLogic(formLogic) &&
         allConditionsExist(formLogic.conditions, formFieldIds),
     ) ?? []

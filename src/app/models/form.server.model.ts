@@ -9,6 +9,13 @@ import mongoose, {
 } from 'mongoose'
 import validator from 'validator'
 
+import {
+  ADMIN_FORM_META_FIELDS,
+  EMAIL_FORM_SETTINGS_FIELDS,
+  EMAIL_PUBLIC_FORM_FIELDS,
+  STORAGE_FORM_SETTINGS_FIELDS,
+  STORAGE_PUBLIC_FORM_FIELDS,
+} from '../../../shared/constants/form'
 import { MB } from '../../shared/constants'
 import { reorder } from '../../shared/util/immutable-array-fns'
 import { getApplicableIfStates } from '../../shared/util/logic'
@@ -16,11 +23,12 @@ import {
   AuthType,
   BasicField,
   Colors,
+  EmailFormSettings,
   EndPage,
   FormField,
   FormFieldWithId,
+  FormLogicSchema,
   FormLogoState,
-  FormMetaView,
   FormOtpData,
   FormSettings,
   IEmailFormModel,
@@ -39,11 +47,12 @@ import {
   Permission,
   PickDuplicateForm,
   PublicForm,
-  PublicFormValues,
   ResponseMode,
   StartPage,
   Status,
+  StorageFormSettings,
 } from '../../types'
+import { AdminDashboardFormMetaDto } from '../../types/api/form'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
@@ -81,35 +90,6 @@ import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
 import getUserModel from './user.server.model'
 
 export const FORM_SCHEMA_ID = 'Form'
-
-// Exported for testing.
-export const FORM_PUBLIC_FIELDS: (keyof PublicFormValues)[] = [
-  'admin',
-  'authType',
-  'endPage',
-  'esrvcId',
-  'form_fields',
-  'form_logics',
-  'hasCaptcha',
-  'publicKey',
-  'startPage',
-  'status',
-  'title',
-  '_id',
-  'responseMode',
-]
-
-export const FORM_SETTING_FIELDS: (keyof FormSettings)[] = [
-  'authType',
-  'emails',
-  'esrvcId',
-  'hasCaptcha',
-  'inactiveMessage',
-  'status',
-  'submissionLimit',
-  'title',
-  'webhook',
-]
 
 const bson = new BSON([
   BSON.Binary,
@@ -504,16 +484,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormLogicPath.discriminator(LogicType.PreventSubmit, PreventSubmitLogicSchema)
 
   // Methods
-  FormSchema.methods.getDashboardView = function (admin: IPopulatedUser) {
-    return {
-      _id: this._id,
-      title: this.title,
-      status: this.status,
-      lastModified: this.lastModified,
-      responseMode: this.responseMode,
-      admin,
-    }
-  }
 
   // Method to return myInfo attributes
   FormSchema.methods.getUniqueMyInfoAttrs = function () {
@@ -542,21 +512,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return { ...newForm, ...overrideProps }
   }
 
-  FormSchema.methods.getPublicView = function (): PublicForm {
-    const basePublicView = pick(this, FORM_PUBLIC_FIELDS) as PublicFormValues
-
-    // Return non-populated public fields of form if not populated.
-    if (!this.populated('admin')) {
-      return basePublicView
-    }
-
-    // Populated, return public view with user's public view.
-    return {
-      ...basePublicView,
-      admin: (this.admin as IUserSchema).getPublicView(),
-    }
-  }
-
   // Archives form.
   FormSchema.methods.archive = function () {
     // Return instantly when form is already archived.
@@ -570,8 +525,44 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   const FormDocumentSchema = FormSchema as unknown as Schema<IFormDocument>
 
+  FormDocumentSchema.methods.getDashboardView = function (
+    admin: IPopulatedUser,
+  ) {
+    return {
+      _id: this._id,
+      title: this.title,
+      status: this.status,
+      lastModified: this.lastModified,
+      responseMode: this.responseMode,
+      admin,
+    }
+  }
+
   FormDocumentSchema.methods.getSettings = function (): FormSettings {
-    return pick(this, FORM_SETTING_FIELDS)
+    const formSettings =
+      this.responseMode === ResponseMode.Encrypt
+        ? (pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings)
+        : (pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings)
+
+    return formSettings
+  }
+
+  FormDocumentSchema.methods.getPublicView = function (): PublicForm {
+    const basePublicView =
+      this.responseMode === ResponseMode.Encrypt
+        ? (pick(this, STORAGE_PUBLIC_FORM_FIELDS) as PublicForm)
+        : (pick(this, EMAIL_PUBLIC_FORM_FIELDS) as PublicForm)
+
+    // Return non-populated public fields of form if not populated.
+    if (!this.populated('admin')) {
+      return basePublicView
+    }
+
+    // Populated, return public view with user's public view.
+    return {
+      ...basePublicView,
+      admin: (this.admin as IUserSchema).getPublicView(),
+    }
   }
 
   // Transfer ownership of the form to another user
@@ -702,10 +693,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return form.save()
   }
 
-  FormSchema.statics.getMetaByUserIdOrEmail = async function (
+  FormDocumentSchema.statics.getMetaByUserIdOrEmail = async function (
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
-  ): Promise<FormMetaView[]> {
+  ): Promise<AdminDashboardFormMetaDto[]> {
     return (
       this.find()
         // List forms when either the user is an admin or collaborator.
@@ -718,7 +709,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         // selection is made for explicitness.
         // `_id` is also returned regardless and selection is made for
         // explicitness.
-        .select('_id title admin lastModified status responseMode')
+        .select(ADMIN_FORM_META_FIELDS.join(' '))
         .sort('-lastModified')
         .populate({
           path: 'admin',
@@ -756,7 +747,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     const form = await this.findById(formId).exec()
     if (!form?.form_logics) return null
     const newLogic = (
-      form.form_logics as Types.DocumentArray<ILogicSchema>
+      form.form_logics as Types.DocumentArray<FormLogicSchema>
     ).create(createLogicBody)
     form.form_logics.push(newLogic)
     return form.save()

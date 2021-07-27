@@ -67,7 +67,8 @@ const convertServerCheckboxValue = (
   }
 }
 
-const adaptSubmissionForLogicModule = (
+// exported for testing
+export const adaptSubmissionForLogicModule = (
   submission: FieldResponse[],
   form: IFormDocument,
 ): LogicFieldResponse[] => {
