@@ -113,7 +113,7 @@ export const checkIfHasInvalidValues = (
     if (state === LogicConditionState.Lte) {
       return belowMin || belowExact
     } else if (state === LogicConditionState.Gte) {
-      return aboveMax || belowExact
+      return aboveMax || aboveExact
     } else {
       return belowMin || aboveMax || belowExact || aboveExact
     }
