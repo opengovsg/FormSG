@@ -5,6 +5,7 @@ import { Button } from './Button'
 import { Form } from './Form'
 import { FormError } from './FormError'
 import { FormLabel } from './FormLabel'
+import { InlineMessage } from './InlineMessage'
 import { Input } from './Input'
 import { Link } from './Link'
 import { NumberInput } from './NumberInput'
@@ -19,6 +20,7 @@ export const components = {
   FormLabel,
   Input,
   Link,
+  InlineMessage,
   NumberInput,
   PhoneNumberInput,
   Textarea,
