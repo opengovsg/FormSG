@@ -1,55 +1,5 @@
 import { z } from 'zod'
-
-// TODO(#2209): Replace when #2355 is merged in.
-enum BasicField {
-  Section = 'section',
-  Statement = 'statement',
-  Email = 'email',
-  Mobile = 'mobile',
-  HomeNo = 'homeno',
-  Number = 'number',
-  Decimal = 'decimal',
-  Image = 'image',
-  ShortText = 'textfield',
-  LongText = 'textarea',
-  Dropdown = 'dropdown',
-  YesNo = 'yes_no',
-  Checkbox = 'checkbox',
-  Radio = 'radiobutton',
-  Attachment = 'attachment',
-  Date = 'date',
-  Rating = 'rating',
-  Nric = 'nric',
-  Table = 'table',
-  Uen = 'uen',
-}
-// TODO(#2209): Replace when #2355 is merged in.
-enum MyInfoAttribute {
-  Name = 'name',
-  PassportNumber = 'passportnumber',
-  RegisteredAddress = 'regadd',
-  Employment = 'employment',
-  VehicleNo = 'vehno',
-  MarriageCertNo = 'marriagecertno',
-  Sex = 'sex',
-  Race = 'race',
-  Dialect = 'dialect',
-  Nationality = 'nationality',
-  BirthCountry = 'birthcountry',
-  ResidentialStatus = 'residentialstatus',
-  HousingType = 'housingtype',
-  HdbType = 'hdbtype',
-  Marital = 'marital',
-  CountryOfMarriage = 'countryofmarriage',
-  WorkpassStatus = 'workpassstatus',
-  Occupation = 'occupation',
-  MobileNo = 'mobileno',
-  DateOfBirth = 'dob',
-  PassportExpiryDate = 'passportexpirydate',
-  MarriageDate = 'marriagedate',
-  DivorceDate = 'divorcedate',
-  WorkpassExpiryDate = 'workpassexpirydate',
-}
+import { BasicField, MyInfoAttribute } from './field'
 
 const ResponseBase = z.object({
   _id: z.string(),
