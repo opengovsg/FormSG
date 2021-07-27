@@ -15,21 +15,21 @@ const Template: Story<TooltipProps> = (args) => {
   return (
     // padding to create space for tooltips to appear
     <VStack p="350px">
-      <Tooltip {...args} label="Display tooltip content top" placement="top" />
       <Tooltip
         {...args}
-        label="Display tooltip content bottom"
-        placement="bottom"
+        label="Display tooltip content right"
+        placement="right"
       />
       <Tooltip
         {...args}
         label="Display tooltip content left"
         placement="left"
       />
+      <Tooltip {...args} label="Display tooltip content top" placement="top" />
       <Tooltip
         {...args}
-        label="Display tooltip content right"
-        placement="right"
+        label="Display tooltip content bottom"
+        placement="bottom"
       />
     </VStack>
   )

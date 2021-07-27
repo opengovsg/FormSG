@@ -13,7 +13,7 @@ export const CustomTooltip: ComponentMultiStyleConfig = {
       borderRadius: '0.25rem',
       textAlign: 'left',
       margin: '0.25rem',
-      maxWidth: '18.75rem',
+      maxWidth: '19.5rem',
     },
     wrapper: {
       display: 'inline-flex',
