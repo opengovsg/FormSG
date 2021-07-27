@@ -1,6 +1,26 @@
+import { useController, useForm } from 'react-hook-form'
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  HStack,
+  Text,
+} from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import { Attachment } from './Attachment'
+import FormErrorMessage from '~/components/FormControl/FormErrorMessage'
+import FormFieldMessage from '~/components/FormControl/FormFieldMessage'
+import { formatBytes } from '~/utils/formatBytes'
+
+import {
+  Attachment,
+  AttachmentInfo,
+  AttachmentProps,
+  Dropzone,
+  DropzoneProps,
+  useAttachmentContext,
+} from './Attachment'
 
 export default {
   title: 'Components/Field/Attachment',
@@ -8,8 +28,103 @@ export default {
   decorators: [],
 } as Meta
 
-export const Simple: Story = (args) => <Attachment {...args} />
-Simple.bind({})
+export const Default: Story<AttachmentProps> = (args) => (
+  <Attachment {...args}>
+    <AttachmentComponent />
+  </Attachment>
+)
+Default.bind({
+  maxSizeInBytes: 2 * 10 ** 6,
+})
 
-export const Complex: Story = (args) => <Attachment {...args} />
-Complex.bind({})
+export const Disabled: Story<AttachmentProps> = (args) => (
+  <Attachment {...args}>
+    <Dropzone isDisabled />
+  </Attachment>
+)
+Disabled.bind({})
+
+export const Labelled: Story<AttachmentProps> = (args) => (
+  <FormControl>
+    <FormLabel>
+      <HStack spacing="0.5rem">
+        <Text textStyle="caption-1">1. </Text>
+        <Text textStyle="subhead-1">Label</Text>
+      </HStack>
+    </FormLabel>
+    <Attachment {...args}>
+      <AttachmentComponent />
+    </Attachment>
+  </FormControl>
+)
+Labelled.bind({})
+
+export const Error: Story<AttachmentProps> = (args) => (
+  <FormControl isInvalid>
+    <Attachment {...args}>
+      <AttachmentComponent />
+    </Attachment>
+    <FormErrorMessage>Some error message here</FormErrorMessage>
+  </FormControl>
+)
+Error.bind({})
+
+const AttachmentComponent = (args: DropzoneProps) => {
+  const { acceptedFiles } = useAttachmentContext()
+  const hasUploadedFiles = !!acceptedFiles.length
+  return hasUploadedFiles ? <AttachmentInfo /> : <Dropzone {...args} />
+}
+
+type PlaygroundProps = DropzoneProps & AttachmentProps
+export const Playground: Story<PlaygroundProps> = ({
+  maxSizeInBytes,
+  ...props
+}: PlaygroundProps) => {
+  return (
+    <Attachment maxSizeInBytes={maxSizeInBytes}>
+      <PlaygroundComponent {...props} />
+    </Attachment>
+  )
+}
+Playground.bind({})
+
+const PlaygroundComponent = (props: DropzoneProps) => {
+  const { acceptedFiles, fileRejections, maxSize } = useAttachmentContext()
+  const hasUploadedFiles = !!acceptedFiles.length
+  const isError = !!fileRejections.length
+  const { handleSubmit, control } = useForm()
+  const { field } = useController({
+    name: 'Attachment Playground',
+    control,
+  })
+  const onSubmit = (data: unknown) => alert(JSON.stringify(data))
+  const formattedMaxSize = formatBytes(maxSize, 0)
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <FormControl isInvalid={isError}>
+        <FormLabel>
+          <HStack spacing="0.5rem">
+            <Text textStyle="caption-1">1. </Text>
+            <Text textStyle="subhead-1">Label</Text>
+          </HStack>
+        </FormLabel>
+        {hasUploadedFiles ? (
+          <AttachmentInfo />
+        ) : (
+          <Box maxWidth="min-content" whiteSpace="pre-line">
+            <Dropzone {...props} {...field} isError={isError} />
+            {isError ? (
+              <FormErrorMessage>{`You have exceeded the limit, please upload a file below ${formattedMaxSize}`}</FormErrorMessage>
+            ) : (
+              <FormFieldMessage>{`Maximum file size: ${formattedMaxSize}`}</FormFieldMessage>
+            )}
+          </Box>
+        )}
+        <Button mt="8px" type="submit" isDisabled={isError}>
+          Submit
+        </Button>
+      </FormControl>
+    </form>
+  )
+}
