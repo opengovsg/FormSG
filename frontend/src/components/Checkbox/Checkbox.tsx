@@ -1,6 +1,5 @@
 import {
   ChangeEvent,
-  Children,
   cloneElement,
   isValidElement,
   ReactNode,
@@ -11,6 +10,7 @@ import {
   Box,
   Checkbox as ChakraCheckbox,
   CheckboxProps,
+  ComponentWithAs,
   Flex,
   forwardRef,
   Icon,
@@ -18,16 +18,20 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
+type CheckboxComponent = ComponentWithAs<'input', CheckboxProps> & {
+  Others: typeof CheckboxOthers
+}
+
 // forward ref to be consistent with chakra's checkbox
 export const Checkbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
   return <ChakraCheckbox ref={ref} {...props} icon={<Icon as={BiCheck} />} />
-})
+}) as CheckboxComponent
 
 interface CheckboxOthersProps extends CheckboxProps {
   label?: ReactNode
 }
 
-export const CheckboxOthers = forwardRef<CheckboxOthersProps, 'input'>(
+const CheckboxOthers = forwardRef<CheckboxOthersProps, 'input'>(
   ({ children, label, ...props }, ref) => {
     const inputRef = useRef<HTMLInputElement | null>(null)
     const mergedRef = useMergeRefs(ref, inputRef)
@@ -36,7 +40,6 @@ export const CheckboxOthers = forwardRef<CheckboxOthersProps, 'input'>(
         inputRef?.current?.click()
       }
     }
-    Children.toArray(children).forEach((child) => console.log(child))
     return (
       <Box>
         <Checkbox {...props} ref={mergedRef}>
@@ -73,3 +76,5 @@ const OthersWrapper = ({
     </Flex>
   )
 }
+
+Checkbox.Others = CheckboxOthers

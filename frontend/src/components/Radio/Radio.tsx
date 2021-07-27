@@ -7,6 +7,7 @@ import {
 } from 'react'
 import {
   Box,
+  ComponentWithAs,
   Flex,
   forwardRef,
   Radio as ChakraRadio,
@@ -15,13 +16,17 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
-export const Radio = ChakraRadio
+type RadioComponent = ComponentWithAs<'input', RadioProps> & {
+  Others: typeof RadioOthers
+}
+
+export const Radio = ChakraRadio as RadioComponent
 
 interface RadioOthersProps extends RadioProps {
   label?: ReactNode
 }
 
-export const RadioOthers = forwardRef<RadioOthersProps, 'input'>(
+const RadioOthers = forwardRef<RadioOthersProps, 'input'>(
   ({ children, label, ...props }, ref) => {
     const inputRef = useRef<HTMLInputElement | null>(null)
     const mergedRef = useMergeRefs(ref, inputRef)
@@ -70,3 +75,5 @@ const OthersWrapper = ({
     </Flex>
   )
 }
+
+Radio.Others = RadioOthers

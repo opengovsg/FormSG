@@ -9,7 +9,7 @@ import { Meta, Story } from '@storybook/react'
 
 import Button from '~components/Button'
 
-import { Radio, RadioOthers } from './Radio'
+import { Radio } from './Radio'
 
 export default {
   title: 'Components/Fields/Radio',
@@ -31,9 +31,9 @@ export const Group: Story<RadioProps> = (args) => {
         <Radio value="Option 1">Option 1</Radio>
         <Radio value="Option 2">Option 2</Radio>
         <Radio value="Option 3">Option 3</Radio>
-        <RadioOthers value="Others" label="Others">
+        <Radio.Others value="Others" label="Others">
           <Input placeholder="Please specify" />
-        </RadioOthers>
+        </Radio.Others>
       </VStack>
     </RadioGroup>
   )
@@ -82,7 +82,7 @@ export const Playground: Story = (args) => {
                 {option}
               </Radio>
             ))}
-            <RadioOthers
+            <Radio.Others
               value="Others"
               label="Others"
               isDisabled={isDisabled}
@@ -104,7 +104,7 @@ export const Playground: Story = (args) => {
                   required: value === 'Others',
                 })}
               />
-            </RadioOthers>
+            </Radio.Others>
           </VStack>
         </RadioGroup>
 

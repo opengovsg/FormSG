@@ -9,7 +9,7 @@ import { Meta, Story } from '@storybook/react'
 
 import Button from '~components/Button'
 
-import { Checkbox, CheckboxOthers } from './Checkbox'
+import { Checkbox } from './Checkbox'
 
 export default {
   title: 'Components/Fields/Checkbox',
@@ -38,9 +38,9 @@ export const Group: Story<CheckboxProps> = (args) => {
       <Checkbox value="Option 1">Option 1</Checkbox>
       <Checkbox value="Option 2">Option 2</Checkbox>
       <Checkbox value="Option 3">Option 3</Checkbox>
-      <CheckboxOthers {...args} value="Others" label="Others">
+      <Checkbox.Others {...args} value="Others" label="Others">
         <Input placeholder="Please specify" />
-      </CheckboxOthers>
+      </Checkbox.Others>
     </VStack>
   )
 }
@@ -87,7 +87,7 @@ export const Playground: Story = (args) => {
               {option}
             </Checkbox>
           ))}
-          <CheckboxOthers
+          <Checkbox.Others
             value="Others"
             label="Others"
             isDisabled={isDisabled}
@@ -108,7 +108,7 @@ export const Playground: Story = (args) => {
                 required: Array.isArray(values) && values.includes('Others'),
               })}
             />
-          </CheckboxOthers>
+          </Checkbox.Others>
         </VStack>
         <FormErrorMessage>
           {errors[name] && errors[name].message}
