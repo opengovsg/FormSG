@@ -89,6 +89,7 @@ export const checkIfHasInvalidValues = (
     if (!field.ValidationOptions.selectedValidation) {
       return false
     }
+    const numberOfDigits = values.toString().length
 
     const min =
       field.ValidationOptions.selectedValidation ===
@@ -106,10 +107,10 @@ export const checkIfHasInvalidValues = (
         ? field.ValidationOptions.customVal
         : null
 
-    const belowMin = min ? values < min : false
-    const aboveMax = max ? max < values : false
-    const belowExact = exact ? values < exact : false
-    const aboveExact = exact ? values > exact : false
+    const belowMin = min ? numberOfDigits < min : false
+    const aboveMax = max ? max < numberOfDigits : false
+    const belowExact = exact ? numberOfDigits < exact : false
+    const aboveExact = exact ? numberOfDigits > exact : false
     if (state === LogicConditionState.Lte) {
       return belowMin || belowExact
     } else if (state === LogicConditionState.Gte) {
