@@ -1,12 +1,40 @@
 import { cloneDeep, omit } from 'lodash'
 
-import {
-  ClientCheckboxCondition,
-  ClientCheckboxConditionOption,
-  isClientCheckboxConditionValue,
-  LogicCheckboxCondition,
-} from '../../../../../shared/util/logic-utils'
-import { IClientConditionSchema } from '../../../../../types'
+import { hasProp } from '../../../../../shared/util/has-prop'
+import { LogicCheckboxCondition } from '../../../../../shared/util/logic-utils'
+
+import { IClientConditionSchema } from './form-logic.client.service'
+
+export type ClientCheckboxConditionOption = {
+  value: string
+  other: boolean
+}
+
+// Representation of frontend checkbox condition
+export interface ClientCheckboxCondition
+  extends Omit<IClientConditionSchema, 'value'> {
+  value: ClientCheckboxConditionOption[][]
+}
+
+export const isClientCheckboxConditionValue = (
+  value: unknown,
+): value is ClientCheckboxCondition['value'] => {
+  return (
+    Array.isArray(value) &&
+    (value as unknown[]).every((val) => {
+      return Array.isArray(val) && val.every(isCheckboxConditionOption)
+    })
+  )
+}
+
+const isCheckboxConditionOption = (value: unknown) => {
+  return (
+    hasProp(value, 'value') &&
+    typeof value.value === 'string' &&
+    hasProp(value, 'other') &&
+    typeof value.other === 'boolean'
+  )
+}
 
 /**
  * Converts checkbox condition value with backend representation to frontend 2D array representation.

@@ -1,8 +1,6 @@
+import { LogicCheckboxCondition } from '../../../../../../shared/util/logic-utils'
 import {
   ClientCheckboxCondition,
-  LogicCheckboxCondition,
-} from '../../../../../../shared/util/logic-utils'
-import {
   convertArrayCheckboxCondition,
   convertObjectCheckboxCondition,
 } from '../form-logic-checkbox.client.service'

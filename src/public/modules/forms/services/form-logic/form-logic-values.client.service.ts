@@ -1,20 +1,22 @@
 import {
-  IClientConditionSchema,
   IField,
   LogicConditionState,
-} from '../../../types'
+  NumberSelectedValidation,
+} from '../../../../../types'
 import {
   isCheckboxField,
   isDecimalField,
   isDropdownField,
+  isNumberField,
   isRadioButtonField,
   isRatingField,
-} from '../../../types/field/utils/guards'
+} from '../../helpers/logic-field-guards'
 
+import { IClientConditionSchema } from './form-logic.client.service'
 import {
   ClientCheckboxCondition,
   isClientCheckboxConditionValue,
-} from './checkbox'
+} from './form-logic-checkbox.client.service'
 
 /**
  * Checks if any of the values specified in logic are invalid.
@@ -82,6 +84,38 @@ export const checkIfHasInvalidValues = (
       return aboveMax
     } else {
       return belowMin || aboveMax
+    }
+  } else if (isNumberField(field)) {
+    if (!field.ValidationOptions.selectedValidation) {
+      return false
+    }
+
+    const min =
+      field.ValidationOptions.selectedValidation ===
+      NumberSelectedValidation.Min
+        ? field.ValidationOptions.customVal
+        : null
+    const max =
+      field.ValidationOptions.selectedValidation ===
+      NumberSelectedValidation.Max
+        ? field.ValidationOptions.customVal
+        : null
+    const exact =
+      field.ValidationOptions.selectedValidation ===
+      NumberSelectedValidation.Exact
+        ? field.ValidationOptions.customVal
+        : null
+
+    const belowMin = min ? values < min : false
+    const aboveMax = max ? max < values : false
+    const belowExact = exact ? values < exact : false
+    const aboveExact = exact ? values > exact : false
+    if (state === LogicConditionState.Lte) {
+      return belowMin || belowExact
+    } else if (state === LogicConditionState.Gte) {
+      return aboveMax || belowExact
+    } else {
+      return belowMin || aboveMax || belowExact || aboveExact
     }
   } else {
     return false

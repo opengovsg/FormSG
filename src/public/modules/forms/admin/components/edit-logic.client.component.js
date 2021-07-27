@@ -7,7 +7,7 @@ const {
 } = require('../../services/form-logic/form-logic.client.service')
 const {
   checkIfHasInvalidValues,
-} = require('../../../../../shared/util/logic-utils')
+} = require('../../services/form-logic/form-logic-values.client.service')
 
 angular.module('forms').component('editLogicComponent', {
   templateUrl: 'modules/forms/admin/componentViews/edit-logic.client.view.html',

@@ -1,18 +1,28 @@
 import { omit } from 'lodash'
 
 import { isLogicCheckboxCondition } from '../../../../../shared/util/logic-utils'
-import {
-  IClientConditionSchema,
-  IClientLogicSchema,
-  IConditionSchema,
-  ILogicSchema,
-} from '../../../../../types'
+import { IConditionSchema, ILogicSchema } from '../../../../../types'
 
 import {
+  ClientCheckboxConditionOption,
   convertArrayCheckboxCondition,
   convertObjectCheckboxCondition,
   isClientCheckboxCondition,
 } from './form-logic-checkbox.client.service'
+
+export interface IClientLogicSchema extends Omit<ILogicSchema, 'conditions'> {
+  conditions: IClientConditionSchema[]
+}
+
+export interface IClientConditionSchema
+  extends Omit<IConditionSchema, 'value'> {
+  value:
+    | string
+    | number
+    | string[]
+    | number[]
+    | ClientCheckboxConditionOption[][]
+}
 
 /**
  * Transforms logic conditions retrieved from the backend into frontend representation.

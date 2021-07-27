@@ -1,7 +1,5 @@
 import { Document } from 'mongoose'
 
-import { ClientCheckboxConditionOption } from '../shared/util/logic-utils'
-
 import { BasicField, IFieldSchema } from './field'
 
 export enum LogicConditionState {
@@ -41,25 +39,12 @@ export interface ICondition {
 // String form.
 export interface IConditionSchema extends ICondition, Document<string> {}
 
-export interface IClientConditionSchema
-  extends Omit<IConditionSchema, 'value'> {
-  value:
-    | string
-    | number
-    | string[]
-    | number[]
-    | ClientCheckboxConditionOption[][]
-}
-
 export interface ILogic {
   conditions: IConditionSchema[]
   logicType: LogicType
 }
 
 export interface ILogicSchema extends ILogic, Document {}
-export interface IClientLogicSchema extends Omit<ILogicSchema, 'conditions'> {
-  conditions: IClientConditionSchema[]
-}
 export interface IShowFieldsLogic extends ILogic {
   show: IFieldSchema['_id'][]
 }

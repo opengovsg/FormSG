@@ -15,7 +15,7 @@ const {
 } = require('../../services/form-logic/form-logic.client.service')
 const {
   checkIfHasInvalidValues,
-} = require('../../../../../shared/util/logic-utils/logic-values-checker')
+} = require('../../services/form-logic/form-logic-values.client.service')
 
 angular
   .module('forms')
