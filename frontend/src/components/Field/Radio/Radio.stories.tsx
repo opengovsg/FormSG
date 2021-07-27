@@ -12,7 +12,7 @@ import Button from '~components/Button'
 import { Radio } from './Radio'
 
 export default {
-  title: 'Components/Fields/Radio',
+  title: 'Components/Field/Radio',
   component: Radio,
   decorators: [],
 } as Meta

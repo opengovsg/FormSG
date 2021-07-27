@@ -12,7 +12,7 @@ import Button from '~components/Button'
 import { Checkbox } from './Checkbox'
 
 export default {
-  title: 'Components/Fields/Checkbox',
+  title: 'Components/Field/Checkbox',
   component: Checkbox,
   decorators: [],
 } as Meta
