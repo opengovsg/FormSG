@@ -1,13 +1,7 @@
 import { cloneDeep, omit } from 'lodash'
-import { err, fromThrowable, ok, Result } from 'neverthrow'
+import { err, ok, Result } from 'neverthrow'
 
-import { hasProp } from '../../shared/util/has-prop'
-import {
-  FieldIdSet,
-  getLogicUnitPreventingSubmit as logicGetLogicUnitPreventingSubmit,
-  getVisibleFieldIds as logicGetVisibleFieldIds,
-  LogicFieldResponse,
-} from '../../shared/util/logic'
+import * as Logic from '../../shared/util/logic'
 import {
   BasicField,
   FieldResponse,
@@ -18,9 +12,9 @@ import {
   IPopulatedForm,
   IPreventSubmitLogicSchema,
 } from '../../types'
-import { ProcessingError } from '../modules/submission/submission.errors'
+import { ResponseFieldMismatchError } from '../modules/submission/submission.errors'
 
-export { FieldIdSet } from '../../shared/util/logic'
+export { FieldIdSet, getApplicableIfStates } from '../../shared/util/logic'
 
 const isCheckboxField = (
   field: IFieldSchema | undefined,
@@ -37,7 +31,7 @@ const isCheckboxFieldResponse = (
 const convertServerCheckboxValue = (
   field: ICheckboxResponse,
   formFields: IPopulatedForm['form_fields'],
-): LogicFieldResponse => {
+): Logic.LogicFieldResponse => {
   const completeField = formFields.find(
     (formField) => String(formField._id) === String(field._id),
   )
@@ -68,56 +62,68 @@ const convertServerCheckboxValue = (
 }
 
 // exported for testing
+/**
+ * Converts each response in submission to suitable shape for logic module
+ * @param submission
+ * @param form
+ * @throws Error when response and field do not match
+ * @returns Transformed submission
+ */
 export const adaptSubmissionForLogicModule = (
   submission: FieldResponse[],
   form: IFormDocument,
-): LogicFieldResponse[] => {
+): Logic.LogicFieldResponse[] => {
   return submission.map((field) => {
     const clonedField = cloneDeep(field)
     if (isCheckboxFieldResponse(clonedField)) {
       return convertServerCheckboxValue(clonedField, form.form_fields)
     } else {
-      return clonedField as LogicFieldResponse
+      return clonedField as Logic.LogicFieldResponse
     }
   })
-}
-
-const transformationErrorGenerator = (e: unknown) => {
-  const message =
-    hasProp(e, 'message') && typeof e.message === 'string'
-      ? e.message
-      : 'Something went wrong when processing submission for logic'
-  return new ProcessingError(message)
 }
 
 export const getVisibleFieldIds = (
   submission: FieldResponse[],
   form: IFormDocument,
-): Result<FieldIdSet, ProcessingError> => {
-  const transformedSubmission = fromThrowable(
+): Result<Logic.FieldIdSet, ResponseFieldMismatchError> => {
+  const transformedSubmission = Result.fromThrowable(
     adaptSubmissionForLogicModule,
-    transformationErrorGenerator,
+    (e: unknown) =>
+      new ResponseFieldMismatchError(
+        e,
+        'Something went wrong when processing submission for logic',
+      ),
   )(submission, form)
+
   if (transformedSubmission.isErr()) {
     return err(transformedSubmission.error)
   }
-  return ok(logicGetVisibleFieldIds(transformedSubmission.value, form))
+  return ok(Logic.getVisibleFieldIds(transformedSubmission.value, form))
 }
 
 export const getLogicUnitPreventingSubmit = (
   submission: FieldResponse[],
   form: IFormDocument,
-  visibleFieldIds?: FieldIdSet,
-): Result<IPreventSubmitLogicSchema | undefined, ProcessingError> => {
-  const transformedSubmission = fromThrowable(
+  visibleFieldIds?: Logic.FieldIdSet,
+): Result<
+  IPreventSubmitLogicSchema | undefined,
+  ResponseFieldMismatchError
+> => {
+  const transformedSubmission = Result.fromThrowable(
     adaptSubmissionForLogicModule,
-    transformationErrorGenerator,
+    (e: unknown) =>
+      new ResponseFieldMismatchError(
+        e,
+        'Something went wrong when processing submission for logic',
+      ),
   )(submission, form)
+
   if (transformedSubmission.isErr()) {
     return err(transformedSubmission.error)
   }
   return ok(
-    logicGetLogicUnitPreventingSubmit(
+    Logic.getLogicUnitPreventingSubmit(
       transformedSubmission.value,
       form,
       visibleFieldIds,

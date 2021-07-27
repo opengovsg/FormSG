@@ -1,12 +1,6 @@
 import { cloneDeep, omit } from 'lodash'
 
-import {
-  FieldIdSet,
-  getLogicUnitPreventingSubmit as logicGetLogicUnitPreventingSubmit,
-  getVisibleFieldIds as logicGetVisibleFieldIds,
-  IClientFieldSchema,
-  ILogicClientFieldSchema,
-} from '../../../../shared/util/logic'
+import * as Logic from '../../../../shared/util/logic'
 import {
   BasicField,
   ICheckboxFieldSchema,
@@ -16,13 +10,18 @@ import {
   IPreventSubmitLogicSchema,
 } from '../../../../types'
 
+export {
+  getApplicableIfStates,
+  getApplicableIfFields,
+} from '../../../../shared/util/logic'
+
 interface ICheckboxClientFieldSchema
-  extends Omit<IClientFieldSchema, 'fieldValue'> {
+  extends Omit<Logic.IClientFieldSchema, 'fieldValue'> {
   fieldValue: boolean[]
 }
 
 const isCheckboxResponse = (
-  field: IClientFieldSchema,
+  field: Logic.IClientFieldSchema,
 ): field is ICheckboxClientFieldSchema => {
   return field.fieldType === BasicField.Checkbox
 }
@@ -36,7 +35,7 @@ const isCheckboxField = (
 const convertClientCheckboxValue = (
   field: ICheckboxClientFieldSchema,
   formFields: IPopulatedForm['form_fields'],
-): ILogicClientFieldSchema => {
+): Logic.ILogicClientFieldSchema => {
   const completeField = formFields.find(
     (formField) => String(formField._id) === field._id,
   )
@@ -57,35 +56,42 @@ const convertClientCheckboxValue = (
 }
 
 // exported for testing
+/**
+ * Converts each response in submission to suitable shape for logic module
+ * @param submission
+ * @param form
+ * @throws Error when response and field do not match
+ * @returns Transformed submission
+ */
 export const adaptSubmissionForLogicModule = (
-  submission: IClientFieldSchema[],
+  submission: Logic.IClientFieldSchema[],
   form: IFormDocument,
-): ILogicClientFieldSchema[] => {
+): Logic.ILogicClientFieldSchema[] => {
   return submission.map((field) => {
     const clonedField = cloneDeep(field)
     if (isCheckboxResponse(clonedField)) {
       return convertClientCheckboxValue(clonedField, form.form_fields)
     } else {
-      return clonedField as ILogicClientFieldSchema
+      return clonedField as Logic.ILogicClientFieldSchema
     }
   })
 }
 
 export const getVisibleFieldIds = (
-  submission: IClientFieldSchema[],
+  submission: Logic.IClientFieldSchema[],
   form: IFormDocument,
-): FieldIdSet => {
+): Logic.FieldIdSet => {
   const transformedSubmission = adaptSubmissionForLogicModule(submission, form)
-  return logicGetVisibleFieldIds(transformedSubmission, form)
+  return Logic.getVisibleFieldIds(transformedSubmission, form)
 }
 
 export const getLogicUnitPreventingSubmit = (
-  submission: IClientFieldSchema[],
+  submission: Logic.IClientFieldSchema[],
   form: IFormDocument,
-  visibleFieldIds?: FieldIdSet,
+  visibleFieldIds?: Logic.FieldIdSet,
 ): IPreventSubmitLogicSchema | undefined => {
   const transformedSubmission = adaptSubmissionForLogicModule(submission, form)
-  return logicGetLogicUnitPreventingSubmit(
+  return Logic.getLogicUnitPreventingSubmit(
     transformedSubmission,
     form,
     visibleFieldIds,

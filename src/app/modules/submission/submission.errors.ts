@@ -66,3 +66,17 @@ export class ResponseModeError extends ApplicationError {
     )
   }
 }
+
+/**
+ * Mismatch between response and field (different field type / ID etc)
+ */
+export class ResponseFieldMismatchError extends ApplicationError {
+  meta: {
+    originalError: unknown
+  }
+
+  constructor(error: unknown, message = 'Response and Field do not match') {
+    super(message)
+    this.meta = { originalError: error }
+  }
+}

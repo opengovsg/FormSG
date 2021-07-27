@@ -13,7 +13,11 @@ import {
   getVisibleFieldIds,
 } from '../../utils/logic-adaptor'
 
-import { ProcessingError, ValidateFieldError } from './submission.errors'
+import {
+  ProcessingError,
+  ResponseFieldMismatchError,
+  ValidateFieldError,
+} from './submission.errors'
 import {
   FilteredResponse,
   ProcessedFieldResponse,
@@ -23,7 +27,10 @@ import {
 } from './submission.types'
 
 export abstract class IncomingSubmission {
-  private readonly visibleFieldIds: Result<FieldIdSet, ProcessingError>
+  private readonly visibleFieldIds: Result<
+    FieldIdSet,
+    ResponseFieldMismatchError
+  >
   private readonly visibleResponseIds: VisibleResponseIdSet
   private readonly verifiableResponseIds: VerifiableResponseIdSet
   protected constructor(
