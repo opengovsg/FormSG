@@ -1,6 +1,6 @@
 import { Document, Model, ObjectId } from 'mongoose'
 
-import { IAgencySchema, PublicAgency } from './agency'
+import { AgencyDocument, PublicAgency } from './agency'
 import { PublicView } from './database'
 
 export type PublicUser = {
@@ -13,7 +13,7 @@ export type AdminContactOtpData = {
 
 export interface IUser {
   email: string
-  agency: IAgencySchema['_id']
+  agency: AgencyDocument['_id']
   contact?: string
   betaFlags?: {
     sgid?: boolean
@@ -49,5 +49,5 @@ export interface IUserModel extends Model<IUserSchema> {
 }
 
 export interface IPopulatedUser extends IUserSchema {
-  agency: IAgencySchema
+  agency: AgencyDocument
 }
