@@ -53,7 +53,9 @@ export const Toast = ({
       </Box>
       {isClosable && (
         <CloseButton
-          as={BiX}
+          data-js-focus-visible
+          data-focus-visible-added
+          children={<BiX />}
           onClick={() => {
             onClose?.()
             onCloseComplete?.()
