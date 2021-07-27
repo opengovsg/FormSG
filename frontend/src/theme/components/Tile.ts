@@ -17,7 +17,6 @@ const baseContainerStyle = {
     bgColor: 'primary.100',
   },
   _focus: {
-    bgColor: 'white',
     borderColor: 'transparent',
     // NOTE: For the boxShadow styling, due to conflicts with the focus-visible package,
     // the !important is required to display the boxShadow styling correctly.
