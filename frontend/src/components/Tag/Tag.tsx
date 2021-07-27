@@ -12,5 +12,5 @@ export interface TagProps extends Omit<ChakraTagProps, 'colorScheme'> {
 }
 
 export const Tag = (props: TagProps): JSX.Element => {
-  return <ChakraTag {...props} />
+  return <ChakraTag textStyle="caption-1" {...props} />
 }
