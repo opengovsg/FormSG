@@ -17,12 +17,21 @@ export default {
   decorators: [],
 } as Meta
 
-export const Default: Story<CheckboxProps> = (args) => (
-  <Checkbox {...args}>{args.value}</Checkbox>
+export const CheckboxStates: Story<CheckboxProps> = (args) => (
+  <VStack>
+    <Checkbox {...args}>Default</Checkbox>
+    <Checkbox {...args} isChecked>
+      Checked
+    </Checkbox>
+    <Checkbox {...args} isDisabled>
+      Disabled
+    </Checkbox>
+    <Checkbox {...args} isChecked isDisabled>
+      Disabled and Checked
+    </Checkbox>
+  </VStack>
 )
-Default.args = {
-  value: 'Option',
-}
+CheckboxStates.args = {}
 
 export const Disabled: Story<CheckboxProps> = (args) => (
   <Checkbox {...args}>{args.value}</Checkbox>

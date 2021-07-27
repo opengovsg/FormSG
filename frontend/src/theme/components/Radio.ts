@@ -23,7 +23,7 @@ export const Radio: ComponentStyleConfig = {
           borderColor: 'neutral.500',
           bg: 'white',
           color: 'neutral.500',
-          cursor: 'default',
+          cursor: 'not-allowed',
         },
       },
       _focus: {
@@ -39,7 +39,7 @@ export const Radio: ComponentStyleConfig = {
       _disabled: {
         borderColor: 'neutral.500',
         bg: 'white',
-        cursor: 'default',
+        cursor: 'not-allowed',
       },
     },
     label: {
@@ -50,7 +50,7 @@ export const Radio: ComponentStyleConfig = {
       _disabled: {
         color: 'neutral.500',
         opacity: '1',
-        cursor: 'default',
+        cursor: 'not-allowed',
       },
     },
     container: {
@@ -66,7 +66,7 @@ export const Radio: ComponentStyleConfig = {
         boxShadow: `inset 0 0 0 0.125rem ${getColor(theme, 'primary.500')}`,
       },
       _disabled: {
-        cursor: 'default',
+        cursor: 'not-allowed',
       },
     },
     others: {

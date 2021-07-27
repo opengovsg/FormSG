@@ -18,8 +18,7 @@ export const Checkbox: ComponentStyleConfig = {
         _disabled: {
           borderColor: 'neutral.500',
           bg: 'white',
-          color: 'white',
-          cursor: 'default',
+          color: 'neutral.500',
         },
       },
       _focus: {
@@ -64,7 +63,7 @@ export const Checkbox: ComponentStyleConfig = {
     // override md size, which is the default size
     md: {
       control: { w: '1.5rem', h: '1.5rem' },
-      icon: { fontSize: '1rem' },
+      icon: { fontSize: '0.695rem' },
       container: { h: '2.75rem' },
     },
   },

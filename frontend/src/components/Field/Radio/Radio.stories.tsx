@@ -17,12 +17,21 @@ export default {
   decorators: [],
 } as Meta
 
-export const Default: Story<RadioProps> = (args) => (
-  <Radio {...args}>{args.value}</Radio>
+export const RadioStates: Story<RadioProps> = (args) => (
+  <VStack>
+    <Radio {...args}>Default</Radio>
+    <Radio {...args} isChecked>
+      Checked
+    </Radio>
+    <Radio {...args} isDisabled>
+      Disabled
+    </Radio>
+    <Radio {...args} isChecked isDisabled>
+      Disabled and Checked
+    </Radio>
+  </VStack>
 )
-Default.args = {
-  value: 'Option',
-}
+RadioStates.args = {}
 
 export const Group: Story<RadioProps> = (args) => {
   return (
