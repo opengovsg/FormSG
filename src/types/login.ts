@@ -6,7 +6,7 @@ import { IAgencySchema } from './agency'
 import { IFormSchema, IPopulatedForm } from './form'
 import { IUserSchema } from './user'
 
-export interface ILogin extends LoginBase {
+interface ILogin extends LoginBase {
   admin: IUserSchema['_id']
   form: IFormSchema['_id']
   agency: IAgencySchema['_id']

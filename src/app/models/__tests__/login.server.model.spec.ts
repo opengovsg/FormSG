@@ -8,7 +8,6 @@ import getLoginModel from 'src/app/models/login.server.model'
 import {
   AuthType,
   IFormSchema,
-  ILogin,
   ILoginSchema,
   IPopulatedForm,
   IUserSchema,
@@ -24,7 +23,7 @@ describe('login.server.model', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('Schema', () => {
-    const DEFAULT_PARAMS: ILogin = {
+    const DEFAULT_PARAMS: mongoose.LeanDocument<ILoginSchema> = {
       admin: new ObjectId(),
       agency: new ObjectId(),
       authType: AuthType.SP,
