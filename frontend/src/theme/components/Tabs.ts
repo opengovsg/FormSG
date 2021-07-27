@@ -33,14 +33,11 @@ const variantLine: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
         p: '0.25rem 0', // No horizontal padding to let bottom border be the same length as text
         borderColor: 'transparent',
         mx: '1rem',
-        //  margins to ensure text remains at the same position as selected tabs
-        mb: '0.125rem',
-        borderBottom: '0',
+        borderBottom: '0.125rem solid transparent',
         _selected: {
-          mb: '0',
           borderBottom: '0.125rem solid',
-          transition: 'common common ease-out',
-          _focus: {
+          transition: 'none',
+          _focusVisible: {
             // add horizontal padding
             p: '0.25rem',
             ml: '0.75rem',
@@ -98,9 +95,9 @@ const variantLight: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
       },
       _selected: {
         color: 'primary.500',
-        _focus: {
-          boxShadow: `0 0 0 2px ${getColor(props.theme, 'primary.500')}`,
-        },
+      },
+      _focusVisible: {
+        boxShadow: `0 0 0 2px ${getColor(props.theme, 'primary.500')}`,
       },
       _active: {
         bg: 'white',
@@ -126,9 +123,9 @@ const variantDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
       },
       _selected: {
         color: 'white',
-        _focus: {
-          boxShadow: '0 0 0 2px white',
-        },
+      },
+      _focusVisible: {
+        boxShadow: `0 0 0 2px white`,
       },
       color: 'secondary.300',
     },
