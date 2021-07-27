@@ -17,8 +17,8 @@ export const Checkbox: ComponentStyleConfig = {
         },
         _disabled: {
           borderColor: 'neutral.500',
-          bg: 'white',
-          color: 'neutral.500',
+          bg: 'neutral.500',
+          color: 'white',
         },
       },
       _focus: {
@@ -38,7 +38,7 @@ export const Checkbox: ComponentStyleConfig = {
       _disabled: {
         color: 'neutral.500',
         opacity: '1',
-        cursor: 'default',
+        cursor: 'not-allowed',
       },
     },
     container: {
