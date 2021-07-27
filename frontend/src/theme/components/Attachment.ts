@@ -24,7 +24,6 @@ export const Attachment: ComponentMultiStyleConfig = {
         borderColor: 'neutral.700',
         borderRadius: '0.25rem',
         textColor: 'secondary.500',
-        outline: '1px solid transparent',
         textStyle: 'legal',
         fill: 'secondary.500',
         _hover: {

@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createContext, PropsWithChildren, useContext } from 'react'
 import { BiTrash } from 'react-icons/bi'
 import {
   Box,
-  BoxProps,
   Button,
   ButtonProps,
   Center,
   Flex,
+  forwardRef,
   Icon,
   IconButton,
   IconButtonProps,
@@ -30,7 +29,7 @@ interface AttachmentContextProps {
   acceptedFiles: DropzoneState['acceptedFiles']
   fileRejections: DropzoneState['fileRejections']
   reset: DropzoneState['reset']
-  maxSize?: number
+  maxSize: number
 }
 
 const AttachmentContext = createContext<undefined | AttachmentContextProps>(
@@ -64,11 +63,19 @@ const useDropzoneProps = () => {
   return pick(value, ['getInputProps', 'getRootProps'])
 }
 
-export const Attachment = (maxSize?: number): JSX.Element => {
-  const { acceptedFiles, fileRejections, reset, getRootProps, getInputProps } =
-    useAttachments({ maxSize })
+export interface AttachmentProps {
+  /**
+   * The maximum allowed filesize to upload, in bytes
+   */
+  maxSizeInBytes: number
+}
 
-  const hasUploadedFiles = !!acceptedFiles.length
+export const Attachment = ({
+  maxSizeInBytes,
+  children,
+}: PropsWithChildren<AttachmentProps>): JSX.Element => {
+  const { acceptedFiles, fileRejections, reset, getRootProps, getInputProps } =
+    useAttachments({ maxSize: maxSizeInBytes })
 
   return (
     <AttachmentContext.Provider
@@ -78,66 +85,70 @@ export const Attachment = (maxSize?: number): JSX.Element => {
         acceptedFiles,
         reset,
         fileRejections,
-        maxSize,
+        maxSize: maxSizeInBytes,
       }}
     >
-      {/* TODO: change this to children tmrw */}
-      {hasUploadedFiles ? <Attached /> : <Dropzone />}
+      {children}
     </AttachmentContext.Provider>
   )
 }
 
-type DropzoneProps = ButtonProps
+export type DropzoneProps = ButtonProps & {
+  // Taken from react-hook-forms: https://react-hook-form.com/api/usecontroller/controller
+  // field.onChange has this typing
+  onChange?: (f: any) => void
+}
 
-// Check with designers if this is actually form label/form field message etc
-// A: This is actually the form xx component
-export const Dropzone = (props: DropzoneProps): JSX.Element => {
+export const Dropzone = forwardRef<DropzoneProps, 'button'>((props, ref) => {
   const styles = useMultiStyleConfig('Attachment', props)
 
   return (
-    <DropzoneButton {...props}>
-      <Icon as={BxsCloudUpload} sx={styles.icon} />
-      {/* double check if the 500 is actually intended */}
-      <Text textStyle="body-1" fontWeight={500}>
-        <Text as="u" sx={styles.text}>
-          Choose file
+    <DropzoneButton {...props} ref={ref}>
+      <Box>
+        <Icon as={BxsCloudUpload} sx={styles.icon} />
+        {/* double check if the 500 is actually intended */}
+        <Text textStyle="body-1" fontWeight={500}>
+          <Text as="u" sx={styles.text}>
+            Choose file
+          </Text>
+          &nbsp;or drag and drop here
         </Text>
-        &nbsp;or drag and drop here
-      </Text>
+      </Box>
     </DropzoneButton>
   )
-}
+})
 
-export const DropzoneButton = (props: DropzoneProps): JSX.Element => {
-  const styles = useMultiStyleConfig('Attachment', props)
-  const { getInputProps, getRootProps } = useDropzoneProps()
+export const DropzoneButton = forwardRef<DropzoneProps, 'input'>(
+  ({ onChange, ...props }, ref) => {
+    const styles = useMultiStyleConfig('Attachment', props)
+    const { getInputProps, getRootProps } = useDropzoneProps()
 
-  return (
-    <Button
-      sx={styles.container}
-      data-js-focus-visible
-      data-focus-visible-added
-      {...getRootProps(props as Record<string, unknown>)}
-    >
-      <Center>
-        <VStack spacing="0.5rem">
-          <input {...getInputProps()} />
-          {props.children}
-        </VStack>
-      </Center>
-    </Button>
-  )
-}
-
-type AttachedProps = PropsWithChildren<StyleProps>
+    return (
+      <Button
+        sx={styles.container}
+        data-js-focus-visible
+        data-focus-visible-added
+        {...getRootProps(props as Record<string, unknown>)}
+      >
+        <Center>
+          <VStack spacing="0.5rem">
+            <input ref={ref} {...getInputProps({ onChange })} />
+            {props.children}
+          </VStack>
+        </Center>
+      </Button>
+    )
+  },
+)
 
 // This component should not have behaviour as it is a simple stylistic wrapper to maintain theming.
-export const _Attached = ({
+type AttachedProps = PropsWithChildren<StyleProps>
+
+export const Attached = ({
   children,
   ...props
 }: AttachedProps): JSX.Element => {
   const styles = useMultiStyleConfig('Attachment', props)
-  // consider passing the files as a prop down into children?
 
   return (
     // NOTE: Due to how Chakra applies styling, sx has precedence over spread props.
@@ -147,10 +158,13 @@ export const _Attached = ({
   )
 }
 
-export const Attached = () => {
+/**
+ * This is a convenience wrapper to simply display file information.
+ */
+export const AttachmentInfo = (): JSX.Element => {
   const { acceptedFiles } = useAttachmentContext()
   return (
-    <_Attached>
+    <Attached>
       <Flex dir="row">
         <VStack spacing="0.5rem">
           {acceptedFiles.map((file) => (
@@ -163,7 +177,7 @@ export const Attached = () => {
         <Spacer />
         <AttachmentActionIcon />
       </Flex>
-    </_Attached>
+    </Attached>
   )
 }
 
@@ -173,7 +187,6 @@ interface AttachmentActionIconProps
   'aria-label'?: string
 }
 
-// Q: Should the icon resize when screen gets bigger
 export const AttachmentActionIcon = ({
   icon = <BiTrash />,
   onClick,
