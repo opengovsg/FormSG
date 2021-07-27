@@ -30,9 +30,3 @@ export interface IFieldSchema extends AllowMyInfoBase, FieldBase, Document {
    */
   getQuestion(): string
 }
-
-export enum TextSelectedValidation {
-  Maximum = 'Maximum',
-  Minimum = 'Minimum',
-  Exact = 'Exact',
-}
