@@ -1,27 +1,40 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
 
 export const Attachment: ComponentMultiStyleConfig = {
-  parts: ['container', 'icon', 'text'],
+  parts: ['container', 'icon', 'text', 'uploaded', 'delete'],
   baseStyle: (props) => {
-    // Double check on what happens with these 2 states
-    // and hover + focus
-    const { isDisabled, hasError } = props
+    const { isDisabled } = props
     return {
+      uploaded: {
+        bgColor: 'primary.100',
+        borderRadius: '0.25rem',
+        // bottom padding is 12px/0.75rem only
+        p: '1rem 1rem 0.75rem 1rem',
+      },
+      delete: {
+        boxSize: '2.75rem',
+        cursor: 'pointer',
+        border: 'none',
+      },
       container: {
-        // on click, we should only see active state
-        // focus state should be hidden
-        // this is not possible with boxshadow because it draws over
         py: '2.5rem',
+        px: '3rem',
         bgColor: 'neutral.100',
         border: '1px dashed',
         borderColor: 'neutral.700',
         borderRadius: '0.25rem',
-        textColor: 'inherit',
+        textColor: 'secondary.500',
         outline: '1px solid transparent',
+        textStyle: 'legal',
+        fill: 'secondary.500',
         _hover: {
           bgColor: 'primary.200',
           borderColor: 'primary.700',
+          _disabled: {
+            bgColor: 'neutral.200',
+            borderColor: 'neutral.500',
+            cursor: 'not-allowed',
+          },
         },
         _focus: {
           boxShadow: '0 0 0 1px var(--chakra-colors-primary-500) !important',
@@ -31,15 +44,19 @@ export const Attachment: ComponentMultiStyleConfig = {
         _active: {
           bgColor: 'primary.100',
         },
+        _disabled: {
+          bgColor: 'neutral.200',
+          borderColor: 'neutral.500',
+          fill: 'neutral.500',
+          textColor: 'neutral.500',
+        },
       },
       icon: {
         boxSize: '3.5rem',
       },
       text: {
-        textStyle: 'body-1',
-        textColor: 'primary.500',
+        textColor: isDisabled ? 'neutral.500' : 'primary.500',
       },
     }
   },
-  variants: {},
 }
