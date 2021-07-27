@@ -5,7 +5,6 @@ import {
   ReactNode,
   useRef,
 } from 'react'
-import { BiCheck } from 'react-icons/bi'
 import {
   Box,
   Checkbox as ChakraCheckbox,
@@ -13,7 +12,6 @@ import {
   ComponentWithAs,
   Flex,
   forwardRef,
-  Icon,
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
@@ -22,11 +20,7 @@ type CheckboxComponent = ComponentWithAs<'input', CheckboxProps> & {
   Others: typeof CheckboxOthers
 }
 
-// forward ref to be consistent with chakra's checkbox
-export const Checkbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
-  return <ChakraCheckbox ref={ref} {...props} icon={<Icon as={BiCheck} />} />
-}) as CheckboxComponent
-
+export const Checkbox = ChakraCheckbox as CheckboxComponent
 interface CheckboxOthersProps extends CheckboxProps {
   label?: ReactNode
 }
