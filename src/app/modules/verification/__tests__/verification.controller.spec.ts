@@ -19,7 +19,6 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import expressHandler from '../../../../../tests/unit/backend/helpers/jest-express'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
-import * as AdminFormService from '../../form/admin-form/admin-form.service'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import * as VerificationController from '../verification.controller'
@@ -645,9 +644,8 @@ describe('Verification controller', () => {
 
     it('should return 201 when params are valid', async () => {
       // Arrange
-      const disableSpy = jest.spyOn(
-        AdminFormService,
-        'checkFreeSmsSentByAdminAndDeactivateVerification',
+      MockVerificationService.processAdminSmsCounts.mockReturnValueOnce(
+        okAsync(true),
       )
 
       // Act
@@ -669,8 +667,10 @@ describe('Verification controller', () => {
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
       })
+      expect(
+        MockVerificationService.processAdminSmsCounts,
+      ).toHaveBeenCalledWith(MOCK_FORM)
       expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
-      expect(disableSpy).toBeCalledWith(MOCK_FORM)
     })
 
     it('should return 400 when form SMS parameters are malformed', async () => {

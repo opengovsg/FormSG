@@ -7,7 +7,6 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
-import * as AdminFormService from '../form/admin-form/admin-form.service'
 import * as FormService from '../form/form.service'
 
 import * as VerificationService from './verification.service'
@@ -227,11 +226,7 @@ export const _handleGenerateOtp: ControllerHandler<
         // NOTE: This is returned because tests require this to avoid async mocks interfering with each other.
         // However, this is not an issue in reality because express does not require awaiting on the sendStatus call.
         return FormService.retrieveFullFormById(formId)
-          .andThen((form) =>
-            AdminFormService.checkFreeSmsSentByAdminAndDeactivateVerification(
-              form,
-            ),
-          )
+          .andThen((form) => VerificationService.processAdminSmsCounts(form))
           .mapErr((error) => {
             logger.error({
               message:
