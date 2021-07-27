@@ -7,7 +7,7 @@ const {
   BasicField,
   LogicConditionState,
 } = require('../../../../../types')
-const FormLogic = require('../../../../../shared/util/logic')
+const FormLogic = require('../../helpers/logic-adaptor')
 const UpdateFormService = require('../../../../services/UpdateFormService')
 const {
   transformBackendLogic,
