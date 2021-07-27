@@ -1,6 +1,7 @@
 import { cloneDeep, omit } from 'lodash'
-import { ok, Result } from 'neverthrow'
+import { err, fromThrowable, ok, Result } from 'neverthrow'
 
+import { hasProp } from '../../shared/util/has-prop'
 import {
   FieldIdSet,
   getLogicUnitPreventingSubmit as logicGetLogicUnitPreventingSubmit,
@@ -42,7 +43,7 @@ const convertServerCheckboxValue = (
   )
   if (!isCheckboxField(completeField)) {
     // eslint-disable-next-line typesafe/no-throw-sync-func
-    throw new Error(`${completeField} is not a Checkbox field`)
+    throw new Error(`${completeField} is not a Checkbox Field`)
   }
 
   const withOthersPrefix = field.answerArray.filter((value) =>
@@ -66,7 +67,7 @@ const convertServerCheckboxValue = (
   }
 }
 
-const transformSubmission = (
+const adaptSubmissionForLogicModule = (
   submission: FieldResponse[],
   form: IFormDocument,
 ): LogicFieldResponse[] => {
@@ -80,12 +81,26 @@ const transformSubmission = (
   })
 }
 
+const transformationErrorGenerator = (e: unknown) => {
+  const message =
+    hasProp(e, 'message') && typeof e.message === 'string'
+      ? e.message
+      : 'Something went wrong when processing submission for logic'
+  return new ProcessingError(message)
+}
+
 export const getVisibleFieldIds = (
   submission: FieldResponse[],
   form: IFormDocument,
 ): Result<FieldIdSet, ProcessingError> => {
-  const transformedSubmission = transformSubmission(submission, form)
-  return ok(logicGetVisibleFieldIds(transformedSubmission, form))
+  const transformedSubmission = fromThrowable(
+    adaptSubmissionForLogicModule,
+    transformationErrorGenerator,
+  )(submission, form)
+  if (transformedSubmission.isErr()) {
+    return err(transformedSubmission.error)
+  }
+  return ok(logicGetVisibleFieldIds(transformedSubmission.value, form))
 }
 
 export const getLogicUnitPreventingSubmit = (
@@ -93,11 +108,16 @@ export const getLogicUnitPreventingSubmit = (
   form: IFormDocument,
   visibleFieldIds?: FieldIdSet,
 ): Result<IPreventSubmitLogicSchema | undefined, ProcessingError> => {
-  const transformedSubmission = transformSubmission(submission, form)
-
+  const transformedSubmission = fromThrowable(
+    adaptSubmissionForLogicModule,
+    transformationErrorGenerator,
+  )(submission, form)
+  if (transformedSubmission.isErr()) {
+    return err(transformedSubmission.error)
+  }
   return ok(
     logicGetLogicUnitPreventingSubmit(
-      transformedSubmission,
+      transformedSubmission.value,
       form,
       visibleFieldIds,
     ),
