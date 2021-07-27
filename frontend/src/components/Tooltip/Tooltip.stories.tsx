@@ -48,6 +48,13 @@ const SingleToolTip: Story<TooltipProps> = (args) => {
   )
 }
 
+export const OpenTooltip = SingleToolTip.bind({})
+OpenTooltip.args = {
+  label: 'This tooltip is open',
+  isOpen: true,
+  children: <Icon name="Question" />,
+}
+
 export const MobileExample = SingleToolTip.bind({})
 MobileExample.args = {
   label:
