@@ -1,9 +1,15 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useMemo } from 'react'
-import { Box, Button, ButtonProps, Flex, HStack, Text } from '@chakra-ui/react'
-import range from 'lodash/range'
+import { BiChevronLeft, BiChevronRight } from 'react-icons/bi'
+import {
+  Button,
+  ButtonProps,
+  Flex,
+  Icon,
+  Text,
+  useMultiStyleConfig,
+} from '@chakra-ui/react'
 
-import { usePaginationRange } from '~/hooks/usePaginationRange'
+import { PAGINATION_THEME_KEY } from '~theme/components/Pagination'
+import { usePaginationRange } from '~hooks/usePaginationRange'
 
 // Separate constant to denote a separator in the pagination component.
 const SEPARATOR = '\u2026'
@@ -37,30 +43,22 @@ export interface PaginationProps {
 }
 
 interface PageButtonProps {
-  activePage: PaginationProps['currentPage']
-  page: number
+  selectedPage: PaginationProps['currentPage']
+  page: number | typeof SEPARATOR
   onClick: PaginationProps['onPageChange']
 }
 
-const PageButton = ({ activePage, page, onClick }: PageButtonProps) => {
-  const isActive = page === activePage
+const PageButton = ({ selectedPage, page, onClick }: PageButtonProps) => {
+  const isSelected = page === selectedPage
+
+  const styles = useMultiStyleConfig(PAGINATION_THEME_KEY, { isSelected })
+
+  if (page === SEPARATOR) {
+    return <Text sx={styles.separator}>{page}</Text>
+  }
+
   return (
-    <Button
-      p="0.25rem"
-      minH="2rem"
-      minW="2rem"
-      border="none"
-      textStyle="body-2"
-      bg={isActive ? 'secondary.500' : 'transparent'}
-      _active={{
-        bg: isActive ? 'secondary.700' : 'secondary.200',
-      }}
-      _hover={{
-        bg: isActive ? 'secondary.600' : 'secondary.100',
-      }}
-      color={isActive ? 'white' : 'secondary.500'}
-      onClick={() => onClick(page)}
-    >
+    <Button sx={styles.button} onClick={() => onClick(page)}>
       {page}
     </Button>
   )
@@ -68,45 +66,12 @@ const PageButton = ({ activePage, page, onClick }: PageButtonProps) => {
 
 interface StepButtonProps extends ButtonProps {
   onClick: () => void
-  isDisabled?: boolean
   children: React.ReactNode
 }
 
-const StepButton = ({
-  onClick,
-  isDisabled,
-  children,
-  ...props
-}: StepButtonProps) => {
+const StepButton = ({ onClick, children, ...props }: StepButtonProps) => {
   return (
-    <Button
-      bg="transparent"
-      _hover={{
-        bg: 'secondary.100',
-        color: 'secondary.600',
-      }}
-      _active={{
-        bg: 'secondary.200',
-      }}
-      _disabled={{
-        bg: 'transparent',
-        cursor: 'not-allowed',
-        color: 'secondary.300',
-        _hover: {
-          bg: 'transparent',
-          color: 'secondary.300',
-        },
-      }}
-      isDisabled={isDisabled}
-      p="0.25rem"
-      minH="2rem"
-      minW="2rem"
-      border="none"
-      textStyle="body-2"
-      color="secondary.500"
-      onClick={onClick}
-      {...props}
-    >
+    <Button onClick={onClick} {...props}>
       {children}
     </Button>
   )
@@ -129,32 +94,33 @@ export const Pagination = ({
 
   const totalPageCount = Math.ceil(totalCount / pageSize)
 
+  const styles = useMultiStyleConfig(PAGINATION_THEME_KEY, {})
+
   return (
-    <Flex>
+    <Flex __css={styles.container}>
       <StepButton
-        mr="1rem"
+        sx={styles.stepperback}
         isDisabled={currentPage === 1}
         onClick={() => onPageChange(currentPage - 1)}
       >
+        <Icon fontSize="1.5rem" as={BiChevronLeft} />
         Back
       </StepButton>
-      {paginationRange.map((p, i) => {
-        if (p === SEPARATOR) return <Text key={i}>{p}</Text>
-        return (
-          <PageButton
-            key={i}
-            page={p}
-            activePage={currentPage}
-            onClick={onPageChange}
-          />
-        )
-      })}
+      {paginationRange.map((p, i) => (
+        <PageButton
+          key={i}
+          page={p}
+          selectedPage={currentPage}
+          onClick={onPageChange}
+        />
+      ))}
       <StepButton
-        ml="1rem"
+        sx={styles.steppernext}
         isDisabled={currentPage === totalPageCount}
         onClick={() => onPageChange(currentPage + 1)}
       >
         Next
+        <Icon fontSize="1.5rem" as={BiChevronRight} />
       </StepButton>
     </Flex>
   )
