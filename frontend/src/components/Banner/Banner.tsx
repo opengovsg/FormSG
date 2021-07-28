@@ -21,11 +21,13 @@ import Link from '../Link'
 export interface BannerProps {
   variant?: BannerVariant
   children: string
+  useMarkdown: boolean
 }
 
 export const Banner = ({
   variant = 'info',
   children,
+  useMarkdown = false,
 }: BannerProps): JSX.Element => {
   const { isOpen, onToggle } = useDisclosure({
     defaultIsOpen: true,
@@ -46,6 +48,12 @@ export const Banner = ({
     [styles.link],
   )
 
+  const messageComponent = useMarkdown ? (
+    <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
+  ) : (
+    <Box>{children}</Box>
+  )
+
   return (
     <Collapse in={isOpen} animateOpacity>
       <Box __css={styles.banner}>
@@ -55,7 +63,7 @@ export const Banner = ({
               as={variant === 'info' ? BxsInfoCircle : BxsErrorCircle}
               __css={styles.icon}
             />
-            <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
+            {messageComponent}
           </Flex>
           {variant === 'info' && (
             <CloseButton
