@@ -1,12 +1,7 @@
-import { useCallback } from 'react'
-import { BiChevronLeft, BiChevronRight } from 'react-icons/bi'
-import { Button, Flex, Icon, Text, useMultiStyleConfig } from '@chakra-ui/react'
+import { useBreakpointValue } from '@chakra-ui/react'
 
-import { PAGINATION_THEME_KEY } from '~theme/components/Pagination'
-import { usePaginationRange } from '~hooks/usePaginationRange'
-
-// Separate constant to denote a separator in the pagination component.
-const SEPARATOR = '\u2026'
+import { PaginationDesktop } from './PaginationDesktop'
+import { PaginationMobile } from './PaginationMobile'
 
 export interface PaginationProps {
   /**
@@ -36,90 +31,22 @@ export interface PaginationProps {
   currentPage: number
 }
 
-interface PageButtonProps {
-  selectedPage: PaginationProps['currentPage']
-  page: number | typeof SEPARATOR
-  onClick: PaginationProps['onPageChange']
-}
-
-const PageButton = ({ selectedPage, page, onClick }: PageButtonProps) => {
-  const isSelected = page === selectedPage
-
-  const styles = useMultiStyleConfig(PAGINATION_THEME_KEY, { isSelected })
-
-  const handleClick = useCallback(() => {
-    if (page === SEPARATOR) return
-    onClick(page)
-  }, [onClick, page])
-
-  if (page === SEPARATOR) {
-    return <Text sx={styles.separator}>{page}</Text>
-  }
-
-  return (
-    <Button sx={styles.button} onClick={handleClick}>
-      {page}
-    </Button>
-  )
-}
-
-export const Pagination = ({
-  siblingCount = 1,
-  pageSize,
-  onPageChange,
-  totalCount,
-  currentPage,
-}: PaginationProps): JSX.Element => {
-  const paginationRange = usePaginationRange<typeof SEPARATOR>({
-    totalCount,
-    pageSize,
-    currentPage,
-    siblingCount,
-    separator: SEPARATOR,
+export const Pagination = (props: PaginationProps): JSX.Element => {
+  const isShowMobileVariant = useBreakpointValue({
+    base: true,
+    xs: true,
+    sm: true,
+    md: false,
+    lg: false,
+    xl: false,
   })
 
-  const styles = useMultiStyleConfig(PAGINATION_THEME_KEY, {})
-
-  const totalPageCount = Math.ceil(totalCount / pageSize)
-  const isDisableNextPage = currentPage >= totalPageCount
-  const isDisablePrevPage = currentPage <= 1
-
-  const handlePageBack = useCallback(() => {
-    if (isDisablePrevPage) return
-    onPageChange(currentPage - 1)
-  }, [currentPage, isDisablePrevPage, onPageChange])
-
-  const handlePageNext = useCallback(() => {
-    if (isDisableNextPage) return
-    onPageChange(currentPage + 1)
-  }, [currentPage, isDisableNextPage, onPageChange])
-
-  return (
-    <Flex __css={styles.container}>
-      <Button
-        sx={styles.stepperback}
-        isDisabled={isDisablePrevPage}
-        onClick={handlePageBack}
-      >
-        <Icon fontSize="1.5rem" as={BiChevronLeft} />
-        Back
-      </Button>
-      {paginationRange.map((p, i) => (
-        <PageButton
-          key={i}
-          page={p}
-          selectedPage={currentPage}
-          onClick={onPageChange}
-        />
-      ))}
-      <Button
-        sx={styles.steppernext}
-        isDisabled={isDisableNextPage}
-        onClick={handlePageNext}
-      >
-        Next
-        <Icon fontSize="1.5rem" as={BiChevronRight} />
-      </Button>
-    </Flex>
+  return isShowMobileVariant ? (
+    <Pagination.Mobile {...props} />
+  ) : (
+    <Pagination.Desktop {...props} />
   )
 }
+
+Pagination.Desktop = PaginationDesktop
+Pagination.Mobile = PaginationMobile
