@@ -140,7 +140,7 @@
     "puppeteer-core": "^5.3.1",
     "selectize": "0.12.6",
     "slick-carousel": "1.8.1",
-    "sortablejs": "~1.13.0",
+    "sortablejs": "~1.14.0",
     "spark-md5": "^3.0.1",
     "sqs-consumer": "^5.5.0",
     "sqs-producer": "^2.1.0",
