@@ -67,8 +67,7 @@ export const usePaginationRange = <T extends unknown = string>({
     // Do not show separator just when there is just one page number to be
     // inserted between the extremes of sibling and the page limits
     // i.e 1 and totalPageCount.
-    // Hence checking with leftSiblingIndex > 2 and rightSiblingIndex < totalPageCount - 2
-    const shouldShowLeftSeparator = leftSiblingIndex > 2
+    const shouldShowLeftSeparator = leftSiblingIndex - 1 > 2
     const shouldShowRightSeparator = rightSiblingIndex < totalPageCount - 2
 
     const firstPageIndex = 1
