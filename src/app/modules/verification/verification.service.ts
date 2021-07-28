@@ -1,19 +1,28 @@
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { NUM_OTP_RETRIES } from '../../../shared/util/verification'
+import {
+  NUM_OTP_RETRIES,
+  SMS_WARNING_TIERS,
+} from '../../../shared/util/verification'
 import {
   BasicField,
+  IPopulatedForm,
   IVerificationFieldSchema,
   IVerificationSchema,
   PublicTransaction,
 } from '../../../types'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
-import { MailSendError } from '../../services/mail/mail.errors'
+import * as AdminFormService from '../../modules/form/admin-form/admin-form.service'
+import {
+  MailGenerationError,
+  MailSendError,
+} from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { SmsFactory } from '../../services/sms/sms.factory'
+import * as SmsService from '../../services/sms/sms.service'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { compareHash, HashingError } from '../../utils/hash'
 import {
@@ -23,6 +32,7 @@ import {
 } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import * as FormService from '../form/form.service'
+import { isFormOnboarded } from '../form/form.utils'
 
 import {
   FieldNotFoundInTransactionError,
@@ -38,6 +48,7 @@ import {
 import getVerificationModel from './verification.model'
 import { SendOtpParams } from './verification.types'
 import {
+  hasAdminExceededFreeSmsLimit,
   isOtpExpired,
   isOtpWaitTimeElapsed,
   isTransactionExpired,
@@ -475,4 +486,63 @@ const sendOtpForField = (
     default:
       return errAsync(new NonVerifiedFieldTypeError(fieldType))
   }
+}
+
+/**
+ * Checks the number of free smses sent by the admin of the form and deactivates verification or sends mail as required
+ * @param form The form whose admin's sms counts needs to be checked
+ * @returns ok(true) when the verification has been deactivated successfully or no action is required
+ * @returns err(MailGenerationError) when an error occurred on creating the HTML template for the email
+ * @returns err(MailSendError) when an error occurred on sending the email
+ * @returns err(PossibleDatabaseError) when an error occurred while retrieving the counts from the database
+ */
+export const processAdminSmsCounts = (
+  form: IPopulatedForm,
+): ResultAsync<
+  true,
+  MailGenerationError | MailSendError | PossibleDatabaseError
+> => {
+  if (isFormOnboarded(form)) {
+    return okAsync(true)
+  }
+
+  // Convert to string because it's typed as any
+  const formAdminId = String(form.admin._id)
+
+  return SmsService.retrieveFreeSmsCounts(formAdminId).andThen((freeSmsSent) =>
+    checkSmsCountAndPerformAction(form, freeSmsSent),
+  )
+}
+
+/**
+ * Checks the number of free smses sent by the admin of a form and performs the appropriate action
+ * @param form The form whose admin's sms counts needs to be checked
+ * @returns ok(true) when the action has been performed successfully
+ * @returns err(MailGenerationError) when an error occurred on creating the HTML template for the email
+ * @returns err(MailSendError) when an error occurred on sending the email
+ * @returns err(PossibleDatabaseError) when an error occurred while retrieving the counts from the database
+ */
+const checkSmsCountAndPerformAction = (
+  form: Pick<IPopulatedForm, 'admin' | 'title' | '_id' | 'permissionList'>,
+  freeSmsSent: number,
+): ResultAsync<
+  true,
+  MailGenerationError | MailSendError | PossibleDatabaseError
+> => {
+  // Convert to string because it's typed as any
+  const formAdminId = String(form.admin._id)
+
+  // NOTE: Because the admin has exceeded their allowable limit of free sms,
+  // the sms verifications for their forms also need to be disabled.
+  if (hasAdminExceededFreeSmsLimit(freeSmsSent)) {
+    return MailService.sendSmsVerificationDisabledEmail(form).andThen(() =>
+      AdminFormService.disableSmsVerificationsForUser(formAdminId),
+    )
+  }
+
+  if (freeSmsSent in SMS_WARNING_TIERS) {
+    return MailService.sendSmsVerificationWarningEmail(form, freeSmsSent)
+  }
+
+  return okAsync(true)
 }

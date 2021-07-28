@@ -63,7 +63,7 @@ import {
   TransferOwnershipError,
 } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
-import { getFormFieldById, getLogicById, isOnboardedForm } from '../form.utils'
+import { getFormFieldById, getLogicById, isFormOnboarded } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -1135,7 +1135,7 @@ const isMobileFieldUpdateAllowed = (
   PossibleDatabaseError | SmsLimitExceededError
 > => {
   // Field can always update if it's not a verifiable field or if the form has been onboarded
-  if (!isVerifiableMobileField(mobileField) || isOnboardedForm(form)) {
+  if (!isVerifiableMobileField(mobileField) || isFormOnboarded(form)) {
     return okAsync(form)
   }
 
