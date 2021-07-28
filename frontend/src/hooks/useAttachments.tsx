@@ -51,7 +51,7 @@ export const useAttachments = ({
 
   const reset = () => {
     setAcceptedFiles([])
-    setAcceptedFiles([])
+    setFileRejections([])
   }
 
   const deleteFile = (file: File) => {

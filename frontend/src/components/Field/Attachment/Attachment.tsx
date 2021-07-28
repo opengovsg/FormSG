@@ -1,9 +1,13 @@
-import { createContext, PropsWithChildren, useContext } from 'react'
+import {
+  createContext,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+} from 'react'
 import { BiTrash } from 'react-icons/bi'
 import {
   Box,
   Button,
-  ButtonProps,
   Center,
   Flex,
   forwardRef,
@@ -67,14 +71,23 @@ export interface AttachmentProps {
    * The maximum allowed filesize to upload, in bytes
    */
   maxSizeInBytes: number
+  onChange?: (f: File[]) => void
 }
 
 export const Attachment = ({
   maxSizeInBytes,
   children,
+  onChange,
 }: PropsWithChildren<AttachmentProps>): JSX.Element => {
+  const onDrop = useCallback(
+    (acceptedFiles) => {
+      onChange?.(acceptedFiles)
+    },
+    [onChange],
+  )
+
   const { acceptedFiles, fileRejections, reset, getRootProps, getInputProps } =
-    useAttachments({ maxSize: maxSizeInBytes })
+    useAttachments({ maxSize: maxSizeInBytes, onDrop })
 
   return (
     <AttachmentContext.Provider
@@ -92,13 +105,8 @@ export const Attachment = ({
   )
 }
 
-export type DropzoneProps = ButtonProps & {
-  // Taken from react-hook-forms: https://react-hook-form.com/api/usecontroller/controller
-  // field.onChange has this typing
-  onChange?: (f: any) => void
-}
-
-export const Dropzone = forwardRef<DropzoneProps, 'button'>((props, ref) => {
+export type DropzoneProps = PropsWithChildren<StyleProps>
+export const Dropzone = forwardRef<DropzoneProps, 'input'>((props, ref) => {
   const styles = useMultiStyleConfig('Attachment', props)
 
   return (
@@ -118,20 +126,18 @@ export const Dropzone = forwardRef<DropzoneProps, 'button'>((props, ref) => {
 })
 
 export const DropzoneButton = forwardRef<DropzoneProps, 'input'>(
-  ({ onChange, ...props }, ref) => {
+  ({ ...props }, ref) => {
     const styles = useMultiStyleConfig('Attachment', props)
     const { getInputProps, getRootProps } = useDropzoneProps()
 
     return (
       <Button
         sx={styles.container}
-        data-js-focus-visible
-        data-focus-visible-added
         {...getRootProps(props as Record<string, unknown>)}
       >
         <Center>
           <VStack spacing="0.5rem">
-            <input ref={ref} {...getInputProps({ onChange })} />
+            <input ref={ref} {...getInputProps()} />
             {props.children}
           </VStack>
         </Center>
