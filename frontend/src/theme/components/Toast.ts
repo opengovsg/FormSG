@@ -41,6 +41,9 @@ export const Toast: ComponentMultiStyleConfig = {
       _hover: {
         bgColor: 'inherit',
       },
+      _active: {
+        bgColor: 'neutral.200',
+      },
       _focus: {
         boxShadow: '0 0 0 2px var(--chakra-colors-secondary-300)',
       },
