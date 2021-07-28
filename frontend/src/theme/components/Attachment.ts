@@ -15,6 +15,7 @@ export const Attachment: ComponentMultiStyleConfig = {
         boxSize: '2.75rem',
         cursor: 'pointer',
         border: 'none',
+        color: 'danger.500',
       },
       container: {
         py: '2.5rem',
@@ -27,7 +28,7 @@ export const Attachment: ComponentMultiStyleConfig = {
         textStyle: 'legal',
         fill: 'secondary.500',
         _hover: {
-          bgColor: 'primary.200',
+          bgColor: 'primary.100',
           borderColor: 'primary.700',
           _disabled: {
             bgColor: 'neutral.200',
@@ -41,7 +42,7 @@ export const Attachment: ComponentMultiStyleConfig = {
           borderColor: 'primary.500',
         },
         _active: {
-          bgColor: 'primary.100',
+          bgColor: 'primary.200',
         },
         _disabled: {
           bgColor: 'neutral.200',

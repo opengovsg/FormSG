@@ -8,8 +8,6 @@ import {
   Flex,
   forwardRef,
   Icon,
-  IconButton,
-  IconButtonProps,
   Spacer,
   StyleProps,
   Text,
@@ -22,6 +20,7 @@ import { formatBytes } from '~/utils/formatBytes'
 
 import { BxsCloudUpload } from '~assets/icons'
 import { DropzoneState, useAttachments } from '~hooks/useAttachments'
+import { IconButton, IconButtonProps } from '~components/IconButton/IconButton'
 
 interface AttachmentContextProps {
   getRootProps: DropzoneState['getRootProps']
@@ -202,9 +201,9 @@ export const AttachmentActionIcon = ({
         onClick?.(acceptedFiles)
         reset()
       }}
-      icon={icon}
+      icon={<BiTrash />}
       sx={styles.delete}
-      variant="ghost"
+      variant="clear"
     />
   )
 }
