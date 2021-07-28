@@ -39,11 +39,11 @@ export const encryptSubmissionResponses = (
 
 const isPossibleResponse = (
   o: unknown,
-): o is Record<string, unknown> & { fieldType: BasicField } => {
+): o is Record<string, unknown> & { fieldType: string } => {
   const isPossibleObject = typeof o === 'object' && o !== null
   if (!isPossibleObject) return false
 
-  return !!(o as Record<string, unknown>).fieldType
+  return typeof (o as Record<string, unknown>).fieldType === 'string'
 }
 
 const validateResponses = (responses: unknown): FieldResponse[] => {
