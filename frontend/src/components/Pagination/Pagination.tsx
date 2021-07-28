@@ -1,12 +1,6 @@
+import { useCallback } from 'react'
 import { BiChevronLeft, BiChevronRight } from 'react-icons/bi'
-import {
-  Button,
-  ButtonProps,
-  Flex,
-  Icon,
-  Text,
-  useMultiStyleConfig,
-} from '@chakra-ui/react'
+import { Button, Flex, Icon, Text, useMultiStyleConfig } from '@chakra-ui/react'
 
 import { PAGINATION_THEME_KEY } from '~theme/components/Pagination'
 import { usePaginationRange } from '~hooks/usePaginationRange'
@@ -53,26 +47,18 @@ const PageButton = ({ selectedPage, page, onClick }: PageButtonProps) => {
 
   const styles = useMultiStyleConfig(PAGINATION_THEME_KEY, { isSelected })
 
+  const handleClick = useCallback(() => {
+    if (page === SEPARATOR) return
+    onClick(page)
+  }, [onClick, page])
+
   if (page === SEPARATOR) {
     return <Text sx={styles.separator}>{page}</Text>
   }
 
   return (
-    <Button sx={styles.button} onClick={() => onClick(page)}>
+    <Button sx={styles.button} onClick={handleClick}>
       {page}
-    </Button>
-  )
-}
-
-interface StepButtonProps extends ButtonProps {
-  onClick: () => void
-  children: React.ReactNode
-}
-
-const StepButton = ({ onClick, children, ...props }: StepButtonProps) => {
-  return (
-    <Button onClick={onClick} {...props}>
-      {children}
     </Button>
   )
 }
@@ -92,20 +78,32 @@ export const Pagination = ({
     separator: SEPARATOR,
   })
 
-  const totalPageCount = Math.ceil(totalCount / pageSize)
-
   const styles = useMultiStyleConfig(PAGINATION_THEME_KEY, {})
+
+  const totalPageCount = Math.ceil(totalCount / pageSize)
+  const isDisableNextPage = currentPage >= totalPageCount
+  const isDisablePrevPage = currentPage <= 1
+
+  const handlePageBack = useCallback(() => {
+    if (isDisablePrevPage) return
+    onPageChange(currentPage - 1)
+  }, [currentPage, isDisablePrevPage, onPageChange])
+
+  const handlePageNext = useCallback(() => {
+    if (isDisableNextPage) return
+    onPageChange(currentPage + 1)
+  }, [currentPage, isDisableNextPage, onPageChange])
 
   return (
     <Flex __css={styles.container}>
-      <StepButton
+      <Button
         sx={styles.stepperback}
-        isDisabled={currentPage === 1}
-        onClick={() => onPageChange(currentPage - 1)}
+        isDisabled={isDisablePrevPage}
+        onClick={handlePageBack}
       >
         <Icon fontSize="1.5rem" as={BiChevronLeft} />
         Back
-      </StepButton>
+      </Button>
       {paginationRange.map((p, i) => (
         <PageButton
           key={i}
@@ -114,14 +112,14 @@ export const Pagination = ({
           onClick={onPageChange}
         />
       ))}
-      <StepButton
+      <Button
         sx={styles.steppernext}
-        isDisabled={currentPage === totalPageCount}
-        onClick={() => onPageChange(currentPage + 1)}
+        isDisabled={isDisableNextPage}
+        onClick={handlePageNext}
       >
         Next
         <Icon fontSize="1.5rem" as={BiChevronRight} />
-      </StepButton>
+      </Button>
     </Flex>
   )
 }
