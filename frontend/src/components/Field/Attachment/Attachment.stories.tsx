@@ -80,10 +80,19 @@ export const Playground: Story<PlaygroundProps> = ({
   maxSizeInBytes,
   ...props
 }: PlaygroundProps) => {
+  const { handleSubmit, control } = useForm()
+  const { field } = useController({
+    name: 'Attachment Playground',
+    control,
+  })
+  const onSubmit = (data: unknown) => alert(JSON.stringify(data))
+
   return (
-    <Attachment maxSizeInBytes={maxSizeInBytes}>
-      <PlaygroundComponent {...props} />
-    </Attachment>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Attachment maxSizeInBytes={maxSizeInBytes} {...field}>
+        <PlaygroundComponent {...props} />
+      </Attachment>
+    </form>
   )
 }
 Playground.bind({})
@@ -92,39 +101,31 @@ const PlaygroundComponent = (props: DropzoneProps) => {
   const { acceptedFiles, fileRejections, maxSize } = useAttachmentContext()
   const hasUploadedFiles = !!acceptedFiles.length
   const isError = !!fileRejections.length
-  const { handleSubmit, control } = useForm()
-  const { field } = useController({
-    name: 'Attachment Playground',
-    control,
-  })
-  const onSubmit = (data: unknown) => alert(JSON.stringify(data))
   const formattedMaxSize = formatBytes(maxSize, 0)
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <FormControl isInvalid={isError}>
-        <FormLabel>
-          <HStack spacing="0.5rem">
-            <Text textStyle="caption-1">1. </Text>
-            <Text textStyle="subhead-1">Label</Text>
-          </HStack>
-        </FormLabel>
-        {hasUploadedFiles ? (
-          <AttachmentInfo />
-        ) : (
-          <Box maxWidth="min-content" whiteSpace="pre-line">
-            <Dropzone {...props} {...field} isError={isError} />
-            {isError ? (
-              <FormErrorMessage>{`You have exceeded the limit, please upload a file below ${formattedMaxSize}`}</FormErrorMessage>
-            ) : (
-              <FormFieldMessage>{`Maximum file size: ${formattedMaxSize}`}</FormFieldMessage>
-            )}
-          </Box>
-        )}
-        <Button mt="8px" type="submit" isDisabled={isError}>
-          Submit
-        </Button>
-      </FormControl>
-    </form>
+    <FormControl isInvalid={isError}>
+      <FormLabel>
+        <HStack spacing="0.5rem">
+          <Text textStyle="caption-1">1. </Text>
+          <Text textStyle="subhead-1">Label</Text>
+        </HStack>
+      </FormLabel>
+      {hasUploadedFiles ? (
+        <AttachmentInfo />
+      ) : (
+        <Box maxWidth="min-content" whiteSpace="pre-line">
+          <Dropzone {...props} isError={isError} />
+          {isError ? (
+            <FormErrorMessage>{`You have exceeded the limit, please upload a file below ${formattedMaxSize}`}</FormErrorMessage>
+          ) : (
+            <FormFieldMessage>{`Maximum file size: ${formattedMaxSize}`}</FormFieldMessage>
+          )}
+        </Box>
+      )}
+      <Button mt="8px" type="submit" isDisabled={isError}>
+        Submit
+      </Button>
+    </FormControl>
   )
 }
