@@ -16,7 +16,7 @@ export type InlineMessageProps = {
 export const InlineMessage = ({
   variant = 'info',
   children,
-}: any): JSX.Element => {
+}: InlineMessageProps): JSX.Element => {
   const styles = useMultiStyleConfig('InlineMessage', { variant })
 
   const mdComponents: Components = useMemo(

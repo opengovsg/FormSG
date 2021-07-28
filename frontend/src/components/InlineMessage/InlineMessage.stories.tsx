@@ -5,12 +5,6 @@ import { InlineMessage, InlineMessageProps } from './InlineMessage'
 export default {
   title: 'Components/InlineMessage',
   component: InlineMessage,
-  argTypes: {
-    variant: {
-      options: ['info', 'warning', 'error'],
-      control: { type: 'radio' },
-    },
-  },
 } as Meta
 
 const InlineMessageTemplate: Story<InlineMessageProps> = (args) => (
