@@ -12,7 +12,8 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
-import { BxsInfoCircle } from '~assets/icons/BxsInfoCircle'
+import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
+
 import { BannerVariant } from '~theme/components/Banner'
 
 import Link from '../Link'
@@ -50,7 +51,10 @@ export const Banner = ({
       <Box __css={styles.banner}>
         <Flex sx={styles.item}>
           <Flex>
-            <Icon as={BxsInfoCircle} __css={styles.icon} />
+            <Icon
+              as={variant === 'info' ? BxsInfoCircle : BxsErrorCircle}
+              __css={styles.icon}
+            />
             <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
           </Flex>
           {variant === 'info' && (
