@@ -11,11 +11,13 @@ import Link from '../Link'
 export type InlineMessageProps = {
   variant: InlineMessageVariant
   children: string
+  useMarkdown: boolean
 }
 
 export const InlineMessage = ({
   variant = 'info',
   children,
+  useMarkdown = false,
 }: InlineMessageProps): JSX.Element => {
   const styles = useMultiStyleConfig('InlineMessage', { variant })
 
@@ -28,6 +30,12 @@ export const InlineMessage = ({
     [],
   )
 
+  const messageComponent = useMarkdown ? (
+    <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
+  ) : (
+    <Box>{children}</Box>
+  )
+
   return (
     <Box __css={styles.messagebox}>
       <Flex sx={styles.item}>
@@ -35,7 +43,7 @@ export const InlineMessage = ({
           as={variant !== 'error' ? BxsInfoCircle : BxsErrorCircle}
           __css={styles.icon}
         />
-        <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
+        {messageComponent}
       </Flex>
     </Box>
   )
