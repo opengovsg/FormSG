@@ -11,7 +11,13 @@ export default {
 const Template: Story<BannerProps> = (args) => <Banner {...args} />
 export const Default = Template.bind({})
 Default.args = {
-  children: `Random string, _can_ be **markdown** too!`,
+  children: 'You can insert a normal string here.',
+  useMarkdown: false,
+}
+
+export const WithMarkdown = Template.bind({})
+WithMarkdown.args = {
+  children: `**Markdown** is also accepted.`,
   useMarkdown: true,
 }
 

@@ -13,8 +13,13 @@ const InlineMessageTemplate: Story<InlineMessageProps> = (args) => (
 
 export const Default = InlineMessageTemplate.bind({})
 Default.args = {
-  variant: 'info',
-  children: `**Markdown** accepted, or just use a normal string.`,
+  children: 'You can insert a normal string here.',
+  useMarkdown: false,
+}
+
+export const WithMarkdown = InlineMessageTemplate.bind({})
+WithMarkdown.args = {
+  children: `**Markdown** is also accepted.`,
   useMarkdown: true,
 }
 
