@@ -17,12 +17,13 @@ export const PaginationMobile = ({
   onPageChange,
   totalCount,
   currentPage,
+  isDisabled,
 }: PaginationMobileProps): JSX.Element => {
-  const styles = useMultiStyleConfig(PAGINATION_THEME_KEY, {})
+  const styles = useMultiStyleConfig(PAGINATION_THEME_KEY, { isDisabled })
 
   const totalPageCount = Math.ceil(totalCount / pageSize)
-  const isDisableNextPage = currentPage >= totalPageCount
-  const isDisablePrevPage = currentPage <= 1
+  const isDisableNextPage = isDisabled || currentPage >= totalPageCount
+  const isDisablePrevPage = isDisabled || currentPage <= 1
 
   const handlePageBack = useCallback(() => {
     if (isDisablePrevPage) return
@@ -43,7 +44,7 @@ export const PaginationMobile = ({
         onClick={handlePageBack}
         icon={<BiChevronLeft />}
       />
-      <Text sx={styles.text}>
+      <Text sx={styles.text} aria-disabled={isDisabled}>
         Page {currentPage} of {totalPageCount}
       </Text>
       <IconButton

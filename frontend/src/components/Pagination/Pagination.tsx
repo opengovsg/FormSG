@@ -29,6 +29,11 @@ export interface PaginationProps {
    * Represents the current active page. Note that a `1-based index` is used.
    */
   currentPage: number
+
+  /**
+   * Whether pagination buttons are disabled.
+   */
+  isDisabled?: boolean
 }
 
 export const Pagination = (props: PaginationProps): JSX.Element => {

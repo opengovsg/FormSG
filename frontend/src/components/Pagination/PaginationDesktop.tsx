@@ -25,12 +25,14 @@ interface DesktopPageButtonProps {
   selectedPage: PaginationProps['currentPage']
   page: number | typeof SEPARATOR
   onClick: PaginationProps['onPageChange']
+  isDisabled: PaginationProps['isDisabled']
 }
 
 const DesktopPageButton = ({
   selectedPage,
   page,
   onClick,
+  isDisabled,
 }: DesktopPageButtonProps) => {
   const isSelected = page === selectedPage
 
@@ -46,7 +48,7 @@ const DesktopPageButton = ({
   }
 
   return (
-    <Button sx={styles.button} onClick={handleClick}>
+    <Button sx={styles.button} onClick={handleClick} isDisabled={isDisabled}>
       {page}
     </Button>
   )
@@ -58,6 +60,7 @@ export const PaginationDesktop = ({
   onPageChange,
   totalCount,
   currentPage,
+  isDisabled,
 }: PaginationProps): JSX.Element => {
   const paginationRange = usePaginationRange<typeof SEPARATOR>({
     totalCount,
@@ -70,8 +73,8 @@ export const PaginationDesktop = ({
   const styles = useMultiStyleConfig(PAGINATION_THEME_KEY, {})
 
   const totalPageCount = Math.ceil(totalCount / pageSize)
-  const isDisableNextPage = currentPage >= totalPageCount
-  const isDisablePrevPage = currentPage <= 1
+  const isDisableNextPage = isDisabled || currentPage >= totalPageCount
+  const isDisablePrevPage = isDisabled || currentPage <= 1
 
   const handlePageBack = useCallback(() => {
     if (isDisablePrevPage) return
@@ -97,6 +100,7 @@ export const PaginationDesktop = ({
           <DesktopPageButton
             key={i}
             page={p}
+            isDisabled={isDisabled}
             selectedPage={currentPage}
             onClick={onPageChange}
           />

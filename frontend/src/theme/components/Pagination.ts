@@ -21,12 +21,12 @@ const baseButtonStyling = (props: Record<string, any>) => {
       boxShadow: `0 0 0 2px var(--chakra-colors-secondary-300)`,
     },
     _disabled: {
-      bg: 'transparent',
+      bg: isSelected ? 'secondary.300' : 'transparent',
       cursor: 'not-allowed',
-      color: 'secondary.300',
+      color: isSelected ? 'white' : 'secondary.300',
       _hover: {
-        bg: 'transparent',
-        color: 'secondary.300',
+        bg: isSelected ? 'secondary.300' : 'transparent',
+        color: isSelected ? 'white' : 'secondary.300',
       },
     },
     color: isSelected ? 'white' : 'secondary.500',
@@ -38,6 +38,8 @@ export const Pagination: ComponentMultiStyleConfig = {
   variants: {
     solid: (props) => {
       const buttonStyling = baseButtonStyling(props)
+      const { isDisabled } = props
+
       return {
         container: {
           display: 'flex',
@@ -52,6 +54,7 @@ export const Pagination: ComponentMultiStyleConfig = {
         text: {
           alignSelf: 'center',
           p: '0.25rem 0.75rem',
+          color: isDisabled ? 'secondary.300' : 'secondary.500',
         },
         stepper: {
           ...buttonStyling,

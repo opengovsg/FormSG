@@ -33,6 +33,14 @@ Default.args = {
   pageSize: 10,
 }
 
+export const Disabled = Template.bind({})
+Disabled.args = {
+  currentPage: 5,
+  totalCount: 1000,
+  pageSize: 10,
+  isDisabled: true,
+}
+
 export const SiblingCountEquals2 = Template.bind({})
 SiblingCountEquals2.args = {
   currentPage: 31,
@@ -81,6 +89,21 @@ Mobile.args = {
   siblingCount: 1,
 }
 Mobile.parameters = {
+  viewport: {
+    defaultViewport: 'mobile1',
+  },
+  chromatic: { viewports: [viewports.xs] },
+}
+
+export const MobileDisabled = Template.bind({})
+MobileDisabled.args = {
+  currentPage: 31,
+  totalCount: 1000,
+  pageSize: 10,
+  siblingCount: 1,
+  isDisabled: true,
+}
+MobileDisabled.parameters = {
   viewport: {
     defaultViewport: 'mobile1',
   },
