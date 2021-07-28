@@ -8,11 +8,9 @@ export const Attachment: ComponentMultiStyleConfig = {
       uploaded: {
         bgColor: 'primary.100',
         borderRadius: '0.25rem',
-        // bottom padding is 12px/0.75rem only
-        p: '1rem 1rem 0.75rem 1rem',
+        p: '0.875rem 1rem',
       },
       delete: {
-        boxSize: '2.75rem',
         cursor: 'pointer',
         border: 'none',
         color: 'danger.500',
@@ -38,7 +36,7 @@ export const Attachment: ComponentMultiStyleConfig = {
         },
         _focus: {
           boxShadow: '0 0 0 1px var(--chakra-colors-primary-500) !important',
-          border: '1px solid',
+          borderStyle: 'solid',
           borderColor: 'primary.500',
         },
         _active: {
