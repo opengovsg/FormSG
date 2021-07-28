@@ -48,12 +48,6 @@ export const Banner = ({
     [styles.link],
   )
 
-  const messageComponent = useMarkdown ? (
-    <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
-  ) : (
-    <Box>{children}</Box>
-  )
-
   return (
     <Collapse in={isOpen} animateOpacity>
       <Box __css={styles.banner}>
@@ -63,7 +57,13 @@ export const Banner = ({
               as={variant === 'info' ? BxsInfoCircle : BxsErrorCircle}
               __css={styles.icon}
             />
-            {messageComponent}
+            {useMarkdown ? (
+              <ReactMarkdown components={mdComponents}>
+                {children}
+              </ReactMarkdown>
+            ) : (
+              children
+            )}
           </Flex>
           {variant === 'info' && (
             <CloseButton

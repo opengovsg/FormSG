@@ -30,12 +30,6 @@ export const InlineMessage = ({
     [],
   )
 
-  const messageComponent = useMarkdown ? (
-    <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
-  ) : (
-    <Box>{children}</Box>
-  )
-
   return (
     <Box __css={styles.messagebox}>
       <Flex sx={styles.item}>
@@ -43,7 +37,11 @@ export const InlineMessage = ({
           as={variant !== 'error' ? BxsInfoCircle : BxsErrorCircle}
           __css={styles.icon}
         />
-        {messageComponent}
+        {useMarkdown ? (
+          <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
+        ) : (
+          children
+        )}
       </Flex>
     </Box>
   )
