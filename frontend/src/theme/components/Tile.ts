@@ -6,6 +6,9 @@ const activeContainerStyle = {
   // NOTE: For the boxShadow styling, due to conflicts with the focus-visible package,
   // the !important is required to display the boxShadow styling correctly.
   boxShadow: '0 0 0 3px var(--chakra-colors-primary-500) !important',
+  _hover: {
+    bgColor: 'primary.200',
+  },
 }
 
 const baseContainerStyle = {
