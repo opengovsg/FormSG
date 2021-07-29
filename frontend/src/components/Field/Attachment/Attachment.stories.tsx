@@ -44,38 +44,63 @@ export const Disabled: Story<AttachmentProps> = (args) => (
 )
 Disabled.bind({})
 
-export const Labelled: Story<AttachmentProps> = (args) => (
+type LabelledProps = {
+  labelText: string
+  labelNumber: number
+}
+export const Labelled: Story<AttachmentProps & LabelledProps> = ({
+  labelText,
+  labelNumber,
+  ...args
+}) => (
   <FormControl>
-    <FormLabel>
-      <HStack spacing="0.5rem">
-        <Text textStyle="caption-1">1. </Text>
-        <Text textStyle="subhead-1">Label</Text>
-      </HStack>
-    </FormLabel>
     <Attachment {...args}>
+      <FormLabel>
+        <HStack spacing="0.5rem">
+          <Text textStyle="caption-1">{`${labelNumber}.`}</Text>
+          <Text textStyle="subhead-1">{labelText}</Text>
+        </HStack>
+      </FormLabel>
       <AttachmentComponent />
     </Attachment>
   </FormControl>
 )
 Labelled.bind({})
+Labelled.args = {
+  labelNumber: 1,
+  labelText: 'Label',
+}
 
-export const Error: Story<AttachmentProps> = (args) => (
-  <FormControl isInvalid>
+type ErrorProps = { errorMessage: string }
+export const Error: Story<AttachmentProps & ErrorProps> = ({
+  errorMessage,
+  ...args
+}) => (
+  <FormControl>
     <Attachment {...args}>
       <AttachmentComponent />
     </Attachment>
-    <FormErrorMessage>Some error message here</FormErrorMessage>
+    <FormErrorMessage>{errorMessage}</FormErrorMessage>
   </FormControl>
 )
 Error.bind({})
+Error.args = {
+  errorMessage: 'Some error message here',
+}
 
 const AttachmentComponent = (args: DropzoneProps) => {
   const { acceptedFiles } = useAttachmentContext()
   const hasUploadedFiles = !!acceptedFiles.length
-  return hasUploadedFiles ? <AttachmentInfo /> : <Dropzone {...args} />
+  return hasUploadedFiles ? (
+    <AttachmentInfo />
+  ) : (
+    <Box maxWidth="min-content" whiteSpace="pre-line">
+      <Dropzone {...args} />
+    </Box>
+  )
 }
 
-type PlaygroundProps = DropzoneProps & AttachmentProps
+type PlaygroundProps = DropzoneProps & AttachmentProps & LabelledProps
 export const Playground: Story<PlaygroundProps> = ({
   maxSizeInBytes,
   ...props
@@ -96,6 +121,10 @@ export const Playground: Story<PlaygroundProps> = ({
   )
 }
 Playground.bind({})
+Playground.args = {
+  labelNumber: 1,
+  labelText: 'Label',
+}
 
 const PlaygroundComponent = (props: DropzoneProps) => {
   const { acceptedFiles, fileRejections, maxSize } = useAttachmentContext()

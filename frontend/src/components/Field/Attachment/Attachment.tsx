@@ -8,6 +8,7 @@ import { BiTrash } from 'react-icons/bi'
 import {
   Box,
   Button,
+  ButtonProps,
   Center,
   Flex,
   forwardRef,
@@ -121,7 +122,7 @@ export const Attachment = ({
   )
 }
 
-export type DropzoneProps = PropsWithChildren<StyleProps>
+export type DropzoneProps = PropsWithChildren<ButtonProps>
 export const Dropzone = forwardRef<DropzoneProps, 'input'>((props, ref) => {
   const styles = useMultiStyleConfig('Attachment', props)
 
@@ -129,7 +130,6 @@ export const Dropzone = forwardRef<DropzoneProps, 'input'>((props, ref) => {
     <DropzoneButton {...props} ref={ref}>
       <Box>
         <Icon as={BxsCloudUpload} sx={styles.icon} />
-        {/* double check if the 500 is actually intended */}
         <Text textStyle="body-1" fontWeight={500}>
           <Text as="u" sx={styles.text}>
             Choose file
