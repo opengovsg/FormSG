@@ -12,6 +12,7 @@ import getFormModel, {
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import {
+  AuthType,
   BasicField,
   EndPage,
   FormFieldWithId,
@@ -567,6 +568,32 @@ describe('Form Model', () => {
         await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
+      })
+
+      it('should set authType to NIL when given authType is MyInfo', async () => {
+        // Arrange
+        const malformedParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          authType: AuthType.MyInfo,
+        })
+
+        // Act
+        const invalidForm = await EncryptedForm.create(malformedParams)
+
+        // Assert
+        await expect(invalidForm.authType).toBe(AuthType.NIL)
+      })
+
+      it('should set authType to NIL when given authType is SGID', async () => {
+        // Arrange
+        const malformedParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          authType: AuthType.SGID,
+        })
+
+        // Act
+        const invalidForm = await EncryptedForm.create(malformedParams)
+
+        // Assert
+        await expect(invalidForm.authType).toBe(AuthType.NIL)
       })
     })
 
