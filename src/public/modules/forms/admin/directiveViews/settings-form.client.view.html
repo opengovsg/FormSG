@@ -301,7 +301,7 @@
                     name="esrvcId"
                     ng-model="tempForm.esrvcId"
                     placeholder="{{ ['SP', 'MyInfo'].includes(type.val) ? 'Enter Singpass e-service ID' : 'Enter Corppass e-service ID' }}"
-                    ng-pattern="/^([a-zA-Z0-9\-]){1,25}$/i"
+                    ng-pattern="/^([a-zA-Z0-9\-\_]){1,25}$/i"
                     ng-keyup="($event.keyCode === 13 && settingsForm.esrvcId.$valid) && saveForm()"
                     ng-blur="(settingsForm.esrvcId.$valid) && saveForm()"
                     ng-disabled="(isFormPublic() && !isPublicWithoutEsrvcId())"

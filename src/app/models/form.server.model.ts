@@ -384,8 +384,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         type: String,
         required: false,
         validate: [
-          /^([a-zA-Z0-9-]){1,25}$/i,
-          'e-service ID must be alphanumeric, dashes are allowed',
+          /^([a-zA-Z0-9-_]){1,25}$/i,
+          'e-service ID must be alphanumeric, underscores and dashes are allowed',
         ],
       },
 
