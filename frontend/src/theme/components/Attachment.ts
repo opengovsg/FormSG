@@ -3,7 +3,7 @@ import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
 export const Attachment: ComponentMultiStyleConfig = {
   parts: ['container', 'icon', 'text', 'uploaded', 'delete'],
   baseStyle: (props) => {
-    const { isDisabled } = props
+    const { isDisabled, isDragActive } = props
     return {
       uploaded: {
         bgColor: 'primary.100',
@@ -18,9 +18,9 @@ export const Attachment: ComponentMultiStyleConfig = {
       container: {
         py: '2.5rem',
         px: '3rem',
-        bgColor: 'neutral.100',
+        bgColor: isDragActive ? 'primary.100' : 'neutral.100',
         border: '1px dashed',
-        borderColor: 'neutral.700',
+        borderColor: isDragActive ? 'primary.700' : 'neutral.700',
         borderRadius: '0.25rem',
         textColor: 'secondary.500',
         textStyle: 'legal',

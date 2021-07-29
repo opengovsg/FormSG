@@ -21,6 +21,7 @@ export type DropzoneState = Pick<
   | 'getRootProps'
   | 'inputRef'
   | 'rootRef'
+  | 'isDragActive'
 > & {
   reset: () => void
   deleteFile: (file: File) => void
@@ -38,6 +39,7 @@ export const useAttachments = ({
     fileRejections: actualFileRejections,
     getRootProps,
     getInputProps,
+    isDragActive,
   } = useDropzone({
     maxFiles,
     ...rest,
@@ -74,5 +76,6 @@ export const useAttachments = ({
     rootRef,
     reset,
     deleteFile,
+    isDragActive,
   }
 }

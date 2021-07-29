@@ -46,6 +46,10 @@ interface AttachmentContextProps {
    * The maximum allowable filesize, in bytes.
    */
   maxSize: number
+  /**
+   * Boolean indicating if a file is being dragged over the dropzone
+   */
+  isDragActive: DropzoneState['isDragActive']
 }
 
 const AttachmentContext = createContext<undefined | AttachmentContextProps>(
@@ -103,8 +107,14 @@ export const Attachment = ({
     [onChange],
   )
 
-  const { acceptedFiles, fileRejections, reset, getRootProps, getInputProps } =
-    useAttachments({ maxSize: maxSizeInBytes, onDrop })
+  const {
+    acceptedFiles,
+    fileRejections,
+    reset,
+    getRootProps,
+    getInputProps,
+    isDragActive,
+  } = useAttachments({ maxSize: maxSizeInBytes, onDrop })
 
   return (
     <AttachmentContext.Provider
@@ -115,6 +125,7 @@ export const Attachment = ({
         reset,
         fileRejections,
         maxSize: maxSizeInBytes,
+        isDragActive,
       }}
     >
       {children}
@@ -143,13 +154,17 @@ export const Dropzone = forwardRef<DropzoneProps, 'input'>((props, ref) => {
 
 export const DropzoneButton = forwardRef<DropzoneProps, 'input'>(
   ({ ...props }, ref) => {
-    const styles = useMultiStyleConfig('Attachment', props)
+    const { isDragActive } = useAttachmentContext()
+    const styles = useMultiStyleConfig('Attachment', { ...props, isDragActive })
     const { getInputProps, getRootProps } = useDropzoneProps()
 
     return (
       <Button
+        {...getRootProps({
+          sx: styles.container,
+          ...(props as Record<string, unknown>),
+        })}
         sx={styles.container}
-        {...getRootProps(props as Record<string, unknown>)}
       >
         <Center>
           <VStack spacing="0.5rem">
