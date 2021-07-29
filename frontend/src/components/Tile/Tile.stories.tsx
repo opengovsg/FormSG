@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { BiLockAlt, BiMailSend } from 'react-icons/bi'
 import { Stack, UnorderedList } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
-import _ from 'lodash'
+import { values } from 'lodash'
 
 import Tag from '~components/Tag'
 
@@ -65,7 +65,7 @@ const Template: Story<TileTemplateProps> = ({
       <TileTitle>{title}</TileTitle>
       <TileSubtitle>{subtitle}</TileSubtitle>
       {hasDescription && (
-        <List listTitle={listTitle} listItems={_.values(listItems)} />
+        <List listTitle={listTitle} listItems={values(listItems)} />
       )}
     </Tile>
   )
@@ -94,8 +94,7 @@ Simple.args = {
 }
 
 export const Playground: Story = () => {
-  const [isStorageClicked, setIsStorageClicked] = useState<boolean>(false)
-  const [isEmailClicked, setIsEmailClicked] = useState<boolean>(false)
+  const [selected, setSelected] = useState('')
 
   return (
     <Stack
@@ -104,18 +103,12 @@ export const Playground: Story = () => {
       spacing="1rem"
     >
       <StorageTile
-        onClick={() => {
-          setIsStorageClicked(true)
-          setIsEmailClicked(false)
-        }}
-        isActive={isStorageClicked}
+        onClick={() => setSelected('storage')}
+        isActive={selected === 'storage'}
       />
       <EmailTile
-        onClick={() => {
-          setIsStorageClicked(false)
-          setIsEmailClicked(true)
-        }}
-        isActive={isEmailClicked}
+        onClick={() => setSelected('email')}
+        isActive={selected === 'email'}
       />
     </Stack>
   )

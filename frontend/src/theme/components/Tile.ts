@@ -12,7 +12,6 @@ const baseContainerStyle = {
   color: 'inherit',
   borderRadius: '0.25rem',
   padding: '1.5rem',
-  _active: activeContainerStyle,
   _hover: {
     bgColor: 'primary.100',
   },
@@ -22,6 +21,7 @@ const baseContainerStyle = {
     // the !important is required to display the boxShadow styling correctly.
     boxShadow: '0 0 0 2px var(--chakra-colors-primary-500) !important',
   },
+  _active: activeContainerStyle,
   bgColor: 'white',
   border: '1px solid',
   borderColor: 'neutral.300',
