@@ -29,9 +29,21 @@ import { IconButton, IconButtonProps } from '~components/IconButton/IconButton'
 interface AttachmentContextProps {
   getRootProps: DropzoneState['getRootProps']
   getInputProps: DropzoneState['getInputProps']
+  /**
+   * The files that have been accepted and uploaded.
+   */
   acceptedFiles: DropzoneState['acceptedFiles']
+  /**
+   * The files that have been rejected
+   */
   fileRejections: DropzoneState['fileRejections']
+  /**
+   * Resets the attachment state to its initial state (no accepted/rejected files)
+   */
   reset: DropzoneState['reset']
+  /**
+   * The maximum allowable filesize, in bytes.
+   */
   maxSize: number
 }
 
@@ -71,6 +83,10 @@ export interface AttachmentProps {
    * The maximum allowed filesize to upload, in bytes
    */
   maxSizeInBytes: number
+  /**
+   * The callback to invoke when a file is dragged/selected.
+   * Note that this runs even if the file is invalid.
+   */
   onChange?: (f: File[]) => void
 }
 
@@ -188,6 +204,10 @@ export const AttachmentInfo = (): JSX.Element => {
 
 interface AttachmentActionIconProps
   extends Omit<IconButtonProps, 'onClick' | 'aria-label'> {
+  /**
+   * The callback to invoke when the attachment component is closed.
+   * This will be passed a list of all accepted files.
+   */
   onClick?: (files: File[]) => void
   'aria-label'?: string
 }
