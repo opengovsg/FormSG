@@ -9,6 +9,7 @@ import { Input } from './Input'
 import { Link } from './Link'
 import { NumberInput } from './NumberInput'
 import { PhoneNumberInput } from './PhoneNumberInput'
+import { Searchbar, SEARCHBAR_THEME_KEY } from './Searchbar'
 import { Textarea } from './Textarea'
 
 export const components = {
@@ -22,6 +23,7 @@ export const components = {
   NumberInput,
   PhoneNumberInput,
   Textarea,
+  [SEARCHBAR_THEME_KEY]: Searchbar,
   [RATING_THEME_KEY]: RatingField,
   [YESNO_THEME_KEY]: YesNoField,
 }
