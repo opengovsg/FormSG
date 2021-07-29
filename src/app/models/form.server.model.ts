@@ -383,10 +383,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       esrvcId: {
         type: String,
         required: false,
-        validate: [
-          /^([a-zA-Z0-9-]){1,25}$/i,
-          'e-service ID must be alphanumeric, dashes are allowed',
-        ],
       },
 
       webhook: {
