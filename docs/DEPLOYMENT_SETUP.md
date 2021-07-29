@@ -106,7 +106,7 @@ The following env variables are set in Travis:
 ## Environment Variables
 
 These are configured by creating groups of environment variables formatted like `.env` files in the Parameter
-Store of AWS Service Manager. These groups have names formatted as `<environment>-<category>`. 
+Store of AWS Service Manager. These groups have names formatted as `<environment>-<category>`.
 
 The environment for each group is user-defined, and should be specified in the Elastic Beanstalk configuration
 as the environment variable `SSM_PREFIX`.
@@ -117,9 +117,9 @@ The list of categories can be inferred by looking at the file `.ebextensions/env
 
 #### AWS Service Manager
 
-| Variable            | Description                                                                                                      |
-| :------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `SSM_PREFIX`        | String prefix (typically the environment name) for AWS SSM parameter names to create a .env file for FormSG.     |
+| Variable     | Description                                                                                                  |
+| :----------- | ------------------------------------------------------------------------------------------------------------ |
+| `SSM_PREFIX` | String prefix (typically the environment name) for AWS SSM parameter names to create a .env file for FormSG. |
 
 #### App Config
 
@@ -190,6 +190,7 @@ SITE_BANNER_CONTENT=hello:This is an invalid banner type, and the full text will
 | `ADMIN_BANNER_CONTENT`   | If set, displays a banner message on private admin routes such as the form list page as well as form builder pages.                                                                                           |
 | `IS_LOGIN_BANNER`        | If set, displays a banner message on the login page.                                                                                                                                                          |
 | `IS_GENERAL_MAINTENANCE` | If set, displays a banner message on all forms. Overrides `IS_SP_MAINTENANCE` and `IS_CP_MAINTENANCE`.                                                                                                        |
+| `MYINFO_BANNER_CONTENT`  | all public **MyInfo-enabled** forms                                                                                                                                                                           |
 | `IS_SP_MAINTENANCE`      | all public **SingPass-enabled** forms                                                                                                                                                                         |
 | `IS_CP_MAINTENANCE`      | all public **CorpPass-enabled** forms                                                                                                                                                                         |
 

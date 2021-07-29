@@ -78,6 +78,10 @@ function SubmitFormController(
     vm.banner = {
       msg: $window.isCPMaintenance,
     }
+  } else if (vm.myform.authType === 'MyInfo' && $window.myInfoBannerContent) {
+    vm.banner = {
+      msg: $window.myInfoBannerContent,
+    }
   } else {
     vm.banner = {}
   }
