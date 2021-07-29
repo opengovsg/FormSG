@@ -67,7 +67,7 @@ type LogicAssociation<K extends LogicField, VS extends LogicConditionState> = [
 
 // Logic fields that are multi-valued
 type MultiCombiLogicField = Extract<BasicField, BasicField.Checkbox>
-type MultiCombiLogicStates = LogicConditionState.AnyOf
+type MultiCombiLogicStates = LogicConditionState.Includes
 type MultiCombiLogicCondition = LogicAssociation<
   MultiCombiLogicField,
   MultiCombiLogicStates

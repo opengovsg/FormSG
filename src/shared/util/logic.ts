@@ -1,4 +1,4 @@
-import { cloneDeep, isEmpty, isEqual } from 'lodash'
+import { cloneDeep, intersection, isEmpty } from 'lodash'
 
 import { CheckboxConditionValue } from '../../../shared/types/form/form_logic'
 import {
@@ -26,7 +26,7 @@ import {
 } from './logic-utils'
 
 const LOGIC_CONDITIONS: LogicCondition[] = [
-  [BasicField.Checkbox, [LogicConditionState.AnyOf]],
+  [BasicField.Checkbox, [LogicConditionState.Includes]],
   [
     BasicField.Dropdown,
     [LogicConditionState.Equal, LogicConditionState.Either],
@@ -394,7 +394,7 @@ const isConditionFulfilled = (
       ) // Server-side
     }
     return conditionValues.indexOf(currentValue) > -1
-  } else if (condition.state === LogicConditionState.AnyOf) {
+  } else if (condition.state === LogicConditionState.Includes) {
     if (
       field.fieldType === BasicField.Checkbox &&
       isLogicCheckboxCondition(condition) &&
@@ -409,9 +409,13 @@ const isConditionFulfilled = (
       const sortedCurrentValue = cloneDeep(currentValue)
       sortedCurrentValue.options = sortedCurrentValue.options.sort()
 
-      return sortedConditionValue.some((val) =>
-        isEqual(sortedCurrentValue, val),
-      )
+      return sortedConditionValue.some((val) => {
+        const optionsIsSubset =
+          val.options.length ===
+          intersection(val.options, sortedCurrentValue.options).length
+        const othersIsSubset = val.others ? sortedCurrentValue.others : true
+        return optionsIsSubset && othersIsSubset
+      })
     } else {
       return false
     }

@@ -5,7 +5,7 @@ export enum LogicConditionState {
   Lte = 'is less than or equal to',
   Gte = 'is more than or equal to',
   Either = 'is either',
-  AnyOf = 'is one of the following',
+  Includes = 'includes the following',
 }
 
 export enum LogicType {

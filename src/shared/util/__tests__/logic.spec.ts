@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson-ext'
+import { CheckboxConditionValue } from 'shared/types/form/form_logic'
 
 import {
   getApplicableIfFields,
@@ -9,8 +10,9 @@ import {
 } from 'src/shared/util/logic'
 import {
   BasicField,
+  FormFieldSchema,
+  ICheckboxFieldSchema,
   IField,
-  IFieldSchema,
   IFormDocument,
   IPreventSubmitLogicSchema,
   IRadioFieldSchema,
@@ -23,7 +25,7 @@ import {
 
 describe('Logic validation', () => {
   /** Mock a field's bare essentials */
-  const makeField = (fieldId: string) => ({ _id: fieldId } as IFieldSchema)
+  const makeField = (fieldId: string) => ({ _id: fieldId } as FormFieldSchema)
   /**
    *  Mock a response
    * @param fieldId field id of the field that this response is meant for
@@ -34,7 +36,7 @@ describe('Logic validation', () => {
   const makeResponse = (
     fieldId: string,
     answer: string | number | null = null,
-    answerArray: string[] | null = null,
+    answerArray: string[] | CheckboxConditionValue | null = null,
     fieldType: string | null = null,
     isVisible = true,
   ): LogicFieldResponse => {
@@ -102,6 +104,83 @@ describe('Logic validation', () => {
         getVisibleFieldIds(
           [
             makeResponse(CONDITION_FIELD._id, 1, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
+          form,
+        ).has(LOGIC_FIELD._id),
+      ).toEqual(false)
+    })
+
+    it('should compute the correct visibility for "includes the following"', () => {
+      // Arrange
+      const CHECKBOX_FIELD = {
+        _id: new ObjectId().toHexString(),
+        fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+        othersRadioButton: true,
+      } as ICheckboxFieldSchema
+      const conditionValue = [
+        {
+          options: ['Option 1'],
+          others: true,
+        },
+      ]
+      const includesCondition = {
+        show: [LOGIC_FIELD._id],
+        conditions: [
+          {
+            ifValueType: LogicIfValue.MultiCombination,
+            _id: '58169',
+            field: CHECKBOX_FIELD._id,
+            state: LogicConditionState.Includes,
+            value: conditionValue,
+          },
+        ],
+        _id: MOCK_LOGIC_ID,
+        logicType: LogicType.ShowFields,
+      } as IShowFieldsLogicSchema
+
+      form.form_logics = [includesCondition]
+      form.form_fields = [CHECKBOX_FIELD, LOGIC_FIELD]
+
+      // Act + Assert
+      expect(
+        getVisibleFieldIds(
+          [
+            makeResponse(
+              CHECKBOX_FIELD._id,
+              null,
+              { options: ['Option 1', 'Option 2'], others: true },
+              BasicField.Checkbox,
+            ),
+          ],
+          form,
+        ).has(LOGIC_FIELD._id),
+      ).toEqual(true)
+
+      expect(
+        getVisibleFieldIds(
+          [
+            makeResponse(
+              CHECKBOX_FIELD._id,
+              null,
+              { options: ['Option 1'], others: true },
+              BasicField.Checkbox,
+            ),
+            LOGIC_RESPONSE,
+          ],
+          form,
+        ).has(LOGIC_FIELD._id),
+      ).toEqual(true)
+
+      expect(
+        getVisibleFieldIds(
+          [
+            makeResponse(
+              CHECKBOX_FIELD._id,
+              null,
+              { options: ['Option 1'], others: false },
+              BasicField.Checkbox,
+            ),
             LOGIC_RESPONSE,
           ],
           form,
@@ -330,6 +409,84 @@ describe('Logic validation', () => {
         getLogicUnitPreventingSubmit(
           [
             makeResponse(CONDITION_FIELD._id, 1, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
+          form,
+        ),
+      ).toBeUndefined()
+    })
+
+    it('should compute that submission should be prevented for "includes the following"', () => {
+      // Arrange
+      const CHECKBOX_FIELD = {
+        _id: new ObjectId().toHexString(),
+        fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+        othersRadioButton: true,
+      } as ICheckboxFieldSchema
+      const conditionValue = [
+        {
+          options: ['Option 1'],
+          others: true,
+        },
+      ]
+      const includesCondition = {
+        conditions: [
+          {
+            ifValueType: LogicIfValue.MultiCombination,
+            _id: '58169',
+            field: CHECKBOX_FIELD._id,
+            state: LogicConditionState.Includes,
+            value: conditionValue,
+          },
+        ],
+        _id: MOCK_LOGIC_ID,
+        logicType: LogicType.PreventSubmit,
+        preventSubmitMessage: 'you shall not pass',
+      } as IPreventSubmitLogicSchema
+
+      form.form_logics = [includesCondition]
+      form.form_fields = [CHECKBOX_FIELD, LOGIC_FIELD]
+
+      // Act + Assert
+      expect(
+        getLogicUnitPreventingSubmit(
+          [
+            makeResponse(
+              CHECKBOX_FIELD._id,
+              null,
+              { options: ['Option 1', 'Option 2'], others: true },
+              BasicField.Checkbox,
+            ),
+            LOGIC_RESPONSE,
+          ],
+          form,
+        ),
+      ).toEqual(form.form_logics[0])
+
+      expect(
+        getLogicUnitPreventingSubmit(
+          [
+            makeResponse(
+              CHECKBOX_FIELD._id,
+              null,
+              { options: ['Option 1'], others: true },
+              BasicField.Checkbox,
+            ),
+            LOGIC_RESPONSE,
+          ],
+          form,
+        ),
+      ).toEqual(form.form_logics[0])
+
+      expect(
+        getLogicUnitPreventingSubmit(
+          [
+            makeResponse(
+              CHECKBOX_FIELD._id,
+              null,
+              { options: ['Option 1'], others: false },
+              BasicField.Checkbox,
+            ),
             LOGIC_RESPONSE,
           ],
           form,
@@ -1308,11 +1465,11 @@ describe('Logic util', () => {
         expect(states).toBeArrayOfSize(3)
       })
     })
-    it('should return valid logic states for multi-value field types', () => {
+    it('should return valid logic states for multi-combination field types', () => {
       const multiCombiFields = [BasicField.Checkbox]
       multiCombiFields.forEach((fieldType) => {
         const states = getApplicableIfStates(fieldType)
-        expect(states).toIncludeSameMembers([LogicConditionState.AnyOf])
+        expect(states).toIncludeSameMembers([LogicConditionState.Includes])
         expect(states).toBeArrayOfSize(1)
       })
     })
