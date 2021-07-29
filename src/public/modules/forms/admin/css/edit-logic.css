@@ -224,13 +224,28 @@
   text-align: center;
 }
 
+.logic-modal .inline-or {
+  display: block;
+  text-align: center;
+  color: #464646;
+  font-size: 16px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.logic-modal .inline-text-button {
+  display: table-cell;
+  padding-top: 16px;
+  cursor: pointer;
+}
+
 .logic-modal .inline-option .inline-input {
   display: table-cell;
 }
 
 .logic-modal .inline-option .inline-btn {
   width: 10%;
-  padding: 0 auto;
+  padding-left: 16px;
   display: table-cell;
   text-align: center;
   vertical-align: middle;

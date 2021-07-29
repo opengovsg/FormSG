@@ -183,47 +183,45 @@
                 id="multi-select"
                 ng-init="vm.initValue(condition)"
               >
-                <div
-                  class="inline-option"
-                  ng-repeat="option in condition.value track by $index"
-                >
-                  <ui-select
-                    multiple
-                    search-enabled="true"
-                    ng-model="condition.value[$index]"
-                    ng-value="true"
-                    ng-disabled="vm.isIfValueDisabled(condition)"
-                    ng-required="true"
-                    uis-open-close="vm.onDropdownOpenClose()"
-                    class="inline-input"
-                  >
-                    <ui-select-match
-                      placeholder="Click to add up to multiple values"
-                      >{{ $item.value }}</ui-select-match
+                <div ng-repeat="option in condition.value track by $index">
+                  <div ng-if="$index > 0" class="inline-or">OR</div>
+                  <div class="inline-option">
+                    <ui-select
+                      multiple
+                      search-enabled="true"
+                      ng-model="condition.value[$index]"
+                      ng-value="true"
+                      ng-disabled="vm.isIfValueDisabled(condition)"
+                      ng-required="true"
+                      uis-open-close="vm.onDropdownOpenClose()"
+                      class="inline-input"
                     >
-                    <ui-select-choices
-                      refresh="vm.filterOptions($select.search, condition.ifValues)"
-                      refresh-delay="300"
-                      repeat="value in vm.filteredOptions | limitTo: vm.infiniteScroll.currentItems track by $index"
-                      infinite-scroll="vm.addMoreItems()"
-                      infinite-scroll-container="'#multi-select .ui-select-choices-content'"
-                      infinite-scroll-distance="3"
-                    >
-                      <span ng-bind="value.value"></span>
-                    </ui-select-choices>
-                  </ui-select>
-                  <div class="inline-btn">
-                    <button
-                      class="btn-delete"
-                      ng-click="vm.deleteOption(condition, option)"
-                    >
-                      <i class="bx bx-trash bx-lg"></i>
-                    </button>
+                      <ui-select-match
+                        placeholder="Click to add up to multiple values"
+                        >{{ $item.value }}</ui-select-match
+                      >
+                      <ui-select-choices
+                        refresh="vm.filterOptions($select.search, condition.ifValues)"
+                        refresh-delay="300"
+                        repeat="value in vm.filteredOptions | limitTo: vm.infiniteScroll.currentItems track by $index"
+                        infinite-scroll="vm.addMoreItems()"
+                        infinite-scroll-container="'#multi-select .ui-select-choices-content'"
+                        infinite-scroll-distance="3"
+                      >
+                        <span ng-bind="value.value"></span>
+                      </ui-select-choices>
+                    </ui-select>
+                    <div class="inline-btn">
+                      <button
+                        class="btn-delete"
+                        ng-click="vm.deleteOption(condition, option)"
+                      >
+                        <i class="bx bx-trash bx-lg"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <a
-                  ng-click="vm.addOption(condition)"
-                  class="modal-add-btn col-md-10 col-xs-10"
+                <a ng-click="vm.addOption(condition)" class="inline-text-button"
                   ><i class="bx bx-plus icon-spacing"></i>Add another
                   combination</a
                 >
