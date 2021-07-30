@@ -13,16 +13,7 @@ type DropzoneOptions = Omit<
   'noClick' | 'noKeyboard' | 'noDrag'
 >
 
-export type DropzoneState = Pick<
-  ReactDropzoneState,
-  | 'acceptedFiles'
-  | 'fileRejections'
-  | 'getInputProps'
-  | 'getRootProps'
-  | 'inputRef'
-  | 'rootRef'
-  | 'isDragActive'
-> & {
+export type DropzoneState = ReactDropzoneState & {
   reset: () => void
   deleteFile: (file: File) => void
 }
@@ -33,13 +24,9 @@ export const useAttachments = ({
   ...rest
 }: DropzoneOptions): DropzoneState => {
   const {
-    inputRef,
-    rootRef,
     acceptedFiles: actualAcceptedFiles,
     fileRejections: actualFileRejections,
-    getRootProps,
-    getInputProps,
-    isDragActive,
+    ...dropzoneState
   } = useDropzone({
     maxFiles,
     ...rest,
@@ -70,12 +57,8 @@ export const useAttachments = ({
   return {
     acceptedFiles,
     fileRejections,
-    getRootProps,
-    getInputProps,
-    inputRef,
-    rootRef,
     reset,
     deleteFile,
-    isDragActive,
+    ...dropzoneState,
   }
 }
