@@ -410,9 +410,11 @@ const isConditionFulfilled = (
       sortedCurrentValue.options = sortedCurrentValue.options.sort()
 
       return sortedConditionValue.some((val) => {
+        // condition's options has to be complete subset of current value's options
         const optionsIsSubset =
           val.options.length ===
           intersection(val.options, sortedCurrentValue.options).length
+        // only care about current value's others if condition's others is true
         const othersIsSubset = val.others ? sortedCurrentValue.others : true
         return optionsIsSubset && othersIsSubset
       })
