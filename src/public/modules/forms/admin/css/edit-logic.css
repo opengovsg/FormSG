@@ -236,6 +236,7 @@
 .logic-modal .inline-text-button {
   display: table-cell;
   padding-top: 16px;
+  padding-bottom: 16px;
   cursor: pointer;
 }
 
