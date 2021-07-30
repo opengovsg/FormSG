@@ -114,7 +114,7 @@ export const Attachment = ({
     getRootProps,
     getInputProps,
     isDragActive,
-  } = useAttachments({ maxSize: maxSizeInBytes, onDrop })
+  } = useAttachments({ maxSize: maxSizeInBytes, onDrop, multiple: false })
 
   return (
     <AttachmentContext.Provider
@@ -199,16 +199,23 @@ export const Attached = ({
  */
 export const AttachmentInfo = (): JSX.Element => {
   const { acceptedFiles } = useAttachmentContext()
+  const { name, size } = acceptedFiles[0]
   return (
     <Attached>
       <Flex dir="row">
-        <VStack spacing="0.5rem">
-          {acceptedFiles.map((file) => (
-            <VStack spacing="0.25rem" alignItems="flex-start">
-              <Text textStyle="subhead-1">{file.name}</Text>
-              <Text textStyle="caption-1">{formatBytes(file.size)}</Text>
-            </VStack>
-          ))}
+        <VStack spacing="0.25rem" alignItems="flex-start">
+          <Text
+            textStyle="subhead-1"
+            id="fileName"
+            // This is done for accessibility reasons, so that screen readers can tab target
+            // And obtain relevant information
+            tabindex="0"
+            role="button"
+            cursor="none"
+          >
+            {name}
+          </Text>
+          <Text textStyle="caption-1">{formatBytes(size)}</Text>
         </VStack>
         <Spacer />
         <AttachmentActionIcon />

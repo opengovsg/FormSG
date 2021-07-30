@@ -1,3 +1,4 @@
+import { FileError } from 'react-dropzone'
 import { useController, useForm } from 'react-hook-form'
 import {
   Box,
@@ -132,6 +133,11 @@ const PlaygroundComponent = (props: DropzoneProps) => {
   const isError = !!fileRejections.length
   const formattedMaxSize = formatBytes(maxSize, 0)
 
+  const getErrorMessage = (error: FileError) =>
+    error.code === 'file-too-large'
+      ? `You have exceeded the limit, please upload a file below ${formattedMaxSize}`
+      : 'Please ensure that only 1 file is uploaded!'
+
   return (
     <FormControl isInvalid={isError}>
       <FormLabel>
@@ -146,7 +152,9 @@ const PlaygroundComponent = (props: DropzoneProps) => {
         <Box maxWidth="min-content" whiteSpace="pre-line">
           <Dropzone {...props} isError={isError} />
           {isError ? (
-            <FormErrorMessage>{`You have exceeded the limit, please upload a file below ${formattedMaxSize}`}</FormErrorMessage>
+            <FormErrorMessage>
+              {getErrorMessage(fileRejections[0].errors[0])}
+            </FormErrorMessage>
           ) : (
             <FormFieldMessage>{`Maximum file size: ${formattedMaxSize}`}</FormFieldMessage>
           )}
