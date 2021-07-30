@@ -1,6 +1,7 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
+
+import { useSearchbar } from '~hooks/useSearchbar'
 
 import Link from '../Link'
 
@@ -12,28 +13,6 @@ export default {
   decorators: [],
 } as Meta
 
-// Custom hooks for stories
-const useSearchbar = (isInitiallyExpanded = false) => {
-  const [isExpanded, onExpansionChange] = useState(isInitiallyExpanded)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  useLayoutEffect(() => {
-    if (isExpanded) {
-      inputRef.current?.focus()
-    }
-  }, [isExpanded])
-
-  const handleExpansion = useCallback(() => onExpansionChange(true), [])
-  const handleCollapse = useCallback(() => onExpansionChange(false), [])
-
-  return {
-    inputRef,
-    isExpanded,
-    handleExpansion,
-    handleCollapse,
-  }
-}
-
 export const Default: Story<SearchbarProps> = (args) => <Searchbar {...args} />
 Default.args = {
   isExpanded: true,
@@ -41,10 +20,13 @@ Default.args = {
 }
 
 export const ExpandableClosed: Story<SearchbarProps> = ({
-  isExpanded: _isExpanded,
+  isExpanded: isInitiallyExpanded,
   ...args
 }) => {
-  const { isExpanded, inputRef, handleExpansion } = useSearchbar(_isExpanded)
+  const { isExpanded, inputRef, handleExpansion } = useSearchbar({
+    isInitiallyExpanded,
+    isFocusOnExpand: true,
+  })
 
   return (
     <Searchbar
@@ -62,10 +44,12 @@ ExpandableClosed.args = {
 ExpandableClosed.storyName = 'Expandable/Closed'
 
 export const ExpandableOpen: Story<SearchbarProps> = ({
-  isExpanded: _isExpanded,
+  isExpanded: isInitiallyExpanded,
   ...args
 }) => {
-  const { isExpanded, inputRef, handleExpansion } = useSearchbar(_isExpanded)
+  const { isExpanded, inputRef, handleExpansion } = useSearchbar({
+    isInitiallyExpanded,
+  })
 
   return (
     <Searchbar
@@ -83,11 +67,11 @@ ExpandableOpen.args = {
 ExpandableOpen.storyName = 'Expandable/Open'
 
 export const Playground: Story<SearchbarProps> = ({
-  isExpanded: _isExpanded,
+  isExpanded: isInitiallyExpanded,
   ...args
 }) => {
   const { isExpanded, inputRef, handleExpansion, handleCollapse } =
-    useSearchbar(_isExpanded)
+    useSearchbar({ isInitiallyExpanded, isFocusOnExpand: true })
 
   return (
     <Box
