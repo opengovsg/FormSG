@@ -1,5 +1,4 @@
 const _ = require('lodash')
-const formsg = require('@opengovsg/formsg-sdk')()
 
 const FieldFactory = require('../helpers/field-factory')
 const {
@@ -8,6 +7,9 @@ const {
   fieldHasAttachment,
 } = require('../helpers/attachments-map')
 const { NoAnswerField } = require('./Fields')
+const {
+  encryptSubmissionResponses,
+} = require('../../../services/EncryptionService')
 
 // The current encrypt version to assign to the encrypted submission.
 // This is needed if we ever break backwards compatibility with
@@ -83,7 +85,7 @@ class Form {
    */
   _getEncryptedContent() {
     if (this.responseMode === 'encrypt') {
-      return formsg.crypto.encrypt(this._getResponses(), this.publicKey)
+      return encryptSubmissionResponses(this._getResponses(), this.publicKey)
     }
     return null
   }

@@ -1,5 +1,6 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
+import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
@@ -200,7 +201,7 @@ export const handleListDashboardForms: ControllerHandler<
   unknown,
   AdminDashboardFormMetaDto[] | ErrorDto
 > = async (req, res) => {
-  const authedUserId = (req.session as Express.AuthedSession).user._id
+  const authedUserId = (req.session as AuthedSessionData).user._id
 
   return AdminFormService.getDashboardForms(authedUserId)
     .map((dashboardView) => res.json(dashboardView))
@@ -234,7 +235,7 @@ export const handleGetAdminForm: ControllerHandler<{ formId: string }> = (
   res,
 ) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -280,7 +281,7 @@ export const handleGetFormCollaborators: ControllerHandler<
   PermissionsUpdateDto | ErrorDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -328,7 +329,7 @@ export const handlePreviewAdminForm: ControllerHandler<{ formId: string }> = (
   res,
 ) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   return (
     // Step 1: Retrieve currently logged in user.
     UserService.getPopulatedUserById(sessionUserId)
@@ -384,7 +385,7 @@ export const createPresignedPostUrlForImages: ControllerHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const { fileId, fileMd5Hash, fileType } = req.body
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -449,7 +450,7 @@ export const createPresignedPostUrlForLogos: ControllerHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const { fileId, fileMd5Hash, fileType } = req.body
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -522,7 +523,7 @@ export const countFormSubmissions: ControllerHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const dateRange = req.query
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   const logMeta = {
     action: 'handleCountFormSubmissions',
@@ -594,7 +595,7 @@ export const handleCountFormFeedback: ControllerHandler<
   number | ErrorDto
 > = async (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -643,7 +644,7 @@ export const handleStreamFormFeedback: ControllerHandler<{
   formId: string
 }> = async (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   const hasReadPermissionResult = await UserService.getPopulatedUserById(
@@ -738,7 +739,7 @@ export const handleGetFormFeedback: ControllerHandler<
   FormFeedbackMetaDto | ErrorDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) =>
@@ -782,7 +783,7 @@ export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
   res,
 ) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -835,7 +836,7 @@ export const duplicateAdminForm: ControllerHandler<
   DuplicateFormBodyDto
 > = (req, res) => {
   const { formId } = req.params
-  const userId = (req.session as Express.AuthedSession).user._id
+  const userId = (req.session as AuthedSessionData).user._id
   const overrideParams = req.body
 
   return (
@@ -899,7 +900,7 @@ export const handleGetTemplateForm: ControllerHandler<
   PreviewFormViewDto | ErrorDto | PrivateFormErrorDto
 > = (req, res) => {
   const { formId } = req.params
-  const userId = (req.session as Express.AuthedSession).user._id
+  const userId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve form only if form is currently public.
@@ -959,7 +960,7 @@ export const handleCopyTemplateForm: ControllerHandler<
   DuplicateFormBodyDto
 > = (req, res) => {
   const { formId } = req.params
-  const userId = (req.session as Express.AuthedSession).user._id
+  const userId = (req.session as AuthedSessionData).user._id
   const overrideParams = req.body
 
   return (
@@ -1021,7 +1022,7 @@ export const transferFormOwnership: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const { email: newOwnerEmail } = req.body
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -1080,7 +1081,7 @@ export const createForm: ControllerHandler<
   { form: CreateFormBodyDto }
 > = async (req, res) => {
   const { form: formParams } = req.body
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -1137,7 +1138,7 @@ export const handleUpdateForm: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const { form: formUpdateParams } = req.body
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return UserService.getPopulatedUserById(sessionUserId)
@@ -1205,7 +1206,7 @@ export const handleDuplicateFormField: ControllerHandler<
   FormFieldDto | ErrorDto
 > = (req, res) => {
   const { formId, fieldId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return UserService.getPopulatedUserById(sessionUserId)
@@ -1259,7 +1260,7 @@ export const handleUpdateSettings: ControllerHandler<
   SettingsUpdateDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   const settingsToPatch = req.body
 
   // Step 1: Retrieve currently logged in user.
@@ -1307,7 +1308,7 @@ export const _handleUpdateFormField: ControllerHandler<
   FieldUpdateDto
 > = (req, res) => {
   const { formId, fieldId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -1362,7 +1363,7 @@ export const handleGetSettings: ControllerHandler<
   FormSettings | ErrorDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) =>
@@ -1408,7 +1409,7 @@ export const submitEncryptPreview: ControllerHandler<
   EncryptSubmissionDto
 > = async (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   // No need to process attachments as we don't do anything with them
   const { encryptedContent, responses, version } = req.body
   const logMeta = {
@@ -1503,7 +1504,7 @@ export const submitEmailPreview: ControllerHandler<
   { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   // No need to process attachments as we don't do anything with them
   const { responses } = req.body
   const logMeta = {
@@ -1695,7 +1696,7 @@ export const _handleCreateFormField: ControllerHandler<
   FieldCreateDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -1750,7 +1751,7 @@ export const _handleCreateLogic: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const createLogicBody = req.body
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -1851,7 +1852,7 @@ export const handleDeleteLogic: ControllerHandler<{
   logicId: string
 }> = (req, res) => {
   const { formId, logicId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -1933,7 +1934,7 @@ export const _handleReorderFormField: ControllerHandler<
 > = (req, res) => {
   const { formId, fieldId } = req.params
   const { to } = req.query
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -2001,7 +2002,7 @@ export const _handleUpdateLogic: ControllerHandler<
 > = (req, res) => {
   const { formId, logicId } = req.params
   const updatedLogic = { ...req.body }
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -2077,7 +2078,7 @@ export const handleDeleteFormField: ControllerHandler<
   ErrorDto | void
 > = (req, res) => {
   const { formId, fieldId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -2130,7 +2131,7 @@ export const _handleUpdateEndPage: ControllerHandler<
   EndPageUpdateDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -2200,7 +2201,7 @@ export const handleGetFormField: ControllerHandler<
   ErrorDto | FormFieldDto
 > = (req, res) => {
   const { formId, fieldId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -2254,7 +2255,7 @@ export const _handleUpdateCollaborators: ControllerHandler<
   PermissionsUpdateDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   // Step 1: Get the form after permission checks
   return (
     UserService.getPopulatedUserById(sessionUserId)
@@ -2327,7 +2328,7 @@ export const handleRemoveSelfFromCollaborators: ControllerHandler<
   PermissionsUpdateDto | ErrorDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   let currentUserEmail = ''
   // Step 1: Get the form after permission checks
   return (
@@ -2391,7 +2392,7 @@ export const _handleUpdateStartPage: ControllerHandler<
   StartPageUpdateDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (

@@ -74,6 +74,7 @@ services:
       - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
       - IS_SP_MAINTENANCE
       - IS_CP_MAINTENANCE
+      - MYINFO_BANNER_CONTENT
       - MYINFO_CLIENT_CONFIG=dev
       - MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
       - MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt

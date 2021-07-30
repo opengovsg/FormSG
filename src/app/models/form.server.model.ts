@@ -338,12 +338,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           // Do not allow authType to be changed if form is published
           if (this.authType !== v && this.status === Status.Public) {
             return this.authType
+            // Singpass/Corppass authentication is available for both email
+            // and storage mode
+            // Important - this case must come before the MyInfo/SGID + storage
+            // mode case, or else we may accidentally set Singpass/Corppass storage
+            // mode forms to AuthType.NIL
+          } else if ([AuthType.SP, AuthType.CP].includes(v)) {
+            return v
           } else if (
             this.responseMode === ResponseMode.Encrypt &&
-            v === AuthType.MyInfo
+            // SGID and MyInfo are not available for storage mode
+            (v === AuthType.MyInfo || v === AuthType.SGID)
           ) {
-            // Do not allow storage mode to have MyInfo authentication
-            return this.authType
+            return AuthType.NIL
           } else {
             return v
           }
@@ -384,8 +391,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         type: String,
         required: false,
         validate: [
-          /^([a-zA-Z0-9-]){1,25}$/i,
-          'e-service ID must be alphanumeric, dashes are allowed',
+          /^([a-zA-Z0-9-_]){1,25}$/i,
+          'e-service ID must be alphanumeric, underscores and dashes are allowed',
         ],
       },
 

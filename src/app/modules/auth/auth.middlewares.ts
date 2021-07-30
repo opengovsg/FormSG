@@ -1,3 +1,4 @@
+import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../config/logger'
@@ -33,7 +34,7 @@ export const logAdminAction: ControllerHandler<{ formId: string }> = async (
   res,
   next,
 ) => {
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   const body = req.body
   const method = req.method
   const query = req.query
