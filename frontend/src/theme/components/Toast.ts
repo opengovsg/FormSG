@@ -15,7 +15,7 @@ export const Toast: ComponentMultiStyleConfig = {
       ml: '1.875rem',
     },
     container: {
-      borderRadius: '3px',
+      borderRadius: '4px',
       boxSizing: 'border-box',
       padding: '1rem',
       // Padding right is 4 rem (normal padding) + width of the button.
