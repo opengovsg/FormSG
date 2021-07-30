@@ -45,24 +45,26 @@ export const Toast = ({
   })
 
   return (
-    <Alert sx={styles.container} id={String(id)}>
-      <Icon sx={styles.icon} as={getIconForStatus(status)} />
-      <Box sx={styles.content}>
-        {title && <AlertTitle>{title}</AlertTitle>}
-        {description && <AlertDescription>{description}</AlertDescription>}
-      </Box>
-      {isClosable && (
-        <CloseButton
-          data-js-focus-visible
-          data-focus-visible-added
-          children={<BiX />}
-          onClick={() => {
-            onClose?.()
-            onCloseComplete?.()
-          }}
-          sx={styles.close}
-        />
-      )}
-    </Alert>
+    <Box sx={styles.wrapper}>
+      <Alert sx={styles.container} id={String(id)}>
+        <Icon sx={styles.icon} as={getIconForStatus(status)} />
+        <Box sx={styles.content}>
+          {title && <AlertTitle>{title}</AlertTitle>}
+          {description && <AlertDescription>{description}</AlertDescription>}
+        </Box>
+        {isClosable && (
+          <CloseButton
+            data-js-focus-visible
+            data-focus-visible-added
+            children={<BiX />}
+            onClick={() => {
+              onClose?.()
+              onCloseComplete?.()
+            }}
+            sx={styles.close}
+          />
+        )}
+      </Alert>
+    </Box>
   )
 }

@@ -1,7 +1,7 @@
 import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
 
 export const Toast: ComponentMultiStyleConfig = {
-  parts: ['container', 'icon', 'close', 'content'],
+  parts: ['icon', 'close', 'content'],
   baseStyle: {
     icon: {
       position: 'absolute',
@@ -14,21 +14,25 @@ export const Toast: ComponentMultiStyleConfig = {
       // So the padding here is icon width + outer padding
       ml: '1.875rem',
     },
-    container: {
+    wrapper: {
       borderRadius: '4px',
       boxSizing: 'border-box',
+      mt: 2,
+      mx: {
+        base: 2,
+        lg: 'inherit',
+      },
+    },
+    container: {
+      borderRadius: '4px',
+      background: 'inherit',
       padding: '1rem',
       // Padding right is 4 rem (normal padding) + width of the button.
       // This is to prevent the button overlapping the text on resize.
       pr: 10,
-      mt: 2,
       width: {
         base: 'auto',
         lg: '42.5rem',
-      },
-      mx: {
-        base: 2,
-        lg: 'inherit',
       },
     },
     close: {
@@ -51,7 +55,7 @@ export const Toast: ComponentMultiStyleConfig = {
   },
   variants: {
     danger: {
-      container: {
+      wrapper: {
         bg: 'danger.100',
         border: '1px solid var(--chakra-colors-danger-500)',
       },
@@ -60,7 +64,7 @@ export const Toast: ComponentMultiStyleConfig = {
       },
     },
     success: {
-      container: {
+      wrapper: {
         bg: 'success.100',
         border: '1px solid var(--chakra-colors-success-500)',
       },
@@ -69,7 +73,7 @@ export const Toast: ComponentMultiStyleConfig = {
       },
     },
     warning: {
-      container: {
+      wrapper: {
         bg: 'warning.100',
         border: '1px solid var(--chakra-colors-warning-500)',
       },
