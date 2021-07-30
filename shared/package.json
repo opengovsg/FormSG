@@ -4,7 +4,7 @@
   "description": "",
   "dependencies": {
     "date-fns": "^2.22.1",
-    "type-fest": "^1.2.1",
+    "type-fest": "^1.2.2",
     "zod": "^3.3.4"
   },
   "devDependencies": {
