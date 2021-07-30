@@ -22,6 +22,10 @@ export const Toast: ComponentMultiStyleConfig = {
         base: 2,
         lg: 'inherit',
       },
+      width: {
+        base: 'auto',
+        lg: '42.5rem',
+      },
     },
     container: {
       borderRadius: '4px',
@@ -30,10 +34,6 @@ export const Toast: ComponentMultiStyleConfig = {
       // Padding right is 4 rem (normal padding) + width of the button.
       // This is to prevent the button overlapping the text on resize.
       pr: 10,
-      width: {
-        base: 'auto',
-        lg: '42.5rem',
-      },
     },
     close: {
       w: '1.5rem',
