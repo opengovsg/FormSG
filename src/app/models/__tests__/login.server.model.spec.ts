@@ -104,19 +104,6 @@ describe('login.server.model', () => {
         mongoose.Error.ValidationError,
       )
     })
-
-    it('should throw validation error when esrvcId param is invalid format', async () => {
-      // Act
-      const actualPromise = LoginModel.create({
-        ...DEFAULT_PARAMS,
-        esrvcId: 'id with spaces',
-      })
-
-      // Assert
-      await expect(actualPromise).rejects.toThrowError(
-        'e-service ID must be alphanumeric, dashes are allowed',
-      )
-    })
   })
 
   describe('Statics', () => {
