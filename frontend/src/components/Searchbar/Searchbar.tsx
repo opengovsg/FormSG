@@ -31,7 +31,7 @@ export interface SearchbarProps extends InputProps {
   isExpanded: boolean
 
   /**
-   * Optional. Function to be invoked when the search icon is changed.
+   * Optional. Function to be invoked when the search icon is clicked.
    * If provided, the search icon will be clickable.
    */
   onSearchIconClick?: () => void
