@@ -46,7 +46,7 @@ export const Toast = ({
 
   return (
     <Box sx={styles.wrapper}>
-      <Alert sx={styles.container} id={String(id)}>
+      <Alert sx={styles.container} id={String(id)} aria-live="assertive">
         <Icon sx={styles.icon} as={getIconForStatus(status)} />
         <Box sx={styles.content}>
           {title && <AlertTitle>{title}</AlertTitle>}
@@ -56,7 +56,7 @@ export const Toast = ({
           <CloseButton
             data-js-focus-visible
             data-focus-visible-added
-            children={<BiX />}
+            children={<BiX aria-hidden="true" />}
             onClick={() => {
               onClose?.()
               onCloseComplete?.()
