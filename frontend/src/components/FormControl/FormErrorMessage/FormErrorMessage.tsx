@@ -20,7 +20,9 @@ export const FormErrorMessage = ({
   ...props
 }: FormErrorMessageProps): JSX.Element => {
   return (
-    <ChakraFormErrorMessage alignItems="top" {...props}>
+    // Set aria-invalid because this element only appears when there is an error.
+    // This allows screen readers to read it.
+    <ChakraFormErrorMessage alignItems="top" {...props} aria-invalid="true">
       <FormErrorIcon h="1.5rem" as={BxsErrorCircle} />
       {children}
     </ChakraFormErrorMessage>
