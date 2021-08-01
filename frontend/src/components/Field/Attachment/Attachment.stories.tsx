@@ -55,13 +55,13 @@ export const Labelled: Story<AttachmentProps & LabelledProps> = ({
   ...args
 }) => (
   <FormControl>
+    <FormLabel>
+      <HStack spacing="0.5rem">
+        <Text textStyle="caption-1">{`${labelNumber}.`}</Text>
+        <Text textStyle="subhead-1">{labelText}</Text>
+      </HStack>
+    </FormLabel>
     <Attachment {...args}>
-      <FormLabel>
-        <HStack spacing="0.5rem">
-          <Text textStyle="caption-1">{`${labelNumber}.`}</Text>
-          <Text textStyle="subhead-1">{labelText}</Text>
-        </HStack>
-      </FormLabel>
       <AttachmentComponent />
     </Attachment>
   </FormControl>
@@ -152,7 +152,7 @@ const PlaygroundComponent = (props: DropzoneProps) => {
         <Box maxWidth="min-content" whiteSpace="pre-line">
           <Dropzone {...props} isError={isError} />
           {isError ? (
-            <FormErrorMessage>
+            <FormErrorMessage role="alert">
               {getErrorMessage(fileRejections[0].errors[0])}
             </FormErrorMessage>
           ) : (

@@ -204,18 +204,16 @@ export const AttachmentInfo = (): JSX.Element => {
     <Attached>
       <Flex dir="row">
         <VStack spacing="0.25rem" alignItems="flex-start">
-          <Text
-            textStyle="subhead-1"
-            id="fileName"
-            // This is done for accessibility reasons, so that screen readers can tab target
-            // And obtain relevant information
-            tabindex="0"
-            role="button"
-            cursor="none"
-          >
+          {/* NOTE: role and tabIndex is set for accessibility reasons.
+           * Setting the role allows screen readers to read out the text once successfully uploaded.
+           * Setting tabIndex allows screen readers/keyboard users to focus on the element and get information.
+           */}
+          <Text textStyle="subhead-1" tabIndex={0} role="alert">
             {name}
           </Text>
-          <Text textStyle="caption-1">{formatBytes(size)}</Text>
+          <Text textStyle="caption-1" tabIndex={0}>
+            {formatBytes(size)}
+          </Text>
         </VStack>
         <Spacer />
         <AttachmentActionIcon />
