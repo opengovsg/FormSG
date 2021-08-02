@@ -7,16 +7,16 @@ import {
 import { EmailModeSubmissionContentDto } from '../../../shared/types/submission'
 
 /**
- * AttachmentResponses with additional metadata.
+ * AttachmentResponses with additional server injected metadata on email forms..
  */
-type ParsedAttachmentResponse = AttachmentResponse & {
+export type ParsedEmailAttachmentResponse = AttachmentResponse & {
   filename: string
   content: Buffer
 }
 
-type ParsedFieldResponse =
+export type ParsedEmailFormFieldResponse =
   | Exclude<FieldResponse, AttachmentResponse>
-  | ParsedAttachmentResponse
+  | ParsedEmailAttachmentResponse
 
 /**
  * Email submission body after req.body's FormData has passed through the
@@ -24,5 +24,5 @@ type ParsedFieldResponse =
  */
 export type ParsedEmailModeSubmissionBody = Merge<
   EmailModeSubmissionContentDto,
-  { responses: ParsedFieldResponse[] }
+  { responses: ParsedEmailFormFieldResponse[] }
 >

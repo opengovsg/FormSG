@@ -1,6 +1,15 @@
+import {
+  CheckboxResponse,
+  TableResponse,
+  TableRow,
+} from '../../../shared/types/response'
+import {
+  EncryptAttachmentResponse,
+  EncryptFormFieldResponse,
+  ParsedEmailAttachmentResponse,
+  ParsedEmailFormFieldResponse,
+} from '../api'
 import { BasicField, IFieldSchema, IMyInfo } from '../field'
-
-export type AttachmentsMap = Record<IFieldSchema['_id'], File>
 
 export interface IBaseResponse {
   _id: IFieldSchema['_id']
@@ -10,35 +19,24 @@ export interface IBaseResponse {
   signature?: string
 }
 
-export interface ISingleAnswerResponse extends IBaseResponse {
-  fieldType: Exclude<
-    BasicField,
-    BasicField.Table | BasicField.Checkbox | BasicField.Attachment
-  >
-  answer: string
-}
+export type IAttachmentResponse =
+  | ParsedEmailAttachmentResponse
+  | EncryptAttachmentResponse
 
-export interface IAttachmentResponse extends IBaseResponse {
-  fieldType: BasicField.Attachment
-  filename: string
-  content: Buffer
-  answer: string
-}
+export type ISingleAnswerResponse =
+  | Exclude<
+      EncryptFormFieldResponse,
+      TableResponse | CheckboxResponse | IAttachmentResponse
+    >
+  | Exclude<
+      ParsedEmailFormFieldResponse,
+      TableResponse | CheckboxResponse | IAttachmentResponse
+    >
 
-export interface ICheckboxResponse extends IBaseResponse {
-  fieldType: BasicField.Checkbox
-  answerArray: string[]
-}
-
-export type ITableRow = string[]
-
-export interface ITableResponse extends IBaseResponse {
-  fieldType: BasicField.Table
-  answerArray: ITableRow[]
-}
+export type ICheckboxResponse = CheckboxResponse
+export type ITableResponse = TableResponse
+export type ITableRow = TableRow
 
 export type FieldResponse =
-  | ISingleAnswerResponse
-  | ICheckboxResponse
-  | ITableResponse
-  | IAttachmentResponse
+  | EncryptFormFieldResponse
+  | ParsedEmailFormFieldResponse
