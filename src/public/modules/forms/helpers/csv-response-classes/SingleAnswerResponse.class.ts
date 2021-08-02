@@ -1,4 +1,4 @@
-import { SingleResponse } from '../../../../../types/response'
+import { SingleResponse } from '../../../../types/response'
 
 import { Response } from './Response.class'
 

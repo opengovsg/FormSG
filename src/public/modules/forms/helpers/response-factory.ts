@@ -5,7 +5,7 @@ import {
   DisplayedResponseWithoutAnswer,
   NestedResponse,
   SingleResponse,
-} from '../../../../types/response'
+} from '../../../types/response'
 
 import {
   ArrayAnswerResponse,

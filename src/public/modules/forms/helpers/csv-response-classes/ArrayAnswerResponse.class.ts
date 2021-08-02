@@ -1,4 +1,4 @@
-import { ArrayResponse } from '../../../../../types/response'
+import { ArrayResponse } from '../../../../types/response'
 
 import { Response } from './Response.class'
 
