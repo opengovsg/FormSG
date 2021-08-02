@@ -45,6 +45,7 @@ import {
   PrivateFormErrorDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
+  SubmissionCountQueryDto,
 } from '../../../../types/api'
 import { DeserializeTransform } from '../../../../types/utils'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -518,10 +519,10 @@ export const countFormSubmissions: ControllerHandler<
   { formId: string },
   ErrorDto | number,
   unknown,
-  { startDate?: string; endDate?: string }
+  SubmissionCountQueryDto
 > = async (req, res) => {
   const { formId } = req.params
-  const { startDate, endDate } = req.query
+  const dateRange = req.query
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   const logMeta = {
@@ -554,10 +555,7 @@ export const countFormSubmissions: ControllerHandler<
   }
 
   // Step 3: Has permissions, continue to retrieve submission counts.
-  return SubmissionService.getFormSubmissionsCount(formId, {
-    startDate,
-    endDate,
-  })
+  return SubmissionService.getFormSubmissionsCount(formId, dateRange)
     .map((count) => res.json(count))
     .mapErr((error) => {
       logger.error({
