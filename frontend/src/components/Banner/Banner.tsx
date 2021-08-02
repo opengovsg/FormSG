@@ -1,7 +1,5 @@
-import { useMemo } from 'react'
 import { BiX } from 'react-icons/bi'
 import ReactMarkdown from 'react-markdown'
-import { Components } from 'react-markdown/src/ast-to-react'
 import {
   Box,
   CloseButton,
@@ -16,7 +14,7 @@ import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
 
 import { BannerVariant } from '~theme/components/Banner'
 
-import Link from '../Link'
+import { useMdComponents } from '../../hooks/useMdComponents'
 
 export interface BannerProps {
   variant?: BannerVariant
@@ -35,18 +33,7 @@ export const Banner = ({
 
   const styles = useMultiStyleConfig('Banner', { variant })
 
-  const mdComponents: Components = useMemo(
-    () => ({
-      a: (props) => {
-        const { href } = props
-        const isExternal =
-          typeof href === 'string' && !href.startsWith(window.location.origin)
-
-        return <Link {...props} isExternal={isExternal} sx={styles.link} />
-      },
-    }),
-    [styles.link],
-  )
+  const mdComponents = useMdComponents(styles)
 
   return (
     <Collapse in={isOpen} animateOpacity>

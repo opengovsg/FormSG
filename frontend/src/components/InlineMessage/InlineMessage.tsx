@@ -1,12 +1,10 @@
-import { useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { Components } from 'react-markdown/src/ast-to-react'
 import { Box, Flex, Icon, useMultiStyleConfig } from '@chakra-ui/react'
 
 import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
 import { InlineMessageVariant } from '~/theme/components/InlineMessage'
 
-import Link from '../Link'
+import { useMdComponents } from '../../hooks/useMdComponents'
 
 export type InlineMessageProps = {
   variant: InlineMessageVariant
@@ -21,14 +19,7 @@ export const InlineMessage = ({
 }: InlineMessageProps): JSX.Element => {
   const styles = useMultiStyleConfig('InlineMessage', { variant })
 
-  const mdComponents: Components = useMemo(
-    () => ({
-      a: (props) => {
-        return <Link {...props} />
-      },
-    }),
-    [],
-  )
+  const mdComponents = useMdComponents(styles)
 
   return (
     <Box __css={styles.messagebox}>
