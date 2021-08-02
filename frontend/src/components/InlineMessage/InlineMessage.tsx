@@ -4,7 +4,7 @@ import { Box, Flex, Icon, useMultiStyleConfig } from '@chakra-ui/react'
 import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
 import { InlineMessageVariant } from '~/theme/components/InlineMessage'
 
-import { useMdComponents } from '../../hooks/useMdComponents'
+import { useMdComponents } from '~hooks/useMdComponents'
 
 export type InlineMessageProps = {
   variant: InlineMessageVariant

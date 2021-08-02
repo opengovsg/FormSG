@@ -13,8 +13,7 @@ import {
 import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
 
 import { BannerVariant } from '~theme/components/Banner'
-
-import { useMdComponents } from '../../hooks/useMdComponents'
+import { useMdComponents } from '~hooks/useMdComponents'
 
 export interface BannerProps {
   variant?: BannerVariant
