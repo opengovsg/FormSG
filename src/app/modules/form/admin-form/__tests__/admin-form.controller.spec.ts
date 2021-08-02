@@ -78,6 +78,8 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import { smsConfig } from '../../../../config/features/sms.config'
+import * as SmsService from '../../../../services/sms/sms.service'
 import ParsedResponsesObject from '../../../submission/email-submission/ParsedResponsesObject.class'
 import * as UserService from '../../../user/user.service'
 import {
@@ -137,6 +139,8 @@ jest.mock('../../../user/user.service')
 const MockUserService = mocked(UserService)
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = mocked(MailService)
+jest.mock('../../../../services/sms/sms.service')
+const MockSmsService = mocked(SmsService)
 
 describe('admin-form.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -10064,6 +10068,144 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(MockAdminFormService.getFormField).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleGetFreeSmsCountForFormAdmin', () => {
+    const mockForm = {
+      admin: new ObjectId().toHexString(),
+    } as unknown as IFormSchema
+    const VERIFICATION_SMS_COUNT = 3
+
+    beforeAll(() => {
+      MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
+      MockSmsService.retrieveFreeSmsCounts.mockReturnValue(
+        okAsync(VERIFICATION_SMS_COUNT),
+      )
+    })
+
+    it('should retrieve sms counts and quota when the user and the form exist', async () => {
+      // Arrange
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: mockForm._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const expected = {
+        freeSmsCounts: VERIFICATION_SMS_COUNT,
+        quota: smsConfig.smsVerificationLimit,
+      }
+
+      // Act
+      await AdminFormController.handleGetFreeSmsCountForFormAdmin(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.json).toBeCalledWith(expected)
+    })
+
+    it('should return 404 when the form is not found in the database', async () => {
+      // Arrange
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: new ObjectId().toHexString(),
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+      MockFormService.retrieveFormById.mockReturnValueOnce(
+        errAsync(new FormNotFoundError()),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expected = {
+        message: 'Form not found',
+      }
+
+      // Act
+      await AdminFormController.handleGetFreeSmsCountForFormAdmin(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(404)
+      expect(mockRes.json).toBeCalledWith(expected)
+    })
+
+    it('should return 500 when a database error occurs during form retrieval', async () => {
+      // Arrange
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: mockForm._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const retrieveSpy = jest.spyOn(FormService, 'retrieveFormById')
+      retrieveSpy.mockReturnValueOnce(errAsync(new DatabaseError()))
+      const expected = {
+        message: 'Something went wrong. Please try again.',
+      }
+
+      // Act
+      await AdminFormController.handleGetFreeSmsCountForFormAdmin(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(500)
+      expect(mockRes.json).toBeCalledWith(expected)
+    })
+
+    it('should return 500 when a database error occurs during count retrieval', async () => {
+      // Arrange
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: mockForm._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+      retrieveSpy.mockReturnValueOnce(errAsync(new DatabaseError()))
+      const expected = {
+        message: 'Something went wrong. Please try again.',
+      }
+
+      // Act
+      await AdminFormController.handleGetFreeSmsCountForFormAdmin(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(500)
+      expect(mockRes.json).toBeCalledWith(expected)
     })
   })
 })

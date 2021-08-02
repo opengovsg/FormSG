@@ -1,4 +1,11 @@
-import { Document, LeanDocument, Model, ToObjectOptions, Types } from 'mongoose'
+import {
+  Document,
+  LeanDocument,
+  Model,
+  ToObjectOptions,
+  Types,
+  UpdateWriteOpResult,
+} from 'mongoose'
 import { Merge, SetOptional } from 'type-fest'
 
 import {
@@ -293,6 +300,10 @@ export interface IFormModel extends Model<IFormSchema> {
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
   ): Promise<AdminDashboardFormMetaDto[]>
+
+  disableSmsVerificationsForUser(
+    userId: IUserSchema['_id'],
+  ): Promise<UpdateWriteOpResult>
 
   /**
    * Update the end page of form with given endpage object.

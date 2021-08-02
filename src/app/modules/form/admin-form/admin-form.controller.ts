@@ -44,12 +44,15 @@ import {
   PreviewFormViewDto,
   PrivateFormErrorDto,
   SettingsUpdateDto,
+  SmsCountsDto,
   StartPageUpdateDto,
   SubmissionCountQueryDto,
 } from '../../../../types/api'
 import { DeserializeTransform } from '../../../../types/utils'
+import { smsConfig } from '../../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
+import * as SmsService from '../../../services/sms/sms.service'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {
@@ -2465,3 +2468,50 @@ export const handleUpdateStartPage = [
   }),
   _handleUpdateStartPage,
 ] as ControllerHandler[]
+
+/**
+ * Handler to retrieve the free sms counts used by a form's administrator and the sms verifications quota
+ * This is the controller for GET /admin/forms/:formId/verified-sms/count/free
+ * @param formId The id of the form to retrieve the free sms counts for
+ * @returns 200 with free sms counts and quota when successful
+ * @returns 404 when the formId is not found in the database
+ * @returns 500 when a database error occurs during retrieval
+ */
+export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
+  {
+    formId: string
+  },
+  ErrorDto | SmsCountsDto
+> = (req, res) => {
+  const { formId } = req.params
+  const logMeta = {
+    action: 'handleGetFreeSmsCountForFormAdmin',
+    ...createReqMeta(req),
+    formId,
+  }
+
+  // Step 1: Check that the form exists
+  return (
+    FormService.retrieveFormById(formId)
+      // Step 2: Retrieve the free sms count
+      .andThen(({ admin }) => {
+        return SmsService.retrieveFreeSmsCounts(String(admin))
+      })
+      // Step 3: Map/MapErr accordingly
+      .map((freeSmsCountForAdmin) =>
+        res.status(StatusCodes.OK).json({
+          freeSmsCounts: freeSmsCountForAdmin,
+          quota: smsConfig.smsVerificationLimit,
+        }),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error while retrieving sms counts for user',
+          meta: logMeta,
+          error,
+        })
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
