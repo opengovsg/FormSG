@@ -42,17 +42,3 @@ export type FieldResponse =
   | ICheckboxResponse
   | ITableResponse
   | IAttachmentResponse
-
-interface IClientSubmission {
-  attachments: AttachmentsMap
-  captchaResponse: string
-  isPreview: boolean
-  responses: FieldResponse[]
-}
-
-export type IClientEmailSubmission = IClientSubmission
-
-export interface IClientEncryptSubmission extends IClientSubmission {
-  encryptedContent: string
-  version: number
-}
