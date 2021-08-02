@@ -38,3 +38,8 @@ export type FormUpdateParams = {
   title?: IForm['title']
   webhook?: IForm['webhook']
 }
+
+export interface SmsCountsDto {
+  quota: number
+  freeSmsCounts: number
+}

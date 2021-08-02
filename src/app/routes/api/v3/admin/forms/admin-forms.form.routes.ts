@@ -199,10 +199,10 @@ AdminFormsFormRouter.put(
 )
 
 /**
- * Retrieves the free sms counts used by a form's administrator
+ * Retrieves the free sms counts used by a form's administrator and the sms verification quota
  * @security session
  *
- * @returns 200 with the free sms counts
+ * @returns 200 with the free sms counts and the quota
  * @returns 401 when user does not exist in session
  * @returns 404 when the formId is not found in the database
  * @returns 500 when a database error occurs during retrieval

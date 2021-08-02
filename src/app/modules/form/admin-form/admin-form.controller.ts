@@ -44,10 +44,12 @@ import {
   PreviewFormViewDto,
   PrivateFormErrorDto,
   SettingsUpdateDto,
+  SmsCountsDto,
   StartPageUpdateDto,
   SubmissionCountQueryDto,
 } from '../../../../types/api'
 import { DeserializeTransform } from '../../../../types/utils'
+import { smsConfig } from '../../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
 import * as SmsService from '../../../services/sms/sms.service'
@@ -2468,10 +2470,10 @@ export const handleUpdateStartPage = [
 ] as ControllerHandler[]
 
 /**
- * Handler to retrieve the free sms counts used by a form's administrator
+ * Handler to retrieve the free sms counts used by a form's administrator and the sms verifications quota
  * This is the controller for GET /admin/forms/:formId/verified-sms/count/free
  * @param formId The id of the form to retrieve the free sms counts for
- * @returns 200 with free sms counts when successful
+ * @returns 200 with free sms counts and quota when successful
  * @returns 404 when the formId is not found in the database
  * @returns 500 when a database error occurs during retrieval
  */
@@ -2479,7 +2481,7 @@ export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
   {
     formId: string
   },
-  ErrorDto | number
+  ErrorDto | SmsCountsDto
 > = (req, res) => {
   const { formId } = req.params
   const logMeta = {
@@ -2497,7 +2499,10 @@ export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
       })
       // Step 3: Map/MapErr accordingly
       .map((freeSmsCountForAdmin) =>
-        res.status(StatusCodes.OK).json(freeSmsCountForAdmin),
+        res.status(StatusCodes.OK).json({
+          freeSmsCounts: freeSmsCountForAdmin,
+          quota: smsConfig.smsVerificationLimit,
+        }),
       )
       .mapErr((error) => {
         logger.error({
