@@ -63,7 +63,7 @@ export interface IVerificationSmsCount extends ISmsCount {
   isOnboardedAccount: boolean
 }
 
-export type IVerificationSmsCountSchema = ISmsCountSchema & {
+export interface IVerificationSmsCountSchema extends ISmsCountSchema {
   isOnboardedAccount: boolean
 }
 

@@ -1,4 +1,11 @@
-import { Document, LeanDocument, Model, ToObjectOptions, Types } from 'mongoose'
+import {
+  Document,
+  LeanDocument,
+  Model,
+  ToObjectOptions,
+  Types,
+  UpdateWriteOpResult,
+} from 'mongoose'
 import { Merge, SetOptional } from 'type-fest'
 
 import {
@@ -21,7 +28,7 @@ import {
 } from '../../shared/types/form/form'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
-import { PublicView, UpdateManyMeta } from './database'
+import { PublicView } from './database'
 import {
   FormField,
   FormFieldSchema,
@@ -296,7 +303,7 @@ export interface IFormModel extends Model<IFormSchema> {
 
   disableSmsVerificationsForUser(
     userId: IUserSchema['_id'],
-  ): Promise<UpdateManyMeta>
+  ): Promise<UpdateWriteOpResult>
 
   /**
    * Update the end page of form with given endpage object.
