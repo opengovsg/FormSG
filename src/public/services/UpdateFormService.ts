@@ -12,9 +12,11 @@ import {
   SettingsUpdateDto,
 } from '../../../shared/types/form/form'
 import { LogicDto } from '../../../shared/types/form/form_logic'
-import { SubmissionResponseDto } from '../../../shared/types/submission'
 import {
-  EmailSubmissionDto,
+  EmailModeSubmissionContentDto,
+  SubmissionResponseDto,
+} from '../../../shared/types/submission'
+import {
   EncryptSubmissionDto,
   EndPageUpdateDto,
   FormUpdateParams,
@@ -222,7 +224,7 @@ export const submitEmailModeFormPreview = async ({
   captchaResponse = null,
 }: {
   formId: string
-  content: EmailSubmissionDto
+  content: EmailModeSubmissionContentDto
   attachments?: Record<string, File>
   captchaResponse?: string | null
 }): Promise<SubmissionResponseDto> => {
