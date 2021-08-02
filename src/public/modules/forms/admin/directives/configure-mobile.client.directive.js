@@ -7,8 +7,6 @@ const {
 
 const AdminMetaService = require('../../../../services/AdminMetaService')
 
-const { injectedVariables } = require('../../../../utils/injectedVariables')
-
 angular
   .module('forms')
   .directive('configureMobileDirective', [configureMobileDirective])
@@ -48,29 +46,34 @@ function configureMobileDirective() {
         $scope.isLoading = true
         $scope.field.hasRetrievalError = false
 
-        const formattedSmsVerificationLimit =
-          // Format so that it has commas; conversion is required because it's string initially
-          formatStringAsNumber(injectedVariables.smsVerificationLimit)
-
-        const getAdminVerifiedSmsState = (verifiedSmsCount, msgSrvcId) => {
+        const getAdminVerifiedSmsState = (
+          verifiedSmsCount,
+          msgSrvcId,
+          freeSmsQuota,
+        ) => {
           if (msgSrvcId) {
             return ADMIN_VERIFIED_SMS_STATES.hasMessageServiceId
           }
-          if (verifiedSmsCount <= injectedVariables.smsVerificationLimit) {
+
+          if (verifiedSmsCount <= freeSmsQuota) {
             return ADMIN_VERIFIED_SMS_STATES.belowLimit
           }
+
           return ADMIN_VERIFIED_SMS_STATES.limitExceeded
         }
 
         $q.when(
           AdminMetaService.getFreeSmsCountsUsedByFormAdmin($scope.form._id),
         )
-          .then((smsCounts) => {
-            $scope.verifiedSmsCount = smsCounts
+          .then(({ quota, freeSmsCounts }) => {
+            $scope.verifiedSmsCount = freeSmsCounts
             $scope.adminVerifiedSmsState = getAdminVerifiedSmsState(
-              smsCounts,
+              freeSmsCounts,
               $scope.form.msgSrvcName,
+              quota,
             )
+            $scope.smsVerificationLimit = formatStringAsNumber(quota)
+
             // NOTE: This links into the verifiable field component and hence, is used by both email and mobile
             $scope.field.hasAdminExceededSmsLimit =
               $scope.adminVerifiedSmsState ===
@@ -113,12 +116,18 @@ function configureMobileDirective() {
               resolve: {
                 externalScope: function () {
                   return {
-                    title: `OTP verification will be disabled at ${formattedSmsVerificationLimit} responses`,
+                    title: `OTP verification will be disabled at ${$scope.smsVerificationLimit} responses`,
                     confirmButtonText: 'Accept',
                     description: `
-                    We provide SMS OTP verification for free up to ${formattedSmsVerificationLimit} responses. OTP verification will be automatically disabled when your account reaches ${formattedSmsVerificationLimit} responses. 
+                    We provide SMS OTP verification for free up to ${
+                      $scope.smsVerificationLimit
+                    } responses. OTP verification will be automatically disabled when your account reaches ${
+                      $scope.smsVerificationLimit
+                    } responses. 
                     <br></br>
-                    If you require OTP verification for more than ${formattedSmsVerificationLimit} responses,
+                    If you require OTP verification for more than ${
+                      $scope.smsVerificationLimit
+                    } responses,
                     <a href=${
                       $scope.verifiedSmsSetupLink
                     } target="_blank" class=""> please arrange advance billing with us. </a>  
@@ -126,7 +135,7 @@ function configureMobileDirective() {
                     <br></br>
                     <small>Current response count: ${formatStringAsNumber(
                       $scope.verifiedSmsCount,
-                    )}/${formattedSmsVerificationLimit}</small>
+                    )}/${$scope.smsVerificationLimit}</small>
                     `,
                     isImportant: true,
                   }
