@@ -78,6 +78,7 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import { smsConfig } from '../../../../config/features/sms.config'
 import * as SmsService from '../../../../services/sms/sms.service'
 import ParsedResponsesObject from '../../../submission/email-submission/ParsedResponsesObject.class'
 import * as UserService from '../../../user/user.service'
@@ -10083,7 +10084,7 @@ describe('admin-form.controller', () => {
       )
     })
 
-    it('should retrieve counts and msgSrvcId when the user and the form exist', async () => {
+    it('should retrieve sms counts and quota when the user and the form exist', async () => {
       // Arrange
       const MOCK_REQ = expressHandler.mockRequest({
         params: {
@@ -10096,7 +10097,10 @@ describe('admin-form.controller', () => {
         },
       })
       const mockRes = expressHandler.mockResponse()
-      const expected = VERIFICATION_SMS_COUNT
+      const expected = {
+        freeSmsCounts: VERIFICATION_SMS_COUNT,
+        quota: smsConfig.smsVerificationLimit,
+      }
 
       // Act
       await AdminFormController.handleGetFreeSmsCountForFormAdmin(
