@@ -2,7 +2,7 @@
  * This utility file contains immutable array functions.
  */
 
-import { ExtractTypeFromArray } from '../../types/utils'
+import { ExtractTypeFromArray } from '../../../shared/types/utils'
 
 /**
  * Pure function to reorders given array from given `fromIndex` to `toIndex`.

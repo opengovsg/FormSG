@@ -5,6 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
+import { DeserializeTransform } from '../../../../../shared/types/utils'
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
@@ -48,7 +49,6 @@ import {
   StartPageUpdateDto,
   SubmissionCountQueryDto,
 } from '../../../../types/api'
-import { DeserializeTransform } from '../../../../types/utils'
 import { smsConfig } from '../../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
