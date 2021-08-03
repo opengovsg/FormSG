@@ -8,7 +8,7 @@ import getLoginModel from 'src/app/models/login.server.model'
 import {
   AuthType,
   IFormSchema,
-  ILogin,
+  ILoginSchema,
   IPopulatedForm,
   IUserSchema,
 } from 'src/types'
@@ -23,7 +23,7 @@ describe('login.server.model', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('Schema', () => {
-    const DEFAULT_PARAMS: ILogin = {
+    const DEFAULT_PARAMS: mongoose.LeanDocument<ILoginSchema> = {
       admin: new ObjectId(),
       agency: new ObjectId(),
       authType: AuthType.SP,
@@ -150,6 +150,7 @@ describe('login.server.model', () => {
 
       it('should reject when the form does not contain an authType', async () => {
         await expect(
+          // @ts-ignore
           LoginModel.addLoginFromForm(omit(fullForm, 'authType')),
         ).rejects.toThrow('Form does not contain authType or e-service ID')
       })
@@ -162,7 +163,7 @@ describe('login.server.model', () => {
       const FUTURE_MOMENT = CURR_MOMENT.clone().add(2, 'years')
       const FUTURE_DATE = FUTURE_MOMENT.toDate()
 
-      let mockLoginDocuments: ILogin[]
+      let mockLoginDocuments: ILoginSchema[]
       let testUser: IUserSchema
       let testForm: IFormSchema
 
@@ -206,7 +207,7 @@ describe('login.server.model', () => {
             esrvcId: VALID_ESRVC_ID,
             created: FUTURE_DATE,
           },
-        ]
+        ] as ILoginSchema[]
 
         await LoginModel.insertMany(mockLoginDocuments)
         testUser = user

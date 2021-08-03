@@ -1,9 +1,10 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
+import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
-import { RequireAtLeastOne, SetOptional } from 'type-fest'
+import { SetOptional } from 'type-fest'
 
 import {
   AuthType,
@@ -13,6 +14,7 @@ import {
 import {
   EncryptSubmissionDto,
   ErrorDto,
+  FormSubmissionMetadataQueryDto,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../types/api'
@@ -405,7 +407,7 @@ export const streamEncryptedResponses: ControllerHandler<
   unknown,
   { startDate?: string; endDate?: string; downloadAttachments: boolean }
 > = async (req, res) => {
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   const { formId } = req.params
   const { startDate, endDate } = req.query
 
@@ -545,7 +547,7 @@ export const getEncryptedResponseUsingQueryParams: ControllerHandler<
   unknown,
   { submissionId: string }
 > = async (req, res) => {
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   const { submissionId } = req.query
   const { formId } = req.params
 
@@ -623,7 +625,7 @@ export const handleGetEncryptedResponse: ControllerHandler<
   { formId: string; submissionId: string },
   EncryptedSubmissionDto | ErrorDto
 > = async (req, res) => {
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   const { formId, submissionId } = req.params
 
   return (
@@ -690,12 +692,9 @@ export const getMetadata: ControllerHandler<
   { formId: string },
   SubmissionMetadataList | ErrorDto,
   unknown,
-  RequireAtLeastOne<
-    { page?: number; submissionId?: string },
-    'page' | 'submissionId'
-  >
+  FormSubmissionMetadataQueryDto
 > = async (req, res) => {
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   const { formId } = req.params
   const { page, submissionId } = req.query
 

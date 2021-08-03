@@ -2,13 +2,17 @@
 import { ObjectId } from 'bson-ext'
 import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'
+import {
+  EMAIL_PUBLIC_FORM_FIELDS,
+  STORAGE_PUBLIC_FORM_FIELDS,
+} from 'shared/constants/form'
 
 import getFormModel, {
-  FORM_PUBLIC_FIELDS,
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import {
+  AuthType,
   BasicField,
   EndPage,
   FormFieldWithId,
@@ -564,6 +568,32 @@ describe('Form Model', () => {
         await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
+      })
+
+      it('should set authType to NIL when given authType is MyInfo', async () => {
+        // Arrange
+        const malformedParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          authType: AuthType.MyInfo,
+        })
+
+        // Act
+        const invalidForm = await EncryptedForm.create(malformedParams)
+
+        // Assert
+        await expect(invalidForm.authType).toBe(AuthType.NIL)
+      })
+
+      it('should set authType to NIL when given authType is SGID', async () => {
+        // Arrange
+        const malformedParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          authType: AuthType.SGID,
+        })
+
+        // Act
+        const invalidForm = await EncryptedForm.create(malformedParams)
+
+        // Assert
+        await expect(invalidForm.authType).toBe(AuthType.NIL)
       })
     })
 
@@ -1907,7 +1937,7 @@ describe('Form Model', () => {
         const actual = emailForm.getPublicView()
 
         // Assert
-        expect(actual).toEqual(pick(emailForm, FORM_PUBLIC_FIELDS))
+        expect(actual).toEqual(pick(emailForm, EMAIL_PUBLIC_FORM_FIELDS))
         // Admin should be plain admin id since form is not populated.
         expect(actual.admin).toBeInstanceOf(ObjectId)
       })
@@ -1931,7 +1961,7 @@ describe('Form Model', () => {
 
         expect(JSON.stringify(actual)).toEqual(
           JSON.stringify({
-            ...pick(populatedEmailForm, FORM_PUBLIC_FIELDS),
+            ...pick(populatedEmailForm, STORAGE_PUBLIC_FORM_FIELDS),
             // Admin should only contain public view of agency since agency is populated.
             admin: {
               agency: expectedPublicAgencyView,
@@ -1953,7 +1983,7 @@ describe('Form Model', () => {
         const actual = encryptForm.getPublicView()
 
         // Assert
-        expect(actual).toEqual(pick(encryptForm, FORM_PUBLIC_FIELDS))
+        expect(actual).toEqual(pick(encryptForm, STORAGE_PUBLIC_FORM_FIELDS))
         // Admin should be plain admin id since form is not populated.
         expect(actual.admin).toBeInstanceOf(ObjectId)
       })
@@ -1977,7 +2007,7 @@ describe('Form Model', () => {
 
         expect(JSON.stringify(actual)).toEqual(
           JSON.stringify({
-            ...pick(populatedEncryptForm, FORM_PUBLIC_FIELDS),
+            ...pick(populatedEncryptForm, STORAGE_PUBLIC_FORM_FIELDS),
             // Admin should only contain public view of agency since agency is populated.
             admin: {
               agency: expectedPublicAgencyView,

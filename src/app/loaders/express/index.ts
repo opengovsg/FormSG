@@ -1,6 +1,5 @@
 import compression from 'compression'
 import express, { Express } from 'express'
-import device from 'express-device'
 import addRequestId from 'express-request-id'
 import http from 'http'
 import { Connection } from 'mongoose'
@@ -138,9 +137,6 @@ const loadExpressApp = async (connection: Connection) => {
   app.use(sessionMiddlewares(connection))
 
   app.use(loggingMiddleware())
-
-  // setup express-device
-  app.use(device.capture({ parseUserAgent: true }))
 
   // Log intranet usage
   app.use(IntranetMiddleware.logIntranetUsage)
