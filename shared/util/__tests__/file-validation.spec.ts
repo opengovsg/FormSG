@@ -4,7 +4,7 @@ import {
   getFileExtension,
   getInvalidFileExtensionsInZip,
   isInvalidFileExtension,
-} from 'src/shared/util/file-validation'
+} from '../file-validation'
 
 describe('File validation utils', () => {
   describe('getFileExtension', () => {
