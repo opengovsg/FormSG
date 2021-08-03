@@ -9,15 +9,6 @@ import {
   ParsedEmailAttachmentResponse,
   ParsedEmailFormFieldResponse,
 } from '../api'
-import { BasicField, IFieldSchema, IMyInfo } from '../field'
-
-export interface IBaseResponse {
-  _id: IFieldSchema['_id']
-  fieldType: BasicField
-  myInfo?: IMyInfo
-  // Signature exists for verifiable fields if the answer is verified.
-  signature?: string
-}
 
 export type IAttachmentResponse =
   | ParsedEmailAttachmentResponse
