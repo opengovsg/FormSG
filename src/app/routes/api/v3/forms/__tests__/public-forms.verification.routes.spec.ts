@@ -22,10 +22,6 @@ import MailService from 'src/app/services/mail/mail.service'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import * as SmsService from 'src/app/services/sms/sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
-import {
-  NUM_OTP_RETRIES,
-  WAIT_FOR_OTP_SECONDS,
-} from 'src/shared/util/verification'
 import { BasicField, IVerificationSchema } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -33,6 +29,10 @@ import MockTwilio from 'tests/integration/helpers/twilio'
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import {
+  NUM_OTP_RETRIES,
+  WAIT_FOR_OTP_SECONDS,
+} from '../../../../../../../shared/util/verification'
 import { MOCK_OTP } from '../../../../../modules/verification/__tests__/verification.test.helpers'
 import { PublicFormsVerificationRouter } from '../public-forms.verification.routes'
 

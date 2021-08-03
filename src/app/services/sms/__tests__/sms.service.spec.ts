@@ -7,11 +7,11 @@ import {
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
-import { VfnErrors } from 'src/shared/util/verification'
 import { FormOtpData, IFormSchema, IUserSchema, ResponseMode } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { VfnErrors } from '../../../../../shared/util/verification'
 import { InvalidNumberError } from '../sms.errors'
 import * as SmsService from '../sms.service'
 import { LogType, SmsType, TwilioConfig } from '../sms.types'

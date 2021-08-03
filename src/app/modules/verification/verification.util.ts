@@ -5,7 +5,7 @@ import {
   VERIFIED_FIELDTYPES,
   WAIT_FOR_OTP_SECONDS,
   WAIT_FOR_OTP_TOLERANCE_SECONDS,
-} from '../../../shared/util/verification'
+} from '../../../../shared/util/verification'
 import {
   IFieldSchema,
   IVerificationSchema,
