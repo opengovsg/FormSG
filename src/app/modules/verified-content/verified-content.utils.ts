@@ -1,6 +1,6 @@
 import { err, ok } from 'neverthrow'
 
-import { VerifiedKeys } from '../../../shared/util/verified-content'
+import { VerifiedKeys } from '../../../../shared/util/verified-content'
 
 import { MalformedVerifiedContentError } from './verified-content.errors'
 import {

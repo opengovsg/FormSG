@@ -7,7 +7,7 @@ import has from 'lodash/has'
 import {
   CURRENT_VERIFIED_FIELDS,
   VerifiedKeys,
-} from '../../../../shared/util/verified-content'
+} from '../../../../../shared/util/verified-content'
 import { BasicField, SgidFieldTitle, SPCPFieldTitle } from '../../../../types'
 
 /**
