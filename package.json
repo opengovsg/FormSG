@@ -41,7 +41,9 @@
     "lint-ci": "concurrently \"eslint src/ --quiet\" \"stylelint '*/**/*.css' --quiet\" \"htmlhint\" \"prettier --c './src/public/**/*.html' --ignore-path './dist/**'\"",
     "version": "auto-changelog -p && git add CHANGELOG.md",
     "prepare": "husky install",
-    "pre-commit": "lint-staged"
+    "pre-commit": "lint-staged",
+    "storybook": "npm run --prefix frontend storybook",
+    "postinstall": "cd frontend && npm install"
   },
   "dependencies": {
     "@babel/runtime": "^7.14.6",
