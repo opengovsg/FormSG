@@ -301,7 +301,7 @@
                     name="esrvcId"
                     ng-model="tempForm.esrvcId"
                     placeholder="{{ ['SP', 'MyInfo'].includes(type.val) ? 'Enter Singpass e-service ID' : 'Enter Corppass e-service ID' }}"
-                    ng-pattern="/^([a-zA-Z0-9\-\_]){1,25}$/i"
+                    ng-pattern="/^\S*$/i"
                     ng-keyup="($event.keyCode === 13 && settingsForm.esrvcId.$valid) && saveForm()"
                     ng-blur="(settingsForm.esrvcId.$valid) && saveForm()"
                     ng-disabled="(isFormPublic() && !isPublicWithoutEsrvcId())"
@@ -322,8 +322,7 @@
                 >
                   <i class="bx bx-exclamation bx-md icon-spacing"></i>
                   <span class="alert-msg"
-                    >e-service ID must be alphanumeric and a maximum of 25
-                    letters</span
+                    >e-service ID must not contain whitespace</span
                   >
                 </div>
               </div>
