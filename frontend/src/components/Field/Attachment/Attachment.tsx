@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
 } from 'react'
+import { FileError } from 'react-dropzone'
 import { BiTrash } from 'react-icons/bi'
 import {
   Box,
@@ -11,16 +12,22 @@ import {
   ButtonProps,
   Center,
   Flex,
+  FormControl,
+  FormLabel,
   forwardRef,
+  HStack,
   Icon,
   Spacer,
   StyleProps,
   Text,
+  useFormControlContext,
   useMultiStyleConfig,
   VStack,
 } from '@chakra-ui/react'
 import { omit, pick } from 'lodash'
 
+import FormErrorMessage from '~/components/FormControl/FormErrorMessage'
+import FormFieldMessage from '~/components/FormControl/FormFieldMessage'
 import { formatBytes } from '~/utils/formatBytes'
 
 import { BxsCloudUpload } from '~assets/icons'
@@ -128,7 +135,7 @@ export const Attachment = ({
         isDragActive,
       }}
     >
-      {children}
+      <FormControl isInvalid={!!fileRejections.length}>{children}</FormControl>
     </AttachmentContext.Provider>
   )
 }
@@ -143,17 +150,20 @@ export const Dropzone = forwardRef<DropzoneProps, 'input'>((props, ref) => {
   const styles = useMultiStyleConfig('Attachment', props)
 
   return (
-    <DropzoneButton {...props} ref={ref}>
-      <Box>
-        <Icon as={BxsCloudUpload} sx={styles.icon} />
-        <Text textStyle="body-1" fontWeight={500}>
-          <Text as="u" sx={styles.text}>
-            Choose file
+    <Box maxWidth="min-content" whiteSpace="pre-line">
+      <DropzoneButton {...props} ref={ref}>
+        <Box>
+          <Icon as={BxsCloudUpload} sx={styles.icon} />
+          <Text textStyle="body-1" fontWeight={500}>
+            <Text as="u" sx={styles.text}>
+              Choose file
+            </Text>
+            &nbsp;or drag and drop here
           </Text>
-          &nbsp;or drag and drop here
-        </Text>
-      </Box>
-    </DropzoneButton>
+        </Box>
+      </DropzoneButton>
+      <AttachmentHelperMessage />
+    </Box>
   )
 })
 
@@ -183,17 +193,19 @@ const DropzoneButton = forwardRef<DropzoneProps, 'input'>(
 )
 
 // This component should not have behaviour as it is a simple stylistic wrapper to maintain theming.
-type AttachmentInfoProps = PropsWithChildren<StyleProps>
+type AttachmentInfoProps = PropsWithChildren<StyleProps> & {
+  file: File
+}
 
 /**
  * This is a convenience wrapper to simply display file information.
  */
 export const AttachmentInfo = ({
+  file,
   children,
   ...rest
 }: AttachmentInfoProps): JSX.Element => {
-  const { acceptedFiles } = useAttachmentContext()
-  const { name, size } = acceptedFiles[0]
+  const { name, size } = file
   const styles = useMultiStyleConfig('Attachment', rest)
 
   return (
@@ -249,5 +261,49 @@ const AttachmentActionIcon = ({
       sx={styles.delete}
       variant="clear"
     />
+  )
+}
+
+const getErrorMessage = (error: FileError, maxSize: number) =>
+  error.code === 'file-too-large'
+    ? `You have exceeded the limit, please upload a file below ${formatBytes(
+        maxSize,
+        0,
+      )}`
+    : 'Please ensure that only 1 file is uploaded!'
+
+const AttachmentHelperMessage = (): JSX.Element => {
+  const { maxSize, fileRejections } = useAttachmentContext()
+  const { isInvalid } = useFormControlContext()
+  return isInvalid ? (
+    <FormErrorMessage role="alert">
+      {getErrorMessage(fileRejections[0].errors[0], maxSize)}
+    </FormErrorMessage>
+  ) : (
+    <FormFieldMessage>{`Maximum file size: ${formatBytes(
+      maxSize,
+    )}`}</FormFieldMessage>
+  )
+}
+
+export interface AttachmentLabelProps {
+  number?: number
+  title?: string
+}
+
+export const AttachmentLabel = ({
+  number,
+  title,
+}: AttachmentLabelProps): JSX.Element => {
+  return (
+    <FormLabel>
+      <HStack spacing="0.5rem">
+        {/* NOTE: this is done because 0 is a falsy value... */}
+        {(!!number || number === 0) && (
+          <Text textStyle="caption-1">{`${number}.`}</Text>
+        )}
+        {title && <Text textStyle="subhead-1">{title}</Text>}
+      </HStack>
+    </FormLabel>
   )
 }
