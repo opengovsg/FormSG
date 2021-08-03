@@ -1,6 +1,6 @@
 'use strict'
 
-const { isNricValid } = require('../../../../../shared/util/nric-validation')
+const { isNricValid } = require('../../../../../../shared/util/nric-validation')
 
 angular.module('forms').directive('validateNric', validateNric)
 

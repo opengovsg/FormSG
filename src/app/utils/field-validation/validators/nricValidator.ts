@@ -4,7 +4,7 @@ import { flow } from 'fp-ts/lib/function'
 import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 
-import { isNricValid } from '../../../../shared/util/nric-validation'
+import { isNricValid } from '../../../../../shared/util/nric-validation'
 
 import { notEmptySingleAnswerResponse } from './common'
 
