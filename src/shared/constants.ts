@@ -7,11 +7,6 @@ export enum EditFieldActions {
   Delete = 'DELETE',
 }
 
-export enum FilePlatforms {
-  Browser = 'browser',
-  Server = 'server',
-}
-
 // Enum of date validation options
 export enum DateSelectedValidation {
   NoPast = 'Disallow past dates',
