@@ -1,7 +1,6 @@
 import JSZip from 'jszip'
 import flattenDeep from 'lodash/flattenDeep'
 import uniq from 'lodash/uniq'
-import path from 'path'
 
 import { FilePlatforms } from '../constants'
 
@@ -79,7 +78,13 @@ const validExtensions = [
  * @param filename - Name of the file
  * @return The file extension
  */
-export const getFileExtension = (filename: string) => path.extname(filename)
+export const getFileExtension = (filename: string): string => {
+  const splits = filename.split('.')
+  if (splits.length < 2) {
+    return ''
+  }
+  return `.${splits[splits.length - 1]}`
+}
 
 /**
  * Checks against the list of validExtensions whether the given
