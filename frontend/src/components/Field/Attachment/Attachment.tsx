@@ -175,7 +175,7 @@ export const Dropzone = forwardRef<DropzoneProps, 'input'>((props, ref) => {
   const styles = useMultiStyleConfig('Attachment', { ...props, isDisabled })
 
   return (
-    <Box maxWidth="min-content" whiteSpace="pre-line">
+    <>
       <DropzoneButton {...props} ref={ref}>
         <Box>
           <Icon as={BxsCloudUpload} sx={styles.icon} />
@@ -188,7 +188,7 @@ export const Dropzone = forwardRef<DropzoneProps, 'input'>((props, ref) => {
         </Box>
       </DropzoneButton>
       <AttachmentHelperMessage />
-    </Box>
+    </>
   )
 })
 
@@ -326,7 +326,7 @@ export const AttachmentLabel = ({
   // Because block generates line breaks after the element,
   // This causes the required indicator to be on a separate line.
   // See: https://github.com/chakra-ui/chakra-ui/blob/main/packages/form-control/src/form-label.tsx#L51
-  <FormLabel display="inline-flex">
+  <FormLabel display="inline-flex" wordBreak="break-word">
     <HStack spacing="0.5rem">
       {/* NOTE: this is done because 0 is a falsy value... */}
       {(!!number || number === 0) && (

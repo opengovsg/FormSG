@@ -16,6 +16,7 @@ export const Attachment: ComponentMultiStyleConfig = {
         color: 'danger.500',
       },
       container: {
+        width: '100%',
         py: '2.5rem',
         px: '3rem',
         bgColor: isDragActive ? 'primary.100' : 'neutral.100',
