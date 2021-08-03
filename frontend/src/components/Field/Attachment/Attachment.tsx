@@ -4,12 +4,11 @@ import {
   useCallback,
   useContext,
 } from 'react'
-import { FileError } from 'react-dropzone'
+import { FileRejection } from 'react-dropzone'
 import { BiTrash } from 'react-icons/bi'
 import {
   Box,
   Button,
-  ButtonProps,
   Center,
   Flex,
   FormControl,
@@ -100,12 +99,26 @@ export interface AttachmentProps {
    * Note that this runs even if the file is invalid.
    */
   onChange?: (f: File[]) => void
+  /**
+   * Whether the component as a whole is disabled.
+   */
+  isDisabled?: boolean
+  /**
+   * Whether the component is in an invalid state
+   */
+  isInvalid?: boolean
+  /**
+   * Whether the component is a required field
+   */
+  isRequired?: boolean
 }
 
 export const Attachment = ({
   maxSizeInBytes,
   children,
   onChange,
+  isInvalid,
+  ...rest
 }: PropsWithChildren<AttachmentProps>): JSX.Element => {
   const onDrop = useCallback(
     (acceptedFiles) => {
@@ -135,19 +148,31 @@ export const Attachment = ({
         isDragActive,
       }}
     >
-      <FormControl isInvalid={!!fileRejections.length}>{children}</FormControl>
+      <FormControl {...rest} isInvalid={isInvalid ?? !!fileRejections.length}>
+        {children}
+      </FormControl>
     </AttachmentContext.Provider>
   )
 }
 
 export const AttachmentField = (): JSX.Element => {
   const { acceptedFiles } = useAttachmentContext()
-  return acceptedFiles.length ? <AttachmentInfo /> : <Dropzone />
+  return acceptedFiles.length ? (
+    <AttachmentInfo file={acceptedFiles[0]} />
+  ) : (
+    <Dropzone />
+  )
 }
 
-export type DropzoneProps = PropsWithChildren<ButtonProps>
+/**
+ * This component should not have behaviour set on it.
+ * Behaviour should instead be set on the Attachment component,
+ * which will then dictate how this behaves.
+ */
+export type DropzoneProps = PropsWithChildren<StyleProps>
 export const Dropzone = forwardRef<DropzoneProps, 'input'>((props, ref) => {
-  const styles = useMultiStyleConfig('Attachment', props)
+  const { isDisabled } = useFormControlContext()
+  const styles = useMultiStyleConfig('Attachment', { ...props, isDisabled })
 
   return (
     <Box maxWidth="min-content" whiteSpace="pre-line">
@@ -172,9 +197,11 @@ const DropzoneButton = forwardRef<DropzoneProps, 'input'>(
     const { isDragActive } = useAttachmentContext()
     const styles = useMultiStyleConfig('Attachment', { ...props, isDragActive })
     const { getInputProps, getRootProps } = useDropzoneProps()
+    const { isDisabled } = useFormControlContext()
 
     return (
       <Button
+        isDisabled={isDisabled}
         {...getRootProps({
           sx: styles.container,
           ...(props as Record<string, unknown>),
@@ -264,20 +291,20 @@ const AttachmentActionIcon = ({
   )
 }
 
-const getErrorMessage = (error: FileError, maxSize: number) =>
-  error.code === 'file-too-large'
-    ? `You have exceeded the limit, please upload a file below ${formatBytes(
+const getErrorMessage = (errors: FileRejection[], maxSize: number) =>
+  errors.length > 1
+    ? 'Please ensure that only 1 file is uploaded!'
+    : `You have exceeded the limit, please upload a file below ${formatBytes(
         maxSize,
         0,
       )}`
-    : 'Please ensure that only 1 file is uploaded!'
 
 const AttachmentHelperMessage = (): JSX.Element => {
   const { maxSize, fileRejections } = useAttachmentContext()
   const { isInvalid } = useFormControlContext()
   return isInvalid ? (
     <FormErrorMessage role="alert">
-      {getErrorMessage(fileRejections[0].errors[0], maxSize)}
+      {getErrorMessage(fileRejections, maxSize)}
     </FormErrorMessage>
   ) : (
     <FormFieldMessage>{`Maximum file size: ${formatBytes(
@@ -294,16 +321,18 @@ export interface AttachmentLabelProps {
 export const AttachmentLabel = ({
   number,
   title,
-}: AttachmentLabelProps): JSX.Element => {
-  return (
-    <FormLabel>
-      <HStack spacing="0.5rem">
-        {/* NOTE: this is done because 0 is a falsy value... */}
-        {(!!number || number === 0) && (
-          <Text textStyle="caption-1">{`${number}.`}</Text>
-        )}
-        {title && <Text textStyle="subhead-1">{title}</Text>}
-      </HStack>
-    </FormLabel>
-  )
-}
+}: AttachmentLabelProps): JSX.Element => (
+  // NOTE: The display property is `block` normally.
+  // Because block generates line breaks after the element,
+  // This causes the required indicator to be on a separate line.
+  // See: https://github.com/chakra-ui/chakra-ui/blob/main/packages/form-control/src/form-label.tsx#L51
+  <FormLabel display="inline-flex">
+    <HStack spacing="0.5rem">
+      {/* NOTE: this is done because 0 is a falsy value... */}
+      {(!!number || number === 0) && (
+        <Text textStyle="caption-1">{`${number}.`}</Text>
+      )}
+      {title && <Text textStyle="subhead-1">{title}</Text>}
+    </HStack>
+  </FormLabel>
+)
