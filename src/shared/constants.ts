@@ -13,7 +13,3 @@ export enum DateSelectedValidation {
   NoFuture = 'Disallow future dates',
   Custom = 'Custom date range',
 }
-
-export const LINKS = {
-  supportFormLink: 'https://go.gov.sg/formsg-support',
-}
