@@ -1,14 +1,13 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ProcessedAttachmentResponse } from 'src/app/modules/submission/submission.types'
+import { MB } from '../../../../../shared/constants/file'
 import {
   IAttachmentFieldSchema,
   OmitUnusedValidatorProps,
-} from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
-
-import { MB } from '../../../../../shared/constants/file'
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
+import { ProcessedAttachmentResponse } from '../../../modules/submission/submission.types'
 
 type AttachmentValidator = ResponseValidator<ProcessedAttachmentResponse>
 type AttachmentValidatorConstructor = (

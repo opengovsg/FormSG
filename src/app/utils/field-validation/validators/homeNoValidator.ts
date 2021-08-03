@@ -1,13 +1,15 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { IHomenoFieldSchema, OmitUnusedValidatorProps } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
-
 import {
   isHomePhoneNumber,
   startsWithSgPrefix,
 } from '../../../../../shared/utils/phone-num-validation'
+import {
+  IHomenoFieldSchema,
+  OmitUnusedValidatorProps,
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 import { notEmptySingleAnswerResponse } from './common'

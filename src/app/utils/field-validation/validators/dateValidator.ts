@@ -2,13 +2,13 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import moment from 'moment-timezone'
 
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
 import {
   DateSelectedValidation,
   IDateFieldSchema,
   OmitUnusedValidatorProps,
-} from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 import { notEmptySingleAnswerResponse } from './common'
 

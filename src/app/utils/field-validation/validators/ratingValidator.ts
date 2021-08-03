@@ -2,9 +2,12 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import isInt from 'validator/lib/isInt'
 
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
-import { IRatingFieldSchema, OmitUnusedValidatorProps } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import {
+  IRatingFieldSchema,
+  OmitUnusedValidatorProps,
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 import { notEmptySingleAnswerResponse } from './common'
 

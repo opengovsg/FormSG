@@ -1,14 +1,13 @@
 import { left, right } from 'fp-ts/lib/Either'
 
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
 import {
   IEmailFieldSchema,
   IMobileFieldSchema,
   OmitUnusedValidatorProps,
-} from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
-
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
 import formsgSdk from '../../../config/formsg-sdk'
+import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 /**
  * A function which returns a validator to check if single answer has a non-empty response
