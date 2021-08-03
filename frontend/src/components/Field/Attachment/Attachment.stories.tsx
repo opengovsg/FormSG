@@ -1,26 +1,13 @@
-import { FileError } from 'react-dropzone'
 import { useController, useForm } from 'react-hook-form'
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  HStack,
-  Text,
-} from '@chakra-ui/react'
+import { Button } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
-
-import FormErrorMessage from '~/components/FormControl/FormErrorMessage'
-import FormFieldMessage from '~/components/FormControl/FormFieldMessage'
-import { formatBytes } from '~/utils/formatBytes'
 
 import {
   Attachment,
   AttachmentField,
-  AttachmentInfo,
+  AttachmentLabel,
   AttachmentProps,
   Dropzone,
-  DropzoneProps,
   useAttachmentContext,
 } from './Attachment'
 
@@ -32,79 +19,54 @@ export default {
 
 export const Default: Story<AttachmentProps> = (args) => (
   <Attachment {...args}>
-    <AttachmentComponent />
+    <Dropzone />
   </Attachment>
 )
-Default.bind({
-  maxSizeInBytes: 2 * 10 ** 6,
-})
+Default.bind({})
 
 export const Disabled: Story<AttachmentProps> = (args) => (
   <Attachment {...args}>
-    <Dropzone isDisabled />
+    <Dropzone />
   </Attachment>
 )
 Disabled.bind({})
-
-type LabelledProps = {
-  labelText: string
-  labelNumber: number
-}
-export const Labelled: Story<AttachmentProps & LabelledProps> = ({
-  labelText,
-  labelNumber,
-  ...args
-}) => (
-  <FormControl>
-    <FormLabel>
-      <HStack spacing="0.5rem">
-        <Text textStyle="caption-1">{`${labelNumber}.`}</Text>
-        <Text textStyle="subhead-1">{labelText}</Text>
-      </HStack>
-    </FormLabel>
-    <Attachment {...args}>
-      <AttachmentComponent />
-    </Attachment>
-  </FormControl>
-)
-Labelled.bind({})
-Labelled.args = {
-  labelNumber: 1,
-  labelText: 'Label',
+Disabled.args = {
+  isDisabled: true,
 }
 
-type ErrorProps = { errorMessage: string }
-export const Error: Story<AttachmentProps & ErrorProps> = ({
-  errorMessage,
-  ...args
-}) => (
-  <FormControl>
-    <Attachment {...args}>
-      <AttachmentComponent />
-    </Attachment>
-    <FormErrorMessage>{errorMessage}</FormErrorMessage>
-  </FormControl>
+export const Error: Story<AttachmentProps> = ({ ...args }) => (
+  <Attachment {...args}>
+    <Dropzone />
+  </Attachment>
 )
 Error.bind({})
 Error.args = {
-  errorMessage: 'Some error message here',
+  isInvalid: true,
+}
+type LabelledProps = {
+  title: string
+  number: number
+}
+export const LabelledDropzone: Story<AttachmentProps & LabelledProps> = ({
+  title,
+  number,
+  ...rest
+}) => (
+  <Attachment {...rest}>
+    <AttachmentLabel title={title} number={number} />
+    <Dropzone />
+  </Attachment>
+)
+LabelledDropzone.bind({})
+LabelledDropzone.args = {
+  number: 1,
+  title: 'Label',
 }
 
-const AttachmentComponent = (args: DropzoneProps) => {
-  const { acceptedFiles } = useAttachmentContext()
-  const hasUploadedFiles = !!acceptedFiles.length
-  return hasUploadedFiles ? (
-    <AttachmentInfo />
-  ) : (
-    <Box maxWidth="min-content" whiteSpace="pre-line">
-      <Dropzone {...args} />
-    </Box>
-  )
-}
-
-type PlaygroundProps = DropzoneProps & AttachmentProps & LabelledProps
+type PlaygroundProps = AttachmentProps & LabelledProps
 export const Playground: Story<PlaygroundProps> = ({
-  maxSizeInBytes,
+  number,
+  title,
   ...props
 }: PlaygroundProps) => {
   const { handleSubmit, control } = useForm()
@@ -116,47 +78,29 @@ export const Playground: Story<PlaygroundProps> = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Attachment maxSizeInBytes={maxSizeInBytes} {...field}>
-        <PlaygroundComponent {...props} />
+      <Attachment {...props} {...field}>
+        <PlaygroundComponent title={title} number={number} />
       </Attachment>
     </form>
   )
 }
 Playground.bind({})
 Playground.args = {
-  labelNumber: 1,
-  labelText: 'Label',
+  number: 1,
+  title: 'Label',
 }
 
-const PlaygroundComponent = (props: DropzoneProps) => {
-  const { fileRejections, maxSize } = useAttachmentContext()
+const PlaygroundComponent = (props: LabelledProps) => {
+  const { fileRejections } = useAttachmentContext()
   const isError = !!fileRejections.length
-  const formattedMaxSize = formatBytes(maxSize, 0)
-
-  const getErrorMessage = (error: FileError) =>
-    error.code === 'file-too-large'
-      ? `You have exceeded the limit, please upload a file below ${formattedMaxSize}`
-      : 'Please ensure that only 1 file is uploaded!'
 
   return (
-    <FormControl isInvalid={isError}>
-      <FormLabel>
-        <HStack spacing="0.5rem">
-          <Text textStyle="caption-1">1. </Text>
-          <Text textStyle="subhead-1">Label</Text>
-        </HStack>
-      </FormLabel>
+    <>
+      <AttachmentLabel {...props} />
       <AttachmentField />
-      {isError ? (
-        <FormErrorMessage role="alert">
-          {getErrorMessage(fileRejections[0].errors[0])}
-        </FormErrorMessage>
-      ) : (
-        <FormFieldMessage>{`Maximum file size: ${formattedMaxSize}`}</FormFieldMessage>
-      )}
       <Button mt="8px" type="submit" isDisabled={isError}>
         Submit
       </Button>
-    </FormControl>
+    </>
   )
 }
