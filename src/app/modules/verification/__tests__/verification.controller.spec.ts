@@ -16,7 +16,7 @@ import { IFormSchema, IVerificationSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { WAIT_FOR_OTP_SECONDS } from '../../../../../shared/util/verification'
+import { WAIT_FOR_OTP_SECONDS } from '../../../../../shared/utils/verification'
 import expressHandler from '../../../../../tests/unit/backend/helpers/jest-express'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'

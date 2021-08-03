@@ -7,7 +7,7 @@ import { ResponseValidator } from 'src/types/field/utils/validation'
 import {
   isHomePhoneNumber,
   startsWithSgPrefix,
-} from '../../../../../shared/util/phone-num-validation'
+} from '../../../../../shared/utils/phone-num-validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 import { notEmptySingleAnswerResponse } from './common'

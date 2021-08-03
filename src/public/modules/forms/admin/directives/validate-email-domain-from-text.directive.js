@@ -2,7 +2,7 @@
 
 const {
   validateEmailDomains,
-} = require('../../../../../../shared/util/email-domain-validation')
+} = require('../../../../../../shared/utils/email-domain-validation')
 
 angular
   .module('forms')

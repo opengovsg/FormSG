@@ -1,6 +1,8 @@
 'use strict'
 const { groupLogicUnitsByField } = require('shared/util/logic')
-const { reorder } = require('../../../../../../shared/util/immutable-array-fns')
+const {
+  reorder,
+} = require('../../../../../../shared/utils/immutable-array-fns')
 const FieldFactory = require('../../helpers/field-factory')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 const BetaService = require('../../../../services/BetaService')

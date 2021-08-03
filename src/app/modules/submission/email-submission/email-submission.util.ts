@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact, flattenDeep, sumBy } from 'lodash'
 
-import * as FileValidation from '../../../../../shared/util/file-validation'
+import * as FileValidation from '../../../../../shared/utils/file-validation'
 import {
   AuthType,
   BasicField,

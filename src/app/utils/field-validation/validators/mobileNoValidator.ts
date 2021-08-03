@@ -4,7 +4,7 @@ import { flow } from 'fp-ts/lib/function'
 import {
   isMobilePhoneNumber,
   startsWithSgPrefix,
-} from '../../../../../shared/util/phone-num-validation'
+} from '../../../../../shared/utils/phone-num-validation'
 import {
   IMobileFieldSchema,
   OmitUnusedValidatorProps,

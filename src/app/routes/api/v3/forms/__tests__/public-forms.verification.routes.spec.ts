@@ -32,7 +32,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import {
   NUM_OTP_RETRIES,
   WAIT_FOR_OTP_SECONDS,
-} from '../../../../../../../shared/util/verification'
+} from '../../../../../../../shared/utils/verification'
 import { MOCK_OTP } from '../../../../../modules/verification/__tests__/verification.test.helpers'
 import { PublicFormsVerificationRouter } from '../public-forms.verification.routes'
 

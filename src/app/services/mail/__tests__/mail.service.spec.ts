@@ -13,7 +13,7 @@ import {
 import * as MailUtils from 'src/app/services/mail/mail.utils'
 import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
 
-import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../../shared/util/verification'
+import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../../shared/utils/verification'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'

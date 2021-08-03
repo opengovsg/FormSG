@@ -16,7 +16,7 @@ import {
   STORAGE_FORM_SETTINGS_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
 } from '../../../shared/constants/form'
-import { reorder } from '../../../shared/util/immutable-array-fns'
+import { reorder } from '../../../shared/utils/immutable-array-fns'
 import { MB } from '../../shared/constants'
 import { getApplicableIfStates } from '../../shared/util/logic'
 import {

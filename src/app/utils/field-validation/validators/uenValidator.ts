@@ -4,7 +4,7 @@ import { flow } from 'fp-ts/lib/function'
 import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 
-import { isUenValid } from '../../../../../shared/util/uen-validation'
+import { isUenValid } from '../../../../../shared/utils/uen-validation'
 
 import { notEmptySingleAnswerResponse } from './common'
 

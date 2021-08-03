@@ -11,7 +11,7 @@ import { FormOtpData, IFormSchema, IUserSchema, ResponseMode } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { VfnErrors } from '../../../../../shared/util/verification'
+import { VfnErrors } from '../../../../../shared/utils/verification'
 import { InvalidNumberError } from '../sms.errors'
 import * as SmsService from '../sms.service'
 import { LogType, SmsType, TwilioConfig } from '../sms.types'

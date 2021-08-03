@@ -4,7 +4,7 @@ import { err, ok, Result } from 'neverthrow'
 import {
   reorder,
   replaceAt,
-} from '../../../../../shared/util/immutable-array-fns'
+} from '../../../../../shared/utils/immutable-array-fns'
 import { EditFieldActions } from '../../../../shared/constants'
 import {
   FormFieldSchema,

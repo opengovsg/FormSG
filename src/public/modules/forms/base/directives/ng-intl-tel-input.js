@@ -7,7 +7,7 @@ const {
   isMobilePhoneNumber,
   isHomePhoneNumber,
   startsWithSgPrefix,
-} = require('../../../../../../shared/util/phone-num-validation')
+} = require('../../../../../../shared/utils/phone-num-validation')
 
 angular
   .module('ngIntlTelInput')

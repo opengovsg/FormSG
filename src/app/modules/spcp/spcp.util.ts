@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
-import { hasProp } from '../../../../shared/util/has-prop'
+import { hasProp } from '../../../../shared/utils/has-prop'
 import {
   AuthType,
   BasicField,
