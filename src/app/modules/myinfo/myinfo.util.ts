@@ -5,8 +5,8 @@ import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
+import { hasProp } from '../../../../shared/util/has-prop'
 import { types as myInfoTypes } from '../../../shared/resources/myinfo'
-import { hasProp } from '../../../shared/util/has-prop'
 import {
   AuthType,
   BasicField,

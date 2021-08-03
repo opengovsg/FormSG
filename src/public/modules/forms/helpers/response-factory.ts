@@ -1,4 +1,4 @@
-import { hasProp } from '../../../../shared/util/has-prop'
+import { hasProp } from '../../../../../shared/util/has-prop'
 import { BasicField } from '../../../../types/field'
 import {
   ArrayResponse,
