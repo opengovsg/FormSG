@@ -2,7 +2,6 @@ import { ObjectId } from 'bson'
 import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
 
-import { types as basicTypes } from 'src/shared/resources/basic'
 import {
   AuthType,
   BasicField,
@@ -25,6 +24,7 @@ import {
   generateNewTableResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
 
+import { types as basicTypes } from '../../../../../../shared/constants/field/basic'
 import { ProcessedFieldResponse } from '../../submission.types'
 import {
   ATTACHMENT_PREFIX,
