@@ -1812,6 +1812,10 @@ const joiLogicBody = {
             Joi.string(),
             Joi.array().items(Joi.string()),
             Joi.array().items(Joi.number()),
+            Joi.array().items({
+              options: Joi.array().items(Joi.string()),
+              others: Joi.boolean(),
+            }),
           )
           .required(),
         ifValueType: Joi.string()

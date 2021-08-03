@@ -9,7 +9,7 @@ const UpdateFormService = require('../../../../services/UpdateFormService')
 const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
-} = require('../../../../../shared/util/logic')
+} = require('../../helpers/logic-adaptor')
 
 /**
  * @typedef {number} FormState
@@ -173,24 +173,28 @@ function submitFormDirective(
       }
 
       function advanceLogic() {
-        const visibleFieldIds = getVisibleFieldIds(
-          scope.form.form_fields,
-          scope.form,
-        )
-        scope.form.form_fields.forEach(function (field) {
-          const fieldWasVisibleBeforeUpdate = field.isVisible
-          field.isVisible = visibleFieldIds.has(field._id)
-          // If the field goes from shown to hidden, then clear its contents
-          if (fieldWasVisibleBeforeUpdate && !field.isVisible) {
-            field.clear(false)
-          }
-        })
-        const preventSubmitLogicUnit = getLogicUnitPreventingSubmit(
-          scope.form.form_fields,
-          scope.form,
-          visibleFieldIds,
-        )
-        setPreventSubmitState(preventSubmitLogicUnit)
+        try {
+          const visibleFieldIds = getVisibleFieldIds(
+            scope.form.form_fields,
+            scope.form,
+          )
+          scope.form.form_fields.forEach(function (field) {
+            const fieldWasVisibleBeforeUpdate = field.isVisible
+            field.isVisible = visibleFieldIds.has(field._id)
+            // If the field goes from shown to hidden, then clear its contents
+            if (fieldWasVisibleBeforeUpdate && !field.isVisible) {
+              field.clear(false)
+            }
+          })
+          const preventSubmitLogicUnit = getLogicUnitPreventingSubmit(
+            scope.form.form_fields,
+            scope.form,
+            visibleFieldIds,
+          )
+          setPreventSubmitState(preventSubmitLogicUnit)
+        } catch (error) {
+          console.error('Something went wrong with logic:\t', error)
+        }
       }
 
       /**

@@ -1,19 +1,32 @@
+import { cloneDeep, intersection, isEmpty } from 'lodash'
+
+import { CheckboxConditionValue } from '../../../shared/types/form/form_logic'
 import {
   BasicField,
   FieldResponse,
-  IClientFieldSchema,
+  IAttachmentResponse,
   IConditionSchema,
   IField,
+  IFieldSchema,
   IFormDocument,
   ILogicSchema,
   IPreventSubmitLogicSchema,
   IShowFieldsLogicSchema,
+  ISingleAnswerResponse,
+  ITableResponse,
   LogicCondition,
   LogicConditionState,
   LogicType,
 } from '../../types'
 
+import {
+  ILogicCheckboxResponse,
+  isCheckboxConditionValue,
+  isLogicCheckboxCondition,
+} from './logic-utils'
+
 const LOGIC_CONDITIONS: LogicCondition[] = [
+  [BasicField.Checkbox, [LogicConditionState.Includes]],
   [
     BasicField.Dropdown,
     [LogicConditionState.Equal, LogicConditionState.Either],
@@ -64,11 +77,38 @@ export const getApplicableIfStates = (
   fieldType: BasicField,
 ): LogicConditionState[] => LOGIC_MAP.get(fieldType) ?? []
 
+export type LogicFieldResponse =
+  | Extract<
+      FieldResponse,
+      ISingleAnswerResponse | IAttachmentResponse | ITableResponse
+    >
+  | ILogicCheckboxResponse
+
+// This is the schema for field responses on the client's end that will be input into the logic module.
+// This will not be saved in the backend.
+export interface IClientFieldSchema extends IFieldSchema {
+  fieldValue: string | boolean[]
+}
+export interface ILogicClientFieldSchema
+  extends Omit<IClientFieldSchema, 'fieldValue'> {
+  // Use omit instead of directly extending IFieldSchema
+  // to prevent typescript from complaining about return type in adaptor function
+  fieldValue: string | CheckboxConditionValue
+}
+
 type GroupedLogic = Record<string, IConditionSchema[][]>
-export type FieldIdSet = Set<IClientFieldSchema['_id']>
-// This module handles logic on both the client side (IFieldSchema[])
-// and server side (FieldResponse[])
-type LogicFieldSchemaOrResponse = IClientFieldSchema | FieldResponse
+export type FieldIdSet = Set<ILogicClientFieldSchema['_id']>
+
+// This module handles logic on both the client side (ILogicClientFieldSchema[])
+// and server side (LogicFieldResponse[]).
+// This type represents the input to the logic module (including non-logic supported fields) that have been transformed.
+export type LogicFieldSchemaOrResponse =
+  | ILogicClientFieldSchema
+  | LogicFieldResponse
+
+type LogicSupportedFieldSchemaOrResponse =
+  | ILogicClientFieldSchema
+  | Extract<LogicFieldResponse, ISingleAnswerResponse | ILogicCheckboxResponse>
 
 // Returns typed ShowFields logic unit
 const isShowFieldsLogic = (
@@ -277,20 +317,30 @@ const isLogicUnitSatisfied = (
 }
 
 const getCurrentValue = (
-  field: LogicFieldSchemaOrResponse,
-): string | null | undefined | string[] => {
+  field: LogicSupportedFieldSchemaOrResponse,
+): string | string[] | CheckboxConditionValue | undefined | null => {
   if ('fieldValue' in field) {
     // client
     return field.fieldValue
   } else if ('answer' in field) {
     // server
     return field.answer
+  } else if ('answerArray' in field) {
+    // server
+    return field.answerArray
   }
   return null
 }
+
+const isLogicField = (
+  field: LogicFieldSchemaOrResponse,
+): field is LogicSupportedFieldSchemaOrResponse => {
+  return LOGIC_MAP.has(field.fieldType)
+}
+
 /**
  * Checks if the field's value matches the condition
- * @param {Object} field
+ * @param {Object} field Logic field
  * @param {Object} condition
  * @param {String} condition.state - The type of condition
  */
@@ -298,14 +348,14 @@ const isConditionFulfilled = (
   field: LogicFieldSchemaOrResponse,
   condition: IConditionSchema,
 ): boolean => {
-  if (!field || !condition) {
+  if (!field || !condition || !isLogicField(field)) {
     return false
   }
   let currentValue = getCurrentValue(field)
   if (
     currentValue === null ||
     currentValue === undefined ||
-    currentValue.length === 0
+    (typeof currentValue !== 'number' && isEmpty(currentValue))
   ) {
     return false
   }
@@ -335,10 +385,8 @@ const isConditionFulfilled = (
     // TODO: An option that is named "Others: Something..." will also pass this test,
     // even if the field has not been configured to set othersRadioButton=true
     if (conditionValues.indexOf('Others') > -1) {
-      if (field.fieldType === 'radiobutton') {
+      if (field.fieldType === BasicField.Radio) {
         conditionValues.push('radioButtonOthers')
-      } else if (field.fieldType === 'checkbox') {
-        conditionValues.push('checkboxOthers') // Checkbox currently doesn't have logic, but the 'Others' will work in the future if it in implemented
       }
       return (
         conditionValues.indexOf(currentValue) > -1 || // Client-side
@@ -346,9 +394,36 @@ const isConditionFulfilled = (
       ) // Server-side
     }
     return conditionValues.indexOf(currentValue) > -1
-  } else if (condition.state === 'is less than or equal to') {
+  } else if (condition.state === LogicConditionState.Includes) {
+    if (
+      field.fieldType === BasicField.Checkbox &&
+      isLogicCheckboxCondition(condition) &&
+      isCheckboxConditionValue(currentValue)
+    ) {
+      // sort condition and current value
+      const sortedConditionValue = condition.value.map((obj) => {
+        const clonedObj = cloneDeep(obj)
+        clonedObj.options = clonedObj.options.sort()
+        return clonedObj
+      })
+      const sortedCurrentValue = cloneDeep(currentValue)
+      sortedCurrentValue.options = sortedCurrentValue.options.sort()
+
+      return sortedConditionValue.some((val) => {
+        // condition's options has to be complete subset of current value's options
+        const optionsIsSubset =
+          val.options.length ===
+          intersection(val.options, sortedCurrentValue.options).length
+        // only care about current value's others if condition's others is true
+        const othersIsSubset = val.others ? sortedCurrentValue.others : true
+        return optionsIsSubset && othersIsSubset
+      })
+    } else {
+      return false
+    }
+  } else if (condition.state === LogicConditionState.Lte) {
     return Number(currentValue) <= Number(condition.value)
-  } else if (condition.state === 'is more than or equal to') {
+  } else if (condition.state === LogicConditionState.Gte) {
     return Number(currentValue) >= Number(condition.value)
   } else {
     return false

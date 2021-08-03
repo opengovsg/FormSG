@@ -18,7 +18,6 @@ import {
 } from '../../../shared/constants/form'
 import { MB } from '../../shared/constants'
 import { reorder } from '../../shared/util/immutable-array-fns'
-import { getApplicableIfStates } from '../../shared/util/logic'
 import {
   AuthType,
   BasicField,
@@ -57,6 +56,7 @@ import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
+import { getApplicableIfStates } from '../utils/logic-adaptor'
 
 import getAgencyModel from './agency.server.model'
 import {

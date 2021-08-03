@@ -57,12 +57,21 @@ type LogicField = Extract<
   | BasicField.Number
   | BasicField.Decimal
   | BasicField.Rating
+  | BasicField.Checkbox
 >
 
 type LogicAssociation<K extends LogicField, VS extends LogicConditionState> = [
   K,
   Array<VS>,
 ]
+
+// Logic fields that are multi-valued
+type MultiCombiLogicField = Extract<BasicField, BasicField.Checkbox>
+type MultiCombiLogicStates = LogicConditionState.Includes
+type MultiCombiLogicCondition = LogicAssociation<
+  MultiCombiLogicField,
+  MultiCombiLogicStates
+>
 
 // Logic fields that are categorical
 type CategoricalLogicField = Extract<
@@ -103,3 +112,4 @@ export type LogicCondition =
   | CategoricalLogicCondition
   | BinaryLogicCondition
   | NumericalLogicCondition
+  | MultiCombiLogicCondition

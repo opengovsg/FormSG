@@ -1,16 +1,18 @@
 import { ObjectId } from 'bson-ext'
+import { CheckboxConditionValue } from 'shared/types/form/form_logic'
 
 import {
   getApplicableIfFields,
   getApplicableIfStates,
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
+  LogicFieldResponse,
 } from 'src/shared/util/logic'
 import {
   BasicField,
-  FieldResponse,
+  FormFieldSchema,
+  ICheckboxFieldSchema,
   IField,
-  IFieldSchema,
   IFormDocument,
   IPreventSubmitLogicSchema,
   IRadioFieldSchema,
@@ -23,8 +25,7 @@ import {
 
 describe('Logic validation', () => {
   /** Mock a field's bare essentials */
-  const makeField = (fieldId: string) => ({ _id: fieldId } as IFieldSchema)
-
+  const makeField = (fieldId: string) => ({ _id: fieldId } as FormFieldSchema)
   /**
    *  Mock a response
    * @param fieldId field id of the field that this response is meant for
@@ -34,21 +35,30 @@ describe('Logic validation', () => {
    */
   const makeResponse = (
     fieldId: string,
-    answer: string | number,
-    answerArray: string[] | null = null,
+    answer: string | number | null = null,
+    answerArray: string[] | CheckboxConditionValue | null = null,
+    fieldType: string | null = null,
     isVisible = true,
-  ): FieldResponse => {
-    const response: Record<string, any> = { _id: fieldId, answer, isVisible }
+  ): LogicFieldResponse => {
+    const response: Record<string, any> = { _id: fieldId, isVisible, fieldType }
+    if (answer !== null) {
+      response.answer = answer
+    }
     if (answerArray) {
       response.answerArray = answerArray
     }
-    return response as FieldResponse
+    return response as LogicFieldResponse
   }
 
   describe('visibility for different states', () => {
     const CONDITION_FIELD = makeField(new ObjectId().toHexString())
     const LOGIC_FIELD = makeField(new ObjectId().toHexString())
-    const LOGIC_RESPONSE = makeResponse(LOGIC_FIELD._id, 'lorem')
+    const LOGIC_RESPONSE = makeResponse(
+      LOGIC_FIELD._id,
+      'lorem',
+      null,
+      BasicField.Dropdown,
+    )
     const MOCK_LOGIC_ID = new ObjectId().toHexString()
 
     let form: IFormDocument
@@ -82,14 +92,97 @@ describe('Logic validation', () => {
       // Act + Assert
       expect(
         getVisibleFieldIds(
-          [makeResponse(CONDITION_FIELD._id, 0), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 0, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
       expect(
         getVisibleFieldIds(
-          [makeResponse(CONDITION_FIELD._id, 1), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 1, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
+          form,
+        ).has(LOGIC_FIELD._id),
+      ).toEqual(false)
+    })
+
+    it('should compute the correct visibility for "includes the following"', () => {
+      // Arrange
+      const CHECKBOX_FIELD = {
+        _id: new ObjectId().toHexString(),
+        fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+        othersRadioButton: true,
+      } as ICheckboxFieldSchema
+      const conditionValue = [
+        {
+          options: ['Option 1'],
+          others: true,
+        },
+      ]
+      const includesCondition = {
+        show: [LOGIC_FIELD._id],
+        conditions: [
+          {
+            ifValueType: LogicIfValue.MultiCombination,
+            _id: '58169',
+            field: CHECKBOX_FIELD._id,
+            state: LogicConditionState.Includes,
+            value: conditionValue,
+          },
+        ],
+        _id: MOCK_LOGIC_ID,
+        logicType: LogicType.ShowFields,
+      } as IShowFieldsLogicSchema
+
+      form.form_logics = [includesCondition]
+      form.form_fields = [CHECKBOX_FIELD, LOGIC_FIELD]
+
+      // Act + Assert
+      expect(
+        getVisibleFieldIds(
+          [
+            makeResponse(
+              CHECKBOX_FIELD._id,
+              null,
+              { options: ['Option 1', 'Option 2'], others: true },
+              BasicField.Checkbox,
+            ),
+          ],
+          form,
+        ).has(LOGIC_FIELD._id),
+      ).toEqual(true)
+
+      expect(
+        getVisibleFieldIds(
+          [
+            makeResponse(
+              CHECKBOX_FIELD._id,
+              null,
+              { options: ['Option 1'], others: true },
+              BasicField.Checkbox,
+            ),
+            LOGIC_RESPONSE,
+          ],
+          form,
+        ).has(LOGIC_FIELD._id),
+      ).toEqual(true)
+
+      expect(
+        getVisibleFieldIds(
+          [
+            makeResponse(
+              CHECKBOX_FIELD._id,
+              null,
+              { options: ['Option 1'], others: false },
+              BasicField.Checkbox,
+            ),
+            LOGIC_RESPONSE,
+          ],
           form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(false)
@@ -117,21 +210,30 @@ describe('Logic validation', () => {
       // Act + Assert
       expect(
         getVisibleFieldIds(
-          [makeResponse(CONDITION_FIELD._id, 98), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 98, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
       expect(
         getVisibleFieldIds(
-          [makeResponse(CONDITION_FIELD._id, 99), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 99, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
       expect(
         getVisibleFieldIds(
-          [makeResponse(CONDITION_FIELD._id, 100), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 100, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(false)
@@ -158,19 +260,28 @@ describe('Logic validation', () => {
       // Act + Assert
       expect(
         getVisibleFieldIds(
-          [makeResponse(CONDITION_FIELD._id, 23), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 23, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
       expect(
         getVisibleFieldIds(
-          [makeResponse(CONDITION_FIELD._id, 22), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 22, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
       expect(
         getVisibleFieldIds(
-          [makeResponse(CONDITION_FIELD._id, 21), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 21, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(false)
@@ -199,21 +310,45 @@ describe('Logic validation', () => {
       // Act + Assert
       expect(
         getVisibleFieldIds(
-          [makeResponse(CONDITION_FIELD._id, validOptions[0]), LOGIC_RESPONSE],
+          [
+            makeResponse(
+              CONDITION_FIELD._id,
+              validOptions[0],
+              null,
+              BasicField.Dropdown,
+            ),
+            LOGIC_RESPONSE,
+          ],
           form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
       expect(
         getVisibleFieldIds(
-          [makeResponse(CONDITION_FIELD._id, validOptions[1]), LOGIC_RESPONSE],
+          [
+            makeResponse(
+              CONDITION_FIELD._id,
+              validOptions[1],
+              null,
+              BasicField.Dropdown,
+            ),
+            LOGIC_RESPONSE,
+          ],
           form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
       expect(
         getVisibleFieldIds(
-          [makeResponse(CONDITION_FIELD._id, 'invalid option'), LOGIC_RESPONSE],
+          [
+            makeResponse(
+              CONDITION_FIELD._id,
+              'invalid option',
+              null,
+              BasicField.Dropdown,
+            ),
+            LOGIC_RESPONSE,
+          ],
           form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(false)
@@ -223,7 +358,12 @@ describe('Logic validation', () => {
   describe('preventing submission for different states', () => {
     const CONDITION_FIELD = makeField(new ObjectId().toHexString())
     const LOGIC_FIELD = makeField(new ObjectId().toHexString())
-    const LOGIC_RESPONSE = makeResponse(LOGIC_FIELD._id, 'lorem')
+    const LOGIC_RESPONSE = makeResponse(
+      LOGIC_FIELD._id,
+      'lorem',
+      null,
+      BasicField.Dropdown,
+    )
     const MOCK_LOGIC_ID = new ObjectId().toHexString()
 
     let form: IFormDocument
@@ -257,14 +397,98 @@ describe('Logic validation', () => {
       // Act + Assert
       expect(
         getLogicUnitPreventingSubmit(
-          [makeResponse(CONDITION_FIELD._id, 0), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 0, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ),
       ).toEqual(form.form_logics[0])
 
       expect(
         getLogicUnitPreventingSubmit(
-          [makeResponse(CONDITION_FIELD._id, 1), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 1, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
+          form,
+        ),
+      ).toBeUndefined()
+    })
+
+    it('should compute that submission should be prevented for "includes the following"', () => {
+      // Arrange
+      const CHECKBOX_FIELD = {
+        _id: new ObjectId().toHexString(),
+        fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+        othersRadioButton: true,
+      } as ICheckboxFieldSchema
+      const conditionValue = [
+        {
+          options: ['Option 1'],
+          others: true,
+        },
+      ]
+      const includesCondition = {
+        conditions: [
+          {
+            ifValueType: LogicIfValue.MultiCombination,
+            _id: '58169',
+            field: CHECKBOX_FIELD._id,
+            state: LogicConditionState.Includes,
+            value: conditionValue,
+          },
+        ],
+        _id: MOCK_LOGIC_ID,
+        logicType: LogicType.PreventSubmit,
+        preventSubmitMessage: 'you shall not pass',
+      } as IPreventSubmitLogicSchema
+
+      form.form_logics = [includesCondition]
+      form.form_fields = [CHECKBOX_FIELD, LOGIC_FIELD]
+
+      // Act + Assert
+      expect(
+        getLogicUnitPreventingSubmit(
+          [
+            makeResponse(
+              CHECKBOX_FIELD._id,
+              null,
+              { options: ['Option 1', 'Option 2'], others: true },
+              BasicField.Checkbox,
+            ),
+            LOGIC_RESPONSE,
+          ],
+          form,
+        ),
+      ).toEqual(form.form_logics[0])
+
+      expect(
+        getLogicUnitPreventingSubmit(
+          [
+            makeResponse(
+              CHECKBOX_FIELD._id,
+              null,
+              { options: ['Option 1'], others: true },
+              BasicField.Checkbox,
+            ),
+            LOGIC_RESPONSE,
+          ],
+          form,
+        ),
+      ).toEqual(form.form_logics[0])
+
+      expect(
+        getLogicUnitPreventingSubmit(
+          [
+            makeResponse(
+              CHECKBOX_FIELD._id,
+              null,
+              { options: ['Option 1'], others: false },
+              BasicField.Checkbox,
+            ),
+            LOGIC_RESPONSE,
+          ],
           form,
         ),
       ).toBeUndefined()
@@ -292,19 +516,28 @@ describe('Logic validation', () => {
       // Act + Assert
       expect(
         getLogicUnitPreventingSubmit(
-          [makeResponse(CONDITION_FIELD._id, 98), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 98, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ),
       ).toEqual(form.form_logics[0])
       expect(
         getLogicUnitPreventingSubmit(
-          [makeResponse(CONDITION_FIELD._id, 99), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 99, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ),
       ).toEqual(form.form_logics[0])
       expect(
         getLogicUnitPreventingSubmit(
-          [makeResponse(CONDITION_FIELD._id, 100), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 100, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ),
       ).toBeUndefined()
@@ -332,21 +565,30 @@ describe('Logic validation', () => {
       // Act + Assert
       expect(
         getLogicUnitPreventingSubmit(
-          [makeResponse(CONDITION_FIELD._id, 23), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 23, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ),
       ).toEqual(form.form_logics[0])
 
       expect(
         getLogicUnitPreventingSubmit(
-          [makeResponse(CONDITION_FIELD._id, 22), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 22, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ),
       ).toEqual(form.form_logics[0])
 
       expect(
         getLogicUnitPreventingSubmit(
-          [makeResponse(CONDITION_FIELD._id, 21), LOGIC_RESPONSE],
+          [
+            makeResponse(CONDITION_FIELD._id, 21, null, BasicField.Dropdown),
+            LOGIC_RESPONSE,
+          ],
           form,
         ),
       ).toBeUndefined()
@@ -375,21 +617,45 @@ describe('Logic validation', () => {
       // Act + Assert
       expect(
         getLogicUnitPreventingSubmit(
-          [makeResponse(CONDITION_FIELD._id, validOptions[0]), LOGIC_RESPONSE],
+          [
+            makeResponse(
+              CONDITION_FIELD._id,
+              validOptions[0],
+              null,
+              BasicField.Dropdown,
+            ),
+            LOGIC_RESPONSE,
+          ],
           form,
         ),
       ).toEqual(form.form_logics[0])
 
       expect(
         getLogicUnitPreventingSubmit(
-          [makeResponse(CONDITION_FIELD._id, validOptions[1]), LOGIC_RESPONSE],
+          [
+            makeResponse(
+              CONDITION_FIELD._id,
+              validOptions[1],
+              null,
+              BasicField.Dropdown,
+            ),
+            LOGIC_RESPONSE,
+          ],
           form,
         ),
       ).toEqual(form.form_logics[0])
 
       expect(
         getLogicUnitPreventingSubmit(
-          [makeResponse(CONDITION_FIELD._id, 'Option 3'), LOGIC_RESPONSE],
+          [
+            makeResponse(
+              CONDITION_FIELD._id,
+              'Option 3',
+              null,
+              BasicField.Dropdown,
+            ),
+            LOGIC_RESPONSE,
+          ],
           form,
         ),
       ).toBeUndefined()
@@ -400,7 +666,12 @@ describe('Logic validation', () => {
     const CONDITION_FIELD_1 = makeField(new ObjectId().toHexString())
     const CONDITION_FIELD_2 = makeField(new ObjectId().toHexString())
     const LOGIC_FIELD = makeField(new ObjectId().toHexString())
-    const LOGIC_RESPONSE = makeResponse(LOGIC_FIELD._id, 'lorem')
+    const LOGIC_RESPONSE = makeResponse(
+      LOGIC_FIELD._id,
+      'lorem',
+      null,
+      BasicField.Dropdown,
+    )
     const MOCK_LOGIC_ID_1 = new ObjectId().toHexString()
     const MOCK_LOGIC_ID_2 = new ObjectId().toHexString()
 
@@ -443,8 +714,13 @@ describe('Logic validation', () => {
       expect(
         getVisibleFieldIds(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'Yes'),
-            makeResponse(CONDITION_FIELD_2._id, 20),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'Yes',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 20, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -454,8 +730,13 @@ describe('Logic validation', () => {
       expect(
         getVisibleFieldIds(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'Yes'),
-            makeResponse(CONDITION_FIELD_2._id, 100),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'Yes',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 100, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -465,8 +746,13 @@ describe('Logic validation', () => {
       expect(
         getVisibleFieldIds(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'No'),
-            makeResponse(CONDITION_FIELD_2._id, 20),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'No',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 20, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -512,8 +798,13 @@ describe('Logic validation', () => {
       expect(
         getVisibleFieldIds(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'Yes'),
-            makeResponse(CONDITION_FIELD_2._id, 20),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'Yes',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 20, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -523,8 +814,13 @@ describe('Logic validation', () => {
       expect(
         getVisibleFieldIds(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'Yes'),
-            makeResponse(CONDITION_FIELD_2._id, 100),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'Yes',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 100, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -534,8 +830,13 @@ describe('Logic validation', () => {
       expect(
         getVisibleFieldIds(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'No'),
-            makeResponse(CONDITION_FIELD_2._id, 20),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'No',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 20, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -545,8 +846,13 @@ describe('Logic validation', () => {
       expect(
         getVisibleFieldIds(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'No'),
-            makeResponse(CONDITION_FIELD_2._id, 100),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'No',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 100, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -559,7 +865,12 @@ describe('Logic validation', () => {
     const CONDITION_FIELD_1 = makeField(new ObjectId().toHexString())
     const CONDITION_FIELD_2 = makeField(new ObjectId().toHexString())
     const LOGIC_FIELD = makeField(new ObjectId().toHexString())
-    const LOGIC_RESPONSE = makeResponse(LOGIC_FIELD._id, 'lorem')
+    const LOGIC_RESPONSE = makeResponse(
+      LOGIC_FIELD._id,
+      'lorem',
+      null,
+      BasicField.Dropdown,
+    )
     const MOCK_LOGIC_ID_1 = new ObjectId().toHexString()
     const MOCK_LOGIC_ID_2 = new ObjectId().toHexString()
 
@@ -601,8 +912,13 @@ describe('Logic validation', () => {
       expect(
         getLogicUnitPreventingSubmit(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'Yes'),
-            makeResponse(CONDITION_FIELD_2._id, 20),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'Yes',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 20, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -612,8 +928,13 @@ describe('Logic validation', () => {
       expect(
         getLogicUnitPreventingSubmit(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'Yes'),
-            makeResponse(CONDITION_FIELD_2._id, 100),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'Yes',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 100, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -623,8 +944,13 @@ describe('Logic validation', () => {
       expect(
         getLogicUnitPreventingSubmit(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'No'),
-            makeResponse(CONDITION_FIELD_2._id, 20),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'No',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 20, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -670,8 +996,13 @@ describe('Logic validation', () => {
       expect(
         getLogicUnitPreventingSubmit(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'Yes'),
-            makeResponse(CONDITION_FIELD_2._id, 20),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'Yes',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 20, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -681,8 +1012,13 @@ describe('Logic validation', () => {
       expect(
         getLogicUnitPreventingSubmit(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'Yes'),
-            makeResponse(CONDITION_FIELD_2._id, 100),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'Yes',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 100, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -692,8 +1028,13 @@ describe('Logic validation', () => {
       expect(
         getLogicUnitPreventingSubmit(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'No'),
-            makeResponse(CONDITION_FIELD_2._id, 20),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'No',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 20, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -703,8 +1044,13 @@ describe('Logic validation', () => {
       expect(
         getLogicUnitPreventingSubmit(
           [
-            makeResponse(CONDITION_FIELD_1._id, 'No'),
-            makeResponse(CONDITION_FIELD_2._id, 100),
+            makeResponse(
+              CONDITION_FIELD_1._id,
+              'No',
+              null,
+              BasicField.Dropdown,
+            ),
+            makeResponse(CONDITION_FIELD_2._id, 100, null, BasicField.Dropdown),
             LOGIC_RESPONSE,
           ],
           form,
@@ -805,7 +1151,12 @@ describe('Logic validation', () => {
       expect(
         getVisibleFieldIds(
           [
-            makeResponse(MOCK_RADIO_FIELD._id, 'Others: School'),
+            makeResponse(
+              MOCK_RADIO_FIELD._id,
+              'Others: School',
+              null,
+              BasicField.Radio,
+            ),
             textFieldResponse,
           ],
           form,
@@ -814,7 +1165,15 @@ describe('Logic validation', () => {
 
       expect(
         getVisibleFieldIds(
-          [makeResponse(MOCK_RADIO_FIELD._id, 'Option 1'), textFieldResponse],
+          [
+            makeResponse(
+              MOCK_RADIO_FIELD._id,
+              'Option 1',
+              null,
+              BasicField.Dropdown,
+            ),
+            textFieldResponse,
+          ],
           form,
         ).has(MOCK_TEXT_FIELD._id),
       ).toEqual(false)
@@ -872,8 +1231,18 @@ describe('Logic validation', () => {
         for (const field2Response of ['Yes', 'No']) {
           const visibleFieldIds = getVisibleFieldIds(
             [
-              makeResponse(FIELD_1._id, field1Response),
-              makeResponse(FIELD_2._id, field2Response),
+              makeResponse(
+                FIELD_1._id,
+                field1Response,
+                null,
+                BasicField.Dropdown,
+              ),
+              makeResponse(
+                FIELD_2._id,
+                field2Response,
+                null,
+                BasicField.Dropdown,
+              ),
             ],
             form,
           )
@@ -889,9 +1258,19 @@ describe('Logic validation', () => {
         for (const field2Response of ['Yes', 'No']) {
           const visibleFieldIds = getVisibleFieldIds(
             [
-              makeResponse(FIELD_1._id, field1Response),
-              makeResponse(FIELD_2._id, field2Response),
-              makeResponse(VISIBLE_FIELD._id, 'Yes'),
+              makeResponse(
+                FIELD_1._id,
+                field1Response,
+                null,
+                BasicField.Dropdown,
+              ),
+              makeResponse(
+                FIELD_2._id,
+                field2Response,
+                null,
+                BasicField.Dropdown,
+              ),
+              makeResponse(VISIBLE_FIELD._id, 'Yes', null, BasicField.Dropdown),
             ],
             form,
           )
@@ -968,6 +1347,8 @@ describe('Logic validation', () => {
       const textFieldResponse = makeResponse(
         new ObjectId().toHexString(),
         'lorem',
+        null,
+        BasicField.Dropdown,
       )
       form.form_fields = [MOCK_RADIO_FIELD, MOCK_TEXT_FIELD]
       form.form_logics = [
@@ -990,7 +1371,12 @@ describe('Logic validation', () => {
       expect(
         getLogicUnitPreventingSubmit(
           [
-            makeResponse(MOCK_RADIO_FIELD._id, 'Others: School'),
+            makeResponse(
+              MOCK_RADIO_FIELD._id,
+              'Others: School',
+              null,
+              BasicField.Radio,
+            ),
             textFieldResponse,
           ],
           form,
@@ -998,7 +1384,15 @@ describe('Logic validation', () => {
       ).toEqual(form.form_logics[0])
       expect(
         getLogicUnitPreventingSubmit(
-          [makeResponse(MOCK_RADIO_FIELD._id, 'Option 1'), textFieldResponse],
+          [
+            makeResponse(
+              MOCK_RADIO_FIELD._id,
+              'Option 1',
+              null,
+              BasicField.Dropdown,
+            ),
+            textFieldResponse,
+          ],
           form,
         ),
       ).toBeUndefined()
@@ -1014,6 +1408,7 @@ describe('Logic util', () => {
     BasicField.Rating,
     BasicField.YesNo,
     BasicField.Radio,
+    BasicField.Checkbox,
   ]
 
   const INVALID_IF_CONDITION_FIELDS = Object.values(BasicField).filter(
@@ -1068,6 +1463,14 @@ describe('Logic util', () => {
           LogicConditionState.Gte,
         ])
         expect(states).toBeArrayOfSize(3)
+      })
+    })
+    it('should return valid logic states for multi-combination field types', () => {
+      const multiCombiFields = [BasicField.Checkbox]
+      multiCombiFields.forEach((fieldType) => {
+        const states = getApplicableIfStates(fieldType)
+        expect(states).toIncludeSameMembers([LogicConditionState.Includes])
+        expect(states).toBeArrayOfSize(1)
       })
     })
     it('should return empty array for invalid conditional fields', () => {
