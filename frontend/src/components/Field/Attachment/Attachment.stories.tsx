@@ -5,7 +5,9 @@ import { Meta, Story } from '@storybook/react'
 import {
   Attachment,
   AttachmentField,
+  AttachmentInfo,
   AttachmentLabel,
+  AttachmentLabelProps,
   AttachmentProps,
   Dropzone,
   useAttachmentContext,
@@ -43,11 +45,21 @@ Error.bind({})
 Error.args = {
   isInvalid: true,
 }
-type LabelledProps = {
-  title: string
-  number: number
+
+export const Active: Story<AttachmentProps> = (args) => {
+  const fakeFile = new File([], 'this is fake')
+  return (
+    <Attachment {...args}>
+      <AttachmentInfo file={fakeFile} />
+    </Attachment>
+  )
 }
-export const LabelledDropzone: Story<AttachmentProps & LabelledProps> = ({
+
+Active.bind({})
+
+type LabelledDropzoneProps = AttachmentProps & AttachmentLabelProps
+
+export const LabelledDropzone: Story<LabelledDropzoneProps> = ({
   title,
   number,
   ...rest
@@ -63,12 +75,11 @@ LabelledDropzone.args = {
   title: 'Label',
 }
 
-type PlaygroundProps = AttachmentProps & LabelledProps
-export const Playground: Story<PlaygroundProps> = ({
+export const Playground: Story<LabelledDropzoneProps> = ({
   number,
   title,
   ...props
-}: PlaygroundProps) => {
+}: LabelledDropzoneProps) => {
   const { handleSubmit, control } = useForm()
   const { field } = useController({
     name: 'Attachment Playground',
@@ -90,7 +101,7 @@ Playground.args = {
   title: 'Label',
 }
 
-const PlaygroundComponent = (props: LabelledProps) => {
+const PlaygroundComponent = (props: AttachmentLabelProps) => {
   const { fileRejections } = useAttachmentContext()
   const isError = !!fileRejections.length
 
