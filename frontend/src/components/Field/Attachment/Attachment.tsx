@@ -133,6 +133,11 @@ export const Attachment = ({
   )
 }
 
+export const AttachmentField = (): JSX.Element => {
+  const { acceptedFiles } = useAttachmentContext()
+  return acceptedFiles.length ? <AttachmentInfo /> : <Dropzone />
+}
+
 export type DropzoneProps = PropsWithChildren<ButtonProps>
 export const Dropzone = forwardRef<DropzoneProps, 'input'>((props, ref) => {
   const styles = useMultiStyleConfig('Attachment', props)
@@ -152,7 +157,7 @@ export const Dropzone = forwardRef<DropzoneProps, 'input'>((props, ref) => {
   )
 })
 
-export const DropzoneButton = forwardRef<DropzoneProps, 'input'>(
+const DropzoneButton = forwardRef<DropzoneProps, 'input'>(
   ({ ...props }, ref) => {
     const { isDragActive } = useAttachmentContext()
     const styles = useMultiStyleConfig('Attachment', { ...props, isDragActive })
@@ -178,30 +183,22 @@ export const DropzoneButton = forwardRef<DropzoneProps, 'input'>(
 )
 
 // This component should not have behaviour as it is a simple stylistic wrapper to maintain theming.
-type AttachedProps = PropsWithChildren<StyleProps>
-
-export const Attached = ({
-  children,
-  ...props
-}: AttachedProps): JSX.Element => {
-  const styles = useMultiStyleConfig('Attachment', props)
-
-  return (
-    // NOTE: Due to how Chakra applies styling, sx has precedence over spread props.
-    // This means that if we do not destructure into the sx props,
-    // duplicate props given by users will be overriden by innate styling.
-    <Box sx={{ ...styles.uploaded, ...props }}>{children}</Box>
-  )
-}
+type AttachmentInfoProps = PropsWithChildren<StyleProps>
 
 /**
  * This is a convenience wrapper to simply display file information.
  */
-export const AttachmentInfo = (): JSX.Element => {
+export const AttachmentInfo = ({
+  children,
+  ...rest
+}: AttachmentInfoProps): JSX.Element => {
   const { acceptedFiles } = useAttachmentContext()
   const { name, size } = acceptedFiles[0]
+  const styles = useMultiStyleConfig('Attachment', rest)
+
   return (
-    <Attached>
+    // _css has lower precedence than sx and hence, we allow users to override the base styling
+    <Box _css={styles.uploaded} sx={rest}>
       <Flex dir="row">
         <VStack spacing="0.25rem" alignItems="flex-start">
           {/* NOTE: role and tabIndex is set for accessibility reasons.
@@ -218,7 +215,8 @@ export const AttachmentInfo = (): JSX.Element => {
         <Spacer />
         <AttachmentActionIcon />
       </Flex>
-    </Attached>
+      {children}
+    </Box>
   )
 }
 
@@ -232,7 +230,7 @@ interface AttachmentActionIconProps
   'aria-label'?: string
 }
 
-export const AttachmentActionIcon = ({
+const AttachmentActionIcon = ({
   icon = <BiTrash />,
   onClick,
   ...props

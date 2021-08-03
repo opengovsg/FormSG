@@ -16,6 +16,7 @@ import { formatBytes } from '~/utils/formatBytes'
 
 import {
   Attachment,
+  AttachmentField,
   AttachmentInfo,
   AttachmentProps,
   Dropzone,
@@ -128,8 +129,7 @@ Playground.args = {
 }
 
 const PlaygroundComponent = (props: DropzoneProps) => {
-  const { acceptedFiles, fileRejections, maxSize } = useAttachmentContext()
-  const hasUploadedFiles = !!acceptedFiles.length
+  const { fileRejections, maxSize } = useAttachmentContext()
   const isError = !!fileRejections.length
   const formattedMaxSize = formatBytes(maxSize, 0)
 
@@ -146,19 +146,13 @@ const PlaygroundComponent = (props: DropzoneProps) => {
           <Text textStyle="subhead-1">Label</Text>
         </HStack>
       </FormLabel>
-      {hasUploadedFiles ? (
-        <AttachmentInfo />
+      <AttachmentField />
+      {isError ? (
+        <FormErrorMessage role="alert">
+          {getErrorMessage(fileRejections[0].errors[0])}
+        </FormErrorMessage>
       ) : (
-        <Box maxWidth="min-content" whiteSpace="pre-line">
-          <Dropzone {...props} isError={isError} />
-          {isError ? (
-            <FormErrorMessage role="alert">
-              {getErrorMessage(fileRejections[0].errors[0])}
-            </FormErrorMessage>
-          ) : (
-            <FormFieldMessage>{`Maximum file size: ${formattedMaxSize}`}</FormFieldMessage>
-          )}
-        </Box>
+        <FormFieldMessage>{`Maximum file size: ${formattedMaxSize}`}</FormFieldMessage>
       )}
       <Button mt="8px" type="submit" isDisabled={isError}>
         Submit
