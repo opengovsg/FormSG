@@ -3,10 +3,12 @@ import { flow } from 'fp-ts/lib/function'
 import moment from 'moment-timezone'
 
 import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
-import { IDateFieldSchema, OmitUnusedValidatorProps } from 'src/types/field'
+import {
+  DateSelectedValidation,
+  IDateFieldSchema,
+  OmitUnusedValidatorProps,
+} from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
-
-import { DateSelectedValidation } from '../../../../shared/constants'
 
 import { notEmptySingleAnswerResponse } from './common'
 

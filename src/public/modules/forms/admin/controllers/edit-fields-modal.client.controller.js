@@ -16,8 +16,8 @@ const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 const { uploadImage } = require('../../../../services/FileHandlerService')
 const {
   DateSelectedValidation: DateValidationOptions,
-} = require('../../../../../shared/constants')
-const { RatingShape } = require('../../../../../types')
+  RatingShape,
+} = require('../../../../../../shared/types/field')
 const CancelToken = axios.CancelToken
 
 const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '7']
