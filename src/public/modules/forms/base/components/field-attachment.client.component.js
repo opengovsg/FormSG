@@ -5,7 +5,7 @@ const {
   isInvalidFileExtension,
   getInvalidFileExtensionsInZip,
 } = require('../../../../../../shared/utils/file-validation')
-const { KB, MB } = require('../../../../../shared/constants')
+const { KB, MB } = require('../../../../../../shared/constants/file')
 
 angular.module('forms').component('attachmentFieldComponent', {
   templateUrl:

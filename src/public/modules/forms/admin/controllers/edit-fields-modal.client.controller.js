@@ -11,7 +11,7 @@ const {
   VALID_UPLOAD_FILE_TYPES,
   MAX_UPLOAD_FILE_SIZE,
   MB,
-} = require('shared/constants')
+} = require('../../../../../../shared/constants/file')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 const { uploadImage } = require('../../../../services/FileHandlerService')
 const {

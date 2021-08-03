@@ -8,7 +8,7 @@ import {
 } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 
-import { MB } from '../../../../shared/constants'
+import { MB } from '../../../../../shared/constants/file'
 
 type AttachmentValidator = ResponseValidator<ProcessedAttachmentResponse>
 type AttachmentValidatorConstructor = (

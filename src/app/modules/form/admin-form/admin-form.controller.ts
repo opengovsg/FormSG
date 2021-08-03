@@ -5,11 +5,11 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
-import { DeserializeTransform } from '../../../../../shared/types/utils'
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
-} from '../../../../shared/constants'
+} from '../../../../../shared/constants/file'
+import { DeserializeTransform } from '../../../../../shared/types/utils'
 import {
   AuthType,
   BasicField,
