@@ -4,7 +4,7 @@ import { CallbackError, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
 import {
-  IAgencySchema,
+  AgencyDocument,
   IUser,
   IUserModel,
   IUserSchema,
@@ -68,7 +68,9 @@ const compileUserModel = (db: Mongoose) => {
         type: Date,
         default: () => Date.now(),
       },
-      betaFlags: {},
+      betaFlags: {
+        sgid: Boolean,
+      },
     },
     {
       timestamps: {
@@ -108,7 +110,7 @@ const compileUserModel = (db: Mongoose) => {
     // Return public view of nested agency document if populated.
     return {
       agency: this.populated('agency')
-        ? (this.agency as IAgencySchema).getPublicView()
+        ? (this.agency as AgencyDocument).getPublicView()
         : this.agency,
     }
   }

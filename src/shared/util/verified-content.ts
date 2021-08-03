@@ -1,10 +1,12 @@
 import values from 'lodash/values'
 
 // Shared centralised mapping layer for use in both frontend and backend to get the mapped value.
+
 export enum VerifiedKeys {
   SpUinFin = 'uinFin',
   CpUen = 'cpUen',
   CpUid = 'cpUid',
+  SgidUinFin = 'sgidUinFin',
 }
 
 /**

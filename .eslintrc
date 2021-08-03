@@ -4,6 +4,7 @@
     "es6": true,
     "node": true
   },
+  "ignorePatterns": ["./shared"],
   "extends": ["eslint:recommended", "plugin:prettier/recommended"],
   "globals": {
     "Atomics": "readonly",

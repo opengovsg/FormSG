@@ -423,7 +423,7 @@ function submitFormDirective(
         )
         GTag.submitFormFailure(form, startDate, Date.now(), error)
         if (get(error, 'response.data.spcpSubmissionFailure')) {
-          SpcpSession.logout()
+          SpcpSession.logout(form.authType)
         }
 
         // Expire captcha if form has captcha

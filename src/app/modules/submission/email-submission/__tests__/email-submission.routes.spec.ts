@@ -266,9 +266,7 @@ describe('email-submission.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when response is missing _id', async () => {
@@ -290,9 +288,7 @@ describe('email-submission.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when response is missing fieldType', async () => {
@@ -314,9 +310,7 @@ describe('email-submission.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when response has invalid fieldType', async () => {
@@ -340,9 +334,7 @@ describe('email-submission.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when response is missing answer', async () => {
@@ -364,9 +356,7 @@ describe('email-submission.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when response has both answer and answerArray', async () => {
@@ -388,9 +378,7 @@ describe('email-submission.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when attachment response has filename but not content', async () => {
@@ -412,9 +400,7 @@ describe('email-submission.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when attachment response has content but not filename', async () => {
@@ -436,9 +422,7 @@ describe('email-submission.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
   })
 

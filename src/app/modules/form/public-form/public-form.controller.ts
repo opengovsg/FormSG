@@ -8,6 +8,7 @@ import { AuthType } from '../../../../types'
 import {
   ErrorDto,
   PrivateFormErrorDto,
+  PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
   PublicFormAuthValidateEsrvcIdDto,
   PublicFormViewDto,
@@ -30,6 +31,8 @@ import {
   extractAndAssertMyInfoCookieValidity,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
+import { SgidService } from '../../sgid/sgid.service'
+import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpService } from '../../spcp/spcp.service'
 import { getRedirectTarget, validateSpcpForm } from '../../spcp/spcp.util'
@@ -271,13 +274,13 @@ export const handleGetPublicForm: ControllerHandler<
     case AuthType.SP:
     case AuthType.CP:
       return SpcpService.extractJwtPayloadFromRequest(authType, req.cookies)
-        .map(({ userName }) =>
-          res.json({
+        .map((spcpSession) => {
+          return res.json({
             form: publicForm,
             isIntranetUser,
-            spcpSession: { userName },
-          }),
-        )
+            spcpSession,
+          })
+        })
         .mapErr((error) => {
           // Report only relevant errors - verification failed for user here
           if (
@@ -355,6 +358,29 @@ export const handleGetPublicForm: ControllerHandler<
           })
       )
     }
+    case AuthType.SGID:
+      return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
+        .map((spcpSession) => {
+          return res.json({
+            form: publicForm,
+            isIntranetUser,
+            spcpSession,
+          })
+        })
+        .mapErr((error) => {
+          // Report only relevant errors - verification failed for user here
+          if (
+            error instanceof VerifyJwtError ||
+            error instanceof InvalidJwtError
+          ) {
+            logger.error({
+              message: 'Error getting public form',
+              meta: logMeta,
+              error,
+            })
+          }
+          return res.json({ form: publicForm, isIntranetUser })
+        })
     default:
       return new UnreachableCaseError(authType)
   }
@@ -414,8 +440,13 @@ export const _handleFormAuthRedirect: ControllerHandler<
             )
           })
         }
-        // NOTE: Only MyInfo and SPCP should have redirects as the point of a redirect is
-        // to provide auth for users from a third party
+        case AuthType.SGID:
+          return validateSgidForm(form).andThen(() => {
+            return SgidService.createRedirectUrl(
+              formId,
+              Boolean(isPersistentLogin),
+            )
+          })
         default:
           return err<never, AuthTypeMismatchError>(
             new AuthTypeMismatchError(form.authType),
@@ -449,6 +480,43 @@ export const handleFormAuthRedirect = [
     }),
   }),
   _handleFormAuthRedirect,
+] as ControllerHandler[]
+
+/**
+ * NOTE: This is exported only for testing
+ * Logs user out of SP / CP / MyInfo / SGID by deleting cookie
+ * @param authType type of authentication
+ *
+ * @returns 200 with success message when user logs out successfully
+ * @returns 400 if authType is invalid
+ */
+export const _handlePublicAuthLogout: ControllerHandler<
+  { authType: AuthType.SP | AuthType.CP | AuthType.MyInfo | AuthType.SGID },
+  PublicFormAuthLogoutDto
+> = (req, res) => {
+  const { authType } = req.params
+
+  const cookieName = PublicFormService.getCookieNameByAuthType(authType)
+
+  return res
+    .clearCookie(cookieName)
+    .status(200)
+    .json({ message: 'Successfully logged out.' })
+}
+
+/**
+ * Handler for /forms/auth/:authType/logout
+ * Valid AuthTypes are SP / CP / MyInfo / SGID
+ */
+export const handlePublicAuthLogout = [
+  celebrate({
+    [Segments.PARAMS]: Joi.object({
+      authType: Joi.string()
+        .valid(AuthType.SP, AuthType.CP, AuthType.MyInfo, AuthType.SGID)
+        .required(),
+    }),
+  }),
+  _handlePublicAuthLogout,
 ] as ControllerHandler[]
 
 /**

@@ -1,4 +1,4 @@
-import BSON from 'bson-ext'
+import BSON, { ObjectId } from 'bson-ext'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   Mongoose,
@@ -11,6 +11,7 @@ import validator from 'validator'
 
 import { MB } from '../../shared/constants'
 import { reorder } from '../../shared/util/immutable-array-fns'
+import { getApplicableIfStates } from '../../shared/util/logic'
 import {
   AuthType,
   BasicField,
@@ -30,7 +31,9 @@ import {
   IFormDocument,
   IFormModel,
   IFormSchema,
+  ILogicSchema,
   IPopulatedForm,
+  LogicConditionState,
   LogicDto,
   LogicType,
   Permission,
@@ -208,7 +211,67 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             'Check that your form is MyInfo-authenticated, is an email mode form and has 30 or fewer MyInfo fields.',
         },
       },
-      form_logics: [LogicSchema],
+      form_logics: {
+        type: [LogicSchema],
+        validate: {
+          validator(this: IFormSchema, v: ILogicSchema[]) {
+            /**
+             * A validatable condition is incomplete if there is a possibility
+             * that its fieldType is null, which is a sign that a condition's
+             * field property references a non-existent form_field.
+             */
+            type IncompleteValidatableCondition = {
+              state: LogicConditionState
+              fieldType?: BasicField
+            }
+
+            /**
+             * A condition object is said to be validatable if it contains the two
+             * necessary for validation: fieldType and state
+             */
+            type ValidatableCondition = IncompleteValidatableCondition & {
+              fieldType: BasicField
+            }
+
+            const isConditionReferencesExistingField = (
+              condition: IncompleteValidatableCondition,
+            ): condition is ValidatableCondition => !!condition.fieldType
+
+            const conditions = v.flatMap((logic) => {
+              return logic.conditions.map<IncompleteValidatableCondition>(
+                (condition) => {
+                  const {
+                    field,
+                    state,
+                  }: { field: ObjectId | string; state: LogicConditionState } =
+                    condition
+                  return {
+                    state,
+                    fieldType: this.form_fields?.find(
+                      (f: IFieldSchema) => String(f._id) === String(field),
+                    )?.fieldType,
+                  }
+                },
+              )
+            })
+
+            return conditions.every((condition) => {
+              /**
+               * Form fields can get deleted by form admins, which causes logic
+               * conditions to reference invalid fields. Here we bypass validation
+               * and allow these conditions to be saved, so we don't make life
+               * difficult for form admins.
+               */
+              if (!isConditionReferencesExistingField(condition)) return true
+
+              const { fieldType, state } = condition
+              const applicableIfStates = getApplicableIfStates(fieldType)
+              return applicableIfStates.includes(state)
+            })
+          },
+          message: 'Form logic condition validation failed.',
+        },
+      },
 
       admin: {
         type: Schema.Types.ObjectId,
@@ -341,8 +404,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         type: String,
         required: false,
         validate: [
-          /^([a-zA-Z0-9-]){1,25}$/i,
-          'e-service ID must be alphanumeric, dashes are allowed',
+          /^([a-zA-Z0-9-_]){1,25}$/i,
+          'e-service ID must be alphanumeric, underscores and dashes are allowed',
         ],
       },
 
@@ -690,14 +753,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     formId: string,
     createLogicBody: LogicDto,
   ): Promise<IFormSchema | null> {
-    return this.findByIdAndUpdate(
-      formId,
-      { $push: { form_logics: createLogicBody } },
-      {
-        new: true,
-        runValidators: true,
-      },
-    ).exec()
+    const form = await this.findById(formId).exec()
+    if (!form?.form_logics) return null
+    const newLogic = (
+      form.form_logics as Types.DocumentArray<ILogicSchema>
+    ).create(createLogicBody)
+    form.form_logics.push(newLogic)
+    return form.save()
   }
 
   // Deletes specified form field by id.
@@ -718,17 +780,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     logicId: string,
     updatedLogic: LogicDto,
   ): Promise<IFormSchema | null> {
-    return this.findByIdAndUpdate(
-      formId,
-      {
-        $set: { 'form_logics.$[object]': updatedLogic },
-      },
-      {
-        arrayFilters: [{ 'object._id': logicId }],
-        new: true,
-        runValidators: true,
-      },
-    ).exec()
+    let form = await this.findById(formId).exec()
+    if (!form?.form_logics) return null
+    const index = form.form_logics.findIndex(
+      (logic) => String(logic._id) === logicId,
+    )
+    form = form.set(`form_logics.${index}`, updatedLogic, {
+      new: true,
+    })
+    return form.save()
   }
 
   FormSchema.statics.updateEndPageById = async function (

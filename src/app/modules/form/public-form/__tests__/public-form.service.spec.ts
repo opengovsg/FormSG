@@ -6,8 +6,11 @@ import { PartialDeep } from 'type-fest'
 import getFormModel from 'src/app/models/form.server.model'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { IFormSchema } from 'src/types'
+import { AuthType, IFormSchema } from 'src/types'
 
+import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
+import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
+import { JwtName } from '../../../spcp/spcp.types'
 import { FormNotFoundError } from '../../form.errors'
 import * as PublicFormService from '../public-form.service'
 import { Metatags } from '../public-form.types'
@@ -17,6 +20,52 @@ const FormModel = getFormModel(mongoose)
 
 describe('public-form.service', () => {
   beforeEach(() => jest.clearAllMocks())
+
+  describe('getCookieNameByAuthType', () => {
+    it('should return JwtName[AuthType.SP] when authType is SP', () => {
+      // Arrange
+      const authType = AuthType.SP
+
+      // Act
+      const result = PublicFormService.getCookieNameByAuthType(authType)
+
+      // Assert
+      expect(result).toEqual(JwtName[AuthType.SP])
+    })
+
+    it('should return JwtName[AuthType.CP] when authType is CP', () => {
+      // Arrange
+      const authType = AuthType.CP
+
+      // Act
+      const result = PublicFormService.getCookieNameByAuthType(authType)
+
+      // Assert
+      expect(result).toEqual(JwtName[AuthType.CP])
+    })
+
+    it('should return MYINFO_COOKIE_NAME when authType is MyInfo', () => {
+      // Arrange
+      const authType = AuthType.MyInfo
+
+      // Act
+      const result = PublicFormService.getCookieNameByAuthType(authType)
+
+      // Assert
+      expect(result).toEqual(MYINFO_COOKIE_NAME)
+    })
+
+    it('should return SGID_COOKIE_NAME when authType is SGID', () => {
+      // Arrange
+      const authType = AuthType.SGID
+
+      // Act
+      const result = PublicFormService.getCookieNameByAuthType(authType)
+
+      // Assert
+      expect(result).toEqual(SGID_COOKIE_NAME)
+    })
+  })
 
   describe('insertFormFeedback', () => {
     const MOCK_FORM_FEEDBACK = new FormFeedbackModel({

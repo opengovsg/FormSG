@@ -26,7 +26,11 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from './spcp.errors'
-import { CorppassJwtPayload, SingpassJwtPayload, SpcpForm } from './spcp.types'
+import {
+  CorppassJwtPayloadFromCookie,
+  SingpassJwtPayloadFromCookie,
+  SpcpForm,
+} from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
 const DESTINATION_REGEX = /^\/([\w]+)\/?/
@@ -149,7 +153,7 @@ export const verifyJwtPromise = (
  */
 export const isSingpassJwtPayload = (
   payload: unknown,
-): payload is SingpassJwtPayload => {
+): payload is SingpassJwtPayloadFromCookie => {
   return (
     typeof payload === 'object' &&
     !!payload &&
@@ -164,7 +168,7 @@ export const isSingpassJwtPayload = (
  */
 export const isCorppassJwtPayload = (
   payload: unknown,
-): payload is CorppassJwtPayload => {
+): payload is CorppassJwtPayloadFromCookie => {
   return (
     typeof payload === 'object' &&
     !!payload &&

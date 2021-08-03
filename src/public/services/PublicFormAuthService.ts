@@ -1,6 +1,8 @@
 import axios from 'axios'
 
+import { AuthType } from '../../types'
 import {
+  PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
   PublicFormAuthValidateEsrvcIdDto,
 } from '../../types/api'
@@ -28,6 +30,16 @@ export const validateEsrvcId = (
   return axios
     .get<PublicFormAuthValidateEsrvcIdDto>(
       `${PUBLIC_FORMS_ENDPOINT}/${formId}/auth/validate`,
+    )
+    .then(({ data }) => data)
+}
+
+export const logoutOfSpcpSession = (
+  authType: AuthType,
+): Promise<PublicFormAuthLogoutDto> => {
+  return axios
+    .get<PublicFormAuthLogoutDto>(
+      `${PUBLIC_FORMS_ENDPOINT}/auth/${authType}/logout`,
     )
     .then(({ data }) => data)
 }

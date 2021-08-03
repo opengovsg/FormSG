@@ -50,10 +50,6 @@ import {
 } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import * as FeedbackService from '../../feedback/feedback.service'
-import {
-  createCorppassParsedResponses,
-  createSingpassParsedResponses,
-} from '../../spcp/spcp.util'
 import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
@@ -61,6 +57,7 @@ import {
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
+import ParsedResponsesObject from '../../submission/email-submission/ParsedResponsesObject.class'
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
@@ -1523,7 +1520,7 @@ export const submitEmailPreview: ControllerHandler<
 
   const parsedResponsesResult =
     await EmailSubmissionService.validateAttachments(responses).andThen(() =>
-      SubmissionService.getProcessedResponses(form, responses),
+      ParsedResponsesObject.parseResponses(form, responses),
     )
   if (parsedResponsesResult.isErr()) {
     logger.error({
@@ -1540,21 +1537,22 @@ export const submitEmailPreview: ControllerHandler<
   const attachments = mapAttachmentsFromResponses(req.body.responses)
 
   // Handle SingPass, CorpPass and MyInfo authentication and validation
-  if (form.authType === AuthType.SP || form.authType === AuthType.MyInfo) {
-    parsedResponses.push(
-      ...createSingpassParsedResponses(PREVIEW_SINGPASS_UINFIN),
-    )
-  } else if (form.authType === AuthType.CP) {
-    parsedResponses.push(
-      ...createCorppassParsedResponses(
-        PREVIEW_CORPPASS_UINFIN,
-        PREVIEW_CORPPASS_UID,
-      ),
-    )
+  const { authType } = form
+  if (authType === AuthType.SP || authType === AuthType.MyInfo) {
+    parsedResponses.addNdiResponses({
+      authType,
+      uinFin: PREVIEW_SINGPASS_UINFIN,
+    })
+  } else if (authType === AuthType.CP) {
+    parsedResponses.addNdiResponses({
+      authType,
+      uinFin: PREVIEW_CORPPASS_UINFIN,
+      userInfo: PREVIEW_CORPPASS_UID,
+    })
   }
 
   const emailData = new SubmissionEmailObj(
-    parsedResponses,
+    parsedResponses.getAllResponses(),
     // All MyInfo fields are verified in preview
     new Set(AdminFormService.extractMyInfoFieldIds(form.form_fields)),
     form.authType,
@@ -1567,7 +1565,9 @@ export const submitEmailPreview: ControllerHandler<
   )
 
   const sendAdminEmailResult = await MailService.sendSubmissionToAdmin({
-    replyToEmails: EmailSubmissionService.extractEmailAnswers(parsedResponses),
+    replyToEmails: EmailSubmissionService.extractEmailAnswers(
+      parsedResponses.getAllResponses(),
+    ),
     form,
     submission,
     attachments,
@@ -1596,7 +1596,7 @@ export const submitEmailPreview: ControllerHandler<
     attachments,
     responsesData: emailData.autoReplyData,
     recipientData: extractEmailConfirmationData(
-      parsedResponses,
+      parsedResponses.getAllResponses(),
       form.form_fields,
     ),
   }).mapErr((error) => {
@@ -2287,6 +2287,68 @@ export const handleUpdateCollaborators = [
   }),
   _handleUpdateCollaborators,
 ] as ControllerHandler[]
+
+/**
+ * Handler for DELETE /api/v3/admin/forms/:formId/collaborators/self
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated collaborators and permissions
+ * @returns 403 when current user does not have permissions to remove themselves from the collaborators list
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating collaborators for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleRemoveSelfFromCollaborators: ControllerHandler<
+  { formId: string },
+  PermissionsUpdateDto | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  let currentUserEmail = ''
+  // Step 1: Get the form after permission checks
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) => {
+        // Step 2: Retrieve form with read permission check, since we are only removing the user themselves
+        currentUserEmail = user.email
+        return AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        })
+      })
+      // Step 3: Update the form collaborators
+      .andThen((form) => {
+        const updatedPermissionList = form.permissionList.filter(
+          (user) => user.email.toLowerCase() !== currentUserEmail.toLowerCase(),
+        )
+        return AdminFormService.updateFormCollaborators(
+          form,
+          updatedPermissionList,
+        )
+      })
+      .map((updatedCollaborators) =>
+        res.status(StatusCodes.OK).json(updatedCollaborators),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating collaborators',
+          meta: {
+            action: 'handleRemoveSelfFromCollaborators',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            formCollaborators: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
 
 /**
  * NOTE: Exported for testing.
