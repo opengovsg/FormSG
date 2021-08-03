@@ -236,8 +236,8 @@ export const AttachmentInfo = ({
   const styles = useMultiStyleConfig('Attachment', rest)
 
   return (
-    // _css has lower precedence than sx and hence, we allow users to override the base styling
-    <Box _css={styles.uploaded} sx={rest}>
+    // __css has lower precedence than sx and hence, we allow users to override the base styling
+    <Box __css={styles.uploaded} sx={rest}>
       <Flex dir="row">
         <VStack spacing="0.25rem" alignItems="flex-start">
           {/* NOTE: role and tabIndex is set for accessibility reasons.
