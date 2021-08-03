@@ -121,6 +121,34 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
       })
 
+      it('should create and save successfully with valid esrvcId', async () => {
+        // Arrange
+        const validEsrvcId = 'validEsrvcId'
+        const validFormParams = merge({}, MOCK_FORM_PARAMS, {
+          esrvcId: validEsrvcId,
+        })
+
+        // Act
+        const validForm = new Form(validFormParams)
+        const saved = await validForm.save()
+
+        // Assert
+        // All fields should exist
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge({}, FORM_DEFAULTS, validFormParams)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
       it('should save successfully, but not save fields that is not defined in the schema', async () => {
         // Arrange
         const formParamsWithExtra = merge({}, MOCK_FORM_PARAMS, {
@@ -342,6 +370,22 @@ describe('Form Model', () => {
         // Assert
         await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
+        )
+      })
+
+      it('should reject when esrvcId id has whitespace', async () => {
+        // Arrange
+        const whitespaceEsrvcId = 'whitespace\tesrvcId'
+        const paramsWithWhitespaceEsrvcId = merge({}, MOCK_FORM_PARAMS, {
+          esrvcId: whitespaceEsrvcId,
+        })
+
+        // Act
+        const invalidForm = new Form(paramsWithWhitespaceEsrvcId)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrowError(
+          'Form validation failed: esrvcId: e-service ID must not contain whitespace',
         )
       })
     })
