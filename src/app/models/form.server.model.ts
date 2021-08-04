@@ -30,6 +30,7 @@ import {
   FormLogicSchema,
   FormLogoState,
   FormOtpData,
+  FormPermission,
   FormSettings,
   IEmailFormModel,
   IEmailFormSchema,
@@ -44,7 +45,6 @@ import {
   LogicConditionState,
   LogicDto,
   LogicType,
-  Permission,
   PickDuplicateForm,
   PublicForm,
   ResponseMode,
@@ -274,7 +274,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           },
         ],
         validate: {
-          validator: async (users: Permission[]) => {
+          validator: async (users: FormPermission[]) => {
             // Retrieve count of users that exist in the Agency collection.
             // Map is used instead of for...of loop so that this runs in
             // parallel.
@@ -587,7 +587,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   FormDocumentSchema.methods.updateFormCollaborators = async function (
-    updatedPermissions: Permission[],
+    updatedPermissions: FormPermission[],
   ) {
     this.permissionList = updatedPermissions
     return this.save()

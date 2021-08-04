@@ -13,6 +13,7 @@ import {
   FormFieldSchema,
   FormLogicSchema,
   FormLogoState,
+  FormPermission,
   FormSettings,
   IForm,
   IFormDocument,
@@ -20,7 +21,6 @@ import {
   IPopulatedForm,
   IUserSchema,
   LogicDto,
-  Permission,
 } from '../../../../types'
 import {
   AdminDashboardFormMetaDto,
@@ -704,8 +704,8 @@ export const updateForm = (
  */
 export const updateFormCollaborators = (
   form: IPopulatedForm,
-  updatedCollaborators: Permission[],
-): ResultAsync<Permission[], PossibleDatabaseError> => {
+  updatedCollaborators: FormPermission[],
+): ResultAsync<FormPermission[], PossibleDatabaseError> => {
   return ResultAsync.fromPromise(
     form.updateFormCollaborators(updatedCollaborators),
     (error) => {

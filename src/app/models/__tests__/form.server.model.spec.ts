@@ -17,13 +17,13 @@ import {
   EndPage,
   FormFieldWithId,
   FormLogoState,
+  FormPermission,
   IEncryptedForm,
   IFieldSchema,
   IFormSchema,
   ILogicSchema,
   IPopulatedUser,
   LogicType,
-  Permission,
   ResponseMode,
   StartPage,
   Status,
@@ -266,7 +266,7 @@ describe('Form Model', () => {
         // Remove indeterministic id from actual permission list
         const actualPermissionList = saved
           .toObject()
-          .permissionList?.map((permission: Permission) =>
+          .permissionList?.map((permission: FormPermission) =>
             omit(permission, '_id'),
           )
         expect(actualPermissionList).toEqual(permissionList)
@@ -781,7 +781,7 @@ describe('Form Model', () => {
         // Remove indeterministic id from actual permission list
         const actualPermissionList = saved
           .toObject()
-          .permissionList?.map((permission: Permission) =>
+          .permissionList?.map((permission: FormPermission) =>
             omit(permission, '_id'),
           )
         expect(actualPermissionList).toEqual(permissionList)

@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson-ext'
 import { Types } from 'mongoose'
 
-import { BasicField, FormFieldSchema, Permission } from 'src/types'
+import { BasicField, FormFieldSchema, FormPermission } from 'src/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
@@ -21,7 +21,7 @@ describe('form.utils', () => {
     })
 
     it('should return all collaborators when writePermission is undefined', () => {
-      const collabs: Permission[] = [
+      const collabs: FormPermission[] = [
         { email: MOCK_EMAIL_1, write: true },
         { email: MOCK_EMAIL_2, write: false },
       ]
@@ -30,7 +30,7 @@ describe('form.utils', () => {
     })
 
     it('should return write-only collaborators when writePermission is true', () => {
-      const collabs: Permission[] = [
+      const collabs: FormPermission[] = [
         { email: MOCK_EMAIL_1, write: true },
         { email: MOCK_EMAIL_2, write: false },
       ]
@@ -39,7 +39,7 @@ describe('form.utils', () => {
     })
 
     it('should return read-only collaborators when writePermission is false', () => {
-      const collabs: Permission[] = [
+      const collabs: FormPermission[] = [
         { email: MOCK_EMAIL_1, write: true },
         { email: MOCK_EMAIL_2, write: false },
       ]

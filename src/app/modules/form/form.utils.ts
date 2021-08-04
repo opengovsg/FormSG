@@ -1,11 +1,11 @@
 import {
   FormFieldSchema,
   FormLogicSchema,
+  FormPermission,
   IEncryptedFormSchema,
   IFormSchema,
   IPopulatedEmailForm,
   IPopulatedForm,
-  Permission,
   ResponseMode,
 } from '../../../types'
 import { isMongooseDocumentArray } from '../../utils/mongoose'
@@ -53,7 +53,7 @@ export const isFormEncryptMode = (
  * @returns Array of emails
  */
 export const getCollabEmailsWithPermission = (
-  permissionList?: Permission[],
+  permissionList?: FormPermission[],
   writePermission?: boolean,
 ): string[] => {
   if (!permissionList) {

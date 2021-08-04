@@ -53,6 +53,7 @@ export {
   PublicFormDto,
   PublicStorageFormDto,
   PublicEmailFormDto,
+  FormPermission,
 }
 
 // Typings
@@ -72,8 +73,6 @@ export type FormOtpData = {
   // Used for sending with the correct twilio
   msgSrvcName?: string
 }
-
-export type Permission = FormPermission
 
 /**
  * Keys with defaults in schema.
@@ -97,7 +96,7 @@ export type IForm = Merge<
   {
     // Loosen types here to allow for IPopulatedForm extension
     admin: any
-    permission?: Permission[]
+    permission?: FormPermission[]
     form_fields?: FormFieldSchema[]
     form_logics?: FormLogicSchema[]
 
@@ -150,7 +149,7 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
 
   updateFormCollaborators<T>(
     this: T,
-    updateFormCollaborators: Permission[],
+    updateFormCollaborators: FormPermission[],
   ): Promise<T>
 
   /**

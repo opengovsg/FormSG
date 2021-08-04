@@ -5,10 +5,10 @@ import { EditFieldActions } from 'src/shared/constants'
 import {
   BasicField,
   FormFieldSchema,
+  FormPermission,
   IEmailFieldSchema,
   IPopulatedForm,
   IPopulatedUser,
-  Permission,
   ResponseMode,
   Status,
 } from 'src/types'
@@ -89,7 +89,7 @@ describe('admin-form.utils', () => {
         admin: {
           _id: new ObjectId(),
         } as IPopulatedUser,
-        permissionList: [] as Permission[],
+        permissionList: [] as FormPermission[],
       } as IPopulatedForm
 
       // Act
@@ -187,7 +187,7 @@ describe('admin-form.utils', () => {
         admin: {
           _id: new ObjectId(),
         } as IPopulatedUser,
-        permissionList: [] as Permission[],
+        permissionList: [] as FormPermission[],
       } as IPopulatedForm
 
       // Act

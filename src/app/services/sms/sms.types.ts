@@ -4,9 +4,9 @@ import { Twilio } from 'twilio'
 import {
   AdminContactOtpData,
   FormOtpData,
+  FormPermission,
   IFormSchema,
   IUserSchema,
-  Permission,
 } from '../../../types'
 
 export enum SmsType {
@@ -27,7 +27,7 @@ export type FormDeactivatedSmsData = {
     email: IUserSchema['email']
     userId: IUserSchema['_id']
   }
-  collaboratorEmail: Permission['email']
+  collaboratorEmail: FormPermission['email']
   recipientNumber: string
 }
 
