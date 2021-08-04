@@ -21,7 +21,7 @@ import {
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
-import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
+import { EditFieldActions } from 'src/shared/constants'
 import {
   AuthType,
   BasicField,
@@ -54,6 +54,7 @@ import {
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
+import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
 import {
   FormNotFoundError,
   LogicNotFoundError,

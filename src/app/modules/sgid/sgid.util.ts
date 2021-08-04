@@ -1,7 +1,7 @@
 import { err, ok, Result } from 'neverthrow'
 
 import { NricResponse } from '../../../../shared/types/response'
-import { hasProp } from '../../../shared/util/has-prop'
+import { hasProp } from '../../../../shared/utils/has-prop'
 import {
   AuthType,
   BasicField,

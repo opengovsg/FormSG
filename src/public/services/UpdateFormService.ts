@@ -8,21 +8,19 @@ import {
 import {
   AdminFormDto,
   AdminFormViewDto,
+  EndPageUpdateDto,
   FormSettings,
+  LogicDto,
+  PermissionsUpdateDto,
   SettingsUpdateDto,
-} from '../../../shared/types/form/form'
-import { LogicDto } from '../../../shared/types/form/form_logic'
+  StartPageUpdateDto,
+} from '../../../shared/types/form'
 import {
   EmailModeSubmissionContentDto,
   StorageModeSubmissionContentDto,
   SubmissionResponseDto,
 } from '../../../shared/types/submission'
-import {
-  EndPageUpdateDto,
-  FormUpdateParams,
-  PermissionsUpdateDto,
-  StartPageUpdateDto,
-} from '../../types/api'
+import { FormUpdateParams } from '../../types/api'
 import { createEmailSubmissionFormData } from '../utils/submission'
 
 // Exported for testing

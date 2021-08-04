@@ -8,7 +8,8 @@ import { ResultAsync } from 'neverthrow'
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
-} from '../../../../shared/constants'
+} from '../../../../../shared/constants/file'
+import { DeserializeTransform } from '../../../../../shared/types/utils'
 import {
   AuthType,
   BasicField,
@@ -48,7 +49,6 @@ import {
   StartPageUpdateDto,
   SubmissionCountQueryDto,
 } from '../../../../types/api'
-import { DeserializeTransform } from '../../../../types/utils'
 import { smsConfig } from '../../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'

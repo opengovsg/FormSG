@@ -17,7 +17,7 @@ import stringify from 'json-stringify-safe'
  * JSON.stringify.
  * @param obj the object to be stringified
  */
-export const stringifySafe = (obj: any): string | undefined => {
+export const stringifySafe = (obj: unknown): string | undefined => {
   return stringify(obj, (_key, value) =>
     typeof value === 'bigint' ? value.toString() : value,
   )

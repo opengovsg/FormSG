@@ -4,8 +4,8 @@ const {
   getFileExtension,
   isInvalidFileExtension,
   getInvalidFileExtensionsInZip,
-} = require('../../../../../shared/util/file-validation')
-const { FilePlatforms, KB, MB } = require('../../../../../shared/constants')
+} = require('../../../../../../shared/utils/file-validation')
+const { KB, MB } = require('../../../../../../shared/constants/file')
 
 angular.module('forms').component('attachmentFieldComponent', {
   templateUrl:
@@ -61,11 +61,10 @@ function attachmentFieldComponentController($timeout) {
       return
     }
 
-    const getInvalidFileExts = getInvalidFileExtensionsInZip(
-      FilePlatforms.Browser,
-    )
     const invalidFilesInZip =
-      fileExt === '.zip' ? getInvalidFileExts(file) : Promise.resolve([])
+      fileExt === '.zip'
+        ? getInvalidFileExtensionsInZip('blob', file)
+        : Promise.resolve([])
     invalidFilesInZip
       .then((invalidFiles) => {
         // Use $timeout to trigger digest cycle

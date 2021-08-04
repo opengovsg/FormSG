@@ -1,8 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact, flattenDeep, sumBy } from 'lodash'
 
-import { FilePlatforms } from '../../../../shared/constants'
-import * as FileValidation from '../../../../shared/util/file-validation'
+import * as FileValidation from '../../../../../shared/utils/file-validation'
 import {
   AuthType,
   BasicField,
@@ -268,15 +267,16 @@ export const getInvalidFileExtensions = (
 ): Promise<string[]> => {
   // Turn it into an array of promises that each resolve
   // to an array of file extensions that are invalid (if any)
-  const getInvalidFileExtensionsInZip =
-    FileValidation.getInvalidFileExtensionsInZip(FilePlatforms.Server)
   const promises = attachments.map((attachment) => {
     const extension = FileValidation.getFileExtension(attachment.filename)
     if (FileValidation.isInvalidFileExtension(extension)) {
       return Promise.resolve([extension])
     }
     if (extension !== '.zip') return Promise.resolve([])
-    return getInvalidFileExtensionsInZip(attachment.content)
+    return FileValidation.getInvalidFileExtensionsInZip(
+      'nodebuffer',
+      attachment.content,
+    )
   })
 
   return Promise.all(promises).then((results) => flattenDeep(results))
