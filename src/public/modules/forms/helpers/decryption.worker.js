@@ -13,7 +13,7 @@ const {
 } = require('../helpers/process-decrypted-content')
 const {
   TRANSACTION_EXPIRE_AFTER_SECONDS,
-} = require('../../../../shared/util/verification')
+} = require('../../../../../shared/utils/verification')
 
 let formsgSdk
 const queue = new PQueue({ concurrency: 1 })

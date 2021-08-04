@@ -1,13 +1,17 @@
-import { BasicField } from '../../../types'
+import { BasicField } from '../../types/field'
 
-interface IBasicFieldType {
+type BasicFieldBlock = {
+  /** Type of field */
   name: BasicField
+  /** Default name of field */
   value: string
+  /** Whether field is to be submittable */
   submitted: boolean
+  /** Whether field is multi-answer */
   answerArray: boolean
 }
 
-export const types: IBasicFieldType[] = [
+export const types: BasicFieldBlock[] = [
   {
     name: BasicField.Section,
     value: 'Header',

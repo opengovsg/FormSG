@@ -5,9 +5,11 @@ const {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
   MB,
-} = require('shared/constants')
+} = require('../../../../../../shared/constants/file')
 const { uploadLogo } = require('../../../../services/FileHandlerService')
-const { FormLogoState } = require('../../../../../types')
+const {
+  FormLogoState,
+} = require('../../../../../../shared/types/form/form_logo')
 const { getFormLogo } = require('../../helpers/logo')
 
 const CancelToken = axios.CancelToken

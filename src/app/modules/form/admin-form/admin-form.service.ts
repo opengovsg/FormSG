@@ -5,10 +5,10 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
 import {
-  EditFieldActions,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
-} from '../../../../shared/constants'
+} from '../../../../../shared/constants/file'
+import { EditFieldActions } from '../../../../shared/constants'
 import {
   FormFieldSchema,
   FormLogicSchema,

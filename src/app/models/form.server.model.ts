@@ -9,6 +9,7 @@ import mongoose, {
 } from 'mongoose'
 import validator from 'validator'
 
+import { MB } from '../../../shared/constants/file'
 import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
@@ -16,8 +17,7 @@ import {
   STORAGE_FORM_SETTINGS_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
 } from '../../../shared/constants/form'
-import { MB } from '../../shared/constants'
-import { reorder } from '../../shared/util/immutable-array-fns'
+import { reorder } from '../../../shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from '../../shared/util/logic'
 import {
   AuthType,
