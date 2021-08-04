@@ -36,7 +36,7 @@ import {
 } from 'src/app/modules/submission/email-submission/__tests__/email-submission.test.constants'
 import { saveSubmissionMetadata } from 'src/app/modules/submission/email-submission/email-submission.service'
 import { SubmissionHash } from 'src/app/modules/submission/email-submission/email-submission.types'
-import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
+import { EditFieldActions } from 'src/shared/constants'
 import {
   BasicField,
   IFieldSchema,
@@ -65,6 +65,7 @@ import {
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
+import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
 import { insertFormFeedback } from '../../public-form/public-form.service'
 import { AdminFormsRouter } from '../admin-form.routes'
 import * as AdminFormService from '../admin-form.service'

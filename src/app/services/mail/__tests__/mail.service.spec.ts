@@ -15,9 +15,9 @@ import {
   SendAutoReplyEmailsArgs,
 } from 'src/app/services/mail/mail.types'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
-import { HASH_EXPIRE_AFTER_SECONDS } from 'src/shared/util/verification'
 import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
 
+import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../../shared/utils/verification'
 import { smsConfig } from '../../../config/features/sms.config'
 
 const MOCK_VALID_EMAIL = 'to@example.com'

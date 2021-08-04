@@ -4,7 +4,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import {
   NUM_OTP_RETRIES,
   SMS_WARNING_TIERS,
-} from '../../../shared/util/verification'
+} from '../../../../shared/utils/verification'
 import {
   BasicField,
   IPopulatedForm,

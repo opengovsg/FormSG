@@ -6078,7 +6078,10 @@ describe('admin-form.controller', () => {
 
   describe('submitEncryptPreview', () => {
     const MOCK_RESPONSES = [
-      generateUnprocessedSingleAnswerResponse(BasicField.Email),
+      {
+        question: 'testQuestion',
+        ...generateUnprocessedSingleAnswerResponse(BasicField.Email),
+      },
     ]
     const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
     const MOCK_VERSION = 1

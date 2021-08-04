@@ -1,6 +1,6 @@
 import { get } from 'lodash'
 
-import { types as basicTypes } from '../../../shared/resources/basic'
+import { types as basicTypes } from '../../../../shared/constants/field/basic'
 import {
   BasicField,
   IEmailFieldSchema,

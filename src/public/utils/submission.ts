@@ -1,13 +1,13 @@
 import forOwn from 'lodash/forOwn'
 import isEmpty from 'lodash/isEmpty'
 
-import { EmailSubmissionDto } from '../../types/api'
+import { EmailModeSubmissionContentDto } from '../../../shared/types/submission'
 
 export const createEmailSubmissionFormData = ({
   content,
   attachments = {},
 }: {
-  content: EmailSubmissionDto
+  content: EmailModeSubmissionContentDto
   attachments?: Record<string, File>
 }): FormData => {
   // Convert passed content to FormData object.

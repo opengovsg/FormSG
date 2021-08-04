@@ -1,5 +1,4 @@
-import { BasicField, MyInfoAttribute } from '../../../types'
-
+import { BasicField, MyInfoAttribute } from '../../../types/field'
 import COUNTRIES from './myinfo-countries'
 import DIALECTS from './myinfo-dialects'
 import NATIONALITIES from './myinfo-nationalities'
@@ -7,7 +6,8 @@ import OCCUPATIONS from './myinfo-occupations'
 import RACES from './myinfo-races'
 
 type MyInfoVerifiedType = 'SG' | 'PR' | 'F'
-interface IMyInfoFieldType {
+
+type MyInfoFieldBlock = {
   name: MyInfoAttribute
   value: string
   category: string
@@ -19,7 +19,7 @@ interface IMyInfoFieldType {
   ValidationOptions?: Record<string, unknown>
 }
 
-export const types: IMyInfoFieldType[] = [
+export const types: MyInfoFieldBlock[] = [
   {
     name: MyInfoAttribute.Name,
     value: 'Name',

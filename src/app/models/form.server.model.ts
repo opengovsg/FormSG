@@ -9,6 +9,7 @@ import mongoose, {
 } from 'mongoose'
 import validator from 'validator'
 
+import { MB } from '../../../shared/constants/file'
 import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
@@ -16,8 +17,7 @@ import {
   STORAGE_FORM_SETTINGS_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
 } from '../../../shared/constants/form'
-import { MB } from '../../shared/constants'
-import { reorder } from '../../shared/util/immutable-array-fns'
+import { reorder } from '../../../shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from '../../shared/util/logic'
 import {
   AuthType,
@@ -390,10 +390,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       esrvcId: {
         type: String,
         required: false,
-        validate: [
-          /^([a-zA-Z0-9-_]){1,25}$/i,
-          'e-service ID must be alphanumeric, underscores and dashes are allowed',
-        ],
+        validate: [/^\S*$/i, 'e-service ID must not contain whitespace'],
       },
 
       webhook: {

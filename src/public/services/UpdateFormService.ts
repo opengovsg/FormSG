@@ -8,19 +8,19 @@ import {
 import {
   AdminFormDto,
   AdminFormViewDto,
-  FormSettings,
-  SettingsUpdateDto,
-} from '../../../shared/types/form/form'
-import { LogicDto } from '../../../shared/types/form/form_logic'
-import { SubmissionResponseDto } from '../../../shared/types/submission'
-import {
-  EmailSubmissionDto,
-  EncryptSubmissionDto,
   EndPageUpdateDto,
-  FormUpdateParams,
+  FormSettings,
+  LogicDto,
   PermissionsUpdateDto,
+  SettingsUpdateDto,
   StartPageUpdateDto,
-} from '../../types/api'
+} from '../../../shared/types/form'
+import {
+  EmailModeSubmissionContentDto,
+  StorageModeSubmissionContentDto,
+  SubmissionResponseDto,
+} from '../../../shared/types/submission'
+import { FormUpdateParams } from '../../types/api'
 import { createEmailSubmissionFormData } from '../utils/submission'
 
 // Exported for testing
@@ -222,7 +222,7 @@ export const submitEmailModeFormPreview = async ({
   captchaResponse = null,
 }: {
   formId: string
-  content: EmailSubmissionDto
+  content: EmailModeSubmissionContentDto
   attachments?: Record<string, File>
   captchaResponse?: string | null
 }): Promise<SubmissionResponseDto> => {
@@ -258,7 +258,7 @@ export const submitStorageModeFormPreview = async ({
   captchaResponse = null,
 }: {
   formId: string
-  content: EncryptSubmissionDto
+  content: StorageModeSubmissionContentDto
   captchaResponse?: string | null
 }): Promise<SubmissionResponseDto> => {
   return axios

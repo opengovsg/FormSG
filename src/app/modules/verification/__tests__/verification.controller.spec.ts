@@ -12,10 +12,6 @@ import {
 } from 'src/app/services/sms/sms.errors'
 import { HashingError } from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
-import { WAIT_FOR_OTP_SECONDS } from 'src/shared/util/verification'
-import { IFormSchema, IPopulatedForm, IVerificationSchema } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import expressHandler from '../../../../../tests/unit/backend/helpers/jest-express'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'

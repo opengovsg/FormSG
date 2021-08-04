@@ -1,4 +1,4 @@
-import { BasicField } from '../../types'
+import { BasicField } from '../types/field'
 
 export const VERIFIED_FIELDTYPES = [BasicField.Email, BasicField.Mobile]
 export const SALT_ROUNDS = 10

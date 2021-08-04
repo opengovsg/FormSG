@@ -1,6 +1,6 @@
 'use strict'
 
-const { isUenValid } = require('../../../../../shared/util/uen-validation')
+const { isUenValid } = require('../../../../../../shared/utils/uen-validation')
 
 angular.module('forms').directive('validateUen', validateUen)
 
