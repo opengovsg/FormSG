@@ -7,7 +7,7 @@ import {
 import { EmailModeSubmissionContentDto } from '../../../shared/types/submission'
 
 /**
- * AttachmentResponses with additional server injected metadata on email forms..
+ * AttachmentResponses with additional server injected metadata on email forms.
  */
 export type ParsedEmailAttachmentResponse = AttachmentResponse & {
   filename: string
