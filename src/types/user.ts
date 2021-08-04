@@ -4,11 +4,11 @@ import { SetOptional } from 'type-fest'
 
 import { UserBase } from '../../shared/types/user'
 
-import { AgencyDocument, IAgencySchema, PublicAgency } from './agency'
+import { AgencyDocument, IAgencySchema, PublicAgencyDto } from './agency'
 import { PublicView } from './database'
 
 export type PublicUser = {
-  agency: PublicAgency | ObjectId
+  agency: PublicAgencyDto | ObjectId
 }
 
 export type AdminContactOtpData = {
