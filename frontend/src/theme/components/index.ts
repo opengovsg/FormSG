@@ -10,6 +10,7 @@ import { Link } from './Link'
 import { NumberInput } from './NumberInput'
 import { PhoneNumberInput } from './PhoneNumberInput'
 import { Textarea } from './Textarea'
+import { Toast } from './Toast'
 
 export const components = {
   Banner,
@@ -24,4 +25,5 @@ export const components = {
   Textarea,
   [RATING_THEME_KEY]: RatingField,
   [YESNO_THEME_KEY]: YesNoField,
+  Toast,
 }
