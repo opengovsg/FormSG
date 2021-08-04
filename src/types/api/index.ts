@@ -1,5 +1,5 @@
 export * from './core'
-export * from './auth'
+export * from './form_auth'
 export * from './field'
 export * from './form'
 export * from './billing'
