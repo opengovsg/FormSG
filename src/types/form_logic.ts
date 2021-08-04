@@ -13,7 +13,15 @@ import {
 
 import { BasicField, IFieldSchema } from './field'
 
-export { LogicConditionState, LogicIfValue, LogicType, LogicDto }
+export {
+  LogicConditionState,
+  LogicIfValue,
+  LogicType,
+  LogicDto,
+  FormLogicBase,
+  ShowFieldLogic,
+  PreventSubmitLogic,
+}
 
 export interface ICondition extends FormCondition {
   field: IFieldSchema['_id']
@@ -23,25 +31,19 @@ export interface ICondition extends FormCondition {
 // String form.
 export interface IConditionSchema extends ICondition, Document<string> {}
 
-export type ILogic = FormLogicBase
-
-export interface ILogicSchema extends ILogic, Document {
+export interface ILogicSchema extends FormLogicBase, Document {
   conditions: IConditionSchema[]
 }
-
-export type IShowFieldsLogic = ShowFieldLogic
 export interface IShowFieldsLogicSchema
   extends ILogicSchema,
-    IShowFieldsLogic,
+    ShowFieldLogic,
     Document {
   logicType: LogicType.ShowFields
   conditions: IConditionSchema[]
 }
-
-export type IPreventSubmitLogic = PreventSubmitLogic
 export interface IPreventSubmitLogicSchema
   extends ILogicSchema,
-    IPreventSubmitLogic,
+    PreventSubmitLogic,
     Document {
   logicType: LogicType.PreventSubmit
   conditions: IConditionSchema[]
