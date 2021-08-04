@@ -7,7 +7,7 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import {
   IEncryptedSubmissionSchema,
   ISubmissionSchema,
-  IWebhookResponse,
+  WebhookResponse,
   WebhookView,
 } from '../../../types'
 import { aws as AwsConfig } from '../../config/config'
@@ -45,7 +45,7 @@ const EncryptSubmission = getEncryptSubmissionModel(mongoose)
  */
 export const saveWebhookRecord = (
   submissionId: ISubmissionSchema['_id'],
-  record: IWebhookResponse,
+  record: WebhookResponse,
 ): ResultAsync<
   IEncryptedSubmissionSchema,
   PossibleDatabaseError | SubmissionNotFoundError
@@ -98,7 +98,7 @@ export const sendWebhook = (
   webhookView: WebhookView,
   webhookUrl: string,
 ): ResultAsync<
-  IWebhookResponse,
+  WebhookResponse,
   | WebhookValidationError
   | WebhookFailedWithAxiosError
   | WebhookFailedWithPresignedUrlGenerationError

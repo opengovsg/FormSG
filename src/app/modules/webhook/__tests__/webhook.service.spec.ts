@@ -11,7 +11,7 @@ import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.valida
 import { transformMongoError } from 'src/app/utils/handle-mongo-error'
 import {
   IEncryptedSubmissionSchema,
-  IWebhookResponse,
+  WebhookResponse,
   WebhookView,
 } from 'src/types'
 
@@ -61,21 +61,21 @@ const MOCK_AXIOS_FAILURE_RESPONSE: AxiosResponse = {
   headers: {},
   config: {},
 }
-const MOCK_WEBHOOK_SUCCESS_RESPONSE: Pick<IWebhookResponse, 'response'> = {
+const MOCK_WEBHOOK_SUCCESS_RESPONSE: Pick<WebhookResponse, 'response'> = {
   response: {
     data: '{"result":"test-result"}',
     status: 200,
     headers: '{}',
   },
 }
-const MOCK_WEBHOOK_FAILURE_RESPONSE: Pick<IWebhookResponse, 'response'> = {
+const MOCK_WEBHOOK_FAILURE_RESPONSE: Pick<WebhookResponse, 'response'> = {
   response: {
     data: '{"result":"test-result"}',
     status: 400,
     headers: '{}',
   },
 }
-const MOCK_WEBHOOK_DEFAULT_FORMAT_RESPONSE: Pick<IWebhookResponse, 'response'> =
+const MOCK_WEBHOOK_DEFAULT_FORMAT_RESPONSE: Pick<WebhookResponse, 'response'> =
   {
     response: {
       data: '',
@@ -139,7 +139,7 @@ describe('webhook.service', () => {
         ...MOCK_WEBHOOK_SUCCESS_RESPONSE,
         signature: MOCK_SIGNATURE,
         webhookUrl: MOCK_WEBHOOK_URL,
-      } as IWebhookResponse
+      } as WebhookResponse
 
       const mockDBError = new Error(DEFAULT_ERROR_MSG)
 
@@ -169,7 +169,7 @@ describe('webhook.service', () => {
         ...MOCK_WEBHOOK_SUCCESS_RESPONSE,
         signature: MOCK_SIGNATURE,
         webhookUrl: MOCK_WEBHOOK_URL,
-      } as IWebhookResponse
+      } as WebhookResponse
 
       // Act
       const actual = await WebhookService.saveWebhookRecord(
@@ -193,7 +193,7 @@ describe('webhook.service', () => {
         ...MOCK_WEBHOOK_SUCCESS_RESPONSE,
         signature: MOCK_SIGNATURE,
         webhookUrl: MOCK_WEBHOOK_URL,
-      } as IWebhookResponse
+      } as WebhookResponse
 
       const expectedSubmission = new EncryptSubmissionModel({
         _id: MOCK_SUBMISSION_ID,

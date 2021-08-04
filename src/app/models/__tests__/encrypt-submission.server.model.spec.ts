@@ -9,7 +9,7 @@ import getSubmissionModel, {
 } from 'src/app/models/submission.server.model'
 import {
   IEncryptedSubmissionSchema,
-  SubmissionMetadata,
+  StorageModeSubmissionMetadata,
   SubmissionType,
 } from 'src/types'
 
@@ -49,7 +49,7 @@ describe('Encrypt Submission Model', () => {
         )
 
         // Assert
-        const expected: SubmissionMetadata = {
+        const expected: StorageModeSubmissionMetadata = {
           number: 1,
           refNo: validSubmission._id,
           submissionTime: moment(createdDate)

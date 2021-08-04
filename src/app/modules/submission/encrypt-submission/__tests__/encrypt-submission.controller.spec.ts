@@ -18,8 +18,8 @@ import {
   IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedUser,
+  StorageModeSubmissionMetadata,
   SubmissionData,
-  SubmissionMetadata,
 } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
@@ -673,7 +673,7 @@ describe('encrypt-submission.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
       // Mock service result.
-      const expectedMetadata: SubmissionMetadata = {
+      const expectedMetadata: StorageModeSubmissionMetadata = {
         number: 2,
         refNo: mockSubmissionId,
         submissionTime: 'some submission time',
@@ -759,7 +759,7 @@ describe('encrypt-submission.controller', () => {
             refNo: new ObjectId().toHexString(),
             submissionTime: 'some submission time',
           },
-        ] as SubmissionMetadata[],
+        ] as StorageModeSubmissionMetadata[],
         count: 32,
       }
       MockEncryptSubService.getSubmissionMetadataList.mockReturnValueOnce(

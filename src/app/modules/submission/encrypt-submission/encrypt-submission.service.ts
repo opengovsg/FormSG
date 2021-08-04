@@ -10,10 +10,10 @@ import {
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
+  StorageModeSubmissionMetadata,
+  StorageModeSubmissionMetadataList,
   SubmissionCursorData,
   SubmissionData,
-  SubmissionMetadata,
-  SubmissionMetadataList,
 } from '../../../../types'
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -301,7 +301,7 @@ export const transformAttachmentMetasToSignedUrls = (
 export const getSubmissionMetadata = (
   formId: string,
   submissionId: string,
-): ResultAsync<SubmissionMetadata | null, DatabaseError> => {
+): ResultAsync<StorageModeSubmissionMetadata | null, DatabaseError> => {
   // Early return, do not even retrieve from database.
   if (!mongoose.Types.ObjectId.isValid(submissionId)) {
     return okAsync(null)
@@ -327,7 +327,7 @@ export const getSubmissionMetadata = (
 export const getSubmissionMetadataList = (
   formId: string,
   page?: number,
-): ResultAsync<SubmissionMetadataList, DatabaseError> => {
+): ResultAsync<StorageModeSubmissionMetadataList, DatabaseError> => {
   return ResultAsync.fromPromise(
     EncryptSubmissionModel.findAllMetadataByFormId(formId, { page }),
     (error) => {

@@ -7,9 +7,9 @@ import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
 import {
-  EncryptedSubmissionDto,
   FormAuthType,
-  SubmissionMetadataList,
+  StorageModeSubmissionDto,
+  StorageModeSubmissionMetadataList,
 } from '../../../../types'
 import {
   EncryptSubmissionDto,
@@ -543,7 +543,7 @@ const validateSubmissionId = celebrate({
  */
 export const getEncryptedResponseUsingQueryParams: ControllerHandler<
   { formId: string },
-  EncryptedSubmissionDto | ErrorDto,
+  StorageModeSubmissionDto | ErrorDto,
   unknown,
   { submissionId: string }
 > = async (req, res) => {
@@ -623,7 +623,7 @@ export const handleGetEncryptedResponseUsingQueryParams = [
  */
 export const handleGetEncryptedResponse: ControllerHandler<
   { formId: string; submissionId: string },
-  EncryptedSubmissionDto | ErrorDto
+  StorageModeSubmissionDto | ErrorDto
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { formId, submissionId } = req.params
@@ -690,7 +690,7 @@ export const handleGetEncryptedResponse: ControllerHandler<
  */
 export const getMetadata: ControllerHandler<
   { formId: string },
-  SubmissionMetadataList | ErrorDto,
+  StorageModeSubmissionMetadataList | ErrorDto,
   unknown,
   FormSubmissionMetadataQueryDto
 > = async (req, res) => {
@@ -724,7 +724,7 @@ export const getMetadata: ControllerHandler<
         // Step 4a: Retrieve specific submission id.
         if (submissionId) {
           return getSubmissionMetadata(formId, submissionId).map((metadata) => {
-            const metadataList: SubmissionMetadataList = metadata
+            const metadataList: StorageModeSubmissionMetadataList = metadata
               ? { metadata: [metadata], count: 1 }
               : { metadata: [], count: 0 }
             return metadataList

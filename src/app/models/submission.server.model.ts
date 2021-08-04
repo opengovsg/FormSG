@@ -12,15 +12,15 @@ import {
   IPopulatedWebhookSubmission,
   ISubmissionModel,
   ISubmissionSchema,
-  IWebhookResponse,
   IWebhookResponseSchema,
   MyInfoAttribute,
+  StorageModeSubmissionMetadata,
   SubmissionCursorData,
   SubmissionData,
-  SubmissionMetadata,
   SubmissionType,
   SubmissionWebhookInfo,
   WebhookData,
+  WebhookResponse,
   WebhookView,
 } from '../../types'
 import { createQueryWithDateParam } from '../utils/date'
@@ -208,7 +208,7 @@ EncryptSubmissionSchema.methods.getWebhookView = function (
 
 EncryptSubmissionSchema.statics.addWebhookResponse = function (
   submissionId: string,
-  webhookResponse: IWebhookResponse,
+  webhookResponse: WebhookResponse,
 ): Promise<IEncryptedSubmissionSchema | null> {
   return this.findByIdAndUpdate(
     submissionId,
@@ -236,7 +236,7 @@ EncryptSubmissionSchema.statics.retrieveWebhookInfoById = function (
 EncryptSubmissionSchema.statics.findSingleMetadata = function (
   formId: string,
   submissionId: string,
-): Promise<SubmissionMetadata | null> {
+): Promise<StorageModeSubmissionMetadata | null> {
   return (
     this.findOne(
       {
@@ -255,7 +255,7 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
         }
 
         // Build submissionMetadata object.
-        const metadata: SubmissionMetadata = {
+        const metadata: StorageModeSubmissionMetadata = {
           number: 1,
           refNo: result._id,
           submissionTime: moment(result.created)
@@ -287,7 +287,7 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
     pageSize?: number
   } = {},
 ): Promise<{
-  metadata: SubmissionMetadata[]
+  metadata: StorageModeSubmissionMetadata[]
   count: number
 }> {
   const numToSkip = (page - 1) * pageSize
@@ -322,7 +322,7 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
         let currentNumber = count - numToSkip
 
         const metadata = pageResults.map((data) => {
-          const metadataEntry: SubmissionMetadata = {
+          const metadataEntry: StorageModeSubmissionMetadata = {
             number: currentNumber,
             refNo: data._id,
             submissionTime: moment(data.created)

@@ -3,7 +3,7 @@ import axios from 'axios'
 import JSZip from 'jszip'
 import { mocked } from 'ts-jest/utils'
 
-import { SubmissionMetadataList } from 'src/types'
+import { StorageModeSubmissionMetadataList } from 'src/types'
 
 import { DateString } from '../../../../shared/types/generic'
 import { SubmissionId } from '../../../../shared/types/submission'
@@ -70,7 +70,7 @@ describe('AdminSubmissionsService', () => {
   describe('getSubmissionsMetadataByPage', () => {
     const MOCK_FORM_ID = 'mock–form-id'
     const MOCK_PAGE_NUM = 1
-    const MOCK_RESPONSE: SubmissionMetadataList = {
+    const MOCK_RESPONSE: StorageModeSubmissionMetadataList = {
       count: 1,
       metadata: [
         {
@@ -107,7 +107,7 @@ describe('AdminSubmissionsService', () => {
   describe('getSubmissionMetadataById', () => {
     const MOCK_FORM_ID = 'mock–form-id'
     const MOCK_SUBMISSION_ID = 'fake'
-    const MOCK_RESPONSE: SubmissionMetadataList = {
+    const MOCK_RESPONSE: StorageModeSubmissionMetadataList = {
       count: 1,
       metadata: [
         {

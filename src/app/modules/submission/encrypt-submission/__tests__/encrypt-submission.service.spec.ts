@@ -14,9 +14,9 @@ import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-f
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import {
   IPopulatedEncryptedForm,
+  StorageModeSubmissionMetadata,
   SubmissionCursorData,
   SubmissionData,
-  SubmissionMetadata,
 } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -588,7 +588,7 @@ describe('encrypt-submission.service', () => {
     it('should return metadata successfully', async () => {
       // Arrange
       const mockSubmissionId = new ObjectId().toHexString()
-      const expectedMetadata: SubmissionMetadata = {
+      const expectedMetadata: StorageModeSubmissionMetadata = {
         number: 200,
         refNo: mockSubmissionId,
         submissionTime: 'some submission time',

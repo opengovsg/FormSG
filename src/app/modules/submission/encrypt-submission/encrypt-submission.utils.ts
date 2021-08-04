@@ -2,8 +2,8 @@ import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
 import {
-  EncryptedSubmissionDto,
   MapRouteErrors,
+  StorageModeSubmissionDto,
   SubmissionData,
 } from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
@@ -207,7 +207,7 @@ export const mapRouteError: MapRouteErrors =
 export const createEncryptedSubmissionDto = (
   submissionData: SubmissionData,
   attachmentPresignedUrls: Record<string, string>,
-): EncryptedSubmissionDto => {
+): StorageModeSubmissionDto => {
   return {
     refNo: submissionData._id,
     submissionTime: moment(submissionData.created)

@@ -14,8 +14,8 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import {
   FormAuthType,
   ISubmissionSchema,
-  IWebhookResponse,
   SubmissionType,
+  WebhookResponse,
 } from '../../../../src/types'
 
 jest.mock('dns', () => ({
@@ -403,7 +403,7 @@ describe('Submission Model', () => {
             status: 200,
             headers: '{}',
           },
-        }) as IWebhookResponse
+        }) as WebhookResponse
 
         // Act
         const actualSubmission = await EncryptedSubmission.addWebhookResponse(
@@ -446,7 +446,7 @@ describe('Submission Model', () => {
             headers: '',
             data: '',
           },
-        } as IWebhookResponse
+        } as WebhookResponse
 
         const invalidSubmissionId = new ObjectId().toHexString()
 
