@@ -3,11 +3,11 @@ import UIDGenerator from 'uid-generator'
 
 import {
   BasicField,
+  FormResponseMode,
   IFieldSchema,
   IMyInfoSchema,
   ITableFieldSchema,
   MyInfoAttribute,
-  ResponseMode,
 } from '../../../types'
 
 const uidgen3 = new UIDGenerator(256, UIDGenerator.BASE62)
@@ -65,7 +65,7 @@ BaseFieldSchema.pre<IFieldSchema>('validate', function (next) {
   }
 
   // Prevent MyInfo fields from being set in encrypt mode.
-  if (this.parent().responseMode === ResponseMode.Encrypt) {
+  if (this.parent().responseMode === FormResponseMode.Encrypt) {
     if (this.myInfo?.attr) {
       return next(Error('MyInfo fields are not allowed for storage mode forms'))
     }

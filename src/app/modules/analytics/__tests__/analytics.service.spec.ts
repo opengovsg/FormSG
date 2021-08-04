@@ -6,9 +6,9 @@ import getFormModel from 'src/app/models/form.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import {
+  FormResponseMode,
   IAgencySchema,
   IUserSchema,
-  ResponseMode,
   SubmissionType,
 } from 'src/types'
 
@@ -66,7 +66,7 @@ describe('analytics.service', () => {
         FormModel.create({
           admin: testUser._id,
           title: 'Test form',
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           emails: ['a@abc.com'],
         }),
       )

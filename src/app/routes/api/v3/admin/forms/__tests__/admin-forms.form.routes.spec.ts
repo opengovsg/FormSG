@@ -17,13 +17,13 @@ import {
 } from 'src/app/modules/core/core.errors'
 import {
   BasicField,
-  Colors,
+  FormColorTheme,
   FormLogoState,
+  FormResponseMode,
+  FormStartPage,
+  FormStatus,
   IPopulatedForm,
   IUserSchema,
-  ResponseMode,
-  StartPage,
-  Status,
 } from 'src/types'
 
 import {
@@ -112,7 +112,7 @@ describe('admin-form.form.routes', () => {
         title: 'Archived form',
         emails: defaultUser.email,
         admin: defaultUser._id,
-        status: Status.Archived,
+        status: FormStatus.Archived,
       })
       // Create form that user is not collaborator/admin of. Should not be
       // fetched.
@@ -213,8 +213,8 @@ describe('admin-form.form.routes', () => {
         expect.objectContaining({
           admin: String(defaultUser._id),
           emails: [defaultUser.email],
-          responseMode: ResponseMode.Email,
-          status: Status.Private,
+          responseMode: FormResponseMode.Email,
+          status: FormStatus.Private,
           title: createEmailParams.form.title,
           form_fields: [],
           form_logics: [],
@@ -243,8 +243,8 @@ describe('admin-form.form.routes', () => {
         expect.objectContaining({
           admin: String(defaultUser._id),
           publicKey: createStorageParams.form.publicKey,
-          responseMode: ResponseMode.Encrypt,
-          status: Status.Private,
+          responseMode: FormResponseMode.Encrypt,
+          status: FormStatus.Private,
           title: createStorageParams.form.title,
           form_fields: [],
           form_logics: [],
@@ -291,7 +291,7 @@ describe('admin-form.form.routes', () => {
       const response = await request.post('/admin/forms').send({
         form: {
           // title is missing.
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           emails: 'some@example.com',
         },
       })
@@ -308,7 +308,7 @@ describe('admin-form.form.routes', () => {
       const response = await request.post('/admin/forms').send({
         form: {
           title: 'new email form',
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           // body.emails missing.
         },
       })
@@ -327,7 +327,7 @@ describe('admin-form.form.routes', () => {
       const response = await request.post('/admin/forms').send({
         form: {
           title: 'new email form',
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           emails: '',
         },
       })
@@ -349,7 +349,7 @@ describe('admin-form.form.routes', () => {
       const response = await request.post('/admin/forms').send({
         form: {
           title: 'new email form',
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           emails: [],
         },
       })
@@ -371,7 +371,7 @@ describe('admin-form.form.routes', () => {
       const response = await request.post('/admin/forms').send({
         form: {
           title: 'new storage mode form',
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
           // publicKey missing.
         },
       })
@@ -392,7 +392,7 @@ describe('admin-form.form.routes', () => {
       const response = await request.post('/admin/forms').send({
         form: {
           title: 'new storage mode form',
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
           publicKey: '',
         },
       })
@@ -645,8 +645,8 @@ describe('admin-form.form.routes', () => {
       // Arrange
       const archivedForm = await EncryptFormModel.create({
         title: 'archived form',
-        status: Status.Archived,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Archived,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'does not matter',
         admin: defaultUser._id,
       })
@@ -697,7 +697,7 @@ describe('admin-form.form.routes', () => {
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
-      expect(formToArchive.status).toEqual(Status.Private)
+      expect(formToArchive.status).toEqual(FormStatus.Private)
 
       // Act
       const response = await request.delete(`/admin/forms/${formToArchive._id}`)
@@ -706,7 +706,7 @@ describe('admin-form.form.routes', () => {
       const form = await EmailFormModel.findById(formToArchive._id)
       expect(response.status).toEqual(200)
       expect(response.body).toEqual({ message: 'Form has been archived' })
-      expect(form?.status).toEqual(Status.Archived)
+      expect(form?.status).toEqual(FormStatus.Archived)
     })
 
     it('should return 401 when user is not logged in', async () => {
@@ -773,7 +773,7 @@ describe('admin-form.form.routes', () => {
         title: 'Form already archived',
         emails: [defaultUser.email],
         admin: defaultUser._id,
-        status: Status.Archived,
+        status: FormStatus.Archived,
       })
 
       // Act
@@ -836,7 +836,7 @@ describe('admin-form.form.routes', () => {
       })
 
       const dupeParams = {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         title: 'new duplicated form title',
         publicKey: 'some public key',
       }
@@ -856,7 +856,7 @@ describe('admin-form.form.routes', () => {
           }),
           responseMode: dupeParams.responseMode,
           title: dupeParams.title,
-          status: Status.Private,
+          status: FormStatus.Private,
         }),
       )
     })
@@ -874,7 +874,7 @@ describe('admin-form.form.routes', () => {
         .post(`/admin/forms/${formToDupe._id}/duplicate`)
         .send({
           title: 'new email form',
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           // body.emails missing.
         })
 
@@ -900,7 +900,7 @@ describe('admin-form.form.routes', () => {
         .post(`/admin/forms/${formToDupe._id}/duplicate`)
         .send({
           title: 'new email form',
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           emails: '',
         })
 
@@ -929,7 +929,7 @@ describe('admin-form.form.routes', () => {
         .post(`/admin/forms/${formToDupe._id}/duplicate`)
         .send({
           title: 'new email form',
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           emails: [],
         })
 
@@ -958,7 +958,7 @@ describe('admin-form.form.routes', () => {
         .post(`/admin/forms/${formToDupe._id}/duplicate`)
         .send({
           title: 'new storage mode form',
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
           // publicKey missing.
         })
 
@@ -986,7 +986,7 @@ describe('admin-form.form.routes', () => {
         .post(`/admin/forms/${formToDupe._id}/duplicate`)
         .send({
           title: 'new storage mode form',
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
           publicKey: '',
         })
 
@@ -1015,7 +1015,7 @@ describe('admin-form.form.routes', () => {
         .post(`/admin/forms/${formToDupe._id}/duplicate`)
         .send({
           // title is missing.
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           emails: 'test@example.com',
         })
 
@@ -1096,7 +1096,7 @@ describe('admin-form.form.routes', () => {
       const response = await request
         .post(`/admin/forms/${randomForm._id}/duplicate`)
         .send({
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
           title: 'new duplicated form title',
           publicKey: 'some public key',
         })
@@ -1116,7 +1116,7 @@ describe('admin-form.form.routes', () => {
       const response = await request
         .post(`/admin/forms/${invalidFormId}/duplicate`)
         .send({
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
           title: 'new duplicated form title',
           publicKey: 'some public key',
         })
@@ -1133,14 +1133,14 @@ describe('admin-form.form.routes', () => {
         title: 'Form already archived',
         emails: [defaultUser.email],
         admin: defaultUser._id,
-        status: Status.Archived,
+        status: FormStatus.Archived,
       })
 
       // Act
       const response = await request
         .post(`/admin/forms/${archivedForm._id}/duplicate`)
         .send({
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           emails: 'anyrandomEmail@example.com',
           title: 'cool new title',
         })
@@ -1159,7 +1159,7 @@ describe('admin-form.form.routes', () => {
       const response = await request
         .post(`/admin/forms/${new ObjectId()}/duplicate`)
         .send({
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
           title: 'does not matter',
           publicKey: 'some public key',
         })
@@ -1181,7 +1181,7 @@ describe('admin-form.form.routes', () => {
       // Force validation error that will be returned as database error
       // TODO(#614): Return transformMongoError instead of DatabaseError for better mongoose error handling.
       const invalidEmailDupeParams = {
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: 'notAnEmail, should return error',
         title: 'cool new title',
       }
@@ -1405,7 +1405,7 @@ describe('admin-form.form.routes', () => {
         admin: defaultUser._id,
         publicKey: 'some public key',
         // Already deleted.
-        status: Status.Archived,
+        status: FormStatus.Archived,
       })
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
@@ -1547,7 +1547,7 @@ describe('admin-form.form.routes', () => {
         title: 'Form already archived',
         emails: [defaultUser.email],
         admin: defaultUser._id,
-        status: Status.Archived,
+        status: FormStatus.Archived,
       })
 
       // Act
@@ -1756,7 +1756,7 @@ describe('admin-form.form.routes', () => {
         emails: [defaultUser.email],
         admin: defaultUser._id,
         form_fields: [generateDefaultField(BasicField.Date)],
-        status: Status.Archived,
+        status: FormStatus.Archived,
       })) as IPopulatedForm
 
       const fieldToDuplicate = archivedForm.form_fields[0]
@@ -1829,13 +1829,13 @@ describe('admin-form.form.routes', () => {
   })
 
   describe('PUT /admin/forms/:formId/start-page', () => {
-    const MOCK_START_PAGE: StartPage = {
+    const MOCK_START_PAGE: FormStartPage = {
       paragraph: 'old end page',
     }
 
-    const MOCK_UPDATED_START_PAGE: StartPage = {
+    const MOCK_UPDATED_START_PAGE: FormStartPage = {
       paragraph: 'new mock start page title',
-      colorTheme: Colors.Blue,
+      colorTheme: FormColorTheme.Blue,
       logo: {
         state: FormLogoState.None,
       },
@@ -1909,7 +1909,7 @@ describe('admin-form.form.routes', () => {
         title: 'email me',
         admin: defaultUser._id,
         startPage: MOCK_START_PAGE,
-        status: Status.Archived,
+        status: FormStatus.Archived,
       })
       const expectedResponse = { message: 'Form has been archived' }
 

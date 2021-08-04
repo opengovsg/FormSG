@@ -3,13 +3,13 @@ import { compact, flattenDeep, sumBy } from 'lodash'
 
 import * as FileValidation from '../../../../../shared/utils/file-validation'
 import {
-  AuthType,
   BasicField,
   EmailAdminDataField,
   EmailDataCollationToolField,
   EmailDataFields,
   EmailDataForOneField,
   EmailRespondentConfirmationField,
+  FormAuthType,
   IAttachmentInfo,
   MapRouteError,
   SPCPFieldTitle,
@@ -698,12 +698,12 @@ const getAutoReplyFormattedResponse = (
 export class SubmissionEmailObj {
   parsedResponses: ProcessedFieldResponse[]
   hashedFields: Set<string>
-  authType: AuthType
+  authType: FormAuthType
 
   constructor(
     parsedResponses: ProcessedFieldResponse[],
     hashedFields: Set<string> = new Set<string>(),
-    authType: AuthType,
+    authType: FormAuthType,
   ) {
     this.parsedResponses = parsedResponses
     this.hashedFields = hashedFields
@@ -745,7 +745,7 @@ export class SubmissionEmailObj {
       ),
     )
 
-    return this.authType === AuthType.CP
+    return this.authType === FormAuthType.CP
       ? maskUidOnLastField(unmaskedAutoReplyData)
       : unmaskedAutoReplyData
   }

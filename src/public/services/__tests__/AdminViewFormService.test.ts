@@ -1,6 +1,6 @@
 import MockAxios from 'jest-mock-axios'
 
-import { IPopulatedForm, PublicForm, ResponseMode } from 'src/types/form'
+import { FormResponseMode, IPopulatedForm, PublicForm } from 'src/types/form'
 
 import {
   AdminDashboardFormMetaDto,
@@ -30,7 +30,7 @@ describe('AdminViewFormService', () => {
           title: 'title',
           lastModified: new Date(),
           _id: 'mock-form-id',
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           admin: MOCK_USER,
           status: FormStatus.Private,
         },

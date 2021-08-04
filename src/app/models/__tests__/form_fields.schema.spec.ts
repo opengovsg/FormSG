@@ -2,7 +2,7 @@ import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
-import { BasicField, IFieldSchema, ResponseMode } from 'src/types'
+import { BasicField, FormResponseMode, IFieldSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -90,15 +90,15 @@ describe('Form Field Schema', () => {
 
 const createAndReturnFormField = async (
   formFieldParams: Record<string, any>,
-  formType: ResponseMode = ResponseMode.Email,
+  formType: FormResponseMode = FormResponseMode.Email,
 ) => {
   let baseParams
 
   switch (formType) {
-    case ResponseMode.Email:
+    case FormResponseMode.Email:
       baseParams = MOCK_EMAIL_FORM_PARAMS
       break
-    case ResponseMode.Encrypt:
+    case FormResponseMode.Encrypt:
       baseParams = MOCK_ENCRYPTED_FORM_PARAMS
       break
     default:

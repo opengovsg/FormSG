@@ -1,6 +1,6 @@
 import {
-  AuthType,
   Environment,
+  FormAuthType,
   IFormSchema,
   IMyInfo,
   MyInfoAttribute,
@@ -63,6 +63,6 @@ export type MyInfoParsedRelayState = MyInfoRelayState & {
 }
 
 export type MyInfoForm<T extends IFormSchema> = T & {
-  authType: AuthType.MyInfo
+  authType: FormAuthType.MyInfo
   esrvcId: string
 }

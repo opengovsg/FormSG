@@ -6,7 +6,7 @@ import { PartialDeep } from 'type-fest'
 import getFormModel from 'src/app/models/form.server.model'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { AuthType, IFormSchema } from 'src/types'
+import { FormAuthType, IFormSchema } from 'src/types'
 
 import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
 import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
@@ -24,29 +24,29 @@ describe('public-form.service', () => {
   describe('getCookieNameByAuthType', () => {
     it('should return JwtName[AuthType.SP] when authType is SP', () => {
       // Arrange
-      const authType = AuthType.SP
+      const authType = FormAuthType.SP
 
       // Act
       const result = PublicFormService.getCookieNameByAuthType(authType)
 
       // Assert
-      expect(result).toEqual(JwtName[AuthType.SP])
+      expect(result).toEqual(JwtName[FormAuthType.SP])
     })
 
     it('should return JwtName[AuthType.CP] when authType is CP', () => {
       // Arrange
-      const authType = AuthType.CP
+      const authType = FormAuthType.CP
 
       // Act
       const result = PublicFormService.getCookieNameByAuthType(authType)
 
       // Assert
-      expect(result).toEqual(JwtName[AuthType.CP])
+      expect(result).toEqual(JwtName[FormAuthType.CP])
     })
 
     it('should return MYINFO_COOKIE_NAME when authType is MyInfo', () => {
       // Arrange
-      const authType = AuthType.MyInfo
+      const authType = FormAuthType.MyInfo
 
       // Act
       const result = PublicFormService.getCookieNameByAuthType(authType)
@@ -57,7 +57,7 @@ describe('public-form.service', () => {
 
     it('should return SGID_COOKIE_NAME when authType is SGID', () => {
       // Arrange
-      const authType = AuthType.SGID
+      const authType = FormAuthType.SGID
 
       // Act
       const result = PublicFormService.getCookieNameByAuthType(authType)

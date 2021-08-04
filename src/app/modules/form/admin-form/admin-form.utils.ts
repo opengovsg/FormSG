@@ -8,9 +8,9 @@ import {
 import { EditFieldActions } from '../../../../shared/constants'
 import {
   FormFieldSchema,
+  FormResponseMode,
+  FormStatus,
   IPopulatedForm,
-  ResponseMode,
-  Status,
 } from '../../../../types'
 import {
   DuplicateFormBodyDto,
@@ -148,7 +148,7 @@ export const mapRouteError = (
 export const assertFormAvailable = (
   form: IPopulatedForm,
 ): Result<true, FormDeletedError> => {
-  return form.status === Status.Archived
+  return form.status === FormStatus.Archived
     ? err(new FormDeletedError('Form has been archived'))
     : ok(true)
 }
@@ -252,10 +252,10 @@ export const processDuplicateOverrideProps = (
   }
 
   switch (params.responseMode) {
-    case ResponseMode.Encrypt:
+    case FormResponseMode.Encrypt:
       overrideProps.publicKey = params.publicKey
       break
-    case ResponseMode.Email:
+    case FormResponseMode.Email:
       overrideProps.emails = params.emails
       break
   }

@@ -2,11 +2,11 @@ import {
   FormFieldSchema,
   FormLogicSchema,
   FormPermission,
+  FormResponseMode,
   IEncryptedFormSchema,
   IFormSchema,
   IPopulatedEmailForm,
   IPopulatedForm,
-  ResponseMode,
 } from '../../../types'
 import { isMongooseDocumentArray } from '../../utils/mongoose'
 
@@ -42,7 +42,7 @@ export const transformEmails = (v: string | string[]): string[] => {
 export const isFormEncryptMode = (
   form: IFormSchema | IPopulatedForm,
 ): form is IEncryptedFormSchema => {
-  return form.responseMode === ResponseMode.Encrypt
+  return form.responseMode === FormResponseMode.Encrypt
 }
 
 /**
@@ -77,7 +77,7 @@ export const getCollabEmailsWithPermission = (
 export const isEmailModeForm = (
   form: IPopulatedForm,
 ): form is IPopulatedEmailForm => {
-  return form.responseMode === ResponseMode.Email
+  return form.responseMode === FormResponseMode.Email
 }
 
 /**

@@ -8,8 +8,8 @@ import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 import { types as myInfoTypes } from '../../../../shared/constants/field/myinfo'
 import { hasProp } from '../../../../shared/utils/has-prop'
 import {
-  AuthType,
   BasicField,
+  FormAuthType,
   IFormSchema,
   IHashes,
   IMyInfo,
@@ -292,14 +292,14 @@ export const validateMyInfoForm = <T extends IFormSchema>(
   if (isMyInfoFormWithEsrvcId(form)) {
     return ok(form)
   }
-  return err(new AuthTypeMismatchError(AuthType.MyInfo, form.authType))
+  return err(new AuthTypeMismatchError(FormAuthType.MyInfo, form.authType))
 }
 
 // Typeguard to ensure that form has eserviceId and MyInfo authType
 const isMyInfoFormWithEsrvcId = <F extends IFormSchema>(
   form: F,
 ): form is MyInfoForm<F> => {
-  return form.authType === AuthType.MyInfo && !!form.esrvcId
+  return form.authType === FormAuthType.MyInfo && !!form.esrvcId
 }
 
 /**

@@ -2,10 +2,10 @@ import { Result } from 'neverthrow'
 
 import {
   FormFieldSchema,
+  FormResponseMode,
   IForm,
   IPopulatedForm,
   IUserSchema,
-  ResponseMode,
 } from '../../../../types'
 import { ForbiddenFormError } from '../form.errors'
 
@@ -27,7 +27,7 @@ export type OverrideProps = {
   startPage?: IForm['startPage']
   admin: string
   title: string
-  responseMode: ResponseMode
+  responseMode: FormResponseMode
   emails?: string | string[]
   publicKey?: string
 }

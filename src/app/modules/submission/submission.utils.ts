@@ -6,8 +6,8 @@ import {
   BasicField,
   FieldResponse,
   FormFieldSchema,
+  FormResponseMode,
   IFormDocument,
-  ResponseMode,
 } from '../../../types'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 
@@ -20,12 +20,12 @@ type ModeFilterParam = {
 }
 
 export const getModeFilter = (
-  responseMode: ResponseMode,
+  responseMode: FormResponseMode,
 ): (<T extends ModeFilterParam>(responses: T[]) => T[]) => {
   switch (responseMode) {
-    case ResponseMode.Email:
+    case FormResponseMode.Email:
       return emailModeFilter
-    case ResponseMode.Encrypt:
+    case FormResponseMode.Encrypt:
       return encryptModeFilter
   }
 }

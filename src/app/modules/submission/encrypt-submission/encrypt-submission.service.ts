@@ -6,10 +6,10 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
 
 import {
+  FormResponseMode,
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
-  ResponseMode,
   SubmissionCursorData,
   SubmissionData,
   SubmissionMetadata,
@@ -350,7 +350,7 @@ export const checkFormIsEncryptMode = (
 ): Result<IPopulatedEncryptedForm, ResponseModeError> => {
   return isFormEncryptMode(form)
     ? ok(form)
-    : err(new ResponseModeError(ResponseMode.Encrypt, form.responseMode))
+    : err(new ResponseModeError(FormResponseMode.Encrypt, form.responseMode))
 }
 
 /**

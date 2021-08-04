@@ -7,8 +7,8 @@ import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
 import {
-  AuthType,
   EncryptedSubmissionDto,
+  FormAuthType,
   SubmissionMetadataList,
 } from '../../../../types'
 import {
@@ -186,7 +186,7 @@ const submitEncryptModeForm: ControllerHandler<
   let userInfo
   const { authType } = form
   switch (authType) {
-    case AuthType.MyInfo: {
+    case FormAuthType.MyInfo: {
       logger.error({
         message:
           'Storage mode form is not allowed to have MyInfo authorisation',
@@ -199,7 +199,7 @@ const submitEncryptModeForm: ControllerHandler<
       )
       return res.status(statusCode).json({ message: errorMessage })
     }
-    case AuthType.SP: {
+    case FormAuthType.SP: {
       const jwtPayloadResult = await SpcpService.extractJwt(
         req.cookies,
         authType,
@@ -221,7 +221,7 @@ const submitEncryptModeForm: ControllerHandler<
       uinFin = jwtPayloadResult.value.userName
       break
     }
-    case AuthType.CP: {
+    case FormAuthType.CP: {
       const jwtPayloadResult = await SpcpService.extractJwt(
         req.cookies,
         authType,
@@ -248,7 +248,7 @@ const submitEncryptModeForm: ControllerHandler<
 
   // Encrypt Verified SPCP Fields
   let verified
-  if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
+  if (form.authType === FormAuthType.SP || form.authType === FormAuthType.CP) {
     const encryptVerifiedContentResult =
       VerifiedContentService.getVerifiedContent({
         type: form.authType,

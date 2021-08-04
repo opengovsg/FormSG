@@ -6,7 +6,7 @@ import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
 import getLoginModel from 'src/app/models/login.server.model'
-import { AuthType } from 'src/types'
+import { FormAuthType } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
@@ -332,7 +332,7 @@ describe('spcp.routes', () => {
       await dbHandler.insertEmailForm({
         formId: new ObjectId(MOCK_TARGET),
         formOptions: {
-          authType: AuthType.SP,
+          authType: FormAuthType.SP,
           esrvcId: MOCK_ESRVCID,
         },
       })
@@ -456,7 +456,7 @@ describe('spcp.routes', () => {
       await dbHandler.insertEmailForm({
         formId: new ObjectId(MOCK_TARGET),
         formOptions: {
-          authType: AuthType.CP,
+          authType: FormAuthType.CP,
           esrvcId: MOCK_ESRVCID,
         },
       })

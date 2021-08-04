@@ -5,7 +5,7 @@ import supertest, { Session } from 'supertest-session'
 
 import getFormModel from 'src/app/models/form.server.model'
 import getLoginModel from 'src/app/models/login.server.model'
-import { AuthType, IUserSchema, ResponseMode } from 'src/types'
+import { FormAuthType, FormResponseMode, IUserSchema } from 'src/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -75,14 +75,14 @@ describe('billing.routes', () => {
           formName: generatedForms[0].title,
           total: generatedLoginTimes[0],
           formId: String(generatedForms[0]._id),
-          authType: AuthType.SP,
+          authType: FormAuthType.SP,
         },
         {
           adminEmail: defaultUser.email,
           formName: generatedForms[1].title,
           total: generatedLoginTimes[1],
           formId: String(generatedForms[1]._id),
-          authType: AuthType.SP,
+          authType: FormAuthType.SP,
         },
       ]
       expect(response.status).toEqual(200)
@@ -229,7 +229,7 @@ const generateLoginStatistics = async ({
     FormModel.create({
       title: `example form title ${idx}`,
       admin: user._id,
-      responseMode: ResponseMode.Email,
+      responseMode: FormResponseMode.Email,
       emails: [user.email],
     }),
   )
@@ -244,7 +244,7 @@ const generateLoginStatistics = async ({
           form: form._id,
           admin: user._id,
           agency: user.agency,
-          authType: AuthType.SP,
+          authType: FormAuthType.SP,
           esrvcId: esrvcIdToCheck,
         }),
       ),
@@ -257,7 +257,7 @@ const generateLoginStatistics = async ({
         form: forms[2]._id,
         admin: user._id,
         agency: user.agency,
-        authType: AuthType.SP,
+        authType: FormAuthType.SP,
         esrvcId: altEsrvcId,
       }),
     ),

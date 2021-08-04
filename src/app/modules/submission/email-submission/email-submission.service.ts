@@ -5,11 +5,11 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import {
   BasicField,
   EmailAdminDataField,
+  FormResponseMode,
   IAttachmentInfo,
   IEmailSubmissionSchema,
   IPopulatedEmailForm,
   IPopulatedForm,
-  ResponseMode,
   SubmissionType,
 } from '../../../../types'
 import { ParsedEmailFormFieldResponse } from '../../../../types/api'
@@ -188,7 +188,7 @@ export const checkFormIsEmailMode = (
   if (isEmailModeForm(form)) {
     return ok(form)
   }
-  return err(new ResponseModeError(ResponseMode.Email, form.responseMode))
+  return err(new ResponseModeError(FormResponseMode.Email, form.responseMode))
 }
 
 /**

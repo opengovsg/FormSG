@@ -1,6 +1,6 @@
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
-import { AuthType, IPopulatedEmailForm } from '../../../../types'
+import { FormAuthType, IPopulatedEmailForm } from '../../../../types'
 import {
   ParsedEmailModeSubmissionBody,
   SubmissionErrorDto,
@@ -150,7 +150,7 @@ const submitEmailModeForm: ControllerHandler<
       .andThen(({ parsedResponses, form }) => {
         const { authType } = form
         switch (authType) {
-          case AuthType.CP:
+          case FormAuthType.CP:
             return SpcpService.extractJwt(req.cookies, authType)
               .asyncAndThen((jwt) => SpcpService.extractCorppassJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
@@ -170,7 +170,7 @@ const submitEmailModeForm: ControllerHandler<
                 })
                 return error
               })
-          case AuthType.SP:
+          case FormAuthType.SP:
             return SpcpService.extractJwt(req.cookies, authType)
               .asyncAndThen((jwt) => SpcpService.extractSingpassJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
@@ -189,7 +189,7 @@ const submitEmailModeForm: ControllerHandler<
                 })
                 return error
               })
-          case AuthType.MyInfo:
+          case FormAuthType.MyInfo:
             return MyInfoUtil.extractMyInfoCookie(req.cookies)
               .andThen(MyInfoUtil.extractAccessTokenFromCookie)
               .andThen((accessToken) =>
@@ -223,7 +223,7 @@ const submitEmailModeForm: ControllerHandler<
                 })
                 return error
               })
-          case AuthType.SGID:
+          case FormAuthType.SGID:
             return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
               .map<IPopulatedEmailFormWithResponsesAndHash>(
                 ({ userName: uinFin }) => ({

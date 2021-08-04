@@ -7,7 +7,7 @@ import {
   DuplicateFormBodyDto,
 } from '../../../../shared/types/form/form'
 import { IPopulatedUser, IYesNoFieldSchema } from '../../../types'
-import { ResponseMode } from '../../../types/form'
+import { FormResponseMode } from '../../../types/form'
 import {
   ADMIN_FORM_ENDPOINT,
   createForm,
@@ -29,7 +29,7 @@ describe('CreateFormService', () => {
         title: 'title',
         lastModified: new Date(),
         _id: new ObjectId().toHexString(),
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         admin: MOCK_USER,
       }
       const MOCK_FORM_ID = expected._id
@@ -75,7 +75,7 @@ describe('CreateFormService', () => {
       const expected = { form_fields: [{} as IYesNoFieldSchema] }
       const mockFormParams: CreateStorageFormBodyDto = {
         title: 'title',
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'test',
       }
       MockAxios.post.mockResolvedValueOnce({ data: expected })
@@ -95,7 +95,7 @@ describe('CreateFormService', () => {
       const expected = new Error('error')
       const mockFormParams: CreateEmailFormBodyDto = {
         title: 'title',
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: ['mock'],
       }
       MockAxios.post.mockRejectedValueOnce(expected)
@@ -114,7 +114,7 @@ describe('CreateFormService', () => {
 const _generateDuplicateFormBody = (): DuplicateFormBodyDto => {
   return {
     title: 'title',
-    responseMode: ResponseMode.Email,
+    responseMode: FormResponseMode.Email,
     emails: 'test@example.com',
   } as DuplicateFormBodyDto
 }

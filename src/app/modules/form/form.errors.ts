@@ -1,4 +1,4 @@
-import { AuthType } from 'src/types'
+import { FormAuthType } from 'src/types'
 
 import { ApplicationError } from '../core/core.errors'
 
@@ -67,7 +67,7 @@ export class LogicNotFoundError extends ApplicationError {
  * Error to be returned when the form's auth type does not match what is required
  */
 export class AuthTypeMismatchError extends ApplicationError {
-  constructor(attemptedAuthType: AuthType, formAuthType?: AuthType) {
+  constructor(attemptedAuthType: FormAuthType, formAuthType?: FormAuthType) {
     super(
       `Attempted authentication type ${attemptedAuthType} did not match form auth type ${formAuthType}`,
     )

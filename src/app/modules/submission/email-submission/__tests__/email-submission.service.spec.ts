@@ -7,8 +7,8 @@ import mongoose from 'mongoose'
 import { getEmailSubmissionModel } from 'src/app/models/submission.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import {
-  AuthType,
   BasicField,
+  FormAuthType,
   IEmailFormSchema,
   IEmailSubmissionSchema,
   IPopulatedEmailForm,
@@ -323,7 +323,7 @@ describe('email-submission.service', () => {
     const MOCK_EMAIL_FORM = {
       _id: new ObjectId(),
       title: 'title',
-      authType: AuthType.SP,
+      authType: FormAuthType.SP,
       getUniqueMyInfoAttrs: () => MYINFO_ATTRS,
       emails: ['a@abc.com', 'b@cde.com'],
     } as IEmailFormSchema

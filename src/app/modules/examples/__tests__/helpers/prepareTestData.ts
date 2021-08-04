@@ -6,13 +6,13 @@ import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import {
-  AuthType,
+  FormAuthType,
+  FormResponseMode,
+  FormStatus,
   IAgencySchema,
   IFormFeedbackSchema,
   IFormSchema,
   IUserSchema,
-  ResponseMode,
-  Status,
   SubmissionType,
 } from 'src/types'
 
@@ -83,13 +83,13 @@ const prepareTestData = async (
 
   const baseFormParams = {
     admin: user._id,
-    responseMode: ResponseMode.Email,
+    responseMode: FormResponseMode.Email,
     emails: [user.email],
     // Important for form status to be public and listed so examples can
     // surface.
-    status: Status.Public,
+    status: FormStatus.Public,
     isListed: true,
-    authType: AuthType.NIL,
+    authType: FormAuthType.NIL,
   }
 
   // Populate forms in database with prespecified number of times.

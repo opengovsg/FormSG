@@ -8,7 +8,12 @@ import { ObjectId } from 'bson'
 import { merge, omit, zipWith } from 'lodash'
 
 import { ISpcpMyInfo } from 'src/app/config/feature-manager'
-import { AuthType, Environment, IFormSchema, MyInfoAttribute } from 'src/types'
+import {
+  Environment,
+  FormAuthType,
+  IFormSchema,
+  MyInfoAttribute,
+} from 'src/types'
 
 import {
   IMyInfoServiceConfig,
@@ -148,7 +153,7 @@ export const MOCK_SERVICE_PARAMS: IMyInfoServiceConfig = {
 export const MOCK_MYINFO_FORM = {
   _id: MOCK_FORM_ID,
   esrvcId: MOCK_ESRVC_ID,
-  authType: AuthType.MyInfo,
+  authType: FormAuthType.MyInfo,
   admin: {
     _id: new ObjectId().toHexString(),
     agency: new ObjectId().toHexString(),

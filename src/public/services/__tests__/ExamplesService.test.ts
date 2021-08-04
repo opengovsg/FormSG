@@ -1,6 +1,6 @@
 import MockAxios from 'jest-mock-axios'
 
-import { IPopulatedUser, PublicForm, ResponseMode } from '../../../types'
+import { FormResponseMode, IPopulatedUser, PublicForm } from '../../../types'
 import { DuplicateFormBody } from '../../../types/api'
 import * as ExamplesService from '../ExamplesService'
 
@@ -102,7 +102,7 @@ describe('ExamplesService', () => {
         title: 'title',
         lastModified: new Date(),
         _id: MOCK_FORM_ID,
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         admin: MOCK_USER,
       }
       const MOCK_DUPLICATE_FORM_BODY = _generateDuplicateFormBody()
@@ -190,7 +190,7 @@ describe('ExamplesService', () => {
 const _generateDuplicateFormBody = (): DuplicateFormBody => {
   return {
     title: 'title',
-    responseMode: ResponseMode.Email,
+    responseMode: FormResponseMode.Email,
     emails: 'test@example.com',
   } as DuplicateFormBody
 }

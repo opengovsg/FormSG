@@ -9,10 +9,10 @@ import {
 import * as LogicUtil from '../../../../../shared/util/logic'
 import {
   BasicField,
+  FormResponseMode,
   IPopulatedEncryptedForm,
   IPreventSubmitLogicSchema,
   LogicType,
-  ResponseMode,
 } from '../../../../../types'
 import { checkIsEncryptedEncoding } from '../../../../utils/encryption'
 import {
@@ -41,7 +41,7 @@ describe('IncomingEncryptSubmission', () => {
     const responses = [mobileResponse, emailResponse]
     const initResult = IncomingEncryptSubmission.init(
       {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         form_fields: [mobileField, emailField],
       } as unknown as IPopulatedEncryptedForm,
       responses,
@@ -61,7 +61,7 @@ describe('IncomingEncryptSubmission', () => {
     const responses = [mobileResponse]
     const initResult = IncomingEncryptSubmission.init(
       {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         form_fields: [mobileField, emailField],
       } as unknown as IPopulatedEncryptedForm,
       responses,
@@ -105,7 +105,7 @@ describe('IncomingEncryptSubmission', () => {
 
     const result = IncomingEncryptSubmission.init(
       {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         form_fields: [mobileField, emailField],
       } as unknown as IPopulatedEncryptedForm,
       responses,
@@ -125,7 +125,7 @@ describe('IncomingEncryptSubmission', () => {
 
     const result = IncomingEncryptSubmission.init(
       {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         form_fields: [mobileField],
       } as unknown as IPopulatedEncryptedForm,
       [mobileResponse],
@@ -150,7 +150,7 @@ describe('IncomingEncryptSubmission', () => {
 
     const result = IncomingEncryptSubmission.init(
       {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         form_fields: [],
       } as unknown as IPopulatedEncryptedForm,
       [],

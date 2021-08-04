@@ -7,7 +7,7 @@ import supertest, { Session } from 'supertest-session'
 import { aws } from 'src/app/config/config'
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
-import { IUserSchema, ResponseMode, Status } from 'src/types'
+import { FormResponseMode, FormStatus, IUserSchema } from 'src/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -256,8 +256,8 @@ describe('admin-form.presign.routes', () => {
       // Arrange
       const archivedForm = await EncryptFormModel.create({
         title: 'archived form',
-        status: Status.Archived,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Archived,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'does not matter',
         admin: defaultUser._id,
       })
@@ -494,8 +494,8 @@ describe('admin-form.presign.routes', () => {
       // Arrange
       const archivedForm = await EncryptFormModel.create({
         title: 'archived form',
-        status: Status.Archived,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Archived,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'does not matter',
         admin: defaultUser._id,
       })

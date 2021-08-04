@@ -1,7 +1,7 @@
 import { Result } from 'neverthrow'
 
 import { VerifiedKeys } from '../../../../shared/utils/verified-content'
-import { AuthType } from '../../../types'
+import { FormAuthType } from '../../../types'
 
 import { MalformedVerifiedContentError } from './verified-content.errors'
 
@@ -33,6 +33,6 @@ export type EncryptVerificationContentParams = {
 }
 
 export type GetVerifiedContentParams = {
-  type: AuthType.SP | AuthType.CP | AuthType.SGID
+  type: FormAuthType.SP | FormAuthType.CP | FormAuthType.SGID
   data: Record<string, unknown>
 }

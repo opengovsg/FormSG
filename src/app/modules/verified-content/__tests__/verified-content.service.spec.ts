@@ -1,5 +1,5 @@
 import formsgSdk from 'src/app/config/formsg-sdk'
-import { AuthType } from 'src/types'
+import { FormAuthType } from 'src/types'
 
 import {
   EncryptVerifiedContentError,
@@ -25,7 +25,10 @@ describe('verified-content.service', () => {
       }
 
       // Act
-      const result = getVerifiedContent({ type: AuthType.SP, data: mockData })
+      const result = getVerifiedContent({
+        type: FormAuthType.SP,
+        data: mockData,
+      })
 
       // Assert
       expect(result._unsafeUnwrap()).toEqual(expected)
@@ -44,7 +47,10 @@ describe('verified-content.service', () => {
       }
 
       // Act
-      const result = getVerifiedContent({ type: AuthType.CP, data: mockData })
+      const result = getVerifiedContent({
+        type: FormAuthType.CP,
+        data: mockData,
+      })
 
       // Assert
       expect(result._unsafeUnwrap()).toEqual(expected)
@@ -59,7 +65,7 @@ describe('verified-content.service', () => {
 
       // Act
       const result = getVerifiedContent({
-        type: AuthType.SP,
+        type: FormAuthType.SP,
         data: mockDataWithoutUin,
       })
 
@@ -80,7 +86,7 @@ describe('verified-content.service', () => {
 
       // Act
       const result = getVerifiedContent({
-        type: AuthType.CP,
+        type: FormAuthType.CP,
         data: mockDataWithoutUin,
       })
 

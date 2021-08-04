@@ -23,11 +23,11 @@ import {
 } from 'src/app/modules/submission/email-submission/__tests__/email-submission.test.constants'
 import {
   BasicField,
+  FormResponseMode,
+  FormStatus,
   IFieldSchema,
   IFormSchema,
   IUserSchema,
-  ResponseMode,
-  Status,
 } from 'src/types'
 import { EncryptSubmissionDto } from 'src/types/api'
 
@@ -89,7 +89,7 @@ describe('admin-form.preview.routes', () => {
         admin: defaultUser._id,
         publicKey: 'some random key',
         // Private status.
-        status: Status.Private,
+        status: FormStatus.Private,
       })
 
       // Act
@@ -197,8 +197,8 @@ describe('admin-form.preview.routes', () => {
       // Arrange
       const archivedForm = await EncryptFormModel.create({
         title: 'archived form',
-        status: Status.Archived,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Archived,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'does not matter',
         admin: defaultUser._id,
       })
@@ -220,7 +220,7 @@ describe('admin-form.preview.routes', () => {
       const formToPreview = await EmailFormModel.create({
         title: 'some other form',
         admin: defaultUser._id,
-        status: Status.Public,
+        status: FormStatus.Public,
         emails: [defaultUser.email],
       })
       // Delete user after login.
@@ -243,7 +243,7 @@ describe('admin-form.preview.routes', () => {
       const formToPreview = await EmailFormModel.create({
         title: 'some other form',
         admin: defaultUser._id,
-        status: Status.Public,
+        status: FormStatus.Public,
         emails: [defaultUser.email],
       })
       // Mock database error.
@@ -270,7 +270,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           form_fields: [MOCK_TEXT_FIELD],
           admin: defaultUser._id,
         },
@@ -299,7 +299,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           form_fields: [
             { ...MOCK_TEXT_FIELD, required: false } as IFieldSchema,
           ],
@@ -330,7 +330,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           form_fields: [MOCK_ATTACHMENT_FIELD],
           admin: defaultUser._id,
         },
@@ -364,7 +364,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           form_fields: [MOCK_SECTION_FIELD],
           admin: defaultUser._id,
         },
@@ -393,7 +393,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           form_fields: [MOCK_OPTIONAL_VERIFIED_FIELD],
           admin: defaultUser._id,
         },
@@ -422,7 +422,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           form_fields: [MOCK_CHECKBOX_FIELD],
           admin: defaultUser._id,
         },
@@ -451,7 +451,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           admin: defaultUser._id,
         },
         // Avoid default mail domain so that user emails in the database don't conflict
@@ -472,7 +472,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           admin: defaultUser._id,
         },
         // Avoid default mail domain so that user emails in the database don't conflict
@@ -497,7 +497,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           admin: defaultUser._id,
         },
         // Avoid default mail domain so that user emails in the database don't conflict
@@ -522,7 +522,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           admin: defaultUser._id,
         },
         // Avoid default mail domain so that user emails in the database don't conflict
@@ -549,7 +549,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           admin: defaultUser._id,
         },
         // Avoid default mail domain so that user emails in the database don't conflict
@@ -574,7 +574,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           admin: defaultUser._id,
         },
         // Avoid default mail domain so that user emails in the database don't conflict
@@ -599,7 +599,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           admin: defaultUser._id,
         },
         // Avoid default mail domain so that user emails in the database don't conflict
@@ -624,7 +624,7 @@ describe('admin-form.preview.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
           admin: defaultUser._id,
         },
         // Avoid default mail domain so that user emails in the database don't conflict

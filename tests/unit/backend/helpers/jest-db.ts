@@ -8,6 +8,7 @@ import {
 } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import {
+  FormResponseMode,
   IAgencySchema,
   IEmailForm,
   IEmailFormSchema,
@@ -15,7 +16,6 @@ import {
   IEncryptedFormSchema,
   IPopulatedForm,
   IUserSchema,
-  ResponseMode,
 } from 'src/types'
 
 import MemoryDatabaseServer from 'tests/database'
@@ -160,7 +160,7 @@ const insertEmailForm = async ({
   const form = await EmailFormModel.create({
     title: 'example form title',
     admin: user._id,
-    responseMode: ResponseMode.Email,
+    responseMode: FormResponseMode.Email,
     emails: [user.email],
     _id: formId,
     ...formOptions,
@@ -204,7 +204,7 @@ const insertEncryptForm = async ({
   const form = await EncryptFormModel.create({
     title: 'example form title',
     admin: user._id,
-    responseMode: ResponseMode.Encrypt,
+    responseMode: FormResponseMode.Encrypt,
     _id: formId,
     publicKey: 'vuUYOfkrC7eiyqZ1OCZhMcjAvMQ7R4Z4zzDWB+og4G4=',
     ...formOptions,

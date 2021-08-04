@@ -11,11 +11,12 @@ import {
 } from '../../../../../shared/constants/file'
 import { DeserializeTransform } from '../../../../../shared/types/utils'
 import {
-  AuthType,
   BasicField,
-  Colors,
+  FormAuthType,
+  FormColorTheme,
   FormFieldWithId,
   FormLogoState,
+  FormResponseMode,
   FormSettings,
   IForm,
   IFormDocument,
@@ -25,7 +26,6 @@ import {
   LogicIfValue,
   LogicType,
   PublicFormDto,
-  ResponseMode,
 } from '../../../../types'
 import {
   AdminDashboardFormMetaDto,
@@ -106,14 +106,14 @@ const createFormValidator = celebrate({
       .keys({
         // Require valid responsesMode field.
         responseMode: Joi.string()
-          .valid(...Object.values(ResponseMode))
+          .valid(...Object.values(FormResponseMode))
           .required(),
         // Require title field.
         title: Joi.string().min(4).max(200).required(),
         // Require emails string (for backwards compatibility) or string
         // array if form to be created in Email mode.
         emails: Joi.when('responseMode', {
-          is: ResponseMode.Email,
+          is: FormResponseMode.Email,
           then: Joi.alternatives()
             .try(Joi.array().items(Joi.string()).min(1), Joi.string())
             .required(),
@@ -129,7 +129,7 @@ const createFormValidator = celebrate({
         publicKey: Joi.string()
           .allow('')
           .when('responseMode', {
-            is: ResponseMode.Encrypt,
+            is: FormResponseMode.Encrypt,
             then: Joi.string().required().disallow(''),
           }),
       })
@@ -143,14 +143,14 @@ const duplicateFormValidator = celebrate({
   [Segments.BODY]: BaseJoi.object<DuplicateFormBodyDto>({
     // Require valid responsesMode field.
     responseMode: Joi.string()
-      .valid(...Object.values(ResponseMode))
+      .valid(...Object.values(FormResponseMode))
       .required(),
     // Require title field.
     title: Joi.string().min(4).max(200).required(),
     // Require emails string (for backwards compatibility) or string array
     // if form to be duplicated in Email mode.
     emails: Joi.when('responseMode', {
-      is: ResponseMode.Email,
+      is: FormResponseMode.Email,
       then: Joi.alternatives()
         .try(Joi.array().items(Joi.string()).min(1), Joi.string())
         .required(),
@@ -163,7 +163,7 @@ const duplicateFormValidator = celebrate({
     publicKey: Joi.string()
       .allow('')
       .when('responseMode', {
-        is: ResponseMode.Encrypt,
+        is: FormResponseMode.Encrypt,
         then: Joi.string().required().disallow(''),
       }),
   }),
@@ -1558,12 +1558,12 @@ export const submitEmailPreview: ControllerHandler<
 
   // Handle SingPass, CorpPass and MyInfo authentication and validation
   const { authType } = form
-  if (authType === AuthType.SP || authType === AuthType.MyInfo) {
+  if (authType === FormAuthType.SP || authType === FormAuthType.MyInfo) {
     parsedResponses.addNdiResponses({
       authType,
       uinFin: PREVIEW_SINGPASS_UINFIN,
     })
-  } else if (authType === AuthType.CP) {
+  } else if (authType === FormAuthType.CP) {
     parsedResponses.addNdiResponses({
       authType,
       uinFin: PREVIEW_CORPPASS_UINFIN,
@@ -2440,7 +2440,7 @@ export const handleUpdateStartPage = [
       paragraph: Joi.string().allow('').optional(),
       estTimeTaken: Joi.number().min(1).max(1000).required(),
       colorTheme: Joi.string()
-        .valid(...Object.values(Colors))
+        .valid(...Object.values(FormColorTheme))
         .required(),
       logo: Joi.object({
         state: Joi.string().valid(...Object.values(FormLogoState)),

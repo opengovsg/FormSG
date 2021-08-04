@@ -1,4 +1,4 @@
-import { ResponseMode } from '../../../types'
+import { FormResponseMode } from '../../../types'
 import { ApplicationError } from '../core/core.errors'
 
 /**
@@ -58,8 +58,8 @@ export class SendEmailConfirmationError extends ApplicationError {
  */
 export class ResponseModeError extends ApplicationError {
   constructor(
-    formResponseMode: ResponseMode,
-    attemptedResponseMode: ResponseMode,
+    formResponseMode: FormResponseMode,
+    attemptedResponseMode: FormResponseMode,
   ) {
     super(
       `Attempted to submit ${formResponseMode} form to ${attemptedResponseMode} endpoint`,

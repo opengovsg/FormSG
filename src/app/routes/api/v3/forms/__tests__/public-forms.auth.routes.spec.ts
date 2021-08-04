@@ -7,7 +7,7 @@ import { mocked } from 'ts-jest/utils'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { getRedirectTarget } from 'src/app/modules/spcp/spcp.util'
-import { AuthType, Status } from 'src/types'
+import { FormAuthType, FormStatus } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
@@ -45,8 +45,8 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
-          authType: AuthType.SP,
-          status: Status.Public,
+          authType: FormAuthType.SP,
+          status: FormStatus.Public,
           esrvcId: new ObjectId().toHexString(),
         },
       })
@@ -60,7 +60,7 @@ describe('public-form.auth.routes', () => {
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
         redirectURL: expect.toIncludeMultiple([
-          encodeURI(getRedirectTarget(form._id, AuthType.SP, false)),
+          encodeURI(getRedirectTarget(form._id, FormAuthType.SP, false)),
           form.esrvcId!,
         ]),
       })
@@ -70,8 +70,8 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
-          authType: AuthType.CP,
-          status: Status.Public,
+          authType: FormAuthType.CP,
+          status: FormStatus.Public,
           esrvcId: new ObjectId().toHexString(),
         },
       })
@@ -85,7 +85,7 @@ describe('public-form.auth.routes', () => {
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
         redirectURL: expect.toIncludeMultiple([
-          encodeURI(getRedirectTarget(form._id, AuthType.CP, false)),
+          encodeURI(getRedirectTarget(form._id, FormAuthType.CP, false)),
           form.esrvcId!,
         ]),
       })
@@ -95,8 +95,8 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: AuthType.MyInfo,
-          status: Status.Public,
+          authType: FormAuthType.MyInfo,
+          status: FormStatus.Public,
           esrvcId: new ObjectId().toHexString(),
         },
       })
@@ -120,8 +120,8 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: AuthType.MyInfo,
-          status: Status.Public,
+          authType: FormAuthType.MyInfo,
+          status: FormStatus.Public,
           esrvcId: new ObjectId().toHexString(),
         },
       })
@@ -146,7 +146,7 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
-          status: Status.Public,
+          status: FormStatus.Public,
           esrvcId: new ObjectId().toHexString(),
         },
       })
@@ -169,8 +169,8 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: AuthType.MyInfo,
-          status: Status.Public,
+          authType: FormAuthType.MyInfo,
+          status: FormStatus.Public,
         },
       })
       const expectedResponse = jsonParseStringify({
@@ -209,8 +209,8 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
-          authType: AuthType.SP,
-          status: Status.Public,
+          authType: FormAuthType.SP,
+          status: FormStatus.Public,
           esrvcId: new ObjectId().toHexString(),
         },
       })
@@ -235,8 +235,8 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: AuthType.SP,
-          status: Status.Public,
+          authType: FormAuthType.SP,
+          status: FormStatus.Public,
           esrvcId: new ObjectId().toHexString(),
         },
       })
@@ -263,9 +263,9 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: AuthType.SP,
+          authType: FormAuthType.SP,
           esrvcId: new ObjectId().toHexString(),
-          status: Status.Public,
+          status: FormStatus.Public,
         },
       })
       MockAxios.get.mockResolvedValueOnce({ data: '<title> </title>' })
@@ -283,9 +283,9 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: AuthType.SP,
+          authType: FormAuthType.SP,
           esrvcId: new ObjectId().toHexString(),
-          status: Status.Public,
+          status: FormStatus.Public,
         },
       })
       MockAxios.get.mockResolvedValueOnce({
@@ -308,9 +308,9 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           esrvcId: new ObjectId().toHexString(),
-          status: Status.Public,
+          status: FormStatus.Public,
         },
       })
       const expectedResponse = jsonParseStringify({
@@ -330,9 +330,9 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: AuthType.CP,
+          authType: FormAuthType.CP,
           esrvcId: new ObjectId().toHexString(),
-          status: Status.Public,
+          status: FormStatus.Public,
         },
       })
       const expectedResponse = jsonParseStringify({
@@ -352,8 +352,8 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: AuthType.SP,
-          status: Status.Public,
+          authType: FormAuthType.SP,
+          status: FormStatus.Public,
         },
       })
       const expectedResponse = jsonParseStringify({
@@ -390,9 +390,9 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: AuthType.SP,
+          authType: FormAuthType.SP,
           esrvcId: new ObjectId().toHexString(),
-          status: Status.Public,
+          status: FormStatus.Public,
         },
       })
       MockAxios.get.mockResolvedValueOnce({
@@ -414,9 +414,9 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: AuthType.SP,
+          authType: FormAuthType.SP,
           esrvcId: new ObjectId().toHexString(),
-          status: Status.Public,
+          status: FormStatus.Public,
         },
       })
       jest
@@ -439,9 +439,9 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: AuthType.SP,
+          authType: FormAuthType.SP,
           esrvcId: new ObjectId().toHexString(),
-          status: Status.Public,
+          status: FormStatus.Public,
         },
       })
       MockAxios.get.mockRejectedValueOnce(new FetchLoginPageError())

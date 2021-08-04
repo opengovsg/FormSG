@@ -6,7 +6,7 @@ import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { ResponseMode } from '../../../../types'
+import { FormResponseMode } from '../../../../types'
 import { DuplicateFormBodyDto } from '../../../../types/api'
 import { withUserAuthentication } from '../../auth/auth.middlewares'
 import * as EncryptSubmissionController from '../../submission/encrypt-submission/encrypt-submission.controller'
@@ -22,14 +22,14 @@ const duplicateFormValidator = celebrate({
   [Segments.BODY]: Joi.object<DuplicateFormBodyDto>({
     // Require valid responsesMode field.
     responseMode: Joi.string()
-      .valid(...Object.values(ResponseMode))
+      .valid(...Object.values(FormResponseMode))
       .required(),
     // Require title field.
     title: Joi.string().min(4).max(200).required(),
     // Require emails string (for backwards compatibility) or string array
     // if form to be duplicated in Email mode.
     emails: Joi.when('responseMode', {
-      is: ResponseMode.Email,
+      is: FormResponseMode.Email,
       then: Joi.alternatives()
         .try(Joi.array().items(Joi.string()).min(1), Joi.string())
         .required(),
@@ -42,7 +42,7 @@ const duplicateFormValidator = celebrate({
     publicKey: Joi.string()
       .allow('')
       .when('responseMode', {
-        is: ResponseMode.Encrypt,
+        is: FormResponseMode.Encrypt,
         then: Joi.string().required().disallow(''),
       }),
   }),

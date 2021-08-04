@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ObjectId } from 'bson'
 import { mocked } from 'ts-jest/utils'
 
-import { AuthType } from '../../../types'
+import { FormAuthType } from '../../../types'
 import * as PublicFormAuthService from '../PublicFormAuthService'
 
 jest.mock('axios')
@@ -105,7 +105,7 @@ describe('PublicFormAuthService', () => {
 
   describe('logoutOfSpcpSession', () => {
     it('should call logout endpoint successfully', async () => {
-      const authType = AuthType.SP
+      const authType = FormAuthType.SP
 
       const mockData = { message: 'Successfully logged out.' }
       MockAxios.get.mockResolvedValueOnce({ data: mockData })
@@ -119,7 +119,7 @@ describe('PublicFormAuthService', () => {
     })
 
     it('should return error message if logout fails', async () => {
-      const authType = AuthType.NIL
+      const authType = FormAuthType.NIL
 
       const mockData = { message: 'Invalid authType.' }
       MockAxios.get.mockResolvedValueOnce({ data: mockData })

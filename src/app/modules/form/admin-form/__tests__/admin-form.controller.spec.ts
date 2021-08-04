@@ -41,9 +41,11 @@ import {
 import MailService from 'src/app/services/mail/mail.service'
 import { EditFieldActions } from 'src/shared/constants'
 import {
-  AuthType,
   BasicField,
+  FormAuthType,
+  FormResponseMode,
   FormSettings,
+  FormStatus,
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
   IFieldSchema,
@@ -57,8 +59,6 @@ import {
   IUserSchema,
   LogicDto,
   PublicForm,
-  ResponseMode,
-  Status,
 } from 'src/types'
 import {
   AdminDashboardFormMetaDto,
@@ -222,7 +222,7 @@ describe('admin-form.controller', () => {
       title: 'mock title',
     } as IFormSchema
     const MOCK_FORM_PARAMS: CreateFormBodyDto = {
-      responseMode: ResponseMode.Encrypt,
+      responseMode: FormResponseMode.Encrypt,
       publicKey: 'some public key',
       title: 'some form title',
     }
@@ -3022,7 +3022,7 @@ describe('admin-form.controller', () => {
     it('should return duplicated form view on duplicate success', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
       }
@@ -3095,7 +3095,7 @@ describe('admin-form.controller', () => {
     it('should return 404 when form to duplicate cannot be found', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
       }
@@ -3229,7 +3229,7 @@ describe('admin-form.controller', () => {
     it('should return 500 when database error occurs whilst duplicating form', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
       }
@@ -3455,7 +3455,7 @@ describe('admin-form.controller', () => {
     it('should return copied template form view on duplicate success', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: ['some-email@example.com'],
         title: 'mock new template title',
       }
@@ -3530,7 +3530,7 @@ describe('admin-form.controller', () => {
     it('should return 404 when form to duplicate cannot be found', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
       }
@@ -3678,7 +3678,7 @@ describe('admin-form.controller', () => {
     it('should return 500 when database error occurs whilst duplicating form', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
       }
@@ -4486,7 +4486,7 @@ describe('admin-form.controller', () => {
         formId: MOCK_FORM_ID,
       },
       body: {
-        status: Status.Private,
+        status: FormStatus.Private,
       },
       session: {
         user: {
@@ -4498,10 +4498,10 @@ describe('admin-form.controller', () => {
     it('should return 200 with updated settings successfully', async () => {
       // Arrange
       const mockUpdatedSettings: FormSettings = {
-        authType: AuthType.NIL,
+        authType: FormAuthType.NIL,
         hasCaptcha: false,
         inactiveMessage: 'some inactive message',
-        status: Status.Private,
+        status: FormStatus.Private,
         submissionLimit: 42069,
         title: 'new title',
         webhook: {
@@ -4843,10 +4843,10 @@ describe('admin-form.controller', () => {
 
   describe('handleGetSettings', () => {
     const MOCK_FORM_SETTINGS: FormSettings = {
-      authType: AuthType.NIL,
+      authType: FormAuthType.NIL,
       hasCaptcha: false,
       inactiveMessage: 'some inactive message',
-      status: Status.Private,
+      status: FormStatus.Private,
       submissionLimit: 42069,
       title: 'mock title',
       webhook: {
@@ -5548,7 +5548,12 @@ describe('admin-form.controller', () => {
 
     it('should return 400 when form is not email mode', async () => {
       MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
-        err(new ResponseModeError(ResponseMode.Encrypt, ResponseMode.Email)),
+        err(
+          new ResponseModeError(
+            FormResponseMode.Encrypt,
+            FormResponseMode.Email,
+          ),
+        ),
       )
       const mockReq = expressHandler.mockRequest({
         params: {
@@ -6487,7 +6492,12 @@ describe('admin-form.controller', () => {
 
     it('should return 400 when form is not encrypt mode', async () => {
       MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValueOnce(
-        err(new ResponseModeError(ResponseMode.Email, ResponseMode.Encrypt)),
+        err(
+          new ResponseModeError(
+            FormResponseMode.Email,
+            FormResponseMode.Encrypt,
+          ),
+        ),
       )
       const mockReq = expressHandler.mockRequest({
         params: {

@@ -3,7 +3,7 @@ import moment from 'moment-timezone'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import { AuthType, LoginStatistic } from 'src/types'
+import { FormAuthType, LoginStatistic } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -54,7 +54,7 @@ describe('billing.controller', () => {
       const mockLoginStats: LoginStatistic[] = [
         {
           adminEmail: 'mockemail@example.com',
-          authType: AuthType.CP,
+          authType: FormAuthType.CP,
           formId: 'mock form id',
           formName: 'some form name',
           total: 100,

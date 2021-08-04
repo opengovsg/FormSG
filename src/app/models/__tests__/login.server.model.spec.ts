@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 
 import getLoginModel from 'src/app/models/login.server.model'
 import {
-  AuthType,
+  FormAuthType,
   IFormSchema,
   ILoginSchema,
   IPopulatedForm,
@@ -26,7 +26,7 @@ describe('login.server.model', () => {
     const DEFAULT_PARAMS: mongoose.LeanDocument<ILoginSchema> = {
       admin: new ObjectId(),
       agency: new ObjectId(),
-      authType: AuthType.SP,
+      authType: FormAuthType.SP,
       esrvcId: 'mock-esrvc-id',
       form: new ObjectId(),
     }
@@ -176,7 +176,7 @@ describe('login.server.model', () => {
             form: form._id,
             admin: user._id,
             agency: agency._id,
-            authType: AuthType.SP,
+            authType: FormAuthType.SP,
             esrvcId: VALID_ESRVC_ID,
             created: CURR_DATE,
           },
@@ -185,7 +185,7 @@ describe('login.server.model', () => {
             form: form._id,
             admin: user._id,
             agency: agency._id,
-            authType: AuthType.SP,
+            authType: FormAuthType.SP,
             esrvcId: VALID_ESRVC_ID,
             created: CURR_DATE,
           },
@@ -194,7 +194,7 @@ describe('login.server.model', () => {
             form: form._id,
             admin: user._id,
             agency: agency._id,
-            authType: AuthType.SP,
+            authType: FormAuthType.SP,
             esrvcId: VALID_ESRVC_ID,
             created: CURR_DATE,
           },
@@ -203,7 +203,7 @@ describe('login.server.model', () => {
             form: form._id,
             admin: user._id,
             agency: agency._id,
-            authType: AuthType.SP,
+            authType: FormAuthType.SP,
             esrvcId: VALID_ESRVC_ID,
             created: FUTURE_DATE,
           },
@@ -250,7 +250,7 @@ describe('login.server.model', () => {
           {
             adminEmail: testUser.email,
             formId: testForm._id,
-            authType: AuthType.SP,
+            authType: FormAuthType.SP,
             formName: testForm.title,
             total: loginsInRange.length,
           },

@@ -6,7 +6,7 @@ import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 import { v4 as uuidv4 } from 'uuid'
 
-import { AuthType } from 'src/types'
+import { FormAuthType } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
@@ -73,7 +73,7 @@ describe('myinfo.routes', () => {
       await dbHandler.insertEmailForm({
         formId: new ObjectId(MOCK_FORM_ID),
         formOptions: {
-          authType: AuthType.MyInfo,
+          authType: FormAuthType.MyInfo,
           esrvcId: MOCK_ESRVC_ID,
         },
       })
@@ -131,7 +131,7 @@ describe('myinfo.routes', () => {
       await dbHandler.insertEmailForm({
         formId: new ObjectId(MOCK_FORM_ID),
         formOptions: {
-          authType: AuthType.MyInfo,
+          authType: FormAuthType.MyInfo,
           esrvcId: MOCK_ESRVC_ID,
         },
       })
@@ -221,7 +221,7 @@ describe('myinfo.routes', () => {
       await dbHandler.insertEmailForm({
         formId: new ObjectId(MOCK_FORM_ID),
         formOptions: {
-          authType: AuthType.MyInfo,
+          authType: FormAuthType.MyInfo,
           esrvcId: MOCK_ESRVC_ID,
         },
       })
@@ -302,7 +302,7 @@ describe('myinfo.routes', () => {
         // inserted in the beforeEach block
         mailDomain: 'test2.gov.sg',
         formOptions: {
-          authType: AuthType.SP,
+          authType: FormAuthType.SP,
           esrvcId: MOCK_ESRVC_ID,
         },
       })

@@ -2,7 +2,7 @@ import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { Status } from 'src/types'
+import { FormStatus } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
@@ -30,7 +30,7 @@ describe('public-form.feedback.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          status: Status.Public,
+          status: FormStatus.Public,
         },
       })
       const MOCK_FEEDBACK = {
@@ -102,7 +102,7 @@ describe('public-form.feedback.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          status: Status.Archived,
+          status: FormStatus.Archived,
         },
       })
       const MOCK_FEEDBACK = {
@@ -129,7 +129,7 @@ describe('public-form.feedback.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          status: Status.Public,
+          status: FormStatus.Public,
         },
       })
       const MOCK_ERROR_MESSAGE = 'mock me'

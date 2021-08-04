@@ -1,4 +1,4 @@
-import { AuthType, IFormSchema } from '../../../types'
+import { FormAuthType, IFormSchema } from '../../../types'
 
 export enum JwtName {
   SP = 'jwtSp',
@@ -65,6 +65,6 @@ export interface ParsedSpcpParams {
 }
 
 export type SpcpForm<T extends IFormSchema> = T & {
-  authType: AuthType.SP | AuthType.CP
+  authType: FormAuthType.SP | FormAuthType.CP
   esrvcId: string
 }

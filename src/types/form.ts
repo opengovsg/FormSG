@@ -39,14 +39,13 @@ import { FormLogicSchema, LogicDto } from './form_logic'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
 
 export {
-  FormAuthType as AuthType,
-  FormColorTheme as ColorTheme,
-  FormEndPage as EndPage,
-  FormStartPage as StartPage,
-  FormStatus as Status,
-  FormColorTheme as Colors,
-  FormResponseMode as ResponseMode,
-  FormWebhook as Webhook,
+  FormAuthType,
+  FormColorTheme,
+  FormEndPage,
+  FormStartPage,
+  FormStatus,
+  FormResponseMode,
+  FormWebhook,
   FormSettings,
   StorageFormSettings,
   EmailFormSettings,

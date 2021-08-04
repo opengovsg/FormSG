@@ -12,7 +12,7 @@ import getSubmissionModel, {
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import {
-  AuthType,
+  FormAuthType,
   ISubmissionSchema,
   IWebhookResponse,
   SubmissionType,
@@ -255,7 +255,7 @@ describe('Submission Model', () => {
           form: formId,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           myInfoFields: [],
           webhookResponses: [],
         })
@@ -287,7 +287,7 @@ describe('Submission Model', () => {
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           verifiedContent: MOCK_VERIFIED_CONTENT,
           version: 1,
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           myInfoFields: [],
           webhookResponses: [],
         })
@@ -326,7 +326,7 @@ describe('Submission Model', () => {
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           verifiedContent: MOCK_VERIFIED_CONTENT,
           version: 1,
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           myInfoFields: [],
           webhookResponses: [],
         })
@@ -360,7 +360,7 @@ describe('Submission Model', () => {
           form: formId,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           myInfoFields: [],
           recipientEmails: [],
           responseHash: 'hash',
@@ -385,7 +385,7 @@ describe('Submission Model', () => {
           form: formId,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           myInfoFields: [],
           recipientEmails: [],
           responseHash: 'hash',
@@ -428,7 +428,7 @@ describe('Submission Model', () => {
           form: formId,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           myInfoFields: [],
           recipientEmails: [],
           responseHash: 'hash',

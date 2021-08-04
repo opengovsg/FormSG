@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 import { errAsync, ResultAsync } from 'neverthrow'
 
 import {
-  AuthType,
+  FormAuthType,
   ILoginSchema,
   IPopulatedForm,
   LoginStatistic,
@@ -60,7 +60,7 @@ export const recordLoginByForm = (
     action: 'recordLoginByForm',
     formId: form._id,
   }
-  if (form.authType === AuthType.NIL) {
+  if (form.authType === FormAuthType.NIL) {
     return errAsync(new FormHasNoAuthError())
   }
   return ResultAsync.fromPromise(LoginModel.addLoginFromForm(form), (error) => {

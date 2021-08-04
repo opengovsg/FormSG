@@ -6,7 +6,12 @@ import supertest, { Session } from 'supertest-session'
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import getUserModel from 'src/app/models/user.server.model'
-import { IFormDocument, IUserSchema, ResponseMode, Status } from 'src/types'
+import {
+  FormResponseMode,
+  FormStatus,
+  IFormDocument,
+  IUserSchema,
+} from 'src/types'
 
 import {
   createAuthedSession,
@@ -175,8 +180,8 @@ describe('admin-form.feedback.routes', () => {
       // Arrange
       const archivedForm = await EncryptFormModel.create({
         title: 'archived form',
-        status: Status.Archived,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Archived,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'does not matter',
         admin: defaultUser._id,
       })
@@ -331,8 +336,8 @@ describe('admin-form.feedback.routes', () => {
       // Arrange
       const archivedForm = await EncryptFormModel.create({
         title: 'archived form',
-        status: Status.Archived,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Archived,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'does not matter',
         admin: defaultUser._id,
       })
@@ -498,8 +503,8 @@ describe('admin-form.feedback.routes', () => {
       // Arrange
       const archivedForm = await EncryptFormModel.create({
         title: 'archived form',
-        status: Status.Archived,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Archived,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'does not matter',
         admin: defaultUser._id,
       })

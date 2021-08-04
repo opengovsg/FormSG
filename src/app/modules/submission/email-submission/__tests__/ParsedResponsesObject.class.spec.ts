@@ -6,11 +6,11 @@ import {
 import * as LogicUtil from '../../../../../shared/util/logic'
 import {
   BasicField,
+  FormResponseMode,
   IEmailFormSchema,
   IFormSchema,
   IPreventSubmitLogicSchema,
   LogicType,
-  ResponseMode,
 } from '../../../../../types'
 import {
   ConflictError,
@@ -44,7 +44,7 @@ describe('ParsedResponsesObject', () => {
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         form_fields: [shortTextField, decimalField],
       } as unknown as IFormSchema,
       [shortTextResponse, decimalResponse],
@@ -64,7 +64,7 @@ describe('ParsedResponsesObject', () => {
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         form_fields: [extraField],
       } as unknown as IEmailFormSchema,
       [],
@@ -83,7 +83,7 @@ describe('ParsedResponsesObject', () => {
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         form_fields: [nricField],
       } as unknown as IEmailFormSchema,
       [nricResponse],
@@ -110,7 +110,7 @@ describe('ParsedResponsesObject', () => {
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         form_fields: [],
       } as unknown as IEmailFormSchema,
       [],

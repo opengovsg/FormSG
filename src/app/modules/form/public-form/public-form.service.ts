@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { AuthType, IFormFeedbackSchema } from '../../../../types'
+import { FormAuthType, IFormFeedbackSchema } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
 import getFormFeedbackModel from '../../../models/form_feedback.server.model'
@@ -64,12 +64,16 @@ export const insertFormFeedback = ({
  * Valid AuthTypes are SP / CP / MyInfo / SGID
  */
 export const getCookieNameByAuthType = (
-  authType: AuthType.SP | AuthType.CP | AuthType.MyInfo | AuthType.SGID,
+  authType:
+    | FormAuthType.SP
+    | FormAuthType.CP
+    | FormAuthType.MyInfo
+    | FormAuthType.SGID,
 ): string => {
   switch (authType) {
-    case AuthType.MyInfo:
+    case FormAuthType.MyInfo:
       return MYINFO_COOKIE_NAME
-    case AuthType.SGID:
+    case FormAuthType.SGID:
       return SGID_COOKIE_NAME
     default:
       return JwtName[authType]

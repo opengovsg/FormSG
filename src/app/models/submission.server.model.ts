@@ -3,8 +3,8 @@ import mongoose, { Mongoose, QueryCursor, Schema } from 'mongoose'
 import { FixedLengthArray } from 'type-fest'
 
 import {
-  AuthType,
   FindFormsWithSubsAboveResult,
+  FormAuthType,
   IEmailSubmissionModel,
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
@@ -38,8 +38,8 @@ const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
     },
     authType: {
       type: String,
-      enum: Object.values(AuthType),
-      default: AuthType.NIL,
+      enum: Object.values(FormAuthType),
+      default: FormAuthType.NIL,
     },
     myInfoFields: {
       type: [

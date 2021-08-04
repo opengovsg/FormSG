@@ -6,7 +6,7 @@ import supertest, { Session } from 'supertest-session'
 
 import getUserModel from 'src/app/models/user.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { Status } from 'src/types'
+import { FormStatus } from 'src/types'
 import { SettingsUpdateDto } from 'src/types/api'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
@@ -183,7 +183,7 @@ describe('admin-form.settings.routes', () => {
       })
       const session = await createAuthedSession(user.email, request)
       const settingsToUpdate: SettingsUpdateDto = {
-        status: Status.Public,
+        status: FormStatus.Public,
       }
       const invalidFormId = new ObjectId().toHexString()
 
@@ -203,11 +203,11 @@ describe('admin-form.settings.routes', () => {
       // Arrange
       const { form, user } = await dbHandler.insertEncryptForm()
       // Set form state to archived
-      form.status = Status.Archived
+      form.status = FormStatus.Archived
       await form.save()
       const session = await createAuthedSession(user.email, request)
       const settingsToUpdate: SettingsUpdateDto = {
-        status: Status.Public,
+        status: FormStatus.Public,
       }
 
       // Act
@@ -338,7 +338,7 @@ describe('admin-form.settings.routes', () => {
       // Arrange
       const { form, user } = await dbHandler.insertEmailForm({
         formOptions: {
-          status: Status.Archived,
+          status: FormStatus.Archived,
         },
       })
       const session = await createAuthedSession(user.email, request)
@@ -475,7 +475,7 @@ describe('admin-form.settings.routes', () => {
       // Arrange
       const { form, user } = await dbHandler.insertEmailForm({
         formOptions: {
-          status: Status.Archived,
+          status: FormStatus.Archived,
         },
       })
       const session = await createAuthedSession(user.email, request)

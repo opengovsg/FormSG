@@ -7,7 +7,12 @@ import {
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
-import { FormOtpData, IFormSchema, IUserSchema, ResponseMode } from 'src/types'
+import {
+  FormOtpData,
+  FormResponseMode,
+  IFormSchema,
+  IUserSchema,
+} from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -246,7 +251,7 @@ describe('sms.service', () => {
         title: 'Test Form',
         emails: [testUser.email],
         admin: testUser._id,
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
       })
 
       mockOtpData = {

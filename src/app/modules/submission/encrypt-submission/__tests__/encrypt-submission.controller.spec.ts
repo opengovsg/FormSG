@@ -14,10 +14,10 @@ import {
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import {
+  FormResponseMode,
   IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedUser,
-  ResponseMode,
   SubmissionData,
   SubmissionMetadata,
 } from 'src/types'
@@ -137,8 +137,8 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       const expectedError = new ResponseModeError(
-        ResponseMode.Encrypt,
-        ResponseMode.Email,
+        FormResponseMode.Encrypt,
+        FormResponseMode.Email,
       )
       MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
         err(expectedError),
@@ -430,8 +430,8 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       const expectedError = new ResponseModeError(
-        ResponseMode.Encrypt,
-        ResponseMode.Email,
+        FormResponseMode.Encrypt,
+        FormResponseMode.Email,
       )
       MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
         err(expectedError),
@@ -794,8 +794,8 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       const expectedError = new ResponseModeError(
-        ResponseMode.Encrypt,
-        ResponseMode.Email,
+        FormResponseMode.Encrypt,
+        FormResponseMode.Email,
       )
       MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
         err(expectedError),
@@ -1070,8 +1070,8 @@ describe('encrypt-submission.controller', () => {
         okAsync(MOCK_FORM),
       )
       const expectedError = new ResponseModeError(
-        ResponseMode.Encrypt,
-        ResponseMode.Email,
+        FormResponseMode.Encrypt,
+        FormResponseMode.Email,
       )
       MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
         err(expectedError),

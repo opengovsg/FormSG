@@ -4,7 +4,7 @@ import { get } from 'lodash'
 // Given that this is used mostly by JavaScript modules, the lack of
 // mongo-specific types should not present a problem.
 // Change the types to frontend equivalents as and when available.
-import { AuthType, BasicField, IForm, IUser } from '../../types'
+import { BasicField, FormAuthType, IForm, IUser } from '../../types'
 
 type BetaFeature = {
   // User-facing name for the feature
@@ -37,7 +37,7 @@ const BETA_FEATURES: BetaFeature[] = [
   {
     name: 'SGID',
     flag: 'sgid',
-    matches: (form) => form.authType === AuthType.SGID,
+    matches: (form) => form.authType === FormAuthType.SGID,
     // SGID is associated with entire form, not individual field
     fieldType: null,
   },

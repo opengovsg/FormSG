@@ -1,7 +1,7 @@
 import { Mongoose, Schema } from 'mongoose'
 
 import {
-  AuthType,
+  FormAuthType,
   ILoginModel,
   ILoginSchema,
   IPopulatedForm,
@@ -33,7 +33,7 @@ const LoginSchema = new Schema<ILoginSchema, ILoginModel>(
     },
     authType: {
       type: String,
-      enum: Object.values(AuthType),
+      enum: Object.values(FormAuthType),
       required: true,
     },
     esrvcId: {

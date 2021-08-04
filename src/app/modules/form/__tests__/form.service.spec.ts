@@ -5,11 +5,11 @@ import mongoose from 'mongoose'
 import getFormModel from 'src/app/models/form.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import {
+  FormResponseMode,
+  FormStatus,
   IEncryptedSubmissionSchema,
   IFormSchema,
   IPopulatedForm,
-  ResponseMode,
-  Status,
   SubmissionType,
 } from 'src/types'
 
@@ -35,7 +35,7 @@ const MOCK_FORM_PARAMS = {
 const MOCK_ENCRYPTED_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
   publicKey: 'mockPublicKey',
-  responseMode: ResponseMode.Encrypt,
+  responseMode: FormResponseMode.Encrypt,
 }
 
 describe('FormService', () => {
@@ -331,7 +331,7 @@ describe('FormService', () => {
     it('should return the form when the submission limit is not reached', async () => {
       // Arrange
       const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-        status: Status.Public,
+        status: FormStatus.Public,
         submissionLimit: 10,
       })
       const validForm = new Form(formParams)
@@ -362,7 +362,7 @@ describe('FormService', () => {
     it('should not let requests through and deactivate form when form has reached submission limit', async () => {
       // Arrange
       const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-        status: Status.Public,
+        status: FormStatus.Public,
         submissionLimit: 5,
       })
       const validForm = new Form(formParams)
@@ -402,7 +402,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         // Form public.
-        status: Status.Public,
+        status: FormStatus.Public,
       } as IPopulatedForm
 
       // Act
@@ -417,7 +417,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         // Form deleted.
-        status: Status.Archived,
+        status: FormStatus.Archived,
       } as IPopulatedForm
 
       // Act
@@ -432,7 +432,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         // Form private.
-        status: Status.Private,
+        status: FormStatus.Private,
         inactiveMessage: 'test inactive message',
       } as IPopulatedForm
 
