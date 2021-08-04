@@ -349,3 +349,8 @@ export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
 export type IOnboardedForm<T extends IForm> = T & {
   msgSrvcName: string
 }
+
+export type FormLinkView<T extends IFormSchema> = {
+  title: T['title']
+  link: string
+}
