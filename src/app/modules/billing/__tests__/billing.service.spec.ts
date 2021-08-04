@@ -4,9 +4,9 @@ import getLoginModel from 'src/app/models/login.server.model'
 import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
 import {
   FormAuthType,
+  FormBillingStatistic,
   ILoginSchema,
   IPopulatedForm,
-  LoginStatistic,
 } from 'src/types'
 
 import { DatabaseError } from '../../core/core.errors'
@@ -61,7 +61,7 @@ describe('billing.service', () => {
   describe('getSpLoginStats', () => {
     it('should return result of aggregate query successfully', async () => {
       // Arrange
-      const mockLoginStats: LoginStatistic[] = [
+      const mockLoginStats: FormBillingStatistic[] = [
         {
           adminEmail: 'mockemail@example.com',
           authType: FormAuthType.CP,

@@ -3,9 +3,9 @@ import { errAsync, ResultAsync } from 'neverthrow'
 
 import {
   FormAuthType,
+  FormBillingStatistic,
   ILoginSchema,
   IPopulatedForm,
-  LoginStatistic,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getLoginModel from '../../models/login.server.model'
@@ -30,7 +30,7 @@ export const getSpLoginStats = (
   esrvcId: string,
   minDate: Date,
   maxDate: Date,
-): ResultAsync<LoginStatistic[], DatabaseError> => {
+): ResultAsync<FormBillingStatistic[], DatabaseError> => {
   return ResultAsync.fromPromise(
     LoginModel.aggregateLoginStats(esrvcId, minDate, maxDate),
     (error) => {

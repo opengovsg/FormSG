@@ -2,10 +2,10 @@ import { Mongoose, Schema } from 'mongoose'
 
 import {
   FormAuthType,
+  FormBillingStatistic,
   ILoginModel,
   ILoginSchema,
   IPopulatedForm,
-  LoginStatistic,
 } from '../../types'
 
 import { AGENCY_SCHEMA_ID } from './agency.server.model'
@@ -70,8 +70,8 @@ LoginSchema.statics.aggregateLoginStats = function (
   esrvcId: string,
   gte: Date,
   lte: Date,
-): Promise<LoginStatistic[]> {
-  return this.aggregate<LoginStatistic>([
+): Promise<FormBillingStatistic[]> {
+  return this.aggregate<FormBillingStatistic>([
     {
       $match: {
         esrvcId,
