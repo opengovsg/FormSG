@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head> </head>
+  <body>
+    <p>Dear form admin(s),</p>
+    <p>
+      You are receiving this as you have enabled SMS OTP verification on a
+      Mobile Number field of your form:
+    </p>
+    <ol>
+      <% forms.forEach(function({title, link}) { %>
+      <li><a href="<%= link %>"> <%= title %> </a>.</li>
+      <% }) %>
+    </ol>
+    <p>
+      SMS OTP verification has been <b>automatically disabled</b> on your form
+      as you have reached the free tier limit of <%= smsVerificationLimit %>
+      responses.
+    </p>
+
+    <p>
+      We would have previously notified all form admins upon your account
+      reaching <%= smsWarningTiers.LOW %>, <%= smsWarningTiers.MED %> and <%=
+      smsWarningTiers.HIGH %> responses while free SMS OTP verification was
+      enabled.
+    </p>
+    <p>
+      If you require SMS OTP verification for more than <%= smsVerificationLimit
+      %> responses, please
+      <a
+        href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-arrange-payment-for-verified-sms"
+      >
+        arrange advance billing with us.
+      </a>
+    </p>
+    <p>
+      <b>Important: </b> Please refrain from creating multiple forms for the
+      same use case in order to avoid this limit, as such forms risk being
+      flagged for abuse and blacklisted.
+    </p>
+    <p>The FormSG Team</p>
+  </body>
+</html>

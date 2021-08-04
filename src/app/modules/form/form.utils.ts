@@ -142,10 +142,11 @@ export const isFormOnboarded = <T extends IForm = IForm>(
 
 export const extractFormLinkView = <T extends IFormDocument>(
   form: Pick<T, 'title' | '_id'>,
+  appUrl: string,
 ): FormLinkView<T> => {
   const { title, _id } = form
   return {
     title,
-    link: `https://form.gov.sg/${_id}`,
+    link: `${appUrl}/${_id}`,
   }
 }

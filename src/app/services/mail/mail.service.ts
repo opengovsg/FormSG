@@ -1,11 +1,21 @@
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import { err, errAsync, Result, ResultAsync } from 'neverthrow'
+import {
+  combine,
+  err,
+  errAsync,
+  okAsync,
+  Result,
+  ResultAsync,
+} from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
-import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
+import {
+  HASH_EXPIRE_AFTER_SECONDS,
+  stringifiedSmsWarningTiers,
+} from '../../../../shared/utils/verification'
 import {
   BounceType,
   EmailAdminDataField,
@@ -23,14 +33,15 @@ import { extractFormLinkView } from '../../modules/form/form.utils'
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
 import { MailGenerationError, MailSendError } from './mail.errors'
 import {
+  AdminSmsDisabledData,
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
+  CollabSmsDisabledData,
   MailOptions,
   MailServiceParams,
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
-  SmsVerificationDisabledData,
   SmsVerificationWarningData,
 } from './mail.types'
 import {
@@ -39,6 +50,7 @@ import {
   generateBounceNotificationHtml,
   generateLoginOtpHtml,
   generateSmsVerificationDisabledHtmlForAdmin,
+  generateSmsVerificationDisabledHtmlForCollab,
   generateSmsVerificationWarningHtml,
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
@@ -601,54 +613,68 @@ export class MailService {
     // Step 1: Retrieve all public forms of admin that have sms verification enabled
     return FormService.retrievePublicFormsWithSmsVerification(form.admin._id)
       .andThen((forms) => {
+        // Step 2: Send the mail containing all the active forms to the admin
         return this.sendDisabledMailForAdmin(forms, form.admin).map(() => forms)
       })
-      .andThen((forms) => {})
-
-    // const htmlData: SmsVerificationDisabledData = {
-    //   formTitle: form.title,
-    //   formLink: `${this.#appUrl}/${form._id}`,
-    //   smsVerificationLimit: smsConfig.smsVerificationLimit,
-    // }
-
-    // return generateSmsVerificationDisabledHtmlForAdmin(htmlData).andThen(
-    //   (mailHtml) => {
-    //     const formCollaborators = form.permissionList.map(({ email }) => email)
-
-    //     const mailOptions: MailOptions = {
-    //       to: form.admin.email,
-    //       cc: formCollaborators,
-    //       from: this.#senderFromString,
-    //       html: mailHtml,
-    //       subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
-    //       replyTo: this.#senderMail,
-    //       bcc: this.#senderMail,
-    //     }
-
-    //     return this.#sendNodeMail(mailOptions, { formId: form._id })
-    //   },
-    // )
+      .andThen((forms) => {
+        // Step 3: Send to each individual form
+        return combine(
+          forms.map((f) =>
+            // If there are no collaborators, do not send out the email.
+            // Admin would already have received a summary email from Step 2.
+            f.permissionList.length
+              ? this.sendDisabledMailForCollab(f, form.admin)
+              : okAsync<true, never>(true),
+          ),
+        )
+      })
+      .map(() => true)
   }
 
+  // Helper method to send an email to all the collaborators of a given form that would be affected by
+  // Sms verifications being disabled for the form.
+  // Note that this method also emails the admin to notify them that the collaborators have been informed.
   sendDisabledMailForCollab = (
-    forms: IPopulatedForm[],
+    form: IPopulatedForm,
     admin: IPopulatedUser,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const mailSendResult = forms.map((form) => {
-      const htmlData: SmsVerificationDisabledData = {
-        form: {title:},
-        smsVerificationLimit: smsConfig.smsVerificationLimit,
-      }
-    })
+    const htmlData: CollabSmsDisabledData = {
+      form: extractFormLinkView(form, this.#appUrl),
+      smsVerificationLimit: smsConfig.smsVerificationLimit,
+      smsWarningTiers: stringifiedSmsWarningTiers,
+    }
+    const collaborators = form.permissionList.map(({ email }) => email)
+
+    return generateSmsVerificationDisabledHtmlForCollab(htmlData).andThen(
+      (mailHtml) => {
+        const mailOptions: MailOptions = {
+          to: admin.email,
+          cc: collaborators,
+          from: this.#senderFromString,
+          html: mailHtml,
+          subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
+          replyTo: this.#senderMail,
+          bcc: this.#senderMail,
+        }
+
+        return this.#sendNodeMail(mailOptions, {
+          formId: form._id,
+          mailId: 'sendDisabledMailForCollab',
+        })
+      },
+    )
   }
 
+  // Helper method to send an email to a form admin which contains a summary of
+  // which forms would be impacted by sms verifications being removed.
   sendDisabledMailForAdmin = (
     forms: IPopulatedForm[],
     admin: IPopulatedUser,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const htmlData: SmsVerificationDisabledData = {
-      forms: extractFormLinkView(forms),
+    const htmlData: AdminSmsDisabledData = {
+      forms: forms.map((f) => extractFormLinkView(f, this.#appUrl)),
       smsVerificationLimit: smsConfig.smsVerificationLimit,
+      smsWarningTiers: stringifiedSmsWarningTiers,
     }
 
     return (
@@ -690,7 +716,7 @@ export class MailService {
       form.admin._id,
     ).andThen((forms) => {
       const htmlData: SmsVerificationWarningData = {
-        forms: forms.map((f) => extractFormLinkView(f)),
+        forms: forms.map((f) => extractFormLinkView(f, this.#appUrl)),
         numAvailable: smsConfig.smsVerificationLimit - smsVerifications,
         smsVerificationLimit: smsConfig.smsVerificationLimit,
       }

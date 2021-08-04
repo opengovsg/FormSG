@@ -1,5 +1,6 @@
 import Mail from 'nodemailer/lib/mailer'
 import { OperationOptions } from 'retry'
+import { SMS_WARNING_TIERS } from 'shared/utils/verification'
 
 import {
   AutoReplyOptions,
@@ -88,10 +89,18 @@ export type BounceNotificationHtmlData = {
   appName: string
 }
 
-export type SmsVerificationDisabledData = {
-  formLink: string
-  formTitle: string
+export type AdminSmsDisabledData = {
+  forms: FormLinkView<IPopulatedForm>[]
+} & SmsVerificationTiers
+
+export type CollabSmsDisabledData = {
+  form: FormLinkView<IPopulatedForm>
+} & SmsVerificationTiers
+
+type SmsVerificationTiers = {
   smsVerificationLimit: number
+  // Ensure that all tiers are covered
+  smsWarningTiers: { [K in keyof typeof SMS_WARNING_TIERS]: string }
 }
 
 export type SmsVerificationWarningData = {

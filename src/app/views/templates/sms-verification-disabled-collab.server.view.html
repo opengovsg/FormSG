@@ -6,7 +6,7 @@
     <p>
       You are receiving this as you have enabled SMS OTP verification on a
       Mobile Number field of your form:
-      <a href="<%= formLink %>"> '<%= formTitle %>' </a>.
+      <a href="<%= form.link %>"> <%= form.title %> </a>.
     </p>
     <p>
       SMS OTP verification has been <b>automatically disabled</b> on your form
@@ -16,7 +16,8 @@
 
     <p>
       We would have previously notified all form admins upon your account
-      reaching 2500, 5000 and 7500 responses while free SMS OTP verification was
+      reaching <%= smsWarningTiers.LOW %>, <%= smsWarningTiers.MED %> and <%=
+      smsWarningTiers.HIGH %> responses while free SMS OTP verification was
       enabled.
     </p>
     <p>

@@ -33,3 +33,11 @@ export enum SMS_WARNING_TIERS {
   MED = 5000,
   HIGH = 7500,
 }
+
+export const stringifiedSmsWarningTiers: {
+  [K in keyof typeof SMS_WARNING_TIERS]: string
+} = {
+  LOW: '2.5k',
+  MED: '5K',
+  HIGH: '7.5K',
+}
