@@ -6,10 +6,10 @@ import {
 } from '../../../types/api'
 import { BasicField, FormFieldSchema } from '../../../types/field'
 import {
+  CheckboxResponse,
   FieldResponse,
-  ICheckboxResponse,
-  ISingleAnswerResponse,
-  ITableResponse,
+  SingleAnswerFieldResponse,
+  TableResponse,
 } from '../../../types/response'
 
 export type ProcessedResponse = {
@@ -48,11 +48,11 @@ export type ColumnResponse = {
 }
 
 export type ProcessedSingleAnswerResponse<
-  T extends ISingleAnswerResponse = ISingleAnswerResponse,
+  T extends SingleAnswerFieldResponse = SingleAnswerFieldResponse,
 > = T & ProcessedResponse
 
-export type ProcessedCheckboxResponse = ICheckboxResponse & ProcessedResponse
-export type ProcessedTableResponse = ITableResponse & ProcessedResponse
+export type ProcessedCheckboxResponse = CheckboxResponse & ProcessedResponse
+export type ProcessedTableResponse = TableResponse & ProcessedResponse
 /**
  * Can be either email or storage mode attachment response.
  * Email mode attachment response in the server will have extra metadata injected

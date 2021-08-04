@@ -2,9 +2,12 @@ import formsgSdk from 'src/app/config/formsg-sdk'
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import { validateField } from 'src/app/utils/field-validation'
-import { IFieldSchema } from 'src/types'
-import { BasicField } from 'src/types/field'
-import { ISingleAnswerResponse } from 'src/types/response'
+import {
+  BasicField,
+  IEmailFieldSchema,
+  OmitUnusedValidatorProps,
+} from 'src/types/field'
+import { SingleAnswerFieldResponse } from 'src/types/response'
 
 type VerificationMock = {
   authenticate: () => boolean
@@ -26,20 +29,18 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
       required: true,
-      disabled: false,
-    }
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'valid@email.com',
       isVisible: true,
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isOk()).toBe(true)
@@ -52,20 +53,18 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
       required: true,
-      disabled: false,
-    }
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'abc@163.com',
       isVisible: true,
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isOk()).toBe(true)
@@ -78,20 +77,18 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
       required: true,
-      disabled: false,
-    }
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'abc@126.com',
       isVisible: true,
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isOk()).toBe(true)
@@ -104,20 +101,18 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
       required: true,
-      disabled: false,
-    }
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'invalidemail.com',
       isVisible: true,
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isErr()).toBe(true)
@@ -132,20 +127,18 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
       required: true,
-      disabled: false,
-    }
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
       question: 'random',
       isVisible: false,
       answer: '',
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isOk()).toBe(true)
@@ -158,13 +151,11 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
-      disabled: false,
       required: true,
       isVerifiable: true,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@test.gov.sg'],
-    }
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
@@ -172,10 +163,10 @@ describe('Email field validation', () => {
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
       signature: 'some signature',
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as unknown as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isOk()).toBe(true)
@@ -188,13 +179,11 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
       required: true,
-      disabled: false,
       isVerifiable: true,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@example.com'],
-    }
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
@@ -202,10 +191,10 @@ describe('Email field validation', () => {
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
       signature: 'some signature',
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as unknown as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isErr()).toBe(true)
@@ -220,13 +209,19 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
       required: true,
-      disabled: false,
       isVerifiable: true,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: [],
-    }
+      autoReplyOptions: {
+        autoReplyMessage: 'some message',
+        autoReplySender: 'some sender',
+        autoReplySubject: 'some subject',
+        hasAutoReply: true,
+        includeFormSummary: true,
+      },
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
+
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
@@ -234,10 +229,10 @@ describe('Email field validation', () => {
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
       signature: 'some signature',
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as unknown as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isOk()).toBe(true)
@@ -250,13 +245,11 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
       required: true,
-      disabled: false,
       isVerifiable: true,
       hasAllowedEmailDomains: false,
       allowedEmailDomains: ['@example.com'],
-    }
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
@@ -264,10 +257,10 @@ describe('Email field validation', () => {
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
       signature: 'some signature',
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as unknown as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isOk()).toBe(true)
@@ -280,23 +273,21 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
       required: true,
-      disabled: false,
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@example.com'],
-    }
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
       question: 'random',
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as unknown as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isOk()).toBe(true)
@@ -309,23 +300,21 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
       required: true,
-      disabled: false,
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@example.com'],
-    }
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
       question: 'random',
       isVisible: false,
       answer: 'volunteer-testing@test.gov.sg',
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as unknown as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isErr()).toBe(true)
@@ -340,21 +329,19 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
       required: true,
-      disabled: false,
       isVerifiable: true,
-    }
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'valid@email.com',
       isVisible: true,
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isErr()).toBe(true)
@@ -376,11 +363,9 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       globalId: 'random',
       title: 'random',
-      description: 'random',
       required: true,
-      disabled: false,
       isVerifiable: true,
-    }
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
@@ -388,10 +373,10 @@ describe('Email field validation', () => {
       answer: 'valid@email.com',
       isVisible: true,
       signature: 'some signature',
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as IFieldSchema,
+      formField,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isErr()).toBe(true)

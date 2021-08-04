@@ -12,6 +12,7 @@ import {
 import {
   AttachmentSize,
   BasicField,
+  CheckboxResponse,
   Column,
   DropdownFieldBase,
   FormField,
@@ -19,7 +20,6 @@ import {
   IAttachmentFieldSchema,
   IAttachmentResponse,
   ICheckboxFieldSchema,
-  ICheckboxResponse,
   IDecimalFieldSchema,
   IDropdownFieldSchema,
   IHomenoFieldSchema,
@@ -27,9 +27,9 @@ import {
   IMobileFieldSchema,
   IRatingFieldSchema,
   IShortTextFieldSchema,
-  ISingleAnswerResponse,
   ITableFieldSchema,
   ShortTextFieldBase,
+  SingleAnswerFieldResponse,
 } from 'src/types'
 
 export const generateDefaultField = (
@@ -179,7 +179,7 @@ export const generateProcessedSingleAnswerResponse = (
 export const generateSingleAnswerResponse = (
   field: FormFieldSchema,
   answer = field.fieldType === BasicField.Section ? '' : 'answer',
-): ISingleAnswerResponse => {
+): SingleAnswerFieldResponse => {
   if (
     [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
       field.fieldType,
@@ -193,7 +193,7 @@ export const generateSingleAnswerResponse = (
     _id: field._id,
     answer,
     fieldType: field.fieldType,
-  } as ISingleAnswerResponse
+  } as SingleAnswerFieldResponse
 }
 
 export const generateNewSingleAnswerResponse = (
@@ -221,14 +221,14 @@ export const generateNewSingleAnswerResponse = (
 
 export const generateUnprocessedSingleAnswerResponse = (
   fieldType: BasicField,
-  customParams?: Partial<ISingleAnswerResponse>,
-): ISingleAnswerResponse => {
+  customParams?: Partial<SingleAnswerFieldResponse>,
+): SingleAnswerFieldResponse => {
   return pick(generateNewSingleAnswerResponse(fieldType, customParams), [
     '_id',
     'question',
     'fieldType',
     'answer',
-  ]) as ISingleAnswerResponse
+  ]) as SingleAnswerFieldResponse
 }
 
 export const generateAttachmentResponse = (
@@ -260,7 +260,7 @@ export const generateNewAttachmentResponse = (
 export const generateCheckboxResponse = (
   field: ICheckboxFieldSchema,
   answerArray?: string[],
-): ICheckboxResponse => ({
+): CheckboxResponse => ({
   question: 'question',
   _id: field._id,
   answerArray: answerArray ?? [field.fieldOptions[0]],

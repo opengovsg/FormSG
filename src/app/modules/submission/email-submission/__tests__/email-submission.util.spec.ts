@@ -7,9 +7,10 @@ import {
   BasicField,
   FieldResponse,
   IAttachmentResponse,
-  ISingleAnswerResponse,
   MyInfoAttribute,
+  SingleAnswerFieldResponse,
   SPCPFieldTitle,
+  TableRow,
 } from 'src/types'
 
 import {
@@ -88,20 +89,13 @@ const zipOnlyValid = {
 
 const MOCK_ANSWER = 'mockAnswer'
 
-type WithQuestion<T> = T & {
-  answer: string
-}
-
-const getResponse = (
-  _id: string,
-  answer: string,
-): WithQuestion<ISingleAnswerResponse> =>
+const getResponse = (_id: string, answer: string): SingleAnswerFieldResponse =>
   ({
     _id,
     fieldType: BasicField.Attachment,
     question: 'mockQuestion',
     answer,
-  } as unknown as WithQuestion<ISingleAnswerResponse>)
+  } as unknown as SingleAnswerFieldResponse)
 
 const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
   // Attachments are special cases, requiring filename and content
@@ -557,7 +551,9 @@ describe('email-submission.util', () => {
     })
 
     it('should split table answers by newline', () => {
-      const answerArray = [['firstLine\nsecondLine', 'thirdLine\nfourthLine']]
+      const answerArray = [
+        ['firstLine\nsecondLine', 'thirdLine\nfourthLine'],
+      ] as TableRow[]
       const response = generateNewTableResponse({ answerArray })
 
       const emailData = new SubmissionEmailObj(
