@@ -1257,11 +1257,11 @@ describe('mail.service', () => {
 
     const MOCK_FORM: IPopulatedForm = {
       permissionList: [
-        { email: MOCK_VALID_EMAIL },
         { email: MOCK_VALID_EMAIL_2 },
+        { email: MOCK_VALID_EMAIL_3 },
       ],
       admin: {
-        email: MOCK_VALID_EMAIL_3,
+        email: MOCK_VALID_EMAIL,
       },
       title: MOCK_FORM_TITLE,
       _id: MOCK_FORM_ID,
@@ -1277,8 +1277,8 @@ describe('mail.service', () => {
     } as unknown as IPopulatedForm
 
     const generateExpectedMailOptions = async (
-      count: number,
-      emailRecipients: string | string[],
+      admin: string,
+      collaborators: string | string[],
     ) => {
       const result = await MailUtils.generateSmsVerificationDisabledHtml({
         formTitle: MOCK_FORM_TITLE,
@@ -1286,7 +1286,8 @@ describe('mail.service', () => {
         smsVerificationLimit: smsConfig.smsVerificationLimit,
       }).map((emailHtml) => {
         return {
-          to: emailRecipients,
+          to: admin,
+          cc: collaborators,
           from: MOCK_SENDER_STRING,
           html: emailHtml,
           subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
@@ -1306,11 +1307,10 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendSmsVerificationDisabledEmail(
         MOCK_FORM,
       )
-      const expectedMailOptions = await generateExpectedMailOptions(1000, [
+      const expectedMailOptions = await generateExpectedMailOptions(
         MOCK_VALID_EMAIL,
-        MOCK_VALID_EMAIL_2,
-        MOCK_VALID_EMAIL_3,
-      ])
+        [MOCK_VALID_EMAIL_2, MOCK_VALID_EMAIL_3],
+      )
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
@@ -1362,11 +1362,11 @@ describe('mail.service', () => {
 
     const MOCK_FORM: IPopulatedForm = {
       permissionList: [
-        { email: MOCK_VALID_EMAIL },
         { email: MOCK_VALID_EMAIL_2 },
+        { email: MOCK_VALID_EMAIL_3 },
       ],
       admin: {
-        email: MOCK_VALID_EMAIL_3,
+        email: MOCK_VALID_EMAIL,
       },
       title: MOCK_FORM_TITLE,
       _id: MOCK_FORM_ID,
@@ -1383,7 +1383,8 @@ describe('mail.service', () => {
 
     const generateExpectedMailOptions = async (
       count: number,
-      emailRecipients: string | string[],
+      admin: string,
+      collaborators: string | string[],
     ) => {
       const result = await MailUtils.generateSmsVerificationWarningHtml({
         formTitle: MOCK_FORM_TITLE,
@@ -1392,7 +1393,8 @@ describe('mail.service', () => {
         smsVerificationLimit: smsConfig.smsVerificationLimit,
       }).map((emailHtml) => {
         return {
-          to: emailRecipients,
+          to: admin,
+          cc: collaborators,
           from: MOCK_SENDER_STRING,
           html: emailHtml,
           subject: '[FormSG] SMS Verification - Free Tier Limit Alert',
@@ -1413,11 +1415,11 @@ describe('mail.service', () => {
         MOCK_FORM,
         1000,
       )
-      const expectedMailOptions = await generateExpectedMailOptions(1000, [
+      const expectedMailOptions = await generateExpectedMailOptions(
+        1000,
         MOCK_VALID_EMAIL,
-        MOCK_VALID_EMAIL_2,
-        MOCK_VALID_EMAIL_3,
-      ])
+        [MOCK_VALID_EMAIL_2, MOCK_VALID_EMAIL_3],
+      )
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)

@@ -597,12 +597,11 @@ export class MailService {
     }
 
     return generateSmsVerificationDisabledHtml(htmlData).andThen((mailHtml) => {
-      const emailRecipients = form.permissionList
-        .map(({ email }) => email)
-        .concat(form.admin.email)
+      const formCollaborators = form.permissionList.map(({ email }) => email)
 
       const mailOptions: MailOptions = {
-        to: emailRecipients,
+        to: form.admin.email,
+        cc: formCollaborators,
         from: this.#senderFromString,
         html: mailHtml,
         subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
@@ -634,12 +633,11 @@ export class MailService {
     }
 
     return generateSmsVerificationWarningHtml(htmlData).andThen((mailHtml) => {
-      const emailRecipients = form.permissionList
-        .map(({ email }) => email)
-        .concat(form.admin.email)
+      const formCollaborators = form.permissionList.map(({ email }) => email)
 
       const mailOptions: MailOptions = {
-        to: emailRecipients,
+        to: form.admin.email,
+        cc: formCollaborators,
         from: this.#senderFromString,
         html: mailHtml,
         subject: '[FormSG] SMS Verification - Free Tier Limit Alert',
