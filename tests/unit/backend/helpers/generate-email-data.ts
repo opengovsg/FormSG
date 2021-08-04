@@ -1,11 +1,11 @@
 import { pick } from 'lodash'
 
+import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
   EmailRespondentConfirmationField,
-} from 'src/app/modules/submission/email-submission/email-submission.types'
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
+} from 'src/types'
 
 export const generateSingleAnswerJson = (
   response: ProcessedSingleAnswerResponse,

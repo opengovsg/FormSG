@@ -7,9 +7,8 @@ import {
 
 import { IFieldSchema } from './baseField'
 
-export { NumberValidationOptions, NumberSelectedValidation }
+export { NumberValidationOptions, NumberSelectedValidation, NumberFieldBase }
 
-export type INumberField = NumberFieldBase
-export interface INumberFieldSchema extends INumberField, IFieldSchema {
+export interface INumberFieldSchema extends NumberFieldBase, IFieldSchema {
   fieldType: BasicField.Number
 }

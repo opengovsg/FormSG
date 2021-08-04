@@ -13,8 +13,8 @@ import {
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
-  IPossiblyPrefilledField,
   MyInfoAttribute,
+  PossiblyPrefilledField,
 } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -221,7 +221,7 @@ describe('MyInfoServiceClass', () => {
       const result = await myInfoService.saveMyInfoHashes(
         MOCK_UINFIN,
         MOCK_FORM_ID,
-        MOCK_POPULATED_FORM_FIELDS as IPossiblyPrefilledField[],
+        MOCK_POPULATED_FORM_FIELDS as PossiblyPrefilledField[],
       )
 
       expect(mockUpdateHashes).toHaveBeenCalledWith(
@@ -239,7 +239,7 @@ describe('MyInfoServiceClass', () => {
       const result = await myInfoService.saveMyInfoHashes(
         MOCK_UINFIN,
         MOCK_FORM_ID,
-        MOCK_POPULATED_FORM_FIELDS as IPossiblyPrefilledField[],
+        MOCK_POPULATED_FORM_FIELDS as PossiblyPrefilledField[],
       )
 
       expect(result._unsafeUnwrapErr()).toEqual(
@@ -253,7 +253,7 @@ describe('MyInfoServiceClass', () => {
       const result = await myInfoService.saveMyInfoHashes(
         MOCK_UINFIN,
         MOCK_FORM_ID,
-        MOCK_POPULATED_FORM_FIELDS as IPossiblyPrefilledField[],
+        MOCK_POPULATED_FORM_FIELDS as PossiblyPrefilledField[],
       )
       expect(result._unsafeUnwrapErr()).toEqual(
         new DatabaseError('Failed to save MyInfo hashes to database'),

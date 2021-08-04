@@ -2,8 +2,8 @@ import { BasicField, ImageFieldBase } from '../../../shared/types/field'
 
 import { IFieldSchema } from './baseField'
 
-export type IImageField = ImageFieldBase
+export { ImageFieldBase }
 
-export interface IImageFieldSchema extends IImageField, IFieldSchema {
+export interface IImageFieldSchema extends ImageFieldBase, IFieldSchema {
   fieldType: BasicField.Image
 }

@@ -5,7 +5,7 @@ import { IFormSchema } from '../form'
 
 import { IFieldSchema } from './baseField'
 
-export type IColumn = Column
+export { Column, TableFieldBase }
 
 export type IColumnSchema = Column &
   Document & {

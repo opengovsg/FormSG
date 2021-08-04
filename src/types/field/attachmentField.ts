@@ -6,9 +6,9 @@ import {
 
 import { IFieldSchema } from './baseField'
 
-export { AttachmentSize }
-
-export type IAttachmentField = AttachmentFieldBase
-export interface IAttachmentFieldSchema extends IAttachmentField, IFieldSchema {
+export { AttachmentSize, AttachmentFieldBase }
+export interface IAttachmentFieldSchema
+  extends AttachmentFieldBase,
+    IFieldSchema {
   fieldType: BasicField.Attachment
 }

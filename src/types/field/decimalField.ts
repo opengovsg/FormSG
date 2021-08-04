@@ -2,8 +2,8 @@ import { BasicField, DecimalFieldBase } from '../../../shared/types/field'
 
 import { IFieldSchema } from './baseField'
 
-export type IDecimalField = DecimalFieldBase
+export { DecimalFieldBase }
 
-export interface IDecimalFieldSchema extends IDecimalField, IFieldSchema {
+export interface IDecimalFieldSchema extends DecimalFieldBase, IFieldSchema {
   fieldType: BasicField.Decimal
 }

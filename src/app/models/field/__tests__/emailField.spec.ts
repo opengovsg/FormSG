@@ -1,7 +1,7 @@
 import merge from 'lodash/merge'
 import { Model, Schema } from 'mongoose'
 
-import { IEmailField, IEmailFieldSchema, ResponseMode } from 'src/types'
+import { EmailFieldBase, IEmailFieldSchema, ResponseMode } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -14,7 +14,7 @@ describe('models.fields.emailField', () => {
     field: IEmailFieldSchema
   }>
 
-  const EMAIL_FIELD_DEFAULTS: Partial<IEmailField> = {
+  const EMAIL_FIELD_DEFAULTS: Partial<EmailFieldBase> = {
     autoReplyOptions: {
       hasAutoReply: true,
       autoReplySubject: '',

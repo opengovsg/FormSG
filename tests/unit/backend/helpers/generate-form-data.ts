@@ -1,6 +1,7 @@
 /* eslint-disable typesafe/no-throw-sync-func */
 import { ObjectId } from 'bson'
 import { pick } from 'lodash'
+import { TableRow } from 'shared/types/response'
 
 import {
   ProcessedAttachmentResponse,
@@ -11,24 +12,24 @@ import {
 import {
   AttachmentSize,
   BasicField,
+  Column,
+  DropdownFieldBase,
   FormField,
   FormFieldSchema,
   IAttachmentFieldSchema,
   IAttachmentResponse,
   ICheckboxFieldSchema,
   ICheckboxResponse,
-  IColumn,
   IDecimalFieldSchema,
-  IDropdownField,
   IDropdownFieldSchema,
   IHomenoFieldSchema,
   IImageFieldSchema,
   IMobileFieldSchema,
   IRatingFieldSchema,
-  IShortTextField,
   IShortTextFieldSchema,
   ISingleAnswerResponse,
   ITableFieldSchema,
+  ShortTextFieldBase,
 } from 'src/types'
 
 export const generateDefaultField = (
@@ -191,11 +192,8 @@ export const generateSingleAnswerResponse = (
   return {
     _id: field._id,
     answer,
-    fieldType: field.fieldType as Exclude<
-      BasicField,
-      BasicField.Table | BasicField.Checkbox | BasicField.Attachment
-    >,
-  }
+    fieldType: field.fieldType,
+  } as ISingleAnswerResponse
 }
 
 export const generateNewSingleAnswerResponse = (
@@ -215,13 +213,10 @@ export const generateNewSingleAnswerResponse = (
     _id: new ObjectId().toHexString(),
     question: `${fieldType} question`,
     answer: `${fieldType} answer`,
-    fieldType: fieldType as Exclude<
-      BasicField,
-      BasicField.Table | BasicField.Checkbox | BasicField.Attachment
-    >,
+    fieldType: fieldType,
     isVisible: true,
     ...customParams,
-  }
+  } as ProcessedSingleAnswerResponse
 }
 
 export const generateUnprocessedSingleAnswerResponse = (
@@ -233,7 +228,7 @@ export const generateUnprocessedSingleAnswerResponse = (
     'question',
     'fieldType',
     'answer',
-  ])
+  ]) as ISingleAnswerResponse
 }
 
 export const generateAttachmentResponse = (
@@ -241,6 +236,7 @@ export const generateAttachmentResponse = (
   filename = 'filename',
   content = Buffer.from('content'),
 ): IAttachmentResponse => ({
+  question: 'question',
   _id: field._id,
   answer: 'answer',
   fieldType: BasicField.Attachment,
@@ -265,6 +261,7 @@ export const generateCheckboxResponse = (
   field: ICheckboxFieldSchema,
   answerArray?: string[],
 ): ICheckboxResponse => ({
+  question: 'question',
   _id: field._id,
   answerArray: answerArray ?? [field.fieldOptions[0]],
   fieldType: BasicField.Checkbox,
@@ -283,7 +280,7 @@ export const generateNewCheckboxResponse = (
 
 export const generateTableResponse = (
   field: ITableFieldSchema,
-  answerArray?: string[][],
+  answerArray?: TableRow[],
 ): ProcessedTableResponse => {
   if (!answerArray) {
     const rowAnswer: string[] = []
@@ -293,7 +290,7 @@ export const generateTableResponse = (
           rowAnswer.push('answer')
           break
         case BasicField.Dropdown:
-          rowAnswer.push((col as unknown as IDropdownField).fieldOptions[0])
+          rowAnswer.push(col.fieldOptions[0])
       }
     })
     answerArray = Array(field.minimumRows).fill(rowAnswer)
@@ -315,15 +312,15 @@ export const generateNewTableResponse = (
   answerArray: [
     ['Table 1', 'Table 2'],
     ['Table 3', 'Table 4'],
-  ],
+  ] as TableRow[],
   fieldType: BasicField.Table,
   isVisible: true,
   ...customParams,
 })
 
 export const generateTableDropdownColumn = (
-  customParams?: Partial<IDropdownField>,
-): IColumn => {
+  customParams?: Partial<DropdownFieldBase>,
+): Column => {
   return {
     title: 'some title',
     columnType: BasicField.Dropdown,
@@ -342,12 +339,12 @@ export const generateTableDropdownColumn = (
         ...customParams,
       }
     },
-  } as IColumn
+  } as Column
 }
 
 export const generateTableShortTextColumn = (
-  customParams?: Partial<IShortTextField>,
-): IColumn => {
+  customParams?: Partial<ShortTextFieldBase>,
+): Column => {
   return {
     title: 'some title',
     columnType: BasicField.ShortText,
@@ -372,5 +369,5 @@ export const generateTableShortTextColumn = (
         ...customParams,
       }
     },
-  } as IColumn
+  } as Column
 }

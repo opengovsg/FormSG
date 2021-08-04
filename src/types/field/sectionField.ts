@@ -2,7 +2,7 @@ import { BasicField, SectionFieldBase } from '../../../shared/types/field'
 
 import { IFieldSchema } from './baseField'
 
-export type ISectionField = SectionFieldBase
-export interface ISectionFieldSchema extends ISectionField, IFieldSchema {
+export { SectionFieldBase }
+export interface ISectionFieldSchema extends SectionFieldBase, IFieldSchema {
   fieldType: BasicField.Section
 }

@@ -2,8 +2,8 @@ import { BasicField, CheckboxFieldBase } from '../../../shared/types/field'
 
 import { IFieldSchema } from './baseField'
 
-export type ICheckboxField = CheckboxFieldBase
+export { CheckboxFieldBase }
 
-export interface ICheckboxFieldSchema extends ICheckboxField, IFieldSchema {
+export interface ICheckboxFieldSchema extends CheckboxFieldBase, IFieldSchema {
   fieldType: BasicField.Checkbox
 }

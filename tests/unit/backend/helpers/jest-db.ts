@@ -124,7 +124,7 @@ const insertFormCollectionReqs = async ({
   const user = await User.create({
     email: `${mailName}@${mailDomain}`,
     _id: userId ?? new ObjectID(),
-    agency: agency.id,
+    agency: agency._id,
   })
 
   return { agency, user }

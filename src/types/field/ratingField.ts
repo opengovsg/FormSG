@@ -6,9 +6,7 @@ import {
 
 import { IFieldSchema } from './baseField'
 
-export { RatingShape }
-
-export type IRatingField = RatingFieldBase
-export interface IRatingFieldSchema extends IRatingField, IFieldSchema {
+export { RatingFieldBase, RatingShape }
+export interface IRatingFieldSchema extends RatingFieldBase, IFieldSchema {
   fieldType: BasicField.Rating
 }

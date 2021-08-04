@@ -13,8 +13,8 @@ import {
   IFormSchema,
   IHashes,
   IMyInfo,
-  IPossiblyPrefilledField,
   MapRouteError,
+  PossiblyPrefilledField,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError } from '../core/core.errors'
@@ -60,7 +60,7 @@ const HASH_SALT_ROUNDS = 10
  * @returns object mapping MyInfo attributes to Promises of their hashes
  */
 export const hashFieldValues = (
-  prefilledFormFields: IPossiblyPrefilledField[],
+  prefilledFormFields: PossiblyPrefilledField[],
 ): MyInfoHashPromises => {
   const readOnlyHashPromises: MyInfoHashPromises = {}
 
