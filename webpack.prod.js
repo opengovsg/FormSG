@@ -1,7 +1,7 @@
-const merge = require('webpack-merge')
+const { merge } = require('webpack-merge')
 const TerserPlugin = require('terser-webpack-plugin')
 
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
 
 const [jsBundle, cssBundle] = require('./webpack.common.js')
 
@@ -15,18 +15,17 @@ module.exports = [
       sideEffects: false,
       minimizer: [
         new TerserPlugin({
-          cache: true,
           parallel: true,
-          sourceMap: true,
           terserOptions: {
             ecma: 5,
             mangle: true,
-            compress: true,
+            compress: {},
             toplevel: true,
             safari10: true,
-            output: {
+            format: {
               comments: false,
             },
+            sourceMap: {},
           },
         }),
       ],
@@ -36,7 +35,8 @@ module.exports = [
         {
           test: /\.js$/,
           // Don't transpile polyfills
-          exclude: /@babel(?:\/|\\{1,2})runtime|core-js|web-streams-polyfill|whatwg-fetch|abortcontroller-polyfill|text-encoding/,
+          exclude:
+            /@babel(?:\/|\\{1,2})runtime|core-js|web-streams-polyfill|whatwg-fetch|abortcontroller-polyfill|text-encoding/,
           use: {
             loader: 'babel-loader',
           },
@@ -47,7 +47,7 @@ module.exports = [
   merge(cssBundle, {
     mode: 'production',
     optimization: {
-      minimizer: [new OptimizeCSSAssetsPlugin()],
+      minimizer: [new CssMinimizerPlugin()],
     },
   }),
 ]
