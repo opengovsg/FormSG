@@ -10,12 +10,14 @@ import {
   EmailDataFields,
   EmailDataForOneField,
   EmailRespondentConfirmationField,
-  FieldResponse,
   IAttachmentInfo,
-  IAttachmentResponse,
   MapRouteError,
   SPCPFieldTitle,
 } from '../../../../types'
+import {
+  ParsedEmailAttachmentResponse,
+  ParsedEmailFormFieldResponse,
+} from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   CaptchaConnectionError,
@@ -294,11 +296,11 @@ export const areAttachmentsMoreThan7MB = (
 }
 
 const isAttachmentResponse = (
-  response: FieldResponse,
-): response is IAttachmentResponse => {
+  response: ParsedEmailFormFieldResponse,
+): response is ParsedEmailAttachmentResponse => {
   return (
     response.fieldType === BasicField.Attachment &&
-    (response as IAttachmentResponse).content !== undefined
+    response.content !== undefined
   )
 }
 
@@ -307,7 +309,7 @@ const isAttachmentResponse = (
  * @param responses Form responses
  */
 export const mapAttachmentsFromResponses = (
-  responses: FieldResponse[],
+  responses: ParsedEmailFormFieldResponse[],
 ): IAttachmentInfo[] => {
   // look for attachments in parsedResponses
   // Could be undefined if it is not required, or hidden
@@ -470,8 +472,8 @@ export const mapRouteError: MapRouteError = (error) => {
  */
 const isAttachmentResponseFromMap = (
   attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo>,
-  response: FieldResponse,
-): response is IAttachmentResponse => {
+  response: ParsedEmailFormFieldResponse,
+): response is ParsedEmailAttachmentResponse => {
   return !!attachmentMap[response._id]
 }
 
@@ -485,7 +487,7 @@ const isAttachmentResponseFromMap = (
  * @returns void. Modifies responses in place.
  */
 export const addAttachmentToResponses = (
-  responses: FieldResponse[],
+  responses: ParsedEmailFormFieldResponse[],
   attachments: IAttachmentInfo[],
 ): void => {
   // Create a map of the attachments with fieldId as keys

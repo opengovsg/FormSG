@@ -2,7 +2,7 @@ import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import { AuthType, IPopulatedEmailForm } from '../../../../types'
 import {
-  EmailSubmissionDto,
+  ParsedEmailModeSubmissionBody,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../types/api'
@@ -39,7 +39,7 @@ const logger = createLoggerWithLabel(module)
 const submitEmailModeForm: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
-  EmailSubmissionDto,
+  ParsedEmailModeSubmissionBody,
   { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params

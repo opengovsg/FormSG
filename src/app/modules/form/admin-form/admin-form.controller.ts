@@ -14,7 +14,6 @@ import {
   AuthType,
   BasicField,
   Colors,
-  FieldResponse,
   FormFieldWithId,
   FormLogoState,
   FormSettings,
@@ -41,6 +40,7 @@ import {
   FormFeedbackMetaDto,
   FormFieldDto,
   FormUpdateParams,
+  ParsedEmailModeSubmissionBody,
   PermissionsUpdateDto,
   PreviewFormViewDto,
   PrivateFormErrorDto,
@@ -1503,7 +1503,7 @@ export const handleEncryptPreviewSubmission = [
 export const submitEmailPreview: ControllerHandler<
   { formId: string },
   { message: string; submissionId?: string },
-  { responses: FieldResponse[] },
+  ParsedEmailModeSubmissionBody,
   { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
