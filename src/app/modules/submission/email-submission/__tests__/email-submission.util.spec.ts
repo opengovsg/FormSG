@@ -769,7 +769,7 @@ describe('email-submission.util', () => {
       expect(submissionEmailObj.autoReplyData).toEqual(correctConfirmation)
     })
 
-    it('should mask corppass UID if AuthType is Corppass and autoReplyData() method is called', () => {
+    it('should mask corppass UID if FormAuthType is Corppass and autoReplyData() method is called', () => {
       const responseCPUID = getResponse(
         String(new ObjectId()),
         'S1234567A',

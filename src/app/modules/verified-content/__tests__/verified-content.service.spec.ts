@@ -13,7 +13,7 @@ import { CpVerifiedContent, SpVerifiedContent } from '../verified-content.types'
 
 describe('verified-content.service', () => {
   describe('getVerifiedContent', () => {
-    it('should return verified content for AuthType.SP data', async () => {
+    it('should return verified content for FormAuthType.SP data', async () => {
       // Arrange
       const mockData = {
         extraData: 'some extra data',
@@ -34,7 +34,7 @@ describe('verified-content.service', () => {
       expect(result._unsafeUnwrap()).toEqual(expected)
     })
 
-    it('should return verified content for AuthType.CP data', async () => {
+    it('should return verified content for FormAuthType.CP data', async () => {
       // Arrange
       const mockData = {
         extraData: 'some extra data again',

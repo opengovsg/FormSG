@@ -22,7 +22,7 @@ describe('public-form.service', () => {
   beforeEach(() => jest.clearAllMocks())
 
   describe('getCookieNameByAuthType', () => {
-    it('should return JwtName[AuthType.SP] when authType is SP', () => {
+    it('should return JwtName[FormAuthType.SP] when authType is SP', () => {
       // Arrange
       const authType = FormAuthType.SP
 
@@ -33,7 +33,7 @@ describe('public-form.service', () => {
       expect(result).toEqual(JwtName[FormAuthType.SP])
     })
 
-    it('should return JwtName[AuthType.CP] when authType is CP', () => {
+    it('should return JwtName[FormAuthType.CP] when authType is CP', () => {
       // Arrange
       const authType = FormAuthType.CP
 

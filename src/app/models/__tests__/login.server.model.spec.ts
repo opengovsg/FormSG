@@ -83,7 +83,7 @@ describe('login.server.model', () => {
       )
     })
 
-    it('should throw validation error when AuthType param is missing', async () => {
+    it('should throw validation error when FormAuthType param is missing', async () => {
       // Act
       // @ts-ignore
       const actualPromise = LoginModel.create(omit(DEFAULT_PARAMS, 'authType'))

@@ -489,7 +489,7 @@ describe('public-form.controller', () => {
         MockFormService.checkIsIntranetFormAccess.mockReturnValue(false)
       })
 
-      it('should return 200 when there is no AuthType on the request', async () => {
+      it('should return 200 when there is no FormAuthType on the request', async () => {
         // Arrange
         const MOCK_NIL_AUTH_FORM = {
           ...BASE_FORM,
@@ -1039,7 +1039,7 @@ describe('public-form.controller', () => {
         })
       })
 
-      it('should return 200 with isIntranetUser set to true when a intranet user accesses an AuthType.SP form', async () => {
+      it('should return 200 with isIntranetUser set to true when a intranet user accesses an FormAuthType.SP form', async () => {
         // Arrange
         const MOCK_SP_AUTH_FORM = {
           ...BASE_FORM,
@@ -1074,7 +1074,7 @@ describe('public-form.controller', () => {
         })
       })
 
-      it('should return 200 with isIntranetUser set to true when a intranet user accesses an AuthType.CP form', async () => {
+      it('should return 200 with isIntranetUser set to true when a intranet user accesses an FormAuthType.CP form', async () => {
         // Arrange
         const MOCK_CP_AUTH_FORM = {
           ...BASE_FORM,
@@ -1109,7 +1109,7 @@ describe('public-form.controller', () => {
         })
       })
 
-      it('should return 200 with isIntranetUser set to true when a intranet user accesses an AuthType.MyInfo form', async () => {
+      it('should return 200 with isIntranetUser set to true when a intranet user accesses an FormAuthType.MyInfo form', async () => {
         // Arrange
         const MOCK_MYINFO_AUTH_FORM = {
           ...BASE_FORM,

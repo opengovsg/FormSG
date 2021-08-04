@@ -65,7 +65,7 @@ describe('public-form.form.routes', () => {
       rememberMe: false,
     }
 
-    it('should return 200 with public form when form has AuthType.NIL and valid formId', async () => {
+    it('should return 200 with public form when form has FormAuthType.NIL and valid formId', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: { status: FormStatus.Public },
@@ -87,7 +87,7 @@ describe('public-form.form.routes', () => {
       expect(actualResponse.body).toEqual(expectedResponseBody)
     })
 
-    it('should return 200 with public form when form has AuthType.SP and valid formId', async () => {
+    it('should return 200 with public form when form has FormAuthType.SP and valid formId', async () => {
       // Arrange
       mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
         cb(null, {
@@ -127,7 +127,7 @@ describe('public-form.form.routes', () => {
       expect(actualResponse.status).toEqual(200)
       expect(actualResponse.body).toEqual(expectedResponseBody)
     })
-    it('should return 200 with public form when form has AuthType.CP and valid formId', async () => {
+    it('should return 200 with public form when form has FormAuthType.CP and valid formId', async () => {
       // Arrange
       mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
         cb(null, {
@@ -168,7 +168,7 @@ describe('public-form.form.routes', () => {
       expect(actualResponse.status).toEqual(200)
       expect(actualResponse.body).toEqual(expectedResponseBody)
     })
-    it('should return 200 with public form when form has AuthType.MyInfo and valid formId', async () => {
+    it('should return 200 with public form when form has FormAuthType.MyInfo and valid formId', async () => {
       // Arrange
       MockMyInfoGovClient.getPerson.mockResolvedValueOnce({
         uinFin: MOCK_UINFIN,

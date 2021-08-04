@@ -304,7 +304,7 @@ describe('public-form.auth.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 400 when the form has AuthType.NIL', async () => {
+    it('should return 400 when the form has FormAuthType.NIL', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
@@ -326,7 +326,7 @@ describe('public-form.auth.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 400 when the form has AuthType.CP', async () => {
+    it('should return 400 when the form has FormAuthType.CP', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {

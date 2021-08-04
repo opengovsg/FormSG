@@ -342,7 +342,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             // and storage mode
             // Important - this case must come before the MyInfo/SGID + storage
             // mode case, or else we may accidentally set Singpass/Corppass storage
-            // mode forms to AuthType.NIL
+            // mode forms to FormAuthType.NIL
           } else if ([FormAuthType.SP, FormAuthType.CP].includes(v)) {
             return v
           } else if (

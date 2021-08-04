@@ -730,7 +730,7 @@ export class SubmissionEmailObj {
 
   /**
    * Getter function to return autoReplyData for confirmation emails to respondent
-   * If AuthType is CP, return a masked version
+   * If FormAuthType is CP, return a masked version
    */
   get autoReplyData(): EmailRespondentConfirmationField[] {
     // Compact is necessary because getAutoReplyFormattedResponse
