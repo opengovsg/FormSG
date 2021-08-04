@@ -3,6 +3,7 @@ import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
+import { WAIT_FOR_OTP_SECONDS } from 'shared/utils/verification'
 import { mocked } from 'ts-jest/utils'
 
 import { MailSendError } from 'src/app/services/mail/mail.errors'
@@ -12,6 +13,9 @@ import {
 } from 'src/app/services/sms/sms.errors'
 import { HashingError } from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
+import { IFormSchema, IPopulatedForm, IVerificationSchema } from 'src/types'
+
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import expressHandler from '../../../../../tests/unit/backend/helpers/jest-express'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'

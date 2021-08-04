@@ -16,7 +16,6 @@ import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import * as SmsService from 'src/app/services/sms/sms.service'
 import * as HashUtils from 'src/app/utils/hash'
-import { SMS_WARNING_TIERS } from 'src/shared/util/verification'
 import {
   BasicField,
   IFormSchema,
@@ -28,6 +27,7 @@ import {
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { SMS_WARNING_TIERS } from '../../../../../shared/utils/verification'
 import { DatabaseError } from '../../core/core.errors'
 import * as AdminFormService from '../../form/admin-form/admin-form.service'
 import { FormNotFoundError } from '../../form/form.errors'

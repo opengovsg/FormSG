@@ -3,7 +3,7 @@ const { get } = require('lodash')
 
 const {
   ADMIN_VERIFIED_SMS_STATES,
-} = require('../../../../../shared/util/verification')
+} = require('../../../../../../shared/utils/verification')
 
 const AdminMetaService = require('../../../../services/AdminMetaService')
 
