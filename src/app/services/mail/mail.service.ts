@@ -11,11 +11,14 @@ import {
   EmailAdminDataField,
   IEmailFormSchema,
   IPopulatedForm,
+  IPopulatedUser,
   ISubmissionSchema,
 } from '../../../types'
 import config from '../../config/config'
 import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
+import * as FormService from '../../modules/form/form.service'
+import { extractFormLinkView } from '../../modules/form/form.utils'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
 import { MailGenerationError, MailSendError } from './mail.errors'
@@ -35,7 +38,7 @@ import {
   generateAutoreplyPdf,
   generateBounceNotificationHtml,
   generateLoginOtpHtml,
-  generateSmsVerificationDisabledHtml,
+  generateSmsVerificationDisabledHtmlForAdmin,
   generateSmsVerificationWarningHtml,
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
@@ -581,71 +584,135 @@ export class MailService {
 
   /**
    * Sends a email to the admin and collaborators of the form when the verified sms feature will be disabled.
-   * This happens only when the admin has hit a certain limit of sms verifications on his account
+   * This happens only when the admin has hit a certain limit of sms verifications on his account.
+   *
+   * Note that the email sent to the admin and collaborators will differ.
+   * This is because the admin will see all of their forms that are affected but collaborators
+   * only see forms which they are a part of.
+   *
    * @param form The form whose admin and collaborators will be issued the email
    * @returns ok(true) when mail sending is successful
    * @returns err(MailGenerationError) when there was an error in generating the html data for the mail
    * @returns err(MailSendError) when there was an error in sending the mail
    */
   sendSmsVerificationDisabledEmail = (
-    form: Pick<IPopulatedForm, 'permissionList' | 'admin' | 'title' | '_id'>,
+    form: Pick<IPopulatedForm, 'admin' | '_id'>,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const htmlData: SmsVerificationDisabledData = {
-      formTitle: form.title,
-      formLink: `${this.#appUrl}/${form._id}`,
-      smsVerificationLimit: smsConfig.smsVerificationLimit,
-    }
+    // Step 1: Retrieve all public forms of admin that have sms verification enabled
+    return FormService.retrievePublicFormsWithSmsVerification(form.admin._id)
+      .andThen((forms) => {
+        return this.sendDisabledMailForAdmin(forms, form.admin).map(() => forms)
+      })
+      .andThen((forms) => {})
 
-    return generateSmsVerificationDisabledHtml(htmlData).andThen((mailHtml) => {
-      const formCollaborators = form.permissionList.map(({ email }) => email)
+    // const htmlData: SmsVerificationDisabledData = {
+    //   formTitle: form.title,
+    //   formLink: `${this.#appUrl}/${form._id}`,
+    //   smsVerificationLimit: smsConfig.smsVerificationLimit,
+    // }
 
-      const mailOptions: MailOptions = {
-        to: form.admin.email,
-        cc: formCollaborators,
-        from: this.#senderFromString,
-        html: mailHtml,
-        subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
-        replyTo: this.#senderMail,
-        bcc: this.#senderMail,
+    // return generateSmsVerificationDisabledHtmlForAdmin(htmlData).andThen(
+    //   (mailHtml) => {
+    //     const formCollaborators = form.permissionList.map(({ email }) => email)
+
+    //     const mailOptions: MailOptions = {
+    //       to: form.admin.email,
+    //       cc: formCollaborators,
+    //       from: this.#senderFromString,
+    //       html: mailHtml,
+    //       subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
+    //       replyTo: this.#senderMail,
+    //       bcc: this.#senderMail,
+    //     }
+
+    //     return this.#sendNodeMail(mailOptions, { formId: form._id })
+    //   },
+    // )
+  }
+
+  sendDisabledMailForCollab = (
+    forms: IPopulatedForm[],
+    admin: IPopulatedUser,
+  ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const mailSendResult = forms.map((form) => {
+      const htmlData: SmsVerificationDisabledData = {
+        form: {title:},
+        smsVerificationLimit: smsConfig.smsVerificationLimit,
       }
-
-      return this.#sendNodeMail(mailOptions, { formId: form._id })
     })
   }
 
+  sendDisabledMailForAdmin = (
+    forms: IPopulatedForm[],
+    admin: IPopulatedUser,
+  ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const htmlData: SmsVerificationDisabledData = {
+      forms: extractFormLinkView(forms),
+      smsVerificationLimit: smsConfig.smsVerificationLimit,
+    }
+
+    return (
+      // Step 1: Generate HTML data for admin
+      generateSmsVerificationDisabledHtmlForAdmin(htmlData).andThen(
+        (mailHtml) => {
+          const mailOptions: MailOptions = {
+            to: admin.email,
+            from: this.#senderFromString,
+            html: mailHtml,
+            subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
+            replyTo: this.#senderMail,
+            bcc: this.#senderMail,
+          }
+
+          // Step 2: Send mail out to admin ONLY
+          return this.#sendNodeMail(mailOptions, {
+            mailId: 'sendDisabledMailForAdmin',
+          })
+        },
+      )
+    )
+  }
+
   /**
-   * Sends a warning email to the admin and collaborators of the form when their current verified sms counts hits a limit
-   * @param form The form whose admin and collaborators will be issued a warning
+   * Sends a warning email to the admin of the form when their current verified sms counts hits a limit
+   * @param form The form whose admin will be issued a warning
    * @param smsVerifications The current total sms verifications for the form
    * @returns ok(true) when mail sending is successful
    * @returns err(MailGenerationError) when there was an error in generating the html data for the mail
    * @returns err(MailSendError) when there was an error in sending the mail
    */
   sendSmsVerificationWarningEmail = (
-    form: Pick<IPopulatedForm, 'permissionList' | 'admin' | 'title' | '_id'>,
+    form: Pick<IPopulatedForm, 'admin' | '_id'>,
     smsVerifications: number,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const htmlData: SmsVerificationWarningData = {
-      formTitle: form.title,
-      formLink: `${this.#appUrl}/${form._id}`,
-      numAvailable: smsConfig.smsVerificationLimit - smsVerifications,
-      smsVerificationLimit: smsConfig.smsVerificationLimit,
-    }
-
-    return generateSmsVerificationWarningHtml(htmlData).andThen((mailHtml) => {
-      const formCollaborators = form.permissionList.map(({ email }) => email)
-
-      const mailOptions: MailOptions = {
-        to: form.admin.email,
-        cc: formCollaborators,
-        from: this.#senderFromString,
-        html: mailHtml,
-        subject: '[FormSG] SMS Verification - Free Tier Limit Alert',
-        replyTo: this.#senderMail,
-        bcc: this.#senderMail,
+    // Step 1: Retrieve all public forms of admin that have sms verification enabled
+    return FormService.retrievePublicFormsWithSmsVerification(
+      form.admin._id,
+    ).andThen((forms) => {
+      const htmlData: SmsVerificationWarningData = {
+        forms: forms.map((f) => extractFormLinkView(f)),
+        numAvailable: smsConfig.smsVerificationLimit - smsVerifications,
+        smsVerificationLimit: smsConfig.smsVerificationLimit,
       }
 
-      return this.#sendNodeMail(mailOptions, { formId: form._id })
+      // Step 2: Generate HTML from template
+      return generateSmsVerificationWarningHtml(htmlData).andThen(
+        (mailHtml) => {
+          const mailOptions: MailOptions = {
+            to: form.admin.email,
+            from: this.#senderFromString,
+            html: mailHtml,
+            subject: '[FormSG] SMS Verification - Free Tier Limit Alert',
+            replyTo: this.#senderMail,
+            bcc: this.#senderMail,
+          }
+
+          // Step 3: Send mail out
+          return this.#sendNodeMail(mailOptions, {
+            mailId: 'sendSmsVerificationWarningEmail',
+          })
+        },
+      )
     })
   }
 }

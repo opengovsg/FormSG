@@ -4,6 +4,7 @@ import { OperationOptions } from 'retry'
 import {
   AutoReplyOptions,
   EmailAdminDataField,
+  FormLinkView,
   IFormSchema,
   IPopulatedForm,
   ISubmissionSchema,
@@ -94,8 +95,7 @@ export type SmsVerificationDisabledData = {
 }
 
 export type SmsVerificationWarningData = {
-  formTitle: string
-  formLink: string
+  forms: FormLinkView<IPopulatedForm>[]
   numAvailable: number
   smsVerificationLimit: number
 }

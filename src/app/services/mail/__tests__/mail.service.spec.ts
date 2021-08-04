@@ -4,6 +4,7 @@ import moment from 'moment-timezone'
 import { err, ok, okAsync } from 'neverthrow'
 import Mail, { Attachment } from 'nodemailer/lib/mailer'
 
+import { extractFormLinkView } from 'src/app/modules/form/form.utils'
 import {
   MailGenerationError,
   MailSendError,
@@ -19,6 +20,7 @@ import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
 
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../../shared/utils/verification'
 import { smsConfig } from '../../../config/features/sms.config'
+import * as FormService from '../../../modules/form/form.service'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
@@ -1384,17 +1386,14 @@ describe('mail.service', () => {
     const generateExpectedMailOptions = async (
       count: number,
       admin: string,
-      collaborators: string | string[],
     ) => {
       const result = await MailUtils.generateSmsVerificationWarningHtml({
-        formTitle: MOCK_FORM_TITLE,
-        formLink: `${MOCK_APP_URL}/${MOCK_FORM_ID}`,
+        forms: extractFormLinkView([MOCK_FORM]),
         numAvailable: smsConfig.smsVerificationLimit - count,
         smsVerificationLimit: smsConfig.smsVerificationLimit,
       }).map((emailHtml) => {
         return {
           to: admin,
-          cc: collaborators,
           from: MOCK_SENDER_STRING,
           html: emailHtml,
           subject: '[FormSG] SMS Verification - Free Tier Limit Alert',
@@ -1407,6 +1406,9 @@ describe('mail.service', () => {
 
     it('should send verified sms warning emails successfully', async () => {
       // Arrange
+      jest
+        .spyOn(FormService, 'retrievePublicFormsWithSmsVerification')
+        .mockReturnValueOnce(okAsync([MOCK_FORM]))
       // sendMail should return mocked success response
       sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
 
@@ -1418,7 +1420,6 @@ describe('mail.service', () => {
       const expectedMailOptions = await generateExpectedMailOptions(
         1000,
         MOCK_VALID_EMAIL,
-        [MOCK_VALID_EMAIL_2, MOCK_VALID_EMAIL_3],
       )
 
       // Assert
@@ -1429,6 +1430,11 @@ describe('mail.service', () => {
     })
 
     it('should return MailSendError when the provided email is invalid', async () => {
+      // Arrange
+      jest
+        .spyOn(FormService, 'retrievePublicFormsWithSmsVerification')
+        .mockReturnValueOnce(okAsync([MOCK_INVALID_EMAIL_FORM]))
+
       // Act
       const actualResult = await mailService.sendSmsVerificationWarningEmail(
         MOCK_INVALID_EMAIL_FORM,
@@ -1445,6 +1451,9 @@ describe('mail.service', () => {
 
     it('should return MailGenerationError when the html template could not be created', async () => {
       // Arrange
+      jest
+        .spyOn(FormService, 'retrievePublicFormsWithSmsVerification')
+        .mockReturnValueOnce(okAsync([MOCK_FORM]))
       jest.spyOn(ejs, 'renderFile').mockRejectedValueOnce('no.')
 
       // Act

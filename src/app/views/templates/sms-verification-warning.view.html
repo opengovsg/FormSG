@@ -5,9 +5,13 @@
     <p>Dear form admin(s),</p>
     <p>
       You are receiving this as you have enabled SMS OTP verification on a
-      Mobile Number field of your form:
-      <a href="<%= formLink %>"> '<%= formTitle %>' </a>.
+      Mobile Number field of your form(s):
     </p>
+    <ol>
+      <% forms.forEach(function({title, link}) { %>
+      <li><a href="<%= link %>"> <%= title %> </a>.</li>
+      <% }) %>
+    </ol>
     <p>
       You can receive <b><%= numAvailable %></b> more responses until free SMS
       OTP verification is automatically disabled.

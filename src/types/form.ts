@@ -350,7 +350,7 @@ export type IOnboardedForm<T extends IForm> = T & {
   msgSrvcName: string
 }
 
-export type FormLinkView<T extends IFormSchema> = {
+export type FormLinkView<T extends IFormDocument> = {
   title: T['title']
   link: string
 }
