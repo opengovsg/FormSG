@@ -6,12 +6,7 @@ import {
   FormLogoState,
 } from '../../shared/types/form/form_logo'
 
-export { FormLogoState }
+export { FormLogoState, FormLogoBase, CustomFormLogo }
 
-export type IFormLogo = FormLogoBase
-
-export type IFormLogoSchema = IFormLogo & Document
-
-export type ICustomFormLogo = CustomFormLogo
-
-export type ICustomFormLogoSchema = ICustomFormLogo & Document
+export type IFormLogoSchema = FormLogoBase & Document
+export type ICustomFormLogoSchema = CustomFormLogo & Document

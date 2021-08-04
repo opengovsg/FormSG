@@ -26,11 +26,11 @@ import {
   AuthType,
   BasicField,
   Colors,
+  CustomFormLogo,
   EndPage,
   FormLogicSchema,
   FormLogoState,
   FormSettings,
-  ICustomFormLogo,
   IEmailFormSchema,
   IFormDocument,
   IFormSchema,
@@ -417,7 +417,7 @@ describe('admin-form.service', () => {
           fileId: 'some file_id',
           fileName: 'some file name',
           fileSizeInBytes: 10000,
-        } as ICustomFormLogo,
+        } as CustomFormLogo,
       },
     } as unknown as IFormDocument
     const MOCK_EMAIL_OVERRIDE_PARAMS: DuplicateFormBodyDto = {
