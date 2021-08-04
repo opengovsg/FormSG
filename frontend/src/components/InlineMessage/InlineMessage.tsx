@@ -1,5 +1,5 @@
 import ReactMarkdown from 'react-markdown'
-import { Box, Flex, Icon, useMultiStyleConfig } from '@chakra-ui/react'
+import { Flex, Icon, useMultiStyleConfig } from '@chakra-ui/react'
 
 import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
 import { InlineMessageVariant } from '~/theme/components/InlineMessage'
@@ -22,18 +22,16 @@ export const InlineMessage = ({
   const mdComponents = useMdComponents(styles)
 
   return (
-    <Box __css={styles.messagebox}>
-      <Flex sx={styles.item}>
-        <Icon
-          as={variant !== 'error' ? BxsInfoCircle : BxsErrorCircle}
-          __css={styles.icon}
-        />
-        {useMarkdown ? (
-          <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
-        ) : (
-          children
-        )}
-      </Flex>
-    </Box>
+    <Flex sx={styles.messagebox}>
+      <Icon
+        as={variant !== 'error' ? BxsInfoCircle : BxsErrorCircle}
+        __css={styles.icon}
+      />
+      {useMarkdown ? (
+        <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
+      ) : (
+        children
+      )}
+    </Flex>
   )
 }

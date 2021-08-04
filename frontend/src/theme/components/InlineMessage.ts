@@ -3,12 +3,10 @@ import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
 export type InlineMessageVariant = 'info' | 'error' | 'warning'
 
 export const InlineMessage: ComponentMultiStyleConfig = {
-  parts: ['messagebox', 'item', 'icon'],
+  parts: ['messagebox', 'icon'],
   baseStyle: {
     messagebox: {
       padding: '8px',
-    },
-    item: {
       display: 'flex',
       p: '1rem',
       justifyContent: 'start',
