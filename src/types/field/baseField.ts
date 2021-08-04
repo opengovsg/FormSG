@@ -11,8 +11,6 @@ export interface IMyInfoSchema extends IMyInfo, Document {
   parent(): IFieldSchema
 }
 
-export type IField = FieldBase
-
 // Manual override since mongoose types don't have generics yet.
 export interface IFieldSchema extends AllowMyInfoBase, FieldBase, Document {
   /** Returns the top level document of this sub-document. */

@@ -3,6 +3,7 @@ import { ConditionalExcept, Merge } from 'type-fest'
 
 import {
   BasicField,
+  FieldBase,
   FormField,
   FormFieldDto,
   MyInfoAttribute,
@@ -52,7 +53,7 @@ export * from './statementField'
 export * from './tableField'
 export * from './uenField'
 export * from './yesNoField'
-export { BasicField, MyInfoAttribute, FormField }
+export { BasicField, MyInfoAttribute, FormField, FieldBase }
 
 export enum SPCPFieldTitle {
   SpNric = 'SingPass Validated NRIC',

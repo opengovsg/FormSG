@@ -8,8 +8,8 @@ import {
 } from 'src/shared/util/logic'
 import {
   BasicField,
+  FieldBase,
   FieldResponse,
-  IField,
   IFieldSchema,
   IFormDocument,
   IPreventSubmitLogicSchema,
@@ -1022,15 +1022,15 @@ describe('Logic util', () => {
 
   describe('getApplicableIfFields', () => {
     it('should not filter fields suitable as an if-conditional', () => {
-      const validIfFields: IField[] = VALID_IF_CONDITION_FIELDS.map(
-        (fieldType) => ({ fieldType } as unknown as IField),
+      const validIfFields: FieldBase[] = VALID_IF_CONDITION_FIELDS.map(
+        (fieldType) => ({ fieldType } as unknown as FieldBase),
       )
       const fields = getApplicableIfFields(validIfFields)
       validIfFields.forEach((v, i) => expect(v).toStrictEqual(fields[i]))
     })
     it('should filter fields not suitable as an if-conditional', () => {
-      const invalidIfFields: IField[] = INVALID_IF_CONDITION_FIELDS.map(
-        (x) => x as unknown as IField,
+      const invalidIfFields: FieldBase[] = INVALID_IF_CONDITION_FIELDS.map(
+        (x) => x as unknown as FieldBase,
       )
       const fields = getApplicableIfFields(invalidIfFields)
       expect(fields).toStrictEqual([])

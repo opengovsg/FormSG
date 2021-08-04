@@ -2,9 +2,9 @@ import fs from 'fs'
 
 import {
   BasicField,
+  FieldBase,
   IAttachmentFieldSchema,
   ICheckboxFieldSchema,
-  IField,
 } from 'src/types'
 
 import {
@@ -43,7 +43,7 @@ export const MOCK_OPTIONAL_VERIFIED_FIELD = generateDefaultField(
   {
     isVerifiable: true,
     required: false,
-  } as Partial<IField>,
+  } as Partial<FieldBase>,
 )
 export const MOCK_OPTIONAL_VERIFIED_RESPONSE = generateSingleAnswerResponse(
   MOCK_OPTIONAL_VERIFIED_FIELD,

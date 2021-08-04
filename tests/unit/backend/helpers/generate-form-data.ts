@@ -11,48 +11,29 @@ import {
 import {
   AttachmentSize,
   BasicField,
+  FormField,
   FormFieldSchema,
-  IAttachmentField,
   IAttachmentFieldSchema,
   IAttachmentResponse,
-  ICheckboxField,
   ICheckboxFieldSchema,
   ICheckboxResponse,
   IColumn,
-  IDateField,
   IDecimalFieldSchema,
   IDropdownField,
   IDropdownFieldSchema,
-  IField,
   IHomenoFieldSchema,
   IImageFieldSchema,
-  ILongTextField,
-  IMobileField,
   IMobileFieldSchema,
-  INumberField,
-  IRatingField,
   IRatingFieldSchema,
   IShortTextField,
   IShortTextFieldSchema,
   ISingleAnswerResponse,
-  ITableField,
   ITableFieldSchema,
 } from 'src/types'
 
 export const generateDefaultField = (
   fieldType: BasicField,
-  customParams?: Partial<
-    | IField
-    | IAttachmentField
-    | ICheckboxField
-    | IMobileField
-    | ITableField
-    | IDateField
-    | INumberField
-    | IRatingField
-    | IShortTextField
-    | ILongTextField
-  > & { _id?: string },
+  customParams?: Partial<FormField> & { _id?: string },
 ): FormFieldSchema => {
   const defaultParams = {
     title: `test ${fieldType} field title`,
@@ -189,12 +170,9 @@ export const generateProcessedSingleAnswerResponse = (
     _id: field._id,
     question: field.title,
     answer,
-    fieldType: field.fieldType as Exclude<
-      BasicField,
-      BasicField.Table | BasicField.Checkbox | BasicField.Attachment
-    >,
+    fieldType: field.fieldType,
     isVisible: true,
-  }
+  } as ProcessedSingleAnswerResponse
 }
 
 export const generateSingleAnswerResponse = (

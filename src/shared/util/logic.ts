@@ -1,10 +1,10 @@
 // TODO: Import shared code from shared/logic.ts when possible.
 import {
   BasicField,
+  FieldBase,
   FieldResponse,
   IClientFieldSchema,
   IConditionSchema,
-  IField,
   IFormDocument,
   ILogicSchema,
   IPreventSubmitLogicSchema,
@@ -55,7 +55,7 @@ export const LOGIC_MAP = new Map<BasicField, LogicConditionState[]>(
  * Given a list of form fields, returns only the fields that are
  * allowed to be present in the if-condition dropdown in the Logic tab.
  */
-export const getApplicableIfFields = (formFields: IField[]): IField[] =>
+export const getApplicableIfFields = (formFields: FieldBase[]): FieldBase[] =>
   formFields.filter((field) => !!LOGIC_MAP.get(field.fieldType))
 
 /**
