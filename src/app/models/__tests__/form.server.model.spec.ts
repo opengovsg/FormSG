@@ -1927,6 +1927,50 @@ describe('Form Model', () => {
         )
       })
     })
+
+    describe('retrievePublicFormsWithSmsVerification', () => {
+      it('should retrieve only forms that are public and with verifiable mobile fields', async () => {
+        // Arrange
+        const mockFormPromises = range(4).map((_, idx) => {
+          const isPublic = !!(idx % 2)
+          const isVerifiable = idx > 1
+          return Form.create({
+            admin: populatedAdmin._id,
+            responseMode: ResponseMode.Email,
+            title: 'mock mobile form',
+            emails: [populatedAdmin.email],
+            status: isPublic ? Status.Public : Status.Private,
+            form_fields: [
+              generateDefaultField(BasicField.Mobile, { isVerifiable }),
+            ],
+          })
+        })
+        await Promise.all(mockFormPromises)
+
+        // Act
+        const forms = await Form.retrievePublicFormsWithSmsVerification(
+          populatedAdmin._id,
+        )
+
+        // Assert
+        expect(forms.length).toBe(1)
+        expect(forms[0].form_fields[0].isVerifiable).toBe(true)
+        expect(forms[0].status).toBe(Status.Public)
+      })
+
+      it('should return an empty array when there are no forms', async () => {
+        // NOTE: This is an edge case and should never happen in prod as this method is called when
+        // a public form has a certain amount of verifications
+
+        // Act
+        const forms = await Form.retrievePublicFormsWithSmsVerification(
+          populatedAdmin._id,
+        )
+
+        // Assert
+        expect(forms.length).toBe(0)
+      })
+    })
   })
 
   describe('Methods', () => {
