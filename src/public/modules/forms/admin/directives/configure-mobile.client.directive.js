@@ -137,7 +137,6 @@ function configureMobileDirective() {
                       $scope.verifiedSmsCount,
                     )}/${$scope.smsVerificationLimit}</small>
                     `,
-                    isImportant: true,
                   }
                 },
               },

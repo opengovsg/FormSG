@@ -15,7 +15,6 @@ function PopUpModalController($uibModalInstance, externalScope) {
   vm.description = externalScope.description
   vm.confirmButtonText = externalScope.confirmButtonText
   vm.cancelButtonText = externalScope.cancelButtonText
-  vm.isImportant = externalScope.isImportant
   vm.cancel = $uibModalInstance.close
 
   vm.confirm = function () {
