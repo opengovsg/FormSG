@@ -2,22 +2,23 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
   <head> </head>
   <body>
-    <p>Dear form admin(s),</p>
+    <p>Dear form admin,</p>
     <p>
-      You are receiving this as you have enabled SMS OTP verification on a
-      Mobile Number field of your form(s):
+      You are receiving this email as you own forms with SMS OTP verification
+      enabled:
     </p>
     <ol>
       <% forms.forEach(function({title, link}) { %>
-      <li><a href="<%= link %>"> <%= title %> </a>.</li>
+      <li><a href="<%= link %>"> <%= title %> </a></li>
       <% }) %>
     </ol>
     <p>
-      You can receive <b><%= numAvailable %></b> more responses until free SMS
-      OTP verification is automatically disabled.
+      Your account can use <b><%= numAvailable %></b> more free verifications
+      until free SMS OTP verification is automatically disabled for all owned
+      forms.
     </p>
     <p>
-      If you require SMS OTP verification for more than 10,000 responses, please
+      If you need to send more than 10,000 SMS OTP verifications, please
       <a
         href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-arrange-payment-for-verified-sms"
         >arrange advance billing with us.
