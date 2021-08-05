@@ -21,6 +21,8 @@ function configureMobileDirective() {
       form: '<',
       name: '=',
       characterLimit: '=',
+      smsVerificationLimit: '=',
+      verifiedSmsCount: '=',
       isLoading: '<',
     },
     controller: [
@@ -66,7 +68,7 @@ function configureMobileDirective() {
           AdminMetaService.getFreeSmsCountsUsedByFormAdmin($scope.form._id),
         )
           .then(({ quota, freeSmsCounts }) => {
-            $scope.verifiedSmsCount = freeSmsCounts
+            $scope.verifiedSmsCount = formatStringAsNumber(freeSmsCounts)
             $scope.adminVerifiedSmsState = getAdminVerifiedSmsState(
               freeSmsCounts,
               $scope.form.msgSrvcName,
@@ -119,9 +121,7 @@ function configureMobileDirective() {
                     title: `OTP verification will be disabled at ${$scope.smsVerificationLimit} responses`,
                     confirmButtonText: 'I understand',
                     description: `
-                    We provide ${
-                      $scope.smsVerificationLimit
-                    } free SMS OTP verifications per account, only counting owned forms. 
+                    We provide ${$scope.smsVerificationLimit} free SMS OTP verifications per account, only counting owned forms. 
 
                     Once this limit is reached, SMS OTP verification will be automatically disabled for all owned forms. 
 
@@ -131,16 +131,10 @@ function configureMobileDirective() {
 
                     <br></br>
 
-                    If you require more than ${
-                      $scope.smsVerificationLimit
-                    } verifications, please <a href=${
-                      $scope.verifiedSmsSetupLink
-                    } target="_blank" class=""> arrange advance billing with us. </a>  
+                    If you require more than ${$scope.smsVerificationLimit} verifications, please <a href=${$scope.verifiedSmsSetupLink} target="_blank" class=""> arrange advance billing with us. </a>  
 
                     <br></br>
-                    <small>Current response count: ${formatStringAsNumber(
-                      $scope.verifiedSmsCount,
-                    )}/${$scope.smsVerificationLimit}</small>
+                    <small>Current response count: ${$scope.verifiedSmsCount}/${$scope.smsVerificationLimit}</small>
                     `,
                   }
                 },

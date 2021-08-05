@@ -1,15 +1,22 @@
 <div class="row">
-  <div class="toggle-option">
+  <div class="toggle-option label-bottom">
     <div
       ng-class="{'toggle-option--disabled' : field.hasAdminExceededSmsLimit || field.hasRetrievalError}"
-      class="col-xs-8 label-custom label-medium label-bottom"
+      class="col-xs-8 justify-content-start"
     >
-      OTP verification
-      <i
-        class="glyphicon glyphicon-question-sign"
-        uib-tooltip="When enabled, respondents must verify by entering a code sent to their mobile number"
-        tooltip-trigger="'click mouseenter'"
-      ></i>
+      <div class="label-custom label-medium">
+        OTP verification
+        <i
+          class="glyphicon glyphicon-question-sign"
+          uib-tooltip="When enabled, respondents must verify by entering a code sent to their mobile number"
+          tooltip-trigger="'click mouseenter'"
+        ></i>
+      </div>
+      <div>
+        <small class="sms-counts"
+          >{{verifiedSmsCount}}/{{smsVerificationLimit}} SMSes used</small
+        >
+      </div>
     </div>
     <div class="col-xs-4 field-input">
       <div ng-show="isLoading" class="loading-spinner">

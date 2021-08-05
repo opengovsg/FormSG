@@ -1437,3 +1437,7 @@ a.modal-cancel-btn:hover {
   display: flex;
   justify-content: flex-end;
 }
+
+.sms-counts {
+  color: #484848;
+}
