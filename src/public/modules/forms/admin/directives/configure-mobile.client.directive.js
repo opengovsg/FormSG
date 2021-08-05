@@ -117,20 +117,25 @@ function configureMobileDirective() {
                 externalScope: function () {
                   return {
                     title: `OTP verification will be disabled at ${$scope.smsVerificationLimit} responses`,
-                    confirmButtonText: 'Accept',
+                    confirmButtonText: 'I understand',
                     description: `
-                    We provide SMS OTP verification for free up to ${
+                    We provide ${
                       $scope.smsVerificationLimit
-                    } responses. OTP verification will be automatically disabled when your account reaches ${
-                      $scope.smsVerificationLimit
-                    } responses. 
+                    } free SMS OTP verifications per account, only counting owned forms. 
+
+                    Once this limit is reached, SMS OTP verification will be automatically disabled for all owned forms. 
+
                     <br></br>
-                    If you require OTP verification for more than ${
+
+                    If you are a collaborator, ensure the form's owner has enough free verifications. 
+
+                    <br></br>
+
+                    If you require more than ${
                       $scope.smsVerificationLimit
-                    } responses,
-                    <a href=${
+                    } verifications, please <a href=${
                       $scope.verifiedSmsSetupLink
-                    } target="_blank" class=""> please arrange advance billing with us. </a>  
+                    } target="_blank" class=""> arrange advance billing with us. </a>  
 
                     <br></br>
                     <small>Current response count: ${formatStringAsNumber(
