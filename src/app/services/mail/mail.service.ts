@@ -640,7 +640,8 @@ export class MailService {
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
     const htmlData: CollabSmsDisabledData = {
       form: extractFormLinkView(form, this.#appUrl),
-      smsVerificationLimit: smsConfig.smsVerificationLimit,
+      smsVerificationLimit:
+        smsConfig.smsVerificationLimit.toLocaleString('en-US'),
       smsWarningTiers: stringifiedSmsWarningTiers,
     }
     const collaborators = form.permissionList.map(({ email }) => email)
@@ -673,7 +674,8 @@ export class MailService {
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
     const htmlData: AdminSmsDisabledData = {
       forms: forms.map((f) => extractFormLinkView(f, this.#appUrl)),
-      smsVerificationLimit: smsConfig.smsVerificationLimit,
+      smsVerificationLimit:
+        smsConfig.smsVerificationLimit.toLocaleString('en-US'),
       smsWarningTiers: stringifiedSmsWarningTiers,
     }
 
@@ -717,8 +719,11 @@ export class MailService {
     ).andThen((forms) => {
       const htmlData: SmsVerificationWarningData = {
         forms: forms.map((f) => extractFormLinkView(f, this.#appUrl)),
-        numAvailable: smsConfig.smsVerificationLimit - smsVerifications,
-        smsVerificationLimit: smsConfig.smsVerificationLimit,
+        numAvailable: (
+          smsConfig.smsVerificationLimit - smsVerifications
+        ).toLocaleString('en-US'),
+        smsVerificationLimit:
+          smsConfig.smsVerificationLimit.toLocaleString('en-US'),
       }
 
       // Step 2: Generate HTML from template

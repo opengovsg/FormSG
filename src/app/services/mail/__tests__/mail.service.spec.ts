@@ -1285,7 +1285,8 @@ describe('mail.service', () => {
       const result =
         await MailUtils.generateSmsVerificationDisabledHtmlForAdmin({
           forms: [extractFormLinkView(MOCK_FORM, MOCK_APP_URL)],
-          smsVerificationLimit: smsConfig.smsVerificationLimit,
+          smsVerificationLimit:
+            smsConfig.smsVerificationLimit.toLocaleString('en-US'),
           smsWarningTiers: stringifiedSmsWarningTiers,
         }).map((emailHtml) => {
           return {
@@ -1307,7 +1308,8 @@ describe('mail.service', () => {
       const result =
         await MailUtils.generateSmsVerificationDisabledHtmlForCollab({
           form: extractFormLinkView(MOCK_FORM, MOCK_APP_URL),
-          smsVerificationLimit: smsConfig.smsVerificationLimit,
+          smsVerificationLimit:
+            smsConfig.smsVerificationLimit.toLocaleString('en-US'),
           smsWarningTiers: stringifiedSmsWarningTiers,
         }).map((emailHtml) => {
           return {
@@ -1427,8 +1429,11 @@ describe('mail.service', () => {
     ) => {
       const result = await MailUtils.generateSmsVerificationWarningHtml({
         forms: [extractFormLinkView(MOCK_FORM, MOCK_APP_URL)],
-        numAvailable: smsConfig.smsVerificationLimit - count,
-        smsVerificationLimit: smsConfig.smsVerificationLimit,
+        numAvailable: (smsConfig.smsVerificationLimit - count).toLocaleString(
+          'en-US',
+        ),
+        smsVerificationLimit:
+          smsConfig.smsVerificationLimit.toLocaleString('en-US'),
       }).map((emailHtml) => {
         return {
           to: admin,
