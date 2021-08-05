@@ -90,7 +90,17 @@ services:
       - SES_USER
       - OTP_LIFE_SPAN
       - AWS_REGION
-
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.development
+    ports:
+      - '3000:3000'
+    volumes:
+      - /app/node_modules
+      - ./frontend:/app
+    environment:
+      - NODE_ENV=development
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
     depends_on:
