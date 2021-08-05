@@ -10,6 +10,7 @@ import { Input } from './Input'
 import { Link } from './Link'
 import { NumberInput } from './NumberInput'
 import { PhoneNumberInput } from './PhoneNumberInput'
+import { Radio, RADIO_THEME_KEY } from './Radio'
 import { Textarea } from './Textarea'
 
 export const components = {
@@ -24,6 +25,7 @@ export const components = {
   PhoneNumberInput,
   Textarea,
   [CHECKBOX_THEME_KEY]: Checkbox,
+  [RADIO_THEME_KEY]: Radio,
   [RATING_THEME_KEY]: RatingField,
   [YESNO_THEME_KEY]: YesNoField,
 }
