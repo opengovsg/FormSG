@@ -1,3 +1,4 @@
+export * from './BxCheckAnimated'
 export * from './BxHeart'
 export * from './BxsCheckCircle'
 export * from './BxsErrorCircle'
