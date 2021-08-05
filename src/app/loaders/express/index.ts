@@ -3,7 +3,6 @@ import express, { Express } from 'express'
 import addRequestId from 'express-request-id'
 import http from 'http'
 import { Connection } from 'mongoose'
-import nocache from 'nocache'
 import path from 'path'
 import url from 'url'
 
@@ -16,7 +15,6 @@ import { ExamplesRouter } from '../../modules/examples/examples.routes'
 import { AdminFormsRouter } from '../../modules/form/admin-form/admin-form.routes'
 import { PublicFormRouter } from '../../modules/form/public-form/public-form.routes'
 import { FrontendRouter } from '../../modules/frontend/frontend.routes'
-import { HomeRouter } from '../../modules/home/home.routes'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
@@ -38,6 +36,8 @@ import loggingMiddleware from './logging'
 import parserMiddlewares from './parser'
 import sentryMiddlewares from './sentry'
 import sessionMiddlewares from './session'
+
+const FRONTEND_PATH = path.resolve('./frontend/build')
 
 const loadExpressApp = async (connection: Connection) => {
   // Initialize express app.
@@ -100,6 +100,9 @@ const loadExpressApp = async (connection: Connection) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   app.engine('server.view.html', require('ejs').__express)
 
+  // Frontend
+  app.use(express.static(FRONTEND_PATH))
+
   // Set views path and view engine
   app.set('view engine', 'server.view.html')
   app.set('views', './src/app/views')
@@ -108,31 +111,8 @@ const loadExpressApp = async (connection: Connection) => {
 
   app.use(helmetMiddlewares())
 
-  // !!!!! DO NOT CHANGE THE ORDER OF THE NEXT 3 LINES !!!!!
-  // The first line redirects requests to /public/fonts to
-  // ./dist/frontend/fonts. After that, nocache() ensures that
-  // cache headers are not set on requests for fonts, which ensures that
-  // fonts are shown correctly on IE11.
-  // The last line redirects requests to /public to ./dist/frontend,
-  // with cache headers set normally.
-  app.use(
-    '/public/fonts',
-    express.static(path.resolve('./dist/frontend/fonts')),
-  )
-
-  app.use(nocache()) // Add headers to prevent browser caching front-end code
-
   // Generate UUID for request and add it to X-Request-Id header
   app.use(addRequestId())
-
-  // Setting the app static folder
-  app.use('/public', express.static(path.resolve('./dist/frontend')))
-
-  // Point crawlers to our robots.txt
-  app.use(
-    '/robots.txt',
-    express.static(path.resolve('./dist/frontend/robots.txt')),
-  )
 
   app.use(sessionMiddlewares(connection))
 
@@ -141,7 +121,6 @@ const loadExpressApp = async (connection: Connection) => {
   // Log intranet usage
   app.use(IntranetMiddleware.logIntranetUsage)
 
-  app.use('/', HomeRouter)
   app.use('/frontend', FrontendRouter)
   app.use('/auth', AuthRouter)
   app.use('/user', UserRouter)
@@ -169,6 +148,10 @@ const loadExpressApp = async (connection: Connection) => {
   app.use(sentryMiddlewares())
 
   app.use(errorHandlerMiddlewares())
+
+  app.get('*', (_req: express.Request, res: express.Response) => {
+    res.sendFile(path.join(FRONTEND_PATH, 'index.html'))
+  })
 
   const server = http.createServer(app)
 
