@@ -1,6 +1,5 @@
 import compression from 'compression'
 import express, { Express } from 'express'
-import device from 'express-device'
 import addRequestId from 'express-request-id'
 import http from 'http'
 import { Connection } from 'mongoose'
@@ -20,6 +19,7 @@ import { FrontendRouter } from '../../modules/frontend/frontend.routes'
 import { HomeRouter } from '../../modules/home/home.routes'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
+import { SgidRouter } from '../../modules/sgid/sgid.routes'
 import {
   CorppassLoginRouter,
   SingpassLoginRouter,
@@ -138,9 +138,6 @@ const loadExpressApp = async (connection: Connection) => {
 
   app.use(loggingMiddleware())
 
-  // setup express-device
-  app.use(device.capture({ parseUserAgent: true }))
-
   // Log intranet usage
   app.use(IntranetMiddleware.logIntranetUsage)
 
@@ -159,6 +156,8 @@ const loadExpressApp = async (connection: Connection) => {
   // Registered routes with the Singpass/Corppass servers
   app.use('/singpass/login', SingpassLoginRouter)
   app.use('/corppass/login', CorppassLoginRouter)
+  // Registered routes with sgID
+  app.use('/sgid', SgidRouter)
   // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
   app.use(AdminFormsRouter)

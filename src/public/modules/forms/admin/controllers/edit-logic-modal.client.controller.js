@@ -2,7 +2,7 @@
 
 const { range } = require('lodash')
 const { LogicType } = require('../../../../../types')
-const FormLogic = require('../../services/form-logic/form-logic.client.service')
+const FormLogic = require('../../../../../shared/util/logic')
 const UpdateFormService = require('../../../../services/UpdateFormService')
 
 angular

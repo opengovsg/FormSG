@@ -1,17 +1,18 @@
 import { err, ok, Result } from 'neverthrow'
 
 import {
-  getLogicUnitPreventingSubmit,
-  getVisibleFieldIds,
-} from '../../../../shared/util/logic'
-import {
   AuthType,
   FieldResponse,
-  IFieldSchema,
+  FormFieldSchema,
   IFormDocument,
   ResponseMode,
 } from '../../../../types'
 import { validateField } from '../../../utils/field-validation'
+import {
+  getLogicUnitPreventingSubmit,
+  getVisibleFieldIds,
+} from '../../../utils/logic-adaptor'
+import { createSgidParsedResponses } from '../../sgid/sgid.util'
 import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
@@ -25,7 +26,7 @@ import { ProcessedFieldResponse } from '../submission.types'
 import { getFilteredResponses } from '../submission.utils'
 
 type NdiUserInfo =
-  | { authType: AuthType.SP | AuthType.MyInfo; uinFin: string }
+  | { authType: AuthType.SP | AuthType.MyInfo | AuthType.SGID; uinFin: string }
   | { authType: AuthType.CP; uinFin: string; userInfo: string }
 
 export default class ParsedResponsesObject {
@@ -48,6 +49,9 @@ export default class ParsedResponsesObject {
           info.uinFin,
           info.userInfo,
         )
+        break
+      case AuthType.SGID:
+        this.ndiResponses = createSgidParsedResponses(info.uinFin)
         break
     }
     return this
@@ -82,12 +86,21 @@ export default class ParsedResponsesObject {
 
     // Set of all visible fields
     const visibleFieldIds = getVisibleFieldIds(filteredResponses, form)
+    if (visibleFieldIds.isErr()) {
+      return err(visibleFieldIds.error)
+    }
 
-    // Guard against invalid form submissions that should have been prevented by
-    // logic.
-    if (
-      getLogicUnitPreventingSubmit(filteredResponses, form, visibleFieldIds)
-    ) {
+    const logicUnitPreventingSubmit = getLogicUnitPreventingSubmit(
+      filteredResponses,
+      form,
+      visibleFieldIds.value,
+    )
+
+    if (logicUnitPreventingSubmit.isErr()) {
+      return err(logicUnitPreventingSubmit.error)
+    } else if (logicUnitPreventingSubmit.value) {
+      // Guard against invalid form submissions that should have been prevented by
+      // logic.
       return err(new ProcessingError('Submission prevented by form logic'))
     }
 
@@ -98,7 +111,7 @@ export default class ParsedResponsesObject {
     }
 
     const fieldMap = form.form_fields.reduce<{
-      [fieldId: string]: IFieldSchema
+      [fieldId: string]: FormFieldSchema
     }>((acc, field) => {
       acc[field._id] = field
       return acc
@@ -128,7 +141,7 @@ export default class ParsedResponsesObject {
             ? 'answer' in response &&
               typeof response.answer === 'string' &&
               response.answer.trim() !== ''
-            : visibleFieldIds.has(responseId),
+            : visibleFieldIds.value.has(responseId),
         question: formField.getQuestion(),
       }
 

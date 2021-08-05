@@ -118,6 +118,10 @@ function ActivateFormController(
       // CorpPass doesn't return any error page even with the wrong e-service id
       updateDisplay(null, { authType, esrvcId }, 0)
       return Promise.resolve(true)
+    } else if (authType === 'SGID') {
+      // sgID doesn't have an esrvcId
+      updateDisplay(null, { authType }, 0)
+      return Promise.resolve(true)
     }
   }
 

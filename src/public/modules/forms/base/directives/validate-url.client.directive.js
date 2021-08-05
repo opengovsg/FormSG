@@ -3,7 +3,7 @@
 const {
   isValidHttpsUrl,
   isValidUrl,
-} = require('../../../../../shared/util/url-validation')
+} = require('../../../../../../shared/utils/url-validation')
 
 angular.module('forms').directive('validateUrl', validateUrl)
 

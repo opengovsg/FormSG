@@ -2,13 +2,17 @@
 import { ObjectId } from 'bson-ext'
 import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'
+import {
+  EMAIL_PUBLIC_FORM_FIELDS,
+  STORAGE_PUBLIC_FORM_FIELDS,
+} from 'shared/constants/form'
 
 import getFormModel, {
-  FORM_PUBLIC_FIELDS,
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import {
+  AuthType,
   BasicField,
   EndPage,
   FormFieldWithId,
@@ -117,6 +121,34 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
       })
 
+      it('should create and save successfully with valid esrvcId', async () => {
+        // Arrange
+        const validEsrvcId = 'validEsrvcId'
+        const validFormParams = merge({}, MOCK_FORM_PARAMS, {
+          esrvcId: validEsrvcId,
+        })
+
+        // Act
+        const validForm = new Form(validFormParams)
+        const saved = await validForm.save()
+
+        // Assert
+        // All fields should exist
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge({}, FORM_DEFAULTS, validFormParams)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
       it('should save successfully, but not save fields that is not defined in the schema', async () => {
         // Arrange
         const formParamsWithExtra = merge({}, MOCK_FORM_PARAMS, {
@@ -145,6 +177,56 @@ describe('Form Model', () => {
 
         // Extra key should not be saved
         expect(Object.keys(saved)).not.toContain('extra')
+      })
+
+      it('should create and save successfully with form_logics that reference nonexistent form_fields', async () => {
+        // Arrange
+        const FORM_LOGICS = {
+          form_logics: [
+            {
+              conditions: [
+                {
+                  _id: '',
+                  field: new ObjectId(),
+                  state: 'is equals to',
+                  value: '',
+                  ifValueType: 'number',
+                },
+              ],
+              logicType: 'preventSubmit',
+              preventSubmitMessage: '',
+            },
+          ],
+        }
+        const formParamsWithLogic = merge({}, MOCK_FORM_PARAMS, FORM_LOGICS)
+
+        // Act
+        const validForm = new Form(formParamsWithLogic)
+        const saved = await validForm.save()
+
+        // Assert
+        // All fields should exist
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        actualSavedObject.form_logics = actualSavedObject.form_logics?.map(
+          (logic) => omit(logic, '_id'),
+        )
+        const expectedObject = merge(
+          {},
+          FORM_DEFAULTS,
+          MOCK_FORM_PARAMS,
+          FORM_LOGICS,
+        )
+        expect(actualSavedObject).toEqual(expectedObject)
       })
 
       it('should create and save successfully with valid permissionList emails', async () => {
@@ -288,6 +370,22 @@ describe('Form Model', () => {
         // Assert
         await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
+        )
+      })
+
+      it('should reject when esrvcId id has whitespace', async () => {
+        // Arrange
+        const whitespaceEsrvcId = 'whitespace\tesrvcId'
+        const paramsWithWhitespaceEsrvcId = merge({}, MOCK_FORM_PARAMS, {
+          esrvcId: whitespaceEsrvcId,
+        })
+
+        // Act
+        const invalidForm = new Form(paramsWithWhitespaceEsrvcId)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrowError(
+          'Form validation failed: esrvcId: e-service ID must not contain whitespace',
         )
       })
     })
@@ -514,6 +612,32 @@ describe('Form Model', () => {
         await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
+      })
+
+      it('should set authType to NIL when given authType is MyInfo', async () => {
+        // Arrange
+        const malformedParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          authType: AuthType.MyInfo,
+        })
+
+        // Act
+        const invalidForm = await EncryptedForm.create(malformedParams)
+
+        // Assert
+        await expect(invalidForm.authType).toBe(AuthType.NIL)
+      })
+
+      it('should set authType to NIL when given authType is SGID', async () => {
+        // Arrange
+        const malformedParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          authType: AuthType.SGID,
+        })
+
+        // Act
+        const invalidForm = await EncryptedForm.create(malformedParams)
+
+        // Assert
+        await expect(invalidForm.authType).toBe(AuthType.NIL)
       })
     })
 
@@ -1857,7 +1981,7 @@ describe('Form Model', () => {
         const actual = emailForm.getPublicView()
 
         // Assert
-        expect(actual).toEqual(pick(emailForm, FORM_PUBLIC_FIELDS))
+        expect(actual).toEqual(pick(emailForm, EMAIL_PUBLIC_FORM_FIELDS))
         // Admin should be plain admin id since form is not populated.
         expect(actual.admin).toBeInstanceOf(ObjectId)
       })
@@ -1881,7 +2005,7 @@ describe('Form Model', () => {
 
         expect(JSON.stringify(actual)).toEqual(
           JSON.stringify({
-            ...pick(populatedEmailForm, FORM_PUBLIC_FIELDS),
+            ...pick(populatedEmailForm, STORAGE_PUBLIC_FORM_FIELDS),
             // Admin should only contain public view of agency since agency is populated.
             admin: {
               agency: expectedPublicAgencyView,
@@ -1903,7 +2027,7 @@ describe('Form Model', () => {
         const actual = encryptForm.getPublicView()
 
         // Assert
-        expect(actual).toEqual(pick(encryptForm, FORM_PUBLIC_FIELDS))
+        expect(actual).toEqual(pick(encryptForm, STORAGE_PUBLIC_FORM_FIELDS))
         // Admin should be plain admin id since form is not populated.
         expect(actual.admin).toBeInstanceOf(ObjectId)
       })
@@ -1927,7 +2051,7 @@ describe('Form Model', () => {
 
         expect(JSON.stringify(actual)).toEqual(
           JSON.stringify({
-            ...pick(populatedEncryptForm, FORM_PUBLIC_FIELDS),
+            ...pick(populatedEncryptForm, STORAGE_PUBLIC_FORM_FIELDS),
             // Admin should only contain public view of agency since agency is populated.
             admin: {
               agency: expectedPublicAgencyView,

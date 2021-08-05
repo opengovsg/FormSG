@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
 
-import { LINKS } from '../../../shared/constants'
+import { SUPPORT_FORM_LINK } from '../../../../shared/constants/links'
 import { createLoggerWithLabel } from '../../config/logger'
 import MailService from '../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../utils/request'
@@ -123,7 +123,7 @@ export const handleLoginVerifyOtp: ControllerHandler<
     email,
     ...createReqMeta(req),
   }
-  const coreErrorMessage = `Failed to process OTP. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`
+  const coreErrorMessage = `Failed to process OTP. Please try again later and if the problem persists, submit our Support Form (${SUPPORT_FORM_LINK}).`
 
   const validateResult = await AuthService.validateEmailDomain(email)
   if (validateResult.isErr()) {

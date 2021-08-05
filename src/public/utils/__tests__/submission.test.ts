@@ -1,6 +1,6 @@
 import { BasicField } from 'src/types'
-import { EmailSubmissionDto } from 'src/types/api'
 
+import { EmailModeSubmissionContentDto } from '../../../../shared/types/submission'
 import { createEmailSubmissionFormData } from '../submission'
 
 const createMockFile = ({
@@ -20,7 +20,7 @@ const createMockFile = ({
 
 describe('utils/submission', () => {
   describe('createEmailSubmissionFormData', () => {
-    const DEFAULT_CONTENT: EmailSubmissionDto = {
+    const DEFAULT_CONTENT: EmailModeSubmissionContentDto = {
       responses: [
         {
           _id: 'some id',

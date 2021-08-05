@@ -23,7 +23,7 @@ export const buildCelebrateError = (
   spec: ICelebrateSpec,
   opts: ICelebrateOpts = {},
 ) => {
-  opts.message ??= 'celebrate request validation failed'
+  opts.message ??= 'Validation failed'
   opts.statusCode ??= 400
   return {
     statusCode: opts.statusCode,

@@ -17,7 +17,9 @@ const {
   TextAreaField,
   TextField,
 } = require('../viewmodels/Fields')
-const { types: basicTypes } = require('../../../../shared/resources/basic')
+const {
+  types: basicTypes,
+} = require('../../../../../shared/constants/field/basic')
 
 const createFieldFromData = (fieldData) => {
   const fieldClass = getClass(fieldData.fieldType)
