@@ -12,7 +12,7 @@
           tooltip-trigger="'click mouseenter'"
         ></i>
       </div>
-      <div>
+      <div ng-show="!isLoading && !field.hasRetrievalError">
         <small class="sms-counts"
           >{{verifiedSmsCount}}/{{smsVerificationLimit}} SMSes used</small
         >
