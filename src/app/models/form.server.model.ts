@@ -841,7 +841,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'form_fields.fieldType': BasicField.Mobile,
       'form_fields.isVerifiable': true,
       status: Status.Public,
-    }).exec()
+    })
+      .read('secondary')
+      .exec()
   }
 
   // Hooks
