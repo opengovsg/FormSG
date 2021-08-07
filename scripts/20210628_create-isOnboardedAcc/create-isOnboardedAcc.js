@@ -52,10 +52,12 @@ db.getCollection('smscounts').updateMany(
 db.getCollection('smscounts').count({
   smsType: 'VERIFICATION',
   msgSrvcSid: { $eq: formTwilioId },
+  isOnboardedAccount: false
 })
 
 // Count of forms using their own twilio acc
 db.getCollection('smscounts').count({
   smsType: 'VERIFICATION',
   msgSrvcSid: { $ne: formTwilioId },
+  isOnboardedAccount: true
 })
