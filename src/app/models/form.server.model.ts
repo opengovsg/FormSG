@@ -830,6 +830,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   /**
    * Retrieves all the public forms for a user which has sms verifications enabled
+   * This only retrieves forms that are using FormSG credentials
    * @param userId The userId to retrieve the forms for
    * @returns All public forms that have sms verifications enabled
    */
@@ -841,6 +842,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'form_fields.fieldType': BasicField.Mobile,
       'form_fields.isVerifiable': true,
       status: Status.Public,
+      msgSrvcName: {
+        $exists: false,
+      },
     })
       .read('secondary')
       .exec()
