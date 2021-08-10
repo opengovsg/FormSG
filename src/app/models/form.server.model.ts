@@ -813,8 +813,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   ) {
     return this.updateMany(
       // Filter the collection so that only specified user is selected
+      // Only update forms without message service name
+      // As it implies that those forms are using default (our) credentials
       {
         admin: userId,
+        msgSrvcName: {
+          $exists: false,
+        },
       },
       // Next, set the isVerifiable property for each field in form_fields
       // Refer here for $[identifier] syntax: https://docs.mongodb.com/manual/reference/operator/update/positional-filtered/
