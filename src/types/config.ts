@@ -43,6 +43,7 @@ export type MailConfig = {
   mailer: {
     from: string
   }
+  official: string
   transporter: Mail
 }
 

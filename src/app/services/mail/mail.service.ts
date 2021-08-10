@@ -98,11 +98,17 @@ export class MailService {
    */
   #retryParams: MailServiceParams['retryParams']
 
+  /**
+   * The official mail account that recipients can reply to
+   */
+  #officialMail: string
+
   constructor({
     appName = config.app.title,
     appUrl = config.app.appUrl,
     transporter = config.mail.transporter,
     senderMail = config.mail.mailFrom,
+    officialMail = config.mail.official,
     retryParams = DEFAULT_RETRY_PARAMS,
   }: MailServiceParams = {}) {
     // Email validation
@@ -124,6 +130,7 @@ export class MailService {
     this.#senderMail = senderMail
     this.#senderFromString = `${appName} <${senderMail}>`
     this.#transporter = transporter
+    this.#officialMail = officialMail
     this.#retryParams = retryParams
   }
 
@@ -655,7 +662,7 @@ export class MailService {
           from: this.#senderFromString,
           html: mailHtml,
           subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
-          replyTo: this.#senderMail,
+          replyTo: this.#officialMail,
           bcc: this.#senderMail,
         }
 
@@ -690,7 +697,7 @@ export class MailService {
             from: this.#senderFromString,
             html: mailHtml,
             subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
-            replyTo: this.#senderMail,
+            replyTo: this.#officialMail,
             bcc: this.#senderMail,
           }
 
@@ -737,7 +744,7 @@ export class MailService {
             from: this.#senderFromString,
             html: mailHtml,
             subject: '[FormSG] SMS Verification - Free Tier Limit Alert',
-            replyTo: this.#senderMail,
+            replyTo: this.#officialMail,
             bcc: this.#senderMail,
           }
 

@@ -38,6 +38,7 @@ export type MailServiceParams = {
   appUrl?: string
   transporter?: Mail
   senderMail?: string
+  officialMail?: string
   retryParams?: Partial<OperationOptions>
 }
 
