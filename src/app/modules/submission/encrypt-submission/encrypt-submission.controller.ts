@@ -122,7 +122,7 @@ const submitEncryptModeForm: ControllerHandler<
       return res.sendStatus(statusCode)
     } else {
       return res.status(statusCode).json({
-        message: errorMessage || form.inactiveMessage,
+        message: errorMessage,
       })
     }
   }
