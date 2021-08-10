@@ -7,7 +7,7 @@ RUN apk update && apk upgrade && \
     npm install --quiet node-gyp -g
 WORKDIR /opt/formsg
 COPY package* /opt/formsg/
-RUN npm ci
+RUN npm ci && npm run postinstall
 COPY . /opt/formsg
 
 # This stage builds the final container
