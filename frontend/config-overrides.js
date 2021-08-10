@@ -3,6 +3,7 @@
  * Config overrides for CRA to allow importing of aliases.
  * Since we are aliasing `shared` folder, another function `aliasDangerous` is
  * needed.
+ * See https://www.npmjs.com/package/react-app-rewire-alias#outside-of-root.
  */
 const path = require('path')
 const { override } = require('customize-cra')
