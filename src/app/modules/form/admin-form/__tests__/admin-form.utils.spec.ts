@@ -4,15 +4,15 @@ import { cloneDeep, omit, tail } from 'lodash'
 import { EditFieldActions } from 'src/shared/constants'
 import {
   BasicField,
+  FormFieldSchema,
   IEmailFieldSchema,
-  IFieldSchema,
   IPopulatedForm,
   IPopulatedUser,
   Permission,
   ResponseMode,
   Status,
 } from 'src/types'
-import { DuplicateFormBody, EditFormFieldParams } from 'src/types/api'
+import { DuplicateFormBodyDto, EditFormFieldParams } from 'src/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
@@ -281,7 +281,7 @@ describe('admin-form.utils', () => {
     it('should return processed props for ResponseMode.Encrypt', async () => {
       // Arrange
       const newAdminId = new ObjectId().toHexString()
-      const params: DuplicateFormBody = {
+      const params: DuplicateFormBodyDto = {
         responseMode: ResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'some title',
@@ -303,7 +303,7 @@ describe('admin-form.utils', () => {
     it('should return processed props for ResponseMode.Email', async () => {
       // Arrange
       const newAdminId = new ObjectId().toHexString()
-      const params: DuplicateFormBody = {
+      const params: DuplicateFormBodyDto = {
         responseMode: ResponseMode.Email,
         emails: ['some@example.com', 'another@example.com'],
         title: 'some title',
@@ -370,9 +370,9 @@ describe('admin-form.utils', () => {
     it('should return updated fields successfully on duplicate action', async () => {
       // Arrange
       // Remove globalId from duplicate.
-      const duplicateField: IFieldSchema = omit(cloneDeep(INITIAL_FIELDS[1]), [
+      const duplicateField = omit(cloneDeep(INITIAL_FIELDS[1]), [
         'globalId',
-      ])
+      ]) as FormFieldSchema
       const dupeFieldParams: EditFormFieldParams = {
         action: { name: EditFieldActions.Duplicate },
         field: duplicateField,
@@ -418,7 +418,7 @@ describe('admin-form.utils', () => {
       const fieldToUpdate = {
         ...INITIAL_FIELDS[0],
         title: 'some new title!!!',
-      } as IFieldSchema
+      } as FormFieldSchema
 
       const updateFieldParams: EditFormFieldParams = {
         action: {

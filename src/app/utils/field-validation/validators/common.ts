@@ -1,10 +1,13 @@
 import { left, right } from 'fp-ts/lib/Either'
 
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
-import { IEmailFieldSchema, IMobileFieldSchema } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
-
+import {
+  IEmailFieldSchema,
+  IMobileFieldSchema,
+  OmitUnusedValidatorProps,
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
 import formsgSdk from '../../../config/formsg-sdk'
+import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 /**
  * A function which returns a validator to check if single answer has a non-empty response
@@ -23,7 +26,9 @@ export const notEmptySingleAnswerResponse: ResponseValidator<ProcessedSingleAnsw
  * The validator checks if field has correct signature.
  */
 export const makeSignatureValidator: (
-  formField: IEmailFieldSchema | IMobileFieldSchema,
+  formField:
+    | OmitUnusedValidatorProps<IEmailFieldSchema>
+    | OmitUnusedValidatorProps<IMobileFieldSchema>,
 ) => ResponseValidator<ProcessedSingleAnswerResponse> =
   (formField) => (response) => {
     const { isVerifiable, _id } = formField

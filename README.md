@@ -91,9 +91,6 @@ FormSG requires some environment variables in order to function.
 More information about the required environment variables can be seen in
 [DEPLOYMENT_SETUP.md](/docs/DEPLOYMENT_SETUP.md).
 
-The docker-compose file declares some blank environment variables that are secret and cannot be committed into
-the repository. See below instructions to get them injected into the container.
-
 We provide a [`.template-env`](./.template-env) file with the secrets blanked out. You can copy and
 paste the variables described into a self-created `.env` file, replacing the
 required values with your own.

@@ -1,15 +1,17 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ProcessedAttachmentResponse } from 'src/app/modules/submission/submission.types'
-import { IAttachmentField } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
-
-const MILLION = 1000000
+import { MB } from '../../../../../shared/constants/file'
+import {
+  IAttachmentFieldSchema,
+  OmitUnusedValidatorProps,
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
+import { ProcessedAttachmentResponse } from '../../../modules/submission/submission.types'
 
 type AttachmentValidator = ResponseValidator<ProcessedAttachmentResponse>
 type AttachmentValidatorConstructor = (
-  attachmentField: IAttachmentField,
+  attachmentField: OmitUnusedValidatorProps<IAttachmentFieldSchema>,
 ) => AttachmentValidator
 
 /**
@@ -41,7 +43,7 @@ const attachmentContentValidator: AttachmentValidator = (response) => {
 const makeAttachmentSizeValidator: AttachmentValidatorConstructor =
   (attachmentField) => (response) => {
     const { attachmentSize } = attachmentField
-    const byteSizeLimit = parseInt(attachmentSize) * MILLION
+    const byteSizeLimit = parseInt(attachmentSize) * MB
     return response.content.byteLength < byteSizeLimit
       ? right(response)
       : left(`AttachmentValidator:\t File size more than limit`)

@@ -36,7 +36,7 @@ import {
 } from 'src/app/modules/submission/email-submission/__tests__/email-submission.test.constants'
 import { saveSubmissionMetadata } from 'src/app/modules/submission/email-submission/email-submission.service'
 import { SubmissionHash } from 'src/app/modules/submission/email-submission/email-submission.types'
-import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
+import { EditFieldActions } from 'src/shared/constants'
 import {
   BasicField,
   IFieldSchema,
@@ -65,6 +65,7 @@ import {
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
+import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
 import { insertFormFeedback } from '../../public-form/public-form.service'
 import { AdminFormsRouter } from '../admin-form.routes'
 import * as AdminFormService from '../admin-form.service'
@@ -308,9 +309,7 @@ describe('admin-form.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when response is missing _id', async () => {
@@ -335,9 +334,7 @@ describe('admin-form.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when response is missing fieldType', async () => {
@@ -362,9 +359,7 @@ describe('admin-form.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when response has invalid fieldType', async () => {
@@ -391,9 +386,7 @@ describe('admin-form.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when response is missing answer', async () => {
@@ -418,9 +411,7 @@ describe('admin-form.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when response has both answer and answerArray', async () => {
@@ -445,9 +436,7 @@ describe('admin-form.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when attachment response has filename but not content', async () => {
@@ -472,9 +461,7 @@ describe('admin-form.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
 
     it('should return 400 when attachment response has content but not filename', async () => {
@@ -499,9 +486,7 @@ describe('admin-form.routes', () => {
         .query({ captchaResponse: 'null' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toEqual(
-        'celebrate request validation failed',
-      )
+      expect(response.body.message).toEqual('Validation failed')
     })
   })
 
@@ -2529,7 +2514,9 @@ describe('admin-form.routes', () => {
 
       // Assert
       expect(response.status).toEqual(410)
-      expect(response.body).toEqual({ message: 'Form has been deleted' })
+      expect(response.body).toEqual({
+        message: 'This form is no longer active',
+      })
     })
 
     it('should return 500 when database error occurs whilst retrieving form', async () => {
@@ -2879,7 +2866,7 @@ describe('admin-form.routes', () => {
       // Assert
       expect(response.status).toEqual(410)
       expect(response.body).toEqual({
-        message: 'Form has been deleted',
+        message: 'This form is no longer active',
       })
     })
 

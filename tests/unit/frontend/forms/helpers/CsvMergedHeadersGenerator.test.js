@@ -358,7 +358,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Should have 1 header row and 1 submission row
         expect(generator.records.length).toEqual(2 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
-          'Reference number',
+          'Response ID',
           'Timestamp',
           mockDecryptedRecord[0].question,
           mockDecryptedRecord[1].question,
@@ -420,7 +420,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Should have 1 header row and 2 submission row
         expect(generator.records.length).toEqual(3 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
-          'Reference number',
+          'Response ID',
           'Timestamp',
           mockFirstDecryptedRecord[0].question,
           mockFirstDecryptedRecord[1].question,
@@ -493,7 +493,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Should have 1 header row and 2 submission row
         expect(generator.records.length).toEqual(3 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
-          'Reference number',
+          'Response ID',
           'Timestamp',
           mockDecryptedRecord[0].question,
           mockDecryptedRecord[1].question,
@@ -561,7 +561,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Should have 1 header row and 1 submission row
         expect(generator.records.length).toEqual(2 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
-          'Reference number',
+          'Response ID',
           'Timestamp',
           mockDecryptedRecord[0].question,
         ])
@@ -609,7 +609,7 @@ describe('CsvMergedHeadersGenerator', () => {
         expect(generator.records.length).toEqual(2 + BOM_LENGTH)
         // Question is repeated for two columns
         const expectedHeaderRow = stringify([
-          'Reference number',
+          'Response ID',
           'Timestamp',
           mockDecryptedRecord[0].question,
           mockDecryptedRecord[0].question,
@@ -656,7 +656,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Should have 1 header row and 2 submission rows
         expect(generator.records.length).toEqual(3 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
-          'Reference number',
+          'Response ID',
           'Timestamp',
           mockAnswerArray[0].question,
         ])

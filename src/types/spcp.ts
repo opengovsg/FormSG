@@ -1,3 +1,1 @@
-export interface SpcpSession {
-  userName: string
-}
+export { SpcpSession } from '../../shared/types/form/form'

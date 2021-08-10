@@ -7,7 +7,7 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import { ResponseMode } from '../../../../types'
-import { DuplicateFormBody } from '../../../../types/api'
+import { DuplicateFormBodyDto } from '../../../../types/api'
 import { withUserAuthentication } from '../../auth/auth.middlewares'
 import * as EncryptSubmissionController from '../../submission/encrypt-submission/encrypt-submission.controller'
 
@@ -19,7 +19,7 @@ const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 // Validators
 const duplicateFormValidator = celebrate({
-  [Segments.BODY]: Joi.object<DuplicateFormBody>({
+  [Segments.BODY]: Joi.object<DuplicateFormBodyDto>({
     // Require valid responsesMode field.
     responseMode: Joi.string()
       .valid(...Object.values(ResponseMode))
@@ -28,12 +28,16 @@ const duplicateFormValidator = celebrate({
     title: Joi.string().min(4).max(200).required(),
     // Require emails string (for backwards compatibility) or string array
     // if form to be duplicated in Email mode.
-    emails: Joi.alternatives()
-      .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-      .when('responseMode', {
-        is: ResponseMode.Email,
-        then: Joi.required(),
-      }),
+    emails: Joi.when('responseMode', {
+      is: ResponseMode.Email,
+      then: Joi.alternatives()
+        .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+        .required(),
+      // TODO (#2264): disallow the 'emails' key when responseMode is not Email
+      // Allow old clients to send this key but optionally and without restrictions
+      // on array length or type
+      otherwise: Joi.alternatives().try(Joi.array(), Joi.string().allow('')),
+    }),
     // Require publicKey field if form to be duplicated in Storage mode.
     publicKey: Joi.string()
       .allow('')

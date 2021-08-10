@@ -3,7 +3,7 @@ import { ObjectId } from 'bson'
 import crypto from 'crypto'
 import _ from 'lodash'
 
-import { ISpcpMyInfo } from 'src/app/config/feature-manager'
+import { ISpcpMyInfo } from 'src/app/config/features/spcp-myinfo.config'
 import { ILoginSchema, IPopulatedForm } from 'src/types'
 
 import { JwtName } from '../spcp.types'
@@ -11,8 +11,10 @@ import { JwtName } from '../spcp.types'
 export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   isSPMaintenance: 'isSPMaintenance',
   isCPMaintenance: 'isCPMaintenance',
+  myInfoBannerContent: 'myInfoBannerContent',
   spCookieMaxAge: 1,
   spCookieMaxAgePreserved: 2,
+  oldSpcpCookieDomain: 'oldSpcpCookieDomain',
   spcpCookieDomain: 'spcpCookieDomain',
   cpCookieMaxAge: 3,
   // spIdpId and cpIdpId need to match the injected environment values

@@ -8,9 +8,11 @@ const DAY_IN_MILLIS = 24 * HOUR_IN_MILLIS
 type ISpcpConfig = {
   isSPMaintenance: string
   isCPMaintenance: string
+  myInfoBannerContent: string
   spCookieMaxAge: number
   spCookieMaxAgePreserved: number
   spcpCookieDomain: string
+  oldSpcpCookieDomain: string // TODO (#2329): To remove after old cookies have expired
   cpCookieMaxAge: number
   spIdpId: string
   cpIdpId: string
@@ -58,6 +60,12 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     default: null,
     env: 'IS_CP_MAINTENANCE',
   },
+  myInfoBannerContent: {
+    doc: 'If set, displays a banner message on MyInfo forms',
+    format: '*',
+    default: null,
+    env: 'MYINFO_BANNER_CONTENT',
+  },
   spCookieMaxAge: {
     doc: 'Max SingPass cookie age with remember me unchecked',
     format: 'int',
@@ -75,6 +83,13 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: String,
     default: '',
     env: 'SPCP_COOKIE_DOMAIN',
+  },
+  oldSpcpCookieDomain: {
+    // TODO (#2329): To remove after old cookies have expired
+    doc: 'Old domain name set on cookie that holds the SPCP jwt',
+    format: String,
+    default: '',
+    env: 'OLD_SPCP_COOKIE_DOMAIN',
   },
   cpCookieMaxAge: {
     doc: 'Max CorpPass cookie age',

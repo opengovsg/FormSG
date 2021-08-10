@@ -7,8 +7,8 @@ import has from 'lodash/has'
 import {
   CURRENT_VERIFIED_FIELDS,
   VerifiedKeys,
-} from '../../../../shared/util/verified-content'
-import { BasicField, SPCPFieldTitle } from '../../../../types'
+} from '../../../../../shared/utils/verified-content'
+import { BasicField, SgidFieldTitle, SPCPFieldTitle } from '../../../../types'
 
 /**
  * Returns a response matching the given type containing the given value.
@@ -44,6 +44,14 @@ const getResponseFromVerifiedField = (
         fieldType: BasicField.Nric,
         answer: value,
         _id: SPCPFieldTitle.CpUid,
+      }
+    case VerifiedKeys.SgidUinFin:
+      return {
+        question: SgidFieldTitle.SgidNric,
+        fieldType: 'nric',
+        answer: value,
+        // Just a unique identifier for CSV header uniqueness
+        _id: SgidFieldTitle.SgidNric,
       }
     default:
       return null

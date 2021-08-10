@@ -3,15 +3,18 @@ import { flow } from 'fp-ts/lib/function'
 import isFloat from 'validator/lib/isFloat'
 import isInt from 'validator/lib/isInt'
 
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
-import { IDecimalField } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import {
+  IDecimalFieldSchema,
+  OmitUnusedValidatorProps,
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 import { notEmptySingleAnswerResponse } from './common'
 
 type DecimalValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type DecimalValidatorConstructor = (
-  decimalField: IDecimalField,
+  decimalField: OmitUnusedValidatorProps<IDecimalFieldSchema>,
 ) => DecimalValidator
 interface IIsFloatOptions {
   min?: number

@@ -1,20 +1,26 @@
 import axios from 'axios'
 
-import { FormSettings, IPopulatedForm, LogicDto } from '../../types'
 import {
-  EmailSubmissionDto,
-  EncryptSubmissionDto,
-  EndPageUpdateDto,
   FieldCreateDto,
-  FieldUpdateDto,
   FormFieldDto,
-  FormUpdateParams,
-  FormViewDto,
+  FormFieldWithId,
+} from '../../../shared/types/field'
+import {
+  AdminFormDto,
+  AdminFormViewDto,
+  EndPageUpdateDto,
+  FormSettings,
+  LogicDto,
   PermissionsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
+} from '../../../shared/types/form'
+import {
+  EmailModeSubmissionContentDto,
+  StorageModeSubmissionContentDto,
   SubmissionResponseDto,
-} from '../../types/api'
+} from '../../../shared/types/submission'
+import { FormUpdateParams } from '../../types/api'
 import { createEmailSubmissionFormData } from '../utils/submission'
 
 // Exported for testing
@@ -44,10 +50,10 @@ export const getSingleFormField = async (
 export const updateSingleFormField = async (
   formId: string,
   fieldId: string,
-  updateFieldBody: FieldUpdateDto,
-): Promise<FieldUpdateDto> => {
+  updateFieldBody: FormFieldDto,
+): Promise<FormFieldDto> => {
   return axios
-    .put<FieldUpdateDto>(
+    .put<FormFieldDto>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}`,
       updateFieldBody,
     )
@@ -57,7 +63,7 @@ export const updateSingleFormField = async (
 export const createSingleFormField = async (
   formId: string,
   createFieldBody: FieldCreateDto,
-): Promise<FormFieldDto> => {
+): Promise<FormFieldWithId> => {
   return axios
     .post<FormFieldDto>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/fields`,
@@ -74,6 +80,16 @@ export const updateCollaborators = async (
     .put<PermissionsUpdateDto>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators`,
       collaboratorsToUpdate,
+    )
+    .then(({ data }) => data)
+}
+
+export const removeSelfFromCollaborators = async (
+  formId: string,
+): Promise<PermissionsUpdateDto> => {
+  return axios
+    .delete<PermissionsUpdateDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/self`,
     )
     .then(({ data }) => data)
 }
@@ -206,7 +222,7 @@ export const submitEmailModeFormPreview = async ({
   captchaResponse = null,
 }: {
   formId: string
-  content: EmailSubmissionDto
+  content: EmailModeSubmissionContentDto
   attachments?: Record<string, File>
   captchaResponse?: string | null
 }): Promise<SubmissionResponseDto> => {
@@ -242,7 +258,7 @@ export const submitStorageModeFormPreview = async ({
   captchaResponse = null,
 }: {
   formId: string
-  content: EncryptSubmissionDto
+  content: StorageModeSubmissionContentDto
   captchaResponse?: string | null
 }): Promise<SubmissionResponseDto> => {
   return axios
@@ -279,9 +295,9 @@ export const deleteForm = async (
 export const updateForm = async (
   formId: string,
   update: FormUpdateParams,
-): Promise<IPopulatedForm> => {
+): Promise<AdminFormDto> => {
   return axios
-    .put<IPopulatedForm>(`${formId}/adminform`, { form: update })
+    .put<AdminFormDto>(`${formId}/adminform`, { form: update })
     .then(({ data }) => data)
 }
 
@@ -293,9 +309,9 @@ export const updateForm = async (
 export const transferOwner = async (
   formId: string,
   newOwnerEmail: string,
-): Promise<FormViewDto> => {
+): Promise<AdminFormViewDto> => {
   return axios
-    .post<FormViewDto>(
+    .post<AdminFormViewDto>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/transfer-owner`,
       { email: newOwnerEmail },
     )
