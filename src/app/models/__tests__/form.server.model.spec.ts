@@ -1804,14 +1804,17 @@ describe('Form Model', () => {
     })
 
     describe('disableSmsVerificationsForUser', () => {
-      it('should disable sms verifications for all forms belonging to a user successfully', async () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioId'
+      it('should disable sms verifications for all forms belonging to a user that are not onboarded successfully', async () => {
         // Arrange
-        const mockFormPromises = range(3).map(() => {
+        const mockFormPromises = range(3).map((_, idx) => {
+          const isOnboarded = !!(idx % 2)
           return Form.create({
             admin: populatedAdmin._id,
             responseMode: ResponseMode.Email,
             title: 'mock mobile form',
             emails: [populatedAdmin.email],
+            ...(isOnboarded && { msgSrvcName: MOCK_MSG_SRVC_NAME }),
             form_fields: [
               generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
             ],
@@ -1824,8 +1827,30 @@ describe('Form Model', () => {
 
         // Assert
         // Find all forms that match admin id
-        const updatedForms = await Form.find({ admin: populatedAdmin._id })
-        updatedForms.map(({ form_fields }) =>
+        // All forms with msgSrvcName have been using their own credentials
+        // They should not have verifications disabled.
+        const onboardedForms = await Form.find({
+          admin: populatedAdmin._id,
+          msgSrvcName: {
+            $exists: true,
+          },
+        })
+        onboardedForms.map(({ form_fields }) =>
+          form_fields!.map((field) => {
+            expect(field.isVerifiable).toBe(true)
+          }),
+        )
+
+        // Conversely, forms without msgSrvcName are using our credentials
+        // And should have their verifications disabled.
+        const notOnboardedForms = await Form.find({
+          admin: populatedAdmin._id,
+          msgSrvcName: {
+            $exists: false,
+          },
+        })
+
+        notOnboardedForms.map(({ form_fields }) =>
           form_fields!.map((field) => {
             expect(field.isVerifiable).toBe(false)
           }),
