@@ -2,6 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "~shared/*": ["../shared/*"],
       "~/*": ["./src/*"],
       "~assets/*": ["./src/assets/*"],
       "~contexts/*": ["./src/contexts/*"],

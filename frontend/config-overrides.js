@@ -1,17 +1,21 @@
+/* eslint-disable no-undef */
 /**
  * Config overrides for CRA to allow importing of aliases.
- * This will not work if aliasing folders that is outside of React app's `/src`
- * folder. If aliasing outside of `/src`, then another function aliasDangerous
- * will be needed.
+ * Since we are aliasing `shared` folder, another function `aliasDangerous` is
+ * needed.
  * See https://www.npmjs.com/package/react-app-rewire-alias#outside-of-root.
  */
 
-const { alias, configPaths, aliasJest } = require('react-app-rewire-alias')
+const {
+  aliasDangerous,
+  configPaths,
+  aliasJest,
+} = require('react-app-rewire-alias/lib/aliasDangerous')
 
 const aliasMap = configPaths('tsconfig.paths.json')
 
 module.exports = function override(config) {
-  alias(aliasMap)(config)
+  aliasDangerous(aliasMap)(config)
 
   return config
 }
