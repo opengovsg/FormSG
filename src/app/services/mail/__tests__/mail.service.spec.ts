@@ -4,6 +4,7 @@ import moment from 'moment-timezone'
 import { err, ok, okAsync } from 'neverthrow'
 import Mail, { Attachment } from 'nodemailer/lib/mailer'
 
+import { extractFormLinkView } from 'src/app/modules/form/form.utils'
 import {
   MailGenerationError,
   MailSendError,
@@ -17,8 +18,12 @@ import {
 import * as MailUtils from 'src/app/services/mail/mail.utils'
 import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
 
-import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../../shared/utils/verification'
+import {
+  HASH_EXPIRE_AFTER_SECONDS,
+  stringifiedSmsWarningTiers,
+} from '../../../../../shared/utils/verification'
 import { smsConfig } from '../../../config/features/sms.config'
+import * as FormService from '../../../modules/form/form.service'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
@@ -1276,50 +1281,84 @@ describe('mail.service', () => {
       _id: MOCK_FORM_ID,
     } as unknown as IPopulatedForm
 
-    const generateExpectedMailOptions = async (
-      admin: string,
-      collaborators: string | string[],
-    ) => {
-      const result = await MailUtils.generateSmsVerificationDisabledHtml({
-        formTitle: MOCK_FORM_TITLE,
-        formLink: `${MOCK_APP_URL}/${MOCK_FORM_ID}`,
-        smsVerificationLimit: smsConfig.smsVerificationLimit,
-      }).map((emailHtml) => {
-        return {
-          to: admin,
-          cc: collaborators,
-          from: MOCK_SENDER_STRING,
-          html: emailHtml,
-          subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
-          replyTo: MOCK_SENDER_EMAIL,
-          bcc: MOCK_SENDER_EMAIL,
-        }
-      })
+    const generateAdminExpectedMailOptions = async (admin: string) => {
+      const result =
+        await MailUtils.generateSmsVerificationDisabledHtmlForAdmin({
+          forms: [extractFormLinkView(MOCK_FORM, MOCK_APP_URL)],
+          smsVerificationLimit:
+            smsConfig.smsVerificationLimit.toLocaleString('en-US'),
+          smsWarningTiers: stringifiedSmsWarningTiers,
+        }).map((emailHtml) => {
+          return {
+            to: admin,
+            from: MOCK_SENDER_STRING,
+            html: emailHtml,
+            subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
+            replyTo: MOCK_SENDER_EMAIL,
+            bcc: MOCK_SENDER_EMAIL,
+          }
+        })
       return result._unsafeUnwrap()
     }
 
+    const generateCollabExpectedMailOptions = async (
+      admin: string,
+      collab: string[],
+    ) => {
+      const result =
+        await MailUtils.generateSmsVerificationDisabledHtmlForCollab({
+          form: extractFormLinkView(MOCK_FORM, MOCK_APP_URL),
+          smsVerificationLimit:
+            smsConfig.smsVerificationLimit.toLocaleString('en-US'),
+          smsWarningTiers: stringifiedSmsWarningTiers,
+        }).map((emailHtml) => {
+          return {
+            to: admin,
+            cc: collab,
+            from: MOCK_SENDER_STRING,
+            html: emailHtml,
+            subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
+            replyTo: MOCK_SENDER_EMAIL,
+            bcc: MOCK_SENDER_EMAIL,
+          }
+        })
+      return result._unsafeUnwrap()
+    }
     it('should send verified sms disabled emails successfully', async () => {
       // Arrange
       // sendMail should return mocked success response
       sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+      jest
+        .spyOn(FormService, 'retrievePublicFormsWithSmsVerification')
+        .mockReturnValueOnce(okAsync([MOCK_FORM]))
+      const expectedAdminMailOptions = await generateAdminExpectedMailOptions(
+        MOCK_VALID_EMAIL,
+      )
+      const expectedCollabMailOptions = await generateCollabExpectedMailOptions(
+        MOCK_VALID_EMAIL,
+        [MOCK_VALID_EMAIL_2, MOCK_VALID_EMAIL_3],
+      )
 
       // Act
       const actualResult = await mailService.sendSmsVerificationDisabledEmail(
         MOCK_FORM,
       )
-      const expectedMailOptions = await generateExpectedMailOptions(
-        MOCK_VALID_EMAIL,
-        [MOCK_VALID_EMAIL_2, MOCK_VALID_EMAIL_3],
-      )
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Check arguments passed to sendNodeMail
-      expect(sendMailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedMailOptions)
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedAdminMailOptions)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedCollabMailOptions)
     })
 
     it('should return MailSendError when the provided email is invalid', async () => {
+      // Arrange
+      jest
+        .spyOn(FormService, 'retrievePublicFormsWithSmsVerification')
+        .mockReturnValueOnce(okAsync([MOCK_INVALID_EMAIL_FORM]))
+
       // Act
       const actualResult = await mailService.sendSmsVerificationDisabledEmail(
         MOCK_INVALID_EMAIL_FORM,
@@ -1335,6 +1374,9 @@ describe('mail.service', () => {
 
     it('should return MailGenerationError when the html template could not be created', async () => {
       // Arrange
+      jest
+        .spyOn(FormService, 'retrievePublicFormsWithSmsVerification')
+        .mockReturnValueOnce(okAsync([MOCK_INVALID_EMAIL_FORM]))
       jest.spyOn(ejs, 'renderFile').mockRejectedValueOnce('no.')
 
       // Act
@@ -1384,17 +1426,17 @@ describe('mail.service', () => {
     const generateExpectedMailOptions = async (
       count: number,
       admin: string,
-      collaborators: string | string[],
     ) => {
       const result = await MailUtils.generateSmsVerificationWarningHtml({
-        formTitle: MOCK_FORM_TITLE,
-        formLink: `${MOCK_APP_URL}/${MOCK_FORM_ID}`,
-        numAvailable: smsConfig.smsVerificationLimit - count,
-        smsVerificationLimit: smsConfig.smsVerificationLimit,
+        forms: [extractFormLinkView(MOCK_FORM, MOCK_APP_URL)],
+        numAvailable: (smsConfig.smsVerificationLimit - count).toLocaleString(
+          'en-US',
+        ),
+        smsVerificationLimit:
+          smsConfig.smsVerificationLimit.toLocaleString('en-US'),
       }).map((emailHtml) => {
         return {
           to: admin,
-          cc: collaborators,
           from: MOCK_SENDER_STRING,
           html: emailHtml,
           subject: '[FormSG] SMS Verification - Free Tier Limit Alert',
@@ -1407,6 +1449,9 @@ describe('mail.service', () => {
 
     it('should send verified sms warning emails successfully', async () => {
       // Arrange
+      jest
+        .spyOn(FormService, 'retrievePublicFormsWithSmsVerification')
+        .mockReturnValueOnce(okAsync([MOCK_FORM]))
       // sendMail should return mocked success response
       sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
 
@@ -1418,7 +1463,6 @@ describe('mail.service', () => {
       const expectedMailOptions = await generateExpectedMailOptions(
         1000,
         MOCK_VALID_EMAIL,
-        [MOCK_VALID_EMAIL_2, MOCK_VALID_EMAIL_3],
       )
 
       // Assert
@@ -1429,6 +1473,11 @@ describe('mail.service', () => {
     })
 
     it('should return MailSendError when the provided email is invalid', async () => {
+      // Arrange
+      jest
+        .spyOn(FormService, 'retrievePublicFormsWithSmsVerification')
+        .mockReturnValueOnce(okAsync([MOCK_INVALID_EMAIL_FORM]))
+
       // Act
       const actualResult = await mailService.sendSmsVerificationWarningEmail(
         MOCK_INVALID_EMAIL_FORM,
@@ -1445,6 +1494,9 @@ describe('mail.service', () => {
 
     it('should return MailGenerationError when the html template could not be created', async () => {
       // Arrange
+      jest
+        .spyOn(FormService, 'retrievePublicFormsWithSmsVerification')
+        .mockReturnValueOnce(okAsync([MOCK_FORM]))
       jest.spyOn(ejs, 'renderFile').mockRejectedValueOnce('no.')
 
       // Act

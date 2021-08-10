@@ -1,8 +1,10 @@
 import {
   FormFieldSchema,
+  FormLinkView,
   FormLogicSchema,
   IEncryptedFormSchema,
   IForm,
+  IFormDocument,
   IFormSchema,
   IOnboardedForm,
   IPopulatedEmailForm,
@@ -136,4 +138,15 @@ export const isFormOnboarded = <T extends IForm = IForm>(
   return form.msgSrvcName
     ? !(form.msgSrvcName === smsConfig.twilioMsgSrvcSid)
     : false
+}
+
+export const extractFormLinkView = <T extends IFormDocument>(
+  form: Pick<T, 'title' | '_id'>,
+  appUrl: string,
+): FormLinkView<T> => {
+  const { title, _id } = form
+  return {
+    title,
+    link: `${appUrl}/${_id}`,
+  }
 }

@@ -11,10 +11,11 @@ import { createLoggerWithLabel } from '../../config/logger'
 
 import { MailGenerationError, MailSendError } from './mail.errors'
 import {
+  AdminSmsDisabledData,
   AutoreplyHtmlData,
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
-  SmsVerificationDisabledData,
+  CollabSmsDisabledData,
   SmsVerificationWarningData,
   SubmissionToAdminHtmlData,
 } from './mail.types'
@@ -172,10 +173,17 @@ export const isToFieldValid = (addresses: string | string[]): boolean => {
   return mails.every((addr) => validator.isEmail(addr))
 }
 
-export const generateSmsVerificationDisabledHtml = (
-  htmlData: SmsVerificationDisabledData,
+export const generateSmsVerificationDisabledHtmlForAdmin = (
+  htmlData: AdminSmsDisabledData,
 ): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-disabled.server.view.html`
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-disabled-admin.server.view.html`
+  return safeRenderFile(pathToTemplate, htmlData)
+}
+
+export const generateSmsVerificationDisabledHtmlForCollab = (
+  htmlData: CollabSmsDisabledData,
+): ResultAsync<string, MailGenerationError> => {
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-disabled-collab.server.view.html`
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
