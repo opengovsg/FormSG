@@ -641,6 +641,7 @@ export class MailService {
     const htmlData: CollabSmsDisabledData = {
       form: extractFormLinkView(form, this.#appUrl),
       smsVerificationLimit:
+        // Formatted using localeString so that the displayed number has commas
         smsConfig.smsVerificationLimit.toLocaleString('en-US'),
       smsWarningTiers: stringifiedSmsWarningTiers,
     }
@@ -675,6 +676,7 @@ export class MailService {
     const htmlData: AdminSmsDisabledData = {
       forms: forms.map((f) => extractFormLinkView(f, this.#appUrl)),
       smsVerificationLimit:
+        // Formatted using localeString so that the displayed number has commas
         smsConfig.smsVerificationLimit.toLocaleString('en-US'),
       smsWarningTiers: stringifiedSmsWarningTiers,
     }
@@ -719,6 +721,7 @@ export class MailService {
     ).andThen((forms) => {
       const htmlData: SmsVerificationWarningData = {
         forms: forms.map((f) => extractFormLinkView(f, this.#appUrl)),
+        // Formatted using localeString so that the displayed number has commas
         numAvailable: (
           smsConfig.smsVerificationLimit - smsVerifications
         ).toLocaleString('en-US'),
