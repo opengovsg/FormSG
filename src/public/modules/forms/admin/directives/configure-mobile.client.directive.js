@@ -21,6 +21,8 @@ function configureMobileDirective() {
       form: '<',
       name: '=',
       characterLimit: '=',
+      smsVerificationLimit: '=',
+      verifiedSmsCount: '=',
       isLoading: '<',
     },
     controller: [
@@ -66,7 +68,7 @@ function configureMobileDirective() {
           AdminMetaService.getFreeSmsCountsUsedByFormAdmin($scope.form._id),
         )
           .then(({ quota, freeSmsCounts }) => {
-            $scope.verifiedSmsCount = freeSmsCounts
+            $scope.verifiedSmsCount = formatStringAsNumber(freeSmsCounts)
             $scope.adminVerifiedSmsState = getAdminVerifiedSmsState(
               freeSmsCounts,
               $scope.form.msgSrvcName,
@@ -117,27 +119,23 @@ function configureMobileDirective() {
                 externalScope: function () {
                   return {
                     title: `OTP verification will be disabled at ${$scope.smsVerificationLimit} responses`,
-                    confirmButtonText: 'Accept',
+                    confirmButtonText: 'I understand',
                     description: `
-                    We provide SMS OTP verification for free up to ${
-                      $scope.smsVerificationLimit
-                    } responses. OTP verification will be automatically disabled when your account reaches ${
-                      $scope.smsVerificationLimit
-                    } responses. 
-                    <br></br>
-                    If you require OTP verification for more than ${
-                      $scope.smsVerificationLimit
-                    } responses,
-                    <a href=${
-                      $scope.verifiedSmsSetupLink
-                    } target="_blank" class=""> please arrange advance billing with us. </a>  
+                    We provide ${$scope.smsVerificationLimit} free SMS OTP verifications per account, only counting owned forms. 
+
+                    Once this limit is reached, SMS OTP verification will be automatically disabled for all owned forms. 
 
                     <br></br>
-                    <small>Current response count: ${formatStringAsNumber(
-                      $scope.verifiedSmsCount,
-                    )}/${$scope.smsVerificationLimit}</small>
+
+                    If you are a collaborator, ensure the form's owner has enough free verifications. 
+
+                    <br></br>
+
+                    If you require more than ${$scope.smsVerificationLimit} verifications, please <a href=${$scope.verifiedSmsSetupLink} target="_blank" class=""> arrange advance billing with us. </a>  
+
+                    <br></br>
+                    <small>Current response count: ${$scope.verifiedSmsCount}/${$scope.smsVerificationLimit}</small>
                     `,
-                    isImportant: true,
                   }
                 },
               },
