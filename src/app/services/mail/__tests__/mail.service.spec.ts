@@ -55,6 +55,7 @@ describe('mail.service', () => {
   const mailService = new MailService({
     transporter: mockTransporter,
     senderMail: MOCK_SENDER_EMAIL,
+    officialMail: MOCK_SENDER_EMAIL,
     appName: MOCK_APP_NAME,
     appUrl: MOCK_APP_URL,
     // Set for instant timeouts during testing.

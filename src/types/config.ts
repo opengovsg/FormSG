@@ -133,6 +133,7 @@ export interface IOptionalVarsSchema {
   }
   mail: {
     from: string
+    official: string
     logger: boolean
     debug: boolean
     bounceLifeSpan: number
