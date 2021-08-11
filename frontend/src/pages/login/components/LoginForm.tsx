@@ -8,18 +8,17 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
-type LoginFormInputs = {
+export type LoginFormInputs = {
   email: string
 }
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
 interface LoginFormProps {
-  onSendOtp: () => void
+  onSubmit: (inputs: LoginFormInputs) => Promise<void>
 }
 
-export const LoginForm = ({ onSendOtp }: LoginFormProps): JSX.Element => {
-  const { handleSubmit, register, formState } = useForm<LoginFormInputs>()
+export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
+  const { handleSubmit, register, formState, setError } =
+    useForm<LoginFormInputs>()
 
   const validateEmail = useCallback((value: string) => {
     const isValidEmail = isEmail(value)
@@ -31,17 +30,14 @@ export const LoginForm = ({ onSendOtp }: LoginFormProps): JSX.Element => {
     return isGovDomain || 'Please sign in with a gov.sg email address.'
   }, [])
 
-  /**
-   * Submit phone number to backend for OTP to be sent to the user.
-   */
-  const onSubmit = async ({ email }: LoginFormInputs) => {
-    // Set mobile number for parent component so next stage is triggered.
-    await sleep(2000)
-    onSendOtp()
+  const onSubmitForm = async (inputs: LoginFormInputs) => {
+    return onSubmit(inputs).catch((e) => {
+      setError('email', { type: 'server', message: e.message })
+    })
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmitForm)}>
       <FormControl
         isInvalid={!!formState.errors.email}
         isReadOnly={formState.isSubmitting}
