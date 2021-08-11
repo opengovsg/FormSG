@@ -1,4 +1,6 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
+
+import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
 
 const API_BASE_URL = process.env.REACT_APP_BASE_URL ?? '/api/v3'
 export class HttpError extends Error {
@@ -20,6 +22,9 @@ export const transformAxiosError = (e: Error): HttpError | Error => {
     if (statusCode === 429) {
       return new HttpError('Please try again later.', statusCode)
     }
+    if (typeof e.response.data === 'string') {
+      return new HttpError(e.response.data, statusCode)
+    }
     if (e.response.data?.message) {
       return new HttpError(e.response.data.message, statusCode)
     }
@@ -40,7 +45,14 @@ export const ApiService = axios.create({
 
 ApiService.interceptors.response.use(
   (response) => response,
-  (error) => {
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      // Remove logged in state from localStorage
+      localStorage.removeItem(LOGGED_IN_KEY)
+      // Event to let useLocalStorage know that key is being deleted.
+      window.dispatchEvent(new Event(LOCAL_STORAGE_EVENT))
+    }
+
     const transformedError = transformAxiosError(error)
     throw transformedError
   },
