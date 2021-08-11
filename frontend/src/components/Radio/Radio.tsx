@@ -32,6 +32,8 @@ import {
 } from '@chakra-ui/react'
 import { callAll, split } from '@chakra-ui/utils'
 
+import { RADIO_THEME_KEY } from '~/theme/components/Radio'
+
 type Omitted = 'onChange' | 'defaultChecked' | 'checked'
 type BaseControlProps = Omit<HTMLChakraProps<'div'>, Omitted>
 
@@ -65,7 +67,7 @@ export const Radio = forwardRef<RadioProps, 'input'>((props, ref) => {
   const { onChange: onChangeProp, value: valueProp } = props
 
   const group = useRadioGroupContext()
-  const styles = useMultiStyleConfig('Radio', { ...group, ...props })
+  const styles = useMultiStyleConfig(RADIO_THEME_KEY, { ...group, ...props })
 
   const {
     spacing = '0.5rem',
