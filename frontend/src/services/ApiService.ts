@@ -1,5 +1,6 @@
 import axios from 'axios'
 
+const API_BASE_URL = process.env.REACT_APP_BASE_URL ?? '/api/v3'
 export class HttpError extends Error {
   code: number
   constructor(message: string, code: number) {
@@ -30,3 +31,17 @@ export const transformAxiosError = (e: Error): HttpError | Error => {
   }
   return e
 }
+
+// Create own axios instance with defaults.
+export const ApiService = axios.create({
+  withCredentials: true,
+  baseURL: API_BASE_URL,
+})
+
+ApiService.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const transformedError = transformAxiosError(error)
+    throw transformedError
+  },
+)
