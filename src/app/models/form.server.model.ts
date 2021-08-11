@@ -9,6 +9,7 @@ import mongoose, {
 } from 'mongoose'
 import validator from 'validator'
 
+import { MB } from '../../../shared/constants/file'
 import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
@@ -16,8 +17,7 @@ import {
   STORAGE_FORM_SETTINGS_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
 } from '../../../shared/constants/form'
-import { MB } from '../../shared/constants'
-import { reorder } from '../../shared/util/immutable-array-fns'
+import { reorder } from '../../../shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from '../../shared/util/logic'
 import {
   AuthType,
@@ -390,10 +390,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       esrvcId: {
         type: String,
         required: false,
-        validate: [
-          /^([a-zA-Z0-9-_]){1,25}$/i,
-          'e-service ID must be alphanumeric, underscores and dashes are allowed',
-        ],
+        validate: [/^\S*$/i, 'e-service ID must not contain whitespace'],
       },
 
       webhook: {
@@ -809,6 +806,53 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       { startPage: newStartPage },
       { new: true, runValidators: true },
     ).exec()
+  }
+
+  FormSchema.statics.disableSmsVerificationsForUser = async function (
+    userId: IUserSchema['_id'],
+  ) {
+    return this.updateMany(
+      // Filter the collection so that only specified user is selected
+      // Only update forms without message service name
+      // As it implies that those forms are using default (our) credentials
+      {
+        admin: userId,
+        msgSrvcName: {
+          $exists: false,
+        },
+      },
+      // Next, set the isVerifiable property for each field in form_fields
+      // Refer here for $[identifier] syntax: https://docs.mongodb.com/manual/reference/operator/update/positional-filtered/
+      { $set: { 'form_fields.$[field].isVerifiable': false } },
+      {
+        // Only set if the field has fieldType equal to mobile
+        arrayFilters: [{ 'field.fieldType': 'mobile' }],
+        // NOTE: Not updating the timestamp because we should preserve ordering due to user-level modifications
+        timestamps: false,
+      },
+    ).exec()
+  }
+
+  /**
+   * Retrieves all the public forms for a user which has sms verifications enabled
+   * This only retrieves forms that are using FormSG credentials
+   * @param userId The userId to retrieve the forms for
+   * @returns All public forms that have sms verifications enabled
+   */
+  FormSchema.statics.retrievePublicFormsWithSmsVerification = async function (
+    userId: IUserSchema['_id'],
+  ) {
+    return this.find({
+      admin: userId,
+      'form_fields.fieldType': BasicField.Mobile,
+      'form_fields.isVerifiable': true,
+      status: Status.Public,
+      msgSrvcName: {
+        $exists: false,
+      },
+    })
+      .read('secondary')
+      .exec()
   }
 
   // Hooks

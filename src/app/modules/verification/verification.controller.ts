@@ -1,7 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 
-import { SALT_ROUNDS } from '../../../shared/util/verification'
+import { SALT_ROUNDS } from '../../../../shared/utils/verification'
 import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
@@ -221,7 +221,21 @@ export const _handleGenerateOtp: ControllerHandler<
           transactionId,
         }),
       )
-      .map(() => res.sendStatus(StatusCodes.CREATED))
+      .map(() => {
+        res.sendStatus(StatusCodes.CREATED)
+        // NOTE: This is returned because tests require this to avoid async mocks interfering with each other.
+        // However, this is not an issue in reality because express does not require awaiting on the sendStatus call.
+        return FormService.retrieveFullFormById(formId)
+          .andThen((form) => VerificationService.processAdminSmsCounts(form))
+          .mapErr((error) => {
+            logger.error({
+              message:
+                'Error checking sms counts or deactivating OTP verification for admin',
+              meta: logMeta,
+              error,
+            })
+          })
+      })
       .mapErr((error) => {
         logger.error({
           message: 'Error creating new OTP',

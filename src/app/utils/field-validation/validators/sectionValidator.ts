@@ -1,7 +1,7 @@
 import { left, right } from 'fp-ts/lib/Either'
 
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 type SectionValidatorConstructor =
   () => ResponseValidator<ProcessedSingleAnswerResponse>

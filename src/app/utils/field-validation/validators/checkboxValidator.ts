@@ -1,9 +1,12 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ProcessedCheckboxResponse } from 'src/app/modules/submission/submission.types'
-import { ICheckboxFieldSchema, OmitUnusedValidatorProps } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import {
+  ICheckboxFieldSchema,
+  OmitUnusedValidatorProps,
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
+import { ProcessedCheckboxResponse } from '../../../modules/submission/submission.types'
 
 import { isOtherOption } from './options'
 

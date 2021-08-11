@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
-import { LINKS } from '../../../shared/constants'
+import { SUPPORT_FORM_LINK } from '../../../../shared/constants/links'
 import {
   IAgencySchema,
   IPopulatedForm,
@@ -67,7 +67,7 @@ export const validateEmailDomain = (
       })
 
       return new DatabaseError(
-        `Unable to validate email domain. If this issue persists, please submit a Support Form at (${LINKS.supportFormLink})`,
+        `Unable to validate email domain. If this issue persists, please submit a Support Form at (${SUPPORT_FORM_LINK})`,
       )
     },
   ).andThen((agency) => {

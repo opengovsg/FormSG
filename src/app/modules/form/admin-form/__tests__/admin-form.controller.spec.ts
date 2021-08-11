@@ -34,6 +34,7 @@ import {
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import * as SubmissionUtils from 'src/app/modules/submission/submission.utils'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
+import { SmsLimitExceededError } from 'src/app/modules/verification/verification.errors'
 import {
   MailGenerationError,
   MailSendError,
@@ -6077,7 +6078,10 @@ describe('admin-form.controller', () => {
 
   describe('submitEncryptPreview', () => {
     const MOCK_RESPONSES = [
-      generateUnprocessedSingleAnswerResponse(BasicField.Email),
+      {
+        question: 'testQuestion',
+        ...generateUnprocessedSingleAnswerResponse(BasicField.Email),
+      },
     ]
     const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
     const MOCK_VERSION = 1
@@ -6751,10 +6755,10 @@ describe('admin-form.controller', () => {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
     } as IPopulatedUser
-    const MOCK_FIELD = generateDefaultField(BasicField.Rating)
+    const MOCK_FIELD = generateDefaultField(BasicField.Mobile)
     const MOCK_UPDATED_FIELD = {
       ...MOCK_FIELD,
-      title: 'some new title',
+      isVerifiable: true,
     } as FieldUpdateDto
 
     const MOCK_FORM = {
@@ -6782,7 +6786,9 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
         okAsync(MOCK_FORM),
       )
-
+      MockAdminFormService.shouldUpdateFormField.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
       MockAdminFormService.updateFormField.mockReturnValue(
         okAsync(MOCK_UPDATED_FIELD as IFieldSchema),
       )
@@ -6879,6 +6885,29 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(MockAdminFormService.updateFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 409 when the field could not be updated due to a sms limit exceeded error', async () => {
+      // Arrange
+      MockAdminFormService.shouldUpdateFormField.mockReturnValueOnce(
+        errAsync(new SmsLimitExceededError()),
+      )
+      const expected = {
+        message:
+          'You have exceeded the free sms limit. Please refresh and try again.',
+      }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleUpdateFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(409)
+      expect(mockRes.json).toBeCalledWith(expected)
     })
 
     it('should return 410 when form to update form field for is already archived', async () => {
@@ -7030,10 +7059,12 @@ describe('admin-form.controller', () => {
       title: 'mock title',
     } as IPopulatedForm
 
-    const MOCK_RETURNED_FIELD = generateDefaultField(BasicField.Nric)
+    const MOCK_RETURNED_FIELD = generateDefaultField(BasicField.Mobile, {
+      isVerifiable: true,
+    })
     const MOCK_CREATE_FIELD_BODY = pick(MOCK_RETURNED_FIELD, [
       'fieldType',
-      'title',
+      'isVerifiable',
     ]) as FieldCreateDto
     const MOCK_REQ = expressHandler.mockRequest({
       session: {
@@ -7049,6 +7080,9 @@ describe('admin-form.controller', () => {
     beforeEach(() => {
       MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
       MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.shouldUpdateFormField.mockReturnValue(
         okAsync(MOCK_FORM),
       )
       MockAdminFormService.createFormField.mockReturnValue(
@@ -7120,6 +7154,29 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(MockAdminFormService.createFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 409 when the field could not be created due to a sms limit exceeded error', async () => {
+      // Arrange
+      MockAdminFormService.shouldUpdateFormField.mockReturnValueOnce(
+        errAsync(new SmsLimitExceededError()),
+      )
+      const expected = {
+        message:
+          'You have exceeded the free sms limit. Please refresh and try again.',
+      }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleCreateFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(409)
+      expect(mockRes.json).toBeCalledWith(expected)
     })
 
     it('should return 410 when attempting to create a form field for an archived form', async () => {
@@ -7311,11 +7368,14 @@ describe('admin-form.controller', () => {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
     } as IPopulatedUser
-    const MOCK_FIELDS = [generateDefaultField(BasicField.Rating)]
+    const MOCK_FIELDS = [
+      generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+    ]
     const MOCK_FIELD_ID = String(MOCK_FIELDS[0]._id)
 
-    const MOCK_DUPLICATED_FIELD = generateDefaultField(BasicField.Rating)
-
+    const MOCK_DUPLICATED_FIELD = generateDefaultField(BasicField.Mobile, {
+      isVerifiable: true,
+    })
     const MOCK_FORM = {
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
@@ -7339,6 +7399,10 @@ describe('admin-form.controller', () => {
       // Mock various services to return expected results.
       MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
       MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.getFormField.mockReturnValue(ok(MOCK_FIELDS[0]))
+      MockAdminFormService.shouldUpdateFormField.mockReturnValue(
         okAsync(MOCK_FORM),
       )
       MockAdminFormService.duplicateFormField.mockReturnValue(
@@ -7478,6 +7542,28 @@ describe('admin-form.controller', () => {
       )
     })
 
+    it('should return 409 when the field could not be duplicated due to a sms limit exceeded error', async () => {
+      // Arrange
+      MockAdminFormService.shouldUpdateFormField.mockReturnValueOnce(
+        errAsync(new SmsLimitExceededError()),
+      )
+      const expected = {
+        message:
+          'You have exceeded the free sms limit. Please refresh and try again.',
+      }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleDuplicateFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(409)
+      expect(mockRes.json).toBeCalledWith(expected)
+    })
     it('should return 410 when form to duplicate form field for is already archived', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
@@ -7488,7 +7574,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleDeleteFormField(
+      await AdminFormController.handleDuplicateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),

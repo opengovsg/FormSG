@@ -1,6 +1,7 @@
 import { err, ok, Result } from 'neverthrow'
 
-import { hasProp } from '../../../shared/util/has-prop'
+import { NricResponse } from '../../../../shared/types/response'
+import { hasProp } from '../../../../shared/utils/has-prop'
 import {
   AuthType,
   BasicField,
@@ -35,7 +36,7 @@ const isSgidForm = <F extends IFormSchema>(form: F): form is SgidForm<F> => {
  */
 export const createSgidParsedResponses = (
   uinFin: string,
-): ProcessedSingleAnswerResponse[] => {
+): ProcessedSingleAnswerResponse<NricResponse>[] => {
   return [
     {
       _id: '',

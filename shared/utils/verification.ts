@@ -1,4 +1,4 @@
-import { BasicField } from '../../types'
+import { BasicField } from '../types/field'
 
 export const VERIFIED_FIELDTYPES = [BasicField.Email, BasicField.Mobile]
 export const SALT_ROUNDS = 10
@@ -20,4 +20,24 @@ export enum VfnErrors {
   FieldNotFound = 'FIELD_NOT_FOUND',
   TransactionNotFound = 'TRANSACTION_NOT_FOUND',
   InvalidMobileNumber = 'INVALID_MOBILE_NUMBER',
+}
+
+export enum ADMIN_VERIFIED_SMS_STATES {
+  limitExceeded = 'LIMIT_EXCEEDED',
+  belowLimit = 'BELOW_LIMIT',
+  hasMessageServiceId = 'MESSAGE_SERVICE_ID_OBTAINED',
+}
+
+export enum SMS_WARNING_TIERS {
+  LOW = 2500,
+  MED = 5000,
+  HIGH = 7500,
+}
+
+export const stringifiedSmsWarningTiers: {
+  [K in keyof typeof SMS_WARNING_TIERS]: string
+} = {
+  LOW: '2.5K',
+  MED: '5K',
+  HIGH: '7.5K',
 }

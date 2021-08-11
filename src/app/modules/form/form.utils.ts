@@ -1,13 +1,18 @@
 import {
   FormFieldSchema,
+  FormLinkView,
   FormLogicSchema,
   IEncryptedFormSchema,
+  IForm,
+  IFormDocument,
   IFormSchema,
+  IOnboardedForm,
   IPopulatedEmailForm,
   IPopulatedForm,
   Permission,
   ResponseMode,
 } from '../../../types'
+import { smsConfig } from '../../config/features/sms.config'
 import { isMongooseDocumentArray } from '../../utils/mongoose'
 
 // Converts 'test@hotmail.com, test@gmail.com' to ['test@hotmail.com', 'test@gmail.com']
@@ -120,4 +125,28 @@ export const getLogicById = (
   }
 
   return form_logics.find((logic) => logicId === String(logic._id)) ?? null
+}
+
+/**
+ * Checks if a given form is onboarded (the form's message service name is defined and different from the default)
+ * @param form The form to check
+ * @returns boolean indicating if the form is/is not onboarded
+ */
+export const isFormOnboarded = <T extends IForm = IForm>(
+  form: Pick<T, 'msgSrvcName'>,
+): form is IOnboardedForm<T> => {
+  return form.msgSrvcName
+    ? !(form.msgSrvcName === smsConfig.twilioMsgSrvcSid)
+    : false
+}
+
+export const extractFormLinkView = <T extends IFormDocument>(
+  form: Pick<T, 'title' | '_id'>,
+  appUrl: string,
+): FormLinkView<T> => {
+  const { title, _id } = form
+  return {
+    title,
+    link: `${appUrl}/${_id}`,
+  }
 }

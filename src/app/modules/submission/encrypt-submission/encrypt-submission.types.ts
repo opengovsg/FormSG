@@ -1,10 +1,10 @@
 import { IPopulatedEncryptedForm } from '../../../../types'
-import { EncryptedAttachmentsDto } from '../../../../types/api'
+import { StorageModeAttachmentsMap } from '../../../../types/api'
 import { ProcessedFieldResponse } from '../submission.types'
 
 export type EncryptSubmissionBodyAfterProcess = {
   encryptedContent: string
-  attachments?: EncryptedAttachmentsDto
+  attachments?: StorageModeAttachmentsMap
   isPreview: boolean
   version: number
   parsedResponses: ProcessedFieldResponse[]

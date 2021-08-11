@@ -1,6 +1,6 @@
 import formsgSdkPackage from '@opengovsg/formsg-sdk'
 
-import * as vfnConstants from '../../shared/util/verification'
+import * as vfnConstants from '../../../shared/utils/verification'
 
 import { verifiedFieldsConfig } from './features/verified-fields.config'
 import { webhooksAndVerifiedContentConfig } from './features/webhook-verified-content.config'

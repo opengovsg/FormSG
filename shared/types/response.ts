@@ -1,7 +1,10 @@
+import { Opaque } from 'type-fest'
 import { z } from 'zod'
 import { BasicField, MyInfoAttribute } from './field'
 
 const ResponseBase = z.object({
+  myInfo: z.never().optional(),
+  signature: z.never().optional(),
   _id: z.string(),
   question: z.string(),
 })
@@ -108,9 +111,11 @@ export const NricResponse = SingleAnswerResponse.extend({
 })
 export type NricResponse = z.infer<typeof NricResponse>
 
+export type TableRow = Opaque<string[], 'TableRow'>
+
 export const TableResponse = ResponseBase.extend({
   // Table fields have an array of array of strings.
-  answerArray: z.array(z.array(z.string())),
+  answerArray: z.array(z.array(z.string())) as unknown as z.Schema<TableRow[]>,
   fieldType: z.literal(BasicField.Table),
 })
 export type TableResponse = z.infer<typeof TableResponse>

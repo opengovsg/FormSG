@@ -1,8 +1,9 @@
 import { Opaque, RequireAtLeastOne } from 'type-fest'
 import { ErrorDto } from './core'
-import { MyInfoAttribute } from './field'
+import { FormFieldDto, MyInfoAttribute } from './field'
 import { FormAuthType, FormDto } from './form/form'
 import { DateString } from './generic'
+import { FieldResponse } from './response'
 
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 
@@ -18,6 +19,9 @@ export type SubmissionBase = {
   submissionType: SubmissionType
 }
 
+/**
+ * Email mode submission typings as stored in the database.
+ */
 export interface EmailModeSubmissionBase extends SubmissionBase {
   submissionType: SubmissionType.Email
   recipientEmails: string[]
@@ -36,6 +40,9 @@ export type WebhookResponse = {
   }
 }
 
+/**
+ * Storage mode submission typings as stored in the database.
+ */
 export interface StorageModeSubmissionBase extends SubmissionBase {
   submissionType: SubmissionType.Encrypt
   encryptedContent: string
@@ -87,3 +94,31 @@ export type FormSubmissionMetadataQueryDto = RequireAtLeastOne<
   },
   'page' | 'submissionId'
 >
+
+type SubmissionContentBase = {
+  responses: FieldResponse[]
+}
+
+/**
+ * Shape of email form submissions
+ */
+export type EmailModeSubmissionContentDto = SubmissionContentBase
+
+type StorageModeAttachment = {
+  encryptedFile?: {
+    binary: string
+    nonce: string
+    submissionPublicKey: string
+  }
+}
+
+export type StorageModeAttachmentsMap = Record<
+  FormFieldDto['_id'],
+  StorageModeAttachment
+>
+
+export type StorageModeSubmissionContentDto = SubmissionContentBase & {
+  encryptedContent: string
+  attachments?: StorageModeAttachmentsMap
+  version: number
+}
