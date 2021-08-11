@@ -86,4 +86,7 @@ export const Radio: ComponentMultiStyleConfig = {
       control: { w: '1.5rem', h: '1.5rem' },
     },
   },
+  defaultProps: {
+    colorScheme: 'primary',
+  },
 }
