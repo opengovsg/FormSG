@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head> </head>
+  <body>
+    <p>Dear form admin,</p>
+    <p>
+      You are receiving this email as you are a collaborator on a form with SMS
+      OTP verification enabled:
+      <a href="<%= form.link %>"> <%= form.title %></a>.
+    </p>
+    <p>
+      As the owner has reached the free tier limit of <%= smsVerificationLimit
+      %> verifications sent, SMS OTP verification has been automatically
+      disabled on this form. Respondents will still be able to submit to this
+      form but will not be prompted to verify their mobile numbers.
+    </p>
+
+    <p>
+      We would have previously notified all form admins upon your account
+      reaching <%= smsWarningTiers.LOW %>, <%= smsWarningTiers.MED %> and <%=
+      smsWarningTiers.HIGH %> responses while free SMS OTP verification was
+      enabled.
+    </p>
+    <p>
+      If you need to send more SMS OTP verifications, please
+      <a
+        href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-arrange-payment-for-verified-sms"
+      >
+        arrange advance billing with us.
+      </a>
+    </p>
+    <p>FormSG Team</p>
+  </body>
+</html>

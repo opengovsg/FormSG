@@ -1,7 +1,14 @@
 import { get } from 'lodash'
 
 import { types as basicTypes } from '../../../../shared/constants/field/basic'
-import { BasicField, IEmailFieldSchema, ITableRow } from '../../../types'
+import {
+  BasicField,
+  IEmailFieldSchema,
+  IField,
+  IMobileField,
+  ITableRow,
+  IVerifiableMobileField,
+} from '../../../types'
 import {
   ColumnResponse,
   ProcessedAttachmentResponse,
@@ -87,4 +94,14 @@ export const isPossibleEmailFieldSchema = (
   field: unknown,
 ): field is Partial<IEmailFieldSchema> => {
   return get(field, 'fieldType') === BasicField.Email
+}
+
+const isMobileNumberField = (formField: IField): formField is IMobileField => {
+  return formField.fieldType === BasicField.Mobile
+}
+
+export const isVerifiableMobileField = (
+  formField: IField,
+): formField is IVerifiableMobileField => {
+  return isMobileNumberField(formField) && formField.isVerifiable
 }

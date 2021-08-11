@@ -20,6 +20,7 @@ import {
 } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
+import { SmsLimitExceededError } from 'src/app/modules/verification/verification.errors'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { EditFieldActions } from 'src/shared/constants'
 import {
@@ -55,6 +56,8 @@ import {
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
+import { smsConfig } from '../../../../config/features/sms.config'
+import * as SmsService from '../../../../services/sms/sms.service'
 import {
   FormNotFoundError,
   LogicNotFoundError,
@@ -66,30 +69,7 @@ import {
   FieldNotFoundError,
   InvalidFileTypeError,
 } from '../admin-form.errors'
-import {
-  archiveForm,
-  createForm,
-  createFormField,
-  createFormLogic,
-  createPresignedPostUrlForImages,
-  createPresignedPostUrlForLogos,
-  deleteFormField,
-  deleteFormLogic,
-  duplicateForm,
-  duplicateFormField,
-  editFormFields,
-  getDashboardForms,
-  getFormField,
-  reorderFormField,
-  transferFormOwnership,
-  updateEndPage,
-  updateForm,
-  updateFormCollaborators,
-  updateFormField,
-  updateFormLogic,
-  updateFormSettings,
-  updateStartPage,
-} from '../admin-form.service'
+import * as AdminFormService from '../admin-form.service'
 import { OverrideProps } from '../admin-form.types'
 import * as AdminFormUtils from '../admin-form.utils'
 
@@ -134,7 +114,7 @@ describe('admin-form.service', () => {
         .mockResolvedValueOnce(mockDashboardForms)
 
       // Act
-      const actualResult = await getDashboardForms(mockUserId)
+      const actualResult = await AdminFormService.getDashboardForms(mockUserId)
 
       // Assert
       expect(getSpy).toHaveBeenCalledWith(mockUserId, mockUser.email)
@@ -148,7 +128,7 @@ describe('admin-form.service', () => {
       MockUserService.findUserById.mockReturnValueOnce(errAsync(expectedError))
 
       // Act
-      const actualResult = await getDashboardForms('any')
+      const actualResult = await AdminFormService.getDashboardForms('any')
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
@@ -172,7 +152,7 @@ describe('admin-form.service', () => {
         .mockRejectedValueOnce(new Error('some error'))
 
       // Act
-      const actualResult = await getDashboardForms(mockUserId)
+      const actualResult = await AdminFormService.getDashboardForms(mockUserId)
 
       // Assert
       expect(getSpy).toHaveBeenCalledWith(mockUserId, mockUser.email)
@@ -201,11 +181,12 @@ describe('admin-form.service', () => {
         })
 
       // Act
-      const actualResult = await createPresignedPostUrlForImages({
-        fileId: 'any id',
-        fileMd5Hash: 'any hash',
-        fileType: VALID_UPLOAD_FILE_TYPES[0],
-      })
+      const actualResult =
+        await AdminFormService.createPresignedPostUrlForImages({
+          fileId: 'any id',
+          fileMd5Hash: 'any hash',
+          fileType: VALID_UPLOAD_FILE_TYPES[0],
+        })
 
       // Assert
       // Check that the correct bucket was used.
@@ -225,11 +206,12 @@ describe('admin-form.service', () => {
       expect(VALID_UPLOAD_FILE_TYPES.includes(invalidFileType)).toEqual(false)
 
       // Act
-      const actualResult = await createPresignedPostUrlForImages({
-        fileId: 'any id',
-        fileMd5Hash: 'any hash',
-        fileType: invalidFileType,
-      })
+      const actualResult =
+        await AdminFormService.createPresignedPostUrlForImages({
+          fileId: 'any id',
+          fileMd5Hash: 'any hash',
+          fileType: invalidFileType,
+        })
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
@@ -250,11 +232,12 @@ describe('admin-form.service', () => {
         })
 
       // Act
-      const actualResult = await createPresignedPostUrlForImages({
-        fileId: 'any id',
-        fileMd5Hash: 'any hash',
-        fileType: VALID_UPLOAD_FILE_TYPES[0],
-      })
+      const actualResult =
+        await AdminFormService.createPresignedPostUrlForImages({
+          fileId: 'any id',
+          fileMd5Hash: 'any hash',
+          fileType: VALID_UPLOAD_FILE_TYPES[0],
+        })
 
       // Assert
       // Check that the correct bucket was used.
@@ -291,11 +274,12 @@ describe('admin-form.service', () => {
         })
 
       // Act
-      const actualResult = await createPresignedPostUrlForLogos({
-        fileId: 'any id',
-        fileMd5Hash: 'any hash',
-        fileType: VALID_UPLOAD_FILE_TYPES[0],
-      })
+      const actualResult =
+        await AdminFormService.createPresignedPostUrlForLogos({
+          fileId: 'any id',
+          fileMd5Hash: 'any hash',
+          fileType: VALID_UPLOAD_FILE_TYPES[0],
+        })
 
       // Assert
       // Check that the correct bucket was used.
@@ -315,11 +299,12 @@ describe('admin-form.service', () => {
       expect(VALID_UPLOAD_FILE_TYPES.includes(invalidFileType)).toEqual(false)
 
       // Act
-      const actualResult = await createPresignedPostUrlForLogos({
-        fileId: 'any id',
-        fileMd5Hash: 'any hash',
-        fileType: invalidFileType,
-      })
+      const actualResult =
+        await AdminFormService.createPresignedPostUrlForLogos({
+          fileId: 'any id',
+          fileMd5Hash: 'any hash',
+          fileType: invalidFileType,
+        })
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
@@ -340,11 +325,12 @@ describe('admin-form.service', () => {
         })
 
       // Act
-      const actualResult = await createPresignedPostUrlForLogos({
-        fileId: 'any id',
-        fileMd5Hash: 'any hash',
-        fileType: VALID_UPLOAD_FILE_TYPES[0],
-      })
+      const actualResult =
+        await AdminFormService.createPresignedPostUrlForLogos({
+          fileId: 'any id',
+          fileMd5Hash: 'any hash',
+          fileType: VALID_UPLOAD_FILE_TYPES[0],
+        })
 
       // Assert
       // Check that the correct bucket was used.
@@ -375,7 +361,7 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm
 
       // Act
-      const actual = await archiveForm(mockInitialForm)
+      const actual = await AdminFormService.archiveForm(mockInitialForm)
 
       // Assert
       expect(actual.isOk()).toEqual(true)
@@ -393,7 +379,7 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm
 
       // Act
-      const actual = await archiveForm(mockInitialForm)
+      const actual = await AdminFormService.archiveForm(mockInitialForm)
 
       // Assert
       expect(actual.isErr()).toEqual(true)
@@ -456,7 +442,7 @@ describe('admin-form.service', () => {
         .mockResolvedValueOnce(expectedForm as never)
 
       // Act
-      const actualResult = await duplicateForm(
+      const actualResult = await AdminFormService.duplicateForm(
         mockForm,
         mockNewAdminId,
         MOCK_EMAIL_OVERRIDE_PARAMS,
@@ -505,7 +491,7 @@ describe('admin-form.service', () => {
         .mockResolvedValueOnce(expectedForm as never)
 
       // Act
-      const actualResult = await duplicateForm(
+      const actualResult = await AdminFormService.duplicateForm(
         mockForm,
         mockNewAdminId,
         MOCK_EMAIL_OVERRIDE_PARAMS,
@@ -546,7 +532,7 @@ describe('admin-form.service', () => {
         .mockReturnValueOnce(expectedOverrideProps)
 
       // Act
-      const actualResult = await duplicateForm(
+      const actualResult = await AdminFormService.duplicateForm(
         mockForm,
         mockNewAdminId,
         MOCK_EMAIL_OVERRIDE_PARAMS,
@@ -612,7 +598,7 @@ describe('admin-form.service', () => {
       )
 
       // Act
-      const actualResult = await transferFormOwnership(
+      const actualResult = await AdminFormService.transferFormOwnership(
         mockValidForm,
         MOCK_NEW_OWNER_EMAIL,
       )
@@ -643,7 +629,7 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm
 
       // Act
-      const actualResult = await transferFormOwnership(
+      const actualResult = await AdminFormService.transferFormOwnership(
         mockValidForm,
         MOCK_NEW_OWNER_EMAIL,
       )
@@ -671,7 +657,7 @@ describe('admin-form.service', () => {
       )
 
       // Act
-      const actualResult = await transferFormOwnership(
+      const actualResult = await AdminFormService.transferFormOwnership(
         mockValidForm,
         MOCK_NEW_OWNER_EMAIL,
       )
@@ -695,7 +681,7 @@ describe('admin-form.service', () => {
       )
 
       // Act
-      const actualResult = await transferFormOwnership(
+      const actualResult = await AdminFormService.transferFormOwnership(
         mockValidForm,
         MOCK_NEW_OWNER_EMAIL,
       )
@@ -722,7 +708,7 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm
 
       // Act
-      const actualResult = await transferFormOwnership(
+      const actualResult = await AdminFormService.transferFormOwnership(
         mockValidForm,
         MOCK_NEW_OWNER_EMAIL,
       )
@@ -746,7 +732,7 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm
 
       // Act
-      const actualResult = await transferFormOwnership(
+      const actualResult = await AdminFormService.transferFormOwnership(
         mockValidForm,
         // Should trigger error since new owner email is the same as current.
         MOCK_CURRENT_OWNER.email,
@@ -792,7 +778,7 @@ describe('admin-form.service', () => {
       )
 
       // Act
-      const actualResult = await transferFormOwnership(
+      const actualResult = await AdminFormService.transferFormOwnership(
         mockValidForm,
         MOCK_NEW_OWNER_EMAIL,
       )
@@ -813,7 +799,7 @@ describe('admin-form.service', () => {
   describe('createForm', () => {
     it('should successfully create form', async () => {
       // Arrange
-      const formParams: Parameters<typeof createForm>[0] = {
+      const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
         responseMode: ResponseMode.Email,
@@ -828,7 +814,7 @@ describe('admin-form.service', () => {
         .mockResolvedValueOnce(expectedForm as never)
 
       // Act
-      const actualResult = await createForm(formParams)
+      const actualResult = await AdminFormService.createForm(formParams)
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
@@ -837,7 +823,7 @@ describe('admin-form.service', () => {
 
     it('should return DatabaseValidationError on invalid form params whilst creating form', async () => {
       // Arrange
-      const formParams: Parameters<typeof createForm>[0] = {
+      const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
         responseMode: ResponseMode.Encrypt,
@@ -850,7 +836,7 @@ describe('admin-form.service', () => {
         .mockRejectedValueOnce(new mongoose.Error.ValidationError() as never)
 
       // Act
-      const actualResult = await createForm(formParams)
+      const actualResult = await AdminFormService.createForm(formParams)
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
@@ -861,7 +847,7 @@ describe('admin-form.service', () => {
 
     it('should return DatabaseConflictError on mongoose version error', async () => {
       // Arrange
-      const formParams: Parameters<typeof createForm>[0] = {
+      const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
         responseMode: ResponseMode.Encrypt,
@@ -873,7 +859,7 @@ describe('admin-form.service', () => {
       )
 
       // Act
-      const actualResult = await createForm(formParams)
+      const actualResult = await AdminFormService.createForm(formParams)
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
@@ -884,7 +870,7 @@ describe('admin-form.service', () => {
 
     it('should return DatabasePayloadError on form size error', async () => {
       // Arrange
-      const formParams: Parameters<typeof createForm>[0] = {
+      const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
         responseMode: ResponseMode.Encrypt,
@@ -899,7 +885,7 @@ describe('admin-form.service', () => {
         .mockRejectedValueOnce(expectedError as never)
 
       // Act
-      const actualResult = await createForm(formParams)
+      const actualResult = await AdminFormService.createForm(formParams)
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(
@@ -912,7 +898,7 @@ describe('admin-form.service', () => {
 
     it('should return DatabaseError on database error whilst creating form', async () => {
       // Arrange
-      const formParams: Parameters<typeof createForm>[0] = {
+      const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
         responseMode: ResponseMode.Encrypt,
@@ -924,7 +910,7 @@ describe('admin-form.service', () => {
         .mockRejectedValueOnce(new Error(mockErrorString) as never)
 
       // Act
-      const actualResult = await createForm(formParams)
+      const actualResult = await AdminFormService.createForm(formParams)
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(
@@ -969,7 +955,10 @@ describe('admin-form.service', () => {
       }
 
       // Act
-      const actualResult = await editFormFields(MOCK_INTIAL_FORM, createParams)
+      const actualResult = await AdminFormService.editFormFields(
+        MOCK_INTIAL_FORM,
+        createParams,
+      )
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_FORM)
@@ -991,7 +980,10 @@ describe('admin-form.service', () => {
       }
 
       // Act
-      const actualResult = await editFormFields(MOCK_INTIAL_FORM, reorderParams)
+      const actualResult = await AdminFormService.editFormFields(
+        MOCK_INTIAL_FORM,
+        reorderParams,
+      )
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(mockError)
@@ -1017,7 +1009,10 @@ describe('admin-form.service', () => {
       }
 
       // Act
-      const actualResult = await editFormFields(MOCK_INTIAL_FORM, deleteParams)
+      const actualResult = await AdminFormService.editFormFields(
+        MOCK_INTIAL_FORM,
+        deleteParams,
+      )
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
@@ -1049,12 +1044,17 @@ describe('admin-form.service', () => {
 
     it('should successfully update given form keys', async () => {
       // Arrange
-      const formUpdateParams: Parameters<typeof updateForm>[1] = {
+      const formUpdateParams: Parameters<
+        typeof AdminFormService.updateForm
+      >[1] = {
         status: Status.Private,
       }
 
       // Act
-      const actualResult = await updateForm(MOCK_INITIAL_FORM, formUpdateParams)
+      const actualResult = await AdminFormService.updateForm(
+        MOCK_INITIAL_FORM,
+        formUpdateParams,
+      )
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_FORM)
@@ -1067,7 +1067,9 @@ describe('admin-form.service', () => {
 
     it('should return DatabaseError when error occurs whilst updating form', async () => {
       // Arrange
-      const formUpdateParams: Parameters<typeof updateForm>[1] = {
+      const formUpdateParams: Parameters<
+        typeof AdminFormService.updateForm
+      >[1] = {
         esrvcId: 'MOCK-ESRVCID',
       }
       // Mock database failure.
@@ -1076,7 +1078,10 @@ describe('admin-form.service', () => {
       )
 
       // Act
-      const actualResult = await updateForm(MOCK_INITIAL_FORM, formUpdateParams)
+      const actualResult = await AdminFormService.updateForm(
+        MOCK_INITIAL_FORM,
+        formUpdateParams,
+      )
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
@@ -1145,7 +1150,7 @@ describe('admin-form.service', () => {
       }
 
       // Act
-      const actualResult = await updateFormSettings(
+      const actualResult = await AdminFormService.updateFormSettings(
         MOCK_EMAIL_FORM,
         settingsToUpdate,
       )
@@ -1168,7 +1173,7 @@ describe('admin-form.service', () => {
         },
       }
       // Act
-      const actualResult = await updateFormSettings(
+      const actualResult = await AdminFormService.updateFormSettings(
         MOCK_ENCRYPT_FORM,
         settingsToUpdate,
       )
@@ -1199,7 +1204,7 @@ describe('admin-form.service', () => {
       })
 
       // Act
-      const actualResult = await updateFormSettings(
+      const actualResult = await AdminFormService.updateFormSettings(
         MOCK_ENCRYPT_FORM,
         settingsToUpdate,
       )
@@ -1239,7 +1244,7 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm
 
       // Act
-      const actual = await updateFormField(
+      const actual = await AdminFormService.updateFormField(
         mockForm,
         fieldToUpdate._id,
         mockNewField,
@@ -1267,7 +1272,7 @@ describe('admin-form.service', () => {
       ) as FieldUpdateDto
 
       // Act
-      const actual = await updateFormField(
+      const actual = await AdminFormService.updateFormField(
         mockForm,
         invalidFieldId,
         mockNewField,
@@ -1294,7 +1299,7 @@ describe('admin-form.service', () => {
       ) as FieldUpdateDto
 
       // Act
-      const actual = await updateFormField(
+      const actual = await AdminFormService.updateFormField(
         mockForm,
         invalidFieldId,
         mockNewField,
@@ -1331,7 +1336,10 @@ describe('admin-form.service', () => {
       ]) as FieldCreateDto
 
       // Act
-      const actual = await createFormField(mockForm, formCreateParams)
+      const actual = await AdminFormService.createFormField(
+        mockForm,
+        formCreateParams,
+      )
 
       // Assert
       // Should return last element in form_field
@@ -1358,7 +1366,10 @@ describe('admin-form.service', () => {
       } as FieldCreateDto
 
       // Act
-      const actual = await createFormField(mockForm, formCreateParams)
+      const actual = await AdminFormService.createFormField(
+        mockForm,
+        formCreateParams,
+      )
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
@@ -1406,7 +1417,10 @@ describe('admin-form.service', () => {
         })
 
       // Act
-      const actualResult = await deleteFormLogic(mockEmailForm, logicId)
+      const actualResult = await AdminFormService.deleteFormLogic(
+        mockEmailForm,
+        logicId,
+      )
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -1440,7 +1454,10 @@ describe('admin-form.service', () => {
         })
 
       // Act
-      const actualResult = await deleteFormLogic(mockEncryptForm, logicId)
+      const actualResult = await AdminFormService.deleteFormLogic(
+        mockEncryptForm,
+        logicId,
+      )
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -1466,7 +1483,10 @@ describe('admin-form.service', () => {
     it('should return LogicNotFoundError if logic does not exist on form', async () => {
       // Act
       const wrongLogicId = new ObjectId().toHexString()
-      const actualResult = await deleteFormLogic(mockEmailForm, wrongLogicId)
+      const actualResult = await AdminFormService.deleteFormLogic(
+        mockEmailForm,
+        wrongLogicId,
+      )
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
@@ -1493,7 +1513,7 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm
 
       // Act
-      const actual = await duplicateFormField(
+      const actual = await AdminFormService.duplicateFormField(
         mockForm,
         String(fieldToDuplicate._id),
       )
@@ -1523,7 +1543,10 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm
 
       // Act
-      const actual = await duplicateFormField(mockForm, fieldToDuplicate._id)
+      const actual = await AdminFormService.duplicateFormField(
+        mockForm,
+        fieldToDuplicate._id,
+      )
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
@@ -1542,7 +1565,10 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm
 
       // Act
-      const actual = await duplicateFormField(mockForm, initialFields[0]._id)
+      const actual = await AdminFormService.duplicateFormField(
+        mockForm,
+        initialFields[0]._id,
+      )
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
@@ -1567,7 +1593,7 @@ describe('admin-form.service', () => {
       const newPosition = 1
 
       // Act
-      const actual = await reorderFormField(
+      const actual = await AdminFormService.reorderFormField(
         mockForm,
         fieldToReorder,
         newPosition,
@@ -1591,7 +1617,7 @@ describe('admin-form.service', () => {
       const newPosition = 2
 
       // Act
-      const actual = await reorderFormField(
+      const actual = await AdminFormService.reorderFormField(
         mockForm,
         fieldToReorder,
         newPosition,
@@ -1618,7 +1644,7 @@ describe('admin-form.service', () => {
       const newPosition = 2
 
       // Act
-      const actual = await reorderFormField(
+      const actual = await AdminFormService.reorderFormField(
         mockForm,
         fieldToReorder,
         newPosition,
@@ -1652,7 +1678,10 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm
 
       // Act
-      const actual = await updateFormCollaborators(mockForm, newCollaborators)
+      const actual = await AdminFormService.updateFormCollaborators(
+        mockForm,
+        newCollaborators,
+      )
 
       // Assert
       expect(mockForm.updateFormCollaborators).toHaveBeenCalledWith(
@@ -1677,7 +1706,10 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm
 
       // Act
-      const actual = await updateFormCollaborators(mockForm, newCollaborators)
+      const actual = await AdminFormService.updateFormCollaborators(
+        mockForm,
+        newCollaborators,
+      )
 
       // Assert
       expect(mockForm.updateFormCollaborators).toHaveBeenCalledWith(
@@ -1763,7 +1795,10 @@ describe('admin-form.service', () => {
       CREATE_SPY.mockResolvedValue(mockEmailFormUpdated as IFormDocument)
 
       // Act
-      const actualResult = await createFormLogic(mockEmailForm, createLogicBody)
+      const actualResult = await AdminFormService.createFormLogic(
+        mockEmailForm,
+        createLogicBody,
+      )
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -1782,7 +1817,7 @@ describe('admin-form.service', () => {
       CREATE_SPY.mockResolvedValue(mockEncryptFormUpdated as IFormDocument)
 
       // Act
-      const actualResult = await createFormLogic(
+      const actualResult = await AdminFormService.createFormLogic(
         mockEncryptForm,
         createLogicBody,
       )
@@ -1804,7 +1839,7 @@ describe('admin-form.service', () => {
       CREATE_SPY.mockResolvedValue(undefined as unknown as IFormDocument)
 
       // Act
-      const actualResult = await createFormLogic(
+      const actualResult = await AdminFormService.createFormLogic(
         mockEncryptForm,
         createLogicBody,
       )
@@ -1828,7 +1863,7 @@ describe('admin-form.service', () => {
       CREATE_SPY.mockResolvedValue(updatedFormWithoutLogic as IFormDocument)
 
       // Act
-      const actualResult = await createFormLogic(
+      const actualResult = await AdminFormService.createFormLogic(
         mockEncryptForm,
         createLogicBody,
       )
@@ -1852,7 +1887,7 @@ describe('admin-form.service', () => {
       CREATE_SPY.mockResolvedValue(updatedFormWithEmptyLogic as IFormDocument)
 
       // Act
-      const actualResult = await createFormLogic(
+      const actualResult = await AdminFormService.createFormLogic(
         mockEncryptForm,
         createLogicBody,
       )
@@ -1894,7 +1929,10 @@ describe('admin-form.service', () => {
       deleteSpy.mockResolvedValueOnce(mockUpdatedForm)
 
       // Act
-      const actual = await deleteFormField(mockForm, String(fieldToDelete._id))
+      const actual = await AdminFormService.deleteFormField(
+        mockForm,
+        String(fieldToDelete._id),
+      )
 
       // Assert
       expect(actual._unsafeUnwrap()).toEqual(mockUpdatedForm)
@@ -1913,7 +1951,7 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm
 
       // Act
-      const actual = await deleteFormField(
+      const actual = await AdminFormService.deleteFormField(
         mockForm,
         new ObjectId().toHexString(),
       )
@@ -1934,7 +1972,10 @@ describe('admin-form.service', () => {
       deleteSpy.mockResolvedValueOnce(null)
 
       // Act
-      const actual = await deleteFormField(mockForm, fieldToDelete._id)
+      const actual = await AdminFormService.deleteFormField(
+        mockForm,
+        fieldToDelete._id,
+      )
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
@@ -1963,7 +2004,10 @@ describe('admin-form.service', () => {
       updateSpy.mockResolvedValueOnce(mockUpdatedForm)
 
       // Act
-      const actual = await updateEndPage(MOCK_FORM_ID, MOCK_NEW_END_PAGE)
+      const actual = await AdminFormService.updateEndPage(
+        MOCK_FORM_ID,
+        MOCK_NEW_END_PAGE,
+      )
 
       // Assert
       expect(actual._unsafeUnwrap()).toEqual(MOCK_NEW_END_PAGE)
@@ -1974,7 +2018,10 @@ describe('admin-form.service', () => {
       updateSpy.mockResolvedValueOnce(null)
 
       // Act
-      const actual = await updateEndPage(MOCK_FORM_ID, MOCK_NEW_END_PAGE)
+      const actual = await AdminFormService.updateEndPage(
+        MOCK_FORM_ID,
+        MOCK_NEW_END_PAGE,
+      )
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
@@ -1986,7 +2033,10 @@ describe('admin-form.service', () => {
       updateSpy.mockRejectedValueOnce(new Error(expectedErrorMsg))
 
       // Act
-      const actual = await updateEndPage(MOCK_FORM_ID, MOCK_NEW_END_PAGE)
+      const actual = await AdminFormService.updateEndPage(
+        MOCK_FORM_ID,
+        MOCK_NEW_END_PAGE,
+      )
 
       // Assert
       const actualError = actual._unsafeUnwrapErr()
@@ -2018,7 +2068,10 @@ describe('admin-form.service', () => {
       updateSpy.mockResolvedValueOnce(mockUpdatedForm)
 
       // Act
-      const actual = await updateStartPage(MOCK_FORM_ID, MOCK_NEW_START_PAGE)
+      const actual = await AdminFormService.updateStartPage(
+        MOCK_FORM_ID,
+        MOCK_NEW_START_PAGE,
+      )
 
       // Assert
       expect(actual._unsafeUnwrap()).toEqual(MOCK_NEW_START_PAGE)
@@ -2029,7 +2082,10 @@ describe('admin-form.service', () => {
       updateSpy.mockResolvedValueOnce(null)
 
       // Act
-      const actual = await updateStartPage(MOCK_FORM_ID, MOCK_NEW_START_PAGE)
+      const actual = await AdminFormService.updateStartPage(
+        MOCK_FORM_ID,
+        MOCK_NEW_START_PAGE,
+      )
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
@@ -2041,7 +2097,10 @@ describe('admin-form.service', () => {
       updateSpy.mockRejectedValueOnce(new Error(expectedErrorMsg))
 
       // Act
-      const actual = await updateStartPage(MOCK_FORM_ID, MOCK_NEW_START_PAGE)
+      const actual = await AdminFormService.updateStartPage(
+        MOCK_FORM_ID,
+        MOCK_NEW_START_PAGE,
+      )
 
       // Assert
       const actualError = actual._unsafeUnwrapErr()
@@ -2130,7 +2189,7 @@ describe('admin-form.service', () => {
       UPDATE_SPY.mockResolvedValue(mockEmailFormUpdated as IFormSchema)
 
       // Act
-      const actualResult = await updateFormLogic(
+      const actualResult = await AdminFormService.updateFormLogic(
         mockEmailForm,
         logicId1.toHexString(),
         updateLogicBody,
@@ -2152,7 +2211,7 @@ describe('admin-form.service', () => {
       UPDATE_SPY.mockResolvedValue(mockEncryptFormUpdated as IFormSchema)
 
       // Act
-      const actualResult = await updateFormLogic(
+      const actualResult = await AdminFormService.updateFormLogic(
         mockEncryptForm,
         logicId1.toHexString(),
         updateLogicBody,
@@ -2172,7 +2231,7 @@ describe('admin-form.service', () => {
     it('should return LogicNotFoundError if logic does not exist on form', async () => {
       // Act
       const wrongLogicId = new ObjectId().toHexString()
-      const actualResult = await updateFormLogic(
+      const actualResult = await AdminFormService.updateFormLogic(
         mockEmailForm,
         wrongLogicId,
         updateLogicBody,
@@ -2194,10 +2253,13 @@ describe('admin-form.service', () => {
         // Append created field to end of form_fields.
         form_fields: [MOCK_FIELD],
         _id: new ObjectId(),
-      } as IFormDocument
+      } as IPopulatedForm
 
       // Act
-      const actual = await getFormField(MOCK_FORM, String(MOCK_FIELD._id))
+      const actual = await AdminFormService.getFormField(
+        MOCK_FORM,
+        String(MOCK_FIELD._id),
+      )
 
       // Assert
       expect(actual._unsafeUnwrap()).toEqual(MOCK_FIELD)
@@ -2211,16 +2273,158 @@ describe('admin-form.service', () => {
         // Append created field to end of form_fields.
         form_fields: [],
         _id: new ObjectId(),
-      } as unknown as IFormDocument
+      } as unknown as IPopulatedForm
       const expectedError = new FieldNotFoundError(
         `Attempted to retrieve field ${MOCK_ID} from ${MOCK_FORM._id} but field was not present`,
       )
 
       // Act
-      const actual = await getFormField(MOCK_FORM, MOCK_ID)
+      const actual = await AdminFormService.getFormField(MOCK_FORM, MOCK_ID)
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toEqual(expectedError)
+    })
+  })
+
+  describe('disableSmsVerificationsForUser', () => {
+    it('should return true when the forms are updated successfully', async () => {
+      // Arrange
+      const MOCK_ADMIN_ID = new ObjectId().toHexString()
+      const disableSpy = jest.spyOn(FormModel, 'disableSmsVerificationsForUser')
+      disableSpy.mockResolvedValueOnce({ n: 0, nModified: 0, ok: 0 })
+
+      // Act
+      const expected = await AdminFormService.disableSmsVerificationsForUser(
+        MOCK_ADMIN_ID,
+      )
+
+      // Assert
+      expect(disableSpy).toHaveBeenCalledWith(MOCK_ADMIN_ID)
+      expect(expected._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should return a database error when the operation fails', async () => {
+      // Arrange
+      const MOCK_ADMIN_ID = new ObjectId().toHexString()
+      const disableSpy = jest.spyOn(FormModel, 'disableSmsVerificationsForUser')
+      disableSpy.mockRejectedValueOnce('whoops')
+
+      // Act
+      const expected = await AdminFormService.disableSmsVerificationsForUser(
+        MOCK_ADMIN_ID,
+      )
+
+      // Assert
+      expect(disableSpy).toHaveBeenCalledWith(MOCK_ADMIN_ID)
+      expect(expected._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
+
+  describe('shouldUpdateFormField', () => {
+    const MOCK_FORM = {
+      admin: {
+        _id: new ObjectId(),
+      },
+    } as unknown as IPopulatedForm
+
+    const countSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+
+    describe('when update form field is not a BasicField.Mobile type', () => {
+      const MOCK_RATING_FIELD = generateDefaultField(BasicField.Rating)
+      it('should return the form without doing anything', async () => {
+        // Act
+        const actual = await AdminFormService.shouldUpdateFormField(
+          MOCK_FORM,
+          MOCK_RATING_FIELD,
+        )
+
+        // Assert
+        expect(actual._unsafeUnwrap()).toEqual(MOCK_FORM)
+        expect(countSpy).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('when update form field is a BasicField.Mobile type', () => {
+      const MOCK_UNVERIFIABLE_MOBILE_FIELD = generateDefaultField(
+        BasicField.Mobile,
+      )
+      const MOCK_VERIFIABLE_MOBILE_FIELD = generateDefaultField(
+        BasicField.Mobile,
+        { isVerifiable: true },
+      )
+
+      it('should return the given form when the admin is under the free sms limit', async () => {
+        // Arrange
+        countSpy.mockReturnValueOnce(okAsync(smsConfig.smsVerificationLimit))
+
+        // Act
+        const actual = await AdminFormService.shouldUpdateFormField(
+          MOCK_FORM,
+          MOCK_VERIFIABLE_MOBILE_FIELD,
+        )
+
+        // Assert
+        expect(actual._unsafeUnwrap()).toBe(MOCK_FORM)
+      })
+
+      it('should return the given form when the form is onboarded with its own credentials', async () => {
+        // Arrange
+        const MOCK_ONBOARDED_FORM = { ...MOCK_FORM, msgSrvcName: 'form a form' }
+
+        // Act
+        const actual = await AdminFormService.shouldUpdateFormField(
+          MOCK_ONBOARDED_FORM,
+          MOCK_VERIFIABLE_MOBILE_FIELD,
+        )
+
+        // Assert
+        expect(countSpy).not.toHaveBeenCalled()
+        expect(actual._unsafeUnwrap()).toEqual(MOCK_ONBOARDED_FORM)
+      })
+
+      it('should return the given form when mobile field is not verifiable', async () => {
+        // Act
+        const actual = await AdminFormService.shouldUpdateFormField(
+          MOCK_FORM,
+          MOCK_UNVERIFIABLE_MOBILE_FIELD,
+        )
+
+        // Assert
+        expect(countSpy).not.toHaveBeenCalled()
+        expect(actual._unsafeUnwrap()).toEqual(MOCK_FORM)
+      })
+
+      it('should return sms retrieval error when sms limit exceeded and the given form has not been onboarded', async () => {
+        // Arrange
+        countSpy.mockReturnValueOnce(
+          okAsync(smsConfig.smsVerificationLimit + 1),
+        )
+
+        // Act
+        const actual = await AdminFormService.shouldUpdateFormField(
+          MOCK_FORM,
+          MOCK_VERIFIABLE_MOBILE_FIELD,
+        )
+
+        // Assert
+        expect(actual._unsafeUnwrapErr()).toEqual(new SmsLimitExceededError())
+      })
+
+      it('should propagate any database errors encountered during retrieval', async () => {
+        // Arrange
+        const MOCK_ERROR_STRING = 'something went oopsie'
+        const expectedError = new DatabaseError(MOCK_ERROR_STRING)
+        countSpy.mockReturnValueOnce(errAsync(expectedError))
+
+        // Act
+        const actual = await AdminFormService.shouldUpdateFormField(
+          MOCK_FORM,
+          MOCK_VERIFIABLE_MOBILE_FIELD,
+        )
+
+        // Assert
+        expect(actual._unsafeUnwrapErr()).toBe(expectedError)
+      })
     })
   })
 })

@@ -1,7 +1,10 @@
 <ng-transclude
   ng-class="(vm.field.isVerifiable ? 'col-sm-9' : 'col-sm-12') + ' vfn-slot'"
 ></ng-transclude>
-<div class="verifiable" ng-if="vm.field.isVerifiable">
+<div
+  class="verifiable"
+  ng-if="vm.field.fieldType === 'email' ? vm.field.isVerifiable : vm.field.isVerifiable && !vm.field.hasAdminExceededSmsLimit && !vm.field.hasRetrievalError"
+>
   <div class="vfn-btn-container col-sm-3 col-xs-12 pull-right field-group">
     <!-- Verify button -->
     <button

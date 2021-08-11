@@ -4,16 +4,22 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
+import { smsConfig } from 'src/app/config/features/sms.config'
 import formsgSdk from 'src/app/config/formsg-sdk'
 import * as FormService from 'src/app/modules/form/form.service'
-import { MailSendError } from 'src/app/services/mail/mail.errors'
+import {
+  MailGenerationError,
+  MailSendError,
+} from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
+import * as SmsService from 'src/app/services/sms/sms.service'
 import * as HashUtils from 'src/app/utils/hash'
 import {
   BasicField,
   IFormSchema,
+  IPopulatedForm,
   IVerificationSchema,
   PublicTransaction,
   UpdateFieldData,
@@ -21,8 +27,11 @@ import {
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { SMS_WARNING_TIERS } from '../../../../../shared/utils/verification'
 import { DatabaseError } from '../../core/core.errors'
+import * as AdminFormService from '../../form/admin-form/admin-form.service'
 import { FormNotFoundError } from '../../form/form.errors'
+import * as FormUtils from '../../form/form.utils'
 import {
   FieldNotFoundInTransactionError,
   MissingHashDataError,
@@ -680,6 +689,154 @@ describe('Verification service', () => {
         otpFieldId,
       )
       expect(result._unsafeUnwrapErr()).toEqual(new WrongOtpError())
+    })
+  })
+
+  describe('processAdminSmsCounts', () => {
+    const MOCK_FORM = {
+      title: 'some mock form',
+      _id: new ObjectId(),
+      admin: {
+        _id: new ObjectId(),
+      },
+      permissionList: [{ email: 'some@user.gov.sg' }],
+    } as IPopulatedForm
+    const onboardSpy = jest.spyOn(FormUtils, 'isFormOnboarded')
+    const retrievalSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+    const disableSpy = jest.spyOn(
+      AdminFormService,
+      'disableSmsVerificationsForUser',
+    )
+
+    it('should not do anything when the form is onboarded', async () => {
+      // Arrange
+      onboardSpy.mockReturnValueOnce(true)
+
+      // Act
+      const actual = await VerificationService.processAdminSmsCounts(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toBe(true)
+      expect(retrievalSpy).not.toHaveBeenCalled()
+    })
+
+    it('should disable sms verifications and send email when sms limit is exceeded', async () => {
+      // Arrange
+
+      MockMailService.sendSmsVerificationDisabledEmail.mockReturnValueOnce(
+        okAsync(true),
+      )
+
+      disableSpy.mockReturnValueOnce(okAsync(true))
+      retrievalSpy.mockReturnValueOnce(
+        okAsync(smsConfig.smsVerificationLimit + 1),
+      )
+
+      // Act
+      const actual = await VerificationService.processAdminSmsCounts(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toBe(true)
+      expect(
+        MockMailService.sendSmsVerificationDisabledEmail,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      // NOTE: String casting is required so that the test recognises them as equal
+      expect(disableSpy).toHaveBeenCalledWith(String(MOCK_FORM.admin._id))
+    })
+
+    it('should send a warning when the admin has sent out a certain number of sms', async () => {
+      // Arrange
+
+      MockMailService.sendSmsVerificationWarningEmail.mockReturnValueOnce(
+        okAsync(true),
+      )
+      retrievalSpy.mockReturnValueOnce(okAsync(SMS_WARNING_TIERS.LOW))
+
+      // Act
+      const actual = await VerificationService.processAdminSmsCounts(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toBe(true)
+      expect(disableSpy).not.toHaveBeenCalled()
+      expect(
+        MockMailService.sendSmsVerificationWarningEmail,
+      ).toHaveBeenCalledWith(MOCK_FORM, SMS_WARNING_TIERS.LOW)
+    })
+
+    it('should not do anything when the sms sent by admin is not at any limit', async () => {
+      // Arrange
+
+      retrievalSpy.mockReturnValueOnce(okAsync(SMS_WARNING_TIERS.LOW - 1))
+
+      // Act
+      const actual = await VerificationService.processAdminSmsCounts(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toBe(true)
+      expect(
+        MockMailService.sendSmsVerificationDisabledEmail,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockMailService.sendSmsVerificationWarningEmail,
+      ).not.toHaveBeenCalled()
+      expect(disableSpy).not.toHaveBeenCalled()
+    })
+
+    it('should propagate any errors encountered during warning mail sending', async () => {
+      // Arrange
+      const expected = new MailGenerationError('big ded')
+      MockMailService.sendSmsVerificationWarningEmail.mockReturnValueOnce(
+        errAsync(expected),
+      )
+      retrievalSpy.mockReturnValueOnce(okAsync(SMS_WARNING_TIERS.LOW))
+
+      // Act
+      const actual = await VerificationService.processAdminSmsCounts(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBe(expected)
+      expect(disableSpy).not.toHaveBeenCalled()
+      expect(
+        MockMailService.sendSmsVerificationWarningEmail,
+      ).toHaveBeenCalledWith(MOCK_FORM, SMS_WARNING_TIERS.LOW)
+    })
+
+    it('should propagate any errors encountered during disabled mail sending', async () => {
+      // Arrange
+      const expected = new MailGenerationError('big ded')
+      MockMailService.sendSmsVerificationDisabledEmail.mockReturnValueOnce(
+        errAsync(expected),
+      )
+      retrievalSpy.mockReturnValueOnce(
+        okAsync(smsConfig.smsVerificationLimit + 1),
+      )
+
+      // Act
+      const actual = await VerificationService.processAdminSmsCounts(MOCK_FORM)
+
+      // Assert
+      expect(disableSpy).not.toHaveBeenCalled()
+      expect(
+        MockMailService.sendSmsVerificationWarningEmail,
+      ).not.toHaveBeenCalled()
+      expect(actual._unsafeUnwrapErr()).toBe(expected)
+      expect(
+        MockMailService.sendSmsVerificationDisabledEmail,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+    })
+
+    it('should return the error received when retrieval of sms counts fails', async () => {
+      // Arrange
+      const expected = new DatabaseError()
+      onboardSpy.mockReturnValueOnce(false)
+      retrievalSpy.mockReturnValueOnce(errAsync(expected))
+
+      // Act
+      const actual = await VerificationService.processAdminSmsCounts(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBe(expected)
+      expect(retrievalSpy).toBeCalledWith(String(MOCK_FORM.admin._id))
     })
   })
 })
