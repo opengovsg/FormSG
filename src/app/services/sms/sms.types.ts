@@ -60,9 +60,12 @@ export interface IVerificationSmsCount extends ISmsCount {
     email: string
     userId: IUserSchema['_id']
   }
+  isOnboardedAccount: boolean
 }
 
-export type IVerificationSmsCountSchema = ISmsCountSchema
+export interface IVerificationSmsCountSchema extends ISmsCountSchema {
+  isOnboardedAccount: boolean
+}
 
 export interface IAdminContactSmsCount extends ISmsCount {
   admin: IUserSchema['_id']
@@ -88,6 +91,11 @@ export interface IBouncedSubmissionSmsCountSchema
 
 export interface ISmsCountModel extends Model<ISmsCountSchema> {
   logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>
+  /**
+   * Counts the number of sms which an admin has sent using default (formSG) credentials.
+   * NOTE: This counts across all forms which an admin has.
+   */
+  retrieveFreeSmsCounts: (userId: string) => Promise<number>
 }
 
 export type TwilioCredentials = {

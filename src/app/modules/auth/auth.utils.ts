@@ -1,3 +1,4 @@
+import { AuthedSessionData, SessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 
 import { MapRouteError } from '../../../types/routing'
@@ -52,13 +53,13 @@ export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
 }
 
 export const isUserInSession = (
-  session?: Express.Session,
-): session is Express.AuthedSession => {
+  session?: SessionData,
+): session is AuthedSessionData => {
   return !!session?.user?._id
 }
 
 export const getUserIdFromSession = (
-  session?: Express.Session,
+  session?: SessionData,
 ): string | undefined => {
   return session?.user?._id as string | undefined
 }

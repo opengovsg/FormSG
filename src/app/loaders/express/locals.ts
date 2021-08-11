@@ -18,6 +18,7 @@ const frontendVars = {
   sentryConfigUrl: sentryConfig.sentryConfigUrl, // Sentry.IO
   isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
   isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
+  myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
   GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
   oldSpcpCookieDomain: spcpMyInfoConfig.oldSpcpCookieDomain, // Old cookie domain used for backward compatibility. TODO (#2329): Delete env var
@@ -27,6 +28,7 @@ const environment = ejs.render(
     // Singpass/Corppass maintenance message
     var isSPMaintenance = "<%- isSPMaintenance %>"
     var isCPMaintenance = "<%- isCPMaintenance %>"
+    var myInfoBannerContent = "<%- myInfoBannerContent %>"
     var isGeneralMaintenance = "<%- isGeneralMaintenance %>"
     var isLoginBanner = "<%- isLoginBanner %>"
     var siteBannerContent = "<%- siteBannerContent %>"

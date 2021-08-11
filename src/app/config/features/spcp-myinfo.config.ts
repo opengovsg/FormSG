@@ -8,6 +8,7 @@ const DAY_IN_MILLIS = 24 * HOUR_IN_MILLIS
 type ISpcpConfig = {
   isSPMaintenance: string
   isCPMaintenance: string
+  myInfoBannerContent: string
   spCookieMaxAge: number
   spCookieMaxAgePreserved: number
   spcpCookieDomain: string
@@ -58,6 +59,12 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: '*',
     default: null,
     env: 'IS_CP_MAINTENANCE',
+  },
+  myInfoBannerContent: {
+    doc: 'If set, displays a banner message on MyInfo forms',
+    format: '*',
+    default: null,
+    env: 'MYINFO_BANNER_CONTENT',
   },
   spCookieMaxAge: {
     doc: 'Max SingPass cookie age with remember me unchecked',
