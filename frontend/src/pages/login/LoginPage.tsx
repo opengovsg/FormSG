@@ -42,44 +42,64 @@ export const LoginPage: FC = () => {
 
   return (
     <Box
-      px="2rem"
+      px={{ base: 0, lg: '2rem' }}
       // Used to fill in the left padding gap.
-      bg="linear-gradient(90deg, var(--chakra-colors-primary-500) 50%, white 0)"
+      bg={{
+        base: 'initial',
+        lg: 'linear-gradient(90deg, var(--chakra-colors-primary-500) 50%, white 0)',
+      }}
     >
       <Grid
         minH="100vh"
         maxW="90rem"
         margin="auto"
-        templateRows="1fr auto"
-        templateColumns="repeat(12, [col-start] 1fr)"
+        templateAreas={{
+          base: `'login' 'sidebar' 'links' 'copy'`,
+          lg: `'sidebar login' 'copy links'`,
+        }}
+        templateRows={{ lg: '1fr auto' }}
+        templateColumns={{ lg: '5fr 7fr' }}
         gap="1rem"
       >
         <GridItem
-          gridColumn="col-start / span 5"
+          gridArea="sidebar"
           bg="primary.500"
-          px="5rem"
-          py="6rem"
+          px={{ base: '1.5rem', lg: '5rem' }}
+          py={{ base: '1.5rem', lg: '6rem' }}
           d="flex"
           flexDir="column"
+          alignItems="center"
           justifyContent="center"
         >
-          <Text textStyle="display-2" color="white" mb="2.5rem">
+          <Text
+            display={{ base: 'none', lg: 'initial' }}
+            textStyle="display-2"
+            color="white"
+            mb="2.5rem"
+          >
             Build secure government forms in minutes
           </Text>
-          <LoginImage aria-hidden />
+          <Box maxW="28rem" w="100%">
+            <LoginImage aria-hidden />
+          </Box>
         </GridItem>
 
         <GridItem
           h="100%"
           bg="white"
-          gridColumn="col-start 6 / -1"
-          px="7.25rem"
-          py="4rem"
+          gridArea="login"
+          px={{ base: '1.5rem', lg: '7.25rem' }}
+          py={{ base: '1.5rem', lg: '4rem' }}
           d="flex"
           alignItems="center"
           justifyContent="center"
         >
-          <Box maxW="28rem" w="100%" minH="24rem" pt="2rem">
+          <Box
+            maxW="28rem"
+            w="100%"
+            minH={{ base: 'auto', lg: '24rem' }}
+            pt="2rem"
+          >
             <Box mb="1.5rem" w="10.5rem">
               <BrandLogo title="FormSG logo" />
             </Box>
@@ -94,11 +114,11 @@ export const LoginPage: FC = () => {
           </Box>
         </GridItem>
         <GridItem
-          gridColumn="col-start / span 5"
+          gridArea="copy"
           bg="primary.500"
           // Remove grid gap on the y-axis
           mt="-1rem"
-          px="5rem"
+          px={{ base: '1.5rem', lg: '5rem' }}
           pt="0.5rem"
           pb="4rem"
         >
@@ -109,10 +129,10 @@ export const LoginPage: FC = () => {
         <GridItem
           bg="white"
           mt="-1rem"
-          px="7.25rem"
+          px={{ base: '1.5rem', lg: '7.25rem' }}
           pt="0.5rem"
           pb="4rem"
-          gridColumn="col-start 6 / -1"
+          gridArea="links"
         >
           <Wrap shouldWrapChildren textStyle="legal" spacing="1.5rem">
             <Link>Contact Us</Link>
