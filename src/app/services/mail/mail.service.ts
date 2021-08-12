@@ -29,20 +29,22 @@ import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import * as FormService from '../../modules/form/form.service'
 import { extractFormLinkView } from '../../modules/form/form.utils'
+import { formatAsPercentage } from '../../utils/formatters'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
 import { MailGenerationError, MailSendError } from './mail.errors'
 import {
   AdminSmsDisabledData,
+  AdminSmsWarningData,
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
   CollabSmsDisabledData,
+  CollabSmsWarningData,
   MailOptions,
   MailServiceParams,
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
-  SmsVerificationWarningData,
 } from './mail.types'
 import {
   generateAutoreplyHtml,
@@ -51,7 +53,8 @@ import {
   generateLoginOtpHtml,
   generateSmsVerificationDisabledHtmlForAdmin,
   generateSmsVerificationDisabledHtmlForCollab,
-  generateSmsVerificationWarningHtml,
+  generateSmsVerificationWarningHtmlForAdmin,
+  generateSmsVerificationWarningHtmlForCollab,
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
   isToFieldValid,
@@ -630,7 +633,7 @@ export class MailService {
             // If there are no collaborators, do not send out the email.
             // Admin would already have received a summary email from Step 2.
             f.permissionList.length
-              ? this.sendDisabledMailForCollab(f, form.admin)
+              ? this.sendDisabledMailForCollab(f)
               : okAsync<true, never>(true),
           ),
         )
@@ -643,7 +646,6 @@ export class MailService {
   // Note that this method also emails the admin to notify them that the collaborators have been informed.
   sendDisabledMailForCollab = (
     form: IPopulatedForm,
-    admin: IPopulatedUser,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
     const htmlData: CollabSmsDisabledData = {
       form: extractFormLinkView(form, this.#appUrl),
@@ -657,11 +659,11 @@ export class MailService {
     return generateSmsVerificationDisabledHtmlForCollab(htmlData).andThen(
       (mailHtml) => {
         const mailOptions: MailOptions = {
-          to: admin.email,
+          to: form.admin.email,
           cc: collaborators,
           from: this.#senderFromString,
           html: mailHtml,
-          subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
+          subject: 'Free Mobile Number Verification Disabled',
           replyTo: this.#officialMail,
           bcc: this.#senderMail,
         }
@@ -696,7 +698,7 @@ export class MailService {
             to: admin.email,
             from: this.#senderFromString,
             html: mailHtml,
-            subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
+            subject: 'Free Mobile Number Verification Disabled',
             replyTo: this.#officialMail,
             bcc: this.#senderMail,
           }
@@ -723,38 +725,104 @@ export class MailService {
     smsVerifications: number,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
     // Step 1: Retrieve all public forms of admin that have sms verification enabled
-    return FormService.retrievePublicFormsWithSmsVerification(
-      form.admin._id,
-    ).andThen((forms) => {
-      const htmlData: SmsVerificationWarningData = {
-        forms: forms.map((f) => extractFormLinkView(f, this.#appUrl)),
-        // Formatted using localeString so that the displayed number has commas
-        numAvailable: (
-          smsConfig.smsVerificationLimit - smsVerifications
-        ).toLocaleString('en-US'),
-        smsVerificationLimit:
-          smsConfig.smsVerificationLimit.toLocaleString('en-US'),
-      }
+    return FormService.retrievePublicFormsWithSmsVerification(form.admin._id)
+      .andThen((forms) => {
+        // Step 2: Send the mail containing all the active forms to the admin
+        return this.sendWarningMailForAdmin(
+          forms,
+          form.admin,
+          smsVerifications,
+        ).map(() => forms)
+      })
+      .andThen((forms) => {
+        // Step 3: Send to each individual form
+        return combine(
+          forms.map((f) =>
+            // If there are no collaborators, do not send out the email.
+            // Admin would already have received a summary email from Step 2.
+            f.permissionList.length
+              ? this.sendWarningMailForCollab(f, smsVerifications)
+              : okAsync<true, never>(true),
+          ),
+        ).map(() => true)
+      })
+  }
 
-      // Step 2: Generate HTML from template
-      return generateSmsVerificationWarningHtml(htmlData).andThen(
+  // Utility method to send a warning mail to the collaborators of a form.
+  // Note that this also sends the mail out to the admin of the form as well.
+  sendWarningMailForCollab = (
+    form: IPopulatedForm,
+    smsVerifications: number,
+  ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const percentageUsed = formatAsPercentage(
+      smsConfig.smsVerificationLimit - smsVerifications,
+    )
+    const htmlData: CollabSmsWarningData = {
+      form: extractFormLinkView(form, this.#appUrl),
+      percentageUsed,
+      smsVerificationLimit:
+        smsConfig.smsVerificationLimit.toLocaleString('en-US'),
+    }
+    const collaborators = form.permissionList.map(({ email }) => email)
+
+    // Step 1: Generate HTML data for collab
+    return generateSmsVerificationWarningHtmlForCollab(htmlData).andThen(
+      (mailHtml) => {
+        const mailOptions: MailOptions = {
+          to: form.admin.email,
+          cc: collaborators,
+          from: this.#senderFromString,
+          html: mailHtml,
+          subject: 'Mobile Number Verification - Free Tier Limit Alert',
+          replyTo: this.#officialMail,
+          bcc: this.#senderMail,
+        }
+        // Step 2: Send mail out to admin and collab
+        return this.#sendNodeMail(mailOptions, {
+          formId: form._id,
+          mailId: 'sendWarningMailForCollab',
+        })
+      },
+    )
+  }
+
+  // Utility method to send a warning mail to the admin of a form.
+  // This is triggered when the admin's sms verification counts hits a limit.
+  // This informs the admin of all forms that use sms verification
+  sendWarningMailForAdmin = (
+    forms: IPopulatedForm[],
+    admin: IPopulatedUser,
+    smsVerifications: number,
+  ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const htmlData: AdminSmsWarningData = {
+      forms: forms.map((f) => extractFormLinkView(f, this.#appUrl)),
+      numAvailable: (
+        smsConfig.smsVerificationLimit - smsVerifications
+      ).toLocaleString('en-US'),
+      smsVerificationLimit:
+        smsConfig.smsVerificationLimit.toLocaleString('en-US'),
+    }
+
+    return (
+      // Step 1: Generate HTML data for admin
+      generateSmsVerificationWarningHtmlForAdmin(htmlData).andThen(
         (mailHtml) => {
           const mailOptions: MailOptions = {
-            to: form.admin.email,
+            to: admin.email,
             from: this.#senderFromString,
             html: mailHtml,
-            subject: '[FormSG] SMS Verification - Free Tier Limit Alert',
+            subject: 'Mobile Number Verification - Free Tier Limit Alert',
             replyTo: this.#officialMail,
             bcc: this.#senderMail,
           }
 
-          // Step 3: Send mail out
+          // Step 2: Send mail out to admin ONLY
           return this.#sendNodeMail(mailOptions, {
-            mailId: 'sendSmsVerificationWarningEmail',
+            mailId: 'sendWarningMailForAdmin',
           })
         },
       )
-    })
+    )
   }
 }
 

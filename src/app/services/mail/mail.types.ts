@@ -98,14 +98,20 @@ export type CollabSmsDisabledData = {
   form: FormLinkView<IPopulatedForm>
 } & SmsVerificationTiers
 
+export type AdminSmsWarningData = {
+  forms: FormLinkView<IPopulatedForm>[]
+  numAvailable: string
+  smsVerificationLimit: string
+}
+
+export type CollabSmsWarningData = {
+  form: FormLinkView<IPopulatedForm>
+  percentageUsed: string
+  smsVerificationLimit: string
+}
+
 type SmsVerificationTiers = {
   smsVerificationLimit: string
   // Ensure that all tiers are covered
   smsWarningTiers: { [K in keyof typeof SMS_WARNING_TIERS]: string }
-}
-
-export type SmsVerificationWarningData = {
-  forms: FormLinkView<IPopulatedForm>[]
-  numAvailable: string
-  smsVerificationLimit: string
 }
