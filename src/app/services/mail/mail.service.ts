@@ -755,7 +755,7 @@ export class MailService {
     smsVerifications: number,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
     const percentageUsed = formatAsPercentage(
-      smsConfig.smsVerificationLimit - smsVerifications,
+      smsVerifications / smsConfig.smsVerificationLimit,
     )
     const htmlData: CollabSmsWarningData = {
       form: extractFormLinkView(form, this.#appUrl),
@@ -768,6 +768,7 @@ export class MailService {
     // Step 1: Generate HTML data for collab
     return generateSmsVerificationWarningHtmlForCollab(htmlData).andThen(
       (mailHtml) => {
+        console.log(mailHtml)
         const mailOptions: MailOptions = {
           to: form.admin.email,
           cc: collaborators,
