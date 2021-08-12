@@ -1,12 +1,13 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
-import { FormControl } from '@chakra-ui/react'
+import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+import Link from '~components/Link'
 
 export type LoginFormInputs = {
   email: string
@@ -36,6 +37,8 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
     })
   }
 
+  const isMobile = useBreakpointValue({ base: true, xs: true, lg: false })
+
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
       <FormControl
@@ -63,9 +66,20 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
           <FormErrorMessage>{formState.errors.email.message}</FormErrorMessage>
         )}
       </FormControl>
-      <Button isLoading={formState.isSubmitting} type="submit">
-        Sign in
-      </Button>
+      <Stack
+        direction={{ base: 'column', lg: 'row' }}
+        spacing={{ base: '1.5rem', lg: '2.5rem' }}
+        align="center"
+      >
+        <Button
+          isFullWidth={isMobile}
+          isLoading={formState.isSubmitting}
+          type="submit"
+        >
+          Sign in
+        </Button>
+        <Link>Have a question?</Link>
+      </Stack>
     </form>
   )
 }

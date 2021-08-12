@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
-import { ButtonGroup, FormControl } from '@chakra-ui/react'
+import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -24,6 +24,8 @@ export const OtpForm = ({
 }: OtpFormProps): JSX.Element => {
   const { handleSubmit, register, formState, setError } =
     useForm<OtpFormInputs>()
+
+  const isMobile = useBreakpointValue({ base: true, xs: true, lg: false })
 
   const validateOtp = useCallback(
     (value: string) => value.length === 6 || 'Please enter a 6 digit OTP.',
@@ -61,12 +63,20 @@ export const OtpForm = ({
           <FormErrorMessage>{formState.errors.otp.message}</FormErrorMessage>
         )}
       </FormControl>
-      <ButtonGroup spacing="1.5rem">
-        <Button isLoading={formState.isSubmitting} type="submit">
+      <Stack
+        direction={{ base: 'column', lg: 'row' }}
+        spacing={{ base: '1.5rem', lg: '2.5rem' }}
+        align="center"
+      >
+        <Button
+          isFullWidth={isMobile}
+          isLoading={formState.isSubmitting}
+          type="submit"
+        >
           Sign in
         </Button>
         <ResendOtpButton onResendOtp={onResendOtp} />
-      </ButtonGroup>
+      </Stack>
     </form>
   )
 }
