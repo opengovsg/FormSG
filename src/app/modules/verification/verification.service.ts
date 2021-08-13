@@ -7,6 +7,7 @@ import {
 } from '../../../../shared/utils/verification'
 import {
   BasicField,
+  IFormSchema,
   IPopulatedForm,
   IVerificationFieldSchema,
   IVerificationSchema,
@@ -40,6 +41,7 @@ import {
   NonVerifiedFieldTypeError,
   OtpExpiredError,
   OtpRetryExceededError,
+  SmsLimitExceededError,
   TransactionExpiredError,
   TransactionNotFoundError,
   WaitForOtpError,
@@ -545,4 +547,21 @@ const checkSmsCountAndPerformAction = (
   }
 
   return okAsync(true)
+}
+
+export const shouldGenerateOtp = ({
+  msgSrvcName,
+  admin,
+}: Pick<IFormSchema, 'msgSrvcName' | 'admin'>): ResultAsync<
+  true,
+  SmsLimitExceededError | PossibleDatabaseError
+> => {
+  if (msgSrvcName) {
+    return okAsync(true)
+  }
+  return SmsService.retrieveFreeSmsCounts(admin._id).andThen((counts) =>
+    hasAdminExceededFreeSmsLimit(counts)
+      ? errAsync(new SmsLimitExceededError())
+      : okAsync(true),
+  )
 }
