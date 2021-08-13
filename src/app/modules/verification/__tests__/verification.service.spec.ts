@@ -7,7 +7,10 @@ import { mocked } from 'ts-jest/utils'
 import { smsConfig } from 'src/app/config/features/sms.config'
 import formsgSdk from 'src/app/config/formsg-sdk'
 import * as FormService from 'src/app/modules/form/form.service'
-import { SmsLimitExceededError } from 'src/app/modules/verification/verification.errors'
+import {
+  OtpRequestError,
+  SmsLimitExceededError,
+} from 'src/app/modules/verification/verification.errors'
 import {
   MailGenerationError,
   MailSendError,
@@ -26,6 +29,7 @@ import {
   UpdateFieldData,
 } from 'src/types'
 
+import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { SMS_WARNING_TIERS } from '../../../../../shared/utils/verification'
@@ -848,6 +852,9 @@ describe('Verification service', () => {
         admin: {
           _id: 'something',
         },
+        form_fields: [
+          generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+        ],
       }
       const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
       retrieveSpy.mockReturnValueOnce(
@@ -886,6 +893,9 @@ describe('Verification service', () => {
         admin: {
           _id: 'something',
         },
+        form_fields: [
+          generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+        ],
       }
       const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
       retrieveSpy.mockReturnValueOnce(
@@ -900,12 +910,32 @@ describe('Verification service', () => {
       expect(retrieveSpy).toBeCalledWith(MOCK_FORM.admin._id)
     })
 
+    it('should return OtpRequestError when an OTP is requested on a form without OTP enabled', async () => {
+      // Arrange
+      const MOCK_FORM = {
+        admin: {
+          _id: 'something',
+        },
+      }
+      const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+
+      // Act
+      const actual = await VerificationService.shouldGenerateOtp(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(OtpRequestError)
+      expect(retrieveSpy).not.toBeCalled()
+    })
+
     it('should propagate any errors during sms counts retrieval', async () => {
       // Arrange
       const MOCK_FORM = {
         admin: {
           _id: 'something',
         },
+        form_fields: [
+          generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+        ],
       }
       const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
       retrieveSpy.mockReturnValueOnce(errAsync(new DatabaseError()))
