@@ -647,14 +647,21 @@ export class MailService {
   sendDisabledMailForCollab = (
     form: IPopulatedForm,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const formLink = extractFormLinkView(form, this.#appUrl)
     const htmlData: CollabSmsDisabledData = {
-      form: extractFormLinkView(form, this.#appUrl),
+      form: formLink,
       smsVerificationLimit:
         // Formatted using localeString so that the displayed number has commas
         smsConfig.smsVerificationLimit.toLocaleString('en-US'),
       smsWarningTiers: stringifiedSmsWarningTiers,
     }
     const collaborators = form.permissionList.map(({ email }) => email)
+    const logMeta = {
+      form: formLink,
+      admin: form.admin,
+      collaborators,
+      action: 'sendDisabledMailForCollab',
+    }
 
     return generateSmsVerificationDisabledHtmlForCollab(htmlData).andThen(
       (mailHtml) => {
@@ -667,6 +674,11 @@ export class MailService {
           replyTo: this.#officialMail,
           bcc: this.#senderMail,
         }
+
+        logger.info({
+          message: 'Attempting to email collaborators about form disabling',
+          meta: logMeta,
+        })
 
         return this.#sendNodeMail(mailOptions, {
           formId: form._id,
@@ -682,8 +694,15 @@ export class MailService {
     forms: IPopulatedForm[],
     admin: IPopulatedUser,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const formLinks = forms.map((f) => extractFormLinkView(f, this.#appUrl))
+    const logMeta = {
+      forms: formLinks,
+      admin,
+      action: 'sendDisabledMailForAdmin',
+    }
+
     const htmlData: AdminSmsDisabledData = {
-      forms: forms.map((f) => extractFormLinkView(f, this.#appUrl)),
+      forms: formLinks,
       smsVerificationLimit:
         // Formatted using localeString so that the displayed number has commas
         smsConfig.smsVerificationLimit.toLocaleString('en-US'),
@@ -702,6 +721,11 @@ export class MailService {
             replyTo: this.#officialMail,
             bcc: this.#senderMail,
           }
+
+          logger.info({
+            message: 'Attempting to email admin about form disabling',
+            meta: logMeta,
+          })
 
           // Step 2: Send mail out to admin ONLY
           return this.#sendNodeMail(mailOptions, {
@@ -754,21 +778,28 @@ export class MailService {
     form: IPopulatedForm,
     smsVerifications: number,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const formLink = extractFormLinkView(form, this.#appUrl)
     const percentageUsed = formatAsPercentage(
       smsVerifications / smsConfig.smsVerificationLimit,
     )
     const htmlData: CollabSmsWarningData = {
-      form: extractFormLinkView(form, this.#appUrl),
+      form: formLink,
       percentageUsed,
       smsVerificationLimit:
         smsConfig.smsVerificationLimit.toLocaleString('en-US'),
     }
     const collaborators = form.permissionList.map(({ email }) => email)
+    const logMeta = {
+      form: formLink,
+      admin: form.admin,
+      collaborators,
+      smsVerifications,
+      action: 'sendWarningMailForCollab',
+    }
 
     // Step 1: Generate HTML data for collab
     return generateSmsVerificationWarningHtmlForCollab(htmlData).andThen(
       (mailHtml) => {
-        console.log(mailHtml)
         const mailOptions: MailOptions = {
           to: form.admin.email,
           cc: collaborators,
@@ -778,6 +809,12 @@ export class MailService {
           replyTo: this.#officialMail,
           bcc: this.#senderMail,
         }
+
+        logger.info({
+          message: 'Attempting to warn collaborators about sms limits',
+          meta: logMeta,
+        })
+
         // Step 2: Send mail out to admin and collab
         return this.#sendNodeMail(mailOptions, {
           formId: form._id,
@@ -795,13 +832,20 @@ export class MailService {
     admin: IPopulatedUser,
     smsVerifications: number,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const formLinks = forms.map((f) => extractFormLinkView(f, this.#appUrl))
     const htmlData: AdminSmsWarningData = {
-      forms: forms.map((f) => extractFormLinkView(f, this.#appUrl)),
+      forms: formLinks,
       numAvailable: (
         smsConfig.smsVerificationLimit - smsVerifications
       ).toLocaleString('en-US'),
       smsVerificationLimit:
         smsConfig.smsVerificationLimit.toLocaleString('en-US'),
+    }
+    const logMeta = {
+      forms: formLinks,
+      admin,
+      smsVerifications,
+      action: 'sendWarningMailForAdmin',
     }
 
     return (
@@ -816,6 +860,11 @@ export class MailService {
             replyTo: this.#officialMail,
             bcc: this.#senderMail,
           }
+
+          logger.info({
+            message: 'Attempting to warn admin about sms limits',
+            meta: logMeta,
+          })
 
           // Step 2: Send mail out to admin ONLY
           return this.#sendNodeMail(mailOptions, {
