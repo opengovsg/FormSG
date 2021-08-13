@@ -1,7 +1,14 @@
-import { SimpleGrid, Text, VStack } from '@chakra-ui/react'
+import { useEffect, useMemo } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
+import { FormControl, SimpleGrid, Text, VStack } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
+import { isEmpty } from 'lodash'
 
 import { viewports } from '~utils/storybook'
+
+import Button from '../Button'
+import FormErrorMessage from '../FormControl/FormErrorMessage'
+import FormLabel from '../FormControl/FormLabel'
 
 import { Checkbox, CheckboxProps } from './Checkbox'
 
@@ -10,16 +17,18 @@ export default {
   component: Checkbox,
 } as Meta
 
-const Template: Story<CheckboxProps> = (args) => <Checkbox {...args} />
+const Template: Story<CheckboxProps> = (args) => {
+  return <Checkbox {...args}>{args.name}</Checkbox>
+}
 
 export const Default = Template.bind({})
 Default.args = {
-  children: 'Default',
+  name: 'Default',
 }
 
 export const Mobile = Template.bind({})
 Mobile.args = {
-  children: 'Mobile',
+  name: 'Mobile',
 }
 Mobile.parameters = {
   viewport: {
@@ -30,7 +39,7 @@ Mobile.parameters = {
 
 export const Tablet = Template.bind({})
 Tablet.args = {
-  children: 'Tablet',
+  name: 'Tablet',
 }
 Tablet.parameters = {
   viewport: {
@@ -93,3 +102,73 @@ const TemplateGroup: Story<CheckboxProps> = (args) => {
 
 export const CheckboxStates = TemplateGroup.bind({})
 CheckboxStates.storyName = 'States and themes'
+
+type PlaygroundFieldValues = {
+  Checkbox: string[] | false
+  Others: string
+}
+
+export const Playground: Story = ({
+  name = 'checkbox',
+  othersInputName = 'others-input',
+  othersCheckboxName = 'others-checkbox',
+  label,
+  isDisabled,
+  isRequired,
+  ...args
+}) => {
+  const options = useMemo(() => ['Option 1', 'Option 2', 'Option 3'], [])
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    control,
+    trigger,
+  } = useForm()
+  const isOthersChecked = useWatch({
+    name: othersCheckboxName,
+    control,
+  })
+  useEffect(() => {
+    // When unchecking others, manually trigger input validation. This is
+    // to ensure that if you check then uncheck the checkbox, the form knows
+    // that the text input is now optional.
+    if (!isOthersChecked) {
+      trigger(othersInputName)
+    }
+  }, [isOthersChecked, trigger, othersInputName])
+  const onSubmit = (data: PlaygroundFieldValues) => {
+    alert(JSON.stringify(data))
+  }
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <FormControl isInvalid={!isEmpty(errors)} mb={6}>
+        <FormLabel isRequired>{label}</FormLabel>
+        {options.map((o, idx) => (
+          <Checkbox key={idx} value={o} {...register(name)} {...args}>
+            {o}
+          </Checkbox>
+        ))}
+        <Checkbox.OthersWrapper>
+          <Checkbox.OthersCheckbox
+            {...register(othersCheckboxName)}
+            {...args}
+          />
+          <Checkbox.OthersInput
+            {...register(othersInputName, {
+              required: isOthersChecked && 'Please specify Others',
+            })}
+          />
+        </Checkbox.OthersWrapper>
+        <FormErrorMessage>
+          {errors[name]?.message ?? errors[othersInputName]?.message}
+        </FormErrorMessage>
+      </FormControl>
+      <Button type="submit">Submit</Button>
+    </form>
+  )
+}
+
+Playground.args = {
+  label: 'Checkbox label',
+}
