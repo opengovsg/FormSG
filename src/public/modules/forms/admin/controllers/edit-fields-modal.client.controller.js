@@ -172,6 +172,10 @@ function EditFieldsModalController(
     return Object.keys(myDict).length !== field.fieldOptions.length
   }
 
+  vm.showFieldDataTooLongError = function (field) {
+    return JSON.stringify(field).length > 10 * MB
+  }
+
   vm.showEmptyOptionsError = function (field) {
     // Empty options should only appear on fields that have options to choose from
     // A blank option is considered to be a non-empty option
@@ -384,6 +388,9 @@ function EditFieldsModalController(
   }
 
   vm.disableSave = function () {
+    if (vm.showFieldDataTooLongError(vm.field)) {
+      return true
+    }
     if (
       vm.field.fieldType === 'attachment' ||
       vm.field.fieldType === 'dropdown' ||

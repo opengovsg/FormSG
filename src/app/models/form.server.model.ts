@@ -1,4 +1,4 @@
-import BSON, { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson-ext'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   Mongoose,
@@ -9,7 +9,6 @@ import mongoose, {
 } from 'mongoose'
 import validator from 'validator'
 
-import { MB } from '../../../shared/constants/file'
 import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
@@ -90,23 +89,6 @@ import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
 import getUserModel from './user.server.model'
 
 export const FORM_SCHEMA_ID = 'Form'
-
-const bson = new BSON([
-  BSON.Binary,
-  BSON.Code,
-  BSON.DBRef,
-  BSON.Decimal128,
-  BSON.Double,
-  BSON.Int32,
-  BSON.Long,
-  BSON.Map,
-  BSON.MaxKey,
-  BSON.MinKey,
-  BSON.ObjectId,
-  BSON.BSONRegExp,
-  BSON.Symbol,
-  BSON.Timestamp,
-])
 
 const formSchemaOptions: SchemaOptions = {
   id: false,
@@ -857,13 +839,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   // Hooks
   FormSchema.pre<IFormSchema>('validate', function (next) {
-    // Reject save if form document is too large
-    if (bson.calculateObjectSize(this) > 10 * MB) {
-      const err = new Error('Form size exceeded.')
-      err.name = 'FormSizeError'
-      return next(err)
-    }
-
     // Validate that admin exists before form is created.
     return User.findById(this.admin).then((admin) => {
       if (!admin) {
