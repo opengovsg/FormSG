@@ -12,7 +12,10 @@
           tooltip-trigger="'click mouseenter'"
         ></i>
       </div>
-      <div ng-show="!isLoading && !field.hasRetrievalError">
+      <!-- only show if it has loaded successfully and the form is not onboarded -->
+      <div
+        ng-show="!isLoading && !field.hasRetrievalError && adminVerifiedSmsState !== 'MESSAGE_SERVICE_ID_OBTAINED'"
+      >
         <small class="sms-counts"
           >{{verifiedSmsCount}}/{{smsVerificationLimit}} SMSes used</small
         >
