@@ -44,15 +44,21 @@ export const usePaginationRange = <T extends unknown = string>({
   const paginationRange = useMemo(() => {
     const totalPageCount = Math.ceil(totalCount / pageSize)
 
-    // Pages count is determined as siblingCount + firstPage + lastPage + currentPage + 2*separator
-    const totalPageNumbers = siblingCount + 5
+    // Only show separators if the currently shown numbers have at least a gap
+    // of 2 numbers to the first or last page numbers.
+    const minGapSize = 2
+    // The maximum number of pages to display is determined as
+    // firstPage + (2 * siblingCount) + currentPage + (2 * separator) + lastPage.
+    // E.g. [1, ..., 5, 6, 7, ..., 15] for siblingCount of 1, and
+    // [1, ..., 5, 6, 7, 8, 9, ..., 15] for siblingCount of 2.
+    const numPageDisplaySlots = 2 * siblingCount + 5
 
     /**
      * Case 1:
      * If the number of pages is less than the page numbers we want to show in
      * the component, we return the range [1..totalPageCount]
      */
-    if (totalPageNumbers >= totalPageCount) {
+    if (numPageDisplaySlots >= totalPageCount) {
       return range(1, totalPageCount + 1)
     }
 
@@ -67,17 +73,19 @@ export const usePaginationRange = <T extends unknown = string>({
     // Do not show separator just when there is just one page number to be
     // inserted between the extremes of sibling and the page limits
     // i.e 1 and totalPageCount.
-    const shouldShowLeftSeparator = leftSiblingIndex - 1 > 2
-    const shouldShowRightSeparator = rightSiblingIndex < totalPageCount - 2
+    const shouldShowLeftSeparator = leftSiblingIndex - 1 > minGapSize
+    const shouldShowRightSeparator =
+      totalPageCount - rightSiblingIndex > minGapSize
 
     const firstPageIndex = 1
     const lastPageIndex = totalPageCount
 
     /**
-     * Case 2: No left separator to show, but rights separator to be shown.
+     * Case 2: No left separator to show, but right separator to be shown.
      */
     if (!shouldShowLeftSeparator && shouldShowRightSeparator) {
-      const leftItemCount = 3 + 2 * siblingCount
+      // 2 indicates separator and final page number.
+      const leftItemCount = numPageDisplaySlots - 2
       const leftRange = range(1, leftItemCount + 1)
 
       return [...leftRange, separator, totalPageCount]
@@ -87,7 +95,8 @@ export const usePaginationRange = <T extends unknown = string>({
      * Case 3: No right separator to show, but left separator to be shown.
      */
     if (shouldShowLeftSeparator && !shouldShowRightSeparator) {
-      const rightItemCount = 3 + 2 * siblingCount
+      // 2 indicates first page number and the separator.
+      const rightItemCount = numPageDisplaySlots - 2
       const rightRange = range(
         totalPageCount - rightItemCount + 1,
         totalPageCount + 1,
