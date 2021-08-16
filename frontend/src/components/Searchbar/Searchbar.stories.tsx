@@ -1,11 +1,10 @@
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import { useSearchbar } from '~hooks/useSearchbar'
-
 import Link from '../Link'
 
 import { Searchbar, SearchbarProps } from './Searchbar'
+import { useSearchbar } from './useSearchbar'
 
 export default {
   title: 'Components/Searchbar',
