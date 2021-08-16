@@ -49,6 +49,22 @@ SiblingCountEquals2.args = {
   siblingCount: 2,
 }
 
+export const Exactly7Pages = Template.bind({})
+Exactly7Pages.args = {
+  currentPage: 1,
+  totalCount: 70,
+  pageSize: 10,
+  siblingCount: 1,
+}
+
+export const Exactly8Pages = Template.bind({})
+Exactly8Pages.args = {
+  currentPage: 1,
+  totalCount: 80,
+  pageSize: 10,
+  siblingCount: 1,
+}
+
 export const LessThan7Pages = Template.bind({})
 LessThan7Pages.args = {
   currentPage: 1,
