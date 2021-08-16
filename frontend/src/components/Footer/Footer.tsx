@@ -76,7 +76,7 @@ export const Footer = ({
           <Text textStyle="h4" color={`${textColorScheme}.500`}>
             {appName}
           </Text>
-          <Text textStyle="body-2" color={`${textColorScheme}.400`}>
+          <Text textStyle="body-2" color={`${textColorScheme}.500`}>
             {tagline}
           </Text>
         </Stack>
@@ -106,12 +106,13 @@ export const Footer = ({
         <Box>
           <Text
             textStyle="caption-1"
-            color={`${textColorScheme}.400`}
+            color={`${textColorScheme}.500`}
             mb="0.5rem"
           >
             Built by
           </Text>
           <Link
+            title="Open Government Products Logo"
             colorScheme={textColorScheme}
             mb="2rem"
             href={SOCIAL_MEDIA_LINKS.ogp}
@@ -128,6 +129,7 @@ export const Footer = ({
             justify={{ base: 'normal', lg: 'flex-end' }}
           >
             <Link
+              title="link to OGP homepage"
               w="2rem"
               href={SOCIAL_MEDIA_LINKS.linkedin}
               colorScheme={textColorScheme}
@@ -135,6 +137,7 @@ export const Footer = ({
               <BxlLinkedin />
             </Link>
             <Link
+              title="link to Facebook page"
               w="2rem"
               href={SOCIAL_MEDIA_LINKS.facebook}
               colorScheme={textColorScheme}
@@ -142,6 +145,7 @@ export const Footer = ({
               <BxlFacebook />
             </Link>
             <Link
+              title="link to YouTube page"
               w="2rem"
               href={SOCIAL_MEDIA_LINKS.youtube}
               colorScheme={textColorScheme}
@@ -149,6 +153,7 @@ export const Footer = ({
               <BxlYoutube />
             </Link>
             <Link
+              title="link to Instagram page"
               w="2rem"
               href={SOCIAL_MEDIA_LINKS.instagram}
               colorScheme={textColorScheme}
@@ -156,6 +161,7 @@ export const Footer = ({
               <BxlInstagram />
             </Link>
             <Link
+              title="link to OGP homepage"
               w="2rem"
               href={SOCIAL_MEDIA_LINKS.ogp}
               colorScheme={textColorScheme}
@@ -166,7 +172,7 @@ export const Footer = ({
           <Flex
             flexDir={{ base: 'column', md: 'row' }}
             textStyle="legal"
-            color={`${textColorScheme}.400`}
+            color={`${textColorScheme}.500`}
           >
             <Text>©{currentYear} Open Government Products,&nbsp;</Text>
             <Text>Government Technology Agency of Singapore</Text>
