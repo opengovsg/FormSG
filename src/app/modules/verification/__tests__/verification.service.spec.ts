@@ -8,6 +8,10 @@ import { smsConfig } from 'src/app/config/features/sms.config'
 import formsgSdk from 'src/app/config/formsg-sdk'
 import * as FormService from 'src/app/modules/form/form.service'
 import {
+  OtpRequestError,
+  SmsLimitExceededError,
+} from 'src/app/modules/verification/verification.errors'
+import {
   MailGenerationError,
   MailSendError,
 } from 'src/app/services/mail/mail.errors'
@@ -25,6 +29,7 @@ import {
   UpdateFieldData,
 } from 'src/types'
 
+import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { SMS_WARNING_TIERS } from '../../../../../shared/utils/verification'
@@ -837,6 +842,110 @@ describe('Verification service', () => {
       // Assert
       expect(actual._unsafeUnwrapErr()).toBe(expected)
       expect(retrievalSpy).toBeCalledWith(String(MOCK_FORM.admin._id))
+    })
+  })
+
+  describe('shouldGenerateOtp', () => {
+    it('should return true when sms counts is less than limit', async () => {
+      // Arrange
+      const MOCK_FORM = {
+        admin: {
+          _id: 'something',
+        },
+        form_fields: [
+          generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+        ],
+      }
+      const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+      retrieveSpy.mockReturnValueOnce(
+        okAsync(smsConfig.smsVerificationLimit - 1),
+      )
+
+      // Act
+      const actual = await VerificationService.shouldGenerateOtp(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toBe(true)
+      expect(retrieveSpy).toBeCalledWith(MOCK_FORM.admin._id)
+    })
+
+    it('should return true when the form is onboarded', async () => {
+      // Arrange
+      const MOCK_FORM = {
+        msgSrvcName: 'somename',
+        admin: {
+          _id: 'something',
+        },
+      }
+      const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+
+      // Act
+      const actual = await VerificationService.shouldGenerateOtp(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toBe(true)
+      expect(retrieveSpy).not.toBeCalled()
+    })
+
+    it('should return SmsLimitExceeded error when sms counts exceeds limit and form is not onboarded', async () => {
+      // Arrange
+      const MOCK_FORM = {
+        admin: {
+          _id: 'something',
+        },
+        form_fields: [
+          generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+        ],
+      }
+      const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+      retrieveSpy.mockReturnValueOnce(
+        okAsync(smsConfig.smsVerificationLimit + 1),
+      )
+
+      // Act
+      const actual = await VerificationService.shouldGenerateOtp(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(SmsLimitExceededError)
+      expect(retrieveSpy).toBeCalledWith(MOCK_FORM.admin._id)
+    })
+
+    it('should return OtpRequestError when an OTP is requested on a form without OTP enabled', async () => {
+      // Arrange
+      const MOCK_FORM = {
+        admin: {
+          _id: 'something',
+        },
+      }
+      const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+
+      // Act
+      const actual = await VerificationService.shouldGenerateOtp(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(OtpRequestError)
+      expect(retrieveSpy).not.toBeCalled()
+    })
+
+    it('should propagate any errors during sms counts retrieval', async () => {
+      // Arrange
+      const MOCK_FORM = {
+        admin: {
+          _id: 'something',
+        },
+        form_fields: [
+          generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+        ],
+      }
+      const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+      retrieveSpy.mockReturnValueOnce(errAsync(new DatabaseError()))
+
+      // Act
+      const actual = await VerificationService.shouldGenerateOtp(MOCK_FORM)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+      expect(retrieveSpy).toBeCalledWith(MOCK_FORM.admin._id)
     })
   })
 })

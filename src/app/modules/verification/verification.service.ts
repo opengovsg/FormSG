@@ -7,6 +7,7 @@ import {
 } from '../../../../shared/utils/verification'
 import {
   BasicField,
+  IFormSchema,
   IPopulatedForm,
   IVerificationFieldSchema,
   IVerificationSchema,
@@ -39,7 +40,9 @@ import {
   MissingHashDataError,
   NonVerifiedFieldTypeError,
   OtpExpiredError,
+  OtpRequestError,
   OtpRetryExceededError,
+  SmsLimitExceededError,
   TransactionExpiredError,
   TransactionNotFoundError,
   WaitForOtpError,
@@ -545,4 +548,36 @@ const checkSmsCountAndPerformAction = (
   }
 
   return okAsync(true)
+}
+
+export const shouldGenerateOtp = ({
+  msgSrvcName,
+  admin,
+  form_fields,
+}: Pick<IFormSchema, 'msgSrvcName' | 'admin' | 'form_fields'>): ResultAsync<
+  true,
+  SmsLimitExceededError | PossibleDatabaseError
+> => {
+  // This check is here to ensure that programmatic pings are rejected.
+  // If the check is solely on whether the form is onboarded,
+  // Pings to form that are not onboarded will go through
+  // Even if the form has no mobile field to verify.
+  const hasVerifiableMobileFields = form_fields?.filter(
+    ({ fieldType, isVerifiable }) =>
+      fieldType === BasicField.Mobile && isVerifiable,
+  )
+
+  if (msgSrvcName) {
+    return okAsync(true)
+  }
+
+  if (!hasVerifiableMobileFields) {
+    return errAsync(new OtpRequestError())
+  }
+
+  return SmsService.retrieveFreeSmsCounts(admin._id).andThen((counts) =>
+    hasAdminExceededFreeSmsLimit(counts)
+      ? errAsync(new SmsLimitExceededError())
+      : okAsync(true),
+  )
 }
