@@ -6,9 +6,10 @@ RUN apk update && apk upgrade && \
     g++ gcc libgcc libstdc++ linux-headers autoconf automake make nasm python3 git curl && \
     npm install --quiet node-gyp -g
 WORKDIR /opt/formsg
-COPY package* /opt/formsg/
+
+COPY . ./
 RUN npm ci && npm run postinstall
-COPY . /opt/formsg
+RUN npm run build
 
 # This stage builds the final container
 FROM node:fermium-alpine3.13
