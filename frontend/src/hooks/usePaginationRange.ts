@@ -77,9 +77,6 @@ export const usePaginationRange = <T extends unknown = string>({
     const shouldShowRightSeparator =
       totalPageCount - rightSiblingIndex > minGapSize
 
-    const firstPageIndex = 1
-    const lastPageIndex = totalPageCount
-
     /**
      * Case 2: No left separator to show, but right separator to be shown.
      */
@@ -101,7 +98,7 @@ export const usePaginationRange = <T extends unknown = string>({
         totalPageCount - rightItemCount + 1,
         totalPageCount + 1,
       )
-      return [firstPageIndex, separator, ...rightRange]
+      return [1, separator, ...rightRange]
     }
 
     /**
@@ -109,13 +106,7 @@ export const usePaginationRange = <T extends unknown = string>({
      */
     if (shouldShowLeftSeparator && shouldShowRightSeparator) {
       const middleRange = range(leftSiblingIndex, rightSiblingIndex + 1)
-      return [
-        firstPageIndex,
-        separator,
-        ...middleRange,
-        separator,
-        lastPageIndex,
-      ]
+      return [1, separator, ...middleRange, separator, totalPageCount]
     }
 
     // This should never be reached, but in case it is, return the range
