@@ -24,6 +24,7 @@ import {
 } from '../../../../../shared/utils/verification'
 import { smsConfig } from '../../../config/features/sms.config'
 import * as FormService from '../../../modules/form/form.service'
+import { formatAsPercentage } from '../../../utils/formatters'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
@@ -55,6 +56,7 @@ describe('mail.service', () => {
   const mailService = new MailService({
     transporter: mockTransporter,
     senderMail: MOCK_SENDER_EMAIL,
+    officialMail: MOCK_SENDER_EMAIL,
     appName: MOCK_APP_NAME,
     appUrl: MOCK_APP_URL,
     // Set for instant timeouts during testing.
@@ -1293,7 +1295,7 @@ describe('mail.service', () => {
             to: admin,
             from: MOCK_SENDER_STRING,
             html: emailHtml,
-            subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
+            subject: 'Free Mobile Number Verification Disabled',
             replyTo: MOCK_SENDER_EMAIL,
             bcc: MOCK_SENDER_EMAIL,
           }
@@ -1317,7 +1319,7 @@ describe('mail.service', () => {
             cc: collab,
             from: MOCK_SENDER_STRING,
             html: emailHtml,
-            subject: '[FormSG] SMS Verification - Free Tier Limit Reached',
+            subject: 'Free Mobile Number Verification Disabled',
             replyTo: MOCK_SENDER_EMAIL,
             bcc: MOCK_SENDER_EMAIL,
           }
@@ -1423,23 +1425,25 @@ describe('mail.service', () => {
       _id: MOCK_FORM_ID,
     } as unknown as IPopulatedForm
 
-    const generateExpectedMailOptions = async (
+    const generateExpectedAdminMailOptions = async (
       count: number,
       admin: string,
     ) => {
-      const result = await MailUtils.generateSmsVerificationWarningHtml({
-        forms: [extractFormLinkView(MOCK_FORM, MOCK_APP_URL)],
-        numAvailable: (smsConfig.smsVerificationLimit - count).toLocaleString(
-          'en-US',
-        ),
-        smsVerificationLimit:
-          smsConfig.smsVerificationLimit.toLocaleString('en-US'),
-      }).map((emailHtml) => {
+      const result = await MailUtils.generateSmsVerificationWarningHtmlForAdmin(
+        {
+          forms: [extractFormLinkView(MOCK_FORM, MOCK_APP_URL)],
+          numAvailable: (smsConfig.smsVerificationLimit - count).toLocaleString(
+            'en-US',
+          ),
+          smsVerificationLimit:
+            smsConfig.smsVerificationLimit.toLocaleString('en-US'),
+        },
+      ).map((emailHtml) => {
         return {
           to: admin,
           from: MOCK_SENDER_STRING,
           html: emailHtml,
-          subject: '[FormSG] SMS Verification - Free Tier Limit Alert',
+          subject: 'Mobile Number Verification - Free Tier Limit Alert',
           replyTo: MOCK_SENDER_EMAIL,
           bcc: MOCK_SENDER_EMAIL,
         }
@@ -1447,29 +1451,66 @@ describe('mail.service', () => {
       return result._unsafeUnwrap()
     }
 
+    const generateExpectedCollabMailOptions = async (
+      count: number,
+      admin: string,
+      collab: string[],
+    ) => {
+      const result =
+        await MailUtils.generateSmsVerificationWarningHtmlForCollab({
+          form: extractFormLinkView(MOCK_FORM, MOCK_APP_URL),
+          percentageUsed: formatAsPercentage(
+            count / smsConfig.smsVerificationLimit,
+          ),
+          smsVerificationLimit:
+            smsConfig.smsVerificationLimit.toLocaleString('en-US'),
+        }).map((emailHtml) => {
+          return {
+            to: admin,
+            cc: collab,
+            from: MOCK_SENDER_STRING,
+            html: emailHtml,
+            subject: 'Mobile Number Verification - Free Tier Limit Alert',
+            replyTo: MOCK_SENDER_EMAIL,
+            bcc: MOCK_SENDER_EMAIL,
+          }
+        })
+      return result._unsafeUnwrap()
+    }
+
     it('should send verified sms warning emails successfully', async () => {
       // Arrange
+      const MOCK_COUNT = 1000
       jest
         .spyOn(FormService, 'retrievePublicFormsWithSmsVerification')
         .mockReturnValueOnce(okAsync([MOCK_FORM]))
       // sendMail should return mocked success response
       sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+      const MOCK_FORM_COLLABS = MOCK_FORM.permissionList.map(
+        ({ email }) => email,
+      )
 
       // Act
       const actualResult = await mailService.sendSmsVerificationWarningEmail(
         MOCK_FORM,
-        1000,
+        MOCK_COUNT,
       )
-      const expectedMailOptions = await generateExpectedMailOptions(
-        1000,
+      const expectedAdminMailOptions = await generateExpectedAdminMailOptions(
+        MOCK_COUNT,
         MOCK_VALID_EMAIL,
+      )
+      const expectedCollabMailOptions = await generateExpectedCollabMailOptions(
+        MOCK_COUNT,
+        MOCK_VALID_EMAIL,
+        MOCK_FORM_COLLABS,
       )
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Check arguments passed to sendNodeMail
-      expect(sendMailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedMailOptions)
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedAdminMailOptions)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedCollabMailOptions)
     })
 
     it('should return MailSendError when the provided email is invalid', async () => {
