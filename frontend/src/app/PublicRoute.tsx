@@ -1,4 +1,5 @@
-import { Redirect, Route, RouteProps } from 'react-router-dom'
+import { Redirect, Route, RouteProps, useLocation } from 'react-router-dom'
+import { Location } from 'history'
 
 import { useAuth } from '~contexts/AuthContext'
 import { ROOT_ROUTE } from '~constants/routes'
@@ -19,6 +20,8 @@ export const PublicRoute = ({
 }: PublicRouteProps): JSX.Element => {
   const { user } = useAuth()
 
+  const { state } = useLocation<{ from: Location | undefined }>()
+
   return (
     <Route
       {...rest}
@@ -26,7 +29,7 @@ export const PublicRoute = ({
         !!user && strict ? (
           <Redirect
             to={{
-              pathname: ROOT_ROUTE,
+              pathname: state.from?.pathname ?? ROOT_ROUTE,
               state: { from: location },
             }}
           />
