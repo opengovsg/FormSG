@@ -6,6 +6,7 @@ import { Connection } from 'mongoose'
 import path from 'path'
 import url from 'url'
 
+import { Environment } from '../../../types'
 import config from '../../config/config'
 import { AnalyticsRouter } from '../../modules/analytics/analytics.routes'
 import { AuthRouter } from '../../modules/auth/auth.routes'
@@ -36,8 +37,6 @@ import loggingMiddleware from './logging'
 import parserMiddlewares from './parser'
 import sentryMiddlewares from './sentry'
 import sessionMiddlewares from './session'
-
-const FRONTEND_PATH = path.resolve('./frontend/build')
 
 const loadExpressApp = async (connection: Connection) => {
   // Initialize express app.
@@ -100,9 +99,6 @@ const loadExpressApp = async (connection: Connection) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   app.engine('server.view.html', require('ejs').__express)
 
-  // Frontend
-  app.use(express.static(FRONTEND_PATH))
-
   // Set views path and view engine
   app.set('view engine', 'server.view.html')
   app.set('views', './src/app/views')
@@ -145,13 +141,20 @@ const loadExpressApp = async (connection: Connection) => {
   // New routes in preparation for API refactor.
   app.use('/api', ApiRouter)
 
+  // Serve static client files only in prod
+  if (config.nodeEnv === Environment.Prod) {
+    // Keep in sync with Dockerfile.production
+    const frontendPath = path.resolve(__dirname, 'dist/frontend')
+    app.use(express.static(frontendPath))
+
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(frontendPath, 'index.html'))
+    })
+  }
+
   app.use(sentryMiddlewares())
 
   app.use(errorHandlerMiddlewares())
-
-  app.get('*', (_req: express.Request, res: express.Response) => {
-    res.sendFile(path.join(FRONTEND_PATH, 'index.html'))
-  })
 
   const server = http.createServer(app)
 
