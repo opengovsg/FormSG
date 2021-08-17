@@ -13,7 +13,7 @@ export const useCheckboxOthers = (): CheckboxOthersContextProps => {
   const context = useContext(CheckboxOthersContext)
   if (!context) {
     throw new Error(
-      `useCheckboxOthers must be used within a CheckboxOthersProvider component`,
+      `useCheckboxOthers must be used within a Checkbox.OthersWrapper component`,
     )
   }
   return context
