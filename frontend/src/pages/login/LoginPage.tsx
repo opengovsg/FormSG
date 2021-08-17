@@ -13,6 +13,7 @@ import {
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 import { ReactComponent as LoginImageSvg } from '~assets/svgs/img-buildscratch.svg'
 import { useAuth } from '~contexts/AuthContext'
+import { FORM_GUIDE, REPORT_VULNERABILITY } from '~constants/externalLinks'
 import Footer from '~components/Footer'
 import Link from '~components/Link'
 
@@ -36,11 +37,14 @@ export const LoginPage: FC = () => {
 
   const footerLinks = useMemo(
     () => [
-      { label: 'Contact Us', href: '' },
-      { label: 'Guide', href: '' },
-      { label: 'Privacy', href: '' },
-      { label: 'Terms of Use', href: '' },
-      { label: 'Report Vulnerability', href: '' },
+      { label: 'Contact Us', href: '/contact-us' },
+      { label: 'Guide', href: FORM_GUIDE },
+      { label: 'Privacy', href: '/privacy' },
+      { label: 'Terms of Use', href: '/terms' },
+      {
+        label: 'Report Vulnerability',
+        href: REPORT_VULNERABILITY,
+      },
     ],
     [],
   )

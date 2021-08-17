@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
+import { FORM_GUIDE } from '~constants/externalLinks'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -78,7 +79,9 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
         >
           Sign in
         </Button>
-        <Link>Have a question?</Link>
+        <Link isExternal variant="standalone" href={FORM_GUIDE}>
+          Have a question?
+        </Link>
       </Stack>
     </form>
   )
