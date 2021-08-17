@@ -64,8 +64,8 @@ export const validateResponseParams = celebrate({
             fieldType: Joi.string()
               .required()
               .valid(...Object.values(BasicField)),
-            answer: Joi.string().allow(''),
-            answerArray: Joi.array(),
+            answer: Joi.string().allow('').insensitive(),
+            answerArray: Joi.array().items(Joi.string().insensitive()),
             filename: Joi.string(),
             content: Joi.binary(),
             isHeader: Joi.boolean(),
