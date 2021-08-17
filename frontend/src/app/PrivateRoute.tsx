@@ -7,13 +7,13 @@ export const PrivateRoute = ({
   children,
   ...rest
 }: Omit<RouteProps, 'render'>): JSX.Element => {
-  const { user } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   return (
     <Route
       {...rest}
       render={({ location }) => {
-        return user ? (
+        return isAuthenticated ? (
           children
         ) : (
           <Redirect
