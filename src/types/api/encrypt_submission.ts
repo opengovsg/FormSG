@@ -1,20 +1,23 @@
-import { FieldResponse } from '../response'
+import { Merge } from 'type-fest'
 
-export type EncryptSubmissionDto = {
-  responses: ({ question: string } & FieldResponse)[]
-  encryptedContent: string
-  attachments?: EncryptedAttachmentsDto
-  version: number
+import {
+  AttachmentResponse,
+  FieldResponse,
+} from '../../../shared/types/response'
+import { StorageModeSubmissionContentDto } from '../../../shared/types/submission'
+
+export { StorageModeAttachmentsMap } from '../../../shared/types/submission'
+
+export type EncryptSubmissionDto = Merge<
+  StorageModeSubmissionContentDto,
+  { responses: EncryptFormFieldResponse[] }
+>
+
+export type EncryptAttachmentResponse = AttachmentResponse & {
+  filename: never
+  content: never
 }
 
-export type EncryptedAttachmentsDto = {
-  [fieldId: string]: {
-    encryptedFile:
-      | {
-          binary: string
-          nonce: string
-          submissionPublicKey: string
-        }
-      | undefined
-  }
-}
+export type EncryptFormFieldResponse =
+  | Exclude<FieldResponse, AttachmentResponse>
+  | EncryptAttachmentResponse

@@ -5,7 +5,6 @@
 **/.elasticbeanstalk
 **/node_modules
 **/public/lib
-**/.env
 .eslintrc.json
 .prettierrc.json
 .travis.yml

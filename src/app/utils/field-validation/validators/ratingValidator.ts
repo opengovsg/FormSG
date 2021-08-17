@@ -2,14 +2,19 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import isInt from 'validator/lib/isInt'
 
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
-import { IRatingField } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import {
+  IRatingFieldSchema,
+  OmitUnusedValidatorProps,
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 import { notEmptySingleAnswerResponse } from './common'
 
 type RatingValidator = ResponseValidator<ProcessedSingleAnswerResponse>
-type RatingValidatorConstructor = (ratingField: IRatingField) => RatingValidator
+type RatingValidatorConstructor = (
+  ratingField: OmitUnusedValidatorProps<IRatingFieldSchema>,
+) => RatingValidator
 
 /**
  * Returns a validation function to check if the

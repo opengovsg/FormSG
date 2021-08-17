@@ -1,16 +1,20 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
-import { INumberField } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
-
-import { NumberSelectedValidation } from '../../../../types/field'
+import {
+  INumberFieldSchema,
+  NumberSelectedValidation,
+  OmitUnusedValidatorProps,
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 import { notEmptySingleAnswerResponse } from './common'
 
 type NumberValidator = ResponseValidator<ProcessedSingleAnswerResponse>
-type NumberValidatorConstructor = (numberField: INumberField) => NumberValidator
+type NumberValidatorConstructor = (
+  numberField: OmitUnusedValidatorProps<INumberFieldSchema>,
+) => NumberValidator
 
 /**
  * Return a validator to check if number format is correct.

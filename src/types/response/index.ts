@@ -1,76 +1,33 @@
-import { BasicField, IFieldSchema, IMyInfo } from '../field'
+import {
+  CheckboxResponse,
+  TableResponse,
+  TableRow,
+} from '../../../shared/types/response'
+import {
+  EncryptAttachmentResponse,
+  EncryptFormFieldResponse,
+  ParsedEmailAttachmentResponse,
+  ParsedEmailFormFieldResponse,
+} from '../api'
 
-export type AttachmentsMap = Record<IFieldSchema['_id'], File>
+export type IAttachmentResponse =
+  | ParsedEmailAttachmentResponse
+  | EncryptAttachmentResponse
 
-export interface IBaseResponse {
-  _id: IFieldSchema['_id']
-  fieldType: BasicField
-  myInfo?: IMyInfo
-  // Signature exists for verifiable fields if the answer is verified.
-  signature?: string
-}
+export type ISingleAnswerResponse =
+  | Exclude<
+      EncryptFormFieldResponse,
+      TableResponse | CheckboxResponse | IAttachmentResponse
+    >
+  | Exclude<
+      ParsedEmailFormFieldResponse,
+      TableResponse | CheckboxResponse | IAttachmentResponse
+    >
 
-export interface ISingleAnswerResponse extends IBaseResponse {
-  fieldType: Exclude<
-    BasicField,
-    BasicField.Table | BasicField.Checkbox | BasicField.Attachment
-  >
-  answer: string
-}
-
-export interface IAttachmentResponse extends IBaseResponse {
-  fieldType: BasicField.Attachment
-  filename: string
-  content: Buffer
-  answer: string
-}
-
-export interface ICheckboxResponse extends IBaseResponse {
-  fieldType: BasicField.Checkbox
-  answerArray: string[]
-}
-
-export type ITableRow = string[]
-
-export interface ITableResponse extends IBaseResponse {
-  fieldType: BasicField.Table
-  answerArray: ITableRow[]
-}
+export type ICheckboxResponse = CheckboxResponse
+export type ITableResponse = TableResponse
+export type ITableRow = TableRow
 
 export type FieldResponse =
-  | ISingleAnswerResponse
-  | ICheckboxResponse
-  | ITableResponse
-  | IAttachmentResponse
-
-interface IClientSubmission {
-  attachments: AttachmentsMap
-  captchaResponse: string
-  isPreview: boolean
-  responses: FieldResponse[]
-}
-
-export type IClientEmailSubmission = IClientSubmission
-
-export interface IClientEncryptSubmission extends IClientSubmission {
-  encryptedContent: string
-  version: number
-}
-
-export type DisplayedResponseWithoutAnswer = {
-  _id: string
-  question: string
-  fieldType: string
-  isHeader?: boolean
-}
-
-export type ArrayResponse = DisplayedResponseWithoutAnswer & {
-  answerArray: string[]
-}
-
-export type NestedResponse = DisplayedResponseWithoutAnswer & {
-  answerArray: string[][]
-}
-export type SingleResponse = DisplayedResponseWithoutAnswer & {
-  answer: string
-}
+  | EncryptFormFieldResponse
+  | ParsedEmailFormFieldResponse

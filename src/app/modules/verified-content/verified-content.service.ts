@@ -36,6 +36,12 @@ export const getVerifiedContent = ({
       return getSpVerifiedContent(data)
     case AuthType.CP:
       return getCpVerifiedContent(data)
+    case AuthType.SGID:
+      return err(
+        new EncryptVerifiedContentError(
+          'Fields from sgID not currently supported',
+        ),
+      )
   }
 }
 

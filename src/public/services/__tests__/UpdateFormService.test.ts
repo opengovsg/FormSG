@@ -4,11 +4,10 @@ import { StatusCodes } from 'http-status-codes'
 import MockAxios from 'jest-mock-axios'
 
 import {
-  EmailSubmissionDto,
-  EncryptSubmissionDto,
+  EmailModeSubmissionContentDto,
+  StorageModeSubmissionContentDto,
   SubmissionResponseDto,
-} from 'src/types/api'
-
+} from '../../../../shared/types/submission'
 import { BasicField, IPopulatedForm, IYesNoFieldSchema } from '../../../types'
 import { FormUpdateParams } from '../../../types/api'
 import * as SubmissionUtil from '../../utils/submission'
@@ -30,7 +29,7 @@ describe('UpdateFormService', () => {
       message: 'some mock response',
       submissionId: 'created submission id',
     }
-    const MOCK_CONTENT: EmailSubmissionDto = {
+    const MOCK_CONTENT: EmailModeSubmissionContentDto = {
       responses: [
         {
           question: 'some question',
@@ -109,7 +108,7 @@ describe('UpdateFormService', () => {
       message: 'some mock response again',
       submissionId: 'created submission id again',
     }
-    const MOCK_CONTENT: EncryptSubmissionDto = {
+    const MOCK_CONTENT: StorageModeSubmissionContentDto = {
       responses: [
         {
           question: 'some question',

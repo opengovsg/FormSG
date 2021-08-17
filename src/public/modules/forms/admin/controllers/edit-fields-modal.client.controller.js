@@ -2,6 +2,7 @@
 
 const axios = require('axios').default
 const values = require('lodash/values')
+const range = require('lodash/range')
 const cloneDeep = require('lodash/cloneDeep')
 
 const UserService = require('../../../../services/UserService')
@@ -9,13 +10,14 @@ const UserService = require('../../../../services/UserService')
 const {
   VALID_UPLOAD_FILE_TYPES,
   MAX_UPLOAD_FILE_SIZE,
-} = require('shared/constants')
+  MB,
+} = require('../../../../../../shared/constants/file')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 const { uploadImage } = require('../../../../services/FileHandlerService')
 const {
   DateSelectedValidation: DateValidationOptions,
-} = require('../../../../../shared/constants')
-const { Rating, RatingShape } = require('../../../../../types')
+  RatingShape,
+} = require('../../../../../../shared/types/field')
 const CancelToken = axios.CancelToken
 
 const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '7']
@@ -157,7 +159,7 @@ function EditFieldsModalController(
     }
   }
 
-  vm.ratingSteps = Rating
+  vm.ratingSteps = range(1, 11).map(String)
   vm.ratingShapes = Object.values(RatingShape)
 
   vm.showDuplicateOptionsError = function (field) {
@@ -546,8 +548,8 @@ function EditFieldsModalController(
       field.uploadedFile = ''
       switch (ngfError.$error) {
         case 'maxSize':
-          vm.uploadError = `${(ngfError.size / 1000000).toFixed(2)} MB / ${
-            vm.maxImageSize / 1000000
+          vm.uploadError = `${(ngfError.size / MB).toFixed(2)} MB / ${
+            vm.maxImageSize / MB
           } MB: File size exceeded`
           break
         case 'resize':
@@ -572,7 +574,7 @@ function EditFieldsModalController(
           field.url = result.url
           field.fileMd5Hash = result.fileMd5Hash
           field.name = result.name
-          field.size = `${(result.size / 1000000).toFixed(2)} MB`
+          field.size = `${(result.size / MB).toFixed(2)} MB`
         })
         .catch((uploadError) => {
           // This is a reference to the ng-model of the upload button, which points to the uploaded file

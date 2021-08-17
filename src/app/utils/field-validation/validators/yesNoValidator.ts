@@ -1,8 +1,8 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 import { notEmptySingleAnswerResponse } from './common'
 

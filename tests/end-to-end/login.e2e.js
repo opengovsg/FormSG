@@ -199,3 +199,13 @@ test
     .expect((await landingPage.tagline.textContent).replace(/  +/g, ' '))
     .contains('Build government forms in minutes')
 })
+
+test('Prevent sign-in if email is invalid', async (t) => {
+  let email = 'ani@open.gov.rg'
+  // Enter email
+  await enterEmail(t, email)
+
+  await t
+    .expect(signInPage.emailErrorMsg().textContent)
+    .contains('Please enter a valid email')
+})

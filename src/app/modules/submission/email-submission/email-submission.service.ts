@@ -5,7 +5,6 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import {
   BasicField,
   EmailAdminDataField,
-  FieldResponse,
   IAttachmentInfo,
   IEmailSubmissionSchema,
   IPopulatedEmailForm,
@@ -13,6 +12,7 @@ import {
   ResponseMode,
   SubmissionType,
 } from '../../../../types'
+import { ParsedEmailFormFieldResponse } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
 import { DatabaseError } from '../../core/core.errors'
@@ -51,7 +51,7 @@ const logger = createLoggerWithLabel(module)
  * @returns errAsync(AttachmentTooLargeError) if total attachment size exceeds 7MB
  */
 export const validateAttachments = (
-  parsedResponses: FieldResponse[],
+  parsedResponses: ParsedEmailFormFieldResponse[],
 ): ResultAsync<true, InvalidFileExtensionError | AttachmentTooLargeError> => {
   const logMeta = { action: 'validateAttachments' }
   const attachments = mapAttachmentsFromResponses(parsedResponses)

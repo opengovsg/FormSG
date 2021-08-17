@@ -12,19 +12,6 @@ angular
   .module('forms')
   .factory('FormApi', ['FormErrorService', 'FormFields', FormApi])
 
-// Helper function for getting formID from path starting with /:formId/.
-// If form ID is not found, returns an empty string.
-const extractFormId = (path) => {
-  if (!path) {
-    return ''
-  }
-  const formId = path.substring(1, 25)
-  if (formId.length !== 24) {
-    return ''
-  }
-  return formId
-}
-
 /**
  * Service for making API calls to /:formId/:accessMode endpoint, which is used
  * for all CRUD operations for forms.
@@ -75,12 +62,12 @@ function FormApi(FormErrorService, FormFields) {
    * If redirectOnError is true, this is the redirect state which will be passed to FormErrorService
    */
   const handleError = (err, errorParams) => {
-    const { redirectOnError, errorTargetState } = errorParams
+    const { redirectOnError, errorTargetState, targetFormId } = errorParams
     if (redirectOnError) {
       FormErrorService.redirect({
         response: err.response,
         targetState: errorTargetState,
-        targetFormId: extractFormId(get(err.response, 'config.url')),
+        targetFormId,
       })
     } else {
       throw err // just pass error on
@@ -115,7 +102,11 @@ function FormApi(FormErrorService, FormFields) {
         AdminViewFormService.getAdminFormView,
         null,
         injectMyInfo,
-        { redirectOnError: true, errorTargetState: 'viewForm' },
+        {
+          redirectOnError: true,
+          errorTargetState: 'viewForm',
+          targetFormId: formId,
+        },
         formId,
       ),
     getPublicForm: (formId) =>
@@ -123,7 +114,7 @@ function FormApi(FormErrorService, FormFields) {
         PublicFormService.getPublicFormView,
         null,
         injectMyInfo,
-        { redirectOnError: true },
+        { redirectOnError: true, targetFormId: formId },
         formId,
       ),
     updateForm: (formId, update) =>
@@ -165,7 +156,11 @@ function FormApi(FormErrorService, FormFields) {
         ExamplesService.queryTemplate,
         null,
         injectMyInfo,
-        { redirectOnError: true, errorTargetState: 'templateForm' },
+        {
+          redirectOnError: true,
+          errorTargetState: 'templateForm',
+          targetFormId: formId,
+        },
         formId,
       ),
     previewForm: (formId) =>
@@ -173,7 +168,11 @@ function FormApi(FormErrorService, FormFields) {
         AdminViewFormService.previewForm,
         null,
         injectMyInfo,
-        { redirectOnError: true, errorTargetState: 'previewForm' },
+        {
+          redirectOnError: true,
+          errorTargetState: 'previewForm',
+          targetFormId: formId,
+        },
         formId,
       ),
     useTemplate: (formId, overrideParams) =>
@@ -181,7 +180,11 @@ function FormApi(FormErrorService, FormFields) {
         ExamplesService.useTemplate,
         null,
         null,
-        { redirectOnError: true, errorTargetState: 'useTemplate' },
+        {
+          redirectOnError: true,
+          errorTargetState: 'useTemplate',
+          targetFormId: formId,
+        },
         formId,
         overrideParams,
       ),

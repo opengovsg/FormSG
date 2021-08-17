@@ -2,7 +2,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"],
       "~assets/*": ["./src/assets/*"],
       "~contexts/*": ["./src/contexts/*"],
       "~constants/*": ["./src/constants/*"],
@@ -12,7 +11,8 @@
       "~pages/*": ["./src/pages/*"],
       "~services/*": ["./src/services/*"],
       "~theme/*": ["./src/theme/*"],
-      "~typings/*": ["./src/typings/*"]
+      "~typings/*": ["./src/typings/*"],
+      "~/*": ["./src/*"]
     }
   }
 }
