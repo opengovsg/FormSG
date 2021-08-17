@@ -103,11 +103,6 @@ const TemplateGroup: Story<CheckboxProps> = (args) => {
 export const CheckboxStates = TemplateGroup.bind({})
 CheckboxStates.storyName = 'States and themes'
 
-type PlaygroundFieldValues = {
-  Checkbox: string[] | false
-  Others: string
-}
-
 export const Playground: Story = ({
   name = 'checkbox',
   othersInputName = 'others-input',
@@ -137,7 +132,7 @@ export const Playground: Story = ({
       trigger(othersInputName)
     }
   }, [isOthersChecked, trigger, othersInputName])
-  const onSubmit = (data: PlaygroundFieldValues) => {
+  const onSubmit = (data: unknown) => {
     alert(JSON.stringify(data))
   }
   return (
