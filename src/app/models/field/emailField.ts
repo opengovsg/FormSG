@@ -49,6 +49,7 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
         {
           type: String,
           trim: true,
+          lowercase: true, // added 2021-08-25, many forms did not have this setting on
         },
       ],
       // If allowedEmailDomains is empty, then all email domains should be allowed.

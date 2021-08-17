@@ -40,7 +40,7 @@ const makeEmailDomainValidator: EmailValidatorConstructor =
       return right(response)
     const emailDomain = '@' + emailAddress.split('@').pop()
 
-    return allowedEmailDomains.includes(emailDomain)
+    return allowedEmailDomains.includes(emailDomain.toLowerCase())
       ? right(response)
       : left(`EmailValidator:\t answer is not a valid email domain`)
   }

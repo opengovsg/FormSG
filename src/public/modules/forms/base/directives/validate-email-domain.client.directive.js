@@ -17,8 +17,8 @@ function validateEmailDomain() {
           return true
         }
         if (allowedEmailDomains.size) {
-          const emailDomain = emailAddress.split('@').pop()
-          return allowedEmailDomains.has('@' + emailDomain)
+          const emailDomain = '@' + emailAddress.split('@').pop()
+          return allowedEmailDomains.has(emailDomain.toLowerCase())
         }
         return true
       }

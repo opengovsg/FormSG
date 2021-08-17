@@ -53,6 +53,8 @@ import {
   StorageFormSettings,
 } from '../../types'
 import { AdminDashboardFormMetaDto } from '../../types/api/form'
+import { FormFieldSchema } from '../../types/field'
+import { IEmailFieldSchema } from '../../types/field/emailField'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
@@ -672,17 +674,33 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
   }
 
+  function hasFixableEmailDomains(
+    field: FormFieldSchema,
+  ): field is IEmailFieldSchema {
+    return !!field.allowedEmailDomains
+  }
+
   // Returns the form with populated admin details
   FormSchema.statics.getFullFormById = async function (
     formId: string,
     fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null> {
-    return this.findById(formId, fields).populate({
-      path: 'admin',
-      populate: {
-        path: 'agency',
-      },
-    }) as Query<IPopulatedForm, IFormDocument>
+    return (
+      this.findById(formId, fields).populate({
+        path: 'admin',
+        populate: {
+          path: 'agency',
+        },
+      }) as Query<IPopulatedForm, IFormDocument>
+    ).then((result) => {
+      result.form_fields.filter(hasFixableEmailDomains).forEach((field) => {
+        field.allowedEmailDomains = field.allowedEmailDomains.map((domain) =>
+          domain.toLowerCase(),
+        )
+      })
+
+      return result
+    })
   }
 
   // Deactivate form by ID
