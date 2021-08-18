@@ -20,6 +20,7 @@ import {
   BounceType,
   EmailAdminDataField,
   IEmailFormSchema,
+  IFormDocument,
   IPopulatedForm,
   IPopulatedUser,
   ISubmissionSchema,
@@ -633,7 +634,7 @@ export class MailService {
             // If there are no collaborators, do not send out the email.
             // Admin would already have received a summary email from Step 2.
             f.permissionList.length
-              ? this.sendDisabledMailForCollab(f)
+              ? this.sendDisabledMailForCollab(f, form.admin)
               : okAsync<true, never>(true),
           ),
         )
@@ -645,7 +646,8 @@ export class MailService {
   // Sms verifications being disabled for the form.
   // Note that this method also emails the admin to notify them that the collaborators have been informed.
   sendDisabledMailForCollab = (
-    form: IPopulatedForm,
+    form: IFormDocument,
+    admin: IPopulatedUser,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
     const formLink = extractFormLinkView(form, this.#appUrl)
     const htmlData: CollabSmsDisabledData = {
@@ -658,7 +660,7 @@ export class MailService {
     const collaborators = form.permissionList.map(({ email }) => email)
     const logMeta = {
       form: formLink,
-      admin: form.admin,
+      admin,
       collaborators,
       action: 'sendDisabledMailForCollab',
     }
@@ -666,7 +668,7 @@ export class MailService {
     return generateSmsVerificationDisabledHtmlForCollab(htmlData).andThen(
       (mailHtml) => {
         const mailOptions: MailOptions = {
-          to: form.admin.email,
+          to: admin.email,
           cc: collaborators,
           from: this.#senderFromString,
           html: mailHtml,
@@ -765,7 +767,7 @@ export class MailService {
             // If there are no collaborators, do not send out the email.
             // Admin would already have received a summary email from Step 2.
             f.permissionList.length
-              ? this.sendWarningMailForCollab(f, smsVerifications)
+              ? this.sendWarningMailForCollab(f, form.admin, smsVerifications)
               : okAsync<true, never>(true),
           ),
         ).map(() => true)
@@ -775,7 +777,8 @@ export class MailService {
   // Utility method to send a warning mail to the collaborators of a form.
   // Note that this also sends the mail out to the admin of the form as well.
   sendWarningMailForCollab = (
-    form: IPopulatedForm,
+    form: IFormDocument,
+    admin: IPopulatedUser,
     smsVerifications: number,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
     const formLink = extractFormLinkView(form, this.#appUrl)
@@ -791,7 +794,7 @@ export class MailService {
     const collaborators = form.permissionList.map(({ email }) => email)
     const logMeta = {
       form: formLink,
-      admin: form.admin,
+      admin,
       collaborators,
       smsVerifications,
       action: 'sendWarningMailForCollab',
@@ -801,7 +804,7 @@ export class MailService {
     return generateSmsVerificationWarningHtmlForCollab(htmlData).andThen(
       (mailHtml) => {
         const mailOptions: MailOptions = {
-          to: form.admin.email,
+          to: admin.email,
           cc: collaborators,
           from: this.#senderFromString,
           html: mailHtml,
