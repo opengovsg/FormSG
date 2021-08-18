@@ -1,5 +1,8 @@
+/**
+ * @precondition Must have a parent `react-hook-form#FormProvider` component.
+ */
 import { useMemo } from 'react'
-import { Controller, useFormContext } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 
 import { FormFieldWithId, YesNoFieldBase } from '~shared/types/field'
 
@@ -18,8 +21,6 @@ export const YesNoField = ({
   schema,
   questionNumber,
 }: YesNoFieldProps): JSX.Element => {
-  const { control } = useFormContext()
-
   const validationRules = useMemo(
     () => createBaseValidationRules(schema),
     [schema],
@@ -28,7 +29,6 @@ export const YesNoField = ({
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>
       <Controller
-        control={control}
         rules={validationRules}
         name={schema._id}
         render={({ field }) => <YesNo {...field} />}
