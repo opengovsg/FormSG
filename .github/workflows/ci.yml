@@ -62,7 +62,7 @@ jobs:
           path: ~/.npm
           key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
       - run: npm ci
-      - run: npm run test-frontend
+      - run: npm run test:frontend
 
   test-backend:
     needs: install
