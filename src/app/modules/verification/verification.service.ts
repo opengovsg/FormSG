@@ -556,7 +556,7 @@ export const shouldGenerateOtp = ({
   form_fields,
 }: Pick<IFormSchema, 'msgSrvcName' | 'admin' | 'form_fields'>): ResultAsync<
   true,
-  SmsLimitExceededError | PossibleDatabaseError
+  SmsLimitExceededError | OtpRequestError
 > => {
   // This check is here to ensure that programmatic pings are rejected.
   // If the check is solely on whether the form is onboarded,
