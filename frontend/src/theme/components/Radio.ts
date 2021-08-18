@@ -13,7 +13,14 @@ export const RADIO_THEME_KEY = 'Radio'
  * https://github.com/chakra-ui/chakra-ui/blob/main/packages/theme/src/components/radio.ts
  */
 
-const parts = ['container', 'control', 'label']
+const parts = [
+  'container',
+  'control',
+  'label',
+  'othersInput',
+  'othersContainer',
+  'othersRadio',
+]
 
 export const Radio: ComponentMultiStyleConfig = {
   parts,
@@ -55,7 +62,7 @@ export const Radio: ComponentMultiStyleConfig = {
     container: {
       w: '100%',
       px: '0.25rem',
-      py: '0.5rem',
+      py: '0.625rem',
       _hover: {
         bg: `${c}.100`,
       },
@@ -78,6 +85,38 @@ export const Radio: ComponentMultiStyleConfig = {
       },
       textStyle: 'body-1',
       ml: '1rem',
+    },
+    othersContainer: {
+      px: '0.25rem',
+      py: '0.625rem',
+      _hover: {
+        bg: `${c}.100`,
+        _disabled: {
+          bg: 'none',
+        },
+      },
+      _focusWithin: {
+        // use boxShadow instead of border to ensure that control and label
+        // do not move when checkbox is focused
+        boxShadow: `inset 0 0 0 0.125rem ${getColor(theme, `${c}.500`)}`,
+      },
+    },
+    othersInput: {
+      // To align left of input with left of "Others" label
+      ml: '2.625rem',
+      mt: '0.625rem',
+      // Use 100% of the width, not counting the left margin
+      w: 'calc(100% - 2.625rem)',
+    },
+    othersRadio: {
+      // To get around an issue where the hover background blocks the border when focused
+      _focusWithin: {
+        boxShadow: 'none',
+      },
+      _hover: {
+        bg: 'none',
+      },
+      p: 0,
     },
   }),
   sizes: {

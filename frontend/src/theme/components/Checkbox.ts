@@ -106,6 +106,7 @@ export const Checkbox: ComponentMultiStyleConfig = {
       w: 'calc(100% - 2.625rem)',
     },
     othersCheckbox: {
+      // To get around an issue where the hover background blocks the border when focused
       _focusWithin: {
         boxShadow: 'none',
       },
