@@ -44,7 +44,7 @@ import { FieldColorScheme } from '~/theme/foundations/colours'
 
 import Input, { InputProps } from '../Input'
 
-import { RadioGroupContext, useRadioGroup } from './useRadioGroup'
+import { RadioGroupContext, useRadioGroupWithOthers } from './useRadioGroup'
 
 type Omitted = 'onChange' | 'defaultChecked' | 'checked'
 type BaseControlProps = Omit<HTMLChakraProps<'div'>, Omitted>
@@ -211,7 +211,7 @@ const OthersWrapper = ({
  * Wrapper for the radio part of the Others option.
  */
 const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
-  const { othersRadioRef, othersInputRef } = useRadioGroup()
+  const { othersRadioRef, othersInputRef } = useRadioGroupWithOthers()
   const styles = useMultiStyleConfig(RADIO_THEME_KEY, {
     size: props.size,
     colorScheme: props.colorScheme,
@@ -252,7 +252,7 @@ const OthersInput = forwardRef<InputProps, 'input'>((props, ref) => {
     othersInputRef,
     othersInputValue,
     onInputValueChange,
-  } = useRadioGroup()
+  } = useRadioGroupWithOthers()
   const styles = useMultiStyleConfig(RADIO_THEME_KEY, {
     size: props.size,
     colorScheme: props.colorScheme,

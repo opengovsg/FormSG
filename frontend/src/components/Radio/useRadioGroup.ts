@@ -11,7 +11,7 @@ export const RadioGroupContext = createContext<
   RadioGroupContextProps | undefined
 >(undefined)
 
-export const useRadioGroup = (): RadioGroupContextProps => {
+export const useRadioGroupWithOthers = (): RadioGroupContextProps => {
   const context = useContext(RadioGroupContext)
   if (!context) {
     throw new Error(
