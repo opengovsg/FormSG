@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { FormControl, SimpleGrid, Text, VStack } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
-import { isEmpty } from 'lodash'
+import { isEmpty, omit } from 'lodash'
 
 import { viewports } from '~utils/storybook'
 
@@ -142,9 +142,18 @@ const PlaygroundTemplate: Story = ({
           control={control}
           name={name}
           render={({ field }) => (
-            <Radio.RadioGroup {...field}>
+            // Don't pass the ref to the surrounding div
+            // so we don't have conflicting refs
+            <Radio.RadioGroup {...omit(field, 'ref')}>
               {options.map((o, idx) => (
-                <Radio key={idx} value={o} {...args}>
+                <Radio
+                  key={idx}
+                  value={o}
+                  // So that the first radio button of the group
+                  // is focused on error
+                  ref={idx === 0 ? field.ref : undefined}
+                  {...args}
+                >
                   {o}
                 </Radio>
               ))}
@@ -152,8 +161,17 @@ const PlaygroundTemplate: Story = ({
             </Radio.RadioGroup>
           )}
           rules={{
-            required: 'Answer is required',
-            validate: (ans: RadioGroupReturn) => {
+            validate: (ans: RadioGroupReturn | undefined) => {
+              // We could separate the undefined check by passing
+              // required: true as a rule, but for some reason the
+              // combination of required: true and passing field.ref
+              // to the first radio button results in the "required"
+              // validation always failing, even if there is an answer.
+              // An alternative solution is to set required: true, remove
+              // the setting of the ref on the first radio button, and
+              // set a tabIndex property on the RadioGroup so it can be
+              // focused.
+              if (!ans) return 'Answer is required'
               if (!ans.isOthers || !!ans.value) return true
               return 'Please specify Others'
             },
