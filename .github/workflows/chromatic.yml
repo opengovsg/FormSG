@@ -9,10 +9,9 @@ defaults:
 
 # Event for the workflow
 on:
-  push:
-    # Sequence of patterns matched against refs/heads
+  pull_request:
     branches:
-      # Push events to branches matching refs/heads/form-v2
+      # PR events to branches matching refs/heads/form-v2
       - 'form-v2'
       - 'form-v2/**'
 
