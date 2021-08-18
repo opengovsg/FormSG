@@ -233,10 +233,9 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
       {...props}
       __css={styles.othersRadio}
       onChange={handleRadioChange}
-      // This value doesn't matter as it will be overridden by the
-      // value in the text input, but it needs to be present in order
-      // for the radio group to work properly
-      value="Other"
+      // This value will be overridden by the value in the text input,
+      // but it should be unique to avoid bugs in the radio buttons
+      value="!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!"
     >
       Other
     </Radio>
