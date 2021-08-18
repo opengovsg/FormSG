@@ -1,5 +1,8 @@
 /**
  * Field container layout that all rendered form fields share.
+ * @precondition There must be a parent `react-hook-form#FormProvider`
+ * component as this component relies on methods the FormProvider component
+ * provides.
  */
 
 import { useFormContext } from 'react-hook-form'
