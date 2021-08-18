@@ -14,7 +14,7 @@ import {
 } from './YesNoField'
 
 export default {
-  title: 'Templates/Field/YesNo Field',
+  title: 'Templates/Field/YesNoField',
   component: YesNoFieldComponent,
   decorators: [],
   parameters: {
@@ -28,7 +28,7 @@ export default {
   },
 } as Meta
 
-const schema: YesNoFieldSchema = {
+const requiredSchema: YesNoFieldSchema = {
   title: 'Do you like apples',
   description:
     'Not oranges, not any other fruits. I only want to know your apple preferences.',
@@ -38,13 +38,13 @@ const schema: YesNoFieldSchema = {
   _id: '611b94dfbb9e300012f702a7',
 }
 
-export const YesNoField: Story<YesNoFieldProps> = (args) => {
+const Template: Story<YesNoFieldProps> = (args) => {
   const formMethods = useForm()
 
-  const [submitValues, setSubmitValues] = useState('')
+  const [submitValues, setSubmitValues] = useState<string>()
 
   const onSubmit = (values: Record<string, string>) => {
-    setSubmitValues(values[args.schema._id])
+    setSubmitValues(values[args.schema._id] ?? 'Nothing was selected')
   }
 
   return (
@@ -64,7 +64,13 @@ export const YesNoField: Story<YesNoFieldProps> = (args) => {
     </FormProvider>
   )
 }
-YesNoField.args = {
-  schema,
+
+export const ValidationRequired = Template.bind({})
+ValidationRequired.args = {
+  schema: requiredSchema,
 }
-YesNoField.storyName = 'YesNo Field'
+
+export const ValidationOptional = Template.bind({})
+ValidationOptional.args = {
+  schema: { ...requiredSchema, required: false },
+}
