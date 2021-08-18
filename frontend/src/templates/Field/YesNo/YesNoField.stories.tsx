@@ -7,12 +7,25 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
-import { YesNoField, YesNoFieldProps, YesNoFieldSchema } from './YesNoField'
+import {
+  YesNoField as YesNoFieldComponent,
+  YesNoFieldProps,
+  YesNoFieldSchema,
+} from './YesNoField'
 
 export default {
   title: 'Templates/Field/YesNo Field',
-  component: YesNoField,
+  component: YesNoFieldComponent,
   decorators: [],
+  parameters: {
+    docs: {
+      // Required in this story due to rhf conflicting with Storybook somehow.
+      // See https://github.com/storybookjs/storybook/issues/12747.
+      source: {
+        type: 'code',
+      },
+    },
+  },
 } as Meta
 
 const schema: YesNoFieldSchema = {
@@ -25,19 +38,19 @@ const schema: YesNoFieldSchema = {
   _id: '611b94dfbb9e300012f702a7',
 }
 
-export const Default: Story<YesNoFieldProps> = (args) => {
+export const YesNoField: Story<YesNoFieldProps> = (args) => {
   const formMethods = useForm()
 
   const [submitValues, setSubmitValues] = useState('')
 
   const onSubmit = (values: Record<string, string>) => {
-    return setSubmitValues(values[args.schema._id])
+    setSubmitValues(values[args.schema._id])
   }
 
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
-        <YesNoField {...args} />
+        <YesNoFieldComponent {...args} />
         <Button
           mt="1rem"
           type="submit"
@@ -51,7 +64,7 @@ export const Default: Story<YesNoFieldProps> = (args) => {
     </FormProvider>
   )
 }
-Default.args = {
+YesNoField.args = {
   schema,
 }
-Default.storyName = 'YesNo Field'
+YesNoField.storyName = 'YesNo Field'
