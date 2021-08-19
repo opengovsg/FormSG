@@ -61,5 +61,5 @@ const Template: Story<AttachmentProps> = (args) => {
 export const Default = Template.bind({})
 Default.args = {
   name: 'Test-attachment',
-  // maxSize: 200000,
+  maxSize: 400000,
 }

@@ -1,7 +1,15 @@
 import { useCallback, useMemo, useState } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
 import { BiTrash } from 'react-icons/bi'
-import { Box, chakra, Flex, forwardRef, Icon, Text } from '@chakra-ui/react'
+import {
+  Box,
+  chakra,
+  Flex,
+  forwardRef,
+  Icon,
+  Text,
+  useMergeRefs,
+} from '@chakra-ui/react'
 
 import { BxsCloudUpload } from '~assets/icons/BxsCloudUpload'
 import IconButton from '~components/IconButton'
@@ -74,7 +82,7 @@ export const Attachment = forwardRef<AttachmentProps, 'input'>(
       [maxSize],
     )
 
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    const { getRootProps, getInputProps, isDragActive, rootRef } = useDropzone({
       multiple: false,
       accept,
       validator: (file) => {
@@ -96,6 +104,8 @@ export const Attachment = forwardRef<AttachmentProps, 'input'>(
       },
     })
 
+    const mergedRefs = useMergeRefs(rootRef, _ref)
+
     const handleRemoveFile = useCallback(() => {
       setInternalFile(undefined)
       onChange?.(undefined)
@@ -116,6 +126,7 @@ export const Attachment = forwardRef<AttachmentProps, 'input'>(
       <Box maxW="29.5rem">
         <Flex
           {...getRootProps()}
+          ref={mergedRefs}
           transitionProperty="common"
           transitionDuration="normal"
           flexDir="column"
@@ -124,28 +135,20 @@ export const Attachment = forwardRef<AttachmentProps, 'input'>(
           cursor="pointer"
           px="3rem"
           py="4rem"
-          pos="relative"
+          border="1px dashed"
+          borderColor="primary.700"
           borderRadius="0.25rem"
-          bgClip="padding-box"
           bg={isDragActive ? 'primary.200' : 'neutral.100'}
+          _focus={{
+            border: '1px solid',
+            borderColor: 'primary.500',
+            boxShadow: `0 0 0 1px var(--chakra-colors-primary-500) !important`,
+          }}
           _hover={{
             bg: 'primary.100',
           }}
           _active={{
             bg: 'primary.200',
-          }}
-          _before={{
-            // Required to display longer dashed borders
-            content: `""`,
-            pos: 'absolute',
-            top: '-1px',
-            right: '-1px',
-            bottom: '-1px',
-            left: '-1px',
-            zIndex: -1,
-            border: '6px dashed',
-            borderColor: 'neutral.700',
-            borderRadius: '0.25rem',
           }}
         >
           <chakra.input {...getInputProps({ name: props.name, onBlur })} />
@@ -157,7 +160,7 @@ export const Attachment = forwardRef<AttachmentProps, 'input'>(
           />
           <Text textStyle="body-1">
             {isDragActive ? (
-              'Drop the files here ...'
+              'Drop the file here ...'
             ) : (
               <>
                 <Link>Choose file</Link> or drag and drop here
