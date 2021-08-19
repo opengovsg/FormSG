@@ -143,7 +143,7 @@ const loadExpressApp = async (connection: Connection) => {
 
   // Serve static client files only in prod
   if (config.nodeEnv === Environment.Prod) {
-    const frontendPath = path.resolve('./dist/frontend')
+    const frontendPath = path.resolve('dist/frontend')
     app.use(express.static(frontendPath))
 
     app.get('*', (_req, res) => {
