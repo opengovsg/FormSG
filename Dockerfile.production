@@ -16,9 +16,6 @@ COPY . ./
 
 RUN npm run build
 
-# Prune devDependencies
-RUN npm run postbuild
-
 # This stage builds the final container
 FROM node:fermium-alpine3.13
 LABEL maintainer=FormSG<formsg@data.gov.sg>

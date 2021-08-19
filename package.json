@@ -44,8 +44,7 @@
     "storybook": "npm run --prefix frontend storybook",
     "postinstall:frontend": "npm --prefix frontend install",
     "postinstall:shared": "npm --prefix shared install",
-    "postinstall": "npm run postinstall:frontend && npm run postinstall:shared",
-    "postbuild": "npm prune --production && npm --prefix frontend prune --production && npm --prefix shared prune --production"
+    "postinstall": "npm run postinstall:frontend && npm run postinstall:shared"
   },
   "dependencies": {
     "@babel/runtime": "^7.14.8",
