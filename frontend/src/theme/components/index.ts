@@ -13,6 +13,7 @@ import { Pagination, PAGINATION_THEME_KEY } from './Pagination'
 import { PhoneNumberInput } from './PhoneNumberInput'
 import { Textarea } from './Textarea'
 import { Toast } from './Toast'
+import { Toggle, TOGGLE_THEME_KEY } from './Toggle'
 
 export const components = {
   Banner,
@@ -29,5 +30,6 @@ export const components = {
   [PAGINATION_THEME_KEY]: Pagination,
   [RATING_THEME_KEY]: RatingField,
   [YESNO_THEME_KEY]: YesNoField,
+  [TOGGLE_THEME_KEY]: Toggle,
   Toast,
 }
