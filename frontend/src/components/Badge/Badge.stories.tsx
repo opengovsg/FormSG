@@ -1,30 +1,30 @@
 import { SimpleGrid, Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import { Tag, TagProps } from './Tag'
+import { Badge, BadgeProps } from './Badge'
 
 export default {
-  title: 'Components/Tag',
-  component: Tag,
+  title: 'Components/Badge',
+  component: Badge,
   decorators: [],
 } as Meta
 
-const Template: Story<TagProps> = (args) => <Tag {...args} />
+const Template: Story<BadgeProps> = (args) => <Badge {...args} />
 
 export const Solid = Template.bind({})
 Solid.args = {
   colorScheme: 'success',
-  children: 'Tag Name',
+  children: 'Badge name',
   variant: 'solid',
 }
 
 export const Subtle = Template.bind({})
 Subtle.args = {
-  children: 'Tag Name',
+  children: 'Badge name',
   variant: 'subtle',
 }
 
-const TemplateGroup: Story<TagProps> = (args) => (
+const TemplateGroup: Story<BadgeProps> = (args) => (
   <SimpleGrid
     columns={2}
     spacing={8}
@@ -32,15 +32,15 @@ const TemplateGroup: Story<TagProps> = (args) => (
     alignItems="center"
   >
     <Text>primary</Text>
-    <Tag {...args} colorScheme="primary" />
+    <Badge {...args} colorScheme="primary" />
     <Text>secondary</Text>
-    <Tag {...args} colorScheme="secondary" />
+    <Badge {...args} colorScheme="secondary" />
     <Text>warning</Text>
-    <Tag {...args} colorScheme="warning" />
+    <Badge {...args} colorScheme="warning" />
     <Text>success</Text>
-    <Tag {...args} colorScheme="success" />
+    <Badge {...args} colorScheme="success" />
     <Text>neutral</Text>
-    <Tag {...args} colorScheme="neutral" />
+    <Badge {...args} colorScheme="neutral" />
   </SimpleGrid>
 )
 
