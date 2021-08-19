@@ -324,13 +324,7 @@ export const sendNewOtp = ({
           return errAsync(new WaitForOtpError())
         }
 
-        return sendOtpForField(
-          transaction.formId,
-          fieldId,
-          field,
-          recipient,
-          otp,
-        )
+        return sendOtpForField(transaction.formId, field, recipient, otp)
       })
       .andThen(() => {
         const signedData = formsgSdk.verification.generateSignature({
@@ -468,14 +462,12 @@ export const verifyOtp = (
 /**
  * Send otp to recipient
  * @param formId
- * @param fieldId
  * @param field
  * @param recipient
  * @param otp
  */
 const sendOtpForField = (
   formId: string,
-  fieldId: string,
   field: IVerificationFieldSchema,
   recipient: string,
   otp: string,
@@ -490,16 +482,18 @@ const sendOtpForField = (
   | SmsLimitExceededError
   | OtpRequestError
 > => {
-  const { fieldType } = field
+  const { fieldType, _id } = field
   switch (fieldType) {
     case BasicField.Mobile:
-      return (
-        FormService.retrieveFormById(formId)
-          // check if we should allow public user to request for otp
-          .andThen((form) => shouldGenerateMobileOtp(form, fieldId))
-          // call sms - it should validate the recipient
-          .andThen(() => SmsFactory.sendVerificationOtp(recipient, otp, formId))
-      )
+      return _id
+        ? FormService.retrieveFormById(formId)
+            // check if we should allow public user to request for otp
+            .andThen((form) => shouldGenerateMobileOtp(form, _id))
+            // call sms - it should validate the recipient
+            .andThen(() =>
+              SmsFactory.sendVerificationOtp(recipient, otp, formId),
+            )
+        : errAsync(new MalformedParametersError('Field id not present'))
     case BasicField.Email:
       // call email - it should validate the recipient
       return MailService.sendVerificationOtp(recipient, otp)
@@ -579,7 +573,7 @@ export const shouldGenerateMobileOtp = (
   // If the check is solely on whether the form is onboarded,
   // Pings to form that are not onboarded will go through
   // Even if the form has no mobile field to verify.
-  const isVerifiableMobileFields =
+  const isVerifiableMobileField =
     !!form_fields &&
     form_fields.filter(
       ({ _id, isVerifiable }) => fieldId === _id.toHexString() && isVerifiable,
@@ -589,7 +583,7 @@ export const shouldGenerateMobileOtp = (
     return okAsync(true)
   }
 
-  if (!isVerifiableMobileFields) {
+  if (!isVerifiableMobileField) {
     return errAsync(new OtpRequestError())
   }
 
