@@ -73,7 +73,8 @@ jest.mock('src/app/utils/hash')
 const MockHashUtils = mocked(HashUtils, true)
 
 describe('Verification service', () => {
-  const mockFieldId = new ObjectId().toHexString()
+  const mockFieldIdObj = new ObjectId()
+  const mockFieldId = mockFieldIdObj.toHexString()
   const mockField = { ...generateFieldParams(), _id: mockFieldId }
   const mockTransactionId = new ObjectId().toHexString()
   const mockFormId = new ObjectId().toHexString()
@@ -298,7 +299,12 @@ describe('Verification service', () => {
       const mockForm = {
         _id: new ObjectId(),
         title: 'mockForm',
-        form_fields: [],
+        form_fields: [
+          generateDefaultField(BasicField.Mobile, {
+            isVerifiable: true,
+            _id: mockFieldIdObj as unknown as string,
+          }),
+        ],
         msgSrvcName: 'abc',
       } as unknown as IFormSchema
 
@@ -462,7 +468,12 @@ describe('Verification service', () => {
       const mockForm = {
         _id: new ObjectId(),
         title: 'mockForm',
-        form_fields: [],
+        form_fields: [
+          generateDefaultField(BasicField.Mobile, {
+            isVerifiable: true,
+            _id: mockFieldIdObj as unknown as string,
+          }),
+        ],
         msgSrvcName: 'abc',
       } as unknown as IFormSchema
 
@@ -473,6 +484,7 @@ describe('Verification service', () => {
       MockSmsFactory.sendVerificationOtp.mockReturnValueOnce(errAsync(error))
       const field = generateFieldParams({
         fieldType: BasicField.Mobile,
+        _id: mockFieldIdObj as unknown as string,
       })
       const transaction = await VerificationModel.create({
         formId: mockFormId,
@@ -481,7 +493,7 @@ describe('Verification service', () => {
 
       const result = await VerificationService.sendNewOtp({
         transactionId: transaction._id,
-        fieldId: field._id,
+        fieldId: mockFieldId,
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
@@ -503,7 +515,12 @@ describe('Verification service', () => {
       const mockForm = {
         _id: new ObjectId(),
         title: 'mockForm',
-        form_fields: [],
+        form_fields: [
+          generateDefaultField(BasicField.Mobile, {
+            isVerifiable: true,
+            _id: mockFieldIdObj as unknown as string,
+          }),
+        ],
         msgSrvcName: 'abc',
       } as unknown as IFormSchema
 
