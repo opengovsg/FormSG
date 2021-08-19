@@ -284,6 +284,18 @@ describe('Verification service', () => {
       [updateData: UpdateFieldData]
     >
 
+    const mockForm = {
+      _id: new ObjectId(),
+      title: 'mockForm',
+      form_fields: [
+        generateDefaultField(BasicField.Mobile, {
+          isVerifiable: true,
+          _id: mockFieldIdObj as unknown as string,
+        }),
+      ],
+      msgSrvcName: 'abc',
+    } as unknown as IFormSchema
+
     beforeEach(() => {
       updateHashSpy = jest
         .spyOn(VerificationModel, 'updateHashForField')
@@ -296,18 +308,6 @@ describe('Verification service', () => {
     })
 
     it('should send OTP and update hashes when parameters are valid', async () => {
-      const mockForm = {
-        _id: new ObjectId(),
-        title: 'mockForm',
-        form_fields: [
-          generateDefaultField(BasicField.Mobile, {
-            isVerifiable: true,
-            _id: mockFieldIdObj as unknown as string,
-          }),
-        ],
-        msgSrvcName: 'abc',
-      } as unknown as IFormSchema
-
       MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
 
       const result = await VerificationService.sendNewOtp({
@@ -465,18 +465,6 @@ describe('Verification service', () => {
     })
 
     it('should forward errors returned by SmsFactory.sendVerificationOtp', async () => {
-      const mockForm = {
-        _id: new ObjectId(),
-        title: 'mockForm',
-        form_fields: [
-          generateDefaultField(BasicField.Mobile, {
-            isVerifiable: true,
-            _id: mockFieldIdObj as unknown as string,
-          }),
-        ],
-        msgSrvcName: 'abc',
-      } as unknown as IFormSchema
-
       MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
 
       const error = new SmsSendError()
@@ -512,18 +500,6 @@ describe('Verification service', () => {
     })
 
     it('should return TransactionNotFoundError when database update returns null', async () => {
-      const mockForm = {
-        _id: new ObjectId(),
-        title: 'mockForm',
-        form_fields: [
-          generateDefaultField(BasicField.Mobile, {
-            isVerifiable: true,
-            _id: mockFieldIdObj as unknown as string,
-          }),
-        ],
-        msgSrvcName: 'abc',
-      } as unknown as IFormSchema
-
       MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
 
       updateHashSpy.mockResolvedValueOnce(null)
