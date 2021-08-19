@@ -640,7 +640,9 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValue(
         okAsync(mockTransaction),
       )
-      MockVerificationService.shouldGenerateOtp.mockReturnValue(okAsync(true))
+      MockVerificationService.shouldGenerateMobileOtp.mockReturnValue(
+        okAsync(true),
+      )
     })
 
     it('should return 201 when params are valid', async () => {
@@ -838,7 +840,7 @@ describe('Verification controller', () => {
 
     it('should return 400 when sms limit has been exceeded and the form is not onboarded', async () => {
       // Arrange
-      MockVerificationService.shouldGenerateOtp.mockReturnValueOnce(
+      MockVerificationService.shouldGenerateMobileOtp.mockReturnValueOnce(
         errAsync(new SmsLimitExceededError()),
       )
       const expected = {

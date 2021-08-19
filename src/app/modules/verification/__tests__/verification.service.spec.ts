@@ -862,7 +862,9 @@ describe('Verification service', () => {
       )
 
       // Act
-      const actual = await VerificationService.shouldGenerateOtp(MOCK_FORM)
+      const actual = await VerificationService.shouldGenerateMobileOtp(
+        MOCK_FORM,
+      )
 
       // Assert
       expect(actual._unsafeUnwrap()).toBe(true)
@@ -880,7 +882,9 @@ describe('Verification service', () => {
       const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
 
       // Act
-      const actual = await VerificationService.shouldGenerateOtp(MOCK_FORM)
+      const actual = await VerificationService.shouldGenerateMobileOtp(
+        MOCK_FORM,
+      )
 
       // Assert
       expect(actual._unsafeUnwrap()).toBe(true)
@@ -903,7 +907,9 @@ describe('Verification service', () => {
       )
 
       // Act
-      const actual = await VerificationService.shouldGenerateOtp(MOCK_FORM)
+      const actual = await VerificationService.shouldGenerateMobileOtp(
+        MOCK_FORM,
+      )
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(SmsLimitExceededError)
@@ -920,7 +926,9 @@ describe('Verification service', () => {
       const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
 
       // Act
-      const actual = await VerificationService.shouldGenerateOtp(MOCK_FORM)
+      const actual = await VerificationService.shouldGenerateMobileOtp(
+        MOCK_FORM,
+      )
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(OtpRequestError)
@@ -941,7 +949,9 @@ describe('Verification service', () => {
       retrieveSpy.mockReturnValueOnce(errAsync(new DatabaseError()))
 
       // Act
-      const actual = await VerificationService.shouldGenerateOtp(MOCK_FORM)
+      const actual = await VerificationService.shouldGenerateMobileOtp(
+        MOCK_FORM,
+      )
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
