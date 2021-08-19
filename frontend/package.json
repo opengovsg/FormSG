@@ -28,7 +28,7 @@
     "gen:theme-typings": "chakra-cli tokens src/theme/index.ts",
     "postinstall": "npm run gen:theme-typings",
     "start": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
-    "build": "cross-env CI=false BUILD_PATH='../dist/frontend' SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
+    "build": "cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006 -s public",
