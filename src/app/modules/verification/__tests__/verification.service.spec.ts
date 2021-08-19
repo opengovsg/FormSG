@@ -856,6 +856,9 @@ describe('Verification service', () => {
           generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
         ],
       }
+      const fieldId = new ObjectId()
+      const fieldIdString = fieldId.toHexString()
+      MOCK_FORM.form_fields[0]._id = fieldId
       const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
       retrieveSpy.mockReturnValueOnce(
         okAsync(smsConfig.smsVerificationLimit - 1),
@@ -864,6 +867,7 @@ describe('Verification service', () => {
       // Act
       const actual = await VerificationService.shouldGenerateMobileOtp(
         MOCK_FORM,
+        fieldIdString,
       )
 
       // Assert
@@ -878,12 +882,19 @@ describe('Verification service', () => {
         admin: {
           _id: 'something',
         },
+        form_fields: [
+          generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+        ],
       }
+      const fieldId = new ObjectId()
+      const fieldIdString = fieldId.toHexString()
+      MOCK_FORM.form_fields[0]._id = fieldId
       const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
 
       // Act
       const actual = await VerificationService.shouldGenerateMobileOtp(
         MOCK_FORM,
+        fieldIdString,
       )
 
       // Assert
@@ -901,6 +912,9 @@ describe('Verification service', () => {
           generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
         ],
       }
+      const fieldId = new ObjectId()
+      const fieldIdString = fieldId.toHexString()
+      MOCK_FORM.form_fields[0]._id = fieldId
       const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
       retrieveSpy.mockReturnValueOnce(
         okAsync(smsConfig.smsVerificationLimit + 1),
@@ -909,6 +923,7 @@ describe('Verification service', () => {
       // Act
       const actual = await VerificationService.shouldGenerateMobileOtp(
         MOCK_FORM,
+        fieldIdString,
       )
 
       // Assert
@@ -922,12 +937,17 @@ describe('Verification service', () => {
         admin: {
           _id: 'something',
         },
+        form_fields: [generateDefaultField(BasicField.Mobile)],
       }
+      const fieldId = new ObjectId()
+      const fieldIdString = fieldId.toHexString()
+      MOCK_FORM.form_fields[0]._id = fieldId
       const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
 
       // Act
       const actual = await VerificationService.shouldGenerateMobileOtp(
         MOCK_FORM,
+        fieldIdString,
       )
 
       // Assert
@@ -945,12 +965,16 @@ describe('Verification service', () => {
           generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
         ],
       }
+      const fieldId = new ObjectId()
+      const fieldIdString = fieldId.toHexString()
+      MOCK_FORM.form_fields[0]._id = fieldId
       const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
       retrieveSpy.mockReturnValueOnce(errAsync(new DatabaseError()))
 
       // Act
       const actual = await VerificationService.shouldGenerateMobileOtp(
         MOCK_FORM,
+        fieldIdString,
       )
 
       // Assert
