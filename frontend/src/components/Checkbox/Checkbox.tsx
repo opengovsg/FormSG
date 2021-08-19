@@ -33,9 +33,8 @@ type CheckboxWithOthers = ComponentWithAs<'input', CheckboxProps> & {
 
 export const Checkbox = forwardRef<CheckboxProps, 'input'>(
   ({ children, colorScheme = 'primary', ...props }, ref) => {
-    const { icon: iconStyles } = useMultiStyleConfig(CHECKBOX_THEME_KEY, {
-      size: props.size,
-    })
+    // Passing all props for cleanliness but the size prop is the most relevant
+    const { icon: iconStyles } = useMultiStyleConfig(CHECKBOX_THEME_KEY, props)
     return (
       <ChakraCheckbox
         icon={
@@ -70,16 +69,13 @@ export interface CheckboxOthersWrapperProps {
  * Provides context values for the Others option.
  */
 const OthersWrapper = ({
-  colorScheme,
-  size,
   children,
+  ...props
 }: CheckboxOthersWrapperProps): JSX.Element => {
   const checkboxRef = useRef<HTMLInputElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, {
-    size,
-    colorScheme,
-  })
+  // Passing all props for cleanliness but size and colorScheme are the most relevant
+  const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, props)
 
   return (
     <CheckboxOthersContext.Provider value={{ checkboxRef, inputRef }}>
@@ -93,10 +89,8 @@ const OthersWrapper = ({
  */
 const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
   const { checkboxRef, inputRef } = useCheckboxOthers()
-  const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, {
-    size: props.size,
-    colorScheme: props.colorScheme,
-  })
+  // Passing all props for cleanliness but size and colorScheme are the most relevant
+  const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, props)
 
   const mergedCheckboxRef = useMergeRefs(checkboxRef, ref)
 
@@ -125,10 +119,8 @@ const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
  */
 const OthersInput = forwardRef<InputProps, 'input'>((props, ref) => {
   const { checkboxRef, inputRef } = useCheckboxOthers()
-  const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, {
-    size: props.size,
-    colorScheme: props.colorScheme,
-  })
+  // Passing all props for cleanliness but size and colorScheme are the most relevant
+  const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, props)
 
   const mergedInputRef = useMergeRefs(inputRef, ref)
 
