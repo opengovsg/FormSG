@@ -890,7 +890,7 @@ describe('Verification service', () => {
     })
   })
 
-  describe('shouldGenerateOtp', () => {
+  describe('shouldGenerateMobileOtp', () => {
     it('should return true when sms counts is less than limit', async () => {
       // Arrange
       const MOCK_FORM = {
@@ -976,7 +976,32 @@ describe('Verification service', () => {
       expect(retrieveSpy).toBeCalledWith(MOCK_FORM.admin._id)
     })
 
-    it('should return OtpRequestError when an OTP is requested on a form without OTP enabled', async () => {
+    it('should return OtpRequestError when an OTP is requested on a form without OTP enabled and msgSrvcName is defined', async () => {
+      // Arrange
+      const MOCK_FORM = {
+        admin: {
+          _id: 'something',
+        },
+        form_fields: [generateDefaultField(BasicField.Mobile)],
+        msgSrvcName: 'somename',
+      }
+      const fieldId = new ObjectId()
+      const fieldIdString = fieldId.toHexString()
+      MOCK_FORM.form_fields[0]._id = fieldId
+      const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+
+      // Act
+      const actual = await VerificationService.shouldGenerateMobileOtp(
+        MOCK_FORM,
+        fieldIdString,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(OtpRequestError)
+      expect(retrieveSpy).not.toBeCalled()
+    })
+
+    it('should return OtpRequestError when an OTP is requested on a form without OTP enabled and msgSrvcName is undefined', async () => {
       // Arrange
       const MOCK_FORM = {
         admin: {
@@ -987,6 +1012,55 @@ describe('Verification service', () => {
       const fieldId = new ObjectId()
       const fieldIdString = fieldId.toHexString()
       MOCK_FORM.form_fields[0]._id = fieldId
+      const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+
+      // Act
+      const actual = await VerificationService.shouldGenerateMobileOtp(
+        MOCK_FORM,
+        fieldIdString,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(OtpRequestError)
+      expect(retrieveSpy).not.toBeCalled()
+    })
+
+    it('should return OtpRequestError if there are no matching form fields with the correct id', async () => {
+      // Arrange
+      const MOCK_FORM = {
+        admin: {
+          _id: 'something',
+        },
+        form_fields: [
+          generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+        ],
+      }
+      const fieldId = new ObjectId()
+      const fieldIdOtherString = new ObjectId().toHexString()
+      MOCK_FORM.form_fields[0]._id = fieldId
+      const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+
+      // Act
+      const actual = await VerificationService.shouldGenerateMobileOtp(
+        MOCK_FORM,
+        fieldIdOtherString,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(OtpRequestError)
+      expect(retrieveSpy).not.toBeCalled()
+    })
+
+    it('should return OtpRequestError if form_fields is empty', async () => {
+      // Arrange
+      const MOCK_FORM = {
+        admin: {
+          _id: 'something',
+        },
+        form_fields: [],
+      }
+      const fieldId = new ObjectId()
+      const fieldIdString = fieldId.toHexString()
       const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
 
       // Act
