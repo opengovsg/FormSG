@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
 import { BiTrash } from 'react-icons/bi'
-import { Box, chakra, Flex, forwardRef, Text } from '@chakra-ui/react'
+import { Box, chakra, Flex, forwardRef, Icon, Text } from '@chakra-ui/react'
 
+import { BxsCloudUpload } from '~assets/icons/BxsCloudUpload'
 import IconButton from '~components/IconButton'
 import Link from '~components/Link'
 
@@ -102,17 +103,24 @@ export const Attachment = forwardRef<AttachmentProps, 'input'>(
 
     if (internalFile) {
       return (
-        <AttachedFileInfo
-          file={internalFile}
-          handleRemoveFile={handleRemoveFile}
-        />
+        <Box maxW="29.5rem">
+          <AttachedFileInfo
+            file={internalFile}
+            handleRemoveFile={handleRemoveFile}
+          />
+        </Box>
       )
     }
 
     return (
-      <Box>
-        <Box
+      <Box maxW="29.5rem">
+        <Flex
           {...getRootProps()}
+          transitionProperty="common"
+          transitionDuration="normal"
+          flexDir="column"
+          align="center"
+          justify="center"
           cursor="pointer"
           px="3rem"
           py="4rem"
@@ -141,6 +149,12 @@ export const Attachment = forwardRef<AttachmentProps, 'input'>(
           }}
         >
           <chakra.input {...getInputProps({ name: props.name, onBlur })} />
+          <Icon
+            aria-hidden
+            as={BxsCloudUpload}
+            fontSize="3.5rem"
+            color="secondary.500"
+          />
           <Text textStyle="body-1">
             {isDragActive ? (
               'Drop the files here ...'
@@ -150,7 +164,7 @@ export const Attachment = forwardRef<AttachmentProps, 'input'>(
               </>
             )}
           </Text>
-        </Box>
+        </Flex>
         {showFileSize && readableMaxSize && (
           <Text textStyle="body-2" color="secondary.400" my="0.5rem">
             Maximum file size: {readableMaxSize}
