@@ -20,7 +20,7 @@
     "test-backend:watch": "env-cmd -f tests/.test-env jest --watch",
     "test-frontend": "jest --config=tests/unit/frontend/jest.config.js",
     "build": "npm run build:backend && npm run build:frontend",
-    "build:frontend": "cd frontend && npm run build",
+    "build:frontend": "npm run --prefix frontend build",
     "build:backend": "tsc -p tsconfig.build.json",
     "start": "node -r dotenv/config dist/backend/src/app/server.js",
     "dev": "docker-compose up --build",
@@ -42,9 +42,10 @@
     "prepare": "husky install",
     "pre-commit": "lint-staged",
     "storybook": "npm run --prefix frontend storybook",
-    "postinstall:frontend": "cd frontend && npm install",
-    "postinstall:shared": "cd shared && npm install",
-    "postinstall": "npm run postinstall:frontend && npm run postinstall:shared"
+    "postinstall:frontend": "npm --prefix frontend install",
+    "postinstall:shared": "npm --prefix shared install",
+    "postinstall": "npm run postinstall:frontend && npm run postinstall:shared",
+    "postbuild": "npm prune --production && npm --prefix frontend prune --production && npm --prefix shared prune --production"
   },
   "dependencies": {
     "@babel/runtime": "^7.14.8",
