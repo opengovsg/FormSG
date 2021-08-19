@@ -18,11 +18,6 @@ function SpcpSession($interval, $q, Toastr, $window, $cookies) {
     userName: null,
     rememberMe: null,
     issuedAt: null,
-    cookieNames: {
-      SP: 'jwtSp',
-      CP: 'jwtCp',
-      SGID: 'jwtSgid',
-    },
     setUser: function ({ userName, rememberMe, iat, exp }) {
       session.userName = userName
       session.rememberMe = rememberMe
@@ -40,13 +35,6 @@ function SpcpSession($interval, $q, Toastr, $window, $cookies) {
       session.userName = undefined
     },
     logout: function (authType) {
-      $cookies.remove(
-        // TODO (#2329): To remove after old cookies have expired
-        session.cookieNames[authType],
-        $window.oldSpcpCookieDomain
-          ? { domain: $window.oldSpcpCookieDomain }
-          : {},
-      )
       $q.when(PublicFormAuthService.logoutOfSpcpSession(authType))
         .then(() => {
           $cookies.put('isJustLogOut', true)

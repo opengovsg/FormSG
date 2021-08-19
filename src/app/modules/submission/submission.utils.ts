@@ -1,7 +1,7 @@
 import { differenceBy, intersectionBy, keyBy, uniqBy } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
-import { FIELDS_TO_REJECT } from '../../../shared/resources/basic'
+import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import {
   BasicField,
   FieldResponse,

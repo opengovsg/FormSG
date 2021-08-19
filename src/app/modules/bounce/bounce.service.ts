@@ -10,7 +10,7 @@ import {
   ResultAsync,
 } from 'neverthrow'
 
-import { hasProp } from '../../../shared/util/has-prop'
+import { hasProp } from '../../../../shared/utils/has-prop'
 import {
   BounceType,
   IBounceSchema,

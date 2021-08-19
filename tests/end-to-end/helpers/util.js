@@ -26,7 +26,7 @@ const {
   mockpass,
 } = require('./selectors')
 
-const { types } = require('../../../dist/backend/src/shared/resources/basic')
+const { types } = require('../../../dist/backend/shared/constants/field/basic')
 
 const { SPCPFieldTitle } = require('../../../dist/backend/src/types/field')
 

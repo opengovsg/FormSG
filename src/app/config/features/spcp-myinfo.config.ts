@@ -12,7 +12,6 @@ type ISpcpConfig = {
   spCookieMaxAge: number
   spCookieMaxAgePreserved: number
   spcpCookieDomain: string
-  oldSpcpCookieDomain: string // TODO (#2329): To remove after old cookies have expired
   cpCookieMaxAge: number
   spIdpId: string
   cpIdpId: string
@@ -83,13 +82,6 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: String,
     default: '',
     env: 'SPCP_COOKIE_DOMAIN',
-  },
-  oldSpcpCookieDomain: {
-    // TODO (#2329): To remove after old cookies have expired
-    doc: 'Old domain name set on cookie that holds the SPCP jwt',
-    format: String,
-    default: '',
-    env: 'OLD_SPCP_COOKIE_DOMAIN',
   },
   cpCookieMaxAge: {
     doc: 'Max CorpPass cookie age',

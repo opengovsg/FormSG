@@ -1,3 +1,4 @@
+import { BasicField } from '../../../shared/types/field'
 import {
   AttachmentResponse,
   CheckboxResponse,
@@ -19,7 +20,6 @@ import {
   UenResponse,
   YesNoResponse,
 } from '../../../shared/types/response'
-import { BasicField } from '../../types'
 
 import { FormSgSdk } from './FormSgSdkService'
 

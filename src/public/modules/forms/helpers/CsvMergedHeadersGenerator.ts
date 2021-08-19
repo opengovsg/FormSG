@@ -1,7 +1,7 @@
 import keyBy from 'lodash/keyBy'
 import moment from 'moment-timezone'
 
-import { DisplayedResponseWithoutAnswer } from '../../../../types/response'
+import { DisplayedResponseWithoutAnswer } from '../../../types/response'
 
 import { Response } from './csv-response-classes'
 import { CsvGenerator } from './CsvGenerator'

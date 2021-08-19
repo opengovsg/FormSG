@@ -1,23 +1,13 @@
-import {
-  BasicField,
-  FieldResponse,
-  IBaseResponse,
-  IPopulatedEmailForm,
-} from '../../../../types'
+import { FieldResponse, IPopulatedEmailForm } from '../../../../types'
 import { ProcessedResponse } from '../submission.types'
 
 import ParsedResponsesObject from './ParsedResponsesObject.class'
 
 // When a response has been formatted for email, all answerArray
 // should have been converted to answer
-interface IResponseFormattedForEmail extends IBaseResponse {
-  question: string
-  fieldType: BasicField
+export type ResponseFormattedForEmail = Omit<FieldResponse, 'answerArray'> & {
   answer: string
-}
-
-export type ResponseFormattedForEmail = IResponseFormattedForEmail &
-  ProcessedResponse
+} & ProcessedResponse
 
 export interface ParsedMultipartForm {
   responses: FieldResponse[]

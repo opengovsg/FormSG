@@ -5,7 +5,6 @@ import { IncomingHttpHeaders } from 'http'
 import { pick } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
-import { MB } from 'src/shared/constants'
 import { BasicField } from 'src/types'
 
 import {
@@ -13,6 +12,7 @@ import {
   generateNewSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
 
+import { MB } from '../../../../../../shared/constants/file'
 import {
   InitialiseMultipartReceiverError,
   MultipartError,
