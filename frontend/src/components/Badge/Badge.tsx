@@ -3,13 +3,13 @@ import {
   BadgeProps as ChakraBadgeProps,
 } from '@chakra-ui/react'
 
-import { TagVariants } from '~theme/components/Tag'
+import { BadgeVariants } from '~theme/components/Badge'
 
 export interface BadgeProps extends ChakraBadgeProps {
   /**
    * The theme of the tag to display
    */
-  variant?: TagVariants
+  variant?: BadgeVariants
 }
 
 export const Badge = (props: BadgeProps): JSX.Element => {

@@ -2,6 +2,8 @@ import { ComponentStyleConfig } from '@chakra-ui/react'
 
 import { textStyles } from '../textStyles'
 
+export type BadgeVariants = 'solid' | 'subtle'
+
 export const Badge: ComponentStyleConfig = {
   baseStyle: {
     ...textStyles['caption-1'],
