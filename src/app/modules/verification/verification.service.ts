@@ -579,12 +579,12 @@ export const shouldGenerateMobileOtp = (
       ({ _id, isVerifiable }) => fieldId === _id.toHexString() && isVerifiable,
     ).length > 0
 
-  if (msgSrvcName) {
-    return okAsync(true)
-  }
-
   if (!isVerifiableMobileField) {
     return errAsync(new OtpRequestError())
+  }
+
+  if (msgSrvcName) {
+    return okAsync(true)
   }
 
   return SmsService.retrieveFreeSmsCounts(admin._id).andThen((counts) =>
