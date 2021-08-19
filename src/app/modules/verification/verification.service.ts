@@ -304,6 +304,8 @@ export const sendNewOtp = ({
   | InvalidNumberError
   | MailSendError
   | NonVerifiedFieldTypeError
+  | SmsLimitExceededError
+  | OtpRequestError
 > => {
   return getValidTransaction(transactionId).andThen((transaction) => {
     const logMeta = {
@@ -477,12 +479,21 @@ const sendOtpForField = (
   | InvalidNumberError
   | MailSendError
   | NonVerifiedFieldTypeError
+  | SmsLimitExceededError
+  | OtpRequestError
 > => {
-  const { fieldType } = field
+  const { fieldType, _id } = field
   switch (fieldType) {
     case BasicField.Mobile:
-      // call sms - it should validate the recipient
-      return SmsFactory.sendVerificationOtp(recipient, otp, formId)
+      return _id
+        ? FormService.retrieveFormById(formId)
+            // check if we should allow public user to request for otp
+            .andThen((form) => shouldGenerateMobileOtp(form, _id))
+            // call sms - it should validate the recipient
+            .andThen(() =>
+              SmsFactory.sendVerificationOtp(recipient, otp, formId),
+            )
+        : errAsync(new MalformedParametersError('Field id not present'))
     case BasicField.Email:
       // call email - it should validate the recipient
       return MailService.sendVerificationOtp(recipient, otp)
@@ -550,29 +561,30 @@ const checkSmsCountAndPerformAction = (
   return okAsync(true)
 }
 
-export const shouldGenerateOtp = ({
-  msgSrvcName,
-  admin,
-  form_fields,
-}: Pick<IFormSchema, 'msgSrvcName' | 'admin' | 'form_fields'>): ResultAsync<
-  true,
-  SmsLimitExceededError | PossibleDatabaseError
-> => {
+export const shouldGenerateMobileOtp = (
+  {
+    msgSrvcName,
+    admin,
+    form_fields,
+  }: Pick<IFormSchema, 'msgSrvcName' | 'admin' | 'form_fields'>,
+  fieldId: string,
+): ResultAsync<true, SmsLimitExceededError | OtpRequestError> => {
   // This check is here to ensure that programmatic pings are rejected.
   // If the check is solely on whether the form is onboarded,
   // Pings to form that are not onboarded will go through
   // Even if the form has no mobile field to verify.
-  const hasVerifiableMobileFields = form_fields?.filter(
-    ({ fieldType, isVerifiable }) =>
-      fieldType === BasicField.Mobile && isVerifiable,
-  )
+  const isVerifiableMobileField =
+    !!form_fields &&
+    form_fields.filter(
+      ({ _id, isVerifiable }) => fieldId === _id.toHexString() && isVerifiable,
+    ).length > 0
+
+  if (!isVerifiableMobileField) {
+    return errAsync(new OtpRequestError())
+  }
 
   if (msgSrvcName) {
     return okAsync(true)
-  }
-
-  if (!hasVerifiableMobileFields) {
-    return errAsync(new OtpRequestError())
   }
 
   return SmsService.retrieveFreeSmsCounts(admin._id).andThen((counts) =>
