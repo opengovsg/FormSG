@@ -1,3 +1,4 @@
+import { SimpleGrid, Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { Tag, TagProps } from './Tag'
@@ -8,23 +9,49 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<TagProps> = (args) => {
-  return <Tag {...args}>Tag Name</Tag>
-}
+const Template: Story<TagProps> = (args) => <Tag {...args} />
+
 export const Solid = Template.bind({})
 Solid.args = {
+  colorScheme: 'success',
+  children: 'Tag Name',
   variant: 'solid',
 }
 
-export const Light = Template.bind({})
-Light.args = {
-  variant: 'light',
-}
-export const Playground: Story = ({ variant, label }) => {
-  return <Tag variant={variant}>{label}</Tag>
+export const Subtle = Template.bind({})
+Subtle.args = {
+  children: 'Tag Name',
+  variant: 'subtle',
 }
 
-Playground.args = {
-  label: "Tag you're it",
-  variant: 'light',
+const TemplateGroup: Story<TagProps> = (args) => (
+  <SimpleGrid
+    columns={2}
+    spacing={8}
+    templateColumns="max-content max-content"
+    alignItems="center"
+  >
+    <Text>primary</Text>
+    <Tag {...args} colorScheme="primary" />
+    <Text>secondary</Text>
+    <Tag {...args} colorScheme="secondary" />
+    <Text>warning</Text>
+    <Tag {...args} colorScheme="warning" />
+    <Text>success</Text>
+    <Tag {...args} colorScheme="success" />
+    <Text>neutral</Text>
+    <Tag {...args} colorScheme="neutral" />
+  </SimpleGrid>
+)
+
+export const SubtleColours = TemplateGroup.bind({})
+SubtleColours.args = {
+  children: 'Subtle',
+  variant: 'subtle',
+}
+
+export const SolidColours = TemplateGroup.bind({})
+SolidColours.args = {
+  children: 'Solid',
+  variant: 'solid',
 }

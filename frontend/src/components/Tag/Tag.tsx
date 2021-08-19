@@ -1,14 +1,8 @@
-import React from 'react'
-import {
-  Tag as ChakraTag,
-  TagProps as ChakraTagProps,
-  useMultiStyleConfig,
-} from '@chakra-ui/react'
+import { Tag as ChakraTag, TagProps as ChakraTagProps } from '@chakra-ui/react'
 
-import { TagVariants } from '~/theme/components/Tag'
+import { TagVariants } from '~theme/components/Tag'
 
-// colorScheme is omitted because the tag uses variants to select colours
-export interface TagProps extends Omit<ChakraTagProps, 'colorScheme'> {
+export interface TagProps extends ChakraTagProps {
   /**
    * The theme of the tag to display
    */
@@ -16,6 +10,5 @@ export interface TagProps extends Omit<ChakraTagProps, 'colorScheme'> {
 }
 
 export const Tag = (props: TagProps): JSX.Element => {
-  const style = useMultiStyleConfig('Tag', props)
-  return <ChakraTag {...props} sx={style.label} />
+  return <ChakraTag {...props} />
 }
