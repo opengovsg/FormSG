@@ -295,6 +295,15 @@ describe('Verification service', () => {
     })
 
     it('should send OTP and update hashes when parameters are valid', async () => {
+      const mockForm = {
+        _id: new ObjectId(),
+        title: 'mockForm',
+        form_fields: [],
+        msgSrvcName: 'abc',
+      } as unknown as IFormSchema
+
+      MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
+
       const result = await VerificationService.sendNewOtp({
         transactionId: mockTransactionId,
         fieldId: mockFieldId,
@@ -450,7 +459,17 @@ describe('Verification service', () => {
     })
 
     it('should forward errors returned by SmsFactory.sendVerificationOtp', async () => {
+      const mockForm = {
+        _id: new ObjectId(),
+        title: 'mockForm',
+        form_fields: [],
+        msgSrvcName: 'abc',
+      } as unknown as IFormSchema
+
+      MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
+
       const error = new SmsSendError()
+
       MockSmsFactory.sendVerificationOtp.mockReturnValueOnce(errAsync(error))
       const field = generateFieldParams({
         fieldType: BasicField.Mobile,
@@ -481,6 +500,15 @@ describe('Verification service', () => {
     })
 
     it('should return TransactionNotFoundError when database update returns null', async () => {
+      const mockForm = {
+        _id: new ObjectId(),
+        title: 'mockForm',
+        form_fields: [],
+        msgSrvcName: 'abc',
+      } as unknown as IFormSchema
+
+      MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
+
       updateHashSpy.mockResolvedValueOnce(null)
 
       const result = await VerificationService.sendNewOtp({
