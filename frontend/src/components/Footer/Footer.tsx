@@ -129,7 +129,7 @@ export const Footer = ({
             justify={{ base: 'normal', lg: 'flex-end' }}
           >
             <Link
-              title="link to OGP homepage"
+              title="link to LinkedIn page"
               w="2rem"
               href={SOCIAL_MEDIA_LINKS.linkedin}
               colorScheme={textColorScheme}
