@@ -1,15 +1,19 @@
 import { motion } from 'framer-motion'
+import { omit } from 'lodash'
 
-export const BxCheckAnimated = (
-  props: React.SVGProps<SVGSVGElement> & { isChecked?: boolean },
-): JSX.Element => {
+export const BxCheckAnimated = ({
+  isChecked,
+  ...props
+}: React.SVGProps<SVGSVGElement> & { isChecked?: boolean }): JSX.Element => {
+  // Required to prevent React warnings about unsupported props
+  const svgProps = omit(props, ['isIndeterminate'])
   return (
     <svg
       viewBox="0 0 12 10"
       fill="currentColor"
       height="1em"
       width="1em"
-      {...props}
+      {...svgProps}
     >
       <motion.polyline
         points="1.5 6 4.5 9 10.5 1"
@@ -32,7 +36,7 @@ export const BxCheckAnimated = (
             strokeDashoffset: 16,
           },
         }}
-        animate={props.isChecked ? 'checked' : 'unchecked'}
+        animate={isChecked ? 'checked' : 'unchecked'}
         initial="unchecked"
       />
     </svg>

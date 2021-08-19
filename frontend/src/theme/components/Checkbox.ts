@@ -13,7 +13,15 @@ export const CHECKBOX_THEME_KEY = 'Checkbox'
  * https://github.com/chakra-ui/chakra-ui/blob/main/packages/theme/src/components/checkbox.ts
  */
 
-const parts = ['container', 'control', 'label', 'icon']
+const parts = [
+  'container',
+  'control',
+  'label',
+  'icon',
+  'othersInput',
+  'othersContainer',
+  'othersCheckbox',
+]
 
 export const Checkbox: ComponentMultiStyleConfig = {
   parts,
@@ -42,7 +50,7 @@ export const Checkbox: ComponentMultiStyleConfig = {
     container: {
       w: '100%',
       px: '0.25rem',
-      py: '0.5rem',
+      py: '0.625rem',
       _hover: {
         bg: `${c}.100`,
         _disabled: {
@@ -75,6 +83,37 @@ export const Checkbox: ComponentMultiStyleConfig = {
       transform: 'scale(1)',
       transition: 'none',
     },
+    othersContainer: {
+      px: '0.25rem',
+      py: '0.625rem',
+      _hover: {
+        bg: `${c}.100`,
+        _disabled: {
+          bg: 'none',
+        },
+      },
+      _focusWithin: {
+        // use boxShadow instead of border to ensure that control and label
+        // do not move when checkbox is focused
+        boxShadow: `inset 0 0 0 0.125rem ${getColor(theme, `${c}.500`)}`,
+      },
+    },
+    othersInput: {
+      // To align left of input with left of "Others" label
+      ml: '2.625rem',
+      mt: '0.625rem',
+      // Use 100% of the width, not counting the left margin
+      w: 'calc(100% - 2.625rem)',
+    },
+    othersCheckbox: {
+      _focusWithin: {
+        boxShadow: 'none',
+      },
+      _hover: {
+        bg: 'none',
+      },
+      w: '100%',
+    },
   }),
   sizes: {
     // md is the default and we only have one size, so override it
@@ -82,5 +121,8 @@ export const Checkbox: ComponentMultiStyleConfig = {
       control: { w: '1.5rem', h: '1.5rem' },
       icon: { fontSize: '1rem' },
     },
+  },
+  defaultProps: {
+    colorScheme: 'primary',
   },
 }
