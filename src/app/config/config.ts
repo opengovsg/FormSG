@@ -124,6 +124,7 @@ const dbConfig: DbConfig = {
 
 const mailConfig: MailConfig = (function () {
   const mailFrom = basicVars.mail.from
+  const official = basicVars.mail.official
   const mailer = {
     from: `${basicVars.appConfig.title} <${mailFrom}>`,
   }
@@ -162,6 +163,7 @@ const mailConfig: MailConfig = (function () {
 
   return {
     mailFrom,
+    official,
     mailer,
     transporter,
   }
