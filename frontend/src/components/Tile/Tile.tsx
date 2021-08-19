@@ -1,4 +1,3 @@
-import React, { ReactNode } from 'react'
 import { IconType } from 'react-icons/lib'
 import {
   Button,
@@ -37,12 +36,12 @@ export interface TileProps
    * The components to be displayed
    * Refer here for correct typing: https://stackoverflow.com/questions/53688899/typescript-and-react-children-type
    */
-  children: ReactNode
+  children: React.ReactNode
 
   /**
-   * The tag, if any, to be displayed alongside the title
+   * The badge, if any, to be displayed alongside the title
    */
-  tag?: JSX.Element
+  badge?: JSX.Element
   /**
    * The variant of the tile - whether it is complex (many elements) or simple (title and subtitle only).
    * Defaults to simple.
@@ -52,7 +51,7 @@ export interface TileProps
 
 type TileVariant = 'complex' | 'simple'
 export const Tile = forwardRef<TileProps, 'button'>(
-  ({ tag, icon, variant = 'simple', children, isActive, ...props }, ref) => {
+  ({ badge, icon, variant = 'simple', children, isActive, ...props }, ref) => {
     const styles = useMultiStyleConfig('Tile', { variant, isActive })
     return (
       // Ref passed into the component as a whole so that it can be focused
@@ -60,7 +59,7 @@ export const Tile = forwardRef<TileProps, 'button'>(
         <Button sx={styles.container} ref={ref} {...props}>
           <HStack spacing="1rem">
             <Icon sx={styles.icon} as={icon}></Icon>
-            {tag}
+            {badge}
           </HStack>
           {children}
         </Button>

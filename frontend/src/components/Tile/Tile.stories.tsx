@@ -4,7 +4,7 @@ import { Stack, UnorderedList } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 import { values } from 'lodash'
 
-import Tag from '~components/Tag'
+import Badge from '~components/Badge'
 
 import {
   Tile,
@@ -76,7 +76,7 @@ Complex.args = {
   variant: 'complex',
   title: 'Complex',
   subtitle: 'Receive responses in forms',
-  tag: <Tag>recommended</Tag>,
+  badge: <Badge colorScheme="success">recommended</Badge>,
   icon: BiLockAlt,
   listTitle: 'description',
   listItems: {
@@ -140,7 +140,7 @@ const StorageTile = ({ onClick, isActive }: StoryTileProps) => (
   <Tile
     variant="complex"
     icon={BiLockAlt}
-    tag={<Tag>recommended</Tag>}
+    badge={<Badge colorScheme="success">recommended</Badge>}
     isActive={isActive}
     onClick={onClick}
     isFullWidth
