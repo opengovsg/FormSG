@@ -78,6 +78,7 @@ export const Radio: ComponentMultiStyleConfig = {
       },
       textStyle: 'body-1',
       ml: '1rem',
+      color: 'secondary.700',
     },
   }),
   sizes: {
