@@ -562,10 +562,12 @@ export const shouldGenerateOtp = ({
   // If the check is solely on whether the form is onboarded,
   // Pings to form that are not onboarded will go through
   // Even if the form has no mobile field to verify.
-  const hasVerifiableMobileFields = form_fields?.filter(
-    ({ fieldType, isVerifiable }) =>
-      fieldType === BasicField.Mobile && isVerifiable,
-  )
+  const hasVerifiableMobileFields =
+    !!form_fields &&
+    form_fields.filter(
+      ({ fieldType, isVerifiable }) =>
+        fieldType === BasicField.Mobile && isVerifiable,
+    ).length > 0
 
   if (msgSrvcName) {
     return okAsync(true)
