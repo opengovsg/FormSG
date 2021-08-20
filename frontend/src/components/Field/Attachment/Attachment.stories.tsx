@@ -8,12 +8,43 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { Attachment, AttachmentProps } from './Attachment'
 
 export default {
-  title: 'Components/Attachment',
+  title: 'Components/Field/Attachment',
   component: Attachment,
   decorators: [],
 } as Meta
 
 const Template: Story<AttachmentProps> = (args) => {
+  return <Attachment {...args} />
+}
+
+export const Default = Template.bind({})
+Default.args = {
+  name: 'Test-input',
+}
+
+export const Invalid = Template.bind({})
+Invalid.args = {
+  name: 'Test-input',
+  isInvalid: true,
+}
+
+export const Disabled = Template.bind({})
+Disabled.args = {
+  name: 'Test-input',
+  isDisabled: true,
+}
+
+export const WithUploadedFile = Template.bind({})
+WithUploadedFile.args = {
+  name: 'Test-input',
+  value: Object.defineProperty(
+    new File([''], 'mock file', { type: 'text/html' }),
+    'size',
+    { value: 1100 * 1000 },
+  ),
+}
+
+export const Playground: Story<AttachmentProps> = (args) => {
   const {
     control,
     handleSubmit,
@@ -25,7 +56,14 @@ const Template: Story<AttachmentProps> = (args) => {
   const isInvalid = !!errors?.[args.name]
 
   const onSubmit = (values: any) => {
-    console.log(values)
+    const stringifyFile = (obj: File) => {
+      const replacer = []
+      for (const key in obj) {
+        replacer.push(key)
+      }
+      return JSON.stringify(obj, replacer)
+    }
+    alert(stringifyFile(values[args.name]))
   }
 
   return (
@@ -46,7 +84,7 @@ const Template: Story<AttachmentProps> = (args) => {
           )}
           name={args.name}
           rules={{
-            required: 'Required!!!',
+            required: 'This field is required',
           }}
           control={control}
         />
@@ -58,8 +96,9 @@ const Template: Story<AttachmentProps> = (args) => {
     </form>
   )
 }
-export const Default = Template.bind({})
-Default.args = {
+Playground.args = {
   name: 'Test-attachment',
   maxSize: 400000,
+  isReadOnly: false,
+  isDisabled: false,
 }
