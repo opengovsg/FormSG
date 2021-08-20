@@ -1,3 +1,4 @@
+import { Attachment, ATTACHMENT_THEME_KEY } from './Field/Attachment'
 import { RATING_THEME_KEY, RatingField } from './Field/Rating'
 import { YESNO_THEME_KEY, YesNoField } from './Field/YesNo'
 import { Banner } from './Banner'
@@ -26,6 +27,7 @@ export const components = {
   NumberInput,
   PhoneNumberInput,
   Textarea,
+  [ATTACHMENT_THEME_KEY]: Attachment,
   [PAGINATION_THEME_KEY]: Pagination,
   [RATING_THEME_KEY]: RatingField,
   [YESNO_THEME_KEY]: YesNoField,
