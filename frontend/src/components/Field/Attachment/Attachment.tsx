@@ -1,80 +1,69 @@
 import { useCallback, useMemo, useState } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
-import { BiTrash } from 'react-icons/bi'
 import {
   Box,
   chakra,
-  Flex,
   forwardRef,
   Icon,
   Text,
+  useFormControl,
+  UseFormControlProps,
   useMergeRefs,
+  useMultiStyleConfig,
 } from '@chakra-ui/react'
+import { omit } from 'lodash'
 
 import { BxsCloudUpload } from '~assets/icons/BxsCloudUpload'
-import IconButton from '~components/IconButton'
+import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
+import FormFieldMessage from '~components/FormControl/FormFieldMessage'
 import Link from '~components/Link'
 
 import { getReadableFileSize } from './utils/getReadableFileSize'
+import { AttachmentFileInfo } from './AttachmentFileInfo'
 
-const AttachedFileInfo = ({
-  file,
-  handleRemoveFile,
-}: {
-  file: File
-  handleRemoveFile: () => void
-}) => {
-  const readableFileSize = useMemo(
-    () => getReadableFileSize(file.size),
-    [file.size],
-  )
-
-  return (
-    <Flex justify="space-between" bg="primary.100" py="0.875rem" px="1rem">
-      <Flex flexDir="column">
-        <Text textStyle="subhead-1" color="secondary.500">
-          {file.name}
-        </Text>
-        <Text textStyle="caption-1" color="secondary.400">
-          {readableFileSize}
-        </Text>
-      </Flex>
-      <IconButton
-        variant="clear"
-        colorScheme="danger"
-        aria-label="remove file"
-        icon={<BiTrash />}
-        onClick={handleRemoveFile}
-      />
-    </Flex>
-  )
-}
-
-export interface AttachmentProps {
+export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
+  /**
+   * If exists, callback to be invoked when the file is attached or removed.
+   */
   onChange?: (file?: File) => void
+  /**
+   * If exists, callback to be invoked when file has errors.
+   */
   onError?: (errMsg: string) => void
-  onBlur?: () => void
+  /**
+   * Current value of the input.
+   */
   value?: File
+  /**
+   * Name of the input.
+   */
   name: string
-
+  /**
+   * One or more
+   * [unique file type specifiers](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#unique_file_type_specifiers)
+   * describing file types to allow
+   */
+  accept?: DropzoneProps['accept']
+  /**
+   * If exists, files cannot be attached if they are above the maximum size
+   * (in bytes).
+   */
   maxSize?: DropzoneProps['maxSize']
+  /**
+   * Boolean flag on whether to show the file size helper message below the
+   * input.
+   */
   showFileSize?: boolean
 }
 
-export const Attachment = forwardRef<AttachmentProps, 'input'>(
+export const Attachment = forwardRef<AttachmentProps, 'div'>(
   (
-    {
-      onChange,
-      onBlur,
-      onError,
-      maxSize,
-      showFileSize,
-      accept,
-      value,
-      ...props
-    },
-    _ref,
+    { onChange, onError, maxSize, showFileSize, accept, value, name, ...props },
+    ref,
   ) => {
+    // Merge given props with any form control props, if they exist.
+    const inputProps = useFormControl(props)
+
     const [internalFile, setInternalFile] = useState<File | undefined>(value)
 
     const readableMaxSize = useMemo(
@@ -85,6 +74,7 @@ export const Attachment = forwardRef<AttachmentProps, 'input'>(
     const { getRootProps, getInputProps, isDragActive, rootRef } = useDropzone({
       multiple: false,
       accept,
+      disabled: inputProps.disabled,
       validator: (file) => {
         if (maxSize && file.size > maxSize) {
           return {
@@ -94,6 +84,8 @@ export const Attachment = forwardRef<AttachmentProps, 'input'>(
         }
         return null
       },
+      noClick: inputProps.readOnly,
+      noDrag: inputProps.readOnly,
       onDrop: ([acceptedFile], rejectedFiles) => {
         if (onError && rejectedFiles.length > 0) {
           return onError(rejectedFiles[0].errors[0].message)
@@ -104,17 +96,44 @@ export const Attachment = forwardRef<AttachmentProps, 'input'>(
       },
     })
 
-    const mergedRefs = useMergeRefs(rootRef, _ref)
+    const mergedRefs = useMergeRefs(rootRef, ref)
+
+    const styles = useMultiStyleConfig(ATTACHMENT_THEME_KEY, {
+      isDragActive,
+    })
 
     const handleRemoveFile = useCallback(() => {
       setInternalFile(undefined)
       onChange?.(undefined)
     }, [onChange])
 
+    // Bunch of memoization to avoid unnecessary re-renders.
+    const processedRootProps = useMemo(() => {
+      return getRootProps({
+        // Root div does not need id prop, prevents duplicate ids.
+        ...omit(inputProps, 'id'),
+        // Bunch of extra work to prevent field from being used when in readOnly
+        // state.
+        onKeyDown: (e) => {
+          if (inputProps.readOnly) {
+            e.stopPropagation()
+            return
+          }
+        },
+      })
+    }, [getRootProps, inputProps])
+
+    const processedInputProps = useMemo(() => {
+      return getInputProps({
+        name,
+        ...inputProps,
+      })
+    }, [getInputProps, inputProps, name])
+
     if (internalFile) {
       return (
-        <Box maxW="29.5rem">
-          <AttachedFileInfo
+        <Box __css={styles.container}>
+          <AttachmentFileInfo
             file={internalFile}
             handleRemoveFile={handleRemoveFile}
           />
@@ -123,55 +142,24 @@ export const Attachment = forwardRef<AttachmentProps, 'input'>(
     }
 
     return (
-      <Box maxW="29.5rem">
-        <Flex
-          {...getRootProps()}
-          ref={mergedRefs}
-          transitionProperty="common"
-          transitionDuration="normal"
-          flexDir="column"
-          align="center"
-          justify="center"
-          cursor="pointer"
-          px="3rem"
-          py="4rem"
-          border="1px dashed"
-          borderColor="primary.700"
-          borderRadius="0.25rem"
-          bg={isDragActive ? 'primary.200' : 'neutral.100'}
-          _focus={{
-            border: '1px solid',
-            borderColor: 'primary.500',
-            boxShadow: `0 0 0 1px var(--chakra-colors-primary-500) !important`,
-          }}
-          _hover={{
-            bg: 'primary.100',
-          }}
-          _active={{
-            bg: 'primary.200',
-          }}
-        >
-          <chakra.input {...getInputProps({ name: props.name, onBlur })} />
-          <Icon
-            aria-hidden
-            as={BxsCloudUpload}
-            fontSize="3.5rem"
-            color="secondary.500"
-          />
-          <Text textStyle="body-1">
-            {isDragActive ? (
-              'Drop the file here ...'
-            ) : (
-              <>
-                <Link>Choose file</Link> or drag and drop here
-              </>
-            )}
-          </Text>
-        </Flex>
+      <Box __css={styles.container}>
+        <Box {...processedRootProps} ref={mergedRefs} __css={styles.dropzone}>
+          <chakra.input {...processedInputProps} />
+          <Icon aria-hidden as={BxsCloudUpload} __css={styles.icon} />
+
+          {isDragActive ? (
+            <Text>Drop the file here ...</Text>
+          ) : (
+            <Text>
+              <Link isDisabled={inputProps.disabled}>Choose file</Link> or drag
+              and drop here
+            </Text>
+          )}
+        </Box>
         {showFileSize && readableMaxSize && (
-          <Text textStyle="body-2" color="secondary.400" my="0.5rem">
+          <FormFieldMessage>
             Maximum file size: {readableMaxSize}
-          </Text>
+          </FormFieldMessage>
         )}
       </Box>
     )
