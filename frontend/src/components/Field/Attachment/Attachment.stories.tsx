@@ -44,7 +44,11 @@ WithUploadedFile.args = {
   ),
 }
 
-export const Playground: Story<AttachmentProps> = (args) => {
+export const Playground: Story<AttachmentProps> = ({
+  isDisabled,
+  isReadOnly,
+  ...args
+}) => {
   const {
     control,
     handleSubmit,
@@ -68,7 +72,11 @@ export const Playground: Story<AttachmentProps> = (args) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <FormControl isInvalid={isInvalid}>
+      <FormControl
+        isInvalid={isInvalid}
+        isDisabled={isDisabled}
+        isReadOnly={isReadOnly}
+      >
         <Controller
           render={({ field: { onChange, ...rest } }) => (
             <Attachment
