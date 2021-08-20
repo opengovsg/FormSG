@@ -37,11 +37,17 @@ export const Input = {
             borderColor: isSuccess ? 'success.700' : 'neutral.400',
           },
           _disabled: {
-            background: 'neutral.200',
+            bg: 'neutral.200',
             borderColor: 'neutral.400',
             color: 'neutral.500',
             cursor: 'not-allowed',
             opacity: 1,
+            _hover: {
+              bg: 'neutral.200',
+            },
+            _active: {
+              bg: 'neutral.200',
+            },
           },
           _invalid: {
             // Remove extra 1px of outline.
