@@ -11,7 +11,7 @@ import {
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
-import { omit } from 'lodash'
+import omit from 'lodash/omit'
 
 import { BxsCloudUpload } from '~assets/icons/BxsCloudUpload'
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
