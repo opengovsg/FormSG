@@ -6,7 +6,6 @@ import {
   forwardRef,
   SwitchProps as ChakraSwitchProps,
   useMultiStyleConfig,
-  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { TOGGLE_THEME_KEY } from '~/theme/components/Toggle'
@@ -77,10 +76,7 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
             )}
           </Box>
         )}
-        <Switch {...props} ref={ref}>
-          {/* a11y - ensure label and description are linked to toggle */}
-          <VisuallyHidden>{`${label}. Description: ${description}`}</VisuallyHidden>
-        </Switch>
+        <Switch {...props} ref={ref} />
       </Flex>
     )
   },
