@@ -1,15 +1,21 @@
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
-import { EditFieldActions } from '../../../../shared/constants'
-import { reorder, replaceAt } from '../../../../shared/util/immutable-array-fns'
 import {
-  IFieldSchema,
+  reorder,
+  replaceAt,
+} from '../../../../../shared/utils/immutable-array-fns'
+import { EditFieldActions } from '../../../../shared/constants'
+import {
+  FormFieldSchema,
   IPopulatedForm,
   ResponseMode,
   Status,
 } from '../../../../types'
-import { DuplicateFormBody, EditFormFieldParams } from '../../../../types/api'
+import {
+  DuplicateFormBodyDto,
+  EditFormFieldParams,
+} from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isPossibleEmailFieldSchema } from '../../../utils/field-validation/field-validation.guards'
 import {
@@ -234,7 +240,7 @@ export const getAssertPermissionFn = (level: PermissionLevel): AssertFormFn => {
  * @returns override props for use in duplicating a form
  */
 export const processDuplicateOverrideProps = (
-  params: DuplicateFormBody,
+  params: DuplicateFormBodyDto,
   newAdminId: string,
 ): OverrideProps => {
   const { responseMode, title } = params
@@ -265,8 +271,8 @@ export const processDuplicateOverrideProps = (
  * @returns err(EditFieldError) if field to be updated does not exist
  */
 const updateCurrentField = (
-  existingFormFields: IFieldSchema[],
-  fieldToUpdate: IFieldSchema,
+  existingFormFields: FormFieldSchema[],
+  fieldToUpdate: FormFieldSchema,
 ): EditFormFieldResult => {
   const existingFieldPosition = existingFormFields.findIndex(
     (f) => f.globalId === fieldToUpdate.globalId,
@@ -285,8 +291,8 @@ const updateCurrentField = (
  * @returns err(EditFieldError) if field to be inserted already exists in current fields
  */
 const insertField = (
-  existingFormFields: IFieldSchema[],
-  fieldToInsert: IFieldSchema,
+  existingFormFields: FormFieldSchema[],
+  fieldToInsert: FormFieldSchema,
 ): EditFormFieldResult => {
   const doesFieldExist = existingFormFields.some(
     (f) => f.globalId === fieldToInsert.globalId,
@@ -309,8 +315,8 @@ const insertField = (
  * @returns err(EditFieldError) if field to be deleted does not exist
  */
 const deleteField = (
-  existingFormFields: IFieldSchema[],
-  fieldToDelete: IFieldSchema,
+  existingFormFields: FormFieldSchema[],
+  fieldToDelete: FormFieldSchema,
 ): EditFormFieldResult => {
   const updatedFormFields = existingFormFields.filter(
     (f) => f.globalId !== fieldToDelete.globalId,
@@ -331,8 +337,8 @@ const deleteField = (
  * @returns err(EditFieldError) if field to reorder does not exist
  */
 const reorderField = (
-  existingFormFields: IFieldSchema[],
-  fieldToReorder: IFieldSchema,
+  existingFormFields: FormFieldSchema[],
+  fieldToReorder: FormFieldSchema,
   newPosition: number,
 ): EditFormFieldResult => {
   const existingFieldPosition = existingFormFields.findIndex(
@@ -353,7 +359,7 @@ const reorderField = (
  * @returns err(EditFieldError) if any errors occur whilst updating fields
  */
 export const getUpdatedFormFields = (
-  currentFormFields: IFieldSchema[],
+  currentFormFields: FormFieldSchema[],
   editFieldParams: EditFormFieldParams,
 ): EditFormFieldResult => {
   const { field: fieldToUpdate, action } = editFieldParams

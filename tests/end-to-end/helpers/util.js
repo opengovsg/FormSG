@@ -26,11 +26,9 @@ const {
   mockpass,
 } = require('./selectors')
 
-const { types } = require('../../../dist/backend/shared/resources/basic')
+const { types } = require('../../../dist/backend/shared/constants/field/basic')
 
-const {
-  SPCPFieldTitle,
-} = require('../../../dist/backend/types/field/fieldTypes')
+const { SPCPFieldTitle } = require('../../../dist/backend/src/types/field')
 
 const NON_SUBMITTED_FIELDS = types
   .filter((field) => !field.submitted)
@@ -248,9 +246,9 @@ function makeModel(db, modelFilename, modelName) {
   // Need this try catch block as some schemas may have been converted to
   // TypeScript and use default exports instead.
   try {
-    return spec(`dist/backend/app/models/${modelFilename}`)(db)
+    return spec(`dist/backend/src/app/models/${modelFilename}`)(db)
   } catch (e) {
-    return spec(`dist/backend/app/models/${modelFilename}`).default(db)
+    return spec(`dist/backend/src/app/models/${modelFilename}`).default(db)
   }
 }
 

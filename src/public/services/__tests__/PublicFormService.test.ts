@@ -2,12 +2,12 @@
 import MockAxios from 'jest-mock-axios'
 
 import { BasicField } from 'src/types'
-import {
-  EmailSubmissionDto,
-  EncryptSubmissionDto,
-  SubmissionResponseDto,
-} from 'src/types/api'
 
+import {
+  EmailModeSubmissionContentDto,
+  StorageModeSubmissionContentDto,
+  SubmissionResponseDto,
+} from '../../../../shared/types/submission'
 import * as SubmissionUtil from '../../utils/submission'
 import {
   getPublicFormView,
@@ -24,7 +24,7 @@ describe('PublicFormService', () => {
       message: 'some mock response',
       submissionId: 'created submission id',
     }
-    const MOCK_CONTENT: EmailSubmissionDto = {
+    const MOCK_CONTENT: EmailModeSubmissionContentDto = {
       responses: [
         {
           question: 'some question',
@@ -103,7 +103,7 @@ describe('PublicFormService', () => {
       message: 'some mock response again',
       submissionId: 'created submission id again',
     }
-    const MOCK_CONTENT: EncryptSubmissionDto = {
+    const MOCK_CONTENT: StorageModeSubmissionContentDto = {
       responses: [
         {
           question: 'some question',

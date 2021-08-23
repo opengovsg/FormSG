@@ -12,7 +12,6 @@ module.exports = {
       'react-scripts/config/jest/fileTransform.js',
   },
   moduleNameMapper: {
-    '~/(.*)': '<rootDir>/../../src/$1',
     '~assets/(.*)': '<rootDir>/../../src/assets/$1',
     '~contexts/(.*)': '<rootDir>/../../src/contexts/$1',
     '~constants/(.*)': '<rootDir>/../../src/constants/$1',
@@ -23,5 +22,6 @@ module.exports = {
     '~services/(.*)': '<rootDir>/../../src/services/$1',
     '~theme/(.*)': '<rootDir>/../../src/theme/$1',
     '~typings/(.*)': '<rootDir>/../../src/typings/$1',
+    '~/(.*)': '<rootDir>/../../src/$1',
   },
 }

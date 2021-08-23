@@ -144,12 +144,18 @@ function AuthenticationController($q, $scope, $state, $timeout, $window, GTag) {
     $q.when(AuthService.checkIsEmailAllowed(vm.credentials.email))
       .then(() => vm.sendOtp())
       .catch((error) => {
-        const errorMsg = get(
+        const validationMsgInBody = get(
           error,
-          'response.data',
-          'Something went wrong while validating your email. Please refresh and try again',
+          'response.data.validation.body.message',
         )
-        setEmailSignInError(errorMsg)
+        const errorMsgInBody = get(error, 'response.data.message')
+        const errorMsgAsPlain = get(error, 'response.data')
+        setEmailSignInError(
+          validationMsgInBody ||
+            errorMsgInBody ||
+            errorMsgAsPlain ||
+            'Something went wrong while validating your email. Please refresh and try again',
+        )
       })
   }
 
@@ -239,11 +245,15 @@ function AuthenticationController($q, $scope, $state, $timeout, $window, GTag) {
         GTag.loginSuccess('otp')
       })
       .catch((error) => {
-        let errorMsg = get(
-          error,
-          'response.data',
-          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
-        )
+        let errorMsg =
+          get(error, 'response.data.validation.body.message') ||
+          get(
+            error,
+            // Normally the error message is in response.data.message, but this particular
+            // API is an exception as it sends the error message as a string in response.data
+            'response.data',
+            'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+          )
         const errorStatus = get(error, 'response.status')
         if (errorStatus >= StatusCodes.INTERNAL_SERVER_ERROR) {
           errorMsg = 'An unknown error occurred'

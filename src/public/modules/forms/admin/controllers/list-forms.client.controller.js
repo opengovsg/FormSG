@@ -173,7 +173,7 @@ function ListFormsController(
   }
 
   vm.duplicateForm = function (formIndex) {
-    const missingBetaPermissions = BetaService.getMissingFieldPermissions(
+    const missingBetaPermissions = BetaService.getMissingBetaPermissions(
       vm.user,
       vm.myforms[formIndex],
     )

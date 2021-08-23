@@ -4,7 +4,7 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
-import { isPhoneNumber } from '../../../shared/util/phone-num-validation'
+import { isPhoneNumber } from '../../../../shared/utils/phone-num-validation'
 import { AdminContactOtpData, FormOtpData } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -12,8 +12,12 @@ import getFormModel from '../../models/form.server.model'
 import {
   DatabaseError,
   MalformedParametersError,
+  PossibleDatabaseError,
 } from '../../modules/core/core.errors'
-import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
+import {
+  getMongoErrorMessage,
+  transformMongoError,
+} from '../../utils/handle-mongo-error'
 
 import { InvalidNumberError, SmsSendError } from './sms.errors'
 import {
@@ -459,5 +463,31 @@ export const sendBouncedSubmissionSms = (
     recipient,
     message,
     SmsType.BouncedSubmission,
+  )
+}
+
+/**
+ * Retrieves the free sms count for a particular user
+ * @param userId The id of the user to retrieve the sms counts for
+ * @returns ok(count) when retrieval is successful
+ * @returns err(error) when retrieval fails due to a database error
+ */
+export const retrieveFreeSmsCounts = (
+  userId: string,
+): ResultAsync<number, PossibleDatabaseError> => {
+  return ResultAsync.fromPromise(
+    SmsCount.retrieveFreeSmsCounts(userId),
+    (error) => {
+      logger.error({
+        message: `Retrieving free sms counts failed for ${userId}`,
+        meta: {
+          action: 'retrieveFreeSmsCounts',
+          userId,
+          error,
+        },
+      })
+
+      return transformMongoError(error)
+    },
   )
 }

@@ -1,20 +1,22 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
-import { IHomenoField } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
-
 import {
   isHomePhoneNumber,
   startsWithSgPrefix,
-} from '../../../../shared/util/phone-num-validation'
+} from '../../../../../shared/utils/phone-num-validation'
+import {
+  IHomenoFieldSchema,
+  OmitUnusedValidatorProps,
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 import { notEmptySingleAnswerResponse } from './common'
 
 type HomeNoValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type HomeNoValidatorConstructor = (
-  homeNumberField: IHomenoField,
+  homeNumberField: OmitUnusedValidatorProps<IHomenoFieldSchema>,
 ) => HomeNoValidator
 
 /**

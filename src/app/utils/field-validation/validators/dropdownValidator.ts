@@ -1,18 +1,20 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
-import { IDropdownField } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
-
+import {
+  IDropdownFieldSchema,
+  OmitUnusedValidatorProps,
+} from '../../../../types/field'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
 import { getMyInfoFieldOptions } from '../../../modules/myinfo/myinfo.util'
+import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
 import { notEmptySingleAnswerResponse } from './common'
 import { isOneOfOptions } from './options'
 
 type DropdownValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type DropdownValidatorConstructor = (
-  dropdownField: IDropdownField,
+  dropdownField: OmitUnusedValidatorProps<IDropdownFieldSchema>,
 ) => DropdownValidator
 
 /**

@@ -1,14 +1,16 @@
 import { Opaque } from 'type-fest'
 
 import {
+  EncryptAttachmentResponse,
+  ParsedEmailAttachmentResponse,
+} from '../../../types/api'
+import { BasicField, FormFieldSchema } from '../../../types/field'
+import {
   FieldResponse,
-  IAttachmentResponse,
   ICheckboxResponse,
   ISingleAnswerResponse,
   ITableResponse,
-} from 'src/types/response'
-
-import { BasicField, IFieldSchema } from '../../../types/field'
+} from '../../../types/response'
 
 export type ProcessedResponse = {
   question: string
@@ -21,7 +23,7 @@ export type ProcessedResponse = {
  * ALL field responses in an incoming submission.
  */
 export type ValidatedFieldMap = Opaque<
-  { [p: string]: IFieldSchema },
+  { [p: string]: FormFieldSchema },
   'ValidatedFieldMap'
 >
 
@@ -45,12 +47,22 @@ export type ColumnResponse = {
   isVisible?: boolean
 }
 
-export type ProcessedSingleAnswerResponse = ISingleAnswerResponse &
-  ProcessedResponse
+export type ProcessedSingleAnswerResponse<
+  T extends ISingleAnswerResponse = ISingleAnswerResponse,
+> = T & ProcessedResponse
 
 export type ProcessedCheckboxResponse = ICheckboxResponse & ProcessedResponse
 export type ProcessedTableResponse = ITableResponse & ProcessedResponse
-export type ProcessedAttachmentResponse = IAttachmentResponse &
+/**
+ * Can be either email or storage mode attachment response.
+ * Email mode attachment response in the server will have extra metadata injected
+ * by a middleware.
+ * Storage mode attachment response is the default response.
+ */
+export type ProcessedAttachmentResponse = (
+  | ParsedEmailAttachmentResponse
+  | EncryptAttachmentResponse
+) &
   ProcessedResponse
 
 export type ProcessedFieldResponse =

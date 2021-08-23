@@ -107,6 +107,7 @@ FORMSG_SDK_MODE=
 
 # IS_SP_MAINTENANCE=
 # IS_CP_MAINTENANCE=
+# MYINFO_BANNER_CONTENT=
 
 ## Per-minute, per-IP request limits applied to specific endpoints
 # SUBMISSIONS_RATE_LIMIT=

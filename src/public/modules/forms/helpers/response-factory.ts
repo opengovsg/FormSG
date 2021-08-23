@@ -1,11 +1,11 @@
-import { hasProp } from '../../../../shared/util/has-prop'
+import { hasProp } from '../../../../../shared/utils/has-prop'
 import { BasicField } from '../../../../types/field'
 import {
   ArrayResponse,
   DisplayedResponseWithoutAnswer,
   NestedResponse,
   SingleResponse,
-} from '../../../../types/response'
+} from '../../../types/response'
 
 import {
   ArrayAnswerResponse,
