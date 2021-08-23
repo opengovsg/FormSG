@@ -18,7 +18,7 @@ export interface ToggleProps extends ChakraSwitchProps {
   /**
    * Main label of the toggle
    */
-  label?: string
+  label: string
   /**
    * Secondary description text
    */
@@ -59,14 +59,9 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
       <Flex __css={{ ...styles.overallContainer, ...containerStyles }}>
         {(label || description) && (
           <Box __css={styles.textContainer}>
-            {label && (
-              <FormLabel.Label
-                sx={{ ...styles.label, ...labelStyles }}
-                // htmlFor={props.name}
-              >
-                {label}
-              </FormLabel.Label>
-            )}
+            <FormLabel.Label sx={{ ...styles.label, ...labelStyles }}>
+              {label}
+            </FormLabel.Label>
             {description && (
               <FormLabel.Description
                 sx={{ ...styles.description, ...descriptionStyles }}
@@ -76,7 +71,7 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
             )}
           </Box>
         )}
-        <Switch {...props} ref={ref} />
+        <Switch {...props} aria-label={label} ref={ref} />
       </Flex>
     )
   },
