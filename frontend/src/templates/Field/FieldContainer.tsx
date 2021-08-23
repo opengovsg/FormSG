@@ -29,7 +29,7 @@ export const FieldContainer = ({
   children,
 }: FieldContainerProps): JSX.Element => {
   const {
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isValid },
   } = useFormContext()
   const { _id: name } = schema
 
@@ -37,7 +37,7 @@ export const FieldContainer = ({
     <FormControl
       isRequired={schema.required}
       isDisabled={schema.disabled}
-      isReadOnly={isSubmitting}
+      isReadOnly={isValid && isSubmitting}
       isInvalid={!!errors[name]}
       mb={6}
     >
