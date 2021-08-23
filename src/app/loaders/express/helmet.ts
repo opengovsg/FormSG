@@ -74,6 +74,7 @@ const helmetMiddlewares = () => {
       'https://www.gstatic.cn/',
       // For inline styles in angular-sanitize.js
       "'sha256-b3IrgBVvuKx/Q3tmAi79fnf6AFClibrz/0S5x1ghdGU='",
+      "'unsafe-inline'",
     ],
     formAction: ["'self'"],
   }
