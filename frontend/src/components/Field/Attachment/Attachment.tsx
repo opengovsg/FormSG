@@ -2,10 +2,8 @@ import { useCallback, useMemo, useState } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
 import {
   Box,
-  chakra,
   forwardRef,
-  Icon,
-  Text,
+  StylesProvider,
   useFormControl,
   UseFormControlProps,
   useMergeRefs,
@@ -13,12 +11,11 @@ import {
 } from '@chakra-ui/react'
 import omit from 'lodash/omit'
 
-import { BxsCloudUpload } from '~assets/icons/BxsCloudUpload'
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import FormFieldMessage from '~components/FormControl/FormFieldMessage'
-import Link from '~components/Link'
 
 import { getReadableFileSize } from './utils/getReadableFileSize'
+import { AttachmentDropzone } from './AttachmentDropzone'
 import { AttachmentFileInfo } from './AttachmentFileInfo'
 
 export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
@@ -130,38 +127,33 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       })
     }, [getInputProps, inputProps, name])
 
-    if (internalFile) {
-      return (
-        <Box __css={styles.container}>
-          <AttachmentFileInfo
-            file={internalFile}
-            handleRemoveFile={handleRemoveFile}
-          />
-        </Box>
-      )
-    }
-
     return (
-      <Box __css={styles.container}>
-        <Box {...processedRootProps} ref={mergedRefs} __css={styles.dropzone}>
-          <chakra.input {...processedInputProps} />
-          <Icon aria-hidden as={BxsCloudUpload} __css={styles.icon} />
-
-          {isDragActive ? (
-            <Text>Drop the file here ...</Text>
-          ) : (
-            <Text>
-              <Link isDisabled={inputProps.disabled}>Choose file</Link> or drag
-              and drop here
-            </Text>
+      <StylesProvider value={styles}>
+        <Box __css={styles.container}>
+          <Box
+            {...processedRootProps}
+            ref={mergedRefs}
+            __css={internalFile ? undefined : styles.dropzone}
+          >
+            {internalFile ? (
+              <AttachmentFileInfo
+                file={internalFile}
+                handleRemoveFile={handleRemoveFile}
+              />
+            ) : (
+              <AttachmentDropzone
+                isDragActive={isDragActive}
+                inputProps={processedInputProps}
+              />
+            )}
+          </Box>
+          {!internalFile && showFileSize && readableMaxSize && (
+            <FormFieldMessage>
+              Maximum file size: {readableMaxSize}
+            </FormFieldMessage>
           )}
         </Box>
-        {showFileSize && readableMaxSize && (
-          <FormFieldMessage>
-            Maximum file size: {readableMaxSize}
-          </FormFieldMessage>
-        )}
-      </Box>
+      </StylesProvider>
     )
   },
 )
