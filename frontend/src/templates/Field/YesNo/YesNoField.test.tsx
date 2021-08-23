@@ -1,29 +1,14 @@
 import { composeStories } from '@storybook/testing-react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
-import { BasicField } from '~shared/types/field'
-
-import { YesNoFieldSchema } from './YesNoField'
 import * as stories from './YesNoField.stories'
 
 const { ValidationOptional, ValidationRequired } = composeStories(stories)
 
-const BASE_SCHEMA: YesNoFieldSchema = {
-  title: 'Do you like apples',
-  description:
-    'Not oranges, not any other fruits. I only want to know your apple preferences.',
-  required: true,
-  disabled: false,
-  fieldType: BasicField.YesNo,
-  _id: '611b94dfbb9e300012f702a7',
-}
-
 describe('ValidationRequired', () => {
-  const MOCK_SCHEMA = BASE_SCHEMA
-
   it('renders error when field is not selected before submitting', async () => {
     // Arrange
-    render(<ValidationRequired schema={MOCK_SCHEMA} />)
+    render(<ValidationRequired />)
     const submitButton = screen.getByText('Submit')
 
     // Act
@@ -38,7 +23,7 @@ describe('ValidationRequired', () => {
 
   it('renders success when selected field is submitted', async () => {
     // Arrange
-    render(<ValidationRequired schema={MOCK_SCHEMA} />)
+    render(<ValidationRequired />)
     const noOption = screen.getByText('No')
     const yesOption = screen.getByText('Yes')
     const submitButton = screen.getByText('Submit')
@@ -60,10 +45,9 @@ describe('ValidationRequired', () => {
 })
 
 describe('ValidationOptional', () => {
-  const MOCK_SCHEMA = { ...BASE_SCHEMA, required: false }
   it('renders success even when field is not selected before submitting', async () => {
     // Arrange
-    render(<ValidationOptional schema={MOCK_SCHEMA} />)
+    render(<ValidationOptional />)
     const submitButton = screen.getByText('Submit')
 
     // Act
@@ -78,7 +62,7 @@ describe('ValidationOptional', () => {
 
   it('renders success when selected field is submitted', async () => {
     // Arrange
-    render(<ValidationOptional schema={MOCK_SCHEMA} />)
+    render(<ValidationOptional />)
     const noOption = screen.getByText('No')
     const yesOption = screen.getByText('Yes')
     const submitButton = screen.getByText('Submit')
