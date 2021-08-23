@@ -12,7 +12,7 @@ export const createBaseValidationRules = (
   return {
     required: {
       value: schema.required,
-      message: 'Please fill in required field',
+      message: 'This field is required',
     },
   }
 }

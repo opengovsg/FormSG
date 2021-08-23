@@ -32,7 +32,7 @@ describe('ValidationRequired', () => {
 
     // Assert
     // Should show error message.
-    const error = screen.getByText('Please fill in required field')
+    const error = screen.getByText('This field is required')
     expect(error).not.toBeNull()
   })
 
