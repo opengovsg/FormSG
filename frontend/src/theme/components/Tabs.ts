@@ -7,11 +7,6 @@ import {
 import { getColor } from '@chakra-ui/theme-tools'
 import merge from 'lodash/merge'
 
-export const DRAG_SCROLL_SPEED = 0.9
-export const SCROLL_TO_VIEW_OPTIONS = {
-  inline: 'center',
-} as ScrollIntoViewOptions
-
 const variantLine: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
   () => {
     return {

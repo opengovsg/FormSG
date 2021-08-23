@@ -2,8 +2,6 @@ import { useRef, WheelEvent } from 'react'
 import { TabList as ChakraTabList, TabListProps } from '@chakra-ui/react'
 import useSwipeScroll from 'use-drag-scroll'
 
-import { DRAG_SCROLL_SPEED } from '~theme/components/Tabs'
-
 export const TabList = (props: TabListProps): JSX.Element => {
   // horizontal scroll on mouse wheel
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -19,7 +17,7 @@ export const TabList = (props: TabListProps): JSX.Element => {
   // horizontal scroll on drag
   useSwipeScroll({
     sliderRef: scrollRef,
-    momentumVelocity: DRAG_SCROLL_SPEED,
+    momentumVelocity: 0.9,
   })
   return <ChakraTabList ref={scrollRef} onWheel={handleWheelEvent} {...props} />
 }
