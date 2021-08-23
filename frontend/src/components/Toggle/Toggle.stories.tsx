@@ -13,29 +13,33 @@ export default {
 
 const AllToggleStates: Story<ToggleProps> = (args) => {
   return (
-    <VStack align="left" w="30%">
+    <VStack align="left" w="50%">
       <Toggle
         {...args}
         label="Selected"
         description="Some description"
+        containerStyles={{ w: '60%' }}
         isChecked
       />
       <Toggle
         {...args}
         label="A really long label to demonstrate the minimum left margin of the toggle"
         description="The description is also really long for the same reason"
+        containerStyles={{ w: '60%' }}
         isChecked
       />
       <Toggle
         {...args}
         label="Unselected"
         description="Some description"
+        containerStyles={{ w: '60%' }}
         isChecked={false}
       />
       <Toggle
         {...args}
         label="Selected and disabled"
         description="Some description"
+        containerStyles={{ w: '60%' }}
         isChecked
         isDisabled
       />
@@ -43,8 +47,14 @@ const AllToggleStates: Story<ToggleProps> = (args) => {
         {...args}
         label="Unselected and disabled"
         description="Some description"
+        containerStyles={{ w: '60%' }}
         isChecked={false}
         isDisabled
+      />
+      <Toggle
+        {...args}
+        label="Wider toggle"
+        description="A toggle in a wider container to demonstrate that the width stretches to that of the container"
       />
     </VStack>
   )
