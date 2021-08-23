@@ -10,14 +10,13 @@ export const TabList = (props: TabListProps): JSX.Element => {
     if (container) {
       container.scrollTo({
         top: 0,
-        left: container?.scrollLeft + e.deltaY,
+        left: container.scrollLeft + e.deltaY,
       })
     }
   }
   // horizontal scroll on drag
   useSwipeScroll({
     sliderRef: scrollRef,
-    momentumVelocity: 0.9,
   })
   return <ChakraTabList ref={scrollRef} onWheel={handleWheelEvent} {...props} />
 }
