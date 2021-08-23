@@ -56,9 +56,9 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
   ) => {
     const styles = useMultiStyleConfig(TOGGLE_THEME_KEY, props)
     return (
-      <Flex __css={styles.overallContainer}>
+      <Flex __css={{ ...styles.overallContainer, ...containerStyles }}>
         {(label || description) && (
-          <Box __css={{ ...styles.textContainer, ...containerStyles }}>
+          <Box __css={styles.textContainer}>
             {label && (
               <FormLabel.Label
                 sx={{ ...styles.label, ...labelStyles }}
