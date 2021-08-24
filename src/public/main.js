@@ -214,6 +214,7 @@ require('./modules/forms/base/components/start-page.client.component.js')
 require('./modules/forms/base/components/verifiable-field.client.component.js')
 require('./modules/forms/base/components/field-dropdown.client.component.js')
 require('./modules/forms/base/components/field-attachment.client.component.js')
+require('./modules/forms/base/components/field-country.client.component.js')
 require('./modules/forms/base/components/field-decimal.client.component.js')
 require('./modules/forms/base/components/field-textfield.client.component.js')
 require('./modules/forms/base/components/field-email.client.component.js')
@@ -238,6 +239,7 @@ require('./modules/forms/base/directives/field.client.directive.js')
 require('./modules/forms/base/directives/iframe-onload.client.directive.js')
 require('./modules/forms/base/directives/rating-stars.client.directive.js')
 require('./modules/forms/base/directives/validate-checkbox.client.directive.js')
+require('./modules/forms/base/directives/validate-country.client.directive.js')
 require('./modules/forms/base/directives/validate-email-domain.client.directive.js')
 require('./modules/forms/base/directives/validate-email-format.client.directive.js')
 require('./modules/forms/base/directives/validate-nric.client.directive.js')
@@ -528,6 +530,10 @@ app.run([
     $templateCache.put(
       'modules/forms/base/componentViews/field-attachment.client.view.html',
       require('./modules/forms/base/componentViews/field-attachment.client.view.html'),
+    )
+    $templateCache.put(
+      'modules/forms/base/componentViews/field-country.client.view.html',
+      require('./modules/forms/base/componentViews/field-country.client.view.html'),
     )
     $templateCache.put(
       'modules/forms/base/componentViews/field-decimal.client.view.html',

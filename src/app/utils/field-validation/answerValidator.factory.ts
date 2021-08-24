@@ -11,6 +11,7 @@ import {
 
 import { constructAttachmentValidator } from './validators/attachmentValidator'
 import { constructCheckboxValidator } from './validators/checkboxValidator'
+import { constructCountryValidator } from './validators/countryValidator'
 import { constructDateValidator } from './validators/dateValidator'
 import { constructDecimalValidator } from './validators/decimalValidator'
 import { constructDropdownValidator } from './validators/dropdownValidator'
@@ -64,6 +65,8 @@ export const constructSingleAnswerValidator = (
       return constructUenValidator()
     case BasicField.YesNo:
       return constructYesNoValidator()
+    case BasicField.Country:
+      return constructCountryValidator(formField)
     default:
       return () => left('Unsupported field type')
   }

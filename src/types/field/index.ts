@@ -10,6 +10,7 @@ import {
 
 import { IAttachmentFieldSchema } from './attachmentField'
 import { ICheckboxFieldSchema } from './checkboxField'
+import { ICountryFieldSchema } from './countryField'
 import { IDateFieldSchema } from './dateField'
 import { IDecimalFieldSchema } from './decimalField'
 import { IDropdownFieldSchema } from './dropdownField'
@@ -52,6 +53,7 @@ export * from './statementField'
 export * from './tableField'
 export * from './uenField'
 export * from './yesNoField'
+export * from './countryField'
 export { BasicField, MyInfoAttribute, FormField }
 
 export enum SPCPFieldTitle {
@@ -85,6 +87,7 @@ export type FormFieldSchema =
   | ITableFieldSchema
   | IUenFieldSchema
   | IYesNoFieldSchema
+  | ICountryFieldSchema
 
 /**
  * Helper type to only retain from FormFieldSchema the props required to create
@@ -125,6 +128,7 @@ export type FieldValidationSchema =
   | OmitUnusedValidatorProps<ITableFieldSchema>
   | OmitUnusedValidatorProps<IUenFieldSchema>
   | OmitUnusedValidatorProps<IYesNoFieldSchema>
+  | OmitUnusedValidatorProps<ICountryFieldSchema>
 
 /**
  * Form field POJO with id

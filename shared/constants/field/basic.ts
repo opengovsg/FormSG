@@ -132,6 +132,12 @@ export const types: BasicFieldBlock[] = [
     submitted: true,
     answerArray: true,
   },
+  {
+    name: BasicField.Country,
+    value: 'Country',
+    submitted: true,
+    answerArray: false,
+  },
 ]
 
 /**

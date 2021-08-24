@@ -16,6 +16,7 @@ const {
   TableField,
   TextAreaField,
   TextField,
+  CountryField,
 } = require('../viewmodels/Fields')
 const {
   types: basicTypes,
@@ -81,6 +82,8 @@ const getClass = (fieldType) => {
     case 'image':
     case 'statement':
       return NoAnswerField
+    case 'country':
+      return CountryField
     default:
       throw new Error('Invalid fieldtype passed to createFieldFromData.')
   }

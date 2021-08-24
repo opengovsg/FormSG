@@ -21,5 +21,6 @@ module.exports.RatingField = require('./RatingField.class')
 module.exports.TextAreaField = require('./TextAreaField.class')
 module.exports.TextField = require('./TextField.class')
 module.exports.VerifiableField = require('./VerifiableField.class')
+module.exports.CountryField = require('./CountryField.class')
 // Table depends on the other fields, so put it last
 module.exports.TableField = require('./TableField.class')
