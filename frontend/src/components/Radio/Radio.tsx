@@ -17,7 +17,19 @@
  */
 
 import {
+  ChangeEvent,
+  ChangeEventHandler,
+  KeyboardEvent,
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+} from 'react'
+import {
+  Box,
   chakra,
+  ComponentWithAs,
+  CSSObject,
   forwardRef,
   HTMLChakraProps,
   layoutPropNames,
@@ -25,6 +37,7 @@ import {
   SystemProps,
   SystemStyleObject,
   ThemingProps,
+  useMergeRefs,
   useMultiStyleConfig,
   useRadio,
   useRadioGroupContext,
@@ -33,6 +46,12 @@ import {
 import { callAll, split } from '@chakra-ui/utils'
 
 import { RADIO_THEME_KEY } from '~/theme/components/Radio'
+import { FieldColorScheme } from '~/theme/foundations/colours'
+
+import Input, { InputProps } from '../Input'
+
+import { RadioGroup } from './RadioGroup'
+import { useRadioGroupWithOthers } from './useRadioGroupWithOthers'
 
 type Omitted = 'onChange' | 'defaultChecked' | 'checked'
 type BaseControlProps = Omit<HTMLChakraProps<'div'>, Omitted>
@@ -55,6 +74,28 @@ export interface RadioProps
    * please use the props `maxWidth` or `width` to configure
    */
   isFullWidth?: boolean
+  /**
+   * Background and shadow colors.
+   */
+  colorScheme?: FieldColorScheme
+  /**
+   * Additional overriding styles. This is a change from the Chakra UI
+   * implementation, which previously did not allow overriding styles.
+   */
+  __css?: CSSObject
+
+  /**
+   * Function called when checked state of the input changes
+   * If provided, will be called with empty string when user attempts to
+   * deselect the radio.
+   */
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void
+}
+
+type RadioWithSubcomponentProps = ComponentWithAs<'input', RadioProps> & {
+  OthersWrapper: typeof OthersWrapper
+  RadioGroup: typeof RadioGroup
+  OthersInput: typeof OthersInput
 }
 
 /**
@@ -101,7 +142,38 @@ export const Radio = forwardRef<RadioProps, 'input'>((props, ref) => {
 
   const checkboxProps = getCheckboxProps(otherProps)
   const inputProps = getInputProps({}, ref)
-  const labelProps = getLabelProps()
+
+  const handleSelect = useCallback(
+    (e: SyntheticEvent) => {
+      if (isChecked) {
+        e.preventDefault()
+        // Toggle off if onChange is given.
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        onChange?.({ target: { value: '' } })
+      }
+    },
+    [isChecked, onChange],
+  )
+
+  const handleSpacebar = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key !== ' ') return
+      if (isChecked) {
+        handleSelect(e)
+      }
+    },
+    [handleSelect, isChecked],
+  )
+
+  // Update labelProps to include props to allow deselection of radio value if
+  // available
+  const labelProps = useMemo(() => {
+    return getLabelProps({
+      onClick: handleSelect,
+      onKeyDown: handleSpacebar,
+    })
+  }, [getLabelProps, handleSelect, handleSpacebar])
 
   const rootStyles = {
     width: isFullWidth ? 'full' : undefined,
@@ -109,6 +181,7 @@ export const Radio = forwardRef<RadioProps, 'input'>((props, ref) => {
     alignItems: 'center',
     verticalAlign: 'top',
     ...styles.container,
+    ...props.__css,
   }
 
   const checkboxStyles = {
@@ -131,7 +204,7 @@ export const Radio = forwardRef<RadioProps, 'input'>((props, ref) => {
       {...layoutProps}
       // This is the adapted line of code which applies the internal label styles
       // to the whole container
-      {...getLabelProps()}
+      {...labelProps}
       __css={rootStyles}
     >
       <input className="chakra-radio__input" {...inputProps} />
@@ -141,14 +214,103 @@ export const Radio = forwardRef<RadioProps, 'input'>((props, ref) => {
         __css={checkboxStyles}
       />
       {children && (
-        <chakra.span
-          className="chakra-radio__label"
-          {...labelProps}
-          __css={labelStyles}
-        >
+        <chakra.span className="chakra-radio__label" __css={labelStyles}>
           {children}
         </chakra.span>
       )}
     </chakra.label>
   )
+}) as RadioWithSubcomponentProps
+
+/**
+ * Components to support the "Others" option.
+ */
+
+/**
+ * Wrapper for the radio part of the Others option.
+ */
+const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
+  const { othersRadioRef, othersInputRef } = useRadioGroupWithOthers()
+  const { value: valueProp } = props
+  const styles = useMultiStyleConfig(RADIO_THEME_KEY, {
+    size: props.size,
+    colorScheme: props.colorScheme,
+  })
+
+  const mergedRadioRef = useMergeRefs(othersRadioRef, ref)
+
+  const group = useRadioGroupContext()
+
+  let isChecked = props.isChecked
+  if (group?.value != null && valueProp != null) {
+    isChecked = group.value === valueProp
+  }
+
+  useEffect(() => {
+    if (isChecked) {
+      othersInputRef.current?.focus()
+    }
+  }, [isChecked, othersInputRef])
+
+  return (
+    <Radio ref={mergedRadioRef} {...props} __css={styles.othersRadio}>
+      Other
+    </Radio>
+  )
 })
+
+/**
+ * Wrapper for the input part of the Others option.
+ */
+export const OthersInput = forwardRef<InputProps, 'input'>(
+  ({ onChange, ...props }, ref) => {
+    const { othersRadioRef, othersInputRef } = useRadioGroupWithOthers()
+    const styles = useMultiStyleConfig(RADIO_THEME_KEY, {
+      size: props.size,
+      colorScheme: props.colorScheme,
+    })
+
+    const mergedInputRef = useMergeRefs(othersInputRef, ref)
+
+    const handleInputChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+      // If user is typing text in the input, ensure the "Others" option is selected
+      if (e.target.value && !othersRadioRef.current?.checked) {
+        othersRadioRef.current?.click()
+      }
+      onChange?.(e)
+    }
+
+    return (
+      <Input
+        sx={styles.othersInput}
+        ref={mergedInputRef}
+        {...props}
+        onChange={handleInputChange}
+      />
+    )
+  },
+)
+
+export interface OthersProps extends RadioProps {
+  children: React.ReactNode
+}
+
+const OthersWrapper = forwardRef<OthersProps, 'input'>(
+  ({ children, size, colorScheme, ...props }, ref) => {
+    const styles = useMultiStyleConfig(RADIO_THEME_KEY, {
+      size,
+      colorScheme,
+    })
+
+    return (
+      <Box __css={styles.othersContainer}>
+        <OthersRadio {...props} ref={ref} />
+        {children}
+      </Box>
+    )
+  },
+)
+
+Radio.OthersWrapper = OthersWrapper
+Radio.RadioGroup = RadioGroup
+Radio.OthersInput = OthersInput
