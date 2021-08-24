@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useMemo } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { FormControl, SimpleGrid, Text, VStack } from '@chakra-ui/react'
@@ -10,7 +11,7 @@ import Button from '../Button'
 import FormErrorMessage from '../FormControl/FormErrorMessage'
 import FormLabel from '../FormControl/FormLabel'
 
-import { Radio, RadioGroupReturn, RadioProps } from './Radio'
+import { OthersInput, Radio, RadioGroupReturn, RadioProps } from './Radio'
 
 export default {
   title: 'Components/Radio',
@@ -117,27 +118,32 @@ const PlaygroundTemplate: Story = ({
     handleSubmit,
     formState: { errors },
     control,
+    register,
     trigger,
   } = useForm()
-  const radioValue: RadioGroupReturn | undefined = useWatch({
+  const radioValue = useWatch({
     name,
     control,
   })
+
+  const othersInputValue = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+
   useEffect(() => {
     // When unchecking others, manually trigger input validation. This is
     // to ensure that if you select then unselect Others, the form knows
     // that the text input is now optional.
-    if (hasOthers && !radioValue?.isOthers) {
+    if (hasOthers && radioValue !== othersInputValue) {
       trigger(othersInputName)
     }
   }, [hasOthers, radioValue, trigger, othersInputName])
+
   const onSubmit = (data: unknown) => {
     alert(JSON.stringify(data))
   }
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <FormControl isInvalid={!isEmpty(errors)} mb={6}>
-        <FormLabel isRequired>{label}</FormLabel>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <FormControl isRequired={isRequired} isInvalid={!isEmpty(errors)} mb={6}>
+        <FormLabel>{label}</FormLabel>
         <Controller
           control={control}
           name={name}
@@ -146,34 +152,36 @@ const PlaygroundTemplate: Story = ({
             // so we don't have conflicting refs
             <Radio.RadioGroup {...omit(field, 'ref')}>
               {options.map((o, idx) => (
-                <Radio
-                  key={idx}
-                  value={o}
-                  // So that the first radio button of the group
-                  // is focused on error
-                  ref={idx === 0 ? field.ref : undefined}
-                  {...args}
-                >
+                <Radio key={idx} value={o} ref={field.ref} {...args}>
                   {o}
                 </Radio>
               ))}
-              {hasOthers && <Radio.Others radioProps={args} />}
+              {hasOthers && (
+                <Radio.OthersWrapper
+                  ref={field.ref}
+                  {...args}
+                  value={othersInputValue}
+                >
+                  <OthersInput
+                    isInvalid={!!errors[othersInputName]}
+                    {...register(othersInputName, {
+                      validate: (value) => {
+                        const isOthersSelected = radioValue === othersInputValue
+                        if (isOthersSelected && !value) {
+                          return 'Please specify a value for Others'
+                        }
+                        return true
+                      },
+                    })}
+                  />
+                </Radio.OthersWrapper>
+              )}
             </Radio.RadioGroup>
           )}
           rules={{
-            validate: (ans: RadioGroupReturn | undefined) => {
-              // We could separate the undefined check by passing
-              // required: true as a rule, but for some reason the
-              // combination of required: true and passing field.ref
-              // to the first radio button results in the "required"
-              // validation always failing, even if there is an answer.
-              // An alternative solution is to set required: true, remove
-              // the setting of the ref on the first radio button, and
-              // set a tabIndex property on the RadioGroup so it can be
-              // focused.
-              if (!ans || !ans.value) return 'Answer is required'
-              if (!ans.isOthers || !!ans.value) return true
-              return 'Please specify Others'
+            required: {
+              value: isRequired,
+              message: 'This field is required',
             },
           }}
         />
@@ -190,10 +198,12 @@ export const Playground = PlaygroundTemplate.bind({})
 Playground.args = {
   label: 'Radio without others',
   hasOthers: false,
+  isRequired: false,
 }
 
 export const PlaygroundWithOthers = PlaygroundTemplate.bind({})
 PlaygroundWithOthers.args = {
   label: 'Radio with others',
   hasOthers: true,
+  isRequired: true,
 }
