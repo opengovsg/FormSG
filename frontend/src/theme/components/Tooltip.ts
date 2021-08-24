@@ -4,7 +4,7 @@ import { textStyles } from '../textStyles'
 
 export const Tooltip: ComponentStyleConfig = {
   baseStyle: {
-    // overriding --tooltip-big since Chakra UI does it this way -
+    // overriding --tooltip-bg since Chakra UI does it this way -
     // see https://github.com/chakra-ui/chakra-ui/blob/main/packages/theme/src/components/tooltip.ts
     '--tooltip-bg': 'var(--chakra-colors-secondary-700)',
     bg: 'secondary.700',
