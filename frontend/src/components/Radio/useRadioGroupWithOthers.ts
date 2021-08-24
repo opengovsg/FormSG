@@ -3,8 +3,6 @@ import { createContext, RefObject, useContext } from 'react'
 export type RadioGroupContextProps = {
   othersRadioRef: RefObject<HTMLInputElement | null>
   othersInputRef: RefObject<HTMLInputElement | null>
-  othersInputValue: string
-  onInputValueChange: (val: string) => void
 }
 
 export const RadioGroupContext = createContext<
