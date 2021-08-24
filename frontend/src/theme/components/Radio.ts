@@ -27,11 +27,17 @@ export const Radio: ComponentMultiStyleConfig = {
   baseStyle: ({ colorScheme: c, theme }) => ({
     // Control is the circular part of the radio button
     control: {
+      bg: 'white',
+      cursor: 'pointer',
       border: '2px solid',
       borderColor: `${c}.500`,
       // When the label is long and overflows to the next line, we want
       // the radio to be aligned with the first line rather than the center
       alignSelf: 'start',
+      _before: {
+        content: `""`,
+        transition: 'transform ease 200ms',
+      },
       _focus: {
         boxShadow: 'none',
       },
@@ -124,12 +130,18 @@ export const Radio: ComponentMultiStyleConfig = {
       control: {
         w: '1.5rem',
         h: '1.5rem',
+        // the ::before pseudoclass controls the solid circle which indicates
+        // that the radio button is checked
+        _before: {
+          w: '1rem',
+          h: '1rem',
+          transform: 'scale(0)',
+        },
         _checked: {
-          // the ::before pseudoclass controls the solid circle which indicates
-          // that the radio button is checked
           _before: {
             w: '1rem',
             h: '1rem',
+            transform: 'scale(1)',
           },
         },
       },
