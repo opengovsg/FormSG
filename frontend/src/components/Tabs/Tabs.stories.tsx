@@ -27,17 +27,32 @@ export const LightTab = TabTemplate.bind({})
 LightTab.args = {
   variant: 'line-light',
 }
+LightTab.parameters = {
+  backgrounds: { default: 'light' },
+}
 
 export const DarkTab = TabTemplate.bind({})
 DarkTab.args = {
   variant: 'line-dark',
 }
 
-export const WithScrolling = TabTemplate.bind({})
-WithScrolling.args = {
+export const WithScrollingLight = TabTemplate.bind({})
+WithScrollingLight.args = {
+  variant: 'line-light',
+}
+WithScrollingLight.parameters = {
+  viewport: {
+    defaultViewport: 'mobile1',
+  },
+  chromatic: { viewports: [viewports.xs] },
+  backgrounds: { default: 'light' },
+}
+
+export const WithScrollingDark = TabTemplate.bind({})
+WithScrollingDark.args = {
   variant: 'line-dark',
 }
-WithScrolling.parameters = {
+WithScrollingDark.parameters = {
   viewport: {
     defaultViewport: 'mobile1',
   },
