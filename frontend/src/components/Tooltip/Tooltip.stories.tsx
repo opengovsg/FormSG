@@ -1,5 +1,7 @@
-import { HStack, Icon, TooltipProps, VStack } from '@chakra-ui/react'
+import { Box, Icon, Placement, TooltipProps, VStack } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
+
+import { BxsHelpCircle } from '~/assets/icons/BxsHelpCircle'
 
 import { viewports } from '~utils/storybook'
 
@@ -11,57 +13,75 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<TooltipProps> = (args) => {
+const TooltipStack = (
+  args: TooltipProps & { labels: { value: string; placement: Placement }[] },
+): JSX.Element => {
   return (
-    // padding to create space for tooltips to appear
-    <VStack p="350px">
-      <Tooltip
-        {...args}
-        label="Display tooltip content right"
-        placement="right"
-      />
-      <Tooltip
-        {...args}
-        label="Display tooltip content left"
-        placement="left"
-      />
-      <Tooltip {...args} label="Display tooltip content top" placement="top" />
-      <Tooltip
-        {...args}
-        label="Display tooltip content bottom"
-        placement="bottom"
-      />
+    <VStack align="left" spacing="4rem">
+      {args.labels.map(({ value, placement }, idx) => (
+        <Box key={idx}>
+          {value}
+          <Tooltip
+            {...args}
+            label="Tooltip content goes here"
+            placement={placement}
+          >
+            <Icon as={BxsHelpCircle} ml="0.5rem" />
+          </Tooltip>
+        </Box>
+      ))}
     </VStack>
   )
 }
+
+const Template: Story<TooltipProps> = (args) => {
+  return (
+    <TooltipStack
+      {...args}
+      labels={[
+        { value: 'Tooltip on the right', placement: 'right' },
+        {
+          value: "Left (requires longer text so it doesn't flip right)",
+          placement: 'left',
+        },
+        { value: 'Tooltip on top', placement: 'top' },
+        { value: 'Tooltip at bottom', placement: 'bottom' },
+      ]}
+    />
+  )
+}
 export const TooltipOnHover = Template.bind({})
-TooltipOnHover.args = {
-  children: <Icon name="Question" />,
+
+export const OpenTooltip = Template.bind({})
+OpenTooltip.args = {
+  isOpen: true,
 }
 
-const SingleToolTip: Story<TooltipProps> = (args) => {
+const MobileTemplate: Story<TooltipProps> = (args) => {
   return (
-    <HStack>
-      <div>OTP Verification Long Message</div>
-      <Tooltip {...args} />
-    </HStack>
+    <TooltipStack
+      {...args}
+      labels={[
+        { value: 'Right', placement: 'right' },
+        { value: 'Left (requires longer text)', placement: 'left' },
+        { value: 'Top', placement: 'top' },
+        { value: 'Bottom', placement: 'bottom' },
+        {
+          value: 'Placed right but flips left automatically due to space',
+          placement: 'right',
+        },
+        {
+          value:
+            'Placed left but flips right automatically due to space blah blah blah',
+          placement: 'left',
+        },
+      ]}
+    />
   )
 }
 
-export const OpenTooltip = SingleToolTip.bind({})
-OpenTooltip.args = {
-  label: 'This tooltip is open',
-  isOpen: true,
-  children: <Icon name="Question" />,
-}
-
-export const MobileExample = SingleToolTip.bind({})
-MobileExample.args = {
-  label:
-    'For developers and IT officers. We will POST encrypted form responses in real-time to the HTTPS endpoint specified here.',
-  children: <Icon name="Question" />,
-}
-MobileExample.parameters = {
+export const Mobile = MobileTemplate.bind({})
+Mobile.parameters = {
   viewport: {
     defaultViewport: 'mobile1',
   },
