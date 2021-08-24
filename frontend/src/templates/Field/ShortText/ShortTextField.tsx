@@ -29,7 +29,10 @@ export const ShortTextField = ({
 
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>
-      <Input {...register(schema._id, validationRules)} />
+      <Input
+        aria-label={schema.title}
+        {...register(schema._id, validationRules)}
+      />
     </FieldContainer>
   )
 }
