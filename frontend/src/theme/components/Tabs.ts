@@ -97,9 +97,9 @@ const variantLight: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
       theme: props.theme,
     }),
     tab: {
-      color: 'primary.300',
+      color: 'primary.400',
       _hover: {
-        color: 'primary.400',
+        color: 'primary.500',
       },
       _selected: {
         color: 'primary.500',
@@ -128,12 +128,9 @@ const variantDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
       theme: props.theme,
     }),
     tab: {
-      color: 'secondary.300',
-      _active: {
-        bg: 'secondary.500',
-      },
+      color: 'secondary.200',
       _hover: {
-        color: 'secondary.200',
+        color: 'white',
       },
       _selected: {
         color: 'white',
