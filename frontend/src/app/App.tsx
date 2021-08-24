@@ -2,9 +2,8 @@ import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { ChakraProvider } from '@chakra-ui/react'
 
-import { AuthProvider } from '~/contexts/AuthContext'
-
 import { theme } from '~theme/index'
+import { AuthProvider } from '~contexts/AuthContext'
 
 import { AppRouter } from './AppRouter'
 

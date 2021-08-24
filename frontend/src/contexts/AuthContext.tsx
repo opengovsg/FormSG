@@ -1,10 +1,14 @@
-import { createContext, FC, useCallback, useContext, useState } from 'react'
+import { createContext, FC, useCallback, useContext } from 'react'
+import { useQueryClient } from 'react-query'
+
+import { LOGGED_IN_KEY } from '~constants/localStorage'
+import { useLocalStorage } from '~hooks/useLocalStorage'
+import * as AuthService from '~services/AuthService'
 
 type AuthContextProps = {
-  user?: any
-  isAuthenticated?: boolean
-  login: () => void
-  logout: () => void
+  sendLoginOtp: typeof AuthService.sendLoginOtp
+  verifyLoginOtp: (params: { otp: string; email: string }) => Promise<void>
+  logout: typeof AuthService.logout
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined)
@@ -34,14 +38,13 @@ export const useAuth = (): AuthContextProps => {
 const useProvideAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  const mockUser = {
-    name: 'Mock User',
-    email: 'mock@example.com',
-  }
-
-  const login = useCallback(() => {
-    setIsAuthenticated(true)
-  }, [setIsAuthenticated])
+  const verifyLoginOtp = useCallback(
+    async (params: { otp: string; email: string }) => {
+      await AuthService.verifyLoginOtp(params)
+      setIsLoggedIn(true)
+    },
+    [setIsLoggedIn],
+  )
 
   const logout = useCallback(() => {
     if (isAuthenticated) {
@@ -52,9 +55,8 @@ const useProvideAuth = () => {
 
   // Return the user object and auth methods
   return {
-    user: isAuthenticated ? mockUser : undefined,
-    isAuthenticated,
-    login,
+    sendLoginOtp: AuthService.sendLoginOtp,
+    verifyLoginOtp: verifyLoginOtp,
     logout,
   }
 }
