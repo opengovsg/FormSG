@@ -16,7 +16,17 @@
  * https://github.com/chakra-ui/chakra-ui/issues/4295
  */
 
-import { ChangeEventHandler, ReactNode, useRef, useState } from 'react'
+import {
+  ChangeEvent,
+  ChangeEventHandler,
+  KeyboardEvent,
+  ReactNode,
+  SyntheticEvent,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   Box,
   chakra,
@@ -76,6 +86,13 @@ export interface RadioProps
    * implementation, which previously did not allow overriding styles.
    */
   __css?: CSSObject
+
+  /**
+   * Function called when checked state of the input changes
+   * If provided, will be called with empty string when user attempts to
+   * deselect the radio.
+   */
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void
 }
 
 type RadioWithOthers = ComponentWithAs<'input', RadioProps> & {
@@ -127,7 +144,38 @@ export const Radio = forwardRef<RadioProps, 'input'>((props, ref) => {
 
   const checkboxProps = getCheckboxProps(otherProps)
   const inputProps = getInputProps({}, ref)
-  const labelProps = getLabelProps()
+
+  const handleSelect = useCallback(
+    (e: SyntheticEvent) => {
+      if (isChecked) {
+        e.preventDefault()
+        // Toggle off if onChange is given.
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        onChange?.({ target: { value: '' } })
+      }
+    },
+    [isChecked, onChange],
+  )
+
+  const handleSpacebar = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key !== ' ') return
+      if (isChecked) {
+        handleSelect(e)
+      }
+    },
+    [handleSelect, isChecked],
+  )
+
+  // Update labelProps to include props to allow deselection of radio value if
+  // available
+  const labelProps = useMemo(() => {
+    return getLabelProps({
+      onClick: handleSelect,
+      onKeyDown: handleSpacebar,
+    })
+  }, [getLabelProps, handleSelect, handleSpacebar])
 
   const rootStyles = {
     width: isFullWidth ? 'full' : undefined,
@@ -158,7 +206,7 @@ export const Radio = forwardRef<RadioProps, 'input'>((props, ref) => {
       {...layoutProps}
       // This is the adapted line of code which applies the internal label styles
       // to the whole container
-      {...getLabelProps()}
+      {...labelProps}
       __css={rootStyles}
     >
       <input className="chakra-radio__input" {...inputProps} />
@@ -168,11 +216,7 @@ export const Radio = forwardRef<RadioProps, 'input'>((props, ref) => {
         __css={checkboxStyles}
       />
       {children && (
-        <chakra.span
-          className="chakra-radio__label"
-          {...labelProps}
-          __css={labelStyles}
-        >
+        <chakra.span className="chakra-radio__label" __css={labelStyles}>
           {children}
         </chakra.span>
       )}

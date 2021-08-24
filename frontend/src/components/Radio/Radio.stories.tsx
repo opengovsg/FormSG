@@ -171,7 +171,7 @@ const PlaygroundTemplate: Story = ({
               // the setting of the ref on the first radio button, and
               // set a tabIndex property on the RadioGroup so it can be
               // focused.
-              if (!ans) return 'Answer is required'
+              if (!ans || !ans.value) return 'Answer is required'
               if (!ans.isOthers || !!ans.value) return true
               return 'Please specify Others'
             },
