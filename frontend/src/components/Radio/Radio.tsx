@@ -291,19 +291,6 @@ export const OthersInput = forwardRef<InputProps, 'input'>(
   },
 )
 
-/**
- * Return value of a radio group. This covers all possible edge
- * cases such as:
- * - Text is present in Others input, but "Others" radio button
- * is not selected (answer should be whichever radio button is selected)
- * - Text is present in Others input, "Others" radio button is
- * selected and text is identical to one of the non-Others option
- * (parent should be able to know that the answer is from the text input,
- * not one of the radio options)
- *
- */
-export type RadioGroupReturn = { value: string; isOthers: boolean }
-
 export interface OthersProps extends RadioProps {
   children: React.ReactNode
 }
