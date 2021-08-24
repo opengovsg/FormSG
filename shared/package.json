@@ -8,9 +8,9 @@
     "jszip": "^3.7.0",
     "libphonenumber-js": "^1.9.23",
     "lodash": "^4.17.21",
-    "type-fest": "^1.2.1",
+    "type-fest": "^1.2.3",
     "validator": "^13.6.0",
-    "zod": "^3.5.1"
+    "zod": "^3.6.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.28.2",
