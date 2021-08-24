@@ -28,10 +28,13 @@ export const authHandlers = [
       return res(ctx.status(200), ctx.json(`OTP sent to ${req.body.email}`))
     },
   ),
-  rest.post<{ email: string; otp: string }, UserDto>(
+  rest.post<{ email: string; otp: string }, UserDto | ErrorDto>(
     '/api/v3/auth/otp/verify',
     (req, res, ctx) => {
-      return res(ctx.status(200))
+      if (req.body.otp === '123456') {
+        return res(ctx.status(200))
+      }
+      return res(ctx.status(401))
     },
   ),
   rest.get<never, UserDto | ErrorDto>('/api/v3/user', (req, res, ctx) => {
