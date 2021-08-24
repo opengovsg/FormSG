@@ -1,17 +1,11 @@
 import { createContext, FC, useCallback, useContext } from 'react'
-import { useQuery, useQueryClient } from 'react-query'
-
-import { UserDto } from '~shared/types/user'
-
-import { fetchUser } from '~/services/UserService'
+import { useQueryClient } from 'react-query'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import * as AuthService from '~services/AuthService'
 
 type AuthContextProps = {
-  user?: UserDto
-  isLoading: boolean
   sendLoginOtp: typeof AuthService.sendLoginOtp
   verifyLoginOtp: (params: { otp: string; email: string }) => Promise<void>
   logout: typeof AuthService.logout
@@ -45,13 +39,6 @@ const useProvideAuth = () => {
   const [isLoggedIn, setIsLoggedIn] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const queryClient = useQueryClient()
 
-  const { data: user, isLoading } = useQuery<UserDto>(
-    'currentUser',
-    () => fetchUser(),
-    // 10 minutes staletime, do not need to retrieve so often.
-    { staleTime: 600000, enabled: !!isLoggedIn },
-  )
-
   const verifyLoginOtp = useCallback(
     async (params: { otp: string; email: string }) => {
       await AuthService.verifyLoginOtp(params)
@@ -71,8 +58,6 @@ const useProvideAuth = () => {
 
   // Return the user object and auth methods
   return {
-    user: isLoggedIn ? user : undefined,
-    isLoading,
     sendLoginOtp: AuthService.sendLoginOtp,
     verifyLoginOtp: verifyLoginOtp,
     logout,
