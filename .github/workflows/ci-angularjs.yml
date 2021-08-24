@@ -1,8 +1,12 @@
-name: CI
+name: CI (AngularJS)
 
 on:
   push:
   pull_request:
+    branches-ignore:
+      # Push events to branches matching refs/heads/form-v2
+      - 'form-v2'
+      - 'form-v2/**'
     types: [opened, reopened]
 
 jobs:
