@@ -11,6 +11,7 @@ interface FrontendInjectedVariables {
   sentryConfigUrl: string | null
   isSPMaintenance: string | null
   isCPMaintenance: string | null
+  myInfoBannerContent: string | null
   GATrackingID: string | null
   spcpCookieDomain: string | null
 }
@@ -31,6 +32,7 @@ export const injectedVariables: FrontendInjectedVariables = {
   sentryConfigUrl: formsgWindow.sentryConfigUrl ?? null,
   isSPMaintenance: formsgWindow.isSPMaintenance ?? null,
   isCPMaintenance: formsgWindow.isCPMaintenance ?? null,
+  myInfoBannerContent: formsgWindow.myInfoBannerContent ?? null,
   GATrackingID: formsgWindow.GATrackingID ?? null,
   spcpCookieDomain: formsgWindow.spcpCookieDomain ?? null,
 }

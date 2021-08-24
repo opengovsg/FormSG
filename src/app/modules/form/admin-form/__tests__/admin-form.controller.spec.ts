@@ -43,12 +43,10 @@ import { EditFieldActions } from 'src/shared/constants'
 import {
   AuthType,
   BasicField,
-  FormMetaView,
   FormSettings,
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
   IFieldSchema,
-  IForm,
   IFormDocument,
   IFormSchema,
   ILogicSchema,
@@ -57,18 +55,21 @@ import {
   IPopulatedForm,
   IPopulatedUser,
   IUserSchema,
+  LogicDto,
   PublicForm,
   ResponseMode,
   Status,
 } from 'src/types'
 import {
-  DuplicateFormBody,
+  AdminDashboardFormMetaDto,
+  CreateFormBodyDto,
+  DuplicateFormBodyDto,
   EditFormFieldParams,
   EncryptSubmissionDto,
   FieldCreateDto,
   FieldUpdateDto,
 } from 'src/types/api'
-import { GetFormFeedbackDto } from 'src/types/api/form_feedback'
+import { FormFeedbackMetaDto } from 'src/types/api/form_feedback'
 
 import {
   generateDefaultField,
@@ -77,6 +78,8 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import { smsConfig } from '../../../../config/features/sms.config'
+import * as SmsService from '../../../../services/sms/sms.service'
 import ParsedResponsesObject from '../../../submission/email-submission/ParsedResponsesObject.class'
 import * as UserService from '../../../user/user.service'
 import {
@@ -136,6 +139,8 @@ jest.mock('../../../user/user.service')
 const MockUserService = mocked(UserService)
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = mocked(MailService)
+jest.mock('../../../../services/sms/sms.service')
+const MockSmsService = mocked(SmsService)
 
 describe('admin-form.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -216,7 +221,7 @@ describe('admin-form.controller', () => {
       _id: new ObjectId(),
       title: 'mock title',
     } as IFormSchema
-    const MOCK_FORM_PARAMS: Omit<IForm, 'admin'> = {
+    const MOCK_FORM_PARAMS: CreateFormBodyDto = {
       responseMode: ResponseMode.Encrypt,
       publicKey: 'some public key',
       title: 'some form title',
@@ -394,7 +399,7 @@ describe('admin-form.controller', () => {
     const MOCK_USER = {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
-    } as IPopulatedUser
+    } as unknown as IPopulatedUser
     const MOCK_FORM = {
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
@@ -925,7 +930,7 @@ describe('admin-form.controller', () => {
     const MOCK_USER = {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
-    } as IPopulatedUser
+    } as unknown as IPopulatedUser
     const MOCK_FORM = {
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
@@ -2420,7 +2425,7 @@ describe('admin-form.controller', () => {
     it('should return 200 with feedback response successfully', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      const expectedFormFeedback: GetFormFeedbackDto = {
+      const expectedFormFeedback: FormFeedbackMetaDto = {
         count: 212,
         feedback: [
           {
@@ -3011,17 +3016,19 @@ describe('admin-form.controller', () => {
           _id: MOCK_USER_ID,
         },
       },
-      body: {} as DuplicateFormBody,
+      body: {} as DuplicateFormBodyDto,
     })
 
     it('should return duplicated form view on duplicate success', async () => {
       // Arrange
-      const expectedParams: DuplicateFormBody = {
+      const expectedParams: DuplicateFormBodyDto = {
         responseMode: ResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
       }
-      const mockDupedFormView = { title: 'mock view' } as FormMetaView
+      const mockDupedFormView = {
+        title: 'mock view',
+      } as AdminDashboardFormMetaDto
       const mockDupedForm = merge({}, MOCK_FORM, {
         title: 'duped form with new title',
         _id: new ObjectId(),
@@ -3087,7 +3094,7 @@ describe('admin-form.controller', () => {
 
     it('should return 404 when form to duplicate cannot be found', async () => {
       // Arrange
-      const expectedParams: DuplicateFormBody = {
+      const expectedParams: DuplicateFormBodyDto = {
         responseMode: ResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
@@ -3221,7 +3228,7 @@ describe('admin-form.controller', () => {
 
     it('should return 500 when database error occurs whilst duplicating form', async () => {
       // Arrange
-      const expectedParams: DuplicateFormBody = {
+      const expectedParams: DuplicateFormBodyDto = {
         responseMode: ResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
@@ -3442,19 +3449,19 @@ describe('admin-form.controller', () => {
           _id: MOCK_USER_ID,
         },
       },
-      body: {} as DuplicateFormBody,
+      body: {} as DuplicateFormBodyDto,
     })
 
     it('should return copied template form view on duplicate success', async () => {
       // Arrange
-      const expectedParams: DuplicateFormBody = {
+      const expectedParams: DuplicateFormBodyDto = {
         responseMode: ResponseMode.Email,
         emails: ['some-email@example.com'],
         title: 'mock new template title',
       }
       const mockDupedFormView = {
         title: 'mock template view',
-      } as FormMetaView
+      } as AdminDashboardFormMetaDto
       const mockDupedForm = merge({}, MOCK_FORM, {
         title: 'duped form with new title',
         _id: new ObjectId(),
@@ -3522,7 +3529,7 @@ describe('admin-form.controller', () => {
 
     it('should return 404 when form to duplicate cannot be found', async () => {
       // Arrange
-      const expectedParams: DuplicateFormBody = {
+      const expectedParams: DuplicateFormBodyDto = {
         responseMode: ResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
@@ -3670,7 +3677,7 @@ describe('admin-form.controller', () => {
 
     it('should return 500 when database error occurs whilst duplicating form', async () => {
       // Arrange
-      const expectedParams: DuplicateFormBody = {
+      const expectedParams: DuplicateFormBodyDto = {
         responseMode: ResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
@@ -6070,7 +6077,10 @@ describe('admin-form.controller', () => {
 
   describe('submitEncryptPreview', () => {
     const MOCK_RESPONSES = [
-      generateUnprocessedSingleAnswerResponse(BasicField.Email),
+      {
+        question: 'testQuestion',
+        ...generateUnprocessedSingleAnswerResponse(BasicField.Email),
+      },
     ]
     const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
     const MOCK_VERSION = 1
@@ -7942,7 +7952,7 @@ describe('admin-form.controller', () => {
       )
 
       MockAdminFormService.deleteFormLogic.mockReturnValue(
-        okAsync(MOCK_FORM as IFormSchema),
+        okAsync(MOCK_FORM as IFormDocument),
       )
     })
 
@@ -8297,7 +8307,7 @@ describe('admin-form.controller', () => {
     const MOCK_UPDATED_FORM = {
       ...MOCK_FORM,
       form_fields: [MOCK_FIELDS[0]],
-    } as IFormSchema
+    } as IFormDocument
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
@@ -9103,7 +9113,7 @@ describe('admin-form.controller', () => {
 
     const mockUpdatedLogic = {
       _id: logicId,
-    } as ILogicSchema
+    } as LogicDto
 
     const MOCK_FORM = {
       admin: MOCK_USER,
@@ -9467,6 +9477,264 @@ describe('admin-form.controller', () => {
     })
   })
 
+  describe('handleRemoveSelfFromCollaborators', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+
+    const MOCK_WRITER_ID = new ObjectId().toHexString()
+    const MOCK_WRITER = {
+      _id: MOCK_WRITER_ID,
+      email: 'mockwriter@example.com',
+    }
+
+    const MOCK_READER_ID = new ObjectId().toHexString()
+    const MOCK_READER = {
+      _id: MOCK_READER_ID,
+      email: 'mockreader@example.com',
+    }
+
+    const MOCK_RANDOM_USER_ID = new ObjectId().toHexString()
+    const MOCK_RANDOM_USER = {
+      _id: MOCK_RANDOM_USER_ID,
+      email: 'mockrandomuser@example.com',
+    }
+
+    const MOCK_COLLABORATORS = [
+      {
+        email: MOCK_READER.email,
+        write: false,
+      },
+      {
+        email: MOCK_WRITER.email,
+        write: true,
+      },
+    ]
+    const MOCK_COLLABORATORS_ONLY_READER = [
+      {
+        email: MOCK_READER.email,
+        write: false,
+      },
+    ]
+    const MOCK_COLLABORATORS_ONLY_WRITER = [
+      {
+        email: MOCK_WRITER.email,
+        write: true,
+      },
+    ]
+
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      permissionList: MOCK_COLLABORATORS,
+    } as IPopulatedForm
+
+    const MOCK_READER_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_READER_ID,
+        },
+      },
+    })
+    const MOCK_WRITER_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_WRITER_ID,
+        },
+      },
+    })
+    const MOCK_RANDOM_USER_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_RANDOM_USER_ID,
+        },
+      },
+    })
+
+    beforeEach(() => {
+      // Mock various services to return expected results.
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+    })
+    it('should return 200 when the current writer is removed successfully', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_WRITER))
+      MockAdminFormService.updateFormCollaborators.mockReturnValueOnce(
+        okAsync(MOCK_COLLABORATORS_ONLY_READER),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_WRITER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
+      expect(mockRes.json).toBeCalledWith(MOCK_COLLABORATORS_ONLY_READER)
+    })
+
+    it('should return 200 when the current reader is removed successfully', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_READER))
+      MockAdminFormService.updateFormCollaborators.mockReturnValueOnce(
+        okAsync(MOCK_COLLABORATORS_ONLY_WRITER),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_READER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
+      expect(mockRes.json).toBeCalledWith(MOCK_COLLABORATORS_ONLY_WRITER)
+    })
+
+    it('should return 403 when the user does not have sufficient permissions to update the form', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValue(
+        okAsync(MOCK_RANDOM_USER),
+      )
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(ERROR_MESSAGE)),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expectedResponse = { message: ERROR_MESSAGE }
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_RANDOM_USER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.FORBIDDEN)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when the form could not be found', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_WRITER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(ERROR_MESSAGE)),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expectedResponse = { message: ERROR_MESSAGE }
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_WRITER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 410 when the form has been archived', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_WRITER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(ERROR_MESSAGE)),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expectedResponse = { message: ERROR_MESSAGE }
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_WRITER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.GONE)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 when the session user could not be retrieved from the database', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(ERROR_MESSAGE)),
+      )
+      const expectedResponse = { message: ERROR_MESSAGE }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_RANDOM_USER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.UNPROCESSABLE_ENTITY)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when a database error occurs', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(ERROR_MESSAGE)),
+      )
+      const expectedResponse = { message: ERROR_MESSAGE }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleRemoveSelfFromCollaborators(
+        MOCK_RANDOM_USER_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(
+        MockAdminFormService.updateFormCollaborators,
+      ).not.toHaveBeenCalled()
+    })
+  })
+
   describe('handleGetFormCollaborators', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER_ID = new ObjectId().toHexString()
@@ -9803,6 +10071,144 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(MockAdminFormService.getFormField).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleGetFreeSmsCountForFormAdmin', () => {
+    const mockForm = {
+      admin: new ObjectId().toHexString(),
+    } as unknown as IFormSchema
+    const VERIFICATION_SMS_COUNT = 3
+
+    beforeAll(() => {
+      MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
+      MockSmsService.retrieveFreeSmsCounts.mockReturnValue(
+        okAsync(VERIFICATION_SMS_COUNT),
+      )
+    })
+
+    it('should retrieve sms counts and quota when the user and the form exist', async () => {
+      // Arrange
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: mockForm._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const expected = {
+        freeSmsCounts: VERIFICATION_SMS_COUNT,
+        quota: smsConfig.smsVerificationLimit,
+      }
+
+      // Act
+      await AdminFormController.handleGetFreeSmsCountForFormAdmin(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.json).toBeCalledWith(expected)
+    })
+
+    it('should return 404 when the form is not found in the database', async () => {
+      // Arrange
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: new ObjectId().toHexString(),
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+      MockFormService.retrieveFormById.mockReturnValueOnce(
+        errAsync(new FormNotFoundError()),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expected = {
+        message: 'Form not found',
+      }
+
+      // Act
+      await AdminFormController.handleGetFreeSmsCountForFormAdmin(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(404)
+      expect(mockRes.json).toBeCalledWith(expected)
+    })
+
+    it('should return 500 when a database error occurs during form retrieval', async () => {
+      // Arrange
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: mockForm._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const retrieveSpy = jest.spyOn(FormService, 'retrieveFormById')
+      retrieveSpy.mockReturnValueOnce(errAsync(new DatabaseError()))
+      const expected = {
+        message: 'Something went wrong. Please try again.',
+      }
+
+      // Act
+      await AdminFormController.handleGetFreeSmsCountForFormAdmin(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(500)
+      expect(mockRes.json).toBeCalledWith(expected)
+    })
+
+    it('should return 500 when a database error occurs during count retrieval', async () => {
+      // Arrange
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: mockForm._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const retrieveSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
+      retrieveSpy.mockReturnValueOnce(errAsync(new DatabaseError()))
+      const expected = {
+        message: 'Something went wrong. Please try again.',
+      }
+
+      // Act
+      await AdminFormController.handleGetFreeSmsCountForFormAdmin(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(500)
+      expect(mockRes.json).toBeCalledWith(expected)
     })
   })
 })

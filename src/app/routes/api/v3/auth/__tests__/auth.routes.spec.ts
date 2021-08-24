@@ -356,7 +356,7 @@ describe('auth.routes', () => {
       expect(response.status).toEqual(400)
       expect(response.body).toEqual(
         buildCelebrateError({
-          body: { key: 'otp', message: 'Please enter a valid otp' },
+          body: { key: 'otp', message: 'Please enter a valid OTP' },
         }),
       )
     })
@@ -372,7 +372,7 @@ describe('auth.routes', () => {
       expect(response.status).toEqual(400)
       expect(response.body).toEqual(
         buildCelebrateError({
-          body: { key: 'otp', message: 'Please enter a valid otp' },
+          body: { key: 'otp', message: 'Please enter a valid OTP' },
         }),
       )
     })

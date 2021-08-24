@@ -1,7 +1,5 @@
-import { useMemo } from 'react'
 import { BiX } from 'react-icons/bi'
 import ReactMarkdown from 'react-markdown'
-import { Components } from 'react-markdown/src/ast-to-react'
 import {
   Box,
   CloseButton,
@@ -12,19 +10,21 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
-import { BxsInfoCircle } from '~assets/icons/BxsInfoCircle'
-import { BannerVariant } from '~theme/components/Banner'
+import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
 
-import Link from '../Link'
+import { BannerVariant } from '~theme/components/Banner'
+import { useMdComponents } from '~hooks/useMdComponents'
 
 export interface BannerProps {
   variant?: BannerVariant
   children: string
+  useMarkdown: boolean
 }
 
 export const Banner = ({
   variant = 'info',
   children,
+  useMarkdown = false,
 }: BannerProps): JSX.Element => {
   const { isOpen, onToggle } = useDisclosure({
     defaultIsOpen: true,
@@ -32,26 +32,24 @@ export const Banner = ({
 
   const styles = useMultiStyleConfig('Banner', { variant })
 
-  const mdComponents: Components = useMemo(
-    () => ({
-      a: (props) => {
-        const { href } = props
-        const isExternal =
-          typeof href === 'string' && !href.startsWith(window.location.origin)
-
-        return <Link {...props} isExternal={isExternal} sx={styles.link} />
-      },
-    }),
-    [styles.link],
-  )
+  const mdComponents = useMdComponents(styles)
 
   return (
     <Collapse in={isOpen} animateOpacity>
       <Box __css={styles.banner}>
         <Flex sx={styles.item}>
           <Flex>
-            <Icon as={BxsInfoCircle} __css={styles.icon} />
-            <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
+            <Icon
+              as={variant === 'info' ? BxsInfoCircle : BxsErrorCircle}
+              __css={styles.icon}
+            />
+            {useMarkdown ? (
+              <ReactMarkdown components={mdComponents}>
+                {children}
+              </ReactMarkdown>
+            ) : (
+              children
+            )}
           </Flex>
           {variant === 'info' && (
             <CloseButton

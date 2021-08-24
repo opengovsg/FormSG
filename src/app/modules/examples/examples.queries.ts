@@ -290,6 +290,7 @@ export const projectFormDetails: Record<string, unknown>[] = [
       logo: '$agencyInfo.logo',
       agency: '$agencyInfo.shortName',
       colorTheme: '$formInfo.startPage.colorTheme',
+      authType: '$formInfo.authType',
     },
   },
 ]
@@ -323,6 +324,7 @@ export const selectAndProjectCardInfo = (
       agency: '$agencyInfo.shortName',
       colorTheme: '$formInfo.startPage.colorTheme',
       avgFeedback: { $avg: '$formFeedbackInfo.rating' },
+      authType: '$formInfo.authType',
     },
   },
 ]
@@ -334,7 +336,7 @@ export const selectAndProjectCardInfo = (
  * If this aggregation step is used by the Submission collection, the key value
  * would be `form`. \
  * If used with the FormStatisticsTotal collection, the key
- * value would be `formId`. See ISubmission['form'] and
+ * value would be `formId`. See ISubmissionSchema['form'] and
  * IFormStatisticsTotal['formId'].
  *
  * @param key The key of the formId to be retrieved from.

@@ -1,4 +1,4 @@
-import BSON from 'bson-ext'
+import BSON, { ObjectId } from 'bson-ext'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   Mongoose,
@@ -9,16 +9,26 @@ import mongoose, {
 } from 'mongoose'
 import validator from 'validator'
 
-import { reorder } from '../../shared/util/immutable-array-fns'
+import { MB } from '../../../shared/constants/file'
+import {
+  ADMIN_FORM_META_FIELDS,
+  EMAIL_FORM_SETTINGS_FIELDS,
+  EMAIL_PUBLIC_FORM_FIELDS,
+  STORAGE_FORM_SETTINGS_FIELDS,
+  STORAGE_PUBLIC_FORM_FIELDS,
+} from '../../../shared/constants/form'
+import { reorder } from '../../../shared/utils/immutable-array-fns'
+import { getApplicableIfStates } from '../../shared/util/logic'
 import {
   AuthType,
   BasicField,
   Colors,
+  EmailFormSettings,
   EndPage,
   FormField,
   FormFieldWithId,
+  FormLogicSchema,
   FormLogoState,
-  FormMetaView,
   FormOtpData,
   FormSettings,
   IEmailFormModel,
@@ -29,19 +39,21 @@ import {
   IFormDocument,
   IFormModel,
   IFormSchema,
+  ILogicSchema,
   IPopulatedForm,
+  LogicConditionState,
   LogicDto,
   LogicType,
   Permission,
   PickDuplicateForm,
   PublicForm,
-  PublicFormValues,
   ResponseMode,
   StartPage,
   Status,
+  StorageFormSettings,
 } from '../../types'
+import { AdminDashboardFormMetaDto } from '../../types/api/form'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
-import { MB } from '../constants/filesize'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
@@ -78,35 +90,6 @@ import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
 import getUserModel from './user.server.model'
 
 export const FORM_SCHEMA_ID = 'Form'
-
-// Exported for testing.
-export const FORM_PUBLIC_FIELDS: (keyof PublicFormValues)[] = [
-  'admin',
-  'authType',
-  'endPage',
-  'esrvcId',
-  'form_fields',
-  'form_logics',
-  'hasCaptcha',
-  'publicKey',
-  'startPage',
-  'status',
-  'title',
-  '_id',
-  'responseMode',
-]
-
-export const FORM_SETTING_FIELDS: (keyof FormSettings)[] = [
-  'authType',
-  'emails',
-  'esrvcId',
-  'hasCaptcha',
-  'inactiveMessage',
-  'status',
-  'submissionLimit',
-  'title',
-  'webhook',
-]
 
 const bson = new BSON([
   BSON.Binary,
@@ -208,7 +191,67 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             'Check that your form is MyInfo-authenticated, is an email mode form and has 30 or fewer MyInfo fields.',
         },
       },
-      form_logics: [LogicSchema],
+      form_logics: {
+        type: [LogicSchema],
+        validate: {
+          validator(this: IFormSchema, v: ILogicSchema[]) {
+            /**
+             * A validatable condition is incomplete if there is a possibility
+             * that its fieldType is null, which is a sign that a condition's
+             * field property references a non-existent form_field.
+             */
+            type IncompleteValidatableCondition = {
+              state: LogicConditionState
+              fieldType?: BasicField
+            }
+
+            /**
+             * A condition object is said to be validatable if it contains the two
+             * necessary for validation: fieldType and state
+             */
+            type ValidatableCondition = IncompleteValidatableCondition & {
+              fieldType: BasicField
+            }
+
+            const isConditionReferencesExistingField = (
+              condition: IncompleteValidatableCondition,
+            ): condition is ValidatableCondition => !!condition.fieldType
+
+            const conditions = v.flatMap((logic) => {
+              return logic.conditions.map<IncompleteValidatableCondition>(
+                (condition) => {
+                  const {
+                    field,
+                    state,
+                  }: { field: ObjectId | string; state: LogicConditionState } =
+                    condition
+                  return {
+                    state,
+                    fieldType: this.form_fields?.find(
+                      (f: IFieldSchema) => String(f._id) === String(field),
+                    )?.fieldType,
+                  }
+                },
+              )
+            })
+
+            return conditions.every((condition) => {
+              /**
+               * Form fields can get deleted by form admins, which causes logic
+               * conditions to reference invalid fields. Here we bypass validation
+               * and allow these conditions to be saved, so we don't make life
+               * difficult for form admins.
+               */
+              if (!isConditionReferencesExistingField(condition)) return true
+
+              const { fieldType, state } = condition
+              const applicableIfStates = getApplicableIfStates(fieldType)
+              return applicableIfStates.includes(state)
+            })
+          },
+          message: 'Form logic condition validation failed.',
+        },
+      },
 
       admin: {
         type: Schema.Types.ObjectId,
@@ -295,12 +338,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           // Do not allow authType to be changed if form is published
           if (this.authType !== v && this.status === Status.Public) {
             return this.authType
+            // Singpass/Corppass authentication is available for both email
+            // and storage mode
+            // Important - this case must come before the MyInfo/SGID + storage
+            // mode case, or else we may accidentally set Singpass/Corppass storage
+            // mode forms to AuthType.NIL
+          } else if ([AuthType.SP, AuthType.CP].includes(v)) {
+            return v
           } else if (
             this.responseMode === ResponseMode.Encrypt &&
-            v === AuthType.MyInfo
+            // SGID and MyInfo are not available for storage mode
+            (v === AuthType.MyInfo || v === AuthType.SGID)
           ) {
-            // Do not allow storage mode to have MyInfo authentication
-            return this.authType
+            return AuthType.NIL
           } else {
             return v
           }
@@ -340,10 +390,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       esrvcId: {
         type: String,
         required: false,
-        validate: [
-          /^([a-zA-Z0-9-]){1,25}$/i,
-          'e-service ID must be alphanumeric, dashes are allowed',
-        ],
+        validate: [/^\S*$/i, 'e-service ID must not contain whitespace'],
       },
 
       webhook: {
@@ -441,16 +488,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormLogicPath.discriminator(LogicType.PreventSubmit, PreventSubmitLogicSchema)
 
   // Methods
-  FormSchema.methods.getDashboardView = function (admin: IPopulatedUser) {
-    return {
-      _id: this._id,
-      title: this.title,
-      status: this.status,
-      lastModified: this.lastModified,
-      responseMode: this.responseMode,
-      admin,
-    }
-  }
 
   // Method to return myInfo attributes
   FormSchema.methods.getUniqueMyInfoAttrs = function () {
@@ -479,21 +516,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return { ...newForm, ...overrideProps }
   }
 
-  FormSchema.methods.getPublicView = function (): PublicForm {
-    const basePublicView = pick(this, FORM_PUBLIC_FIELDS) as PublicFormValues
-
-    // Return non-populated public fields of form if not populated.
-    if (!this.populated('admin')) {
-      return basePublicView
-    }
-
-    // Populated, return public view with user's public view.
-    return {
-      ...basePublicView,
-      admin: (this.admin as IUserSchema).getPublicView(),
-    }
-  }
-
   // Archives form.
   FormSchema.methods.archive = function () {
     // Return instantly when form is already archived.
@@ -507,8 +529,44 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   const FormDocumentSchema = FormSchema as unknown as Schema<IFormDocument>
 
+  FormDocumentSchema.methods.getDashboardView = function (
+    admin: IPopulatedUser,
+  ) {
+    return {
+      _id: this._id,
+      title: this.title,
+      status: this.status,
+      lastModified: this.lastModified,
+      responseMode: this.responseMode,
+      admin,
+    }
+  }
+
   FormDocumentSchema.methods.getSettings = function (): FormSettings {
-    return pick(this, FORM_SETTING_FIELDS)
+    const formSettings =
+      this.responseMode === ResponseMode.Encrypt
+        ? (pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings)
+        : (pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings)
+
+    return formSettings
+  }
+
+  FormDocumentSchema.methods.getPublicView = function (): PublicForm {
+    const basePublicView =
+      this.responseMode === ResponseMode.Encrypt
+        ? (pick(this, STORAGE_PUBLIC_FORM_FIELDS) as PublicForm)
+        : (pick(this, EMAIL_PUBLIC_FORM_FIELDS) as PublicForm)
+
+    // Return non-populated public fields of form if not populated.
+    if (!this.populated('admin')) {
+      return basePublicView
+    }
+
+    // Populated, return public view with user's public view.
+    return {
+      ...basePublicView,
+      admin: (this.admin as IUserSchema).getPublicView(),
+    }
   }
 
   // Transfer ownership of the form to another user
@@ -639,10 +697,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return form.save()
   }
 
-  FormSchema.statics.getMetaByUserIdOrEmail = async function (
+  FormDocumentSchema.statics.getMetaByUserIdOrEmail = async function (
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
-  ): Promise<FormMetaView[]> {
+  ): Promise<AdminDashboardFormMetaDto[]> {
     return (
       this.find()
         // List forms when either the user is an admin or collaborator.
@@ -655,7 +713,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         // selection is made for explicitness.
         // `_id` is also returned regardless and selection is made for
         // explicitness.
-        .select('_id title admin lastModified status responseMode')
+        .select(ADMIN_FORM_META_FIELDS.join(' '))
         .sort('-lastModified')
         .populate({
           path: 'admin',
@@ -690,14 +748,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     formId: string,
     createLogicBody: LogicDto,
   ): Promise<IFormSchema | null> {
-    return this.findByIdAndUpdate(
-      formId,
-      { $push: { form_logics: createLogicBody } },
-      {
-        new: true,
-        runValidators: true,
-      },
-    ).exec()
+    const form = await this.findById(formId).exec()
+    if (!form?.form_logics) return null
+    const newLogic = (
+      form.form_logics as Types.DocumentArray<FormLogicSchema>
+    ).create(createLogicBody)
+    form.form_logics.push(newLogic)
+    return form.save()
   }
 
   // Deletes specified form field by id.
@@ -718,17 +775,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     logicId: string,
     updatedLogic: LogicDto,
   ): Promise<IFormSchema | null> {
-    return this.findByIdAndUpdate(
-      formId,
-      {
-        $set: { 'form_logics.$[object]': updatedLogic },
-      },
-      {
-        arrayFilters: [{ 'object._id': logicId }],
-        new: true,
-        runValidators: true,
-      },
-    ).exec()
+    let form = await this.findById(formId).exec()
+    if (!form?.form_logics) return null
+    const index = form.form_logics.findIndex(
+      (logic) => String(logic._id) === logicId,
+    )
+    form = form.set(`form_logics.${index}`, updatedLogic, {
+      new: true,
+    })
+    return form.save()
   }
 
   FormSchema.statics.updateEndPageById = async function (

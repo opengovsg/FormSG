@@ -80,7 +80,7 @@ AuthRouter.post(
       otp: Joi.string()
         .required()
         .regex(/^\d{6}$/)
-        .message('Please enter a valid otp'),
+        .message('Please enter a valid OTP'),
     }),
   }),
   AuthController.handleLoginVerifyOtp,

@@ -6,6 +6,7 @@ import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import {
+  AuthType,
   IAgencySchema,
   IFormFeedbackSchema,
   IFormSchema,
@@ -88,6 +89,7 @@ const prepareTestData = async (
     // surface.
     status: Status.Public,
     isListed: true,
+    authType: AuthType.NIL,
   }
 
   // Populate forms in database with prespecified number of times.
@@ -207,6 +209,7 @@ const prepareTestData = async (
       timeText: 'less than 1 day ago',
       lastSubmission: expect.anything(),
       title: form.title,
+      authType: form.authType,
     }))
   }
 

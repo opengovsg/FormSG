@@ -1,4 +1,4 @@
-import { getReasonPhrase, StatusCodes } from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 
 import { MapRouteError } from 'src/types'
 
@@ -33,7 +33,7 @@ export const mapRouteError = (
     case FormErrors.FormDeletedError:
       return {
         statusCode: StatusCodes.GONE,
-        errorMessage: getReasonPhrase(StatusCodes.GONE),
+        errorMessage: error.message,
       }
     case FormErrors.PrivateFormError:
       return {

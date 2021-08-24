@@ -80,7 +80,7 @@ function examplesCardController(
    */
 
   $scope.useTemplate = function () {
-    const missingBetaPermissions = BetaService.getMissingFieldPermissions(
+    const missingBetaPermissions = BetaService.getMissingBetaPermissions(
       $scope.user,
       $scope.form,
     )

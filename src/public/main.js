@@ -173,6 +173,7 @@ require('./modules/forms/admin/controllers/pop-up-modal.client.controller.js')
 
 // forms admin directives
 require('./modules/forms/admin/directives/settings-form.client.directive.js')
+require('./modules/forms/admin/directives/validate-form-emails-input.directive.js')
 require('./modules/forms/admin/directives/edit-form.client.directive.js')
 require('./modules/forms/admin/directives/is-verifiable-save-interceptor.directive.js')
 require('./modules/forms/admin/directives/validate-email-domain-from-text.directive.js')

@@ -5,17 +5,19 @@ declare global {
     export interface Request {
       id?: string
     }
+  }
+}
 
-    export interface Session {
-      user?: {
-        _id: IUserSchema['_id']
-      }
+declare module 'express-session' {
+  export interface SessionData {
+    user?: {
+      _id: IUserSchema['_id']
     }
+  }
 
-    export interface AuthedSession extends Session {
-      user: {
-        _id: IUserSchema['_id']
-      }
+  export interface AuthedSessionData extends SessionData {
+    user: {
+      _id: IUserSchema['_id']
     }
   }
 }
