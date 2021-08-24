@@ -9,6 +9,15 @@ import { TabList } from './TabList'
 export default {
   title: 'Components/Tabs',
   component: Tabs,
+  parameters: {
+    backgrounds: {
+      default: 'tabs-light',
+      values: [
+        // secondary.100
+        { name: 'tabs-light', value: '#F5F6F8' },
+      ],
+    },
+  },
 } as Meta
 
 const TabTemplate: Story<TabsProps> = (args) => {
@@ -27,9 +36,6 @@ export const LightTab = TabTemplate.bind({})
 LightTab.args = {
   variant: 'line-light',
 }
-LightTab.parameters = {
-  backgrounds: { default: 'light' },
-}
 
 export const DarkTab = TabTemplate.bind({})
 DarkTab.args = {
@@ -45,7 +51,6 @@ WithScrollingLight.parameters = {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
-  backgrounds: { default: 'light' },
 }
 
 export const WithScrollingDark = TabTemplate.bind({})
