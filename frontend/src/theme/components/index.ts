@@ -1,5 +1,6 @@
 import { RATING_THEME_KEY, RatingField } from './Field/Rating'
 import { YESNO_THEME_KEY, YesNoField } from './Field/YesNo'
+import { Badge } from './Badge'
 import { Banner } from './Banner'
 import { Button } from './Button'
 import { Form } from './Form'
@@ -15,6 +16,7 @@ import { Textarea } from './Textarea'
 import { Toast } from './Toast'
 
 export const components = {
+  Badge,
   Banner,
   Button,
   Form,
