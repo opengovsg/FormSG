@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useMemo } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { FormControl, SimpleGrid, Text, VStack } from '@chakra-ui/react'
@@ -11,7 +10,7 @@ import Button from '../Button'
 import FormErrorMessage from '../FormControl/FormErrorMessage'
 import FormLabel from '../FormControl/FormLabel'
 
-import { OthersInput, Radio, RadioGroupReturn, RadioProps } from './Radio'
+import { OthersInput, Radio, RadioProps } from './Radio'
 
 export default {
   title: 'Components/Radio',

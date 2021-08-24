@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * This file is a slightly modified version of Chakra UI's internal Radio
  * implementation, which can be found here:
@@ -21,7 +20,6 @@ import {
   ChangeEvent,
   ChangeEventHandler,
   KeyboardEvent,
-  ReactNode,
   SyntheticEvent,
   useCallback,
   useEffect,
