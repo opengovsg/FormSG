@@ -123,7 +123,7 @@ function configureMobileDirective() {
                     description: `
                     We provide ${$scope.smsVerificationLimit} free SMS OTP verifications per account, only counting owned forms. 
 
-                    Once this limit is reached, SMS OTP verification will be automatically disabled for all owned forms. 
+                    Once this limit is reached, SMS OTP verification will be automatically disabled for all owned forms. Forms with Twilio already set up will not be affected.
 
                     <br></br>
 

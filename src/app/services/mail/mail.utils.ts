@@ -12,11 +12,12 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { MailGenerationError, MailSendError } from './mail.errors'
 import {
   AdminSmsDisabledData,
+  AdminSmsWarningData,
   AutoreplyHtmlData,
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
   CollabSmsDisabledData,
-  SmsVerificationWarningData,
+  CollabSmsWarningData,
   SubmissionToAdminHtmlData,
 } from './mail.types'
 
@@ -187,9 +188,16 @@ export const generateSmsVerificationDisabledHtmlForCollab = (
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
-export const generateSmsVerificationWarningHtml = (
-  htmlData: SmsVerificationWarningData,
+export const generateSmsVerificationWarningHtmlForAdmin = (
+  htmlData: AdminSmsWarningData,
 ): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-warning.view.html`
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-warning-admin.view.html`
+  return safeRenderFile(pathToTemplate, htmlData)
+}
+
+export const generateSmsVerificationWarningHtmlForCollab = (
+  htmlData: CollabSmsWarningData,
+): ResultAsync<string, MailGenerationError> => {
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-warning-collab.view.html`
   return safeRenderFile(pathToTemplate, htmlData)
 }

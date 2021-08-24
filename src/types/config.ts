@@ -43,6 +43,7 @@ export type MailConfig = {
   mailer: {
     from: string
   }
+  official: string
   transporter: Mail
 }
 
@@ -132,6 +133,7 @@ export interface IOptionalVarsSchema {
   }
   mail: {
     from: string
+    official: string
     logger: boolean
     debug: boolean
     bounceLifeSpan: number

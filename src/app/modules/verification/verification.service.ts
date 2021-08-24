@@ -7,6 +7,7 @@ import {
 } from '../../../../shared/utils/verification'
 import {
   BasicField,
+  IFormSchema,
   IPopulatedForm,
   IVerificationFieldSchema,
   IVerificationSchema,
@@ -39,6 +40,7 @@ import {
   MissingHashDataError,
   NonVerifiedFieldTypeError,
   OtpExpiredError,
+  OtpRequestError,
   OtpRetryExceededError,
   TransactionExpiredError,
   TransactionNotFoundError,
@@ -301,6 +303,7 @@ export const sendNewOtp = ({
   | InvalidNumberError
   | MailSendError
   | NonVerifiedFieldTypeError
+  | OtpRequestError
 > => {
   return getValidTransaction(transactionId).andThen((transaction) => {
     const logMeta = {
@@ -474,12 +477,20 @@ const sendOtpForField = (
   | InvalidNumberError
   | MailSendError
   | NonVerifiedFieldTypeError
+  | OtpRequestError
 > => {
-  const { fieldType } = field
+  const { fieldType, _id: fieldId } = field
   switch (fieldType) {
     case BasicField.Mobile:
-      // call sms - it should validate the recipient
-      return SmsFactory.sendVerificationOtp(recipient, otp, formId)
+      return fieldId
+        ? FormService.retrieveFormById(formId)
+            // check if we should allow public user to request for otp
+            .andThen((form) => shouldGenerateMobileOtp(form, fieldId))
+            // call sms - it should validate the recipient
+            .andThen(() =>
+              SmsFactory.sendVerificationOtp(recipient, otp, formId),
+            )
+        : errAsync(new MalformedParametersError('Field id not present'))
     case BasicField.Email:
       // call email - it should validate the recipient
       return MailService.sendVerificationOtp(recipient, otp)
@@ -545,4 +556,23 @@ const checkSmsCountAndPerformAction = (
   }
 
   return okAsync(true)
+}
+
+/**
+ * Check whether the field in the form is verifiable.
+ * If it is not, then we don't need to generate an OTP.
+ */
+export const shouldGenerateMobileOtp = (
+  { form_fields }: Pick<IFormSchema, 'form_fields'>,
+  fieldId: string,
+): ResultAsync<true, OtpRequestError> => {
+  const isVerifiableMobileField =
+    !!form_fields &&
+    form_fields.filter(
+      ({ _id, isVerifiable }) => fieldId === String(_id) && isVerifiable,
+    ).length > 0
+
+  return isVerifiableMobileField
+    ? okAsync(true)
+    : errAsync(new OtpRequestError())
 }

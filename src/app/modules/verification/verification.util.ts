@@ -13,6 +13,10 @@ import {
 } from '../../../types'
 import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
+import {
+  OtpRequestError,
+  SmsLimitExceededError,
+} from '../../modules/verification/verification.errors'
 import { MailSendError } from '../../services/mail/mail.errors'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { HashingError } from '../../utils/hash'
@@ -190,6 +194,13 @@ export const mapRouteError: MapRouteError = (
       return {
         errorMessage: coreErrorMsg,
         statusCode: StatusCodes.NOT_FOUND,
+      }
+    case SmsLimitExceededError:
+    case OtpRequestError:
+      return {
+        errorMessage:
+          'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
+        statusCode: StatusCodes.BAD_REQUEST,
       }
     case HashingError:
     case DatabaseError:

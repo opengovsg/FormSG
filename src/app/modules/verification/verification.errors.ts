@@ -93,3 +93,14 @@ export class SmsLimitExceededError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Public user attempts to request for an OTP on a form without OTP enabled.
+ */
+export class OtpRequestError extends ApplicationError {
+  constructor(
+    message = 'Please ensure that the form you are trying to request OTP for has the feature enabled.',
+  ) {
+    super(message)
+  }
+}

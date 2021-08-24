@@ -28,6 +28,7 @@ import {
   NonVerifiedFieldTypeError,
   OtpExpiredError,
   OtpRetryExceededError,
+  SmsLimitExceededError,
   TransactionExpiredError,
   TransactionNotFoundError,
   WaitForOtpError,
@@ -613,7 +614,6 @@ describe('Verification controller', () => {
         fieldId: MOCK_FIELD_ID,
       },
     })
-
     const MOCK_FORM = {
       admin: {
         _id: new ObjectId(),
@@ -639,6 +639,9 @@ describe('Verification controller', () => {
       )
       MockVerificationService.sendNewOtp.mockReturnValue(
         okAsync(mockTransaction),
+      )
+      MockVerificationService.shouldGenerateMobileOtp.mockReturnValue(
+        okAsync(true),
       )
     })
 
@@ -833,6 +836,28 @@ describe('Verification controller', () => {
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 400 when sms limit has been exceeded and the form is not onboarded', async () => {
+      // Arrange
+      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+        errAsync(new SmsLimitExceededError()),
+      )
+      const expected = {
+        message:
+          'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toBeCalledWith(expected)
     })
 
     it('should return 400 when field type is not verifiable', async () => {

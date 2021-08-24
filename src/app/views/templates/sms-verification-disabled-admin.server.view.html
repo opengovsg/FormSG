@@ -4,8 +4,7 @@
   <body>
     <p>Dear form admin,</p>
     <p>
-      You are receiving this email as you own forms with SMS OTP verification
-      enabled:
+      You own forms with free SMS OTP verification on a Mobile Number field:
     </p>
     <ol>
       <% forms.forEach(function({title, link}) { %>
@@ -13,11 +12,14 @@
       <% }) %>
     </ol>
     <p>
-      As you have reached the free tier limit of <%= smsVerificationLimit %>
-      verifications sent, SMS OTP verification has been
-      <b>automatically disabled</b> on all your form(s). Respondents will still
-      be able to submit to your form(s) but will not be prompted to verify their
-      mobile numbers.
+      <b>
+        As you have reached the free tier limit of <%= smsVerificationLimit %>
+        per account, SMS OTP verification has been automatically disabled on all
+        forms you own.
+      </b>
+      Forms with Twilio already set up will not be affected. Respondents will
+      still be able to submit to your forms but will not be prompted to verify
+      their mobile numbers
     </p>
 
     <p>
