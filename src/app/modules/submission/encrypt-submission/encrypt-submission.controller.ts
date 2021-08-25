@@ -119,12 +119,12 @@ const submitEncryptModeForm: ControllerHandler<
       meta: logMeta,
       error: formPublicResult.error,
     })
-    const { statusCode } = mapRouteError(formPublicResult.error)
+    const { statusCode, errorMessage } = mapRouteError(formPublicResult.error)
     if (statusCode === StatusCodes.GONE) {
       return res.sendStatus(statusCode)
     } else {
       return res.status(statusCode).json({
-        message: form.inactiveMessage,
+        message: errorMessage,
       })
     }
   }

@@ -82,3 +82,25 @@ export class NonVerifiedFieldTypeError extends ApplicationError {
     )
   }
 }
+
+/**
+ * Agency user has sent too many SMSes using default Twilio credentials
+ */
+export class SmsLimitExceededError extends ApplicationError {
+  constructor(
+    message = 'You have exceeded the free sms limit. Please refresh and try again.',
+  ) {
+    super(message)
+  }
+}
+
+/**
+ * Public user attempts to request for an OTP on a form without OTP enabled.
+ */
+export class OtpRequestError extends ApplicationError {
+  constructor(
+    message = 'Please ensure that the form you are trying to request OTP for has the feature enabled.',
+  ) {
+    super(message)
+  }
+}

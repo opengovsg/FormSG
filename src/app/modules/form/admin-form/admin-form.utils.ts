@@ -28,6 +28,7 @@ import {
 } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
 import { MissingUserError } from '../../user/user.errors'
+import { SmsLimitExceededError } from '../../verification/verification.errors'
 import {
   ForbiddenFormError,
   FormDeletedError,
@@ -63,6 +64,11 @@ export const mapRouteError = (
   coreErrorMessage?: string,
 ): ErrorResponseData => {
   switch (error.constructor) {
+    case SmsLimitExceededError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage: error.message,
+      }
     case InvalidFileTypeError:
     case CreatePresignedUrlError:
       return {

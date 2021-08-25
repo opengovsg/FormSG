@@ -181,6 +181,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 'donotreply@mail.form.gov.sg',
       env: 'MAIL_FROM',
     },
+    official: {
+      doc: 'Official email address to reply to',
+      format: 'email',
+      default: 'form@open.gov.sg',
+      env: 'MAIL_OFFICIAL',
+    },
     logger: {
       doc: 'If set to true then logs to console',
       format: 'Boolean',

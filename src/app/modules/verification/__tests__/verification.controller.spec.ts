@@ -3,6 +3,7 @@ import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
+import { WAIT_FOR_OTP_SECONDS } from 'shared/utils/verification'
 import { mocked } from 'ts-jest/utils'
 
 import { MailSendError } from 'src/app/services/mail/mail.errors'
@@ -12,11 +13,10 @@ import {
 } from 'src/app/services/sms/sms.errors'
 import { HashingError } from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
-import { IFormSchema, IVerificationSchema } from 'src/types'
+import { IFormSchema, IPopulatedForm, IVerificationSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { WAIT_FOR_OTP_SECONDS } from '../../../../../shared/utils/verification'
 import expressHandler from '../../../../../tests/unit/backend/helpers/jest-express'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
@@ -28,6 +28,7 @@ import {
   NonVerifiedFieldTypeError,
   OtpExpiredError,
   OtpRetryExceededError,
+  SmsLimitExceededError,
   TransactionExpiredError,
   TransactionNotFoundError,
   WaitForOtpError,
@@ -613,10 +614,21 @@ describe('Verification controller', () => {
         fieldId: MOCK_FIELD_ID,
       },
     })
+    const MOCK_FORM = {
+      admin: {
+        _id: new ObjectId(),
+      },
+      title: 'i am a form',
+      _id: new ObjectId(),
+      permissionList: [{ email: 'former@forms.sg' }],
+    } as IPopulatedForm
 
     beforeEach(() => {
       MockFormService.retrieveFormById.mockReturnValue(
         okAsync({} as IFormSchema),
+      )
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
       )
 
       MockOtpUtils.generateOtpWithHash.mockReturnValue(
@@ -628,9 +640,17 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValue(
         okAsync(mockTransaction),
       )
+      MockVerificationService.shouldGenerateMobileOtp.mockReturnValue(
+        okAsync(true),
+      )
     })
 
     it('should return 201 when params are valid', async () => {
+      // Arrange
+      MockVerificationService.processAdminSmsCounts.mockReturnValueOnce(
+        okAsync(true),
+      )
+
       // Act
       await VerificationController._handleGenerateOtp(
         MOCK_REQ,
@@ -650,6 +670,9 @@ describe('Verification controller', () => {
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
       })
+      expect(
+        MockVerificationService.processAdminSmsCounts,
+      ).toHaveBeenCalledWith(MOCK_FORM)
       expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
@@ -813,6 +836,28 @@ describe('Verification controller', () => {
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 400 when sms limit has been exceeded and the form is not onboarded', async () => {
+      // Arrange
+      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+        errAsync(new SmsLimitExceededError()),
+      )
+      const expected = {
+        message:
+          'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toBeCalledWith(expected)
     })
 
     it('should return 400 when field type is not verifiable', async () => {

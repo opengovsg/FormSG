@@ -119,7 +119,8 @@ const errorMapper: MapRouteError = (
     case PrivateFormError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: error.message,
+        errorMessage:
+          'This form has been taken down. For assistance, please contact the person who asked you to fill in this form.',
       }
     case CaptchaConnectionError:
       return {
