@@ -1,15 +1,14 @@
 import axios from 'axios'
-import { ObjectId } from 'bson'
 import { mocked } from 'ts-jest/utils'
 
-import { FormAuthType } from '../../../types'
+import { FormAuthType } from '../../../../shared/types'
 import * as PublicFormAuthService from '../PublicFormAuthService'
 
 jest.mock('axios')
 const MockAxios = mocked(axios, true)
 
 const MOCK_REDIRECT_URL = 'redirectURL'
-const MOCK_FORM_ID = new ObjectId().toHexString()
+const MOCK_FORM_ID = 'mock-form-id'
 
 describe('PublicFormAuthService', () => {
   afterEach(() => jest.resetAllMocks())

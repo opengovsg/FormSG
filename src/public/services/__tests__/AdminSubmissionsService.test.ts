@@ -3,10 +3,11 @@ import axios from 'axios'
 import JSZip from 'jszip'
 import { mocked } from 'ts-jest/utils'
 
-import { StorageModeSubmissionMetadataList } from 'src/types'
-
-import { DateString } from '../../../../shared/types/generic'
-import { SubmissionId } from '../../../../shared/types/submission'
+import {
+  DateString,
+  StorageModeSubmissionMetadataList,
+  SubmissionId,
+} from '../../../../shared/types'
 import * as AdminSubmissionService from '../AdminSubmissionsService'
 import * as formsSdk from '../FormSgSdkService'
 import { ADMIN_FORM_ENDPOINT } from '../UpdateFormService'

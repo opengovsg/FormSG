@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson-ext'
+/* eslint-disable typesafe/no-await-without-trycatch */
 import MockAxios from 'jest-mock-axios'
 
 import { FeedbackCsvGenerator } from '../../modules/forms/helpers/FeedbackCsvGenerator'
@@ -9,7 +9,7 @@ FeedbackCsvGenerator.prototype.addLineFromFeedback = jest.fn()
 
 describe('FormFeedbackService', () => {
   afterEach(() => jest.clearAllMocks())
-  const mockFormId = new ObjectId().toHexString()
+  const mockFormId = 'mock-form-id'
   describe('postFeedback', () => {
     const mockFeedback = {
       formId: mockFormId,

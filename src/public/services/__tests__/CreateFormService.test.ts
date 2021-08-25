@@ -5,9 +5,9 @@ import {
   CreateEmailFormBodyDto,
   CreateStorageFormBodyDto,
   DuplicateFormBodyDto,
-} from '../../../../shared/types/form/form'
-import { IPopulatedUser, IYesNoFieldSchema } from '../../../types'
-import { FormResponseMode } from '../../../types/form'
+  FormResponseMode,
+  UserDto,
+} from '../../../../shared/types'
 import {
   ADMIN_FORM_ENDPOINT,
   createForm,
@@ -17,8 +17,8 @@ import {
 jest.mock('axios', () => MockAxios)
 
 const MOCK_USER = {
-  _id: new ObjectId(),
-} as IPopulatedUser
+  _id: 'mock-user-id',
+} as UserDto
 
 describe('CreateFormService', () => {
   afterEach(() => MockAxios.reset())
@@ -72,7 +72,7 @@ describe('CreateFormService', () => {
   describe('createForm', () => {
     it('should return created form if POST request succeeds', async () => {
       // Arrange
-      const expected = { form_fields: [{} as IYesNoFieldSchema] }
+      const expected = { form_fields: [] }
       const mockFormParams: CreateStorageFormBodyDto = {
         title: 'title',
         responseMode: FormResponseMode.Encrypt,
