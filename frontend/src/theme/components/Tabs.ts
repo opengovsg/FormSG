@@ -64,12 +64,15 @@ const createSizes = () => ({
       },
     },
     tablist: {
-      // Leftmost and rightmost spacing comes half from tablist margin,
-      // half from tab margin
-      mx: '1rem',
-      py: '1.125rem',
+      pt: '1.125rem',
+      pb: '0.25rem',
       '&::-webkit-scrollbar': {
         height: '0.75rem',
+      },
+      '&::-webkit-scrollbar-track': {
+        // Align the ends of the scrollbar with the content.
+        // 0.75 = 1rem (padding) - 0.25rem (transparent border)
+        mx: '0.75rem',
       },
     },
   },
