@@ -2,9 +2,10 @@ import { ObjectId } from 'bson-ext'
 import { Document, Model } from 'mongoose'
 import { SetOptional } from 'type-fest'
 
+import { PublicAgencyDto } from '../../shared/types/agency'
 import { UserBase } from '../../shared/types/user'
 
-import { AgencyDocument, IAgencySchema, PublicAgencyDto } from './agency'
+import { AgencyDocument, IAgencySchema } from './agency'
 import { PublicView } from './database'
 
 export type PublicUser = {

@@ -4,8 +4,6 @@ import { AgencyBase, PublicAgencyDto } from '../../shared/types/agency'
 
 import { PublicView } from './database'
 
-export { PublicAgencyDto }
-
 export type AgencyInstanceMethods = PublicView<PublicAgencyDto>
 
 export interface IAgencySchema extends AgencyBase {
