@@ -1,25 +1,21 @@
 import axios from 'axios'
 
 import {
+  AdminFormDto,
+  AdminFormViewDto,
+  EmailModeSubmissionContentDto,
+  EndPageUpdateDto,
   FieldCreateDto,
   FormFieldDto,
   FormFieldWithId,
-} from '../../../shared/types/field'
-import {
-  AdminFormDto,
-  AdminFormViewDto,
-  EndPageUpdateDto,
   FormSettings,
   LogicDto,
   PermissionsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
-} from '../../../shared/types/form'
-import {
-  EmailModeSubmissionContentDto,
   StorageModeSubmissionContentDto,
   SubmissionResponseDto,
-} from '../../../shared/types/submission'
+} from '../../../shared/types'
 import { FormUpdateParams } from '../../types/api'
 import { createEmailSubmissionFormData } from '../utils/submission'
 

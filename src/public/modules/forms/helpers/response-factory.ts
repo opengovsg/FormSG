@@ -1,5 +1,5 @@
+import { BasicField } from '../../../../../shared/types/field'
 import { hasProp } from '../../../../../shared/utils/has-prop'
-import { BasicField } from '../../../../types/field'
 import {
   ArrayResponse,
   DisplayedResponseWithoutAnswer,
