@@ -6,12 +6,11 @@ import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 import { v4 as uuidv4 } from 'uuid'
 
-import { FormAuthType } from 'src/types'
-
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormAuthType } from '../../../../../shared/types'
 import { MOCK_ERROR_CODE } from '../../spcp/__tests__/spcp.test.constants'
 import { MyInfoCookieState } from '../myinfo.types'
 

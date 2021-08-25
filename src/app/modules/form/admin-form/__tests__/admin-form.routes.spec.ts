@@ -38,19 +38,15 @@ import { saveSubmissionMetadata } from 'src/app/modules/submission/email-submiss
 import { SubmissionHash } from 'src/app/modules/submission/email-submission/email-submission.types'
 import { EditFieldActions } from 'src/shared/constants'
 import {
-  BasicField,
-  FormResponseMode,
-  FormStatus,
-  IFieldSchema,
+  FormFieldSchema,
   IFormDocument,
   IFormSchema,
   IPopulatedEmailForm,
   IPopulatedForm,
   IUserSchema,
   SubmissionCursorData,
-  SubmissionType,
 } from 'src/types'
-import { EncryptSubmissionDto } from 'src/types/api'
+import { EncryptFormFieldResponse, EncryptSubmissionDto } from 'src/types/api'
 
 import {
   createAuthedSession,
@@ -66,6 +62,12 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
+import {
+  BasicField,
+  FormResponseMode,
+  FormStatus,
+  SubmissionType,
+} from '../../../../../../shared/types'
 import { insertFormFeedback } from '../../public-form/public-form.service'
 import { AdminFormsRouter } from '../admin-form.routes'
 import * as AdminFormService from '../admin-form.service'
@@ -145,7 +147,7 @@ describe('admin-form.routes', () => {
           hasCaptcha: false,
           status: FormStatus.Public,
           form_fields: [
-            { ...MOCK_TEXT_FIELD, required: false } as IFieldSchema,
+            { ...MOCK_TEXT_FIELD, required: false } as FormFieldSchema,
           ],
           admin: defaultUser._id,
         },
@@ -499,7 +501,7 @@ describe('admin-form.routes', () => {
         answer: 'a@abc.com',
       }),
       'question',
-    )
+    ) as EncryptFormFieldResponse
     const MOCK_ENCRYPTED_CONTENT = `${'a'.repeat(44)};${'a'.repeat(
       32,
     )}:${'a'.repeat(4)}`

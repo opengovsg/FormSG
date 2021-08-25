@@ -4,17 +4,15 @@ import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
-import {
-  FormResponseMode,
-  FormStatus,
-  IEncryptedSubmissionSchema,
-  IFormSchema,
-  IPopulatedForm,
-  SubmissionType,
-} from 'src/types'
+import { IFormSchema, IPopulatedForm } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import {
+  FormResponseMode,
+  FormStatus,
+  SubmissionType,
+} from '../../../../../shared/types'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import {
   FormDeletedError,
@@ -245,7 +243,7 @@ describe('FormService', () => {
       } as IFormSchema
       const retrieveFormSpy = jest.spyOn(Form, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(expectedForm),
-      } as unknown as mongoose.Query<any>)
+      } as unknown as mongoose.Query<any, any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -262,7 +260,7 @@ describe('FormService', () => {
       // Resolve query to null.
       const retrieveFormSpy = jest.spyOn(Form, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(null),
-      } as unknown as mongoose.Query<any>)
+      } as unknown as mongoose.Query<any, any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -283,7 +281,7 @@ describe('FormService', () => {
       } as IFormSchema
       const retrieveFormSpy = jest.spyOn(Form, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(expectedForm),
-      } as unknown as mongoose.Query<any>)
+      } as unknown as mongoose.Query<any, any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -300,7 +298,7 @@ describe('FormService', () => {
       // Mock rejection.
       const retrieveFormSpy = jest.spyOn(Form, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockRejectedValue(new Error('some error')),
-      } as unknown as mongoose.Query<any>)
+      } as unknown as mongoose.Query<any, any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -338,7 +336,7 @@ describe('FormService', () => {
       const form = await validForm.save()
 
       const submissionPromises = times(5, () =>
-        Submission.create<IEncryptedSubmissionSchema>({
+        Submission.create({
           form: form._id,
           myInfoFields: [],
           submissionType: SubmissionType.Encrypt,
@@ -366,10 +364,10 @@ describe('FormService', () => {
         submissionLimit: 5,
       })
       const validForm = new Form(formParams)
-      const form = await validForm.save()
+      const form = (await validForm.save()) as IPopulatedForm
 
       const submissionPromises = times(5, () =>
-        Submission.create<IEncryptedSubmissionSchema>({
+        Submission.create({
           form: form._id,
           myInfoFields: [],
           submissionType: SubmissionType.Encrypt,

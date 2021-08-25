@@ -1,8 +1,9 @@
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
+import { BasicField, FormResponseMode } from 'shared/types'
 
 import getFormModel from 'src/app/models/form.server.model'
-import { BasicField, FormResponseMode, IFieldSchema } from 'src/types'
+import { IFieldSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

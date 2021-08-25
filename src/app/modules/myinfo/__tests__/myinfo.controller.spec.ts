@@ -2,15 +2,11 @@ import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import {
-  FormAuthType,
-  IFormSchema,
-  ILoginSchema,
-  IPopulatedForm,
-} from 'src/types'
+import { IFormSchema, ILoginSchema, IPopulatedForm } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import { FormAuthType } from '../../../../../shared/types'
 import * as BillingService from '../../billing/billing.service'
 import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'

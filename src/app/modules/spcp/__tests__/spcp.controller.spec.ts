@@ -4,10 +4,10 @@ import { mocked } from 'ts-jest/utils'
 import config from 'src/app/config/config'
 import * as FormService from 'src/app/modules/form/form.service'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
-import { FormAuthType } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import { FormAuthType } from '../../../../../shared/types'
 import * as BillingService from '../../billing/billing.service'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'

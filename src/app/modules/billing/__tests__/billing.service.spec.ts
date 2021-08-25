@@ -2,13 +2,9 @@ import mongoose from 'mongoose'
 
 import getLoginModel from 'src/app/models/login.server.model'
 import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
-import {
-  FormAuthType,
-  FormBillingStatistic,
-  ILoginSchema,
-  IPopulatedForm,
-} from 'src/types'
+import { FormBillingStatistic, ILoginSchema, IPopulatedForm } from 'src/types'
 
+import { FormAuthType } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import { FormHasNoAuthError } from '../billing.errors'
 import * as BillingService from '../billing.service'

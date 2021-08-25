@@ -6,12 +6,7 @@ import supertest, { Session } from 'supertest-session'
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import getUserModel from 'src/app/models/user.server.model'
-import {
-  FormResponseMode,
-  FormStatus,
-  IFormDocument,
-  IUserSchema,
-} from 'src/types'
+import { IFormDocument, IUserSchema } from 'src/types'
 
 import {
   createAuthedSession,
@@ -21,6 +16,10 @@ import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
+import {
+  FormResponseMode,
+  FormStatus,
+} from '../../../../../../../../shared/types'
 import { insertFormFeedback } from '../../../../../../modules/form/public-form/public-form.service'
 import { AdminFormsRouter } from '../admin-forms.routes'
 

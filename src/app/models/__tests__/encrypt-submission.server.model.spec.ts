@@ -2,16 +2,13 @@ import { ObjectId } from 'bson-ext'
 import { pick, times } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
+import { StorageModeSubmissionMetadata, SubmissionType } from 'shared/types'
 
 import getSubmissionModel, {
   getEmailSubmissionModel,
   getEncryptSubmissionModel,
 } from 'src/app/models/submission.server.model'
-import {
-  IEncryptedSubmissionSchema,
-  StorageModeSubmissionMetadata,
-  SubmissionType,
-} from 'src/types'
+import { IEncryptedSubmissionSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

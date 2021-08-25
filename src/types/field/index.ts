@@ -1,8 +1,6 @@
 import { Document } from 'mongoose'
 import { ConditionalExcept, Merge } from 'type-fest'
 
-import { FormFieldDto } from '../../../shared/types'
-
 import { IAttachmentFieldSchema } from './attachmentField'
 import { ICheckboxFieldSchema } from './checkboxField'
 import { IDateFieldSchema } from './dateField'
@@ -118,8 +116,3 @@ export type FieldValidationSchema =
   | OmitUnusedValidatorProps<ITableFieldSchema>
   | OmitUnusedValidatorProps<IUenFieldSchema>
   | OmitUnusedValidatorProps<IYesNoFieldSchema>
-
-/**
- * Form field POJO with id
- */
-export type FormFieldWithId = FormFieldDto

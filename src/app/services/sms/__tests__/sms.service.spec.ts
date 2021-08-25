@@ -7,15 +7,11 @@ import {
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
-import {
-  FormOtpData,
-  FormResponseMode,
-  IFormSchema,
-  IUserSchema,
-} from 'src/types'
+import { FormOtpData, IFormSchema, IUserSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormResponseMode } from '../../../../../shared/types'
 import { VfnErrors } from '../../../../../shared/utils/verification'
 import { InvalidNumberError } from '../sms.errors'
 import * as SmsService from '../sms.service'

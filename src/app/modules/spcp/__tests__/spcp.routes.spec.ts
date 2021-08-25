@@ -6,12 +6,12 @@ import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
 import getLoginModel from 'src/app/models/login.server.model'
-import { FormAuthType } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormAuthType } from '../../../../../shared/types'
 import {
   CorppassLoginRouter,
   SingpassLoginRouter,

@@ -6,10 +6,11 @@ import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
-import { SubmissionWebhookInfo, WebhookResponse } from 'src/types'
+import { SubmissionWebhookInfo } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { WebhookResponse } from '../../../../../shared/types'
 import { createWebhookQueueHandler } from '../webhook.consumer'
 import { WebhookPushToQueueError } from '../webhook.errors'
 import { WebhookProducer } from '../webhook.producer'

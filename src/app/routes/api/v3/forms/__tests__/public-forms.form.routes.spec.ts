@@ -8,11 +8,11 @@ import { mocked } from 'ts-jest/utils'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { MYINFO_COOKIE_NAME } from 'src/app/modules/myinfo/myinfo.constants'
 import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
-import { FormAuthType, FormStatus } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import * as AuthService from '../../../../../modules/auth/auth.service'
 import { PublicFormsRouter } from '../public-forms.routes'
 
@@ -72,9 +72,10 @@ describe('public-form.form.routes', () => {
       })
       // NOTE: This is needed to inject admin info into the form
       const fullForm = await dbHandler.getFullFormById(form._id)
+      expect(fullForm).not.toBeNull()
       const expectedResponseBody = JSON.parse(
         JSON.stringify({
-          form: fullForm.getPublicView(),
+          form: fullForm?.getPublicView(),
           isIntranetUser: false,
         }),
       )
@@ -172,6 +173,7 @@ describe('public-form.form.routes', () => {
       // Arrange
       MockMyInfoGovClient.getPerson.mockResolvedValueOnce({
         uinFin: MOCK_UINFIN,
+        data: {},
       })
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
@@ -183,9 +185,10 @@ describe('public-form.form.routes', () => {
       })
       // NOTE: This is needed to inject admin info into the form
       const fullForm = await dbHandler.getFullFormById(form._id)
+      expect(fullForm).not.toBeNull()
       const expectedResponseBody = JSON.parse(
         JSON.stringify({
-          form: fullForm.getPublicView(),
+          form: fullForm?.getPublicView(),
           spcpSession: { userName: 'S1234567A' },
           isIntranetUser: false,
         }),

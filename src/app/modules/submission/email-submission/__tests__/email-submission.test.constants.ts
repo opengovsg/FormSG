@@ -1,11 +1,7 @@
 import fs from 'fs'
+import { BasicField, FieldBase } from 'shared/types'
 
-import {
-  BasicField,
-  FieldBase,
-  IAttachmentFieldSchema,
-  ICheckboxFieldSchema,
-} from 'src/types'
+import { IAttachmentFieldSchema, ICheckboxFieldSchema } from 'src/types'
 
 import {
   generateAttachmentResponse,

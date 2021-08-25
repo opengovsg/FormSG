@@ -13,10 +13,10 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import {
   FormAuthType,
-  ISubmissionSchema,
   SubmissionType,
   WebhookResponse,
-} from '../../../../src/types'
+} from '../../../../shared/types'
+import { ISubmissionSchema } from '../../../../src/types'
 
 jest.mock('dns', () => ({
   promises: {

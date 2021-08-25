@@ -4,7 +4,7 @@ import validator from 'validator'
 
 import { SUPPORT_FORM_LINK } from '../../../../shared/constants/links'
 import {
-  IAgencySchema,
+  AgencyDocument,
   IPopulatedForm,
   ITokenSchema,
   IUserSchema,
@@ -47,7 +47,7 @@ export const MAX_OTP_ATTEMPTS = 10
  */
 export const validateEmailDomain = (
   email: string,
-): ResultAsync<IAgencySchema, InvalidDomainError | DatabaseError> => {
+): ResultAsync<AgencyDocument, InvalidDomainError | DatabaseError> => {
   // Extra guard even if Joi validation has already checked.
   if (!validator.isEmail(email)) {
     return errAsync(new InvalidDomainError())

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
 import mockingoose from 'mockingoose'
 import mongoose from 'mongoose'
@@ -6,8 +7,9 @@ import { PartialDeep } from 'type-fest'
 import getFormModel from 'src/app/models/form.server.model'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { FormAuthType, IFormSchema } from 'src/types'
+import { IFormSchema } from 'src/types'
 
+import { FormAuthType } from '../../../../../../shared/types'
 import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
 import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
 import { JwtName } from '../../../spcp/spcp.types'
@@ -113,6 +115,7 @@ describe('public-form.service', () => {
       // Mock success.
       const insertSpy = jest
         .spyOn(FormFeedbackModel, 'create')
+        // @ts-ignore
         .mockResolvedValueOnce(MOCK_FORM_FEEDBACK)
 
       // Act

@@ -1,6 +1,6 @@
 import formsgSdk from 'src/app/config/formsg-sdk'
-import { FormAuthType } from 'src/types'
 
+import { FormAuthType } from '../../../../../shared/types'
 import {
   EncryptVerifiedContentError,
   MalformedVerifiedContentError,
@@ -116,7 +116,6 @@ describe('verified-content.service', () => {
       const result = encryptVerifiedContent({
         verifiedContent: mockVerifiedContent,
         formPublicKey: 'mockPublicKey',
-        signingSecretKey: 'mockSecretKey',
       })
 
       // Assert
@@ -140,7 +139,6 @@ describe('verified-content.service', () => {
       const result = encryptVerifiedContent({
         verifiedContent: mockVerifiedContent,
         formPublicKey: 'mockPublicKey',
-        signingSecretKey: 'mockSecretKey',
       })
 
       // Assert

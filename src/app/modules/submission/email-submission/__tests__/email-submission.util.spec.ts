@@ -3,14 +3,10 @@ import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
 
 import {
-  BasicField,
   FieldResponse,
-  FormAuthType,
   IAttachmentResponse,
-  MyInfoAttribute,
   SingleAnswerFieldResponse,
   SPCPFieldTitle,
-  TableRow,
 } from 'src/types'
 
 import {
@@ -26,6 +22,12 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { types as basicTypes } from '../../../../../../shared/constants/field/basic'
+import {
+  BasicField,
+  FormAuthType,
+  MyInfoAttribute,
+  TableRow,
+} from '../../../../../../shared/types'
 import { ProcessedFieldResponse } from '../../submission.types'
 import {
   ATTACHMENT_PREFIX,

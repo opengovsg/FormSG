@@ -9,14 +9,11 @@ import { getEncryptSubmissionModel } from 'src/app/models/submission.server.mode
 import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
 import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.validation'
 import { transformMongoError } from 'src/app/utils/handle-mongo-error'
-import {
-  IEncryptedSubmissionSchema,
-  WebhookResponse,
-  WebhookView,
-} from 'src/types'
+import { IEncryptedSubmissionSchema, WebhookView } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { WebhookResponse } from '../../../../../shared/types'
 import { SubmissionNotFoundError } from '../../submission/submission.errors'
 import { WebhookQueueMessage } from '../webhook.message'
 import { WebhookProducer } from '../webhook.producer'

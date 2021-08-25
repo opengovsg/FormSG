@@ -8,11 +8,12 @@ import { mocked } from 'ts-jest/utils'
 import { MYINFO_COOKIE_NAME } from 'src/app/modules/myinfo/myinfo.constants'
 import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
 import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
-import { FormAuthType, FormStatus, IFieldSchema } from 'src/types'
+import { FormFieldSchema } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 import {
@@ -123,7 +124,7 @@ describe('public-form.submissions.routes', () => {
             hasCaptcha: false,
             status: FormStatus.Public,
             form_fields: [
-              { ...MOCK_TEXT_FIELD, required: false } as IFieldSchema,
+              { ...MOCK_TEXT_FIELD, required: false } as FormFieldSchema,
             ],
           },
         })

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
 import { StatusCodes } from 'http-status-codes'
@@ -42,14 +43,10 @@ import {
 import MailService from 'src/app/services/mail/mail.service'
 import { EditFieldActions } from 'src/shared/constants'
 import {
-  BasicField,
-  FormAuthType,
-  FormResponseMode,
-  FormSettings,
-  FormStatus,
+  FormFieldSchema,
+  FormLogicSchema,
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
-  IFieldSchema,
   IFormDocument,
   IFormSchema,
   ILogicSchema,
@@ -58,19 +55,9 @@ import {
   IPopulatedForm,
   IPopulatedUser,
   IUserSchema,
-  LogicDto,
   PublicForm,
 } from 'src/types'
-import {
-  AdminDashboardFormMetaDto,
-  CreateFormBodyDto,
-  DuplicateFormBodyDto,
-  EditFormFieldParams,
-  EncryptSubmissionDto,
-  FieldCreateDto,
-  FieldUpdateDto,
-} from 'src/types/api'
-import { FormFeedbackMetaDto } from 'src/types/api/form_feedback'
+import { EditFormFieldParams, EncryptSubmissionDto } from 'src/types/api'
 
 import {
   generateDefaultField,
@@ -79,6 +66,20 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import {
+  AdminDashboardFormMetaDto,
+  BasicField,
+  CreateFormBodyDto,
+  DuplicateFormBodyDto,
+  FieldCreateDto,
+  FieldUpdateDto,
+  FormAuthType,
+  FormFeedbackMetaDto,
+  FormResponseMode,
+  FormSettings,
+  FormStatus,
+  LogicDto,
+} from '../../../../../../shared/types'
 import { smsConfig } from '../../../../config/features/sms.config'
 import * as SmsService from '../../../../services/sms/sms.service'
 import ParsedResponsesObject from '../../../submission/email-submission/ParsedResponsesObject.class'
@@ -221,7 +222,7 @@ describe('admin-form.controller', () => {
       admin: MOCK_USER_ID,
       _id: new ObjectId(),
       title: 'mock title',
-    } as IFormSchema
+    } as IFormDocument
     const MOCK_FORM_PARAMS: CreateFormBodyDto = {
       responseMode: FormResponseMode.Encrypt,
       publicKey: 'some public key',
@@ -4506,6 +4507,7 @@ describe('admin-form.controller', () => {
         submissionLimit: 42069,
         title: 'new title',
         webhook: {
+          isRetryEnabled: true,
           url: '',
         },
       }
@@ -4851,6 +4853,7 @@ describe('admin-form.controller', () => {
       submissionLimit: 42069,
       title: 'mock title',
       webhook: {
+        isRetryEnabled: true,
         url: '',
       },
     }
@@ -5141,10 +5144,13 @@ describe('admin-form.controller', () => {
       MockEmailSubmissionService.validateAttachments.mockReturnValue(
         okAsync(true),
       )
+      // @ts-ignore
       MockParsedResponsesObject.mockClear()
       MockParsedResponsesObject.parseResponses.mockReturnValue(
+        // @ts-ignore
         ok(new ParsedResponsesObject(MOCK_PARSED_RESPONSES)),
       )
+      // @ts-ignore
       MockParsedResponsesObject.mock.instances[0].getAllResponses.mockReturnValue(
         MOCK_PARSED_RESPONSES,
       )
@@ -6084,8 +6090,8 @@ describe('admin-form.controller', () => {
   describe('submitEncryptPreview', () => {
     const MOCK_RESPONSES = [
       {
-        question: 'testQuestion',
         ...generateUnprocessedSingleAnswerResponse(BasicField.Email),
+        question: 'testQuestion',
       },
     ]
     const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
@@ -6800,7 +6806,7 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM),
       )
       MockAdminFormService.updateFormField.mockReturnValue(
-        okAsync(MOCK_UPDATED_FIELD as IFieldSchema),
+        okAsync(MOCK_UPDATED_FIELD as FormFieldSchema),
       )
     })
     it('should return 200 with updated form field', async () => {
@@ -8210,18 +8216,18 @@ describe('admin-form.controller', () => {
     } as IPopulatedUser
 
     const logicId = new ObjectId().toHexString()
+
+    const mockLogic = {
+      _id: logicId,
+    } as FormLogicSchema
+
     const mockFormLogic = {
-      form_logics: [
-        {
-          _id: logicId,
-          id: logicId,
-        } as ILogicSchema,
-      ],
+      form_logics: [mockLogic],
     }
 
     const mockCreateLogicBody = {
       _id: logicId,
-    } as ILogicSchema
+    } as LogicDto
 
     const MOCK_FORM = {
       admin: MOCK_USER,
@@ -8233,7 +8239,6 @@ describe('admin-form.controller', () => {
     const mockReq = expressHandler.mockRequest({
       params: {
         formId: MOCK_FORM_ID,
-        logicId,
       },
       session: {
         user: {
@@ -8249,9 +8254,7 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
         okAsync(MOCK_FORM),
       )
-      MockAdminFormService.createFormLogic.mockReturnValue(
-        okAsync(mockCreateLogicBody),
-      )
+      MockAdminFormService.createFormLogic.mockReturnValue(okAsync(mockLogic))
     })
 
     it('should call all services correctly when request is valid', async () => {
@@ -9195,18 +9198,16 @@ describe('admin-form.controller', () => {
       email: 'somerandom@example.com',
     } as IPopulatedUser
     const logicId = new ObjectId().toHexString()
-    const mockFormLogic = {
-      form_logics: [
-        {
-          _id: logicId,
-          id: logicId,
-        } as ILogicSchema,
-      ],
-    }
+
+    const mockUpdateLogicBody = { _id: logicId } as LogicDto
 
     const mockUpdatedLogic = {
       _id: logicId,
-    } as LogicDto
+    } as FormLogicSchema
+
+    const mockFormLogic = {
+      form_logics: [mockUpdatedLogic],
+    }
 
     const MOCK_FORM = {
       admin: MOCK_USER,
@@ -9225,7 +9226,7 @@ describe('admin-form.controller', () => {
           _id: MOCK_USER_ID,
         },
       },
-      body: mockUpdatedLogic,
+      body: mockUpdateLogicBody,
     })
     const mockRes = expressHandler.mockResponse()
 
@@ -9582,19 +9583,19 @@ describe('admin-form.controller', () => {
     const MOCK_WRITER = {
       _id: MOCK_WRITER_ID,
       email: 'mockwriter@example.com',
-    }
+    } as IPopulatedUser
 
     const MOCK_READER_ID = new ObjectId().toHexString()
     const MOCK_READER = {
       _id: MOCK_READER_ID,
       email: 'mockreader@example.com',
-    }
+    } as IPopulatedUser
 
     const MOCK_RANDOM_USER_ID = new ObjectId().toHexString()
     const MOCK_RANDOM_USER = {
       _id: MOCK_RANDOM_USER_ID,
       email: 'mockrandomuser@example.com',
-    }
+    } as IPopulatedUser
 
     const MOCK_COLLABORATORS = [
       {

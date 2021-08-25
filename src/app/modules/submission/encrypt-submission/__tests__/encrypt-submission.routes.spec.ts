@@ -2,11 +2,10 @@ import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
-import { FormAuthType, FormStatus } from 'src/types'
-
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormAuthType, FormStatus } from '../../../../../../shared/types'
 import { EncryptSubmissionRouter } from '../encrypt-submission.routes'
 
 jest.mock('@opengovsg/spcp-auth-client')

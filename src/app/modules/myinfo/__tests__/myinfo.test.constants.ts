@@ -7,14 +7,10 @@ import {
 import { ObjectId } from 'bson'
 import { merge, omit, zipWith } from 'lodash'
 
-import { ISpcpMyInfo } from 'src/app/config/feature-manager'
-import {
-  Environment,
-  FormAuthType,
-  IFormSchema,
-  MyInfoAttribute,
-} from 'src/types'
+import { ISpcpMyInfo } from 'src/app/config/features/spcp-myinfo.config'
+import { Environment, IFormSchema } from 'src/types'
 
+import { FormAuthType, MyInfoAttribute } from '../../../../../shared/types'
 import {
   IMyInfoServiceConfig,
   MyInfoCookieState,
@@ -160,7 +156,7 @@ export const MOCK_MYINFO_FORM = {
   },
   getUniqueMyInfoAttrs: () => MOCK_REQUESTED_ATTRS,
   getPublicView: function () {
-    return omit(this, 'admin')
+    return omit(this as IFormSchema, 'admin')
   },
   toJSON: function () {
     return this

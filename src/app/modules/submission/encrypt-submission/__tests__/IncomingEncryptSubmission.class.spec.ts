@@ -2,17 +2,19 @@ import { ok } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import {
+  BasicField,
+  FormResponseMode,
+  LogicType,
+} from '../../../../../../shared/types'
+import {
   generateDefaultField,
   generateProcessedSingleAnswerResponse,
   generateSingleAnswerResponse,
 } from '../../../../../../tests/unit/backend/helpers/generate-form-data'
 import * as LogicUtil from '../../../../../shared/util/logic'
 import {
-  BasicField,
-  FormResponseMode,
   IPopulatedEncryptedForm,
   IPreventSubmitLogicSchema,
-  LogicType,
 } from '../../../../../types'
 import { checkIsEncryptedEncoding } from '../../../../utils/encryption'
 import {

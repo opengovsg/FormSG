@@ -6,7 +6,6 @@ import mongoose from 'mongoose'
 
 import getLoginModel from 'src/app/models/login.server.model'
 import {
-  FormAuthType,
   IFormSchema,
   ILoginSchema,
   IPopulatedForm,
@@ -14,6 +13,8 @@ import {
 } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
+
+import { FormAuthType } from '../../../../shared/types'
 
 const LoginModel = getLoginModel(mongoose)
 

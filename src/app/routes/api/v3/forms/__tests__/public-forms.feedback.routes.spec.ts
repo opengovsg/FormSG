@@ -2,12 +2,12 @@ import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { FormStatus } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormStatus } from '../../../../../../../shared/types'
 import * as FormService from '../../../../../modules/form/form.service'
 import { PublicFormsRouter } from '../public-forms.routes'
 

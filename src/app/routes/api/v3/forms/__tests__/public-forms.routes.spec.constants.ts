@@ -1,11 +1,6 @@
 import fs from 'fs'
 
-import {
-  BasicField,
-  FieldBase,
-  IAttachmentFieldSchema,
-  ICheckboxFieldSchema,
-} from 'src/types'
+import { IAttachmentFieldSchema, ICheckboxFieldSchema } from 'src/types'
 
 import {
   generateAttachmentResponse,
@@ -13,6 +8,8 @@ import {
   generateDefaultField,
   generateSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
+
+import { BasicField, FieldBase } from '../../../../../../../shared/types'
 
 export const MOCK_NO_RESPONSES_BODY = {
   responses: [],

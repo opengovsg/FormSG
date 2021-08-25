@@ -7,23 +7,26 @@ import {
   getVisibleFieldIds,
 } from 'src/shared/util/logic'
 import {
-  BasicField,
-  FieldBase,
   FieldResponse,
-  IFieldSchema,
+  FormFieldSchema,
   IFormDocument,
   IPreventSubmitLogicSchema,
   IRadioFieldSchema,
   IShortTextFieldSchema,
   IShowFieldsLogicSchema,
+} from 'src/types'
+
+import {
+  BasicField,
+  FieldBase,
   LogicConditionState,
   LogicIfValue,
   LogicType,
-} from 'src/types'
+} from '../../../../shared/types'
 
 describe('Logic validation', () => {
   /** Mock a field's bare essentials */
-  const makeField = (fieldId: string) => ({ _id: fieldId } as IFieldSchema)
+  const makeField = (fieldId: string) => ({ _id: fieldId } as FormFieldSchema)
 
   /**
    *  Mock a response

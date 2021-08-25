@@ -3,19 +3,22 @@ import { cloneDeep, omit, tail } from 'lodash'
 
 import { EditFieldActions } from 'src/shared/constants'
 import {
-  BasicField,
   FormFieldSchema,
-  FormPermission,
-  FormResponseMode,
-  FormStatus,
   IEmailFieldSchema,
   IPopulatedForm,
   IPopulatedUser,
 } from 'src/types'
-import { DuplicateFormBodyDto, EditFormFieldParams } from 'src/types/api'
+import { EditFormFieldParams } from 'src/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
+import {
+  BasicField,
+  DuplicateFormBodyDto,
+  FormPermission,
+  FormResponseMode,
+  FormStatus,
+} from '../../../../../../shared/types'
 import { ForbiddenFormError } from '../../form.errors'
 import { EditFieldError } from '../admin-form.errors'
 import { OverrideProps } from '../admin-form.types'

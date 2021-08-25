@@ -1,5 +1,6 @@
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
+import { FormResponseMode } from 'shared/types'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
 import {
@@ -8,7 +9,7 @@ import {
 } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import {
-  FormResponseMode,
+  AgencyDocument,
   IAgencySchema,
   IEmailForm,
   IEmailFormSchema,
@@ -65,7 +66,7 @@ const insertAgency = async ({
 }: {
   mailDomain?: string
   shortName?: string
-} = {}): Promise<IAgencySchema> => {
+} = {}): Promise<AgencyDocument> => {
   const Agency = getAgencyModel(mongoose)
   const agency = await Agency.create({
     shortName,
@@ -114,7 +115,7 @@ const insertFormCollectionReqs = async ({
   mailDomain?: string
   shortName?: string
 } = {}): Promise<{
-  agency: IAgencySchema
+  agency: AgencyDocument
   user: IUserSchema
 }> => {
   const User = getUserModel(mongoose)

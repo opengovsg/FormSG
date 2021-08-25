@@ -1,16 +1,18 @@
 import {
+  BasicField,
+  FormResponseMode,
+  LogicType,
+} from '../../../../../../shared/types'
+import {
   generateDefaultField,
   generateProcessedSingleAnswerResponse,
   generateSingleAnswerResponse,
 } from '../../../../../../tests/unit/backend/helpers/generate-form-data'
 import * as LogicUtil from '../../../../../shared/util/logic'
 import {
-  BasicField,
-  FormResponseMode,
-  IEmailFormSchema,
-  IFormSchema,
+  FormFieldSchema,
+  IFormDocument,
   IPreventSubmitLogicSchema,
-  LogicType,
 } from '../../../../../types'
 import {
   ConflictError,
@@ -46,7 +48,7 @@ describe('ParsedResponsesObject', () => {
       {
         responseMode: FormResponseMode.Email,
         form_fields: [shortTextField, decimalField],
-      } as unknown as IFormSchema,
+      } as IFormDocument,
       [shortTextResponse, decimalResponse],
     )
 
@@ -66,7 +68,7 @@ describe('ParsedResponsesObject', () => {
       {
         responseMode: FormResponseMode.Email,
         form_fields: [extraField],
-      } as unknown as IEmailFormSchema,
+      } as IFormDocument,
       [],
     )
 
@@ -85,7 +87,7 @@ describe('ParsedResponsesObject', () => {
       {
         responseMode: FormResponseMode.Email,
         form_fields: [nricField],
-      } as unknown as IEmailFormSchema,
+      } as IFormDocument,
       [nricResponse],
     )
 
@@ -111,8 +113,8 @@ describe('ParsedResponsesObject', () => {
     const result = ParsedResponsesObject.parseResponses(
       {
         responseMode: FormResponseMode.Email,
-        form_fields: [],
-      } as unknown as IEmailFormSchema,
+        form_fields: [] as FormFieldSchema[],
+      } as IFormDocument,
       [],
     )
 

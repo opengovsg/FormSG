@@ -14,16 +14,19 @@ import {
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import {
-  FormResponseMode,
   IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedUser,
-  StorageModeSubmissionMetadata,
   SubmissionData,
 } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import {
+  FormResponseMode,
+  StorageModeSubmissionMetadata,
+  SubmissionId,
+} from '../../../../../../shared/types'
 import {
   ResponseModeError,
   SubmissionNotFoundError,
@@ -659,7 +662,7 @@ describe('encrypt-submission.controller', () => {
 
     it('should return 200 with single submission metadata when query.submissionId is provided and can be found', async () => {
       // Arrange
-      const mockSubmissionId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString() as SubmissionId
       const mockReq = expressHandler.mockRequest({
         params: { formId: MOCK_FORM_ID },
         query: {

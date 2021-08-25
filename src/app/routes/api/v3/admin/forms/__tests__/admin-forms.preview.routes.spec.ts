@@ -21,15 +21,8 @@ import {
   MOCK_TEXT_FIELD,
   MOCK_TEXTFIELD_RESPONSE,
 } from 'src/app/modules/submission/email-submission/__tests__/email-submission.test.constants'
-import {
-  BasicField,
-  FormResponseMode,
-  FormStatus,
-  IFieldSchema,
-  IFormSchema,
-  IUserSchema,
-} from 'src/types'
-import { EncryptSubmissionDto } from 'src/types/api'
+import { FormFieldSchema, IFormSchema, IUserSchema } from 'src/types'
+import { EncryptFormFieldResponse, EncryptSubmissionDto } from 'src/types/api'
 
 import {
   createAuthedSession,
@@ -44,6 +37,11 @@ import {
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
+import {
+  BasicField,
+  FormResponseMode,
+  FormStatus,
+} from '../../../../../../../../shared/types'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
 // Prevent rate limiting.
@@ -301,7 +299,7 @@ describe('admin-form.preview.routes', () => {
           hasCaptcha: false,
           status: FormStatus.Public,
           form_fields: [
-            { ...MOCK_TEXT_FIELD, required: false } as IFieldSchema,
+            { ...MOCK_TEXT_FIELD, required: false } as FormFieldSchema,
           ],
           admin: defaultUser._id,
         },
@@ -655,7 +653,7 @@ describe('admin-form.preview.routes', () => {
         answer: 'a@abc.com',
       }),
       'question',
-    )
+    ) as EncryptFormFieldResponse
     const MOCK_ENCRYPTED_CONTENT = `${'a'.repeat(44)};${'a'.repeat(
       32,
     )}:${'a'.repeat(4)}`

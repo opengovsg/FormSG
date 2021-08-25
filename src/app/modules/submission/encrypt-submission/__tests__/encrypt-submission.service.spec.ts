@@ -14,13 +14,16 @@ import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-f
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import {
   IPopulatedEncryptedForm,
-  StorageModeSubmissionMetadata,
   SubmissionCursorData,
   SubmissionData,
 } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import {
+  StorageModeSubmissionMetadata,
+  SubmissionId,
+} from '../../../../../../shared/types'
 import { SubmissionNotFoundError } from '../../submission.errors'
 import {
   createEncryptSubmissionWithoutSave,
@@ -590,7 +593,7 @@ describe('encrypt-submission.service', () => {
       const mockSubmissionId = new ObjectId().toHexString()
       const expectedMetadata: StorageModeSubmissionMetadata = {
         number: 200,
-        refNo: mockSubmissionId,
+        refNo: mockSubmissionId as SubmissionId,
         submissionTime: 'some submission time',
       }
       const getMetaSpy = jest
@@ -678,7 +681,7 @@ describe('encrypt-submission.service', () => {
             refNo: new ObjectId().toHexString(),
             submissionTime: 'some submission time',
           },
-        ],
+        ] as StorageModeSubmissionMetadata[],
         count: 1,
       }
       const getMetaSpy = jest
@@ -704,7 +707,7 @@ describe('encrypt-submission.service', () => {
             refNo: new ObjectId().toHexString(),
             submissionTime: 'another submission time',
           },
-        ],
+        ] as StorageModeSubmissionMetadata[],
         count: 1,
       }
       const getMetaSpy = jest

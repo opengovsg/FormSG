@@ -1,10 +1,11 @@
 import { ObjectId } from 'bson-ext'
 import { Types } from 'mongoose'
 
-import { BasicField, FormFieldSchema, FormPermission } from 'src/types'
+import { FormFieldSchema } from 'src/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
+import { BasicField, FormPermission } from '../../../../../shared/types'
 import { getCollabEmailsWithPermission, getFormFieldById } from '../form.utils'
 
 const MOCK_EMAIL_1 = 'a@abc.com'

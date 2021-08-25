@@ -1,11 +1,15 @@
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField } from 'src/app/utils/field-validation'
-import { BasicField } from 'src/types'
 
 import {
   generateDefaultField,
   generateNewSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
+
+import {
+  BasicField,
+  DateSelectedValidation,
+} from '../../../../../../shared/types'
 
 describe('Date field validation', () => {
   beforeAll(() => {
@@ -217,7 +221,7 @@ describe('Date field validation', () => {
 
   it('should disallow past dates if disallow past dates is set', () => {
     const formField = generateDefaultField(BasicField.Date, {
-      dateValidation: { selectedDateValidation: 'Disallow past dates' },
+      dateValidation: { selectedDateValidation: DateSelectedValidation.NoPast },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Date, {
       answer: '9 Jan 2019',
@@ -243,7 +247,9 @@ describe('Date field validation', () => {
 
   it('should disallow future dates if disallow future dates is set', () => {
     const formField = generateDefaultField(BasicField.Date, {
-      dateValidation: { selectedDateValidation: 'Disallow future dates' },
+      dateValidation: {
+        selectedDateValidation: DateSelectedValidation.NoFuture,
+      },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Date, {
       answer: '01 Jan 2022',
@@ -259,9 +265,9 @@ describe('Date field validation', () => {
   it('should allow dates inside of Custom Date Range if set', () => {
     const formField = generateDefaultField(BasicField.Date, {
       dateValidation: {
-        selectedDateValidation: 'Custom date range',
-        customMinDate: '2020-06-25',
-        customMaxDate: '2020-06-28',
+        selectedDateValidation: DateSelectedValidation.Custom,
+        customMinDate: new Date('2020-06-25'),
+        customMaxDate: new Date('2020-06-28'),
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Date, {
@@ -276,9 +282,9 @@ describe('Date field validation', () => {
   it('should disallow dates outside of Custom Date Range if set', () => {
     const formField = generateDefaultField(BasicField.Date, {
       dateValidation: {
-        selectedDateValidation: 'Custom date range',
-        customMinDate: '2020-06-25',
-        customMaxDate: '2020-06-28',
+        selectedDateValidation: DateSelectedValidation.Custom,
+        customMinDate: new Date('2020-06-25'),
+        customMaxDate: new Date('2020-06-28'),
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Date, {
@@ -295,9 +301,9 @@ describe('Date field validation', () => {
   it('should disallow responses submitted for hidden fields', () => {
     const formField = generateDefaultField(BasicField.Date, {
       dateValidation: {
-        selectedDateValidation: 'Custom date range',
-        customMinDate: '2020-06-25',
-        customMaxDate: '2020-06-28',
+        selectedDateValidation: DateSelectedValidation.Custom,
+        customMinDate: new Date('2020-06-25'),
+        customMaxDate: new Date('2020-06-28'),
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Date, {

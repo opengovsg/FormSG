@@ -7,7 +7,7 @@ import supertest, { Session } from 'supertest-session'
 import { aws } from 'src/app/config/config'
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
-import { FormResponseMode, FormStatus, IUserSchema } from 'src/types'
+import { IUserSchema } from 'src/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -15,6 +15,10 @@ import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../../../shared/constants/file'
+import {
+  FormResponseMode,
+  FormStatus,
+} from '../../../../../../../../shared/types'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
 // Prevent rate limiting.

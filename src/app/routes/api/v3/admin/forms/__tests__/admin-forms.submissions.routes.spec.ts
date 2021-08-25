@@ -17,13 +17,10 @@ import getUserModel from 'src/app/models/user.server.model'
 import { saveSubmissionMetadata } from 'src/app/modules/submission/email-submission/email-submission.service'
 import { SubmissionHash } from 'src/app/modules/submission/email-submission/email-submission.types'
 import {
-  FormResponseMode,
-  FormStatus,
   IFormDocument,
   IPopulatedEmailForm,
   IUserSchema,
   SubmissionCursorData,
-  SubmissionType,
 } from 'src/types'
 
 import {
@@ -35,6 +32,11 @@ import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
+import {
+  FormResponseMode,
+  FormStatus,
+  SubmissionType,
+} from '../../../../../../../../shared/types'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
 // Prevent rate limiting.

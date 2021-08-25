@@ -15,16 +15,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
 } from 'src/app/modules/core/core.errors'
-import {
-  BasicField,
-  FormColorTheme,
-  FormLogoState,
-  FormResponseMode,
-  FormStartPage,
-  FormStatus,
-  IPopulatedForm,
-  IUserSchema,
-} from 'src/types'
+import { IPopulatedForm, IUserSchema } from 'src/types'
 
 import {
   createAuthedSession,
@@ -36,6 +27,14 @@ import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-d
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
+import {
+  BasicField,
+  FormColorTheme,
+  FormLogoState,
+  FormResponseMode,
+  FormStartPage,
+  FormStatus,
+} from '../../../../../../../../shared/types'
 import * as AdminFormService from '../../../../../../modules/form/admin-form/admin-form.service'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
@@ -1829,7 +1828,7 @@ describe('admin-form.form.routes', () => {
   })
 
   describe('PUT /admin/forms/:formId/start-page', () => {
-    const MOCK_START_PAGE: FormStartPage = {
+    const MOCK_START_PAGE: Partial<FormStartPage> = {
       paragraph: 'old end page',
     }
 
@@ -1858,9 +1857,7 @@ describe('admin-form.form.routes', () => {
 
       // Assert
       expect(resp.status).toBe(200)
-      expect(resp.body).toEqual(
-        jsonParseStringify({ colorTheme: 'blue', ...MOCK_UPDATED_START_PAGE }),
-      )
+      expect(resp.body).toEqual(jsonParseStringify(MOCK_UPDATED_START_PAGE))
     })
 
     it('should return 403 when the user does not have permission to update the start page', async () => {

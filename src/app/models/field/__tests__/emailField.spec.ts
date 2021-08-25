@@ -1,10 +1,11 @@
 import merge from 'lodash/merge'
 import { Model, Schema } from 'mongoose'
 
-import { EmailFieldBase, FormResponseMode, IEmailFieldSchema } from 'src/types'
+import { IEmailFieldSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { EmailFieldBase, FormResponseMode } from '../../../../../shared/types'
 import createEmailFieldSchema from '../emailField'
 
 describe('models.fields.emailField', () => {

@@ -5,13 +5,14 @@ import supertest, { Session } from 'supertest-session'
 
 import getFormModel from 'src/app/models/form.server.model'
 import getLoginModel from 'src/app/models/login.server.model'
-import { FormAuthType, FormResponseMode, IUserSchema } from 'src/types'
+import { IUserSchema } from 'src/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormAuthType, FormResponseMode } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import { BillingRouter } from '../billing.routes'
 import * as BillingService from '../billing.service'

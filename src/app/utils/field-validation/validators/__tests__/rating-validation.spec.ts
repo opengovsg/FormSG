@@ -1,12 +1,12 @@
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField } from 'src/app/utils/field-validation'
-import { BasicField } from 'src/types'
-import { RatingShape } from 'src/types/field/ratingField'
 
 import {
   generateDefaultField,
   generateNewSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
+
+import { BasicField, RatingShape } from '../../../../../../shared/types'
 
 describe('Rating field validation', () => {
   it('should allow answer within range', () => {

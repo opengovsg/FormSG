@@ -1,10 +1,9 @@
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import { FormColorTheme } from 'src/types'
-
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import { FormColorTheme } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import * as ExamplesController from '../examples.controller'
 import { ResultsNotFoundError } from '../examples.errors'

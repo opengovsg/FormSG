@@ -24,38 +24,38 @@ import { SmsLimitExceededError } from 'src/app/modules/verification/verification
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { EditFieldActions } from 'src/shared/constants'
 import {
-  BasicField,
-  CustomFormLogo,
-  FormAuthType,
-  FormColorTheme,
-  FormEndPage,
   FormLogicSchema,
-  FormLogoState,
-  FormResponseMode,
-  FormSettings,
-  FormStartPage,
-  FormStatus,
   IEmailFormSchema,
   IFormDocument,
   IFormSchema,
   IPopulatedForm,
   IUserSchema,
-  LogicDto,
-  LogicType,
   PickDuplicateForm,
 } from 'src/types'
-import {
-  AdminDashboardFormMetaDto,
-  DuplicateFormBodyDto,
-  EditFormFieldParams,
-  FieldCreateDto,
-  FieldUpdateDto,
-  SettingsUpdateDto,
-} from 'src/types/api'
+import { EditFormFieldParams } from 'src/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
+import {
+  AdminDashboardFormMetaDto,
+  BasicField,
+  CustomFormLogo,
+  DuplicateFormBodyDto,
+  FieldCreateDto,
+  FieldUpdateDto,
+  FormAuthType,
+  FormColorTheme,
+  FormEndPage,
+  FormLogoState,
+  FormResponseMode,
+  FormSettings,
+  FormStartPage,
+  FormStatus,
+  LogicDto,
+  LogicType,
+  SettingsUpdateDto,
+} from '../../../../../../shared/types'
 import { smsConfig } from '../../../../config/features/sms.config'
 import * as SmsService from '../../../../services/sms/sms.service'
 import {
@@ -1047,7 +1047,7 @@ describe('admin-form.service', () => {
       const formUpdateParams: Parameters<
         typeof AdminFormService.updateForm
       >[1] = {
-        status: Status.Private,
+        status: FormStatus.Private,
       }
 
       // Act
