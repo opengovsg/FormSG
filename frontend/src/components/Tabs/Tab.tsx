@@ -8,8 +8,6 @@ export const Tab = (props: TabProps): JSX.Element => {
   // the focused tab is scrolled horizontally into view
   const handleFocus = () => {
     tabRef.current?.scrollIntoView({
-      // center horizontally
-      inline: 'center',
       // prevent unnecessary vertical scrolling
       block: 'nearest',
     })
