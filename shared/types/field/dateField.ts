@@ -7,17 +7,11 @@ export enum DateSelectedValidation {
   Custom = 'Custom date range',
 }
 
-export type DateValidationOptions =
-  | {
-      selectedDateValidation:
-        | DateSelectedValidation.NoFuture
-        | DateSelectedValidation.NoPast
-    }
-  | {
-      customMaxDate: Date
-      customMinDate: Date
-      selectedDateValidation: DateSelectedValidation.Custom
-    }
+export type DateValidationOptions = {
+  customMaxDate: Date | null
+  customMinDate: Date | null
+  selectedDateValidation: DateSelectedValidation | null
+}
 
 export interface DateFieldBase extends MyInfoableFieldBase {
   fieldType: BasicField.Date

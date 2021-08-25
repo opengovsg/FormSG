@@ -221,7 +221,11 @@ describe('Date field validation', () => {
 
   it('should disallow past dates if disallow past dates is set', () => {
     const formField = generateDefaultField(BasicField.Date, {
-      dateValidation: { selectedDateValidation: DateSelectedValidation.NoPast },
+      dateValidation: {
+        selectedDateValidation: DateSelectedValidation.NoPast,
+        customMaxDate: null,
+        customMinDate: null,
+      },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Date, {
       answer: '9 Jan 2019',
@@ -249,6 +253,8 @@ describe('Date field validation', () => {
     const formField = generateDefaultField(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.NoFuture,
+        customMaxDate: null,
+        customMinDate: null,
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Date, {
