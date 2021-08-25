@@ -1,6 +1,8 @@
 import { composeStories } from '@storybook/testing-react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
+import { REQUIRED_ERROR } from '~constants/validation'
+
 import * as stories from './YesNoField.stories'
 
 const { ValidationOptional, ValidationRequired } = composeStories(stories)
@@ -17,7 +19,7 @@ describe('ValidationRequired', () => {
 
     // Assert
     // Should show error message.
-    const error = screen.getByText('This field is required')
+    const error = screen.getByText(REQUIRED_ERROR)
     expect(error).not.toBeNull()
   })
 

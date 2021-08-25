@@ -6,13 +6,15 @@ import { RegisterOptions } from 'react-hook-form'
 
 import { FieldBase } from '~shared/types/field'
 
+import { REQUIRED_ERROR } from '~constants/validation'
+
 export const createBaseValidationRules = (
   schema: FieldBase,
 ): RegisterOptions => {
   return {
     required: {
       value: schema.required,
-      message: 'This field is required',
+      message: REQUIRED_ERROR,
     },
   }
 }
