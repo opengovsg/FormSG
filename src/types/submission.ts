@@ -3,23 +3,13 @@ import { Document, Model, QueryCursor } from 'mongoose'
 import {
   EmailModeSubmissionBase,
   StorageModeSubmissionBase,
-  StorageModeSubmissionDto,
   StorageModeSubmissionMetadata,
-  StorageModeSubmissionMetadataList,
   SubmissionBase,
   SubmissionType,
   WebhookResponse,
 } from '../../shared/types/submission'
 
 import { IFormSchema } from './form'
-
-export {
-  SubmissionType,
-  StorageModeSubmissionDto,
-  StorageModeSubmissionMetadata,
-  StorageModeSubmissionMetadataList,
-  WebhookResponse,
-}
 
 export interface WebhookData {
   formId: string

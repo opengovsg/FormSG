@@ -7,17 +7,15 @@ import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
 import {
+  ErrorDto,
   FormAuthType,
+  FormSubmissionMetadataQueryDto,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
-} from '../../../../types'
-import {
-  EncryptSubmissionDto,
-  ErrorDto,
-  FormSubmissionMetadataQueryDto,
   SubmissionErrorDto,
   SubmissionResponseDto,
-} from '../../../../types/api'
+} from '../../../../../shared/types'
+import { EncryptSubmissionDto } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'

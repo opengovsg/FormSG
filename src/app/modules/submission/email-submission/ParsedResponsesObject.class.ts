@@ -1,10 +1,9 @@
 import { err, ok, Result } from 'neverthrow'
 
+import { FormAuthType, FormResponseMode } from '../../../../../shared/types'
 import {
   FieldResponse,
-  FormAuthType,
   FormFieldSchema,
-  FormResponseMode,
   IFormDocument,
 } from '../../../../types'
 import { validateField } from '../../../utils/field-validation'

@@ -6,8 +6,10 @@ import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { FormResponseMode } from '../../../../types'
-import { DuplicateFormBodyDto } from '../../../../types/api'
+import {
+  DuplicateFormBodyDto,
+  FormResponseMode,
+} from '../../../../../shared/types'
 import { withUserAuthentication } from '../../auth/auth.middlewares'
 import * as EncryptSubmissionController from '../../submission/encrypt-submission/encrypt-submission.controller'
 

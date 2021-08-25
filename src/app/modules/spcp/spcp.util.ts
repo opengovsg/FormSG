@@ -3,14 +3,9 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
+import { BasicField, FormAuthType } from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
-import {
-  BasicField,
-  FormAuthType,
-  IFormSchema,
-  MapRouteError,
-  SPCPFieldTitle,
-} from '../../../types'
+import { IFormSchema, MapRouteError, SPCPFieldTitle } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import {
   AuthTypeMismatchError,

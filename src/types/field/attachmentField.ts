@@ -1,12 +1,7 @@
-import {
-  AttachmentFieldBase,
-  AttachmentSize,
-  BasicField,
-} from '../../../shared/types/field'
+import { AttachmentFieldBase, BasicField } from '../../../shared/types'
 
 import { IFieldSchema } from './baseField'
 
-export { AttachmentSize, AttachmentFieldBase }
 export interface IAttachmentFieldSchema
   extends AttachmentFieldBase,
     IFieldSchema {

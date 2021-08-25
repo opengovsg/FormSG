@@ -4,11 +4,9 @@ import UIDGenerator from 'uid-generator'
 import {
   BasicField,
   FormResponseMode,
-  IFieldSchema,
-  IMyInfoSchema,
-  ITableFieldSchema,
   MyInfoAttribute,
-} from '../../../types'
+} from '../../../../shared/types'
+import { IFieldSchema, IMyInfoSchema, ITableFieldSchema } from '../../../types'
 
 const uidgen3 = new UIDGenerator(256, UIDGenerator.BASE62)
 

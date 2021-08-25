@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose'
 
-import { AttachmentSize, IAttachmentFieldSchema } from '../../../types/field'
+import { AttachmentSize } from '../../../../shared/types'
+import { IAttachmentFieldSchema } from '../../../types/field'
 
 const createAttachmentFieldSchema = () => {
   const AttachmentFieldSchema = new Schema<IAttachmentFieldSchema>({

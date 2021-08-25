@@ -2,8 +2,8 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import moment from 'moment-timezone'
 
+import { DateSelectedValidation } from '../../../../../shared/types'
 import {
-  DateSelectedValidation,
   IDateFieldSchema,
   OmitUnusedValidatorProps,
 } from '../../../../types/field'

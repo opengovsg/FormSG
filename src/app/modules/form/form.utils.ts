@@ -1,9 +1,8 @@
+import { FormPermission, FormResponseMode } from '../../../../shared/types'
 import {
   FormFieldSchema,
   FormLinkView,
   FormLogicSchema,
-  FormPermission,
-  FormResponseMode,
   IEncryptedFormSchema,
   IForm,
   IFormDocument,

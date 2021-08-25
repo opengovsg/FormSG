@@ -1,8 +1,6 @@
-import { BasicField, DropdownFieldBase } from '../../../shared/types/field'
+import { BasicField, DropdownFieldBase } from '../../../shared/types'
 
 import { IFieldSchema } from './baseField'
-
-export { DropdownFieldBase }
 
 export interface IDropdownFieldSchema extends DropdownFieldBase, IFieldSchema {
   fieldType: BasicField.Dropdown

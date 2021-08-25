@@ -1,5 +1,4 @@
-import { FormAuthType } from 'src/types'
-
+import { FormAuthType } from '../../../../shared/types'
 import { ApplicationError } from '../core/core.errors'
 
 export class FormNotFoundError extends ApplicationError {

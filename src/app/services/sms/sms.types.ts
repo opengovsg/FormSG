@@ -1,10 +1,10 @@
 import { Document, Model } from 'mongoose'
 import { Twilio } from 'twilio'
 
+import { FormPermission } from '../../../../shared/types'
 import {
   AdminContactOtpData,
   FormOtpData,
-  FormPermission,
   IFormSchema,
   IUserSchema,
 } from '../../../types'

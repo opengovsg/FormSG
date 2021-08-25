@@ -4,13 +4,15 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
   BasicField,
-  EmailAdminDataField,
   FormResponseMode,
+  SubmissionType,
+} from '../../../../../shared/types'
+import {
+  EmailAdminDataField,
   IAttachmentInfo,
   IEmailSubmissionSchema,
   IPopulatedEmailForm,
   IPopulatedForm,
-  SubmissionType,
 } from '../../../../types'
 import { ParsedEmailFormFieldResponse } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'

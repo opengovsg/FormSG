@@ -10,50 +10,23 @@ import { Merge, SetOptional } from 'type-fest'
 
 import {
   AdminDashboardFormMetaDto,
-  EmailFormSettings,
-  FormAuthType,
   FormBase,
-  FormColorTheme,
   FormEndPage,
+  FormField,
+  FormFieldDto,
   FormPermission,
-  FormResponseMode,
   FormSettings,
   FormStartPage,
-  FormStatus,
-  FormWebhook,
-  PublicEmailFormDto,
+  LogicDto,
+  MyInfoAttribute,
   PublicFormDto,
-  PublicStorageFormDto,
-  StorageFormSettings,
-} from '../../shared/types/form/form'
+} from '../../shared/types'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
 import { PublicView } from './database'
-import {
-  FormField,
-  FormFieldSchema,
-  FormFieldWithId,
-  MyInfoAttribute,
-} from './field'
-import { FormLogicSchema, LogicDto } from './form_logic'
+import { FormFieldSchema } from './field'
+import { FormLogicSchema } from './form_logic'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
-
-export {
-  FormAuthType,
-  FormColorTheme,
-  FormEndPage,
-  FormStartPage,
-  FormStatus,
-  FormResponseMode,
-  FormWebhook,
-  FormSettings,
-  StorageFormSettings,
-  EmailFormSettings,
-  PublicFormDto,
-  PublicStorageFormDto,
-  PublicEmailFormDto,
-  FormPermission,
-}
 
 // Typings
 export type PublicForm = Merge<
@@ -143,7 +116,7 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   updateFormFieldById<T>(
     this: T,
     fieldId: string,
-    newField: FormFieldWithId,
+    newField: FormFieldDto,
   ): Promise<T | null>
 
   updateFormCollaborators<T>(

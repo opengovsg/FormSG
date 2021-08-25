@@ -2,6 +2,10 @@
 import {
   BasicField,
   FieldBase,
+  LogicConditionState,
+  LogicType,
+} from '../../../shared/types'
+import {
   FieldResponse,
   IClientFieldSchema,
   IConditionSchema,
@@ -10,8 +14,6 @@ import {
   IPreventSubmitLogicSchema,
   IShowFieldsLogicSchema,
   LogicCondition,
-  LogicConditionState,
-  LogicType,
 } from '../../types'
 
 const LOGIC_CONDITIONS: LogicCondition[] = [

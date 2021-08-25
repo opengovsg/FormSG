@@ -6,7 +6,7 @@ import {
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
 
-import { MyInfoAttribute as InternalAttr } from '../../../types'
+import { MyInfoAttribute as InternalAttr } from '../../../../shared/types'
 
 import {
   formatAddress,

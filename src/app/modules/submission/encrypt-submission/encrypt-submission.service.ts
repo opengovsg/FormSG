@@ -7,11 +7,13 @@ import { Transform } from 'stream'
 
 import {
   FormResponseMode,
+  StorageModeSubmissionMetadata,
+  StorageModeSubmissionMetadataList,
+} from '../../../../../shared/types'
+import {
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
-  StorageModeSubmissionMetadata,
-  StorageModeSubmissionMetadataList,
   SubmissionCursorData,
   SubmissionData,
 } from '../../../../types'

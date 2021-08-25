@@ -1,7 +1,6 @@
 /* eslint-disable typesafe/no-throw-sync-func */
 import { ObjectId } from 'bson'
 import { pick } from 'lodash'
-import { TableRow } from 'shared/types/response'
 
 import {
   ProcessedAttachmentResponse,
@@ -10,12 +9,6 @@ import {
   ProcessedTableResponse,
 } from 'src/app/modules/submission/submission.types'
 import {
-  AttachmentSize,
-  BasicField,
-  CheckboxResponse,
-  Column,
-  DropdownFieldBase,
-  FormField,
   FormFieldSchema,
   IAttachmentFieldSchema,
   IAttachmentResponse,
@@ -28,9 +21,19 @@ import {
   IRatingFieldSchema,
   IShortTextFieldSchema,
   ITableFieldSchema,
-  ShortTextFieldBase,
   SingleAnswerFieldResponse,
 } from 'src/types'
+
+import {
+  AttachmentSize,
+  BasicField,
+  CheckboxResponse,
+  Column,
+  DropdownFieldBase,
+  FormField,
+  ShortTextFieldBase,
+  TableRow,
+} from '../../../../shared/types'
 
 export const generateDefaultField = (
   fieldType: BasicField,

@@ -1,13 +1,6 @@
-import {
-  BasicField,
-  NumberFieldBase,
-  NumberSelectedValidation,
-  NumberValidationOptions,
-} from '../../../shared/types/field'
+import { BasicField, NumberFieldBase } from '../../../shared/types'
 
 import { IFieldSchema } from './baseField'
-
-export { NumberValidationOptions, NumberSelectedValidation, NumberFieldBase }
 
 export interface INumberFieldSchema extends NumberFieldBase, IFieldSchema {
   fieldType: BasicField.Number

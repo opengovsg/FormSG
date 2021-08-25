@@ -1,8 +1,7 @@
-import { BasicField, ShortTextFieldBase } from '../../../shared/types/field'
+import { BasicField, ShortTextFieldBase } from '../../../shared/types'
 
 import { IFieldSchema } from './baseField'
 
-export { ShortTextFieldBase }
 export interface IShortTextFieldSchema
   extends ShortTextFieldBase,
     IFieldSchema {

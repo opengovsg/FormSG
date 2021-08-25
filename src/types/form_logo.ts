@@ -1,12 +1,6 @@
 import { Document } from 'mongoose'
 
-import {
-  CustomFormLogo,
-  FormLogoBase,
-  FormLogoState,
-} from '../../shared/types/form/form_logo'
-
-export { FormLogoState, FormLogoBase, CustomFormLogo }
+import { CustomFormLogo, FormLogoBase } from '../../shared/types'
 
 export type IFormLogoSchema = FormLogoBase & Document
 export type ICustomFormLogoSchema = CustomFormLogo & Document

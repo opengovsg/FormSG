@@ -1,15 +1,14 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact, flattenDeep, sumBy } from 'lodash'
 
+import { BasicField, FormAuthType } from '../../../../../shared/types'
 import * as FileValidation from '../../../../../shared/utils/file-validation'
 import {
-  BasicField,
   EmailAdminDataField,
   EmailDataCollationToolField,
   EmailDataFields,
   EmailDataForOneField,
   EmailRespondentConfirmationField,
-  FormAuthType,
   IAttachmentInfo,
   MapRouteError,
   SPCPFieldTitle,

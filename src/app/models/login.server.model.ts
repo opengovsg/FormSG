@@ -1,7 +1,7 @@
 import { Mongoose, Schema } from 'mongoose'
 
+import { FormAuthType } from '../../../shared/types'
 import {
-  FormAuthType,
   FormBillingStatistic,
   ILoginModel,
   ILoginSchema,

@@ -9,32 +9,39 @@ import mongoose, {
 } from 'mongoose'
 import validator from 'validator'
 
-import { MB } from '../../../shared/constants/file'
 import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
   EMAIL_PUBLIC_FORM_FIELDS,
+  MB,
   STORAGE_FORM_SETTINGS_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
-} from '../../../shared/constants/form'
-import { reorder } from '../../../shared/utils/immutable-array-fns'
-import { getApplicableIfStates } from '../../shared/util/logic'
+} from '../../../shared/constants'
 import {
+  AdminDashboardFormMetaDto,
   BasicField,
   EmailFormSettings,
   FormAuthType,
   FormColorTheme,
   FormEndPage,
   FormField,
-  FormFieldWithId,
-  FormLogicSchema,
+  FormFieldDto,
   FormLogoState,
-  FormOtpData,
   FormPermission,
   FormResponseMode,
   FormSettings,
   FormStartPage,
   FormStatus,
+  LogicConditionState,
+  LogicDto,
+  LogicType,
+  StorageFormSettings,
+} from '../../../shared/types'
+import { reorder } from '../../../shared/utils/immutable-array-fns'
+import { getApplicableIfStates } from '../../shared/util/logic'
+import {
+  FormLogicSchema,
+  FormOtpData,
   IEmailFormModel,
   IEmailFormSchema,
   IEncryptedFormModel,
@@ -45,14 +52,9 @@ import {
   IFormSchema,
   ILogicSchema,
   IPopulatedForm,
-  LogicConditionState,
-  LogicDto,
-  LogicType,
   PickDuplicateForm,
   PublicForm,
-  StorageFormSettings,
 } from '../../types'
-import { AdminDashboardFormMetaDto } from '../../types/api/form'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
@@ -595,7 +597,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormDocumentSchema.methods.updateFormFieldById = function (
     fieldId: string,
-    newField: FormFieldWithId,
+    newField: FormFieldDto,
   ) {
     const fieldToUpdate = getFormFieldById(this.form_fields, fieldId)
     if (!fieldToUpdate) return Promise.resolve(null)

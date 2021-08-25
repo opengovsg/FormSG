@@ -1,10 +1,10 @@
+import { FormStartPage } from '../../../../shared/types'
 import {
-  FormStartPage,
   IAgencyDocument,
   IForm,
   IFormFeedbackSchema,
   IFormStatisticsTotalModel,
-} from 'src/types'
+} from '../../../types'
 
 export type QueryDataMap = {
   generalQueryModel: IFormStatisticsTotalModel

@@ -2,8 +2,7 @@ import { ObjectId } from 'bson-ext'
 import { Document, Model } from 'mongoose'
 import { SetOptional } from 'type-fest'
 
-import { PublicAgencyDto } from '../../shared/types/agency'
-import { UserBase } from '../../shared/types/user'
+import { PublicAgencyDto, UserBase } from '../../shared/types'
 
 import { AgencyDocument, IAgencySchema } from './agency'
 import { PublicView } from './database'

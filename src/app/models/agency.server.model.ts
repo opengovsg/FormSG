@@ -1,11 +1,11 @@
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
+import { PublicAgencyDto } from '../../../shared/types'
 import {
   AgencyInstanceMethods,
   IAgencyDocument,
   IAgencyModel,
-  PublicAgencyDto,
 } from '../../types'
 
 export const AGENCY_SCHEMA_ID = 'Agency'

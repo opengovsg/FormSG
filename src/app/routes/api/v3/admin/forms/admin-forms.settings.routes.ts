@@ -1,8 +1,11 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { FormAuthType, FormStatus } from '../../../../../../types'
-import { SettingsUpdateDto } from '../../../../../../types/api'
+import {
+  FormAuthType,
+  FormStatus,
+  SettingsUpdateDto,
+} from '../../../../../../../shared/types'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 
 export const AdminFormsSettingsRouter = Router()

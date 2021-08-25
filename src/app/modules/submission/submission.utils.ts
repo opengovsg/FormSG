@@ -2,13 +2,8 @@ import { differenceBy, intersectionBy, keyBy, uniqBy } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
-import {
-  BasicField,
-  FieldResponse,
-  FormFieldSchema,
-  FormResponseMode,
-  IFormDocument,
-} from '../../../types'
+import { BasicField, FormResponseMode } from '../../../../shared/types'
+import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 
 import { IncomingSubmission } from './IncomingSubmission.class'

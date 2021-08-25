@@ -10,13 +10,13 @@ import mongoose, { LeanDocument } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
+import { MyInfoAttribute } from '../../../../shared/types'
 import {
   Environment,
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
-  MyInfoAttribute,
   PossiblyPrefilledField,
 } from '../../../types'
 import config from '../../config/config'

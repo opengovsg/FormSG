@@ -9,45 +9,42 @@ import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../../shared/constants/file'
-import { DeserializeTransform } from '../../../../../shared/types/utils'
-import {
-  BasicField,
-  FormAuthType,
-  FormColorTheme,
-  FormFieldWithId,
-  FormLogoState,
-  FormResponseMode,
-  FormSettings,
-  IForm,
-  IFormDocument,
-  IPopulatedForm,
-  LogicConditionState,
-  LogicDto,
-  LogicIfValue,
-  LogicType,
-  PublicFormDto,
-} from '../../../../types'
 import {
   AdminDashboardFormMetaDto,
+  BasicField,
   CreateFormBodyDto,
+  DeserializeTransform,
   DuplicateFormBodyDto,
-  EncryptSubmissionDto,
   EndPageUpdateDto,
   ErrorDto,
   FieldCreateDto,
   FieldUpdateDto,
+  FormAuthType,
+  FormColorTheme,
   FormDto,
   FormFeedbackMetaDto,
   FormFieldDto,
-  FormUpdateParams,
-  ParsedEmailModeSubmissionBody,
+  FormLogoState,
+  FormResponseMode,
+  FormSettings,
+  LogicConditionState,
+  LogicDto,
+  LogicIfValue,
+  LogicType,
   PermissionsUpdateDto,
   PreviewFormViewDto,
   PrivateFormErrorDto,
+  PublicFormDto,
   SettingsUpdateDto,
   SmsCountsDto,
   StartPageUpdateDto,
   SubmissionCountQueryDto,
+} from '../../../../../shared/types'
+import { IForm, IFormDocument, IPopulatedForm } from '../../../../types'
+import {
+  EncryptSubmissionDto,
+  FormUpdateParams,
+  ParsedEmailModeSubmissionBody,
 } from '../../../../types/api'
 import { smsConfig } from '../../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -1709,7 +1706,7 @@ export const handleUpdateFormField = [
  */
 export const _handleCreateFormField: ControllerHandler<
   { formId: string },
-  FormFieldWithId | ErrorDto,
+  FormFieldDto | ErrorDto,
   FieldCreateDto
 > = (req, res) => {
   const { formId } = req.params
@@ -1736,7 +1733,7 @@ export const _handleCreateFormField: ControllerHandler<
         AdminFormService.createFormField(form, formFieldToCreate),
       )
       .map((createdFormField) =>
-        res.status(StatusCodes.OK).json(createdFormField as FormFieldWithId),
+        res.status(StatusCodes.OK).json(createdFormField as FormFieldDto),
       )
       .mapErr((error) => {
         logger.error({

@@ -1,27 +1,16 @@
 import { Document } from 'mongoose'
 
 import {
+  BasicField,
   FormCondition,
   FormLogicBase,
   LogicConditionState,
-  LogicDto,
-  LogicIfValue,
   LogicType,
   PreventSubmitLogic,
   ShowFieldLogic,
-} from '../../shared/types/form/form_logic'
+} from '../../shared/types'
 
-import { BasicField, IFieldSchema } from './field'
-
-export {
-  LogicConditionState,
-  LogicIfValue,
-  LogicType,
-  LogicDto,
-  FormLogicBase,
-  ShowFieldLogic,
-  PreventSubmitLogic,
-}
+import { IFieldSchema } from './field'
 
 export interface ICondition extends FormCondition {
   field: IFieldSchema['_id']

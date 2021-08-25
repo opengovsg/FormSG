@@ -1,6 +1,6 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 
-import { FormAuthType } from '../../../types'
+import { FormAuthType } from '../../../../shared/types'
 
 export const redirectParamsMiddleware = celebrate({
   [Segments.QUERY]: Joi.object({

@@ -1,8 +1,7 @@
-import { BasicField, MobileFieldBase } from '../../../shared/types/field'
+import { BasicField, MobileFieldBase } from '../../../shared/types'
 
 import { IFieldSchema } from './baseField'
 
-export { MobileFieldBase }
 export interface IVerifiableMobileField extends MobileFieldBase {
   isVerifiable: true
 }

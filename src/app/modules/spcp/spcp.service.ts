@@ -4,8 +4,10 @@ import fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { FormAuthType } from '../../../types'
-import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
+import {
+  FormAuthType,
+  PublicFormAuthValidateEsrvcIdDto,
+} from '../../../../shared/types'
 import {
   ISpcpMyInfo,
   spcpMyInfoConfig,

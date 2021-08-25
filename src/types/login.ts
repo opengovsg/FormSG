@@ -4,7 +4,7 @@ import { Merge } from 'type-fest'
 import {
   FormBillingStatistic as SharedFormBillingStatistic,
   LoginBase,
-} from '../../shared/types/billing'
+} from '../../shared/types'
 
 import { IAgencySchema } from './agency'
 import { IFormSchema, IPopulatedForm } from './form'

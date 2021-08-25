@@ -1,10 +1,10 @@
 import { Schema } from 'mongoose'
 
 import {
-  INumberFieldSchema,
   NumberSelectedValidation,
   NumberValidationOptions,
-} from '../../../types'
+} from '../../../../shared/types'
+import { INumberFieldSchema } from '../../../types'
 import { WithCustomMinMax } from '../../../types/field/utils/virtuals'
 
 import { MyInfoSchema } from './baseField'

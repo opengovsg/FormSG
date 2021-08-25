@@ -1,8 +1,6 @@
-import { BasicField, HomenoFieldBase } from '../../../shared/types/field'
+import { BasicField, HomenoFieldBase } from '../../../shared/types'
 
 import { IFieldSchema } from './baseField'
-
-export { HomenoFieldBase }
 
 export interface IHomenoFieldSchema extends HomenoFieldBase, IFieldSchema {
   fieldType: BasicField.HomeNo

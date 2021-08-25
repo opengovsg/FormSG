@@ -1,4 +1,4 @@
-import { FormResponseMode } from '../../../types'
+import { FormResponseMode } from '../../../../shared/types'
 import { ApplicationError } from '../core/core.errors'
 
 /**

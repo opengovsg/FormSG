@@ -1,13 +1,8 @@
 import { get } from 'lodash'
-import { FormField } from 'shared/types/field'
 
 import { types as basicTypes } from '../../../../shared/constants/field/basic'
-import {
-  BasicField,
-  IEmailFieldSchema,
-  IVerifiableMobileField,
-  TableRow,
-} from '../../../types'
+import { BasicField, FormField, TableRow } from '../../../../shared/types'
+import { IEmailFieldSchema, IVerifiableMobileField } from '../../../types'
 import {
   ColumnResponse,
   ProcessedAttachmentResponse,

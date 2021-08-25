@@ -1,7 +1,9 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { FormAuthType } from '../../../types'
-import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
+import {
+  FormAuthType,
+  PublicFormAuthValidateEsrvcIdDto,
+} from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'

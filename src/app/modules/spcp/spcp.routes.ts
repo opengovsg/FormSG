@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import { FormAuthType } from '../../../types'
+import { FormAuthType } from '../../../../shared/types'
 
 import * as SpcpController from './spcp.controller'
 import {

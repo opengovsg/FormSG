@@ -1,11 +1,12 @@
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
-import { FormAuthType, IPopulatedEmailForm } from '../../../../types'
 import {
-  ParsedEmailModeSubmissionBody,
+  FormAuthType,
   SubmissionErrorDto,
   SubmissionResponseDto,
-} from '../../../../types/api'
+} from '../../../../../shared/types'
+import { IPopulatedEmailForm } from '../../../../types'
+import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'

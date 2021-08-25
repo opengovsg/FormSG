@@ -1,15 +1,18 @@
 import { Opaque } from 'type-fest'
 
 import {
+  BasicField,
+  CheckboxResponse,
+  TableResponse,
+} from '../../../../shared/types'
+import {
   EncryptAttachmentResponse,
   ParsedEmailAttachmentResponse,
 } from '../../../types/api'
-import { BasicField, FormFieldSchema } from '../../../types/field'
+import { FormFieldSchema } from '../../../types/field'
 import {
-  CheckboxResponse,
   FieldResponse,
   SingleAnswerFieldResponse,
-  TableResponse,
 } from '../../../types/response'
 
 export type ProcessedResponse = {

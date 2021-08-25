@@ -3,8 +3,8 @@ import { inRange } from 'lodash'
 import moment from 'moment-timezone'
 import { err, ok, Result } from 'neverthrow'
 
+import { WebhookResponse } from '../../../../shared/types'
 import { stringifySafe } from '../../../../shared/utils/stringify-safe'
-import { WebhookResponse } from '../../../types'
 import { TIMEZONE } from '../../constants/timezone'
 import { randomUniformInt } from '../../utils/random-uniform'
 

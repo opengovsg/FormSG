@@ -1,8 +1,8 @@
 import mongoose from 'mongoose'
 import { errAsync, ResultAsync } from 'neverthrow'
 
+import { FormAuthType } from '../../../../shared/types'
 import {
-  FormAuthType,
   FormBillingStatistic,
   ILoginSchema,
   IPopulatedForm,

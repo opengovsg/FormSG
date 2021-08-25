@@ -6,10 +6,9 @@ import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
 import { types as myInfoTypes } from '../../../../shared/constants/field/myinfo'
+import { BasicField, FormAuthType } from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
 import {
-  BasicField,
-  FormAuthType,
   IFormSchema,
   IHashes,
   IMyInfo,

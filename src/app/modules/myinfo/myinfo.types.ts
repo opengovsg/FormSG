@@ -1,10 +1,5 @@
-import {
-  Environment,
-  FormAuthType,
-  IFormSchema,
-  IMyInfo,
-  MyInfoAttribute,
-} from '../../../types'
+import { FormAuthType, MyInfoAttribute } from '../../../../shared/types'
+import { Environment, IFormSchema, IMyInfo } from '../../../types'
 import { ISpcpMyInfo } from '../../config/features/spcp-myinfo.config'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 

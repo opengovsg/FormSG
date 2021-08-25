@@ -4,10 +4,10 @@ import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
+import { WebhookResponse } from '../../../../shared/types'
 import {
   IEncryptedSubmissionSchema,
   ISubmissionSchema,
-  WebhookResponse,
   WebhookView,
 } from '../../../types'
 import { aws as AwsConfig } from '../../config/config'
