@@ -1,7 +1,7 @@
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import Link from '../Link'
+import Button from '~components/Button'
 
 import { Searchbar, SearchbarProps } from './Searchbar'
 import { useSearchbar } from './useSearchbar'
@@ -31,7 +31,7 @@ export const ExpandableClosed: Story<SearchbarProps> = ({
     <Searchbar
       ref={inputRef}
       isExpanded={isExpanded}
-      onSearchIconClick={isExpanded ? undefined : handleExpansion}
+      onSearchIconClick={handleExpansion}
       {...args}
     />
   )
@@ -82,18 +82,18 @@ export const Playground: Story<SearchbarProps> = ({
       <Text textStyle="h2">Form examples</Text>
       <Flex justify="space-between">
         <Text textStyle="body-1">Explore forms and use as a template</Text>
-        <Flex align="center" w="20rem" justify="flex-end">
-          {isExpanded && (
-            <Link variant="inline" mr="1rem" onClick={handleCollapse}>
-              Reset
-            </Link>
-          )}
+        <Flex align="center" maxW="25rem" justify="flex-end">
           <Searchbar
             ref={inputRef}
             onSearchIconClick={isExpanded ? undefined : handleExpansion}
             isExpanded={isExpanded}
             {...args}
           />
+          {isExpanded && (
+            <Button variant="clear" ml="1rem" onClick={handleCollapse}>
+              Reset
+            </Button>
+          )}
         </Flex>
       </Flex>
     </Box>
