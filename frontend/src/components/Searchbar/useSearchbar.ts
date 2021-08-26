@@ -2,13 +2,7 @@
  * Hook exposing convenient variables for use with `Searchbar` component.
  */
 
-import {
-  RefObject,
-  useCallback,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react'
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 
 type UseSearchbarReturn = {
   inputRef: RefObject<HTMLInputElement>
@@ -33,7 +27,7 @@ export const useSearchbar = ({
   const [isExpanded, onExpansionChange] = useState(isInitiallyExpanded)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (isFocusOnExpand && isExpanded) {
       inputRef.current?.focus()
     }
