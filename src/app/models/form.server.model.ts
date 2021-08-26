@@ -26,13 +26,11 @@ import {
   EmailFormSettings,
   EndPage,
   FormField,
-  FormFieldSchema,
   FormFieldWithId,
   FormLogicSchema,
   FormLogoState,
   FormOtpData,
   FormSettings,
-  IEmailFieldSchema,
   IEmailFormModel,
   IEmailFormSchema,
   IEncryptedFormModel,
@@ -674,33 +672,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
   }
 
-  function hasFixableEmailDomains(
-    field: FormFieldSchema,
-  ): field is IEmailFieldSchema {
-    return !!field.allowedEmailDomains
-  }
-
   // Returns the form with populated admin details
   FormSchema.statics.getFullFormById = async function (
     formId: string,
     fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null> {
-    return (
-      this.findById(formId, fields).populate({
-        path: 'admin',
-        populate: {
-          path: 'agency',
-        },
-      }) as Query<IPopulatedForm, IFormDocument>
-    ).then((result) => {
-      result.form_fields.filter(hasFixableEmailDomains).forEach((field) => {
-        field.allowedEmailDomains = field.allowedEmailDomains.map((domain) =>
-          domain.toLowerCase(),
-        )
-      })
-
-      return result
-    })
+    return this.findById(formId, fields).populate({
+      path: 'admin',
+      populate: {
+        path: 'agency',
+      },
+    }) as Query<IPopulatedForm, IFormDocument>
   }
 
   // Deactivate form by ID
