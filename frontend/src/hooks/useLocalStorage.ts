@@ -43,7 +43,9 @@ export const useLocalStorage = <T>(
       // We dispatch a custom event so every useLocalStorage hook are notified
       window.dispatchEvent(new Event(LOCAL_STORAGE_EVENT))
       // eslint-disable-next-line no-empty
-    } catch {}
+    } catch {
+      // TODO (#2640) Pass in some sort of logger here.
+    }
   }
   useEffect(() => {
     setStoredValue(readValue())
