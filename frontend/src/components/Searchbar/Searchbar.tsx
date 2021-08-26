@@ -56,26 +56,24 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
       [onSearch],
     )
 
-    if (!isExpanded) {
-      return (
-        <IconButton
-          aria-label="Expand search"
-          icon={<BiSearch />}
-          variant="clear"
-          colorScheme="secondary"
-          onClick={onSearchIconClick}
-          sx={styles.icon}
-        />
-      )
-    }
-
     return (
       <InputGroup flex={isExpanded ? 1 : 0}>
-        <InputLeftElement pointerEvents="none">
-          <Box __css={styles.icon}>
-            <Icon as={BiSearch} />
-          </Box>
-        </InputLeftElement>
+        {isExpanded ? (
+          <InputLeftElement pointerEvents="none">
+            <Box __css={styles.icon}>
+              <Icon as={BiSearch} />
+            </Box>
+          </InputLeftElement>
+        ) : (
+          <IconButton
+            aria-label="Expand search"
+            icon={<BiSearch />}
+            variant="clear"
+            colorScheme="secondary"
+            onClick={onSearchIconClick}
+            sx={styles.icon}
+          />
+        )}
         <Input
           aria-label="Press enter to search"
           ref={inputRef}

@@ -22,6 +22,7 @@ export const Searchbar: ComponentMultiStyleConfig = {
         },
         field: {
           ...field,
+          display: isExpanded ? 'initial' : 'none',
           w: isExpanded ? '100%' : 0,
           borderColor: isExpanded ? field.borderColor : 'transparent',
           paddingInlineStart: isExpanded ? '2.75rem' : 0,
