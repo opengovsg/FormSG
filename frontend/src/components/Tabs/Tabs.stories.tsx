@@ -31,9 +31,9 @@ const TabTemplate: Story<TabsProps> = (args) => {
         <Tab>Results</Tab>
       </TabList>
       <TabPanels>
-        <TabPanel color={contentFontColour}>Create tab content</TabPanel>
-        <TabPanel color={contentFontColour}>Settings tab content</TabPanel>
-        <TabPanel color={contentFontColour}>Results tab content</TabPanel>
+        <TabPanel color={contentFontColour}>Content of Create tab</TabPanel>
+        <TabPanel color={contentFontColour}>Content of Settings tab</TabPanel>
+        <TabPanel color={contentFontColour}>Content of Results tab</TabPanel>
       </TabPanels>
     </Tabs>
   )
