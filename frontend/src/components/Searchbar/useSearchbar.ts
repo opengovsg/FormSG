@@ -13,7 +13,7 @@ type UseSearchbarReturn = {
 
 export const useSearchbar = ({
   isInitiallyExpanded = false,
-  isFocusOnExpand = false,
+  isFocusOnExpand = true,
 }: {
   /**
    * If `true`, the searchbar will be expanded on initial render.
@@ -21,6 +21,7 @@ export const useSearchbar = ({
   isInitiallyExpanded?: boolean
   /**
    * If `true`, the searchbar will be focused whenever the searchbar is expanded.
+   * Defaults to `true`.
    */
   isFocusOnExpand?: boolean
 }): UseSearchbarReturn => {

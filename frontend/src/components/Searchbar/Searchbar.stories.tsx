@@ -24,7 +24,6 @@ export const ExpandableClosed: Story<SearchbarProps> = ({
 }) => {
   const { isExpanded, inputRef, handleExpansion } = useSearchbar({
     isInitiallyExpanded,
-    isFocusOnExpand: true,
   })
 
   return (
@@ -48,6 +47,7 @@ export const ExpandableOpen: Story<SearchbarProps> = ({
 }) => {
   const { isExpanded, inputRef, handleExpansion } = useSearchbar({
     isInitiallyExpanded,
+    isFocusOnExpand: false,
   })
 
   return (
@@ -70,7 +70,7 @@ export const Playground: Story<SearchbarProps> = ({
   ...args
 }) => {
   const { isExpanded, inputRef, handleExpansion, handleCollapse } =
-    useSearchbar({ isInitiallyExpanded, isFocusOnExpand: true })
+    useSearchbar({ isInitiallyExpanded })
 
   return (
     <Box
@@ -85,7 +85,7 @@ export const Playground: Story<SearchbarProps> = ({
         <Flex align="center" maxW="25rem" justify="flex-end">
           <Searchbar
             ref={inputRef}
-            onSearchIconClick={isExpanded ? undefined : handleExpansion}
+            onSearchIconClick={handleExpansion}
             isExpanded={isExpanded}
             {...args}
           />
