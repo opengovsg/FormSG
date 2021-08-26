@@ -4,6 +4,7 @@ import { Meta, Story } from '@storybook/react'
 
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
 
 import { Attachment, AttachmentProps } from './Attachment'
 
@@ -77,12 +78,13 @@ export const Playground: Story<AttachmentProps> = ({
         isDisabled={isDisabled}
         isReadOnly={isReadOnly}
       >
+        <FormLabel>Attachments are cool</FormLabel>
         <Controller
           render={({ field: { onChange, ...rest } }) => (
             <Attachment
               {...args}
               {...rest}
-              showFileSize={!isInvalid}
+              showFileSize={!isInvalid && args.showFileSize}
               onChange={(file) => {
                 clearErrors(args.name)
                 onChange(file)
