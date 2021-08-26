@@ -25,7 +25,7 @@ export const useSearchbar = ({
    */
   isFocusOnExpand?: boolean
 }): UseSearchbarReturn => {
-  const [isExpanded, onExpansionChange] = useState(isInitiallyExpanded)
+  const [isExpanded, setIsExpanded] = useState(isInitiallyExpanded)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -34,8 +34,8 @@ export const useSearchbar = ({
     }
   }, [isExpanded, isFocusOnExpand])
 
-  const handleExpansion = useCallback(() => onExpansionChange(true), [])
-  const handleCollapse = useCallback(() => onExpansionChange(false), [])
+  const handleExpansion = useCallback(() => setIsExpanded(true), [])
+  const handleCollapse = useCallback(() => setIsExpanded(false), [])
 
   return {
     inputRef,
