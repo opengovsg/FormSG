@@ -1,12 +1,11 @@
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
-import { PublicAgencyDto } from '../../../shared/types/agency'
+import { PublicAgencyDto } from '../../../shared/types'
 import {
   AgencyInstanceMethods,
   IAgencyDocument,
   IAgencyModel,
-  PublicAgency,
 } from '../../types'
 
 export const AGENCY_SCHEMA_ID = 'Agency'
@@ -61,8 +60,8 @@ const AgencySchema = new Schema<
 )
 
 // Methods
-AgencySchema.methods.getPublicView = function (): PublicAgency {
-  return pick(this, Object.keys(PublicAgencyDto.shape)) as PublicAgency
+AgencySchema.methods.getPublicView = function (): PublicAgencyDto {
+  return pick(this, Object.keys(PublicAgencyDto.shape)) as PublicAgencyDto
 }
 
 const compileAgencyModel = (db: Mongoose): IAgencyModel => {

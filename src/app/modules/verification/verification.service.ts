@@ -1,12 +1,12 @@
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
+import { BasicField } from '../../../../shared/types'
 import {
   NUM_OTP_RETRIES,
   SMS_WARNING_TIERS,
 } from '../../../../shared/utils/verification'
 import {
-  BasicField,
   IFormSchema,
   IPopulatedForm,
   IVerificationFieldSchema,
@@ -42,7 +42,6 @@ import {
   OtpExpiredError,
   OtpRequestError,
   OtpRetryExceededError,
-  SmsLimitExceededError,
   TransactionExpiredError,
   TransactionNotFoundError,
   WaitForOtpError,
@@ -304,6 +303,7 @@ export const sendNewOtp = ({
   | InvalidNumberError
   | MailSendError
   | NonVerifiedFieldTypeError
+  | OtpRequestError
 > => {
   return getValidTransaction(transactionId).andThen((transaction) => {
     const logMeta = {
@@ -477,12 +477,20 @@ const sendOtpForField = (
   | InvalidNumberError
   | MailSendError
   | NonVerifiedFieldTypeError
+  | OtpRequestError
 > => {
-  const { fieldType } = field
+  const { fieldType, _id: fieldId } = field
   switch (fieldType) {
     case BasicField.Mobile:
-      // call sms - it should validate the recipient
-      return SmsFactory.sendVerificationOtp(recipient, otp, formId)
+      return fieldId
+        ? FormService.retrieveFormById(formId)
+            // check if we should allow public user to request for otp
+            .andThen((form) => shouldGenerateMobileOtp(form, fieldId))
+            // call sms - it should validate the recipient
+            .andThen(() =>
+              SmsFactory.sendVerificationOtp(recipient, otp, formId),
+            )
+        : errAsync(new MalformedParametersError('Field id not present'))
     case BasicField.Email:
       // call email - it should validate the recipient
       return MailService.sendVerificationOtp(recipient, otp)
@@ -550,34 +558,21 @@ const checkSmsCountAndPerformAction = (
   return okAsync(true)
 }
 
-export const shouldGenerateOtp = ({
-  msgSrvcName,
-  admin,
-  form_fields,
-}: Pick<IFormSchema, 'msgSrvcName' | 'admin' | 'form_fields'>): ResultAsync<
-  true,
-  SmsLimitExceededError | PossibleDatabaseError
-> => {
-  // This check is here to ensure that programmatic pings are rejected.
-  // If the check is solely on whether the form is onboarded,
-  // Pings to form that are not onboarded will go through
-  // Even if the form has no mobile field to verify.
-  const hasVerifiableMobileFields = form_fields?.filter(
-    ({ fieldType, isVerifiable }) =>
-      fieldType === BasicField.Mobile && isVerifiable,
-  )
+/**
+ * Check whether the field in the form is verifiable.
+ * If it is not, then we don't need to generate an OTP.
+ */
+export const shouldGenerateMobileOtp = (
+  { form_fields }: Pick<IFormSchema, 'form_fields'>,
+  fieldId: string,
+): ResultAsync<true, OtpRequestError> => {
+  const isVerifiableMobileField =
+    !!form_fields &&
+    form_fields.filter(
+      ({ _id, isVerifiable }) => fieldId === String(_id) && isVerifiable,
+    ).length > 0
 
-  if (msgSrvcName) {
-    return okAsync(true)
-  }
-
-  if (!hasVerifiableMobileFields) {
-    return errAsync(new OtpRequestError())
-  }
-
-  return SmsService.retrieveFreeSmsCounts(admin._id).andThen((counts) =>
-    hasAdminExceededFreeSmsLimit(counts)
-      ? errAsync(new SmsLimitExceededError())
-      : okAsync(true),
-  )
+  return isVerifiableMobileField
+    ? okAsync(true)
+    : errAsync(new OtpRequestError())
 }

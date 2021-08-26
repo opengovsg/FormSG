@@ -1,7 +1,7 @@
 import { ObjectID } from 'bson'
 import { zipWith } from 'lodash'
 import MockDate from 'mockdate'
-import mongoose, { Query } from 'mongoose'
+import mongoose, { LeanDocument, Query } from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 
 import getAdminVerificationModel from 'src/app/models/admin_verification.server.model'
@@ -10,7 +10,7 @@ import { InvalidDomainError } from 'src/app/modules/auth/auth.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import * as HashUtils from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
-import { IAgencySchema, IPopulatedUser, IUserSchema } from 'src/types'
+import { AgencyDocument, IPopulatedUser, IUserSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -31,7 +31,7 @@ describe('user.service', () => {
   const USER_ID = new ObjectID()
   const ALLOWED_DOMAIN = 'test.gov.sg'
 
-  let defaultAgency: IAgencySchema
+  let defaultAgency: AgencyDocument
   let defaultUser: IUserSchema
 
   beforeAll(async () => {
@@ -369,8 +369,8 @@ describe('user.service', () => {
       )
 
       // Assert
-      const expectedUser: Partial<IPopulatedUser> = {
-        agency: defaultAgency.toObject() as IAgencySchema,
+      const expectedUser: Partial<LeanDocument<IPopulatedUser>> = {
+        agency: defaultAgency.toObject(),
         email: newUserEmail,
         lastAccessed: MOCKED_DATE,
       }
@@ -395,9 +395,9 @@ describe('user.service', () => {
       )
 
       // Assert
-      const expectedUser: Partial<IPopulatedUser> = {
+      const expectedUser: Partial<LeanDocument<IPopulatedUser>> = {
         ...defaultUser.toObject(),
-        agency: defaultAgency.toObject() as IAgencySchema,
+        agency: defaultAgency.toObject(),
         lastAccessed: MOCKED_DATE,
       }
       expect(actualResult.isOk()).toBe(true)

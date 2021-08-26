@@ -183,6 +183,11 @@ export type PublicFormViewDto = {
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form'>
 
+export type SmsCountsDto = {
+  quota: number
+  freeSmsCounts: number
+}
+
 export type AdminFormViewDto = {
   form: AdminFormDto
 }

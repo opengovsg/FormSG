@@ -7,17 +7,15 @@ import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
 import {
-  AuthType,
-  EncryptedSubmissionDto,
-  SubmissionMetadataList,
-} from '../../../../types'
-import {
-  EncryptSubmissionDto,
   ErrorDto,
+  FormAuthType,
   FormSubmissionMetadataQueryDto,
+  StorageModeSubmissionDto,
+  StorageModeSubmissionMetadataList,
   SubmissionErrorDto,
   SubmissionResponseDto,
-} from '../../../../types/api'
+} from '../../../../../shared/types'
+import { EncryptSubmissionDto } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
@@ -186,7 +184,7 @@ const submitEncryptModeForm: ControllerHandler<
   let userInfo
   const { authType } = form
   switch (authType) {
-    case AuthType.MyInfo: {
+    case FormAuthType.MyInfo: {
       logger.error({
         message:
           'Storage mode form is not allowed to have MyInfo authorisation',
@@ -199,7 +197,7 @@ const submitEncryptModeForm: ControllerHandler<
       )
       return res.status(statusCode).json({ message: errorMessage })
     }
-    case AuthType.SP: {
+    case FormAuthType.SP: {
       const jwtPayloadResult = await SpcpService.extractJwt(
         req.cookies,
         authType,
@@ -221,7 +219,7 @@ const submitEncryptModeForm: ControllerHandler<
       uinFin = jwtPayloadResult.value.userName
       break
     }
-    case AuthType.CP: {
+    case FormAuthType.CP: {
       const jwtPayloadResult = await SpcpService.extractJwt(
         req.cookies,
         authType,
@@ -248,7 +246,7 @@ const submitEncryptModeForm: ControllerHandler<
 
   // Encrypt Verified SPCP Fields
   let verified
-  if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
+  if (form.authType === FormAuthType.SP || form.authType === FormAuthType.CP) {
     const encryptVerifiedContentResult =
       VerifiedContentService.getVerifiedContent({
         type: form.authType,
@@ -543,7 +541,7 @@ const validateSubmissionId = celebrate({
  */
 export const getEncryptedResponseUsingQueryParams: ControllerHandler<
   { formId: string },
-  EncryptedSubmissionDto | ErrorDto,
+  StorageModeSubmissionDto | ErrorDto,
   unknown,
   { submissionId: string }
 > = async (req, res) => {
@@ -623,7 +621,7 @@ export const handleGetEncryptedResponseUsingQueryParams = [
  */
 export const handleGetEncryptedResponse: ControllerHandler<
   { formId: string; submissionId: string },
-  EncryptedSubmissionDto | ErrorDto
+  StorageModeSubmissionDto | ErrorDto
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { formId, submissionId } = req.params
@@ -690,7 +688,7 @@ export const handleGetEncryptedResponse: ControllerHandler<
  */
 export const getMetadata: ControllerHandler<
   { formId: string },
-  SubmissionMetadataList | ErrorDto,
+  StorageModeSubmissionMetadataList | ErrorDto,
   unknown,
   FormSubmissionMetadataQueryDto
 > = async (req, res) => {
@@ -724,7 +722,7 @@ export const getMetadata: ControllerHandler<
         // Step 4a: Retrieve specific submission id.
         if (submissionId) {
           return getSubmissionMetadata(formId, submissionId).map((metadata) => {
-            const metadataList: SubmissionMetadataList = metadata
+            const metadataList: StorageModeSubmissionMetadataList = metadata
               ? { metadata: [metadata], count: 1 }
               : { metadata: [], count: 0 }
             return metadataList

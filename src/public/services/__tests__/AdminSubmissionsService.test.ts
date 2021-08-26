@@ -3,10 +3,11 @@ import axios from 'axios'
 import JSZip from 'jszip'
 import { mocked } from 'ts-jest/utils'
 
-import { SubmissionMetadataList } from 'src/types'
-
-import { DateString } from '../../../../shared/types/generic'
-import { SubmissionId } from '../../../../shared/types/submission'
+import {
+  DateString,
+  StorageModeSubmissionMetadataList,
+  SubmissionId,
+} from '../../../../shared/types'
 import * as AdminSubmissionService from '../AdminSubmissionsService'
 import * as formsSdk from '../FormSgSdkService'
 import { ADMIN_FORM_ENDPOINT } from '../UpdateFormService'
@@ -70,7 +71,7 @@ describe('AdminSubmissionsService', () => {
   describe('getSubmissionsMetadataByPage', () => {
     const MOCK_FORM_ID = 'mock–form-id'
     const MOCK_PAGE_NUM = 1
-    const MOCK_RESPONSE: SubmissionMetadataList = {
+    const MOCK_RESPONSE: StorageModeSubmissionMetadataList = {
       count: 1,
       metadata: [
         {
@@ -107,7 +108,7 @@ describe('AdminSubmissionsService', () => {
   describe('getSubmissionMetadataById', () => {
     const MOCK_FORM_ID = 'mock–form-id'
     const MOCK_SUBMISSION_ID = 'fake'
-    const MOCK_RESPONSE: SubmissionMetadataList = {
+    const MOCK_RESPONSE: StorageModeSubmissionMetadataList = {
       count: 1,
       metadata: [
         {

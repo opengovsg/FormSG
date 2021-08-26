@@ -6,10 +6,11 @@ import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
-import { IWebhookResponse, SubmissionWebhookInfo } from 'src/types'
+import { SubmissionWebhookInfo } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { WebhookResponse } from '../../../../../shared/types'
 import { createWebhookQueueHandler } from '../webhook.consumer'
 import { WebhookPushToQueueError } from '../webhook.errors'
 import { WebhookProducer } from '../webhook.producer'
@@ -21,7 +22,7 @@ const MockWebhookService = mocked(WebhookService, true)
 
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
 
-const MOCK_WEBHOOK_SUCCESS_RESPONSE: IWebhookResponse = {
+const MOCK_WEBHOOK_SUCCESS_RESPONSE: WebhookResponse = {
   signature: 'mockSignature',
   webhookUrl: 'mockWebhookUrl',
   response: {
@@ -30,7 +31,7 @@ const MOCK_WEBHOOK_SUCCESS_RESPONSE: IWebhookResponse = {
     status: 200,
   },
 }
-const MOCK_WEBHOOK_FAILURE_RESPONSE: IWebhookResponse = {
+const MOCK_WEBHOOK_FAILURE_RESPONSE: WebhookResponse = {
   signature: 'mockSignature',
   webhookUrl: 'mockWebhookUrl',
   response: {

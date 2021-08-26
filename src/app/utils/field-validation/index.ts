@@ -2,6 +2,7 @@ import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { err, ok, Result } from 'neverthrow'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
+import { BasicField } from '../../../../shared/types'
 import {
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
@@ -10,7 +11,6 @@ import {
   ProcessedTableResponse,
 } from '../../../app/modules/submission/submission.types'
 import {
-  BasicField,
   FieldValidationSchema,
   ITableFieldSchema,
   OmitUnusedValidatorProps,

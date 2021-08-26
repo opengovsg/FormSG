@@ -1,11 +1,11 @@
 import mongoose from 'mongoose'
 import { errAsync, ResultAsync } from 'neverthrow'
 
+import { FormAuthType } from '../../../../shared/types'
 import {
-  AuthType,
+  FormBillingStatistic,
   ILoginSchema,
   IPopulatedForm,
-  LoginStatistic,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getLoginModel from '../../models/login.server.model'
@@ -30,7 +30,7 @@ export const getSpLoginStats = (
   esrvcId: string,
   minDate: Date,
   maxDate: Date,
-): ResultAsync<LoginStatistic[], DatabaseError> => {
+): ResultAsync<FormBillingStatistic[], DatabaseError> => {
   return ResultAsync.fromPromise(
     LoginModel.aggregateLoginStats(esrvcId, minDate, maxDate),
     (error) => {
@@ -60,7 +60,7 @@ export const recordLoginByForm = (
     action: 'recordLoginByForm',
     formId: form._id,
   }
-  if (form.authType === AuthType.NIL) {
+  if (form.authType === FormAuthType.NIL) {
     return errAsync(new FormHasNoAuthError())
   }
   return ResultAsync.fromPromise(LoginModel.addLoginFromForm(form), (error) => {

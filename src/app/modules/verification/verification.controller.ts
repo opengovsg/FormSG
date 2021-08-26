@@ -1,8 +1,8 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 
+import { ErrorDto } from '../../../../shared/types'
 import { SALT_ROUNDS } from '../../../../shared/utils/verification'
-import { ErrorDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta } from '../../utils/request'
@@ -209,12 +209,10 @@ export const _handleGenerateOtp: ControllerHandler<
   // Step 1: Ensure that the form for the specified transaction exists
   return (
     FormService.retrieveFormById(formId)
-      // Step 2: Check if we should allow public user to request for OTP
-      .andThen((form) => VerificationService.shouldGenerateOtp(form))
-      // Step 3: Generate hash and otp
+      // Step 2: Generate hash and otp
       .andThen(() => generateOtpWithHash(logMeta, SALT_ROUNDS))
       .andThen(({ otp, hashedOtp }) =>
-        // Step 4: Send otp
+        // Step 3: Send otp
         VerificationService.sendNewOtp({
           fieldId,
           hashedOtp,

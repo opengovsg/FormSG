@@ -3,7 +3,7 @@ import { Schema } from 'mongoose'
 import {
   TextSelectedValidation,
   TextValidationOptions,
-} from '../../../../types/field'
+} from '../../../../../shared/types'
 import { WithCustomMinMax } from '../../../../types/field/utils/virtuals'
 
 export const TextValidationOptionsSchema = new Schema<

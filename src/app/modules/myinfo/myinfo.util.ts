@@ -6,15 +6,14 @@ import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
 import { types as myInfoTypes } from '../../../../shared/constants/field/myinfo'
+import { BasicField, FormAuthType } from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
 import {
-  AuthType,
-  BasicField,
   IFormSchema,
   IHashes,
   IMyInfo,
-  IPossiblyPrefilledField,
   MapRouteError,
+  PossiblyPrefilledField,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError } from '../core/core.errors'
@@ -60,7 +59,7 @@ const HASH_SALT_ROUNDS = 10
  * @returns object mapping MyInfo attributes to Promises of their hashes
  */
 export const hashFieldValues = (
-  prefilledFormFields: IPossiblyPrefilledField[],
+  prefilledFormFields: PossiblyPrefilledField[],
 ): MyInfoHashPromises => {
   const readOnlyHashPromises: MyInfoHashPromises = {}
 
@@ -292,14 +291,14 @@ export const validateMyInfoForm = <T extends IFormSchema>(
   if (isMyInfoFormWithEsrvcId(form)) {
     return ok(form)
   }
-  return err(new AuthTypeMismatchError(AuthType.MyInfo, form.authType))
+  return err(new AuthTypeMismatchError(FormAuthType.MyInfo, form.authType))
 }
 
 // Typeguard to ensure that form has eserviceId and MyInfo authType
 const isMyInfoFormWithEsrvcId = <F extends IFormSchema>(
   form: F,
 ): form is MyInfoForm<F> => {
-  return form.authType === AuthType.MyInfo && !!form.esrvcId
+  return form.authType === FormAuthType.MyInfo && !!form.esrvcId
 }
 
 /**

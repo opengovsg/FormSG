@@ -3,14 +3,9 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
+import { BasicField, FormAuthType } from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
-import {
-  AuthType,
-  BasicField,
-  IFormSchema,
-  MapRouteError,
-  SPCPFieldTitle,
-} from '../../../types'
+import { IFormSchema, MapRouteError, SPCPFieldTitle } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import {
   AuthTypeMismatchError,
@@ -238,14 +233,14 @@ export const validateSpcpForm = <T extends IFormSchema>(
   if (isSpcpForm(form)) {
     return ok(form)
   }
-  return err(new AuthTypeMismatchError(AuthType.CP, form.authType))
+  return err(new AuthTypeMismatchError(FormAuthType.CP, form.authType))
 }
 
 // Typeguard to ensure that form has eserviceId and correct authType
 const isSpcpForm = <F extends IFormSchema>(form: F): form is SpcpForm<F> => {
   return (
     !!form.authType &&
-    [AuthType.SP, AuthType.CP].includes(form.authType) &&
+    [FormAuthType.SP, FormAuthType.CP].includes(form.authType) &&
     !!form.esrvcId
   )
 }
@@ -300,12 +295,12 @@ export const mapRouteError: MapRouteError = (
 // Generates the target to redirect to for the given form id
 export const getRedirectTarget = (
   formId: string,
-  authType: AuthType.SP | AuthType.CP,
+  authType: FormAuthType.SP | FormAuthType.CP,
   isPersistentLogin?: boolean,
 ): string =>
   `/${formId},${
     // Need to cast to boolean because undefined is allowed as a valid value
     // We are not following corppass's official spec for
     // the target parameter
-    authType === AuthType.SP ? !!isPersistentLogin : false
+    authType === FormAuthType.SP ? !!isPersistentLogin : false
   }`
