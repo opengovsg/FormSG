@@ -102,7 +102,8 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     const handleRemoveFile = useCallback(() => {
       setInternalFile(undefined)
       onChange?.(undefined)
-    }, [onChange])
+      rootRef.current?.focus()
+    }, [onChange, rootRef])
 
     // Bunch of memoization to avoid unnecessary re-renders.
     const processedRootProps = useMemo(() => {
@@ -117,8 +118,9 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             return
           }
         },
+        tabIndex: internalFile ? -1 : 0,
       })
-    }, [getRootProps, inputProps])
+    }, [getRootProps, inputProps, internalFile])
 
     const processedInputProps = useMemo(() => {
       return getInputProps({
