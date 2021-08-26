@@ -1,8 +1,10 @@
 import { useAuth } from '~contexts/AuthContext'
+import { useUser } from '~hooks/useUser'
 import Button from '~components/Button'
 
 export const WorkspacePage = (): JSX.Element => {
-  const { user, logout } = useAuth()
+  const { logout } = useAuth()
+  const { user } = useUser()
 
   return (
     <div>
