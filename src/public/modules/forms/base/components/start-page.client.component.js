@@ -1,6 +1,6 @@
 'use strict'
 
-const { FormLogoState } = require('../../../../../types')
+const { FormLogoState } = require('../../../../../../shared/types')
 
 angular.module('forms').component('startPageComponent', {
   templateUrl: 'modules/forms/base/componentViews/start-page.html',

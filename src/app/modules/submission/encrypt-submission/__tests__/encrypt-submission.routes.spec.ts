@@ -2,11 +2,10 @@ import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
-import { AuthType, Status } from 'src/types'
-
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormAuthType, FormStatus } from '../../../../../../shared/types'
 import { EncryptSubmissionRouter } from '../encrypt-submission.routes'
 
 jest.mock('@opengovsg/spcp-auth-client')
@@ -54,9 +53,9 @@ describe('encrypt-submission.routes', () => {
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
-            authType: AuthType.SP,
+            authType: FormAuthType.SP,
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -77,9 +76,9 @@ describe('encrypt-submission.routes', () => {
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
-            authType: AuthType.SP,
+            authType: FormAuthType.SP,
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -101,9 +100,9 @@ describe('encrypt-submission.routes', () => {
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
-            authType: AuthType.SP,
+            authType: FormAuthType.SP,
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -130,9 +129,9 @@ describe('encrypt-submission.routes', () => {
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
-            authType: AuthType.SP,
+            authType: FormAuthType.SP,
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -160,9 +159,9 @@ describe('encrypt-submission.routes', () => {
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
-            authType: AuthType.SP,
+            authType: FormAuthType.SP,
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -192,9 +191,9 @@ describe('encrypt-submission.routes', () => {
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
-            authType: AuthType.CP,
+            authType: FormAuthType.CP,
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -215,9 +214,9 @@ describe('encrypt-submission.routes', () => {
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
-            authType: AuthType.CP,
+            authType: FormAuthType.CP,
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -239,9 +238,9 @@ describe('encrypt-submission.routes', () => {
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
-            authType: AuthType.CP,
+            authType: FormAuthType.CP,
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -268,9 +267,9 @@ describe('encrypt-submission.routes', () => {
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
-            authType: AuthType.CP,
+            authType: FormAuthType.CP,
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -298,9 +297,9 @@ describe('encrypt-submission.routes', () => {
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
-            authType: AuthType.CP,
+            authType: FormAuthType.CP,
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 

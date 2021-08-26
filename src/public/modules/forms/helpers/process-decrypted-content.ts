@@ -4,11 +4,12 @@ import {
 } from '@opengovsg/formsg-sdk/dist/types'
 import has from 'lodash/has'
 
+import { BasicField } from '../../../../../shared/types'
 import {
   CURRENT_VERIFIED_FIELDS,
   VerifiedKeys,
 } from '../../../../../shared/utils/verified-content'
-import { BasicField, SgidFieldTitle, SPCPFieldTitle } from '../../../../types'
+import { SgidFieldTitle, SPCPFieldTitle } from '../../../../types'
 
 /**
  * Returns a response matching the given type containing the given value.

@@ -4,13 +4,15 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
   BasicField,
+  FormResponseMode,
+  SubmissionType,
+} from '../../../../../shared/types'
+import {
   EmailAdminDataField,
   IAttachmentInfo,
   IEmailSubmissionSchema,
   IPopulatedEmailForm,
   IPopulatedForm,
-  ResponseMode,
-  SubmissionType,
 } from '../../../../types'
 import { ParsedEmailFormFieldResponse } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -188,7 +190,7 @@ export const checkFormIsEmailMode = (
   if (isEmailModeForm(form)) {
     return ok(form)
   }
-  return err(new ResponseModeError(ResponseMode.Email, form.responseMode))
+  return err(new ResponseModeError(FormResponseMode.Email, form.responseMode))
 }
 
 /**

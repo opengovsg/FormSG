@@ -5,7 +5,7 @@ import {
   CreateFormBodyDto,
   DuplicateFormBodyDto,
   FormDto,
-} from '../../../shared/types/form/form'
+} from '../../../shared/types'
 
 export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
 

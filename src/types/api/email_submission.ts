@@ -2,9 +2,9 @@ import { Merge } from 'type-fest'
 
 import {
   AttachmentResponse,
+  EmailModeSubmissionContentDto,
   FieldResponse,
-} from '../../../shared/types/response'
-import { EmailModeSubmissionContentDto } from '../../../shared/types/submission'
+} from '../../../shared/types'
 
 /**
  * AttachmentResponses with additional server injected metadata on email forms.

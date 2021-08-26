@@ -1,10 +1,11 @@
 import { get } from 'lodash'
 
-// Re-use the backend types for now so that we have some type safety.
-// Given that this is used mostly by JavaScript modules, the lack of
-// mongo-specific types should not present a problem.
-// Change the types to frontend equivalents as and when available.
-import { AuthType, BasicField, IForm, IUser } from '../../types'
+import {
+  BasicField,
+  FormAuthType,
+  FormDto,
+  UserDto,
+} from '../../../shared/types'
 
 type BetaFeature = {
   // User-facing name for the feature
@@ -12,7 +13,7 @@ type BetaFeature = {
   // Flag given to the feature in the User schema's betaFlags object
   flag: string
   // Function to match whether a form has this beta feature
-  matches: (form: IForm) => boolean
+  matches: (form: FormDto) => boolean
   /**
    * Some beta features are associated with specific field types.
    * If this is the case for a beta feature, this key indicates
@@ -37,14 +38,14 @@ const BETA_FEATURES: BetaFeature[] = [
   {
     name: 'SGID',
     flag: 'sgid',
-    matches: (form) => form.authType === AuthType.SGID,
+    matches: (form) => form.authType === FormAuthType.SGID,
     // SGID is associated with entire form, not individual field
     fieldType: null,
   },
 ]
 
 const getBetaFeaturesForForm = (
-  form: IForm,
+  form: FormDto,
   betaFeaturesField: BetaFeature[],
 ): string[] => {
   const betaFeatures = new Set<string>()
@@ -57,8 +58,8 @@ const getBetaFeaturesForForm = (
 }
 
 export const getMissingBetaPermissions = (
-  user: IUser,
-  form: IForm,
+  user: UserDto,
+  form: FormDto,
   betaFeaturesField = BETA_FEATURES,
 ): string[] => {
   const betaFeatures = getBetaFeaturesForForm(form, betaFeaturesField)
@@ -78,7 +79,7 @@ export const isBetaField = (
 }
 
 export const userHasAccessToFieldType = (
-  user: IUser,
+  user: UserDto,
   fieldType: BasicField,
   betaFeaturesField = BETA_FEATURES,
 ): boolean => {
@@ -93,6 +94,9 @@ export const userHasAccessToFieldType = (
   )
 }
 
-export const userHasAccessToFeature = (user: IUser, flag: string): boolean => {
+export const userHasAccessToFeature = (
+  user: UserDto,
+  flag: string,
+): boolean => {
   return get(user, ['betaFlags', flag], false)
 }

@@ -1,7 +1,11 @@
 import MockAxios from 'jest-mock-axios'
 
-import { IPopulatedUser, PublicForm, ResponseMode } from '../../../types'
-import { DuplicateFormBody } from '../../../types/api'
+import {
+  DuplicateFormBodyDto,
+  FormResponseMode,
+  PublicFormViewDto,
+  UserDto,
+} from '../../../../shared/types'
 import * as ExamplesService from '../ExamplesService'
 
 jest.mock('axios', () => MockAxios)
@@ -96,13 +100,13 @@ describe('ExamplesService', () => {
       // Arrange
       const MOCK_USER = {
         _id: 'mock-user-id',
-      } as IPopulatedUser
+      } as UserDto
       const MOCK_FORM_ID = 'mock-form-id'
       const expected = {
         title: 'title',
         lastModified: new Date(),
         _id: MOCK_FORM_ID,
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         admin: MOCK_USER,
       }
       const MOCK_DUPLICATE_FORM_BODY = _generateDuplicateFormBody()
@@ -149,13 +153,13 @@ describe('ExamplesService', () => {
       // Arrange
       const MOCK_USER = {
         _id: 'mock-user-id',
-      } as IPopulatedUser
+      } as UserDto
       const MOCK_FORM_ID = 'mock-form-id'
       const expected = {
         _id: MOCK_FORM_ID,
         title: 'mock preview title',
         admin: MOCK_USER,
-      } as unknown as PublicForm
+      } as unknown as PublicFormViewDto
       MockAxios.get.mockResolvedValueOnce({ data: expected })
 
       // Act
@@ -187,10 +191,10 @@ describe('ExamplesService', () => {
 })
 
 // Utils
-const _generateDuplicateFormBody = (): DuplicateFormBody => {
+const _generateDuplicateFormBody = (): DuplicateFormBodyDto => {
   return {
     title: 'title',
-    responseMode: ResponseMode.Email,
+    responseMode: FormResponseMode.Email,
     emails: 'test@example.com',
-  } as DuplicateFormBody
+  } as DuplicateFormBodyDto
 }

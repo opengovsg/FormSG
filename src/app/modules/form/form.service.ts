@@ -2,14 +2,16 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
-  AuthType,
+  FormAuthType,
+  FormResponseMode,
+  FormStatus,
+} from '../../../../shared/types'
+import {
   IEmailFormModel,
   IEncryptedFormModel,
   IFormDocument,
   IFormSchema,
   IPopulatedForm,
-  ResponseMode,
-  Status,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel, {
@@ -197,11 +199,11 @@ export const isFormPublic = (
     return err(new ApplicationError())
   }
   switch (form.status) {
-    case Status.Public:
+    case FormStatus.Public:
       return ok(true)
-    case Status.Archived:
+    case FormStatus.Archived:
       return err(new FormDeletedError())
-    case Status.Private:
+    case FormStatus.Private:
       return err(new PrivateFormError(form.inactiveMessage, form.title))
   }
 }
@@ -265,12 +267,12 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
 }
 
 export const getFormModelByResponseMode = (
-  responseMode: ResponseMode,
+  responseMode: FormResponseMode,
 ): IEmailFormModel | IEncryptedFormModel => {
   switch (responseMode) {
-    case ResponseMode.Email:
+    case FormResponseMode.Email:
       return EmailFormModel
-    case ResponseMode.Encrypt:
+    case FormResponseMode.Encrypt:
       return EncryptedFormModel
   }
 }
@@ -291,7 +293,9 @@ export const checkIsIntranetFormAccess = (
   // and the form has authentication set
   if (
     isIntranetUser &&
-    [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(form.authType)
+    [FormAuthType.SP, FormAuthType.CP, FormAuthType.MyInfo].includes(
+      form.authType,
+    )
   ) {
     logger.warn({
       message:

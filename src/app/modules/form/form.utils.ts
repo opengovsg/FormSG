@@ -1,3 +1,4 @@
+import { FormPermission, FormResponseMode } from '../../../../shared/types'
 import {
   FormFieldSchema,
   FormLinkView,
@@ -9,8 +10,6 @@ import {
   IOnboardedForm,
   IPopulatedEmailForm,
   IPopulatedForm,
-  Permission,
-  ResponseMode,
 } from '../../../types'
 import { smsConfig } from '../../config/features/sms.config'
 import { isMongooseDocumentArray } from '../../utils/mongoose'
@@ -47,7 +46,7 @@ export const transformEmails = (v: string | string[]): string[] => {
 export const isFormEncryptMode = (
   form: IFormSchema | IPopulatedForm,
 ): form is IEncryptedFormSchema => {
-  return form.responseMode === ResponseMode.Encrypt
+  return form.responseMode === FormResponseMode.Encrypt
 }
 
 /**
@@ -58,7 +57,7 @@ export const isFormEncryptMode = (
  * @returns Array of emails
  */
 export const getCollabEmailsWithPermission = (
-  permissionList?: Permission[],
+  permissionList?: FormPermission[],
   writePermission?: boolean,
 ): string[] => {
   if (!permissionList) {
@@ -82,7 +81,7 @@ export const getCollabEmailsWithPermission = (
 export const isEmailModeForm = (
   form: IPopulatedForm,
 ): form is IPopulatedEmailForm => {
-  return form.responseMode === ResponseMode.Email
+  return form.responseMode === FormResponseMode.Email
 }
 
 /**

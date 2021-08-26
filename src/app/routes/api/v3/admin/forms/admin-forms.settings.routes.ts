@@ -1,8 +1,11 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { AuthType, Status } from '../../../../../../types'
-import { SettingsUpdateDto } from '../../../../../../types/api'
+import {
+  FormAuthType,
+  FormStatus,
+  SettingsUpdateDto,
+} from '../../../../../../../shared/types'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 
 export const AdminFormsSettingsRouter = Router()
@@ -12,7 +15,7 @@ export const AdminFormsSettingsRouter = Router()
  */
 const updateSettingsValidator = celebrate({
   [Segments.BODY]: Joi.object<SettingsUpdateDto>({
-    authType: Joi.string().valid(...Object.values(AuthType)),
+    authType: Joi.string().valid(...Object.values(FormAuthType)),
     emails: Joi.alternatives().try(
       Joi.array().items(Joi.string().email()),
       Joi.string().email({ multiple: true }),
@@ -20,7 +23,7 @@ const updateSettingsValidator = celebrate({
     esrvcId: Joi.string().allow(''),
     hasCaptcha: Joi.boolean(),
     inactiveMessage: Joi.string(),
-    status: Joi.string().valid(...Object.values(Status)),
+    status: Joi.string().valid(...Object.values(FormStatus)),
     submissionLimit: Joi.number().allow(null),
     title: Joi.string(),
     webhook: Joi.object({

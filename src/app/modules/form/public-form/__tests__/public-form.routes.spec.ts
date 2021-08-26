@@ -7,11 +7,11 @@ import { mocked } from 'ts-jest/utils'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { MYINFO_COOKIE_NAME } from 'src/app/modules/myinfo/myinfo.constants'
 import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
-import { AuthType, Status } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormAuthType, FormStatus } from '../../../../../../shared/types'
 import * as AuthService from '../../../auth/auth.service'
 import { PublicFormRouter } from '../public-form.routes'
 
@@ -56,16 +56,17 @@ describe('public-form.routes', () => {
       rememberMe: false,
     }
 
-    it('should return 200 with public form when form has AuthType.NIL and valid formId', async () => {
+    it('should return 200 with public form when form has FormAuthType.NIL and valid formId', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
-        formOptions: { status: Status.Public },
+        formOptions: { status: FormStatus.Public },
       })
       // NOTE: This is needed to inject admin info into the form
       const fullForm = await dbHandler.getFullFormById(form._id)
+      expect(fullForm).not.toBeNull()
       const expectedResponseBody = JSON.parse(
         JSON.stringify({
-          form: fullForm.getPublicView(),
+          form: fullForm?.getPublicView(),
           isIntranetUser: false,
         }),
       )
@@ -78,7 +79,7 @@ describe('public-form.routes', () => {
       expect(actualResponse.body).toEqual(expectedResponseBody)
     })
 
-    it('should return 200 with public form when form has AuthType.SP and valid formId', async () => {
+    it('should return 200 with public form when form has FormAuthType.SP and valid formId', async () => {
       // Arrange
       mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
         cb(null, {
@@ -91,9 +92,9 @@ describe('public-form.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
-          authType: AuthType.SP,
+          authType: FormAuthType.SP,
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
         },
       })
       const formId = form._id
@@ -120,7 +121,7 @@ describe('public-form.routes', () => {
       expect(actualResponse.status).toEqual(200)
       expect(actualResponse.body).toEqual(expectedResponseBody)
     })
-    it('should return 200 with public form when form has AuthType.CP and valid formId', async () => {
+    it('should return 200 with public form when form has FormAuthType.CP and valid formId', async () => {
       // Arrange
       mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
         cb(null, {
@@ -134,9 +135,9 @@ describe('public-form.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
-          authType: AuthType.CP,
+          authType: FormAuthType.CP,
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
         },
       })
       const formId = form._id
@@ -164,21 +165,22 @@ describe('public-form.routes', () => {
       expect(actualResponse.status).toEqual(200)
       expect(actualResponse.body).toEqual(expectedResponseBody)
     })
-    it('should return 200 with public form when form has AuthType.MyInfo and valid formId', async () => {
+    it('should return 200 with public form when form has FormAuthType.MyInfo and valid formId', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
-          authType: AuthType.MyInfo,
+          authType: FormAuthType.MyInfo,
           hasCaptcha: false,
-          status: Status.Public,
+          status: FormStatus.Public,
         },
       })
       // NOTE: This is needed to inject admin info into the form
       const fullForm = await dbHandler.getFullFormById(form._id)
+      expect(fullForm).not.toBeNull()
       const expectedResponseBody = JSON.parse(
         JSON.stringify({
-          form: fullForm.getPublicView(),
+          form: fullForm?.getPublicView(),
           spcpSession: { userName: 'S1234567A' },
           isIntranetUser: false,
         }),
@@ -232,7 +234,7 @@ describe('public-form.routes', () => {
     it('should return 404 if the form is private', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
-        formOptions: { status: Status.Private },
+        formOptions: { status: FormStatus.Private },
       })
       const expectedResponseBody = JSON.parse(
         JSON.stringify({
@@ -253,7 +255,7 @@ describe('public-form.routes', () => {
     it('should return 410 if the form has been archived', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
-        formOptions: { status: Status.Archived },
+        formOptions: { status: FormStatus.Archived },
       })
       const expectedResponseBody = JSON.parse(
         JSON.stringify({
@@ -272,7 +274,7 @@ describe('public-form.routes', () => {
     it('should return 500 if a database error occurs', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
-        formOptions: { status: Status.Public },
+        formOptions: { status: FormStatus.Public },
       })
       const expectedError = new DatabaseError('all your base are belong to us')
       const expectedResponseBody = JSON.parse(

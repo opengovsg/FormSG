@@ -1,10 +1,9 @@
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import { Colors } from 'src/types'
-
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import { FormColorTheme } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import * as ExamplesController from '../examples.controller'
 import { ResultsNotFoundError } from '../examples.errors'
@@ -97,7 +96,7 @@ describe('examples.controller', () => {
           _id: 'mock randomId',
           agency: 'mock agencyId',
           avgFeedback: 5,
-          colorTheme: Colors.Blue,
+          colorTheme: FormColorTheme.Blue,
           count: 20,
           form_fields: [],
           lastSubmission: new Date(),

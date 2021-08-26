@@ -1,12 +1,12 @@
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
+import { BasicField } from '../../../../shared/types'
 import {
   NUM_OTP_RETRIES,
   SMS_WARNING_TIERS,
 } from '../../../../shared/utils/verification'
 import {
-  BasicField,
   IFormSchema,
   IPopulatedForm,
   IVerificationFieldSchema,

@@ -3,21 +3,13 @@ import { Document, Model, QueryCursor } from 'mongoose'
 import {
   EmailModeSubmissionBase,
   StorageModeSubmissionBase,
-  StorageModeSubmissionDto,
   StorageModeSubmissionMetadata,
-  StorageModeSubmissionMetadataList,
   SubmissionBase,
   SubmissionType,
   WebhookResponse,
 } from '../../shared/types/submission'
 
 import { IFormSchema } from './form'
-
-export { SubmissionType }
-
-export type EncryptedSubmissionDto = StorageModeSubmissionDto
-export type SubmissionMetadata = StorageModeSubmissionMetadata
-export type SubmissionMetadataList = StorageModeSubmissionMetadataList
 
 export interface WebhookData {
   formId: string
@@ -81,8 +73,6 @@ export interface IEncryptedSubmissionSchema
   getWebhookView(): WebhookView
 }
 
-export type IWebhookResponse = WebhookResponse
-
 // When retrieving from database, the attachmentMetadata type becomes an object
 // instead of a Map.
 // Due to schema changes, some objects may not have attachmentMetadata key.
@@ -115,7 +105,7 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
     findSingleMetadata(
       formId: string,
       submissionId: string,
-    ): Promise<SubmissionMetadata | null>
+    ): Promise<StorageModeSubmissionMetadata | null>
 
     /**
      * Returns all submission metadata of the form for the given formId. The
@@ -130,7 +120,7 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       formId: string,
       params?: { page?: number; pageSize?: number },
     ): Promise<{
-      metadata: SubmissionMetadata[]
+      metadata: StorageModeSubmissionMetadata[]
       count: number
     }>
 
@@ -162,7 +152,7 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
      */
     addWebhookResponse(
       submissionId: string,
-      webhookResponse: IWebhookResponse,
+      webhookResponse: WebhookResponse,
     ): Promise<IEncryptedSubmissionSchema | null>
 
     /**
@@ -175,4 +165,4 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
     ): Promise<SubmissionWebhookInfo | null>
   }
 
-export interface IWebhookResponseSchema extends IWebhookResponse, Document {}
+export interface IWebhookResponseSchema extends WebhookResponse, Document {}

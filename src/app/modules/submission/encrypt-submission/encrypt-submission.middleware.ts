@@ -1,6 +1,6 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 
-import { BasicField } from '../../../../types'
+import { BasicField } from '../../../../../shared/types'
 
 /**
  * Celebrate middleware for verifying shape of encrypted submission

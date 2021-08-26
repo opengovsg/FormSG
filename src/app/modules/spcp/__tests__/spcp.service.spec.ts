@@ -6,10 +6,10 @@ import { mocked } from 'ts-jest/utils'
 
 import { ISpcpMyInfo } from 'src/app/config/features/spcp-myinfo.config'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
-import { AuthType } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormAuthType } from '../../../../../shared/types'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
@@ -96,7 +96,7 @@ describe('spcp.service', () => {
       const mockClient = mocked(MockAuthClient.mock.instances[0], true)
       mockClient.createRedirectURL.mockReturnValueOnce(MOCK_REDIRECT_URL)
       const redirectUrl = spcpServiceClass.createRedirectUrl(
-        AuthType.SP,
+        FormAuthType.SP,
         MOCK_TARGET,
         MOCK_ESRVCID,
       )
@@ -114,7 +114,7 @@ describe('spcp.service', () => {
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.createRedirectURL.mockReturnValueOnce(MOCK_REDIRECT_URL)
       const redirectUrl = spcpServiceClass.createRedirectUrl(
-        AuthType.CP,
+        FormAuthType.CP,
         MOCK_TARGET,
         MOCK_ESRVCID,
       )
@@ -132,7 +132,7 @@ describe('spcp.service', () => {
       const mockClient = mocked(MockAuthClient.mock.instances[1], true)
       mockClient.createRedirectURL.mockReturnValueOnce(new Error())
       const redirectUrl = spcpServiceClass.createRedirectUrl(
-        AuthType.CP,
+        FormAuthType.CP,
         MOCK_TARGET,
         MOCK_ESRVCID,
       )
@@ -301,7 +301,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
-        AuthType.SP,
+        FormAuthType.SP,
       )
       expect(parsedResult._unsafeUnwrap()).toEqual({
         formId: MOCK_TARGET,
@@ -318,7 +318,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(parsedResult._unsafeUnwrap()).toEqual({
         formId: MOCK_TARGET,
@@ -335,7 +335,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
-        AuthType.SP,
+        FormAuthType.SP,
       )
       expect(parsedResult._unsafeUnwrap()).toEqual({
         formId: MOCK_TARGET,
@@ -352,7 +352,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(parsedResult._unsafeUnwrap()).toEqual({
         formId: MOCK_TARGET,
@@ -369,7 +369,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
-        AuthType.SP,
+        FormAuthType.SP,
       )
       expect(parsedResult._unsafeUnwrap()).toEqual({
         formId: MOCK_TARGET,
@@ -386,7 +386,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(parsedResult._unsafeUnwrap()).toEqual({
         formId: MOCK_TARGET,
@@ -403,7 +403,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
-        AuthType.SP,
+        FormAuthType.SP,
       )
       expect(parsedResult._unsafeUnwrap()).toEqual({
         formId: MOCK_TARGET,
@@ -420,7 +420,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(parsedResult._unsafeUnwrap()).toEqual({
         formId: MOCK_TARGET,
@@ -436,7 +436,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
-        AuthType.SP,
+        FormAuthType.SP,
       )
       expect(parsedResult._unsafeUnwrapErr()).toEqual(
         new InvalidOOBParamsError(),
@@ -449,7 +449,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(parsedResult._unsafeUnwrapErr()).toEqual(
         new InvalidOOBParamsError(),
@@ -462,7 +462,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
-        AuthType.SP,
+        FormAuthType.SP,
       )
       expect(parsedResult._unsafeUnwrapErr()).toEqual(
         new InvalidOOBParamsError(),
@@ -475,7 +475,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(parsedResult._unsafeUnwrapErr()).toEqual(
         new InvalidOOBParamsError(),
@@ -488,7 +488,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
-        AuthType.SP,
+        FormAuthType.SP,
       )
       expect(parsedResult._unsafeUnwrapErr()).toEqual(
         new InvalidOOBParamsError(),
@@ -501,7 +501,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(parsedResult._unsafeUnwrapErr()).toEqual(
         new InvalidOOBParamsError(),
@@ -514,7 +514,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML_WRONG_TYPECODE,
         mockRelayState,
-        AuthType.SP,
+        FormAuthType.SP,
       )
       expect(parsedResult._unsafeUnwrapErr()).toEqual(
         new InvalidOOBParamsError(),
@@ -527,7 +527,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML_WRONG_TYPECODE,
         mockRelayState,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(parsedResult._unsafeUnwrapErr()).toEqual(
         new InvalidOOBParamsError(),
@@ -540,7 +540,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML_WRONG_HASH,
         mockRelayState,
-        AuthType.SP,
+        FormAuthType.SP,
       )
       expect(parsedResult._unsafeUnwrapErr()).toEqual(
         new InvalidOOBParamsError(),
@@ -553,7 +553,7 @@ describe('spcp.service', () => {
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML_WRONG_HASH,
         mockRelayState,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(parsedResult._unsafeUnwrapErr()).toEqual(
         new InvalidOOBParamsError(),
@@ -573,7 +573,7 @@ describe('spcp.service', () => {
       const result = await spcpServiceClass.getSpcpAttributes(
         MOCK_SP_SAML,
         MOCK_DESTINATION,
-        AuthType.SP,
+        FormAuthType.SP,
       )
 
       expect(mockClient.getAttributes).toHaveBeenCalledWith(
@@ -597,7 +597,7 @@ describe('spcp.service', () => {
       const result = await spcpServiceClass.getSpcpAttributes(
         MOCK_CP_SAML,
         MOCK_DESTINATION,
-        AuthType.CP,
+        FormAuthType.CP,
       )
 
       expect(mockClient.getAttributes).toHaveBeenCalledWith(
@@ -621,7 +621,7 @@ describe('spcp.service', () => {
       const result = await spcpServiceClass.getSpcpAttributes(
         MOCK_SP_SAML,
         MOCK_DESTINATION,
-        AuthType.SP,
+        FormAuthType.SP,
       )
 
       expect(mockClient.getAttributes).toHaveBeenCalledWith(
@@ -643,7 +643,7 @@ describe('spcp.service', () => {
       const result = await spcpServiceClass.getSpcpAttributes(
         MOCK_CP_SAML,
         MOCK_DESTINATION,
-        AuthType.CP,
+        FormAuthType.CP,
       )
 
       expect(mockClient.getAttributes).toHaveBeenCalledWith(
@@ -664,7 +664,7 @@ describe('spcp.service', () => {
       const jwtResult = spcpServiceClass.createJWT(
         MOCK_JWT_PAYLOAD,
         MOCK_COOKIE_AGE,
-        AuthType.SP,
+        FormAuthType.SP,
       )
       expect(mockClient.createJWT).toHaveBeenCalledWith(
         MOCK_JWT_PAYLOAD,
@@ -681,7 +681,7 @@ describe('spcp.service', () => {
       const jwtResult = spcpServiceClass.createJWT(
         MOCK_JWT_PAYLOAD,
         MOCK_COOKIE_AGE,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(mockClient.createJWT).toHaveBeenCalledWith(
         MOCK_JWT_PAYLOAD,
@@ -697,7 +697,7 @@ describe('spcp.service', () => {
       const result = spcpServiceClass.createJWTPayload(
         { UserName: MOCK_JWT_PAYLOAD.userName },
         true,
-        AuthType.SP,
+        FormAuthType.SP,
       )
       expect(result._unsafeUnwrap()).toEqual({
         userName: MOCK_JWT_PAYLOAD.userName,
@@ -707,7 +707,11 @@ describe('spcp.service', () => {
 
     it('should return MissingAttributesError if SP UserName does not exist', () => {
       const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
-      const result = spcpServiceClass.createJWTPayload({}, true, AuthType.SP)
+      const result = spcpServiceClass.createJWTPayload(
+        {},
+        true,
+        FormAuthType.SP,
+      )
       expect(result._unsafeUnwrapErr()).toEqual(new MissingAttributesError())
     })
 
@@ -721,7 +725,7 @@ describe('spcp.service', () => {
           },
         },
         true,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(result._unsafeUnwrap()).toEqual({
         userName: MOCK_JWT_PAYLOAD.userName,
@@ -732,7 +736,11 @@ describe('spcp.service', () => {
 
     it('should return MissingAttributesError if CorpPass UserInfo is missing', () => {
       const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
-      const result = spcpServiceClass.createJWTPayload({}, true, AuthType.SP)
+      const result = spcpServiceClass.createJWTPayload(
+        {},
+        true,
+        FormAuthType.SP,
+      )
       expect(result._unsafeUnwrapErr()).toEqual(new MissingAttributesError())
     })
 
@@ -745,7 +753,7 @@ describe('spcp.service', () => {
           },
         },
         true,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(result._unsafeUnwrapErr()).toEqual(new MissingAttributesError())
     })
@@ -759,7 +767,7 @@ describe('spcp.service', () => {
           },
         },
         true,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       expect(result._unsafeUnwrapErr()).toEqual(new MissingAttributesError())
     })
@@ -785,19 +793,19 @@ describe('spcp.service', () => {
   describe('extractJwt', () => {
     it('should return SingPass JWT correctly', () => {
       const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
-      const result = spcpServiceClass.extractJwt(MOCK_COOKIES, AuthType.SP)
+      const result = spcpServiceClass.extractJwt(MOCK_COOKIES, FormAuthType.SP)
       expect(result._unsafeUnwrap()).toEqual(MOCK_COOKIES[JwtName.SP])
     })
 
     it('should return CorpPass JWT correctly', () => {
       const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
-      const result = spcpServiceClass.extractJwt(MOCK_COOKIES, AuthType.CP)
+      const result = spcpServiceClass.extractJwt(MOCK_COOKIES, FormAuthType.CP)
       expect(result._unsafeUnwrap()).toEqual(MOCK_COOKIES[JwtName.CP])
     })
 
     it('should return MissingJwtError if there is no JWT', () => {
       const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
-      const result = spcpServiceClass.extractJwt({}, AuthType.CP)
+      const result = spcpServiceClass.extractJwt({}, FormAuthType.CP)
       expect(result._unsafeUnwrapErr()).toEqual(new MissingJwtError())
     })
   })
@@ -814,7 +822,7 @@ describe('spcp.service', () => {
 
       // Act
       const result = await spcpServiceClass.extractJwtPayloadFromRequest(
-        AuthType.SP,
+        FormAuthType.SP,
         MOCK_COOKIES,
       )
 
@@ -833,7 +841,7 @@ describe('spcp.service', () => {
 
       // Act
       const result = await spcpServiceClass.extractJwtPayloadFromRequest(
-        AuthType.CP,
+        FormAuthType.CP,
         MOCK_COOKIES,
       )
 
@@ -848,7 +856,7 @@ describe('spcp.service', () => {
 
       // Act
       const result = await spcpServiceClass.extractJwtPayloadFromRequest(
-        AuthType.SP,
+        FormAuthType.SP,
         {},
       )
 
@@ -863,7 +871,7 @@ describe('spcp.service', () => {
 
       // Act
       const result = await spcpServiceClass.extractJwtPayloadFromRequest(
-        AuthType.CP,
+        FormAuthType.CP,
         {},
       )
 
@@ -883,7 +891,7 @@ describe('spcp.service', () => {
 
       // Act
       const result = await spcpServiceClass.extractJwtPayloadFromRequest(
-        AuthType.SP,
+        FormAuthType.SP,
         MOCK_COOKIES,
       )
 
@@ -903,7 +911,7 @@ describe('spcp.service', () => {
 
       // Act
       const result = await spcpServiceClass.extractJwtPayloadFromRequest(
-        AuthType.CP,
+        FormAuthType.CP,
         MOCK_COOKIES,
       )
 
@@ -920,7 +928,7 @@ describe('spcp.service', () => {
 
       // Act
       const result = await spcpServiceClass.extractJwtPayloadFromRequest(
-        AuthType.SP,
+        FormAuthType.SP,
         MOCK_COOKIES,
       )
 
@@ -938,7 +946,7 @@ describe('spcp.service', () => {
 
       // Act
       const result = await spcpServiceClass.extractJwtPayloadFromRequest(
-        AuthType.CP,
+        FormAuthType.CP,
         MOCK_COOKIES,
       )
 

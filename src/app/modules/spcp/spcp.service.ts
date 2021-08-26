@@ -4,8 +4,10 @@ import fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { AuthType } from '../../../types'
-import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
+import {
+  FormAuthType,
+  PublicFormAuthValidateEsrvcIdDto,
+} from '../../../../shared/types'
 import {
   ISpcpMyInfo,
   spcpMyInfoConfig,
@@ -89,8 +91,8 @@ export class SpcpServiceClass {
    * Retrieve the correct auth client.
    * @param authType 'SP' or 'CP'
    */
-  getAuthClient(authType: AuthType.SP | AuthType.CP): SPCPAuthClient {
-    if (authType === AuthType.SP) {
+  getAuthClient(authType: FormAuthType.SP | FormAuthType.CP): SPCPAuthClient {
+    if (authType === FormAuthType.SP) {
       return this.#singpassAuthClient
     } else {
       return this.#corppassAuthClient
@@ -105,7 +107,7 @@ export class SpcpServiceClass {
    * @param esrvcId SP/CP e-service ID
    */
   createRedirectUrl(
-    authType: AuthType.SP | AuthType.CP,
+    authType: FormAuthType.SP | FormAuthType.CP,
     target: string,
     esrvcId: string,
   ): Result<string, CreateRedirectUrlError> {
@@ -209,9 +211,9 @@ export class SpcpServiceClass {
    */
   extractJwt(
     cookies: SpcpCookies,
-    authType: AuthType.SP | AuthType.CP,
+    authType: FormAuthType.SP | FormAuthType.CP,
   ): Result<string, MissingJwtError> {
-    const jwtName = authType === AuthType.SP ? JwtName.SP : JwtName.CP
+    const jwtName = authType === FormAuthType.SP ? JwtName.SP : JwtName.CP
     const cookie = cookies[jwtName]
     return cookie ? ok(cookie) : err(new MissingJwtError())
   }
@@ -229,7 +231,7 @@ export class SpcpServiceClass {
     const logMeta = {
       action: 'extractSingpassJwtPayload',
     }
-    const authClient = this.getAuthClient(AuthType.SP)
+    const authClient = this.getAuthClient(FormAuthType.SP)
     return ResultAsync.fromPromise(
       verifyJwtPromise(authClient, jwt),
       (error) => {
@@ -272,7 +274,7 @@ export class SpcpServiceClass {
     const logMeta = {
       action: 'extractCorppassJwtPayload',
     }
-    const authClient = this.getAuthClient(AuthType.CP)
+    const authClient = this.getAuthClient(FormAuthType.CP)
     return ResultAsync.fromPromise(
       verifyJwtPromise(authClient, jwt),
       (error) => {
@@ -312,7 +314,7 @@ export class SpcpServiceClass {
   parseOOBParams(
     samlArt: string,
     relayState: string,
-    authType: AuthType.SP | AuthType.CP,
+    authType: FormAuthType.SP | FormAuthType.CP,
   ): Result<ParsedSpcpParams, InvalidOOBParamsError> {
     const logMeta = {
       action: 'validateOOBParams',
@@ -332,11 +334,11 @@ export class SpcpServiceClass {
     const destination = payloads[0]
     const rememberMe = payloads[1] === 'true'
     const idpId =
-      authType === AuthType.SP
+      authType === FormAuthType.SP
         ? this.#spcpProps.spIdpId
         : this.#spcpProps.cpIdpId
     let cookieDuration: number
-    if (authType === AuthType.CP) {
+    if (authType === FormAuthType.CP) {
       cookieDuration = this.#spcpProps.cpCookieMaxAge
     } else {
       cookieDuration = rememberMe
@@ -369,7 +371,7 @@ export class SpcpServiceClass {
   getSpcpAttributes(
     samlArt: string,
     destination: string,
-    authType: AuthType.SP | AuthType.CP,
+    authType: FormAuthType.SP | FormAuthType.CP,
   ): ResultAsync<Record<string, unknown>, RetrieveAttributesError> {
     const logMeta = {
       action: 'getSpcpAttributes',
@@ -401,7 +403,7 @@ export class SpcpServiceClass {
   createJWT(
     payload: JwtPayload,
     cookieDuration: number,
-    authType: AuthType.SP | AuthType.CP,
+    authType: FormAuthType.SP | FormAuthType.CP,
   ): Result<string, ApplicationError> {
     const authClient = this.getAuthClient(authType)
     return ok(
@@ -423,9 +425,9 @@ export class SpcpServiceClass {
   createJWTPayload(
     attributes: Record<string, unknown>,
     rememberMe: boolean,
-    authType: AuthType.SP | AuthType.CP,
+    authType: FormAuthType.SP | FormAuthType.CP,
   ): Result<JwtPayload, MissingAttributesError> {
-    if (authType === AuthType.SP) {
+    if (authType === FormAuthType.SP) {
       const userName = (attributes as SingpassAttributes).UserName
       return userName && typeof userName === 'string'
         ? ok({ userName, rememberMe })
@@ -457,7 +459,7 @@ export class SpcpServiceClass {
    * @return err(InvalidJwtError) if the jwt exists but the payload is invalid
    */
   extractJwtPayloadFromRequest(
-    authType: AuthType.SP | AuthType.CP,
+    authType: FormAuthType.SP | FormAuthType.CP,
     cookies: SpcpCookies,
   ): ResultAsync<
     JwtPayloadFromCookie,
@@ -465,9 +467,9 @@ export class SpcpServiceClass {
   > {
     return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) => {
       switch (authType) {
-        case AuthType.SP:
+        case FormAuthType.SP:
           return this.extractSingpassJwtPayload(jwtResult)
-        case AuthType.CP:
+        case FormAuthType.CP:
           return this.extractCorppassJwtPayload(jwtResult)
       }
     })
