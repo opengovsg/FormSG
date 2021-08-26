@@ -104,14 +104,15 @@ FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
   )
 }
 
-FormLabel.OptionalIndicator = (
-  props: TextProps & { isRequired?: boolean },
-): JSX.Element | null => {
+FormLabel.OptionalIndicator = ({
+  isRequired,
+  ...props
+}: TextProps & { isRequired?: boolean }): JSX.Element | null => {
   // Valid hook usage since composited component is still a component.
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const field = useFormControlContext()
 
-  if (props.isRequired || field?.isRequired) return null
+  if (isRequired || field?.isRequired) return null
 
   return (
     <Text

@@ -40,16 +40,15 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
   ({ children, ...props }, ref) => {
     const styles = useMultiStyleConfig(YESNO_THEME_KEY, props)
 
-    const { getInputProps, getCheckboxProps } = useRadio({
-      ...props,
-    })
+    const { getInputProps, getCheckboxProps } = useRadio(props)
     // Empty object needed here as ref is the second argument,
     // and ref is required so that any refs passed in gets forwarded.
     const inputProps = getInputProps(undefined, ref)
     const checkboxProps = getCheckboxProps()
 
     const handleSelect = useCallback(() => {
-      if (props.isChecked) {
+      // Do not do anything if the input is readonly
+      if (props.isChecked && !props.isReadOnly) {
         /**
          * onChange prop is meant to be called when the current value of the
          * checkbox group is updated.
