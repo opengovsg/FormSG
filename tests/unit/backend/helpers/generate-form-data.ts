@@ -23,6 +23,7 @@ import {
   IDecimalFieldSchema,
   IDropdownField,
   IDropdownFieldSchema,
+  IEmailField,
   IField,
   IHomenoFieldSchema,
   IImageFieldSchema,
@@ -44,6 +45,7 @@ export const generateDefaultField = (
   customParams?: Partial<
     | IField
     | IAttachmentField
+    | IEmailField
     | ICheckboxField
     | IMobileField
     | ITableField

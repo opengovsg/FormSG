@@ -26,11 +26,13 @@ import {
   EmailFormSettings,
   EndPage,
   FormField,
+  FormFieldSchema,
   FormFieldWithId,
   FormLogicSchema,
   FormLogoState,
   FormOtpData,
   FormSettings,
+  IEmailFieldSchema,
   IEmailFormModel,
   IEmailFormSchema,
   IEncryptedFormModel,
@@ -53,8 +55,6 @@ import {
   StorageFormSettings,
 } from '../../types'
 import { AdminDashboardFormMetaDto } from '../../types/api/form'
-import { FormFieldSchema } from '../../types/field'
-import { IEmailFieldSchema } from '../../types/field/emailField'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
