@@ -37,7 +37,7 @@
         <button
           type="button"
           class="end-page-btn {{ vm.colorTheme }}-font"
-          ng-click="vm.formLogout()"
+          ng-click="vm.formLogout(vm.authType)"
           ng-disabled="vm.isAdminPreview"
         >
           <span>{{ vm.userName }} - Log out</span

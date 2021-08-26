@@ -1,5 +1,6 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
+import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
@@ -7,14 +8,14 @@ import { ResultAsync } from 'neverthrow'
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
-} from '../../../../shared/constants'
+} from '../../../../../shared/constants/file'
+import { DeserializeTransform } from '../../../../../shared/types/utils'
 import {
   AuthType,
   BasicField,
   Colors,
-  FieldResponse,
+  FormFieldWithId,
   FormLogoState,
-  FormMetaView,
   FormSettings,
   IForm,
   IFormDocument,
@@ -23,23 +24,35 @@ import {
   LogicDto,
   LogicIfValue,
   LogicType,
+  PublicFormDto,
   ResponseMode,
 } from '../../../../types'
 import {
-  DuplicateFormBody,
+  AdminDashboardFormMetaDto,
+  CreateFormBodyDto,
+  DuplicateFormBodyDto,
   EncryptSubmissionDto,
   EndPageUpdateDto,
   ErrorDto,
   FieldCreateDto,
   FieldUpdateDto,
+  FormDto,
+  FormFeedbackMetaDto,
   FormFieldDto,
   FormUpdateParams,
+  ParsedEmailModeSubmissionBody,
   PermissionsUpdateDto,
+  PreviewFormViewDto,
+  PrivateFormErrorDto,
   SettingsUpdateDto,
+  SmsCountsDto,
   StartPageUpdateDto,
+  SubmissionCountQueryDto,
 } from '../../../../types/api'
+import { smsConfig } from '../../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
+import * as SmsService from '../../../services/sms/sms.service'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {
@@ -99,12 +112,19 @@ const createFormValidator = celebrate({
         title: Joi.string().min(4).max(200).required(),
         // Require emails string (for backwards compatibility) or string
         // array if form to be created in Email mode.
-        emails: Joi.alternatives()
-          .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-          .when('responseMode', {
-            is: ResponseMode.Email,
-            then: Joi.required(),
-          }),
+        emails: Joi.when('responseMode', {
+          is: ResponseMode.Email,
+          then: Joi.alternatives()
+            .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+            .required(),
+          // TODO (#2264): disallow the 'emails' key when responseMode is not Email
+          // Allow old clients to send this key but optionally and without restrictions
+          // on array length or type
+          otherwise: Joi.alternatives().try(
+            Joi.array(),
+            Joi.string().allow(''),
+          ),
+        }),
         // Require publicKey field if form to be created in Storage mode.
         publicKey: Joi.string()
           .allow('')
@@ -120,7 +140,7 @@ const createFormValidator = celebrate({
 })
 
 const duplicateFormValidator = celebrate({
-  [Segments.BODY]: BaseJoi.object<DuplicateFormBody>({
+  [Segments.BODY]: BaseJoi.object<DuplicateFormBodyDto>({
     // Require valid responsesMode field.
     responseMode: Joi.string()
       .valid(...Object.values(ResponseMode))
@@ -129,12 +149,16 @@ const duplicateFormValidator = celebrate({
     title: Joi.string().min(4).max(200).required(),
     // Require emails string (for backwards compatibility) or string array
     // if form to be duplicated in Email mode.
-    emails: Joi.alternatives()
-      .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-      .when('responseMode', {
-        is: ResponseMode.Email,
-        then: Joi.required(),
-      }),
+    emails: Joi.when('responseMode', {
+      is: ResponseMode.Email,
+      then: Joi.alternatives()
+        .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+        .required(),
+      // TODO (#2264): disallow the 'emails' key when responseMode is not Email
+      // Allow old clients to send this key but optionally and without restrictions
+      // on array length or type
+      otherwise: Joi.alternatives().try(Joi.array(), Joi.string().allow('')),
+    }),
     // Require publicKey field if form to be duplicated in Storage mode.
     publicKey: Joi.string()
       .allow('')
@@ -178,9 +202,9 @@ const fileUploadValidator = celebrate({
  */
 export const handleListDashboardForms: ControllerHandler<
   unknown,
-  FormMetaView[] | ErrorDto
+  AdminDashboardFormMetaDto[] | ErrorDto
 > = async (req, res) => {
-  const authedUserId = (req.session as Express.AuthedSession).user._id
+  const authedUserId = (req.session as AuthedSessionData).user._id
 
   return AdminFormService.getDashboardForms(authedUserId)
     .map((dashboardView) => res.json(dashboardView))
@@ -214,7 +238,7 @@ export const handleGetAdminForm: ControllerHandler<{ formId: string }> = (
   res,
 ) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -260,7 +284,7 @@ export const handleGetFormCollaborators: ControllerHandler<
   PermissionsUpdateDto | ErrorDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -308,7 +332,7 @@ export const handlePreviewAdminForm: ControllerHandler<{ formId: string }> = (
   res,
 ) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   return (
     // Step 1: Retrieve currently logged in user.
     UserService.getPopulatedUserById(sessionUserId)
@@ -364,7 +388,7 @@ export const createPresignedPostUrlForImages: ControllerHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const { fileId, fileMd5Hash, fileType } = req.body
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -429,7 +453,7 @@ export const createPresignedPostUrlForLogos: ControllerHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const { fileId, fileMd5Hash, fileType } = req.body
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -498,11 +522,11 @@ export const countFormSubmissions: ControllerHandler<
   { formId: string },
   ErrorDto | number,
   unknown,
-  { startDate?: string; endDate?: string }
+  SubmissionCountQueryDto
 > = async (req, res) => {
   const { formId } = req.params
-  const { startDate, endDate } = req.query
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const dateRange = req.query
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   const logMeta = {
     action: 'handleCountFormSubmissions',
@@ -534,10 +558,7 @@ export const countFormSubmissions: ControllerHandler<
   }
 
   // Step 3: Has permissions, continue to retrieve submission counts.
-  return SubmissionService.getFormSubmissionsCount(formId, {
-    startDate,
-    endDate,
-  })
+  return SubmissionService.getFormSubmissionsCount(formId, dateRange)
     .map((count) => res.json(count))
     .mapErr((error) => {
       logger.error({
@@ -572,11 +593,12 @@ export const handleCountFormSubmissions = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleCountFormFeedback: ControllerHandler<{
-  formId: string
-}> = async (req, res) => {
+export const handleCountFormFeedback: ControllerHandler<
+  { formId: string },
+  number | ErrorDto
+> = async (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -625,7 +647,7 @@ export const handleStreamFormFeedback: ControllerHandler<{
   formId: string
 }> = async (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   const hasReadPermissionResult = await UserService.getPopulatedUserById(
@@ -715,11 +737,12 @@ export const handleStreamFormFeedback: ControllerHandler<{
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleGetFormFeedback: ControllerHandler<{
-  formId: string
-}> = (req, res) => {
+export const handleGetFormFeedback: ControllerHandler<
+  { formId: string },
+  FormFeedbackMetaDto | ErrorDto
+> = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) =>
@@ -763,7 +786,7 @@ export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
   res,
 ) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -813,10 +836,10 @@ export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
 export const duplicateAdminForm: ControllerHandler<
   { formId: string },
   unknown,
-  DuplicateFormBody
+  DuplicateFormBodyDto
 > = (req, res) => {
   const { formId } = req.params
-  const userId = (req.session as Express.AuthedSession).user._id
+  const userId = (req.session as AuthedSessionData).user._id
   const overrideParams = req.body
 
   return (
@@ -875,12 +898,12 @@ export const handleDuplicateAdminForm = [
  * @returns 410 when form is archived
  * @returns 500 when database error occurs
  */
-export const handleGetTemplateForm: ControllerHandler<{ formId: string }> = (
-  req,
-  res,
-) => {
+export const handleGetTemplateForm: ControllerHandler<
+  { formId: string },
+  PreviewFormViewDto | ErrorDto | PrivateFormErrorDto
+> = (req, res) => {
   const { formId } = req.params
-  const userId = (req.session as Express.AuthedSession).user._id
+  const userId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve form only if form is currently public.
@@ -888,7 +911,9 @@ export const handleGetTemplateForm: ControllerHandler<{ formId: string }> = (
       // Step 2: Remove private form details before being returned.
       .map((populatedForm) => populatedForm.getPublicView())
       .map((scrubbedForm) =>
-        res.status(StatusCodes.OK).json({ form: scrubbedForm }),
+        res
+          .status(StatusCodes.OK)
+          .json({ form: scrubbedForm as PublicFormDto }),
       )
       .mapErr((error) => {
         logger.error({
@@ -934,11 +959,11 @@ export const handleGetTemplateForm: ControllerHandler<{ formId: string }> = (
  */
 export const handleCopyTemplateForm: ControllerHandler<
   { formId: string },
-  unknown,
-  DuplicateFormBody
+  AdminDashboardFormMetaDto | ErrorDto,
+  DuplicateFormBodyDto
 > = (req, res) => {
   const { formId } = req.params
-  const userId = (req.session as Express.AuthedSession).user._id
+  const userId = (req.session as AuthedSessionData).user._id
   const overrideParams = req.body
 
   return (
@@ -1000,7 +1025,7 @@ export const transferFormOwnership: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const { email: newOwnerEmail } = req.body
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -1055,11 +1080,11 @@ export const handleTransferFormOwnership = [
  */
 export const createForm: ControllerHandler<
   unknown,
-  unknown,
-  { form: Omit<IForm, 'admin'> }
+  DeserializeTransform<FormDto> | ErrorDto,
+  { form: CreateFormBodyDto }
 > = async (req, res) => {
   const { form: formParams } = req.body
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -1068,7 +1093,11 @@ export const createForm: ControllerHandler<
       .andThen((user) =>
         AdminFormService.createForm({ ...formParams, admin: user._id }),
       )
-      .map((createdForm) => res.status(StatusCodes.OK).json(createdForm))
+      .map((createdForm) => {
+        return res
+          .status(StatusCodes.OK)
+          .json(createdForm as DeserializeTransform<FormDto>)
+      })
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when creating form',
@@ -1112,7 +1141,7 @@ export const handleUpdateForm: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const { form: formUpdateParams } = req.body
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return UserService.getPopulatedUserById(sessionUserId)
@@ -1180,7 +1209,7 @@ export const handleDuplicateFormField: ControllerHandler<
   FormFieldDto | ErrorDto
 > = (req, res) => {
   const { formId, fieldId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return UserService.getPopulatedUserById(sessionUserId)
@@ -1193,7 +1222,9 @@ export const handleDuplicateFormField: ControllerHandler<
       }),
     )
     .andThen((form) => AdminFormService.duplicateFormField(form, fieldId))
-    .map((duplicatedField) => res.status(StatusCodes.OK).json(duplicatedField))
+    .map((duplicatedField) =>
+      res.status(StatusCodes.OK).json(duplicatedField as FormFieldDto),
+    )
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred when duplicating field',
@@ -1232,7 +1263,7 @@ export const handleUpdateSettings: ControllerHandler<
   SettingsUpdateDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   const settingsToPatch = req.body
 
   // Step 1: Retrieve currently logged in user.
@@ -1280,7 +1311,7 @@ export const _handleUpdateFormField: ControllerHandler<
   FieldUpdateDto
 > = (req, res) => {
   const { formId, fieldId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -1298,7 +1329,7 @@ export const _handleUpdateFormField: ControllerHandler<
         AdminFormService.updateFormField(form, fieldId, req.body),
       )
       .map((updatedFormField) =>
-        res.status(StatusCodes.OK).json(updatedFormField),
+        res.status(StatusCodes.OK).json(updatedFormField as FormFieldDto),
       )
       .mapErr((error) => {
         logger.error({
@@ -1335,7 +1366,7 @@ export const handleGetSettings: ControllerHandler<
   FormSettings | ErrorDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) =>
@@ -1381,7 +1412,7 @@ export const submitEncryptPreview: ControllerHandler<
   EncryptSubmissionDto
 > = async (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   // No need to process attachments as we don't do anything with them
   const { encryptedContent, responses, version } = req.body
   const logMeta = {
@@ -1472,11 +1503,11 @@ export const handleEncryptPreviewSubmission = [
 export const submitEmailPreview: ControllerHandler<
   { formId: string },
   { message: string; submissionId?: string },
-  { responses: FieldResponse[] },
+  ParsedEmailModeSubmissionBody,
   { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   // No need to process attachments as we don't do anything with them
   const { responses } = req.body
   const logMeta = {
@@ -1664,11 +1695,11 @@ export const handleUpdateFormField = [
  */
 export const _handleCreateFormField: ControllerHandler<
   { formId: string },
-  FormFieldDto | ErrorDto,
+  FormFieldWithId | ErrorDto,
   FieldCreateDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -1684,7 +1715,7 @@ export const _handleCreateFormField: ControllerHandler<
       // Step 3: User has permissions, proceed to create form field with provided body.
       .andThen((form) => AdminFormService.createFormField(form, req.body))
       .map((createdFormField) =>
-        res.status(StatusCodes.OK).json(createdFormField),
+        res.status(StatusCodes.OK).json(createdFormField as FormFieldWithId),
       )
       .mapErr((error) => {
         logger.error({
@@ -1723,7 +1754,7 @@ export const _handleCreateLogic: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const createLogicBody = req.body
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -1740,7 +1771,9 @@ export const _handleCreateLogic: ControllerHandler<
       .andThen((retrievedForm) =>
         AdminFormService.createFormLogic(retrievedForm, createLogicBody),
       )
-      .map((createdLogic) => res.status(StatusCodes.OK).json(createdLogic))
+      .map((createdLogic) =>
+        res.status(StatusCodes.OK).json(createdLogic as LogicDto),
+      )
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when creating form logic',
@@ -1822,7 +1855,7 @@ export const handleDeleteLogic: ControllerHandler<{
   logicId: string
 }> = (req, res) => {
   const { formId, logicId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -1904,7 +1937,7 @@ export const _handleReorderFormField: ControllerHandler<
 > = (req, res) => {
   const { formId, fieldId } = req.params
   const { to } = req.query
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -1920,7 +1953,7 @@ export const _handleReorderFormField: ControllerHandler<
       // Step 3: User has permissions, proceed to reorder field
       .andThen((form) => AdminFormService.reorderFormField(form, fieldId, to))
       .map((reorderedFormFields) =>
-        res.status(StatusCodes.OK).json(reorderedFormFields),
+        res.status(StatusCodes.OK).json(reorderedFormFields as FormFieldDto[]),
       )
       .mapErr((error) => {
         logger.error({
@@ -1972,7 +2005,7 @@ export const _handleUpdateLogic: ControllerHandler<
 > = (req, res) => {
   const { formId, logicId } = req.params
   const updatedLogic = { ...req.body }
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -1989,7 +2022,9 @@ export const _handleUpdateLogic: ControllerHandler<
       .andThen((retrievedForm) =>
         AdminFormService.updateFormLogic(retrievedForm, logicId, updatedLogic),
       )
-      .map((updatedLogic) => res.status(StatusCodes.OK).json(updatedLogic))
+      .map((updatedLogic) =>
+        res.status(StatusCodes.OK).json(updatedLogic as LogicDto),
+      )
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when updating form logic',
@@ -2046,7 +2081,7 @@ export const handleDeleteFormField: ControllerHandler<
   ErrorDto | void
 > = (req, res) => {
   const { formId, fieldId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -2099,7 +2134,7 @@ export const _handleUpdateEndPage: ControllerHandler<
   EndPageUpdateDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -2169,7 +2204,7 @@ export const handleGetFormField: ControllerHandler<
   ErrorDto | FormFieldDto
 > = (req, res) => {
   const { formId, fieldId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -2183,7 +2218,9 @@ export const handleGetFormField: ControllerHandler<
         }),
       )
       .andThen((form) => AdminFormService.getFormField(form, fieldId))
-      .map((formField) => res.status(StatusCodes.OK).json(formField))
+      .map((formField) =>
+        res.status(StatusCodes.OK).json(formField as FormFieldDto),
+      )
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when retrieving form field',
@@ -2221,7 +2258,7 @@ export const _handleUpdateCollaborators: ControllerHandler<
   PermissionsUpdateDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
   // Step 1: Get the form after permission checks
   return (
     UserService.getPopulatedUserById(sessionUserId)
@@ -2278,6 +2315,68 @@ export const handleUpdateCollaborators = [
 ] as ControllerHandler[]
 
 /**
+ * Handler for DELETE /api/v3/admin/forms/:formId/collaborators/self
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated collaborators and permissions
+ * @returns 403 when current user does not have permissions to remove themselves from the collaborators list
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating collaborators for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleRemoveSelfFromCollaborators: ControllerHandler<
+  { formId: string },
+  PermissionsUpdateDto | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  let currentUserEmail = ''
+  // Step 1: Get the form after permission checks
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) => {
+        // Step 2: Retrieve form with read permission check, since we are only removing the user themselves
+        currentUserEmail = user.email
+        return AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        })
+      })
+      // Step 3: Update the form collaborators
+      .andThen((form) => {
+        const updatedPermissionList = form.permissionList.filter(
+          (user) => user.email.toLowerCase() !== currentUserEmail.toLowerCase(),
+        )
+        return AdminFormService.updateFormCollaborators(
+          form,
+          updatedPermissionList,
+        )
+      })
+      .map((updatedCollaborators) =>
+        res.status(StatusCodes.OK).json(updatedCollaborators),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating collaborators',
+          meta: {
+            action: 'handleRemoveSelfFromCollaborators',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            formCollaborators: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
  * NOTE: Exported for testing.
  * Private handler for PUT /forms/:formId/start-page
  * @precondition Must be preceded by request validation
@@ -2296,7 +2395,7 @@ export const _handleUpdateStartPage: ControllerHandler<
   StartPageUpdateDto
 > = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -2369,3 +2468,50 @@ export const handleUpdateStartPage = [
   }),
   _handleUpdateStartPage,
 ] as ControllerHandler[]
+
+/**
+ * Handler to retrieve the free sms counts used by a form's administrator and the sms verifications quota
+ * This is the controller for GET /admin/forms/:formId/verified-sms/count/free
+ * @param formId The id of the form to retrieve the free sms counts for
+ * @returns 200 with free sms counts and quota when successful
+ * @returns 404 when the formId is not found in the database
+ * @returns 500 when a database error occurs during retrieval
+ */
+export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
+  {
+    formId: string
+  },
+  ErrorDto | SmsCountsDto
+> = (req, res) => {
+  const { formId } = req.params
+  const logMeta = {
+    action: 'handleGetFreeSmsCountForFormAdmin',
+    ...createReqMeta(req),
+    formId,
+  }
+
+  // Step 1: Check that the form exists
+  return (
+    FormService.retrieveFormById(formId)
+      // Step 2: Retrieve the free sms count
+      .andThen(({ admin }) => {
+        return SmsService.retrieveFreeSmsCounts(String(admin))
+      })
+      // Step 3: Map/MapErr accordingly
+      .map((freeSmsCountForAdmin) =>
+        res.status(StatusCodes.OK).json({
+          freeSmsCounts: freeSmsCountForAdmin,
+          quota: smsConfig.smsVerificationLimit,
+        }),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error while retrieving sms counts for user',
+          meta: logMeta,
+          error,
+        })
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}

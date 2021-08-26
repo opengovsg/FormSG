@@ -4,8 +4,8 @@ const {
   getFileExtension,
   isInvalidFileExtension,
   getInvalidFileExtensionsInZip,
-} = require('../../../../../shared/util/file-validation')
-const { FilePlatforms } = require('../../../../../shared/constants')
+} = require('../../../../../../shared/utils/file-validation')
+const { KB, MB } = require('../../../../../../shared/constants/file')
 
 angular.module('forms').component('attachmentFieldComponent', {
   templateUrl:
@@ -22,6 +22,8 @@ angular.module('forms').component('attachmentFieldComponent', {
 function attachmentFieldComponentController($timeout) {
   const vm = this
 
+  vm.MB = MB
+
   vm.isAttachmentTouched = false
   vm.touchAttachment = function () {
     vm.isAttachmentTouched = true
@@ -37,7 +39,7 @@ function attachmentFieldComponentController($timeout) {
     if (errFiles.length > 0) {
       err = errFiles[0].$error
       if (err === 'maxSize') {
-        const currentSize = (errFiles[0].size / 1000000).toFixed(2)
+        const currentSize = (errFiles[0].size / MB).toFixed(2)
         showAttachmentError(
           `${currentSize} MB / ${vm.field.attachmentSize} MB: File size exceeded`,
         )
@@ -59,11 +61,10 @@ function attachmentFieldComponentController($timeout) {
       return
     }
 
-    const getInvalidFileExts = getInvalidFileExtensionsInZip(
-      FilePlatforms.Browser,
-    )
     const invalidFilesInZip =
-      fileExt === '.zip' ? getInvalidFileExts(file) : Promise.resolve([])
+      fileExt === '.zip'
+        ? getInvalidFileExtensionsInZip('blob', file)
+        : Promise.resolve([])
     invalidFilesInZip
       .then((invalidFiles) => {
         // Use $timeout to trigger digest cycle
@@ -136,11 +137,11 @@ function attachmentFieldComponentController($timeout) {
         vm.fileAttached = true
         vm.fileError = false
         vm.fileName = file.name
-        vm.fileSize = file.size / 1000
-        if (file.size / 1000 > 1000) {
-          vm.fileSize = String((file.size / 1000000).toFixed(2)) + ' MB'
+        vm.fileSize = file.size / KB
+        if (file.size / KB > KB) {
+          vm.fileSize = String((file.size / MB).toFixed(2)) + ' MB'
         } else {
-          vm.fileSize = String((file.size / 1000).toFixed(2)) + ' KB'
+          vm.fileSize = String((file.size / KB).toFixed(2)) + ' KB'
         }
         vm.isLoading = false
       })

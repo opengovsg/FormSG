@@ -2,8 +2,12 @@
 
 const get = require('lodash/get')
 
-const { types: basicTypes } = require('../../../../shared/resources/basic')
-const { types: myInfoTypes } = require('../../../../shared/resources/myinfo')
+const {
+  types: basicTypes,
+} = require('../../../../../shared/constants/field/basic')
+const {
+  types: myInfoTypes,
+} = require('../../../../../shared/constants/field/myinfo')
 
 angular.module('forms').service('FormFields', [FormFields])
 

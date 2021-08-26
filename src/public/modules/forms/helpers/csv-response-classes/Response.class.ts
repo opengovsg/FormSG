@@ -1,4 +1,4 @@
-import { DisplayedResponseWithoutAnswer } from '../../../../../types/response'
+import { DisplayedResponseWithoutAnswer } from '../../../../types/response'
 
 export abstract class Response {
   private data: DisplayedResponseWithoutAnswer

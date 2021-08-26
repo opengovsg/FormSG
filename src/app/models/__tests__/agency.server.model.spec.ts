@@ -1,9 +1,8 @@
 import { pick } from 'lodash'
 import mongoose from 'mongoose'
+import { PublicAgencyDto } from 'shared/types/agency'
 
-import getAgencyModel, {
-  AGENCY_PUBLIC_FIELDS,
-} from 'src/app/models/agency.server.model'
+import getAgencyModel from 'src/app/models/agency.server.model'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -32,7 +31,7 @@ describe('agency.server.model', () => {
         const actual = agency.getPublicView()
 
         // Assert
-        expect(actual).toEqual(pick(agency, AGENCY_PUBLIC_FIELDS))
+        expect(actual).toEqual(pick(agency, Object.keys(PublicAgencyDto.shape)))
       })
     })
   })

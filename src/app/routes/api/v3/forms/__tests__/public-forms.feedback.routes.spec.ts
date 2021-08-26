@@ -1,4 +1,3 @@
-import { getReasonPhrase, StatusCodes } from 'http-status-codes'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
@@ -112,7 +111,7 @@ describe('public-form.feedback.routes', () => {
       }
       const expectedResponse = JSON.parse(
         JSON.stringify({
-          message: getReasonPhrase(StatusCodes.GONE),
+          message: 'This form is no longer active',
         }),
       )
 

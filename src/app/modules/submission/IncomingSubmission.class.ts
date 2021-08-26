@@ -1,17 +1,17 @@
 import { combineWithAllErrors, err, ok, Result } from 'neverthrow'
 
 import {
-  FieldIdSet,
-  getLogicUnitPreventingSubmit,
-  getVisibleFieldIds,
-} from '../../../shared/util/logic'
-import {
   FieldResponse,
   IFieldSchema,
   IFormDocument,
   IPopulatedForm,
 } from '../../../types'
 import { validateField } from '../../utils/field-validation'
+import {
+  FieldIdSet,
+  getLogicUnitPreventingSubmit,
+  getVisibleFieldIds,
+} from '../../utils/logic-adaptor'
 
 import { ProcessingError, ValidateFieldError } from './submission.errors'
 import {
@@ -23,7 +23,7 @@ import {
 } from './submission.types'
 
 export abstract class IncomingSubmission {
-  private readonly visibleFieldIds: FieldIdSet
+  private readonly visibleFieldIds: Result<FieldIdSet, ProcessingError>
   private readonly visibleResponseIds: VisibleResponseIdSet
   private readonly verifiableResponseIds: VerifiableResponseIdSet
   protected constructor(
@@ -152,15 +152,20 @@ export abstract class IncomingSubmission {
   }
 
   protected validate(): Result<true, ProcessingError | ValidateFieldError[]> {
+    if (this.visibleFieldIds.isErr()) {
+      return err(this.visibleFieldIds.error)
+    }
     // Guard against invalid form submissions that should have been prevented by
     // logic.
-    if (
-      getLogicUnitPreventingSubmit(
-        this.responses,
-        this.form,
-        this.visibleFieldIds,
-      )
-    ) {
+    const logicUnitPreventingSubmit = getLogicUnitPreventingSubmit(
+      this.responses,
+      this.form,
+      this.visibleFieldIds.value,
+    )
+
+    if (logicUnitPreventingSubmit.isErr()) {
+      return err(logicUnitPreventingSubmit.error)
+    } else if (logicUnitPreventingSubmit.value) {
       return err(new ProcessingError('Submission prevented by form logic'))
     }
 

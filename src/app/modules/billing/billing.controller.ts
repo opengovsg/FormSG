@@ -1,3 +1,4 @@
+import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
@@ -25,7 +26,7 @@ export const handleGetBillInfo: ControllerHandler<
   BillingQueryDto
 > = async (req, res) => {
   const { esrvcId, mth, yr } = req.query
-  const authedUser = (req.session as Express.AuthedSession).user
+  const authedUser = (req.session as AuthedSessionData).user
 
   const startOfMonth = moment
     .tz([parseInt(yr), parseInt(mth)], 'Asia/Singapore')

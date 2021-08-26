@@ -1,11 +1,11 @@
 import axios from 'axios'
 
+import { PublicFormViewDto } from '../../../shared/types/form/form'
 import {
-  EmailSubmissionDto,
-  EncryptSubmissionDto,
-  PublicFormViewDto,
+  EmailModeSubmissionContentDto,
+  StorageModeSubmissionContentDto,
   SubmissionResponseDto,
-} from '../../types/api'
+} from '../../../shared/types/submission'
 import { createEmailSubmissionFormData } from '../utils/submission'
 
 const PUBLIC_FORMS_ENDPOINT = '/api/v3/forms'
@@ -26,7 +26,7 @@ export const submitEmailModeForm = async ({
   captchaResponse = null,
 }: {
   formId: string
-  content: EmailSubmissionDto
+  content: EmailModeSubmissionContentDto
   attachments?: Record<string, File>
   captchaResponse?: string | null
 }): Promise<SubmissionResponseDto> => {
@@ -62,7 +62,7 @@ export const submitStorageModeForm = async ({
   captchaResponse = null,
 }: {
   formId: string
-  content: EncryptSubmissionDto
+  content: StorageModeSubmissionContentDto
   captchaResponse?: string | null
 }): Promise<SubmissionResponseDto> => {
   return axios

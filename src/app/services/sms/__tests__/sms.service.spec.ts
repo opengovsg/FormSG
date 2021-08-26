@@ -2,12 +2,16 @@ import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
-import { MalformedParametersError } from 'src/app/modules/core/core.errors'
-import { VfnErrors } from 'src/shared/util/verification'
+import {
+  DatabaseError,
+  MalformedParametersError,
+} from 'src/app/modules/core/core.errors'
+import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
 import { FormOtpData, IFormSchema, IUserSchema, ResponseMode } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { VfnErrors } from '../../../../../shared/utils/verification'
 import { InvalidNumberError } from '../sms.errors'
 import * as SmsService from '../sms.service'
 import { LogType, SmsType, TwilioConfig } from '../sms.types'
@@ -348,6 +352,36 @@ describe('sms.service', () => {
         logType: LogType.success,
       }
       expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
+    })
+  })
+
+  describe('retrieveFreeSmsCounts', () => {
+    const VERIFICATION_SMS_COUNT = 3
+
+    it('should retrieve sms counts correctly for a specified user', async () => {
+      // Arrange
+      const retrieveSpy = jest.spyOn(SmsCountModel, 'retrieveFreeSmsCounts')
+      retrieveSpy.mockResolvedValueOnce(VERIFICATION_SMS_COUNT)
+
+      // Act
+      const actual = await SmsService.retrieveFreeSmsCounts(testUser._id)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toBe(VERIFICATION_SMS_COUNT)
+    })
+
+    it('should return a database error when retrieval fails', async () => {
+      // Arrange
+      const retrieveSpy = jest.spyOn(SmsCountModel, 'retrieveFreeSmsCounts')
+      retrieveSpy.mockRejectedValueOnce('ohno')
+
+      // Act
+      const actual = await SmsService.retrieveFreeSmsCounts(testUser._id)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(getMongoErrorMessage('ohno')),
+      )
     })
   })
 

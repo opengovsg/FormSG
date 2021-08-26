@@ -9,7 +9,7 @@ export class FormNotFoundError extends ApplicationError {
 }
 
 export class FormDeletedError extends ApplicationError {
-  constructor(message = 'Form has been deleted') {
+  constructor(message = 'This form is no longer active') {
     super(message)
   }
 }

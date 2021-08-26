@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
-import { hasProp } from '../../../shared/util/has-prop'
+import { hasProp } from '../../../../shared/utils/has-prop'
 import {
   AuthType,
   BasicField,
@@ -26,7 +26,11 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from './spcp.errors'
-import { CorppassJwtPayload, SingpassJwtPayload, SpcpForm } from './spcp.types'
+import {
+  CorppassJwtPayloadFromCookie,
+  SingpassJwtPayloadFromCookie,
+  SpcpForm,
+} from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
 const DESTINATION_REGEX = /^\/([\w]+)\/?/
@@ -149,7 +153,7 @@ export const verifyJwtPromise = (
  */
 export const isSingpassJwtPayload = (
   payload: unknown,
-): payload is SingpassJwtPayload => {
+): payload is SingpassJwtPayloadFromCookie => {
   return (
     typeof payload === 'object' &&
     !!payload &&
@@ -164,7 +168,7 @@ export const isSingpassJwtPayload = (
  */
 export const isCorppassJwtPayload = (
   payload: unknown,
-): payload is CorppassJwtPayload => {
+): payload is CorppassJwtPayloadFromCookie => {
   return (
     typeof payload === 'object' &&
     !!payload &&

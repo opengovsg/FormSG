@@ -1,4 +1,4 @@
-import { NestedResponse } from '../../../../../types/response'
+import { NestedResponse } from '../../../../types/response'
 
 import { Response } from './Response.class'
 

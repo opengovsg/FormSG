@@ -1,10 +1,10 @@
 const { Selector } = require('testcafe')
 const {
   types: basicTypes,
-} = require('../../../dist/backend/shared/resources/basic')
+} = require('../../../dist/backend/shared/constants/field/basic')
 const {
   types: myInfoTypes,
-} = require('../../../dist/backend/shared/resources/myinfo')
+} = require('../../../dist/backend/shared/constants/field/myinfo')
 
 const landingPage = {
   tagline: Selector('#tagline'),

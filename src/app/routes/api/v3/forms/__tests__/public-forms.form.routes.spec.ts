@@ -92,6 +92,8 @@ describe('public-form.form.routes', () => {
       mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
         cb(null, {
           userName: MOCK_COOKIE_PAYLOAD.userName,
+          iat: 100000000,
+          exp: 1000000000,
         }),
       )
       const { form } = await dbHandler.insertEmailForm({
@@ -105,13 +107,15 @@ describe('public-form.form.routes', () => {
       const formId = form._id
       // NOTE: This is needed to inject admin info into the form
       const fullForm = await dbHandler.getFullFormById(formId)
-      const expectedResponseBody = JSON.parse(
-        JSON.stringify({
-          form: fullForm?.getPublicView(),
-          spcpSession: { userName: MOCK_COOKIE_PAYLOAD.userName },
-          isIntranetUser: false,
+      const expectedResponseBody = {
+        form: JSON.parse(JSON.stringify(fullForm?.getPublicView())),
+        spcpSession: expect.objectContaining({
+          userName: MOCK_COOKIE_PAYLOAD.userName,
+          iat: 100000000,
+          exp: 1000000000,
         }),
-      )
+        isIntranetUser: false,
+      }
 
       // Act
       // Set cookie on request
@@ -129,6 +133,8 @@ describe('public-form.form.routes', () => {
         cb(null, {
           userName: MOCK_COOKIE_PAYLOAD.userName,
           userInfo: 'MyCorpPassUEN',
+          iat: 100000000,
+          exp: 1000000000,
         }),
       )
       const { form } = await dbHandler.insertEmailForm({
@@ -142,13 +148,15 @@ describe('public-form.form.routes', () => {
       const formId = form._id
       // NOTE: This is needed to inject admin info into the form
       const fullForm = await dbHandler.getFullFormById(formId)
-      const expectedResponseBody = JSON.parse(
-        JSON.stringify({
-          form: fullForm?.getPublicView(),
-          spcpSession: { userName: MOCK_COOKIE_PAYLOAD.userName },
-          isIntranetUser: false,
+      const expectedResponseBody = {
+        form: JSON.parse(JSON.stringify(fullForm?.getPublicView())),
+        spcpSession: expect.objectContaining({
+          userName: MOCK_COOKIE_PAYLOAD.userName,
+          iat: 100000000,
+          exp: 1000000000,
         }),
-      )
+        isIntranetUser: false,
+      }
 
       // Act
       // Set cookie on request
@@ -256,7 +264,7 @@ describe('public-form.form.routes', () => {
       })
       const expectedResponseBody = JSON.parse(
         JSON.stringify({
-          message: 'Gone',
+          message: 'This form is no longer active',
         }),
       )
 
