@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { BiTrash } from 'react-icons/bi'
-import { Flex, forwardRef, Text } from '@chakra-ui/react'
+import { Flex, forwardRef, Text, VisuallyHidden } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'
 
@@ -26,7 +26,10 @@ export const AttachmentFileInfo = forwardRef<AttachmentFileInfoProps, 'div'>(
         py="0.875rem"
         px="1rem"
       >
-        <Flex flexDir="column">
+        <VisuallyHidden>
+          File attached: {file.name} with file size of {readableFileSize}
+        </VisuallyHidden>
+        <Flex flexDir="column" aria-hidden>
           <Text textStyle="subhead-1" color="secondary.500">
             {file.name}
           </Text>
