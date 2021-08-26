@@ -29,6 +29,7 @@ export const NumberField = ({
         name={schema._id}
         render={({ field }) => (
           <NumberInput
+            aria-label={schema.title}
             allowMouseWheel
             clampValueOnBlur
             precision={0}

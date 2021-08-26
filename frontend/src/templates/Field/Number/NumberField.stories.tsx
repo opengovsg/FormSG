@@ -19,7 +19,8 @@ export default {
   decorators: [],
   parameters: {
     docs: {
-      // Required in this story due to rhf conflicting with Storybook somehow.
+      // Required in this story due to react-hook-form conflicting with
+      // Storybook somehow.
       // See https://github.com/storybookjs/storybook/issues/12747.
       source: {
         type: 'code',
@@ -55,13 +56,15 @@ const Template: Story<StoryNumberFieldProps> = ({ defaultValue, ...args }) => {
   const [submitValues, setSubmitValues] = useState<string>()
 
   const onSubmit = (values: Record<string, string>) => {
-    setSubmitValues(values[args.schema._id] ?? 'Nothing was selected')
+    setSubmitValues(values[args.schema._id] || 'Nothing was selected')
   }
 
   useEffect(() => {
     if (defaultValue) {
       formMethods.trigger()
     }
+    // Only want it to run once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
