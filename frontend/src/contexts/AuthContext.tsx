@@ -6,6 +6,7 @@ import { useLocalStorage } from '~hooks/useLocalStorage'
 import * as AuthService from '~services/AuthService'
 
 type AuthContextProps = {
+  isAuthenticated?: boolean
   sendLoginOtp: typeof AuthService.sendLoginOtp
   verifyLoginOtp: (params: { otp: string; email: string }) => Promise<void>
   logout: typeof AuthService.logout
@@ -36,25 +37,30 @@ export const useAuth = (): AuthContextProps => {
 
 // Provider hook that creates auth object and handles state
 const useProvideAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] =
+    useLocalStorage<boolean>(LOGGED_IN_KEY)
+  const queryClient = useQueryClient()
 
   const verifyLoginOtp = useCallback(
     async (params: { otp: string; email: string }) => {
       await AuthService.verifyLoginOtp(params)
-      setIsLoggedIn(true)
+      setIsAuthenticated(true)
     },
-    [setIsLoggedIn],
+    [setIsAuthenticated],
   )
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    await AuthService.logout()
     if (isAuthenticated) {
       // Clear logged in state.
-      setIsAuthenticated(false)
+      setIsAuthenticated(undefined)
     }
-  }, [isAuthenticated, setIsAuthenticated])
+    queryClient.clear()
+  }, [isAuthenticated, queryClient, setIsAuthenticated])
 
   // Return the user object and auth methods
   return {
+    isAuthenticated,
     sendLoginOtp: AuthService.sendLoginOtp,
     verifyLoginOtp: verifyLoginOtp,
     logout,
