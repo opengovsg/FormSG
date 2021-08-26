@@ -19,7 +19,8 @@ export default {
   decorators: [],
   parameters: {
     docs: {
-      // Required in this story due to rhf conflicting with Storybook somehow.
+      // Required in this story due to react-hook-form conflicting with
+      // Storybook somehow.
       // See https://github.com/storybookjs/storybook/issues/12747.
       source: {
         type: 'code',
