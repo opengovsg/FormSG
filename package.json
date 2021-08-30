@@ -140,7 +140,7 @@
     "slick-carousel": "1.8.1",
     "sortablejs": "~1.14.0",
     "spark-md5": "^3.0.2",
-    "sqs-consumer": "^5.5.0",
+    "sqs-consumer": "^5.6.0",
     "sqs-producer": "^2.1.0",
     "text-encoding": "^0.7.0",
     "toastr": "^2.1.4",
