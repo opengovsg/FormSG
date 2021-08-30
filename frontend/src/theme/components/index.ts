@@ -14,6 +14,7 @@ import { NumberInput } from './NumberInput'
 import { Pagination, PAGINATION_THEME_KEY } from './Pagination'
 import { PhoneNumberInput } from './PhoneNumberInput'
 import { Radio, RADIO_THEME_KEY } from './Radio'
+import { Searchbar, SEARCHBAR_THEME_KEY } from './Searchbar'
 import { Tabs } from './Tabs'
 import { Textarea } from './Textarea'
 import { Tile } from './Tile'
@@ -37,6 +38,7 @@ export const components = {
   [PAGINATION_THEME_KEY]: Pagination,
   [CHECKBOX_THEME_KEY]: Checkbox,
   [RADIO_THEME_KEY]: Radio,
+  [SEARCHBAR_THEME_KEY]: Searchbar,
   [RATING_THEME_KEY]: RatingField,
   [YESNO_THEME_KEY]: YesNoField,
   [TOGGLE_THEME_KEY]: Toggle,
