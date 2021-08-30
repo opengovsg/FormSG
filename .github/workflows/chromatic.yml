@@ -9,6 +9,9 @@ defaults:
 
 # Event for the workflow
 on:
+  push:
+    branches:
+      - 'form-v2/develop'
   pull_request:
     branches:
       # PR events to branches matching refs/heads/form-v2
