@@ -9,8 +9,8 @@ import Flags from 'country-flag-icons/react/3x2'
 
 import Input from '~components/Input'
 
-import { usePhoneNumber } from './PhoneNumberContext'
 import { BasePhoneNumberInputProps } from './PhoneNumberInput'
+import { usePhoneNumberInput } from './PhoneNumberInputContext'
 
 export const SingleCountryPhoneNumberInput = forwardRef<
   BasePhoneNumberInputProps,
@@ -22,7 +22,7 @@ export const SingleCountryPhoneNumberInput = forwardRef<
     handleInputChange,
     handleInputBlur,
     country,
-  } = usePhoneNumber()
+  } = usePhoneNumberInput()
 
   const styles = useMultiStyleConfig('SingleCountryPhoneNumberInput', props)
 

@@ -12,9 +12,9 @@ import { InputProps } from '../Input'
 
 import { IntlPhoneNumberInput } from './IntlPhoneNumberInput'
 import {
-  PhoneNumberProvider,
-  PhoneNumberProviderProps,
-} from './PhoneNumberContext'
+  PhoneNumberInputProvider,
+  PhoneNumberInputProviderProps,
+} from './PhoneNumberInputContext'
 import { SingleCountryPhoneNumberInput } from './SingleCountryPhoneNumberInput'
 
 export type BasePhoneNumberInputProps = Omit<
@@ -83,7 +83,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
     },
     ref,
   ) => {
-    const providerProps: PhoneNumberProviderProps = {
+    const providerProps: PhoneNumberInputProviderProps = {
       defaultCountry,
       isAllowInternational,
       onChange,
@@ -95,13 +95,13 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
     }
 
     return (
-      <PhoneNumberProvider {...providerProps}>
+      <PhoneNumberInputProvider {...providerProps}>
         {isAllowInternational ? (
           <IntlPhoneNumberInput {...props} ref={ref} />
         ) : (
           <SingleCountryPhoneNumberInput {...props} ref={ref} />
         )}
-      </PhoneNumberProvider>
+      </PhoneNumberInputProvider>
     )
   },
 )

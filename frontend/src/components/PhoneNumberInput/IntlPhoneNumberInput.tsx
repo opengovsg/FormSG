@@ -26,8 +26,8 @@ import {
   COUNTRY_CODE_TO_NAME,
   getCountrySelectOptions,
 } from './utils/countrySelectUtils'
-import { usePhoneNumber } from './PhoneNumberContext'
 import { BasePhoneNumberInputProps } from './PhoneNumberInput'
+import { usePhoneNumberInput } from './PhoneNumberInputContext'
 
 export const IntlPhoneNumberInput = forwardRef<
   BasePhoneNumberInputProps,
@@ -39,7 +39,7 @@ export const IntlPhoneNumberInput = forwardRef<
     inputPlaceholder,
     handleInputChange,
     handleInputBlur,
-  } = usePhoneNumber()
+  } = usePhoneNumberInput()
 
   const styles = useMultiStyleConfig('PhoneNumberInput', props)
 
@@ -68,7 +68,7 @@ interface CountrySelectProps {
 }
 
 const CountrySelect: FC<CountrySelectProps> = (props) => {
-  const { country, handleCountryChange } = usePhoneNumber()
+  const { country, handleCountryChange } = usePhoneNumberInput()
   const styles = useMultiStyleConfig('PhoneNumberInput', props)
 
   const onCountryChange = useCallback(

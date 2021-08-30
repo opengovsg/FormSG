@@ -17,7 +17,7 @@ import {
 } from 'libphonenumber-js'
 import defaultExamples from 'libphonenumber-js/examples.mobile.json'
 
-type PhoneNumberContextProps = {
+type PhoneNumberInputContextProps = {
   defaultValue?: string
   defaultCountry: CountryCode
   /**
@@ -56,7 +56,7 @@ type PhoneNumberContextProps = {
   onBlur?: () => void
 }
 
-type PhoneNumberContextReturn = {
+type PhoneNumberInputContextReturn = {
   inputValue: string
   country: CountryCode
   innerInputRef: MutableRefObject<HTMLInputElement | null>
@@ -67,28 +67,28 @@ type PhoneNumberContextReturn = {
   isDisabled?: boolean
 }
 
-const PhoneNumberContext = createContext<PhoneNumberContextReturn | undefined>(
-  undefined,
-)
+const PhoneNumberInputContext = createContext<
+  PhoneNumberInputContextReturn | undefined
+>(undefined)
 
-export type PhoneNumberProviderProps = PhoneNumberContextProps & {
+export type PhoneNumberInputProviderProps = PhoneNumberInputContextProps & {
   children?: React.ReactNode
 }
 
 /**
  * Provider component that makes context object available to any
- * child component that calls `usePhoneNumber()`.
+ * child component that calls `usePhoneNumberInput()`.
  */
-export const PhoneNumberProvider = ({
+export const PhoneNumberInputProvider = ({
   children,
   ...contextProps
-}: PhoneNumberProviderProps): JSX.Element => {
-  const context = useProvidePhoneNumber(contextProps)
+}: PhoneNumberInputProviderProps): JSX.Element => {
+  const context = useProvidePhoneNumberInput(contextProps)
 
   return (
-    <PhoneNumberContext.Provider value={context}>
+    <PhoneNumberInputContext.Provider value={context}>
       {children}
-    </PhoneNumberContext.Provider>
+    </PhoneNumberInputContext.Provider>
   )
 }
 
@@ -96,8 +96,8 @@ export const PhoneNumberProvider = ({
  * Hook for components nested in PhoneNumberProvider component to get the
  * current context object.
  */
-export const usePhoneNumber = (): PhoneNumberContextReturn => {
-  const context = useContext(PhoneNumberContext)
+export const usePhoneNumberInput = (): PhoneNumberInputContextReturn => {
+  const context = useContext(PhoneNumberInputContext)
   if (!context) {
     throw new Error(
       `usePhoneNumber must be used within a PhoneNumberProvider component`,
@@ -106,7 +106,7 @@ export const usePhoneNumber = (): PhoneNumberContextReturn => {
   return context
 }
 
-export const useProvidePhoneNumber = ({
+const useProvidePhoneNumberInput = ({
   defaultValue,
   defaultCountry,
   examplePlaceholder,
@@ -115,7 +115,7 @@ export const useProvidePhoneNumber = ({
   onChange,
   onBlur,
   ...props
-}: PhoneNumberContextProps): PhoneNumberContextReturn => {
+}: PhoneNumberInputContextProps): PhoneNumberInputContextReturn => {
   // Internal states of the component.
   const [inputValue, setInputValue] = useState(defaultValue ?? '')
   const [country, setCountry] = useState(defaultCountry)
