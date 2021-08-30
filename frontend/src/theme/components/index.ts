@@ -12,6 +12,7 @@ import { Link } from './Link'
 import { NumberInput } from './NumberInput'
 import { Pagination, PAGINATION_THEME_KEY } from './Pagination'
 import { PhoneNumberInput } from './PhoneNumberInput'
+import { Searchbar, SEARCHBAR_THEME_KEY } from './Searchbar'
 import { SingleCountryPhoneNumberInput } from './SingleCountryPhoneNumberInput'
 import { Tabs } from './Tabs'
 import { Textarea } from './Textarea'
@@ -35,6 +36,7 @@ export const components = {
   Textarea,
   Tabs,
   [PAGINATION_THEME_KEY]: Pagination,
+  [SEARCHBAR_THEME_KEY]: Searchbar,
   [RATING_THEME_KEY]: RatingField,
   [YESNO_THEME_KEY]: YesNoField,
   [TOGGLE_THEME_KEY]: Toggle,
