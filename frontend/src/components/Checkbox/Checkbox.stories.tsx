@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
-import { FormControl, SimpleGrid, Text, VStack } from '@chakra-ui/react'
+import { FormControl, VStack } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 import { isEmpty } from 'lodash'
 
@@ -48,7 +48,7 @@ Tablet.parameters = {
   chromatic: { viewports: [viewports.md] },
 }
 
-const AllCheckboxStates = (args: CheckboxProps) => {
+const AllStates: Story<CheckboxProps> = (args) => {
   return (
     <VStack>
       <Checkbox {...args}>Unselected</Checkbox>
@@ -70,38 +70,7 @@ const AllCheckboxStates = (args: CheckboxProps) => {
   )
 }
 
-const LabelledCheckboxStates = (args: CheckboxProps) => {
-  return (
-    <VStack
-      align="left"
-      border="1px dashed"
-      borderColor={`${args.colorScheme}.300`}
-      p="2rem"
-    >
-      <Text textStyle="h2">{args.colorScheme}</Text>
-      <AllCheckboxStates {...args} />
-    </VStack>
-  )
-}
-
-const TemplateGroup: Story<CheckboxProps> = (args) => {
-  return (
-    <SimpleGrid columns={2} spacing={8} alignItems="center">
-      <LabelledCheckboxStates {...args} colorScheme="primary" />
-      <LabelledCheckboxStates {...args} colorScheme="theme-green" />
-      <LabelledCheckboxStates {...args} colorScheme="theme-teal" />
-      <LabelledCheckboxStates {...args} colorScheme="theme-purple" />
-      <LabelledCheckboxStates {...args} colorScheme="theme-grey" />
-      <LabelledCheckboxStates {...args} colorScheme="theme-yellow" />
-      <LabelledCheckboxStates {...args} colorScheme="theme-orange" />
-      <LabelledCheckboxStates {...args} colorScheme="theme-red" />
-      <LabelledCheckboxStates {...args} colorScheme="theme-brown" />
-    </SimpleGrid>
-  )
-}
-
-export const CheckboxStates = TemplateGroup.bind({})
-CheckboxStates.storyName = 'States and themes'
+export const CheckboxStates = AllStates.bind({})
 
 export const Playground: Story = ({
   name = 'checkbox',

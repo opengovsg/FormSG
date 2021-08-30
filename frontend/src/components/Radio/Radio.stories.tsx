@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
-import { FormControl, SimpleGrid, Text, VStack } from '@chakra-ui/react'
+import { FormControl, VStack } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 import { isEmpty, omit } from 'lodash'
 
@@ -48,7 +48,7 @@ Tablet.parameters = {
   chromatic: { viewports: [viewports.md] },
 }
 
-const AllRadioStates = (args: RadioProps) => {
+const AllStates: Story<RadioProps> = (args) => {
   return (
     <VStack>
       <Radio {...args}>Unselected</Radio>
@@ -70,38 +70,7 @@ const AllRadioStates = (args: RadioProps) => {
   )
 }
 
-const LabelledRadioStates = (args: RadioProps) => {
-  return (
-    <VStack
-      align="left"
-      border="1px dashed"
-      borderColor={`${args.colorScheme}.300`}
-      p="2rem"
-    >
-      <Text textStyle="h2">{args.colorScheme}</Text>
-      <AllRadioStates {...args} />
-    </VStack>
-  )
-}
-
-const TemplateGroup: Story<RadioProps> = (args) => {
-  return (
-    <SimpleGrid columns={2} spacing={8} alignItems="center">
-      <LabelledRadioStates {...args} colorScheme="primary" />
-      <LabelledRadioStates {...args} colorScheme="theme-green" />
-      <LabelledRadioStates {...args} colorScheme="theme-teal" />
-      <LabelledRadioStates {...args} colorScheme="theme-purple" />
-      <LabelledRadioStates {...args} colorScheme="theme-grey" />
-      <LabelledRadioStates {...args} colorScheme="theme-yellow" />
-      <LabelledRadioStates {...args} colorScheme="theme-orange" />
-      <LabelledRadioStates {...args} colorScheme="theme-red" />
-      <LabelledRadioStates {...args} colorScheme="theme-brown" />
-    </SimpleGrid>
-  )
-}
-
-export const RadioStates = TemplateGroup.bind({})
-RadioStates.storyName = 'States and themes'
+export const RadioStates = AllStates.bind({})
 
 const PlaygroundTemplate: Story = ({
   name = 'radio',
