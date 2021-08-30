@@ -12,6 +12,7 @@ module.exports = {
       'react-scripts/config/jest/fileTransform.js',
   },
   moduleNameMapper: {
+    '~shared/(.*)': '<rootDir>/../../../shared/$1',
     '~assets/(.*)': '<rootDir>/../../src/assets/$1',
     '~contexts/(.*)': '<rootDir>/../../src/contexts/$1',
     '~constants/(.*)': '<rootDir>/../../src/constants/$1',

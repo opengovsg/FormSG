@@ -58,7 +58,7 @@ export const FormLabel = ({
       display="flex"
       flexDir="column"
     >
-      <Box display="block">
+      <Box>
         {questionNumber && (
           <FormLabel.QuestionNumber>{questionNumber}</FormLabel.QuestionNumber>
         )}
@@ -91,11 +91,11 @@ FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
   return (
     <Text
       as="span"
-      verticalAlign="top"
       textStyle="caption-1"
       color="secondary.700"
       mr="0.5rem"
-      lineHeight="1.5rem"
+      verticalAlign="baseline"
+      lineHeight={0}
       {...props}
     >
       <VisuallyHidden>Question number:</VisuallyHidden>
@@ -104,14 +104,15 @@ FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
   )
 }
 
-FormLabel.OptionalIndicator = (
-  props: TextProps & { isRequired?: boolean },
-): JSX.Element | null => {
+FormLabel.OptionalIndicator = ({
+  isRequired,
+  ...props
+}: TextProps & { isRequired?: boolean }): JSX.Element | null => {
   // Valid hook usage since composited component is still a component.
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const field = useFormControlContext()
 
-  if (props.isRequired || field?.isRequired) return null
+  if (isRequired || field?.isRequired) return null
 
   return (
     <Text
@@ -120,6 +121,7 @@ FormLabel.OptionalIndicator = (
       textStyle="body-2"
       ml="0.5rem"
       color="neutral.700"
+      lineHeight={0}
       {...props}
     >
       (optional)
