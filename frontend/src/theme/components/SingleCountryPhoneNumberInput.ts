@@ -4,7 +4,7 @@ import { Input } from './Input'
 
 const parts = ['field', 'iconContainer', 'icon']
 
-export const LocalPhoneNumberInput: ComponentMultiStyleConfig = {
+export const SingleCountryPhoneNumberInput: ComponentMultiStyleConfig = {
   parts,
   variants: {
     outline: (props) => {

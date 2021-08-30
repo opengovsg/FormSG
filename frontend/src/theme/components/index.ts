@@ -9,10 +9,10 @@ import { FormLabel } from './FormLabel'
 import { InlineMessage } from './InlineMessage'
 import { Input } from './Input'
 import { Link } from './Link'
-import { LocalPhoneNumberInput } from './LocalPhoneNumberInput'
 import { NumberInput } from './NumberInput'
 import { Pagination, PAGINATION_THEME_KEY } from './Pagination'
 import { PhoneNumberInput } from './PhoneNumberInput'
+import { SingleCountryPhoneNumberInput } from './SingleCountryPhoneNumberInput'
 import { Tabs } from './Tabs'
 import { Textarea } from './Textarea'
 import { Tile } from './Tile'
@@ -31,7 +31,7 @@ export const components = {
   InlineMessage,
   NumberInput,
   PhoneNumberInput,
-  LocalPhoneNumberInput,
+  SingleCountryPhoneNumberInput,
   Textarea,
   Tabs,
   [PAGINATION_THEME_KEY]: Pagination,

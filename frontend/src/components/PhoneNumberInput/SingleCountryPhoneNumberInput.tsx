@@ -12,7 +12,7 @@ import Input from '~components/Input'
 import { usePhoneNumber } from './PhoneNumberContext'
 import { BasePhoneNumberInputProps } from './PhoneNumberInput'
 
-export const LocalPhoneNumberInput = forwardRef<
+export const SingleCountryPhoneNumberInput = forwardRef<
   BasePhoneNumberInputProps,
   'input'
 >((props, ref) => {
@@ -24,7 +24,7 @@ export const LocalPhoneNumberInput = forwardRef<
     country,
   } = usePhoneNumber()
 
-  const styles = useMultiStyleConfig('LocalPhoneNumberInput', props)
+  const styles = useMultiStyleConfig('SingleCountryPhoneNumberInput', props)
 
   return (
     <InputGroup>

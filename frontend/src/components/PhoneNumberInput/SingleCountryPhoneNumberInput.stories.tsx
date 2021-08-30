@@ -4,7 +4,7 @@ import * as stories from './IntlPhoneNumberInput.stories'
 import { PhoneNumberInput } from './PhoneNumberInput'
 
 export default {
-  title: 'Components/PhoneNumberInput/Local',
+  title: 'Components/PhoneNumberInput/SingleCountry',
   component: PhoneNumberInput,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [],

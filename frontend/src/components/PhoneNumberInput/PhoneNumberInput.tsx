@@ -11,11 +11,11 @@ import { CountryCode, NationalNumber } from 'libphonenumber-js/min'
 import { InputProps } from '../Input'
 
 import { IntlPhoneNumberInput } from './IntlPhoneNumberInput'
-import { LocalPhoneNumberInput } from './LocalPhoneNumberInput'
 import {
   PhoneNumberProvider,
   PhoneNumberProviderProps,
 } from './PhoneNumberContext'
+import { SingleCountryPhoneNumberInput } from './SingleCountryPhoneNumberInput'
 
 export type BasePhoneNumberInputProps = Omit<
   InputProps,
@@ -99,7 +99,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
         {isAllowInternational ? (
           <IntlPhoneNumberInput {...props} ref={ref} />
         ) : (
-          <LocalPhoneNumberInput {...props} ref={ref} />
+          <SingleCountryPhoneNumberInput {...props} ref={ref} />
         )}
       </PhoneNumberProvider>
     )
