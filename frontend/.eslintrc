@@ -1,11 +1,14 @@
 {
   "root": true,
-  "plugins": ["import", "simple-import-sort", "prettier"],
+  "plugins": ["import", "simple-import-sort", "prettier", "testing-library"],
   "extends": ["eslint:recommended", "plugin:prettier/recommended"],
   "overrides": [
     {
-      "files": ["*.test.ts"],
-      "extends": ["react-app/jest"]
+      "files": [
+        "**/__tests__/**/*.[jt]s?(x)",
+        "**/?(*.)+(spec|test).[jt]s?(x)"
+      ],
+      "extends": ["react-app/jest", "plugin:testing-library/react"]
     },
     {
       "files": ["*.ts", "*.tsx"],

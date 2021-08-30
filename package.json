@@ -18,7 +18,7 @@
   "scripts": {
     "test-backend": "env-cmd -f tests/.test-env jest --coverage --maxWorkers=4",
     "test-backend:watch": "env-cmd -f tests/.test-env jest --watch",
-    "test-frontend": "jest --config=tests/unit/frontend/jest.config.js",
+    "test:frontend": "npm --prefix frontend test",
     "build": "npm run build:backend && npm run build:frontend",
     "build:frontend": "npm run --prefix frontend build",
     "build:backend": "tsc -p tsconfig.build.json",
