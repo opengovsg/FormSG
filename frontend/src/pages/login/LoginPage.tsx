@@ -1,4 +1,5 @@
 import { FC, useMemo, useState } from 'react'
+import { Link as ReactLink } from 'react-router-dom'
 import {
   Box,
   chakra,
@@ -14,6 +15,7 @@ import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-co
 import { ReactComponent as LoginImageSvg } from '~assets/svgs/img-buildscratch.svg'
 import { useAuth } from '~contexts/AuthContext'
 import { FORM_GUIDE, REPORT_VULNERABILITY } from '~constants/externalLinks'
+import { LANDING_ROUTE } from '~constants/routes'
 import Footer from '~components/Footer'
 import Link from '~components/Link'
 
@@ -137,11 +139,16 @@ export const LoginPage: FC = () => {
               minH={{ base: 'auto', lg: '24rem' }}
             >
               <Box pt={{ base: 0, lg: '2rem' }} mb={{ base: '2.5rem', lg: 0 }}>
-                <BrandLogo
-                  title="FormSG logo"
+                <Link
+                  as={ReactLink}
+                  to={LANDING_ROUTE}
                   mb={{ base: '0.75rem', lg: '1.5rem' }}
-                  h={{ base: '1.5rem', lg: '2rem' }}
-                />
+                >
+                  <BrandLogo
+                    title="FormSG logo"
+                    h={{ base: '1.5rem', lg: '2rem' }}
+                  />
+                </Link>
                 <Text
                   textStyle="h4"
                   color="secondary.500"
