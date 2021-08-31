@@ -4,10 +4,12 @@ import {
   forwardRef,
   HStack,
   Icon,
+  useFormControlProps,
   useMultiStyleConfig,
   useRadioGroup,
   UseRadioGroupProps,
 } from '@chakra-ui/react'
+import pick from 'lodash/pick'
 
 import { YESNO_THEME_KEY } from '~theme/components/Field/YesNo'
 import { FieldColorScheme } from '~theme/foundations/colours'
@@ -51,13 +53,19 @@ export interface YesNoProps {
 export const YesNo = forwardRef<YesNoProps, 'input'>(
   ({ colorScheme, ...props }, ref) => {
     const styles = useMultiStyleConfig(YESNO_THEME_KEY, props)
+    const formControlProps = useFormControlProps(props)
     const { getRootProps, getRadioProps } = useRadioGroup(props)
 
     const groupProps = getRootProps()
     const [noProps, yesProps] = useMemo(() => {
       const baseProps = {
         enterKeyHint: '',
-        isDisabled: props.isDisabled,
+        ...pick(formControlProps, [
+          'isDisabled',
+          'isReadOnly',
+          'isRequired',
+          'isInvalid',
+        ]),
       }
 
       return [
@@ -70,7 +78,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           ...baseProps,
         }),
       ]
-    }, [getRadioProps, props.isDisabled])
+    }, [formControlProps, getRadioProps])
 
     return (
       // -1px so borders collapse.
@@ -79,7 +87,8 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           side="left"
           colorScheme={colorScheme}
           {...noProps}
-          // Ref is set here so any errors can focus this input.
+          // Ref is set here for tracking current value, and also so any errors
+          // can focus this input.
           ref={ref}
         >
           <Icon as={BiX} __css={styles.icon} />
@@ -89,7 +98,8 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           side="right"
           colorScheme={colorScheme}
           {...yesProps}
-          // Ref is set here so any errors can focus this input.
+          // Ref is set here for tracking current value, and also so any errors
+          // can focus this input.
           ref={ref}
         >
           <Icon as={BiCheck} __css={styles.icon} />
