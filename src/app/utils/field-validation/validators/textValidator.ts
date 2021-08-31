@@ -1,7 +1,7 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { TextSelectedValidation } from '../../../../../shared/types/field'
+import { TextSelectedValidation } from '../../../../../shared/types'
 import {
   ILongTextFieldSchema,
   IShortTextFieldSchema,

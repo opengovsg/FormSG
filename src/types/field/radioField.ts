@@ -1,8 +1,7 @@
-import { BasicField, RadioFieldBase } from '../../../shared/types/field'
+import { BasicField, RadioFieldBase } from '../../../shared/types'
 
 import { IFieldSchema } from './baseField'
 
-export type IRadioField = RadioFieldBase
-export interface IRadioFieldSchema extends IRadioField, IFieldSchema {
+export interface IRadioFieldSchema extends RadioFieldBase, IFieldSchema {
   fieldType: BasicField.Radio
 }

@@ -1,16 +1,18 @@
 import {
+  BasicField,
+  FormResponseMode,
+  LogicType,
+} from '../../../../../../shared/types'
+import {
   generateDefaultField,
   generateProcessedSingleAnswerResponse,
   generateSingleAnswerResponse,
 } from '../../../../../../tests/unit/backend/helpers/generate-form-data'
 import * as LogicUtil from '../../../../../shared/util/logic'
 import {
-  BasicField,
-  IEmailFormSchema,
-  IFormSchema,
+  FormFieldSchema,
+  IFormDocument,
   IPreventSubmitLogicSchema,
-  LogicType,
-  ResponseMode,
 } from '../../../../../types'
 import {
   ConflictError,
@@ -44,9 +46,9 @@ describe('ParsedResponsesObject', () => {
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         form_fields: [shortTextField, decimalField],
-      } as unknown as IFormSchema,
+      } as IFormDocument,
       [shortTextResponse, decimalResponse],
     )
 
@@ -64,9 +66,9 @@ describe('ParsedResponsesObject', () => {
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         form_fields: [extraField],
-      } as unknown as IEmailFormSchema,
+      } as IFormDocument,
       [],
     )
 
@@ -83,9 +85,9 @@ describe('ParsedResponsesObject', () => {
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         form_fields: [nricField],
-      } as unknown as IEmailFormSchema,
+      } as IFormDocument,
       [nricResponse],
     )
 
@@ -110,9 +112,9 @@ describe('ParsedResponsesObject', () => {
 
     const result = ParsedResponsesObject.parseResponses(
       {
-        responseMode: ResponseMode.Email,
-        form_fields: [],
-      } as unknown as IEmailFormSchema,
+        responseMode: FormResponseMode.Email,
+        form_fields: [] as FormFieldSchema[],
+      } as IFormDocument,
       [],
     )
 

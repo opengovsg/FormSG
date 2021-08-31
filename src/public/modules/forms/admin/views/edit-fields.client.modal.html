@@ -969,6 +969,18 @@
           </div>
         </div>
 
+        <div class="row" ng-if="vm.showFieldDataTooLongError(vm.field)">
+          <div class="col-md-12">
+            <div class="alert-custom alert-error">
+              <i class="bx bx-exclamation bx-md icon-spacing"></i>
+              <span class="alert-msg"
+                >Your field size has exceeded 10 MB. Please reduce the size of
+                the field.</span
+              >
+            </div>
+          </div>
+        </div>
+
         <!-- Rating -->
         <div class="row" ng-if="vm.field.fieldType === 'rating'">
           <div id="rating-options">

@@ -5,7 +5,7 @@ import {
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
   PublicFormAuthValidateEsrvcIdDto,
-} from '../../../shared/types/form'
+} from '../../../shared/types'
 
 // Exported for testing
 export const PUBLIC_FORMS_ENDPOINT = '/api/v3/forms'

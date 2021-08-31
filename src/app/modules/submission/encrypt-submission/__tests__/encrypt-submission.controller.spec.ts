@@ -17,13 +17,16 @@ import {
   IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedUser,
-  ResponseMode,
   SubmissionData,
-  SubmissionMetadata,
 } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import {
+  FormResponseMode,
+  StorageModeSubmissionMetadata,
+  SubmissionId,
+} from '../../../../../../shared/types'
 import {
   ResponseModeError,
   SubmissionNotFoundError,
@@ -137,8 +140,8 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       const expectedError = new ResponseModeError(
-        ResponseMode.Encrypt,
-        ResponseMode.Email,
+        FormResponseMode.Encrypt,
+        FormResponseMode.Email,
       )
       MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
         err(expectedError),
@@ -430,8 +433,8 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       const expectedError = new ResponseModeError(
-        ResponseMode.Encrypt,
-        ResponseMode.Email,
+        FormResponseMode.Encrypt,
+        FormResponseMode.Email,
       )
       MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
         err(expectedError),
@@ -659,7 +662,7 @@ describe('encrypt-submission.controller', () => {
 
     it('should return 200 with single submission metadata when query.submissionId is provided and can be found', async () => {
       // Arrange
-      const mockSubmissionId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString() as SubmissionId
       const mockReq = expressHandler.mockRequest({
         params: { formId: MOCK_FORM_ID },
         query: {
@@ -673,7 +676,7 @@ describe('encrypt-submission.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
       // Mock service result.
-      const expectedMetadata: SubmissionMetadata = {
+      const expectedMetadata: StorageModeSubmissionMetadata = {
         number: 2,
         refNo: mockSubmissionId,
         submissionTime: 'some submission time',
@@ -759,7 +762,7 @@ describe('encrypt-submission.controller', () => {
             refNo: new ObjectId().toHexString(),
             submissionTime: 'some submission time',
           },
-        ] as SubmissionMetadata[],
+        ] as StorageModeSubmissionMetadata[],
         count: 32,
       }
       MockEncryptSubService.getSubmissionMetadataList.mockReturnValueOnce(
@@ -794,8 +797,8 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       const expectedError = new ResponseModeError(
-        ResponseMode.Encrypt,
-        ResponseMode.Email,
+        FormResponseMode.Encrypt,
+        FormResponseMode.Email,
       )
       MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
         err(expectedError),
@@ -1070,8 +1073,8 @@ describe('encrypt-submission.controller', () => {
         okAsync(MOCK_FORM),
       )
       const expectedError = new ResponseModeError(
-        ResponseMode.Encrypt,
-        ResponseMode.Email,
+        FormResponseMode.Encrypt,
+        FormResponseMode.Email,
       )
       MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
         err(expectedError),

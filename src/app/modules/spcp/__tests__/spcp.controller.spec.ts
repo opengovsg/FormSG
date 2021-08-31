@@ -4,10 +4,10 @@ import { mocked } from 'ts-jest/utils'
 import config from 'src/app/config/config'
 import * as FormService from 'src/app/modules/form/form.service'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
-import { AuthType } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import { FormAuthType } from '../../../../../shared/types'
 import * as BillingService from '../../billing/billing.service'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
@@ -56,14 +56,14 @@ const MOCK_RESPONSE = expressHandler.mockResponse()
 const MOCK_REDIRECT_REQ = expressHandler.mockRequest({
   query: {
     target: MOCK_RELAY_STATE,
-    authType: AuthType.SP as const,
+    authType: FormAuthType.SP as const,
     esrvcId: MOCK_ESRVCID,
   },
 })
 const MOCK_VALIDATE_REQ = expressHandler.mockRequest({
   query: {
     target: MOCK_TARGET,
-    authType: AuthType.SP as const,
+    authType: FormAuthType.SP as const,
     esrvcId: MOCK_ESRVCID,
   },
 })
@@ -86,7 +86,7 @@ describe('spcp.controller', () => {
       SpcpController.handleRedirect(MOCK_REDIRECT_REQ, MOCK_RESPONSE, jest.fn())
 
       expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        AuthType.SP,
+        FormAuthType.SP,
         MOCK_RELAY_STATE,
         MOCK_ESRVCID,
       )
@@ -104,7 +104,7 @@ describe('spcp.controller', () => {
       SpcpController.handleRedirect(MOCK_REDIRECT_REQ, MOCK_RESPONSE, jest.fn())
 
       expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        AuthType.SP,
+        FormAuthType.SP,
         MOCK_RELAY_STATE,
         MOCK_ESRVCID,
       )
@@ -134,7 +134,7 @@ describe('spcp.controller', () => {
       )
 
       expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        AuthType.SP,
+        FormAuthType.SP,
         MOCK_TARGET,
         MOCK_ESRVCID,
       )
@@ -168,7 +168,7 @@ describe('spcp.controller', () => {
       )
 
       expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        AuthType.SP,
+        FormAuthType.SP,
         MOCK_TARGET,
         MOCK_ESRVCID,
       )
@@ -200,7 +200,7 @@ describe('spcp.controller', () => {
       )
 
       expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        AuthType.SP,
+        FormAuthType.SP,
         MOCK_TARGET,
         MOCK_ESRVCID,
       )
@@ -232,7 +232,7 @@ describe('spcp.controller', () => {
       )
 
       expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        AuthType.SP,
+        FormAuthType.SP,
         MOCK_TARGET,
         MOCK_ESRVCID,
       )
@@ -251,7 +251,7 @@ describe('spcp.controller', () => {
 
   describe('handleLogin', () => {
     describe('(Singpass)', () => {
-      const loginHandler = SpcpController.handleLogin(AuthType.SP)
+      const loginHandler = SpcpController.handleLogin(FormAuthType.SP)
 
       beforeEach(() => {
         MockSpcpService.parseOOBParams.mockReturnValue(
@@ -282,7 +282,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -290,17 +290,17 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_DESTINATION,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
           MOCK_ATTRIBUTES,
           MOCK_REMEMBER_ME,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockSpcpService.createJWT).toHaveBeenCalledWith(
           MOCK_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
           MOCK_SP_FORM,
@@ -323,7 +323,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(400)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
@@ -345,7 +345,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -370,7 +370,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -392,7 +392,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -400,7 +400,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_DESTINATION,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
@@ -418,7 +418,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -426,12 +426,12 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_DESTINATION,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
           MOCK_ATTRIBUTES,
           MOCK_REMEMBER_ME,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
@@ -446,7 +446,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -454,17 +454,17 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_DESTINATION,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
           MOCK_ATTRIBUTES,
           MOCK_REMEMBER_ME,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockSpcpService.createJWT).toHaveBeenCalledWith(
           MOCK_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
@@ -480,7 +480,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -488,17 +488,17 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
           MOCK_SP_SAML,
           MOCK_DESTINATION,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
           MOCK_ATTRIBUTES,
           MOCK_REMEMBER_ME,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockSpcpService.createJWT).toHaveBeenCalledWith(
           MOCK_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          AuthType.SP,
+          FormAuthType.SP,
         )
         expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
           MOCK_SP_FORM,
@@ -510,7 +510,7 @@ describe('spcp.controller', () => {
     })
 
     describe('(Corppass)', () => {
-      const loginHandler = SpcpController.handleLogin(AuthType.CP)
+      const loginHandler = SpcpController.handleLogin(FormAuthType.CP)
 
       beforeEach(() => {
         MockSpcpService.parseOOBParams.mockReturnValue(
@@ -541,7 +541,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -549,17 +549,17 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_DESTINATION,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
           MOCK_ATTRIBUTES,
           MOCK_REMEMBER_ME,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockSpcpService.createJWT).toHaveBeenCalledWith(
           MOCK_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
           MOCK_CP_FORM,
@@ -582,7 +582,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(400)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
@@ -605,7 +605,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -627,7 +627,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -651,7 +651,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -659,7 +659,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_DESTINATION,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
@@ -677,7 +677,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -685,12 +685,12 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_DESTINATION,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
           MOCK_ATTRIBUTES,
           MOCK_REMEMBER_ME,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
@@ -705,7 +705,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -713,17 +713,17 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_DESTINATION,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
           MOCK_ATTRIBUTES,
           MOCK_REMEMBER_ME,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockSpcpService.createJWT).toHaveBeenCalledWith(
           MOCK_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
@@ -739,7 +739,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_RELAY_STATE,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -747,17 +747,17 @@ describe('spcp.controller', () => {
         expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
           MOCK_CP_SAML,
           MOCK_DESTINATION,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
           MOCK_ATTRIBUTES,
           MOCK_REMEMBER_ME,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockSpcpService.createJWT).toHaveBeenCalledWith(
           MOCK_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          AuthType.CP,
+          FormAuthType.CP,
         )
         expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
           MOCK_CP_FORM,

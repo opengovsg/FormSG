@@ -1,11 +1,11 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 
-import { AuthType } from '../../../types'
+import { FormAuthType } from '../../../../shared/types'
 
 export const redirectParamsMiddleware = celebrate({
   [Segments.QUERY]: Joi.object({
     target: Joi.string().required(),
-    authType: Joi.string().required().valid(AuthType.SP, AuthType.CP),
+    authType: Joi.string().required().valid(FormAuthType.SP, FormAuthType.CP),
     esrvcId: Joi.string().required(),
   }),
 })

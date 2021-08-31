@@ -3,10 +3,11 @@ import moment from 'moment-timezone'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import { AuthType, LoginStatistic } from 'src/types'
+import { FormBillingStatistic } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import { FormAuthType } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import * as BillingController from '../billing.controller'
 import * as BillingService from '../billing.service'
@@ -51,10 +52,10 @@ describe('billing.controller', () => {
 
     it('should return 200 with login statistics successfully', async () => {
       // Arrange
-      const mockLoginStats: LoginStatistic[] = [
+      const mockLoginStats: FormBillingStatistic[] = [
         {
           adminEmail: 'mockemail@example.com',
-          authType: AuthType.CP,
+          authType: FormAuthType.CP,
           formId: 'mock form id',
           formName: 'some form name',
           total: 100,

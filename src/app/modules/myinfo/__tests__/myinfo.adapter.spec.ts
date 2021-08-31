@@ -5,8 +5,7 @@ import {
 } from '@opengovsg/myinfo-gov-client'
 import { SetRequired } from 'type-fest'
 
-import { MyInfoAttribute } from 'src/types'
-
+import { MyInfoAttribute } from '../../../../../shared/types'
 import { MyInfoData } from '../myinfo.adapter'
 
 import { MOCK_UINFIN } from './myinfo.test.constants'

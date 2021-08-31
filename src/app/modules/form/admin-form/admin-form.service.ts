@@ -7,35 +7,34 @@ import { Except, Merge } from 'type-fest'
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
-} from '../../../../../shared/constants/file'
-import { EditFieldActions } from '../../../../shared/constants'
-import {
-  BasicField,
-  FormFieldSchema,
-  FormLogicSchema,
-  FormLogoState,
-  FormSettings,
-  IField,
-  IForm,
-  IFormDocument,
-  IFormSchema,
-  IMobileField,
-  IPopulatedForm,
-  IUserSchema,
-  LogicDto,
-  Permission,
-} from '../../../../types'
+} from '../../../../../shared/constants'
 import {
   AdminDashboardFormMetaDto,
+  BasicField,
   DuplicateFormBodyDto,
-  EditFormFieldParams,
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
-  FormUpdateParams,
+  FormField,
+  FormLogoState,
+  FormPermission,
+  FormSettings,
+  LogicDto,
+  MobileFieldBase,
   SettingsUpdateDto,
   StartPageUpdateDto,
-} from '../../../../types/api'
+} from '../../../../../shared/types'
+import { EditFieldActions } from '../../../../shared/constants'
+import {
+  FormFieldSchema,
+  FormLogicSchema,
+  IForm,
+  IFormDocument,
+  IFormSchema,
+  IPopulatedForm,
+  IUserSchema,
+} from '../../../../types'
+import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
@@ -711,8 +710,8 @@ export const updateForm = (
  */
 export const updateFormCollaborators = (
   form: IPopulatedForm,
-  updatedCollaborators: Permission[],
-): ResultAsync<Permission[], PossibleDatabaseError> => {
+  updatedCollaborators: FormPermission[],
+): ResultAsync<FormPermission[], PossibleDatabaseError> => {
   return ResultAsync.fromPromise(
     form.updateFormCollaborators(updatedCollaborators),
     (error) => {
@@ -1103,15 +1102,14 @@ export const disableSmsVerificationsForUser = (
  */
 export const shouldUpdateFormField = (
   form: IPopulatedForm,
-  formField: IField,
+  formField: FormField,
 ): ResultAsync<
   IPopulatedForm,
   PossibleDatabaseError | SmsLimitExceededError
 > => {
   switch (formField.fieldType) {
     case BasicField.Mobile: {
-      // NOTE: This casting is safe and we require this casting because we do not declare explicit discriminants on the extended type
-      return isMobileFieldUpdateAllowed(formField as IMobileField, form)
+      return isMobileFieldUpdateAllowed(formField, form)
     }
     default:
       return okAsync(form)
@@ -1128,7 +1126,7 @@ export const shouldUpdateFormField = (
  * @returns err(SmsLimitExceededError) if the admin of the form has exceeded their free sms quota
  */
 const isMobileFieldUpdateAllowed = (
-  mobileField: IMobileField,
+  mobileField: MobileFieldBase,
   form: IPopulatedForm,
 ): ResultAsync<
   IPopulatedForm,

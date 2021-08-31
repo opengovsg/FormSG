@@ -2,13 +2,9 @@ import mongoose from 'mongoose'
 
 import getLoginModel from 'src/app/models/login.server.model'
 import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
-import {
-  AuthType,
-  ILoginSchema,
-  IPopulatedForm,
-  LoginStatistic,
-} from 'src/types'
+import { FormBillingStatistic, ILoginSchema, IPopulatedForm } from 'src/types'
 
+import { FormAuthType } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import { FormHasNoAuthError } from '../billing.errors'
 import * as BillingService from '../billing.service'
@@ -19,7 +15,9 @@ describe('billing.service', () => {
   describe('recordLoginByForm', () => {
     beforeEach(() => jest.restoreAllMocks())
     it('should call LoginModel.addLoginFromForm with the given form', async () => {
-      const mockForm = { authType: AuthType.SP } as unknown as IPopulatedForm
+      const mockForm = {
+        authType: FormAuthType.SP,
+      } as unknown as IPopulatedForm
       const mockLogin = { esrvcId: 'esrvcId' } as unknown as ILoginSchema
       const addLoginSpy = jest
         .spyOn(LoginModel, 'addLoginFromForm')
@@ -30,7 +28,9 @@ describe('billing.service', () => {
     })
 
     it('should return FormHasNoAuthError when form has authType NIL', async () => {
-      const mockForm = { authType: AuthType.NIL } as unknown as IPopulatedForm
+      const mockForm = {
+        authType: FormAuthType.NIL,
+      } as unknown as IPopulatedForm
       const mockLogin = { esrvcId: 'esrvcId' } as unknown as ILoginSchema
       const addLoginSpy = jest
         .spyOn(LoginModel, 'addLoginFromForm')
@@ -41,7 +41,9 @@ describe('billing.service', () => {
     })
 
     it('should return DatabaseError when adding login fails', async () => {
-      const mockForm = { authType: AuthType.SP } as unknown as IPopulatedForm
+      const mockForm = {
+        authType: FormAuthType.SP,
+      } as unknown as IPopulatedForm
       const addLoginSpy = jest
         .spyOn(LoginModel, 'addLoginFromForm')
         .mockRejectedValueOnce('')
@@ -55,10 +57,10 @@ describe('billing.service', () => {
   describe('getSpLoginStats', () => {
     it('should return result of aggregate query successfully', async () => {
       // Arrange
-      const mockLoginStats: LoginStatistic[] = [
+      const mockLoginStats: FormBillingStatistic[] = [
         {
           adminEmail: 'mockemail@example.com',
-          authType: AuthType.CP,
+          authType: FormAuthType.CP,
           formId: 'mock form id',
           formName: 'some form name',
           total: 100,

@@ -3,12 +3,13 @@ import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
 import getUserModel from 'src/app/models/user.server.model'
-import { ILogicSchema, LogicType } from 'src/types'
+import { FormLogicSchema } from 'src/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { LogicType } from '../../../../../../../../shared/types'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
 const UserModel = getUserModel(mongoose)
@@ -39,7 +40,7 @@ describe('admin-form.logic.routes', () => {
           form_logics: [
             {
               _id: formLogicId,
-            } as ILogicSchema,
+            } as FormLogicSchema,
           ],
         },
       })
@@ -62,7 +63,7 @@ describe('admin-form.logic.routes', () => {
           form_logics: [
             {
               _id: formLogicId,
-            } as ILogicSchema,
+            } as FormLogicSchema,
           ],
         },
       })
@@ -85,7 +86,7 @@ describe('admin-form.logic.routes', () => {
           form_logics: [
             {
               _id: formLogicId,
-            } as ILogicSchema,
+            } as FormLogicSchema,
           ],
         },
       })
@@ -119,7 +120,7 @@ describe('admin-form.logic.routes', () => {
           form_logics: [
             {
               _id: formLogicId,
-            } as ILogicSchema,
+            } as FormLogicSchema,
           ],
         },
       })
@@ -146,7 +147,7 @@ describe('admin-form.logic.routes', () => {
           form_logics: [
             {
               _id: formLogicId,
-            } as ILogicSchema,
+            } as FormLogicSchema,
           ],
         },
       })
@@ -174,7 +175,7 @@ describe('admin-form.logic.routes', () => {
           form_logics: [
             {
               _id: formLogicId,
-            } as ILogicSchema,
+            } as FormLogicSchema,
           ],
         },
       })
@@ -207,7 +208,7 @@ describe('admin-form.logic.routes', () => {
             {
               _id: formLogicId,
               logicType: LogicType.ShowFields,
-            } as ILogicSchema,
+            } as FormLogicSchema,
           ],
         },
       })
@@ -217,7 +218,7 @@ describe('admin-form.logic.routes', () => {
         logicType: LogicType.PreventSubmit,
         conditions: [],
         preventSubmitMessage: 'Some message',
-      } as unknown as ILogicSchema
+      } as unknown as FormLogicSchema
 
       const session = await createAuthedSession(user.email, request)
 
@@ -239,7 +240,7 @@ describe('admin-form.logic.routes', () => {
             {
               _id: formLogicId,
               logicType: LogicType.ShowFields,
-            } as ILogicSchema,
+            } as FormLogicSchema,
           ],
         },
       })
@@ -249,7 +250,7 @@ describe('admin-form.logic.routes', () => {
         logicType: LogicType.PreventSubmit,
         conditions: [],
         preventSubmitMessage: 'Some message',
-      } as unknown as ILogicSchema
+      } as unknown as FormLogicSchema
 
       const session = await createAuthedSession(user.email, request)
 
@@ -270,7 +271,7 @@ describe('admin-form.logic.routes', () => {
           form_logics: [
             {
               _id: formLogicId,
-            } as ILogicSchema,
+            } as FormLogicSchema,
           ],
         },
       })
@@ -280,7 +281,7 @@ describe('admin-form.logic.routes', () => {
         logicType: LogicType.PreventSubmit,
         conditions: [],
         preventSubmitMessage: 'Some message',
-      } as unknown as ILogicSchema
+      } as unknown as FormLogicSchema
 
       const diffUser = await dbHandler.insertUser({
         mailName: 'newUser',
@@ -312,7 +313,7 @@ describe('admin-form.logic.routes', () => {
           form_logics: [
             {
               _id: formLogicId,
-            } as ILogicSchema,
+            } as FormLogicSchema,
           ],
         },
       })
@@ -322,7 +323,7 @@ describe('admin-form.logic.routes', () => {
         logicType: LogicType.PreventSubmit,
         conditions: [],
         preventSubmitMessage: 'Some message',
-      } as unknown as ILogicSchema
+      } as unknown as FormLogicSchema
 
       const session = await createAuthedSession(user.email, request)
 
@@ -347,7 +348,7 @@ describe('admin-form.logic.routes', () => {
           form_logics: [
             {
               _id: formLogicId,
-            } as ILogicSchema,
+            } as FormLogicSchema,
           ],
         },
       })
@@ -357,7 +358,7 @@ describe('admin-form.logic.routes', () => {
         logicType: LogicType.PreventSubmit,
         conditions: [],
         preventSubmitMessage: 'Some message',
-      } as unknown as ILogicSchema
+      } as unknown as FormLogicSchema
 
       const session = await createAuthedSession(user.email, request)
 
@@ -383,7 +384,7 @@ describe('admin-form.logic.routes', () => {
           form_logics: [
             {
               _id: formLogicId,
-            } as ILogicSchema,
+            } as FormLogicSchema,
           ],
         },
       })
@@ -393,7 +394,7 @@ describe('admin-form.logic.routes', () => {
         logicType: LogicType.PreventSubmit,
         conditions: [],
         preventSubmitMessage: 'Some message',
-      } as unknown as ILogicSchema
+      } as unknown as FormLogicSchema
 
       const session = await createAuthedSession(user.email, request)
 

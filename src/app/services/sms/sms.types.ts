@@ -1,12 +1,12 @@
 import { Document, Model } from 'mongoose'
 import { Twilio } from 'twilio'
 
+import { FormPermission } from '../../../../shared/types'
 import {
   AdminContactOtpData,
   FormOtpData,
   IFormSchema,
   IUserSchema,
-  Permission,
 } from '../../../types'
 
 export enum SmsType {
@@ -27,7 +27,7 @@ export type FormDeactivatedSmsData = {
     email: IUserSchema['email']
     userId: IUserSchema['_id']
   }
-  collaboratorEmail: Permission['email']
+  collaboratorEmail: FormPermission['email']
   recipientNumber: string
 }
 

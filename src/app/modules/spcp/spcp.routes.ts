@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import { AuthType } from '../../../types'
+import { FormAuthType } from '../../../../shared/types'
 
 import * as SpcpController from './spcp.controller'
 import {
@@ -71,7 +71,7 @@ export const SingpassLoginRouter = Router()
 SingpassLoginRouter.get(
   '/',
   loginParamsMiddleware,
-  SpcpController.handleLogin(AuthType.SP),
+  SpcpController.handleLogin(FormAuthType.SP),
 )
 
 // Handles CorpPass login requests
@@ -93,5 +93,5 @@ export const CorppassLoginRouter = Router()
 CorppassLoginRouter.get(
   '/',
   loginParamsMiddleware,
-  SpcpController.handleLogin(AuthType.CP),
+  SpcpController.handleLogin(FormAuthType.CP),
 )

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { MyInfoGovClient } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
@@ -13,12 +14,12 @@ import {
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
-  IPossiblyPrefilledField,
-  MyInfoAttribute,
+  PossiblyPrefilledField,
 } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { MyInfoAttribute } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import { MyInfoData } from '../myinfo.adapter'
 import { MYINFO_CONSENT_PAGE_PURPOSE } from '../myinfo.constants'
@@ -221,7 +222,7 @@ describe('MyInfoServiceClass', () => {
       const result = await myInfoService.saveMyInfoHashes(
         MOCK_UINFIN,
         MOCK_FORM_ID,
-        MOCK_POPULATED_FORM_FIELDS as IPossiblyPrefilledField[],
+        MOCK_POPULATED_FORM_FIELDS as PossiblyPrefilledField[],
       )
 
       expect(mockUpdateHashes).toHaveBeenCalledWith(
@@ -234,12 +235,13 @@ describe('MyInfoServiceClass', () => {
     })
 
     it('should throw HashingError when hashing fails', async () => {
+      // @ts-ignore
       MockBcrypt.hash.mockRejectedValue('')
 
       const result = await myInfoService.saveMyInfoHashes(
         MOCK_UINFIN,
         MOCK_FORM_ID,
-        MOCK_POPULATED_FORM_FIELDS as IPossiblyPrefilledField[],
+        MOCK_POPULATED_FORM_FIELDS as PossiblyPrefilledField[],
       )
 
       expect(result._unsafeUnwrapErr()).toEqual(
@@ -253,7 +255,7 @@ describe('MyInfoServiceClass', () => {
       const result = await myInfoService.saveMyInfoHashes(
         MOCK_UINFIN,
         MOCK_FORM_ID,
-        MOCK_POPULATED_FORM_FIELDS as IPossiblyPrefilledField[],
+        MOCK_POPULATED_FORM_FIELDS as PossiblyPrefilledField[],
       )
       expect(result._unsafeUnwrapErr()).toEqual(
         new DatabaseError('Failed to save MyInfo hashes to database'),
@@ -312,6 +314,7 @@ describe('MyInfoServiceClass', () => {
 
   describe('checkMyInfoHashes', () => {
     it('should return the set of hashed attributes when the hashes match', async () => {
+      // @ts-ignore
       MockBcrypt.compare.mockResolvedValue(true)
 
       const result = await myInfoService.checkMyInfoHashes(
@@ -323,6 +326,7 @@ describe('MyInfoServiceClass', () => {
     })
 
     it('should return HashingError when hashing fails', async () => {
+      // @ts-ignore
       MockBcrypt.compare.mockRejectedValue('')
 
       const result = await myInfoService.checkMyInfoHashes(

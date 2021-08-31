@@ -24,38 +24,38 @@ import { SmsLimitExceededError } from 'src/app/modules/verification/verification
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { EditFieldActions } from 'src/shared/constants'
 import {
-  AuthType,
-  BasicField,
-  Colors,
-  EndPage,
   FormLogicSchema,
-  FormLogoState,
-  FormSettings,
-  ICustomFormLogo,
   IEmailFormSchema,
   IFormDocument,
   IFormSchema,
   IPopulatedForm,
   IUserSchema,
-  LogicDto,
-  LogicType,
   PickDuplicateForm,
-  ResponseMode,
-  StartPage,
-  Status,
 } from 'src/types'
-import {
-  AdminDashboardFormMetaDto,
-  DuplicateFormBodyDto,
-  EditFormFieldParams,
-  FieldCreateDto,
-  FieldUpdateDto,
-  SettingsUpdateDto,
-} from 'src/types/api'
+import { EditFormFieldParams } from 'src/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
+import {
+  AdminDashboardFormMetaDto,
+  BasicField,
+  CustomFormLogo,
+  DuplicateFormBodyDto,
+  FieldCreateDto,
+  FieldUpdateDto,
+  FormAuthType,
+  FormColorTheme,
+  FormEndPage,
+  FormLogoState,
+  FormResponseMode,
+  FormSettings,
+  FormStartPage,
+  FormStatus,
+  LogicDto,
+  LogicType,
+  SettingsUpdateDto,
+} from '../../../../../../shared/types'
 import { smsConfig } from '../../../../config/features/sms.config'
 import * as SmsService from '../../../../services/sms/sms.service'
 import {
@@ -96,13 +96,13 @@ describe('admin-form.service', () => {
           admin: {},
           title: 'test form 1',
           _id: 'any',
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
         },
         {
           admin: {},
           title: 'test form 2',
           _id: 'any2',
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
         },
       ] as AdminDashboardFormMetaDto[]
       // Mock user admin success.
@@ -353,7 +353,7 @@ describe('admin-form.service', () => {
       const mockArchivedForm = {
         _id: new ObjectId(),
         admin: new ObjectId(),
-        status: Status.Archived,
+        status: FormStatus.Archived,
       } as IEmailFormSchema
       const mockArchiveFn = jest.fn().mockResolvedValue(mockArchivedForm)
       const mockInitialForm = {
@@ -403,16 +403,16 @@ describe('admin-form.service', () => {
           fileId: 'some file_id',
           fileName: 'some file name',
           fileSizeInBytes: 10000,
-        } as ICustomFormLogo,
+        } as CustomFormLogo,
       },
     } as unknown as IFormDocument
     const MOCK_EMAIL_OVERRIDE_PARAMS: DuplicateFormBodyDto = {
-      responseMode: ResponseMode.Email,
+      responseMode: FormResponseMode.Email,
       title: 'mock new title',
       emails: ['mockExample@example.com'],
     }
     const MOCK_ENCRYPT_OVERRIDE_PARAMS: DuplicateFormBodyDto = {
-      responseMode: ResponseMode.Encrypt,
+      responseMode: FormResponseMode.Encrypt,
       title: 'mock new title',
       publicKey: 'some public key',
     }
@@ -577,7 +577,7 @@ describe('admin-form.service', () => {
         _id: new ObjectId(),
         admin: MOCK_CURRENT_OWNER,
         emails: [MOCK_NEW_OWNER_EMAIL],
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         title: 'some mock form',
         populate: jest.fn().mockReturnValue({
           execPopulate: jest.fn().mockResolvedValue(expectedPopulateResult),
@@ -754,7 +754,7 @@ describe('admin-form.service', () => {
         _id: new ObjectId(),
         admin: MOCK_CURRENT_OWNER,
         emails: [MOCK_NEW_OWNER_EMAIL],
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         title: 'some mock form',
         populate: jest.fn().mockReturnValue({
           // Mock populate error.
@@ -802,7 +802,7 @@ describe('admin-form.service', () => {
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: 'example@example.com',
       }
       const expectedForm = {
@@ -826,7 +826,7 @@ describe('admin-form.service', () => {
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some key',
       }
       const createSpy = jest
@@ -850,7 +850,7 @@ describe('admin-form.service', () => {
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some key',
       }
       const createSpy = jest.spyOn(FormModel, 'create').mockRejectedValueOnce(
@@ -873,7 +873,7 @@ describe('admin-form.service', () => {
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some key',
       }
       const mockErrorString = 'some payload size error'
@@ -901,7 +901,7 @@ describe('admin-form.service', () => {
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
         admin: new ObjectId().toHexString(),
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some key',
       }
       const mockErrorString = 'no'
@@ -1027,7 +1027,7 @@ describe('admin-form.service', () => {
     const MOCK_UPDATED_FORM = {
       _id: new ObjectId(),
       admin: new ObjectId(),
-      status: Status.Private,
+      status: FormStatus.Private,
       form_fields: [
         generateDefaultField(BasicField.Mobile),
         generateDefaultField(BasicField.Dropdown),
@@ -1037,7 +1037,7 @@ describe('admin-form.service', () => {
     const MOCK_INITIAL_FORM = mocked({
       _id: MOCK_UPDATED_FORM._id,
       admin: MOCK_UPDATED_FORM.admin,
-      status: Status.Public,
+      status: FormStatus.Public,
       form_fields: MOCK_UPDATED_FORM.form_fields,
       save: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
     } as unknown as IPopulatedForm)
@@ -1047,7 +1047,7 @@ describe('admin-form.service', () => {
       const formUpdateParams: Parameters<
         typeof AdminFormService.updateForm
       >[1] = {
-        status: Status.Private,
+        status: FormStatus.Private,
       }
 
       // Act
@@ -1095,10 +1095,10 @@ describe('admin-form.service', () => {
 
   describe('updateFormSettings', () => {
     const MOCK_UPDATED_SETTINGS: FormSettings = {
-      authType: AuthType.NIL,
+      authType: FormAuthType.NIL,
       hasCaptcha: false,
       inactiveMessage: 'some inactive message',
-      status: Status.Private,
+      status: FormStatus.Private,
       submissionLimit: 42069,
       title: 'new title',
       webhook: {
@@ -1109,20 +1109,20 @@ describe('admin-form.service', () => {
 
     const MOCK_UPDATED_FORM = {
       ...MOCK_UPDATED_SETTINGS,
-      responseMode: ResponseMode.Encrypt,
+      responseMode: FormResponseMode.Encrypt,
       publicKey: 'some public key',
       getSettings: jest.fn().mockReturnValue(MOCK_UPDATED_SETTINGS),
     } as unknown as IFormDocument
 
     const MOCK_EMAIL_FORM = mocked({
       _id: new ObjectId(),
-      status: Status.Public,
-      responseMode: ResponseMode.Email,
+      status: FormStatus.Public,
+      responseMode: FormResponseMode.Email,
     } as unknown as IPopulatedForm)
     const MOCK_ENCRYPT_FORM = mocked({
       _id: new ObjectId(),
-      status: Status.Public,
-      responseMode: ResponseMode.Encrypt,
+      status: FormStatus.Public,
+      responseMode: FormResponseMode.Encrypt,
     } as unknown as IPopulatedForm)
 
     const EMAIL_UPDATE_SPY = jest
@@ -1145,7 +1145,7 @@ describe('admin-form.service', () => {
     it('should return updated form settings when successfully updating email form settings', async () => {
       // Arrange
       const settingsToUpdate: SettingsUpdateDto = {
-        status: Status.Private,
+        status: FormStatus.Private,
         title: 'new title',
       }
 
@@ -1394,14 +1394,14 @@ describe('admin-form.service', () => {
     beforeEach(() => {
       mockEmailForm = {
         _id: new ObjectId(),
-        status: Status.Public,
-        responseMode: ResponseMode.Email,
+        status: FormStatus.Public,
+        responseMode: FormResponseMode.Email,
         ...mockFormLogic,
       } as unknown as IPopulatedForm
       mockEncryptForm = {
         _id: new ObjectId(),
-        status: Status.Public,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Public,
+        responseMode: FormResponseMode.Encrypt,
         ...mockFormLogic,
       } as unknown as IPopulatedForm
     })
@@ -1770,14 +1770,14 @@ describe('admin-form.service', () => {
     beforeEach(() => {
       mockEmailForm = {
         _id: mockEmailFormId,
-        status: Status.Public,
-        responseMode: ResponseMode.Email,
+        status: FormStatus.Public,
+        responseMode: FormResponseMode.Email,
         ...mockFormLogicOld,
       } as unknown as IPopulatedForm
       mockEncryptForm = {
         _id: mockEncryptFormId,
-        status: Status.Public,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Public,
+        responseMode: FormResponseMode.Encrypt,
         ...mockFormLogicOld,
       } as unknown as IPopulatedForm
       mockEmailFormUpdated = {
@@ -1989,7 +1989,7 @@ describe('admin-form.service', () => {
   describe('updateEndPage', () => {
     const updateSpy = jest.spyOn(FormModel, 'updateEndPageById')
     const MOCK_FORM_ID = new ObjectId().toHexString()
-    const MOCK_NEW_END_PAGE: EndPage = {
+    const MOCK_NEW_END_PAGE: FormEndPage = {
       title: 'expected end page title',
       buttonLink: 'https://some-button-link.example.com',
       buttonText: 'expected button text',
@@ -2051,8 +2051,8 @@ describe('admin-form.service', () => {
   describe('updateStartPage', () => {
     const updateSpy = jest.spyOn(FormModel, 'updateStartPageById')
     const MOCK_FORM_ID = new ObjectId().toHexString()
-    const MOCK_NEW_START_PAGE: StartPage = {
-      colorTheme: Colors.Blue,
+    const MOCK_NEW_START_PAGE: FormStartPage = {
+      colorTheme: FormColorTheme.Blue,
       paragraph: 'some paragraph',
       estTimeTaken: 10000000,
       logo: {
@@ -2164,14 +2164,14 @@ describe('admin-form.service', () => {
     beforeEach(() => {
       mockEmailForm = {
         _id: mockEmailFormId,
-        status: Status.Public,
-        responseMode: ResponseMode.Email,
+        status: FormStatus.Public,
+        responseMode: FormResponseMode.Email,
         ...mockFormLogicOld,
       } as unknown as IPopulatedForm
       mockEncryptForm = {
         _id: mockEncryptFormId,
-        status: Status.Public,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Public,
+        responseMode: FormResponseMode.Encrypt,
         ...mockFormLogicOld,
       } as unknown as IPopulatedForm
       mockEmailFormUpdated = {

@@ -2,13 +2,8 @@ import { differenceBy, intersectionBy, keyBy, uniqBy } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
-import {
-  BasicField,
-  FieldResponse,
-  FormFieldSchema,
-  IFormDocument,
-  ResponseMode,
-} from '../../../types'
+import { BasicField, FormResponseMode } from '../../../../shared/types'
+import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 
 import { IncomingSubmission } from './IncomingSubmission.class'
@@ -20,12 +15,12 @@ type ModeFilterParam = {
 }
 
 export const getModeFilter = (
-  responseMode: ResponseMode,
+  responseMode: FormResponseMode,
 ): (<T extends ModeFilterParam>(responses: T[]) => T[]) => {
   switch (responseMode) {
-    case ResponseMode.Email:
+    case FormResponseMode.Email:
       return emailModeFilter
-    case ResponseMode.Encrypt:
+    case FormResponseMode.Encrypt:
       return encryptModeFilter
   }
 }

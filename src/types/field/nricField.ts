@@ -1,9 +1,7 @@
-import { BasicField, NricFieldBase } from '../../../shared/types/field'
+import { BasicField, NricFieldBase } from '../../../shared/types'
 
 import { IFieldSchema } from './baseField'
 
-export type INricField = NricFieldBase
-
-export interface INricFieldSchema extends INricField, IFieldSchema {
+export interface INricFieldSchema extends NricFieldBase, IFieldSchema {
   fieldType: BasicField.Nric
 }

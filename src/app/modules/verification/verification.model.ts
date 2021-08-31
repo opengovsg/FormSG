@@ -1,6 +1,7 @@
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
+import { BasicField } from '../../../../shared/types'
 import { TRANSACTION_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
 import {
   IFormSchema,
@@ -23,7 +24,7 @@ const VerificationFieldSchema = new Schema<IVerificationFieldSchema>({
     type: String,
     required: true,
   },
-  fieldType: { type: String, required: true },
+  fieldType: { type: String, enum: Object.values(BasicField), required: true },
   signedData: { type: String, default: null },
   hashedOtp: { type: String, default: null },
   // No ttl index is applied on hashCreatedAt, as we do not want to delete the

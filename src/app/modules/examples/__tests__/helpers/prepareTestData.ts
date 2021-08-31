@@ -6,16 +6,18 @@ import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import {
-  AuthType,
   IAgencySchema,
+  IFormDocument,
   IFormFeedbackSchema,
-  IFormSchema,
   IUserSchema,
-  ResponseMode,
-  Status,
-  SubmissionType,
 } from 'src/types'
 
+import {
+  FormAuthType,
+  FormResponseMode,
+  FormStatus,
+  SubmissionType,
+} from '../../../../../../shared/types'
 import { FormInfo } from '../../examples.types'
 
 const FormStatsModel = getFormStatisticsTotalModel(mongoose)
@@ -36,7 +38,7 @@ export type TestData = {
     // Number of times the form was submitted.
     submissionCount: number
     // The forms themselves.
-    forms: IFormSchema[]
+    forms: IFormDocument[]
     // Expected form info to be returned by query.
     expectedFormInfo: FormInfo[]
     // Feedbacks for each of the forms.
@@ -83,13 +85,13 @@ const prepareTestData = async (
 
   const baseFormParams = {
     admin: user._id,
-    responseMode: ResponseMode.Email,
+    responseMode: FormResponseMode.Email,
     emails: [user.email],
     // Important for form status to be public and listed so examples can
     // surface.
-    status: Status.Public,
+    status: FormStatus.Public,
     isListed: true,
-    authType: AuthType.NIL,
+    authType: FormAuthType.NIL,
   }
 
   // Populate forms in database with prespecified number of times.
@@ -98,7 +100,7 @@ const prepareTestData = async (
       ...baseFormParams,
       title: `${testData.first.searchTerm} ${Math.random()}`,
     }),
-  )
+  ) as Promise<IFormDocument>[]
 
   testData.first.forms = await Promise.all(firstFormsPromises)
 
@@ -107,7 +109,7 @@ const prepareTestData = async (
       ...baseFormParams,
       title: `${testData.second.searchTerm} ${Math.random()}`,
     }),
-  )
+  ) as Promise<IFormDocument>[]
 
   testData.second.forms = await Promise.all(secondFormsPromises)
 
@@ -190,7 +192,7 @@ const prepareTestData = async (
   // Internal function to create expected aggregate pipeline results to insert
   // into test data.
   const createFormInfo = (
-    forms: IFormSchema[],
+    forms: IFormDocument[],
     titlePrefix: 'first' | 'second',
   ): FormInfo[] => {
     const isFirst = titlePrefix === 'first'
@@ -200,7 +202,7 @@ const prepareTestData = async (
       avgFeedback: isFirst
         ? testData.first.feedbacks[i].rating
         : testData.second.feedbacks[i].rating,
-      colorTheme: form.startPage!.colorTheme,
+      colorTheme: form.startPage.colorTheme,
       count: isFirst
         ? testData.first.submissionCount
         : testData.second.submissionCount,

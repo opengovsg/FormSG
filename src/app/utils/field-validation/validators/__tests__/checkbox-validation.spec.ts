@@ -2,12 +2,13 @@ import { ObjectId } from 'mongodb'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField } from 'src/app/utils/field-validation'
-import { BasicField } from 'src/types'
 
 import {
   generateDefaultField,
   generateNewCheckboxResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
+
+import { BasicField } from '../../../../../../shared/types'
 
 describe('Checkbox validation', () => {
   const formId = new ObjectId().toHexString()
