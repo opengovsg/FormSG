@@ -124,7 +124,7 @@ export const LoginPage: FC = () => {
           )}
 
           <GridItem
-            h="100%"
+            h={{ base: '100vh', md: '100%' }}
             gridArea="login"
             px={{ base: 0, lg: '7.25rem' }}
             py="4rem"
