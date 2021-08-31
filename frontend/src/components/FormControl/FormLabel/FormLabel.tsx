@@ -1,5 +1,6 @@
 import {
   Box,
+  FormHelperText,
   FormLabel as ChakraFormLabel,
   FormLabelProps as ChakraFormLabelProps,
   Icon,
@@ -81,9 +82,9 @@ FormLabel.Label = ChakraFormLabel
 
 FormLabel.Description = ({ children, ...props }: TextProps): JSX.Element => {
   return (
-    <Text textStyle="body-2" color="secondary.400">
+    <FormHelperText mt={0} textStyle="body-2" color="secondary.400">
       {children}
-    </Text>
+    </FormHelperText>
   )
 }
 
