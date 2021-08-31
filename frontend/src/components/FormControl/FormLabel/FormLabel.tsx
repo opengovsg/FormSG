@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   Box,
   FormHelperText,
@@ -80,13 +81,30 @@ export const FormLabel = ({
 
 FormLabel.Label = ChakraFormLabel
 
-FormLabel.Description = ({ children, ...props }: TextProps): JSX.Element => {
+const FormLabelDescription = ({
+  children,
+  ...props
+}: TextProps): JSX.Element => {
+  const field = useFormControlContext()
+
+  // Render normal Text component if no form context is found.
+  const ComponentToRender = useMemo(() => {
+    if (field) return FormHelperText
+    return Text
+  }, [field])
+
   return (
-    <FormHelperText mt={0} textStyle="body-2" color="secondary.400">
+    <ComponentToRender
+      mt={0}
+      textStyle="body-2"
+      color="secondary.400"
+      {...props}
+    >
       {children}
-    </FormHelperText>
+    </ComponentToRender>
   )
 }
+FormLabel.Description = FormLabelDescription
 
 FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
   return (
