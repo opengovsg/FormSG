@@ -1,11 +1,7 @@
 import fs from 'fs'
+import { BasicField, FieldBase } from 'shared/types'
 
-import {
-  BasicField,
-  IAttachmentFieldSchema,
-  ICheckboxFieldSchema,
-  IField,
-} from 'src/types'
+import { IAttachmentFieldSchema, ICheckboxFieldSchema } from 'src/types'
 
 import {
   generateAttachmentResponse,
@@ -43,7 +39,7 @@ export const MOCK_OPTIONAL_VERIFIED_FIELD = generateDefaultField(
   {
     isVerifiable: true,
     required: false,
-  } as Partial<IField>,
+  } as Partial<FieldBase>,
 )
 export const MOCK_OPTIONAL_VERIFIED_RESPONSE = generateSingleAnswerResponse(
   MOCK_OPTIONAL_VERIFIED_FIELD,

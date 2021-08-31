@@ -1,5 +1,6 @@
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
+import { FormResponseMode } from 'shared/types'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
 import {
@@ -8,6 +9,7 @@ import {
 } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import {
+  AgencyDocument,
   IAgencySchema,
   IEmailForm,
   IEmailFormSchema,
@@ -15,7 +17,6 @@ import {
   IEncryptedFormSchema,
   IPopulatedForm,
   IUserSchema,
-  ResponseMode,
 } from 'src/types'
 
 import MemoryDatabaseServer from 'tests/database'
@@ -65,7 +66,7 @@ const insertAgency = async ({
 }: {
   mailDomain?: string
   shortName?: string
-} = {}): Promise<IAgencySchema> => {
+} = {}): Promise<AgencyDocument> => {
   const Agency = getAgencyModel(mongoose)
   const agency = await Agency.create({
     shortName,
@@ -114,7 +115,7 @@ const insertFormCollectionReqs = async ({
   mailDomain?: string
   shortName?: string
 } = {}): Promise<{
-  agency: IAgencySchema
+  agency: AgencyDocument
   user: IUserSchema
 }> => {
   const User = getUserModel(mongoose)
@@ -124,7 +125,7 @@ const insertFormCollectionReqs = async ({
   const user = await User.create({
     email: `${mailName}@${mailDomain}`,
     _id: userId ?? new ObjectID(),
-    agency: agency.id,
+    agency: agency._id,
   })
 
   return { agency, user }
@@ -160,7 +161,7 @@ const insertEmailForm = async ({
   const form = await EmailFormModel.create({
     title: 'example form title',
     admin: user._id,
-    responseMode: ResponseMode.Email,
+    responseMode: FormResponseMode.Email,
     emails: [user.email],
     _id: formId,
     ...formOptions,
@@ -204,7 +205,7 @@ const insertEncryptForm = async ({
   const form = await EncryptFormModel.create({
     title: 'example form title',
     admin: user._id,
-    responseMode: ResponseMode.Encrypt,
+    responseMode: FormResponseMode.Encrypt,
     _id: formId,
     publicKey: 'vuUYOfkrC7eiyqZ1OCZhMcjAvMQ7R4Z4zzDWB+og4G4=',
     ...formOptions,

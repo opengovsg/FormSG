@@ -65,7 +65,9 @@ export type FormField =
   | UenFieldBase
   | YesNoFieldBase
 
-export type FormFieldWithId = FormField & { _id: string }
+export type FormFieldWithId<T extends FormField = FormField> = T & {
+  _id: string
+}
 
 export type PossiblyPrefilledFormField = FormFieldWithId & {
   fieldValue?: string

@@ -1,6 +1,7 @@
-import { BasicField } from 'src/types'
-
-import { EmailModeSubmissionContentDto } from '../../../../shared/types/submission'
+import {
+  BasicField,
+  EmailModeSubmissionContentDto,
+} from '../../../../shared/types'
 import { createEmailSubmissionFormData } from '../submission'
 
 const createMockFile = ({

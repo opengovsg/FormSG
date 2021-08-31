@@ -10,50 +10,23 @@ import { Merge, SetOptional } from 'type-fest'
 
 import {
   AdminDashboardFormMetaDto,
-  EmailFormSettings,
-  FormAuthType,
   FormBase,
-  FormColorTheme,
   FormEndPage,
+  FormField,
+  FormFieldDto,
   FormPermission,
-  FormResponseMode,
   FormSettings,
   FormStartPage,
-  FormStatus,
-  FormWebhook,
-  PublicEmailFormDto,
+  LogicDto,
+  MyInfoAttribute,
   PublicFormDto,
-  PublicStorageFormDto,
-  StorageFormSettings,
-} from '../../shared/types/form/form'
+} from '../../shared/types'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
 import { PublicView } from './database'
-import {
-  FormField,
-  FormFieldSchema,
-  FormFieldWithId,
-  MyInfoAttribute,
-} from './field'
-import { FormLogicSchema, LogicDto } from './form_logic'
+import { FormFieldSchema } from './field'
+import { FormLogicSchema } from './form_logic'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
-
-export {
-  FormAuthType as AuthType,
-  FormColorTheme as ColorTheme,
-  FormEndPage as EndPage,
-  FormStartPage as StartPage,
-  FormStatus as Status,
-  FormColorTheme as Colors,
-  FormResponseMode as ResponseMode,
-  FormWebhook as Webhook,
-  FormSettings,
-  StorageFormSettings,
-  EmailFormSettings,
-  PublicFormDto,
-  PublicStorageFormDto,
-  PublicEmailFormDto,
-}
 
 // Typings
 export type PublicForm = Merge<
@@ -72,8 +45,6 @@ export type FormOtpData = {
   // Used for sending with the correct twilio
   msgSrvcName?: string
 }
-
-export type Permission = FormPermission
 
 /**
  * Keys with defaults in schema.
@@ -97,7 +68,7 @@ export type IForm = Merge<
   {
     // Loosen types here to allow for IPopulatedForm extension
     admin: any
-    permission?: Permission[]
+    permission?: FormPermission[]
     form_fields?: FormFieldSchema[]
     form_logics?: FormLogicSchema[]
 
@@ -145,12 +116,12 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   updateFormFieldById<T>(
     this: T,
     fieldId: string,
-    newField: FormFieldWithId,
+    newField: FormFieldDto,
   ): Promise<T | null>
 
   updateFormCollaborators<T>(
     this: T,
-    updateFormCollaborators: Permission[],
+    updateFormCollaborators: FormPermission[],
   ): Promise<T>
 
   /**

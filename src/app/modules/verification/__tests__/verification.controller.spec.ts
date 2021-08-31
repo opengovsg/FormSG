@@ -624,12 +624,7 @@ describe('Verification controller', () => {
     } as IPopulatedForm
 
     beforeEach(() => {
-      MockFormService.retrieveFormById.mockReturnValue(
-        okAsync({} as IFormSchema),
-      )
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
+      MockFormService.retrieveFullFormById.mockReturnValue(okAsync(MOCK_FORM))
 
       MockOtpUtils.generateOtpWithHash.mockReturnValue(
         okAsync({
@@ -647,7 +642,7 @@ describe('Verification controller', () => {
 
     it('should return 201 when params are valid', async () => {
       // Arrange
-      MockVerificationService.processAdminSmsCounts.mockReturnValueOnce(
+      MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
         okAsync(true),
       )
 
@@ -659,7 +654,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -671,8 +666,12 @@ describe('Verification controller', () => {
         recipient: MOCK_ANSWER,
       })
       expect(
-        MockVerificationService.processAdminSmsCounts,
-      ).toHaveBeenCalledWith(MOCK_FORM)
+        MockVerificationService.disableVerifiedFieldsIfRequired,
+      ).toHaveBeenCalledWith(
+        MOCK_FORM,
+        mockTransaction,
+        MOCK_REQ.params.fieldId,
+      )
       expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
@@ -693,7 +692,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -725,7 +724,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -757,7 +756,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -790,7 +789,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -823,7 +822,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -877,7 +876,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -894,7 +893,7 @@ describe('Verification controller', () => {
 
     it('should return 404 when form is not found', async () => {
       // Arrange
-      MockFormService.retrieveFormById.mockReturnValueOnce(
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
         errAsync(new FormNotFoundError()),
       )
       const expectedResponse = {
@@ -909,7 +908,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
@@ -935,7 +934,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -967,7 +966,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -999,7 +998,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -1030,7 +1029,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -1058,7 +1057,7 @@ describe('Verification controller', () => {
       )
 
       // Assert
-      expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()

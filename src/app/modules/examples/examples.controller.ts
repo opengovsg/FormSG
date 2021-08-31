@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 
+import { ErrorDto } from '../../../../shared/types'
 import {
-  ErrorDto,
   ExampleFormsQueryDto,
   ExampleFormsResult,
   ExampleSingleFormResult,

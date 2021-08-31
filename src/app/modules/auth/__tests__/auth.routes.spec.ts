@@ -6,7 +6,7 @@ import validator from 'validator'
 import MailService from 'src/app/services/mail/mail.service'
 import { HashingError } from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
-import { IAgencySchema } from 'src/types'
+import { AgencyDocument } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
@@ -293,7 +293,7 @@ describe('auth.routes', () => {
     const VALID_EMAIL = `test@${VALID_DOMAIN}`
     const INVALID_DOMAIN = 'example.org'
 
-    let defaultAgency: IAgencySchema
+    let defaultAgency: AgencyDocument
 
     beforeEach(async () => {
       defaultAgency = await dbHandler.insertAgency({

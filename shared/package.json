@@ -5,10 +5,10 @@
   "dependencies": {
     "date-fns": "^2.23.0",
     "json-stringify-safe": "^5.0.1",
-    "jszip": "^3.7.0",
+    "jszip": "^3.7.1",
     "libphonenumber-js": "^1.9.23",
     "lodash": "^4.17.21",
-    "type-fest": "^1.3.0",
+    "type-fest": "^1.4.0",
     "validator": "^13.6.0",
     "zod": "^3.7.1"
   },

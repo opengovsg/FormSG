@@ -3,12 +3,9 @@ import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
 
 import {
-  AuthType,
-  BasicField,
   FieldResponse,
   IAttachmentResponse,
-  ISingleAnswerResponse,
-  MyInfoAttribute,
+  SingleAnswerFieldResponse,
   SPCPFieldTitle,
 } from 'src/types'
 
@@ -25,6 +22,12 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { types as basicTypes } from '../../../../../../shared/constants/field/basic'
+import {
+  BasicField,
+  FormAuthType,
+  MyInfoAttribute,
+  TableRow,
+} from '../../../../../../shared/types'
 import { ProcessedFieldResponse } from '../../submission.types'
 import {
   ATTACHMENT_PREFIX,
@@ -88,20 +91,13 @@ const zipOnlyValid = {
 
 const MOCK_ANSWER = 'mockAnswer'
 
-type WithQuestion<T> = T & {
-  answer: string
-}
-
-const getResponse = (
-  _id: string,
-  answer: string,
-): WithQuestion<ISingleAnswerResponse> =>
+const getResponse = (_id: string, answer: string): SingleAnswerFieldResponse =>
   ({
     _id,
     fieldType: BasicField.Attachment,
     question: 'mockQuestion',
     answer,
-  } as unknown as WithQuestion<ISingleAnswerResponse>)
+  } as unknown as SingleAnswerFieldResponse)
 
 const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
   // Attachments are special cases, requiring filename and content
@@ -359,7 +355,7 @@ describe('email-submission.util', () => {
       new ObjectId().toHexString(),
       new ObjectId().toHexString(),
     ])
-    const authType = AuthType.NIL
+    const authType = FormAuthType.NIL
     const submissionEmailObj = new SubmissionEmailObj(
       [response1, response2],
       hashedFields,
@@ -370,7 +366,7 @@ describe('email-submission.util', () => {
       const emailData = new SubmissionEmailObj(
         ALL_SINGLE_SUBMITTED_RESPONSES,
         new Set(),
-        AuthType.NIL,
+        FormAuthType.NIL,
       )
       const expectedAutoReplyData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
         generateSingleAnswerAutoreply,
@@ -392,7 +388,7 @@ describe('email-submission.util', () => {
       const emailData = new SubmissionEmailObj(
         [response],
         new Set(),
-        AuthType.NIL,
+        FormAuthType.NIL,
       )
       expect(emailData.dataCollationData).toEqual([])
       expect(emailData.autoReplyData).toEqual([
@@ -411,7 +407,7 @@ describe('email-submission.util', () => {
       const emailData = new SubmissionEmailObj(
         [response],
         new Set(),
-        AuthType.NIL,
+        FormAuthType.NIL,
       )
 
       expect(emailData.dataCollationData).toEqual([
@@ -429,7 +425,7 @@ describe('email-submission.util', () => {
       const emailData = new SubmissionEmailObj(
         [response],
         new Set(),
-        AuthType.NIL,
+        FormAuthType.NIL,
       )
 
       const question = response.question
@@ -472,7 +468,7 @@ describe('email-submission.util', () => {
       const emailData = new SubmissionEmailObj(
         [response],
         new Set(),
-        AuthType.NIL,
+        FormAuthType.NIL,
       )
 
       const question = response.question
@@ -500,7 +496,7 @@ describe('email-submission.util', () => {
       const emailData = new SubmissionEmailObj(
         [response],
         new Set(),
-        AuthType.NIL,
+        FormAuthType.NIL,
       )
 
       const question = response.question
@@ -533,7 +529,7 @@ describe('email-submission.util', () => {
       const emailData = new SubmissionEmailObj(
         [response],
         new Set(),
-        AuthType.NIL,
+        FormAuthType.NIL,
       )
 
       const question = response.question
@@ -557,13 +553,15 @@ describe('email-submission.util', () => {
     })
 
     it('should split table answers by newline', () => {
-      const answerArray = [['firstLine\nsecondLine', 'thirdLine\nfourthLine']]
+      const answerArray = [
+        ['firstLine\nsecondLine', 'thirdLine\nfourthLine'],
+      ] as TableRow[]
       const response = generateNewTableResponse({ answerArray })
 
       const emailData = new SubmissionEmailObj(
         [response],
         new Set(),
-        AuthType.NIL,
+        FormAuthType.NIL,
       )
 
       const question = response.question
@@ -596,7 +594,7 @@ describe('email-submission.util', () => {
       const emailData = new SubmissionEmailObj(
         [response],
         new Set(),
-        AuthType.NIL,
+        FormAuthType.NIL,
       )
 
       const question = response.question
@@ -628,7 +626,7 @@ describe('email-submission.util', () => {
       const emailData = new SubmissionEmailObj(
         [response],
         new Set(),
-        AuthType.NIL,
+        FormAuthType.NIL,
       )
 
       const question = response.question
@@ -672,7 +670,7 @@ describe('email-submission.util', () => {
       const emailData = new SubmissionEmailObj(
         [nameResponse, vehicleResponse],
         new Set([nameResponse._id]),
-        AuthType.MyInfo,
+        FormAuthType.MyInfo,
       )
 
       const expectedDataCollationData = [
@@ -773,7 +771,7 @@ describe('email-submission.util', () => {
       expect(submissionEmailObj.autoReplyData).toEqual(correctConfirmation)
     })
 
-    it('should mask corppass UID if AuthType is Corppass and autoReplyData() method is called', () => {
+    it('should mask corppass UID if FormAuthType is Corppass and autoReplyData() method is called', () => {
       const responseCPUID = getResponse(
         String(new ObjectId()),
         'S1234567A',
@@ -785,7 +783,7 @@ describe('email-submission.util', () => {
       const submissionEmailObjCP = new SubmissionEmailObj(
         [response1, response2, responseCPUID],
         hashedFields,
-        AuthType.CP,
+        FormAuthType.CP,
       )
       const correctConfirmation = [
         {

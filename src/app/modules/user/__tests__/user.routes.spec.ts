@@ -8,7 +8,7 @@ import getUserModel from 'src/app/models/user.server.model'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import * as SmsService from 'src/app/services/sms/sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
-import { IAgencySchema, IUserSchema } from 'src/types'
+import { AgencyDocument, IUserSchema } from 'src/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -36,7 +36,7 @@ describe('user.routes', () => {
   const VALID_CONTACT = '+15005550006'
 
   let request: Session
-  let defaultAgency: IAgencySchema
+  let defaultAgency: AgencyDocument
   let defaultUser: IUserSchema
 
   beforeAll(async () => await dbHandler.connect())

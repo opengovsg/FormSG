@@ -1,11 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
-import {
-  EncryptedSubmissionDto,
-  MapRouteErrors,
-  SubmissionData,
-} from '../../../../types'
+import { StorageModeSubmissionDto } from '../../../../../shared/types'
+import { MapRouteErrors, SubmissionData } from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { MalformedVerifiedContentError } from '../../../modules/verified-content/verified-content.errors'
@@ -208,7 +205,7 @@ export const mapRouteError: MapRouteErrors =
 export const createEncryptedSubmissionDto = (
   submissionData: SubmissionData,
   attachmentPresignedUrls: Record<string, string>,
-): EncryptedSubmissionDto => {
+): StorageModeSubmissionDto => {
   return {
     refNo: submissionData._id,
     submissionTime: moment(submissionData.created)

@@ -1,10 +1,5 @@
-import {
-  AuthType,
-  Environment,
-  IFormSchema,
-  IMyInfo,
-  MyInfoAttribute,
-} from '../../../types'
+import { FormAuthType, MyInfoAttribute } from '../../../../shared/types'
+import { Environment, IFormSchema, IMyInfo } from '../../../types'
 import { ISpcpMyInfo } from '../../config/features/spcp-myinfo.config'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
@@ -63,6 +58,6 @@ export type MyInfoParsedRelayState = MyInfoRelayState & {
 }
 
 export type MyInfoForm<T extends IFormSchema> = T & {
-  authType: AuthType.MyInfo
+  authType: FormAuthType.MyInfo
   esrvcId: string
 }

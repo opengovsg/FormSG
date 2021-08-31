@@ -7,23 +7,26 @@ import {
   getVisibleFieldIds,
 } from 'src/shared/util/logic'
 import {
-  BasicField,
   FieldResponse,
-  IField,
-  IFieldSchema,
+  FormFieldSchema,
   IFormDocument,
   IPreventSubmitLogicSchema,
   IRadioFieldSchema,
   IShortTextFieldSchema,
   IShowFieldsLogicSchema,
+} from 'src/types'
+
+import {
+  BasicField,
+  FieldBase,
   LogicConditionState,
   LogicIfValue,
   LogicType,
-} from 'src/types'
+} from '../../../../shared/types'
 
 describe('Logic validation', () => {
   /** Mock a field's bare essentials */
-  const makeField = (fieldId: string) => ({ _id: fieldId } as IFieldSchema)
+  const makeField = (fieldId: string) => ({ _id: fieldId } as FormFieldSchema)
 
   /**
    *  Mock a response
@@ -1022,15 +1025,15 @@ describe('Logic util', () => {
 
   describe('getApplicableIfFields', () => {
     it('should not filter fields suitable as an if-conditional', () => {
-      const validIfFields: IField[] = VALID_IF_CONDITION_FIELDS.map(
-        (fieldType) => ({ fieldType } as unknown as IField),
+      const validIfFields: FieldBase[] = VALID_IF_CONDITION_FIELDS.map(
+        (fieldType) => ({ fieldType } as unknown as FieldBase),
       )
       const fields = getApplicableIfFields(validIfFields)
       validIfFields.forEach((v, i) => expect(v).toStrictEqual(fields[i]))
     })
     it('should filter fields not suitable as an if-conditional', () => {
-      const invalidIfFields: IField[] = INVALID_IF_CONDITION_FIELDS.map(
-        (x) => x as unknown as IField,
+      const invalidIfFields: FieldBase[] = INVALID_IF_CONDITION_FIELDS.map(
+        (x) => x as unknown as FieldBase,
       )
       const fields = getApplicableIfFields(invalidIfFields)
       expect(fields).toStrictEqual([])

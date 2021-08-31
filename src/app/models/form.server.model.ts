@@ -9,28 +9,39 @@ import mongoose, {
 } from 'mongoose'
 import validator from 'validator'
 
-import { MB } from '../../../shared/constants/file'
 import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
   EMAIL_PUBLIC_FORM_FIELDS,
+  MB,
   STORAGE_FORM_SETTINGS_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
-} from '../../../shared/constants/form'
+} from '../../../shared/constants'
+import {
+  AdminDashboardFormMetaDto,
+  BasicField,
+  EmailFormSettings,
+  FormAuthType,
+  FormColorTheme,
+  FormEndPage,
+  FormField,
+  FormFieldDto,
+  FormLogoState,
+  FormPermission,
+  FormResponseMode,
+  FormSettings,
+  FormStartPage,
+  FormStatus,
+  LogicConditionState,
+  LogicDto,
+  LogicType,
+  StorageFormSettings,
+} from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from '../../shared/util/logic'
 import {
-  AuthType,
-  BasicField,
-  Colors,
-  EmailFormSettings,
-  EndPage,
-  FormField,
-  FormFieldWithId,
   FormLogicSchema,
-  FormLogoState,
   FormOtpData,
-  FormSettings,
   IEmailFormModel,
   IEmailFormSchema,
   IEncryptedFormModel,
@@ -41,18 +52,9 @@ import {
   IFormSchema,
   ILogicSchema,
   IPopulatedForm,
-  LogicConditionState,
-  LogicDto,
-  LogicType,
-  Permission,
   PickDuplicateForm,
   PublicForm,
-  ResponseMode,
-  StartPage,
-  Status,
-  StorageFormSettings,
 } from '../../types'
-import { AdminDashboardFormMetaDto } from '../../types/api/form'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
@@ -183,8 +185,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             )
             return (
               myInfoFieldCount === 0 ||
-              (this.authType === AuthType.MyInfo &&
-                this.responseMode === ResponseMode.Email &&
+              (this.authType === FormAuthType.MyInfo &&
+                this.responseMode === FormResponseMode.Email &&
                 myInfoFieldCount <= 30)
             )
           },
@@ -275,7 +277,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           },
         ],
         validate: {
-          validator: async (users: Permission[]) => {
+          validator: async (users: FormPermission[]) => {
             // Retrieve count of users that exist in the Agency collection.
             // Map is used instead of for...of loop so that this runs in
             // parallel.
@@ -303,8 +305,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         estTimeTaken: Number,
         colorTheme: {
           type: String,
-          enum: Object.values(Colors),
-          default: Colors.Blue,
+          enum: Object.values(FormColorTheme),
+          default: FormColorTheme.Blue,
         },
         logo: {
           type: FormLogoSchema,
@@ -332,26 +334,26 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
       authType: {
         type: String,
-        enum: Object.values(AuthType),
-        default: AuthType.NIL,
-        set: function (this: IFormSchema, v: AuthType) {
+        enum: Object.values(FormAuthType),
+        default: FormAuthType.NIL,
+        set: function (this: IFormSchema, v: FormAuthType) {
           // TODO (#1222): Convert to validator
           // Do not allow authType to be changed if form is published
-          if (this.authType !== v && this.status === Status.Public) {
+          if (this.authType !== v && this.status === FormStatus.Public) {
             return this.authType
             // Singpass/Corppass authentication is available for both email
             // and storage mode
             // Important - this case must come before the MyInfo/SGID + storage
             // mode case, or else we may accidentally set Singpass/Corppass storage
-            // mode forms to AuthType.NIL
-          } else if ([AuthType.SP, AuthType.CP].includes(v)) {
+            // mode forms to FormAuthType.NIL
+          } else if ([FormAuthType.SP, FormAuthType.CP].includes(v)) {
             return v
           } else if (
-            this.responseMode === ResponseMode.Encrypt &&
+            this.responseMode === FormResponseMode.Encrypt &&
             // SGID and MyInfo are not available for storage mode
-            (v === AuthType.MyInfo || v === AuthType.SGID)
+            (v === FormAuthType.MyInfo || v === FormAuthType.SGID)
           ) {
-            return AuthType.NIL
+            return FormAuthType.NIL
           } else {
             return v
           }
@@ -360,16 +362,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
       status: {
         type: String,
-        enum: Object.values(Status),
-        default: Status.Private,
-        set: function (this: IFormSchema, v: Status) {
+        enum: Object.values(FormStatus),
+        default: FormStatus.Private,
+        set: function (this: IFormSchema, v: FormStatus) {
           if (
-            this.status === Status.Private &&
-            v === Status.Public &&
-            this.authType !== AuthType.NIL &&
+            this.status === FormStatus.Private &&
+            v === FormStatus.Public &&
+            this.authType !== FormAuthType.NIL &&
             !this.esrvcId
           ) {
-            return Status.Private
+            return FormStatus.Private
           }
 
           return v
@@ -493,7 +495,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   // Method to return myInfo attributes
   FormSchema.methods.getUniqueMyInfoAttrs = function () {
-    if (this.authType !== AuthType.MyInfo) {
+    if (this.authType !== FormAuthType.MyInfo) {
       return []
     }
 
@@ -521,11 +523,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Archives form.
   FormSchema.methods.archive = function () {
     // Return instantly when form is already archived.
-    if (this.status === Status.Archived) {
+    if (this.status === FormStatus.Archived) {
       return Promise.resolve(this)
     }
 
-    this.status = Status.Archived
+    this.status = FormStatus.Archived
     return this.save()
   }
 
@@ -546,7 +548,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormDocumentSchema.methods.getSettings = function (): FormSettings {
     const formSettings =
-      this.responseMode === ResponseMode.Encrypt
+      this.responseMode === FormResponseMode.Encrypt
         ? (pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings)
         : (pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings)
 
@@ -555,7 +557,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormDocumentSchema.methods.getPublicView = function (): PublicForm {
     const basePublicView =
-      this.responseMode === ResponseMode.Encrypt
+      this.responseMode === FormResponseMode.Encrypt
         ? (pick(this, STORAGE_PUBLIC_FORM_FIELDS) as PublicForm)
         : (pick(this, EMAIL_PUBLIC_FORM_FIELDS) as PublicForm)
 
@@ -589,7 +591,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   FormDocumentSchema.methods.updateFormCollaborators = async function (
-    updatedPermissions: Permission[],
+    updatedPermissions: FormPermission[],
   ) {
     this.permissionList = updatedPermissions
     return this.save()
@@ -597,7 +599,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormDocumentSchema.methods.updateFormFieldById = function (
     fieldId: string,
-    newField: FormFieldWithId,
+    newField: FormFieldDto,
   ) {
     const fieldToUpdate = getFormFieldById(this.form_fields, fieldId)
     if (!fieldToUpdate) return Promise.resolve(null)
@@ -693,8 +695,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   ): Promise<IFormSchema | null> {
     const form = await this.findById(formId)
     if (!form) return null
-    if (form.status === Status.Public) {
-      form.status = Status.Private
+    if (form.status === FormStatus.Public) {
+      form.status = FormStatus.Private
     }
     return form.save()
   }
@@ -709,7 +711,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         .or([{ 'permissionList.email': userEmail }, { admin: userId }])
         // Filter out archived forms.
         .where('status')
-        .ne(Status.Archived)
+        .ne(FormStatus.Archived)
         // Project selected fields.
         // `responseMode` is a discriminator key and is returned regardless,
         // selection is made for explicitness.
@@ -790,7 +792,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormSchema.statics.updateEndPageById = async function (
     formId: string,
-    newEndPage: EndPage,
+    newEndPage: FormEndPage,
   ) {
     return this.findByIdAndUpdate(
       formId,
@@ -801,7 +803,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormSchema.statics.updateStartPageById = async function (
     formId: string,
-    newStartPage: StartPage,
+    newStartPage: FormStartPage,
   ) {
     return this.findByIdAndUpdate(
       formId,
@@ -848,7 +850,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       admin: userId,
       'form_fields.fieldType': BasicField.Mobile,
       'form_fields.isVerifiable': true,
-      status: Status.Public,
+      status: FormStatus.Public,
       msgSrvcName: {
         $exists: false,
       },
@@ -909,8 +911,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   )
 
   // Adding form discriminators
-  FormModel.discriminator(ResponseMode.Email, EmailFormSchema)
-  FormModel.discriminator(ResponseMode.Encrypt, EncryptedFormSchema)
+  FormModel.discriminator(FormResponseMode.Email, EmailFormSchema)
+  FormModel.discriminator(FormResponseMode.Encrypt, EncryptedFormSchema)
 
   return FormModel
 }
@@ -926,13 +928,13 @@ const getFormModel = (db: Mongoose): IFormModel => {
 export const getEmailFormModel = (db: Mongoose): IEmailFormModel => {
   // Load or build base model first
   getFormModel(db)
-  return db.model(ResponseMode.Email) as IEmailFormModel
+  return db.model(FormResponseMode.Email) as IEmailFormModel
 }
 
 export const getEncryptedFormModel = (db: Mongoose): IEncryptedFormModel => {
   // Load or build base model first
   getFormModel(db)
-  return db.model(ResponseMode.Encrypt) as IEncryptedFormModel
+  return db.model(FormResponseMode.Encrypt) as IEncryptedFormModel
 }
 
 export default getFormModel

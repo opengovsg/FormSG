@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { AnalyticStatsDto } from '../../../shared/types/analytics'
+import { AnalyticStatsDto } from '../../../shared/types'
 
 /**
  * Retrieves landing page statistics - user, form and submission count.
