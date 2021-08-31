@@ -529,7 +529,6 @@ const sendOtpForField = (
 }
 
 /**
- * Exported for testing.
  * Checks the number of free smses sent by the admin of the form and deactivates verification or sends mail as required
  * @param form The form whose admin's sms counts needs to be checked
  * @returns ok(true) when the verification has been deactivated successfully
@@ -538,7 +537,7 @@ const sendOtpForField = (
  * @returns err(MailSendError) when an error occurred on sending the email
  * @returns err(PossibleDatabaseError) when an error occurred while retrieving the counts from the database
  */
-export const processAdminSmsCounts = (
+const processAdminSmsCounts = (
   form: IPopulatedForm,
 ): ResultAsync<
   boolean,
