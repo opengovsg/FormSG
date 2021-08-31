@@ -154,6 +154,7 @@ export const LoginPage: FC = () => {
                 <LoginForm onSubmit={handleSendOtp} />
               ) : (
                 <OtpForm
+                  email={email}
                   onSubmit={handleVerifyOtp}
                   onResendOtp={handleResendOtp}
                 />
