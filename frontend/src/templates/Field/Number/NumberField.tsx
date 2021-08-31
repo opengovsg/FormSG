@@ -27,13 +27,19 @@ export const NumberField = ({
       <Controller
         rules={validationRules}
         name={schema._id}
-        render={({ field }) => (
+        render={({ field: { value, onChange, ...rest } }) => (
           <NumberInput
+            min={0}
+            inputMode="numeric"
             aria-label={schema.title}
             allowMouseWheel
-            clampValueOnBlur
             precision={0}
-            {...field}
+            value={value}
+            onChange={(val) => {
+              // Only allow numeric inputs
+              onChange(val.replace(/\D/g, ''))
+            }}
+            {...rest}
           />
         )}
       />
