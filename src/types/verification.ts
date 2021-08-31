@@ -1,10 +1,12 @@
 import { Document, Model } from 'mongoose'
 
+import { BasicField } from '../../shared/types'
+
 import { PublicView } from './database'
 import { IFormSchema } from './form'
 
 export interface IVerificationField {
-  fieldType: string
+  fieldType: BasicField
   signedData: string | null
   hashedOtp: string | null
   hashCreatedAt: Date | null
