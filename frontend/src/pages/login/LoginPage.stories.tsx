@@ -1,4 +1,5 @@
 import { Meta, Story } from '@storybook/react'
+import StoryRouter from 'storybook-react-router'
 
 import { authHandlers } from '~/mocks/msw/handlers/auth'
 
@@ -9,7 +10,7 @@ import { LoginPage } from './LoginPage'
 export default {
   title: 'Pages/LoginPage',
   component: LoginPage,
-  decorators: [],
+  decorators: [StoryRouter()],
   parameters: {
     layout: 'fullscreen',
     msw: authHandlers,
