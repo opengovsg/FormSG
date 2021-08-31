@@ -25,16 +25,24 @@ export const authHandlers = [
   rest.post<{ email: string }, string>(
     '/api/v3/auth/otp/generate',
     (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(`OTP sent to ${req.body.email}`))
+      return res(
+        ctx.delay(),
+        ctx.status(200),
+        ctx.json(`OTP sent to ${req.body.email}`),
+      )
     },
   ),
   rest.post<{ email: string; otp: string }, UserDto | ErrorDto>(
     '/api/v3/auth/otp/verify',
     (req, res, ctx) => {
       if (req.body.otp === '123456') {
-        return res(ctx.status(200))
+        return res(ctx.delay(), ctx.status(200))
       }
-      return res(ctx.status(401), ctx.json({ message: 'Wrong OTP' }))
+      return res(
+        ctx.delay(),
+        ctx.status(401),
+        ctx.json({ message: 'Wrong OTP' }),
+      )
     },
   ),
   rest.get<never, UserDto | ErrorDto>('/api/v3/user', (req, res, ctx) => {
@@ -43,6 +51,7 @@ export const authHandlers = [
     if (!isAuthenticated) {
       // If not authenticated, respond with a 403 error
       return res(
+        ctx.delay(),
         ctx.status(403),
         ctx.json({
           message: 'Not authorized',
@@ -50,9 +59,13 @@ export const authHandlers = [
       )
     }
     // If authenticated, return a mocked user details
-    return res(ctx.status(200), ctx.json(MOCK_USER))
+    return res(ctx.delay(), ctx.status(200), ctx.json(MOCK_USER))
   }),
   rest.get('/api/v3/auth/logout', (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ message: 'Sign out successful' }))
+    return res(
+      ctx.delay(),
+      ctx.status(200),
+      ctx.json({ message: 'Sign out successful' }),
+    )
   }),
 ]
