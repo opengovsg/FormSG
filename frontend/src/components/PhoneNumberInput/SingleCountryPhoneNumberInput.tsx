@@ -39,7 +39,7 @@ export const SingleCountryPhoneNumberInput = forwardRef<
       />
       <InputRightElement
         sx={styles.iconContainer}
-        aria-disabled={props.disabled}
+        aria-disabled={props.isDisabled}
       >
         <Icon
           // Show Flags if available. If value does not exist for any reason,
