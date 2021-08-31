@@ -29,7 +29,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
     }
 
     const isGovDomain = value.split('@').pop()?.includes('gov.sg')
-    return isGovDomain || 'Please sign in with a gov.sg email address.'
+    return isGovDomain || 'Please log in with a gov.sg email address.'
   }, [])
 
   const onSubmitForm = async (inputs: LoginFormInputs) => {
@@ -77,7 +77,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
           isLoading={formState.isSubmitting}
           type="submit"
         >
-          Sign in
+          Log in
         </Button>
         <Link isExternal variant="standalone" href={FORM_GUIDE}>
           Have a question?
