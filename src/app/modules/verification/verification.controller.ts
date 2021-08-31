@@ -208,33 +208,32 @@ export const _handleGenerateOtp: ControllerHandler<
   }
   // Step 1: Ensure that the form for the specified transaction exists
   return (
-    FormService.retrieveFormById(formId)
+    FormService.retrieveFullFormById(formId)
       // Step 2: Generate hash and otp
-      .andThen(() => generateOtpWithHash(logMeta, SALT_ROUNDS))
-      .andThen(({ otp, hashedOtp }) =>
-        // Step 3: Send otp
-        VerificationService.sendNewOtp({
-          fieldId,
-          hashedOtp,
-          otp,
-          recipient: answer,
-          transactionId,
-        }),
+      .andThen((form) =>
+        generateOtpWithHash(logMeta, SALT_ROUNDS)
+          .andThen(({ otp, hashedOtp }) =>
+            // Step 3: Send otp
+            VerificationService.sendNewOtp({
+              fieldId,
+              hashedOtp,
+              otp,
+              recipient: answer,
+              transactionId,
+            }),
+          )
+          // Return the required data for next steps.
+          .map((updatedTransaction) => ({ updatedTransaction, form })),
       )
-      .map(() => {
+      .map(({ updatedTransaction, form }) => {
         res.sendStatus(StatusCodes.CREATED)
         // NOTE: This is returned because tests require this to avoid async mocks interfering with each other.
         // However, this is not an issue in reality because express does not require awaiting on the sendStatus call.
-        return FormService.retrieveFullFormById(formId)
-          .andThen((form) => VerificationService.processAdminSmsCounts(form))
-          .mapErr((error) => {
-            logger.error({
-              message:
-                'Error checking sms counts or deactivating OTP verification for admin',
-              meta: logMeta,
-              error,
-            })
-          })
+        return VerificationService.checkShouldDisableVerifiedFields(
+          form,
+          updatedTransaction,
+          fieldId,
+        )
       })
       .mapErr((error) => {
         logger.error({
