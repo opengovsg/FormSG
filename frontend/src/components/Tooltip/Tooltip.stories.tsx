@@ -17,7 +17,8 @@ const TooltipStack = (
   args: TooltipProps & { labels: { value: string; placement: Placement }[] },
 ): JSX.Element => {
   return (
-    <VStack align="left" spacing="4rem">
+    // bottom margin just so that story snapshot does not get cut off at bottom
+    <VStack align="left" spacing="4rem" mb="4rem">
       {args.labels.map(({ value, placement }, idx) => (
         <Box key={idx}>
           {value}
