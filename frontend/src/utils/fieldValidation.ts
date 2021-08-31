@@ -7,9 +7,11 @@ import simplur from 'simplur'
 
 import {
   FieldBase,
+  NricFieldBase,
   ShortTextFieldBase,
   TextSelectedValidation,
 } from '~shared/types/field'
+import { isNricValid } from '~shared/utils/nric-validation'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
@@ -52,6 +54,18 @@ export const createShortTextValidationRules = (
             simplur`Please enter at most ${customVal} character[|s] (${currLen}/${customVal})`
           )
       }
+    },
+  }
+}
+
+export const createNricValidationRules = (
+  schema: NricFieldBase,
+): RegisterOptions => {
+  return {
+    ...createBaseValidationRules(schema),
+    validate: (val?: string) => {
+      if (!val) return true
+      return isNricValid(val) || 'Please enter a valid NRIC'
     },
   }
 }
