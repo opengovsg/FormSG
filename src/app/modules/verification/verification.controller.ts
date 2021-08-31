@@ -229,7 +229,7 @@ export const _handleGenerateOtp: ControllerHandler<
         res.sendStatus(StatusCodes.CREATED)
         // NOTE: This is returned because tests require this to avoid async mocks interfering with each other.
         // However, this is not an issue in reality because express does not require awaiting on the sendStatus call.
-        return VerificationService.checkShouldDisableVerifiedFields(
+        return VerificationService.disableVerifiedFieldsIfRequired(
           form,
           updatedTransaction,
           fieldId,

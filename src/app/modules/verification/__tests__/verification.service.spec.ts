@@ -726,7 +726,7 @@ describe('Verification service', () => {
     })
   })
 
-  describe('checkShouldDisableVerifiedFields', () => {
+  describe('disableVerifiedFieldsIfRequired', () => {
     const MOCK_FORM = {
       title: 'some mock form',
       _id: new ObjectId(),
@@ -765,7 +765,7 @@ describe('Verification service', () => {
 
       // Act
       const actualResult =
-        await VerificationService.checkShouldDisableVerifiedFields(
+        await VerificationService.disableVerifiedFieldsIfRequired(
           MOCK_FORM,
           nonMobileTransaction,
           EMAIL_FIELD._id,
@@ -782,7 +782,7 @@ describe('Verification service', () => {
 
       // Act
       const actualResult =
-        await VerificationService.checkShouldDisableVerifiedFields(
+        await VerificationService.disableVerifiedFieldsIfRequired(
           MOCK_FORM,
           mobileTransaction,
           MOBILE_FIELD._id,
@@ -806,7 +806,7 @@ describe('Verification service', () => {
 
       // Act
       const actualResult =
-        await VerificationService.checkShouldDisableVerifiedFields(
+        await VerificationService.disableVerifiedFieldsIfRequired(
           MOCK_FORM,
           mobileTransaction,
           MOBILE_FIELD._id,
@@ -830,7 +830,7 @@ describe('Verification service', () => {
 
       // Act
       const actualResult =
-        await VerificationService.checkShouldDisableVerifiedFields(
+        await VerificationService.disableVerifiedFieldsIfRequired(
           MOCK_FORM,
           mobileTransaction,
           MOBILE_FIELD._id,
@@ -849,7 +849,7 @@ describe('Verification service', () => {
 
       // Act
       const actualResult =
-        await VerificationService.checkShouldDisableVerifiedFields(
+        await VerificationService.disableVerifiedFieldsIfRequired(
           MOCK_FORM,
           mobileTransaction,
           MOBILE_FIELD._id,
@@ -875,7 +875,7 @@ describe('Verification service', () => {
 
       // Act
       const actualResult =
-        await VerificationService.checkShouldDisableVerifiedFields(
+        await VerificationService.disableVerifiedFieldsIfRequired(
           MOCK_FORM,
           mobileTransaction,
           MOBILE_FIELD._id,
@@ -903,7 +903,7 @@ describe('Verification service', () => {
 
       // Act
       const actualResult =
-        await VerificationService.checkShouldDisableVerifiedFields(
+        await VerificationService.disableVerifiedFieldsIfRequired(
           MOCK_FORM,
           mobileTransaction,
           MOBILE_FIELD._id,
@@ -931,7 +931,7 @@ describe('Verification service', () => {
 
       // Act
       const actualResult =
-        await VerificationService.checkShouldDisableVerifiedFields(
+        await VerificationService.disableVerifiedFieldsIfRequired(
           MOCK_FORM,
           mobileTransaction,
           MOBILE_FIELD._id,

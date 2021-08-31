@@ -363,7 +363,7 @@ export const sendNewOtp = ({
   })
 }
 
-export const checkShouldDisableVerifiedFields = (
+export const disableVerifiedFieldsIfRequired = (
   form: IPopulatedForm,
   transaction: IVerificationSchema,
   fieldId: string,

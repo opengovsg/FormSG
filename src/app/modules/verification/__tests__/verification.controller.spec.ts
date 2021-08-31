@@ -642,7 +642,7 @@ describe('Verification controller', () => {
 
     it('should return 201 when params are valid', async () => {
       // Arrange
-      MockVerificationService.checkShouldDisableVerifiedFields.mockReturnValueOnce(
+      MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
         okAsync(true),
       )
 
@@ -666,7 +666,7 @@ describe('Verification controller', () => {
         recipient: MOCK_ANSWER,
       })
       expect(
-        MockVerificationService.checkShouldDisableVerifiedFields,
+        MockVerificationService.disableVerifiedFieldsIfRequired,
       ).toHaveBeenCalledWith(
         MOCK_FORM,
         mockTransaction,
