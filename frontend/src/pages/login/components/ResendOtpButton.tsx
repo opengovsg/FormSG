@@ -28,6 +28,7 @@ export const ResendOtpButton = ({
   return (
     <Button
       isDisabled={resendOtpMutation.isLoading || timer > 0}
+      isLoading={resendOtpMutation.isLoading}
       type="button"
       variant="clear"
       colorScheme="primary"
