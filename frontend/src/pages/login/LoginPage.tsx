@@ -169,7 +169,7 @@ export const LoginPage: FC = () => {
                 pt="0.5rem"
                 pb="4rem"
               >
-                <Text textStyle="legal" color="white">
+                <Text textStyle="caption-2" color="white">
                   © {currentYear} Open Government Products, GovTech Singapore
                 </Text>
               </GridItem>
@@ -180,7 +180,7 @@ export const LoginPage: FC = () => {
                 display={{ base: 'none', lg: 'flex' }}
                 gridArea="links"
               >
-                <Wrap shouldWrapChildren textStyle="legal" spacing="1.5rem">
+                <Wrap shouldWrapChildren textStyle="caption-2" spacing="1.5rem">
                   {footerLinks.map(({ label, href }, index) => (
                     <Link variant="standalone" key={index} href={href}>
                       {label}
