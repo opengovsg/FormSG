@@ -12,6 +12,7 @@ import {
 } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
+import { viewports } from '~utils/storybook'
 import Button from '~components/Button'
 
 export default {
@@ -84,4 +85,5 @@ Mobile.parameters = {
   viewport: {
     defaultViewport: 'mobile1',
   },
+  chromatic: { viewports: [viewports.xs] },
 }
