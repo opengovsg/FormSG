@@ -14,8 +14,8 @@ export const RADIO_THEME_KEY = 'Radio'
  */
 
 const parts = [
-  'container',
-  'control',
+  'container', // Container for the circle as well as label
+  'control', // Control is the circular part of the radio button
   'label',
   'othersInput',
   'othersContainer',
@@ -25,7 +25,6 @@ const parts = [
 export const Radio: ComponentMultiStyleConfig = {
   parts,
   baseStyle: ({ colorScheme: c, theme }) => ({
-    // Control is the circular part of the radio button
     control: {
       bg: 'white',
       cursor: 'pointer',
@@ -49,6 +48,10 @@ export const Radio: ComponentMultiStyleConfig = {
           borderColor: `${c}.500`,
         },
       },
+      _invalid: {
+        // override Chakra UI style which turns the control red when invalid
+        borderColor: `${c}.500`,
+      },
       _disabled: {
         borderColor: getColor(theme, `neutral.500`),
         bg: 'white',
@@ -59,7 +62,6 @@ export const Radio: ComponentMultiStyleConfig = {
         },
       },
     },
-    // Container for the circle as well as label
     container: {
       w: '100%',
       _hover: {
