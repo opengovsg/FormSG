@@ -85,7 +85,7 @@ export const Playground: Story = ({
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     control,
     trigger,
   } = useForm()
@@ -94,13 +94,19 @@ export const Playground: Story = ({
     control,
   })
   useEffect(() => {
-    // When unchecking others, manually trigger input validation. This is
-    // to ensure that if you check then uncheck the checkbox, the form knows
+    // When isOthersChecked changes, manually trigger input validation. This
+    // is to ensure that:
+    // 1. if you check then uncheck the checkbox, the form knows
     // that the text input is now optional.
-    if (!isOthersChecked) {
+    // 2. if you check a non-others option, uncheck it, then check "Others",
+    // the form knows that the error state should switch from "Please select
+    // at least one option" to "Please specify others"
+    // Use isDirty to avoid triggering validation when form first loads
+    if (isDirty) {
+      trigger(name)
       trigger(othersInputName)
     }
-  }, [isOthersChecked, trigger, othersInputName])
+  }, [isOthersChecked, trigger, othersInputName, name, isDirty])
   const onSubmit = (data: unknown) => {
     alert(JSON.stringify(data))
   }
@@ -109,7 +115,14 @@ export const Playground: Story = ({
       <FormControl isInvalid={!isEmpty(errors)} mb={6}>
         <FormLabel isRequired>{label}</FormLabel>
         {options.map((o, idx) => (
-          <Checkbox key={idx} value={o} {...register(name)} {...args}>
+          <Checkbox
+            key={idx}
+            value={o}
+            {...register(name, {
+              required: !isOthersChecked && 'Please select at least one option',
+            })}
+            {...args}
+          >
             {o}
           </Checkbox>
         ))}
