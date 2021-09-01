@@ -119,7 +119,7 @@ export const Playground: Story = ({
             key={idx}
             value={o}
             {...register(name, {
-              required: !isOthersChecked && 'Please select at least one option',
+              required: !isOthersChecked && 'This field is required',
             })}
             {...args}
           >
@@ -133,7 +133,7 @@ export const Playground: Story = ({
           />
           <Checkbox.OthersInput
             {...register(othersInputName, {
-              required: isOthersChecked && 'Please specify Others',
+              required: isOthersChecked && 'Please specify a value for Others',
             })}
           />
         </Checkbox.OthersWrapper>
