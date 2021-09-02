@@ -38,19 +38,10 @@ export const Toast: ComponentMultiStyleConfig = {
     close: {
       w: '1.5rem',
       h: '1.5rem',
-      right: '1rem',
+      insetEnd: '1rem',
       top: '1rem',
       position: 'absolute',
       fontSize: '1.5rem',
-      _hover: {
-        bgColor: 'inherit',
-      },
-      _active: {
-        bgColor: 'neutral.200',
-      },
-      _focus: {
-        boxShadow: '0 0 0 2px var(--chakra-colors-secondary-300)',
-      },
     },
   },
   variants: {

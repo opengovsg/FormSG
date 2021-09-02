@@ -54,14 +54,14 @@ export const Toast = ({
         </Box>
         {isClosable && (
           <CloseButton
-            data-js-focus-visible
-            data-focus-visible-added
+            variant="clear"
+            colorScheme="secondary"
             children={<BiX aria-hidden="true" />}
             onClick={() => {
               onClose?.()
               onCloseComplete?.()
             }}
-            sx={styles.close}
+            __css={styles.close}
           />
         )}
       </Alert>
