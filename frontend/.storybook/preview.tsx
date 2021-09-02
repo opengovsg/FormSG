@@ -4,7 +4,7 @@ import '../src/assets/fonts/inter.css'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ChakraProvider } from '@chakra-ui/react'
 import { DecoratorFn } from '@storybook/react'
-import { initializeWorker, mswDecorator } from 'msw-storybook-addon'
+import { initialize, mswDecorator } from 'msw-storybook-addon'
 
 import { AuthProvider } from '~contexts/AuthContext'
 
@@ -12,7 +12,7 @@ import { theme } from '../src/theme'
 
 import { StorybookTheme } from './themes'
 
-initializeWorker()
+initialize()
 
 const withReactQuery: DecoratorFn = (storyFn) => {
   const queryClient = new QueryClient()
