@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   Box,
@@ -13,9 +13,11 @@ import {
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 import { ReactComponent as LoginImageSvg } from '~assets/svgs/img-buildscratch.svg'
-import { useAuth } from '~contexts/AuthContext'
 import { FORM_GUIDE, REPORT_VULNERABILITY } from '~constants/externalLinks'
+import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { LANDING_ROUTE } from '~constants/routes'
+import { useLocalStorage } from '~hooks/useLocalStorage'
+import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
 import Footer from '~components/Footer'
 import Link from '~components/Link'
 
@@ -29,9 +31,9 @@ export type LoginOtpData = {
 const BrandLogo = chakra(BrandLogoSvg)
 const LoginImage = chakra(LoginImageSvg)
 
-export const LoginPage: FC = () => {
+export const LoginPage = (): JSX.Element => {
+  const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
-  const { sendLoginOtp, verifyLoginOtp } = useAuth()
 
   const currentYear = new Date().getFullYear()
   const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
@@ -56,13 +58,14 @@ export const LoginPage: FC = () => {
     return setEmail(email)
   }
 
-  const handleVerifyOtp = ({ otp }: OtpFormInputs) => {
+  const handleVerifyOtp = async ({ otp }: OtpFormInputs) => {
     // Should not happen, since OtpForm component is only shown when there is
     // already an email state set.
     if (!email) {
       throw new Error('Something went wrong')
     }
-    return verifyLoginOtp({ otp, email })
+    await verifyLoginOtp({ otp, email })
+    return setIsAuthenticated(true)
   }
 
   const handleResendOtp = async () => {

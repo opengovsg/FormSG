@@ -1,15 +1,32 @@
-import { useAuth } from '~contexts/AuthContext'
+import { useCallback } from 'react'
+import { useQueryClient } from 'react-query'
+
+import { LOGGED_IN_KEY } from '~constants/localStorage'
+import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useUser } from '~hooks/useUser'
+import { logout } from '~services/AuthService'
 import Button from '~components/Button'
 
 export const WorkspacePage = (): JSX.Element => {
-  const { logout } = useAuth()
+  const queryClient = useQueryClient()
+  const [isAuthenticated, setIsAuthenticated] =
+    useLocalStorage<boolean>(LOGGED_IN_KEY)
+
+  const handleLogout = useCallback(async () => {
+    await logout()
+    if (isAuthenticated) {
+      // Clear logged in state.
+      setIsAuthenticated(undefined)
+    }
+    queryClient.clear()
+  }, [isAuthenticated, queryClient, setIsAuthenticated])
+
   const { user } = useUser()
 
   return (
     <div>
       Logged in: {JSON.stringify(user)}
-      <Button onClick={logout}>Logout</Button>
+      <Button onClick={handleLogout}>Logout</Button>
     </div>
   )
 }
