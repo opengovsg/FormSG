@@ -6,17 +6,23 @@ import Button from '~components/Button'
 
 export interface ResendOtpButtonProps {
   onResendOtp: () => Promise<void>
+  /**
+   * The timer to reset to once the otp has been resent.
+   * Defaults to `60`.
+   */
+  timer?: number
 }
 
 export const ResendOtpButton = ({
   onResendOtp,
+  timer: propTimer = 60,
 }: ResendOtpButtonProps): JSX.Element => {
   // The counter
   const [timer, setTimer] = useState(0)
 
   const resendOtpMutation = useMutation(onResendOtp, {
     // On success, restart the timer before this can be called again.
-    onSuccess: () => setTimer(60),
+    onSuccess: () => setTimer(propTimer),
   })
 
   useInterval(
