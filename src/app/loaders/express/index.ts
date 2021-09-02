@@ -142,6 +142,8 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/api', ApiRouter)
 
   // Serve static client files only in prod
+  // This block must be after all our routes, since the React application is
+  // served in a catchall route.
   if (config.nodeEnv === Environment.Prod) {
     const frontendPath = path.resolve('dist/frontend')
     app.use(express.static(frontendPath))
