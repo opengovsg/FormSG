@@ -25,6 +25,15 @@
     "use-drag-scroll": "^1.0.1",
     "web-vitals": "^0.2.2"
   },
+  "scriptComments": {
+    "build": [
+      "The flags are required for the app to build successfully.",
+      "`CI=false` ensures that warnings in the app linter are not treated as errors (preventing a build)",
+      "`BUILD_PATH='../dist/frontend` ensures build output to be created in the root /dist folder",
+      "`INLINE_RUNTIME_CHUNK=false` prevents inline scripts from appearing in the build output. This is required due to our strict CSP rules on the backend that disallow inline scripts",
+      "`SKIP_PREFLIGHT_CHECK=true` skips node_module warnings that results from having a root node_module above this application"
+    ]
+  },
   "scripts": {
     "gen:theme-typings": "chakra-cli tokens src/theme/index.ts",
     "postinstall": "npm run gen:theme-typings",
