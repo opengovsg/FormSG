@@ -5,7 +5,7 @@
  * provides.
  */
 
-import { useFormContext } from 'react-hook-form'
+import { FieldError, useFormContext } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 
 import { FormFieldWithId } from '~shared/types/field'
@@ -33,6 +33,16 @@ export const FieldContainer = ({
   } = useFormContext()
   const { _id: name } = schema
 
+  const getErrorMessage = () => {
+    if (!errors[name]) return
+    if (typeof errors[name]?.message === 'string') {
+      return errors[name]?.message
+    }
+
+    const [firstError] = Object.values(errors[name]) as FieldError[]
+    return firstError?.message
+  }
+
   return (
     <FormControl
       isRequired={schema.required}
@@ -48,9 +58,7 @@ export const FieldContainer = ({
         {schema.title}
       </FormLabel>
       {children}
-      <FormErrorMessage>
-        {errors[name] && errors[name].message}
-      </FormErrorMessage>
+      <FormErrorMessage>{getErrorMessage()}</FormErrorMessage>
     </FormControl>
   )
 }
