@@ -45,4 +45,4 @@ EXPOSE 5000
 # e.g. chromium when launched to create a new PDF
 ENTRYPOINT [ "tini", "--" ]
 # Create local AWS resources before building the app
-CMD sh init-localstack.sh && npm run docker-dev
+CMD sh init-localstack.sh && npm run dev:backend

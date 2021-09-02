@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
+import { BrowserRouter } from 'react-router-dom'
 import { ChakraProvider } from '@chakra-ui/react'
 
 import { theme } from '~theme/index'
@@ -13,10 +14,12 @@ const queryClient = new QueryClient()
 export const App = (): JSX.Element => (
   <QueryClientProvider client={queryClient}>
     <ReactQueryDevtools initialIsOpen={false} />
-    <ChakraProvider theme={theme} resetCSS>
-      <AuthProvider>
-        <AppRouter />
-      </AuthProvider>
-    </ChakraProvider>
+    <BrowserRouter>
+      <ChakraProvider theme={theme} resetCSS>
+        <AuthProvider>
+          <AppRouter />
+        </AuthProvider>
+      </ChakraProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 )

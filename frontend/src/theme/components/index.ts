@@ -18,6 +18,7 @@ import { Textarea } from './Textarea'
 import { Tile } from './Tile'
 import { Toast } from './Toast'
 import { Toggle, TOGGLE_THEME_KEY } from './Toggle'
+import { Tooltip } from './Tooltip'
 
 export const components = {
   Badge,
@@ -35,6 +36,7 @@ export const components = {
   Tabs,
   [PAGINATION_THEME_KEY]: Pagination,
   [SEARCHBAR_THEME_KEY]: Searchbar,
+  Tooltip,
   [RATING_THEME_KEY]: RatingField,
   [YESNO_THEME_KEY]: YesNoField,
   [TOGGLE_THEME_KEY]: Toggle,
