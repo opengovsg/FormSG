@@ -48,11 +48,7 @@ type StoryModalProps = ModalProps & {
 const generateLorem = (numParagraph = 1) => {
   const para =
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla gravida nisl sit amet hendrerit elementum. Phasellus et aliquet quam, nec ornare ex. Donec et luctus justo, id consectetur nisi. Nam non nunc ligula. Suspendisse potenti. Integer accumsan sem quis purus euismod, et tincidunt velit faucibus. Curabitur pharetra finibus nunc, sed finibus ex hendrerit eu. Cras elementum dui a imperdiet porttitor. Donec vulputate hendrerit quam, quis consectetur orci interdum ac. Cras porttitor arcu lacus.'
-  let builtString = ''
-  while (numParagraph-- > 0) {
-    builtString += para + '\n\n'
-  }
-  return builtString
+  return Array(numParagraph).fill(para).join('\n\n')
 }
 
 const Template: Story<StoryModalProps> = ({ bodyContent, ...args }) => {
