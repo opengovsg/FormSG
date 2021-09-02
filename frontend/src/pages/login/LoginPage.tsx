@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { FC, useMemo, useState } from 'react'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   Box,
@@ -28,16 +28,109 @@ export type LoginOtpData = {
   email: string
 }
 
-const BrandLogo = chakra(BrandLogoSvg)
-const LoginImage = chakra(LoginImageSvg)
+const BrandLogo = chakra(BrandLogoSvg, {
+  baseStyle: {
+    h: { base: '1.5rem', lg: '2rem' },
+  },
+})
+const LoginImage = chakra(LoginImageSvg, {
+  baseStyle: {
+    maxW: { base: '22rem', lg: '28rem' },
+    w: '100%',
+  },
+})
+
+// Component for the split blue/white background.
+const BackgroundBox: FC = ({ children }) => (
+  <Box
+    flexGrow={1}
+    px={{ base: '1.5rem', md: '5.5rem', lg: 0 }}
+    bg={{
+      base: 'initial',
+      md: 'linear-gradient(180deg, var(--chakra-colors-primary-500) 20.625rem, white 0)',
+      lg: 'linear-gradient(90deg, var(--chakra-colors-primary-500) 42%, white 0)',
+    }}
+    children={children}
+  />
+)
+
+// Component that controls the various grid areas according to responsive breakpoints.
+const BaseGridLayout: FC = ({ children }) => (
+  <Grid
+    minH={{ base: 'initial', lg: '100vh' }}
+    maxW="90rem"
+    margin="auto"
+    templateAreas={{
+      base: `'login'`,
+      md: `'sidebar' 'login'`,
+      lg: `'sidebar login' 'copy links'`,
+    }}
+    templateRows={{ lg: '1fr auto' }}
+    templateColumns={{ lg: '5fr 7fr' }}
+    children={children}
+  />
+)
+
+// Grid area styling for the login form.
+const LoginGridArea: FC = ({ children }) => (
+  <GridItem
+    h={{ base: '100vh', md: '100%' }}
+    gridArea="login"
+    px={{ base: 0, lg: '7.25rem' }}
+    py="4rem"
+    d="flex"
+    alignItems={{ base: 'initial', lg: 'center' }}
+    children={children}
+  />
+)
+
+// Desktop-only grid area styling for the bottom left area.
+const DesktopCopyGridArea: FC = ({ children }) => (
+  <GridItem
+    display={{ base: 'none', lg: 'initial' }}
+    gridArea="copy"
+    bg={{ base: 'transparent', lg: 'primary.500' }}
+    px={{ base: '1.5rem', lg: '5rem' }}
+    pt="0.5rem"
+    pb="4rem"
+    children={children}
+  />
+)
+
+// Desktop-only grid area styling for the bottom right area.
+const DesktopLinksGridArea: FC = ({ children }) => (
+  <GridItem
+    px={{ base: '1.5rem', lg: '7.25rem' }}
+    pt="0.5rem"
+    pb="4rem"
+    display={{ base: 'none', lg: 'flex' }}
+    gridArea="links"
+    children={children}
+  />
+)
+
+// Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
+const NonMobileSidebarGridArea: FC = ({ children }) => (
+  <GridItem
+    d={{ base: 'none', md: 'flex' }}
+    gridArea="sidebar"
+    bg={{ base: 'transparent', lg: 'primary.500' }}
+    px={{ base: '1.5rem', lg: '5rem' }}
+    pt={{ base: '1.5rem', md: '4rem', lg: '6rem' }}
+    pb={{ lg: '6rem' }}
+    flexDir="column"
+    alignItems="center"
+    justifyContent="center"
+    children={children}
+  />
+)
 
 export const LoginPage = (): JSX.Element => {
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
 
   const currentYear = new Date().getFullYear()
-  const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
-  const isTablet = useBreakpointValue({ base: false, xs: false, md: true })
+  const isDesktop = useBreakpointValue({ base: false, lg: true })
 
   const footerLinks = useMemo(
     () => [
@@ -79,78 +172,37 @@ export const LoginPage = (): JSX.Element => {
 
   return (
     <Flex flexDir="column" minH="100vh">
-      <Box
-        flexGrow={1}
-        px={{ base: '1.5rem', md: '5.5rem', lg: 0 }}
-        bg={{
-          base: 'initial',
-          md: 'linear-gradient(180deg, var(--chakra-colors-primary-500) 20.625rem, white 0)',
-          lg: 'linear-gradient(90deg, var(--chakra-colors-primary-500) 42%, white 0)',
-        }}
-      >
-        <Grid
-          minH={{ base: 'initial', lg: '100vh' }}
-          maxW="90rem"
-          margin="auto"
-          templateAreas={{
-            base: `'login'`,
-            md: `'sidebar' 'login'`,
-            lg: `'sidebar login' 'copy links'`,
-          }}
-          templateRows={{ lg: '1fr auto' }}
-          templateColumns={{ lg: '5fr 7fr' }}
-        >
-          {isTablet && (
-            <GridItem
-              d="flex"
-              gridArea="sidebar"
-              bg={{ base: 'transparent', lg: 'primary.500' }}
-              px={{ base: '1.5rem', lg: '5rem' }}
-              pt={{ base: '1.5rem', md: '4rem', lg: '6rem' }}
-              pb={{ lg: '6rem' }}
-              flexDir="column"
-              alignItems="center"
-              justifyContent="center"
+      <BackgroundBox>
+        <BaseGridLayout>
+          <NonMobileSidebarGridArea>
+            <Text
+              display={{ base: 'none', lg: 'initial' }}
+              textStyle="display-2"
+              color="white"
+              mb="2.5rem"
             >
-              <Text
-                display={{ base: 'none', lg: 'initial' }}
-                textStyle="display-2"
-                color="white"
-                mb="2.5rem"
-              >
-                Build secure government forms in minutes
-              </Text>
-              <LoginImage
-                aria-hidden
-                maxW={{ base: '22rem', lg: '28rem' }}
-                w="100%"
-              />
-            </GridItem>
-          )}
+              Build secure government forms in minutes
+            </Text>
+            <LoginImage aria-hidden />
+          </NonMobileSidebarGridArea>
 
-          <GridItem
-            h={{ base: '100vh', md: '100%' }}
-            gridArea="login"
-            px={{ base: 0, lg: '7.25rem' }}
-            py="4rem"
-            d="flex"
-            alignItems={{ base: 'initial', lg: 'center' }}
-          >
+          <LoginGridArea>
             <Box
               maxW={{ base: '100%', lg: '28rem' }}
               w="100%"
               minH={{ base: 'auto', lg: '24rem' }}
             >
-              <Box pt={{ base: 0, lg: '2rem' }} mb={{ base: '2.5rem', lg: 0 }}>
+              <Flex
+                pt={{ base: 0, lg: '2rem' }}
+                mb={{ base: '2.5rem', lg: 0 }}
+                flexDir="column"
+              >
                 <Link
                   as={ReactLink}
                   to={LANDING_ROUTE}
                   mb={{ base: '0.75rem', lg: '1.5rem' }}
                 >
-                  <BrandLogo
-                    title="FormSG logo"
-                    h={{ base: '1.5rem', lg: '2rem' }}
-                  />
+                  <BrandLogo title="FormSG logo" />
                 </Link>
                 <Text
                   textStyle="h4"
@@ -159,7 +211,7 @@ export const LoginPage = (): JSX.Element => {
                 >
                   Build secure government forms in minutes
                 </Text>
-              </Box>
+              </Flex>
               {!email ? (
                 <LoginForm onSubmit={handleSendOtp} />
               ) : (
@@ -170,39 +222,24 @@ export const LoginPage = (): JSX.Element => {
                 />
               )}
             </Box>
-          </GridItem>
-          {isDesktop && (
-            <>
-              <GridItem
-                gridArea="copy"
-                bg={{ base: 'transparent', lg: 'primary.500' }}
-                px={{ base: '1.5rem', lg: '5rem' }}
-                pt="0.5rem"
-                pb="4rem"
-              >
-                <Text textStyle="caption-2" color="white">
-                  © {currentYear} Open Government Products, GovTech Singapore
-                </Text>
-              </GridItem>
-              <GridItem
-                px={{ base: '1.5rem', lg: '7.25rem' }}
-                pt="0.5rem"
-                pb="4rem"
-                display={{ base: 'none', lg: 'flex' }}
-                gridArea="links"
-              >
-                <Wrap shouldWrapChildren textStyle="caption-2" spacing="1.5rem">
-                  {footerLinks.map(({ label, href }, index) => (
-                    <Link variant="standalone" key={index} href={href}>
-                      {label}
-                    </Link>
-                  ))}
-                </Wrap>
-              </GridItem>
-            </>
-          )}
-        </Grid>
-      </Box>
+          </LoginGridArea>
+
+          <DesktopCopyGridArea>
+            <Text textStyle="caption-2" color="white">
+              © {currentYear} Open Government Products, GovTech Singapore
+            </Text>
+          </DesktopCopyGridArea>
+          <DesktopLinksGridArea>
+            <Wrap shouldWrapChildren textStyle="caption-2" spacing="1.5rem">
+              {footerLinks.map(({ label, href }, index) => (
+                <Link variant="standalone" key={index} href={href}>
+                  {label}
+                </Link>
+              ))}
+            </Wrap>
+          </DesktopLinksGridArea>
+        </BaseGridLayout>
+      </BackgroundBox>
       {!isDesktop && (
         <Footer
           appName="Form"
