@@ -42,17 +42,17 @@ export const createNumberValidationRules = (
         case NumberSelectedValidation.Exact:
           return (
             currLen === customVal ||
-            simplur`Please enter ${customVal} number[|s] (${currLen}/${customVal})`
+            simplur`Please enter ${customVal} digit[|s] (${currLen}/${customVal})`
           )
         case NumberSelectedValidation.Min:
           return (
             currLen >= customVal ||
-            simplur`Please enter at least ${customVal} number[|s] (${currLen}/${customVal})`
+            simplur`Please enter at least ${customVal} digit[|s] (${currLen}/${customVal})`
           )
         case NumberSelectedValidation.Max:
           return (
             currLen <= customVal ||
-            simplur`Please enter at most ${customVal} number[|s] (${currLen}/${customVal})`
+            simplur`Please enter at most ${customVal} digit[|s] (${currLen}/${customVal})`
           )
       }
     },

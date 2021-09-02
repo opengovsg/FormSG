@@ -112,7 +112,7 @@ describe('text validation', () => {
 
       // Assert
       // Should show error validation message.
-      const error = screen.getByText('Please enter at least 8 numbers (4/8)')
+      const error = screen.getByText('Please enter at least 8 digits (4/8)')
       expect(error).not.toBeNull()
       const success = screen.queryByText('You have submitted')
       expect(success).toBeNull()
@@ -167,7 +167,7 @@ describe('text validation', () => {
 
       // Assert
       // Should show error validation message.
-      const error = screen.getByText('Please enter at most 2 numbers (4/2)')
+      const error = screen.getByText('Please enter at most 2 digits (4/2)')
       expect(error).not.toBeNull()
       const success = screen.queryByText('You have submitted')
       expect(success).toBeNull()
@@ -222,7 +222,7 @@ describe('text validation', () => {
 
       // Assert
       // Should show error validation message.
-      const error = screen.getByText('Please enter 3 numbers (5/3)')
+      const error = screen.getByText('Please enter 3 digits (5/3)')
       expect(error).not.toBeNull()
       const success = screen.queryByText('You have submitted')
       expect(success).toBeNull()
