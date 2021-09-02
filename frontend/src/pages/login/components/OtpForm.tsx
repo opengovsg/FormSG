@@ -6,8 +6,7 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
-
-import { ResendOtpButton } from './ResendOtpButton'
+import ResendOtpButton from '~templates/ResendOtpButton'
 
 export type OtpFormInputs = {
   otp: string
