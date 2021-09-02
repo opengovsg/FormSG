@@ -3,9 +3,10 @@ import { useQueryClient } from 'react-query'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
-import { useUser } from '~hooks/useUser'
 import { logout } from '~services/AuthService'
 import Button from '~components/Button'
+
+import { useUser } from '~features/user/queries'
 
 export const WorkspacePage = (): JSX.Element => {
   const queryClient = useQueryClient()
