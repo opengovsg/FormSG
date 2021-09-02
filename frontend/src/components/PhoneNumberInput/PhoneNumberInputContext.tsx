@@ -118,6 +118,7 @@ const useProvidePhoneNumberInput = ({
 }: PhoneNumberInputContextProps): PhoneNumberInputContextReturn => {
   // Internal states of the component.
   const [inputValue, setInputValue] = useState(defaultValue ?? '')
+  const [lastOnChangeNumber, setLastOnChangeNumber] = useState<string>()
   const [country, setCountry] = useState(defaultCountry)
 
   // Refs of the phone number input so focus can be passed to the input when
@@ -173,6 +174,7 @@ const useProvidePhoneNumberInput = ({
 
       const e164 = number?.number as string | undefined
       onChange(e164)
+      setLastOnChangeNumber(e164)
 
       // On a similar vein, do not set country even if the country has changed
       // so that the cursor position does not get lost.
@@ -206,13 +208,18 @@ const useProvidePhoneNumberInput = ({
 
   const handleFormatInput = useCallback(() => {
     const number = formatter.getNumber()
+    const newValue = number?.number as string | undefined
+
+    // No change, do nothing.
+    if (newValue === lastOnChangeNumber) return
 
     // Trigger on change again in case formatted number changes.
     // This can happen in the following scenario:
     // 1. `onInputChange` gets called when user types for example "65aabvcd123"
     // 2. `formatter.getNumber().number` will transform that into "65" and cut out the remaining characters since the remaining string is not a valid number
     // 3. Will need to call onChange on this new number.
-    onChange(number?.number as string | undefined)
+    onChange(newValue)
+    setLastOnChangeNumber(newValue)
     // Check and update possibility
     const possible = number?.isPossible()
 
@@ -237,7 +244,7 @@ const useProvidePhoneNumberInput = ({
       // Format the phone number
       setInputValue(formatter.input(''))
     }
-  }, [country, formatter, isAllowInternational, onChange])
+  }, [country, formatter, isAllowInternational, lastOnChangeNumber, onChange])
 
   const handleInputBlur = useCallback(() => {
     onBlur?.()
