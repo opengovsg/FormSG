@@ -53,6 +53,8 @@ export const Banner = ({
           </Flex>
           {variant === 'info' && (
             <CloseButton
+              variant="subtle"
+              colorScheme="whiteAlpha"
               __css={styles.close}
               children={<BiX />}
               onClick={onToggle}
