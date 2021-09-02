@@ -16,29 +16,24 @@ import { DecoratorFn, Meta, Story } from '@storybook/react'
 import { viewports } from '~utils/storybook'
 import Button from '~components/Button'
 
+// Required for Chromatic to know the dimensions of the snapshot to take,
+// since the modal is rendered in a portal and Chromatic only detects the
+// bounding box of the button that opens the modal.
+const fullScreenDecorator: DecoratorFn = (storyFn) => (
+  <Box w="100vw" h="100vh">
+    {storyFn()}
+  </Box>
+)
+
 export default {
   title: 'Components/Modal',
-  decorators: [],
+  decorators: [fullScreenDecorator],
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
     chromatic: { delay: 200 },
   },
 } as Meta
-
-// Required for Chromatic to know the dimensions of the snapshot to take,
-// since the modal is rendered in a portal and Chromatic only detects the
-// bounding box of the button that opens the modal.
-const desktopDecorator: DecoratorFn = (storyFn) => (
-  <Box w="1000px" h="700px">
-    {storyFn()}
-  </Box>
-)
-const mobileDecorator: DecoratorFn = (storyFn) => (
-  <Box w="320px" h="568px">
-    {storyFn()}
-  </Box>
-)
 
 type StoryModalProps = ModalProps & {
   bodyContent?: any
@@ -79,21 +74,18 @@ const Template: Story<StoryModalProps> = ({ bodyContent, ...args }) => {
 }
 
 export const BasicUsage = Template.bind({})
-BasicUsage.decorators = [desktopDecorator]
 
 export const InsideScroll = Template.bind({})
 InsideScroll.args = {
   scrollBehavior: 'inside',
   bodyContent: generateLorem(5),
 }
-InsideScroll.decorators = [desktopDecorator]
 
 export const FullWithLongContent = Template.bind({})
 FullWithLongContent.args = {
   size: 'full',
   bodyContent: generateLorem(30),
 }
-FullWithLongContent.decorators = [desktopDecorator]
 
 export const Mobile = Template.bind({})
 Mobile.args = {
@@ -106,4 +98,3 @@ Mobile.parameters = {
   },
   chromatic: { viewports: [viewports.xs] },
 }
-Mobile.decorators = [mobileDecorator]
