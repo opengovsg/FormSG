@@ -1,0 +1,86 @@
+os: linux
+dist: xenial
+
+services:
+  - xvfb
+
+language: node_js
+node_js: '14'
+install: true # skip installation, perform in build stage.
+
+notifications:
+  email:
+    recipients:
+      # Please change to your own email recipient if you are forking this
+      # repository.
+      - formsg@data.gov.sg
+    on_success: always
+    on_failure: always
+
+jobs:
+  include:
+    - stage: Build application
+      install: npm ci
+      cache:
+        - npm
+        - pip
+      before_script:
+        - export NODE_OPTIONS=--max-old-space-size=4096
+      script:
+        - set -e
+        - npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
+        - npm run lint-ci
+        - npm run build
+      workspaces:
+        create:
+          name: build
+          paths: .
+    - stage: Deploy
+      services:
+        - docker
+      workspaces:
+        use: build
+      script: skip
+      before_deploy:
+        # Workaround to run before_deploy only once
+        - >
+          if ! [ "$TAG" ]; then
+            pip install --user awscli
+            # Put AWS in path
+            export PATH=$PATH:$HOME/.local/bin
+            # Login to AWS ECR, credentials defined in $AWS_ACCESS_KEY_ID and $AWS_SECRET_ACCESS_KEY
+            $(aws ecr get-login --no-include-email --region ap-southeast-1)
+            export TAG=travis-$TRAVIS_COMMIT-$TRAVIS_BUILD_NUMBER
+            docker build -f Dockerfile.production -t $REPO:$TAG .
+            docker tag $REPO:$TAG $REPO:$TRAVIS_BRANCH
+            docker push $REPO
+            # Add TAG to Dockerrun
+            sed -i -e "s/@TAG/$TAG/g" Dockerrun.aws.json 
+            zip -r "$TAG.zip" .ebextensions Dockerrun.aws.json
+          fi
+        - export ELASTIC_BEANSTALK_LABEL="$TAG-$(env TZ=Asia/Singapore date "+%Y%m%d%H%M%S")"
+      deploy:
+        - provider: elasticbeanstalk
+          skip_cleanup: true
+          access_key_id: $AWS_ACCESS_KEY_ID
+          secret_access_key: $AWS_SECRET_ACCESS_KEY
+          region: $AWS_REGION
+          app: $STAGING_APP_NAME
+          env: $STAGING_ALT_DEPLOY_ENV
+          bucket: $STAGING_BUCKET_NAME
+          zip_file: '$TAG.zip'
+          on:
+            branch: $STAGING_ALT_BRANCH
+
+      after_deploy:
+        - >
+          if [[ "$SENTRY_PROJECT" &&  "$SENTRY_AUTH_TOKEN" && "$SENTRY_ORG" && "$SENTRY_URL" ]]; then
+            curl -sL https://sentry.io/get-cli/ | bash
+            sentry-cli releases --org $SENTRY_ORG --project $SENTRY_PROJECT new "$TAG"
+            sentry-cli releases files "$TAG" upload-sourcemaps ./ --rewrite --ignore-file .sentryignore
+            sentry-cli releases finalize "$TAG"
+          fi
+stages:
+  - Build application
+  - Tests
+  - Deploy
