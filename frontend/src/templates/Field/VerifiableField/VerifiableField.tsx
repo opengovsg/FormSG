@@ -87,20 +87,28 @@ export const VerifiableField = ({
 
   const handleInputChange = useCallback(
     (onChange: ControllerRenderProps['onChange']) => (val?: string) => {
-      if (isVfnOpen) {
-        setIsVfnOpen(false)
-      }
       onChange(val)
-      // Unable to use some memoized savedSignature constant, will not set
-      // properly; suspect useCallback not recreating function on savedSignature
-      // changes.
-      const signature = mapNumberToSignature[val ?? '']
-      setValue(signatureName, signature, {
-        // Only validate if there is signature
-        shouldValidate: !!signature,
-      })
+      if (schema.isVerifiable) {
+        if (isVfnOpen) {
+          setIsVfnOpen(false)
+        }
+        // Unable to use some memoized savedSignature constant, will not set
+        // properly; suspect useCallback not recreating function on savedSignature
+        // changes.
+        const signature = mapNumberToSignature[val ?? '']
+        setValue(signatureName, signature, {
+          // Only validate if there is signature
+          shouldValidate: !!signature,
+        })
+      }
     },
-    [isVfnOpen, mapNumberToSignature, setValue, signatureName],
+    [
+      isVfnOpen,
+      mapNumberToSignature,
+      schema.isVerifiable,
+      setValue,
+      signatureName,
+    ],
   )
 
   const handleVfnButtonClick = useCallback(async () => {
