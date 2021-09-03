@@ -84,8 +84,10 @@ export const VerifiableField = ({
           [currentInput]: signature,
         }))
       }
+      // Refocus back to initial field on success.
+      setFocus(fieldValueName)
     },
-    [currentInput, setValue, signatureName],
+    [currentInput, fieldValueName, setFocus, setValue, signatureName],
   )
 
   const handleInputChange = useCallback(
