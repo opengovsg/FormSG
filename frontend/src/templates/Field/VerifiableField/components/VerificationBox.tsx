@@ -37,6 +37,13 @@ export const VerificationBox = ({
     return Promise.resolve(console.log('resending'))
   }, [])
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      onSubmitForm()
+    }
+  }
+
   return (
     <Flex px="6.625rem" py="2.25rem" bg="primary.100" align="flex-start">
       <OtpIcon mr="2rem" />
@@ -67,6 +74,7 @@ export const VerificationBox = ({
                   validate: (value) =>
                     value.length === 6 || 'Please enter a 6 digit OTP.',
                 })}
+                onKeyDown={handleKeyDown}
               />
 
               <Button ml="0.5rem" onClick={onSubmitForm}>
