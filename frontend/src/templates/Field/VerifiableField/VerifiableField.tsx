@@ -43,7 +43,7 @@ export const VerifiableField = ({
   const fieldValueName = useMemo(() => `${schema._id}.fieldValue`, [schema._id])
   const signatureName = useMemo(() => `${schema._id}.signature`, [schema._id])
 
-  const { setValue, watch, setFocus, register, trigger, getValues } =
+  const { setValue, watch, setFocus, register, trigger, getValues, setError } =
     useFormContext()
   const currentInput = watch(fieldValueName)
   const hasSavedSignature = !!mapNumberToSignature[currentInput]
@@ -112,13 +112,20 @@ export const VerifiableField = ({
   )
 
   const handleVfnButtonClick = useCallback(async () => {
+    if (!getValues(fieldValueName)) {
+      return setError(
+        fieldValueName,
+        { message: 'Please fill in field before attempting verification' },
+        { shouldFocus: true },
+      )
+    }
     const result = await trigger(fieldValueName, {
       shouldFocus: true,
     })
     if (result && !isVfnOpen) {
       setIsVfnOpen(true)
     }
-  }, [fieldValueName, isVfnOpen, trigger])
+  }, [fieldValueName, getValues, isVfnOpen, setError, trigger])
 
   return (
     <VerifiableFieldContext.Provider
