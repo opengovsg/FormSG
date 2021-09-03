@@ -26,7 +26,7 @@
   },
   "scripts": {
     "gen:theme-typings": "chakra-cli tokens src/theme/index.ts",
-    "postinstall": "npm run gen:theme-typings",
+    "postinstall": "npm run gen:theme-typings && npm --prefix ../shared i",
     "start": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
     "build": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired test",
