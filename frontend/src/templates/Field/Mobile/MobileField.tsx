@@ -45,6 +45,12 @@ export const MobileField = ({
                     {...rest}
                     isAllowInternational={schema.allowIntlNumbers}
                     onChange={context.handleInputChange(onChange)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        context.handleVfnButtonClick()
+                      }
+                    }}
                   />
                 )
               }}

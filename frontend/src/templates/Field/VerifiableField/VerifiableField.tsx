@@ -25,6 +25,7 @@ type VerifiableFieldContextProps = {
   handleInputChange: (
     onChange: ControllerRenderProps['onChange'],
   ) => (val?: string | undefined) => void
+  handleVfnButtonClick: () => Promise<void>
   fieldValueName: string
 }
 export const VerifiableFieldContext = createContext<
@@ -129,7 +130,7 @@ export const VerifiableField = ({
 
   return (
     <VerifiableFieldContext.Provider
-      value={{ handleInputChange, fieldValueName }}
+      value={{ handleInputChange, fieldValueName, handleVfnButtonClick }}
     >
       <FieldContainer schema={schema} questionNumber={questionNumber}>
         <Flex>
@@ -157,7 +158,10 @@ export const VerifiableField = ({
         </Flex>
       </FieldContainer>
       {isVfnOpen && !hasSavedSignature && (
-        <VerificationBox onSuccess={onVerificationSuccess} />
+        <VerificationBox
+          fieldType={schema.fieldType}
+          onSuccess={onVerificationSuccess}
+        />
       )}
     </VerifiableFieldContext.Provider>
   )
