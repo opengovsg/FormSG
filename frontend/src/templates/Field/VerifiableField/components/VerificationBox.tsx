@@ -45,15 +45,20 @@ export const VerificationBox = ({
   }
 
   return (
-    <Flex px="6.625rem" py="2.25rem" bg="primary.100" align="flex-start">
-      <OtpIcon mr="2rem" />
+    <Flex
+      px={{ base: '1.25rem', md: '6.625rem' }}
+      py={{ base: '1.25rem', md: '2.25rem' }}
+      bg="primary.100"
+      align="flex-start"
+      mt="-1rem"
+    >
+      <OtpIcon d={{ base: 'none', md: 'initial' }} mr="2rem" />
       <Box>
         <Flex>
           <FormControl
             isRequired
             isReadOnly={isValid && isSubmitting}
             isInvalid={!!errors.otp}
-            mb={6}
           >
             <FormLabel description="A text message with a verification code was just sent to you. The code will be valid for 10 minutes.">
               Verify your mobile number

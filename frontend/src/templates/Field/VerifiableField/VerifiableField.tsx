@@ -3,7 +3,7 @@
  */
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 import { ControllerRenderProps, useFormContext } from 'react-hook-form'
-import { chakra, Flex, Stack } from '@chakra-ui/react'
+import { chakra, Flex } from '@chakra-ui/react'
 
 import {
   EmailFieldBase,
@@ -131,36 +131,34 @@ export const VerifiableField = ({
     <VerifiableFieldContext.Provider
       value={{ handleInputChange, fieldValueName }}
     >
-      <Stack>
-        <FieldContainer schema={schema} questionNumber={questionNumber}>
-          <Flex>
-            {children}
-            {schema.isVerifiable && (
-              <>
-                {/* Virtual input to capture signature for verified fields */}
-                <chakra.input
-                  readOnly
-                  w={0}
-                  tabIndex={-1}
-                  aria-hidden
-                  {...register(signatureName, verifiedValidationRules)}
-                  onFocus={() => setFocus(fieldValueName)}
-                />
-                <Button
-                  ml="0.5rem"
-                  onClick={handleVfnButtonClick}
-                  colorScheme={hasSavedSignature ? 'success' : 'primary'}
-                >
-                  {hasSavedSignature ? 'Verified' : 'Verify'}
-                </Button>
-              </>
-            )}
-          </Flex>
-        </FieldContainer>
-        {isVfnOpen && !hasSavedSignature && (
-          <VerificationBox onSuccess={onVerificationSuccess} />
-        )}
-      </Stack>
+      <FieldContainer schema={schema} questionNumber={questionNumber}>
+        <Flex>
+          {children}
+          {schema.isVerifiable && (
+            <>
+              {/* Virtual input to capture signature for verified fields */}
+              <chakra.input
+                readOnly
+                w={0}
+                tabIndex={-1}
+                aria-hidden
+                {...register(signatureName, verifiedValidationRules)}
+                onFocus={() => setFocus(fieldValueName)}
+              />
+              <Button
+                ml="0.5rem"
+                onClick={handleVfnButtonClick}
+                colorScheme={hasSavedSignature ? 'success' : 'primary'}
+              >
+                {hasSavedSignature ? 'Verified' : 'Verify'}
+              </Button>
+            </>
+          )}
+        </Flex>
+      </FieldContainer>
+      {isVfnOpen && !hasSavedSignature && (
+        <VerificationBox onSuccess={onVerificationSuccess} />
+      )}
     </VerifiableFieldContext.Provider>
   )
 }
