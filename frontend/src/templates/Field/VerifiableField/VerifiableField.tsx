@@ -3,7 +3,8 @@
  */
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 import { ControllerRenderProps, useFormContext } from 'react-hook-form'
-import { chakra, Flex } from '@chakra-ui/react'
+import { BiCheck } from 'react-icons/bi'
+import { Box, chakra, Stack, VisuallyHidden } from '@chakra-ui/react'
 
 import {
   EmailFieldBase,
@@ -12,6 +13,7 @@ import {
 } from '~shared/types/field'
 
 import Button from '~components/Button'
+import FormFieldMessage from '~components/FormControl/FormFieldMessage'
 
 import { FieldContainer, FieldContainerProps } from '../FieldContainer'
 
@@ -40,7 +42,7 @@ export const VerifiableField = ({
   const [mapNumberToSignature, setMapNumberToSignature] = useState<
     Record<string, string>
   >({})
-  const [isVfnOpen, setIsVfnOpen] = useState(false)
+  const [isAllowVfnOpen, setIsAllowVfnOpen] = useState(false)
   const fieldValueName = useMemo(() => `${schema._id}.fieldValue`, [schema._id])
   const signatureName = useMemo(() => `${schema._id}.signature`, [schema._id])
 
@@ -90,8 +92,8 @@ export const VerifiableField = ({
     (onChange: ControllerRenderProps['onChange']) => (val?: string) => {
       onChange(val)
       if (schema.isVerifiable) {
-        if (isVfnOpen) {
-          setIsVfnOpen(false)
+        if (isAllowVfnOpen) {
+          setIsAllowVfnOpen(false)
         }
         // Unable to use some memoized savedSignature constant, will not set
         // properly; suspect useCallback not recreating function on savedSignature
@@ -104,7 +106,7 @@ export const VerifiableField = ({
       }
     },
     [
-      isVfnOpen,
+      isAllowVfnOpen,
       mapNumberToSignature,
       schema.isVerifiable,
       setValue,
@@ -123,41 +125,55 @@ export const VerifiableField = ({
     const result = await trigger(fieldValueName, {
       shouldFocus: true,
     })
-    if (result && !isVfnOpen) {
-      setIsVfnOpen(true)
+    if (result && !isAllowVfnOpen) {
+      setIsAllowVfnOpen(true)
     }
-  }, [fieldValueName, getValues, isVfnOpen, setError, trigger])
+  }, [fieldValueName, getValues, isAllowVfnOpen, setError, trigger])
 
   return (
     <VerifiableFieldContext.Provider
       value={{ handleInputChange, fieldValueName, handleVfnButtonClick }}
     >
       <FieldContainer schema={schema} questionNumber={questionNumber}>
-        <Flex>
+        <Stack spacing="0.5rem" direction={{ base: 'column', md: 'row' }}>
           {children}
           {schema.isVerifiable && (
             <>
               {/* Virtual input to capture signature for verified fields */}
               <chakra.input
                 readOnly
+                pos="absolute"
                 w={0}
                 tabIndex={-1}
                 aria-hidden
                 {...register(signatureName, verifiedValidationRules)}
                 onFocus={() => setFocus(fieldValueName)}
               />
-              <Button
-                ml="0.5rem"
-                onClick={handleVfnButtonClick}
-                colorScheme={hasSavedSignature ? 'success' : 'primary'}
-              >
-                {hasSavedSignature ? 'Verified' : 'Verify'}
-              </Button>
+              <Box>
+                <Button
+                  disabled={isAllowVfnOpen || hasSavedSignature}
+                  onClick={handleVfnButtonClick}
+                  leftIcon={
+                    hasSavedSignature ? (
+                      <BiCheck fontSize="1.5rem" />
+                    ) : undefined
+                  }
+                >
+                  {hasSavedSignature ? 'Verified' : 'Verify'}
+                </Button>
+              </Box>
+              <VisuallyHidden>
+                <FormFieldMessage>
+                  {hasSavedSignature
+                    ? 'This field has been successfully verified'
+                    : 'This field requires verification. Please click the verify button next to this field to verify the field'}
+                </FormFieldMessage>
+              </VisuallyHidden>
             </>
           )}
-        </Flex>
+        </Stack>
       </FieldContainer>
-      {isVfnOpen && !hasSavedSignature && (
+      {isAllowVfnOpen && !hasSavedSignature && (
         <VerificationBox
           fieldType={schema.fieldType}
           onSuccess={onVerificationSuccess}
