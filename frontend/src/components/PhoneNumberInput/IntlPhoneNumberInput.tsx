@@ -47,7 +47,7 @@ export const IntlPhoneNumberInput = forwardRef<
   const inputRef = useMergeRefs(innerInputRef, ref)
 
   return (
-    <InputGroup>
+    <InputGroup w="auto">
       <CountrySelect isDisabled={props.isDisabled} />
       <Input
         onBlur={handleInputBlur}

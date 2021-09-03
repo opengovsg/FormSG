@@ -27,7 +27,7 @@ export const SingleCountryPhoneNumberInput = forwardRef<
   const styles = useMultiStyleConfig('SingleCountryPhoneNumberInput', props)
 
   return (
-    <InputGroup>
+    <InputGroup w="auto">
       <Input
         ref={ref}
         onChange={handleInputChange}

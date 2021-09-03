@@ -42,6 +42,7 @@ export const MobileField = ({
               render={({ field: { onChange, ...rest } }) => {
                 return (
                   <PhoneNumberInput
+                    maxW="15rem"
                     {...rest}
                     isAllowInternational={schema.allowIntlNumbers}
                     onChange={context.handleInputChange(onChange)}
