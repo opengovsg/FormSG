@@ -41,7 +41,8 @@
               aria-labelledby="label-{{ vm.field._id || 'defaultID'}}"
               aria-describedby="description-{{ vm.field._id || 'defaultID'}}"
             />
-            {{ option }}
+            <span ng-if="option">{{ option }}</span>
+            <span ng-if="!option">&nbsp;</span>
             <span
               class="radiomark"
               ng-class="vm.field.fieldValue === option ? '{{ vm.colortheme }}-border' : ''"
