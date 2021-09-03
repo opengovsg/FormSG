@@ -2,6 +2,8 @@ import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { Box, Flex, FormControl } from '@chakra-ui/react'
 
+import { BasicField } from '~shared/types/field'
+
 import ResendOtpButton from '~/templates/ResendOtpButton'
 
 import Button from '~components/Button'
@@ -9,7 +11,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
-import { OtpIcon } from './OtpIcon'
+import { MobileOtpIcon } from './MobileOtpIcon'
 
 type VfnFieldValues = {
   otp: string
@@ -17,10 +19,30 @@ type VfnFieldValues = {
 
 interface VerificationBoxProps {
   onSuccess: (signature: string) => void
+  fieldType: BasicField.Mobile | BasicField.Email
 }
+
+const VFN_DATA = {
+  [BasicField.Mobile]: {
+    LogoComponent: MobileOtpIcon,
+    header: 'Verify your mobile number',
+    subheader:
+      'An SMS with a 6-digit verification code was sent to you. It will be valid for 10 minutes.',
+  },
+  [BasicField.Email]: {
+    // TODO: Update to EmailOtpIcon
+    LogoComponent: MobileOtpIcon,
+    header: 'Verify your email',
+    subheader:
+      'An email with a 6-digit verification code was sent to you. It will be valid for 10 minutes.',
+  },
+}
+
 export const VerificationBox = ({
+  fieldType,
   onSuccess,
 }: VerificationBoxProps): JSX.Element => {
+  const { LogoComponent, header, subheader } = VFN_DATA[fieldType]
   const {
     register,
     formState: { isValid, isSubmitting, errors },
@@ -37,12 +59,15 @@ export const VerificationBox = ({
     return Promise.resolve(console.log('resending'))
   }, [])
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      onSubmitForm()
-    }
-  }
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>): void => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        onSubmitForm()
+      }
+    },
+    [onSubmitForm],
+  )
 
   return (
     <Flex
@@ -52,7 +77,7 @@ export const VerificationBox = ({
       align="flex-start"
       mt="-1rem"
     >
-      <OtpIcon d={{ base: 'none', md: 'initial' }} mr="2rem" />
+      <LogoComponent d={{ base: 'none', md: 'initial' }} mr="2rem" />
       <Box>
         <Flex>
           <FormControl
@@ -60,9 +85,7 @@ export const VerificationBox = ({
             isReadOnly={isValid && isSubmitting}
             isInvalid={!!errors.otp}
           >
-            <FormLabel description="A text message with a verification code was just sent to you. The code will be valid for 10 minutes.">
-              Verify your mobile number
-            </FormLabel>
+            <FormLabel description={subheader}>{header}</FormLabel>
             <Flex>
               <Input
                 type="text"

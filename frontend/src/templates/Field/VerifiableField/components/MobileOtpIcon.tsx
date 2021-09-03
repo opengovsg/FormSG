@@ -1,6 +1,6 @@
 import { chakra } from '@chakra-ui/react'
 
-export const OtpIcon = chakra(
+export const MobileOtpIcon = chakra(
   (props: React.SVGProps<SVGSVGElement>): JSX.Element => {
     return (
       <svg
