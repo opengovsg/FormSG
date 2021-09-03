@@ -37,7 +37,7 @@ const requiredSchema: MobileFieldSchema = {
   disabled: false,
   fieldType: BasicField.Mobile,
   allowIntlNumbers: true,
-  isVerifiable: true,
+  isVerifiable: false,
   _id: '611b94dfbb9e300012f702a7',
 }
 
@@ -80,4 +80,14 @@ ValidationRequired.args = {
 export const ValidationOptional = Template.bind({})
 ValidationOptional.args = {
   schema: { ...requiredSchema, required: false },
+}
+
+export const VerifiableValidationRequired = Template.bind({})
+VerifiableValidationRequired.args = {
+  schema: { ...requiredSchema, isVerifiable: true },
+}
+
+export const VerifiableValidationOptional = Template.bind({})
+VerifiableValidationOptional.args = {
+  schema: { ...requiredSchema, isVerifiable: true, required: false },
 }
