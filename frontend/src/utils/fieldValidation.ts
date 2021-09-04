@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * This utility file creates validation rules for `react-hook-form` according
  * to the field schema.
  */
-import { FieldValues, RegisterOptions, UseFormGetValues } from 'react-hook-form'
+import { RegisterOptions } from 'react-hook-form'
 
 import { FieldBase } from '~shared/types/field'
 import { isMobilePhoneNumber } from '~shared/utils/phone-num-validation'
