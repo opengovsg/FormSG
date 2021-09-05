@@ -155,7 +155,7 @@
     "whatwg-fetch": "^3.6.2",
     "winston": "^3.3.3",
     "winston-cloudwatch": "^2.5.2",
-    "zod": "^3.8.1"
+    "zod": "^3.8.2"
   },
   "devDependencies": {
     "@babel/core": "^7.15.0",
