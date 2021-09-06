@@ -1,7 +1,7 @@
 import { Meta, Story } from '@storybook/react'
 import StoryRouter from 'storybook-react-router'
 
-import { authHandlers } from '~/mocks/msw/handlers/auth'
+import { authHandlers, otpGenerationResponse } from '~/mocks/msw/handlers/auth'
 
 import { viewports } from '~utils/storybook'
 
@@ -34,4 +34,9 @@ Mobile.parameters = {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
+}
+
+export const InvalidAgencyResponse = Template.bind({})
+InvalidAgencyResponse.parameters = {
+  msw: [otpGenerationResponse({ isInvalid: true }), ...authHandlers.slice(1)],
 }

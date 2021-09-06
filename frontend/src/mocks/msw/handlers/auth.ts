@@ -21,17 +21,27 @@ const MOCK_USER = {
   updatedAt: '2021-08-24T09:10:03.295Z',
 } as UserDto
 
-export const authHandlers = [
-  rest.post<{ email: string }, string>(
+export const otpGenerationResponse = ({
+  isInvalid = false,
+}: { isInvalid?: boolean } = {}): ReturnType<typeof rest['post']> => {
+  return rest.post<{ email: string }, string>(
     '/api/v3/auth/otp/generate',
     (req, res, ctx) => {
       return res(
         ctx.delay(),
-        ctx.status(200),
-        ctx.json(`OTP sent to ${req.body.email}`),
+        ctx.status(isInvalid ? 401 : 200),
+        ctx.json(
+          isInvalid
+            ? 'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.'
+            : `OTP sent to ${req.body.email}`,
+        ),
       )
     },
-  ),
+  )
+}
+
+export const authHandlers = [
+  otpGenerationResponse(),
   rest.post<{ email: string; otp: string }, UserDto | ErrorDto>(
     '/api/v3/auth/otp/verify',
     (req, res, ctx) => {
