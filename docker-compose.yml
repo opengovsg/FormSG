@@ -1,7 +1,7 @@
 # This docker-compose file is only for local development purposes.
 version: '3'
 services:
-  formsg:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile.development
@@ -90,11 +90,10 @@ services:
       - SES_USER
       - OTP_LIFE_SPAN
       - AWS_REGION
-
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
     depends_on:
-      - formsg
+      - backend
     environment:
       - CORPPASS_ASSERT_ENDPOINT=http://localhost:5000/corppass/login
       - SINGPASS_ASSERT_ENDPOINT=http://localhost:5000/singpass/login
@@ -103,7 +102,7 @@ services:
       - SHOW_LOGIN_PAGE=true
       - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
       - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
-    network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:5156 to mockpass:5156
+    network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:5156 to mockpass:5156
 
   database:
     image: 'mongo:4.0'
@@ -122,14 +121,14 @@ services:
     image: localstack/localstack:0.11.5
     container_name: formsg-localstack
     depends_on:
-      - formsg
+      - backend
     environment:
       - SERVICES=s3,sqs
       - DATA_DIR=/tmp/localstack/data
     volumes:
       - './.localstack:/tmp/localstack'
       - '/var/run/docker.sock:/var/run/docker.sock'
-    network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:4566 to localstack:4566
+    network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:4566 to localstack:4566
     logging:
       driver: none
 
