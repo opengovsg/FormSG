@@ -9,7 +9,9 @@ import {
   FieldBase,
   ShortTextFieldBase,
   TextSelectedValidation,
+  UenFieldBase,
 } from '~shared/types/field'
+import { isUenValid } from '~shared/utils/uen-validation'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
@@ -52,6 +54,18 @@ export const createShortTextValidationRules = (
             simplur`Please enter at most ${customVal} character[|s] (${currLen}/${customVal})`
           )
       }
+    },
+  }
+}
+
+export const createUenValidationRules = (
+  schema: UenFieldBase,
+): RegisterOptions => {
+  return {
+    ...createBaseValidationRules(schema),
+    validate: (val?: string) => {
+      if (!val) return true
+      return isUenValid(val) || 'Please enter a valid UEN'
     },
   }
 }
