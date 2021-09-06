@@ -3,6 +3,7 @@ import { YESNO_THEME_KEY, YesNoField } from './Field/YesNo'
 import { Badge } from './Badge'
 import { Banner } from './Banner'
 import { Button } from './Button'
+import { Checkbox, CHECKBOX_THEME_KEY } from './Checkbox'
 import { Form } from './Form'
 import { FormError } from './FormError'
 import { FormLabel } from './FormLabel'
@@ -12,6 +13,7 @@ import { Link } from './Link'
 import { NumberInput } from './NumberInput'
 import { Pagination, PAGINATION_THEME_KEY } from './Pagination'
 import { PhoneNumberInput } from './PhoneNumberInput'
+import { Radio, RADIO_THEME_KEY } from './Radio'
 import { Searchbar, SEARCHBAR_THEME_KEY } from './Searchbar'
 import { Tabs } from './Tabs'
 import { Textarea } from './Textarea'
@@ -35,6 +37,8 @@ export const components = {
   Textarea,
   Tabs,
   [PAGINATION_THEME_KEY]: Pagination,
+  [CHECKBOX_THEME_KEY]: Checkbox,
+  [RADIO_THEME_KEY]: Radio,
   [SEARCHBAR_THEME_KEY]: Searchbar,
   Tooltip,
   [RATING_THEME_KEY]: RatingField,
