@@ -83,7 +83,7 @@
     "angular-ui-router": "~1.0.29",
     "aws-info": "^1.2.0",
     "aws-sdk": "^2.983.0",
-    "axios": "^0.21.2",
+    "axios": "^0.21.4",
     "bcrypt": "^5.0.1",
     "bluebird": "^3.5.2",
     "body-parser": "^1.18.3",
