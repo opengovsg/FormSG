@@ -5,8 +5,16 @@ import {
   SystemStyleObject,
   ThemingPropsThunk,
 } from '@chakra-ui/react'
+import merge from 'lodash/merge'
 
-export type ThemeButtonVariant = 'solid' | 'reverse' | 'outline' | 'clear'
+import { Link } from './Link'
+
+export type ThemeButtonVariant =
+  | 'solid'
+  | 'reverse'
+  | 'outline'
+  | 'clear'
+  | 'link'
 
 const variantSolid: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
   const { colorScheme: c } = props
@@ -149,6 +157,16 @@ export const Button: ComponentStyleConfig = {
     reverse: variantOutlineReverse,
     outline: variantOutlineReverse,
     clear: variantClear,
+    link: (props) => {
+      return merge(
+        {
+          border: 'none',
+          minHeight: 'auto',
+        },
+        Link.baseStyle(props),
+        Link.variants.standalone,
+      )
+    },
   } as Record<ThemeButtonVariant, ThemingPropsThunk<SystemStyleObject>>,
   defaultProps: {
     variant: 'solid',

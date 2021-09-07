@@ -1,8 +1,9 @@
-import { ComponentStyleConfig } from '@chakra-ui/theme'
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import { ThemeComponentProps } from '@chakra-ui/theme'
 import { getColor } from '@chakra-ui/theme-tools'
 
-export const Link: ComponentStyleConfig = {
-  baseStyle: ({ colorScheme: c = 'primary', theme }) => {
+export const Link = {
+  baseStyle: ({ colorScheme: c = 'primary', theme }: ThemeComponentProps) => {
     let linkColor = `${c}.500`
     let hoverColor = `${c}.600`
 
@@ -23,6 +24,9 @@ export const Link: ComponentStyleConfig = {
       borderRadius: '0.25rem',
       _hover: {
         color: hoverColor,
+        _disabled: {
+          color: `${c}.300`,
+        },
       },
       _disabled: {
         color: `${c}.300`,
@@ -40,9 +44,9 @@ export const Link: ComponentStyleConfig = {
     },
     standalone: {
       p: '0.25rem',
+      textUnderlineOffset: '0.125rem',
       _hover: {
         textDecorationLine: 'underline',
-        textUnderlineOffset: '0.125rem',
       },
     },
   },

@@ -30,8 +30,7 @@ export const ResendOtpButton = ({
       isDisabled={resendOtpMutation.isLoading || timer > 0}
       isLoading={resendOtpMutation.isLoading}
       type="button"
-      variant="clear"
-      colorScheme="primary"
+      variant="link"
       onClick={() => resendOtpMutation.mutate()}
     >
       <u>
