@@ -104,6 +104,7 @@ const CountrySelect: FC<CountrySelectProps> = (props) => {
         aria-label="Country selector"
         sx={styles.selector}
         {...inputProps}
+        value={country}
         id={`${inputProps.id}-country`}
         // Override props on change with one that takes in ChangeEvent as a param.
         onChange={onCountryChange}
