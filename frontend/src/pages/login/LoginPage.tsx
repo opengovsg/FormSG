@@ -91,8 +91,8 @@ const DesktopCopyGridArea: FC = ({ children }) => (
     gridArea="copy"
     bg={{ base: 'transparent', lg: 'primary.500' }}
     px={{ base: '1.5rem', lg: '5rem' }}
-    pt="0.5rem"
-    pb="4rem"
+    pt={0}
+    pb="2.5rem"
     children={children}
   />
 )
@@ -101,8 +101,8 @@ const DesktopCopyGridArea: FC = ({ children }) => (
 const DesktopLinksGridArea: FC = ({ children }) => (
   <GridItem
     px={{ base: '1.5rem', lg: '7.25rem' }}
-    pt="0.5rem"
-    pb="4rem"
+    pt={0}
+    pb="2.5rem"
     display={{ base: 'none', lg: 'flex' }}
     gridArea="links"
     children={children}
@@ -117,7 +117,7 @@ const NonMobileSidebarGridArea: FC = ({ children }) => (
     bg={{ base: 'transparent', lg: 'primary.500' }}
     px={{ base: '1.5rem', lg: '5rem' }}
     pt={{ base: '1.5rem', md: '4rem', lg: '6rem' }}
-    pb={{ lg: '6rem' }}
+    pb={{ lg: '3.25rem' }}
     flexDir="column"
     alignItems="center"
     justifyContent="center"
