@@ -23,13 +23,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
     useForm<LoginFormInputs>()
 
   const validateEmail = useCallback((value: string) => {
-    const isValidEmail = isEmail(value)
-    if (!isValidEmail) {
-      return 'Please enter a valid email'
-    }
-
-    const isGovDomain = value.split('@').pop()?.includes('gov.sg')
-    return isGovDomain || 'Please log in with a gov.sg email address.'
+    return isEmail(value) || 'Please enter a valid email'
   }, [])
 
   const onSubmitForm = async (inputs: LoginFormInputs) => {
