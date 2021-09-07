@@ -6,7 +6,7 @@ import { LOGIN_ROUTE, ROOT_ROUTE } from '~constants/routes'
 import { PrivateRoute } from './PrivateRoute'
 import { PublicRoute } from './PublicRoute'
 
-const WorkspacePage = lazy(() => import('~pages/workspace'))
+const WorkspacePage = lazy(() => import('~features/workspace'))
 const LoginPage = lazy(() => import('~pages/login'))
 
 export const AppRouter = (): JSX.Element => {
