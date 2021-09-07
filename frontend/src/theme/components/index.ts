@@ -1,3 +1,4 @@
+import { Attachment, ATTACHMENT_THEME_KEY } from './Field/Attachment'
 import { RATING_THEME_KEY, RatingField } from './Field/Rating'
 import { YESNO_THEME_KEY, YesNoField } from './Field/YesNo'
 import { Badge } from './Badge'
@@ -34,8 +35,9 @@ export const components = {
   InlineMessage,
   NumberInput,
   PhoneNumberInput,
-  Textarea,
   Tabs,
+  Textarea,
+  [ATTACHMENT_THEME_KEY]: Attachment,
   [PAGINATION_THEME_KEY]: Pagination,
   [CHECKBOX_THEME_KEY]: Checkbox,
   [RADIO_THEME_KEY]: Radio,
