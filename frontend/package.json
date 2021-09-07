@@ -7,6 +7,7 @@
     "@chakra-ui/react": "^1.6.4",
     "@emotion/react": "^11.0.0",
     "@emotion/styled": "^11.0.0",
+    "axios": "^0.21.1",
     "country-flag-icons": "^1.2.10",
     "focus-visible": "^5.2.0",
     "framer-motion": "^4.0.0",
@@ -18,16 +19,28 @@
     "react-hook-form": "^7.10.1",
     "react-icons": "^3.0.0",
     "react-markdown": "^6.0.2",
+    "react-query": "^3.19.2",
     "react-router-dom": "^5.2.0",
     "react-textarea-autosize": "^8.3.3",
+    "simplur": "^3.0.1",
     "typescript": "^4.3.5",
+    "use-drag-scroll": "^1.0.1",
     "web-vitals": "^0.2.2"
+  },
+  "scriptComments": {
+    "build": [
+      "The flags are required for the app to build successfully.",
+      "`CI=false` ensures that warnings in the app linter are not treated as errors (preventing a build)",
+      "`BUILD_PATH='../dist/frontend` ensures build output to be created in the root /dist folder",
+      "`INLINE_RUNTIME_CHUNK=false` prevents inline scripts from appearing in the build output. This is required due to our strict CSP rules on the backend that disallow inline scripts",
+      "`SKIP_PREFLIGHT_CHECK=true` skips node_module warnings that results from having a root node_module above this application"
+    ]
   },
   "scripts": {
     "gen:theme-typings": "chakra-cli tokens src/theme/index.ts",
     "postinstall": "npm run gen:theme-typings",
     "start": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
-    "build": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
+    "build": "cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006 -s public",
@@ -61,10 +74,12 @@
     "@storybook/node-logger": "^6.3.2",
     "@storybook/preset-create-react-app": "^3.1.7",
     "@storybook/react": "^6.3.2",
+    "@storybook/testing-react": "0.0.22",
     "@storybook/theming": "^6.3.2",
+    "@testing-library/dom": "^8.1.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^10.2.1",
-    "@testing-library/user-event": "^12.0.2",
+    "@testing-library/user-event": "^12.8.3",
     "@types/jest": "^25.0.0",
     "@types/node": "^12.20.15",
     "@types/react": "^16.14.10",
@@ -74,11 +89,13 @@
     "@typescript-eslint/parser": "^4.28.2",
     "chromatic": "^5.9.2",
     "cross-env": "^7.0.3",
+    "customize-cra": "^1.0.0",
     "eslint": "^7.30.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
+    "eslint-plugin-testing-library": "^4.11.0",
     "lint-staged": "^10.5.4",
     "prettier": "^2.3.2",
     "puppeteer": "^9.1.1",
@@ -86,5 +103,6 @@
     "react-app-rewired": "^2.1.8",
     "react-scripts": "^4.0.3",
     "ts-jest": "^26.5.6"
-  }
+  },
+  "proxy": "http://localhost:5000"
 }
