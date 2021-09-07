@@ -130,7 +130,9 @@ export const LoginPage = (): JSX.Element => {
   const [email, setEmail] = useState<string>()
 
   const currentYear = new Date().getFullYear()
-  const isDesktop = useBreakpointValue({ base: false, lg: true })
+  // `xs` breakpoint needs to be explicitly set, suspect ChakraUI bug where xs
+  // breakpoint is smaller than base, so xs defaults to true.
+  const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
 
   const footerLinks = useMemo(
     () => [
