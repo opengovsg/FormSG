@@ -44,6 +44,7 @@ const getSize = (value: string): SystemStyleObjectRecord => {
     minH: '100vh',
     my: 0,
     borderRadius: 0,
+    bg: 'neutral.100',
   }
 
   switch (value) {
