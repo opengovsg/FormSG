@@ -81,14 +81,20 @@ export const AdminFormNavbar = (): JSX.Element => {
         <IconButton
           aria-label="Add collaborators to form"
           variant="outline"
+          // TODO(#2487): Add collaborator feature
           icon={<BiUserPlus />}
         />
         <IconButton
           aria-label="Preview form"
           variant="outline"
+          // TODO: Add preview feature
           icon={<BiShow />}
         />
-        <Button>Share</Button>
+        <Button
+        // TODO: Add share form feature (new?)
+        >
+          Share
+        </Button>
       </ButtonGroup>
     </Flex>
   )
