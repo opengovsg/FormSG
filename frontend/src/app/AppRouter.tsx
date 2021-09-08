@@ -8,7 +8,7 @@ import {
   ROOT_ROUTE,
 } from '~constants/routes'
 
-import { AdminFormPage } from '~features/admin-form/AdminFormPage'
+import { AdminFormPage } from '~features/admin-form/common/AdminFormPage'
 import { PublicFormPage } from '~features/public-form/PublicFormPage'
 
 import { PrivateRoute } from './PrivateRoute'
