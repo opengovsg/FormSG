@@ -1,6 +1,6 @@
 import { TabPanel, TabPanels } from '@chakra-ui/react'
 
-import { AdminFormNavbar } from './components/AdminFormNavbar'
+import AdminFormNavbar from './components/AdminFormNavbar'
 import { AdminFormTabProvider } from './components/AdminFormTabProvider'
 
 export const AdminFormPage = (): JSX.Element => {
