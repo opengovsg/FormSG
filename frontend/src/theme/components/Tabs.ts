@@ -242,6 +242,7 @@ export const Tabs: ComponentMultiStyleConfig = {
   },
   defaultProps: {
     colorScheme: 'primary',
+    variant: 'line-light',
     size: 'md',
   },
 }
