@@ -1,7 +1,7 @@
 import { ComponentMultiStyleConfig } from '@chakra-ui/react'
 
 export const Menu: ComponentMultiStyleConfig = {
-  parts: ['list', 'item'],
+  parts: ['list', 'item', 'divider'],
   baseStyle: {
     item: {
       padding: '0.75rem 1rem',
@@ -22,6 +22,9 @@ export const Menu: ComponentMultiStyleConfig = {
     },
     list: {
       minWidth: '0rem',
+    },
+    divider: {
+      margin: '0rem',
     },
   },
 }
