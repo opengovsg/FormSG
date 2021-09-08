@@ -21,6 +21,7 @@ export const theme = extendTheme({
       '.js-focus-visible :focus:not([data-focus-visible-added])': {
         outline: 'none',
       },
+      '.focus-visible': { outline: 'none' },
     },
   },
   colors: colours,

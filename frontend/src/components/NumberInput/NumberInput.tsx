@@ -7,6 +7,7 @@ import {
   forwardRef,
   NumberInputProps as ChakraNumberInputProps,
   useFormControlProps,
+  useMergeRefs,
   useMultiStyleConfig,
   useNumberInput,
 } from '@chakra-ui/react'
@@ -28,7 +29,7 @@ export interface NumberInputProps extends ChakraNumberInputProps {
   showSteppers?: boolean
 }
 
-export const NumberInput = forwardRef<NumberInputProps, 'div'>(
+export const NumberInput = forwardRef<NumberInputProps, 'input'>(
   (
     {
       showSteppers = true,
@@ -58,24 +59,34 @@ export const NumberInput = forwardRef<NumberInputProps, 'div'>(
       getInputProps,
       getIncrementButtonProps,
       getDecrementButtonProps,
-    } = useNumberInput({ ...controlProps, clampValueOnBlur })
+    } = useNumberInput({
+      ...controlProps,
+      clampValueOnBlur,
+    })
 
     const inputProps = getInputProps({ placeholder: props.placeholder })
     const incProps = getIncrementButtonProps()
     const decProps = getDecrementButtonProps()
+
+    const inputRef = useMergeRefs(inputProps.ref, ref)
 
     const inputEndPadding = showSteppers
       ? stepperWrapperRef.current?.offsetWidth
       : undefined
 
     return (
-      <Box {...htmlProps} ref={ref} __css={styles.root}>
+      <Box {...htmlProps} __css={styles.root}>
         {/* Using base input wrapper instead of `Input` component as the Input 
         component strips out some props such as `aria-invalid`, resulting in
         incorrect styling */}
         <chakra.input
           {...inputProps}
           paddingInlineEnd={inputEndPadding}
+          // Passing in ref to the input element so that it can be focused by
+          // the parent.
+          // No point passing the ref to the div wrapper as the main component
+          // is this input.
+          ref={inputRef}
           __css={styles.field}
         />
         {showSteppers && (
