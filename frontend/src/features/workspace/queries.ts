@@ -1,7 +1,7 @@
 import { useQuery } from 'react-query'
 import { AsyncReturnType } from 'type-fest'
 
-import { getDashboardView } from './AdminViewFormService'
+import { getDashboardView } from './WorkspaceService'
 
 const workspaceKeys = {
   all: ['workspace'] as const,
