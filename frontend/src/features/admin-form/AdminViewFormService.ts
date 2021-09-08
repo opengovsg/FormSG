@@ -1,6 +1,10 @@
 import axios from 'axios'
 
-import { AdminFormViewDto, PreviewFormViewDto } from '~shared/types/form/form'
+import {
+  AdminFormDto,
+  AdminFormViewDto,
+  PreviewFormViewDto,
+} from '~shared/types/form/form'
 
 // endpoint exported for testing
 export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
@@ -12,10 +16,10 @@ export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
  */
 export const getAdminFormView = async (
   formId: string,
-): Promise<AdminFormViewDto> => {
+): Promise<AdminFormDto> => {
   return axios
     .get<AdminFormViewDto>(`${ADMIN_FORM_ENDPOINT}/${formId}`)
-    .then(({ data }) => data)
+    .then(({ data }) => data.form)
 }
 
 /**
