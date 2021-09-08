@@ -1,18 +1,17 @@
 import { useCallback, useMemo, useState } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { Tabs } from '@chakra-ui/react'
 
 import { ADMIN_FORM_ROUTE } from '~constants/routes'
 
 interface AdminFormTabProviderProps {
-  formId: string
   children: React.ReactNode
 }
 
 export const AdminFormTabProvider = ({
-  formId,
   children,
 }: AdminFormTabProviderProps): JSX.Element => {
+  const { formId } = useParams<{ formId: string }>()
   const history = useHistory()
   const { pathname } = useLocation()
 
