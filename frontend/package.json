@@ -9,6 +9,7 @@
     "@emotion/styled": "^11.0.0",
     "axios": "^0.21.1",
     "country-flag-icons": "^1.2.10",
+    "date-fns": "^2.23.0",
     "focus-visible": "^5.2.0",
     "framer-motion": "^4.0.0",
     "libphonenumber-js": "^1.9.20",
