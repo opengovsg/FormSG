@@ -58,6 +58,7 @@ export const AdminFormNavbar = (): JSX.Element => {
     <Flex py="0.625rem" px="2rem" justify="space-between" align="center">
       <Flex flex={1}>
         <IconButton
+          mr="0.5rem"
           aria-label="Go back to dashboard"
           variant="clear"
           colorScheme="secondary"
@@ -67,11 +68,16 @@ export const AdminFormNavbar = (): JSX.Element => {
         <FormNavbarDetails form={form} />
       </Flex>
       <TabList mt="-1.125rem" mb="-0.25rem" borderBottom="none">
-        <Tab>Create</Tab>
-        <Tab>Settings</Tab>
-        <Tab>Results</Tab>
+        <Tab isDisabled={!form}>Create</Tab>
+        <Tab isDisabled={!form}>Settings</Tab>
+        <Tab isDisabled={!form}>Results</Tab>
       </TabList>
-      <ButtonGroup spacing="0.5rem" flex={1} justifyContent="flex-end">
+      <ButtonGroup
+        spacing="0.5rem"
+        flex={1}
+        justifyContent="flex-end"
+        isDisabled={!form}
+      >
         <IconButton
           aria-label="Add collaborators to form"
           variant="outline"
