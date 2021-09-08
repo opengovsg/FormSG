@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { BiLeftArrowAlt, BiShow, BiUserPlus } from 'react-icons/bi'
 import { useHistory, useParams } from 'react-router-dom'
-import { ButtonGroup, Flex, Skeleton, Stack, Text } from '@chakra-ui/react'
+import { ButtonGroup, Flex, Skeleton, Text } from '@chakra-ui/react'
 import format from 'date-fns/format'
 
 import { AdminFormDto } from '~shared/types/form/form'
@@ -11,21 +11,12 @@ import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import { TabList } from '~components/Tabs'
 import { Tab } from '~components/Tabs/Tab'
-import Skeletonable from '~templates/Skeletonable'
 
 import { useAdminForm } from '../queries'
 
-const FormNavbarDetailsSkeleton = () => {
-  return (
-    <Stack w="12rem" maxW="100%">
-      <Skeleton height="1.5rem" />
-      <Skeleton height="0.75rem" />
-    </Stack>
-  )
-}
-
-const FormNavbarDetails = ({ form }: { form: AdminFormDto }) => {
+const FormNavbarDetails = ({ form }: { form?: AdminFormDto }) => {
   const readableLastModified = useMemo(() => {
+    if (!form) return 'Date is still loading...'
     const formattedDate = format(
       new Date(form.lastModified),
       'h:mm a, dd LLL y',
@@ -34,13 +25,18 @@ const FormNavbarDetails = ({ form }: { form: AdminFormDto }) => {
   }, [form])
 
   return (
-    <Flex ml="0.5rem" align="flex-start" flexDir="column" justify="center">
-      <Text textStyle="body-1" color="secondary.500">
-        {form.title}
-      </Text>
-      <Text textStyle="legal" textTransform="uppercase" color="neutral.700">
-        {readableLastModified}
-      </Text>
+    <Flex align="flex-start" flexDir="column" justify="center">
+      <Skeleton isLoaded={!!form}>
+        <Text textStyle="body-1" color="secondary.500">
+          {form?.title ?? 'Form title loading...'}
+        </Text>
+      </Skeleton>
+
+      <Skeleton isLoaded={!!form}>
+        <Text textStyle="legal" textTransform="uppercase" color="neutral.700">
+          {readableLastModified}
+        </Text>
+      </Skeleton>
     </Flex>
   )
 }
@@ -68,9 +64,7 @@ export const AdminFormNavbar = (): JSX.Element => {
           onClick={handleBackToDashboard}
           icon={<BiLeftArrowAlt />}
         />
-        <Skeletonable skeleton={<FormNavbarDetailsSkeleton />}>
-          {form && <FormNavbarDetails form={form} />}
-        </Skeletonable>
+        <FormNavbarDetails form={form} />
       </Flex>
       <TabList mt="-1.125rem" mb="-0.25rem" borderBottom="none">
         <Tab>Create</Tab>
