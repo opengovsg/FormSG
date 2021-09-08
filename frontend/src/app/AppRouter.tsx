@@ -1,8 +1,14 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 
-import { LOGIN_ROUTE, PUBLIC_FORM_REGEX, ROOT_ROUTE } from '~constants/routes'
+import {
+  ADMIN_FORM_ROUTE,
+  LOGIN_ROUTE,
+  PUBLIC_FORM_REGEX,
+  ROOT_ROUTE,
+} from '~constants/routes'
 
+import { AdminFormPage } from '~features/admin-form/AdminFormPage'
 import { PublicFormPage } from '~features/public-form/PublicFormPage'
 
 import { PrivateRoute } from './PrivateRoute'
@@ -24,6 +30,9 @@ export const AppRouter = (): JSX.Element => {
           </PublicRoute>
           <PrivateRoute exact path={ROOT_ROUTE}>
             <WorkspacePage />
+          </PrivateRoute>
+          <PrivateRoute path={`${ADMIN_FORM_ROUTE}/:formId`}>
+            <AdminFormPage />
           </PrivateRoute>
           <Route path="*">
             <div>404</div>
