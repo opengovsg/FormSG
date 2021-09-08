@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom'
 
 import { ADMIN_FORM_ROUTE, LOGIN_ROUTE, ROOT_ROUTE } from '~constants/routes'
 
-import { AdminFormPage } from '~features/admin-form/AdminFormPage'
+import { AdminFormPage } from '~features/admin-form/common/AdminFormPage'
 
 import { PrivateRoute } from './PrivateRoute'
 import { PublicRoute } from './PublicRoute'
