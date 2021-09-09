@@ -15,7 +15,7 @@ import {
 import { BxsCheckCircle, BxsErrorCircle } from '~assets/icons'
 import { useMdComponents } from '~hooks/useMdComponents'
 
-type ToastStatus = 'danger' | 'success' | 'warning'
+export type ToastStatus = 'danger' | 'success' | 'warning'
 
 export interface ToastProps
   extends Omit<
