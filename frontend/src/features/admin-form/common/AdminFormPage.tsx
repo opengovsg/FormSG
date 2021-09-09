@@ -10,13 +10,13 @@ export const AdminFormPage = (): JSX.Element => {
     <AdminFormTabProvider>
       <AdminFormNavbar />
       <TabPanels>
-        <TabPanel>
+        <TabPanel p={0}>
           <p>Insert builder page here!</p>
         </TabPanel>
-        <TabPanel>
+        <TabPanel p={0}>
           <SettingsPage />
         </TabPanel>
-        <TabPanel>
+        <TabPanel p={0}>
           <p>Insert results page here!</p>
         </TabPanel>
       </TabPanels>
