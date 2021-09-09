@@ -33,7 +33,7 @@ export const FormStatusToggle = (): JSX.Element => {
   }, [isLoadingMutation, isLoadingSettings, mutate, settings?.status])
 
   return (
-    <Skeleton isLoaded={!isLoadingSettings}>
+    <Skeleton isLoaded={!isLoadingSettings && !!settings}>
       <Flex
         bg={isFormPublic ? 'success.100' : 'danger.200'}
         py="1rem"

@@ -9,6 +9,7 @@ import {
 import { TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react'
 
 import { SettingsTab } from './components/SettingsTab'
+import { SettingsGeneralPage } from './SettingsGeneralPage'
 
 export const SettingsPage = (): JSX.Element => {
   return (
@@ -23,7 +24,7 @@ export const SettingsPage = (): JSX.Element => {
       </TabList>
       <TabPanels>
         <TabPanel>
-          <p>one!</p>
+          <SettingsGeneralPage />
         </TabPanel>
         <TabPanel>
           <p>two!</p>
