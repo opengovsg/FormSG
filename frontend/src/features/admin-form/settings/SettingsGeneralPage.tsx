@@ -1,7 +1,23 @@
+import { FC } from 'react'
 import { Box, Divider, Text } from '@chakra-ui/react'
 
+import { FormCustomisationSection } from './components/FormCustomisationSection'
 import { FormLimitToggle } from './components/FormLimitToggle'
 import { FormStatusToggle } from './components/FormStatusToggle'
+
+const SubcategoryHeader: FC = ({ children }) => {
+  return (
+    <Text
+      as="h3"
+      textTransform="uppercase"
+      textStyle="subhead-3"
+      color="primary.500"
+      mb="2rem"
+    >
+      {children}
+    </Text>
+  )
+}
 
 export const SettingsGeneralPage = (): JSX.Element => {
   return (
@@ -11,16 +27,11 @@ export const SettingsGeneralPage = (): JSX.Element => {
       </Text>
       <FormStatusToggle />
       <Divider my="2.5rem" />
-      <Text
-        as="h3"
-        textTransform="uppercase"
-        textStyle="subhead-3"
-        color="primary.500"
-        mb="2rem"
-      >
-        Scheduling
-      </Text>
+      <SubcategoryHeader>Scheduling</SubcategoryHeader>
       <FormLimitToggle />
+      <Divider my="2.5rem" />
+      <SubcategoryHeader>Customisation</SubcategoryHeader>
+      <FormCustomisationSection />
     </Box>
   )
 }

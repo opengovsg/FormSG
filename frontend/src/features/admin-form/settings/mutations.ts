@@ -8,7 +8,11 @@ import { useToast } from '~hooks/useToast'
 import { formatOrdinal } from '~utils/stringFormat'
 
 import { adminFormSettingsKeys } from './queries'
-import { updateFormLimit, updateFormStatus } from './SettingsService'
+import {
+  updateFormInactiveMessage,
+  updateFormLimit,
+  updateFormStatus,
+} from './SettingsService'
 
 export const useMutateFormSettings = () => {
   const { formId } = useParams<{ formId: FormId }>()
@@ -19,6 +23,7 @@ export const useMutateFormSettings = () => {
     (nextStatus: FormStatus) => updateFormStatus(formId, nextStatus),
     {
       onSuccess: (newData) => {
+        toast.closeAll()
         // Update new settings data in cache.
         queryClient.setQueryData(adminFormSettingsKeys.id(formId), newData)
 
@@ -38,6 +43,7 @@ export const useMutateFormSettings = () => {
     (nextLimit: number | null) => updateFormLimit(formId, nextLimit),
     {
       onSuccess: (newData) => {
+        toast.closeAll()
         // Update new settings data in cache.
         queryClient.setQueryData(adminFormSettingsKeys.id(formId), newData)
 
@@ -55,5 +61,21 @@ export const useMutateFormSettings = () => {
     },
   )
 
-  return { mutateFormStatus, mutateFormLimit }
+  const mutateFormInactiveMessage = useMutation(
+    (nextMessage: string) => updateFormInactiveMessage(formId, nextMessage),
+    {
+      onSuccess: (newData) => {
+        toast.closeAll()
+        // Update new settings data in cache.
+        queryClient.setQueryData(adminFormSettingsKeys.id(formId), newData)
+
+        // Show toast on success.
+        toast({
+          description: "Your form's inactive message has been updated.",
+        })
+      },
+    },
+  )
+
+  return { mutateFormStatus, mutateFormLimit, mutateFormInactiveMessage }
 }
