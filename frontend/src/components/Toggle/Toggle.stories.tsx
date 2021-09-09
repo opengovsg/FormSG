@@ -30,7 +30,23 @@ const AllToggleStates: Story<ToggleProps> = (args) => {
       />
       <Toggle
         {...args}
+        label="Selected loading"
+        isLoading
+        description="Some description"
+        containerStyles={{ w: '60%' }}
+        isChecked
+      />
+      <Toggle
+        {...args}
         label="Unselected"
+        description="Some description"
+        containerStyles={{ w: '60%' }}
+        isChecked={false}
+      />
+      <Toggle
+        {...args}
+        label="Unselected loading"
+        isLoading
         description="Some description"
         containerStyles={{ w: '60%' }}
         isChecked={false}
