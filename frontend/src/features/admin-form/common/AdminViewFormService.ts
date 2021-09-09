@@ -6,8 +6,10 @@ import {
   PreviewFormViewDto,
 } from '~shared/types/form/form'
 
+import { ApiService } from '~services/ApiService'
+
 // endpoint exported for testing
-export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
+export const ADMIN_FORM_ENDPOINT = 'admin/forms'
 
 /**
  * Gets admin view of form.
@@ -17,9 +19,9 @@ export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
 export const getAdminFormView = async (
   formId: string,
 ): Promise<AdminFormDto> => {
-  return axios
-    .get<AdminFormViewDto>(`${ADMIN_FORM_ENDPOINT}/${formId}`)
-    .then(({ data }) => data.form)
+  return ApiService.get<AdminFormViewDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}`,
+  ).then(({ data }) => data.form)
 }
 
 /**
