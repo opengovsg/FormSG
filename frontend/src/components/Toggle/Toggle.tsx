@@ -4,7 +4,6 @@ import {
   CSSObject,
   Flex,
   forwardRef,
-  SwitchProps as ChakraSwitchProps,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
@@ -12,9 +11,9 @@ import { TOGGLE_THEME_KEY } from '~/theme/components/Toggle'
 
 import FormLabel from '../FormControl/FormLabel'
 
-import { Switch } from './Switch'
+import { Switch, SwitchProps } from './Switch'
 
-export interface ToggleProps extends ChakraSwitchProps {
+export interface ToggleProps extends SwitchProps {
   /**
    * Main label of the toggle
    */
