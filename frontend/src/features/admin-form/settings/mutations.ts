@@ -9,6 +9,7 @@ import { formatOrdinal } from '~utils/stringFormat'
 
 import { adminFormSettingsKeys } from './queries'
 import {
+  updateFormCaptcha,
   updateFormInactiveMessage,
   updateFormLimit,
   updateFormStatus,
@@ -61,6 +62,25 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormCaptcha = useMutation(
+    (nextHasCaptcha: boolean) => updateFormCaptcha(formId, nextHasCaptcha),
+    {
+      onSuccess: (newData) => {
+        toast.closeAll()
+        // Update new settings data in cache.
+        queryClient.setQueryData(adminFormSettingsKeys.id(formId), newData)
+
+        // Show toast on success.
+        const toastStatusMessage = `reCAPTCHA is now ${
+          newData.hasCaptcha ? 'enabled' : 'disabled'
+        } on your form.`
+        toast({
+          description: toastStatusMessage,
+        })
+      },
+    },
+  )
+
   const mutateFormInactiveMessage = useMutation(
     (nextMessage: string) => updateFormInactiveMessage(formId, nextMessage),
     {
@@ -77,5 +97,10 @@ export const useMutateFormSettings = () => {
     },
   )
 
-  return { mutateFormStatus, mutateFormLimit, mutateFormInactiveMessage }
+  return {
+    mutateFormStatus,
+    mutateFormLimit,
+    mutateFormInactiveMessage,
+    mutateFormCaptcha,
+  }
 }

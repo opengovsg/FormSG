@@ -30,6 +30,13 @@ export const updateFormLimit = async (
   return updateFormSettings(formId, { submissionLimit: newLimit })
 }
 
+export const updateFormCaptcha = async (
+  formId: string,
+  newHasCaptcha: boolean,
+): Promise<FormSettings> => {
+  return updateFormSettings(formId, { hasCaptcha: newHasCaptcha })
+}
+
 export const updateFormInactiveMessage = async (
   formId: string,
   newMessage: string,
