@@ -2,7 +2,7 @@
 import { SimpleGrid, Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import { useToast, UseToastOptions } from '~hooks/useToast'
+import { useToast, UseToastProps } from '~hooks/useToast'
 import Button from '~components/Button'
 
 import { Toast, ToastProps } from './Toast'
@@ -47,7 +47,7 @@ export default {
 
 const ToastTemplate: Story<ToastProps> = (args) => <Toast {...args} />
 
-const ButtonWithToastTemplate: Story<UseToastOptions> = (args) => {
+const ButtonWithToastTemplate: Story<UseToastProps> = (args) => {
   const toast = useToast()
   return (
     <Button

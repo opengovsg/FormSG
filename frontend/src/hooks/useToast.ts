@@ -4,7 +4,6 @@ import {
   useToast as useChakraToast,
   UseToastOptions as ChakraUseToastOptions,
 } from '@chakra-ui/react'
-import { SetRequired } from 'type-fest'
 
 import { Toast, ToastProps, ToastStatus } from '~/components/Toast/Toast'
 
@@ -19,10 +18,8 @@ export type UseToastProps = Omit<
   'onClose' | 'status'
 > & { status?: ToastStatus }
 
-export type UseToastOptions = SetRequired<UseToastProps, 'status'>
-
 export type UseToastReturn = {
-  (options: UseToastOptions): string | number | undefined
+  (options: UseToastProps): string | number | undefined
   close: ReturnType<typeof useChakraToast>['close']
   closeAll: ReturnType<typeof useChakraToast>['closeAll']
   isActive: ReturnType<typeof useChakraToast>['isActive']
@@ -30,7 +27,7 @@ export type UseToastReturn = {
 }
 
 export const useToast = ({
-  status,
+  status: initialStatus = 'success',
   ...initialProps
 }: UseToastProps = {}): UseToastReturn => {
   const toast = useChakraToast(initialProps)
@@ -42,7 +39,7 @@ export const useToast = ({
       render,
       status,
       ...rest
-    }: UseToastOptions) =>
+    }: UseToastProps) =>
       toast({
         duration,
         position,
@@ -52,7 +49,9 @@ export const useToast = ({
           // Omitting the createElement causes a visual bug, where our own theme providers are not used.
           // Using createElement also allows the file to be pure ts rather than tsx.
           render ??
-          React.createElement(() => Toast({ status, ...rest, ...props })),
+          React.createElement(() =>
+            Toast({ status: status ?? initialStatus, ...rest, ...props }),
+          ),
       })
 
     impl.close = toast.close
@@ -61,7 +60,7 @@ export const useToast = ({
     impl.update = toast.update
 
     return impl
-  }, [toast])
+  }, [initialStatus, toast])
 
   return customToastImpl
 }
