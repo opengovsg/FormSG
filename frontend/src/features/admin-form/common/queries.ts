@@ -7,7 +7,7 @@ import { ApiError } from '~typings/core'
 
 import { getAdminFormView } from './AdminViewFormService'
 
-const adminFormKeys = {
+export const adminFormKeys = {
   base: ['adminForm'] as const,
   id: (id: string) => ['adminForm', id] as const,
 }
