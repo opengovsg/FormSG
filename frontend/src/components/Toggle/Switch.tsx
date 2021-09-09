@@ -84,7 +84,7 @@ export const Switch = forwardRef<SwitchProps, 'input'>(
       getCheckboxProps,
       getRootProps,
       getLabelProps,
-    } = useCheckbox({ ...ownProps, isDisabled: props.isDisabled || isLoading })
+    } = useCheckbox({ ...ownProps, isReadOnly: isLoading })
 
     const containerStyles: SystemStyleObject = useMemo(
       () => ({
