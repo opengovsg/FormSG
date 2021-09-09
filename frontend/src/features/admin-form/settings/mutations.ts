@@ -1,12 +1,14 @@
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
+import simplur from 'simplur'
 
 import { FormId, FormStatus } from '~shared/types/form/form'
 
 import { useToast } from '~hooks/useToast'
+import { formatOrdinal } from '~utils/stringFormat'
 
 import { adminFormSettingsKeys } from './queries'
-import { updateFormStatus } from './SettingsService'
+import { updateFormLimit, updateFormStatus } from './SettingsService'
 
 export const useMutateFormSettings = () => {
   const { formId } = useParams<{ formId: FormId }>()
@@ -32,5 +34,26 @@ export const useMutateFormSettings = () => {
     },
   )
 
-  return { mutateFormStatus }
+  const mutateFormLimit = useMutation(
+    (nextLimit: number | null) => updateFormLimit(formId, nextLimit),
+    {
+      onSuccess: (newData) => {
+        // Update new settings data in cache.
+        queryClient.setQueryData(adminFormSettingsKeys.id(formId), newData)
+
+        // Show toast on success.
+        const toastStatusMessage = newData.submissionLimit
+          ? simplur`Your form will now automatically close on the ${[
+              newData.submissionLimit,
+              formatOrdinal,
+            ]} submission.`
+          : 'The submission limit on your form is removed.'
+        toast({
+          description: toastStatusMessage,
+        })
+      },
+    },
+  )
+
+  return { mutateFormStatus, mutateFormLimit }
 }

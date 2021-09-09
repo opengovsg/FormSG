@@ -23,6 +23,13 @@ export const updateFormStatus = async (
   return updateFormSettings(formId, { status })
 }
 
+export const updateFormLimit = async (
+  formId: string,
+  newLimit: number | null,
+): Promise<FormSettings> => {
+  return updateFormSettings(formId, { submissionLimit: newLimit })
+}
+
 /**
  * Internal function that calls the PATCH API.
  * @param formId the id of the form to update
