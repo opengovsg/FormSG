@@ -10,17 +10,11 @@ const DEFAULT_SALT_ROUNDS = 10
  * @returns 6 digit OTP string
  */
 export const generateOtp = (): string => {
-  const length = 6
-  const chars = '0123456789'
   // Generates cryptographically strong pseudo-random data.
-  // The size argument is a number indicating the number of bytes to generate.
-  const rnd = crypto.randomBytes(length)
-  const d = chars.length / 256
-  const digits = new Array(length)
-  for (let i = 0; i < length; i++) {
-    digits[i] = chars[Math.floor(rnd[i] * d)]
-  }
-  return digits.join('')
+  return Array(6)
+    .fill(0)
+    .map(() => crypto.randomInt(0, 10))
+    .join('')
 }
 
 /**
