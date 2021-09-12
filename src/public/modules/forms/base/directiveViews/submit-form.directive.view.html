@@ -62,7 +62,9 @@
 
       <!-- Form footer -->
       <div id="form-submit" class="row">
-        <div class="standard-padding">
+        <div
+          ng-class="!uiState.submitPreventedMessage ? 'standard-padding' : 'standard-padding no-bottom-margin'"
+        >
           <!-- Submit button if not in preview mode -->
           <button
             class="btn-custom btn-large form-submit-btn {{ form.startPage.colorTheme }}-bg-dark {{ form.startPage.colorTheme }}-border-dark"
@@ -70,11 +72,24 @@
             ng-click="checkCaptchaAndSubmit()"
             ng-class="uiState.submitButtonClicked ? 'btn-pressed' : ''"
           >
-            <span ng-if="!uiState.submitButtonClicked">Submit</span>
+            <span
+              ng-if="!uiState.submitButtonClicked && !uiState.submitPrevented"
+              >Submit</span
+            >
+            <span
+              ng-if="!uiState.submitButtonClicked && uiState.submitPrevented"
+              >Submission Disabled</span
+            >
             <span ng-if="uiState.submitButtonClicked"
               ><i class="bx bx-loader bx-spin bx-lg"></i
             ></span>
           </button>
+        </div>
+        <div class="standard-padding" ng-if="uiState.submitPreventedMessage">
+          <div class="alert-custom alert-error">
+            <i class="bx bx-exclamation bx-md icon-spacing"></i
+            ><span class="alert-msg">{{ uiState.submitPreventedMessage }}</span>
+          </div>
         </div>
       </div>
     </div>
