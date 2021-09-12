@@ -88,7 +88,9 @@
         <div class="standard-padding" ng-if="uiState.submitPreventedMessage">
           <div class="alert-custom alert-error">
             <i class="bx bx-exclamation bx-md icon-spacing"></i
-            ><span class="alert-msg">{{ uiState.submitPreventedMessage }}</span>
+            ><span class="alert-msg" id="submit-prevented-message"
+              >{{ uiState.submitPreventedMessage }}</span
+            >
           </div>
         </div>
       </div>
