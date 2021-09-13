@@ -4,6 +4,7 @@ export enum AttachmentSize {
   OneMb = '1',
   TwoMb = '2',
   ThreeMb = '3',
+  FourMb = '4',
   SevenMb = '7',
   TenMb = '10',
   TwentyMb = '20',
