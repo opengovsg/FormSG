@@ -44,6 +44,13 @@ export const updateFormInactiveMessage = async (
   return updateFormSettings(formId, { inactiveMessage: newMessage })
 }
 
+export const updateFormEmails = async (
+  formId: string,
+  newEmails: string[],
+): Promise<FormSettings> => {
+  return updateFormSettings(formId, { emails: newEmails })
+}
+
 /**
  * Internal function that calls the PATCH API.
  * @param formId the id of the form to update
