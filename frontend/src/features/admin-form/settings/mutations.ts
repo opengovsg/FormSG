@@ -37,6 +37,13 @@ export const useMutateFormSettings = () => {
           description: toastStatusMessage,
         })
       },
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message,
+          status: 'danger',
+        })
+      },
     },
   )
 
@@ -59,6 +66,13 @@ export const useMutateFormSettings = () => {
           description: toastStatusMessage,
         })
       },
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message,
+          status: 'danger',
+        })
+      },
     },
   )
 
@@ -78,6 +92,13 @@ export const useMutateFormSettings = () => {
           description: toastStatusMessage,
         })
       },
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message,
+          status: 'danger',
+        })
+      },
     },
   )
 
@@ -92,6 +113,13 @@ export const useMutateFormSettings = () => {
         // Show toast on success.
         toast({
           description: "Your form's inactive message has been updated.",
+        })
+      },
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message,
+          status: 'danger',
         })
       },
     },

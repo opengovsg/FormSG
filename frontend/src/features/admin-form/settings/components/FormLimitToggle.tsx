@@ -35,7 +35,11 @@ const FormLimitBlock = ({ initialLimit }: FormLimitBlockProps): JSX.Element => {
       return setValue(initialLimit)
     }
 
-    return mutateFormLimit.mutate(parseInt(value, 10))
+    return mutateFormLimit.mutate(parseInt(value, 10), {
+      onError: () => {
+        setValue(initialLimit)
+      },
+    })
   }, [initialLimit, mutateFormLimit, value])
 
   const handleKeydown: KeyboardEventHandler<HTMLInputElement> = useCallback(

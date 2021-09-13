@@ -54,7 +54,11 @@ const PrivateFormMessageInput = ({
       return setValue(initialMessage)
     }
 
-    return mutateFormInactiveMessage.mutate(value)
+    return mutateFormInactiveMessage.mutate(value, {
+      onError: () => {
+        setValue(initialMessage)
+      },
+    })
   }, [initialMessage, mutateFormInactiveMessage, value])
 
   const handleKeydown: KeyboardEventHandler<HTMLInputElement> = useCallback(
