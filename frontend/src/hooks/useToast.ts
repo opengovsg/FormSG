@@ -50,7 +50,12 @@ export const useToast = ({
           // Using createElement also allows the file to be pure ts rather than tsx.
           render ??
           React.createElement(() =>
-            Toast({ status: status ?? initialStatus, ...rest, ...props }),
+            Toast({
+              status: status ?? initialStatus,
+              isClosable: initialProps.isClosable,
+              ...rest,
+              ...props,
+            }),
           ),
       })
 
@@ -60,7 +65,7 @@ export const useToast = ({
     impl.update = toast.update
 
     return impl
-  }, [initialStatus, toast])
+  }, [initialProps.isClosable, initialStatus, toast])
 
   return customToastImpl
 }
