@@ -1,10 +1,7 @@
-import { MemoryRouter, Route } from 'react-router-dom'
-import { TabPanel, TabPanels } from '@chakra-ui/react'
+import { TabPanel, TabPanels, Tabs } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { DateString } from '~shared/types/generic'
-
-import { AdminFormTabProvider } from '../AdminFormTabProvider'
 
 import { AdminFormNavbar, AdminFormNavbarProps } from './AdminFormNavbar'
 
@@ -14,18 +11,14 @@ export default {
   decorators: [
     (storyFn) => {
       return (
-        <MemoryRouter initialEntries={['/admin/forms/1']}>
-          <Route path="/admin/forms/:formId">
-            <AdminFormTabProvider>
-              {storyFn()}
-              <TabPanels>
-                <TabPanel></TabPanel>
-                <TabPanel></TabPanel>
-                <TabPanel></TabPanel>
-              </TabPanels>
-            </AdminFormTabProvider>
-          </Route>
-        </MemoryRouter>
+        <Tabs>
+          {storyFn()}
+          <TabPanels>
+            <TabPanel></TabPanel>
+            <TabPanel></TabPanel>
+            <TabPanel></TabPanel>
+          </TabPanels>
+        </Tabs>
       )
     },
   ],
