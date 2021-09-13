@@ -1,4 +1,3 @@
-import hasAnsi from 'has-ansi'
 import omit from 'lodash/omit'
 import logform from 'logform'
 import path from 'path'
@@ -84,7 +83,7 @@ const formatWithInspect = (val: any): string => {
     return ''
   }
 
-  const shouldFormat = typeof val !== 'string' && !hasAnsi(val)
+  const shouldFormat = typeof val !== 'string'
   const formattedVal = shouldFormat
     ? inspect(val, { depth: null, colors: true })
     : val
