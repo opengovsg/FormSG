@@ -17,12 +17,11 @@ export const Banner: ComponentMultiStyleConfig = {
     },
     close: {
       padding: 0,
-      mr: '-0.75rem',
+      ml: '0.5rem',
+      mr: '-0.5rem',
       fontSize: '1.5rem',
-      my: '-0.25rem',
-      _focus: {
-        boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
-      },
+      w: '1.5rem',
+      h: '1.5rem',
     },
   },
   variants: {
@@ -36,11 +35,6 @@ export const Banner: ComponentMultiStyleConfig = {
         _hover: {
           color: 'white',
         },
-        _focus: {
-          boxShadow: '0 0 0 2px var(--chakra-colors-white)',
-        },
-      },
-      close: {
         _focus: {
           boxShadow: '0 0 0 2px var(--chakra-colors-white)',
         },
@@ -68,11 +62,6 @@ export const Banner: ComponentMultiStyleConfig = {
         _hover: {
           color: 'white',
         },
-        _focus: {
-          boxShadow: '0 0 0 2px var(--chakra-colors-white)',
-        },
-      },
-      close: {
         _focus: {
           boxShadow: '0 0 0 2px var(--chakra-colors-white)',
         },
