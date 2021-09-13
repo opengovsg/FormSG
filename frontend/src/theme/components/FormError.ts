@@ -7,7 +7,7 @@ export const FormError: ComponentMultiStyleConfig = {
   baseStyle: {
     text: {
       color: 'danger.500',
-      mt: 2,
+      my: '0.5rem',
       ...textStyles['body-2'],
     },
     icon: {
