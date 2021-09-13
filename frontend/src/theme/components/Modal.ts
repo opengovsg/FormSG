@@ -6,7 +6,7 @@ import {
   ThemingPropsThunk,
 } from '@chakra-ui/react'
 
-import { textStyles } from '~theme/textStyles'
+import { textStyles } from '../textStyles'
 
 // Default parts.
 const parts = [

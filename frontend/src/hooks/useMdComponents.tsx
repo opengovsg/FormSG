@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Components } from 'react-markdown/src/ast-to-react'
-import { CSSObject } from '@chakra-ui/react'
+import { CSSObject, Text } from '@chakra-ui/react'
 
 import Link from '~components/Link'
 
@@ -9,9 +9,21 @@ type MdComponentStyles = {
    * If exists, will be used for styling links
    */
   link?: CSSObject
+  /**
+   * If exists, will be used for styling text
+   */
+  text?: CSSObject
 }
 
-export const useMdComponents = (styles: MdComponentStyles): Components => {
+type UseMdComponentsProps = {
+  styles?: MdComponentStyles
+  overrides?: Components
+}
+
+export const useMdComponents = ({
+  styles = {},
+  overrides = {},
+}: UseMdComponentsProps = {}): Components => {
   const mdComponents: Components = useMemo(
     () => ({
       a: (props) => {
@@ -27,8 +39,12 @@ export const useMdComponents = (styles: MdComponentStyles): Components => {
           />
         )
       },
+      p: (props) => (
+        <Text {...props} {...(styles?.text ? { sx: styles.text } : {})} />
+      ),
+      ...overrides,
     }),
-    [styles.link],
+    [overrides, styles],
   )
 
   return mdComponents
