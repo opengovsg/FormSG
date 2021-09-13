@@ -1,5 +1,7 @@
+import { useMemo } from 'react'
 import {
   Box,
+  FormHelperText,
   FormLabel as ChakraFormLabel,
   FormLabelProps as ChakraFormLabelProps,
   Icon,
@@ -79,13 +81,36 @@ export const FormLabel = ({
 
 FormLabel.Label = ChakraFormLabel
 
-FormLabel.Description = ({ children, ...props }: TextProps): JSX.Element => {
+const FormLabelDescription = ({
+  children,
+  ...props
+}: TextProps): JSX.Element => {
+  // useFormControlContext is a ChakraUI hook that returns props passed down
+  // from a parent ChakraUI's `FormControl` component.
+  // The return object is used to determine whether FormHelperText or Text is
+  // used.
+  // Using FormHelperText allows for the children text to be added to the parent
+  // FormLabel's aria-describedby attribute. This is done internally by ChakraUI.
+  const field = useFormControlContext()
+
+  // Render normal Text component if no form context is found.
+  const ComponentToRender = useMemo(() => {
+    if (field) return FormHelperText
+    return Text
+  }, [field])
+
   return (
-    <Text textStyle="body-2" color="secondary.400">
+    <ComponentToRender
+      mt={0}
+      textStyle="body-2"
+      color="secondary.400"
+      {...props}
+    >
       {children}
-    </Text>
+    </ComponentToRender>
   )
 }
+FormLabel.Description = FormLabelDescription
 
 FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
   return (
@@ -108,6 +133,8 @@ FormLabel.OptionalIndicator = ({
   isRequired,
   ...props
 }: TextProps & { isRequired?: boolean }): JSX.Element | null => {
+  // useFormControlContext is a ChakraUI hook that returns props passed down
+  // from a parent ChakraUI's `FormControl` component.
   // Valid hook usage since composited component is still a component.
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const field = useFormControlContext()
