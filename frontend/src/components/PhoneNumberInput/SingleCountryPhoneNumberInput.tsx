@@ -46,6 +46,7 @@ export const SingleCountryPhoneNumberInput = forwardRef<
           // a default fallback icon will be used by ChakraUI.
           // See https://chakra-ui.com/docs/media-and-icons/icon#fallback-icon.
           as={Flags[country]}
+          aria-label={`Only ${country} numbers are allowed`}
           __css={styles.icon}
         />
       </InputRightElement>
