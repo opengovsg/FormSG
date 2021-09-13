@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react'
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
-import { ReactComponent as LoginImageSvg } from '~assets/svgs/img-buildscratch.svg'
+import { ReactComponent as LoginImageSvg } from '~assets/svgs/img-login.svg'
 import { FORM_GUIDE, REPORT_VULNERABILITY } from '~constants/externalLinks'
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { LANDING_ROUTE } from '~constants/routes'
