@@ -35,7 +35,7 @@ const BrandLogo = chakra(BrandLogoSvg, {
 })
 const LoginImage = chakra(LoginImageSvg, {
   baseStyle: {
-    maxW: { base: '22rem', lg: '28rem' },
+    maxW: { base: '22rem' },
     w: '100%',
   },
 })
@@ -119,7 +119,7 @@ const NonMobileSidebarGridArea: FC = ({ children }) => (
     pt={{ base: '1.5rem', md: '4rem', lg: '6rem' }}
     pb={{ lg: '3.25rem' }}
     flexDir="column"
-    alignItems="center"
+    alignItems={{ base: 'center', lg: 'flex-start' }}
     justifyContent="center"
     children={children}
   />
@@ -234,7 +234,12 @@ export const LoginPage = (): JSX.Element => {
           <DesktopLinksGridArea>
             <Wrap shouldWrapChildren textStyle="caption-2" spacing="1.5rem">
               {footerLinks.map(({ label, href }, index) => (
-                <Link variant="standalone" key={index} href={href}>
+                <Link
+                  my="-0.75rem"
+                  variant="standalone"
+                  key={index}
+                  href={href}
+                >
                   {label}
                 </Link>
               ))}
