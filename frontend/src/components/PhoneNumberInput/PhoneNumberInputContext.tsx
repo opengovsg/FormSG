@@ -42,7 +42,7 @@ type PhoneNumberInputContextProps = {
    * and the selected country will be displayed in the input's left add-on, and
    * autoformatting will be enabled.
    */
-  isAllowInternational?: boolean
+  allowInternational?: boolean
 
   /**
    * Callback that will be called when the value in the phone number input field
@@ -111,7 +111,7 @@ const useProvidePhoneNumberInput = ({
   defaultCountry,
   examplePlaceholder,
   examples = defaultExamples,
-  isAllowInternational,
+  allowInternational,
   onChange,
   onBlur,
   ...props
@@ -154,7 +154,7 @@ const useProvidePhoneNumberInput = ({
         const appended = newValue.slice(inputValue.length)
         setInputValue(formatter.input(appended))
 
-        if (isAllowInternational) {
+        if (allowInternational) {
           const number = formatter.getNumber()
           if (number?.country && number.country !== country) {
             setCountry(number.country)
@@ -178,20 +178,20 @@ const useProvidePhoneNumberInput = ({
       // so that the cursor position does not get lost.
       // Change country on blur instead.
     },
-    [country, formatter, inputValue, isAllowInternational, onChange],
+    [country, formatter, inputValue, allowInternational, onChange],
   )
 
   const handleInputChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       let newValue = e.target.value
-      if (!isAllowInternational) {
+      if (!allowInternational) {
         // Remove all non-numeric, non-space characters so country cannot be
         // changed.
         newValue = newValue.replace(/[^\d ]/g, '')
       }
       return onInputChange(newValue)
     },
-    [isAllowInternational, onInputChange],
+    [allowInternational, onInputChange],
   )
 
   const handleCountryChange = useCallback(
@@ -220,24 +220,20 @@ const useProvidePhoneNumberInput = ({
       // Reformat the phone number as international if international numbers
       // are enabled.
       formatter.reset()
-      const nextValue = isAllowInternational
+      const nextValue = allowInternational
         ? number.number
         : number.nationalNumber
       setInputValue(formatter.input(nextValue as string))
       // Update the country if the parsed number belongs to a different
       // country.
-      if (
-        isAllowInternational &&
-        number?.country &&
-        number.country !== country
-      ) {
+      if (allowInternational && number?.country && number.country !== country) {
         setCountry(number.country)
       }
     } else {
       // Format the phone number
       setInputValue(formatter.input(''))
     }
-  }, [country, formatter, isAllowInternational, onChange])
+  }, [country, formatter, allowInternational, onChange])
 
   const handleInputBlur = useCallback(() => {
     onBlur?.()
@@ -266,7 +262,7 @@ const useProvidePhoneNumberInput = ({
     inputValue,
     onChange,
     country,
-    isAllowInternational,
+    allowInternational,
     handleFormatInput,
   ])
 

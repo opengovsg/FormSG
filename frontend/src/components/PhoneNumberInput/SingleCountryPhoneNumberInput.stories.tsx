@@ -13,36 +13,36 @@ export default {
 export const Default = stories.Default.bind({})
 Default.args = {
   ...stories.Default.args,
-  isAllowInternational: false,
+  allowInternational: false,
 }
 
 export const Prefilled = stories.Prefilled.bind({})
 Prefilled.args = {
   ...stories.Prefilled.args,
-  isAllowInternational: false,
+  allowInternational: false,
   defaultCountry: 'US',
 }
 
 export const Error = stories.Error.bind({})
 Error.args = {
   ...stories.Error.args,
-  isAllowInternational: false,
+  allowInternational: false,
 }
 
 export const Success = stories.Success.bind({})
 Success.args = {
   ...stories.Success.args,
-  isAllowInternational: false,
+  allowInternational: false,
 }
 
 export const Disabled = stories.Disabled.bind({})
 Disabled.args = {
   ...stories.Disabled.args,
-  isAllowInternational: false,
+  allowInternational: false,
 }
 
 export const Playground = stories.Playground.bind({})
 Playground.args = {
   ...stories.Playground.args,
-  isAllowInternational: false,
+  allowInternational: false,
 }

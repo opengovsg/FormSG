@@ -66,14 +66,14 @@ export interface PhoneNumberInputProps extends BasePhoneNumberInputProps {
    * and the selected country will be displayed in the input's left add-on, and
    * autoformatting will be enabled.
    */
-  isAllowInternational?: boolean
+  allowInternational?: boolean
 }
 
 export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
   (
     {
       defaultCountry = 'SG',
-      isAllowInternational = true,
+      allowInternational = true,
       onChange,
       onBlur,
       value,
@@ -85,7 +85,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
   ) => {
     const providerProps: PhoneNumberInputProviderProps = {
       defaultCountry,
-      isAllowInternational,
+      allowInternational,
       onChange,
       onBlur,
       defaultValue: value,
@@ -96,7 +96,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
 
     return (
       <PhoneNumberInputProvider {...providerProps}>
-        {isAllowInternational ? (
+        {allowInternational ? (
           <IntlPhoneNumberInput {...props} ref={ref} />
         ) : (
           <SingleCountryPhoneNumberInput {...props} ref={ref} />
