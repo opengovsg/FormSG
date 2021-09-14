@@ -13,7 +13,7 @@ import Button from '../Button'
 import { PhoneNumberInput, PhoneNumberInputProps } from './PhoneNumberInput'
 
 export default {
-  title: 'Components/PhoneNumberInput',
+  title: 'Components/PhoneNumberInput/International',
   component: PhoneNumberInput,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [],
@@ -37,7 +37,7 @@ Default.args = {}
 
 export const Prefilled = Template.bind({})
 Prefilled.args = {
-  value: '+6598765432',
+  value: '+12015550123',
   isPrefilled: true,
 }
 
@@ -92,7 +92,9 @@ export const Playground: Story = ({
             required: isRequired
               ? { value: true, message: 'Required field' }
               : false,
-            validate: (val) => isValidPhoneNumber(val) || 'Invalid number',
+            validate: (val) => {
+              return isValidPhoneNumber(val) || 'Invalid number'
+            },
           }}
           render={({ field }) => <PhoneNumberInput {...args} {...field} />}
         />
