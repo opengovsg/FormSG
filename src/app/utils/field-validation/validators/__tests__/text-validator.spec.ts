@@ -1,11 +1,15 @@
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField } from 'src/app/utils/field-validation'
-import { BasicField, TextSelectedValidation } from 'src/types/field'
 
 import {
   generateDefaultField,
   generateNewSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
+
+import {
+  BasicField,
+  TextSelectedValidation,
+} from '../../../../../../shared/types'
 
 describe('Text validation', () => {
   describe('Short text', () => {

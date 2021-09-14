@@ -1,8 +1,10 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 
-import { AuthType } from '../../../types'
-import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
+import {
+  FormAuthType,
+  PublicFormAuthValidateEsrvcIdDto,
+} from '../../../../shared/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import * as BillingService from '../billing/billing.service'
@@ -106,7 +108,7 @@ export const checkMyInfoEServiceId: ControllerHandler<
   return FormService.retrieveFormById(formId)
     .andThen((form) => validateMyInfoForm(form))
     .andThen((form) =>
-      SpcpService.createRedirectUrl(AuthType.SP, formId, form.esrvcId),
+      SpcpService.createRedirectUrl(FormAuthType.SP, formId, form.esrvcId),
     )
     .andThen(SpcpService.fetchLoginPage)
     .andThen(SpcpService.validateLoginPage)
@@ -214,7 +216,7 @@ export const loginToMyInfo: ControllerHandler<
   }
 
   // Ensure form is a MyInfo form
-  if (form.authType !== AuthType.MyInfo) {
+  if (form.authType !== FormAuthType.MyInfo) {
     logger.error({
       message: "Log in attempt to wrong endpoint for form's authType",
       meta: logMeta,

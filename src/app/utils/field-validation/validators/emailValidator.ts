@@ -38,9 +38,11 @@ const makeEmailDomainValidator: EmailValidatorConstructor =
     const emailAddress = String(answer)
     if (!(isVerifiable && hasAllowedEmailDomains && allowedEmailDomains.length))
       return right(response)
-    const emailDomain = '@' + emailAddress.split('@').pop()
+    const emailDomain = ('@' + emailAddress.split('@').pop()).toLowerCase()
 
-    return allowedEmailDomains.includes(emailDomain)
+    return allowedEmailDomains.some(
+      (domain) => domain.toLowerCase() === emailDomain,
+    )
       ? right(response)
       : left(`EmailValidator:\t answer is not a valid email domain`)
   }

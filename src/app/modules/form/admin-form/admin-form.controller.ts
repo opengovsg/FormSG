@@ -9,45 +9,42 @@ import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../../shared/constants/file'
-import { DeserializeTransform } from '../../../../../shared/types/utils'
-import {
-  AuthType,
-  BasicField,
-  Colors,
-  FormFieldWithId,
-  FormLogoState,
-  FormSettings,
-  IForm,
-  IFormDocument,
-  IPopulatedForm,
-  LogicConditionState,
-  LogicDto,
-  LogicIfValue,
-  LogicType,
-  PublicFormDto,
-  ResponseMode,
-} from '../../../../types'
 import {
   AdminDashboardFormMetaDto,
+  BasicField,
   CreateFormBodyDto,
+  DeserializeTransform,
   DuplicateFormBodyDto,
-  EncryptSubmissionDto,
   EndPageUpdateDto,
   ErrorDto,
   FieldCreateDto,
   FieldUpdateDto,
+  FormAuthType,
+  FormColorTheme,
   FormDto,
   FormFeedbackMetaDto,
   FormFieldDto,
-  FormUpdateParams,
-  ParsedEmailModeSubmissionBody,
+  FormLogoState,
+  FormResponseMode,
+  FormSettings,
+  LogicConditionState,
+  LogicDto,
+  LogicIfValue,
+  LogicType,
   PermissionsUpdateDto,
   PreviewFormViewDto,
   PrivateFormErrorDto,
+  PublicFormDto,
   SettingsUpdateDto,
   SmsCountsDto,
   StartPageUpdateDto,
   SubmissionCountQueryDto,
+} from '../../../../../shared/types'
+import { IForm, IFormDocument, IPopulatedForm } from '../../../../types'
+import {
+  EncryptSubmissionDto,
+  FormUpdateParams,
+  ParsedEmailModeSubmissionBody,
 } from '../../../../types/api'
 import { smsConfig } from '../../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -106,14 +103,14 @@ const createFormValidator = celebrate({
       .keys({
         // Require valid responsesMode field.
         responseMode: Joi.string()
-          .valid(...Object.values(ResponseMode))
+          .valid(...Object.values(FormResponseMode))
           .required(),
         // Require title field.
         title: Joi.string().min(4).max(200).required(),
         // Require emails string (for backwards compatibility) or string
         // array if form to be created in Email mode.
         emails: Joi.when('responseMode', {
-          is: ResponseMode.Email,
+          is: FormResponseMode.Email,
           then: Joi.alternatives()
             .try(Joi.array().items(Joi.string()).min(1), Joi.string())
             .required(),
@@ -129,7 +126,7 @@ const createFormValidator = celebrate({
         publicKey: Joi.string()
           .allow('')
           .when('responseMode', {
-            is: ResponseMode.Encrypt,
+            is: FormResponseMode.Encrypt,
             then: Joi.string().required().disallow(''),
           }),
       })
@@ -143,14 +140,14 @@ const duplicateFormValidator = celebrate({
   [Segments.BODY]: BaseJoi.object<DuplicateFormBodyDto>({
     // Require valid responsesMode field.
     responseMode: Joi.string()
-      .valid(...Object.values(ResponseMode))
+      .valid(...Object.values(FormResponseMode))
       .required(),
     // Require title field.
     title: Joi.string().min(4).max(200).required(),
     // Require emails string (for backwards compatibility) or string array
     // if form to be duplicated in Email mode.
     emails: Joi.when('responseMode', {
-      is: ResponseMode.Email,
+      is: FormResponseMode.Email,
       then: Joi.alternatives()
         .try(Joi.array().items(Joi.string()).min(1), Joi.string())
         .required(),
@@ -163,7 +160,7 @@ const duplicateFormValidator = celebrate({
     publicKey: Joi.string()
       .allow('')
       .when('responseMode', {
-        is: ResponseMode.Encrypt,
+        is: FormResponseMode.Encrypt,
         then: Joi.string().required().disallow(''),
       }),
   }),
@@ -1570,12 +1567,12 @@ export const submitEmailPreview: ControllerHandler<
 
   // Handle SingPass, CorpPass and MyInfo authentication and validation
   const { authType } = form
-  if (authType === AuthType.SP || authType === AuthType.MyInfo) {
+  if (authType === FormAuthType.SP || authType === FormAuthType.MyInfo) {
     parsedResponses.addNdiResponses({
       authType,
       uinFin: PREVIEW_SINGPASS_UINFIN,
     })
-  } else if (authType === AuthType.CP) {
+  } else if (authType === FormAuthType.CP) {
     parsedResponses.addNdiResponses({
       authType,
       uinFin: PREVIEW_CORPPASS_UINFIN,
@@ -1709,7 +1706,7 @@ export const handleUpdateFormField = [
  */
 export const _handleCreateFormField: ControllerHandler<
   { formId: string },
-  FormFieldWithId | ErrorDto,
+  FormFieldDto | ErrorDto,
   FieldCreateDto
 > = (req, res) => {
   const { formId } = req.params
@@ -1736,7 +1733,7 @@ export const _handleCreateFormField: ControllerHandler<
         AdminFormService.createFormField(form, formFieldToCreate),
       )
       .map((createdFormField) =>
-        res.status(StatusCodes.OK).json(createdFormField as FormFieldWithId),
+        res.status(StatusCodes.OK).json(createdFormField as FormFieldDto),
       )
       .mapErr((error) => {
         logger.error({
@@ -2461,7 +2458,7 @@ export const handleUpdateStartPage = [
       paragraph: Joi.string().allow('').optional(),
       estTimeTaken: Joi.number().min(1).max(1000).required(),
       colorTheme: Joi.string()
-        .valid(...Object.values(Colors))
+        .valid(...Object.values(FormColorTheme))
         .required(),
       logo: Joi.object({
         state: Joi.string().valid(...Object.values(FormLogoState)),

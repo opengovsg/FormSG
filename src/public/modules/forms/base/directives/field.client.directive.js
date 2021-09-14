@@ -1,6 +1,6 @@
 'use strict'
 
-const { get } = require('lodash')
+const get = require('lodash/get')
 
 angular
   .module('forms')

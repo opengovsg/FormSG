@@ -2,7 +2,7 @@ import MockDate from 'mockdate'
 import mongoose from 'mongoose'
 
 import getUserModel from 'src/app/models/user.server.model'
-import { IAgencySchema, IUser, IUserSchema } from 'src/types'
+import { AgencyDocument, IUser, IUserSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -19,7 +19,7 @@ const VALID_USER_EMAIL_2 = `test2@${AGENCY_DOMAIN}`
 const VALID_CONTACT_2 = '+6581234568'
 
 describe('User Model', () => {
-  let agency: IAgencySchema
+  let agency: AgencyDocument
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {

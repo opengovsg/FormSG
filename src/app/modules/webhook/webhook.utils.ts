@@ -3,8 +3,8 @@ import { inRange } from 'lodash'
 import moment from 'moment-timezone'
 import { err, ok, Result } from 'neverthrow'
 
+import { WebhookResponse } from '../../../../shared/types'
 import { stringifySafe } from '../../../../shared/utils/stringify-safe'
-import { IWebhookResponse } from '../../../types'
 import { TIMEZONE } from '../../constants/timezone'
 import { randomUniformInt } from '../../utils/random-uniform'
 
@@ -17,7 +17,7 @@ import { WebhookNoMoreRetriesError } from './webhook.errors'
  */
 export const formatWebhookResponse = (
   response?: AxiosResponse<unknown>,
-): IWebhookResponse['response'] => ({
+): WebhookResponse['response'] => ({
   status: response?.status ?? 0,
   headers: stringifySafe(response?.headers) ?? '',
   data: stringifySafe(response?.data) ?? '',
@@ -59,7 +59,7 @@ export const getNextAttempt = (
  * @returns true if webhook was successful
  */
 export const isSuccessfulResponse = (
-  webhookResponse: IWebhookResponse,
+  webhookResponse: WebhookResponse,
 ): boolean => inRange(webhookResponse.response.status, 200, 300)
 
 /**

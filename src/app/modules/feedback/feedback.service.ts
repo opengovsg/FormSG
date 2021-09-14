@@ -3,9 +3,11 @@ import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 
+import {
+  FormFeedbackMetaDto,
+  ProcessedFeedbackMeta,
+} from '../../../../shared/types'
 import { IFormFeedbackSchema } from '../../../types'
-import { FormFeedbackMetaDto } from '../../../types/api/form_feedback'
-import { ProcessedFeedbackMeta } from '../../../types/form_feedback'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormFeedbackModel from '../../models/form_feedback.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'

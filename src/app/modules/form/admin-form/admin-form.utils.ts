@@ -2,20 +2,17 @@ import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
 import {
+  DuplicateFormBodyDto,
+  FormResponseMode,
+  FormStatus,
+} from '../../../../../shared/types'
+import {
   reorder,
   replaceAt,
 } from '../../../../../shared/utils/immutable-array-fns'
 import { EditFieldActions } from '../../../../shared/constants'
-import {
-  FormFieldSchema,
-  IPopulatedForm,
-  ResponseMode,
-  Status,
-} from '../../../../types'
-import {
-  DuplicateFormBodyDto,
-  EditFormFieldParams,
-} from '../../../../types/api'
+import { FormFieldSchema, IPopulatedForm } from '../../../../types'
+import { EditFormFieldParams } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isPossibleEmailFieldSchema } from '../../../utils/field-validation/field-validation.guards'
 import {
@@ -154,7 +151,7 @@ export const mapRouteError = (
 export const assertFormAvailable = (
   form: IPopulatedForm,
 ): Result<true, FormDeletedError> => {
-  return form.status === Status.Archived
+  return form.status === FormStatus.Archived
     ? err(new FormDeletedError('Form has been archived'))
     : ok(true)
 }
@@ -258,10 +255,10 @@ export const processDuplicateOverrideProps = (
   }
 
   switch (params.responseMode) {
-    case ResponseMode.Encrypt:
+    case FormResponseMode.Encrypt:
       overrideProps.publicKey = params.publicKey
       break
-    case ResponseMode.Email:
+    case FormResponseMode.Email:
       overrideProps.emails = params.emails
       break
   }

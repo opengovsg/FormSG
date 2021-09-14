@@ -1,13 +1,6 @@
 import { Document } from 'mongoose'
 import { ConditionalExcept, Merge } from 'type-fest'
 
-import {
-  BasicField,
-  FormField,
-  FormFieldDto,
-  MyInfoAttribute,
-} from '../../../shared/types/field'
-
 import { IAttachmentFieldSchema } from './attachmentField'
 import { ICheckboxFieldSchema } from './checkboxField'
 import { IDateFieldSchema } from './dateField'
@@ -29,7 +22,6 @@ import { ITableFieldSchema } from './tableField'
 import { IUenFieldSchema } from './uenField'
 import { IYesNoFieldSchema } from './yesNoField'
 
-export * from '../../../shared/types/field/utils'
 export * from './attachmentField'
 export * from './baseField'
 export * from './checkboxField'
@@ -52,7 +44,6 @@ export * from './statementField'
 export * from './tableField'
 export * from './uenField'
 export * from './yesNoField'
-export { BasicField, MyInfoAttribute, FormField }
 
 export enum SPCPFieldTitle {
   SpNric = 'SingPass Validated NRIC',
@@ -125,8 +116,3 @@ export type FieldValidationSchema =
   | OmitUnusedValidatorProps<ITableFieldSchema>
   | OmitUnusedValidatorProps<IUenFieldSchema>
   | OmitUnusedValidatorProps<IYesNoFieldSchema>
-
-/**
- * Form field POJO with id
- */
-export type FormFieldWithId = FormFieldDto

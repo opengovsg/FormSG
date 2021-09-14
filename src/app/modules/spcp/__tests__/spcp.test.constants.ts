@@ -14,7 +14,6 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   myInfoBannerContent: 'myInfoBannerContent',
   spCookieMaxAge: 1,
   spCookieMaxAgePreserved: 2,
-  oldSpcpCookieDomain: 'oldSpcpCookieDomain',
   spcpCookieDomain: 'spcpCookieDomain',
   cpCookieMaxAge: 3,
   // spIdpId and cpIdpId need to match the injected environment values

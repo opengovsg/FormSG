@@ -4,17 +4,15 @@ import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
-import {
-  IEncryptedSubmissionSchema,
-  IFormSchema,
-  IPopulatedForm,
-  ResponseMode,
-  Status,
-  SubmissionType,
-} from 'src/types'
+import { IFormSchema, IPopulatedForm } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import {
+  FormResponseMode,
+  FormStatus,
+  SubmissionType,
+} from '../../../../../shared/types'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import {
   FormDeletedError,
@@ -35,7 +33,7 @@ const MOCK_FORM_PARAMS = {
 const MOCK_ENCRYPTED_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
   publicKey: 'mockPublicKey',
-  responseMode: ResponseMode.Encrypt,
+  responseMode: FormResponseMode.Encrypt,
 }
 
 describe('FormService', () => {
@@ -245,7 +243,7 @@ describe('FormService', () => {
       } as IFormSchema
       const retrieveFormSpy = jest.spyOn(Form, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(expectedForm),
-      } as unknown as mongoose.Query<any>)
+      } as unknown as mongoose.Query<any, any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -262,7 +260,7 @@ describe('FormService', () => {
       // Resolve query to null.
       const retrieveFormSpy = jest.spyOn(Form, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(null),
-      } as unknown as mongoose.Query<any>)
+      } as unknown as mongoose.Query<any, any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -283,7 +281,7 @@ describe('FormService', () => {
       } as IFormSchema
       const retrieveFormSpy = jest.spyOn(Form, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(expectedForm),
-      } as unknown as mongoose.Query<any>)
+      } as unknown as mongoose.Query<any, any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -300,7 +298,7 @@ describe('FormService', () => {
       // Mock rejection.
       const retrieveFormSpy = jest.spyOn(Form, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockRejectedValue(new Error('some error')),
-      } as unknown as mongoose.Query<any>)
+      } as unknown as mongoose.Query<any, any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -331,14 +329,14 @@ describe('FormService', () => {
     it('should return the form when the submission limit is not reached', async () => {
       // Arrange
       const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-        status: Status.Public,
+        status: FormStatus.Public,
         submissionLimit: 10,
       })
       const validForm = new Form(formParams)
       const form = await validForm.save()
 
       const submissionPromises = times(5, () =>
-        Submission.create<IEncryptedSubmissionSchema>({
+        Submission.create({
           form: form._id,
           myInfoFields: [],
           submissionType: SubmissionType.Encrypt,
@@ -362,14 +360,14 @@ describe('FormService', () => {
     it('should not let requests through and deactivate form when form has reached submission limit', async () => {
       // Arrange
       const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-        status: Status.Public,
+        status: FormStatus.Public,
         submissionLimit: 5,
       })
       const validForm = new Form(formParams)
-      const form = await validForm.save()
+      const form = (await validForm.save()) as IPopulatedForm
 
       const submissionPromises = times(5, () =>
-        Submission.create<IEncryptedSubmissionSchema>({
+        Submission.create({
           form: form._id,
           myInfoFields: [],
           submissionType: SubmissionType.Encrypt,
@@ -402,7 +400,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         // Form public.
-        status: Status.Public,
+        status: FormStatus.Public,
       } as IPopulatedForm
 
       // Act
@@ -417,7 +415,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         // Form deleted.
-        status: Status.Archived,
+        status: FormStatus.Archived,
       } as IPopulatedForm
 
       // Act
@@ -432,7 +430,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         // Form private.
-        status: Status.Private,
+        status: FormStatus.Private,
         inactiveMessage: 'test inactive message',
       } as IPopulatedForm
 

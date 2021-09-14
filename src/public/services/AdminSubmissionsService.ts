@@ -7,7 +7,7 @@ import {
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionCountQueryDto,
-} from '../../../shared/types/submission'
+} from '../../../shared/types'
 
 import { FormSgSdk } from './FormSgSdkService'
 import { ADMIN_FORM_ENDPOINT } from './UpdateFormService'

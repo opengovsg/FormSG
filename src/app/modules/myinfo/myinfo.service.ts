@@ -10,14 +10,14 @@ import mongoose, { LeanDocument } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
+import { MyInfoAttribute } from '../../../../shared/types'
 import {
   Environment,
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
-  IPossiblyPrefilledField,
-  MyInfoAttribute,
+  PossiblyPrefilledField,
 } from '../../../types'
 import config from '../../config/config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
@@ -300,17 +300,14 @@ export class MyInfoServiceClass {
     formId: string,
     myInfoData: MyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
-  ): ResultAsync<
-    IPossiblyPrefilledField[],
-    MyInfoHashingError | DatabaseError
-  > {
+  ): ResultAsync<PossiblyPrefilledField[], MyInfoHashingError | DatabaseError> {
     const prefilledFields = currFormFields.map((field) => {
       if (!field.myInfo?.attr) return field
 
       const myInfoAttr = field.myInfo.attr
       const { fieldValue, isReadOnly } =
         myInfoData.getFieldValueForAttr(myInfoAttr)
-      const prefilledField = cloneDeep(field) as IPossiblyPrefilledField
+      const prefilledField = cloneDeep(field) as PossiblyPrefilledField
       prefilledField.fieldValue = fieldValue
 
       // Disable field
@@ -335,7 +332,7 @@ export class MyInfoServiceClass {
   saveMyInfoHashes(
     uinFin: string,
     formId: string,
-    prefilledFormFields: IPossiblyPrefilledField[],
+    prefilledFormFields: PossiblyPrefilledField[],
   ): ResultAsync<IMyInfoHashSchema | null, MyInfoHashingError | DatabaseError> {
     const readOnlyHashPromises = hashFieldValues(prefilledFormFields)
     return ResultAsync.fromPromise(

@@ -1,5 +1,5 @@
 'use strict'
-const { get } = require('lodash')
+const get = require('lodash/get')
 
 const {
   ADMIN_VERIFIED_SMS_STATES,

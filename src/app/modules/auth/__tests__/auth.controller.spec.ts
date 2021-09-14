@@ -3,7 +3,7 @@ import { mocked } from 'ts-jest/utils'
 
 import MailService from 'src/app/services/mail/mail.service'
 import { HashingError } from 'src/app/utils/hash'
-import { IAgencySchema, IUserSchema } from 'src/types'
+import { AgencyDocument, IPopulatedUser } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -38,7 +38,7 @@ describe('auth.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
-        okAsync(<IAgencySchema>{}),
+        okAsync(<AgencyDocument>{}),
       )
 
       // Act
@@ -76,7 +76,7 @@ describe('auth.controller', () => {
       const mockRes = expressHandler.mockResponse()
       // Mock AuthService and MailService to return without errors
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
-        okAsync(<IAgencySchema>{}),
+        okAsync(<AgencyDocument>{}),
       )
       MockAuthService.createLoginOtp.mockReturnValueOnce(okAsync(MOCK_OTP))
       MockMailService.sendLoginOtp.mockReturnValueOnce(okAsync(true))
@@ -112,7 +112,7 @@ describe('auth.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
-        okAsync(<IAgencySchema>{}),
+        okAsync(<AgencyDocument>{}),
       )
       // Mock createLoginOtp failure
       MockAuthService.createLoginOtp.mockReturnValueOnce(
@@ -137,7 +137,7 @@ describe('auth.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
-        okAsync(<IAgencySchema>{}),
+        okAsync(<AgencyDocument>{}),
       )
       // Mock createLoginOtp success but sendLoginOtp failure.
       MockAuthService.createLoginOtp.mockReturnValueOnce(okAsync(MOCK_OTP))
@@ -165,14 +165,14 @@ describe('auth.controller', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       body: { email: VALID_EMAIL, otp: MOCK_OTP },
     })
-    const MOCK_AGENCY = { id: 'mock agency id' } as IAgencySchema
+    const MOCK_AGENCY = { id: 'mock agency id' } as AgencyDocument
 
     it('should return 200 with the user when verification succeeds', async () => {
       // Arrange
       // Mock bare minimum mongo documents.
       const mockUser = {
         toObject: () => ({ id: 'imagine this is a user document from the db' }),
-      } as IUserSchema
+      } as IPopulatedUser
       const mockRes = expressHandler.mockResponse()
 
       // Mock all service success.

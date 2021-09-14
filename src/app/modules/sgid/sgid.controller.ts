@@ -1,7 +1,7 @@
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
-import { AuthType } from '../../../types'
+import { FormAuthType } from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
@@ -44,13 +44,13 @@ export const handleLogin: ControllerHandler<
   }
 
   const form = formResult.value
-  if (form.authType !== AuthType.SGID) {
+  if (form.authType !== FormAuthType.SGID) {
     logger.error({
       message: "Log in attempt to wrong endpoint for form's authType",
       meta: {
         ...meta,
         formAuthType: form.authType,
-        endpointAuthType: AuthType.SGID,
+        endpointAuthType: FormAuthType.SGID,
       },
     })
     res.cookie('isLoginError', true)

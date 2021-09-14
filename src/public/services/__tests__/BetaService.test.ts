@@ -1,4 +1,4 @@
-import { BasicField, IForm, IUser } from '../../../types'
+import { BasicField, FormDto, UserDto } from '../../../../shared/types'
 import * as BetaService from '../BetaService'
 
 describe('BetaService', () => {
@@ -9,7 +9,7 @@ describe('BetaService', () => {
     {
       name: featureOne,
       flag: 'betaFlagOne',
-      matches(form: IForm) {
+      matches(form: FormDto) {
         return (
           !!form.form_fields &&
           form.form_fields.some(
@@ -22,7 +22,7 @@ describe('BetaService', () => {
     {
       name: featureTwo,
       flag: 'betaFlagTwo',
-      matches(form: IForm) {
+      matches(form: FormDto) {
         return form.title === featureTwo
       },
       fieldType: null,
@@ -32,10 +32,10 @@ describe('BetaService', () => {
     betaFlags: {
       [betaFeaturesField[0].flag]: true,
     },
-  } as IUser
+  } as UserDto
   const userWithNoFeatures = {
     betaFlags: {},
-  } as IUser
+  } as UserDto
   describe('isBetaField', () => {
     it('returns truthy for defined beta fields', () => {
       const result = BetaService.isBetaField(
@@ -84,7 +84,7 @@ describe('BetaService', () => {
     const form = {
       form_fields: [{ fieldType: featureOneFieldType }],
       title: featureTwo,
-    } as IForm
+    } as FormDto
     it('lists the beta features that the user lacks', () => {
       // User with access to only feature one
       const result = BetaService.getMissingBetaPermissions(

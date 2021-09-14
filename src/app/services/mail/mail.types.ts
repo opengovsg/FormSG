@@ -1,9 +1,9 @@
 import Mail from 'nodemailer/lib/mailer'
 import { OperationOptions } from 'retry'
-import { SMS_WARNING_TIERS } from 'shared/utils/verification'
 
+import { AutoReplyOptions } from '../../../../shared/types'
+import { SMS_WARNING_TIERS } from '../../../../shared/utils/verification'
 import {
-  AutoReplyOptions,
   EmailAdminDataField,
   FormLinkView,
   IFormSchema,

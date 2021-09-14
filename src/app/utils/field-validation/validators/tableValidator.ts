@@ -1,8 +1,8 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
+import { BasicField } from '../../../../../shared/types'
 import {
-  BasicField,
   ITableFieldSchema,
   OmitUnusedValidatorProps,
 } from '../../../../types/field'
