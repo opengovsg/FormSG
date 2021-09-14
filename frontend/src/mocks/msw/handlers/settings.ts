@@ -1,14 +1,8 @@
 import { DefaultRequestBody, MockedRequest, rest, RestHandler } from 'msw'
 
-import {
-  FormAuthType,
-  FormResponseMode,
-  FormSettings,
-  FormStatus,
-} from '~shared/types/form/form'
+import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form/form'
 
 export const BASE_MOCK_FORM_SETTINGS: FormSettings = {
-  responseMode: FormResponseMode.Email,
   authType: FormAuthType.NIL,
   hasCaptcha: true,
   inactiveMessage:
