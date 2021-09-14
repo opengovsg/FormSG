@@ -86,34 +86,37 @@ const getSizesForLineLightDarkVariant = (size?: string) => {
   return {}
 }
 
-const variantLine: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
-  () => ({
-    tablist: {
-      // overflowX and whiteSpace required for use-drag-scroll library
-      overflowX: 'scroll',
-      whiteSpace: 'nowrap',
-    },
-    tab: {
+const variantLineColor: ThemingPropsThunk<
+  SystemStyleObjectRecord,
+  ChakraTheme
+> = () => ({
+  tablist: {
+    // overflowX and whiteSpace required for use-drag-scroll library
+    overflowX: 'scroll',
+    whiteSpace: 'nowrap',
+  },
+  tab: {
+    textStyle: 'subhead-3',
+    _selected: {
       textStyle: 'subhead-3',
+      fontSize: '1rem',
+    },
+    textTransform: 'uppercase',
+    borderBottom: '0.125rem solid transparent',
+    _focusVisible: {
       _selected: {
-        textStyle: 'subhead-3',
-        fontSize: '1rem',
-      },
-      textTransform: 'uppercase',
-      borderBottom: '0.125rem solid transparent',
-      _focusVisible: {
-        _selected: {
-          borderColor: 'transparent',
-        },
+        borderColor: 'transparent',
       },
     },
-  })
+  },
+})
 
-const variantLight: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
-  props,
-) => {
+const variantLineLight: ThemingPropsThunk<
+  SystemStyleObjectRecord,
+  ChakraTheme
+> = (props) => {
   const { size } = props
-  return merge(variantLine(props), getSizesForLineLightDarkVariant(size), {
+  return merge(variantLineColor(props), getSizesForLineLightDarkVariant(size), {
     tablist: createScrollBarStyles({
       thumbColor: 'secondary.200',
       trackColor: 'transparent',
@@ -138,34 +141,37 @@ const variantLight: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
   })
 }
 
-const variantDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
-  props,
-) => {
-  const { size } = props
-  return merge(variantLine(props), getSizesForLineLightDarkVariant(size), {
-    root: {
-      bg: 'secondary.500',
-    },
-    tablist: createScrollBarStyles({
-      thumbColor: 'secondary.400',
-      trackColor: 'secondary.500',
-      theme: props.theme,
-    }),
-    tab: {
-      color: 'secondary.200',
-      _hover: {
-        color: 'white',
+const variantLineDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
+  (props) => {
+    const { size } = props
+    return merge(
+      variantLineColor(props),
+      getSizesForLineLightDarkVariant(size),
+      {
+        root: {
+          bg: 'secondary.500',
+        },
+        tablist: createScrollBarStyles({
+          thumbColor: 'secondary.400',
+          trackColor: 'secondary.500',
+          theme: props.theme,
+        }),
+        tab: {
+          color: 'secondary.200',
+          _hover: {
+            color: 'white',
+          },
+          _selected: {
+            color: 'white',
+            borderColor: 'white',
+          },
+          _focusVisible: {
+            boxShadow: `inset 0 0 0 0.125rem white`,
+          },
+        },
       },
-      _selected: {
-        color: 'white',
-        borderColor: 'white',
-      },
-      _focusVisible: {
-        boxShadow: `inset 0 0 0 0.125rem white`,
-      },
-    },
-  })
-}
+    )
+  }
 
 export const Tabs: ComponentMultiStyleConfig = {
   parts,
@@ -179,8 +185,8 @@ export const Tabs: ComponentMultiStyleConfig = {
   },
   variants: {
     // Chakra UI already has a line variant, these are our custom variants
-    'line-light': variantLight,
-    'line-dark': variantDark,
+    'line-light': variantLineLight,
+    'line-dark': variantLineDark,
   },
   defaultProps: {
     colorScheme: 'primary',
