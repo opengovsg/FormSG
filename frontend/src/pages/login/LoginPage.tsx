@@ -228,14 +228,14 @@ export const LoginPage = (): JSX.Element => {
             </Text>
           </DesktopCopyGridArea>
           <DesktopLinksGridArea>
-            <Wrap shouldWrapChildren textStyle="caption-2" spacing="1.5rem">
+            <Wrap
+              shouldWrapChildren
+              textStyle="caption-2"
+              spacing={0}
+              mx="-0.75rem"
+            >
               {footerLinks.map(({ label, href }, index) => (
-                <Link
-                  my="-0.75rem"
-                  variant="standalone"
-                  key={index}
-                  href={href}
-                >
+                <Link variant="standalone" key={index} href={href} mx="0.75rem">
                   {label}
                 </Link>
               ))}
