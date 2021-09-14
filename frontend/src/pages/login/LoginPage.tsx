@@ -195,13 +195,15 @@ export const LoginPage = (): JSX.Element => {
               minH={{ base: 'auto', lg: '17.25rem' }}
             >
               <Flex mb={{ base: '2.5rem', lg: 0 }} flexDir="column">
-                <Link
-                  as={ReactLink}
-                  to={LANDING_ROUTE}
-                  mb={{ base: '0.75rem', lg: '1.5rem' }}
-                >
-                  <BrandLogo title="FormSG logo" />
-                </Link>
+                <Box>
+                  <Link
+                    as={ReactLink}
+                    to={LANDING_ROUTE}
+                    mb={{ base: '0.75rem', lg: '1.5rem' }}
+                  >
+                    <BrandLogo title="FormSG logo" />
+                  </Link>
+                </Box>
                 <Text
                   textStyle="h4"
                   color="secondary.500"
