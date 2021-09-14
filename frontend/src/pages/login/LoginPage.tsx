@@ -35,7 +35,7 @@ const BrandLogo = chakra(BrandLogoSvg, {
 })
 const LoginImage = chakra(LoginImageSvg, {
   baseStyle: {
-    maxW: { base: '22rem' },
+    maxH: { base: '18.5rem' },
     w: '100%',
   },
 })
