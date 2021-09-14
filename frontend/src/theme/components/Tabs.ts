@@ -52,7 +52,7 @@ const createScrollBarStyles = ({
   }
 }
 
-const createSizes = () => ({
+const sizesForLineLightDarkVariant = {
   md: {
     tab: {
       px: '0',
@@ -77,7 +77,14 @@ const createSizes = () => ({
       },
     },
   },
-})
+}
+
+// Special constant to map sizes specifically to line-light and line-dark variants.
+const getSizesForLineLightDarkVariant = (size?: string) => {
+  if (!size) return {}
+  if (size === 'md') return sizesForLineLightDarkVariant[size]
+  return {}
+}
 
 const variantLine: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
   () => ({
@@ -105,7 +112,8 @@ const variantLine: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
 const variantLight: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
   props,
 ) => {
-  return merge(variantLine(props), {
+  const { size } = props
+  return merge(variantLine(props), getSizesForLineLightDarkVariant(size), {
     tablist: createScrollBarStyles({
       thumbColor: 'secondary.200',
       trackColor: 'transparent',
@@ -133,7 +141,8 @@ const variantLight: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
 const variantDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
   props,
 ) => {
-  return merge(variantLine(props), {
+  const { size } = props
+  return merge(variantLine(props), getSizesForLineLightDarkVariant(size), {
     root: {
       bg: 'secondary.500',
     },
@@ -160,7 +169,6 @@ const variantDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
 
 export const Tabs: ComponentMultiStyleConfig = {
   parts,
-  sizes: createSizes(),
   baseStyle: {
     tab: {
       textStyle: 'body-1',
