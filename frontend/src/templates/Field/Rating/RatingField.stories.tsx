@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
+import { merge } from 'lodash'
 
 import { BasicField, RatingShape } from '~shared/types/field'
 
@@ -30,9 +31,8 @@ export default {
 } as Meta
 
 const requiredSchema: RatingFieldSchema = {
-  title: 'Do you like apples',
-  description:
-    'Not oranges, not any other fruits. I only want to know your apple preferences.',
+  title: 'Rate this component',
+  description: '1: Bad, 10: Good',
   required: true,
   disabled: false,
   fieldType: BasicField.Rating,
@@ -82,4 +82,15 @@ ValidationRequired.args = {
 export const ValidationOptional = Template.bind({})
 ValidationOptional.args = {
   schema: { ...requiredSchema, required: false },
+}
+
+export const RatingFieldHeart = Template.bind({})
+RatingFieldHeart.args = {
+  schema: merge({}, requiredSchema, {
+    required: false,
+    ratingOptions: {
+      shape: RatingShape.Heart,
+      steps: 6,
+    },
+  }),
 }
