@@ -173,6 +173,44 @@ const variantLineDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
     )
   }
 
+const sizesForLineVariant = {
+  md: {
+    tab: {
+      padding: '1rem',
+    },
+  },
+}
+
+const getSizesForLineVariant = (size?: string) => {
+  if (!size) return {}
+  if (size === 'md') return sizesForLineVariant[size]
+  return {}
+}
+
+const variantLine: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
+  props,
+) => {
+  const { colorScheme: c, size } = props
+  return merge(getSizesForLineVariant(size), {
+    tab: {
+      transitionProperty:
+        'background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, font-weight',
+      textStyle: 'body-1',
+      color: 'secondary.500',
+      _selected: {
+        textStyle: 'subhead-1',
+        color: `${c}.500`,
+      },
+      _hover: {
+        color: `${c}.500`,
+      },
+      _focus: {
+        boxShadow: `0 0 0 2px var(--chakra-colors-${c}-500)`,
+      },
+    },
+  })
+}
+
 export const Tabs: ComponentMultiStyleConfig = {
   parts,
   baseStyle: {
@@ -185,6 +223,7 @@ export const Tabs: ComponentMultiStyleConfig = {
   },
   variants: {
     // Chakra UI already has a line variant, these are our custom variants
+    line: variantLine,
     'line-light': variantLineLight,
     'line-dark': variantLineDark,
   },
