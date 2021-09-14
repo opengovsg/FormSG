@@ -1,27 +1,28 @@
-import {
-  BiCheckDouble,
-  BiCodeBlock,
-  BiCog,
-  BiKey,
-  BiMailSend,
-  BiRocket,
-} from 'react-icons/bi'
-import { TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react'
+import { TabPanel, TabPanels, Tabs } from '@chakra-ui/react'
 
-import { SettingsTab } from './components/SettingsTab'
+import { SettingsGeneralSidebar } from './components/SettingsGeneralSidebar'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 
-export const SettingsPage = (): JSX.Element => {
+export interface SettingsPageProps {
+  /**
+   * Exposed for testing.
+   * Default tab index to render.
+   */
+  _defaultIndex?: number
+}
+
+export const SettingsPage = ({
+  _defaultIndex,
+}: SettingsPageProps): JSX.Element => {
   return (
-    <Tabs isLazy isManual orientation="vertical" variant="line">
-      <TabList flexShrink={0} p={0} w="21rem" maxW="100%">
-        <SettingsTab label="General" icon={BiCog} />
-        <SettingsTab label="Singpass" icon={BiKey} />
-        <SettingsTab label="Thank you page" icon={BiCheckDouble} />
-        <SettingsTab label="Email notifications" icon={BiMailSend} />
-        <SettingsTab label="Webhooks" icon={BiCodeBlock} />
-        <SettingsTab label="Workflow" icon={BiRocket} />
-      </TabList>
+    <Tabs
+      isLazy
+      isManual
+      orientation="vertical"
+      variant="line"
+      defaultIndex={_defaultIndex}
+    >
+      <SettingsGeneralSidebar />
       <TabPanels>
         <TabPanel>
           <SettingsGeneralPage />
