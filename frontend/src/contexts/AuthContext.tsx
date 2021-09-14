@@ -1,10 +1,10 @@
-import { createContext, FC, useCallback, useContext, useState } from 'react'
+import { createContext, FC, useContext } from 'react'
+
+import { LOGGED_IN_KEY } from '~constants/localStorage'
+import { useLocalStorage } from '~hooks/useLocalStorage'
 
 type AuthContextProps = {
-  user?: any
   isAuthenticated?: boolean
-  login: () => void
-  logout: () => void
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined)
@@ -32,29 +32,10 @@ export const useAuth = (): AuthContextProps => {
 
 // Provider hook that creates auth object and handles state
 const useProvideAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  const mockUser = {
-    name: 'Mock User',
-    email: 'mock@example.com',
-  }
-
-  const login = useCallback(() => {
-    setIsAuthenticated(true)
-  }, [setIsAuthenticated])
-
-  const logout = useCallback(() => {
-    if (isAuthenticated) {
-      // Clear logged in state.
-      setIsAuthenticated(false)
-    }
-  }, [isAuthenticated, setIsAuthenticated])
+  const [isAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
 
   // Return the user object and auth methods
   return {
-    user: isAuthenticated ? mockUser : undefined,
     isAuthenticated,
-    login,
-    logout,
   }
 }

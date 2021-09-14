@@ -210,6 +210,19 @@ export const Typography: FC = () => {
         </Wrap>
         <Wrap justify="space-between">
           <WrapItem>
+            <Box w="43rem" textStyle="caption-2" color="secondary.700">
+              <Text>Caption 2</Text>
+              <Text maxW="33rem">
+                Sign up with your government email, and build your form in
+                minutes. It's free and no approval is required. Together let's
+                make the Singapore government paperless.
+              </Text>
+            </Box>
+          </WrapItem>
+          <WrapItem>{prettyPrint(theme.textStyles['caption-2'])}</WrapItem>
+        </Wrap>
+        <Wrap justify="space-between">
+          <WrapItem>
             <Box w="43rem" textStyle="legal" color="secondary.700">
               <Text>Legal</Text>
               <Text maxW="33rem">

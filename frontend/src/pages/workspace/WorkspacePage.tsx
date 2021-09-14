@@ -1,21 +1,33 @@
-import { useQuery } from 'react-query'
-import { Divider } from '@chakra-ui/react'
+import { useCallback } from 'react'
+import { useQueryClient } from 'react-query'
 
-import { useAuth } from '~contexts/AuthContext'
-import { getLandingPageStatistics } from '~services/AnalyticsService'
+import { LOGGED_IN_KEY } from '~constants/localStorage'
+import { useLocalStorage } from '~hooks/useLocalStorage'
+import { logout } from '~services/AuthService'
 import Button from '~components/Button'
 
-export const WorkspacePage = (): JSX.Element => {
-  const { user, logout } = useAuth()
+import { useUser } from '~features/user/queries'
 
-  const { data, isLoading } = useQuery('stats', getLandingPageStatistics)
+export const WorkspacePage = (): JSX.Element => {
+  const queryClient = useQueryClient()
+  const [isAuthenticated, setIsAuthenticated] =
+    useLocalStorage<boolean>(LOGGED_IN_KEY)
+
+  const handleLogout = useCallback(async () => {
+    await logout()
+    if (isAuthenticated) {
+      // Clear logged in state.
+      setIsAuthenticated(undefined)
+    }
+    queryClient.clear()
+  }, [isAuthenticated, queryClient, setIsAuthenticated])
+
+  const { user } = useUser()
 
   return (
     <div>
       Logged in: {JSON.stringify(user)}
-      <Button onClick={logout}>Logout</Button>
-      <Divider />
-      {isLoading ? <div>Loading...</div> : <div>{JSON.stringify(data)}</div>}
+      <Button onClick={handleLogout}>Logout</Button>
     </div>
   )
 }

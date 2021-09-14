@@ -59,9 +59,10 @@
             "^(~hooks)(/.*|$)",
             "^(~utils)(/.*|$)",
             "^(~services)(/.*|$)",
-            "^(~components)(/.*|$)"
+            "^(~components)(/.*|$)",
+            "^(~templates)(/.*|$)"
           ],
-          ["^(~pages)(/.*|$)"],
+          ["^(~pages)(/.*|$)", "^(~features)(/.*|$)"],
           // Parent imports. Put `..` last.
           ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
           // Other relative imports. Put same-folder imports and `.` last.

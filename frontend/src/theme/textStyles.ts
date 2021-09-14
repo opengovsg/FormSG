@@ -98,6 +98,14 @@ export const textStyles = {
     lineHeight: '1rem',
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
+  'caption-2': {
+    fontSize: '0.75rem',
+    fontStyle: 'normal',
+    fontWeight: 400,
+    lineHeight: '1rem',
+    letterSpacing: 0,
+    fontFeatureSettings: "'tnum' on, 'cv05' on",
+  },
   legal: {
     fontStyle: 'normal',
     fontWeight: 400,
