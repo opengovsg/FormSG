@@ -18,16 +18,16 @@ export const isNricValid = (value: string): boolean => {
 
   const { prefix, digits, checksum } = parsed.groups as NricParts
 
-  // http://www.ngiam.net/NRIC/NRIC_numbers.pdf
-  const coefficients = [2, 7, 6, 5, 4, 3, 2]
+  // Specifications at: http://www.ngiam.net/NRIC/NRIC_numbers.pdf
+  const weights = [2, 7, 6, 5, 4, 3, 2]
   const startConstant = prefix === 'S' || prefix === 'F' ? 0 : 4
   const checksumEncoding =
     prefix === 'S' || prefix === 'T' ? 'JZIHGFEDCBA' : 'XWUTRQPNMLK'
 
-  const sum = coefficients.reduce(
-    (acc, coef, idx) => acc + coef * parseInt(digits[idx]),
+  const weightedSum = weights.reduce(
+    (acc, weight, idx) => acc + weight * parseInt(digits[idx]),
     startConstant,
   )
 
-  return checksum === checksumEncoding[sum % 11]
+  return checksum === checksumEncoding[weightedSum % 11]
 }
