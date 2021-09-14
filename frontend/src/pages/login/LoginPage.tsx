@@ -192,13 +192,9 @@ export const LoginPage = (): JSX.Element => {
             <Box
               maxW={{ base: '100%', lg: '28rem' }}
               w="100%"
-              minH={{ base: 'auto', lg: '24rem' }}
+              minH={{ base: 'auto', lg: '17.25rem' }}
             >
-              <Flex
-                pt={{ base: 0, lg: '2rem' }}
-                mb={{ base: '2.5rem', lg: 0 }}
-                flexDir="column"
-              >
+              <Flex mb={{ base: '2.5rem', lg: 0 }} flexDir="column">
                 <Link
                   as={ReactLink}
                   to={LANDING_ROUTE}
