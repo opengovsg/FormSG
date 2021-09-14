@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ChakraTheme,
   ComponentMultiStyleConfig,
@@ -80,7 +81,18 @@ const createSizes = () => ({
 
 const variantLine: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
   () => ({
+    tablist: {
+      // overflowX and whiteSpace required for use-drag-scroll library
+      overflowX: 'scroll',
+      whiteSpace: 'nowrap',
+    },
     tab: {
+      textStyle: 'subhead-3',
+      _selected: {
+        textStyle: 'subhead-3',
+        fontSize: '1rem',
+      },
+      textTransform: 'uppercase',
       borderBottom: '0.125rem solid transparent',
       _focusVisible: {
         _selected: {
@@ -148,18 +160,15 @@ const variantDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
 
 export const Tabs: ComponentMultiStyleConfig = {
   parts,
+  sizes: createSizes(),
   baseStyle: {
-    tablist: {
-      // overflowX and whiteSpace required for use-drag-scroll library
-      overflowX: 'scroll',
-      whiteSpace: 'nowrap',
-    },
     tab: {
-      textStyle: 'subhead-3',
-      textTransform: 'uppercase',
+      textStyle: 'body-1',
+      _selected: {
+        textStyle: 'subhead-1',
+      },
     },
   },
-  sizes: createSizes(),
   variants: {
     // Chakra UI already has a line variant, these are our custom variants
     'line-light': variantLight,
