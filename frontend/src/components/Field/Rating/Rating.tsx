@@ -147,8 +147,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
                       numberOfRatings={numberOfRatings}
                       onChange={handleRatingChange}
                       selectedValue={currentValue}
-                      // Pass in ref if first item so it can be focused.
-                      {...(i === 0 ? { ref } : {})}
+                      ref={ref}
                     >
                       {value}
                     </RatingOption>
