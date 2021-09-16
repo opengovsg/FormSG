@@ -1,5 +1,7 @@
 export * from './BxCheck'
 export * from './BxCheckAnimated'
+export * from './BxChevronLeft'
+export * from './BxChevronRight'
 export * from './BxHeart'
 export * from './BxLockAlt'
 export * from './BxsCheckCircle'
