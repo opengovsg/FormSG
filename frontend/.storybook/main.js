@@ -8,9 +8,10 @@ const toPath = (_path) => path.join(process.cwd(), _path)
 const excludedPropNames = propNames.concat(['as', 'apply', 'sx', '__css'])
 
 module.exports = {
-  // Welcome story set first so it will show up first.
   stories: [
-    './introduction/**/*.stories.@(mdx|js|jsx|ts|tsx)',
+    // Introduction stories set first so stories are ordered correctly.
+    './introduction/Welcome/Welcome.stories.tsx',
+    './introduction/Principles/Principles.stories.tsx',
     './foundations/**/*.stories.@(mdx|js|jsx|ts|tsx)',
     '../src/**/*.stories.mdx',
     '../src/**/*.stories.@(js|jsx|ts|tsx)',
