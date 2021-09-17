@@ -10,7 +10,7 @@ const excludedPropNames = propNames.concat(['as', 'apply', 'sx', '__css'])
 module.exports = {
   // Welcome story set first so it will show up first.
   stories: [
-    './Welcome/Welcome.stories.tsx',
+    './introduction/**/*.stories.@(mdx|js|jsx|ts|tsx)',
     './foundations/**/*.stories.@(mdx|js|jsx|ts|tsx)',
     '../src/**/*.stories.mdx',
     '../src/**/*.stories.@(js|jsx|ts|tsx)',
