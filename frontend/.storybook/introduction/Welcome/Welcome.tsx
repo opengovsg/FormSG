@@ -6,7 +6,7 @@ import Link from '~components/Link'
 
 export const Welcome = (): JSX.Element => {
   return (
-    <Flex bg="secondary.700" w="100vw" h="100vh" flexDir="column">
+    <Flex bg="secondary.700" w="100vw" minH="100vh" flexDir="column">
       <Box
         px={{ base: '1.5rem', md: '5.5rem', lg: '7.5rem' }}
         py={{ base: '1.5rem', md: '5rem', lg: '6rem' }}
@@ -65,7 +65,7 @@ export const Welcome = (): JSX.Element => {
         <Flex bg="success.500" align="center" justify="center" px="4rem">
           <Link
             as="button"
-            onClick={linkTo('Foundation/Colours')}
+            onClick={linkTo('Introduction/Guiding principles')}
             aria-label="Next story"
             colorScheme="secondary"
           >
