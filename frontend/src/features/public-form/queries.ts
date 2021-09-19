@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom'
 
 import { PublicFormViewDto } from '~shared/types/form/form'
 
+import { PublicFormParam } from '~constants/routes'
+
 import { getPublicFormView } from './PublicFormService'
 
 const publicFormKeys = {
@@ -11,7 +13,7 @@ const publicFormKeys = {
 }
 
 export const usePublicFormView = (): UseQueryResult<PublicFormViewDto> => {
-  const { formId } = useParams<{ formId: string }>()
+  const { formId } = useParams<PublicFormParam>()
 
   return useQuery<PublicFormViewDto>(publicFormKeys.id(formId), () =>
     getPublicFormView(formId),
