@@ -7,6 +7,7 @@ import { getRequestIp } from '../../utils/request'
 import { getUserIdFromSession } from '../auth/auth.utils'
 import { ControllerHandler } from '../core/core.types'
 
+import { validateContactOtpVerificationParams } from './user.middleware'
 import {
   createContactOtp,
   getPopulatedUserById,
@@ -91,16 +92,7 @@ export const handleContactSendOtp: ControllerHandler<
   return res.sendStatus(StatusCodes.OK)
 }
 
-/**
- * Verifies given OTP with the hashed OTP data, and updates the user's contact
- * number if the hash matches.
- * @route POST /contact/otp/verify
- * @returns 200 when user contact update success
- * @returns 401 if user id does not match current session user or if user is not currently logged in
- * @returns 422 when OTP is invalid
- * @returns 500 when OTP is malformed or for unknown errors
- */
-export const handleContactVerifyOtp: ControllerHandler<
+export const _handleContactVerifyOtp: ControllerHandler<
   unknown,
   string | IPopulatedUser,
   {
@@ -157,6 +149,20 @@ export const handleContactVerifyOtp: ControllerHandler<
   // No errors, return updated user to client.
   return res.status(StatusCodes.OK).json(updateResult.value)
 }
+
+/**
+ * Verifies given OTP with the hashed OTP data, and updates the user's contact
+ * number if the hash matches.
+ * @route POST /contact/otp/verify
+ * @returns 200 when user contact update success
+ * @returns 401 if user id does not match current session user or if user is not currently logged in
+ * @returns 422 when OTP is invalid
+ * @returns 500 when OTP is malformed or for unknown errors
+ */
+export const handleContactVerifyOtp = [
+  validateContactOtpVerificationParams,
+  _handleContactVerifyOtp,
+] as ControllerHandler[]
 
 /**
  * Retrieves and returns the session user from the database.
