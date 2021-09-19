@@ -26,3 +26,11 @@ export const usePublicFormView = (): UseQueryResult<
     getPublicFormView(formId),
   )
 }
+
+export const usePublicForm = () => {
+  const { data, ...rest } = usePublicFormView()
+  return {
+    data: data?.form,
+    ...rest,
+  }
+}
