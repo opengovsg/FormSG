@@ -1,5 +1,8 @@
+import { Flex } from '@chakra-ui/react'
+
 import { HttpError } from '~services/ApiService'
 
+import FormFields from './components/FormFields'
 import FormStartPage from './components/FormStartPage'
 import { PublicFormProvider } from './PublicFormContext'
 import { usePublicFormView } from './queries'
@@ -17,7 +20,10 @@ export const PublicFormPage = (): JSX.Element => {
 
   return (
     <PublicFormProvider>
-      <FormStartPage />
+      <Flex flexDir="column" height="100%">
+        <FormStartPage />
+        <FormFields />
+      </Flex>
     </PublicFormProvider>
   )
 }
