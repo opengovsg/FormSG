@@ -5,21 +5,14 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import { usePublicForm } from '~features/public-form/queries'
 
+import { useFormSections } from './FormSectionsContext'
 import { SidebarLink } from './SidebarLink'
-
-interface SectionSidebarProps {
-  /**
-   * ID of the current active section
-   */
-  currentActiveId?: string
-}
 
 export type SidebarSectionMeta = Pick<FormFieldDto, 'title' | '_id'>
 
-export const SectionSidebar = ({
-  currentActiveId: currentId,
-}: SectionSidebarProps): JSX.Element => {
+export const SectionSidebar = (): JSX.Element => {
   const { data } = usePublicForm()
+  const { activeSectionId } = useFormSections()
 
   const scrollData = useMemo(() => {
     if (!data) return
@@ -47,7 +40,7 @@ export const SectionSidebar = ({
       >
         {scrollData?.map((d) => (
           <Flex key={d._id} align="center">
-            <SidebarLink isActive={currentId === d._id} sectionMeta={d} />
+            <SidebarLink isActive={activeSectionId === d._id} sectionMeta={d} />
           </Flex>
         ))}
       </VStack>
