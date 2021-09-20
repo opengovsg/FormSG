@@ -13,6 +13,8 @@ import { usePublicForm } from '~features/public-form/queries'
 
 interface FormSectionsContextProps {
   sectionRefs: Record<string, RefObject<HTMLDivElement>>
+  activeSectionId?: string
+  setActiveSectionId: (activeId: string) => void
 }
 
 const FormSectionsContext = createContext<FormSectionsContextProps | undefined>(
@@ -28,6 +30,7 @@ export const FormSectionsProvider = ({
   const [sectionRefs, setSectionRefs] = useState<
     Record<string, RefObject<HTMLDivElement>>
   >({})
+  const [activeSectionId, setActiveSectionId] = useState<string>()
 
   useEffect(() => {
     if (!data) return
@@ -40,7 +43,9 @@ export const FormSectionsProvider = ({
   }, [data])
 
   return (
-    <FormSectionsContext.Provider value={{ sectionRefs }}>
+    <FormSectionsContext.Provider
+      value={{ sectionRefs, activeSectionId, setActiveSectionId }}
+    >
       {children}
     </FormSectionsContext.Provider>
   )
