@@ -1,3 +1,4 @@
+import { Box } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { DatePicker } from './DatePicker'
@@ -8,7 +9,11 @@ export default {
 } as Meta
 
 const Template: Story = () => {
-  return <DatePicker />
+  return (
+    <Box maxW="50%">
+      <DatePicker />
+    </Box>
+  )
 }
 
 export const Default = Template.bind({})
