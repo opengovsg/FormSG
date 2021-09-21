@@ -1,6 +1,8 @@
 os: linux
 dist: xenial
 
+if: branch = $STAGING_ALT_BRANCH
+
 services:
   - xvfb
 
