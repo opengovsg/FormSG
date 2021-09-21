@@ -10,6 +10,7 @@ import {
   NricFieldBase,
   NumberFieldBase,
   NumberSelectedValidation,
+  RatingFieldBase,
   ShortTextFieldBase,
   TextSelectedValidation,
   UenFieldBase,
@@ -19,13 +20,36 @@ import { isUenValid } from '~shared/utils/uen-validation'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
+const createRequiredValidationRules = (schema: FieldBase) => {
+  return {
+    value: schema.required,
+    message: REQUIRED_ERROR,
+  }
+}
+
+const createRequiredInValidationRules = (schema: FieldBase) => {
+  return {
+    required: (value: unknown) => {
+      if (!schema.required) return true
+      return !!value || REQUIRED_ERROR
+    },
+  }
+}
+
 export const createBaseValidationRules = (
   schema: FieldBase,
 ): RegisterOptions => {
   return {
-    required: {
-      value: schema.required,
-      message: REQUIRED_ERROR,
+    required: createRequiredValidationRules(schema),
+  }
+}
+
+export const createRatingValidationRules = (
+  schema: RatingFieldBase,
+): RegisterOptions => {
+  return {
+    validate: {
+      ...createRequiredInValidationRules(schema),
     },
   }
 }

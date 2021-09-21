@@ -196,6 +196,7 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
           type="radio"
           aria-checked={selectedValue === value}
           {...inputProps}
+          data-testid={inputProps.id}
           onChange={handleSelect}
           onKeyDown={handleSpacebar}
           ref={ref}
