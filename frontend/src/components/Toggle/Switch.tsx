@@ -5,8 +5,9 @@
  */
 
 import { useMemo } from 'react'
+import { BiLoader } from 'react-icons/bi'
 import { useCheckbox, UseCheckboxProps } from '@chakra-ui/checkbox'
-import { Icon } from '@chakra-ui/react'
+import { Icon, keyframes, usePrefersReducedMotion } from '@chakra-ui/react'
 import {
   chakra,
   forwardRef,
@@ -37,13 +38,23 @@ export interface SwitchProps
    */
   disabledIcon?: (props: React.SVGProps<SVGSVGElement>) => JSX.Element
   /**
-   * Icon for checked switch; defaults to lock-alt.
+   * Icon for checked switch; defaults to BxCheck.
    */
   checkedIcon?: (props: React.SVGProps<SVGSVGElement>) => JSX.Element
   /**
-   * Icon for unchecked switch; defaults to lock-alt.
+   * Icon for unchecked switch; defaults to BxLockAlt.
    */
   uncheckedIcon?: (props: React.SVGProps<SVGSVGElement>) => JSX.Element
+
+  /**
+   * Icon for loading switch; defaults to BiLoader.
+   */
+  loadingIcon?: (props: React.SVGProps<SVGSVGElement>) => JSX.Element
+
+  /**
+   * Whether the switch is in an indeterminate loading state.
+   */
+  isLoading?: boolean
 }
 
 export const Switch = forwardRef<SwitchProps, 'input'>(
@@ -52,11 +63,14 @@ export const Switch = forwardRef<SwitchProps, 'input'>(
       disabledIcon = BxLockAlt,
       checkedIcon = BxCheck,
       uncheckedIcon = BxX,
+      loadingIcon = BiLoader,
+      isLoading,
       ...props
     },
     ref,
   ) => {
     const styles = useMultiStyleConfig(TOGGLE_THEME_KEY, props)
+    const prefersReducedMotion = usePrefersReducedMotion()
 
     const {
       spacing = '0.5rem',
@@ -70,7 +84,7 @@ export const Switch = forwardRef<SwitchProps, 'input'>(
       getCheckboxProps,
       getRootProps,
       getLabelProps,
-    } = useCheckbox(ownProps)
+    } = useCheckbox({ ...ownProps, isReadOnly: isLoading })
 
     const containerStyles: SystemStyleObject = useMemo(
       () => ({
@@ -103,11 +117,52 @@ export const Switch = forwardRef<SwitchProps, 'input'>(
       [spacing, styles.label],
     )
 
-    const ThumbIcon = state.isDisabled
-      ? disabledIcon
-      : state.isChecked
-      ? checkedIcon
-      : uncheckedIcon
+    const ThumbIcon = useMemo(() => {
+      if (isLoading) return loadingIcon
+      if (state.isDisabled) return disabledIcon
+      return state.isChecked ? checkedIcon : uncheckedIcon
+    }, [
+      checkedIcon,
+      disabledIcon,
+      isLoading,
+      loadingIcon,
+      state.isChecked,
+      state.isDisabled,
+      uncheckedIcon,
+    ])
+
+    const iconComponent = useMemo(() => {
+      let animation: string | undefined
+
+      if (isLoading) {
+        const spin = keyframes({
+          '0%': {
+            transform: 'rotate(0deg)',
+          },
+          '100%': {
+            transform: 'rotate(360deg)',
+          },
+        })
+        animation = prefersReducedMotion
+          ? undefined
+          : `${spin} 2.5s linear infinite`
+      }
+
+      return (
+        <Icon
+          as={ThumbIcon}
+          animation={animation}
+          __css={styles.icon}
+          data-checked={dataAttr(state.isChecked)}
+        />
+      )
+    }, [
+      ThumbIcon,
+      isLoading,
+      prefersReducedMotion,
+      state.isChecked,
+      styles.icon,
+    ])
 
     return (
       <chakra.label
@@ -127,13 +182,7 @@ export const Switch = forwardRef<SwitchProps, 'input'>(
             data-checked={dataAttr(state.isChecked)}
             data-hover={dataAttr(state.isHovered)}
           >
-            {
-              <Icon
-                as={ThumbIcon}
-                __css={styles.icon}
-                data-checked={dataAttr(state.isChecked)}
-              />
-            }
+            {iconComponent}
           </chakra.span>
         </chakra.span>
         {children && (
