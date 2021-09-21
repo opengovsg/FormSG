@@ -71,7 +71,7 @@ export const generateLoginOtpHtml = (htmlData: {
   appUrl: string
   ipAddress: string
 }): ResultAsync<string, MailSendError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/otp-email.server.view.html`
+  const pathToTemplate = `${__dirname}/../../views/templates/otp-email.server.view.html`
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
@@ -101,7 +101,7 @@ export const generateVerificationOtpHtml = ({
 export const generateSubmissionToAdminHtml = (
   htmlData: SubmissionToAdminHtmlData,
 ): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-email.server.view.html`
+  const pathToTemplate = `${__dirname}/../../views/templates/submit-form-email.server.view.html`
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
@@ -111,9 +111,9 @@ export const generateBounceNotificationHtml = (
 ): ResultAsync<string, MailGenerationError> => {
   let pathToTemplate
   if (bounceType === BounceType.Permanent) {
-    pathToTemplate = `${process.cwd()}/src/app/views/templates/bounce-notification-permanent.server.view.html`
+    pathToTemplate = `${__dirname}/../../views/templates/bounce-notification-permanent.server.view.html`
   } else {
-    pathToTemplate = `${process.cwd()}/src/app/views/templates/bounce-notification-transient.server.view.html`
+    pathToTemplate = `${__dirname}/../../views/templates/bounce-notification-transient.server.view.html`
   }
 
   return safeRenderFile(pathToTemplate, htmlData)
@@ -122,7 +122,7 @@ export const generateBounceNotificationHtml = (
 export const generateAutoreplyPdf = (
   renderData: AutoreplySummaryRenderData,
 ): ResultAsync<Buffer, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-summary-pdf.server.view.html`
+  const pathToTemplate = `${__dirname}/../../views/templates/submit-form-summary-pdf.server.view.html`
 
   return safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
     return ResultAsync.fromPromise(
@@ -147,7 +147,7 @@ export const generateAutoreplyPdf = (
 export const generateAutoreplyHtml = (
   htmlData: AutoreplyHtmlData,
 ): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-autoreply.server.view.html`
+  const pathToTemplate = `${__dirname}/../../views/templates/submit-form-autoreply.server.view.html`
   return safeRenderFile(pathToTemplate, htmlData)
 }
 

@@ -15,13 +15,23 @@
     "node": "~14",
     "npm": "~6.4.0"
   },
+  "scriptComments": {
+    "clean": "remove all current build artifacts",
+    "copyfiles:backend": [
+      "copies additional file types that tsc does not cover, such as server `.html` view files",
+      "-e command excludes the old angularjs files",
+      "-u 1 moves the files relative to the output directory"
+    ]
+  },
   "scripts": {
     "test-backend": "env-cmd -f tests/.test-env jest --coverage --maxWorkers=4",
     "test-backend:watch": "env-cmd -f tests/.test-env jest --watch",
     "test:frontend": "npm --prefix frontend test",
-    "build": "npm run build:backend && npm run build:frontend",
+    "build": "npm run clean && npm run build:backend && npm run build:frontend",
     "build:frontend": "npm run --prefix frontend build",
-    "build:backend": "tsc -p tsconfig.build.json",
+    "build:backend": "tsc -p tsconfig.build.json && npm run copyfiles:backend",
+    "copyfiles:backend": "copyfiles -e src/public/**/*.html -u 1 src/**/*.html dist/backend/src",
+    "clean": "rimraf dist/",
     "start": "node -r dotenv/config dist/backend/src/app/server.js",
     "dev": "concurrently -k -p \"[{name}]\" -n \"api,client\" -c \"yellow.bold,green.bold\" \"docker-compose up --build\" \"npm run dev:frontend\"",
     "dev:backend": "tsnd --respawn --transpile-only --inspect=0.0.0.0 --exit-child -r dotenv/config -- src/app/server.ts",
@@ -194,6 +204,7 @@
     "babel-loader": "^8.2.2",
     "concurrently": "^6.2.0",
     "copy-webpack-plugin": "^6.0.2",
+    "copyfiles": "^2.4.1",
     "core-js": "^3.16.0",
     "coveralls": "^3.1.1",
     "css-loader": "^2.1.1",
