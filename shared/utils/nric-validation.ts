@@ -1,10 +1,4 @@
-type NricParts = {
-  prefix: string
-  digits: string
-  checksum: string
-}
-
-const NRIC_FORMAT = /^(?<prefix>[STFG])(?<digits>\d{7})(?<checksum>[A-Z])$/
+const NRIC_FORMAT = /^([STFG])(\d{7})([A-Z])$/
 
 /**
  * Validates whether a provided string value adheres to the UIN/FIN format
@@ -16,7 +10,9 @@ export const isNricValid = (value: string): boolean => {
 
   if (!parsed) return false
 
-  const { prefix, digits, checksum } = parsed.groups as NricParts
+  const prefix = parsed[1]
+  const digits = parsed[2]
+  const checksum = parsed[3]
 
   // Specifications at: http://www.ngiam.net/NRIC/NRIC_numbers.pdf
   const weights = [2, 7, 6, 5, 4, 3, 2]
