@@ -1,6 +1,8 @@
 import compression from 'compression'
+import connectDatadog from 'connect-datadog'
 import express, { Express } from 'express'
 import addRequestId from 'express-request-id'
+import { StatsD } from 'hot-shots'
 import http from 'http'
 import { Connection } from 'mongoose'
 import nocache from 'nocache'
@@ -8,6 +10,7 @@ import path from 'path'
 import url from 'url'
 
 import config from '../../config/config'
+// import { datadogConfig } from '../../config/features/datadog.config'
 import { AnalyticsRouter } from '../../modules/analytics/analytics.routes'
 import { AuthRouter } from '../../modules/auth/auth.routes'
 import { BillingRouter } from '../../modules/billing/billing.routes'
@@ -140,6 +143,21 @@ const loadExpressApp = async (connection: Connection) => {
 
   // Log intranet usage
   app.use(IntranetMiddleware.logIntranetUsage)
+
+  app.use(
+    connectDatadog({
+      method: true, // i.e. normalized path, to keep cardinality in check
+      response_code: true,
+      path: false, // !! Important: do not turn this true or the tag cardinality will explode
+      dogstatsd: new StatsD({
+        useDefaultRoute: true,
+        errorHandler: (error) => {
+          // eslint-disable-next-line no-console
+          console.log(error)
+        },
+      }),
+    }),
+  )
 
   app.use('/', HomeRouter)
   app.use('/frontend', FrontendRouter)
