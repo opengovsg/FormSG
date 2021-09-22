@@ -150,10 +150,6 @@ const loadExpressApp = async (connection: Connection) => {
       path: false, // !! Important: do not turn this true or the tag cardinality will explode
       dogstatsd: new StatsD({
         useDefaultRoute: true,
-        errorHandler: (error) => {
-          // eslint-disable-next-line no-console
-          console.log(error)
-        },
       }),
     }),
   )
