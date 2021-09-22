@@ -145,7 +145,7 @@ const loadExpressApp = async (connection: Connection) => {
 
   app.use(
     connectDatadog({
-      method: true, // i.e. normalized path, to keep cardinality in check
+      method: true,
       response_code: true,
       path: false, // !! Important: do not turn this true or the tag cardinality will explode
       dogstatsd: new StatsD({
