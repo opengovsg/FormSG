@@ -10,7 +10,6 @@ import path from 'path'
 import url from 'url'
 
 import config from '../../config/config'
-// import { datadogConfig } from '../../config/features/datadog.config'
 import { AnalyticsRouter } from '../../modules/analytics/analytics.routes'
 import { AuthRouter } from '../../modules/auth/auth.routes'
 import { BillingRouter } from '../../modules/billing/billing.routes'
