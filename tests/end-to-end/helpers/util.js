@@ -1,5 +1,5 @@
 const axios = require('axios')
-const { ClientFunction, Selector } = require('testcafe')
+const { ClientFunction } = require('testcafe')
 const _ = require('lodash')
 const mongoose = require('mongoose')
 mongoose.Promise = global.Promise
@@ -1202,11 +1202,13 @@ const getAuthFields = (authType, authData) => {
 /**
  * Expects form submisision to be disabled and toast message to be shown.
  * @param {Object} browser Testcafe browser
- * @param {string} toastMessage message to be shown in toast when form is disabled
+ * @param {string} disabledMessage message to be shown underneath the submit button when form is disabled
  */
-async function expectFormDisabled(browser, toastMessage) {
+async function expectFormDisabled(browser, disabledMessage) {
   await browser.expect(formPage.submitBtn.getAttribute('disabled')).ok()
-  await browser.expect(Selector('.toast-message').textContent).eql(toastMessage)
+  await browser
+    .expect(formPage.submitPreventedMessage.textContent)
+    .eql(disabledMessage)
 }
 
 /**
