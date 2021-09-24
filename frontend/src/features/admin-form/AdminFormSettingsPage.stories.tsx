@@ -12,6 +12,8 @@ export default {
   component: AdminFormPage,
   decorators: [
     (storyFn) => {
+      // MemoryRouter is used so react-router-dom#Link components can work
+      // (and also to force the initial tab the page renders to be the settings tab).
       return (
         <MemoryRouter initialEntries={['/admin/form/1234/settings']}>
           <Route path="/admin/form/:formId">{storyFn()}</Route>
