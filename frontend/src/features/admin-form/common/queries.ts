@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom'
 
 import { AdminFormDto } from '~shared/types/form/form'
 
+import { ApiError } from '~typings/core'
+
 import { getAdminFormView } from './AdminViewFormService'
 
 const adminFormKeys = {
@@ -13,7 +15,7 @@ const adminFormKeys = {
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useAdminForm = (): UseQueryResult<AdminFormDto> => {
+export const useAdminForm = (): UseQueryResult<AdminFormDto, ApiError> => {
   const { formId } = useParams<{ formId: string }>()
   return useQuery(adminFormKeys.id(formId), () => getAdminFormView(formId))
 }
