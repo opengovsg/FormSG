@@ -15,7 +15,9 @@ import { FormLogoState } from '~shared/types/form/form_logo'
 import { DateString } from '~shared/types/generic'
 import { UserDto } from '~shared/types/user'
 
-const createMockForm = (props: Partial<AdminFormDto>): AdminFormViewDto => {
+const createMockForm = (
+  props: Partial<AdminFormDto> = {},
+): AdminFormViewDto => {
   return {
     form: merge(
       {
