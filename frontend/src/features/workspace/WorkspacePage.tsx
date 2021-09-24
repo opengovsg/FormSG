@@ -1,13 +1,14 @@
 import { useCallback } from 'react'
 import { useQueryClient } from 'react-query'
 import { Link as ReactLink } from 'react-router-dom'
-import { Link, Text } from '@chakra-ui/react'
+import { Text } from '@chakra-ui/react'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { ADMIN_FORM_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { logout } from '~services/AuthService'
 import Button from '~components/Button'
+import Link from '~components/Link'
 
 import { useUser } from '~features/user/queries'
 
