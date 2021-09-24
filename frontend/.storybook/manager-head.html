@@ -1,0 +1,97 @@
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"
+  rel="stylesheet"
+/>
+<!-- Style overrides -->
+<style>
+  body {
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  /* More details button beside logo */
+  .sidebar-header > * button {
+    box-shadow: none;
+  }
+
+  .sidebar-subheading {
+    margin-top: 24px;
+  }
+
+  .sidebar-subheading > button {
+    text-transform: initial;
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: -0.006em;
+    font-feature-settings: 'tnum' on, 'lnum' on, 'cv05' on;
+
+    /* Secondary/700 */
+    color: #293044;
+  }
+
+  .os-content form span {
+    font-weight: 600;
+  }
+
+  .os-content a button {
+    /* secondary/500 */
+    color: #445072;
+  }
+
+  button.sidebar-item,
+  a.sidebar-item {
+    font-size: 14px;
+    letter-spacing: -0.006em;
+    line-height: 16px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    align-items: center;
+  }
+
+  button.sidebar-item > span,
+  a.sidebar-item > span {
+    margin-top: initial;
+  }
+
+  a.sidebar-item svg,
+  button.sidebar-item svg {
+    margin-top: initial;
+  }
+
+  button.sidebar-item svg {
+    /* secondary/500 */
+    color: #445072;
+  }
+
+  button.sidebar-item:hover {
+    /* secondary/100 */
+    background: #f5f6f8;
+  }
+
+  a.sidebar-item svg {
+    /* primary/300 */
+    color: #b7c0e6;
+  }
+
+  a.sidebar-item:active,
+  a.sidebar-item:hover,
+  a.sidebar-item[data-selected='true'] {
+    /* secondary/500 */
+    color: #445072;
+
+    /* primary/200 */
+    background: #e4e7f6 !important;
+  }
+
+  a.sidebar-item[data-selected='true'] svg {
+    /* secondary/500 */
+    color: #445072;
+  }
+
+  .search-field > input {
+    border-radius: 4px;
+    border: 1px solid #c9cccf;
+    background: white;
+  }
+</style>
