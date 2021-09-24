@@ -29,6 +29,7 @@
     "react-router-dom": "^6.0.2",
     "react-table": "^7.7.0",
     "react-textarea-autosize": "^8.3.3",
+    "react-use": "^17.3.1",
     "react-waypoint": "^10.1.0",
     "remark-gfm": "^3.0.1",
     "simplur": "^3.0.1",
