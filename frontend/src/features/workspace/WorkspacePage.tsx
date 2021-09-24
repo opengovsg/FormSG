@@ -30,7 +30,7 @@ export const WorkspacePage = (): JSX.Element => {
 
   const { user } = useUser()
 
-  const { dashboardForms } = useWorkspace()
+  const { data: dashboardForms } = useWorkspace()
 
   return (
     <div>
