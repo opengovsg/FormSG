@@ -37,7 +37,6 @@ export const AdminFormTabProvider = ({
 
   return (
     <Tabs
-      isManual
       isLazy
       defaultIndex={defaultIndex}
       index={tabIndex}
