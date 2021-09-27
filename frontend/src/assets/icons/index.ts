@@ -1,3 +1,4 @@
+export * from './BxCalendar'
 export * from './BxCheck'
 export * from './BxCheckAnimated'
 export * from './BxChevronLeft'
