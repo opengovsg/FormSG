@@ -28,7 +28,9 @@ import {
 } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
-const DESTINATION_REGEX = /^\/([\w]+)\/?/
+
+// Matches the MongoDB ObjectID hex format exactly (24 hex characters)
+const DESTINATION_REGEX = /^\/([a-fA-F0-9]{24})\/?$/
 
 // Checks the format of a SAML artifact
 const isArtifactValid = function (
@@ -75,7 +77,7 @@ export const isValidAuthenticationQuery = (
  * @param destination Redirect destination
  */
 export const extractFormId = (destination: string): string | null => {
-  const regexSplit = DESTINATION_REGEX.exec(destination)
+  const regexSplit = destination.match(DESTINATION_REGEX)
   if (!regexSplit || regexSplit.length < 2) {
     return null
   }
