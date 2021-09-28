@@ -59,7 +59,7 @@ export const FormLabel = ({
   tooltipText,
   questionNumber,
   description,
-  useMarkdownForDescription,
+  useMarkdownForDescription = false,
   children,
 }: FormLabelProps): JSX.Element => {
   return (
@@ -97,7 +97,7 @@ interface FormLabelDescriptionProps extends TextProps {
 }
 const FormLabelDescription = ({
   children,
-  useMarkdown,
+  useMarkdown = false,
   ...props
 }: FormLabelDescriptionProps): JSX.Element => {
   // useFormControlContext is a ChakraUI hook that returns props passed down
