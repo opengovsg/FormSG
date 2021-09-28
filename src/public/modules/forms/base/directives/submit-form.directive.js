@@ -79,6 +79,7 @@ function submitFormDirective(
         formSubmitted: false,
         progressModal: null,
         submitPrevented: false,
+        submitPreventedMessage: '',
       }
 
       // Also used to store a backup of the form state during submission, the state
@@ -219,8 +220,8 @@ function submitFormDirective(
             scope.uiState.submitButtonClicked = false
             // This check is necessary to prevent clearing of submission error Toast
             if (scope.uiState.submitPrevented) {
-              Toastr.remove()
               scope.uiState.submitPrevented = false
+              scope.uiState.submitPreventedMessage = ''
             }
             break
           case FORM_STATES.SUBMITTING:
@@ -252,7 +253,7 @@ function submitFormDirective(
               preventSubmitMessage =
                 'The form admin has disabled submission for forms with these answers.'
             }
-            Toastr.permanentError(preventSubmitMessage)
+            scope.uiState.submitPreventedMessage = preventSubmitMessage
             scope.uiState.submitPrevented = true
             break
           default:

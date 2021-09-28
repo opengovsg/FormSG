@@ -191,6 +191,7 @@ const formPage = {
       .nth(col)
   },
   submitBtn: Selector('#form-submit button'),
+  submitPreventedMessage: Selector('#submit-prevented-message'),
   spcpLoginBtn: Selector('#start-page-btn-container button span').withText(
     'LOGIN',
   ),
