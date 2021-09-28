@@ -12,9 +12,11 @@ type ToastBehaviourProps = Pick<
   'duration' | 'position' | 'render'
 >
 
-// onClose is provided by the chakra hook and should not be exposed to clients
 export type UseToastProps = Omit<
   ToastBehaviourProps & ToastProps,
+  // onClose is provided by the chakra hook and should not be exposed to clients.
+  // ChakraToast's status is different from this custom component, hence replaced
+  // with ToastStatus for type compatibility.
   'onClose' | 'status'
 > & { status?: ToastStatus }
 
