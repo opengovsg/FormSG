@@ -117,6 +117,7 @@ const FormLabelDescription = ({
   const styleProps = {
     textStyle: 'body-2',
     color: 'secondary.400',
+    mt: 0,
     ...props,
   }
 
