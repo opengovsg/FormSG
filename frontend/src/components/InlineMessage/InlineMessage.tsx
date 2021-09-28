@@ -19,7 +19,7 @@ export const InlineMessage = ({
 }: InlineMessageProps): JSX.Element => {
   const styles = useMultiStyleConfig('InlineMessage', { variant })
 
-  const mdComponents = useMdComponents(styles)
+  const mdComponents = useMdComponents({ styles })
 
   return (
     <Flex sx={styles.messagebox}>

@@ -32,7 +32,7 @@ export const Banner = ({
 
   const styles = useMultiStyleConfig('Banner', { variant })
 
-  const mdComponents = useMdComponents(styles)
+  const mdComponents = useMdComponents({ styles })
 
   return (
     <Collapse in={isOpen} animateOpacity>

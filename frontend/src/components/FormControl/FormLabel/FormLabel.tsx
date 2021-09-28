@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import ReactMarkdown from 'react-markdown'
 import {
   Box,
   FormHelperText,
@@ -13,6 +14,7 @@ import {
 } from '@chakra-ui/react'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
+import { useMdComponents } from '~hooks/useMdComponents'
 
 export interface FormLabelProps extends ChakraFormLabelProps {
   /**
@@ -36,6 +38,11 @@ export interface FormLabelProps extends ChakraFormLabelProps {
    * provided, the value from it's parent `FormContext` (if any) will be used.
    */
   isRequired?: boolean
+
+  /**
+   * Whether markdown is enabled for description text.
+   */
+  useMarkdownForDescription?: boolean
 }
 
 /**
@@ -52,6 +59,7 @@ export const FormLabel = ({
   tooltipText,
   questionNumber,
   description,
+  useMarkdownForDescription = false,
   children,
 }: FormLabelProps): JSX.Element => {
   return (
@@ -73,7 +81,9 @@ export const FormLabel = ({
         )}
       </Box>
       {description && (
-        <FormLabel.Description>{description}</FormLabel.Description>
+        <FormLabel.Description useMarkdown={useMarkdownForDescription}>
+          {description}
+        </FormLabel.Description>
       )}
     </FormLabel.Label>
   )
@@ -81,10 +91,15 @@ export const FormLabel = ({
 
 FormLabel.Label = ChakraFormLabel
 
+interface FormLabelDescriptionProps extends TextProps {
+  useMarkdown?: boolean
+  children: string
+}
 const FormLabelDescription = ({
   children,
+  useMarkdown = false,
   ...props
-}: TextProps): JSX.Element => {
+}: FormLabelDescriptionProps): JSX.Element => {
   // useFormControlContext is a ChakraUI hook that returns props passed down
   // from a parent ChakraUI's `FormControl` component.
   // The return object is used to determine whether FormHelperText or Text is
@@ -99,17 +114,34 @@ const FormLabelDescription = ({
     return Text
   }, [field])
 
-  return (
-    <ComponentToRender
-      mt={0}
-      textStyle="body-2"
-      color="secondary.400"
-      {...props}
-    >
-      {children}
-    </ComponentToRender>
+  const styleProps = {
+    textStyle: 'body-2',
+    color: 'secondary.400',
+    mt: 0,
+    ...props,
+  }
+
+  const mdComponentsStyles = {
+    text: styleProps,
+    link: { display: 'initial' },
+  }
+  const mdComponents = useMdComponents({
+    styles: mdComponentsStyles,
+    overrides: {
+      p: (props) => (
+        <ComponentToRender {...props} sx={mdComponentsStyles.text} />
+      ),
+    },
+  })
+
+  return useMarkdown ? (
+    <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
+  ) : (
+    <ComponentToRender {...styleProps}>{children}</ComponentToRender>
   )
 }
+FormLabel.Description = FormLabelDescription
+
 FormLabel.Description = FormLabelDescription
 
 FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
