@@ -46,7 +46,7 @@ export const FormTitle = (): JSX.Element => {
     <Flex p="3rem" justify="center" bg={titleBg}>
       <Flex maxW="32.5rem" flexDir="column" align="center" color={titleColour}>
         <Skeleton isLoaded={!!title}>
-          <Text as="h1" textStyle="h1">
+          <Text as="h1" textStyle="h1" textAlign="center">
             {title ?? 'Loading title'}
           </Text>
         </Skeleton>
