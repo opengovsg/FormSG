@@ -35,6 +35,7 @@ const useFormBannerLogo = () => {
   )
 
   return {
+    hasLogo: form?.startPage.logo.state !== FormLogoState.None,
     hasImageLoaded,
     onImageLoad,
     logoImgAlt,
@@ -42,15 +43,18 @@ const useFormBannerLogo = () => {
   }
 }
 
-export const FormBannerLogo = (): JSX.Element => {
-  const { hasImageLoaded, onImageLoad, logoImgAlt, logoImgSrc } =
+export const FormBannerLogo = (): JSX.Element | null => {
+  const { hasLogo, hasImageLoaded, onImageLoad, logoImgAlt, logoImgSrc } =
     useFormBannerLogo()
 
+  if (!hasLogo) return null
+
   return (
-    <Flex justify="center" p="1rem">
+    <Flex justify="center" m="1rem">
       <Skeleton isLoaded={hasImageLoaded}>
         <Image
           onLoad={onImageLoad}
+          ignoreFallback
           src={logoImgSrc}
           alt={logoImgAlt}
           // Define minimum height and width of skeleton before image has loaded.
