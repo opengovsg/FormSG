@@ -6,6 +6,7 @@ import * as FrontendServerController from './frontend.controller'
 export const FrontendRouter = Router()
 
 /**
+ * @deprecated use routes in src/app/routes/api/v3/client/client.routes.ts instead
  * Generate the templated Javascript code for the frontend to initialise Google Tag Manager
  * Code depends on whether googleAnalyticsFeature.isEnabled
  * @route GET /frontend/datalayer
@@ -18,6 +19,7 @@ FrontendRouter.get(
 )
 
 /**
+ * @deprecated use routes in src/app/routes/api/v3/client/client.routes.ts instead
  * Generate the templated Javascript code with environment variables for the frontend
  * @route GET /frontend/environment
  * @return 200 when code generation is successful
@@ -26,6 +28,7 @@ FrontendRouter.get(
 FrontendRouter.get('/environment', FrontendServerController.addEnvVarData)
 
 /**
+ * @deprecated use routes in src/app/routes/api/v3/client/client.routes.ts instead
  * Generate a json of current activated features
  * @route GET /frontend/features
  * @return json with featureManager.states
@@ -35,6 +38,7 @@ FrontendRouter.get('/environment', FrontendServerController.addEnvVarData)
 FrontendRouter.get('/features', FrontendServerController.showFeaturesStates)
 
 /**
+ * @deprecated use routes in src/app/routes/api/v3/client/client.routes.ts instead
  * Generate the javascript code to redirect to the correct url
  * @route GET /frontend/redirect
  * @return 200 when redirect code is  successful
