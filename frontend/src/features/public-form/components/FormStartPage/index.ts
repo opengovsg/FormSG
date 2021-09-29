@@ -1,1 +1,1 @@
-export { FormStartPageContainer as default } from './FormStartPageContainer'
+export { FormStartPage as default } from './FormStartPage'
