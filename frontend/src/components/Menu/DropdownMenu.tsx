@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Menu as ChakraMenu,
   MenuButton as ChakraMenuButton,
   MenuItem as ChakraMenuItem,
@@ -46,12 +47,16 @@ export const DropdownMenuButton = ({
   isActive,
   size,
 }: DropdownMenuButtonProps): JSX.Element => {
-  const styles = useMultiStyleConfig('DropdownMenu', { variant, size })
+  const styles = useMultiStyleConfig('DropdownMenu', {
+    variant,
+    size,
+    isActive,
+  })
   return (
     <ChakraMenuButton
       sx={styles.outerBox}
-      as={Box}
-      bgColor={isActive ? 'secondary.300' : 'clear'} //  For rounded outline
+      as={Button}
+      //  For rounded outline
     >
       <Box sx={styles.innerBox} role={'presentation'} aria-hidden>
         {children}

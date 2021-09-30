@@ -5,11 +5,23 @@ export type DropdownMenuSize = 'normal' | 'stretch'
 
 export const DropdownMenu: ComponentMultiStyleConfig = {
   parts: ['outerbox', 'innerbox'],
-  baseStyle: {
+  baseStyle: ({ isActive }) => ({
     outerBox: {
       padding: '4px',
+      background: 'white',
       borderRadius: '8px',
+      border: '0px',
       width: '177px',
+      color: 'secondary.500',
+      _hover: {
+        background: 'white',
+      },
+      _focus: {
+        background: 'secondary.300',
+      },
+      _active: {
+        background: 'white',
+      },
     },
     innerBox: {
       display: 'flex',
@@ -21,7 +33,7 @@ export const DropdownMenu: ComponentMultiStyleConfig = {
       background: 'white',
       boxSizing: 'border-box',
       borderStyle: 'solid',
-      borderWidth: '1px',
+      borderWidth: isActive ? '2px' : '1px',
       borderRadius: '4px',
       borderColor: 'white',
     },
@@ -29,7 +41,7 @@ export const DropdownMenu: ComponentMultiStyleConfig = {
       color: 'secondary.500',
       fontWeight: '500',
     },
-  },
+  }),
   sizes: {
     stretch: {
       outerBox: {
@@ -43,15 +55,6 @@ export const DropdownMenu: ComponentMultiStyleConfig = {
         borderColor: 'secondary.500',
         _hover: {
           borderColor: 'secondary.700',
-        },
-        _focus: {
-          outline: '4px solid',
-          outlineColor: 'secondary.300',
-        },
-        _active: {
-          borderWidth: '2px',
-          outline: '4px solid',
-          outlineColor: 'secondary.300',
         },
       },
     },
