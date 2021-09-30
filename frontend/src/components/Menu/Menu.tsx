@@ -29,7 +29,7 @@ const MenuButton = (props: ButtonProps): JSX.Element => {
       iconSpacing="1.5rem"
       _hover={{
         bgColor: 'white',
-        borderColor: 'secondary.900',
+        borderColor: isVariantOutline ? 'secondary.900' : '',
         color: 'secondary.900',
       }}
       _active={{
