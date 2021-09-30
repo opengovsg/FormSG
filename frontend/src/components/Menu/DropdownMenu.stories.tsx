@@ -31,8 +31,6 @@ type DropdownMenuGroupTemplateProps = {
   variant: ThemeButtonVariant
 }
 
-const { DropdownMenuButton, DropdownMenuItem, DropdownMenuList } = DropdownMenu
-
 const DropdownMenuTemplate: Story<DropdownMenuTemplateProps> = ({
   variant,
   children,
@@ -43,18 +41,18 @@ const DropdownMenuTemplate: Story<DropdownMenuTemplateProps> = ({
     <DropdownMenu {...(isOpen ? { isOpen } : {})}>
       {({ isOpen }) => (
         <>
-          <DropdownMenuButton
+          <DropdownMenu.Button
             variant={variant}
             isFullWidth={isFullWidth}
             isActive={isOpen}
           >
             {children}
-          </DropdownMenuButton>
-          <DropdownMenuList>
-            <DropdownMenuItem>Last updated</DropdownMenuItem>
-            <DropdownMenuItem>Date created</DropdownMenuItem>
-            <DropdownMenuItem>Name</DropdownMenuItem>
-          </DropdownMenuList>
+          </DropdownMenu.Button>
+          <DropdownMenu.List>
+            <DropdownMenu.Item>Last updated</DropdownMenu.Item>
+            <DropdownMenu.Item>Date created</DropdownMenu.Item>
+            <DropdownMenu.Item>Name</DropdownMenu.Item>
+          </DropdownMenu.List>
         </>
       )}
     </DropdownMenu>
@@ -119,23 +117,23 @@ export const Playground: Story = () => {
       <DropdownMenu>
         {({ isOpen }) => (
           <>
-            <DropdownMenuButton isActive={isOpen}>EXPORT</DropdownMenuButton>
-            <DropdownMenuList>
-              <DropdownMenuItem
+            <DropdownMenu.Button isActive={isOpen}>EXPORT</DropdownMenu.Button>
+            <DropdownMenu.List>
+              <DropdownMenu.Item
                 onClick={() => {
                   alert('Successfully downloaded')
                 }}
               >
                 CSV only
-              </DropdownMenuItem>
-              <DropdownMenuItem
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
                 onClick={() => {
                   alert('Successfully downloaded')
                 }}
               >
                 CSV and Attachments
-              </DropdownMenuItem>
-            </DropdownMenuList>
+              </DropdownMenu.Item>
+            </DropdownMenu.List>
           </>
         )}
       </DropdownMenu>

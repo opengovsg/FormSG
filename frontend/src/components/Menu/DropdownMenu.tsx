@@ -57,6 +57,6 @@ export const DropdownMenu = (props: MenuProps): JSX.Element => {
   return <ChakraMenu matchWidth={true} gutter={4} {...props}></ChakraMenu>
 }
 
-DropdownMenu.DropdownMenuButton = DropdownMenuButton
-DropdownMenu.DropdownMenuList = DropdownMenuList
-DropdownMenu.DropdownMenuItem = DropdownMenuItem
+DropdownMenu.Button = DropdownMenuButton
+DropdownMenu.List = DropdownMenuList
+DropdownMenu.Item = DropdownMenuItem
