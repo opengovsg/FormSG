@@ -26,16 +26,6 @@ import {
 export default {
   title: 'Components/DropdownMenu',
   component: DropdownMenu,
-  argTypes: {
-    variant: {
-      options: ['outline', 'clear'],
-      control: { type: 'radio' },
-    },
-    size: {
-      options: ['normal', 'stretch'],
-      control: { type: 'radio' },
-    },
-  },
 } as Meta
 
 type DropdownMenuTemplateProps = {
