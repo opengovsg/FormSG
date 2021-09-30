@@ -7,6 +7,7 @@ export const Menu: ComponentMultiStyleConfig = {
   parts: [
     'buttonBorder',
     'button',
+    'content',
     'list',
     'item',
     'groupTitle',
@@ -33,6 +34,12 @@ export const Menu: ComponentMultiStyleConfig = {
       borderColor: 'white',
       minWidth: 'max-content',
       _focus: { boxShadow: '0 0 0 0.25rem var(--chakra-colors-secondary-300)' },
+    },
+    content: {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
     },
     item: {
       padding: '0.75rem 1rem',

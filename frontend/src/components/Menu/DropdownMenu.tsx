@@ -1,4 +1,5 @@
 import {
+  Box,
   Icon,
   Menu as ChakraMenu,
   MenuButton as ChakraMenuButton,
@@ -53,22 +54,24 @@ export const DropdownMenuButton = ({
   })
   return (
     <ChakraMenuButton>
-      {children}
-      {isActive ? (
-        <Icon
-          sx={styles.icon}
-          as={BxsChevronUp}
-          role={'presentation'}
-          aria-hidden
-        />
-      ) : (
-        <Icon
-          sx={styles.icon}
-          as={BxsChevronDown}
-          role={'presentation'}
-          aria-hidden
-        />
-      )}
+      <Box sx={styles.content}>
+        {children}
+        {isActive ? (
+          <Icon
+            sx={styles.icon}
+            as={BxsChevronUp}
+            role={'presentation'}
+            aria-hidden
+          />
+        ) : (
+          <Icon
+            sx={styles.icon}
+            as={BxsChevronDown}
+            role={'presentation'}
+            aria-hidden
+          />
+        )}
+      </Box>
     </ChakraMenuButton>
   )
 }
