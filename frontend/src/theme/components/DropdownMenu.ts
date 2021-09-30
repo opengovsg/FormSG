@@ -38,17 +38,26 @@ export const DropdownMenu: ComponentMultiStyleConfig = {
       borderColor: 'white',
     },
     option: {
+      padding: '12px 16px',
+      fontWeight: '400',
       _hover: {
+        padding: '12px 16px',
         background: 'primary.100',
+        borderWidth: '0px',
       },
       _focus: {
+        padding: '10px 14px',
         background: 'white',
         borderWidth: '2px',
         borderStyle: 'solid',
         borderColor: 'primary.500',
+        borderRadius: '2px',
       },
       _active: {
+        padding: '12px 16px',
+        borderWidth: '0px',
         background: 'primary.200',
+        fontWeight: '500',
       },
     },
     text: {
