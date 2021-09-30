@@ -1,7 +1,7 @@
 import { ComponentMultiStyleConfig } from '@chakra-ui/react'
 
 export type DropdownMenuVariant = 'outline' | 'clear'
-export type DropdownMenuSize = 'normal' | 'stretch'
+export type DropdownMenuSize = 'md' | 'lg'
 
 export const DropdownMenu: ComponentMultiStyleConfig = {
   parts: ['outerbox', 'innerbox', 'option', 'text', 'menu'],
@@ -59,7 +59,7 @@ export const DropdownMenu: ComponentMultiStyleConfig = {
     },
   }),
   sizes: {
-    stretch: {
+    lg: {
       outerBox: {
         minWidth: '100%',
       },
@@ -77,6 +77,6 @@ export const DropdownMenu: ComponentMultiStyleConfig = {
   },
   defaultProps: {
     variant: 'outline',
-    size: 'normal',
+    size: 'md',
   },
 }

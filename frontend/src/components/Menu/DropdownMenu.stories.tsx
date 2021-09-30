@@ -90,10 +90,10 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
         templateColumns="min-content auto"
         alignItems="center"
       >
-        <DropdownMenuTemplate variant={variant} size={'normal'}>
+        <DropdownMenuTemplate variant={variant} size={'md'}>
           Menu
         </DropdownMenuTemplate>
-        <DropdownMenuTemplate variant={variant} size={'stretch'}>
+        <DropdownMenuTemplate variant={variant} size={'lg'}>
           Menu Stretch
         </DropdownMenuTemplate>
       </SimpleGrid>
@@ -104,10 +104,10 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
         templateColumns="min-content auto"
         alignItems="center"
       >
-        <DropdownMenuTemplate variant={variant} size={'normal'} isOpen>
+        <DropdownMenuTemplate variant={variant} size={'md'} isOpen>
           Menu
         </DropdownMenuTemplate>
-        <DropdownMenuTemplate variant={variant} size={'stretch'} isOpen>
+        <DropdownMenuTemplate variant={variant} size={'lg'} isOpen>
           Menu Stretch
         </DropdownMenuTemplate>
       </SimpleGrid>
@@ -117,7 +117,7 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
 export const Default = DropdownMenuTemplate.bind({})
 Default.args = {
   variant: 'outline',
-  size: 'normal',
+  size: 'md',
   children: 'Menu Default',
 }
 
@@ -187,5 +187,5 @@ export const Playground: Story = ({ variant, size }) => {
 
 DropdownMenuTemplate.args = {
   variant: 'outline',
-  size: 'normal',
+  size: 'md',
 }
