@@ -52,7 +52,7 @@ export const DropdownMenu: ComponentMultiStyleConfig = {
       },
     },
     text: {
-      marginRight: '30px',
+      marginRight: '24px',
     },
     menuList: {
       minW: '0',
