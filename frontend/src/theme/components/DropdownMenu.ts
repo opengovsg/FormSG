@@ -14,7 +14,6 @@ export const Menu: ComponentMultiStyleConfig = {
         outlineWidth: '0.125rem',
         outlineStyle: 'solid',
         outlineColor: 'primary.500',
-        background: 'white',
       },
       _active: {
         background: 'primary.200',
