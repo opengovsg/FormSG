@@ -80,7 +80,8 @@ export const DropdownMenuButton = ({
  * Used to wrap MenuItem component
  */
 export const DropdownMenuList = (props: MenuListProps): JSX.Element => {
-  return <ChakraMenuList {...props} minW="0"></ChakraMenuList>
+  const styles = useMultiStyleConfig('DropdownMenu', {})
+  return <ChakraMenuList {...props} sx={styles.menuList}></ChakraMenuList>
 }
 
 /**

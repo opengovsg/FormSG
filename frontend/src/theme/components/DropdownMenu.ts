@@ -4,7 +4,7 @@ export type DropdownMenuVariant = 'outline' | 'clear'
 export type DropdownMenuSize = 'normal' | 'stretch'
 
 export const DropdownMenu: ComponentMultiStyleConfig = {
-  parts: ['outerbox', 'innerbox', 'option', 'text'],
+  parts: ['outerbox', 'innerbox', 'option', 'text', 'menu'],
   baseStyle: ({ isActive }) => ({
     outerBox: {
       padding: '4px',
@@ -50,6 +50,9 @@ export const DropdownMenu: ComponentMultiStyleConfig = {
     },
     text: {
       marginRight: '30px',
+    },
+    menuList: {
+      minW: '0',
     },
     _active: {
       background: 'primary.200',
