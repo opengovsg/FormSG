@@ -4,9 +4,7 @@ import {
   Menu as ChakraMenu,
   MenuButton as ChakraMenuButton,
   MenuItem as ChakraMenuItem,
-  MenuItemProps,
   MenuList as ChakraMenuList,
-  MenuListProps,
   MenuProps,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
@@ -37,7 +35,7 @@ export interface DropdownMenuButtonProps {
  * @preconditions Must be a child of DropdownMenu component and returned
  * using a render prop (see implementation in DropdownMenu.stories)
  */
-export const DropdownMenuButton = ({
+const DropdownMenuButton = ({
   isClear,
   children,
   isActive,
@@ -83,20 +81,20 @@ export const DropdownMenuButton = ({
  *
  * Used to wrap MenuItem component
  */
-export const DropdownMenuList = (props: MenuListProps): JSX.Element => {
-  return <ChakraMenuList {...props}></ChakraMenuList>
-}
+const DropdownMenuList = ChakraMenuList
 
 /**
- * Used to wrap DropdownMenuButton and DropdownMenuList components
+ * Item in DropdownMenuList
+ */
+const DropdownMenuItem = ChakraMenuItem
+
+/**
+ * Used to wrap DropdownMenuButton, DropdownMenuItem and DropdownMenuList components
  */
 export const DropdownMenu = (props: MenuProps): JSX.Element => {
   return <ChakraMenu {...props} matchWidth={true} gutter={4}></ChakraMenu>
 }
 
-/**
- * Item in DropdownMenuList
- */
-export const DropdownMenuItem = (props: MenuItemProps): JSX.Element => {
-  return <ChakraMenuItem {...props}></ChakraMenuItem>
-}
+DropdownMenu.DropdownMenuButton = DropdownMenuButton
+DropdownMenu.DropdownMenuList = DropdownMenuList
+DropdownMenu.DropdownMenuItem = DropdownMenuItem

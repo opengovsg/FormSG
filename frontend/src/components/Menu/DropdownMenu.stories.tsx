@@ -11,12 +11,7 @@ import {
 } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import {
-  DropdownMenu,
-  DropdownMenuButton,
-  DropdownMenuItem,
-  DropdownMenuList,
-} from './DropdownMenu'
+import { DropdownMenu } from './DropdownMenu'
 
 export default {
   title: 'Components/DropdownMenu',
@@ -33,6 +28,8 @@ type DropdownMenuTemplateProps = {
 type DropdownMenuGroupTemplateProps = {
   isClear?: boolean
 }
+
+const { DropdownMenuButton, DropdownMenuItem, DropdownMenuList } = DropdownMenu
 
 const DropdownMenuTemplate: Story<DropdownMenuTemplateProps> = ({
   isClear,
