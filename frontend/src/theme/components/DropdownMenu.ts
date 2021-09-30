@@ -17,7 +17,6 @@ export const Menu: ComponentMultiStyleConfig = {
         borderWidth: '0.125rem',
         borderStyle: 'solid',
         borderColor: 'primary.500',
-        borderRadius: '0.125rem',
       },
       _active: {
         background: 'primary.200',
