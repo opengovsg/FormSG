@@ -7,16 +7,14 @@ export const Menu: ComponentMultiStyleConfig = {
       padding: '0.75rem 1rem',
       fontWeight: '400',
       _hover: {
-        padding: '0.75rem 1rem',
         background: 'primary.100',
         borderWidth: '0rem',
       },
       _focus: {
-        padding: '0.625rem 0.875rem',
+        outlineWidth: '0.125rem',
+        outlineStyle: 'solid',
+        outlineColor: 'primary.500',
         background: 'white',
-        borderWidth: '0.125rem',
-        borderStyle: 'solid',
-        borderColor: 'primary.500',
       },
       _active: {
         background: 'primary.200',
@@ -25,6 +23,7 @@ export const Menu: ComponentMultiStyleConfig = {
     },
     list: {
       minWidth: '0rem',
+      padding: '0.125rem',
     },
   },
 }
