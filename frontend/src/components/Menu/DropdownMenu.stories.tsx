@@ -11,8 +11,6 @@ import {
 } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import { useToast } from '~hooks/useToast'
-
 import {
   DropdownMenuSize,
   DropdownMenuVariant,
@@ -129,7 +127,6 @@ Outline.args = { variant: 'outline' }
 export const Clear = DropdownMenuGroupTemplate.bind({})
 Clear.args = { variant: 'clear' }
 export const Playground: Story = ({ variant, size }) => {
-  const toast = useToast()
   return (
     <Box>
       <DropdownMenu>
@@ -141,24 +138,14 @@ export const Playground: Story = ({ variant, size }) => {
             <DropdownMenuList>
               <DropdownMenuItem
                 onClick={() => {
-                  toast({
-                    status: 'success',
-                    description: 'Successfully downloaded',
-                    isClosable: true,
-                    duration: 2000,
-                  })
+                  alert('Successfully downloaded')
                 }}
               >
                 CSV only
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
-                  toast({
-                    status: 'success',
-                    description: 'Successfully downloaded',
-                    isClosable: true,
-                    duration: 2000,
-                  })
+                  alert('Successfully downloaded')
                 }}
               >
                 CSV and Attachments
