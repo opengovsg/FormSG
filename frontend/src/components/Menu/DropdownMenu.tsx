@@ -92,5 +92,6 @@ export const DropdownMenu = (props: MenuProps): JSX.Element => {
  * Item in DropdownMenuList
  */
 export const DropdownMenuItem = (props: MenuItemProps): JSX.Element => {
-  return <ChakraMenuItem {...props}></ChakraMenuItem>
+  const styles = useMultiStyleConfig('DropdownMenu', {})
+  return <ChakraMenuItem {...props} sx={styles.option}></ChakraMenuItem>
 }
