@@ -1,6 +1,8 @@
 import { useCallback } from 'react'
 import { Box, chakra, useStyleConfig } from '@chakra-ui/react'
 
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
 import { useFormSections } from './FormSectionsContext'
 import { SidebarSectionMeta } from './SectionSidebar'
 
@@ -21,12 +23,22 @@ export const SidebarLink = ({
   sectionMeta,
 }: SidebarLinkProps): JSX.Element => {
   const { sectionRefs } = useFormSections()
+  const { miniHeaderRef } = usePublicFormContext()
 
   const handleClick = useCallback(() => {
-    const ref = sectionRefs[sectionMeta._id]
-    if (!ref || !ref.current) return
-    return ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [sectionMeta._id, sectionRefs])
+    const sectionRef = sectionRefs[sectionMeta._id]
+    if (!sectionRef || !sectionRef.current) return
+
+    const headerOffset = miniHeaderRef.current?.clientHeight ?? 0
+    const sectionPosition = sectionRef.current.getBoundingClientRect().top
+    // Add additional buffer of 16px for scroll padding.
+    const offsetPosition = sectionPosition - headerOffset - 16
+
+    window.scrollBy({
+      top: offsetPosition,
+      behavior: 'smooth',
+    })
+  }, [miniHeaderRef, sectionMeta._id, sectionRefs])
 
   const styles = useStyleConfig('Link', {
     colorScheme: 'secondary',
