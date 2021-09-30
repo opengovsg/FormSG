@@ -8,11 +8,7 @@ import { PublicFormProvider } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
 export const PublicFormPage = (): JSX.Element => {
-  const { isLoading, error } = usePublicFormView()
-
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
+  const { error } = usePublicFormView()
 
   if (error instanceof HttpError && error.code === 404) {
     return <div>404</div>
@@ -20,7 +16,7 @@ export const PublicFormPage = (): JSX.Element => {
 
   return (
     <PublicFormProvider>
-      <Flex flexDir="column" height="100%">
+      <Flex flexDir="column" h="100%" minH="100vh">
         <FormStartPage />
         <FormFields />
       </Flex>
