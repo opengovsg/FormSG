@@ -28,7 +28,7 @@ export const DropdownMenu: ComponentMultiStyleConfig = {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: '8px 16px',
+      padding: isActive ? '7px 15px' : '8px 16px',
       height: '44px',
       background: 'white',
       boxSizing: 'border-box',
