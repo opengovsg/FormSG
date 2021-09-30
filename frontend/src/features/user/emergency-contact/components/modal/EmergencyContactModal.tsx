@@ -86,46 +86,52 @@ const ContactNumberInput = () => {
   }, [])
 
   return (
-    <FormControl
-      mt="1rem"
-      isRequired
-      isReadOnly={(isValid && isSubmitting) || isLoading}
-      isInvalid={!!errors.contact}
-    >
-      <FormLabel>Mobile number</FormLabel>
-      <Flex>
-        <Controller
-          name="contact"
-          control={control}
-          rules={contactNumberValidationRules}
-          render={({ field: { onChange, ...rest } }) => (
-            <PhoneNumberInput
-              isSuccess={isSuccess}
-              {...rest}
-              onChange={(nextVal) => {
-                handleInputChange(nextVal)
-                onChange(nextVal)
-              }}
-            />
-          )}
-        />
-        <Button
-          isDisabled={isVerified || isVfnOpen}
-          ml="0.5rem"
-          onClick={handleSubmit(handleSendOtp)}
-          isLoading={generateOtpMutation.isLoading}
-          leftIcon={isVerified ? <BiCheck fontSize="1.5rem" /> : undefined}
-        >
-          {isVerified ? 'Verified' : 'Verify'}
-        </Button>
-      </Flex>
-      <FormErrorMessage>
-        {errors.contact && errors.contact.message}
-      </FormErrorMessage>
-      {isVfnOpen && !isVerified ? (
-        <VerificationBox onSuccess={() => setIsSuccess(true)} />
-      ) : null}
-    </FormControl>
+    <form>
+      <FormControl
+        mt="1rem"
+        isRequired
+        isReadOnly={(isValid && isSubmitting) || isLoading}
+        isInvalid={!!errors.contact}
+      >
+        <FormLabel>Mobile number</FormLabel>
+        <Flex>
+          <Controller
+            name="contact"
+            control={control}
+            rules={contactNumberValidationRules}
+            render={({ field: { onChange, ...rest } }) => (
+              <PhoneNumberInput
+                isSuccess={isSuccess}
+                {...rest}
+                onChange={(nextVal) => {
+                  handleInputChange(nextVal)
+                  onChange(nextVal)
+                }}
+              />
+            )}
+          />
+          <Button
+            type="submit"
+            isDisabled={isVerified || isVfnOpen}
+            ml="0.5rem"
+            onClick={handleSubmit(handleSendOtp)}
+            isLoading={generateOtpMutation.isLoading}
+            leftIcon={isVerified ? <BiCheck fontSize="1.5rem" /> : undefined}
+          >
+            {isVerified ? 'Verified' : 'Verify'}
+          </Button>
+        </Flex>
+        <FormErrorMessage>
+          {errors.contact && errors.contact.message}
+        </FormErrorMessage>
+        {isVfnOpen && !isVerified ? (
+          <VerificationBox
+            onSuccess={() => setIsSuccess(true)}
+            contact={contact}
+          />
+        ) : null}
+      </FormControl>
+    </form>
   )
 }
 

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Flex, FormControl } from '@chakra-ui/react'
+import { Flex, FormControl } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -46,7 +46,7 @@ export const VerificationBox = ({
       mt="2.5rem"
     >
       <OtpIcon mr="2rem" maxW="9rem" />
-      <Box>
+      <form>
         <Flex>
           <FormControl
             isRequired
@@ -75,7 +75,12 @@ export const VerificationBox = ({
                 })}
               />
 
-              <Button ml="0.5rem" onClick={onSubmitForm}>
+              <Button
+                ml="0.5rem"
+                type="submit"
+                isLoading={verifyOtpMutation.isLoading}
+                onClick={onSubmitForm}
+              >
                 Submit
               </Button>
             </Flex>
@@ -85,7 +90,7 @@ export const VerificationBox = ({
           </FormControl>
         </Flex>
         <ResendOtpButton onResendOtp={onResendOtp} />
-      </Box>
+      </form>
     </Flex>
   )
 }
