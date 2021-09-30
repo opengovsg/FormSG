@@ -22,7 +22,6 @@ export const Menu: ComponentMultiStyleConfig = {
     },
     list: {
       minWidth: '0rem',
-      padding: '0.125rem',
     },
   },
 }
