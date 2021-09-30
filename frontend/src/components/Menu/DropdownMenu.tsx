@@ -59,7 +59,9 @@ export const DropdownMenuButton = ({
       //  For rounded outline
     >
       <Box sx={styles.innerBox} role={'presentation'} aria-hidden>
-        {children}
+        <Box sx={styles.text} role={'presentation'} aria-hidden>
+          {children}
+        </Box>
         {isActive ? (
           <BxsChevronUp role={'presentation'} aria-hidden />
         ) : (
