@@ -1,5 +1,17 @@
-import { SimpleGrid, Text } from '@chakra-ui/react'
+import {
+  Box,
+  SimpleGrid,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
+
+import { useToast } from '~hooks/useToast'
 
 import {
   DropdownMenuSize,
@@ -104,7 +116,6 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
     </SimpleGrid>
   )
 }
-
 export const Default = DropdownMenuTemplate.bind({})
 Default.args = {
   variant: 'outline',
@@ -117,3 +128,77 @@ Outline.args = { variant: 'outline' }
 
 export const Clear = DropdownMenuGroupTemplate.bind({})
 Clear.args = { variant: 'clear' }
+export const Playground: Story = ({ variant, size }) => {
+  const toast = useToast()
+  return (
+    <Box>
+      <DropdownMenu>
+        {({ isOpen }) => (
+          <>
+            <DropdownMenuButton isActive={isOpen} variant={variant} size={size}>
+              EXPORT
+            </DropdownMenuButton>
+            <DropdownMenuList>
+              <DropdownMenuItem
+                onClick={() => {
+                  toast({
+                    status: 'success',
+                    description: 'Successfully downloaded',
+                    isClosable: true,
+                    duration: 2000,
+                  })
+                }}
+              >
+                CSV only
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  toast({
+                    status: 'success',
+                    description: 'Successfully downloaded',
+                    isClosable: true,
+                    duration: 2000,
+                  })
+                }}
+              >
+                CSV and Attachments
+              </DropdownMenuItem>
+            </DropdownMenuList>
+          </>
+        )}
+      </DropdownMenu>
+      <Table variant="simple" width="80%" mt="20px">
+        <Thead bgColor="#444">
+          <Tr>
+            <Th textColor="white">#</Th>
+            <Th textColor="white">Response ID</Th>
+            <Th textColor="white">Time</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          <Tr>
+            <Td>3</Td>
+            <Td>611339e30519320012b24a4d</Td>
+            <Td>11th Aug 2021, 10:45:55 am</Td>
+          </Tr>
+
+          <Tr>
+            <Td>2</Td>
+            <Td>611335959eba44001239c086</Td>
+            <Td>11th Aug 2021, 10:27:33 am</Td>
+          </Tr>
+          <Tr>
+            <Td>1</Td>
+            <Td>611335921795eb0012def447</Td>
+            <Td>11th Aug 2021, 10:27:30 am</Td>
+          </Tr>
+        </Tbody>
+      </Table>
+    </Box>
+  )
+}
+
+DropdownMenuTemplate.args = {
+  variant: 'outline',
+  size: 'normal',
+}
