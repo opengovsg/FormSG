@@ -17,6 +17,7 @@ import { BxsChevronUp } from '~/assets/icons/BxsChevronUp'
  */
 const DropdownMenuButton = (props: ButtonProps): JSX.Element => {
   const ChevronIcon = props.isActive ? <BxsChevronUp /> : <BxsChevronDown />
+  const isVariantOutline = !props.variant || props.variant === 'outline'
 
   return (
     <ChakraMenuButton
@@ -29,7 +30,7 @@ const DropdownMenuButton = (props: ButtonProps): JSX.Element => {
       _hover={{ bgColor: 'white' }}
       _active={{
         bgColor: 'white',
-        boxShadow: '0 0 0 0.0625rem black',
+        boxShadow: isVariantOutline ? '0 0 0 0.0625rem black' : '',
       }}
       {...props}
     ></ChakraMenuButton>
