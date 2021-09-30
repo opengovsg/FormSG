@@ -1,76 +1,39 @@
 import {
-  Box,
-  Icon,
+  Button,
+  ButtonProps,
   Menu as ChakraMenu,
   MenuButton as ChakraMenuButton,
   MenuItem as ChakraMenuItem,
   MenuList as ChakraMenuList,
   MenuProps,
-  useMultiStyleConfig,
 } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~/assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~/assets/icons/BxsChevronUp'
 
-export interface DropdownMenuButtonProps {
-  /**
-   * If true, the button will have a clear border
-   */
-  isClear?: boolean
-  /**
-   * Whether the menu has been opened
-   */
-  isActive: boolean
-  /**
-   * If true, the menu will take the full width of its container
-   */
-  isStretch?: boolean
-  /**
-   * Menu title
-   */
-  children: string
-}
-
 /**
- * @preconditions Must be a child of DropdownMenu component and returned
- * using a render prop (see implementation in DropdownMenu.stories)
+ * @preconditions Must be a child of DropdownMenu component,
+ * and returned using a render prop (see implementation in DropdownMenu.stories).
  */
-const DropdownMenuButton = ({
-  isClear,
-  children,
-  isActive,
-  isStretch,
-}: DropdownMenuButtonProps): JSX.Element => {
-  const styles = useMultiStyleConfig('Menu', {
-    isActive,
-  })
+const DropdownMenuButton = (props: ButtonProps): JSX.Element => {
+  const ChevronIcon = props.isActive ? <BxsChevronUp /> : <BxsChevronDown />
+
   return (
     <ChakraMenuButton
-      padding={isActive ? '0.4375rem 0.9375rem' : '0.5rem 1rem'}
-      borderWidth={isActive ? '0.125rem' : '0.0625rem'}
-      borderColor={isClear ? 'white' : 'secondary.500'}
-      minWidth={isStretch ? '100%' : 'max-content'}
-      _hover={{ borderColor: isClear ? 'white' : 'secondary.700' }}
-    >
-      <Box sx={styles.content}>
-        {children}
-        {isActive ? (
-          <Icon
-            sx={styles.icon}
-            as={BxsChevronUp}
-            role={'presentation'}
-            aria-hidden
-          />
-        ) : (
-          <Icon
-            sx={styles.icon}
-            as={BxsChevronDown}
-            role={'presentation'}
-            aria-hidden
-          />
-        )}
-      </Box>
-    </ChakraMenuButton>
+      as={Button}
+      variant="outline"
+      colorScheme="secondary"
+      textAlign="left"
+      rightIcon={ChevronIcon}
+      iconSpacing="1.5rem"
+      _hover={{ bgColor: 'white' }}
+      _active={{
+        bgColor: 'white',
+        borderWidth: '0.125rem',
+        padding: '0.4375rem 0.9375rem',
+      }}
+      {...props}
+    ></ChakraMenuButton>
   )
 }
 

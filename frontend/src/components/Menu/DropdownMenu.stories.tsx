@@ -11,6 +11,8 @@ import {
 } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
+import { ThemeButtonVariant } from '~theme/components/Button'
+
 import { DropdownMenu } from './DropdownMenu'
 
 export default {
@@ -19,22 +21,22 @@ export default {
 } as Meta
 
 type DropdownMenuTemplateProps = {
-  isClear?: boolean
-  isStretch?: boolean
-  children: string
+  isFullWidth?: boolean
   isOpen?: boolean
+  variant: ThemeButtonVariant
+  children: string
 }
 
 type DropdownMenuGroupTemplateProps = {
-  isClear?: boolean
+  variant: ThemeButtonVariant
 }
 
 const { DropdownMenuButton, DropdownMenuItem, DropdownMenuList } = DropdownMenu
 
 const DropdownMenuTemplate: Story<DropdownMenuTemplateProps> = ({
-  isClear,
-  isStretch,
+  variant,
   children,
+  isFullWidth,
   isOpen,
 }) => {
   return (
@@ -42,9 +44,9 @@ const DropdownMenuTemplate: Story<DropdownMenuTemplateProps> = ({
       {({ isOpen }) => (
         <>
           <DropdownMenuButton
+            variant={variant}
+            isFullWidth={isFullWidth}
             isActive={isOpen}
-            isClear={isClear}
-            isStretch={isStretch}
           >
             {children}
           </DropdownMenuButton>
@@ -60,7 +62,7 @@ const DropdownMenuTemplate: Story<DropdownMenuTemplateProps> = ({
 }
 
 const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
-  isClear,
+  variant,
 }) => {
   return (
     <SimpleGrid
@@ -76,8 +78,8 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
         templateColumns="inherit"
         alignItems="center"
       >
-        <DropdownMenuTemplate isClear={isClear}>Menu</DropdownMenuTemplate>
-        <DropdownMenuTemplate isClear={isClear} isStretch>
+        <DropdownMenuTemplate variant={variant}>Menu</DropdownMenuTemplate>
+        <DropdownMenuTemplate variant={variant} isFullWidth>
           Menu Stretch
         </DropdownMenuTemplate>
       </SimpleGrid>
@@ -88,10 +90,10 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
         templateColumns="inherit"
         alignItems="center"
       >
-        <DropdownMenuTemplate isClear={isClear} isOpen>
+        <DropdownMenuTemplate variant={variant} isOpen>
           Menu
         </DropdownMenuTemplate>
-        <DropdownMenuTemplate isClear={isClear} isStretch isOpen>
+        <DropdownMenuTemplate variant={variant} isFullWidth isOpen>
           Menu Stretch
         </DropdownMenuTemplate>
       </SimpleGrid>
@@ -101,15 +103,16 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
 export const Default = DropdownMenuTemplate.bind({})
 Default.args = {
   children: 'Menu Default',
-  isClear: false,
-  isStretch: false,
+  variant: 'outline',
+  isFullWidth: false,
 }
 
 export const Outline = DropdownMenuGroupTemplate.bind({})
-Outline.args = {}
+Outline.args = { variant: 'outline' }
 
 export const Clear = DropdownMenuGroupTemplate.bind({})
-Clear.args = { isClear: true }
+Clear.args = { variant: 'clear' }
+
 export const Playground: Story = () => {
   return (
     <Box>
