@@ -1,13 +1,11 @@
-import { Box } from '@chakra-ui/layout'
-
 import { FormBannerLogo } from './FormBannerLogo'
-import { FormTitle } from './FormTitle'
+import { FormHeader } from './FormHeader'
 
 export const FormStartPage = (): JSX.Element => {
   return (
-    <Box>
+    <>
       <FormBannerLogo />
-      <FormTitle />
-    </Box>
+      <FormHeader />
+    </>
   )
 }
