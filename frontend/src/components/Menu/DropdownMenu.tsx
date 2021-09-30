@@ -53,9 +53,13 @@ export const DropdownMenuButton = ({
       as={Box}
       bgColor={isActive ? 'secondary.300' : 'clear'} //  For rounded outline
     >
-      <Box sx={styles.innerBox}>
+      <Box sx={styles.innerBox} role={'presentation'} aria-hidden>
         {children}
-        {isActive ? <BxsChevronUp /> : <BxsChevronDown />}
+        {isActive ? (
+          <BxsChevronUp role={'presentation'} aria-hidden />
+        ) : (
+          <BxsChevronDown role={'presentation'} aria-hidden />
+        )}
       </Box>
     </ChakraMenuButton>
   )
