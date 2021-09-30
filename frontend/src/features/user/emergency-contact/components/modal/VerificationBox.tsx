@@ -8,6 +8,9 @@ import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import ResendOtpButton from '~templates/ResendOtpButton'
 
+import { useUserMutations } from '~features/user/mutations'
+import { useUser } from '~features/user/queries'
+
 import { OtpIcon } from './OtpIcon'
 
 type VfnFieldValues = {
@@ -16,26 +19,45 @@ type VfnFieldValues = {
 
 interface VerificationBoxProps {
   onSuccess: () => void
+  contact: string
 }
 
 export const VerificationBox = ({
   onSuccess,
+  contact,
 }: VerificationBoxProps): JSX.Element => {
+  const { user } = useUser()
   const {
     register,
+    setError,
     formState: { isValid, isSubmitting, errors },
     handleSubmit,
   } = useForm<VfnFieldValues>()
 
+  const { verifyOtpMutation, generateOtpMutation } = useUserMutations()
+
   const onSubmitForm = handleSubmit(async (inputs) => {
-    console.log(inputs)
-    onSuccess()
+    if (!user) return
+    return verifyOtpMutation.mutate(
+      { userId: user._id, contact, otp: inputs.otp },
+      {
+        onSuccess,
+        onError: (error) =>
+          setError('otp', { type: 'server', message: error.message }),
+      },
+    )
   })
 
-  const onResendOtp = useCallback(() => {
-    // TODO: Add API call to resend OTP
-    return Promise.resolve(console.log('resending'))
-  }, [])
+  const onResendOtp = useCallback(async () => {
+    if (!user) return
+    return generateOtpMutation.mutate(
+      { userId: user._id, contact },
+      {
+        onError: (error) =>
+          setError('otp', { type: 'server', message: error.message }),
+      },
+    )
+  }, [contact, generateOtpMutation, setError, user])
 
   return (
     <Flex
