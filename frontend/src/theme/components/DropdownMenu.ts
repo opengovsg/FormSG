@@ -44,12 +44,12 @@ export const DropdownMenu: ComponentMultiStyleConfig = {
         _hover: {
           borderColor: 'secondary.700',
         },
-        _active: {
-          borderWidth: '2px',
+        _focus: {
           outline: '4px solid',
           outlineColor: 'secondary.300',
         },
-        _focus: {
+        _active: {
+          borderWidth: '2px',
           outline: '4px solid',
           outlineColor: 'secondary.300',
         },
