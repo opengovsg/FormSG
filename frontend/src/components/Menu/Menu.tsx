@@ -27,7 +27,11 @@ const MenuButton = (props: ButtonProps): JSX.Element => {
       textAlign="left"
       rightIcon={ChevronIcon}
       iconSpacing="1.5rem"
-      _hover={{ bgColor: 'white' }}
+      _hover={{
+        bgColor: 'white',
+        borderColor: 'secondary.900',
+        color: 'secondary.900',
+      }}
       _active={{
         bgColor: 'white',
         boxShadow: isVariantOutline ? '0 0 0 0.0625rem black' : '',
