@@ -3,6 +3,7 @@ import { Box, Flex, VStack } from '@chakra-ui/react'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
 
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { usePublicForm } from '~features/public-form/queries'
 
 import { useFormSections } from './FormSectionsContext'
@@ -13,6 +14,17 @@ export type SidebarSectionMeta = Pick<FormFieldDto, 'title' | '_id'>
 export const SectionSidebar = (): JSX.Element => {
   const { data } = usePublicForm()
   const { activeSectionId } = useFormSections()
+  const { miniHeaderRef } = usePublicFormContext()
+
+  // Used for offsetting the section sidebar when the mini header is open.
+  const sectionTopOffset = useMemo(() => {
+    // Current height of the mini header + 52px from the top
+    const offsetPx = (miniHeaderRef?.current?.clientHeight ?? 0) + 52
+    return `${offsetPx}px`
+    // Require ignore as miniHeaderRef is an object and dependency comparison
+    // will never change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [miniHeaderRef?.current?.clientHeight])
 
   const scrollData = useMemo(() => {
     if (!data) return
@@ -32,7 +44,7 @@ export const SectionSidebar = (): JSX.Element => {
     <Box flex={1} d={{ base: 'none', md: 'initial' }} minW="20%">
       <VStack
         pos="sticky"
-        top={0}
+        top={sectionTopOffset}
         spacing="1.25rem"
         alignSelf="flex-start"
         align="flex-start"
