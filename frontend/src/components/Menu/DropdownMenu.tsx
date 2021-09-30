@@ -1,6 +1,5 @@
 import {
-  Box,
-  Button,
+  Icon,
   Menu as ChakraMenu,
   MenuButton as ChakraMenuButton,
   MenuItem as ChakraMenuItem,
@@ -47,27 +46,29 @@ export const DropdownMenuButton = ({
   isActive,
   size,
 }: DropdownMenuButtonProps): JSX.Element => {
-  const styles = useMultiStyleConfig('DropdownMenu', {
+  const styles = useMultiStyleConfig('Menu', {
     variant,
     size,
     isActive,
   })
   return (
-    <ChakraMenuButton
-      sx={styles.outerBox}
-      as={Button}
-      //  For rounded outline
-    >
-      <Box sx={styles.innerBox} role={'presentation'} aria-hidden>
-        <Box sx={styles.text} role={'presentation'} aria-hidden>
-          {children}
-        </Box>
-        {isActive ? (
-          <BxsChevronUp role={'presentation'} aria-hidden />
-        ) : (
-          <BxsChevronDown role={'presentation'} aria-hidden />
-        )}
-      </Box>
+    <ChakraMenuButton>
+      {children}
+      {isActive ? (
+        <Icon
+          sx={styles.icon}
+          as={BxsChevronUp}
+          role={'presentation'}
+          aria-hidden
+        />
+      ) : (
+        <Icon
+          sx={styles.icon}
+          as={BxsChevronDown}
+          role={'presentation'}
+          aria-hidden
+        />
+      )}
     </ChakraMenuButton>
   )
 }
@@ -80,8 +81,7 @@ export const DropdownMenuButton = ({
  * Used to wrap MenuItem component
  */
 export const DropdownMenuList = (props: MenuListProps): JSX.Element => {
-  const styles = useMultiStyleConfig('DropdownMenu', {})
-  return <ChakraMenuList {...props} sx={styles.menuList}></ChakraMenuList>
+  return <ChakraMenuList {...props}></ChakraMenuList>
 }
 
 /**
@@ -95,6 +95,5 @@ export const DropdownMenu = (props: MenuProps): JSX.Element => {
  * Item in DropdownMenuList
  */
 export const DropdownMenuItem = (props: MenuItemProps): JSX.Element => {
-  const styles = useMultiStyleConfig('DropdownMenu', {})
-  return <ChakraMenuItem {...props} sx={styles.option}></ChakraMenuItem>
+  return <ChakraMenuItem {...props}></ChakraMenuItem>
 }

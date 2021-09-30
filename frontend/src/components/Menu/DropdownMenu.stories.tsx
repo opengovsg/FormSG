@@ -14,7 +14,7 @@ import { Meta, Story } from '@storybook/react'
 import {
   DropdownMenuSize,
   DropdownMenuVariant,
-} from '../../theme/components/DropdownMenu'
+} from '~/theme/components/DropdownMenu'
 
 import {
   DropdownMenu,
@@ -87,7 +87,7 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
       <SimpleGrid
         columns={2}
         spacing={8}
-        templateColumns="min-content auto"
+        templateColumns="inherit"
         alignItems="center"
       >
         <DropdownMenuTemplate variant={variant} size={'md'}>
@@ -101,7 +101,7 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
       <SimpleGrid
         columns={2}
         spacing={8}
-        templateColumns="min-content auto"
+        templateColumns="inherit"
         alignItems="center"
       >
         <DropdownMenuTemplate variant={variant} size={'md'} isOpen>
