@@ -20,8 +20,6 @@ export const Menu: ComponentMultiStyleConfig = {
         borderRadius: '0.125rem',
       },
       _active: {
-        padding: '0.75rem 1rem',
-        borderWidth: '0rem',
         background: 'primary.200',
         fontWeight: '500',
       },
