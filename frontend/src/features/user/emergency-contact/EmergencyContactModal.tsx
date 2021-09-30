@@ -6,6 +6,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
+  useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
 
@@ -15,10 +16,17 @@ import { ContactNumberInput } from './components/ContactNumberInput'
 
 export const EmergencyContactModal = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'md',
+  })
+
   return (
     <>
       <Button onClick={onOpen}>Open</Button>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalCloseButton />

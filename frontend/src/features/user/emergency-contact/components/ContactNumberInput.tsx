@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { BiCheck } from 'react-icons/bi'
-import { Flex, FormControl } from '@chakra-ui/react'
+import { Box, FormControl, Stack } from '@chakra-ui/react'
 
 import { isMobilePhoneNumber } from '~shared/utils/phone-num-validation'
 
@@ -83,7 +83,7 @@ export const ContactNumberInput = (): JSX.Element => {
         isInvalid={!!errors.contact}
       >
         <FormLabel>Mobile number</FormLabel>
-        <Flex>
+        <Stack direction={{ base: 'column', md: 'row' }} spacing="0.5rem">
           <Controller
             name="contact"
             control={control}
@@ -99,17 +99,18 @@ export const ContactNumberInput = (): JSX.Element => {
               />
             )}
           />
-          <Button
-            type="submit"
-            isDisabled={isVerified || isVfnOpen}
-            ml="0.5rem"
-            onClick={handleSubmit(handleSendOtp)}
-            isLoading={generateOtpMutation.isLoading}
-            leftIcon={isVerified ? <BiCheck fontSize="1.5rem" /> : undefined}
-          >
-            {isVerified ? 'Verified' : 'Verify'}
-          </Button>
-        </Flex>
+          <Box>
+            <Button
+              type="submit"
+              isDisabled={isVerified || isVfnOpen}
+              onClick={handleSubmit(handleSendOtp)}
+              isLoading={generateOtpMutation.isLoading}
+              leftIcon={isVerified ? <BiCheck fontSize="1.5rem" /> : undefined}
+            >
+              {isVerified ? 'Verified' : 'Verify'}
+            </Button>
+          </Box>
+        </Stack>
         <FormErrorMessage>
           {errors.contact && errors.contact.message}
         </FormErrorMessage>

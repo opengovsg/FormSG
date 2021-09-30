@@ -61,13 +61,17 @@ export const VerificationBox = ({
 
   return (
     <Flex
-      px="4.5rem"
-      py="2.25rem"
+      px={{ base: '1.25rem', md: '4.5rem' }}
+      py={{ base: '1.25rem', md: '2.25rem' }}
       bg="primary.100"
       align="flex-start"
       mt="2.5rem"
     >
-      <OtpIcon mr="2rem" maxW="9rem" />
+      <OtpIcon
+        display={{ base: 'none', md: 'initial' }}
+        mr="2rem"
+        maxW="9rem"
+      />
       <form>
         <Flex>
           <FormControl
