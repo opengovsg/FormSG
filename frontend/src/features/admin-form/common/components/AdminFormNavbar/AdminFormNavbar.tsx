@@ -1,5 +1,5 @@
 import { BiLeftArrowAlt, BiShow, BiUserPlus } from 'react-icons/bi'
-import { ButtonGroup, Flex } from '@chakra-ui/react'
+import { Box, ButtonGroup, Flex } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form/form'
 
@@ -35,15 +35,17 @@ export const AdminFormNavbar = ({
 }: AdminFormNavbarProps): JSX.Element => {
   return (
     <Flex py="0.625rem" px="2rem" justify="space-between" align="center">
-      <Flex flex={1}>
-        <IconButton
-          mr="0.5rem"
-          aria-label="Go back to dashboard"
-          variant="clear"
-          colorScheme="secondary"
-          onClick={handleBackButtonClick}
-          icon={<BiLeftArrowAlt />}
-        />
+      <Flex flex={1} align="center">
+        <Box>
+          <IconButton
+            mr="0.5rem"
+            aria-label="Go back to dashboard"
+            variant="clear"
+            colorScheme="secondary"
+            onClick={handleBackButtonClick}
+            icon={<BiLeftArrowAlt />}
+          />
+        </Box>
         <AdminFormNavbarDetails formInfo={formInfo} />
       </Flex>
       <TabList mt="-1.125rem" mb="-0.25rem" borderBottom="none">
