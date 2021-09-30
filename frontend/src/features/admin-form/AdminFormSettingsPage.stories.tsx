@@ -4,6 +4,7 @@ import { Meta, Story } from '@storybook/react'
 import {
   getAdminFormResponse,
   getAdminFormSettings,
+  getAdminFormSubmissions,
 } from '~/mocks/msw/handlers/admin-form'
 
 import { viewports } from '~utils/storybook'
@@ -28,7 +29,11 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [getAdminFormResponse(), getAdminFormSettings()],
+    msw: [
+      getAdminFormResponse(),
+      getAdminFormSettings(),
+      getAdminFormSubmissions(),
+    ],
   },
 } as Meta
 
