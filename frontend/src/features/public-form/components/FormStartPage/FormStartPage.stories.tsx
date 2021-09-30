@@ -10,12 +10,21 @@ import {
   getPublicFormResponse,
 } from '~/mocks/msw/handlers/public-form'
 
+import { PublicFormProvider } from '~features/public-form/PublicFormContext'
+
+import {
+  MiniHeader as MiniHeaderComponent,
+  MiniHeaderProps,
+} from './FormHeader'
 import { FormStartPage } from './FormStartPage'
 
 export default {
   title: 'Pages/PublicFormPage/FormStartPage',
   component: FormStartPage,
-  decorators: [StoryRouter()],
+  decorators: [
+    StoryRouter(),
+    (storyFn) => <PublicFormProvider>{storyFn()}</PublicFormProvider>,
+  ],
   parameters: {
     layout: 'fullscreen',
   },
@@ -137,6 +146,23 @@ ColorThemeRed.parameters = {
         startPage: {
           colorTheme: FormColorTheme.Red,
         },
+      },
+      delay: 0,
+    }),
+  ],
+}
+
+export const MiniHeader: Story<MiniHeaderProps> = (args) => (
+  <MiniHeaderComponent {...args} />
+)
+MiniHeader.args = {
+  isOpen: true,
+}
+MiniHeader.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        title: 'storybook test title',
       },
       delay: 0,
     }),

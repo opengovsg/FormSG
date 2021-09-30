@@ -49,11 +49,12 @@ const useFormHeader = () => {
   }
 }
 
-interface MiniHeaderProps {
+export interface MiniHeaderProps {
   isOpen: boolean
 }
 
-const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element => {
+// Exported for testing.
+export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element => {
   const { title, titleBg, titleColour } = useFormHeader()
 
   const { miniHeaderRef } = usePublicFormContext()
