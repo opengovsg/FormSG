@@ -1,8 +1,7 @@
-import { Box } from '@chakra-ui/react'
-
 import { HttpError } from '~services/ApiService'
 
 import FormStartPage from './components/FormStartPage'
+import { PublicFormProvider } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
 export const PublicFormPage = (): JSX.Element => {
@@ -17,8 +16,8 @@ export const PublicFormPage = (): JSX.Element => {
   }
 
   return (
-    <Box>
+    <PublicFormProvider>
       <FormStartPage />
-    </Box>
+    </PublicFormProvider>
   )
 }
