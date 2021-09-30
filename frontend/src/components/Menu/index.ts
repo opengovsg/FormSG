@@ -1,6 +1,1 @@
-export {
-  DropdownMenu,
-  DropdownMenuButton,
-  DropdownMenuItem,
-  DropdownMenuList,
-} from './DropdownMenu'
+export { DropdownMenu as default } from './DropdownMenu'
