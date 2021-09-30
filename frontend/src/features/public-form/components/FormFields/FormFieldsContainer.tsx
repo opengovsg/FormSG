@@ -38,7 +38,13 @@ export const FormFieldsContainer = (): JSX.Element => {
     return data?.form_fields.map((field) => {
       switch (field.fieldType) {
         case BasicField.Section:
-          return <SectionField dividerColor={bgColour} schema={field} />
+          return (
+            <SectionField
+              key={field._id}
+              dividerColor={bgColour}
+              schema={field}
+            />
+          )
         default:
           return (
             <Text w="100%" key={field._id}>
