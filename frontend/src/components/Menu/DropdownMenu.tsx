@@ -13,24 +13,20 @@ import {
 
 import { BxsChevronDown } from '~/assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~/assets/icons/BxsChevronUp'
-import {
-  DropdownMenuSize,
-  DropdownMenuVariant,
-} from '~/theme/components/DropdownMenu'
 
 export interface DropdownMenuButtonProps {
   /**
-   * The variant of the dropdown menu.
+   * If true, the button will have a clear border
    */
-  variant: DropdownMenuVariant
+  isClear?: boolean
   /**
    * Whether the menu has been opened
    */
   isActive: boolean
   /**
-   * The size of the dropdown menu - stretched or not.
+   * If true, the menu will take the full width of its container
    */
-  size: DropdownMenuSize
+  isStretch?: boolean
   /**
    * Menu title
    */
@@ -42,18 +38,22 @@ export interface DropdownMenuButtonProps {
  * using a render prop (see implementation in DropdownMenu.stories)
  */
 export const DropdownMenuButton = ({
-  variant = 'outline',
+  isClear,
   children,
   isActive,
-  size,
+  isStretch,
 }: DropdownMenuButtonProps): JSX.Element => {
   const styles = useMultiStyleConfig('Menu', {
-    variant,
-    size,
     isActive,
   })
   return (
-    <ChakraMenuButton>
+    <ChakraMenuButton
+      padding={isActive ? '0.4375rem 0.9375rem' : '0.5rem 1rem'}
+      borderWidth={isActive ? '0.125rem' : '0.0625rem'}
+      borderColor={isClear ? 'white' : 'secondary.500'}
+      minWidth={isStretch ? '100%' : 'max-content'}
+      _hover={{ borderColor: isClear ? 'white' : 'secondary.700' }}
+    >
       <Box sx={styles.content}>
         {children}
         {isActive ? (

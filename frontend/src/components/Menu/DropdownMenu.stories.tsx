@@ -12,11 +12,6 @@ import {
 import { Meta, Story } from '@storybook/react'
 
 import {
-  DropdownMenuSize,
-  DropdownMenuVariant,
-} from '~/theme/components/DropdownMenu'
-
-import {
   DropdownMenu,
   DropdownMenuButton,
   DropdownMenuItem,
@@ -29,19 +24,19 @@ export default {
 } as Meta
 
 type DropdownMenuTemplateProps = {
-  variant: DropdownMenuVariant
-  size: DropdownMenuSize
+  isClear?: boolean
+  isStretch?: boolean
   children: string
   isOpen?: boolean
 }
 
 type DropdownMenuGroupTemplateProps = {
-  variant: DropdownMenuVariant
+  isClear?: boolean
 }
 
 const DropdownMenuTemplate: Story<DropdownMenuTemplateProps> = ({
-  variant,
-  size,
+  isClear,
+  isStretch,
   children,
   isOpen,
 }) => {
@@ -49,7 +44,11 @@ const DropdownMenuTemplate: Story<DropdownMenuTemplateProps> = ({
     <DropdownMenu {...(isOpen ? { isOpen } : {})}>
       {({ isOpen }) => (
         <>
-          <DropdownMenuButton isActive={isOpen} variant={variant} size={size}>
+          <DropdownMenuButton
+            isActive={isOpen}
+            isClear={isClear}
+            isStretch={isStretch}
+          >
             {children}
           </DropdownMenuButton>
           <DropdownMenuList>
@@ -64,7 +63,7 @@ const DropdownMenuTemplate: Story<DropdownMenuTemplateProps> = ({
 }
 
 const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
-  variant,
+  isClear,
 }) => {
   return (
     <SimpleGrid
@@ -80,10 +79,8 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
         templateColumns="inherit"
         alignItems="center"
       >
-        <DropdownMenuTemplate variant={variant} size={'md'}>
-          Menu
-        </DropdownMenuTemplate>
-        <DropdownMenuTemplate variant={variant} size={'lg'}>
+        <DropdownMenuTemplate isClear={isClear}>Menu</DropdownMenuTemplate>
+        <DropdownMenuTemplate isClear={isClear} isStretch>
           Menu Stretch
         </DropdownMenuTemplate>
       </SimpleGrid>
@@ -94,10 +91,10 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
         templateColumns="inherit"
         alignItems="center"
       >
-        <DropdownMenuTemplate variant={variant} size={'md'} isOpen>
+        <DropdownMenuTemplate isClear={isClear} isOpen>
           Menu
         </DropdownMenuTemplate>
-        <DropdownMenuTemplate variant={variant} size={'lg'} isOpen>
+        <DropdownMenuTemplate isClear={isClear} isStretch isOpen>
           Menu Stretch
         </DropdownMenuTemplate>
       </SimpleGrid>
@@ -106,25 +103,23 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
 }
 export const Default = DropdownMenuTemplate.bind({})
 Default.args = {
-  variant: 'outline',
-  size: 'md',
   children: 'Menu Default',
+  isClear: false,
+  isStretch: false,
 }
 
 export const Outline = DropdownMenuGroupTemplate.bind({})
-Outline.args = { variant: 'outline' }
+Outline.args = {}
 
 export const Clear = DropdownMenuGroupTemplate.bind({})
-Clear.args = { variant: 'clear' }
-export const Playground: Story = ({ variant, size }) => {
+Clear.args = { isClear: true }
+export const Playground: Story = () => {
   return (
     <Box>
       <DropdownMenu>
         {({ isOpen }) => (
           <>
-            <DropdownMenuButton isActive={isOpen} variant={variant} size={size}>
-              EXPORT
-            </DropdownMenuButton>
+            <DropdownMenuButton isActive={isOpen}>EXPORT</DropdownMenuButton>
             <DropdownMenuList>
               <DropdownMenuItem
                 onClick={() => {
@@ -173,9 +168,4 @@ export const Playground: Story = ({ variant, size }) => {
       </Table>
     </Box>
   )
-}
-
-DropdownMenuTemplate.args = {
-  variant: 'outline',
-  size: 'md',
 }
