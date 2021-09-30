@@ -21,7 +21,12 @@ export const AdminFormNavbarDetails = ({
   return (
     <Flex align="flex-start" flexDir="column" justify="center">
       <Skeleton isLoaded={!!formInfo}>
-        <Text textStyle="body-1" color="secondary.500">
+        <Text
+          textStyle="body-1"
+          color="secondary.500"
+          noOfLines={1}
+          title={formInfo?.title}
+        >
           {formInfo?.title ?? 'Form title loading...'}
         </Text>
       </Skeleton>
