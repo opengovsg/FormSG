@@ -29,8 +29,7 @@ const DropdownMenuButton = (props: ButtonProps): JSX.Element => {
       _hover={{ bgColor: 'white' }}
       _active={{
         bgColor: 'white',
-        borderWidth: '0.125rem',
-        padding: '0.4375rem 0.9375rem',
+        boxShadow: '0 0 0 0.0625rem black',
       }}
       {...props}
     ></ChakraMenuButton>
