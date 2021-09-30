@@ -55,7 +55,7 @@ const DropdownMenuItem = ChakraMenuItem
  * Used to wrap DropdownMenuButton, DropdownMenuItem and DropdownMenuList components
  */
 export const DropdownMenu = (props: MenuProps): JSX.Element => {
-  return <ChakraMenu {...props} matchWidth={true} gutter={4}></ChakraMenu>
+  return <ChakraMenu matchWidth={true} gutter={4} {...props}></ChakraMenu>
 }
 
 DropdownMenu.DropdownMenuButton = DropdownMenuButton
