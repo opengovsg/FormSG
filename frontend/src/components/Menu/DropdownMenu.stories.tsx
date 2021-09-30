@@ -1,4 +1,4 @@
-import { SimpleGrid } from '@chakra-ui/react'
+import { SimpleGrid, Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import {
@@ -32,6 +32,7 @@ type DropdownMenuTemplateProps = {
   variant: DropdownMenuVariant
   size: DropdownMenuSize
   children: string
+  isOpen?: boolean
 }
 
 type DropdownMenuGroupTemplateProps = {
@@ -42,9 +43,10 @@ const DropdownMenuTemplate: Story<DropdownMenuTemplateProps> = ({
   variant,
   size,
   children,
+  isOpen,
 }) => {
   return (
-    <DropdownMenu>
+    <DropdownMenu {...(isOpen ? { isOpen } : {})}>
       {({ isOpen }) => (
         <>
           <DropdownMenuButton isActive={isOpen} variant={variant} size={size}>
@@ -68,15 +70,37 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
     <SimpleGrid
       columns={2}
       spacing={8}
-      templateColumns="min-content auto"
+      templateColumns="max-content auto"
       alignItems="center"
     >
-      <DropdownMenuTemplate variant={variant} size={'normal'}>
-        Menu Default
-      </DropdownMenuTemplate>
-      <DropdownMenuTemplate variant={variant} size={'stretch'}>
-        Menu Default Stretch
-      </DropdownMenuTemplate>
+      <Text>Closed Menu</Text>
+      <SimpleGrid
+        columns={2}
+        spacing={8}
+        templateColumns="min-content auto"
+        alignItems="center"
+      >
+        <DropdownMenuTemplate variant={variant} size={'normal'}>
+          Menu
+        </DropdownMenuTemplate>
+        <DropdownMenuTemplate variant={variant} size={'stretch'}>
+          Menu Stretch
+        </DropdownMenuTemplate>
+      </SimpleGrid>
+      <Text>Open Menu</Text>
+      <SimpleGrid
+        columns={2}
+        spacing={8}
+        templateColumns="min-content auto"
+        alignItems="center"
+      >
+        <DropdownMenuTemplate variant={variant} size={'normal'} isOpen>
+          Menu
+        </DropdownMenuTemplate>
+        <DropdownMenuTemplate variant={variant} size={'stretch'} isOpen>
+          Menu Stretch
+        </DropdownMenuTemplate>
+      </SimpleGrid>
     </SimpleGrid>
   )
 }
