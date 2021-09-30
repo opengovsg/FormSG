@@ -13,55 +13,53 @@ import { Meta, Story } from '@storybook/react'
 
 import { ThemeButtonVariant } from '~theme/components/Button'
 
-import { DropdownMenu } from './DropdownMenu'
+import { Menu } from './Menu'
 
 export default {
-  title: 'Components/DropdownMenu',
-  component: DropdownMenu,
+  title: 'Components/Menu',
+  component: Menu,
 } as Meta
 
-type DropdownMenuTemplateProps = {
+type MenuTemplateProps = {
   isFullWidth?: boolean
   isOpen?: boolean
   variant: ThemeButtonVariant
   children: string
 }
 
-type DropdownMenuGroupTemplateProps = {
+type MenuGroupTemplateProps = {
   variant: ThemeButtonVariant
 }
 
-const DropdownMenuTemplate: Story<DropdownMenuTemplateProps> = ({
+const MenuTemplate: Story<MenuTemplateProps> = ({
   variant,
   children,
   isFullWidth,
   isOpen,
 }) => {
   return (
-    <DropdownMenu {...(isOpen ? { isOpen } : {})}>
+    <Menu {...(isOpen ? { isOpen } : {})}>
       {({ isOpen }) => (
         <>
-          <DropdownMenu.Button
+          <Menu.Button
             variant={variant}
             isFullWidth={isFullWidth}
             isActive={isOpen}
           >
             {children}
-          </DropdownMenu.Button>
-          <DropdownMenu.List>
-            <DropdownMenu.Item>Last updated</DropdownMenu.Item>
-            <DropdownMenu.Item>Date created</DropdownMenu.Item>
-            <DropdownMenu.Item>Name</DropdownMenu.Item>
-          </DropdownMenu.List>
+          </Menu.Button>
+          <Menu.List>
+            <Menu.Item>Last updated</Menu.Item>
+            <Menu.Item>Date created</Menu.Item>
+            <Menu.Item>Name</Menu.Item>
+          </Menu.List>
         </>
       )}
-    </DropdownMenu>
+    </Menu>
   )
 }
 
-const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
-  variant,
-}) => {
+const MenuGroupTemplate: Story<MenuGroupTemplateProps> = ({ variant }) => {
   return (
     <SimpleGrid
       columns={2}
@@ -76,10 +74,10 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
         templateColumns="inherit"
         alignItems="center"
       >
-        <DropdownMenuTemplate variant={variant}>Menu</DropdownMenuTemplate>
-        <DropdownMenuTemplate variant={variant} isFullWidth>
+        <MenuTemplate variant={variant}>Menu</MenuTemplate>
+        <MenuTemplate variant={variant} isFullWidth>
           Menu Stretch
-        </DropdownMenuTemplate>
+        </MenuTemplate>
       </SimpleGrid>
       <Text>Open Menu</Text>
       <SimpleGrid
@@ -88,55 +86,55 @@ const DropdownMenuGroupTemplate: Story<DropdownMenuGroupTemplateProps> = ({
         templateColumns="inherit"
         alignItems="center"
       >
-        <DropdownMenuTemplate variant={variant} isOpen>
+        <MenuTemplate variant={variant} isOpen>
           Menu
-        </DropdownMenuTemplate>
-        <DropdownMenuTemplate variant={variant} isFullWidth isOpen>
+        </MenuTemplate>
+        <MenuTemplate variant={variant} isFullWidth isOpen>
           Menu Stretch
-        </DropdownMenuTemplate>
+        </MenuTemplate>
       </SimpleGrid>
     </SimpleGrid>
   )
 }
-export const Default = DropdownMenuTemplate.bind({})
+export const Default = MenuTemplate.bind({})
 Default.args = {
   children: 'Menu Default',
   variant: 'outline',
   isFullWidth: false,
 }
 
-export const Outline = DropdownMenuGroupTemplate.bind({})
+export const Outline = MenuGroupTemplate.bind({})
 Outline.args = { variant: 'outline' }
 
-export const Clear = DropdownMenuGroupTemplate.bind({})
+export const Clear = MenuGroupTemplate.bind({})
 Clear.args = { variant: 'clear' }
 
 export const Playground: Story = () => {
   return (
     <Box>
-      <DropdownMenu>
+      <Menu>
         {({ isOpen }) => (
           <>
-            <DropdownMenu.Button isActive={isOpen}>EXPORT</DropdownMenu.Button>
-            <DropdownMenu.List>
-              <DropdownMenu.Item
+            <Menu.Button isActive={isOpen}>EXPORT</Menu.Button>
+            <Menu.List>
+              <Menu.Item
                 onClick={() => {
                   alert('Successfully downloaded')
                 }}
               >
                 CSV only
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
+              </Menu.Item>
+              <Menu.Item
                 onClick={() => {
                   alert('Successfully downloaded')
                 }}
               >
                 CSV and Attachments
-              </DropdownMenu.Item>
-            </DropdownMenu.List>
+              </Menu.Item>
+            </Menu.List>
           </>
         )}
-      </DropdownMenu>
+      </Menu>
       <Table variant="simple" width="80%" mt="20px">
         <Thead bgColor="#444">
           <Tr>

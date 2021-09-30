@@ -12,10 +12,10 @@ import { BxsChevronDown } from '~/assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~/assets/icons/BxsChevronUp'
 
 /**
- * @preconditions Must be a child of DropdownMenu component,
- * and returned using a render prop (see implementation in DropdownMenu.stories).
+ * @preconditions Must be a child of Menu component,
+ * and returned using a render prop (see implementation in Menu.stories).
  */
-const DropdownMenuButton = (props: ButtonProps): JSX.Element => {
+const MenuButton = (props: ButtonProps): JSX.Element => {
   const ChevronIcon = props.isActive ? <BxsChevronUp /> : <BxsChevronDown />
   const isVariantOutline = !props.variant || props.variant === 'outline'
 
@@ -38,26 +38,26 @@ const DropdownMenuButton = (props: ButtonProps): JSX.Element => {
 }
 
 /**
- * @preconditions Must be a child of DropdownMenu component
- * after DropdownMenuButton, and returned using a render prop
- * (see implementation in DropdownMenu.stories).
+ * @preconditions Must be a child of Menu component
+ * after MenuButton, and returned using a render prop
+ * (see implementation in Menu.stories).
  *
  * Used to wrap MenuItem component
  */
-const DropdownMenuList = ChakraMenuList
+const MenuList = ChakraMenuList
 
 /**
- * Item in DropdownMenuList
+ * Item in MenuList
  */
-const DropdownMenuItem = ChakraMenuItem
+const MenuItem = ChakraMenuItem
 
 /**
- * Used to wrap DropdownMenuButton, DropdownMenuItem and DropdownMenuList components
+ * Used to wrap MenuButton, MenuItem and MenuList components
  */
-export const DropdownMenu = (props: MenuProps): JSX.Element => {
+export const Menu = (props: MenuProps): JSX.Element => {
   return <ChakraMenu matchWidth={true} gutter={4} {...props}></ChakraMenu>
 }
 
-DropdownMenu.Button = DropdownMenuButton
-DropdownMenu.List = DropdownMenuList
-DropdownMenu.Item = DropdownMenuItem
+Menu.Button = MenuButton
+Menu.List = MenuList
+Menu.Item = MenuItem
