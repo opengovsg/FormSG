@@ -1,3 +1,4 @@
+import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 
@@ -57,3 +58,37 @@ export const logAdminAction: ControllerHandler<{ formId: string }> = async (
 
   return next()
 }
+
+export const validateCheckUserParams = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    email: Joi.string()
+      .required()
+      .email()
+      .message('Please enter a valid email')
+      .lowercase(),
+  }),
+})
+
+export const validateLoginSendOtpParams = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    email: Joi.string()
+      .required()
+      .email()
+      .message('Please enter a valid email')
+      .lowercase(),
+  }),
+})
+
+export const validateVerifyOtpParams = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    email: Joi.string()
+      .required()
+      .email()
+      .message('Please enter a valid email')
+      .lowercase(),
+    otp: Joi.string()
+      .required()
+      .regex(/^\d{6}$/)
+      .message('Please enter a valid OTP'),
+  }),
+})
