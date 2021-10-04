@@ -1,10 +1,10 @@
-import { celebrate, Joi } from 'celebrate'
+import { celebrate, Joi, Segments } from 'celebrate'
 
 /**
  * Celebrate validation for the contact OTP verification endpoint.
  */
 export const validateContactOtpVerificationParams = celebrate({
-  body: Joi.object({
+  [Segments.BODY]: Joi.object({
     userId: Joi.string().required(),
     otp: Joi.string()
       .required()
