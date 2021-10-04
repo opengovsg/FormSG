@@ -5,6 +5,8 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 
+import { validateGenerateRedirectParams } from './frontend.middlewares'
+
 const logger = createLoggerWithLabel(module)
 
 /**
@@ -81,7 +83,7 @@ export const addEnvVarData: ControllerHandler<unknown, { message: string }> = (
  * @param res - Express response object
  * @returns Templated Javascript code for the frontend that redirects to specific form url
  */
-export const generateRedirectUrl: ControllerHandler<
+export const _generateRedirectUrl: ControllerHandler<
   unknown,
   string | { message: string },
   unknown,
@@ -114,6 +116,11 @@ export const generateRedirectUrl: ControllerHandler<
     })
   }
 }
+
+export const generateRedirectUrl = [
+  validateGenerateRedirectParams,
+  _generateRedirectUrl,
+] as ControllerHandler[]
 
 // Duplicated here since the feature manager is being deprecated.
 // TODO (#2147): delete this.
