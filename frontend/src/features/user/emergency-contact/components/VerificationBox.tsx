@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
-import { useForm } from 'react-hook-form'
+import { useCallback, useMemo } from 'react'
+import { RegisterOptions, useForm } from 'react-hook-form'
 import { Flex, FormControl } from '@chakra-ui/react'
 
 import { UserDto } from '~shared/types/user'
@@ -24,11 +24,11 @@ interface VerificationBoxProps {
   contact: string
 }
 
-export const VerificationBox = ({
+const useVerificationBox = ({
   userId,
   onSuccess,
   contact,
-}: VerificationBoxProps): JSX.Element => {
+}: VerificationBoxProps) => {
   const {
     register,
     setError,
@@ -38,16 +38,21 @@ export const VerificationBox = ({
 
   const { verifyOtpMutation, generateOtpMutation } = useUserMutations()
 
-  const onSubmitForm = handleSubmit(async (inputs) => {
-    return verifyOtpMutation.mutate(
-      { userId, contact, otp: inputs.otp },
-      {
-        onSuccess,
-        onError: (error) =>
-          setError('otp', { type: 'server', message: error.message }),
+  const onSubmitForm = handleSubmit(
+    useCallback(
+      (inputs: VfnFieldValues) => {
+        return verifyOtpMutation.mutate(
+          { userId, contact, otp: inputs.otp },
+          {
+            onSuccess,
+            onError: (error) =>
+              setError('otp', { type: 'server', message: error.message }),
+          },
+        )
       },
-    )
-  })
+      [contact, onSuccess, setError, userId, verifyOtpMutation],
+    ),
+  )
 
   const onResendOtp = useCallback(async () => {
     return generateOtpMutation.mutate(
@@ -58,6 +63,49 @@ export const VerificationBox = ({
       },
     )
   }, [contact, generateOtpMutation, setError, userId])
+
+  const isInputReadOnly = useMemo(
+    () => isValid && isSubmitting,
+    [isSubmitting, isValid],
+  )
+
+  const isOtpButtonLoading = useMemo(
+    () => verifyOtpMutation.isLoading,
+    [verifyOtpMutation.isLoading],
+  )
+
+  const otpValidationRules: RegisterOptions<VfnFieldValues> = useMemo(() => {
+    return {
+      required: 'OTP is required.',
+      pattern: {
+        value: /^[0-9\b]+$/,
+        message: 'Only numbers are allowed.',
+      },
+      validate: (value) => value.length === 6 || 'Please enter a 6 digit OTP.',
+    }
+  }, [])
+
+  return {
+    onSubmitForm,
+    onResendOtp,
+    isInputReadOnly,
+    isOtpButtonLoading,
+    otpValidationRules,
+    otpInputError: errors.otp,
+    otpInputRegister: register,
+  }
+}
+
+export const VerificationBox = (props: VerificationBoxProps): JSX.Element => {
+  const {
+    onResendOtp,
+    onSubmitForm,
+    isInputReadOnly,
+    otpInputError,
+    otpValidationRules,
+    isOtpButtonLoading,
+    otpInputRegister,
+  } = useVerificationBox(props)
 
   return (
     <Flex
@@ -76,8 +124,8 @@ export const VerificationBox = ({
         <Flex>
           <FormControl
             isRequired
-            isReadOnly={isValid && isSubmitting}
-            isInvalid={!!errors.otp}
+            isReadOnly={isInputReadOnly}
+            isInvalid={!!otpInputError}
             mb={6}
           >
             <FormLabel description="A text message with a verification code was just sent to you. The code will be valid for 10 minutes.">
@@ -90,29 +138,19 @@ export const VerificationBox = ({
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 autoFocus
-                {...register('otp', {
-                  required: 'OTP is required.',
-                  pattern: {
-                    value: /^[0-9\b]+$/,
-                    message: 'Only numbers are allowed.',
-                  },
-                  validate: (value) =>
-                    value.length === 6 || 'Please enter a 6 digit OTP.',
-                })}
+                {...otpInputRegister('otp', otpValidationRules)}
               />
 
               <Button
                 ml="0.5rem"
                 type="submit"
-                isLoading={verifyOtpMutation.isLoading}
+                isLoading={isOtpButtonLoading}
                 onClick={onSubmitForm}
               >
                 Submit
               </Button>
             </Flex>
-            <FormErrorMessage>
-              {errors.otp && errors.otp.message}
-            </FormErrorMessage>
+            <FormErrorMessage>{otpInputError?.message}</FormErrorMessage>
           </FormControl>
         </Flex>
         <ResendOtpButton onResendOtp={onResendOtp} />
