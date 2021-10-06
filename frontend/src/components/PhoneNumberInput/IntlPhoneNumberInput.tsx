@@ -48,7 +48,10 @@ export const IntlPhoneNumberInput = forwardRef<
 
   return (
     <InputGroup>
-      <CountrySelect isDisabled={props.isDisabled} />
+      <CountrySelect
+        isReadOnly={props.isReadOnly}
+        isDisabled={props.isDisabled}
+      />
       <Input
         onBlur={handleInputBlur}
         ref={inputRef}
@@ -65,6 +68,7 @@ export const IntlPhoneNumberInput = forwardRef<
 
 interface CountrySelectProps {
   isDisabled?: boolean
+  isReadOnly?: boolean
 }
 
 const CountrySelect: FC<CountrySelectProps> = (props) => {
@@ -92,6 +96,7 @@ const CountrySelect: FC<CountrySelectProps> = (props) => {
       <Flex>
         <Icon
           aria-disabled={inputProps.disabled}
+          aria-readonly={inputProps.readOnly}
           // Show Flags if available. If value does not exist for any reason,
           // a default fallback icon will be used by ChakraUI.
           // See https://chakra-ui.com/docs/media-and-icons/icon#fallback-icon.
@@ -104,6 +109,7 @@ const CountrySelect: FC<CountrySelectProps> = (props) => {
         aria-label="Country selector"
         sx={styles.selector}
         {...inputProps}
+        disabled={inputProps.disabled || inputProps.readOnly}
         value={country}
         id={`${inputProps.id}-country`}
         // Override props on change with one that takes in ChangeEvent as a param.
