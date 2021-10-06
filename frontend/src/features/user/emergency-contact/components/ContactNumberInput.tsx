@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { BiCheck } from 'react-icons/bi'
-import { Box, FormControl, Stack } from '@chakra-ui/react'
+import { Box, FormControl, Skeleton, Stack } from '@chakra-ui/react'
 
 import { isMobilePhoneNumber } from '~shared/utils/phone-num-validation'
 
@@ -30,12 +30,21 @@ const useContactNumberInput = () => {
     control,
     watch,
     handleSubmit,
+    reset,
     formState: { isValid, isSubmitting, errors },
   } = useForm<ContactNumberFormInputs>({
     defaultValues: {
       contact: user?.contact,
     },
   })
+
+  useEffect(() => {
+    if (user) {
+      reset({
+        contact: user.contact,
+      })
+    }
+  }, [reset, user])
 
   const contact = watch('contact')
 
@@ -151,42 +160,46 @@ export const ContactNumberInput = (): JSX.Element => {
         isInvalid={!!contactInputError}
       >
         <FormLabel>Mobile number</FormLabel>
-        <Stack direction={{ base: 'column', md: 'row' }} spacing="0.5rem">
-          <Controller
-            name="contact"
-            control={contactInputControl}
-            rules={contactNumberValidationRules}
-            render={({ field: { onChange, ...rest } }) => (
-              <PhoneNumberInput
-                isSuccess={isSuccess}
-                {...rest}
-                onChange={(nextVal) => {
-                  handleInputChange(nextVal)
-                  onChange(nextVal)
-                }}
-              />
-            )}
-          />
-          <Box>
-            <Button
-              type="submit"
-              isDisabled={isVerifyButtonDisabled}
-              onClick={handleSubmitContact}
-              isLoading={isVerifyButtonLoading}
-              leftIcon={isVerified ? <BiCheck fontSize="1.5rem" /> : undefined}
-            >
-              {isVerified ? 'Verified' : 'Verify'}
-            </Button>
-          </Box>
-        </Stack>
-        <FormErrorMessage>{contactInputError?.message}</FormErrorMessage>
-        {isVfnBoxOpen && userId && contactToVerify ? (
-          <VerificationBox
-            userId={userId}
-            onSuccess={handleVfnSuccess}
-            contact={contactToVerify}
-          />
-        ) : null}
+        <Skeleton isLoaded={!!userId}>
+          <Stack direction={{ base: 'column', md: 'row' }} spacing="0.5rem">
+            <Controller
+              name="contact"
+              control={contactInputControl}
+              rules={contactNumberValidationRules}
+              render={({ field: { onChange, ...rest } }) => (
+                <PhoneNumberInput
+                  isSuccess={isSuccess}
+                  {...rest}
+                  onChange={(nextVal) => {
+                    handleInputChange(nextVal)
+                    onChange(nextVal)
+                  }}
+                />
+              )}
+            />
+            <Box>
+              <Button
+                type="submit"
+                isDisabled={isVerifyButtonDisabled}
+                onClick={handleSubmitContact}
+                isLoading={isVerifyButtonLoading}
+                leftIcon={
+                  isVerified ? <BiCheck fontSize="1.5rem" /> : undefined
+                }
+              >
+                {isVerified ? 'Verified' : 'Verify'}
+              </Button>
+            </Box>
+          </Stack>
+          <FormErrorMessage>{contactInputError?.message}</FormErrorMessage>
+          {isVfnBoxOpen && userId && contactToVerify ? (
+            <VerificationBox
+              userId={userId}
+              onSuccess={handleVfnSuccess}
+              contact={contactToVerify}
+            />
+          ) : null}
+        </Skeleton>
       </FormControl>
     </form>
   )
