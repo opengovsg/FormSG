@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { BiCheck } from 'react-icons/bi'
 import { Box, FormControl, Stack } from '@chakra-ui/react'
@@ -20,10 +20,11 @@ type ContactNumberFormInputs = {
   contact: string
 }
 
-export const ContactNumberInput = (): JSX.Element => {
-  const { user, isLoading } = useUser()
-  const [isVfnOpen, setIsVfnOpen] = useState(false)
+const useContactNumberInput = () => {
+  const { user } = useUser()
   const [isSuccess, setIsSuccess] = useState(false)
+  const [isVfnBoxOpen, setIsVfnBoxOpen] = useState(false)
+  const [contactToVerify, setContactToVerify] = useState<string | undefined>()
 
   const {
     control,
@@ -45,19 +46,36 @@ export const ContactNumberInput = (): JSX.Element => {
 
   const { generateOtpMutation } = useUserMutations()
 
-  const handleSendOtp = (inputs: ContactNumberFormInputs) => {
-    if (!user || isVerified) return
-    return generateOtpMutation.mutate(
-      { userId: user._id, contact: inputs.contact },
-      { onSuccess: () => setIsVfnOpen(true) },
-    )
-  }
-
   const handleInputChange = (nextVal?: string) => {
-    if (isVfnOpen && nextVal !== contact) {
-      setIsVfnOpen(false)
+    setIsVfnBoxOpen(!!contactToVerify && nextVal === contactToVerify)
+    if (isSuccess) {
+      setIsSuccess(false)
     }
   }
+
+  const handleVfnSuccess = useCallback(() => {
+    setIsSuccess(true)
+    // Clear contact
+    setContactToVerify(undefined)
+  }, [])
+
+  const handleSubmitContact = handleSubmit(
+    useCallback(
+      (inputs: ContactNumberFormInputs) => {
+        if (!user || isVerified) return
+        return generateOtpMutation.mutate(
+          { userId: user._id, contact: inputs.contact },
+          {
+            onSuccess: () => {
+              setContactToVerify(inputs.contact)
+              setIsVfnBoxOpen(true)
+            },
+          },
+        )
+      },
+      [generateOtpMutation, isVerified, user],
+    ),
+  )
 
   const contactNumberValidationRules = useMemo(() => {
     return {
@@ -74,19 +92,69 @@ export const ContactNumberInput = (): JSX.Element => {
     }
   }, [])
 
+  const isInputReadOnly = useMemo(
+    () => (isValid && isSubmitting) || !user,
+    [isSubmitting, isValid, user],
+  )
+  const isVerifyButtonDisabled = useMemo(
+    () => isVerified || isVfnBoxOpen,
+    [isVerified, isVfnBoxOpen],
+  )
+
+  const isVerifyButtonLoading = useMemo(
+    () => generateOtpMutation.isLoading,
+    [generateOtpMutation.isLoading],
+  )
+
+  return {
+    handleInputChange,
+    handleVfnSuccess,
+    handleSubmitContact,
+    contactNumberValidationRules,
+    contactToVerify,
+    isVfnBoxOpen,
+    isSuccess,
+    isVerified,
+    isInputReadOnly,
+    isVerifyButtonDisabled,
+    isVerifyButtonLoading,
+    contactInputError: errors.contact,
+    contactInputControl: control,
+    userId: user?._id,
+  }
+}
+
+export const ContactNumberInput = (): JSX.Element => {
+  const {
+    handleInputChange,
+    handleSubmitContact,
+    handleVfnSuccess,
+    isSuccess,
+    isInputReadOnly,
+    isVerifyButtonDisabled,
+    isVerifyButtonLoading,
+    isVerified,
+    isVfnBoxOpen,
+    contactNumberValidationRules,
+    contactToVerify,
+    contactInputError,
+    contactInputControl,
+    userId,
+  } = useContactNumberInput()
+
   return (
     <form>
       <FormControl
         mt="1rem"
         isRequired
-        isReadOnly={(isValid && isSubmitting) || isLoading}
-        isInvalid={!!errors.contact}
+        isReadOnly={isInputReadOnly}
+        isInvalid={!!contactInputError}
       >
         <FormLabel>Mobile number</FormLabel>
         <Stack direction={{ base: 'column', md: 'row' }} spacing="0.5rem">
           <Controller
             name="contact"
-            control={control}
+            control={contactInputControl}
             rules={contactNumberValidationRules}
             render={({ field: { onChange, ...rest } }) => (
               <PhoneNumberInput
@@ -102,22 +170,21 @@ export const ContactNumberInput = (): JSX.Element => {
           <Box>
             <Button
               type="submit"
-              isDisabled={isVerified || isVfnOpen}
-              onClick={handleSubmit(handleSendOtp)}
-              isLoading={generateOtpMutation.isLoading}
+              isDisabled={isVerifyButtonDisabled}
+              onClick={handleSubmitContact}
+              isLoading={isVerifyButtonLoading}
               leftIcon={isVerified ? <BiCheck fontSize="1.5rem" /> : undefined}
             >
               {isVerified ? 'Verified' : 'Verify'}
             </Button>
           </Box>
         </Stack>
-        <FormErrorMessage>
-          {errors.contact && errors.contact.message}
-        </FormErrorMessage>
-        {isVfnOpen && !isVerified ? (
+        <FormErrorMessage>{contactInputError?.message}</FormErrorMessage>
+        {isVfnBoxOpen && userId && contactToVerify ? (
           <VerificationBox
-            onSuccess={() => setIsSuccess(true)}
-            contact={contact}
+            userId={userId}
+            onSuccess={handleVfnSuccess}
+            contact={contactToVerify}
           />
         ) : null}
       </FormControl>

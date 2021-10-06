@@ -2,6 +2,8 @@ import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { Flex, FormControl } from '@chakra-ui/react'
 
+import { UserDto } from '~shared/types/user'
+
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -9,7 +11,6 @@ import Input from '~components/Input'
 import ResendOtpButton from '~templates/ResendOtpButton'
 
 import { useUserMutations } from '~features/user/mutations'
-import { useUser } from '~features/user/queries'
 
 import { OtpIcon } from './OtpIcon'
 
@@ -18,15 +19,16 @@ type VfnFieldValues = {
 }
 
 interface VerificationBoxProps {
+  userId: UserDto['_id']
   onSuccess: () => void
   contact: string
 }
 
 export const VerificationBox = ({
+  userId,
   onSuccess,
   contact,
 }: VerificationBoxProps): JSX.Element => {
-  const { user } = useUser()
   const {
     register,
     setError,
@@ -37,9 +39,8 @@ export const VerificationBox = ({
   const { verifyOtpMutation, generateOtpMutation } = useUserMutations()
 
   const onSubmitForm = handleSubmit(async (inputs) => {
-    if (!user) return
     return verifyOtpMutation.mutate(
-      { userId: user._id, contact, otp: inputs.otp },
+      { userId, contact, otp: inputs.otp },
       {
         onSuccess,
         onError: (error) =>
@@ -49,15 +50,14 @@ export const VerificationBox = ({
   })
 
   const onResendOtp = useCallback(async () => {
-    if (!user) return
     return generateOtpMutation.mutate(
-      { userId: user._id, contact },
+      { userId, contact },
       {
         onError: (error) =>
           setError('otp', { type: 'server', message: error.message }),
       },
     )
-  }, [contact, generateOtpMutation, setError, user])
+  }, [contact, generateOtpMutation, setError, userId])
 
   return (
     <Flex
