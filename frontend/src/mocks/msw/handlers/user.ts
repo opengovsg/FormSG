@@ -60,11 +60,21 @@ export const postGenerateContactOtp = ({
 
 export const postVerifyContactOtp = ({
   delay,
-}: WithDelayProps = {}): DefaultRequestReturn => {
-  return rest.post<VerifyUserContactOtpDto, UserDto>(
+  mockOtp,
+}: WithDelayProps & { mockOtp?: string } = {}): DefaultRequestReturn => {
+  return rest.post<VerifyUserContactOtpDto, UserDto | ErrorDto>(
     '/api/v3/user/contact/otp/verify',
     (req, res, ctx) => {
       const nextContact = req.body.contact
+
+      if (mockOtp && req.body.otp !== mockOtp) {
+        return res(
+          ctx.delay(delay),
+          ctx.status(422),
+          ctx.json({ message: 'OTP is invalid. Please try again.' }),
+        )
+      }
+
       return res(
         ctx.delay(delay),
         ctx.status(200),
@@ -74,7 +84,9 @@ export const postVerifyContactOtp = ({
   )
 }
 
-export const userHandlers = (props: WithDelayProps = {}) => [
+export const userHandlers = (
+  props: WithDelayProps = {},
+): DefaultRequestReturn[] => [
   getUser(props),
   postGenerateContactOtp(props),
   postVerifyContactOtp(props),
