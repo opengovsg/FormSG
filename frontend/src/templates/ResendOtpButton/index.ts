@@ -1,1 +1,1 @@
-export { ResendOtpButton as default } from './ResendOtpButton'
+export { ResendOtpButtonContainer as default } from './ResendOtpButtonContainer'
