@@ -1,11 +1,24 @@
+import { useEffect } from 'react'
 import { Center } from '@chakra-ui/layout'
 import { DecoratorFn } from '@storybook/react'
 
 import { theme } from '~/theme'
 
+import { LOGGED_IN_KEY } from '~constants/localStorage'
+
 export const centerDecorator: DecoratorFn = (storyFn) => (
   <Center>{storyFn()}</Center>
 )
+
+export const LoggedInDecorator: DecoratorFn = (storyFn) => {
+  useEffect(() => {
+    window.localStorage.setItem(LOGGED_IN_KEY, JSON.stringify(true))
+
+    return () => window.localStorage.removeItem(LOGGED_IN_KEY)
+  }, [])
+
+  return storyFn()
+}
 
 /**
  * Helper function to convert theme breakpoint into viewport width in px for

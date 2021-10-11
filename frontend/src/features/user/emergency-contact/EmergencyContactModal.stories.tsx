@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useDisclosure } from '@chakra-ui/hooks'
 import { Meta, Story } from '@storybook/react'
 import { omit } from 'lodash'
@@ -11,8 +10,7 @@ import {
   userHandlers,
 } from '~/mocks/msw/handlers/user'
 
-import { LOGGED_IN_KEY } from '~constants/localStorage'
-import { viewports } from '~utils/storybook'
+import { LoggedInDecorator, viewports } from '~utils/storybook'
 import Button from '~components/Button'
 
 import { EmergencyContactModal } from './EmergencyContactModal'
@@ -20,17 +18,7 @@ import { EmergencyContactModal } from './EmergencyContactModal'
 export default {
   title: 'Features/User/EmergencyContactModal',
   component: EmergencyContactModal,
-  decorators: [
-    (storyFn) => {
-      useEffect(() => {
-        window.localStorage.setItem(LOGGED_IN_KEY, JSON.stringify(true))
-
-        return () => window.localStorage.removeItem(LOGGED_IN_KEY)
-      }, [])
-
-      return storyFn()
-    },
-  ],
+  decorators: [LoggedInDecorator],
   parameters: {
     layout: 'fullscreen',
     msw: userHandlers({ delay: 0 }),
