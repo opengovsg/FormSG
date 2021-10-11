@@ -20,6 +20,8 @@ type ContactNumberFormInputs = {
   contact: string
 }
 
+export const INVALID_NUMBER_ERROR_MSG = 'Please enter a valid mobile number'
+
 const useContactNumberInput = () => {
   const { user } = useUser()
   const [isSuccess, setIsSuccess] = useState(false)
@@ -91,11 +93,7 @@ const useContactNumberInput = () => {
       required: REQUIRED_ERROR,
       validate: {
         validPhoneNumber: (val?: string) => {
-          return (
-            !val ||
-            isMobilePhoneNumber(val) ||
-            'Please enter a valid mobile number'
-          )
+          return !val || isMobilePhoneNumber(val) || INVALID_NUMBER_ERROR_MSG
         },
       },
     }
@@ -152,55 +150,60 @@ export const ContactNumberInput = (): JSX.Element => {
   } = useContactNumberInput()
 
   return (
-    <form>
-      <FormControl
-        mt="1rem"
-        isRequired
-        isReadOnly={isInputReadOnly}
-        isInvalid={!!contactInputError}
-      >
-        <FormLabel>Mobile number</FormLabel>
-        <Skeleton isLoaded={!!userId}>
-          <Stack direction={{ base: 'column', md: 'row' }} spacing="0.5rem">
-            <Controller
-              name="contact"
-              control={contactInputControl}
-              rules={contactNumberValidationRules}
-              render={({ field: { onChange, ...rest } }) => (
-                <PhoneNumberInput
-                  isSuccess={isSuccess}
-                  {...rest}
-                  onChange={(nextVal) => {
-                    handleInputChange(nextVal)
-                    onChange(nextVal)
-                  }}
-                />
-              )}
-            />
-            <Box>
-              <Button
-                type="submit"
-                isDisabled={isVerifyButtonDisabled}
-                onClick={handleSubmitContact}
-                isLoading={isVerifyButtonLoading}
-                leftIcon={
-                  isVerified ? <BiCheck fontSize="1.5rem" /> : undefined
-                }
-              >
-                {isVerified ? 'Verified' : 'Verify'}
-              </Button>
-            </Box>
-          </Stack>
-          <FormErrorMessage>{contactInputError?.message}</FormErrorMessage>
-          {isVfnBoxOpen && userId && contactToVerify ? (
-            <VerificationBox
-              userId={userId}
-              onSuccess={handleVfnSuccess}
-              contact={contactToVerify}
-            />
-          ) : null}
-        </Skeleton>
-      </FormControl>
-    </form>
+    <>
+      <form>
+        <FormControl
+          mt="1rem"
+          isRequired
+          isReadOnly={isInputReadOnly}
+          isInvalid={!!contactInputError}
+        >
+          <FormLabel>Mobile number</FormLabel>
+          <Skeleton isLoaded={!!userId}>
+            <Stack direction={{ base: 'column', md: 'row' }} spacing="0.5rem">
+              <Controller
+                name="contact"
+                control={contactInputControl}
+                rules={contactNumberValidationRules}
+                render={({ field: { onChange, ...rest } }) => (
+                  <PhoneNumberInput
+                    isSuccess={isSuccess}
+                    {...rest}
+                    // Placeholder will not be seen by users due to the skeleton.
+                    // Used for asserting asynchronicity has ended in tests.
+                    placeholder={!userId ? 'Loading user...' : undefined}
+                    onChange={(nextVal) => {
+                      handleInputChange(nextVal)
+                      onChange(nextVal)
+                    }}
+                  />
+                )}
+              />
+              <Box>
+                <Button
+                  type="submit"
+                  isDisabled={isVerifyButtonDisabled}
+                  onClick={handleSubmitContact}
+                  isLoading={isVerifyButtonLoading}
+                  leftIcon={
+                    isVerified ? <BiCheck fontSize="1.5rem" /> : undefined
+                  }
+                >
+                  {isVerified ? 'Verified' : 'Verify'}
+                </Button>
+              </Box>
+            </Stack>
+            <FormErrorMessage>{contactInputError?.message}</FormErrorMessage>
+          </Skeleton>
+        </FormControl>
+      </form>
+      {isVfnBoxOpen && userId && contactToVerify ? (
+        <VerificationBox
+          userId={userId}
+          onSuccess={handleVfnSuccess}
+          contact={contactToVerify}
+        />
+      ) : null}
+    </>
   )
 }
