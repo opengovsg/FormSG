@@ -25,6 +25,8 @@ export default {
   decorators: [fullScreenDecorator, LoggedInDecorator],
   parameters: {
     layout: 'fullscreen',
+    // Prevent flaky tests due to modal animating in.
+    chromatic: { delay: 200 },
     msw: userHandlers({ delay: 0 }),
   },
 } as Meta
