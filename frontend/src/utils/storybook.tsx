@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Center } from '@chakra-ui/layout'
+import { Box, Center } from '@chakra-ui/react'
 import { DecoratorFn } from '@storybook/react'
 
 import { theme } from '~/theme'
@@ -8,6 +8,12 @@ import { LOGGED_IN_KEY } from '~constants/localStorage'
 
 export const centerDecorator: DecoratorFn = (storyFn) => (
   <Center>{storyFn()}</Center>
+)
+
+export const fullScreenDecorator: DecoratorFn = (storyFn) => (
+  <Box w="100vw" h="100vh">
+    {storyFn()}
+  </Box>
 )
 
 export const LoggedInDecorator: DecoratorFn = (storyFn) => {
