@@ -1,29 +1,31 @@
 import { rest } from 'msw'
 
+import { AgencyId } from '~shared/types/agency'
 import { ErrorDto } from '~shared/types/core'
-import { UserDto, VerifyUserContactOtpDto } from '~shared/types/user'
+import { DateString } from '~shared/types/generic'
+import { UserDto, UserId, VerifyUserContactOtpDto } from '~shared/types/user'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 
 import { DefaultRequestReturn, WithDelayProps } from './types'
 
 export const MOCK_USER = {
-  _id: 'mock_id',
+  _id: 'mock_id' as UserId,
   email: 'test@example.com',
   agency: {
     emailDomain: ['example.com'],
-    _id: '59bb6d4ef06ef18400109733',
-    lastModified: '2017-09-15T06:03:58.803Z',
+    _id: '59bb6d4ef06ef18400109733' as AgencyId,
+    lastModified: '2017-09-15T06:03:58.803Z' as DateString,
     shortName: 'eg',
     fullName: 'Example Agency Name',
     logo: '/path/to/logo/example.jpg',
-    created: '2017-09-15T06:03:58.792Z',
+    created: '2017-09-15T06:03:58.792Z' as DateString,
   },
-  created: '2020-03-26T09:39:44.613Z',
+  created: '2020-03-26T09:39:44.613Z' as DateString,
   contact: '+6598765432',
-  lastAccessed: '2021-08-24T09:10:02.661Z',
-  updatedAt: '2021-08-24T09:10:03.295Z',
-} as UserDto
+  lastAccessed: '2021-08-24T09:10:02.661Z' as DateString,
+  updatedAt: '2021-08-24T09:10:03.295Z' as DateString,
+}
 
 export const getUser = ({
   delay,

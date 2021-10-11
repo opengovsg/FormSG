@@ -133,6 +133,7 @@ export const VerificationBox = (props: VerificationBoxProps): JSX.Element => {
             </FormLabel>
             <Flex>
               <Input
+                data-testid="otp-input"
                 type="text"
                 maxLength={6}
                 inputMode="numeric"

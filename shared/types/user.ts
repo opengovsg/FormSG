@@ -4,7 +4,7 @@ import { Opaque } from 'type-fest'
 import { DateString } from './generic'
 import { AgencyBase, AgencyDto, PublicAgencyDto } from './agency'
 
-type UserId = Opaque<string, 'UserId'>
+export type UserId = Opaque<string, 'UserId'>
 
 // Base used for being referenced by schema/model in the backend.
 // Note the lack of typing of _id.
