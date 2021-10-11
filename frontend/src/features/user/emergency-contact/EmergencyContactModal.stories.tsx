@@ -10,7 +10,11 @@ import {
   userHandlers,
 } from '~/mocks/msw/handlers/user'
 
-import { LoggedInDecorator, viewports } from '~utils/storybook'
+import {
+  fullScreenDecorator,
+  LoggedInDecorator,
+  viewports,
+} from '~utils/storybook'
 import Button from '~components/Button'
 
 import { EmergencyContactModal } from './EmergencyContactModal'
@@ -18,7 +22,7 @@ import { EmergencyContactModal } from './EmergencyContactModal'
 export default {
   title: 'Features/User/EmergencyContactModal',
   component: EmergencyContactModal,
-  decorators: [LoggedInDecorator],
+  decorators: [fullScreenDecorator, LoggedInDecorator],
   parameters: {
     layout: 'fullscreen',
     msw: userHandlers({ delay: 0 }),
