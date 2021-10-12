@@ -21,7 +21,7 @@ export default {
 } as Meta
 
 const TabTemplate: Story<TabsProps> = (args) => {
-  const contentFontColour = args.variant === 'line-light' ? 'black' : 'white'
+  const contentFontColour = args.variant === 'line-dark' ? 'white' : 'black'
 
   return (
     <Tabs {...args}>
@@ -69,4 +69,10 @@ WithScrollingDark.parameters = {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
+}
+
+export const VerticalLine = TabTemplate.bind({})
+VerticalLine.args = {
+  variant: 'line',
+  orientation: 'vertical',
 }
