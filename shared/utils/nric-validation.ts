@@ -10,9 +10,7 @@ export const isNricValid = (value: string): boolean => {
 
   if (!parsed) return false
 
-  const prefix = parsed[1]
-  const digits = parsed[2]
-  const checksum = parsed[3]
+  const [, prefix, digits, checksum] = parsed
 
   // Specifications at: http://www.ngiam.net/NRIC/NRIC_numbers.pdf
   const weights = [2, 7, 6, 5, 4, 3, 2]
