@@ -8,6 +8,8 @@ import {
 import { getColor } from '@chakra-ui/theme-tools'
 import merge from 'lodash/merge'
 
+import { textStyles } from '~theme/textStyles'
+
 const parts = [
   'root', // overall container
   'tablist', // wrapper for tabs themselves (the clickable buttons)
@@ -55,13 +57,12 @@ const createScrollBarStyles = ({
 const sizesForLineLightDarkVariant = {
   md: {
     tab: {
-      px: '0',
-      mx: '1rem',
-      _focusVisible: {
-        p: '0.25rem',
-        // Subtract 0.25rem from mx and give it to padding so that
-        // focus ring can have padding
-        mx: '0.75rem',
+      p: '0.25rem',
+      mx: '0.75rem',
+      _selected: {
+        _before: {
+          width: 'calc(100% - 0.5rem)',
+        },
       },
     },
     tablist: {
@@ -96,16 +97,26 @@ const variantLineColor: ThemingPropsThunk<
     whiteSpace: 'nowrap',
   },
   tab: {
-    textStyle: 'subhead-3',
+    ...textStyles['subhead-3'],
+    position: 'relative',
+    borderRadius: '0.25rem',
     _selected: {
       textStyle: 'subhead-3',
-      fontSize: '1rem',
+      _before: {
+        position: 'absolute',
+        content: "''",
+        height: '2px',
+        bottom: '-2px',
+        width: '100%',
+      },
     },
     textTransform: 'uppercase',
-    borderBottom: '0.125rem solid transparent',
+    // borderBottom: '0.125rem solid transparent',
     _focusVisible: {
       _selected: {
-        borderColor: 'transparent',
+        _before: {
+          w: 0,
+        },
       },
     },
   },
@@ -128,14 +139,13 @@ const variantLineLight: ThemingPropsThunk<
         color: 'primary.500',
       },
       _selected: {
+        _before: {
+          bg: 'primary.500',
+        },
         color: 'primary.500',
-        borderColor: 'primary.500',
       },
       _focusVisible: {
-        boxShadow: `inset 0 0 0 0.125rem ${getColor(
-          props.theme,
-          'primary.500',
-        )}`,
+        boxShadow: `0 0 0 2px ${getColor(props.theme, 'primary.500')}`,
       },
     },
   })
@@ -162,11 +172,13 @@ const variantLineDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
             color: 'white',
           },
           _selected: {
+            _before: {
+              bg: 'white',
+            },
             color: 'white',
-            borderColor: 'white',
           },
           _focusVisible: {
-            boxShadow: `inset 0 0 0 0.125rem white`,
+            boxShadow: `0 0 0 2px white`,
           },
         },
       },
