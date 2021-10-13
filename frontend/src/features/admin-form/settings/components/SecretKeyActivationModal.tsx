@@ -16,6 +16,7 @@ import {
 
 import formsgSdk from '~utils/formSdk'
 import Button from '~components/Button'
+import Checkbox from '~components/Checkbox'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
@@ -118,7 +119,7 @@ export const SecretKeyActivationModal = ({
               <Text as="h1" textStyle="h2" color="secondary.500">
                 Activate your form
               </Text>
-              <FormControl isRequired isInvalid={!!errors.secretKey} mb={6}>
+              <FormControl isRequired isInvalid={!!errors.secretKey} mb="1rem">
                 <FormLabel>Enter or upload Secret Key</FormLabel>
                 <Stack direction="row" spacing="0.5rem">
                   <Input
@@ -139,6 +140,17 @@ export const SecretKeyActivationModal = ({
                   />
                 </Stack>
                 <FormErrorMessage>{errors.secretKey?.message}</FormErrorMessage>
+              </FormControl>
+              <FormControl mb="1.25rem">
+                <Checkbox
+                  isInvalid={!!errors.ack}
+                  {...register('ack', {
+                    required: true,
+                  })}
+                >
+                  If I lose my key, I will not be able to activate my form and
+                  all my responses will be lost permanently.
+                </Checkbox>
               </FormControl>
               <Button type="submit" isFullWidth>
                 Activate form
