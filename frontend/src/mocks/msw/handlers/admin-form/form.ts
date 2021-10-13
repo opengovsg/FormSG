@@ -1,7 +1,6 @@
-import { merge, pick } from 'lodash'
+import { merge } from 'lodash'
 import { rest } from 'msw'
 
-import { EMAIL_FORM_SETTINGS_FIELDS } from '~shared/constants/form'
 import { AgencyId } from '~shared/types/agency'
 import {
   AdminFormDto,
@@ -10,14 +9,13 @@ import {
   FormColorTheme,
   FormId,
   FormResponseMode,
-  FormSettings,
   FormStatus,
 } from '~shared/types/form/form'
 import { FormLogoState } from '~shared/types/form/form_logo'
 import { DateString } from '~shared/types/generic'
 import { UserDto } from '~shared/types/user'
 
-const createMockForm = (
+export const createMockForm = (
   props: Partial<AdminFormDto> = {},
 ): AdminFormViewDto => {
   return {
@@ -81,30 +79,6 @@ export const getAdminFormResponse = (
         ctx.delay(delay),
         ctx.status(200),
         ctx.json(createMockForm({ _id: req.params.formId, ...props })),
-      )
-    },
-  )
-}
-
-export const getAdminFormSettings = ({
-  delay = 0,
-  overrides,
-}: {
-  delay?: number | 'infinite'
-  overrides?: Partial<FormSettings>
-} = {}) => {
-  return rest.get<FormSettings>(
-    '/api/v3/admin/forms/:formId/settings',
-    (req, res, ctx) => {
-      return res(
-        ctx.delay(delay),
-        ctx.status(200),
-        ctx.json(
-          pick(
-            createMockForm({ _id: req.params.formId, ...overrides }).form,
-            EMAIL_FORM_SETTINGS_FIELDS,
-          ),
-        ),
       )
     },
   )
