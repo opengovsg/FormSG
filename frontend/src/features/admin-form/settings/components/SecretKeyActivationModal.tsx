@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { BiUpload } from 'react-icons/bi'
+import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
 import {
   Container,
   FormControl,
@@ -206,10 +206,15 @@ export const SecretKeyActivationModal = ({
                   })}
                 >
                   If I lose my key, I will not be able to activate my form and
-                  all my responses will be lost permanently.
+                  all my responses will be lost permanently
                 </Checkbox>
               </FormControl>
-              <Button type="submit" isFullWidth isLoading={isLoading}>
+              <Button
+                rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+                type="submit"
+                isFullWidth
+                isLoading={isLoading}
+              >
                 Activate form
               </Button>
             </form>
