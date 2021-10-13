@@ -8,7 +8,7 @@ import {
 import { getColor } from '@chakra-ui/theme-tools'
 import merge from 'lodash/merge'
 
-import { textStyles } from '~theme/textStyles'
+import { textStyles } from '../textStyles'
 
 const parts = [
   'root', // overall container
