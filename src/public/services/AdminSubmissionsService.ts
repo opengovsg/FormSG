@@ -1,9 +1,11 @@
+import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
 import { decode as decodeBase64 } from '@stablelib/base64'
 import axios from 'axios'
 import JSZip from 'jszip'
 
 import {
   FormSubmissionMetadataQueryDto,
+  StorageModeAttachment,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionCountQueryDto,
@@ -27,12 +29,12 @@ export const countFormSubmissions = async ({
   const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/count`
   if (dates) {
     return axios
-      .get(queryUrl, {
+      .get<number>(queryUrl, {
         params: { ...dates },
       })
       .then(({ data }) => data)
   }
-  return axios.get(queryUrl).then(({ data }) => data)
+  return axios.get<number>(queryUrl).then(({ data }) => data)
 }
 
 /**
@@ -49,11 +51,14 @@ export const getSubmissionsMetadataByPage = async ({
   page: NonNullable<FormSubmissionMetadataQueryDto['page']>
 }): Promise<StorageModeSubmissionMetadataList> => {
   return axios
-    .get(`${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`, {
-      params: {
-        page,
+    .get<StorageModeSubmissionMetadataList>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`,
+      {
+        params: {
+          page,
+        },
       },
-    })
+    )
     .then(({ data }) => data)
 }
 
@@ -71,11 +76,14 @@ export const getSubmissionMetadataById = async ({
   submissionId: NonNullable<FormSubmissionMetadataQueryDto['submissionId']>
 }): Promise<StorageModeSubmissionMetadataList> => {
   return axios
-    .get(`${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`, {
-      params: {
-        submissionId,
+    .get<StorageModeSubmissionMetadataList>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`,
+      {
+        params: {
+          submissionId,
+        },
       },
-    })
+    )
     .then(({ data }) => data)
 }
 
@@ -93,7 +101,9 @@ export const getEncryptedResponse = async ({
   submissionId: string
 }): Promise<StorageModeSubmissionDto> => {
   return axios
-    .get(`${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}`)
+    .get<StorageModeSubmissionDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}`,
+    )
     .then(({ data }) => data)
 }
 
@@ -131,8 +141,14 @@ export const downloadAndDecryptAttachment = (
   url: string,
   secretKey: string,
 ): Promise<Uint8Array | null> => {
-  return axios.get(url).then(({ data }) => {
-    data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
-    return FormSgSdk.crypto.decryptFile(secretKey, data.encryptedFile)
+  return axios.get<StorageModeAttachment>(url).then(({ data }) => {
+    const { encryptedFile } = data
+    if (!encryptedFile) return null
+
+    const decodedFile: EncryptedFileContent = {
+      ...encryptedFile,
+      binary: decodeBase64(encryptedFile.binary),
+    }
+    return FormSgSdk.crypto.decryptFile(secretKey, decodedFile)
   })
 }
