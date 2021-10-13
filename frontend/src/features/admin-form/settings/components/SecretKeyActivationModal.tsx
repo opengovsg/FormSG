@@ -26,6 +26,8 @@ import Input from '~components/Input'
 
 import { useMutateFormSettings } from '../mutations'
 
+import { FormActivationSvg } from './FormActivationSvg'
+
 export interface SecretKeyActivationModalProps
   extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
   publicKey: string
@@ -146,9 +148,10 @@ export const SecretKeyActivationModal = ({
           display="none"
         />
         <ModalBody whiteSpace="pre-line">
-          <Container maxW="42.5rem">
+          <Container maxW="42.5rem" my="6rem">
+            <FormActivationSvg mb="2rem" />
             <form onSubmit={handleVerifyKeypair} noValidate>
-              <Text as="h1" textStyle="h2" color="secondary.500">
+              <Text as="h1" textStyle="h2" color="secondary.500" mb="2rem">
                 Activate your form
               </Text>
               <FormControl
