@@ -8,11 +8,13 @@ import { Switch } from '~components/Toggle/Switch'
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
-import { SectionKeyActivationModal } from './SectionKeyActivationModal'
+import { SecretKeyActivationModal } from './SecretKeyActivationModal'
 
 export const FormStatusToggle = (): JSX.Element => {
-  const { data: { status, responseMode } = {}, isLoading: isLoadingSettings } =
+  const { data: formSettings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
+
+  const { status, responseMode } = formSettings ?? {}
 
   const storageModalProps = useDisclosure()
   const { onOpen: onOpenActivationModal } = storageModalProps
@@ -45,7 +47,12 @@ export const FormStatusToggle = (): JSX.Element => {
 
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!status}>
-      <SectionKeyActivationModal {...storageModalProps} />
+      {formSettings?.responseMode === FormResponseMode.Encrypt && (
+        <SecretKeyActivationModal
+          {...storageModalProps}
+          publicKey={formSettings.publicKey}
+        />
+      )}
       <Flex
         bg={isFormPublic ? 'success.100' : 'danger.200'}
         py="1rem"
