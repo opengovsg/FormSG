@@ -111,7 +111,6 @@ const variantLineColor: ThemingPropsThunk<
       },
     },
     textTransform: 'uppercase',
-    // borderBottom: '0.125rem solid transparent',
     _focusVisible: {
       _selected: {
         _before: {
