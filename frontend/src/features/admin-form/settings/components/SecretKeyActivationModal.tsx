@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { BiUpload } from 'react-icons/bi'
@@ -50,6 +49,7 @@ const useSecretKeyActivationModal = ({
     setError,
     register,
     setValue,
+    reset,
     handleSubmit,
   } = useForm<SecretKeyFormInputs>()
 
@@ -110,6 +110,12 @@ const useSecretKeyActivationModal = ({
     [setError, setValue],
   )
 
+  // Reset form before closing.
+  const handleOnClose = useCallback(() => {
+    reset()
+    return onClose()
+  }, [onClose, reset])
+
   return {
     fileUploadRef,
     handleFileSelect,
@@ -117,6 +123,7 @@ const useSecretKeyActivationModal = ({
     register,
     errors,
     isLoading: mutateFormStatus.isLoading,
+    handleOnClose,
   }
 }
 
@@ -132,10 +139,11 @@ export const SecretKeyActivationModal = ({
     register,
     errors,
     isLoading,
+    handleOnClose,
   } = useSecretKeyActivationModal({ publicKey, onClose })
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="full">
+    <Modal isOpen={isOpen} onClose={handleOnClose} size="full">
       <ModalContent>
         <ModalCloseButton />
         {/* Hidden input field to trigger file selector, can be anywhere in the DOM */}
