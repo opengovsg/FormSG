@@ -158,7 +158,7 @@ describe('FileHandlerService', () => {
         expectedFormData,
         {
           cancelToken: undefined,
-          headers: { 'Content-Type': undefined },
+          headers: { 'Content-Type': '' },
           withCredentials: false,
         },
       )
