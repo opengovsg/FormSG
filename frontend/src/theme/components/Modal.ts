@@ -72,6 +72,7 @@ const getSize = (value: string): SystemStyleObjectRecord => {
         },
         dialog: fullDialogStyle,
         header: {
+          ...textStyles['h2'],
           p: '1.5rem',
         },
         closeButton: {
