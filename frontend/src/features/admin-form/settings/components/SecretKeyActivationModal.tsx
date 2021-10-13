@@ -8,8 +8,9 @@ import {
   ModalBody,
   ModalCloseButton,
   ModalContent,
+  ModalHeader,
   Stack,
-  Text,
+  useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
@@ -142,9 +143,15 @@ export const SecretKeyActivationModal = ({
     handleOnClose,
   } = useSecretKeyActivationModal({ publicKey, onClose })
 
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'full',
+  })
+
   return (
-    <Modal isOpen={isOpen} onClose={handleOnClose} size="full">
-      <ModalContent>
+    <Modal isOpen={isOpen} onClose={handleOnClose} size={modalSize}>
+      <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
         <ModalCloseButton />
         {/* Hidden input field to trigger file selector, can be anywhere in the DOM */}
         <Input
@@ -155,13 +162,13 @@ export const SecretKeyActivationModal = ({
           onChange={handleFileSelect}
           display="none"
         />
+        <ModalHeader color="secondary.500">
+          <Container maxW="42.5rem">Activate your form</Container>
+        </ModalHeader>
         <ModalBody whiteSpace="pre-line">
-          <Container maxW="42.5rem" my="6rem">
+          <Container maxW="42.5rem">
             <FormActivationSvg mb="2rem" />
             <form onSubmit={handleVerifyKeypair} noValidate>
-              <Text as="h1" textStyle="h2" color="secondary.500" mb="2rem">
-                Activate your form
-              </Text>
               <FormControl
                 isRequired
                 isInvalid={!!errors.secretKey}
