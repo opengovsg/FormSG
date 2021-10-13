@@ -14,6 +14,8 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
+import { FormStatus } from '~shared/types/form/form'
+
 import formsgSdk from '~utils/formSdk'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
@@ -21,6 +23,8 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
+
+import { useMutateFormSettings } from '../mutations'
 
 export interface SecretKeyActivationModalProps
   extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
@@ -35,9 +39,10 @@ interface SecretKeyFormInputs {
   ack: boolean
 }
 
-const useSecretKeyActivationModal = (
-  publicKey: SecretKeyActivationModalProps['publicKey'],
-) => {
+const useSecretKeyActivationModal = ({
+  publicKey,
+  onClose,
+}: Pick<SecretKeyActivationModalProps, 'publicKey' | 'onClose'>) => {
   const {
     formState: { errors },
     setError,
@@ -48,7 +53,9 @@ const useSecretKeyActivationModal = (
 
   const fileUploadRef = useRef<HTMLInputElement | null>(null)
 
-  const verifyKeypair = handleSubmit(({ secretKey }) => {
+  const { mutateFormStatus } = useMutateFormSettings()
+
+  const handleVerifyKeypair = handleSubmit(({ secretKey }) => {
     const trimmedSecretKey = secretKey.trim()
     const isKeypairValid = formsgSdk.crypto.valid(publicKey, trimmedSecretKey)
 
@@ -62,6 +69,9 @@ const useSecretKeyActivationModal = (
         { shouldFocus: true },
       )
     }
+
+    // Valid, process to activate form.
+    return mutateFormStatus.mutate(FormStatus.Public, { onSuccess: onClose })
   })
 
   const handleFileSelect = useCallback(
@@ -101,9 +111,10 @@ const useSecretKeyActivationModal = (
   return {
     fileUploadRef,
     handleFileSelect,
-    verifyKeypair,
+    handleVerifyKeypair,
     register,
     errors,
+    isLoading: mutateFormStatus.isLoading,
   }
 }
 
@@ -112,8 +123,14 @@ export const SecretKeyActivationModal = ({
   isOpen,
   publicKey,
 }: SecretKeyActivationModalProps): JSX.Element => {
-  const { fileUploadRef, handleFileSelect, verifyKeypair, register, errors } =
-    useSecretKeyActivationModal(publicKey)
+  const {
+    fileUploadRef,
+    handleFileSelect,
+    handleVerifyKeypair,
+    register,
+    errors,
+    isLoading,
+  } = useSecretKeyActivationModal({ publicKey, onClose })
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full">
@@ -130,11 +147,16 @@ export const SecretKeyActivationModal = ({
         />
         <ModalBody whiteSpace="pre-line">
           <Container maxW="42.5rem">
-            <form onSubmit={verifyKeypair} noValidate>
+            <form onSubmit={handleVerifyKeypair} noValidate>
               <Text as="h1" textStyle="h2" color="secondary.500">
                 Activate your form
               </Text>
-              <FormControl isRequired isInvalid={!!errors.secretKey} mb="1rem">
+              <FormControl
+                isRequired
+                isInvalid={!!errors.secretKey}
+                mb="1rem"
+                isDisabled={isLoading}
+              >
                 <FormLabel>Enter or upload Secret Key</FormLabel>
                 <Stack direction="row" spacing="0.5rem">
                   <Input
@@ -148,6 +170,7 @@ export const SecretKeyActivationModal = ({
                     placeholder="Enter or upload your Secret Key to continue"
                   />
                   <IconButton
+                    isDisabled={isLoading}
                     variant="outline"
                     aria-label="Pass secret key from file"
                     icon={<BiUpload />}
@@ -158,6 +181,7 @@ export const SecretKeyActivationModal = ({
               </FormControl>
               <FormControl mb="1.25rem">
                 <Checkbox
+                  isDisabled={isLoading}
                   isInvalid={!!errors.ack}
                   {...register('ack', {
                     required: true,
@@ -167,7 +191,7 @@ export const SecretKeyActivationModal = ({
                   all my responses will be lost permanently.
                 </Checkbox>
               </FormControl>
-              <Button type="submit" isFullWidth>
+              <Button type="submit" isFullWidth isLoading={isLoading}>
                 Activate form
               </Button>
             </form>
