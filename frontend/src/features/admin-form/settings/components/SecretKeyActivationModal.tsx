@@ -35,11 +35,9 @@ interface SecretKeyFormInputs {
   ack: boolean
 }
 
-export const SecretKeyActivationModal = ({
-  onClose,
-  isOpen,
-  publicKey,
-}: SecretKeyActivationModalProps): JSX.Element => {
+const useSecretKeyActivationModal = (
+  publicKey: SecretKeyActivationModalProps['publicKey'],
+) => {
   const {
     formState: { errors },
     setError,
@@ -99,6 +97,23 @@ export const SecretKeyActivationModal = ({
     },
     [setError, setValue],
   )
+
+  return {
+    fileUploadRef,
+    handleFileSelect,
+    verifyKeypair,
+    register,
+    errors,
+  }
+}
+
+export const SecretKeyActivationModal = ({
+  onClose,
+  isOpen,
+  publicKey,
+}: SecretKeyActivationModalProps): JSX.Element => {
+  const { fileUploadRef, handleFileSelect, verifyKeypair, register, errors } =
+    useSecretKeyActivationModal(publicKey)
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full">
