@@ -103,6 +103,8 @@ const variantLineColor: ThemingPropsThunk<
     _selected: {
       textStyle: 'subhead-3',
       _before: {
+        transitionProperty: 'common',
+        transitionDuration: 'normal',
         position: 'absolute',
         content: "''",
         height: '2px',
@@ -133,15 +135,15 @@ const variantLineLight: ThemingPropsThunk<
       theme: props.theme,
     }),
     tab: {
-      color: 'primary.400',
+      color: 'primary.500',
       _hover: {
-        color: 'primary.500',
+        color: 'primary.600',
       },
       _selected: {
         _before: {
-          bg: 'primary.500',
+          bg: 'primary.600',
         },
-        color: 'primary.500',
+        color: 'primary.600',
       },
       _focusVisible: {
         boxShadow: `0 0 0 2px ${getColor(props.theme, 'primary.500')}`,
