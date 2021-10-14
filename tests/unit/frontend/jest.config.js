@@ -12,6 +12,6 @@ module.exports = {
     },
   },
   clearMocks: true,
-  setupFilesAfterEnv: ['jest-extended'],
+  setupFilesAfterEnv: ['<rootDir>/tests/jest-setupAfterEnv.js'],
   setupFiles: ['jest-localstorage-mock'],
 }
