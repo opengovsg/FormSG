@@ -1,0 +1,59 @@
+{
+  "addMoreRows": true,
+  "title": "Table",
+  "description": "",
+  "required": true,
+  "disabled": false,
+  "fieldType": "table",
+  "_id": "6135cf67b30dfb00123f8f4b",
+  "minimumRows": 3,
+  "columns": [
+    {
+      "ValidationOptions": {
+        "_id": "6135cf67b30dfb00123f8f4c",
+        "customVal": null,
+        "selectedValidation": null,
+        "customMin": null,
+        "customMax": null,
+        "id": "6135cf67b30dfb00123f8f4c"
+      },
+      "allowPrefill": false,
+      "columnType": "textfield",
+      "_id": "6135cf67b30dfb00123f8f4d",
+      "title": "Text Field",
+      "required": true
+    },
+    {
+      "ValidationOptions": {
+        "_id": "6135cf67b30dfb00123f8f4e",
+        "customVal": null,
+        "selectedValidation": null,
+        "customMin": null,
+        "customMax": null,
+        "id": "6135cf67b30dfb00123f8f4e"
+      },
+      "allowPrefill": false,
+      "columnType": "textfield",
+      "_id": "6135cf67b30dfb00123f8f4f",
+      "title": "Text Field",
+      "required": true
+    },
+    {
+      "ValidationOptions": {
+        "_id": "6135cf67b30dfb00123f8f50",
+        "customVal": null,
+        "selectedValidation": null,
+        "customMin": null,
+        "customMax": null,
+        "id": "6135cf67b30dfb00123f8f50"
+      },
+      "allowPrefill": false,
+      "columnType": "textfield",
+      "_id": "6135cf67b30dfb00123f8f51",
+      "title": "Text Field",
+      "required": true
+    }
+  ],
+  "maximumRows": 4,
+  "globalId": "OskleQBdOy9Qiwca1WXb6OmUUZWqIRFYf3vnrRrxmRl"
+}
