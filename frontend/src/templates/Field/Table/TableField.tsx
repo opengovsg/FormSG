@@ -5,6 +5,7 @@
 import { useCallback, useMemo } from 'react'
 import {
   Controller,
+  ControllerRenderProps,
   FieldError,
   FormProvider,
   useFieldArray,
@@ -27,8 +28,15 @@ import {
 import { get, times } from 'lodash'
 import { Merge } from 'type-fest'
 
-import { Column, FormFieldWithId, TableFieldBase } from '~shared/types/field'
+import {
+  BasicField,
+  Column,
+  FormFieldWithId,
+  ShortTextColumnBase,
+  TableFieldBase,
+} from '~shared/types/field'
 
+import { createShortTextValidationRules } from '~utils/fieldValidation'
 import Button from '~components/Button'
 import { FormErrorMessage } from '~components/FormControl/FormErrorMessage/FormErrorMessage'
 import Input from '~components/Input'
@@ -37,13 +45,31 @@ import { BaseFieldProps } from '../FieldContainer'
 
 import { TableFieldContainer } from './TableFieldContainer'
 
-type ColumnWithId = Column & { _id: string }
+type ColumnWithId<T = Column> = T & { _id: string }
 export type TableFieldSchema = Merge<
   FormFieldWithId<TableFieldBase>,
   { columns: ColumnWithId[] }
 >
 export interface TableFieldProps extends BaseFieldProps {
   schema: TableFieldSchema
+}
+
+const ShortTextColumnCell = ({
+  schema,
+  inputName,
+}: {
+  schema: ColumnWithId<ShortTextColumnBase>
+  inputName: string
+}) => {
+  const rules = useMemo(() => createShortTextValidationRules(schema), [schema])
+
+  return (
+    <Controller
+      name={inputName}
+      rules={rules}
+      render={({ field }) => <Input {...field} />}
+    />
+  )
 }
 
 /**
@@ -69,17 +95,24 @@ const ColumnCell = ({
 
   const cellError: FieldError | undefined = get(errors, inputName)
 
+  const renderedColumnCell = useMemo(() => {
+    switch (columnSchema.columnType) {
+      case BasicField.ShortText:
+        return (
+          <ShortTextColumnCell schema={columnSchema} inputName={inputName} />
+        )
+      default:
+        return null
+    }
+  }, [columnSchema, inputName])
+
   return (
     <FormControl
       isRequired={columnSchema.required}
       isInvalid={!!cellError}
       mb={6}
     >
-      <Controller
-        name={inputName}
-        rules={{ required: { value: true, message: 'field is required' } }}
-        render={({ field }) => <Input {...field} />}
-      />
+      {renderedColumnCell}
       <FormErrorMessage>{cellError?.message}</FormErrorMessage>
     </FormControl>
   )

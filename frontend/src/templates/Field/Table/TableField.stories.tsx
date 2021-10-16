@@ -8,6 +8,7 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import mockData from './data.json'
 import {
   TableField as TableFieldComponent,
   TableFieldProps,
@@ -30,53 +31,7 @@ export default {
   },
 } as Meta
 
-const baseSchema: TableFieldSchema = {
-  addMoreRows: true,
-  title: 'Table',
-  description: '',
-  required: true,
-  disabled: false,
-  fieldType: BasicField.Table,
-  _id: '6135cf67b30dfb00123f8f4b',
-  minimumRows: 3,
-  columns: [
-    {
-      ValidationOptions: {
-        customVal: null,
-        selectedValidation: null,
-      },
-      allowPrefill: false,
-      columnType: BasicField.ShortText,
-      _id: '6135cf67b30dfb00123f8f4d',
-      title: 'Text Field',
-      required: false,
-    },
-    {
-      ValidationOptions: {
-        customVal: null,
-        selectedValidation: null,
-      },
-      allowPrefill: false,
-      columnType: BasicField.ShortText,
-      _id: '6135cf67b30dfb00123f8f4f',
-      title: 'Text Field',
-      required: true,
-    },
-    {
-      ValidationOptions: {
-        customVal: null,
-        selectedValidation: null,
-      },
-      allowPrefill: false,
-      columnType: BasicField.ShortText,
-      _id: '6135cf67b30dfb00123f8f51',
-      title: 'Text Field',
-      required: true,
-    },
-  ],
-  maximumRows: 4,
-  globalId: 'OskleQBdOy9Qiwca1WXb6OmUUZWqIRFYf3vnrRrxmRl',
-}
+const baseSchema: TableFieldSchema = mockData as TableFieldSchema
 
 interface StoryTableFieldProps extends TableFieldProps {
   defaultValue?: string

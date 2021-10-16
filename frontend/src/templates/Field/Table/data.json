@@ -5,55 +5,47 @@
   "required": true,
   "disabled": false,
   "fieldType": "table",
-  "_id": "6135cf67b30dfb00123f8f4b",
+  "_id": "616b055a6b1c3400122f469d",
   "minimumRows": 3,
   "columns": [
     {
       "ValidationOptions": {
-        "_id": "6135cf67b30dfb00123f8f4c",
+        "_id": "616b055a6b1c3400122f469e",
         "customVal": null,
         "selectedValidation": null,
         "customMin": null,
         "customMax": null,
-        "id": "6135cf67b30dfb00123f8f4c"
+        "id": "616b055a6b1c3400122f469e"
       },
       "allowPrefill": false,
+      "_id": "616b055a6b1c3400122f469f",
       "columnType": "textfield",
-      "_id": "6135cf67b30dfb00123f8f4d",
-      "title": "Text Field",
+      "title": "Text Field 1",
       "required": true
     },
     {
       "ValidationOptions": {
-        "_id": "6135cf67b30dfb00123f8f4e",
+        "_id": "616b055a6b1c3400122f46a0",
         "customVal": null,
         "selectedValidation": null,
         "customMin": null,
         "customMax": null,
-        "id": "6135cf67b30dfb00123f8f4e"
+        "id": "616b055a6b1c3400122f46a0"
       },
       "allowPrefill": false,
+      "_id": "616b055a6b1c3400122f46a1",
       "columnType": "textfield",
-      "_id": "6135cf67b30dfb00123f8f4f",
-      "title": "Text Field",
-      "required": true
+      "title": "Text Field 2",
+      "required": false
     },
     {
-      "ValidationOptions": {
-        "_id": "6135cf67b30dfb00123f8f50",
-        "customVal": null,
-        "selectedValidation": null,
-        "customMin": null,
-        "customMax": null,
-        "id": "6135cf67b30dfb00123f8f50"
-      },
-      "allowPrefill": false,
-      "columnType": "textfield",
-      "_id": "6135cf67b30dfb00123f8f51",
-      "title": "Text Field",
+      "fieldOptions": ["Eraser", "Pencil", "Pen", "Book"],
+      "_id": "616b055a6b1c3400122f46a2",
+      "columnType": "dropdown",
+      "title": "Dropdown field",
       "required": true
     }
   ],
-  "maximumRows": 4,
-  "globalId": "OskleQBdOy9Qiwca1WXb6OmUUZWqIRFYf3vnrRrxmRl"
+  "maximumRows": 5,
+  "globalId": "hcflAH6SGcALs2qqp8gDPqJzMy71JmlS3q6aH43Qf05"
 }
