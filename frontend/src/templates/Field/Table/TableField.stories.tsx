@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
@@ -103,20 +104,20 @@ const Template: Story<StoryTableFieldProps> = ({ defaultValue, ...args }) => {
   }, [])
 
   return (
-    <FormProvider {...formMethods}>
-      <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
-        <TableFieldComponent {...args} />
-        <Button
-          mt="1rem"
-          type="submit"
-          isLoading={formMethods.formState.isSubmitting}
-          loadingText="Submitting"
-        >
-          Submit
-        </Button>
-        {submitValues && <Text>You have submitted: {submitValues}</Text>}
-      </form>
-    </FormProvider>
+    // <FormProvider {...formMethods}>
+    //   <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
+    <TableFieldComponent {...args} />
+    //     <Button
+    //       mt="1rem"
+    //       type="submit"
+    //       isLoading={formMethods.formState.isSubmitting}
+    //       loadingText="Submitting"
+    //     >
+    //       Submit
+    //     </Button>
+    //     {submitValues && <Text>You have submitted: {submitValues}</Text>}
+    //   </form>
+    // </FormProvider>
   )
 }
 

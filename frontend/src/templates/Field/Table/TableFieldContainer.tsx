@@ -34,27 +34,12 @@ export const TableFieldContainer = ({
     formState: { isSubmitting, isValid, errors },
   } = useFormContext()
 
-  const getFirstErrorMessage = () => {
-    const allErrors = schema.columns
-      .map((c) => get(errors, `${schema._id}.${c._id}`))
-      .filter(Boolean)
-    console.log(allErrors)
-
-    if (allErrors) {
-      const firstValue = (Object.values(allErrors)?.pop() as Error[])?.pop()
-
-      return firstValue?.message
-    }
-
-    return undefined
-  }
-
   return (
     <FormControl
       isRequired={schema.required}
       isDisabled={schema.disabled}
       isReadOnly={isValid && isSubmitting}
-      isInvalid={get(errors, schema._id)}
+      isInvalid={!!get(errors, schema._id)}
       mb={6}
     >
       <FormLabel
@@ -64,7 +49,6 @@ export const TableFieldContainer = ({
         {schema.title}
       </FormLabel>
       {children}
-      <FormErrorMessage>{getFirstErrorMessage()}</FormErrorMessage>
     </FormControl>
   )
 }

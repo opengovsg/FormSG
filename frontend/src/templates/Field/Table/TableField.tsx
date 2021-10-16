@@ -2,89 +2,153 @@
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-import { memo, useMemo } from 'react'
+import { useMemo } from 'react'
 import {
-  Box,
-  chakra,
-  Table,
-  TableCaption,
-  Tbody,
-  Text,
-  Tfoot,
-  Th,
-  Thead,
-  Tr,
-  useMultiStyleConfig,
-  useStyleConfig,
-} from '@chakra-ui/react'
-import { times } from 'lodash'
+  Controller,
+  FieldError,
+  FormProvider,
+  useFieldArray,
+  useForm,
+  useFormContext,
+} from 'react-hook-form'
+import { useTable, UseTableCellProps } from 'react-table'
+import { FormControl, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
+import { get } from 'lodash'
 import { Merge } from 'type-fest'
 
 import { Column, FormFieldWithId, TableFieldBase } from '~shared/types/field'
 
-import { TABLE_THEME_KEY } from '~theme/components/Field/Table'
-import FormLabel from '~components/FormControl/FormLabel'
+import { FormErrorMessage } from '~components/FormControl/FormErrorMessage/FormErrorMessage'
+import Input from '~components/Input'
 
 import { BaseFieldProps } from '../FieldContainer'
 
 import { TableFieldContainer } from './TableFieldContainer'
-import { TableRow } from './TableRow'
 
+type ColumnWithId = Column & { _id: string }
 export type TableFieldSchema = Merge<
   FormFieldWithId<TableFieldBase>,
-  { columns: (Column & { _id: string })[] }
+  { columns: ColumnWithId[] }
 >
 export interface TableFieldProps extends BaseFieldProps {
   schema: TableFieldSchema
+}
+
+/**
+ * Renderer for each column cell in the table schema.
+ */
+const ColumnCell = ({
+  schemaId,
+  row,
+  column,
+  columnSchema,
+}: UseTableCellProps<Record<string, unknown>, string> & {
+  schemaId: string
+  columnSchema: ColumnWithId
+}) => {
+  const {
+    formState: { errors },
+  } = useFormContext()
+
+  const inputName = useMemo(
+    () => `${schemaId}.${row.index}.${column.id}`,
+    [column.id, row.index, schemaId],
+  )
+
+  const cellError: FieldError | undefined = get(errors, inputName)
+
+  return (
+    <FormControl
+      isRequired={columnSchema.required}
+      isInvalid={!!cellError}
+      mb={6}
+    >
+      <Controller
+        name={inputName}
+        rules={{ required: { value: true, message: 'field is required' } }}
+        render={({ field }) => <Input {...field} />}
+      />
+      <FormErrorMessage>{cellError?.message}</FormErrorMessage>
+    </FormControl>
+  )
 }
 
 export const TableField = ({
   schema,
   questionNumber,
 }: TableFieldProps): JSX.Element => {
-  const memoizedRows = useMemo(
-    () => (
-      <>
-        {times(schema.minimumRows, (rowNumber) => {
-          return (
-            <TableRow
-              row={rowNumber}
-              name={schema._id}
-              columns={schema.columns}
-            />
-          )
-        })}
-      </>
-    ),
-    [schema._id, schema.columns, schema.minimumRows],
-  )
+  const columnsData = useMemo(() => {
+    return schema.columns.map((c) => ({
+      Header: c.title,
+      accessor: c._id,
+      Cell: ColumnCell,
+    }))
+  }, [schema.columns])
 
-  const styles = useMultiStyleConfig(TABLE_THEME_KEY, {})
+  const data = useMemo(() => {
+    return [
+      schema.columns.reduce((acc, c) => {
+        acc[c._id] = ''
+        return acc
+      }, {} as Record<string, unknown>),
+    ]
+  }, [schema.columns])
+
+  const formMethods = useForm({
+    defaultValues: {
+      [schema._id]: data,
+    },
+  })
+  const { fields } = useFieldArray({
+    control: formMethods.control,
+    name: schema._id,
+  })
+
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+    useTable({ columns: columnsData, data: fields })
 
   return (
-    <TableFieldContainer schema={schema} questionNumber={questionNumber}>
-      <Table variant="simple">
-        <Thead>
-          <Tr>
-            {schema.columns.map((c) => {
-              console.log('ISREUIQRED', c.required)
-
-              return (
-                <Th key={c._id} textTransform="initial">
-                  <FormLabel
-                    isRequired={c.required}
-                    id={c._id}
-                    sx={styles.label}
-                  >
-                    {c.title}
-                  </FormLabel>
-                </Th>
-              )
-            })}
-          </Tr>
-        </Thead>
-        <Tbody>{memoizedRows}</Tbody>
-      </Table>
-    </TableFieldContainer>
+    <FormProvider {...formMethods}>
+      <form
+        noValidate
+        onSubmit={formMethods.handleSubmit((data) =>
+          console.warn('submit', data),
+        )}
+      >
+        <TableFieldContainer schema={schema} questionNumber={questionNumber}>
+          <Table {...getTableProps()}>
+            <Thead>
+              {headerGroups.map((headerGroup) => (
+                <Tr {...headerGroup.getHeaderGroupProps()}>
+                  {headerGroup.headers.map((column) => (
+                    <Th {...column.getHeaderProps()}>
+                      {column.render('Header')}
+                    </Th>
+                  ))}
+                </Tr>
+              ))}
+            </Thead>
+            <Tbody {...getTableBodyProps()}>
+              {rows.map((row) => {
+                prepareRow(row)
+                return (
+                  <Tr {...row.getRowProps()}>
+                    {row.cells.map((cell, j) => (
+                      <Td {...cell.getCellProps()}>
+                        {cell.render('Cell', {
+                          schemaId: schema._id,
+                          columnSchema: schema.columns[j],
+                        })}
+                      </Td>
+                    ))}
+                  </Tr>
+                )
+              })}
+            </Tbody>
+          </Table>
+        </TableFieldContainer>
+        <button type="submit">Submit</button>
+      </form>
+    </FormProvider>
   )
 }
