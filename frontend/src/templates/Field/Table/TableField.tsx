@@ -2,7 +2,7 @@
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   Controller,
   FieldError,
@@ -11,13 +11,25 @@ import {
   useForm,
   useFormContext,
 } from 'react-hook-form'
+import { BiPlus } from 'react-icons/bi'
 import { useTable, UseTableCellProps } from 'react-table'
-import { FormControl, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
-import { get } from 'lodash'
+import {
+  FormControl,
+  Stack,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from '@chakra-ui/react'
+import { get, times } from 'lodash'
 import { Merge } from 'type-fest'
 
 import { Column, FormFieldWithId, TableFieldBase } from '~shared/types/field'
 
+import Button from '~components/Button'
 import { FormErrorMessage } from '~components/FormControl/FormErrorMessage/FormErrorMessage'
 import Input from '~components/Input'
 
@@ -85,27 +97,36 @@ export const TableField = ({
     }))
   }, [schema.columns])
 
-  const data = useMemo(() => {
-    return [
+  const baseRowData = useMemo(
+    () =>
       schema.columns.reduce((acc, c) => {
         acc[c._id] = ''
         return acc
       }, {} as Record<string, unknown>),
-    ]
-  }, [schema.columns])
+    [schema.columns],
+  )
+
+  const data = useMemo(() => {
+    return times(schema.minimumRows, () => baseRowData)
+  }, [baseRowData, schema.minimumRows])
 
   const formMethods = useForm({
     defaultValues: {
       [schema._id]: data,
     },
   })
-  const { fields } = useFieldArray({
+  const { fields, append } = useFieldArray({
     control: formMethods.control,
     name: schema._id,
   })
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     useTable({ columns: columnsData, data: fields })
+
+  const handleAddRow = useCallback(() => {
+    if (!schema.maximumRows || fields.length >= schema.maximumRows) return
+    return append(baseRowData)
+  }, [append, baseRowData, fields.length, schema.maximumRows])
 
   return (
     <FormProvider {...formMethods}>
@@ -147,8 +168,43 @@ export const TableField = ({
             </Tbody>
           </Table>
         </TableFieldContainer>
+        {schema.addMoreRows && (
+          <AddRowFooter
+            currentRows={fields.length}
+            maxRows={schema.maximumRows}
+            handleAddRow={handleAddRow}
+          />
+        )}
         <button type="submit">Submit</button>
       </form>
     </FormProvider>
+  )
+}
+
+interface AddRowFooterProps {
+  handleAddRow: () => void
+  currentRows: number
+  maxRows: number
+}
+const AddRowFooter = ({
+  currentRows,
+  maxRows,
+  handleAddRow,
+}: AddRowFooterProps) => {
+  return (
+    <Stack direction="row" justify="space-between" align="center">
+      <Button
+        isDisabled={currentRows >= maxRows}
+        leftIcon={<BiPlus fontSize="1.5rem" />}
+        type="button"
+        onClick={handleAddRow}
+      >
+        Add another row
+      </Button>
+
+      <Text textStyle="body-2" color="secondary.400">
+        {currentRows} out of max {maxRows} rows
+      </Text>
+    </Stack>
   )
 }
