@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
-import { times } from 'lodash'
+import { assign, merge, times } from 'lodash'
 
 import Button from '~components/Button'
 
@@ -46,8 +46,8 @@ const Template: Story<StoryTableFieldProps> = ({ defaultValue, ...args }) => {
   )
 
   const data = useMemo(() => {
-    return times(args.schema.minimumRows, () => baseRowData)
-  }, [baseRowData, args.schema.minimumRows])
+    return times(args.schema.minimumRows, () => defaultValue ?? baseRowData)
+  }, [args.schema.minimumRows, defaultValue, baseRowData])
 
   const formMethods = useForm({
     defaultValues: {
@@ -93,11 +93,30 @@ Default.args = {
   schema: baseSchema,
 }
 
+export const NoAddableRows = Template.bind({})
+NoAddableRows.args = {
+  schema: merge({}, baseSchema, { addMoreRows: false }),
+}
+
+export const ThreeColumnTable = Template.bind({})
+ThreeColumnTable.args = {
+  schema: assign({}, baseSchema, { columns: baseSchema.columns.slice(0, 3) }),
+}
+
 export const ValidationEmpty = Template.bind({})
 ValidationEmpty.args = {
   schema: baseSchema,
   defaultValue: baseSchema.columns.reduce((acc, c) => {
     acc[c._id] = ''
+    return acc
+  }, {} as Record<string, string>),
+}
+
+export const ValidationValid = Template.bind({})
+ValidationValid.args = {
+  schema: baseSchema,
+  defaultValue: baseSchema.columns.reduce((acc, c) => {
+    acc[c._id] = 'This is a valid value'
     return acc
   }, {} as Record<string, string>),
 }
