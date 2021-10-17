@@ -16,7 +16,11 @@ export const AddRowFooter = ({
   handleAddRow,
 }: AddRowFooterProps): JSX.Element => {
   return (
-    <Stack direction="row" justify="space-between" align="center">
+    <Stack
+      direction={{ base: 'column', md: 'row' }}
+      justify="space-between"
+      align={{ base: 'start', md: 'center' }}
+    >
       <Button
         isDisabled={currentRows >= maxRows}
         leftIcon={<BiPlus fontSize="1.5rem" />}
