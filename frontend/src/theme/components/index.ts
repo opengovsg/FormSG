@@ -1,6 +1,5 @@
 import { Attachment, ATTACHMENT_THEME_KEY } from './Field/Attachment'
 import { RATING_THEME_KEY, RatingField } from './Field/Rating'
-import { TABLE_THEME_KEY, TableField } from './Field/Table'
 import { YESNO_THEME_KEY, YesNoField } from './Field/YesNo'
 import { Badge } from './Badge'
 import { Banner } from './Banner'
@@ -53,7 +52,6 @@ export const components = {
   [SEARCHBAR_THEME_KEY]: Searchbar,
   Tooltip,
   [RATING_THEME_KEY]: RatingField,
-  [TABLE_THEME_KEY]: TableField,
   [YESNO_THEME_KEY]: YesNoField,
   [TOGGLE_THEME_KEY]: Toggle,
   Tile,
