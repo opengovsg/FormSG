@@ -78,7 +78,7 @@ export const TableField = ({
                 <Th
                   {...column.getHeaderProps()}
                   w={`calc(100%/${array.length})`}
-                  minW="12rem"
+                  minW="15rem"
                   id={column.id}
                 >
                   {column.render('Header')}
