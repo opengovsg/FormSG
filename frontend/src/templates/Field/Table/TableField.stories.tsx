@@ -4,9 +4,10 @@ import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 import { assign, merge, times } from 'lodash'
 
+import { BasicField } from '~shared/types/field'
+
 import Button from '~components/Button'
 
-import mockData from './data.json'
 import {
   TableField as TableFieldComponent,
   TableFieldProps,
@@ -29,7 +30,70 @@ export default {
   },
 } as Meta
 
-const baseSchema: TableFieldSchema = mockData as TableFieldSchema
+const baseSchema: TableFieldSchema = {
+  addMoreRows: true,
+  title: 'Table',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.Table,
+  _id: '616b055a6b1c3400122f469d',
+  minimumRows: 3,
+  columns: [
+    {
+      ValidationOptions: {
+        customVal: null,
+        selectedValidation: null,
+      },
+      allowPrefill: false,
+      _id: '616b055a6b1c3400122f469f',
+      columnType: BasicField.ShortText,
+      title: 'Job title',
+      required: true,
+    },
+    {
+      ValidationOptions: {
+        customVal: null,
+        selectedValidation: null,
+      },
+      allowPrefill: false,
+      _id: '616b055a6b1c3400122f46a1',
+      columnType: BasicField.ShortText,
+      title: 'Job description',
+      required: false,
+    },
+    {
+      fieldOptions: ['Eraser', 'Pencil', 'Pen', 'Book'],
+      _id: '616b055a6b1c3400122f46a2',
+      columnType: BasicField.Dropdown,
+      title: 'Field of employment',
+      required: true,
+    },
+    {
+      ValidationOptions: {
+        customVal: null,
+        selectedValidation: null,
+      },
+      allowPrefill: false,
+      _id: '616b055a6b1c3400122f46a9',
+      columnType: BasicField.ShortText,
+      title: 'Job description 2',
+      required: true,
+    },
+    {
+      ValidationOptions: {
+        customVal: null,
+        selectedValidation: null,
+      },
+      allowPrefill: false,
+      _id: '616b055a6b1c3400122f46b9',
+      columnType: BasicField.ShortText,
+      title: 'Job description longer column title name',
+      required: false,
+    },
+  ],
+  maximumRows: 5,
+}
 
 interface StoryTableFieldProps extends TableFieldProps {
   defaultValue?: Record<string, string>
