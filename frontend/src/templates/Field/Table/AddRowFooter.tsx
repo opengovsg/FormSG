@@ -1,5 +1,6 @@
 import { BiPlus } from 'react-icons/bi'
 import { Stack, Text } from '@chakra-ui/react'
+import simplur from 'simplur'
 
 import Button from '~components/Button'
 
@@ -26,7 +27,7 @@ export const AddRowFooter = ({
       </Button>
 
       <Text textStyle="body-2" color="secondary.400">
-        {currentRows} out of max {maxRows} rows
+        {simplur`${currentRows} out of max ${maxRows} row[|s]`}
       </Text>
     </Stack>
   )
