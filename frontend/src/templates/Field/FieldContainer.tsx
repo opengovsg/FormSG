@@ -33,8 +33,6 @@ export const FieldContainer = ({
   } = useFormContext()
   const { _id: name } = schema
 
-  console.log(errors)
-
   return (
     <FormControl
       isRequired={schema.required}
