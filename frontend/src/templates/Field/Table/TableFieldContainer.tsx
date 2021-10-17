@@ -40,7 +40,6 @@ export const TableFieldContainer = ({
       isDisabled={schema.disabled}
       isReadOnly={isValid && isSubmitting}
       isInvalid={!!get(errors, schema._id)}
-      mb={6}
     >
       <FormLabel
         questionNumber={questionNumber}

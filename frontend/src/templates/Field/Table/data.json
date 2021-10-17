@@ -20,7 +20,7 @@
       "allowPrefill": false,
       "_id": "616b055a6b1c3400122f469f",
       "columnType": "textfield",
-      "title": "Text Field 1",
+      "title": "Job title",
       "required": true
     },
     {
@@ -35,15 +35,45 @@
       "allowPrefill": false,
       "_id": "616b055a6b1c3400122f46a1",
       "columnType": "textfield",
-      "title": "Text Field 2",
+      "title": "Job description",
       "required": false
     },
     {
       "fieldOptions": ["Eraser", "Pencil", "Pen", "Book"],
       "_id": "616b055a6b1c3400122f46a2",
       "columnType": "dropdown",
-      "title": "Dropdown field",
+      "title": "Field of employment",
       "required": true
+    },
+    {
+      "ValidationOptions": {
+        "_id": "616b055a6b1c3400122f46a6",
+        "customVal": null,
+        "selectedValidation": null,
+        "customMin": null,
+        "customMax": null,
+        "id": "616b055a6b1c3400122f46a6"
+      },
+      "allowPrefill": false,
+      "_id": "616b055a6b1c3400122f46a9",
+      "columnType": "textfield",
+      "title": "Job description 2",
+      "required": true
+    },
+    {
+      "ValidationOptions": {
+        "_id": "616b055a6b1c3400122f46b6",
+        "customVal": null,
+        "selectedValidation": null,
+        "customMin": null,
+        "customMax": null,
+        "id": "616b055a6b1c3400122f46b6"
+      },
+      "allowPrefill": false,
+      "_id": "616b055a6b1c3400122f46b9",
+      "columnType": "textfield",
+      "title": "Job description longer column title name",
+      "required": false
     }
   ],
   "maximumRows": 5,
