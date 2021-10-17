@@ -26,7 +26,7 @@ import {
   Tr,
 } from '@chakra-ui/react'
 import { get, times } from 'lodash'
-import { Merge } from 'type-fest'
+import { Merge, RequireAllOrNone } from 'type-fest'
 
 import {
   BasicField,
@@ -39,6 +39,7 @@ import {
 import { createShortTextValidationRules } from '~utils/fieldValidation'
 import Button from '~components/Button'
 import { FormErrorMessage } from '~components/FormControl/FormErrorMessage/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
 import { BaseFieldProps } from '../FieldContainer'
@@ -47,7 +48,10 @@ import { TableFieldContainer } from './TableFieldContainer'
 
 type ColumnWithId<T = Column> = T & { _id: string }
 export type TableFieldSchema = Merge<
-  FormFieldWithId<TableFieldBase>,
+  RequireAllOrNone<
+    FormFieldWithId<TableFieldBase>,
+    'addMoreRows' | 'maximumRows'
+  >,
   { columns: ColumnWithId[] }
 >
 export interface TableFieldProps extends BaseFieldProps {
