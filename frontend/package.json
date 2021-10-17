@@ -7,7 +7,6 @@
     "@chakra-ui/react": "^1.6.4",
     "@emotion/react": "^11.0.0",
     "@emotion/styled": "^11.0.0",
-    "@hookform/error-message": "^2.0.0",
     "axios": "^0.21.1",
     "country-flag-icons": "^1.2.10",
     "focus-visible": "^5.2.0",
