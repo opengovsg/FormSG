@@ -1,11 +1,7 @@
-/**
- * @precondition Must have a parent `react-hook-form#FormProvider` component.
- */
 import { useCallback, useMemo } from 'react'
-import { FormProvider, useFieldArray, useForm } from 'react-hook-form'
+import { useFieldArray, useFormContext } from 'react-hook-form'
 import { useTable } from 'react-table'
 import { Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
-import { times } from 'lodash'
 import { Merge, RequireAllOrNone } from 'type-fest'
 
 import { Column, FormFieldWithId, TableFieldBase } from '~shared/types/field'
@@ -31,6 +27,11 @@ export interface TableFieldProps extends BaseFieldProps {
   schema: TableFieldSchema
 }
 
+/**
+ * Field renderer for Table fields.
+ * @precondition This component uses `react-hook-form#useFieldArray`, and will require defaultValues to be populated in the parent `useForm` hook.
+ * @precondition Must have a parent `react-hook-form#FormProvider` component.
+ */
 export const TableField = ({
   schema,
   questionNumber,
@@ -52,15 +53,9 @@ export const TableField = ({
     [schema.columns],
   )
 
-  const data = useMemo(() => {
-    return times(schema.minimumRows, () => baseRowData)
-  }, [baseRowData, schema.minimumRows])
+  const formMethods =
+    useFormContext<Record<string, Record<string, unknown>[]>>()
 
-  const formMethods = useForm({
-    defaultValues: {
-      [schema._id]: data,
-    },
-  })
   const { fields, append } = useFieldArray({
     control: formMethods.control,
     name: schema._id,
@@ -74,63 +69,53 @@ export const TableField = ({
   }, [append, baseRowData, fields.length, schema.maximumRows])
 
   return (
-    <FormProvider {...formMethods}>
-      <form
-        noValidate
-        onSubmit={formMethods.handleSubmit((data) =>
-          console.warn('submit', data),
-        )}
-      >
-        <TableFieldContainer schema={schema} questionNumber={questionNumber}>
-          <Table {...getTableProps()} d="inline-block" overflowX="auto">
-            <Thead>
-              {headerGroups.map((headerGroup) => (
-                <Tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column, _idx, array) => (
-                    <Th
-                      {...column.getHeaderProps()}
-                      w={`calc(100%/${array.length})`}
-                      minW="12rem"
-                      id={column.id}
-                    >
-                      {column.render('Header')}
-                    </Th>
-                  ))}
-                </Tr>
+    <TableFieldContainer schema={schema} questionNumber={questionNumber}>
+      <Table {...getTableProps()} d="inline-block" overflowX="auto">
+        <Thead>
+          {headerGroups.map((headerGroup) => (
+            <Tr {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map((column, _idx, array) => (
+                <Th
+                  {...column.getHeaderProps()}
+                  w={`calc(100%/${array.length})`}
+                  minW="12rem"
+                  id={column.id}
+                >
+                  {column.render('Header')}
+                </Th>
               ))}
-            </Thead>
-            <Tbody {...getTableBodyProps()}>
-              {rows.map((row) => {
-                prepareRow(row)
-                return (
-                  <Tr {...row.getRowProps()}>
-                    {row.cells.map((cell, j) => (
-                      <Td {...cell.getCellProps()}>
-                        {cell.render('Cell', {
-                          schemaId: schema._id,
-                          columnSchema: schema.columns[j],
-                        })}
-                      </Td>
-                    ))}
-                  </Tr>
-                )
-              })}
-            </Tbody>
-          </Table>
-          {/* Assume any error is required, since that's the only error (for now) */}
-          <FormErrorMessage my="0.75rem">
-            Please fill in the required fields
-          </FormErrorMessage>
-        </TableFieldContainer>
-        {schema.addMoreRows && (
-          <AddRowFooter
-            currentRows={fields.length}
-            maxRows={schema.maximumRows}
-            handleAddRow={handleAddRow}
-          />
-        )}
-        <button type="submit">Submit</button>
-      </form>
-    </FormProvider>
+            </Tr>
+          ))}
+        </Thead>
+        <Tbody {...getTableBodyProps()}>
+          {rows.map((row) => {
+            prepareRow(row)
+            return (
+              <Tr {...row.getRowProps()}>
+                {row.cells.map((cell, j) => (
+                  <Td {...cell.getCellProps()}>
+                    {cell.render('Cell', {
+                      schemaId: schema._id,
+                      columnSchema: schema.columns[j],
+                    })}
+                  </Td>
+                ))}
+              </Tr>
+            )
+          })}
+        </Tbody>
+      </Table>
+      {/* Assume any error is required error, since that's the only error (for now) */}
+      <FormErrorMessage my="0.75rem">
+        Please fill in the required fields
+      </FormErrorMessage>
+      {schema.addMoreRows && (
+        <AddRowFooter
+          currentRows={fields.length}
+          maxRows={schema.maximumRows}
+          handleAddRow={handleAddRow}
+        />
+      )}
+    </TableFieldContainer>
   )
 }

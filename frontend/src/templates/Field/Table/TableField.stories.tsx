@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
-
-import { BasicField } from '~shared/types/field'
+import { times } from 'lodash'
 
 import Button from '~components/Button'
 
@@ -34,23 +32,30 @@ export default {
 const baseSchema: TableFieldSchema = mockData as TableFieldSchema
 
 interface StoryTableFieldProps extends TableFieldProps {
-  defaultValue?: string
+  defaultValue?: Record<string, string>
 }
 
 const Template: Story<StoryTableFieldProps> = ({ defaultValue, ...args }) => {
+  const baseRowData = useMemo(
+    () =>
+      args.schema.columns.reduce((acc, c) => {
+        acc[c._id] = ''
+        return acc
+      }, {} as Record<string, unknown>),
+    [args.schema.columns],
+  )
+
+  const data = useMemo(() => {
+    return times(args.schema.minimumRows, () => baseRowData)
+  }, [baseRowData, args.schema.minimumRows])
+
   const formMethods = useForm({
     defaultValues: {
-      // [args.schema._id]: [[], [], []],
+      [args.schema._id]: data,
     },
   })
 
   const [submitValues, setSubmitValues] = useState<string>()
-
-  const onSubmit = (values: Record<string, string>) => {
-    setSubmitValues(
-      JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
-    )
-  }
 
   useEffect(() => {
     if (defaultValue) {
@@ -58,30 +63,41 @@ const Template: Story<StoryTableFieldProps> = ({ defaultValue, ...args }) => {
     }
   }, [])
 
+  const onSubmit = (values: Record<string, string>) => {
+    console.log(values)
+    setSubmitValues(
+      JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
+    )
+  }
+
   return (
-    // <FormProvider {...formMethods}>
-    //   <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
-    <TableFieldComponent {...args} />
-    //     <Button
-    //       mt="1rem"
-    //       type="submit"
-    //       isLoading={formMethods.formState.isSubmitting}
-    //       loadingText="Submitting"
-    //     >
-    //       Submit
-    //     </Button>
-    //     {submitValues && <Text>You have submitted: {submitValues}</Text>}
-    //   </form>
-    // </FormProvider>
+    <FormProvider {...formMethods}>
+      <form noValidate onSubmit={formMethods.handleSubmit(onSubmit)}>
+        <TableFieldComponent {...args} />
+        <Button
+          mt="1rem"
+          type="submit"
+          isLoading={formMethods.formState.isSubmitting}
+          loadingText="Submitting"
+        >
+          Submit
+        </Button>
+        {submitValues && <Text>You have submitted: {submitValues}</Text>}
+      </form>
+    </FormProvider>
   )
 }
 
-export const ValidationRequired = Template.bind({})
-ValidationRequired.args = {
+export const Default = Template.bind({})
+Default.args = {
   schema: baseSchema,
 }
 
-export const ValidationOptional = Template.bind({})
-ValidationOptional.args = {
-  schema: { ...baseSchema, required: false },
+export const ValidationEmpty = Template.bind({})
+ValidationEmpty.args = {
+  schema: baseSchema,
+  defaultValue: baseSchema.columns.reduce((acc, c) => {
+    acc[c._id] = ''
+    return acc
+  }, {} as Record<string, string>),
 }
