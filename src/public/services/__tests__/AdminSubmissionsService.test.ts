@@ -196,6 +196,10 @@ describe('AdminSubmissionsService', () => {
       const MOCK_ARRAY = Uint8Array.from([1, 2, 3, 4])
       MockAxios.get.mockResolvedValueOnce({ data: MOCK_ENCRYPTED_ATTACHMENT })
       mockDecodeBase64.mockReturnValueOnce(MOCK_ARRAY)
+      const expectedDecodedFile = {
+        ...MOCK_ENCRYPTED_ATTACHMENT.encryptedFile,
+        binary: MOCK_ARRAY,
+      }
 
       // Act
       const actual = await AdminSubmissionService.downloadAndDecryptAttachment(
@@ -203,11 +207,11 @@ describe('AdminSubmissionsService', () => {
         MOCK_SECRET_KEY,
       )
 
-      // Arrange
+      // Assert
       expect(mockDecodeBase64).toHaveBeenCalledWith(MOCK_BINARY)
       expect(mockFormSgSdk.crypto.decryptFile).toHaveBeenCalledWith(
         MOCK_SECRET_KEY,
-        MOCK_ENCRYPTED_ATTACHMENT.encryptedFile,
+        expectedDecodedFile,
       )
       expect(actual).toBe('great decryption')
     })
@@ -225,6 +229,10 @@ describe('AdminSubmissionsService', () => {
       const MOCK_ARRAY = Uint8Array.from([1, 2, 3, 4])
       MockAxios.get.mockResolvedValueOnce({ data: MOCK_ENCRYPTED_ATTACHMENT })
       mockDecodeBase64.mockReturnValueOnce(MOCK_ARRAY)
+      const expectedDecodedFile = {
+        ...MOCK_ENCRYPTED_ATTACHMENT.encryptedFile,
+        binary: MOCK_ARRAY,
+      }
 
       // Act
       const actual = await AdminSubmissionService.downloadAndDecryptAttachment(
@@ -236,7 +244,7 @@ describe('AdminSubmissionsService', () => {
       expect(mockDecodeBase64).toHaveBeenCalledWith(MOCK_BINARY)
       expect(mockFormSgSdk.crypto.decryptFile).toHaveBeenCalledWith(
         MOCK_SECRET_KEY,
-        MOCK_ENCRYPTED_ATTACHMENT.encryptedFile,
+        expectedDecodedFile,
       )
       expect(actual).toBe(null)
     })
