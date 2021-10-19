@@ -20,12 +20,11 @@ export const ResendOtpButton = ({
       isLoading={isLoading}
       onClick={onButtonClick}
       type="button"
-      variant="link"
+      variant="reverse"
+      colorScheme="primary"
     >
-      <u>
-        Resend OTP
-        {timer > 0 && ` in ${timer}s`}
-      </u>
+      Resend OTP
+      {timer > 0 && ` in ${timer}s`}
     </Button>
   )
 }
