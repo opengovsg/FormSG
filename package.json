@@ -156,7 +156,7 @@
     "whatwg-fetch": "^3.6.2",
     "winston": "^3.3.3",
     "winston-cloudwatch": "^3.1.1",
-    "zod": "^3.9.8"
+    "zod": "^3.10.3"
   },
   "devDependencies": {
     "@babel/core": "^7.15.8",
@@ -183,7 +183,7 @@
     "@types/json-stringify-safe": "^5.0.0",
     "@types/mongodb": "^3.6.20",
     "@types/mongodb-uri": "^0.9.1",
-    "@types/node": "^14.17.23",
+    "@types/node": "^14.17.27",
     "@types/nodemailer": "^6.4.4",
     "@types/opossum": "^6.2.0",
     "@types/promise-retry": "^1.1.3",
