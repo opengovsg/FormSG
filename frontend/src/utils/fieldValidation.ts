@@ -6,7 +6,6 @@ import { RegisterOptions } from 'react-hook-form'
 import simplur from 'simplur'
 
 import {
-  BasicField,
   FieldBase,
   NricFieldBase,
   NumberFieldBase,
@@ -17,8 +16,6 @@ import {
 } from '~shared/types/field'
 import { isNricValid } from '~shared/utils/nric-validation'
 import { isUenValid } from '~shared/utils/uen-validation'
-
-import { TableFieldSchema } from '~/templates/Field/Table/TableField'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
@@ -68,28 +65,6 @@ export const createNumberValidationRules = (
           )
       }
     },
-  }
-}
-
-export const createTableColumnValidationRules = (
-  columnSchema: TableFieldSchema['columns'][number],
-): RegisterOptions => {
-  const columnRequiredOverride = {
-    required: {
-      value: columnSchema.required,
-      message: 'A required column has missing input',
-    },
-  }
-
-  switch (columnSchema.columnType) {
-    case BasicField.ShortText:
-      return {
-        ...createShortTextValidationRules(columnSchema),
-        ...columnRequiredOverride,
-      }
-    // TODO: Add dropdown validation when that field is complete
-    default:
-      return columnRequiredOverride
   }
 }
 
