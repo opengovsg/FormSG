@@ -7,7 +7,6 @@ import { Merge, RequireAllOrNone } from 'type-fest'
 
 import { Column, FormFieldWithId, TableFieldBase } from '~shared/types/field'
 
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 
 import { BaseFieldProps } from '../FieldContainer'
@@ -98,7 +97,7 @@ export const TableField = ({
               </Tr>
             ))}
           </Thead>
-          <Tbody {...getTableBodyProps()}>
+          <Tbody {...getTableBodyProps()} verticalAlign="baseline">
             {rows.map((row, rowIndex) => {
               prepareRow(row)
               return (
@@ -114,7 +113,7 @@ export const TableField = ({
                   ))}
 
                   {schema.addMoreRows ? (
-                    <Td>
+                    <Td verticalAlign="top">
                       <IconButton
                         isDisabled={fields.length <= schema.minimumRows}
                         variant="clear"
@@ -131,10 +130,6 @@ export const TableField = ({
           </Tbody>
         </Table>
       </Box>
-      {/* Assume any error is required error, since that's the only error (for now) */}
-      <FormErrorMessage my="0.75rem">
-        Please fill in the required fields
-      </FormErrorMessage>
       {schema.addMoreRows && (
         <AddRowFooter
           currentRows={fields.length}

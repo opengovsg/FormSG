@@ -7,6 +7,7 @@ import { get } from 'lodash'
 import { BasicField, Column, ShortTextColumnBase } from '~shared/types/field'
 
 import { createShortTextValidationRules } from '~utils/fieldValidation'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 
 import { ColumnWithId } from './TableField'
@@ -71,6 +72,7 @@ export const ColumnCell = ({
   return (
     <FormControl isRequired={columnSchema.required} isInvalid={!!cellError}>
       {renderedColumnCell}
+      <FormErrorMessage>{cellError?.message}</FormErrorMessage>
     </FormControl>
   )
 }
