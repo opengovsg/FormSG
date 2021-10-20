@@ -17,6 +17,7 @@ export const AddRowFooter = ({
 }: AddRowFooterProps): JSX.Element => {
   return (
     <Stack
+      mt="0.75rem"
       direction={{ base: 'column', md: 'row' }}
       justify="space-between"
       align={{ base: 'start', md: 'center' }}

@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useFieldArray, useFormContext } from 'react-hook-form'
 import { useTable } from 'react-table'
-import { Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
+import { Box, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 import { Merge, RequireAllOrNone } from 'type-fest'
 
 import { Column, FormFieldWithId, TableFieldBase } from '~shared/types/field'
@@ -16,12 +16,9 @@ import { ColumnHeader } from './ColumnHeader'
 import { TableFieldContainer } from './TableFieldContainer'
 
 export type ColumnWithId<T = Column> = T & { _id: string }
-export type TableFieldSchema = Merge<
-  RequireAllOrNone<
-    FormFieldWithId<TableFieldBase>,
-    'addMoreRows' | 'maximumRows'
-  >,
-  { columns: ColumnWithId[] }
+export type TableFieldSchema = RequireAllOrNone<
+  Merge<FormFieldWithId<TableFieldBase>, { columns: ColumnWithId[] }>,
+  'addMoreRows' | 'maximumRows'
 >
 export interface TableFieldProps extends BaseFieldProps {
   schema: TableFieldSchema
@@ -70,41 +67,43 @@ export const TableField = ({
 
   return (
     <TableFieldContainer schema={schema} questionNumber={questionNumber}>
-      <Table {...getTableProps()} d="inline-block" overflowX="auto">
-        <Thead>
-          {headerGroups.map((headerGroup) => (
-            <Tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column, _idx, array) => (
-                <Th
-                  {...column.getHeaderProps()}
-                  w={`calc(100%/${array.length})`}
-                  minW="15rem"
-                  id={column.id}
-                >
-                  {column.render('Header')}
-                </Th>
-              ))}
-            </Tr>
-          ))}
-        </Thead>
-        <Tbody {...getTableBodyProps()}>
-          {rows.map((row) => {
-            prepareRow(row)
-            return (
-              <Tr {...row.getRowProps()}>
-                {row.cells.map((cell, j) => (
-                  <Td {...cell.getCellProps()}>
-                    {cell.render('Cell', {
-                      schemaId: schema._id,
-                      columnSchema: schema.columns[j],
-                    })}
-                  </Td>
+      <Box d="block" w="100%" overflowX="auto">
+        <Table {...getTableProps()}>
+          <Thead>
+            {headerGroups.map((headerGroup) => (
+              <Tr {...headerGroup.getHeaderGroupProps()}>
+                {headerGroup.headers.map((column, _idx, array) => (
+                  <Th
+                    {...column.getHeaderProps()}
+                    w={`calc(100%/${array.length})`}
+                    minW="15rem"
+                    id={column.id}
+                  >
+                    {column.render('Header')}
+                  </Th>
                 ))}
               </Tr>
-            )
-          })}
-        </Tbody>
-      </Table>
+            ))}
+          </Thead>
+          <Tbody {...getTableBodyProps()}>
+            {rows.map((row) => {
+              prepareRow(row)
+              return (
+                <Tr {...row.getRowProps()}>
+                  {row.cells.map((cell, j) => (
+                    <Td {...cell.getCellProps()}>
+                      {cell.render('Cell', {
+                        schemaId: schema._id,
+                        columnSchema: schema.columns[j],
+                      })}
+                    </Td>
+                  ))}
+                </Tr>
+              )
+            })}
+          </Tbody>
+        </Table>
+      </Box>
       {/* Assume any error is required error, since that's the only error (for now) */}
       <FormErrorMessage my="0.75rem">
         Please fill in the required fields
