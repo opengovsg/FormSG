@@ -55,9 +55,4 @@ export const Table: ComponentMultiStyleConfig = {
     'column-stripe': variantColumnStripe,
   },
   sizes,
-  defaultProps: {
-    variant: 'column-stripe',
-    colorScheme: 'primary',
-    size: 'sm',
-  },
 }
