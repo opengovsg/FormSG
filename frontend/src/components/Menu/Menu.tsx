@@ -37,7 +37,7 @@ const MenuButton = (props: ButtonProps): JSX.Element => {
         boxShadow: isVariantOutline ? '0 0 0 0.0625rem black' : '',
       }}
       {...props}
-    ></ChakraMenuButton>
+    />
   )
 }
 
@@ -59,7 +59,7 @@ const MenuItem = ChakraMenuItem
  * Used to wrap MenuButton, MenuItem and MenuList components
  */
 export const Menu = (props: MenuProps): JSX.Element => {
-  return <ChakraMenu matchWidth={true} gutter={4} {...props}></ChakraMenu>
+  return <ChakraMenu matchWidth={true} gutter={4} {...props} />
 }
 
 Menu.Button = MenuButton
