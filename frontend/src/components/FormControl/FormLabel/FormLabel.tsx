@@ -68,7 +68,6 @@ export const FormLabel = ({
       requiredIndicator={<Box />}
       display="flex"
       flexDir="column"
-      textStyle="caption-1"
       {...labelProps}
     >
       <Box>
