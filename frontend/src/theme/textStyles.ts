@@ -42,7 +42,7 @@ export const textStyles = {
   h3: {
     fontWeight: 600,
     fontSize: '1.25rem',
-    lineHeight: '2rem',
+    lineHeight: '1.75rem',
     letterSpacing: '-0.017em',
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
@@ -63,7 +63,7 @@ export const textStyles = {
   'subhead-2': {
     fontWeight: 500,
     fontSize: '0.875rem',
-    lineHeight: '1.5rem',
+    lineHeight: '1.25rem',
     letterSpacing: '-0.006em',
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
@@ -87,7 +87,7 @@ export const textStyles = {
     fontStyle: 'normal',
     fontWeight: 400,
     fontSize: '0.875rem',
-    lineHeight: '1.5rem',
+    lineHeight: '1.25rem',
     letterSpacing: '-0.006em',
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
