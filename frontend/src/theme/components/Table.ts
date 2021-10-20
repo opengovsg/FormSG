@@ -19,6 +19,7 @@ const variantColumnStripe: ThemingPropsThunk<SystemStyleObjectRecord> = ({
       textTransform: 'initial',
       ...textStyles['caption-1'],
       color: 'secondary.500',
+      bg: 'white',
       '&:nth-of-type(odd)': {
         bg: `${c}.100`,
       },
@@ -26,6 +27,7 @@ const variantColumnStripe: ThemingPropsThunk<SystemStyleObjectRecord> = ({
     td: {
       borderBottom: '1px',
       borderColor: 'neutral.300',
+      bg: 'white',
       '&:nth-of-type(odd)': {
         bg: `${c}.100`,
       },
