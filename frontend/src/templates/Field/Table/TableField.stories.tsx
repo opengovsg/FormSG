@@ -6,6 +6,7 @@ import { assign, merge, times } from 'lodash'
 
 import { BasicField } from '~shared/types/field'
 
+import { viewports } from '~utils/storybook'
 import Button from '~components/Button'
 
 import {
@@ -155,6 +156,17 @@ const Template: Story<StoryTableFieldProps> = ({ defaultValue, ...args }) => {
 export const Default = Template.bind({})
 Default.args = {
   schema: baseSchema,
+}
+
+export const Mobile = Template.bind({})
+Mobile.args = {
+  schema: baseSchema,
+}
+Mobile.parameters = {
+  viewport: {
+    defaultViewport: 'mobile1',
+  },
+  chromatic: { viewports: [viewports.xs] },
 }
 
 export const NoAddableRows = Template.bind({})
