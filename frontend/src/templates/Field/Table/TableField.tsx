@@ -36,7 +36,9 @@ export const TableField = ({
 }: TableFieldProps): JSX.Element => {
   const columnsData = useMemo(() => {
     return schema.columns.map((c) => ({
-      Header: <ColumnHeader title={c.title} isRequired={c.required} />,
+      Header: (
+        <ColumnHeader title={c.title} isRequired={c.required} id={c._id} />
+      ),
       accessor: c._id,
       Cell: ColumnCell,
     }))
@@ -89,7 +91,6 @@ export const TableField = ({
                     {...column.getHeaderProps()}
                     w={`calc(100%/${array.length})`}
                     minW="15rem"
-                    id={column.id}
                   >
                     {column.render('Header')}
                   </Th>
