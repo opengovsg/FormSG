@@ -131,13 +131,13 @@ export const TableField = ({
           </Tbody>
         </Table>
       </Box>
-      {schema.addMoreRows && (
+      {schema.addMoreRows ? (
         <AddRowFooter
           currentRows={fields.length}
           maxRows={schema.maximumRows}
           handleAddRow={handleAddRow}
         />
-      )}
+      ) : null}
     </TableFieldContainer>
   )
 }
