@@ -4,6 +4,7 @@
   -webkit-transition: 0s ease-in-out left;
   transition: 0s ease-in-out left;
 }
+
 .uib-datepicker .uib-title {
   width: 100%;
 }
@@ -38,6 +39,7 @@
 .uib-position-body-scrollbar-measure {
   overflow: scroll !important;
 }
+
 .uib-datepicker-popup.dropdown-menu {
   display: block;
   float: none;
