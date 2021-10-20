@@ -1,12 +1,14 @@
 import { useCallback, useMemo } from 'react'
 import { useFieldArray, useFormContext } from 'react-hook-form'
+import { BiTrash } from 'react-icons/bi'
 import { useTable } from 'react-table'
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 import { Merge, RequireAllOrNone } from 'type-fest'
 
 import { Column, FormFieldWithId, TableFieldBase } from '~shared/types/field'
 
-import { FormErrorMessage } from '~components/FormControl/FormErrorMessage/FormErrorMessage'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import IconButton from '~components/IconButton'
 
 import { BaseFieldProps } from '../FieldContainer'
 
@@ -53,10 +55,11 @@ export const TableField = ({
   const formMethods =
     useFormContext<Record<string, Record<string, unknown>[]>>()
 
-  const { fields, append } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: formMethods.control,
     name: schema._id,
   })
+
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     useTable({ columns: columnsData, data: fields })
 
@@ -64,6 +67,16 @@ export const TableField = ({
     if (!schema.maximumRows || fields.length >= schema.maximumRows) return
     return append(baseRowData)
   }, [append, baseRowData, fields.length, schema.maximumRows])
+
+  const handleRemoveRow = useCallback(
+    (rowIndex: number) => {
+      if (fields.length <= schema.minimumRows || rowIndex >= fields.length) {
+        return
+      }
+      return remove(rowIndex)
+    },
+    [fields.length, remove, schema.minimumRows],
+  )
 
   return (
     <TableFieldContainer schema={schema} questionNumber={questionNumber}>
@@ -86,10 +99,11 @@ export const TableField = ({
             ))}
           </Thead>
           <Tbody {...getTableBodyProps()}>
-            {rows.map((row) => {
+            {rows.map((row, rowIndex) => {
               prepareRow(row)
               return (
-                <Tr {...row.getRowProps()}>
+                // The `key` prop is required for useFieldArray to remove the correct row.
+                <Tr {...row.getRowProps()} key={row.original.id}>
                   {row.cells.map((cell, j) => (
                     <Td {...cell.getCellProps()}>
                       {cell.render('Cell', {
@@ -98,6 +112,19 @@ export const TableField = ({
                       })}
                     </Td>
                   ))}
+
+                  {schema.addMoreRows ? (
+                    <Td>
+                      <IconButton
+                        isDisabled={fields.length <= schema.minimumRows}
+                        variant="clear"
+                        colorScheme="danger"
+                        aria-label="Remove row"
+                        icon={<BiTrash />}
+                        onClick={() => handleRemoveRow(rowIndex)}
+                      />
+                    </Td>
+                  ) : null}
                 </Tr>
               )
             })}
