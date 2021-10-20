@@ -82,7 +82,12 @@ export const TableField = ({
   return (
     <TableFieldContainer schema={schema} questionNumber={questionNumber}>
       <Box d="block" w="100%" overflowX="auto">
-        <Table {...getTableProps()}>
+        <Table
+          {...getTableProps()}
+          variant="column-stripe"
+          size="sm"
+          colorScheme="primary"
+        >
           <Thead>
             {headerGroups.map((headerGroup) => (
               <Tr {...headerGroup.getHeaderGroupProps()}>
