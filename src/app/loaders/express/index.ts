@@ -16,6 +16,7 @@ import { ExamplesRouter } from '../../modules/examples/examples.routes'
 import { AdminFormsRouter } from '../../modules/form/admin-form/admin-form.routes'
 import { PublicFormRouter } from '../../modules/form/public-form/public-form.routes'
 import { FrontendRouter } from '../../modules/frontend/frontend.routes'
+import * as HomeController from '../../modules/home/home.controller'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
@@ -151,6 +152,15 @@ const loadExpressApp = async (connection: Connection) => {
     app.get('*', (_req, res) => {
       res.sendFile(path.join(frontendPath, 'index.html'))
     })
+  }
+
+  if (config.nodeEnv === Environment.Dev) {
+    app.use(
+      '/public/fonts',
+      express.static(path.resolve('./dist/angularjs/fonts')),
+    )
+    app.use('/public', express.static(path.resolve('./dist/angularjs')))
+    app.get('/old/', HomeController.home)
   }
 
   app.use(sentryMiddlewares())
