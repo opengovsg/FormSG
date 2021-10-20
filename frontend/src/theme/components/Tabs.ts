@@ -135,15 +135,15 @@ const variantLineLight: ThemingPropsThunk<
       theme: props.theme,
     }),
     tab: {
-      color: 'primary.500',
+      color: 'secondary.400',
       _hover: {
-        color: 'primary.600',
+        color: 'primary.500',
       },
       _selected: {
         _before: {
-          bg: 'primary.600',
+          bg: 'primary.500',
         },
-        color: 'primary.600',
+        color: 'primary.500',
       },
       _focusVisible: {
         boxShadow: `0 0 0 2px ${getColor(props.theme, 'primary.500')}`,
@@ -168,7 +168,7 @@ const variantLineDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
           theme: props.theme,
         }),
         tab: {
-          color: 'secondary.200',
+          color: 'neutral.400',
           _hover: {
             color: 'white',
           },
