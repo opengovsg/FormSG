@@ -635,7 +635,7 @@ export class MailService {
             // Admin would already have received a summary email from Step 2.
             f.permissionList.length
               ? this.sendDisabledMailForCollab(f, form.admin)
-              : okAsync<true, never>(true),
+              : okAsync(true),
           ),
         )
       })
@@ -768,9 +768,9 @@ export class MailService {
             // Admin would already have received a summary email from Step 2.
             f.permissionList.length
               ? this.sendWarningMailForCollab(f, form.admin, smsVerifications)
-              : okAsync<true, never>(true),
+              : okAsync(true),
           ),
-        ).map(() => true)
+        ).map(() => true as const)
       })
   }
 

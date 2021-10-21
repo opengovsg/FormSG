@@ -14,9 +14,7 @@ import { SubmissionNotFoundError } from '../submission/submission.errors'
 
 import {
   WebhookNoMoreRetriesError,
-  WebhookPushToQueueError,
   WebhookRetriesNotEnabledError,
-  WebhookValidationError,
 } from './webhook.errors'
 import { WebhookQueueMessage } from './webhook.message'
 import { WebhookProducer } from './webhook.producer'
@@ -152,13 +150,7 @@ export const createWebhookQueueHandler =
     // First, retrieve webhook view and URL from database
     const retryResult = await retrieveWebhookInfo(
       webhookMessage.submissionId,
-    ).andThen<
-      true,
-      | WebhookRetriesNotEnabledError
-      | WebhookValidationError
-      | WebhookNoMoreRetriesError
-      | WebhookPushToQueueError
-    >((webhookInfo) => {
+    ).andThen((webhookInfo) => {
       const { webhookUrl, isRetryEnabled } = webhookInfo
       logMeta = {
         ...logMeta,

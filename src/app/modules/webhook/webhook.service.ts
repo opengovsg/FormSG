@@ -251,8 +251,9 @@ export const createInitialWebhookSender =
             isSuccessfulResponse(webhookResponse) ||
             !producer ||
             !isRetryEnabled
-          )
-            return okAsync(true)
+          ) {
+            return okAsync(true as const)
+          }
           // Webhook failed and retries enabled, so create initial message and enqueue
           return WebhookQueueMessage.fromSubmissionId(
             String(submission._id),

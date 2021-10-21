@@ -159,7 +159,7 @@ const assertHashMatch = (
   logMeta: Record<string, unknown> = {},
 ): ResultAsync<true, HashingError | InvalidOtpError> => {
   return compareHash(otp, otpHash, logMeta).andThen((isMatch) => {
-    if (isMatch) return okAsync(true)
+    if (isMatch) return okAsync(isMatch)
     return errAsync(new InvalidOtpError('OTP is invalid. Please try again.'))
   })
 }

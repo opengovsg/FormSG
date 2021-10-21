@@ -32,7 +32,6 @@ import {
   IFormDocument,
   IFormSchema,
   IPopulatedForm,
-  IUserSchema,
 } from '../../../../types'
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
 import { aws as AwsConfig } from '../../../config/config'
@@ -289,7 +288,7 @@ export const transferFormOwnership = (
   return (
     // Step 1: Retrieve current owner of form to transfer.
     UserService.findUserById(String(currentForm.admin._id))
-      .andThen<IUserSchema, TransferOwnershipError>((currentOwner) => {
+      .andThen((currentOwner) => {
         // No need to transfer form ownership if new and current owners are
         // the same.
         if (newOwnerEmail === currentOwner.email) {
@@ -468,7 +467,7 @@ export const updateFormField = (
 
       return transformMongoError(error)
     },
-  ).andThen<FormFieldSchema, FieldNotFoundError>((updatedForm) => {
+  ).andThen((updatedForm) => {
     if (!updatedForm) {
       return errAsync(new FieldNotFoundError())
     }
