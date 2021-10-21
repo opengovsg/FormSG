@@ -210,7 +210,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-angular": "^4.1.0",
     "eslint-plugin-import": "^2.24.2",
-    "eslint-plugin-jest": "^25.0.5",
+    "eslint-plugin-jest": "^25.2.2",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-typesafe": "^0.5.2",
