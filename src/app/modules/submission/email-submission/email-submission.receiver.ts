@@ -26,7 +26,7 @@ const logger = createLoggerWithLabel(module)
  */
 export const createMultipartReceiver = (
   headers: IncomingHttpHeaders,
-): Result<busboy.Busboy, InitialiseMultipartReceiverError> => {
+): Result<Busboy.Busboy, InitialiseMultipartReceiverError> => {
   try {
     const busboy = new Busboy({
       headers,
@@ -55,7 +55,7 @@ export const createMultipartReceiver = (
  * @param busboy Busboy receiver object
  */
 export const configureMultipartReceiver = (
-  busboy: busboy.Busboy,
+  busboy: Busboy.Busboy,
 ): ResultAsync<ParsedMultipartForm, MultipartError> => {
   const logMeta = {
     action: 'configureMultipartReceiver',
