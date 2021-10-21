@@ -114,6 +114,7 @@
 .create-form #create-form-secret-key .icon-container:first-child {
   padding-right: 5px;
 }
+
 .create-form #create-form-secret-key .icon-container:nth-child(2) {
   padding-left: 5px;
 }
@@ -193,9 +194,11 @@
   flex: 1;
   border-bottom: 1px solid #dcdcdc;
 }
+
 .create-form #template-separator::before {
   margin-right: 2em;
 }
+
 .create-form #template-separator::after {
   margin-left: 2em;
 }
@@ -204,6 +207,7 @@
   .create-form #template-separator::before {
     margin-right: 0.5em;
   }
+
   .create-form #template-separator::after {
     margin-left: 0.5em;
   }
