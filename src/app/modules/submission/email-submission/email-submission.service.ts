@@ -85,7 +85,7 @@ export const validateAttachments = (
       })
       return errAsync(new InvalidFileExtensionError())
     }
-    return okAsync(true)
+    return okAsync(true as const)
   })
 }
 

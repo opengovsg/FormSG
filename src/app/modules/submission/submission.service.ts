@@ -129,6 +129,6 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
       })
       return errAsync(new SendEmailConfirmationError())
     }
-    return okAsync(true)
+    return okAsync(true as const)
   })
 }
