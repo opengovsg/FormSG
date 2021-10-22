@@ -21,8 +21,6 @@ export default {
 } as Meta
 
 const TabTemplate: Story<TabsProps> = (args) => {
-  const contentFontColour = args.variant === 'line-dark' ? 'white' : 'black'
-
   return (
     <Tabs {...args}>
       <TabList>
@@ -31,9 +29,9 @@ const TabTemplate: Story<TabsProps> = (args) => {
         <Tab>Results</Tab>
       </TabList>
       <TabPanels>
-        <TabPanel color={contentFontColour}>Content of Create tab</TabPanel>
-        <TabPanel color={contentFontColour}>Content of Settings tab</TabPanel>
-        <TabPanel color={contentFontColour}>Content of Results tab</TabPanel>
+        <TabPanel>Content of Create tab</TabPanel>
+        <TabPanel>Content of Settings tab</TabPanel>
+        <TabPanel>Content of Results tab</TabPanel>
       </TabPanels>
     </Tabs>
   )
