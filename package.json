@@ -198,7 +198,7 @@
     "@typescript-eslint/parser": "^4.33.0",
     "auto-changelog": "^2.3.0",
     "axios-mock-adapter": "^1.20.0",
-    "babel-loader": "^8.2.2",
+    "babel-loader": "^8.2.3",
     "concurrently": "^6.3.0",
     "copy-webpack-plugin": "^6.0.2",
     "core-js": "^3.18.3",
