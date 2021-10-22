@@ -47,6 +47,10 @@ const variantLineColor: ThemingPropsThunk<
   SystemStyleObjectRecord,
   ChakraTheme
 > = () => ({
+  tablist: {
+    pt: '2px',
+    mt: '-2px',
+  },
   tab: {
     ...textStyles['subhead-3'],
     position: 'relative',

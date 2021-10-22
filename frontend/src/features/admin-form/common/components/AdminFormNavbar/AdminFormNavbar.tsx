@@ -121,7 +121,6 @@ export const AdminFormNavbar = ({
       <TabList
         ref={ref}
         onMouseDown={onMouseDown}
-        pt={{ base: '0.375rem', lg: 0 }}
         px={{ base: '1.75rem', lg: '1rem' }}
         w={{ base: '100vw', lg: 'initial' }}
         gridArea="tabs"
