@@ -18,16 +18,6 @@ const parts = [
   'indicator', // used to render an active tab indicator that animates between selected tabs
 ]
 
-const scrollBarStyles = {
-  /* Scrollbar for Firefox */
-  // Firefox only has these two css properties to customise scrollbar
-  scrollbarWidth: 0,
-  /* Scrollbar for Chrome, Safari, Opera and Microsoft Edge */
-  '&::-webkit-scrollbar': {
-    width: 0,
-  },
-}
-
 const sizesForLineLightDarkVariant = {
   md: {
     tab: {
@@ -42,7 +32,6 @@ const sizesForLineLightDarkVariant = {
     tablist: {
       // Allow bottom border to show through
       py: '2px',
-      my: '-2px',
     },
   },
 }
@@ -58,11 +47,6 @@ const variantLineColor: ThemingPropsThunk<
   SystemStyleObjectRecord,
   ChakraTheme
 > = () => ({
-  tablist: {
-    // hide any overflows so scrollbar is also hidden.
-    overflowX: 'hidden',
-    whiteSpace: 'nowrap',
-  },
   tab: {
     ...textStyles['subhead-3'],
     position: 'relative',
@@ -96,9 +80,6 @@ const variantLineLight: ThemingPropsThunk<
 > = (props) => {
   const { size } = props
   return merge(variantLineColor(props), getSizesForLineLightDarkVariant(size), {
-    tablist: {
-      ...scrollBarStyles,
-    },
     tab: {
       color: 'secondary.400',
       _hover: {
@@ -125,7 +106,6 @@ const variantLineDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
       getSizesForLineLightDarkVariant(size),
       {
         tablist: {
-          ...scrollBarStyles,
           bg: 'secondary.500',
         },
         tab: {
@@ -188,6 +168,19 @@ const variantLine: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
 export const Tabs: ComponentMultiStyleConfig = {
   parts,
   baseStyle: {
+    tablist: {
+      // Allow drag without showing scrollbar
+      overflowX: 'auto',
+      whiteSpace: 'nowrap',
+      /* Scrollbar for Firefox */
+      // Firefox only has these two css properties to customise scrollbar
+      scrollbarWidth: 0,
+      /* Scrollbar for Chrome, Safari, Opera and Microsoft Edge */
+      '&::-webkit-scrollbar': {
+        width: 0,
+        height: 0,
+      },
+    },
     tab: {
       textStyle: 'body-1',
       _selected: {
