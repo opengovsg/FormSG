@@ -1,11 +1,20 @@
-import { BiLeftArrowAlt, BiShow, BiUserPlus } from 'react-icons/bi'
+import { useMemo } from 'react'
+import {
+  BiChevronUp,
+  BiDotsHorizontalRounded,
+  BiLeftArrowAlt,
+  BiShow,
+  BiUserPlus,
+} from 'react-icons/bi'
 import {
   Box,
   ButtonGroup,
+  Collapse,
   Flex,
   Grid,
   GridItem,
   TabList,
+  useDisclosure,
 } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form/form'
@@ -41,11 +50,36 @@ export const AdminFormNavbar = ({
   handleShareButtonClick,
 }: AdminFormNavbarProps): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
+  const { isOpen, onToggle } = useDisclosure()
+
+  const navbarActionButtons = useMemo(() => {
+    return (
+      <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
+        <IconButton
+          aria-label="Add collaborators to form"
+          variant="outline"
+          onClick={handleAddCollabButtonClick}
+          icon={<BiUserPlus />}
+        />
+        <IconButton
+          aria-label="Preview form"
+          variant="outline"
+          onClick={handlePreviewFormButtonClick}
+          icon={<BiShow />}
+        />
+        <Button onClick={handleShareButtonClick}>Share</Button>
+      </ButtonGroup>
+    )
+  }, [
+    formInfo,
+    handleAddCollabButtonClick,
+    handlePreviewFormButtonClick,
+    handleShareButtonClick,
+  ])
 
   return (
     <Grid
       w="100vw"
-      overflowX="auto"
       position="sticky"
       top={0}
       flexDir="column"
@@ -55,7 +89,7 @@ export const AdminFormNavbar = ({
       }}
       templateRows="min-content"
       templateAreas={{
-        base: `'left right' 'tabs tabs'`,
+        base: `'left right' 'actions actions' 'tabs tabs'`,
         lg: `'left tabs right'`,
       }}
       boxShadow={{ lg: '0 1px 1px var(--chakra-colors-neutral-300)' }}
@@ -105,23 +139,27 @@ export const AdminFormNavbar = ({
         pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
         flex={1}
         gridArea="right"
-        justifyContent="flex-end"
+        justify="flex-end"
+        align="center"
       >
-        <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
-          <IconButton
-            aria-label="Add collaborators to form"
-            variant="outline"
-            onClick={handleAddCollabButtonClick}
-            icon={<BiUserPlus />}
-          />
-          <IconButton
-            aria-label="Preview form"
-            variant="outline"
-            onClick={handlePreviewFormButtonClick}
-            icon={<BiShow />}
-          />
-          <Button onClick={handleShareButtonClick}>Share</Button>
-        </ButtonGroup>
+        <IconButton
+          display={{ base: 'flex', md: 'none' }}
+          aria-label="Form actions"
+          onClick={onToggle}
+          icon={isOpen ? <BiChevronUp /> : <BiDotsHorizontalRounded />}
+        />
+        <Box display={{ base: 'none', md: 'flex' }}>{navbarActionButtons}</Box>
+      </Flex>
+      <Flex
+        display={{ base: 'flex', md: 'none' }}
+        justify="flex-end"
+        gridArea="actions"
+      >
+        <Collapse in={isOpen}>
+          <Box mb="0.5rem" px="1.5rem">
+            {navbarActionButtons}
+          </Box>
+        </Collapse>
       </Flex>
     </Grid>
   )
