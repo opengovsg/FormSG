@@ -53,6 +53,7 @@ export const AdminFormNavbar = ({
         base: '1fr',
         lg: 'repeat(3, minmax(0, 1fr))',
       }}
+      templateRows="min-content"
       templateAreas={{
         base: `'left right' 'tabs tabs'`,
         lg: `'left tabs right'`,
@@ -68,7 +69,7 @@ export const AdminFormNavbar = ({
         alignItems="center"
         gridArea="left"
         py="0.625rem"
-        pl="2rem"
+        pl={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
         pr="1rem"
       >
         <Box>
@@ -101,7 +102,7 @@ export const AdminFormNavbar = ({
       <Flex
         py="0.625rem"
         pl="1rem"
-        pr="2rem"
+        pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
         flex={1}
         gridArea="right"
         justifyContent="flex-end"

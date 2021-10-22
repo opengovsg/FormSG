@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BiCheckDouble,
   BiCodeBlock,
@@ -37,8 +36,6 @@ export const SettingsPage = (): JSX.Element => {
       isManual
       orientation={tabOrientation}
       variant="line"
-      py={{ base: '2.5rem', lg: '3.125rem' }}
-      px={{ base: '1.75rem', lg: '2rem' }}
       display="grid"
       gridTemplateAreas={{ base: `'content' 'tabs'`, md: `'tabs content'` }}
       gridTemplateRows="1fr auto"
@@ -54,13 +51,12 @@ export const SettingsPage = (): JSX.Element => {
         position={{ base: 'fixed', md: 'sticky' }}
         zIndex={{ base: 'docked', md: 0 }}
         bg={{ base: 'neutral.100', md: 'inherit' }}
-        top={{ base: 'initial', md: '9rem', lg: '7.125rem' }}
+        top={{ base: 'initial', md: 0 }}
         bottom={{ base: 0, md: 'initial' }}
         left={{ base: 0, md: 'initial' }}
         borderTop={{ base: '1px solid', md: 'none' }}
         borderTopColor="neutral.300"
         w={{ base: '100vw', md: 'auto', lg: '21rem' }}
-        // w={{ base: 'auto', lg: '21rem' }}
         mr={{ base: '1.5rem', md: '4rem', lg: 'initial' }}
         __css={{
           scrollbarWidth: 0,
@@ -76,7 +72,7 @@ export const SettingsPage = (): JSX.Element => {
           display="inline-flex"
           w="max-content"
           mx={{ base: '1.5rem', md: 0 }}
-          mb="0.5rem"
+          mb="calc(0.5rem - 2px)"
         >
           <SettingsTab label="General" icon={BiCog} />
           <SettingsTab label="Singpass" icon={BiKey} />
@@ -89,7 +85,7 @@ export const SettingsPage = (): JSX.Element => {
       <TabPanels
         maxW="42.5rem"
         gridArea="content"
-        pb={{ base: '4rem', md: 'initial' }}
+        mb={{ base: '4rem', md: 'initial' }}
       >
         <TabPanel>
           <SettingsGeneralPage />
