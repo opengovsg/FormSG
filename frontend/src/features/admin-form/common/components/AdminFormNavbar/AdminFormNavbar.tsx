@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { BiLeftArrowAlt, BiShow, BiUserPlus } from 'react-icons/bi'
-import { Box, ButtonGroup, Flex } from '@chakra-ui/react'
+import { Box, ButtonGroup, Flex, Grid, GridItem } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form/form'
 
@@ -34,18 +35,32 @@ export const AdminFormNavbar = ({
   handleShareButtonClick,
 }: AdminFormNavbarProps): JSX.Element => {
   return (
-    <Flex
-      py="0.3125rem"
-      px="2rem"
-      justify="space-between"
-      align="center"
+    <Grid
       position="sticky"
       top={0}
+      flexDir="column"
+      templateColumns={{
+        base: '1fr',
+        lg: 'repeat(3, minmax(0, 1fr))',
+      }}
+      templateAreas={{
+        base: `'left right' 'tabs tabs'`,
+        lg: `'left tabs right'`,
+      }}
+      boxShadow={{ lg: '0 1px 1px var(--chakra-colors-neutral-300)' }}
       bg="white"
       zIndex="docked"
-      boxShadow="0 1px 1px var(--chakra-colors-neutral-300)"
+      flex={1}
     >
-      <Flex flex={1} align="center">
+      <GridItem
+        display="flex"
+        flex={1}
+        alignItems="center"
+        gridArea="left"
+        py="0.625rem"
+        pl="2rem"
+        pr="1rem"
+      >
         <Box>
           <IconButton
             mr="0.5rem"
@@ -57,32 +72,43 @@ export const AdminFormNavbar = ({
           />
         </Box>
         <AdminFormNavbarDetails formInfo={formInfo} />
-      </Flex>
-      <TabList mt="-1.125rem" mb="-0.25rem" borderBottom="none">
+      </GridItem>
+      <TabList
+        pt={{ base: '0.375rem', lg: 0 }}
+        px={{ base: '1.75rem', lg: '1rem' }}
+        gridArea="tabs"
+        borderBottom="none"
+        justifyContent={{ base: 'flex-start', lg: 'center' }}
+        alignSelf="center"
+      >
         <Tab isDisabled={!formInfo}>Create</Tab>
         <Tab isDisabled={!formInfo}>Settings</Tab>
         <Tab isDisabled={!formInfo}>Results</Tab>
       </TabList>
-      <ButtonGroup
-        spacing="0.5rem"
+      <Flex
+        py="0.625rem"
+        pl="1rem"
+        pr="2rem"
         flex={1}
+        gridArea="right"
         justifyContent="flex-end"
-        isDisabled={!formInfo}
       >
-        <IconButton
-          aria-label="Add collaborators to form"
-          variant="outline"
-          onClick={handleAddCollabButtonClick}
-          icon={<BiUserPlus />}
-        />
-        <IconButton
-          aria-label="Preview form"
-          variant="outline"
-          onClick={handlePreviewFormButtonClick}
-          icon={<BiShow />}
-        />
-        <Button onClick={handleShareButtonClick}>Share</Button>
-      </ButtonGroup>
-    </Flex>
+        <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
+          <IconButton
+            aria-label="Add collaborators to form"
+            variant="outline"
+            onClick={handleAddCollabButtonClick}
+            icon={<BiUserPlus />}
+          />
+          <IconButton
+            aria-label="Preview form"
+            variant="outline"
+            onClick={handlePreviewFormButtonClick}
+            icon={<BiShow />}
+          />
+          <Button onClick={handleShareButtonClick}>Share</Button>
+        </ButtonGroup>
+      </Flex>
+    </Grid>
   )
 }

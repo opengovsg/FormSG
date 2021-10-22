@@ -194,6 +194,9 @@ export const Tabs: ComponentMultiStyleConfig = {
         textStyle: 'subhead-1',
       },
     },
+    tabpanel: {
+      p: 'initial',
+    },
   },
   variants: {
     // Chakra UI already has a line variant, these are our custom variants
