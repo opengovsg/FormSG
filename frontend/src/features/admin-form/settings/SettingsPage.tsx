@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BiCheckDouble,
   BiCodeBlock,
@@ -16,6 +17,8 @@ import {
   UseTabsProps,
 } from '@chakra-ui/react'
 
+import { useDraggable } from '~hooks/useDraggable'
+
 import { SettingsTab } from './components/SettingsTab'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 
@@ -25,6 +28,8 @@ export const SettingsPage = (): JSX.Element => {
     xs: 'horizontal',
     md: 'vertical',
   })
+
+  const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
   return (
     <Tabs
@@ -40,25 +45,38 @@ export const SettingsPage = (): JSX.Element => {
       gridTemplateColumns="auto 1fr"
     >
       <Flex
+        h="max-content"
         gridArea="tabs"
         flexShrink={0}
+        ref={ref}
+        onMouseDown={onMouseDown}
+        overflowX={{ base: 'auto', md: 'initial' }}
         position={{ base: 'fixed', md: 'sticky' }}
         zIndex={{ base: 'docked', md: 0 }}
         bg={{ base: 'neutral.100', md: 'inherit' }}
-        top={{ base: 'initial', md: '8.75rem', lg: '7.125rem' }}
+        top={{ base: 'initial', md: '9rem', lg: '7.125rem' }}
         bottom={{ base: 0, md: 'initial' }}
         left={{ base: 0, md: 'initial' }}
         borderTop={{ base: '1px solid', md: 'none' }}
-        borderColor="neutral.300"
-        w="100%"
+        borderTopColor="neutral.300"
+        w={{ base: '100vw', md: 'auto', lg: '21rem' }}
+        // w={{ base: 'auto', lg: '21rem' }}
+        mr={{ base: '1.5rem', md: '4rem', lg: 'initial' }}
+        __css={{
+          scrollbarWidth: 0,
+          /* Scrollbar for Chrome, Safari, Opera and Microsoft Edge */
+          '&::-webkit-scrollbar': {
+            width: 0,
+            height: 0,
+          },
+        }}
       >
         <TabList
+          overflowX="initial"
+          display="inline-flex"
+          w="max-content"
           mx={{ base: '1.5rem', md: 0 }}
           mb="0.5rem"
-          h="max-content"
-          maxW="100%"
-          w={{ base: 'auto', lg: '21rem' }}
-          mr={{ md: '4rem', lg: 'initial' }}
         >
           <SettingsTab label="General" icon={BiCog} />
           <SettingsTab label="Singpass" icon={BiKey} />

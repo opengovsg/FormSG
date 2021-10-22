@@ -1,13 +1,19 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { BiLeftArrowAlt, BiShow, BiUserPlus } from 'react-icons/bi'
-import { Box, ButtonGroup, Flex, Grid, GridItem } from '@chakra-ui/react'
+import {
+  Box,
+  ButtonGroup,
+  Flex,
+  Grid,
+  GridItem,
+  TabList,
+} from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form/form'
 
+import { useDraggable } from '~hooks/useDraggable'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
-import { TabList } from '~components/Tabs'
-import { Tab } from '~components/Tabs/Tab'
+import { Tab } from '~components/Tabs'
 
 import { AdminFormNavbarDetails } from './AdminFormNavbarDetails'
 
@@ -34,8 +40,12 @@ export const AdminFormNavbar = ({
   handlePreviewFormButtonClick,
   handleShareButtonClick,
 }: AdminFormNavbarProps): JSX.Element => {
+  const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
+
   return (
     <Grid
+      w="100vw"
+      overflowX="auto"
       position="sticky"
       top={0}
       flexDir="column"
@@ -74,8 +84,11 @@ export const AdminFormNavbar = ({
         <AdminFormNavbarDetails formInfo={formInfo} />
       </GridItem>
       <TabList
+        ref={ref}
+        onMouseDown={onMouseDown}
         pt={{ base: '0.375rem', lg: 0 }}
         px={{ base: '1.75rem', lg: '1rem' }}
+        w={{ base: '100vw', lg: 'initial' }}
         gridArea="tabs"
         borderBottom="none"
         justifyContent={{ base: 'flex-start', lg: 'center' }}
