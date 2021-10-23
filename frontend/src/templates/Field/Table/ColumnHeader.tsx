@@ -18,10 +18,7 @@ export const ColumnHeader = ({
       <Text as="label" id={id}>
         {title}
       </Text>
-      <FormLabel.OptionalIndicator
-        textStyle="caption-2"
-        isRequired={isRequired}
-      />
+      <FormLabel.OptionalIndicator isRequired={isRequired} />
     </>
   )
 }

@@ -17,7 +17,7 @@ const variantColumnStripe: ThemingPropsThunk<SystemStyleObjectRecord> = ({
       borderColor: 'neutral.300',
       textAlign: 'center',
       textTransform: 'initial',
-      ...textStyles['caption-1'],
+      ...textStyles['subhead-2'],
       color: 'secondary.500',
       bg: 'white',
       '&:nth-of-type(odd)': {
@@ -38,7 +38,7 @@ const variantColumnStripe: ThemingPropsThunk<SystemStyleObjectRecord> = ({
 const sizes: Record<string, ThemingPropsThunk<SystemStyleObjectRecord>> = {
   sm: {
     th: {
-      fontSize: textStyles['caption-1']['fontSize'],
+      fontSize: textStyles['subhead-2']['fontSize'],
       py: '0.625rem',
       px: '0.5rem',
     },
