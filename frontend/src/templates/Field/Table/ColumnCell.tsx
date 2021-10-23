@@ -8,6 +8,7 @@ import { BasicField, Column, ShortTextColumnBase } from '~shared/types/field'
 
 import { createShortTextValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
 import { ColumnWithId } from './TableField'
@@ -71,6 +72,9 @@ export const ColumnCell = ({
 
   return (
     <FormControl isRequired={columnSchema.required} isInvalid={!!cellError}>
+      <FormLabel display={{ base: 'flex', md: 'none' }} color="secondary.700">
+        {columnSchema.title}
+      </FormLabel>
       {renderedColumnCell}
       <FormErrorMessage>{cellError?.message}</FormErrorMessage>
     </FormControl>

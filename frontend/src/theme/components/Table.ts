@@ -12,24 +12,32 @@ const variantColumnStripe: ThemingPropsThunk<SystemStyleObjectRecord> = ({
   colorScheme: c,
 }) => {
   return {
+    tr: {
+      '&:nth-of-type(odd)': {
+        bg: { base: `${c}.100`, md: 'none' },
+      },
+      px: { base: '1.5rem', md: 0 },
+      py: { base: '0.75rem', md: 0 },
+      display: { base: 'block', md: 'table-row' },
+      borderBottom: {
+        base: 0,
+        md: '1px solid var(--chakra-colors-neutral-300)',
+      },
+    },
     th: {
-      borderBottom: '1px',
-      borderColor: 'neutral.300',
       textAlign: 'center',
       textTransform: 'initial',
       ...textStyles['subhead-2'],
       color: 'secondary.500',
-      bg: 'white',
+      bg: { base: 'transparent', md: 'white' },
       '&:nth-of-type(odd)': {
-        bg: `${c}.100`,
+        bg: { md: `${c}.100` },
       },
     },
     td: {
-      borderBottom: '1px',
-      borderColor: 'neutral.300',
-      bg: 'white',
+      bg: { base: 'transparent', md: 'white' },
       '&:nth-of-type(odd)': {
-        bg: `${c}.100`,
+        bg: { md: `${c}.100` },
       },
     },
   }
@@ -43,8 +51,8 @@ const sizes: Record<string, ThemingPropsThunk<SystemStyleObjectRecord>> = {
       px: '0.5rem',
     },
     td: {
-      px: '0.5rem',
-      py: '0.375rem',
+      px: { base: 0, md: '0.5rem' },
+      py: { base: '0.75rem', md: '0.375rem' },
     },
   },
 }

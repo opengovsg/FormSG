@@ -88,14 +88,15 @@ export const TableField = ({
           size="sm"
           colorScheme="primary"
         >
-          <Thead>
+          <Thead display={{ base: 'none', md: 'table-header-group' }}>
             {headerGroups.map((headerGroup) => (
               <Tr {...headerGroup.getHeaderGroupProps()}>
                 {headerGroup.headers.map((column, _idx, array) => (
                   <Th
                     {...column.getHeaderProps()}
-                    w={`calc(100%/${array.length})`}
+                    w={{ base: 'initial', md: `calc(100%/${array.length})` }}
                     minW="15rem"
+                    display={{ base: 'block', md: 'table-cell' }}
                   >
                     {column.render('Header')}
                   </Th>
@@ -110,7 +111,10 @@ export const TableField = ({
                 // The `key` prop is required for useFieldArray to remove the correct row.
                 <Tr {...row.getRowProps()} key={row.original.id}>
                   {row.cells.map((cell, j) => (
-                    <Td {...cell.getCellProps()}>
+                    <Td
+                      {...cell.getCellProps()}
+                      display={{ base: 'block', md: 'table-cell' }}
+                    >
                       {cell.render('Cell', {
                         schemaId: schema._id,
                         columnSchema: schema.columns[j],
@@ -119,7 +123,11 @@ export const TableField = ({
                   ))}
 
                   {schema.addMoreRows ? (
-                    <Td verticalAlign="top">
+                    <Td
+                      verticalAlign="top"
+                      textAlign="end"
+                      display={{ base: 'block', md: 'table-cell' }}
+                    >
                       <IconButton
                         isDisabled={fields.length <= schema.minimumRows}
                         variant="clear"
