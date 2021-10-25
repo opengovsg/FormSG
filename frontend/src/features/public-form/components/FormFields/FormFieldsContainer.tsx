@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { Box, Flex, Skeleton, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Skeleton, Spacer, Stack, Text } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types/field'
 import { FormColorTheme } from '~shared/types/form/form'
@@ -109,7 +109,7 @@ export const FormFieldsContainer = (): JSX.Element => {
             </form>
           </Box>
         </FormProvider>
-        <Box flex={{ base: 0, lg: 1 }} minW={0} />
+        <Spacer />
       </Flex>
     </FormSectionsProvider>
   )
