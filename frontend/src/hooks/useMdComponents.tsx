@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Components } from 'react-markdown/src/ast-to-react'
+import { Components } from 'react-markdown'
 import { CSSObject, Text } from '@chakra-ui/react'
 
 import Link from '~components/Link'
