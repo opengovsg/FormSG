@@ -8,7 +8,7 @@ import { AdminFormTabProvider } from './components/AdminFormTabProvider'
 export const AdminFormPage = (): JSX.Element => {
   return (
     <AdminFormTabProvider>
-      <Flex flexDir="column" height="100vh" overflowX="hidden" pos="relative">
+      <Flex flexDir="column" height="100vh" overflow="hidden" pos="relative">
         <Flex>
           <AdminFormNavbar />
         </Flex>
