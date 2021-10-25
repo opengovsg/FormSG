@@ -1,4 +1,4 @@
-import Busboy from 'busboy'
+import Busboy, { BusboyHeaders } from 'busboy'
 import { IncomingHttpHeaders } from 'http'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
@@ -20,13 +20,30 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
+const isBusboyHeaders = (
+  headers: IncomingHttpHeaders,
+): headers is BusboyHeaders => {
+  return !!headers['content-type']
+}
+
 /**
  * Initialises a Busboy object to receive the submission stream
  * @param headers HTTP request headers
  */
 export const createMultipartReceiver = (
   headers: IncomingHttpHeaders,
-): Result<busboy.Busboy, InitialiseMultipartReceiverError> => {
+): Result<Busboy.Busboy, InitialiseMultipartReceiverError> => {
+  if (!isBusboyHeaders(headers)) {
+    logger.error({
+      message: "Busboy cannot be init due to missing headers['content-type']",
+      meta: {
+        action: 'createMultipartReceiver',
+        headers,
+      },
+    })
+    return err(new InitialiseMultipartReceiverError())
+  }
+
   try {
     const busboy = new Busboy({
       headers,
@@ -55,7 +72,7 @@ export const createMultipartReceiver = (
  * @param busboy Busboy receiver object
  */
 export const configureMultipartReceiver = (
-  busboy: busboy.Busboy,
+  busboy: Busboy.Busboy,
 ): ResultAsync<ParsedMultipartForm, MultipartError> => {
   const logMeta = {
     action: 'configureMultipartReceiver',
