@@ -6,7 +6,14 @@ import { BasicField } from '~shared/types/field'
 import { FormColorTheme } from '~shared/types/form/form'
 
 import Button from '~components/Button'
-import SectionField from '~templates/Field/Section'
+import {
+  NricField,
+  NumberField,
+  SectionField,
+  ShortTextField,
+  UenField,
+  YesNoField,
+} from '~templates/Field'
 
 import { usePublicForm } from '~features/public-form/queries'
 
@@ -63,6 +70,16 @@ export const FormFieldsContainer = (): JSX.Element => {
               schema={field}
             />
           )
+        case BasicField.Nric:
+          return <NricField key={field._id} schema={field} />
+        case BasicField.Number:
+          return <NumberField key={field._id} schema={field} />
+        case BasicField.ShortText:
+          return <ShortTextField key={field._id} schema={field} />
+        case BasicField.YesNo:
+          return <YesNoField key={field._id} schema={field} />
+        case BasicField.Uen:
+          return <UenField key={field._id} schema={field} />
         default:
           return (
             <Text w="100%" key={field._id}>
@@ -71,7 +88,7 @@ export const FormFieldsContainer = (): JSX.Element => {
           )
       }
     })
-  }, [bgColour, data?.form_fields])
+  }, [bgColour, data?.form_fields, isLoading])
 
   return (
     <FormSectionsProvider>
