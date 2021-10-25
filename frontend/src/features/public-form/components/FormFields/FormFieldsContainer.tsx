@@ -95,7 +95,7 @@ export const FormFieldsContainer = (): JSX.Element => {
       <Flex bg={bgColour} flex={1} justify="center" p="1.5rem">
         <SectionSidebar />
         <FormProvider {...formMethods}>
-          <Box bg="white" p="2.5rem" w="100%" maxW="57rem">
+          <Box bg="white" p="2.5rem" w="100%" minW={0} maxW="57rem">
             <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
               <Stack spacing="2.25rem">{renderFields}</Stack>
               <Button
@@ -109,7 +109,7 @@ export const FormFieldsContainer = (): JSX.Element => {
             </form>
           </Box>
         </FormProvider>
-        <Box flex={1} minW={0} />
+        <Box flex={{ base: 0, lg: 1 }} minW={0} />
       </Flex>
     </FormSectionsProvider>
   )
