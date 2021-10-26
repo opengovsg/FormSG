@@ -1,11 +1,12 @@
-type GroupedLogic = Record<string, IConditionSchema[][]>
-
-// Returns typed ShowFields logic unit
-const isShowFieldsLogic = (
-  formLogic: ILogicSchema,
-): formLogic is IShowFieldsLogicSchema => {
-  return formLogic.logicType === LogicType.ShowFields
-}
+import {
+  FieldIdSet,
+  GroupedLogic,
+  isShowFieldsLogic,
+  allConditionsExist,
+  LogicFieldSchemaOrResponse,
+  isLogicUnitSatisfied,
+} from '../../src/shared/util/logic'
+import { IFormDocument } from '../../src/types'
 
 /**
  * Parse logic into a map of fields that are shown/hidden depending on the

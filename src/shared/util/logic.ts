@@ -67,14 +67,14 @@ export const getApplicableIfStates = (
   fieldType: BasicField,
 ): LogicConditionState[] => LOGIC_MAP.get(fieldType) ?? []
 
-type GroupedLogic = Record<string, IConditionSchema[][]>
+export type GroupedLogic = Record<string, IConditionSchema[][]>
 export type FieldIdSet = Set<IClientFieldSchema['_id']>
 // This module handles logic on both the client side (IFieldSchema[])
 // and server side (FieldResponse[])
-type LogicFieldSchemaOrResponse = IClientFieldSchema | FieldResponse
+export type LogicFieldSchemaOrResponse = IClientFieldSchema | FieldResponse
 
 // Returns typed ShowFields logic unit
-const isShowFieldsLogic = (
+export const isShowFieldsLogic = (
   formLogic: ILogicSchema,
 ): formLogic is IShowFieldsLogicSchema => {
   return formLogic.logicType === LogicType.ShowFields
@@ -204,7 +204,7 @@ export const getLogicUnitPreventingSubmit = (
  * @param formFieldIds the set of form field ids to check
  * @returns true if every condition's related form field id exists in the set of formFieldIds, false otherwise.
  */
-const allConditionsExist = (
+export const allConditionsExist = (
   conditions: IConditionSchema[],
   formFieldIds: FieldIdSet,
 ): boolean => {
@@ -264,7 +264,7 @@ export const getVisibleFieldIds = (
  * @param visibleFieldIds the set of field IDs that are visible, which is used to ensure that conditions are visible
  * @returns true if all the conditions are satisfied, false otherwise
  */
-const isLogicUnitSatisfied = (
+export const isLogicUnitSatisfied = (
   submission: LogicFieldSchemaOrResponse[],
   logicUnit: IConditionSchema[],
   visibleFieldIds: FieldIdSet,
