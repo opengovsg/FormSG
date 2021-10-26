@@ -1,5 +1,7 @@
 'use strict'
-const { groupLogicUnitsByField } = require('../../../../../shared/util/logic')
+const {
+  groupLogicUnitsByField,
+} = require('../../../../../../../FormSG/shared/utils/logic')
 const {
   reorder,
 } = require('../../../../../../shared/utils/immutable-array-fns')

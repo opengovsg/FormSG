@@ -5,8 +5,9 @@ import {
   allConditionsExist,
   LogicFieldSchemaOrResponse,
   isLogicUnitSatisfied,
+  getPreventSubmitConditions,
 } from '../../src/shared/util/logic'
-import { IFormDocument } from '../../src/types'
+import { IFormDocument, IPreventSubmitLogicSchema } from '../../src/types'
 
 /**
  * Parse logic into a map of fields that are shown/hidden depending on the
@@ -113,4 +114,28 @@ export const getVisibleFieldIds = (
     })
   }
   return visibleFieldIds
+}
+/**
+ * Determines whether the submission should be prevented by form logic. If so,
+ * return the condition preventing the submission. If not, return undefined.
+ * @param submission the submission responses to retrieve logic units for. Can be `form_fields` (on client), or `req.body.responses` (on server)
+ * @param form the form document for the submission
+ * @param optionalVisibleFieldIds the optional set of currently visible fields. If this is not provided, it will be recomputed using the given form parameter.
+ * @returns a condition if submission is to prevented, otherwise `undefined`
+ */
+export const getLogicUnitPreventingSubmit = (
+  submission: LogicFieldSchemaOrResponse[],
+  form: IFormDocument,
+  visibleFieldIds?: FieldIdSet,
+): IPreventSubmitLogicSchema | undefined => {
+  const definedVisibleFieldIds =
+    visibleFieldIds ?? getVisibleFieldIds(submission, form)
+  const preventSubmitConditions = getPreventSubmitConditions(form)
+  return preventSubmitConditions.find((logicUnit) =>
+    isLogicUnitSatisfied(
+      submission,
+      logicUnit.conditions,
+      definedVisibleFieldIds,
+    ),
+  )
 }

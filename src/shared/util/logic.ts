@@ -156,7 +156,7 @@ export const groupLogicUnitsByField = (form: IFormDocument): GroupedLogic => {
  * @param form the form document to check
  * @returns array of conditions that prevent submission, can be empty
  */
-const getPreventSubmitConditions = (
+export const getPreventSubmitConditions = (
   form: IFormDocument,
 ): IPreventSubmitLogicSchema[] => {
   const formFieldIds = new Set(
