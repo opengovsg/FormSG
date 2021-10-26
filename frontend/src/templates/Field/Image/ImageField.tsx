@@ -2,7 +2,7 @@
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
 import ReactMarkdown from 'react-markdown'
-import { Box, Image, Skeleton } from '@chakra-ui/react'
+import { Box, Image, Skeleton, useBreakpointValue } from '@chakra-ui/react'
 import gfm from 'remark-gfm'
 
 import { FormFieldWithId, ImageFieldBase } from '~shared/types/field'
@@ -15,10 +15,16 @@ export interface ImageFieldProps {
 }
 
 export const ImageField = ({ schema }: ImageFieldProps): JSX.Element => {
+  const responsiveTextStyle = useBreakpointValue({
+    base: 'caption-2',
+    md: 'body-2',
+  })
+
   const mdComponents = useMdComponents({
     styles: {
       text: {
         color: 'secondary.700',
+        textStyle: responsiveTextStyle,
       },
     },
   })
@@ -31,7 +37,7 @@ export const ImageField = ({ schema }: ImageFieldProps): JSX.Element => {
         fallback={<Skeleton h="10rem" />}
       />
       {schema.description ? (
-        <Box mt="1rem">
+        <Box mt={{ base: '0.5rem', md: '1rem' }}>
           <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
             {schema.description}
           </ReactMarkdown>
