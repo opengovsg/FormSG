@@ -3,6 +3,8 @@ import { merge } from 'lodash'
 
 import { BasicField } from '~shared/types/field'
 
+import { viewports } from '~utils/storybook'
+
 import MockImage from './mocks/img-login.svg'
 import {
   ImageField as ImageFieldComponent,
@@ -53,7 +55,28 @@ Default.args = {
   schema: baseSchema,
 }
 
+export const Mobile = Template.bind({})
+Mobile.args = {
+  schema: baseSchema,
+}
+Mobile.parameters = {
+  viewport: {
+    defaultViewport: 'mobile1',
+  },
+  chromatic: { viewports: [viewports.xs] },
+}
+export const Tablet = Template.bind({})
+Tablet.args = {
+  schema: baseSchema,
+}
+Tablet.parameters = {
+  viewport: {
+    defaultViewport: 'tablet',
+  },
+  chromatic: { viewports: [viewports.md] },
+}
+
 export const Loading = Template.bind({})
 Loading.args = {
-  schema: merge({}, baseSchema, { url: 'some-invalid-url' }),
+  schema: merge({}, baseSchema, { url: '' }),
 }
