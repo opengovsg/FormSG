@@ -2,7 +2,7 @@ import Busboy from 'busboy'
 import FormData from 'form-data'
 import { createReadStream, readFileSync } from 'fs'
 import { IncomingHttpHeaders } from 'http'
-import { pick } from 'lodash'
+import { omit, pick } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
 import {
@@ -22,12 +22,15 @@ jest.mock('busboy')
 const MockBusboy = mocked(Busboy, true)
 const RealBusboy = jest.requireActual('busboy') as typeof Busboy
 
-const MOCK_HEADERS = { key: 'value' }
+const MOCK_HEADERS: IncomingHttpHeaders = {
+  'content-type': 'anything',
+  key: 'value',
+}
 
 const MOCK_BUSBOY_ON = jest.fn().mockReturnThis()
 const MOCK_BUSBOY = {
   on: MOCK_BUSBOY_ON,
-} as unknown as busboy.Busboy
+} as unknown as Busboy.Busboy
 
 const VALID_FILE_PATH = 'tests/unit/backend/resources/'
 const VALID_FILENAME_1 = 'valid.txt'
@@ -40,13 +43,15 @@ const VALID_FILE_CONTENT_2 = readFileSync(
 )
 
 describe('email-submission.receiver', () => {
+  beforeEach(() => {
+    MockBusboy.mockReset()
+  })
   describe('createMultipartReceiver', () => {
     it('should call Busboy constructor with the correct params', () => {
       MockBusboy.mockReturnValueOnce(MOCK_BUSBOY)
 
-      const result = EmailSubmissionReceiver.createMultipartReceiver(
-        MOCK_HEADERS as IncomingHttpHeaders,
-      )
+      const result =
+        EmailSubmissionReceiver.createMultipartReceiver(MOCK_HEADERS)
 
       expect(MockBusboy).toHaveBeenCalledWith({
         headers: MOCK_HEADERS,
@@ -58,14 +63,25 @@ describe('email-submission.receiver', () => {
       expect(result._unsafeUnwrap()).toEqual(MOCK_BUSBOY)
     })
 
+    it('should return error headers are missing content-type key-value', () => {
+      const result = EmailSubmissionReceiver.createMultipartReceiver(
+        omit(MOCK_HEADERS, 'content-type'),
+      )
+
+      // Should have failed type guard and not have been called.
+      expect(MockBusboy).not.toHaveBeenCalled()
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new InitialiseMultipartReceiverError(),
+      )
+    })
+
     it('should return error when busboy constructor errors', () => {
       MockBusboy.mockImplementationOnce(() => {
         throw new Error()
       })
 
-      const result = EmailSubmissionReceiver.createMultipartReceiver(
-        MOCK_HEADERS as IncomingHttpHeaders,
-      )
+      const result =
+        EmailSubmissionReceiver.createMultipartReceiver(MOCK_HEADERS)
 
       expect(MockBusboy).toHaveBeenCalledWith({
         headers: MOCK_HEADERS,

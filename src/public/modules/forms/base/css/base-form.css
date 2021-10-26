@@ -117,6 +117,7 @@
 #admin-tabs-container {
   scrollbar-width: none;
 }
+
 #admin-tabs-container > li {
   width: 20%;
   text-align: center;
