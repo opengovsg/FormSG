@@ -1,5 +1,7 @@
 import axios, { AxiosError } from 'axios'
 
+import { ApiError } from '~typings/core'
+
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
 
 const API_BASE_URL = process.env.REACT_APP_BASE_URL ?? '/api/v3'
@@ -16,7 +18,7 @@ export class HttpError extends Error {
  *
  * @returns HttpError if AxiosError, else original error
  */
-export const transformAxiosError = (e: Error): HttpError | Error => {
+export const transformAxiosError = (e: Error): ApiError => {
   if (axios.isAxiosError(e) && e.response) {
     const statusCode = e.response.status
     if (statusCode === 429) {
