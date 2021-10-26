@@ -1,13 +1,187 @@
+import { LogicType, LogicConditionState } from './../types'
 import {
-  FieldIdSet,
-  GroupedLogic,
-  isShowFieldsLogic,
-  allConditionsExist,
-  LogicFieldSchemaOrResponse,
-  isLogicUnitSatisfied,
-  getPreventSubmitConditions,
-} from '../../src/shared/util/logic'
-import { IFormDocument, IPreventSubmitLogicSchema } from '../../src/types'
+  IFormDocument,
+  IPreventSubmitLogicSchema,
+  IConditionSchema,
+  IClientFieldSchema,
+  ILogicSchema,
+  IShowFieldsLogicSchema,
+  FieldResponse,
+} from '../../src/types'
+
+type GroupedLogic = Record<string, IConditionSchema[][]>
+export type FieldIdSet = Set<IClientFieldSchema['_id']>
+export type LogicFieldSchemaOrResponse = IClientFieldSchema | FieldResponse
+
+// Returns typed ShowFields logic unit
+export const isShowFieldsLogic = (
+  formLogic: ILogicSchema,
+): formLogic is IShowFieldsLogicSchema => {
+  return formLogic.logicType === LogicType.ShowFields
+}
+
+/**
+ * Checks if the field ids in logic's conditions all exist in the fieldIds.
+ * @param conditions the list of conditions to check
+ * @param formFieldIds the set of form field ids to check
+ * @returns true if every condition's related form field id exists in the set of formFieldIds, false otherwise.
+ */
+export const allConditionsExist = (
+  conditions: IConditionSchema[],
+  formFieldIds: FieldIdSet,
+): boolean => {
+  return conditions.every((condition) =>
+    formFieldIds.has(String(condition.field)),
+  )
+}
+
+const getCurrentValue = (
+  field: LogicFieldSchemaOrResponse,
+): string | null | undefined | string[] => {
+  if ('fieldValue' in field) {
+    // client
+    return field.fieldValue
+  } else if ('answer' in field) {
+    // server
+    return field.answer
+  }
+  return null
+}
+
+// Returns typed PreventSubmit logic unit
+const isPreventSubmitLogic = (
+  formLogic: ILogicSchema,
+): formLogic is IPreventSubmitLogicSchema => {
+  return formLogic.logicType === LogicType.PreventSubmit
+}
+
+/**
+ * Checks if the field's value matches the condition
+ * @param {Object} field
+ * @param {Object} condition
+ * @param {String} condition.state - The type of condition
+ */
+const isConditionFulfilled = (
+  field: LogicFieldSchemaOrResponse,
+  condition: IConditionSchema,
+): boolean => {
+  if (!field || !condition) {
+    return false
+  }
+  let currentValue = getCurrentValue(field)
+  if (
+    currentValue === null ||
+    currentValue === undefined ||
+    currentValue.length === 0
+  ) {
+    return false
+  }
+
+  if (
+    condition.state === LogicConditionState.Equal ||
+    condition.state === LogicConditionState.Either
+  ) {
+    // condition.value can be a string (is equals to), or an array (is either)
+    const conditionValues = ([] as unknown[])
+      .concat(condition.value)
+      .map(String)
+    currentValue = String(currentValue)
+    /*
+    Handling 'Others' for radiobutton
+
+    form_logics: [{ ... value : 'Others' }]
+
+    Client-side:
+    When an Others radiobutton is checked, the fieldValue is 'radioButtonOthers'
+
+    Server-side:
+    When an Others radiobutton is checked, and submitted with the required value,
+    the answer is: 'Others: value'
+    */
+
+    // TODO: An option that is named "Others: Something..." will also pass this test,
+    // even if the field has not been configured to set othersRadioButton=true
+    if (conditionValues.indexOf('Others') > -1) {
+      if (field.fieldType === 'radiobutton') {
+        conditionValues.push('radioButtonOthers')
+      } else if (field.fieldType === 'checkbox') {
+        conditionValues.push('checkboxOthers') // Checkbox currently doesn't have logic, but the 'Others' will work in the future if it in implemented
+      }
+      return (
+        conditionValues.indexOf(currentValue) > -1 || // Client-side
+        currentValue.startsWith('Others: ')
+      ) // Server-side
+    }
+    return conditionValues.indexOf(currentValue) > -1
+  } else if (condition.state === 'is less than or equal to') {
+    return Number(currentValue) <= Number(condition.value)
+  } else if (condition.state === 'is more than or equal to') {
+    return Number(currentValue) >= Number(condition.value)
+  } else {
+    return false
+  }
+}
+
+/**
+ * Checks if an array of conditions is satisfied.
+ * @param submission the submission responses to retrieve logic units for. Can be `form_fields` (on client), or `req.body.responses` (on server)
+ * @param logicUnit an object containing the conditions specified in a single modal of `add new logic` on the form logic tab
+ * @param visibleFieldIds the set of field IDs that are visible, which is used to ensure that conditions are visible
+ * @returns true if all the conditions are satisfied, false otherwise
+ */
+export const isLogicUnitSatisfied = (
+  submission: LogicFieldSchemaOrResponse[],
+  logicUnit: IConditionSchema[],
+  visibleFieldIds: FieldIdSet,
+): boolean => {
+  return logicUnit.every((condition) => {
+    const conditionField = findConditionField(submission, condition.field)
+    return (
+      conditionField &&
+      visibleFieldIds.has(conditionField._id.toString()) &&
+      isConditionFulfilled(conditionField, condition)
+    )
+  })
+}
+
+/**
+ * Find the field in the current submission corresponding to the condition to be
+ * checked.
+ * @param submission the submission responses to retrieve logic units for. Can be `form_fields` (on client), or `req.body.responses` (on server)
+ * @param fieldId the id of condition field to find
+ * @returns the condition field if it exists, `undefined` otherwise
+ */
+const findConditionField = (
+  submission: LogicFieldSchemaOrResponse[],
+  fieldId: IConditionSchema['field'],
+): LogicFieldSchemaOrResponse | undefined => {
+  return submission.find(
+    (submittedField) => String(submittedField._id) === String(fieldId),
+  )
+}
+
+/**
+ * Parse logic to get a list of conditions where, if any condition in this list
+ * is fulfilled, form submission is prevented.
+ * @param form the form document to check
+ * @returns array of conditions that prevent submission, can be empty
+ */
+export const getPreventSubmitConditions = (
+  form: IFormDocument,
+): IPreventSubmitLogicSchema[] => {
+  const formFieldIds = new Set(
+    form.form_fields?.map((field) => String(field._id)),
+  )
+
+  const preventFormLogics =
+    form.form_logics?.filter(
+      (formLogic): formLogic is IPreventSubmitLogicSchema =>
+        isPreventSubmitLogic(formLogic) &&
+        allConditionsExist(formLogic.conditions, formFieldIds),
+    ) ?? []
+
+  return preventFormLogics
+}
 
 /**
  * Parse logic into a map of fields that are shown/hidden depending on the

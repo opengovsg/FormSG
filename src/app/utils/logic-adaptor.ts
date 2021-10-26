@@ -4,7 +4,7 @@ import {
   FieldIdSet,
   getLogicUnitPreventingSubmit as logicGetLogicUnitPreventingSubmit,
   getVisibleFieldIds as logicGetVisibleFieldIds,
-} from '../../shared/util/logic'
+} from '../../../shared/utils/logic'
 import {
   FieldResponse,
   IFormDocument,

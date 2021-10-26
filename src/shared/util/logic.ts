@@ -67,7 +67,7 @@ export const getApplicableIfStates = (
   fieldType: BasicField,
 ): LogicConditionState[] => LOGIC_MAP.get(fieldType) ?? []
 
-export type GroupedLogic = Record<string, IConditionSchema[][]>
+type GroupedLogic = Record<string, IConditionSchema[][]>
 export type FieldIdSet = Set<IClientFieldSchema['_id']>
 // This module handles logic on both the client side (IFieldSchema[])
 // and server side (FieldResponse[])
