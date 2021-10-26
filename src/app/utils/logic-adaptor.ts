@@ -12,7 +12,7 @@ import {
 } from '../../types'
 import { ProcessingError } from '../modules/submission/submission.errors'
 
-export { FieldIdSet } from '../../shared/util/logic'
+export { FieldIdSet } from '../../../shared/utils/logic'
 
 export const getVisibleFieldIds = (
   submission: FieldResponse[],
