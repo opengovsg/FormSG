@@ -26,7 +26,7 @@ export const useMdComponents = ({
 }: UseMdComponentsProps = {}): Components => {
   const mdComponents: Components = useMemo(
     () => ({
-      a: (props) => {
+      a: ({ node, ...props }) => {
         const { href } = props
         const isExternal =
           typeof href === 'string' && !href.startsWith(window.location.origin)
@@ -39,7 +39,7 @@ export const useMdComponents = ({
           />
         )
       },
-      p: (props) => (
+      p: ({ node, ...props }) => (
         <Text {...props} {...(styles?.text ? { sx: styles.text } : {})} />
       ),
       ...overrides,
