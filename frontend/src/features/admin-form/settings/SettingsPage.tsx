@@ -8,6 +8,7 @@ import {
 } from 'react-icons/bi'
 import {
   Flex,
+  Spacer,
   TabList,
   TabPanel,
   TabPanels,
@@ -31,19 +32,10 @@ export const SettingsPage = (): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
   return (
-    <Tabs
-      isLazy
-      isManual
-      orientation={tabOrientation}
-      variant="line"
-      display="grid"
-      gridTemplateAreas={{ base: `'content' 'tabs'`, md: `'tabs content'` }}
-      gridTemplateRows="1fr auto"
-      gridTemplateColumns="auto 1fr"
-    >
+    <Tabs isLazy isManual orientation={tabOrientation} variant="line">
       <Flex
         h="max-content"
-        gridArea="tabs"
+        flex={1}
         flexShrink={0}
         ref={ref}
         onMouseDown={onMouseDown}
@@ -57,7 +49,6 @@ export const SettingsPage = (): JSX.Element => {
         borderTop={{ base: '1px solid', md: 'none' }}
         borderTopColor="neutral.300"
         w={{ base: '100vw', md: 'auto', lg: '21rem' }}
-        mr={{ base: '1.5rem', md: '4rem', lg: 'initial' }}
         __css={{
           scrollbarWidth: 0,
           /* Scrollbar for Chrome, Safari, Opera and Microsoft Edge */
@@ -71,7 +62,8 @@ export const SettingsPage = (): JSX.Element => {
           overflowX="initial"
           display="inline-flex"
           w="max-content"
-          mx={{ base: '1.5rem', md: 0 }}
+          ml={{ base: '1.5rem', md: 0 }}
+          mr={{ base: '1.5rem', md: '4rem', lg: '2rem' }}
           mb="calc(0.5rem - 2px)"
         >
           <SettingsTab label="General" icon={BiCog} />
@@ -82,11 +74,7 @@ export const SettingsPage = (): JSX.Element => {
           <SettingsTab label="Workflow" icon={BiRocket} />
         </TabList>
       </Flex>
-      <TabPanels
-        maxW="42.5rem"
-        gridArea="content"
-        mb={{ base: '4rem', md: 'initial' }}
-      >
+      <TabPanels maxW="42.5rem" mb={{ base: '4rem', md: 'initial' }}>
         <TabPanel>
           <SettingsGeneralPage />
         </TabPanel>
@@ -106,6 +94,7 @@ export const SettingsPage = (): JSX.Element => {
           <p>6!</p>
         </TabPanel>
       </TabPanels>
+      <Spacer />
     </Tabs>
   )
 }
