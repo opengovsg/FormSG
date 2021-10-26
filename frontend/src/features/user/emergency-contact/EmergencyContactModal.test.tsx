@@ -15,6 +15,9 @@ import * as stories from './EmergencyContactModal.stories'
 
 const { NoContact, WithContact } = composeStories(stories)
 
+// Some tests take longer in this suite.
+jest.setTimeout(10000)
+
 describe('User has no verified contact number', () => {
   it('should render with empty contact number details', async () => {
     // Arrange
