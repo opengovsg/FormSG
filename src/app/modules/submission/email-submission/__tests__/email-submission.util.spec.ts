@@ -3,7 +3,6 @@ import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
 
 import {
-  FieldResponse,
   IAttachmentResponse,
   SingleAnswerFieldResponse,
   SPCPFieldTitle,
@@ -25,6 +24,7 @@ import { types as basicTypes } from '../../../../../../shared/constants/field/ba
 import {
   BasicField,
   FormAuthType,
+  FormFieldResponse,
   MyInfoAttribute,
   TableRow,
 } from '../../../../../../shared/types'
@@ -46,6 +46,8 @@ import {
   mapAttachmentsFromResponses,
   SubmissionEmailObj,
 } from '../email-submission.util'
+
+import { FormFieldResponse } from './../../../../../../shared/types/response'
 
 const validSingleFile = {
   filename: 'govtech.jpg',
@@ -241,7 +243,7 @@ describe('email-submission.util', () => {
     })
 
     it('should do nothing when responses are empty', () => {
-      const responses: FieldResponse[] = []
+      const responses: FormFieldResponse[] = []
       addAttachmentToResponses(responses, [validSingleFile])
       expect(responses).toEqual([])
     })

@@ -1,4 +1,4 @@
-import { LogicType, LogicConditionState } from './../types'
+import { LogicType, LogicConditionState, FormFieldResponse } from './../types'
 import {
   IFormDocument,
   IPreventSubmitLogicSchema,
@@ -6,12 +6,13 @@ import {
   IClientFieldSchema,
   ILogicSchema,
   IShowFieldsLogicSchema,
-  FieldResponse,
 } from '../../src/types'
 
 type GroupedLogic = Record<string, IConditionSchema[][]>
 export type FieldIdSet = Set<IClientFieldSchema['_id']>
-export type LogicFieldSchemaOrResponse = IClientFieldSchema | FieldResponse
+// This module handles logic on both the client side (IFieldSchema[])
+// and server side (FormFieldResponse[])
+export type LogicFieldSchemaOrResponse = IClientFieldSchema | FormFieldResponse
 
 // Returns typed ShowFields logic unit
 export const isShowFieldsLogic = (

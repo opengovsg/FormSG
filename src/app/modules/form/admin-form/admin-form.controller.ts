@@ -15,6 +15,7 @@ import {
   CreateFormBodyDto,
   DeserializeTransform,
   DuplicateFormBodyDto,
+  EncryptSubmissionDto,
   EndPageUpdateDto,
   ErrorDto,
   FieldCreateDto,
@@ -42,7 +43,6 @@ import {
 } from '../../../../../shared/types'
 import { IForm, IFormDocument, IPopulatedForm } from '../../../../types'
 import {
-  EncryptSubmissionDto,
   FormUpdateParams,
   ParsedEmailModeSubmissionBody,
 } from '../../../../types/api'

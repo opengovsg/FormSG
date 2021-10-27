@@ -1,11 +1,6 @@
 import { combineWithAllErrors, err, ok, Result } from 'neverthrow'
 
-import {
-  FieldResponse,
-  IFieldSchema,
-  IFormDocument,
-  IPopulatedForm,
-} from '../../../types'
+import { IFieldSchema, IFormDocument, IPopulatedForm } from '../../../types'
 import { validateField } from '../../utils/field-validation'
 import {
   FieldIdSet,
@@ -13,6 +8,7 @@ import {
   getVisibleFieldIds,
 } from '../../utils/logic-adaptor'
 
+import { FormFieldResponse } from './../../../../shared/types/response'
 import { ProcessingError, ValidateFieldError } from './submission.errors'
 import {
   FilteredResponse,
@@ -50,7 +46,7 @@ export abstract class IncomingSubmission {
    */
   protected static getFieldMap(
     form: IFormDocument,
-    responses: FieldResponse[],
+    responses: FormFieldResponse[],
   ): Result<ValidatedFieldMap, ProcessingError> {
     if (!form.form_fields) {
       return err(new ProcessingError('Form fields are undefined'))
@@ -76,7 +72,7 @@ export abstract class IncomingSubmission {
     fieldMap: {
       [p: string]: IFieldSchema
     },
-    responses: FieldResponse[],
+    responses: FormFieldResponse[],
   ): fieldMap is ValidatedFieldMap {
     for (const r of responses) {
       const responseId = r._id
@@ -128,7 +124,7 @@ export abstract class IncomingSubmission {
    * functions that have not been refactored to take in the new
    * IncomingResponse object.
    *
-   * A ProcessedResponse is just a regular FieldResponse with some
+   * A ProcessedResponse is just a regular FormFieldResponse with some
    * metadata inserted into them. This function takes in several
    * data sets that help determine what each metadata field should
    * contain.
@@ -137,7 +133,7 @@ export abstract class IncomingSubmission {
    * @protected
    */
   protected getLegacyProcessedFieldResponse(
-    response: FieldResponse,
+    response: FormFieldResponse,
   ): ProcessedFieldResponse {
     const responseId = String(response._id)
     const formField = this.fieldMap[responseId]
@@ -193,5 +189,5 @@ export abstract class IncomingSubmission {
    * @param response
    * @returns boolean
    */
-  abstract responseVisibilityPredicate(response: FieldResponse): boolean
+  abstract responseVisibilityPredicate(response: FormFieldResponse): boolean
 }

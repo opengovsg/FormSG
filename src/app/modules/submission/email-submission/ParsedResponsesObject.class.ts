@@ -1,11 +1,8 @@
 import { err, ok, Result } from 'neverthrow'
+import { FormFieldResponse } from 'shared/types/response'
 
 import { FormAuthType, FormResponseMode } from '../../../../../shared/types'
-import {
-  FieldResponse,
-  FormFieldSchema,
-  IFormDocument,
-} from '../../../../types'
+import { FormFieldSchema, IFormDocument } from '../../../../types'
 import { validateField } from '../../../utils/field-validation'
 import {
   getLogicUnitPreventingSubmit,
@@ -74,7 +71,7 @@ export default class ParsedResponsesObject {
    */
   static parseResponses(
     form: IFormDocument,
-    responses: FieldResponse[],
+    responses: FormFieldResponse[],
   ): Result<
     ParsedResponsesObject,
     ProcessingError | ConflictError | ValidateFieldError

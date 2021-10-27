@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
 import {
+  EncryptSubmissionDto,
   ErrorDto,
   FormAuthType,
   FormSubmissionMetadataQueryDto,
@@ -15,7 +16,6 @@ import {
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
-import { EncryptSubmissionDto } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'

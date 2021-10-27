@@ -22,7 +22,6 @@ import {
   MOCK_TEXTFIELD_RESPONSE,
 } from 'src/app/modules/submission/email-submission/__tests__/email-submission.test.constants'
 import { FormFieldSchema, IFormSchema, IUserSchema } from 'src/types'
-import { EncryptFormFieldResponse, EncryptSubmissionDto } from 'src/types/api'
 
 import {
   createAuthedSession,
@@ -39,6 +38,8 @@ import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import {
   BasicField,
+  EncryptFormFieldResponse,
+  EncryptSubmissionDto,
   FormResponseMode,
   FormStatus,
 } from '../../../../../../../../shared/types'

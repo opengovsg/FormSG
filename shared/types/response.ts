@@ -1,6 +1,10 @@
-import { Opaque } from 'type-fest'
+import { Opaque, Merge } from 'type-fest'
 import { z } from 'zod'
 import { BasicField, MyInfoAttribute } from './field'
+import {
+  StorageModeSubmissionContentDto,
+  EmailModeSubmissionContentDto,
+} from '../types'
 
 const ResponseBase = z.object({
   myInfo: z.never().optional(),
@@ -144,3 +148,43 @@ export type FieldResponse =
   | NricResponse
   | TableResponse
   | UenResponse
+
+// export type FieldResponse =
+//   | EncryptFormFieldResponse
+//   | ParsedEmailFormFieldResponse
+
+export type EncryptSubmissionDto = Merge<
+  StorageModeSubmissionContentDto,
+  { responses: EncryptFormFieldResponse[] }
+>
+
+export type EncryptAttachmentResponse = AttachmentResponse & {
+  filename: never
+  content: never
+}
+
+export type EncryptFormFieldResponse =
+  | Exclude<FieldResponse, AttachmentResponse>
+  | EncryptAttachmentResponse
+
+export type ParsedEmailAttachmentResponse = AttachmentResponse & {
+  filename: string
+  content: Buffer
+}
+
+export type ParsedEmailFormFieldResponse =
+  | Exclude<FieldResponse, AttachmentResponse>
+  | ParsedEmailAttachmentResponse
+
+/**
+ * Email submission body after req.body's FormData has passed through the
+ * EmailSubmissionMiddleware.receiveEmailSubmission middleware.
+ */
+export type ParsedEmailModeSubmissionBody = Merge<
+  EmailModeSubmissionContentDto,
+  { responses: ParsedEmailFormFieldResponse[] }
+>
+
+export type FormFieldResponse =
+  | EncryptFormFieldResponse
+  | ParsedEmailFormFieldResponse

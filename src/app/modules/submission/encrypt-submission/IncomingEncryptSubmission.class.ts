@@ -1,6 +1,7 @@
 import { Result } from 'neverthrow'
+import { FormFieldResponse } from 'shared/types'
 
-import { FieldResponse, IPopulatedEncryptedForm } from '../../../../types'
+import { IPopulatedEncryptedForm } from '../../../../types'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { IncomingSubmission } from '../IncomingSubmission.class'
 import {
@@ -30,7 +31,7 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
 
   static init(
     form: IPopulatedEncryptedForm,
-    responses: FieldResponse[],
+    responses: FormFieldResponse[],
     encryptedContent: string,
   ): Result<
     IncomingEncryptSubmission,
@@ -54,7 +55,7 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
       )
   }
 
-  responseVisibilityPredicate(response: FieldResponse): boolean {
+  responseVisibilityPredicate(response: FormFieldResponse): boolean {
     return (
       'answer' in response &&
       typeof response.answer === 'string' &&

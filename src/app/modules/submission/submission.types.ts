@@ -3,17 +3,14 @@ import { Opaque } from 'type-fest'
 import {
   BasicField,
   CheckboxResponse,
+  EncryptAttachmentResponse,
   TableResponse,
 } from '../../../../shared/types'
-import {
-  EncryptAttachmentResponse,
-  ParsedEmailAttachmentResponse,
-} from '../../../types/api'
+import { ParsedEmailAttachmentResponse } from '../../../types/api'
 import { FormFieldSchema } from '../../../types/field'
-import {
-  FieldResponse,
-  SingleAnswerFieldResponse,
-} from '../../../types/response'
+import { SingleAnswerFieldResponse } from '../../../types/response'
+
+import { FormFieldResponse } from './../../../../shared/types/response'
 
 export type ProcessedResponse = {
   question: string
@@ -42,7 +39,7 @@ export type VerifiableResponseIdSet = Opaque<
  * list, additionally guarantees that duplicates (if any) are removed.
  * Instantiated ONLY via `getFilteredResponses`.
  */
-export type FilteredResponse = Opaque<FieldResponse, 'FilteredResponse'>
+export type FilteredResponse = Opaque<FormFieldResponse, 'FilteredResponse'>
 
 export type ColumnResponse = {
   fieldType: BasicField

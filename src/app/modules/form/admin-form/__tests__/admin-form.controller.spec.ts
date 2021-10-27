@@ -57,7 +57,7 @@ import {
   IUserSchema,
   PublicForm,
 } from 'src/types'
-import { EditFormFieldParams, EncryptSubmissionDto } from 'src/types/api'
+import { EditFormFieldParams } from 'src/types/api'
 
 import {
   generateDefaultField,
@@ -80,6 +80,7 @@ import {
   FormStatus,
   LogicDto,
 } from '../../../../../../shared/types'
+import { EncryptSubmissionDto } from '../../../../../../shared/types/response'
 import { smsConfig } from '../../../../config/features/sms.config'
 import * as SmsService from '../../../../services/sms/sms.service'
 import ParsedResponsesObject from '../../../submission/email-submission/ParsedResponsesObject.class'

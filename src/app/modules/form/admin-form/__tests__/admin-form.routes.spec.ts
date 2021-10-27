@@ -46,7 +46,7 @@ import {
   IUserSchema,
   SubmissionCursorData,
 } from 'src/types'
-import { EncryptFormFieldResponse, EncryptSubmissionDto } from 'src/types/api'
+import { EncryptFormFieldResponse } from 'src/types/api'
 
 import {
   createAuthedSession,
@@ -64,6 +64,7 @@ import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
 import {
   BasicField,
+  EncryptSubmissionDto,
   FormResponseMode,
   FormStatus,
   SubmissionType,

@@ -1,9 +1,10 @@
 import { differenceBy, intersectionBy, keyBy, uniqBy } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
+import { FormFieldResponse } from 'shared/types/response'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { BasicField, FormResponseMode } from '../../../../shared/types'
-import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
+import { FormFieldSchema, IFormDocument } from '../../../types'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 
 import { IncomingSubmission } from './IncomingSubmission.class'
@@ -46,7 +47,7 @@ const encryptModeFilter = <T extends ModeFilterParam>(responses: T[] = []) => {
  */
 // TODO: Migrate to extractEmailConfirmationDataFromIncomingSubmission
 export const extractEmailConfirmationData = (
-  responses: FieldResponse[],
+  responses: FormFieldResponse[],
   formFields: FormFieldSchema[] | undefined,
 ): AutoReplyMailData[] => {
   const fieldsById = keyBy(formFields, '_id')
@@ -97,7 +98,7 @@ export const extractEmailConfirmationDataFromIncomingSubmission = (
  */
 export const getFilteredResponses = (
   form: IFormDocument,
-  responses: FieldResponse[],
+  responses: FormFieldResponse[],
 ): Result<FilteredResponse[], ConflictError> => {
   const modeFilter = getModeFilter(form.responseMode)
 
