@@ -4,6 +4,7 @@ import {
   Box,
   forwardRef,
   StylesProvider,
+  Text,
   useFormControl,
   UseFormControlProps,
   useMergeRefs,
@@ -13,7 +14,6 @@ import omit from 'lodash/omit'
 import simplur from 'simplur'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
-import FormFieldMessage from '~components/FormControl/FormFieldMessage'
 
 import { AttachmentDropzone } from './AttachmentDropzone'
 import { AttachmentFileInfo } from './AttachmentFileInfo'
@@ -65,6 +65,8 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
   ) => {
     // Merge given props with any form control props, if they exist.
     const inputProps = useFormControl(props)
+    // id to set on the rendered max size FormFieldMessage component.
+    const maxSizeTextId = useMemo(() => `${name}-max-size`, [name])
 
     const [internalFile, setInternalFile] = useState<File | undefined>(value)
 
@@ -72,6 +74,16 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       () => (maxSize ? getReadableFileSize(maxSize) : undefined),
       [maxSize],
     )
+
+    const showMaxSize = useMemo(
+      () => !internalFile && showFileSize && readableMaxSize,
+      [internalFile, readableMaxSize, showFileSize],
+    )
+
+    const ariaDescribedBy = useMemo(() => {
+      if (showMaxSize)
+        return [inputProps['aria-describedby'], maxSizeTextId].join(' ').trim()
+    }, [inputProps, maxSizeTextId, showMaxSize])
 
     const handleFileDrop = useCallback<NonNullable<DropzoneProps['onDrop']>>(
       async ([acceptedFile], rejectedFiles) => {
@@ -172,15 +184,18 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           }
         },
         tabIndex: internalFile ? -1 : 0,
+        'aria-describedby': ariaDescribedBy,
+        'aria-labelledby': inputProps.id ? `${inputProps.id}-label` : undefined,
       })
-    }, [getRootProps, inputProps, internalFile])
+    }, [ariaDescribedBy, getRootProps, inputProps, internalFile])
 
     const processedInputProps = useMemo(() => {
       return getInputProps({
         name,
         ...inputProps,
+        'aria-describedby': ariaDescribedBy,
       })
-    }, [getInputProps, inputProps, name])
+    }, [ariaDescribedBy, getInputProps, inputProps, name])
 
     return (
       <StylesProvider value={styles}>
@@ -202,11 +217,16 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               />
             )}
           </Box>
-          {!internalFile && showFileSize && readableMaxSize && (
-            <FormFieldMessage>
+          {showMaxSize ? (
+            <Text
+              id={maxSizeTextId}
+              color="secondary.400"
+              mt="0.5rem"
+              textStyle="body-2"
+            >
               Maximum file size: {readableMaxSize}
-            </FormFieldMessage>
-          )}
+            </Text>
+          ) : null}
         </Box>
       </StylesProvider>
     )
