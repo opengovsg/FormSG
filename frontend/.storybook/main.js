@@ -1,7 +1,5 @@
 /* eslint-env node */
 const { propNames } = require('@chakra-ui/styled-system')
-// Required to sync aliases between storybook and overriden configs
-const config = require('../config-overrides')
 const path = require('path')
 
 const toPath = (_path) => path.join(process.cwd(), _path)
@@ -20,7 +18,7 @@ module.exports = {
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-a11y',
-    '@storybook/preset-create-react-app',
+    'storybook-preset-craco',
   ],
   typescript: {
     check: false,
@@ -48,13 +46,12 @@ module.exports = {
   // https://github.com/chakra-ui/chakra-ui/blob/main/.storybook/main.js
   webpackFinal: async (storybookConfig) => {
     // Required to sync aliases between storybook and overriden configs
-    const customConfig = config(storybookConfig)
     return {
       ...storybookConfig,
       resolve: {
         ...storybookConfig.resolve,
         alias: {
-          ...customConfig.resolve.alias,
+          ...storybookConfig.resolve.alias,
           // Required so storybook knows where the npm package is to render ChakraUI components
           // as this is not directly installed in package.json.
           '@emotion/core': toPath('node_modules/@emotion/react'),
