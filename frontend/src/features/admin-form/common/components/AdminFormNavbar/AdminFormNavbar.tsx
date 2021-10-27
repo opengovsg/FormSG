@@ -1,15 +1,18 @@
 import { useMemo } from 'react'
 import {
-  BiChevronUp,
   BiDotsHorizontalRounded,
   BiLeftArrowAlt,
+  BiShareAlt,
   BiShow,
   BiUserPlus,
 } from 'react-icons/bi'
 import {
   Box,
   ButtonGroup,
-  Collapse,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerOverlay,
   Flex,
   Grid,
   GridItem,
@@ -20,7 +23,7 @@ import {
 import { AdminFormDto } from '~shared/types/form/form'
 
 import { useDraggable } from '~hooks/useDraggable'
-import Button from '~components/Button'
+import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
 import { Tab } from '~components/Tabs'
 
@@ -50,32 +53,19 @@ export const AdminFormNavbar = ({
   handleShareButtonClick,
 }: AdminFormNavbarProps): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
-  const { isOpen, onToggle } = useDisclosure()
+  const { isOpen, onClose, onOpen } = useDisclosure()
 
-  const navbarActionButtons = useMemo(() => {
-    return (
-      <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
-        <IconButton
-          aria-label="Add collaborators to form"
-          variant="outline"
-          onClick={handleAddCollabButtonClick}
-          icon={<BiUserPlus />}
-        />
-        <IconButton
-          aria-label="Preview form"
-          variant="outline"
-          onClick={handlePreviewFormButtonClick}
-          icon={<BiShow />}
-        />
-        <Button onClick={handleShareButtonClick}>Share</Button>
-      </ButtonGroup>
-    )
-  }, [
-    formInfo,
-    handleAddCollabButtonClick,
-    handlePreviewFormButtonClick,
-    handleShareButtonClick,
-  ])
+  const mobileDrawerExtraButtonProps: Partial<ButtonProps> = useMemo(
+    () => ({
+      isFullWidth: true,
+      iconSpacing: '1rem',
+      justifyContent: 'flex-start',
+      variant: 'clear',
+      colorScheme: 'secondary',
+      textStyle: 'body-1',
+    }),
+    [],
+  )
 
   return (
     <Grid
@@ -144,22 +134,62 @@ export const AdminFormNavbar = ({
         <IconButton
           display={{ base: 'flex', md: 'none' }}
           aria-label="Form actions"
-          onClick={onToggle}
-          icon={isOpen ? <BiChevronUp /> : <BiDotsHorizontalRounded />}
+          onClick={onOpen}
+          icon={<BiDotsHorizontalRounded />}
         />
-        <Box display={{ base: 'none', md: 'flex' }}>{navbarActionButtons}</Box>
+        <Box display={{ base: 'none', md: 'flex' }}>
+          <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
+            <IconButton
+              aria-label="Add collaborators to form"
+              variant="outline"
+              onClick={handleAddCollabButtonClick}
+              icon={<BiUserPlus />}
+            />
+            <IconButton
+              aria-label="Preview form"
+              variant="outline"
+              onClick={handlePreviewFormButtonClick}
+              icon={<BiShow />}
+            />
+            <Button onClick={handleShareButtonClick}>Share</Button>
+          </ButtonGroup>
+        </Box>
       </Flex>
-      <Flex
-        display={{ base: 'flex', md: 'none' }}
-        justify="flex-end"
-        gridArea="actions"
-      >
-        <Collapse in={isOpen}>
-          <Box mb="0.5rem" px="1.5rem">
-            {navbarActionButtons}
-          </Box>
-        </Collapse>
-      </Flex>
+      <Drawer placement="bottom" onClose={onClose} isOpen={isOpen}>
+        <DrawerOverlay />
+        <DrawerContent borderTopRadius="0.25rem">
+          <DrawerBody px={0} py="0.5rem">
+            <ButtonGroup
+              flexDir="column"
+              isDisabled={!formInfo}
+              spacing={0}
+              w="100%"
+            >
+              <Button
+                onClick={handlePreviewFormButtonClick}
+                {...mobileDrawerExtraButtonProps}
+                leftIcon={<BiShow fontSize="1.25rem" />}
+              >
+                Preview form
+              </Button>
+              <Button
+                {...mobileDrawerExtraButtonProps}
+                onClick={handleShareButtonClick}
+                leftIcon={<BiShareAlt fontSize="1.25rem" />}
+              >
+                Share form link
+              </Button>
+              <Button
+                {...mobileDrawerExtraButtonProps}
+                onClick={handleAddCollabButtonClick}
+                leftIcon={<BiUserPlus fontSize="1.25rem" />}
+              >
+                Manage collaborators
+              </Button>
+            </ButtonGroup>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
     </Grid>
   )
 }
