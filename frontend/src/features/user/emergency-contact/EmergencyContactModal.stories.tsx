@@ -27,7 +27,7 @@ export default {
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
-    chromatic: { delay: 200 },
+    chromatic: { pauseAnimationAtEnd: true },
     msw: userHandlers({ delay: 0 }),
   },
 } as Meta
