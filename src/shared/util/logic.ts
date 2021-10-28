@@ -6,15 +6,25 @@ import {
   LogicType,
 } from '../../../shared/types'
 import {
+  FormCondition,
+  FormDto,
+  FormLogic,
+  ShowFieldLogic,
+} from '../../../shared/types/form'
+import {
   FieldResponse,
   IClientFieldSchema,
   IConditionSchema,
   IFormDocument,
   ILogicSchema,
   IPreventSubmitLogicSchema,
-  IShowFieldsLogicSchema,
   LogicCondition,
 } from '../../types'
+
+type PickLogicSubset<T extends FormDto = FormDto> = Pick<
+  T,
+  '_id' | 'form_logics' | 'form_fields'
+>
 
 const LOGIC_CONDITIONS: LogicCondition[] = [
   [
@@ -67,7 +77,7 @@ export const getApplicableIfStates = (
   fieldType: BasicField,
 ): LogicConditionState[] => LOGIC_MAP.get(fieldType) ?? []
 
-type GroupedLogic = Record<string, IConditionSchema[][]>
+type GroupedLogic = Record<string, FormCondition[][]>
 export type FieldIdSet = Set<IClientFieldSchema['_id']>
 // This module handles logic on both the client side (IFieldSchema[])
 // and server side (FieldResponse[])
@@ -75,8 +85,8 @@ type LogicFieldSchemaOrResponse = IClientFieldSchema | FieldResponse
 
 // Returns typed ShowFields logic unit
 const isShowFieldsLogic = (
-  formLogic: ILogicSchema,
-): formLogic is IShowFieldsLogicSchema => {
+  formLogic: FormLogic,
+): formLogic is ShowFieldLogic => {
   return formLogic.logicType === LogicType.ShowFields
 }
 
@@ -118,9 +128,10 @@ const isPreventSubmitLogic = (
  * @param form the form object to group its logic by field for
  * @returns an object containing fields to be displayed and their corresponding conditions, keyed by id of the displayable field
  */
-export const groupLogicUnitsByField = (form: IFormDocument): GroupedLogic => {
+export const groupLogicUnitsByField = (form: PickLogicSubset): GroupedLogic => {
   const formId = form._id
-  const formLogics = form.form_logics?.filter(isShowFieldsLogic) ?? []
+  const formLogics = form.form_logics.filter(isShowFieldsLogic) ?? []
+
   const formFieldIds = new Set(
     form.form_fields?.map((field) => String(field._id)),
   )
@@ -129,10 +140,10 @@ export const groupLogicUnitsByField = (form: IFormDocument): GroupedLogic => {
   const logicUnitsGroupedByField: GroupedLogic = {}
 
   let hasInvalidLogic = false
-  formLogics.forEach(function (logicUnit) {
+  formLogics.forEach((logicUnit) => {
     // Only add fields with valid logic conditions to the returned map.
     if (allConditionsExist(logicUnit.conditions, formFieldIds)) {
-      logicUnit.show.forEach(function (fieldId) {
+      logicUnit.show.forEach((fieldId) => {
         fieldId = String(fieldId)
         if (formFieldIds.has(fieldId)) {
           logicUnitsGroupedByField[fieldId] = logicUnitsGroupedByField[fieldId]
@@ -157,7 +168,7 @@ export const groupLogicUnitsByField = (form: IFormDocument): GroupedLogic => {
  * @returns array of conditions that prevent submission, can be empty
  */
 const getPreventSubmitConditions = (
-  form: IFormDocument,
+  form: PickLogicSubset,
 ): IPreventSubmitLogicSchema[] => {
   const formFieldIds = new Set(
     form.form_fields?.map((field) => String(field._id)),
@@ -183,7 +194,7 @@ const getPreventSubmitConditions = (
  */
 export const getLogicUnitPreventingSubmit = (
   submission: LogicFieldSchemaOrResponse[],
-  form: IFormDocument,
+  form: PickLogicSubset,
   visibleFieldIds?: FieldIdSet,
 ): IPreventSubmitLogicSchema | undefined => {
   const definedVisibleFieldIds =
@@ -205,7 +216,7 @@ export const getLogicUnitPreventingSubmit = (
  * @returns true if every condition's related form field id exists in the set of formFieldIds, false otherwise.
  */
 const allConditionsExist = (
-  conditions: IConditionSchema[],
+  conditions: FormCondition[],
   formFieldIds: FieldIdSet,
 ): boolean => {
   return conditions.every((condition) =>
@@ -224,7 +235,7 @@ const allConditionsExist = (
  */
 export const getVisibleFieldIds = (
   submission: LogicFieldSchemaOrResponse[],
-  form: IFormDocument,
+  form: PickLogicSubset,
 ): FieldIdSet => {
   const logicUnitsGroupedByField = groupLogicUnitsByField(form)
   const visibleFieldIds: FieldIdSet = new Set()
@@ -232,7 +243,7 @@ export const getVisibleFieldIds = (
   let changesMade = true
   while (changesMade) {
     changesMade = false
-    form.form_fields?.forEach((field) => {
+    form.form_fields.forEach((field) => {
       const logicUnits = logicUnitsGroupedByField[String(field._id)]
       // If a field's visibility does not have any conditions, it is always
       // visible.

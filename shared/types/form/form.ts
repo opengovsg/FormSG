@@ -110,16 +110,16 @@ export interface StorageFormBase extends FormBase {
 /**
  * Additional props to be added/replaced when tranformed into DTO.
  */
-type FormDtoBase = {
+type FormDtoExtraProps = {
   _id: FormId
   form_fields: FormFieldDto[]
   created: DateString
   lastModified: DateString
 }
 
-export type StorageFormDto = Merge<StorageFormBase, FormDtoBase>
+export type StorageFormDto = Merge<StorageFormBase, FormDtoExtraProps>
 
-export type EmailFormDto = Merge<EmailFormBase, FormDtoBase>
+export type EmailFormDto = Merge<EmailFormBase, FormDtoExtraProps>
 
 export type FormDto = StorageFormDto | EmailFormDto
 
