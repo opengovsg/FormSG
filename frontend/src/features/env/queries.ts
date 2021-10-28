@@ -8,6 +8,10 @@ const envKeys = {
   base: ['env'],
 }
 
-export const useEnv = (): UseQueryResult<ClientEnvVars, unknown> => {
-  return useQuery<ClientEnvVars>(envKeys.base, () => getClientEnvVars())
+export const useEnv = (
+  enabled = true,
+): UseQueryResult<ClientEnvVars, unknown> => {
+  return useQuery<ClientEnvVars>(envKeys.base, () => getClientEnvVars(), {
+    enabled,
+  })
 }
