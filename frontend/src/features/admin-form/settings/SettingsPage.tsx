@@ -13,8 +13,24 @@ import { SettingsGeneralPage } from './SettingsGeneralPage'
 
 export const SettingsPage = (): JSX.Element => {
   return (
-    <Tabs isLazy isManual orientation="vertical" variant="line">
-      <TabList flexShrink={0} p={0} w="21rem" maxW="100%">
+    <Tabs
+      isLazy
+      isManual
+      orientation="vertical"
+      variant="line"
+      py="4rem"
+      px="2rem"
+    >
+      <TabList
+        flexShrink={0}
+        p={0}
+        h="max-content"
+        w="21rem"
+        maxW="100%"
+        position="sticky"
+        mt="-0.875rem"
+        top="7.125rem"
+      >
         <SettingsTab label="General" icon={BiCog} />
         <SettingsTab label="Singpass" icon={BiKey} />
         <SettingsTab label="Thank you page" icon={BiCheckDouble} />

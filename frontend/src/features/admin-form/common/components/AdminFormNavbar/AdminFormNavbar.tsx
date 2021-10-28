@@ -34,7 +34,17 @@ export const AdminFormNavbar = ({
   handleShareButtonClick,
 }: AdminFormNavbarProps): JSX.Element => {
   return (
-    <Flex py="0.625rem" px="2rem" justify="space-between" align="center">
+    <Flex
+      py="0.3125rem"
+      px="2rem"
+      justify="space-between"
+      align="center"
+      position="sticky"
+      top={0}
+      bg="white"
+      zIndex="docked"
+      boxShadow="0 1px 1px var(--chakra-colors-neutral-300)"
+    >
       <Flex flex={1} align="center">
         <Box>
           <IconButton
