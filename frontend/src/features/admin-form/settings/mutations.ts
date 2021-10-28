@@ -10,6 +10,7 @@ import { formatOrdinal } from '~utils/stringFormat'
 import { adminFormSettingsKeys } from './queries'
 import {
   updateFormCaptcha,
+  updateFormEmails,
   updateFormInactiveMessage,
   updateFormLimit,
   updateFormStatus,
@@ -125,10 +126,34 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormEmails = useMutation(
+    (nextEmails: string[]) => updateFormEmails(formId, nextEmails),
+    {
+      onSuccess: (newData) => {
+        toast.closeAll()
+        // Update new settings data in cache.
+        queryClient.setQueryData(adminFormSettingsKeys.id(formId), newData)
+
+        // Show toast on success.
+        toast({
+          description: 'Emails successfully updated.',
+        })
+      },
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message,
+          status: 'danger',
+        })
+      },
+    },
+  )
+
   return {
     mutateFormStatus,
     mutateFormLimit,
     mutateFormInactiveMessage,
     mutateFormCaptcha,
+    mutateFormEmails,
   }
 }

@@ -37,11 +37,12 @@ export const FormStatusToggle = (): JSX.Element => {
         px="1.125rem"
         justify="space-between"
       >
-        <Text textStyle="subhead-1">
+        <Text textStyle="subhead-1" id="form-status">
           Your form is <b>{isFormPublic ? 'OPEN' : 'CLOSED'}</b> to new
           responses
         </Text>
         <Switch
+          aria-describedby="form-status"
           isLoading={mutateFormStatus.isLoading}
           isChecked={isFormPublic}
           onChange={handleToggleStatus}

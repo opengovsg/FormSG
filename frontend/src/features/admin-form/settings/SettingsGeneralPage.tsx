@@ -1,10 +1,14 @@
 import { FC } from 'react'
 import { Box, Divider, Text } from '@chakra-ui/react'
 
+import { FormResponseMode } from '~shared/types/form/form'
+
+import { EmailFormSection } from './components/EmailFormSection'
 import { FormCaptchaToggle } from './components/FormCaptchaToggle'
 import { FormCustomisationSection } from './components/FormCustomisationSection'
 import { FormLimitToggle } from './components/FormLimitToggle'
 import { FormStatusToggle } from './components/FormStatusToggle'
+import { useAdminFormSettings } from './queries'
 
 const CategoryHeader: FC = ({ children }) => {
   return (
@@ -29,6 +33,8 @@ const SubcategoryHeader: FC = ({ children }) => {
 }
 
 export const SettingsGeneralPage = (): JSX.Element => {
+  const { data: settings } = useAdminFormSettings()
+
   return (
     <Box maxW="42.5rem">
       <CategoryHeader>Respondent access</CategoryHeader>
@@ -42,7 +48,13 @@ export const SettingsGeneralPage = (): JSX.Element => {
       <Divider my="2.5rem" />
       <SubcategoryHeader>Verification</SubcategoryHeader>
       <FormCaptchaToggle />
-      <Divider my="2.5rem" />
+      {settings?.responseMode === FormResponseMode.Email && (
+        <>
+          <Divider my="2.5rem" />
+          <CategoryHeader>Responses recipients</CategoryHeader>
+          <EmailFormSection settings={settings} />
+        </>
+      )}
     </Box>
   )
 }
