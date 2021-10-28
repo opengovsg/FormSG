@@ -1,5 +1,5 @@
-import { FieldResponse } from './response'
-import { AllowMyInfoBase, FieldBase } from './field/base'
+import { AllowMyInfoBase, FieldBase, FieldResponse } from '../types'
+
 import {
   FormCondition,
   FormDto,
@@ -8,14 +8,14 @@ import {
   LogicType,
   ShowFieldLogic,
   LogicConditionState,
-} from './form'
+} from '../types/form'
 
 type PickLogicSubset<T extends FormDto = FormDto> = Pick<
   T,
   '_id' | 'form_logics' | 'form_fields'
 >
 
-interface ClientField extends AllowMyInfoBase, FieldBase {
+export interface ClientField extends AllowMyInfoBase, FieldBase {
   _id: string
   isVerifiable?: boolean
   fieldValue: string
