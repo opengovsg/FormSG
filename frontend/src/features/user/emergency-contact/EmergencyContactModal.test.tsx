@@ -1,11 +1,5 @@
 import { composeStories } from '@storybook/testing-react'
-import {
-  act,
-  render,
-  screen,
-  waitFor,
-  waitForElementToBeRemoved,
-} from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import parsePhoneNumber from 'libphonenumber-js'
 
@@ -26,8 +20,8 @@ describe('User has no verified contact number', () => {
       render(<NoContact />)
     })
     // Wait until all async stuff has rendered
-    await waitForElementToBeRemoved(() =>
-      screen.queryByPlaceholderText(/loading.*/i),
+    await waitFor(() =>
+      expect(screen.queryByPlaceholderText(/loading.*/i)).toBeNull(),
     )
     const input = screen.getByRole('textbox', {
       name: /mobile number/i,
@@ -47,8 +41,8 @@ describe('User has no verified contact number', () => {
       render(<NoContact />)
     })
     // Wait until all async stuff has rendered
-    await waitForElementToBeRemoved(() =>
-      screen.queryByPlaceholderText(/loading.*/i),
+    await waitFor(() =>
+      expect(screen.queryByPlaceholderText(/loading.*/i)).toBeNull(),
     )
     const contactNumInput = screen.getByRole('textbox', {
       name: /mobile number/i,
@@ -101,8 +95,8 @@ describe('User has verified contact number', () => {
       render(<WithContact />)
     })
     // Wait until all async stuff has rendered
-    await waitForElementToBeRemoved(() =>
-      screen.queryByPlaceholderText(/loading.*/i),
+    await waitFor(() =>
+      expect(screen.queryByPlaceholderText(/loading.*/i)).toBeNull(),
     )
     const input = screen.getByRole('textbox', {
       name: /mobile number/i,
@@ -126,8 +120,8 @@ describe('User has verified contact number', () => {
       render(<WithContact />)
     })
     // Wait until all async stuff has rendered
-    await waitForElementToBeRemoved(() =>
-      screen.queryByPlaceholderText(/loading.*/i),
+    await waitFor(() =>
+      expect(screen.queryByPlaceholderText(/loading.*/i)).toBeNull(),
     )
     const input = screen.getByRole('textbox', {
       name: /mobile number/i,
