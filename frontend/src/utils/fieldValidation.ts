@@ -10,6 +10,7 @@ import {
   NricFieldBase,
   NumberFieldBase,
   NumberSelectedValidation,
+  RatingFieldBase,
   ShortTextFieldBase,
   TextSelectedValidation,
   UenFieldBase,
@@ -23,14 +24,38 @@ type OmitUnusedProps<T extends FieldBase = FieldBase> = Omit<
   T,
   'fieldType' | 'description' | 'disabled'
 >
+const createRequiredValidationRules = (schema: Pick<FieldBase, 'required'>) => {
+  return {
+    value: schema.required,
+    message: REQUIRED_ERROR,
+  }
+}
+
+const createRequiredInValidationRules = (
+  schema: Pick<FieldBase, 'required'>,
+) => {
+  return {
+    required: (value: unknown) => {
+      if (!schema.required) return true
+      return !!value || REQUIRED_ERROR
+    },
+  }
+}
 
 export const createBaseValidationRules = (
   schema: Pick<FieldBase, 'required'>,
 ): RegisterOptions => {
   return {
-    required: {
-      value: schema.required,
-      message: REQUIRED_ERROR,
+    required: createRequiredValidationRules(schema),
+  }
+}
+
+export const createRatingValidationRules = (
+  schema: RatingFieldBase,
+): RegisterOptions => {
+  return {
+    validate: {
+      ...createRequiredInValidationRules(schema),
     },
   }
 }

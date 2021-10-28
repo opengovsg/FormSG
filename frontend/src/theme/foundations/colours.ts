@@ -5,6 +5,7 @@ export type ThemeColorScheme =
   | 'warning'
   | 'success'
   | 'neutral'
+  | 'theme-blue'
   | 'theme-green'
   | 'theme-teal'
   | 'theme-purple'
@@ -31,6 +32,18 @@ export type FieldColorScheme = Extract<
   | 'theme-brown'
 >
 
+const primaryColourPalette = {
+  100: '#F6F7FC',
+  200: '#E4E7F6',
+  300: '#B7C0E6',
+  400: '#8998D6',
+  500: '#4A61C0',
+  600: '#3B4E9A',
+  700: '#2C3A73',
+  800: '#1E274D',
+  900: '#161D3A',
+}
+
 export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
   white: {
     100: '#FFFFFF',
@@ -43,17 +56,7 @@ export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
     800: '#FFFFFF',
     900: '#FFFFFF',
   },
-  primary: {
-    100: '#F6F7FC',
-    200: '#E4E7F6',
-    300: '#B7C0E6',
-    400: '#8998D6',
-    500: '#4A61C0',
-    600: '#3B4E9A',
-    700: '#2C3A73',
-    800: '#1E274D',
-    900: '#161D3A',
-  },
+  primary: primaryColourPalette,
   secondary: {
     100: '#F5F6F8',
     200: '#DADCE3',
@@ -118,6 +121,7 @@ export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
     600: '#025641',
     700: '#013C2E',
   },
+  'theme-blue': primaryColourPalette,
   'theme-teal': {
     100: '#F3F6F8',
     200: '#D9E5EA',

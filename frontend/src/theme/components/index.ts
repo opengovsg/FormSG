@@ -12,6 +12,7 @@ import { FormLabel } from './FormLabel'
 import { InlineMessage } from './InlineMessage'
 import { Input } from './Input'
 import { Link } from './Link'
+import { Menu } from './Menu'
 import { Modal } from './Modal'
 import { NumberInput } from './NumberInput'
 import { Pagination, PAGINATION_THEME_KEY } from './Pagination'
@@ -39,6 +40,7 @@ export const components = {
   Link,
   InlineMessage,
   Modal,
+  Menu,
   NumberInput,
   PhoneNumberInput,
   SingleCountryPhoneNumberInput,

@@ -135,6 +135,7 @@ export const Button: ComponentStyleConfig = {
     border: '1px solid',
     textStyle: 'subhead-1',
     fontWeight: 'medium',
+    flexShrink: 0,
     h: 'auto',
     // -1px for border
     px: '15px',
