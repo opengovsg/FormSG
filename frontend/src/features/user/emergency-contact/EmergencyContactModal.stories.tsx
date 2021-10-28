@@ -48,7 +48,13 @@ const Template: Story = () => {
     }
   })
 
-  return ReactDOM.createPortal(<EmergencyContactModal {...modalProps} />, el)
+  return ReactDOM.createPortal(
+    <EmergencyContactModal
+      {...modalProps}
+      onClose={() => console.log('close modal')}
+    />,
+    el,
+  )
 }
 export const WithContact = Template.bind({})
 
