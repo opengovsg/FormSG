@@ -25,6 +25,8 @@ export default {
     },
   ],
   parameters: {
+    // Required so skeleton "animation" does not hide content.
+    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
     msw: [getAdminFormResponse(), getAdminFormSettings()],
   },
