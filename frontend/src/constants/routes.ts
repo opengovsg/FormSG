@@ -8,3 +8,5 @@ const PUBLIC_FORM_PARAM = 'formId'
 export type PublicFormParam = { [PUBLIC_FORM_PARAM]: string }
 export const PUBLIC_FORM_REGEX =
   `/:${PUBLIC_FORM_PARAM}([a-fA-F0-9]{24})` as const
+
+export const ADMIN_FORM_ROUTE = '/admin/form'
