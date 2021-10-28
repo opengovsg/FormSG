@@ -1,12 +1,16 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Meta, Story } from '@storybook/react'
 
+import { FormResponseMode, FormStatus } from '~shared/types/form/form'
+
 import {
   getAdminFormResponse,
   getAdminFormSettings,
   getAdminFormSubmissions,
+  patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
+import formsgSdk from '~utils/formSdk'
 import { viewports } from '~utils/storybook'
 
 import { AdminFormPage } from './common/AdminFormPage'
@@ -33,6 +37,7 @@ export default {
       getAdminFormResponse(),
       getAdminFormSettings(),
       getAdminFormSubmissions(),
+      patchAdminFormSettings(),
     ],
   },
 } as Meta
@@ -54,4 +59,28 @@ Mobile.parameters = {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
+}
+
+const storageModeKeypair = formsgSdk.crypto.generate()
+
+export const StorageModeSettings = Template.bind({})
+StorageModeSettings.parameters = {
+  docs: {
+    storyDescription: `The passing secret key is ${storageModeKeypair.secretKey}`,
+  },
+  msw: [
+    getAdminFormResponse({ responseMode: FormResponseMode.Encrypt }),
+    getAdminFormSettings({
+      mode: FormResponseMode.Encrypt,
+      overrides: {
+        status: FormStatus.Private,
+        publicKey: storageModeKeypair.publicKey,
+      },
+    }),
+    getAdminFormSubmissions(),
+    patchAdminFormSettings({
+      mode: FormResponseMode.Encrypt,
+      overrides: { publicKey: storageModeKeypair.publicKey },
+    }),
+  ],
 }
