@@ -10,7 +10,7 @@ import {
   LogicConditionState,
 } from '../types/form'
 
-type PickLogicSubset<T extends FormDto = FormDto> = Pick<
+export type PickLogicSubset<T extends FormDto = FormDto> = Pick<
   T,
   '_id' | 'form_logics' | 'form_fields'
 >
@@ -24,7 +24,7 @@ export interface ClientField extends AllowMyInfoBase, FieldBase {
 }
 
 export type FieldIdSet = Set<string>
-type LogicFieldOrResponse = ClientField | FieldResponse
+export type LogicFieldOrResponse = ClientField | FieldResponse
 type GroupedLogic = Record<string, FormCondition[][]>
 
 // Returns typed PreventSubmit logic unit

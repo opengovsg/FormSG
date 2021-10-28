@@ -4,28 +4,27 @@ import {
   FieldIdSet,
   getLogicUnitPreventingSubmit as logicGetLogicUnitPreventingSubmit,
   getVisibleFieldIds as logicGetVisibleFieldIds,
-} from '../../shared/util/logic'
-import {
-  FieldResponse,
-  IFormDocument,
-  IPreventSubmitLogicSchema,
-} from '../../types'
+  PickLogicSubset,
+} from '../../../shared/utils/logic'
+import { FieldResponse } from '../../types'
 import { ProcessingError } from '../modules/submission/submission.errors'
+
+import { PreventSubmitLogic } from './../../../shared/types/form/form_logic'
 
 export { FieldIdSet } from '../../shared/util/logic'
 
 export const getVisibleFieldIds = (
   submission: FieldResponse[],
-  form: IFormDocument,
+  form: PickLogicSubset,
 ): Result<FieldIdSet, ProcessingError> => {
   return ok(logicGetVisibleFieldIds(submission, form))
 }
 
 export const getLogicUnitPreventingSubmit = (
   submission: FieldResponse[],
-  form: IFormDocument,
+  form: PickLogicSubset,
   visibleFieldIds?: FieldIdSet,
-): Result<IPreventSubmitLogicSchema | undefined, ProcessingError> => {
+): Result<PreventSubmitLogic | undefined, ProcessingError> => {
   return ok(
     logicGetLogicUnitPreventingSubmit(submission, form, visibleFieldIds),
   )
