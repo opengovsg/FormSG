@@ -1,4 +1,4 @@
-import { FormHelperText, HelpTextProps, Icon } from '@chakra-ui/react'
+import { Box, FormHelperText, HelpTextProps, Icon } from '@chakra-ui/react'
 
 import { BxsCheckCircle } from '~assets/icons'
 
@@ -39,7 +39,12 @@ export const FormFieldMessage = ({
           mr={2}
         />
       )}
-      {children}
+      {typeof children === 'string' ? (
+        // Align line base height with icon (if any)
+        <Box my="0.125rem">{children}</Box>
+      ) : (
+        children
+      )}
     </FormHelperText>
   )
 }
