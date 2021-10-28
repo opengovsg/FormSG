@@ -9,15 +9,13 @@ import {
   FormCondition,
   FormDto,
   FormLogic,
+  PreventSubmitLogic,
   ShowFieldLogic,
 } from '../../../shared/types/form'
 import {
   FieldResponse,
   IClientFieldSchema,
   IConditionSchema,
-  IFormDocument,
-  ILogicSchema,
-  IPreventSubmitLogicSchema,
   LogicCondition,
 } from '../../types'
 
@@ -92,8 +90,8 @@ const isShowFieldsLogic = (
 
 // Returns typed PreventSubmit logic unit
 const isPreventSubmitLogic = (
-  formLogic: ILogicSchema,
-): formLogic is IPreventSubmitLogicSchema => {
+  formLogic: FormLogic,
+): formLogic is PreventSubmitLogic => {
   return formLogic.logicType === LogicType.PreventSubmit
 }
 
@@ -169,14 +167,14 @@ export const groupLogicUnitsByField = (form: PickLogicSubset): GroupedLogic => {
  */
 const getPreventSubmitConditions = (
   form: PickLogicSubset,
-): IPreventSubmitLogicSchema[] => {
+): PreventSubmitLogic[] => {
   const formFieldIds = new Set(
-    form.form_fields?.map((field) => String(field._id)),
+    form.form_fields.map((field) => String(field._id)),
   )
 
   const preventFormLogics =
     form.form_logics?.filter(
-      (formLogic): formLogic is IPreventSubmitLogicSchema =>
+      (formLogic): formLogic is PreventSubmitLogic =>
         isPreventSubmitLogic(formLogic) &&
         allConditionsExist(formLogic.conditions, formFieldIds),
     ) ?? []
@@ -196,7 +194,7 @@ export const getLogicUnitPreventingSubmit = (
   submission: LogicFieldSchemaOrResponse[],
   form: PickLogicSubset,
   visibleFieldIds?: FieldIdSet,
-): IPreventSubmitLogicSchema | undefined => {
+): PreventSubmitLogic | undefined => {
   const definedVisibleFieldIds =
     visibleFieldIds ?? getVisibleFieldIds(submission, form)
   const preventSubmitConditions = getPreventSubmitConditions(form)
