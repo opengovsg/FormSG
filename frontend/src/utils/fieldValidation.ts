@@ -4,8 +4,10 @@
  */
 import { RegisterOptions } from 'react-hook-form'
 import simplur from 'simplur'
+import validator from 'validator'
 
 import {
+  EmailFieldBase,
   FieldBase,
   HomenoFieldBase,
   NricFieldBase,
@@ -20,7 +22,11 @@ import { isNricValid } from '~shared/utils/nric-validation'
 import { isHomePhoneNumber } from '~shared/utils/phone-num-validation'
 import { isUenValid } from '~shared/utils/uen-validation'
 
-import { REQUIRED_ERROR } from '~constants/validation'
+import {
+  INVALID_EMAIL_DOMAIN_ERROR,
+  INVALID_EMAIL_ERROR,
+  REQUIRED_ERROR,
+} from '~constants/validation'
 
 const createRequiredValidationRules = (schema: FieldBase) => {
   return {
@@ -153,6 +159,35 @@ export const createNricValidationRules = (
     validate: (val?: string) => {
       if (!val) return true
       return isNricValid(val) || 'Please enter a valid NRIC'
+    },
+  }
+}
+
+export const createEmailValidationRules = (
+  schema: EmailFieldBase,
+): RegisterOptions => {
+  const allowedDomains = schema.isVerifiable
+    ? new Set(schema.allowedEmailDomains)
+    : new Set()
+
+  return {
+    ...createBaseValidationRules(schema),
+    validate: {
+      validEmail: (val?: string) => {
+        if (!val) return true
+        return validator.isEmail(val) || INVALID_EMAIL_ERROR
+      },
+      validDomain: (val?: string) => {
+        // Return if no value, or has no whitelisted domains at all.
+        if (!val || allowedDomains.size === 0) return true
+
+        const domainInValue = val.split('@')[1]
+
+        return (
+          (domainInValue && allowedDomains.has(`@${domainInValue}`)) ||
+          INVALID_EMAIL_DOMAIN_ERROR
+        )
+      },
     },
   }
 }
