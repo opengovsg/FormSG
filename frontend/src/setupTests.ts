@@ -21,3 +21,14 @@ global.matchMedia =
   }
 
 setGlobalConfig(globalStorybookConfig)
+
+// Mock the window.matchMedia function since jest environment may not contain it.
+window.matchMedia =
+  window.matchMedia ||
+  function () {
+    return {
+      matches: false,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    }
+  }
