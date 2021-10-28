@@ -1,7 +1,10 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Meta, Story } from '@storybook/react'
 
-import { getAdminFormResponse } from '~/mocks/msw/handlers/admin-form'
+import {
+  getAdminFormResponse,
+  getAdminFormSettings,
+} from '~/mocks/msw/handlers/admin-form'
 
 import { viewports } from '~utils/storybook'
 
@@ -22,8 +25,10 @@ export default {
     },
   ],
   parameters: {
+    // Required so skeleton "animation" does not hide content.
+    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [getAdminFormResponse()],
+    msw: [getAdminFormResponse(), getAdminFormSettings()],
   },
 } as Meta
 
