@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import ReactDOM from 'react-dom'
 import { useDisclosure } from '@chakra-ui/hooks'
 import { Meta, Story } from '@storybook/react'
 import { omit } from 'lodash'
@@ -15,7 +17,6 @@ import {
   LoggedInDecorator,
   viewports,
 } from '~utils/storybook'
-import Button from '~components/Button'
 
 import { EmergencyContactModal } from './EmergencyContactModal'
 
@@ -31,15 +32,23 @@ export default {
   },
 } as Meta
 
+const modalRoot = document.createElement('div')
+document.body.appendChild(modalRoot)
+
 const Template: Story = () => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
 
-  return (
-    <>
-      <Button onClick={modalProps.onOpen}>Open modal</Button>
-      <EmergencyContactModal {...modalProps} />
-    </>
-  )
+  const el = document.createElement('div')
+
+  useEffect(() => {
+    modalRoot.appendChild(el)
+
+    return () => {
+      modalRoot.removeChild(el)
+    }
+  })
+
+  return ReactDOM.createPortal(<EmergencyContactModal {...modalProps} />, el)
 }
 export const WithContact = Template.bind({})
 
