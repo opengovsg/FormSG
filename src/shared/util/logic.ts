@@ -5,6 +5,7 @@ import {
   LogicConditionState,
   LogicType,
 } from '../../../shared/types'
+import { AllowMyInfoBase } from '../../../shared/types/field/base'
 import {
   FormCondition,
   FormDto,
@@ -23,6 +24,16 @@ type PickLogicSubset<T extends FormDto = FormDto> = Pick<
   T,
   '_id' | 'form_logics' | 'form_fields'
 >
+
+interface ClientField extends AllowMyInfoBase, FieldBase {
+  _id: string
+  isVerifiable?: boolean
+  fieldValue: string
+
+  getQuestion(): string
+}
+
+type LogicFieldOrResponse = ClientField | FieldResponse
 
 const LOGIC_CONDITIONS: LogicCondition[] = [
   [
@@ -79,7 +90,6 @@ type GroupedLogic = Record<string, FormCondition[][]>
 export type FieldIdSet = Set<IClientFieldSchema['_id']>
 // This module handles logic on both the client side (IFieldSchema[])
 // and server side (FieldResponse[])
-type LogicFieldSchemaOrResponse = IClientFieldSchema | FieldResponse
 
 // Returns typed ShowFields logic unit
 const isShowFieldsLogic = (
@@ -191,7 +201,7 @@ const getPreventSubmitConditions = (
  * @returns a condition if submission is to prevented, otherwise `undefined`
  */
 export const getLogicUnitPreventingSubmit = (
-  submission: LogicFieldSchemaOrResponse[],
+  submission: LogicFieldOrResponse[],
   form: PickLogicSubset,
   visibleFieldIds?: FieldIdSet,
 ): PreventSubmitLogic | undefined => {
@@ -232,7 +242,7 @@ const allConditionsExist = (
  * @returns a set of IDs of visible fields in the submission
  */
 export const getVisibleFieldIds = (
-  submission: LogicFieldSchemaOrResponse[],
+  submission: LogicFieldOrResponse[],
   form: PickLogicSubset,
 ): FieldIdSet => {
   const logicUnitsGroupedByField = groupLogicUnitsByField(form)
@@ -274,7 +284,7 @@ export const getVisibleFieldIds = (
  * @returns true if all the conditions are satisfied, false otherwise
  */
 const isLogicUnitSatisfied = (
-  submission: LogicFieldSchemaOrResponse[],
+  submission: LogicFieldOrResponse[],
   logicUnit: FormCondition[],
   visibleFieldIds: FieldIdSet,
 ): boolean => {
@@ -289,7 +299,7 @@ const isLogicUnitSatisfied = (
 }
 
 const getCurrentValue = (
-  field: LogicFieldSchemaOrResponse,
+  field: LogicFieldOrResponse,
 ): string | null | undefined | string[] => {
   if ('fieldValue' in field) {
     // client
@@ -307,7 +317,7 @@ const getCurrentValue = (
  * @param {String} condition.state - The type of condition
  */
 const isConditionFulfilled = (
-  field: LogicFieldSchemaOrResponse,
+  field: LogicFieldOrResponse,
   condition: FormCondition,
 ): boolean => {
   if (!field || !condition) {
@@ -375,9 +385,9 @@ const isConditionFulfilled = (
  * @returns the condition field if it exists, `undefined` otherwise
  */
 const findConditionField = (
-  submission: LogicFieldSchemaOrResponse[],
+  submission: LogicFieldOrResponse[],
   fieldId: IConditionSchema['field'],
-): LogicFieldSchemaOrResponse | undefined => {
+): LogicFieldOrResponse | undefined => {
   return submission.find(
     (submittedField) => String(submittedField._id) === String(fieldId),
   )
