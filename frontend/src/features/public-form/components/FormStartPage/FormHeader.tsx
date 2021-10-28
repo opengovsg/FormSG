@@ -32,7 +32,7 @@ const useFormHeader = () => {
     () =>
       data?.startPage.colorTheme
         ? `theme-${data.startPage.colorTheme}.500`
-        : undefined,
+        : `neutral.200`,
     [data?.startPage.colorTheme],
   )
 
