@@ -11,7 +11,7 @@ import * as stories from './EmergencyContactModal.stories'
 const { NoContact, WithContact } = composeStories(stories)
 
 // Some tests take longer in this suite.
-jest.setTimeout(10000)
+jest.setTimeout(20000)
 
 describe('User has no verified contact number', () => {
   it('should render with empty contact number details', async () => {
@@ -63,9 +63,7 @@ describe('User has no verified contact number', () => {
 
     // Assert
     // Should now show OTP verification box
-    const otpInput = await screen.findByRole('textbox', {
-      name: /verify your mobile number.*/i,
-    })
+    const otpInput = await screen.findByTestId('otp-input')
     const otpSubmitButton = screen.getByRole('button', { name: /submit/i })
     expect(otpInput).toBeInTheDocument()
 
