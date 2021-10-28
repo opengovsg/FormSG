@@ -275,7 +275,7 @@ export const getVisibleFieldIds = (
  */
 const isLogicUnitSatisfied = (
   submission: LogicFieldSchemaOrResponse[],
-  logicUnit: IConditionSchema[],
+  logicUnit: FormCondition[],
   visibleFieldIds: FieldIdSet,
 ): boolean => {
   return logicUnit.every((condition) => {
@@ -308,7 +308,7 @@ const getCurrentValue = (
  */
 const isConditionFulfilled = (
   field: LogicFieldSchemaOrResponse,
-  condition: IConditionSchema,
+  condition: FormCondition,
 ): boolean => {
   if (!field || !condition) {
     return false
