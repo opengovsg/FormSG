@@ -1,5 +1,6 @@
 import { composeStories } from '@storybook/testing-react'
 import {
+  act,
   render,
   screen,
   waitFor,
@@ -21,13 +22,17 @@ jest.setTimeout(10000)
 describe('User has no verified contact number', () => {
   it('should render with empty contact number details', async () => {
     // Arrange
-    render(<NoContact />)
+    await act(async () => {
+      render(<NoContact />)
+    })
     // Wait until all async stuff has rendered
     await waitForElementToBeRemoved(() =>
-      screen.queryByPlaceholderText('Loading user...'),
+      screen.queryByPlaceholderText(/loading.*/i),
     )
-    const input = screen.getByLabelText('Mobile number') as HTMLInputElement
-    const vfnButton = screen.getByRole('button', { name: 'Verify' })
+    const input = screen.getByRole('textbox', {
+      name: /mobile number/i,
+    }) as HTMLInputElement
+    const vfnButton = screen.getByRole('button', { name: /verify/i })
 
     // Assert
     // Should be empty value
@@ -38,49 +43,53 @@ describe('User has no verified contact number', () => {
 
   it('should update user contact successfully', async () => {
     // Arrange
-    render(<NoContact />)
+    await act(async () => {
+      render(<NoContact />)
+    })
     // Wait until all async stuff has rendered
     await waitForElementToBeRemoved(() =>
-      screen.queryByPlaceholderText('Loading user...'),
+      screen.queryByPlaceholderText(/loading.*/i),
     )
-    const contactNumInput = screen.getByLabelText(
-      'Mobile number',
-    ) as HTMLInputElement
-    const vfnButton = screen.getByRole('button', { name: 'Verify' })
+    const contactNumInput = screen.getByRole('textbox', {
+      name: /mobile number/i,
+    }) as HTMLInputElement
+    const vfnButton = screen.getByRole('button', { name: /verify/i })
     const mockNumber = '98765432'
     const expectedFormattedPhoneNumber = parsePhoneNumber(
       `+65${mockNumber}`,
     )!.formatInternational()
 
     // Act
-    userEvent.type(contactNumInput, mockNumber)
-    userEvent.tab()
-    // Input should now have formatted value.
+    await act(async () => userEvent.type(contactNumInput, mockNumber))
+    await act(async () => userEvent.tab())
     expect(vfnButton).toHaveTextContent('Verify')
+    // Input should now have formatted value.
     expect(contactNumInput).toHaveDisplayValue(expectedFormattedPhoneNumber)
-    userEvent.click(vfnButton)
-    const otpInput = await screen.findByTestId('otp-input')
-    const otpSubmitButton = await screen.findByRole('button', {
-      name: 'Submit',
-    })
+    await act(async () => userEvent.click(vfnButton))
 
     // Assert
     // Should now show OTP verification box
+    const otpInput = await screen.findByRole('textbox', {
+      name: /verify your mobile number.*/i,
+    })
+    const otpSubmitButton = screen.getByRole('button', { name: /submit/i })
     expect(otpInput).toBeInTheDocument()
 
     // Act
-    userEvent.type(otpInput, '123456')
-    userEvent.click(otpSubmitButton)
-    await waitForElementToBeRemoved(otpInput)
+    await act(async () => userEvent.type(otpInput, '123456'))
+    await act(async () => userEvent.click(otpSubmitButton))
 
     // Assert
-    // Toast should appear.
-    await waitFor(() => {
-      expect(screen.getByText('Emergency contact added.')).toBeTruthy()
+    // Wait for button to change to verified
+    await waitFor(() => expect(vfnButton.textContent).toMatch(/verified/i), {
+      timeout: 2000,
     })
+    // Toast should appear.
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      /emergency contact added\./i,
+    )
     // Should now show updated phone number in input, with verified button
     expect(contactNumInput).toHaveDisplayValue(expectedFormattedPhoneNumber)
-    expect(vfnButton).toHaveTextContent('Verified')
     expect(vfnButton).toBeDisabled()
   })
 })
@@ -88,13 +97,17 @@ describe('User has no verified contact number', () => {
 describe('User has verified contact number', () => {
   it('should render with verified contact number details', async () => {
     // Arrange
-    render(<WithContact />)
+    await act(async () => {
+      render(<WithContact />)
+    })
     // Wait until all async stuff has rendered
     await waitForElementToBeRemoved(() =>
-      screen.queryByPlaceholderText('Loading user...'),
+      screen.queryByPlaceholderText(/loading.*/i),
     )
-    const input = screen.getByLabelText('Mobile number') as HTMLInputElement
-    const vfnButton = screen.getByRole('button', { name: 'Verified' })
+    const input = screen.getByRole('textbox', {
+      name: /mobile number/i,
+    }) as HTMLInputElement
+    const vfnButton = screen.getByRole('button', { name: /verified/i })
     const expectedFormattedPhoneNumber = parsePhoneNumber(
       MOCK_USER.contact,
     )!.formatInternational()
@@ -109,21 +122,24 @@ describe('User has verified contact number', () => {
 
   it('should render error if invalid phone number is entered', async () => {
     // Arrange
-    render(<WithContact />)
+    await act(async () => {
+      render(<WithContact />)
+    })
     // Wait until all async stuff has rendered
     await waitForElementToBeRemoved(() =>
-      screen.queryByPlaceholderText('Loading user...'),
+      screen.queryByPlaceholderText(/loading.*/i),
     )
-    const input = screen.getByLabelText('Mobile number') as HTMLInputElement
-    const vfnButton = screen.getByRole('button', { name: 'Verified' })
+    const input = screen.getByRole('textbox', {
+      name: /mobile number/i,
+    }) as HTMLInputElement
+    const vfnButton = screen.getByRole('button', { name: /verified/i })
 
     // Act
-    userEvent.clear(input)
-    userEvent.type(input, '12345')
+    await act(async () => userEvent.clear(input))
+    await act(async () => userEvent.type(input, '12345'))
     // Should change to Verify text since contact number has changed.
-    expect(vfnButton).toHaveTextContent('Verify')
-    userEvent.click(vfnButton)
-    await waitFor(() => vfnButton.textContent === 'Verify')
+    expect(vfnButton).toHaveTextContent(/verify/i)
+    await act(async () => userEvent.click(vfnButton))
 
     // Assert
     expect(screen.getByText(INVALID_NUMBER_ERROR_MSG)).toBeInTheDocument()
