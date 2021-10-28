@@ -23,6 +23,7 @@
     "react-query": "^3.21.0",
     "react-router-dom": "^5.2.0",
     "react-textarea-autosize": "^8.3.3",
+    "react-waypoint": "^10.1.0",
     "simplur": "^3.0.1",
     "type-fest": "^2.2.0",
     "typescript": "^4.3.5",

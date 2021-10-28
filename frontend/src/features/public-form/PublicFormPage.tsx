@@ -1,9 +1,11 @@
 import { HttpError } from '~services/ApiService'
 
+import FormStartPage from './components/FormStartPage'
+import { PublicFormProvider } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
 export const PublicFormPage = (): JSX.Element => {
-  const { data, isLoading, error } = usePublicFormView()
+  const { isLoading, error } = usePublicFormView()
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -13,5 +15,9 @@ export const PublicFormPage = (): JSX.Element => {
     return <div>404</div>
   }
 
-  return <div>{JSON.stringify(data)}</div>
+  return (
+    <PublicFormProvider>
+      <FormStartPage />
+    </PublicFormProvider>
+  )
 }

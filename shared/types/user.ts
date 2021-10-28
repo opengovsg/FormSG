@@ -37,5 +37,5 @@ export const UserDto = UserBase.extend({
 export type UserDto = z.infer<typeof UserDto>
 
 export type PublicUserDto = {
-  agency: PublicAgencyDto | AgencyDto['_id']
+  agency: PublicAgencyDto
 }
