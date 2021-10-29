@@ -648,7 +648,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       newPosition,
     )
     this.form_fields = updatedFormFields
-    return this.save()
+    return this.save() as Promise<IFormDocument | null>
   }
 
   // Statics

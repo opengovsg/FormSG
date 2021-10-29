@@ -1,5 +1,6 @@
 import { err, ok, Result } from 'neverthrow'
-import { PickLogicSubset } from 'shared/utils/logic'
+
+import { IFormDocument } from 'src/types'
 
 import { FormAuthType, FormResponseMode } from '../../../../../shared/types'
 import { FieldResponse, FormFieldSchema } from '../../../../types'
@@ -70,7 +71,7 @@ export default class ParsedResponsesObject {
    * @returns neverthrow err() if response validation fails
    */
   static parseResponses(
-    form: PickLogicSubset,
+    form: IFormDocument,
     responses: FieldResponse[],
   ): Result<
     ParsedResponsesObject,

@@ -195,6 +195,7 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
  * Schema type with defaults populated and thus set to be defined.
  */
 export interface IFormDocument extends IFormSchema {
+  _id: NonNullable<IFormSchema['_id']>
   form_fields: NonNullable<IFormSchema['form_fields']>
   form_logics: NonNullable<IFormSchema['form_logics']>
   permissionList: NonNullable<IFormSchema['permissionList']>
