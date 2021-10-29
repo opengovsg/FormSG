@@ -109,6 +109,7 @@ describe('IncomingEncryptSubmission', () => {
       {
         responseMode: FormResponseMode.Encrypt,
         form_fields: [mobileField, emailField],
+        toJSON: () => this,
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
@@ -129,6 +130,7 @@ describe('IncomingEncryptSubmission', () => {
       {
         responseMode: FormResponseMode.Encrypt,
         form_fields: [mobileField],
+        toJSON: () => this,
       } as unknown as IPopulatedEncryptedForm,
       [mobileResponse],
       '',

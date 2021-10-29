@@ -21,7 +21,7 @@ export type PickLogicSubset<T extends FormDto = FormDto> = Pick<
 >
 
 export interface ClientField extends AllowMyInfoBase, FieldBase {
-  _id: string
+  _id?: string
   isVerifiable?: boolean
   fieldValue: string
 
@@ -260,7 +260,7 @@ const isLogicUnitSatisfied = (
     const conditionField = findConditionField(submission, condition.field)
     return (
       conditionField &&
-      visibleFieldIds.has(conditionField._id.toString()) &&
+      visibleFieldIds.has(conditionField._id!.toString()) &&
       isConditionFulfilled(conditionField, condition)
     )
   })

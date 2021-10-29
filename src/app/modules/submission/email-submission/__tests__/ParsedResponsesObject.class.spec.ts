@@ -48,6 +48,7 @@ describe('ParsedResponsesObject', () => {
       {
         responseMode: FormResponseMode.Email,
         form_fields: [shortTextField, decimalField],
+        toJSON: () => this,
       } as IFormDocument,
       [shortTextResponse, decimalResponse],
     )
@@ -68,6 +69,7 @@ describe('ParsedResponsesObject', () => {
       {
         responseMode: FormResponseMode.Email,
         form_fields: [extraField],
+        toJSON: () => this,
       } as IFormDocument,
       [],
     )
@@ -87,6 +89,7 @@ describe('ParsedResponsesObject', () => {
       {
         responseMode: FormResponseMode.Email,
         form_fields: [nricField],
+        toJSON: () => this,
       } as IFormDocument,
       [nricResponse],
     )
