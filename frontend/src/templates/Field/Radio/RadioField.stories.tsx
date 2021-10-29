@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
+import { merge } from 'lodash'
 
 import { BasicField } from '~shared/types/field'
 
@@ -91,4 +92,9 @@ ValidationRequired.args = {
 export const ValidationOptional = Template.bind({})
 ValidationOptional.args = {
   schema: { ...baseSchema, required: false },
+}
+
+export const WithoutOthersOption = Template.bind({})
+WithoutOthersOption.args = {
+  schema: merge({}, baseSchema, { othersRadioButton: false }),
 }

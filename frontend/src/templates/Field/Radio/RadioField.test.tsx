@@ -6,7 +6,8 @@ import { REQUIRED_ERROR } from '~constants/validation'
 
 import * as stories from './RadioField.stories'
 
-const { ValidationOptional, ValidationRequired } = composeStories(stories)
+const { ValidationOptional, ValidationRequired, WithoutOthersOption } =
+  composeStories(stories)
 
 describe('required field', () => {
   it('renders error when field is not selected before submitting', async () => {
@@ -24,7 +25,29 @@ describe('required field', () => {
     expect(screen.getByText(REQUIRED_ERROR)).toBeInTheDocument()
   })
 
-  it('renders success when valid radio field selected when submitted', async () => {
+  it('renders success when valid radio field selected when submitted (without others option)', async () => {
+    // Arrange
+    const radioOption =
+      WithoutOthersOption.args?.schema?.fieldOptions?.[0] ?? ''
+    await act(async () => {
+      render(<WithoutOthersOption />)
+    })
+    const submitButton = screen.getByRole('button', { name: /submit/i })
+    const firstRadioButton = screen.getByLabelText(new RegExp(radioOption, 'i'))
+
+    // Act
+    await act(async () => userEvent.click(firstRadioButton))
+    await act(async () => userEvent.click(submitButton))
+
+    // Assert
+    // Should show success message.
+    expect(
+      screen.getByText(new RegExp(`{"value":"${radioOption}"}`, 'i')),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(REQUIRED_ERROR)).not.toBeInTheDocument()
+  })
+
+  it('renders success when valid radio field selected when submitted (with others option)', async () => {
     // Arrange
     const radioOption = ValidationRequired.args?.schema?.fieldOptions?.[0] ?? ''
     await act(async () => {
