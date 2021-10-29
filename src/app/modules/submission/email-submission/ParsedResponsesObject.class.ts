@@ -1,11 +1,8 @@
 import { err, ok, Result } from 'neverthrow'
+import { PickLogicSubset } from 'shared/utils/logic'
 
 import { FormAuthType, FormResponseMode } from '../../../../../shared/types'
-import {
-  FieldResponse,
-  FormFieldSchema,
-  IFormDocument,
-} from '../../../../types'
+import { FieldResponse, FormFieldSchema } from '../../../../types'
 import { validateField } from '../../../utils/field-validation'
 import {
   getLogicUnitPreventingSubmit,
@@ -73,7 +70,7 @@ export default class ParsedResponsesObject {
    * @returns neverthrow err() if response validation fails
    */
   static parseResponses(
-    form: IFormDocument,
+    form: PickLogicSubset,
     responses: FieldResponse[],
   ): Result<
     ParsedResponsesObject,

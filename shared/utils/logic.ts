@@ -12,7 +12,12 @@ import {
 
 export type PickLogicSubset<T extends FormDto = FormDto> = Pick<
   T,
-  '_id' | 'form_logics' | 'form_fields'
+  | '_id'
+  | 'form_logics'
+  | 'form_fields'
+  | 'responseMode'
+  | 'form_logics'
+  | 'form_fields'
 >
 
 export interface ClientField extends AllowMyInfoBase, FieldBase {

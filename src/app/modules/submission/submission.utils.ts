@@ -1,9 +1,10 @@
 import { differenceBy, intersectionBy, keyBy, uniqBy } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
+import { PickLogicSubset } from 'shared/utils/logic'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { BasicField, FormResponseMode } from '../../../../shared/types'
-import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
+import { FieldResponse, FormFieldSchema } from '../../../types'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 
 import { IncomingSubmission } from './IncomingSubmission.class'
@@ -96,7 +97,7 @@ export const extractEmailConfirmationDataFromIncomingSubmission = (
  * @returns neverthrow err(ConflictError) if the given form's form field ids count do not match given responses'
  */
 export const getFilteredResponses = (
-  form: IFormDocument,
+  form: PickLogicSubset,
   responses: FieldResponse[],
 ): Result<FilteredResponse[], ConflictError> => {
   const modeFilter = getModeFilter(form.responseMode)
