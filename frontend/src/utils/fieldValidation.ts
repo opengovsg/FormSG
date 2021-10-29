@@ -10,6 +10,7 @@ import {
   NricFieldBase,
   NumberFieldBase,
   NumberSelectedValidation,
+  RadioFieldBase,
   RatingFieldBase,
   ShortTextFieldBase,
   TextSelectedValidation,
@@ -141,4 +142,10 @@ export const createNricValidationRules = (
       return isNricValid(val) || 'Please enter a valid NRIC'
     },
   }
+}
+
+export const createRadioValidationRules = (
+  schema: RadioFieldBase,
+): RegisterOptions => {
+  return createBaseValidationRules(schema)
 }
