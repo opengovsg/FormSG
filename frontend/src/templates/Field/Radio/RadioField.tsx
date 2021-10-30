@@ -48,10 +48,14 @@ export const RadioField = ({
   } = useFormContext()
   const radioValue = watch(radioInputName)
 
+  const isOthersSelected = useMemo(
+    () => schema.othersRadioButton && radioValue === RADIO_OTHERS_INPUT_VALUE,
+    [radioValue, schema.othersRadioButton],
+  )
+
   const othersValidationRules = useMemo(
     () => ({
       validate: (value: string) => {
-        const isOthersSelected = radioValue === RADIO_OTHERS_INPUT_VALUE
         return (
           !isOthersSelected ||
           !!value ||
@@ -59,17 +63,17 @@ export const RadioField = ({
         )
       },
     }),
-    [radioValue],
+    [isOthersSelected],
   )
 
   useEffect(() => {
     // When unchecking others, manually trigger input validation. This is
     // to ensure that if you select then unselect Others, the form knows
     // that the text input is now optional.
-    if (schema.othersRadioButton && radioValue !== RADIO_OTHERS_INPUT_VALUE) {
+    if (!isOthersSelected) {
       trigger(othersInputName)
     }
-  }, [othersInputName, radioValue, schema.othersRadioButton, trigger])
+  }, [isOthersSelected, othersInputName, trigger])
 
   const othersInputError: FieldError | undefined = get(errors, othersInputName)
 
