@@ -6,6 +6,7 @@ import { RegisterOptions } from 'react-hook-form'
 import simplur from 'simplur'
 
 import {
+  CheckboxFieldBase,
   FieldBase,
   NricFieldBase,
   NumberFieldBase,
@@ -141,4 +142,10 @@ export const createNricValidationRules = (
       return isNricValid(val) || 'Please enter a valid NRIC'
     },
   }
+}
+
+export const createCheckboxValidationRules = (
+  schema: CheckboxFieldBase,
+): RegisterOptions => {
+  return createBaseValidationRules(schema)
 }
