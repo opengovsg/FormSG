@@ -91,7 +91,7 @@ describe('optional field', () => {
     // Arrange
     const radioOption = ValidationOptional.args?.schema?.fieldOptions?.[3] ?? ''
     await act(async () => {
-      render(<ValidationRequired />)
+      render(<ValidationOptional />)
     })
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const firstRadioButton = screen.getByLabelText(new RegExp(radioOption, 'i'))
