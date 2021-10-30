@@ -33,7 +33,7 @@ describe('required field', () => {
       render(<WithoutOthersOption />)
     })
     const submitButton = screen.getByRole('button', { name: /submit/i })
-    const firstRadioButton = screen.getByLabelText(new RegExp(radioOption, 'i'))
+    const firstRadioButton = screen.getByLabelText(radioOption)
 
     // Act
     await act(async () => userEvent.click(firstRadioButton))
@@ -54,7 +54,7 @@ describe('required field', () => {
       render(<ValidationRequired />)
     })
     const submitButton = screen.getByRole('button', { name: /submit/i })
-    const firstRadioButton = screen.getByLabelText(new RegExp(radioOption, 'i'))
+    const firstRadioButton = screen.getByLabelText(radioOption)
 
     // Act
     await act(async () => userEvent.click(firstRadioButton))
@@ -94,7 +94,7 @@ describe('optional field', () => {
       render(<ValidationOptional />)
     })
     const submitButton = screen.getByRole('button', { name: /submit/i })
-    const firstRadioButton = screen.getByLabelText(new RegExp(radioOption, 'i'))
+    const firstRadioButton = screen.getByLabelText(radioOption)
 
     // Act
     await act(async () => userEvent.click(firstRadioButton))
@@ -139,7 +139,7 @@ describe('radio validation', () => {
     const radioOption = ValidationOptional.args?.schema?.fieldOptions?.[3] ?? ''
 
     const submitButton = screen.getByRole('button', { name: /submit/i })
-    const altRadioButton = screen.getByLabelText(new RegExp(radioOption, 'i'))
+    const altRadioButton = screen.getByLabelText(radioOption)
     const otherRadioButton = screen.getByRole('radio', { name: /other/i })
 
     // Act
