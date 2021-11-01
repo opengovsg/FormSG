@@ -4,7 +4,7 @@ import { merge } from 'lodash'
 
 import { getByTextContent } from '~/test-utils'
 
-import * as stories from './StatementField.stories'
+import * as stories from './ParagraphField.stories'
 
 const { Default } = composeStories(stories)
 

@@ -4,14 +4,18 @@ import { FormFieldWithId, StatementFieldBase } from '~shared/types/field'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 
-export type StatementFieldSchema = FormFieldWithId<StatementFieldBase>
-export interface StatementFieldProps {
-  schema: StatementFieldSchema
+export type ParagraphFieldSchema = FormFieldWithId<StatementFieldBase>
+export interface ParagraphFieldProps {
+  schema: ParagraphFieldSchema
 }
 
-export const StatementField = ({
+/**
+ * Renderer for a paragraph field.
+ * @note schema is still based on `StatementFieldBase`, but to the client code it is a paragraph field.
+ */
+export const ParagraphField = ({
   schema,
-}: StatementFieldProps): JSX.Element => {
+}: ParagraphFieldProps): JSX.Element => {
   const mdComponents = useMdComponents({
     styles: {
       text: {

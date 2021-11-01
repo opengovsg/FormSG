@@ -1,3 +1,4 @@
+import { Box } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
@@ -5,18 +6,19 @@ import { BasicField } from '~shared/types/field'
 import { viewports } from '~utils/storybook'
 
 import {
-  StatementField as StatementFieldComponent,
-  StatementFieldProps,
-  StatementFieldSchema,
-} from './StatementField'
+  ParagraphField as ParagraphFieldComponent,
+  ParagraphFieldProps,
+  ParagraphFieldSchema,
+} from './ParagraphField'
 
 export default {
-  title: 'Templates/Field/StatementField',
-  component: StatementFieldComponent,
-  decorators: [],
+  title: 'Templates/Field/ParagraphField',
+  component: ParagraphFieldComponent,
+  // Prevents chromatic from cutting the story off due to <li/> margins.
+  decorators: [(storyFn) => <Box>{storyFn()}</Box>],
 } as Meta
 
-const baseSchema: StatementFieldSchema = {
+const baseSchema: ParagraphFieldSchema = {
   title: 'Actually hidden',
   description: `1. This form allows companies to apply for crew changes under various circumstances. Please refer to Port Marine Circular No.s 26, 27 and 38 of 2020 for more details.
 
@@ -29,12 +31,12 @@ const baseSchema: StatementFieldSchema = {
   _id: '611b94dfbb9e300012f702a7',
 }
 
-interface StoryStatementFieldProps extends StatementFieldProps {
+interface StoryParagraphFieldProps extends ParagraphFieldProps {
   defaultValue?: string
 }
 
-const Template: Story<StoryStatementFieldProps> = (args) => (
-  <StatementFieldComponent {...args} />
+const Template: Story<StoryParagraphFieldProps> = (args) => (
+  <ParagraphFieldComponent {...args} />
 )
 
 export const Default = Template.bind({})
