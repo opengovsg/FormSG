@@ -36,7 +36,7 @@ export const SettingsGeneralPage = (): JSX.Element => {
   const { data: settings } = useAdminFormSettings()
 
   return (
-    <Box maxW="42.5rem">
+    <Box mt="1rem">
       <CategoryHeader>Respondent access</CategoryHeader>
       <FormStatusToggle />
       <Divider my="2.5rem" />

@@ -6,6 +6,7 @@ import { Banner } from './Banner'
 import { Button } from './Button'
 import { Checkbox, CHECKBOX_THEME_KEY } from './Checkbox'
 import { CloseButton } from './CloseButton'
+import { Drawer } from './Drawer'
 import { Form } from './Form'
 import { FormError } from './FormError'
 import { FormLabel } from './FormLabel'
@@ -32,6 +33,7 @@ export const components = {
   Banner,
   Button,
   CloseButton,
+  Drawer,
   Form,
   FormError,
   FormLabel,
