@@ -81,8 +81,25 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     )
 
     const ariaDescribedBy = useMemo(() => {
-      if (showMaxSize)
-        return [inputProps['aria-describedby'], maxSizeTextId].join(' ').trim()
+      const describedByIds = new Set<string>()
+      // Must be in this order so the screen reader reads out something coherent.
+      // 1. Label text (if available)
+      // 2. Initial describedby text (if available)
+      // 3. Max size text (if prop is true)
+      if (inputProps.id) {
+        describedByIds.add(`${inputProps.id}-label`)
+      }
+      inputProps['aria-describedby']
+        ?.split(' ')
+        .map((id) => describedByIds.add(id))
+      if (showMaxSize) {
+        describedByIds.add(maxSizeTextId)
+      }
+
+      // Remove helptext, since label should already consist of the text
+      describedByIds.delete(`${inputProps.id}-helptext`)
+
+      return Array.from(describedByIds).filter(Boolean).join(' ').trim()
     }, [inputProps, maxSizeTextId, showMaxSize])
 
     const handleFileDrop = useCallback<NonNullable<DropzoneProps['onDrop']>>(
@@ -185,7 +202,6 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         },
         tabIndex: internalFile ? -1 : 0,
         'aria-describedby': ariaDescribedBy,
-        'aria-labelledby': inputProps.id ? `${inputProps.id}-label` : undefined,
       })
     }, [ariaDescribedBy, getRootProps, inputProps, internalFile])
 
@@ -193,9 +209,8 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       return getInputProps({
         name,
         ...inputProps,
-        'aria-describedby': ariaDescribedBy,
       })
-    }, [ariaDescribedBy, getInputProps, inputProps, name])
+    }, [getInputProps, inputProps, name])
 
     return (
       <StylesProvider value={styles}>
