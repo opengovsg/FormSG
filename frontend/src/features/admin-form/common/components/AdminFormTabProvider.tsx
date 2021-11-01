@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
-import { Tabs } from '@chakra-ui/react'
+import { Tabs, useBreakpointValue } from '@chakra-ui/react'
 
 import { ADMIN_FORM_ROUTE } from '~constants/routes'
 
@@ -35,8 +35,15 @@ export const AdminFormTabProvider = ({
     [history, routes],
   )
 
+  const responsiveVariant = useBreakpointValue({
+    base: 'line-dark',
+    xs: 'line-dark',
+    lg: 'line-light',
+  })
+
   return (
     <Tabs
+      variant={responsiveVariant}
       isLazy
       defaultIndex={defaultIndex}
       index={tabIndex}
