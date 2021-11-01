@@ -1,14 +1,16 @@
+import { ObjectId } from 'bson-ext'
+
 import {
   BasicField,
   FormResponseMode,
   LogicType,
 } from '../../../../../../shared/types'
+import * as LogicUtil from '../../../../../../shared/utils/logic'
 import {
   generateDefaultField,
   generateProcessedSingleAnswerResponse,
   generateSingleAnswerResponse,
 } from '../../../../../../tests/unit/backend/helpers/generate-form-data'
-import * as LogicUtil from '../../../../../shared/util/logic'
 import {
   FormFieldSchema,
   IFormDocument,
@@ -44,14 +46,17 @@ describe('ParsedResponsesObject', () => {
       '3.142',
     )
 
-    const result = ParsedResponsesObject.parseResponses(
-      {
-        responseMode: FormResponseMode.Email,
-        form_fields: [shortTextField, decimalField],
-        toJSON: () => this,
-      } as IFormDocument,
-      [shortTextResponse, decimalResponse],
-    )
+    const mockForm = {
+      _id: new ObjectId(),
+      responseMode: FormResponseMode.Email,
+      form_fields: [shortTextField, decimalField],
+      form_logics: [],
+      toJSON: () => mockForm,
+    } as unknown as IFormDocument
+    const result = ParsedResponsesObject.parseResponses(mockForm, [
+      shortTextResponse,
+      decimalResponse,
+    ])
 
     const expectedParsed: ProcessedFieldResponse[] = [
       { ...shortTextProcessedResponse, isVisible: true },
@@ -85,14 +90,17 @@ describe('ParsedResponsesObject', () => {
     const nricField = generateDefaultField(BasicField.Nric)
     const nricResponse = generateSingleAnswerResponse(nricField, 'invalid')
 
-    const result = ParsedResponsesObject.parseResponses(
-      {
-        responseMode: FormResponseMode.Email,
-        form_fields: [nricField],
-        toJSON: () => this,
-      } as IFormDocument,
-      [nricResponse],
-    )
+    const mockForm = {
+      _id: new ObjectId(),
+      responseMode: FormResponseMode.Email,
+      form_fields: [nricField],
+      form_logics: [],
+      toJSON: () => mockForm,
+    } as unknown as IFormDocument
+
+    const result = ParsedResponsesObject.parseResponses(mockForm, [
+      nricResponse,
+    ])
 
     expect(result.isErr()).toEqual(true)
     expect(result._unsafeUnwrapErr()).toEqual(
@@ -109,18 +117,21 @@ describe('ParsedResponsesObject', () => {
       _id: 'some id',
     } as unknown as IPreventSubmitLogicSchema
 
-    jest
+    const spy = jest
       .spyOn(LogicUtil, 'getLogicUnitPreventingSubmit')
       .mockReturnValueOnce(mockReturnLogicUnit)
 
-    const result = ParsedResponsesObject.parseResponses(
-      {
-        responseMode: FormResponseMode.Email,
-        form_fields: [] as FormFieldSchema[],
-      } as IFormDocument,
-      [],
-    )
+    const mockForm = {
+      _id: new ObjectId(),
+      responseMode: FormResponseMode.Email,
+      form_fields: [] as FormFieldSchema[],
+      form_logics: [],
+      toJSON: () => mockForm,
+    } as unknown as IFormDocument
 
+    const result = ParsedResponsesObject.parseResponses(mockForm, [])
+
+    expect(spy).toHaveBeenCalledTimes(1)
     expect(result.isErr()).toEqual(true)
     expect(result._unsafeUnwrapErr()).toEqual(
       new ProcessingError('Submission prevented by form logic'),
