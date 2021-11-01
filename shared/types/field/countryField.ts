@@ -1,3 +1,6 @@
-import { DropdownFieldBase } from '.'
+import { BasicField, MyInfoableFieldBase } from './base'
 
-export type CountryFieldBase = DropdownFieldBase
+export interface CountryFieldBase extends MyInfoableFieldBase {
+  fieldType: BasicField.Country
+  fieldOptions: string[]
+}
