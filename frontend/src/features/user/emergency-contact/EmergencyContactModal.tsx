@@ -1,13 +1,14 @@
 import {
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
+
+import { ModalCloseButton } from '~components/Modal'
 
 import { ContactNumberInput } from './components/ContactNumberInput'
 
