@@ -259,8 +259,8 @@ const isLogicUnitSatisfied = (
   return logicUnit.every((condition) => {
     const conditionField = findConditionField(submission, condition.field)
     return (
-      conditionField &&
-      visibleFieldIds.has(conditionField._id!.toString()) &&
+      conditionField?._id &&
+      visibleFieldIds.has(conditionField._id.toString()) &&
       isConditionFulfilled(conditionField, condition)
     )
   })
