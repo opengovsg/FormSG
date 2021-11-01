@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson-ext'
 import { ok } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
@@ -6,12 +7,12 @@ import {
   FormResponseMode,
   LogicType,
 } from '../../../../../../shared/types'
+import * as LogicUtil from '../../../../../../shared/utils/logic'
 import {
   generateDefaultField,
   generateProcessedSingleAnswerResponse,
   generateSingleAnswerResponse,
 } from '../../../../../../tests/unit/backend/helpers/generate-form-data'
-import * as LogicUtil from '../../../../../shared/util/logic'
 import {
   IPopulatedEncryptedForm,
   IPreventSubmitLogicSchema,
@@ -41,14 +42,16 @@ describe('IncomingEncryptSubmission', () => {
       'test@example.com',
     )
     const responses = [mobileResponse, emailResponse]
-    const initResult = IncomingEncryptSubmission.init(
-      {
-        responseMode: FormResponseMode.Encrypt,
-        form_fields: [mobileField, emailField],
-      } as unknown as IPopulatedEncryptedForm,
-      responses,
-      '',
-    )
+
+    const mockForm = {
+      _id: new ObjectId(),
+      responseMode: FormResponseMode.Encrypt,
+      form_fields: [mobileField, emailField],
+      form_logics: [],
+      toJSON: () => mockForm,
+    } as unknown as IPopulatedEncryptedForm
+
+    const initResult = IncomingEncryptSubmission.init(mockForm, responses, '')
     expect(initResult._unsafeUnwrap().responses).toEqual(responses)
   })
 
@@ -105,15 +108,15 @@ describe('IncomingEncryptSubmission', () => {
 
     const responses = [mobileResponse, emailResponse]
 
-    const result = IncomingEncryptSubmission.init(
-      {
-        responseMode: FormResponseMode.Encrypt,
-        form_fields: [mobileField, emailField],
-        toJSON: () => this,
-      } as unknown as IPopulatedEncryptedForm,
-      responses,
-      '',
-    )
+    const mockForm = {
+      _id: new ObjectId(),
+      responseMode: FormResponseMode.Encrypt,
+      form_fields: [mobileField, emailField],
+      form_logics: [],
+      toJSON: () => mockForm,
+    } as unknown as IPopulatedEncryptedForm
+
+    const result = IncomingEncryptSubmission.init(mockForm, responses, '')
 
     expect(result.isOk()).toEqual(true)
     expect(result._unsafeUnwrap().responses).toEqual(responses)
@@ -126,12 +129,16 @@ describe('IncomingEncryptSubmission', () => {
     const mobileField = generateDefaultField(BasicField.Mobile)
     const mobileResponse = generateSingleAnswerResponse(mobileField, 'invalid')
 
+    const mockForm = {
+      _id: new ObjectId(),
+      responseMode: FormResponseMode.Encrypt,
+      form_fields: [mobileField],
+      form_logics: [],
+      toJSON: () => mockForm,
+    } as unknown as IPopulatedEncryptedForm
+
     const result = IncomingEncryptSubmission.init(
-      {
-        responseMode: FormResponseMode.Encrypt,
-        form_fields: [mobileField],
-        toJSON: () => this,
-      } as unknown as IPopulatedEncryptedForm,
+      mockForm,
       [mobileResponse],
       '',
     )
@@ -145,22 +152,26 @@ describe('IncomingEncryptSubmission', () => {
   it('should return error when encrypted form submission is prevented by logic', async () => {
     mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
     // Mock logic util to return non-empty to check if error is thrown
-    jest.spyOn(LogicUtil, 'getLogicUnitPreventingSubmit').mockReturnValueOnce({
-      preventSubmitMessage: 'mock prevent submit',
-      conditions: [],
-      logicType: LogicType.PreventSubmit,
-      _id: 'some id',
-    } as unknown as IPreventSubmitLogicSchema)
+    const spy = jest
+      .spyOn(LogicUtil, 'getLogicUnitPreventingSubmit')
+      .mockReturnValueOnce({
+        preventSubmitMessage: 'mock prevent submit',
+        conditions: [],
+        logicType: LogicType.PreventSubmit,
+        _id: 'some id',
+      } as unknown as IPreventSubmitLogicSchema)
 
-    const result = IncomingEncryptSubmission.init(
-      {
-        responseMode: FormResponseMode.Encrypt,
-        form_fields: [],
-      } as unknown as IPopulatedEncryptedForm,
-      [],
-      '',
-    )
+    const mockForm = {
+      _id: new ObjectId(),
+      responseMode: FormResponseMode.Encrypt,
+      form_fields: [],
+      form_logics: [],
+      toJSON: () => mockForm,
+    } as unknown as IPopulatedEncryptedForm
 
+    const result = IncomingEncryptSubmission.init(mockForm, [], '')
+
+    expect(spy).toHaveBeenCalledTimes(1)
     expect(result.isErr()).toEqual(true)
     expect(result._unsafeUnwrapErr()).toEqual(
       new ProcessingError('Submission prevented by form logic'),
