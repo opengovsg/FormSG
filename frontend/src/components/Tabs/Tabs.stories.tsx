@@ -1,10 +1,10 @@
-import { TabPanel, TabPanels, Tabs, TabsProps } from '@chakra-ui/react'
+import { TabList, TabPanel, TabPanels, Tabs, TabsProps } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
+import { useDraggable } from '~hooks/useDraggable'
 import { viewports } from '~utils/storybook'
 
 import { Tab } from './Tab'
-import { TabList } from './TabList'
 
 export default {
   title: 'Components/Tabs',
@@ -21,19 +21,19 @@ export default {
 } as Meta
 
 const TabTemplate: Story<TabsProps> = (args) => {
-  const contentFontColour = args.variant === 'line-dark' ? 'white' : 'black'
+  const { ref, onMouseDown } = useDraggable()
 
   return (
     <Tabs {...args}>
-      <TabList>
+      <TabList ref={ref} onMouseDown={onMouseDown}>
         <Tab>Create</Tab>
         <Tab>Settings</Tab>
         <Tab>Results</Tab>
       </TabList>
       <TabPanels>
-        <TabPanel color={contentFontColour}>Content of Create tab</TabPanel>
-        <TabPanel color={contentFontColour}>Content of Settings tab</TabPanel>
-        <TabPanel color={contentFontColour}>Content of Results tab</TabPanel>
+        <TabPanel>Content of Create tab</TabPanel>
+        <TabPanel>Content of Settings tab</TabPanel>
+        <TabPanel>Content of Results tab</TabPanel>
       </TabPanels>
     </Tabs>
   )

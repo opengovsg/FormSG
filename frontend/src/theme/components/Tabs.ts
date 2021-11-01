@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ChakraTheme,
   ComponentMultiStyleConfig,
@@ -19,41 +18,6 @@ const parts = [
   'indicator', // used to render an active tab indicator that animates between selected tabs
 ]
 
-const createScrollBarStyles = ({
-  thumbColor,
-  trackColor,
-  theme,
-}: {
-  thumbColor: string
-  trackColor: string
-  theme: ChakraTheme
-}) => {
-  return {
-    /* Scrollbar for Firefox */
-    // Firefox only has these two css properties to customise scrollbar
-    scrollbarColor: `${getColor(theme, thumbColor)} ${getColor(
-      theme,
-      trackColor,
-    )}`,
-    scrollbarWidth: 'thin',
-    /* Scrollbar for Chrome, Safari, Opera and Microsoft Edge */
-    '&::-webkit-scrollbar': {
-      backgroundColor: trackColor,
-    },
-    '&::-webkit-scrollbar-thumb': {
-      backgroundColor: thumbColor,
-      // Create the effect of a spacing below the scroll bar by giving
-      // it a transparent border
-      border: '0.25rem solid rgba(0, 0, 0, 0)',
-      // No background drawn beneath border, which allows the border to
-      // retain the colour of the scrollbar's background, rather than
-      // the thumb colour
-      backgroundClip: 'padding-box',
-      borderRadius: '0.5rem',
-    },
-  }
-}
-
 const sizesForLineLightDarkVariant = {
   md: {
     tab: {
@@ -66,16 +30,8 @@ const sizesForLineLightDarkVariant = {
       },
     },
     tablist: {
-      pt: '1.125rem',
-      pb: '0.25rem',
-      '&::-webkit-scrollbar': {
-        height: '0.75rem',
-      },
-      '&::-webkit-scrollbar-track': {
-        // Align the ends of the scrollbar with the content.
-        // 0.75 = 1rem (padding) - 0.25rem (transparent border)
-        mx: '0.75rem',
-      },
+      // Allow bottom border to show through
+      py: '2px',
     },
   },
 }
@@ -92,9 +48,8 @@ const variantLineColor: ThemingPropsThunk<
   ChakraTheme
 > = () => ({
   tablist: {
-    // overflowX and whiteSpace required for use-drag-scroll library
-    overflowX: 'scroll',
-    whiteSpace: 'nowrap',
+    pt: '2px',
+    mt: '-2px',
   },
   tab: {
     ...textStyles['subhead-3'],
@@ -129,11 +84,6 @@ const variantLineLight: ThemingPropsThunk<
 > = (props) => {
   const { size } = props
   return merge(variantLineColor(props), getSizesForLineLightDarkVariant(size), {
-    tablist: createScrollBarStyles({
-      thumbColor: 'secondary.200',
-      trackColor: 'transparent',
-      theme: props.theme,
-    }),
     tab: {
       color: 'secondary.400',
       _hover: {
@@ -159,14 +109,9 @@ const variantLineDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
       variantLineColor(props),
       getSizesForLineLightDarkVariant(size),
       {
-        root: {
+        tablist: {
           bg: 'secondary.500',
         },
-        tablist: createScrollBarStyles({
-          thumbColor: 'secondary.400',
-          trackColor: 'secondary.500',
-          theme: props.theme,
-        }),
         tab: {
           color: 'neutral.400',
           _hover: {
@@ -227,11 +172,27 @@ const variantLine: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
 export const Tabs: ComponentMultiStyleConfig = {
   parts,
   baseStyle: {
+    tablist: {
+      // Allow drag without showing scrollbar
+      overflowX: 'auto',
+      whiteSpace: 'nowrap',
+      /* Scrollbar for Firefox */
+      // Firefox only has these two css properties to customise scrollbar
+      scrollbarWidth: 0,
+      /* Scrollbar for Chrome, Safari, Opera and Microsoft Edge */
+      '&::-webkit-scrollbar': {
+        width: 0,
+        height: 0,
+      },
+    },
     tab: {
       textStyle: 'body-1',
       _selected: {
         textStyle: 'subhead-1',
       },
+    },
+    tabpanel: {
+      p: 'initial',
     },
   },
   variants: {

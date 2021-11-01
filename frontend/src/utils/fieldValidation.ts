@@ -7,6 +7,7 @@ import simplur from 'simplur'
 
 import {
   FieldBase,
+  HomenoFieldBase,
   NricFieldBase,
   NumberFieldBase,
   NumberSelectedValidation,
@@ -16,6 +17,7 @@ import {
   UenFieldBase,
 } from '~shared/types/field'
 import { isNricValid } from '~shared/utils/nric-validation'
+import { isHomePhoneNumber } from '~shared/utils/phone-num-validation'
 import { isUenValid } from '~shared/utils/uen-validation'
 
 import { REQUIRED_ERROR } from '~constants/validation'
@@ -50,6 +52,18 @@ export const createRatingValidationRules = (
   return {
     validate: {
       ...createRequiredInValidationRules(schema),
+    },
+  }
+}
+
+export const createHomeNoValidationRules = (
+  schema: HomenoFieldBase,
+): RegisterOptions => {
+  return {
+    ...createBaseValidationRules(schema),
+    validate: (val?: string) => {
+      if (!val) return true
+      return isHomePhoneNumber(val) || 'Please enter a valid landline number'
     },
   }
 }
