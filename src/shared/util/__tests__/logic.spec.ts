@@ -1,10 +1,6 @@
 import { ObjectId } from 'bson-ext'
 
 import {
-  getApplicableIfFields,
-  getApplicableIfStates,
-} from 'src/shared/util/logic'
-import {
   FieldResponse,
   FormFieldSchema,
   IFormDocument,
@@ -23,6 +19,8 @@ import {
   LogicType,
 } from '../../../../shared/types'
 import {
+  getApplicableIfFields,
+  getApplicableIfStates,
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
 } from '../../../../shared/utils/logic'
