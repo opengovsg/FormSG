@@ -14,6 +14,7 @@ import {
   updateFormInactiveMessage,
   updateFormLimit,
   updateFormStatus,
+  updateFormTitle,
 } from './SettingsService'
 
 export const useMutateFormSettings = () => {
@@ -103,6 +104,29 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormTitle = useMutation(
+    (nextTitle: string) => updateFormTitle(formId, nextTitle),
+    {
+      onSuccess: (newData) => {
+        toast.closeAll()
+        // Update new settings data in cache.
+        queryClient.setQueryData(adminFormSettingsKeys.id(formId), newData)
+
+        // Show toast on success.
+        toast({
+          description: "Your form's title has been updated.",
+        })
+      },
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message,
+          status: 'danger',
+        })
+      },
+    },
+  )
+
   const mutateFormInactiveMessage = useMutation(
     (nextMessage: string) => updateFormInactiveMessage(formId, nextMessage),
     {
@@ -155,5 +179,6 @@ export const useMutateFormSettings = () => {
     mutateFormInactiveMessage,
     mutateFormCaptcha,
     mutateFormEmails,
+    mutateFormTitle,
   }
 }
