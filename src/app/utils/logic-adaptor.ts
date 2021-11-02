@@ -3,14 +3,15 @@ import { ok, Result } from 'neverthrow'
 import { FormDto } from '../../../shared/types'
 import { PreventSubmitLogic } from '../../../shared/types/form/form_logic'
 import {
-  FieldIdSet,
   getLogicUnitPreventingSubmit as logicGetLogicUnitPreventingSubmit,
   getVisibleFieldIds as logicGetVisibleFieldIds,
 } from '../../../shared/utils/logic'
 import { FieldResponse, IFormDocument } from '../../types'
 import { ProcessingError } from '../modules/submission/submission.errors'
 
-export { FieldIdSet } from '../../shared/util/logic'
+import { FieldIdSet } from './../../../shared/types/logic'
+
+export { FieldIdSet } from './../../../shared/types/logic'
 
 export const getVisibleFieldIds = (
   submission: FieldResponse[],
