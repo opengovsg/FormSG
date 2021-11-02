@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "5.32.0",
+  "version": "5.33.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -82,8 +82,8 @@
     "angular-ui-bootstrap": "~2.5.6",
     "angular-ui-router": "~1.0.29",
     "aws-info": "^1.2.0",
-    "aws-sdk": "^2.1013.0",
-    "axios": "^0.23.0",
+    "aws-sdk": "^2.1016.0",
+    "axios": "^0.24.0",
     "bcrypt": "^5.0.1",
     "bluebird": "^3.5.2",
     "body-parser": "^1.18.3",
@@ -120,7 +120,7 @@
     "json-stringify-safe": "^5.0.1",
     "jszip": "^3.7.1",
     "jwt-decode": "^3.1.2",
-    "libphonenumber-js": "^1.9.38",
+    "libphonenumber-js": "^1.9.39",
     "lodash": "^4.17.21",
     "moment-timezone": "0.5.33",
     "mongodb-uri": "^0.9.7",
@@ -156,7 +156,7 @@
     "whatwg-fetch": "^3.6.2",
     "winston": "^3.3.3",
     "winston-cloudwatch": "^3.1.1",
-    "zod": "^3.11.4"
+    "zod": "^3.11.6"
   },
   "devDependencies": {
     "@babel/core": "^7.15.8",
@@ -183,7 +183,7 @@
     "@types/json-stringify-safe": "^5.0.0",
     "@types/mongodb": "^3.6.20",
     "@types/mongodb-uri": "^0.9.1",
-    "@types/node": "^14.17.30",
+    "@types/node": "^14.17.32",
     "@types/nodemailer": "^6.4.4",
     "@types/opossum": "^6.2.0",
     "@types/promise-retry": "^1.1.3",
@@ -224,7 +224,7 @@
     "jest-extended": "^1.1.0",
     "jest-localstorage-mock": "^2.4.18",
     "jest-mock-axios": "^4.4.1",
-    "lint-staged": "^11.2.4",
+    "lint-staged": "^11.2.6",
     "maildev": "^1.1.0",
     "mini-css-extract-plugin": "^0.5.0",
     "mockdate": "^3.0.5",
@@ -249,7 +249,7 @@
     "ts-loader": "^7.0.5",
     "ts-node": "^10.4.0",
     "ts-node-dev": "^1.1.8",
-    "type-fest": "^2.5.1",
+    "type-fest": "^2.5.2",
     "typescript": "^4.4.4",
     "url-loader": "^1.1.2",
     "webpack": "^4.46.0",
