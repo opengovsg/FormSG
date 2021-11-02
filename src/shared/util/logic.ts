@@ -4,7 +4,7 @@ import {
   FieldBase,
   LogicConditionState,
 } from '../../../shared/types'
-import { IClientFieldSchema, LogicCondition } from '../../types'
+import { LogicCondition } from '../../types'
 
 const LOGIC_CONDITIONS: LogicCondition[] = [
   [
@@ -56,7 +56,3 @@ export const getApplicableIfFields = (formFields: FieldBase[]): FieldBase[] =>
 export const getApplicableIfStates = (
   fieldType: BasicField,
 ): LogicConditionState[] => LOGIC_MAP.get(fieldType) ?? []
-
-export type FieldIdSet = Set<IClientFieldSchema['_id']>
-// This module handles logic on both the client side (IFieldSchema[])
-// and server side (FieldResponse[])

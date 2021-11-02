@@ -1,31 +1,15 @@
-import { AllowMyInfoBase, FieldBase, FieldResponse } from '../types'
-
 import {
+  PickLogicSubset,
   FormCondition,
-  FormDto,
   PreventSubmitLogic,
   FormLogic,
   LogicType,
   ShowFieldLogic,
   LogicConditionState,
-} from '../types/form'
-
-export type PickLogicSubset<T extends FormDto = FormDto> = Pick<
-  T,
-  '_id' | 'form_logics' | 'form_fields' | 'responseMode'
->
-
-export interface ClientField extends AllowMyInfoBase, FieldBase {
-  _id?: string
-  isVerifiable?: boolean
-  fieldValue: string
-
-  getQuestion(): string
-}
-
-export type FieldIdSet = Set<string>
-export type LogicFieldOrResponse = ClientField | FieldResponse
-type GroupedLogic = Record<string, FormCondition[][]>
+  FieldIdSet,
+  GroupedLogic,
+  LogicFieldOrResponse,
+} from '../types'
 
 // Returns typed PreventSubmit logic unit
 const isPreventSubmitLogic = (
@@ -112,7 +96,7 @@ const getPreventSubmitConditions = (
  */
 export const groupLogicUnitsByField = (form: PickLogicSubset): GroupedLogic => {
   const formId = form._id
-  const formLogics = form.form_logics.filter(isShowFieldsLogic) ?? []
+  const formLogics = form.form_logics.filter(isShowFieldsLogic)
 
   const formFieldIds = new Set(
     form.form_fields?.map((field) => String(field._id)),
