@@ -12,12 +12,7 @@ import {
 
 export type PickLogicSubset<T extends FormDto = FormDto> = Pick<
   T,
-  | '_id'
-  | 'form_logics'
-  | 'form_fields'
-  | 'responseMode'
-  | 'form_logics'
-  | 'form_fields'
+  '_id' | 'form_logics' | 'form_fields' | 'responseMode'
 >
 
 export interface ClientField extends AllowMyInfoBase, FieldBase {
@@ -161,12 +156,6 @@ const getCurrentValue = (
   return null
 }
 
-/**
- * Checks if the field's value matches the condition
- * @param {Object} field
- * @param {Object} condition
- * @param {String} condition.state - The type of condition
- */
 const isConditionFulfilled = (
   field: LogicFieldOrResponse,
   condition: FormCondition,
