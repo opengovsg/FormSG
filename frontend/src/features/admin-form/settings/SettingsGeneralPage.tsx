@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import { Box, Divider, Text } from '@chakra-ui/react'
+import { Divider, Text } from '@chakra-ui/react'
 
 import { FormCaptchaToggle } from './components/FormCaptchaToggle'
 import { FormCustomisationSection } from './components/FormCustomisationSection'
@@ -31,7 +31,7 @@ const SubcategoryHeader: FC = ({ children }) => {
 
 export const SettingsGeneralPage = (): JSX.Element => {
   return (
-    <Box mt="1rem">
+    <>
       <CategoryHeader>Respondent access</CategoryHeader>
       <FormStatusToggle />
       <Divider my="2.5rem" />
@@ -46,6 +46,6 @@ export const SettingsGeneralPage = (): JSX.Element => {
       <Divider my="2.5rem" />
       <SubcategoryHeader>Form Details</SubcategoryHeader>
       <FormDetailsSection />
-    </Box>
+    </>
   )
 }
