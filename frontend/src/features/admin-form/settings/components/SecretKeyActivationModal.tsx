@@ -6,7 +6,6 @@ import {
   FormControl,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalHeader,
   Stack,
@@ -23,6 +22,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
+import { ModalCloseButton } from '~components/Modal'
 
 import { useMutateFormSettings } from '../mutations'
 

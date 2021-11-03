@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useQueryClient } from 'react-query'
 import { Link as ReactLink } from 'react-router-dom'
+import { useDisclosure } from '@chakra-ui/hooks'
 import { Text } from '@chakra-ui/react'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
@@ -10,6 +11,7 @@ import { logout } from '~services/AuthService'
 import Button from '~components/Button'
 import Link from '~components/Link'
 
+import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUser } from '~features/user/queries'
 
 import { useWorkspace } from './queries'
@@ -18,6 +20,8 @@ export const WorkspacePage = (): JSX.Element => {
   const queryClient = useQueryClient()
   const [isAuthenticated, setIsAuthenticated] =
     useLocalStorage<boolean>(LOGGED_IN_KEY)
+
+  const modalProps = useDisclosure()
 
   const handleLogout = useCallback(async () => {
     await logout()
@@ -47,6 +51,9 @@ export const WorkspacePage = (): JSX.Element => {
         )
       })}
       <Button onClick={handleLogout}>Logout</Button>
+      <br />
+      <Button onClick={modalProps.onOpen}>Emergency Contact</Button>
+      <EmergencyContactModal {...modalProps} />
     </div>
   )
 }
