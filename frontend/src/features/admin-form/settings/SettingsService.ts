@@ -1,12 +1,22 @@
 import {
+  EmailFormSettings,
   FormSettings,
-  FormStatus,
   SettingsUpdateDto,
 } from '~shared/types/form/form'
 
 import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
+
+type UpdateEmailFormFn<T extends keyof EmailFormSettings> = (
+  formId: string,
+  settingsToUpdate: EmailFormSettings[T],
+) => Promise<FormSettings>
+
+type UpdateFormFn<T extends keyof FormSettings> = (
+  formId: string,
+  settingsToUpdate: FormSettings[T],
+) => Promise<FormSettings>
 
 export const getFormSettings = async (
   formId: string,
@@ -16,45 +26,43 @@ export const getFormSettings = async (
   ).then(({ data }) => data)
 }
 
-export const updateFormStatus = async (
-  formId: string,
-  status: FormStatus,
-): Promise<FormSettings> => {
+export const updateFormStatus: UpdateFormFn<'status'> = async (
+  formId,
+  status,
+) => {
   return updateFormSettings(formId, { status })
 }
 
-export const updateFormLimit = async (
-  formId: string,
-  newLimit: number | null,
-): Promise<FormSettings> => {
+export const updateFormLimit: UpdateFormFn<'submissionLimit'> = async (
+  formId,
+  newLimit,
+) => {
   return updateFormSettings(formId, { submissionLimit: newLimit })
 }
 
-export const updateFormCaptcha = async (
-  formId: string,
-  newHasCaptcha: boolean,
-): Promise<FormSettings> => {
+export const updateFormCaptcha: UpdateFormFn<'hasCaptcha'> = async (
+  formId,
+  newHasCaptcha,
+) => {
   return updateFormSettings(formId, { hasCaptcha: newHasCaptcha })
 }
 
-export const updateFormInactiveMessage = async (
-  formId: string,
-  newMessage: string,
-): Promise<FormSettings> => {
-  return updateFormSettings(formId, { inactiveMessage: newMessage })
-}
+export const updateFormInactiveMessage: UpdateFormFn<'inactiveMessage'> =
+  async (formId, newMessage) => {
+    return updateFormSettings(formId, { inactiveMessage: newMessage })
+  }
 
-export const updateFormTitle = async (
-  formId: string,
-  newTitle: string,
-): Promise<FormSettings> => {
+export const updateFormTitle: UpdateFormFn<'title'> = async (
+  formId,
+  newTitle,
+) => {
   return updateFormSettings(formId, { title: newTitle })
 }
 
-export const updateFormEmails = async (
+export const updateFormEmails: UpdateEmailFormFn<'emails'> = async (
   formId: string,
   newEmails: string[],
-): Promise<FormSettings> => {
+) => {
   return updateFormSettings(formId, { emails: newEmails })
 }
 
@@ -67,7 +75,7 @@ export const updateFormEmails = async (
 const updateFormSettings = async (
   formId: string,
   settingsToUpdate: SettingsUpdateDto,
-): Promise<FormSettings> => {
+) => {
   return ApiService.patch<FormSettings>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/settings`,
     settingsToUpdate,
