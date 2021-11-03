@@ -82,6 +82,7 @@ export const EsrvcIdBox = ({
         <WrapItem maxW="20rem" w="100%">
           <Input
             isDisabled={isDisabled}
+            isReadOnly={mutateFormEsrvcId.isLoading}
             ref={inputRef}
             value={value}
             onChange={handleValueChange}
