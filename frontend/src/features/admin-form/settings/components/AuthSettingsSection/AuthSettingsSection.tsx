@@ -107,6 +107,7 @@ export const AuthSettingsSection = ({
         onChange={(e: FormAuthType) => setFocusedValue(e)}
       >
         {radioOptions.map(([authType, text]) => (
+          // TODO: Check whether user has permissions for SGID, etc
           <Fragment key={authType}>
             <Box onClick={handleOptionClick(authType)}>
               <Radio value={authType} isDisabled={isDisabled}>
