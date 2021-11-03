@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   KeyboardEventHandler,
   MouseEventHandler,
@@ -8,7 +7,12 @@ import {
 } from 'react'
 import { Box, Skeleton } from '@chakra-ui/react'
 
-import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form/form'
+import {
+  FormAuthType,
+  FormResponseMode,
+  FormSettings,
+  FormStatus,
+} from '~shared/types/form'
 
 import InlineMessage from '~components/InlineMessage'
 import Radio from '~components/Radio'
@@ -17,15 +21,27 @@ import { CategoryHeader } from './components/CategoryHeader'
 import { useMutateFormSettings } from './mutations'
 import { useAdminFormSettings } from './queries'
 
-const AUTHTYPE_TO_TEXT = {
+type EmailFormAuthType = FormAuthType
+type StorageFormAuthType = FormAuthType.NIL | FormAuthType.SP | FormAuthType.CP
+
+const STORAGE_MODE_AUTHTYPES: Record<StorageFormAuthType, string> = {
+  [FormAuthType.NIL]: 'None',
+  [FormAuthType.SP]: 'Singpass',
+  [FormAuthType.CP]: 'Singpass (Corporate)',
+}
+
+// Not using STORAGE_MODE_AUTHTYPES due to wanting a different order.
+const EMAIL_MODE_AUTHTYPES: Record<EmailFormAuthType, string> = {
   [FormAuthType.NIL]: 'None',
   [FormAuthType.SP]: 'Singpass',
   [FormAuthType.SGID]: 'Singpass App-only Login (Free)',
   [FormAuthType.MyInfo]: 'Singpass with MyInfo',
   [FormAuthType.CP]: 'Singpass (Corporate)',
 }
-
-const FORM_AUTH_TYPES = Object.values(FormAuthType)
+const AUTHTYPE_TO_TEXT = {
+  [FormResponseMode.Email]: EMAIL_MODE_AUTHTYPES,
+  [FormResponseMode.Encrypt]: STORAGE_MODE_AUTHTYPES,
+}
 
 export const SettingsAuthPage = (): JSX.Element => {
   const { data: settings } = useAdminFormSettings()
@@ -55,11 +71,13 @@ export const SettingsAuthPage = (): JSX.Element => {
 const AuthSettingsSelectionSkeleton = () => {
   return (
     <Radio.RadioGroup>
-      {Object.values(FormAuthType).map((authType) => (
-        <Radio isDisabled key={authType}>
-          <Skeleton>{AUTHTYPE_TO_TEXT[authType]}</Skeleton>
-        </Radio>
-      ))}
+      {Object.entries(STORAGE_MODE_AUTHTYPES).map(
+        ([authType, textToRender]) => (
+          <Radio isDisabled key={authType}>
+            <Skeleton>{textToRender}</Skeleton>
+          </Radio>
+        ),
+      )}
     </Radio.RadioGroup>
   )
 }
@@ -115,13 +133,18 @@ const AuthSettingsSelection = ({
       onKeyDown={handleEnterKeyDown}
       onChange={(e: FormAuthType) => setFocusedValue(e)}
     >
-      {FORM_AUTH_TYPES.map((authType) => (
-        <Box key={authType} onClick={handleOptionClick(authType)}>
-          <Radio value={authType} isDisabled={isDisabled}>
-            {AUTHTYPE_TO_TEXT[authType]}
-          </Radio>
-        </Box>
-      ))}
+      {Object.entries(AUTHTYPE_TO_TEXT[settings.responseMode]).map(
+        ([authType, text]) => (
+          <Box
+            key={authType}
+            onClick={handleOptionClick(authType as FormAuthType)}
+          >
+            <Radio value={authType} isDisabled={isDisabled}>
+              {text}
+            </Radio>
+          </Box>
+        ),
+      )}
     </Radio.RadioGroup>
   )
 }
