@@ -1,33 +1,12 @@
-import { FC } from 'react'
-import { Divider, Text } from '@chakra-ui/react'
+import { Divider } from '@chakra-ui/react'
 
+import { CategoryHeader } from './components/CategoryHeader'
 import { FormCaptchaToggle } from './components/FormCaptchaToggle'
 import { FormCustomisationSection } from './components/FormCustomisationSection'
 import { FormDetailsSection } from './components/FormDetailsSection'
 import { FormLimitToggle } from './components/FormLimitToggle'
 import { FormStatusToggle } from './components/FormStatusToggle'
-
-const CategoryHeader: FC = ({ children }) => {
-  return (
-    <Text as="h2" textStyle="h2" color="secondary.500" mb="2.5rem">
-      {children}
-    </Text>
-  )
-}
-
-const SubcategoryHeader: FC = ({ children }) => {
-  return (
-    <Text
-      as="h3"
-      textTransform="uppercase"
-      textStyle="subhead-3"
-      color="primary.500"
-      mb="2rem"
-    >
-      {children}
-    </Text>
-  )
-}
+import { SubcategoryHeader } from './components/SubcategoryHeader'
 
 export const SettingsGeneralPage = (): JSX.Element => {
   return (
