@@ -6,6 +6,8 @@ import {
   VerifyUserContactOtpDto,
 } from '~shared/types/user'
 
+import { ApiError } from '~typings/core'
+
 import { useToast } from '~hooks/useToast'
 import {
   generateUserContactOtp,
@@ -19,16 +21,14 @@ export const useUserMutations = () => {
   const toast = useToast({ status: 'success', isClosable: true })
 
   const generateOtpMutation = useMutation<
-    unknown,
-    // TODO: Update to correct ApiError type
-    Error,
+    void,
+    ApiError,
     SendUserContactOtpDto
   >((params) => generateUserContactOtp(params))
 
   const verifyOtpMutation = useMutation<
     UserDto,
-    // TODO: Update to correct ApiError type
-    Error,
+    ApiError,
     VerifyUserContactOtpDto
   >((params) => verifyUserContactOtp(params), {
     onSuccess: (data) => {
