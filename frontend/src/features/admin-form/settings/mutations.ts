@@ -3,7 +3,14 @@ import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 import simplur from 'simplur'
 
-import { AdminFormDto, FormSettings, FormStatus } from '~shared/types/form/form'
+import {
+  AdminFormDto,
+  FormAuthType,
+  FormSettings,
+  FormStatus,
+} from '~shared/types/form/form'
+
+import { ApiError } from '~typings/core'
 
 import { useToast } from '~hooks/useToast'
 import { formatOrdinal } from '~utils/stringFormat'
@@ -12,6 +19,7 @@ import { adminFormKeys } from '../common/queries'
 
 import { adminFormSettingsKeys } from './queries'
 import {
+  updateFormAuthType,
   updateFormCaptcha,
   updateFormEmails,
   updateFormInactiveMessage,
@@ -26,6 +34,7 @@ export const useMutateFormSettings = () => {
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
+  const formSettingsQueryKey = adminFormSettingsKeys.id(formId)
 
   const updateFormData = useCallback(
     (newData: FormSettings) => {
@@ -195,6 +204,63 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormAuthType = useMutation<
+    FormSettings,
+    ApiError,
+    FormAuthType,
+    { previousSettings?: FormSettings }
+  >((nextAuthType: FormAuthType) => updateFormAuthType(formId, nextAuthType), {
+    // Optimistic update
+    onMutate: async (newData) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries(formSettingsQueryKey)
+
+      // Snapshot the previous value
+      const previousSettings =
+        queryClient.getQueryData<FormSettings>(formSettingsQueryKey)
+
+      // Optimistically update to the new value
+      queryClient.setQueryData<FormSettings | undefined>(
+        formSettingsQueryKey,
+        (old) => {
+          if (!old) return
+          return {
+            ...old,
+            authType: newData,
+          }
+        },
+      )
+
+      // Return a context object with the snapshotted value
+      return { previousSettings }
+    },
+    onSuccess: (newData) => {
+      toast.closeAll()
+      // Update new settings data in cache.
+      updateFormData(newData)
+      // Show toast on success.
+      toast({
+        description: 'Form authentication successfully toggled.',
+      })
+    },
+    onError: (error, _newData, context) => {
+      toast.closeAll()
+      if (context?.previousSettings) {
+        queryClient.setQueryData(formSettingsQueryKey, context.previousSettings)
+      }
+      toast({
+        description: error.message,
+        status: 'danger',
+      })
+    },
+    onSettled: (_data, error) => {
+      if (error) {
+        // Refetch data if any error occurs
+        queryClient.invalidateQueries(formSettingsQueryKey)
+      }
+    },
+  })
+
   return {
     mutateFormStatus,
     mutateFormLimit,
@@ -202,5 +268,6 @@ export const useMutateFormSettings = () => {
     mutateFormCaptcha,
     mutateFormEmails,
     mutateFormTitle,
+    mutateFormAuthType,
   }
 }
