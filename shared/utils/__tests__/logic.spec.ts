@@ -229,7 +229,6 @@ describe('Logic validation', () => {
       form = {
         _id: new ObjectId(),
         form_fields: [CONDITION_FIELD, LOGIC_FIELD],
-        toJSON: () => this,
       } as unknown as PickLogicSubset
     })
 
@@ -734,7 +733,6 @@ describe('Logic validation', () => {
     beforeEach(() => {
       form = {
         _id: new ObjectId(),
-        toJSON: () => this,
       } as unknown as PickLogicSubset
     })
 
@@ -863,7 +861,6 @@ describe('Logic validation', () => {
             logicType: LogicType.ShowFields,
           } as unknown as FormLogic,
         ],
-        toJSON: () => this,
       } as unknown as unknown as PickLogicSubset
     })
 
