@@ -101,11 +101,16 @@ const AuthSettingsSelection = ({
 
   const handleEnterKeyDown: KeyboardEventHandler = useCallback(
     (e) => {
-      if (!isDisabled && (e.key === 'Enter' || e.key === ' ') && focusedValue) {
+      if (
+        !isDisabled &&
+        (e.key === 'Enter' || e.key === ' ') &&
+        focusedValue &&
+        focusedValue !== settings.authType
+      ) {
         return mutateFormAuthType.mutate(focusedValue)
       }
     },
-    [focusedValue, isDisabled, mutateFormAuthType],
+    [focusedValue, isDisabled, mutateFormAuthType, settings.authType],
   )
 
   const handleOptionClick = useCallback(
@@ -119,12 +124,13 @@ const AuthSettingsSelection = ({
           // See: https://www.w3.org/TR/2012/WD-html5-20121025/content-models.html#interactive-content
           // https://github.com/facebook/react/issues/7407#issuecomment-237082712
           e.clientX !== 0 &&
-          e.clientY !== 0
+          e.clientY !== 0 &&
+          authType !== settings.authType
         ) {
           return mutateFormAuthType.mutate(authType)
         }
       },
-    [isDisabled, mutateFormAuthType],
+    [isDisabled, mutateFormAuthType, settings.authType],
   )
 
   return (
