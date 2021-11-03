@@ -66,6 +66,13 @@ export const updateFormEmails: UpdateEmailFormFn<'emails'> = async (
   return updateFormSettings(formId, { emails: newEmails })
 }
 
+export const updateFormAuthType: UpdateFormFn<'authType'> = async (
+  formId,
+  newAuthType,
+) => {
+  return updateFormSettings(formId, { authType: newAuthType })
+}
+
 /**
  * Internal function that calls the PATCH API.
  * @param formId the id of the form to update
