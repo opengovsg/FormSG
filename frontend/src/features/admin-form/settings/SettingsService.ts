@@ -60,8 +60,8 @@ export const updateFormTitle: UpdateFormFn<'title'> = async (
 }
 
 export const updateFormEmails: UpdateEmailFormFn<'emails'> = async (
-  formId: string,
-  newEmails: string[],
+  formId,
+  newEmails,
 ) => {
   return updateFormSettings(formId, { emails: newEmails })
 }
@@ -71,6 +71,13 @@ export const updateFormAuthType: UpdateFormFn<'authType'> = async (
   newAuthType,
 ) => {
   return updateFormSettings(formId, { authType: newAuthType })
+}
+
+export const updateFormEsrvcId: UpdateFormFn<'esrvcId'> = async (
+  formId,
+  newEsrvcId,
+) => {
+  return updateFormSettings(formId, { esrvcId: newEsrvcId })
 }
 
 /**

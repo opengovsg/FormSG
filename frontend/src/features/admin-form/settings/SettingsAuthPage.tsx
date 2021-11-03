@@ -1,11 +1,21 @@
-import {
+import React, {
+  ChangeEventHandler,
   KeyboardEventHandler,
   MouseEventHandler,
   useCallback,
   useMemo,
+  useRef,
   useState,
 } from 'react'
-import { Box, Skeleton } from '@chakra-ui/react'
+import {
+  Box,
+  Skeleton,
+  Stack,
+  Text,
+  VisuallyHidden,
+  Wrap,
+  WrapItem,
+} from '@chakra-ui/react'
 
 import {
   FormAuthType,
@@ -14,7 +24,10 @@ import {
   FormStatus,
 } from '~shared/types/form'
 
+import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
+import Input from '~components/Input'
+import Link from '~components/Link'
 import Radio from '~components/Radio'
 
 import { CategoryHeader } from './components/CategoryHeader'
@@ -133,24 +146,104 @@ const AuthSettingsSelection = ({
     [isDisabled, mutateFormAuthType, settings.authType],
   )
 
+  const radioOptions: [FormAuthType, string][] = useMemo(() => {
+    return Object.entries(AUTHTYPE_TO_TEXT[settings.responseMode]) as [
+      FormAuthType,
+      string,
+    ][]
+  }, [settings.responseMode])
+
   return (
     <Radio.RadioGroup
       value={settings.authType}
       onKeyDown={handleEnterKeyDown}
       onChange={(e: FormAuthType) => setFocusedValue(e)}
     >
-      {Object.entries(AUTHTYPE_TO_TEXT[settings.responseMode]).map(
-        ([authType, text]) => (
-          <Box
-            key={authType}
-            onClick={handleOptionClick(authType as FormAuthType)}
-          >
+      {radioOptions.map(([authType, text]) => (
+        <React.Fragment key={authType}>
+          <Box onClick={handleOptionClick(authType)}>
             <Radio value={authType} isDisabled={isDisabled}>
               {text}
             </Radio>
           </Box>
-        ),
-      )}
+          {authType !== FormAuthType.NIL && authType === settings.authType ? (
+            <EsrvcIdBox settings={settings} isDisabled={isDisabled} />
+          ) : null}
+        </React.Fragment>
+      ))}
     </Radio.RadioGroup>
+  )
+}
+
+const EsrvcIdBox = ({
+  settings,
+  isDisabled,
+}: {
+  settings: FormSettings
+  isDisabled: boolean
+}) => {
+  const initialEsrvcId = useMemo(() => settings.esrvcId ?? '', [settings])
+
+  const [value, setValue] = useState<string>(initialEsrvcId)
+
+  const inputRef = useRef<HTMLInputElement>(null)
+  const { mutateFormEsrvcId } = useMutateFormSettings()
+
+  const handleValueChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => setValue(e.target.value),
+    [],
+  )
+
+  const handleBlur = useCallback(() => {
+    if (value === initialEsrvcId) return
+
+    return mutateFormEsrvcId.mutate(value, {
+      onError: () => {
+        setValue(initialEsrvcId)
+      },
+    })
+  }, [initialEsrvcId, mutateFormEsrvcId, value])
+
+  const handleKeydown: KeyboardEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        e.stopPropagation()
+        inputRef.current?.blur()
+      }
+    },
+    [],
+  )
+
+  return (
+    <Stack ml="2.75rem" mb="1.25rem">
+      <Text textStyle="body-2" color="secondary.400">
+        Find out{' '}
+        <Link
+          isExternal
+          href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-you-enable-singpass-or-corppass"
+        >
+          how to get your Singpass e-service ID
+        </Link>
+        .
+      </Text>
+      <VisuallyHidden>
+        <FormLabel htmlFor="esrvc-id">e-service ID:</FormLabel>
+      </VisuallyHidden>
+      <Wrap spacing="1rem">
+        <WrapItem maxW="20rem" w="100%">
+          <Input
+            isDisabled={isDisabled}
+            ref={inputRef}
+            value={value}
+            onChange={handleValueChange}
+            onKeyDown={handleKeydown}
+            onBlur={handleBlur}
+            id="esrvc-id"
+            placeholder="Enter Singpass e-service ID"
+          />
+        </WrapItem>
+      </Wrap>
+    </Stack>
   )
 }

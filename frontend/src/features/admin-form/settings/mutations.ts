@@ -22,6 +22,7 @@ import {
   updateFormAuthType,
   updateFormCaptcha,
   updateFormEmails,
+  updateFormEsrvcId,
   updateFormInactiveMessage,
   updateFormLimit,
   updateFormStatus,
@@ -179,6 +180,19 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormEsrvcId = useMutation(
+    (nextEsrvcId?: string) => updateFormEsrvcId(formId, nextEsrvcId),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: 'E-service ID successfully updated.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateFormAuthType = useMutation<
     FormSettings,
     ApiError,
@@ -237,5 +251,6 @@ export const useMutateFormSettings = () => {
     mutateFormEmails,
     mutateFormTitle,
     mutateFormAuthType,
+    mutateFormEsrvcId,
   }
 }
