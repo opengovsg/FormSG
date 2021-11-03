@@ -6,6 +6,7 @@ import { RegisterOptions } from 'react-hook-form'
 import simplur from 'simplur'
 
 import {
+  AttachmentFieldBase,
   FieldBase,
   HomenoFieldBase,
   NricFieldBase,
@@ -54,6 +55,12 @@ export const createRatingValidationRules = (
       ...createRequiredInValidationRules(schema),
     },
   }
+}
+
+export const createAttachmentValidationRules = (
+  schema: AttachmentFieldBase,
+): RegisterOptions => {
+  return createBaseValidationRules(schema)
 }
 
 export const createHomeNoValidationRules = (

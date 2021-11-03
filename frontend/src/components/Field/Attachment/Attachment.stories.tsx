@@ -21,6 +21,14 @@ const Template: Story<AttachmentProps> = (args) => {
 export const Default = Template.bind({})
 Default.args = {
   name: 'Test-input',
+  maxSize: 23000,
+}
+
+export const ShowMaxSize = Template.bind({})
+ShowMaxSize.args = {
+  name: 'Test-input',
+  maxSize: 23000,
+  showFileSize: true,
 }
 
 export const Invalid = Template.bind({})
