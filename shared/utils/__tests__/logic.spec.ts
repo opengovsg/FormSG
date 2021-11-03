@@ -1,33 +1,26 @@
 import { ObjectId } from 'bson-ext'
 
 import {
-  FieldResponse,
-  FormFieldSchema,
-  IFormDocument,
-  IPreventSubmitLogicSchema,
-  IRadioFieldSchema,
-  IShortTextFieldSchema,
-  IShowFieldsLogicSchema,
-} from 'src/types'
-
-import {
   BasicField,
   FieldBase,
-  FormDto,
+  FieldResponse,
   LogicConditionState,
   LogicIfValue,
+  FormFieldDto,
+  FormLogic,
+  PickLogicSubset,
   LogicType,
-} from '../../../../shared/types'
+} from '../../types'
 import {
   getApplicableIfFields,
   getApplicableIfStates,
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
-} from '../../../../shared/utils/logic'
+} from '../../utils/logic'
 
 describe('Logic validation', () => {
   /** Mock a field's bare essentials */
-  const makeField = (fieldId: string) => ({ _id: fieldId } as FormFieldSchema)
+  const makeField = (fieldId: string) => ({ _id: fieldId } as FormFieldDto)
 
   /**
    *  Mock a response
@@ -55,14 +48,13 @@ describe('Logic validation', () => {
     const LOGIC_RESPONSE = makeResponse(LOGIC_FIELD._id, 'lorem')
     const MOCK_LOGIC_ID = new ObjectId().toHexString()
 
-    let form: IFormDocument
+    let form: PickLogicSubset
 
     beforeEach(() => {
       form = {
         _id: new ObjectId(),
         form_fields: [CONDITION_FIELD, LOGIC_FIELD],
-        toJSON: () => form,
-      } as IFormDocument
+      } as unknown as PickLogicSubset
     })
 
     it('should compute the correct visibility for "is equals to"', () => {
@@ -80,23 +72,22 @@ describe('Logic validation', () => {
         ],
         _id: MOCK_LOGIC_ID,
         logicType: LogicType.ShowFields,
-      } as IShowFieldsLogicSchema
+      } as unknown as FormLogic
 
       form.form_logics = [equalsCondition]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
         getVisibleFieldIds(
           [makeResponse(CONDITION_FIELD._id, 0), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
       expect(
         getVisibleFieldIds(
           [makeResponse(CONDITION_FIELD._id, 1), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(false)
     })
@@ -116,30 +107,29 @@ describe('Logic validation', () => {
         ],
         _id: MOCK_LOGIC_ID,
         logicType: LogicType.ShowFields,
-      } as IShowFieldsLogicSchema
+      } as unknown as FormLogic
 
       form.form_logics = [lteCondition]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
         getVisibleFieldIds(
           [makeResponse(CONDITION_FIELD._id, 98), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
       expect(
         getVisibleFieldIds(
           [makeResponse(CONDITION_FIELD._id, 99), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
       expect(
         getVisibleFieldIds(
           [makeResponse(CONDITION_FIELD._id, 100), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(false)
     })
@@ -159,27 +149,26 @@ describe('Logic validation', () => {
         ],
         _id: MOCK_LOGIC_ID,
         logicType: LogicType.ShowFields,
-      } as IShowFieldsLogicSchema
+      } as unknown as FormLogic
       form.form_logics = [gteCondition]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
         getVisibleFieldIds(
           [makeResponse(CONDITION_FIELD._id, 23), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
       expect(
         getVisibleFieldIds(
           [makeResponse(CONDITION_FIELD._id, 22), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
       expect(
         getVisibleFieldIds(
           [makeResponse(CONDITION_FIELD._id, 21), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(false)
     })
@@ -200,30 +189,29 @@ describe('Logic validation', () => {
         ],
         _id: MOCK_LOGIC_ID,
         logicType: LogicType.ShowFields,
-      } as IShowFieldsLogicSchema
+      } as unknown as FormLogic
 
       form.form_logics = [eitherCondition]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
         getVisibleFieldIds(
           [makeResponse(CONDITION_FIELD._id, validOptions[0]), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
       expect(
         getVisibleFieldIds(
           [makeResponse(CONDITION_FIELD._id, validOptions[1]), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
       expect(
         getVisibleFieldIds(
           [makeResponse(CONDITION_FIELD._id, 'invalid option'), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(false)
     })
@@ -235,14 +223,14 @@ describe('Logic validation', () => {
     const LOGIC_RESPONSE = makeResponse(LOGIC_FIELD._id, 'lorem')
     const MOCK_LOGIC_ID = new ObjectId().toHexString()
 
-    let form: IFormDocument
+    let form: PickLogicSubset
 
     beforeEach(() => {
       form = {
         _id: new ObjectId(),
         form_fields: [CONDITION_FIELD, LOGIC_FIELD],
         toJSON: () => this,
-      } as IFormDocument
+      } as unknown as PickLogicSubset
     })
 
     it('should compute that submission should be prevented for "is equals to"', () => {
@@ -260,23 +248,22 @@ describe('Logic validation', () => {
         _id: MOCK_LOGIC_ID,
         logicType: LogicType.PreventSubmit,
         preventSubmitMessage: "oh no you don't",
-      } as IPreventSubmitLogicSchema
+      } as unknown as FormLogic
 
       form.form_logics = [equalCondition]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(CONDITION_FIELD._id, 0), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[0])
 
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(CONDITION_FIELD._id, 1), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toBeUndefined()
     })
@@ -296,28 +283,27 @@ describe('Logic validation', () => {
         _id: MOCK_LOGIC_ID,
         logicType: LogicType.PreventSubmit,
         preventSubmitMessage: "oh no you don't",
-      } as IPreventSubmitLogicSchema
+      } as unknown as FormLogic
 
       form.form_logics = [lteCondition]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(CONDITION_FIELD._id, 98), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[0])
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(CONDITION_FIELD._id, 99), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[0])
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(CONDITION_FIELD._id, 100), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toBeUndefined()
     })
@@ -337,30 +323,29 @@ describe('Logic validation', () => {
         _id: MOCK_LOGIC_ID,
         logicType: LogicType.PreventSubmit,
         preventSubmitMessage: "oh no you don't",
-      } as IPreventSubmitLogicSchema
+      } as unknown as FormLogic
 
       form.form_logics = [gteCondition]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(CONDITION_FIELD._id, 23), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[0])
 
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(CONDITION_FIELD._id, 22), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[0])
 
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(CONDITION_FIELD._id, 21), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toBeUndefined()
     })
@@ -381,30 +366,29 @@ describe('Logic validation', () => {
         _id: MOCK_LOGIC_ID,
         logicType: LogicType.PreventSubmit,
         preventSubmitMessage: "oh no you don't",
-      } as IPreventSubmitLogicSchema
+      } as unknown as FormLogic
 
       form.form_logics = [eitherCondition]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(CONDITION_FIELD._id, validOptions[0]), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[0])
 
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(CONDITION_FIELD._id, validOptions[1]), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[0])
 
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(CONDITION_FIELD._id, 'Option 3'), LOGIC_RESPONSE],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toBeUndefined()
     })
@@ -418,14 +402,13 @@ describe('Logic validation', () => {
     const MOCK_LOGIC_ID_1 = new ObjectId().toHexString()
     const MOCK_LOGIC_ID_2 = new ObjectId().toHexString()
 
-    let form: IFormDocument
+    let form: PickLogicSubset
 
     beforeEach(() => {
       form = {
         _id: new ObjectId(),
         form_fields: [CONDITION_FIELD_1, CONDITION_FIELD_2, LOGIC_FIELD],
-        toJSON: () => this,
-      } as IFormDocument
+      } as unknown as PickLogicSubset
     })
 
     it('should compute the correct visibility for AND conditions', () => {
@@ -450,10 +433,9 @@ describe('Logic validation', () => {
           },
         ],
         logicType: LogicType.ShowFields,
-      } as IShowFieldsLogicSchema
+      } as unknown as FormLogic
 
       form.form_logics = [multipleEqualConditions]
-      form.toJSON = () => form
 
       // Act
       expect(
@@ -463,7 +445,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 20),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
@@ -474,7 +456,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 100),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(false)
 
@@ -485,7 +467,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 20),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(false)
     })
@@ -505,7 +487,7 @@ describe('Logic validation', () => {
         ],
         _id: MOCK_LOGIC_ID_1,
         logicType: LogicType.ShowFields,
-      } as IShowFieldsLogicSchema
+      } as unknown as FormLogic
 
       const equalCondition2 = {
         show: [LOGIC_FIELD._id],
@@ -520,10 +502,9 @@ describe('Logic validation', () => {
         ],
         _id: MOCK_LOGIC_ID_2,
         logicType: LogicType.ShowFields,
-      } as IShowFieldsLogicSchema
+      } as unknown as FormLogic
 
       form.form_logics = [equalCondition, equalCondition2]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
@@ -533,7 +514,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 20),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
@@ -544,7 +525,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 100),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
@@ -555,7 +536,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 20),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(true)
 
@@ -566,7 +547,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 100),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(LOGIC_FIELD._id),
       ).toEqual(false)
     })
@@ -580,14 +561,13 @@ describe('Logic validation', () => {
     const MOCK_LOGIC_ID_1 = new ObjectId().toHexString()
     const MOCK_LOGIC_ID_2 = new ObjectId().toHexString()
 
-    let form: IFormDocument
+    let form: PickLogicSubset
 
     beforeEach(() => {
       form = {
         _id: new ObjectId(),
         form_fields: [CONDITION_FIELD_1, CONDITION_FIELD_2, LOGIC_FIELD],
-        toJSON: () => this,
-      } as IFormDocument
+      } as unknown as PickLogicSubset
     })
 
     it('should correctly prevent submission for AND conditions', () => {
@@ -612,9 +592,8 @@ describe('Logic validation', () => {
         ],
         logicType: LogicType.PreventSubmit,
         preventSubmitMessage: 'orh hor i tell teacher',
-      } as IPreventSubmitLogicSchema
+      } as unknown as FormLogic
       form.form_logics = [multipleEqualConditions]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
@@ -624,7 +603,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 20),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[0])
 
@@ -635,7 +614,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 100),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toBeUndefined()
 
@@ -646,7 +625,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 20),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toBeUndefined()
     })
@@ -666,7 +645,7 @@ describe('Logic validation', () => {
         _id: MOCK_LOGIC_ID_1,
         logicType: LogicType.PreventSubmit,
         preventSubmitMessage: 'this one cannot',
-      } as IPreventSubmitLogicSchema
+      } as unknown as FormLogic
 
       const equalCondition2 = {
         conditions: [
@@ -681,10 +660,9 @@ describe('Logic validation', () => {
         _id: MOCK_LOGIC_ID_2,
         logicType: LogicType.PreventSubmit,
         preventSubmitMessage: 'this one also cannot',
-      } as IPreventSubmitLogicSchema
+      } as unknown as FormLogic
 
       form.form_logics = [equalCondition, equalCondition2]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
@@ -694,7 +672,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 20),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[0])
 
@@ -705,7 +683,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 100),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[0])
 
@@ -716,7 +694,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 20),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[1])
 
@@ -727,7 +705,7 @@ describe('Logic validation', () => {
             makeResponse(CONDITION_FIELD_2._id, 100),
             LOGIC_RESPONSE,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toBeUndefined()
     })
@@ -741,23 +719,23 @@ describe('Logic validation', () => {
       fieldType: BasicField.Radio,
       fieldOptions: ['Option 1', 'Option 2'],
       othersRadioButton: true,
-    } as IRadioFieldSchema
+    } as unknown as FormFieldDto
 
     const MOCK_TEXT_FIELD = {
       _id: new ObjectId().toHexString(),
       fieldType: BasicField.ShortText,
-    } as IShortTextFieldSchema
+    } as unknown as FormFieldDto
 
     const fillInRadioButton = (fieldValue: string) =>
       Object.assign({}, MOCK_RADIO_FIELD, { fieldValue, isVisible: true })
 
-    let form: IFormDocument
+    let form: PickLogicSubset
 
     beforeEach(() => {
       form = {
         _id: new ObjectId(),
         toJSON: () => this,
-      } as IFormDocument
+      } as unknown as PickLogicSubset
     })
 
     it('should compute the correct visibility for radiobutton Others on clientside', () => {
@@ -775,26 +753,26 @@ describe('Logic validation', () => {
         ],
         _id: MOCK_LOGIC_ID,
         logicType: LogicType.ShowFields,
-      } as IShowFieldsLogicSchema
+      } as unknown as FormLogic
 
       const textFieldResponse = Object.assign({}, MOCK_TEXT_FIELD, {
         fieldValue: 'lorem',
       })
       form.form_fields = [MOCK_RADIO_FIELD, MOCK_TEXT_FIELD]
       form.form_logics = [equalCondition]
-      form.toJSON = () => form
+
       // Act + Assert
       expect(
         getVisibleFieldIds(
           [fillInRadioButton('radioButtonOthers'), textFieldResponse],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(MOCK_TEXT_FIELD._id),
       ).toEqual(true)
 
       expect(
         getVisibleFieldIds(
           [fillInRadioButton('Option 1'), textFieldResponse],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(MOCK_TEXT_FIELD._id),
       ).toEqual(false)
     })
@@ -814,7 +792,7 @@ describe('Logic validation', () => {
         ],
         _id: MOCK_LOGIC_ID,
         logicType: LogicType.ShowFields,
-      } as IShowFieldsLogicSchema
+      } as unknown as FormLogic
 
       const textFieldResponse = makeResponse(
         new ObjectId().toHexString(),
@@ -822,7 +800,6 @@ describe('Logic validation', () => {
       )
       form.form_fields = [MOCK_RADIO_FIELD, MOCK_TEXT_FIELD]
       form.form_logics = [equalCondition]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
@@ -831,14 +808,14 @@ describe('Logic validation', () => {
             makeResponse(MOCK_RADIO_FIELD._id, 'Others: School'),
             textFieldResponse,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(MOCK_TEXT_FIELD._id),
       ).toEqual(true)
 
       expect(
         getVisibleFieldIds(
           [makeResponse(MOCK_RADIO_FIELD._id, 'Option 1'), textFieldResponse],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ).has(MOCK_TEXT_FIELD._id),
       ).toEqual(false)
     })
@@ -851,7 +828,7 @@ describe('Logic validation', () => {
     const MOCK_LOGIC_ID_1 = new ObjectId()
     const MOCK_LOGIC_ID_2 = new ObjectId()
 
-    let form: IFormDocument
+    let form: PickLogicSubset
 
     beforeEach(() => {
       form = {
@@ -870,7 +847,7 @@ describe('Logic validation', () => {
             ],
             _id: MOCK_LOGIC_ID_1,
             logicType: LogicType.ShowFields,
-          } as IShowFieldsLogicSchema,
+          } as unknown as FormLogic,
           {
             show: [FIELD_1._id],
             conditions: [
@@ -884,15 +861,15 @@ describe('Logic validation', () => {
             ],
             _id: MOCK_LOGIC_ID_2,
             logicType: LogicType.ShowFields,
-          } as IShowFieldsLogicSchema,
+          } as unknown as FormLogic,
         ],
         toJSON: () => this,
-      } as unknown as IFormDocument
+      } as unknown as unknown as PickLogicSubset
     })
 
     it('should compute the correct visibility for circular logic where all fields are hidden', () => {
       form.form_fields = [FIELD_1, FIELD_2]
-      form.toJSON = () => form
+
       for (const field1Response of ['Yes', 'No']) {
         for (const field2Response of ['Yes', 'No']) {
           const visibleFieldIds = getVisibleFieldIds(
@@ -900,7 +877,7 @@ describe('Logic validation', () => {
               makeResponse(FIELD_1._id, field1Response),
               makeResponse(FIELD_2._id, field2Response),
             ],
-            form.toJSON({ virtuals: true }) as unknown as FormDto,
+            form,
           )
           expect(visibleFieldIds.has(FIELD_1._id)).toEqual(false)
           expect(visibleFieldIds.has(FIELD_2._id)).toEqual(false)
@@ -910,7 +887,7 @@ describe('Logic validation', () => {
 
     it('should compute the correct visibility for circular logic with a mix of shown and hidden fields', () => {
       form.form_fields = [FIELD_1, FIELD_2, VISIBLE_FIELD]
-      form.toJSON = () => form
+
       for (const field1Response of ['Yes', 'No']) {
         for (const field2Response of ['Yes', 'No']) {
           const visibleFieldIds = getVisibleFieldIds(
@@ -919,7 +896,7 @@ describe('Logic validation', () => {
               makeResponse(FIELD_2._id, field2Response),
               makeResponse(VISIBLE_FIELD._id, 'Yes'),
             ],
-            form.toJSON({ virtuals: true }) as unknown as FormDto,
+            form,
           )
           expect(visibleFieldIds.has(FIELD_1._id)).toEqual(false)
           expect(visibleFieldIds.has(FIELD_2._id)).toEqual(false)
@@ -936,19 +913,21 @@ describe('Logic validation', () => {
       fieldType: BasicField.Radio,
       fieldOptions: ['Option 1', 'Option 2'],
       othersRadioButton: true,
-    } as IRadioFieldSchema
+    } as unknown as FormFieldDto
     const MOCK_TEXT_FIELD = {
       _id: new ObjectId(),
       fieldType: BasicField.ShortText,
-    } as IShortTextFieldSchema
+    } as unknown as FormFieldDto
 
     const fillInRadioButton = (fieldValue: string) =>
       Object.assign({}, MOCK_RADIO_FIELD, { fieldValue, isVisible: true })
 
-    let form: IFormDocument
+    let form: PickLogicSubset
 
     beforeEach(() => {
-      form = { _id: new ObjectId(), toJSON: () => this } as IFormDocument
+      form = {
+        _id: new ObjectId(),
+      } as unknown as PickLogicSubset
     })
 
     it('should correctly prevent submission for radiobutton Others on clientside', () => {
@@ -970,22 +949,21 @@ describe('Logic validation', () => {
           ],
           _id: MOCK_LOGIC_ID,
           logicType: LogicType.PreventSubmit,
-        } as IPreventSubmitLogicSchema,
+        } as unknown as FormLogic,
       ]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
         getLogicUnitPreventingSubmit(
           [fillInRadioButton('radioButtonOthers'), textFieldResponse],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[0])
 
       expect(
         getLogicUnitPreventingSubmit(
           [fillInRadioButton('Option 1'), textFieldResponse],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toBeUndefined()
     })
@@ -1010,9 +988,8 @@ describe('Logic validation', () => {
           ],
           _id: MOCK_LOGIC_ID,
           logicType: LogicType.PreventSubmit,
-        } as IPreventSubmitLogicSchema,
+        } as unknown as FormLogic,
       ]
-      form.toJSON = () => form
 
       // Act + Assert
       expect(
@@ -1021,13 +998,13 @@ describe('Logic validation', () => {
             makeResponse(MOCK_RADIO_FIELD._id, 'Others: School'),
             textFieldResponse,
           ],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toEqual(form.form_logics[0])
       expect(
         getLogicUnitPreventingSubmit(
           [makeResponse(MOCK_RADIO_FIELD._id, 'Option 1'), textFieldResponse],
-          form.toJSON({ virtuals: true }) as unknown as FormDto,
+          form,
         ),
       ).toBeUndefined()
     })

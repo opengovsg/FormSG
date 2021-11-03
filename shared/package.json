@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
+    "bson-ext": "^4.0.2",
     "date-fns": "^2.23.0",
     "json-stringify-safe": "^5.0.1",
     "jszip": "^3.7.1",
