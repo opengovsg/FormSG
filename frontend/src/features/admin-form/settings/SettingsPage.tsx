@@ -21,6 +21,7 @@ import {
 import { useDraggable } from '~hooks/useDraggable'
 
 import { SettingsTab } from './components/SettingsTab'
+import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 
 export const SettingsPage = (): JSX.Element => {
@@ -95,7 +96,7 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsGeneralPage />
           </TabPanel>
           <TabPanel>
-            <p>two!</p>
+            <SettingsAuthPage />
           </TabPanel>
           <TabPanel>
             <p>3!</p>
