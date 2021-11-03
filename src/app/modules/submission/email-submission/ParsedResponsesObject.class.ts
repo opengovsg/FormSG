@@ -1,9 +1,11 @@
 import { err, ok, Result } from 'neverthrow'
 
-import { IFormDocument } from 'src/types'
-
 import { FormAuthType, FormResponseMode } from '../../../../../shared/types'
-import { FieldResponse, FormFieldSchema } from '../../../../types'
+import {
+  FieldResponse,
+  FormFieldSchema,
+  IFormDocument,
+} from '../../../../types'
 import { validateField } from '../../../utils/field-validation'
 import {
   getLogicUnitPreventingSubmit,

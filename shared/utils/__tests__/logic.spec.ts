@@ -1,5 +1,3 @@
-import { ObjectId } from 'bson-ext'
-
 import {
   BasicField,
   FieldBase,
@@ -16,7 +14,7 @@ import {
   getApplicableIfStates,
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
-} from '../../utils/logic'
+} from '../logic'
 
 describe('Logic validation', () => {
   /** Mock a field's bare essentials */
@@ -43,18 +41,21 @@ describe('Logic validation', () => {
   }
 
   describe('visibility for different states', () => {
-    const CONDITION_FIELD = makeField(new ObjectId().toHexString())
-    const LOGIC_FIELD = makeField(new ObjectId().toHexString())
+    const CONDITION_MOCK_ID = '1'
+    const LOGIC_FIELD_MOCK_ID = '2'
+
+    const CONDITION_FIELD = makeField(CONDITION_MOCK_ID)
+    const LOGIC_FIELD = makeField(LOGIC_FIELD_MOCK_ID)
     const LOGIC_RESPONSE = makeResponse(LOGIC_FIELD._id, 'lorem')
-    const MOCK_LOGIC_ID = new ObjectId().toHexString()
+    const MOCK_LOGIC_ID = '3'
 
     let form: PickLogicSubset
 
     beforeEach(() => {
       form = {
-        _id: new ObjectId(),
+        _id: '4',
         form_fields: [CONDITION_FIELD, LOGIC_FIELD],
-      } as unknown as PickLogicSubset
+      } as PickLogicSubset
     })
 
     it('should compute the correct visibility for "is equals to"', () => {
@@ -218,18 +219,21 @@ describe('Logic validation', () => {
   })
 
   describe('preventing submission for different states', () => {
-    const CONDITION_FIELD = makeField(new ObjectId().toHexString())
-    const LOGIC_FIELD = makeField(new ObjectId().toHexString())
+    const CONDITION_MOCK_ID = '1'
+    const LOGIC_FIELD_MOCK_ID = '2'
+
+    const CONDITION_FIELD = makeField(CONDITION_MOCK_ID)
+    const LOGIC_FIELD = makeField(LOGIC_FIELD_MOCK_ID)
     const LOGIC_RESPONSE = makeResponse(LOGIC_FIELD._id, 'lorem')
-    const MOCK_LOGIC_ID = new ObjectId().toHexString()
+    const MOCK_LOGIC_ID = '3'
 
     let form: PickLogicSubset
 
     beforeEach(() => {
       form = {
-        _id: new ObjectId(),
+        _id: '4',
         form_fields: [CONDITION_FIELD, LOGIC_FIELD],
-      } as unknown as PickLogicSubset
+      } as PickLogicSubset
     })
 
     it('should compute that submission should be prevented for "is equals to"', () => {
@@ -394,20 +398,24 @@ describe('Logic validation', () => {
   })
 
   describe('show fields with multiple conditions', () => {
-    const CONDITION_FIELD_1 = makeField(new ObjectId().toHexString())
-    const CONDITION_FIELD_2 = makeField(new ObjectId().toHexString())
-    const LOGIC_FIELD = makeField(new ObjectId().toHexString())
+    const CONDITION_1_MOCK_ID = '1'
+    const CONDITION_2_MOCK_ID = '2'
+    const LOGIC_FIELD_MOCK_ID = '3'
+
+    const CONDITION_FIELD_1 = makeField(CONDITION_1_MOCK_ID)
+    const CONDITION_FIELD_2 = makeField(CONDITION_2_MOCK_ID)
+    const LOGIC_FIELD = makeField(LOGIC_FIELD_MOCK_ID)
     const LOGIC_RESPONSE = makeResponse(LOGIC_FIELD._id, 'lorem')
-    const MOCK_LOGIC_ID_1 = new ObjectId().toHexString()
-    const MOCK_LOGIC_ID_2 = new ObjectId().toHexString()
+    const MOCK_LOGIC_ID_1 = '4'
+    const MOCK_LOGIC_ID_2 = '5'
 
     let form: PickLogicSubset
 
     beforeEach(() => {
       form = {
-        _id: new ObjectId(),
+        _id: '6',
         form_fields: [CONDITION_FIELD_1, CONDITION_FIELD_2, LOGIC_FIELD],
-      } as unknown as PickLogicSubset
+      } as PickLogicSubset
     })
 
     it('should compute the correct visibility for AND conditions', () => {
@@ -553,20 +561,24 @@ describe('Logic validation', () => {
   })
 
   describe('prevent submit with multiple conditions', () => {
-    const CONDITION_FIELD_1 = makeField(new ObjectId().toHexString())
-    const CONDITION_FIELD_2 = makeField(new ObjectId().toHexString())
-    const LOGIC_FIELD = makeField(new ObjectId().toHexString())
+    const CONDITION_1_MOCK_ID = '1'
+    const CONDITION_2_MOCK_ID = '2'
+    const LOGIC_FIELD_MOCK_ID = '3'
+
+    const CONDITION_FIELD_1 = makeField(CONDITION_1_MOCK_ID)
+    const CONDITION_FIELD_2 = makeField(CONDITION_2_MOCK_ID)
+    const LOGIC_FIELD = makeField(LOGIC_FIELD_MOCK_ID)
     const LOGIC_RESPONSE = makeResponse(LOGIC_FIELD._id, 'lorem')
-    const MOCK_LOGIC_ID_1 = new ObjectId().toHexString()
-    const MOCK_LOGIC_ID_2 = new ObjectId().toHexString()
+    const MOCK_LOGIC_ID_1 = '4'
+    const MOCK_LOGIC_ID_2 = '5'
 
     let form: PickLogicSubset
 
     beforeEach(() => {
       form = {
-        _id: new ObjectId(),
+        _id: '6',
         form_fields: [CONDITION_FIELD_1, CONDITION_FIELD_2, LOGIC_FIELD],
-      } as unknown as PickLogicSubset
+      } as PickLogicSubset
     })
 
     it('should correctly prevent submission for AND conditions', () => {
@@ -711,17 +723,17 @@ describe('Logic validation', () => {
   })
 
   describe('visibility for others value', () => {
-    const MOCK_LOGIC_ID = new ObjectId().toHexString()
+    const MOCK_LOGIC_ID = '1'
 
     const MOCK_RADIO_FIELD = {
-      _id: new ObjectId().toHexString(),
+      _id: '2',
       fieldType: BasicField.Radio,
       fieldOptions: ['Option 1', 'Option 2'],
       othersRadioButton: true,
     } as unknown as FormFieldDto
 
     const MOCK_TEXT_FIELD = {
-      _id: new ObjectId().toHexString(),
+      _id: '3',
       fieldType: BasicField.ShortText,
     } as unknown as FormFieldDto
 
@@ -732,8 +744,8 @@ describe('Logic validation', () => {
 
     beforeEach(() => {
       form = {
-        _id: new ObjectId(),
-      } as unknown as PickLogicSubset
+        _id: '4',
+      } as PickLogicSubset
     })
 
     it('should compute the correct visibility for radiobutton Others on clientside', () => {
@@ -792,10 +804,7 @@ describe('Logic validation', () => {
         logicType: LogicType.ShowFields,
       } as unknown as FormLogic
 
-      const textFieldResponse = makeResponse(
-        new ObjectId().toHexString(),
-        'lorem',
-      )
+      const textFieldResponse = makeResponse('5', 'lorem')
       form.form_fields = [MOCK_RADIO_FIELD, MOCK_TEXT_FIELD]
       form.form_logics = [equalCondition]
 
@@ -820,17 +829,17 @@ describe('Logic validation', () => {
   })
 
   describe('visibility for circular logic', () => {
-    const FIELD_1 = makeField(new ObjectId().toHexString())
-    const FIELD_2 = makeField(new ObjectId().toHexString())
-    const VISIBLE_FIELD = makeField(new ObjectId().toHexString())
-    const MOCK_LOGIC_ID_1 = new ObjectId()
-    const MOCK_LOGIC_ID_2 = new ObjectId()
+    const FIELD_1 = makeField('1')
+    const FIELD_2 = makeField('2')
+    const VISIBLE_FIELD = makeField('3')
+    const MOCK_LOGIC_ID_1 = '4'
+    const MOCK_LOGIC_ID_2 = '5'
 
     let form: PickLogicSubset
 
     beforeEach(() => {
       form = {
-        _id: new ObjectId(),
+        _id: '6',
         form_logics: [
           {
             show: [FIELD_2._id],
@@ -861,7 +870,7 @@ describe('Logic validation', () => {
             logicType: LogicType.ShowFields,
           } as unknown as FormLogic,
         ],
-      } as unknown as unknown as PickLogicSubset
+      } as unknown as PickLogicSubset
     })
 
     it('should compute the correct visibility for circular logic where all fields are hidden', () => {
@@ -904,15 +913,15 @@ describe('Logic validation', () => {
   })
 
   describe('prevent submit for others value', () => {
-    const MOCK_LOGIC_ID = new ObjectId()
+    const MOCK_LOGIC_ID = '1'
     const MOCK_RADIO_FIELD = {
-      _id: new ObjectId(),
+      _id: '2',
       fieldType: BasicField.Radio,
       fieldOptions: ['Option 1', 'Option 2'],
       othersRadioButton: true,
     } as unknown as FormFieldDto
     const MOCK_TEXT_FIELD = {
-      _id: new ObjectId(),
+      _id: '3',
       fieldType: BasicField.ShortText,
     } as unknown as FormFieldDto
 
@@ -923,8 +932,8 @@ describe('Logic validation', () => {
 
     beforeEach(() => {
       form = {
-        _id: new ObjectId(),
-      } as unknown as PickLogicSubset
+        _id: '4',
+      } as PickLogicSubset
     })
 
     it('should correctly prevent submission for radiobutton Others on clientside', () => {
@@ -967,10 +976,7 @@ describe('Logic validation', () => {
 
     it('should correctly prevent submission for radiobutton Others on serverside', () => {
       // Arrange
-      const textFieldResponse = makeResponse(
-        new ObjectId().toHexString(),
-        'lorem',
-      )
+      const textFieldResponse = makeResponse('1', 'lorem')
       form.form_fields = [MOCK_RADIO_FIELD, MOCK_TEXT_FIELD]
       form.form_logics = [
         {

@@ -1,3 +1,4 @@
+import { FormFieldDto } from './../types/field/index'
 import {
   PickLogicSubset,
   FormCondition,
@@ -264,7 +265,7 @@ const isConditionFulfilled = (
  */
 const findConditionField = (
   submission: LogicFieldOrResponse[],
-  fieldId: any,
+  fieldId: FormFieldDto['_id'],
 ): LogicFieldOrResponse | undefined => {
   return submission.find(
     (submittedField) => String(submittedField._id) === String(fieldId),
