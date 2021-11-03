@@ -54,29 +54,47 @@ export const useMutateFormSettings = () => {
     [formId, queryClient],
   )
 
+  const handleSuccess = useCallback(
+    ({
+      newData,
+      toastDescription,
+    }: {
+      newData: FormSettings
+      toastDescription: string
+    }) => {
+      toast.closeAll()
+      updateFormData(newData)
+      toast({
+        description: toastDescription,
+      })
+    },
+    [toast, updateFormData],
+  )
+
+  const handleError = useCallback(
+    (error: Error) => {
+      toast.closeAll()
+      toast({
+        description: error.message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
   const mutateFormStatus = useMutation(
     (nextStatus: FormStatus) => updateFormStatus(formId, nextStatus),
     {
       onSuccess: (newData) => {
-        toast.closeAll()
-        updateFormData(newData)
-
         // Show toast on success.
         const isNowPublic = newData.status === FormStatus.Public
         const toastStatusMessage = isNowPublic
           ? `Congrats! Your form is now open for submission.\n\nFor high-traffic forms, [AutoArchive your mailbox](https://go.gov.sg/form-prevent-bounce) to prevent lost responses.`
           : 'Your form is closed for submission.'
-        toast({
-          description: toastStatusMessage,
-        })
+
+        handleSuccess({ newData, toastDescription: toastStatusMessage })
       },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
+      onError: handleError,
     },
   )
 
@@ -84,10 +102,6 @@ export const useMutateFormSettings = () => {
     (nextLimit: number | null) => updateFormLimit(formId, nextLimit),
     {
       onSuccess: (newData) => {
-        toast.closeAll()
-        // Update new settings data in cache.
-        updateFormData(newData)
-
         // Show toast on success.
         const toastStatusMessage = newData.submissionLimit
           ? simplur`Your form will now automatically close on the ${[
@@ -95,17 +109,9 @@ export const useMutateFormSettings = () => {
               formatOrdinal,
             ]} submission.`
           : 'The submission limit on your form is removed.'
-        toast({
-          description: toastStatusMessage,
-        })
+        handleSuccess({ newData, toastDescription: toastStatusMessage })
       },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
+      onError: handleError,
     },
   )
 
@@ -113,25 +119,14 @@ export const useMutateFormSettings = () => {
     (nextHasCaptcha: boolean) => updateFormCaptcha(formId, nextHasCaptcha),
     {
       onSuccess: (newData) => {
-        toast.closeAll()
-        // Update new settings data in cache.
-        updateFormData(newData)
-
-        // Show toast on success.
-        const toastStatusMessage = `reCAPTCHA is now ${
-          newData.hasCaptcha ? 'enabled' : 'disabled'
-        } on your form.`
-        toast({
-          description: toastStatusMessage,
+        handleSuccess({
+          newData,
+          toastDescription: `reCAPTCHA is now ${
+            newData.hasCaptcha ? 'enabled' : 'disabled'
+          } on your form.`,
         })
       },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
+      onError: handleError,
     },
   )
 
@@ -162,22 +157,12 @@ export const useMutateFormSettings = () => {
     (nextMessage: string) => updateFormInactiveMessage(formId, nextMessage),
     {
       onSuccess: (newData) => {
-        toast.closeAll()
-        // Update new settings data in cache.
-        updateFormData(newData)
-
-        // Show toast on success.
-        toast({
-          description: "Your form's inactive message has been updated.",
+        handleSuccess({
+          newData,
+          toastDescription: "Your form's inactive message has been updated.",
         })
       },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
+      onError: handleError,
     },
   )
 
@@ -185,22 +170,12 @@ export const useMutateFormSettings = () => {
     (nextEmails: string[]) => updateFormEmails(formId, nextEmails),
     {
       onSuccess: (newData) => {
-        toast.closeAll()
-        // Update new settings data in cache.
-        updateFormData(newData)
-
-        // Show toast on success.
-        toast({
-          description: 'Emails successfully updated.',
+        handleSuccess({
+          newData,
+          toastDescription: 'Emails successfully updated.',
         })
       },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
+      onError: handleError,
     },
   )
 
@@ -235,23 +210,16 @@ export const useMutateFormSettings = () => {
       return { previousSettings }
     },
     onSuccess: (newData) => {
-      toast.closeAll()
-      // Update new settings data in cache.
-      updateFormData(newData)
-      // Show toast on success.
-      toast({
-        description: 'Form authentication successfully toggled.',
+      handleSuccess({
+        newData,
+        toastDescription: 'Form authentication successfully toggled.',
       })
     },
     onError: (error, _newData, context) => {
-      toast.closeAll()
       if (context?.previousSettings) {
         queryClient.setQueryData(formSettingsQueryKey, context.previousSettings)
       }
-      toast({
-        description: error.message,
-        status: 'danger',
-      })
+      handleError(error)
     },
     onSettled: (_data, error) => {
       if (error) {
