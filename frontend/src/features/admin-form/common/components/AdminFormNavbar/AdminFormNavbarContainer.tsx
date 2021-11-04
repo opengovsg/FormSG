@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { ROOT_ROUTE } from '~constants/routes'
 
@@ -13,11 +13,11 @@ import { AdminFormNavbar } from './AdminFormNavbar'
 export const AdminFormNavbarContainer = (): JSX.Element => {
   const { data: form } = useAdminForm()
 
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const handleBackToDashboard = useCallback((): void => {
-    history.push(ROOT_ROUTE)
-  }, [history])
+    navigate(ROOT_ROUTE)
+  }, [navigate])
 
   const handleAddCollaborator = useCallback((): void => {
     console.log('add collab button clicked')

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Tabs, useBreakpointValue } from '@chakra-ui/react'
 
 import { ADMIN_FORM_ROUTE } from '~constants/routes'
@@ -11,8 +11,8 @@ interface AdminFormTabProviderProps {
 export const AdminFormTabProvider = ({
   children,
 }: AdminFormTabProviderProps): JSX.Element => {
-  const { formId } = useParams<{ formId: string }>()
-  const history = useHistory()
+  const { formId } = useParams()
+  const navigate = useNavigate()
   const { pathname } = useLocation()
 
   const routes = useMemo(() => {
@@ -30,9 +30,9 @@ export const AdminFormTabProvider = ({
   const handleTabsChange = useCallback(
     (index: number) => {
       setTabIndex(index)
-      history.push(routes[index])
+      navigate(routes[index])
     },
-    [history, routes],
+    [navigate, routes],
   )
 
   const responsiveVariant = useBreakpointValue({
