@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 import simplur from 'simplur'
 
-import { FormId, FormStatus } from '~shared/types/form/form'
+import { FormStatus } from '~shared/types/form/form'
 
 import { useToast } from '~hooks/useToast'
 import { formatOrdinal } from '~utils/stringFormat'
@@ -17,7 +17,9 @@ import {
 } from './SettingsService'
 
 export const useMutateFormSettings = () => {
-  const { formId } = useParams<{ formId: FormId }>()
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
 
