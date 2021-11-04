@@ -2,7 +2,6 @@ import { Outlet } from 'react-router-dom'
 import { Box, Flex } from '@chakra-ui/react'
 
 import AdminFormNavbar from './components/AdminFormNavbar'
-import { AdminFormTabProvider } from './components/AdminFormTabProvider'
 
 /**
  * Page for rendering subroutes via `Outlet` component for admin form pages.
@@ -10,9 +9,7 @@ import { AdminFormTabProvider } from './components/AdminFormTabProvider'
 export const AdminFormLayout = (): JSX.Element => {
   return (
     <Flex flexDir="column" height="100vh" overflow="hidden" pos="relative">
-      <AdminFormTabProvider>
-        <AdminFormNavbar />
-      </AdminFormTabProvider>
+      <AdminFormNavbar />
       <Box
         overflow="auto"
         flex={1}
