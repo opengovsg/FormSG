@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 
 import {
   ADMIN_FORM_ROUTE,
@@ -11,34 +12,40 @@ import {
 import { AdminFormPage } from '~features/admin-form/common/AdminFormPage'
 import { PublicFormPage } from '~features/public-form/PublicFormPage'
 
-import { PrivateRoute } from './PrivateRoute'
-import { PublicRoute } from './PublicRoute'
+import { PrivateElement } from './PrivateElement'
+import { PublicElement } from './PublicElement'
 
 const WorkspacePage = lazy(() => import('~features/workspace'))
 const LoginPage = lazy(() => import('~pages/login'))
 
+const WithSuspense = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+)
+
 export const AppRouter = (): JSX.Element => {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Switch>
-          <PublicRoute strict={false} path={PUBLIC_FORM_REGEX}>
-            <PublicFormPage />
-          </PublicRoute>
-          <PublicRoute exact path={LOGIN_ROUTE}>
-            <LoginPage />
-          </PublicRoute>
-          <PrivateRoute exact path={ROOT_ROUTE}>
-            <WorkspacePage />
-          </PrivateRoute>
-          <PrivateRoute path={`${ADMIN_FORM_ROUTE}/:formId`}>
-            <AdminFormPage />
-          </PrivateRoute>
-          <Route path="*">
-            <div>404</div>
-          </Route>
-        </Switch>
-      </Suspense>
-    </BrowserRouter>
+    <WithSuspense>
+      <Routes>
+        <Route
+          path={ROOT_ROUTE}
+          element={<PrivateElement element={<WorkspacePage />} />}
+        />
+        <Route
+          path={LOGIN_ROUTE}
+          element={<PublicElement strict element={<LoginPage />} />}
+        />
+        <Route
+          path={PUBLIC_FORM_REGEX}
+          element={<PublicElement element={<PublicFormPage />} />}
+        />
+        <Route
+          path={`${ADMIN_FORM_ROUTE}/:formId`}
+          element={<PrivateElement element={<AdminFormPage />} />}
+        />
+        <Route path="*">
+          <div>404</div>
+        </Route>
+      </Routes>
+    </WithSuspense>
   )
 }
