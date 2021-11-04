@@ -1,9 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 
 import {
-  ADMIN_FORM_ROUTE,
+  ADMINFORM_RESPONSES_SUBROUTE,
+  ADMINFORM_ROUTE,
+  ADMINFORM_SETTINGS_SUBROUTE,
   LOGIN_ROUTE,
   PUBLIC_FORM_REGEX,
   ROOT_ROUTE,
@@ -40,15 +41,20 @@ export const AppRouter = (): JSX.Element => {
           element={<PublicElement element={<PublicFormPage />} />}
         />
         <Route
-          path={`${ADMIN_FORM_ROUTE}/:formId`}
+          path={`${ADMINFORM_ROUTE}/:formId`}
           element={<PrivateElement element={<AdminFormLayout />} />}
         >
-          <Route path="settings" element={<SettingsPage />} />
-          <Route path="*" element={<div>No match</div>} />
+          <Route index element={<div>Builder subpage</div>} />
+          <Route
+            path={ADMINFORM_SETTINGS_SUBROUTE}
+            element={<SettingsPage />}
+          />
+          <Route
+            path={ADMINFORM_RESPONSES_SUBROUTE}
+            element={<div>Responses subpage</div>}
+          />
         </Route>
-        <Route path="*">
-          <div>404</div>
-        </Route>
+        <Route path="*" element={<div>404!!!</div>} />
       </Routes>
     </WithSuspense>
   )
