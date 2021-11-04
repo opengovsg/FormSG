@@ -1,5 +1,10 @@
 import { Controller, useForm } from 'react-hook-form'
-import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
+import {
+  FormControl,
+  Skeleton,
+  Stack,
+  useBreakpointValue,
+} from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
@@ -23,10 +28,12 @@ export enum DropdownRole {
 
 interface AddCollaboratorInputProps {
   onSubmit: (inputs: AddCollaboratorInputs) => void
+  isLoading: boolean
 }
 
 export const AddCollaboratorInput = ({
   onSubmit,
+  isLoading,
 }: AddCollaboratorInputProps): JSX.Element => {
   const {
     register,
@@ -50,25 +57,34 @@ export const AddCollaboratorInput = ({
         >
           Add collaborators or transfer form ownership
         </FormLabel>
-        <Stack direction={{ base: 'column', md: 'row' }}>
-          <Input
-            type="email"
-            {...register('email', {
-              required: 'Collaborator email is required',
-              validate: (value) => {
-                return !value || isEmail(value) || 'Please enter a valid email'
-              },
-            })}
-            placeholder="me@example.com"
-          />
-          <Controller
-            name="role"
-            control={control}
-            render={({ field: { value, onChange } }) => (
-              <PermissionDropdown value={value} onChange={onChange} />
-            )}
-          />
-        </Stack>
+        <Skeleton isLoaded={!isLoading}>
+          <Stack direction={{ base: 'column', md: 'row' }}>
+            <Input
+              isDisabled={isLoading}
+              type="email"
+              {...register('email', {
+                required: 'Collaborator email is required',
+                validate: (value) => {
+                  return (
+                    !value || isEmail(value) || 'Please enter a valid email'
+                  )
+                },
+              })}
+              placeholder="me@example.com"
+            />
+            <Controller
+              name="role"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <PermissionDropdown
+                  isLoading={isLoading}
+                  value={value}
+                  onChange={onChange}
+                />
+              )}
+            />
+          </Stack>
+        </Skeleton>
         <FormErrorMessage>
           {errors.email && errors.email.message}
         </FormErrorMessage>

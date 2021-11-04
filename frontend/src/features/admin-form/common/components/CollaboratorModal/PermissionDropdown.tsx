@@ -7,11 +7,13 @@ import { DropdownRole } from './AddCollaboratorInput'
 export interface PermissionDropdownProps {
   value: DropdownRole
   onChange: (role: DropdownRole) => void
+  isLoading: boolean
 }
 
 export const PermissionDropdown = ({
   value,
   onChange,
+  isLoading,
 }: PermissionDropdownProps): JSX.Element => {
   return (
     <Menu>
@@ -19,6 +21,7 @@ export const PermissionDropdown = ({
         <>
           <Box>
             <Menu.Button
+              isDisabled={isLoading}
               w="100%"
               minW="8rem"
               variant="outline"

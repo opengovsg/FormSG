@@ -56,7 +56,10 @@ export const CollaboratorModal = ({
         <ModalCloseButton />
         <ModalHeader color="secondary.700">Manage collaborators</ModalHeader>
         <ModalBody whiteSpace="pre-line" pb="3.25rem">
-          <AddCollaboratorInput onSubmit={handleAddCollaborators} />
+          <AddCollaboratorInput
+            isLoading={false}
+            onSubmit={handleAddCollaborators}
+          />
         </ModalBody>
       </ModalContent>
     </Modal>
