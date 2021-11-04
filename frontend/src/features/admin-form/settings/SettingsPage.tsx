@@ -74,7 +74,7 @@ export const SettingsPage = (): JSX.Element => {
           <SettingsTab label="Workflow" icon={BiRocket} />
         </TabList>
       </Flex>
-      <TabPanels maxW="42.5rem" mb={{ base: '4rem', md: 'initial' }}>
+      <TabPanels maxW="42.5rem">
         <TabPanel>
           <SettingsGeneralPage />
         </TabPanel>
