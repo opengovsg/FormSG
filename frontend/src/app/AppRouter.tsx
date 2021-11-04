@@ -9,7 +9,8 @@ import {
   ROOT_ROUTE,
 } from '~constants/routes'
 
-import { AdminFormPage } from '~features/admin-form/common/AdminFormPage'
+import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
+import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
 import { PublicFormPage } from '~features/public-form/PublicFormPage'
 
 import { PrivateElement } from './PrivateElement'
@@ -40,8 +41,11 @@ export const AppRouter = (): JSX.Element => {
         />
         <Route
           path={`${ADMIN_FORM_ROUTE}/:formId`}
-          element={<PrivateElement element={<AdminFormPage />} />}
-        />
+          element={<PrivateElement element={<AdminFormLayout />} />}
+        >
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="*" element={<div>No match</div>} />
+        </Route>
         <Route path="*">
           <div>404</div>
         </Route>
