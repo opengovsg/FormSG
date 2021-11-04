@@ -7,7 +7,15 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
+import { FormPermission } from '~shared/types/form/form'
+
 import { ModalCloseButton } from '~components/Modal'
+
+import {
+  AddCollaboratorInput,
+  AddCollaboratorInputs,
+  DropdownRole,
+} from './AddCollaboratorInput'
 
 interface CollaboratorModalProps {
   isOpen: boolean
@@ -24,6 +32,23 @@ export const CollaboratorModal = ({
     md: 'md',
   })
 
+  const roleToPermission = (
+    role: DropdownRole,
+  ): Omit<FormPermission, 'email'> => {
+    switch (role) {
+      case DropdownRole.Admin:
+      case DropdownRole.Editor:
+        return { write: true }
+      case DropdownRole.Viewer:
+        return { write: false }
+    }
+  }
+
+  const handleAddCollaborators = (inputs: AddCollaboratorInputs) => {
+    const permission = roleToPermission(inputs.role)
+    console.log({ permission, email: inputs.email })
+  }
+
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -31,7 +56,7 @@ export const CollaboratorModal = ({
         <ModalCloseButton />
         <ModalHeader color="secondary.700">Manage collaborators</ModalHeader>
         <ModalBody whiteSpace="pre-line" pb="3.25rem">
-          Placeholder content
+          <AddCollaboratorInput onSubmit={handleAddCollaborators} />
         </ModalBody>
       </ModalContent>
     </Modal>
