@@ -1,8 +1,7 @@
-import axios from 'axios'
-
 import {
   AdminFormDto,
   AdminFormViewDto,
+  FormPermissionsDto,
   PreviewFormViewDto,
   SmsCountsDto,
 } from '~shared/types/form/form'
@@ -35,14 +34,21 @@ export const getAdminFormView = async (
 export const previewForm = async (
   formId: string,
 ): Promise<PreviewFormViewDto> => {
-  return axios
-    .get<PreviewFormViewDto>(`${ADMIN_FORM_ENDPOINT}/${formId}/preview`)
-    .then(({ data }) => data)
-    .then(transformAllIsoStringsToDate)
+  return ApiService.get<PreviewFormViewDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/preview`,
+  ).then(({ data }) => data)
 }
 
 export const getFreeSmsQuota = async (formId: string) => {
   return ApiService.get<SmsCountsDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/verified-sms/count/free`,
+  )
+}
+
+export const getFormCollaborators = async (
+  formId: string,
+): Promise<FormPermissionsDto> => {
+  return ApiService.get<FormPermissionsDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators`,
   ).then(({ data }) => data)
 }
