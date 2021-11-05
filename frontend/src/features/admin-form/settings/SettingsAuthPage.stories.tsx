@@ -1,4 +1,3 @@
-import { MemoryRouter, Route } from 'react-router'
 import { Meta, Story } from '@storybook/react'
 
 import {
@@ -13,6 +12,8 @@ import {
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
+import { StoryRouter } from '~utils/storybook'
+
 import { SettingsAuthPage } from './SettingsAuthPage'
 
 const buildMswRoutes = (overrides?: Partial<FormSettings>) => [
@@ -23,17 +24,7 @@ const buildMswRoutes = (overrides?: Partial<FormSettings>) => [
 export default {
   title: 'Pages/AdminFormPage/Settings/AuthTab',
   component: SettingsAuthPage,
-  decorators: [
-    (storyFn) => {
-      // MemoryRouter is used so react-router-dom#Link components can work
-      // (and also to force the initial tab the page renders to be the settings tab).
-      return (
-        <MemoryRouter initialEntries={['/admin/form/1234/settings']}>
-          <Route path="/admin/form/:formId">{storyFn()}</Route>
-        </MemoryRouter>
-      )
-    },
-  ],
+  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
   parameters: {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
