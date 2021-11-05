@@ -11,6 +11,7 @@ import { useAdminForm, useAdminFormCollaborators } from '../../queries'
 
 import { DropdownRole } from './AddCollaboratorInput'
 import { PermissionDropdown } from './PermissionDropdown'
+import { permissionsToRole } from './utils'
 
 export const CollaboratorList = (): JSX.Element => {
   // Admin form data required for checking for duplicate emails.
@@ -18,10 +19,6 @@ export const CollaboratorList = (): JSX.Element => {
   const { isLoading, data: collaborators } = useAdminFormCollaborators({
     enabled: !!form,
   })
-
-  const permissionsToRole = (permission: FormPermission) => {
-    return permission.write ? DropdownRole.Editor : DropdownRole.Viewer
-  }
 
   const list = useMemo(() => {
     return (
@@ -54,7 +51,7 @@ export const CollaboratorList = (): JSX.Element => {
   }, [form?.admin.email])
 
   return (
-    <Grid templateColumns="1fr auto auto">
+    <Grid templateColumns="1fr auto auto" maxH="12.5rem" overflowY="auto">
       {ownerRow}
       {list.map((row) => (
         <Fragment key={row.email}>
