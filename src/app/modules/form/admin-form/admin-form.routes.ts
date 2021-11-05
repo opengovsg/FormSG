@@ -445,3 +445,14 @@ AdminFormsRouter.post(
   withUserAuthentication,
   AdminFormController.handleEmailPreviewSubmission,
 )
+
+AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/twilio')
+  /**
+   * Update the specified form twilio credentials
+   * @route PUT /:formId/twilio
+   * @security session
+   *
+   * @returns 200 with updated twilio credentials
+   * @returns 500 when database error occurs
+   */
+  .put(withUserAuthentication, AdminFormController.handleUpdateTwilio)
