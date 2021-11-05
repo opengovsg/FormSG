@@ -8,12 +8,15 @@ export interface PermissionDropdownProps {
   value: DropdownRole
   onChange: (role: DropdownRole) => void
   isLoading: boolean
+
+  buttonVariant?: 'outline' | 'clear'
 }
 
 export const PermissionDropdown = ({
   value,
   onChange,
   isLoading,
+  buttonVariant = 'outline',
 }: PermissionDropdownProps): JSX.Element => {
   return (
     <Menu>
@@ -24,7 +27,7 @@ export const PermissionDropdown = ({
               isDisabled={isLoading}
               w="100%"
               minW="8rem"
-              variant="outline"
+              variant={buttonVariant}
               colorScheme="secondary"
               isActive={isOpen}
             >

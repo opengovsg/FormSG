@@ -17,6 +17,7 @@ import {
   AddCollaboratorInputs,
   DropdownRole,
 } from './AddCollaboratorInput'
+import { CollaboratorList } from './CollaboratorList'
 
 interface CollaboratorModalProps {
   isOpen: boolean
@@ -59,6 +60,7 @@ export const CollaboratorModal = ({
         <ModalBody whiteSpace="pre-line" pb="3.25rem">
           <AddCollaboratorInput onSubmit={handleAddCollaborators} />
           <Divider mt="2.5rem" mb="2rem" />
+          <CollaboratorList />
         </ModalBody>
       </ModalContent>
     </Modal>
