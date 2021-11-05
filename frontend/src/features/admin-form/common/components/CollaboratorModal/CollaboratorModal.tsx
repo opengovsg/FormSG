@@ -27,12 +27,6 @@ export const CollaboratorModal = ({
     xs: 'mobile',
     md: 'md',
   })
-
-  const handleAddCollaborators = (inputs: AddCollaboratorInputs) => {
-    const permission = roleToPermission(inputs.role)
-    console.log({ permission, email: inputs.email })
-  }
-
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -40,7 +34,7 @@ export const CollaboratorModal = ({
         <ModalCloseButton />
         <ModalHeader color="secondary.700">Manage collaborators</ModalHeader>
         <ModalBody whiteSpace="pre-line" pb="3.25rem">
-          <AddCollaboratorInput onSubmit={handleAddCollaborators} />
+          <AddCollaboratorInput />
           <Divider mt="2.5rem" mb="2rem" />
           <CollaboratorList />
         </ModalBody>

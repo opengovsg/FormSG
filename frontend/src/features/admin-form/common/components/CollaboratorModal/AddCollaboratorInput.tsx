@@ -9,14 +9,18 @@ import {
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
+import { FormPermission } from '~shared/types/form/form'
+
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
+import { useMutateCollaborators } from '../../mutations'
 import { useAdminForm, useAdminFormCollaborators } from '../../queries'
 
 import { PermissionDropdown } from './PermissionDropdown'
+import { roleToPermission } from './utils'
 
 export type AddCollaboratorInputs = {
   email: string
@@ -27,10 +31,6 @@ export enum DropdownRole {
   Admin = 'Admin',
   Editor = 'Editor',
   Viewer = 'Viewer',
-}
-
-interface AddCollaboratorInputProps {
-  onSubmit: (inputs: AddCollaboratorInputs) => void
 }
 
 const useAddCollaboratorInput = () => {
@@ -73,27 +73,50 @@ const useAddCollaboratorInput = () => {
     formMethods,
     isFullWidth,
     validationRules,
+    currentCollaborators: form?.permissionList,
   }
 }
 
-export const AddCollaboratorInput = ({
-  onSubmit,
-}: AddCollaboratorInputProps): JSX.Element => {
+export const AddCollaboratorInput = (): JSX.Element => {
   const {
     formMethods: {
       control,
       register,
       formState: { errors },
       handleSubmit,
+      reset,
     },
     isFullWidth,
     isLoading,
     validationRules,
+    currentCollaborators,
   } = useAddCollaboratorInput()
 
+  const { mutateAddCollaborator } = useMutateCollaborators()
+
+  const handleAddCollaborator = handleSubmit((inputs) => {
+    if (!currentCollaborators) return
+    const newPermission: FormPermission = {
+      ...roleToPermission(inputs.role),
+      email: inputs.email,
+    }
+    return mutateAddCollaborator.mutate(
+      {
+        newPermission,
+        currentPermissions: currentCollaborators,
+      },
+      {
+        onSuccess: () => reset(),
+      },
+    )
+  })
+
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)}>
-      <FormControl isInvalid={!isEmpty(errors)}>
+    <form noValidate onSubmit={handleAddCollaborator}>
+      <FormControl
+        isInvalid={!isEmpty(errors)}
+        isReadOnly={mutateAddCollaborator.isLoading}
+      >
         <FormLabel
           isRequired
           description="Share your secret key with users who need to access response data"
@@ -113,7 +136,7 @@ export const AddCollaboratorInput = ({
               control={control}
               render={({ field: { value, onChange } }) => (
                 <PermissionDropdown
-                  isLoading={isLoading}
+                  isLoading={isLoading || mutateAddCollaborator.isLoading}
                   value={value}
                   onChange={onChange}
                 />
@@ -125,7 +148,12 @@ export const AddCollaboratorInput = ({
           {errors.email && errors.email.message}
         </FormErrorMessage>
       </FormControl>
-      <Button isFullWidth={isFullWidth} mt="1rem" type="submit">
+      <Button
+        isLoading={mutateAddCollaborator.isLoading}
+        isFullWidth={isFullWidth}
+        mt="1rem"
+        type="submit"
+      >
         Add collaborator
       </Button>
     </form>
