@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Fragment, useMemo } from 'react'
 import { BiTrash } from 'react-icons/bi'
-import { Divider, Flex, Grid, Spacer, Stack, Text } from '@chakra-ui/react'
+import {
+  Divider,
+  Flex,
+  Grid,
+  Skeleton,
+  Spacer,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
 
 import { FormPermission } from '~shared/types/form/form'
 
@@ -32,26 +40,25 @@ export const CollaboratorList = (): JSX.Element => {
   const ownerRow = useMemo(() => {
     return (
       <>
-        <Text
-          textStyle="body-2"
-          color="secondary.900"
-          alignSelf="center"
-          isTruncated
-        >
-          {form?.admin.email}
-        </Text>
-        <Text textStyle="body-2" color="secondary.300" px="1rem" py="0.5rem">
-          Owner
-        </Text>
+        <Skeleton isLoaded={!!collaborators} alignSelf="center" py="0.5rem">
+          <Text textStyle="body-2" color="secondary.900" isTruncated>
+            {form?.admin.email}
+          </Text>
+        </Skeleton>
+        <Skeleton isLoaded={!!collaborators}>
+          <Text textStyle="body-2" color="secondary.300" px="1rem" py="0.5rem">
+            Owner
+          </Text>
+        </Skeleton>
         {/* Spacer required for 3 column grid layout */}
         <Spacer />
         <Divider gridColumn="1 / -1" />
       </>
     )
-  }, [form?.admin.email])
+  }, [collaborators, form?.admin.email])
 
   return (
-    <Grid templateColumns="1fr auto auto" maxH="12.5rem" overflowY="auto">
+    <Grid templateColumns="1fr auto auto" overflowY="auto">
       {ownerRow}
       {list.map((row) => (
         <Fragment key={row.email}>
