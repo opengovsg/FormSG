@@ -2,6 +2,7 @@ import {
   AdminFormDto,
   AdminFormViewDto,
   FormPermissionsDto,
+  PermissionsUpdateDto,
   PreviewFormViewDto,
   SmsCountsDto,
 } from '~shared/types/form/form'
@@ -50,5 +51,15 @@ export const getFormCollaborators = async (
 ): Promise<FormPermissionsDto> => {
   return ApiService.get<FormPermissionsDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators`,
+  ).then(({ data }) => data)
+}
+
+export const updateFormCollaborators = async (
+  formId: string,
+  collaborators: PermissionsUpdateDto,
+): Promise<FormPermissionsDto> => {
+  return ApiService.put<FormPermissionsDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators`,
+    collaborators,
   ).then(({ data }) => data)
 }
