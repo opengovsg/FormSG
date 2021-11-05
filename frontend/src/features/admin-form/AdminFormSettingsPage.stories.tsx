@@ -1,4 +1,5 @@
 import { MemoryRouter, Route } from 'react-router'
+import { Routes } from 'react-router-dom'
 import { Meta, Story } from '@storybook/react'
 
 import { FormResponseMode, FormStatus } from '~shared/types/form/form'
@@ -13,18 +14,23 @@ import {
 import formsgSdk from '~utils/formSdk'
 import { viewports } from '~utils/storybook'
 
-import { AdminFormPage } from './common/AdminFormPage'
+import { AdminFormLayout } from './common/AdminFormLayout'
+import { SettingsPage } from './settings/SettingsPage'
 
 export default {
   title: 'Pages/AdminFormPage/Settings',
-  component: AdminFormPage,
+  component: SettingsPage,
   decorators: [
     (storyFn) => {
       // MemoryRouter is used so react-router-dom#Link components can work
       // (and also to force the initial tab the page renders to be the settings tab).
       return (
-        <MemoryRouter initialEntries={['/admin/form/1234/settings']}>
-          <Route path="/admin/form/:formId">{storyFn()}</Route>
+        <MemoryRouter initialEntries={['/:formId/settings']}>
+          <Routes>
+            <Route path={'/:formId'} element={<AdminFormLayout />}>
+              <Route path="settings" element={storyFn()} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       )
     },
@@ -42,7 +48,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <AdminFormPage />
+const Template: Story = () => <SettingsPage />
 export const Desktop = Template.bind({})
 
 export const Tablet = Template.bind({})

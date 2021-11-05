@@ -1,14 +1,20 @@
 import { Meta, Story } from '@storybook/react'
-import StoryRouter from 'storybook-react-router'
 
 import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
+
+import { StoryRouter } from '~utils/storybook'
 
 import { PublicFormPage } from './PublicFormPage'
 
 export default {
   title: 'Pages/PublicFormPage',
   component: PublicFormPage,
-  decorators: [StoryRouter()],
+  decorators: [
+    StoryRouter({
+      initialEntries: ['/12345'],
+      path: '/:formId',
+    }),
+  ],
   parameters: {
     layout: 'fullscreen',
     msw: [getPublicFormResponse({ delay: 0 })],
