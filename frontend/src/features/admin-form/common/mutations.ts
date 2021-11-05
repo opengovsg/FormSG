@@ -39,6 +39,68 @@ export const useMutateCollaborators = () => {
     [formId, queryClient],
   )
 
+  const handleSuccess = useCallback(
+    ({
+      newData,
+      toastDescription,
+    }: {
+      newData: FormPermissionsDto
+      toastDescription: string
+    }) => {
+      toast.closeAll()
+      updateFormData(newData)
+
+      // Show toast on success.
+      toast({
+        description: toastDescription,
+      })
+    },
+    [toast, updateFormData],
+  )
+
+  const handleError = useCallback(
+    (error: Error) => {
+      toast.closeAll()
+      toast({
+        description: error.message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
+  const mutateUpdateCollaborator = useMutation(
+    ({
+      permissionToUpdate,
+      currentPermissions,
+    }: {
+      permissionToUpdate: FormPermission
+      currentPermissions: FormPermissionsDto
+    }) => {
+      const index = currentPermissions.findIndex(
+        (c) => c.email === permissionToUpdate.email,
+      )
+      if (index === -1)
+        throw new Error(
+          'Collaborator to update does not seem to exist. Refresh and try again.',
+        )
+      const permissionListToUpdate = currentPermissions.slice()
+      // Replace old permissions with new permission.
+      permissionListToUpdate[index] = permissionToUpdate
+
+      return updateFormCollaborators(formId, permissionListToUpdate)
+    },
+    {
+      onSuccess: (newData, { permissionToUpdate }) => {
+        const toastDescription = `${
+          permissionToUpdate.email
+        } has been updated to the ${permissionsToRole(permissionToUpdate)} role`
+        handleSuccess({ newData, toastDescription })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateAddCollaborator = useMutation(
     ({
       newPermission,
@@ -52,27 +114,17 @@ export const useMutateCollaborators = () => {
     },
     {
       onSuccess: (newData, { newPermission }) => {
-        toast.closeAll()
-        updateFormData(newData)
-
-        // Show toast on success.
-        toast({
-          description: `${
-            newPermission.email
-          } has been added as a ${permissionsToRole(newPermission)}`,
-        })
+        const toastDescription = `${
+          newPermission.email
+        } has been added as a ${permissionsToRole(newPermission)}`
+        handleSuccess({ newData, toastDescription })
       },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
+      onError: handleError,
     },
   )
 
   return {
     mutateAddCollaborator,
+    mutateUpdateCollaborator,
   }
 }
