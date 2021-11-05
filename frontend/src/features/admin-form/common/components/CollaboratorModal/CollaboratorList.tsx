@@ -1,32 +1,26 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Fragment, useMemo } from 'react'
 import { BiTrash } from 'react-icons/bi'
-import {
-  Divider,
-  Flex,
-  Grid,
-  Skeleton,
-  Spacer,
-  Stack,
-  Text,
-} from '@chakra-ui/react'
+import { Divider, Grid, Skeleton, Spacer, Text } from '@chakra-ui/react'
 
 import { FormPermission } from '~shared/types/form/form'
 
 import IconButton from '~components/IconButton'
 
+import { useMutateCollaborators } from '../../mutations'
 import { useAdminForm, useAdminFormCollaborators } from '../../queries'
 
 import { DropdownRole } from './AddCollaboratorInput'
 import { PermissionDropdown } from './PermissionDropdown'
-import { permissionsToRole } from './utils'
+import { permissionsToRole, roleToPermission } from './utils'
 
 export const CollaboratorList = (): JSX.Element => {
   // Admin form data required for checking for duplicate emails.
   const { data: form } = useAdminForm()
-  const { isLoading, data: collaborators } = useAdminFormCollaborators({
+  const { data: collaborators } = useAdminFormCollaborators({
     enabled: !!form,
   })
+
+  const { mutateUpdateCollaborator } = useMutateCollaborators()
 
   const list = useMemo(() => {
     return (
@@ -57,6 +51,22 @@ export const CollaboratorList = (): JSX.Element => {
     )
   }, [collaborators, form?.admin.email])
 
+  const handleUpdateRole =
+    (row: typeof list[number]) => (newRole: DropdownRole) => {
+      // Should not happen since this function cannot be invoked without the
+      // collaborators being loaded, but guarding just in case.
+      // Or when role to update is already the current role.
+      if (!collaborators || row.role === newRole) return
+      const permissionToUpdate: FormPermission = {
+        email: row.email,
+        ...roleToPermission(newRole),
+      }
+      return mutateUpdateCollaborator.mutate({
+        permissionToUpdate,
+        currentPermissions: collaborators,
+      })
+    }
+
   return (
     <Grid templateColumns="1fr auto auto" overflowY="auto">
       {ownerRow}
@@ -73,11 +83,12 @@ export const CollaboratorList = (): JSX.Element => {
           <PermissionDropdown
             buttonVariant="clear"
             value={row.role}
-            isLoading={false}
-            onChange={(e) => console.log(e)}
+            isLoading={mutateUpdateCollaborator.isLoading}
+            onChange={handleUpdateRole(row)}
           />
           <IconButton
             icon={<BiTrash />}
+            isDisabled={mutateUpdateCollaborator.isLoading}
             variant="clear"
             aria-label="Remove collaborator"
             colorScheme="danger"
