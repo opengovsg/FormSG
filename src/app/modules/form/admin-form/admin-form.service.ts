@@ -1,3 +1,4 @@
+import { AWSError, SecretsManager } from 'aws-sdk'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { assignIn, last, omit } from 'lodash'
 import mongoose from 'mongoose'
@@ -34,7 +35,7 @@ import {
   IPopulatedForm,
 } from '../../../../types'
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
-import { aws as AwsConfig } from '../../../config/config'
+import config, { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
@@ -63,6 +64,8 @@ import {
 import { getFormModelByResponseMode } from '../form.service'
 import { getFormFieldById, getLogicById, isFormOnboarded } from '../form.utils'
 
+import { TwilioCredentials } from './../../../services/sms/sms.types'
+import { ApplicationError } from './../../core/core.errors'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   CreatePresignedUrlError,
@@ -77,6 +80,8 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
+
+const secretsManager = new SecretsManager({ region: config.aws.region })
 
 type PresignedPostUrlParams = {
   fileId: string
@@ -1147,4 +1152,73 @@ const isMobileFieldUpdateAllowed = (
         : okAsync(form)
     },
   )
+}
+
+export const createTwilioCredentials = (
+  originalForm: IPopulatedForm,
+  twilioCredentials: TwilioCredentials,
+  formId: string,
+): ResultAsync<SecretsManager.Types.CreateSecretRequest, ApplicationError> => {
+  const msgSrvcName = `formsg/${process.env.FORMSG_SDK_MODE}/form/${formId}/twilio`
+
+  // TO DO: Add error handling to undo MongoDB
+  void updateForm(originalForm, { msgSrvcName })
+
+  const body: SecretsManager.Types.CreateSecretRequest = {
+    Name: msgSrvcName,
+    SecretString: JSON.stringify(twilioCredentials),
+  }
+
+  let reqError: AWSError | null
+  const request = secretsManager.createSecret(body, (err: AWSError, data) => {
+    if (err) {
+      logger.error({
+        message: 'Error when creating Secret',
+        meta: {
+          action: 'Create Secret in SecretsManager',
+          data,
+        },
+        error: err,
+      })
+      reqError = err
+    }
+  })
+  request.send()
+
+  return ResultAsync.fromPromise(Promise.resolve(body), () => {
+    return new ApplicationError(reqError?.message)
+  })
+}
+
+export const updateTwilioCredentials = (
+  msgSrvcName: string,
+  twilioCredentials: TwilioCredentials,
+): ResultAsync<
+  SecretsManager.Types.PutSecretValueRequest,
+  ApplicationError
+> => {
+  const body: SecretsManager.Types.PutSecretValueRequest = {
+    SecretId: msgSrvcName,
+    SecretString: JSON.stringify(twilioCredentials),
+  }
+
+  let reqError: AWSError | null
+  const request = secretsManager.putSecretValue(body, (err: AWSError, data) => {
+    if (err) {
+      logger.error({
+        message: 'Error when updating Secret',
+        meta: {
+          action: 'Update Secret in SecretsManager',
+          data,
+        },
+        error: err,
+      })
+      reqError = err
+    }
+  })
+  request.send()
+
+  return ResultAsync.fromPromise(Promise.resolve(body), () => {
+    return new ApplicationError(reqError?.message)
+  })
 }
