@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { Box, Center } from '@chakra-ui/react'
 import { DecoratorFn } from '@storybook/react'
 
@@ -25,6 +26,25 @@ export const LoggedInDecorator: DecoratorFn = (storyFn) => {
 
   return storyFn()
 }
+
+interface StoryRouterProps {
+  initialEntries: string[]
+  path: string
+}
+/**
+ * Decorator to instantiate a story with an initial route.
+ */
+export const StoryRouter =
+  ({ path, initialEntries }: StoryRouterProps): DecoratorFn =>
+  (storyFn) => {
+    return (
+      <MemoryRouter initialEntries={initialEntries}>
+        <Routes>
+          <Route path={path} element={storyFn()} />
+        </Routes>
+      </MemoryRouter>
+    )
+  }
 
 /**
  * Helper function to convert theme breakpoint into viewport width in px for
