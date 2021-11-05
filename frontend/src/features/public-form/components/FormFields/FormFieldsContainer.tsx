@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { FieldValues, FormProvider, useForm } from 'react-hook-form'
-import { Box, Flex, Skeleton, Spacer, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Spacer, Stack, Text } from '@chakra-ui/react'
 import { times } from 'lodash'
 
 import { BasicField } from '~shared/types/field'
-import { FormColorTheme } from '~shared/types/form/form'
+import { FormColorTheme, PublicFormDto } from '~shared/types/form/form'
 
 import Button from '~components/Button'
 import {
@@ -24,14 +24,16 @@ import {
 } from '~templates/Field'
 import { TableFieldSchema } from '~templates/Field/Table'
 
-import { usePublicForm } from '~features/public-form/queries'
-
 import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
 
-export const FormFieldsContainer = (): JSX.Element => {
-  const { data, isLoading } = usePublicForm()
+interface FormFieldsContainerProps {
+  form: PublicFormDto
+}
 
+export const FormFieldsContainer = ({
+  form,
+}: FormFieldsContainerProps): JSX.Element => {
   // TODO: Cleanup messy code
   // TODO: Inject default values if field is MyInfo, or prefilled.
   const defaultFormValues = useMemo(() => {
@@ -67,36 +69,17 @@ export const FormFieldsContainer = (): JSX.Element => {
   }
 
   const bgColour = useMemo(() => {
-    if (isLoading) return 'neutral.100'
-    if (!data) return ''
-    const { colorTheme } = data.startPage
+    const { colorTheme } = form.startPage
     switch (colorTheme) {
       case FormColorTheme.Blue:
         return 'secondary.100'
       default:
         return `theme-${colorTheme}.100`
     }
-  }, [data, isLoading])
+  }, [form])
 
   const renderFields = useMemo(() => {
-    // Render skeleton when no data
-    if (isLoading) {
-      return (
-        <Flex flexDir="column">
-          <Skeleton height="2rem" />
-          <Skeleton height="1.5rem" mt="2.25rem" />
-          <Skeleton height="2.75rem" mt="0.75rem" />
-          <Skeleton height="1.5rem" mt="2.25rem" />
-          <Skeleton height="2.75rem" mt="0.75rem" />
-          <Skeleton height="1.5rem" mt="2.25rem" />
-          <Skeleton height="2.75rem" mt="0.75rem" />
-          <Skeleton height="1.5rem" mt="2.25rem" />
-          <Skeleton height="2.75rem" mt="0.75rem" />
-        </Flex>
-      )
-    }
-
-    return data?.form_fields.map((field) => {
+    return form.form_fields.map((field) => {
       switch (field.fieldType) {
         case BasicField.Section:
           return (
@@ -140,7 +123,7 @@ export const FormFieldsContainer = (): JSX.Element => {
           )
       }
     })
-  }, [bgColour, data?.form_fields, isLoading])
+  }, [bgColour, form.form_fields])
 
   return (
     <FormSectionsProvider>
