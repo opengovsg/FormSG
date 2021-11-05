@@ -3,7 +3,10 @@ import ReactDOM from 'react-dom'
 import { useDisclosure } from '@chakra-ui/hooks'
 import { Meta, Story } from '@storybook/react'
 
-import { getAdminFormCollaborators } from '~/mocks/msw/handlers/admin-form'
+import {
+  getAdminFormCollaborators,
+  getAdminFormResponse,
+} from '~/mocks/msw/handlers/admin-form'
 
 import {
   fullScreenDecorator,
@@ -13,6 +16,8 @@ import {
 } from '~utils/storybook'
 
 import { CollaboratorModal } from './CollaboratorModal'
+
+const baseMswRoutes = [getAdminFormResponse(), getAdminFormCollaborators()]
 
 export default {
   title: 'Features/AdminForm/CollaboratorModal',
@@ -26,7 +31,7 @@ export default {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
     chromatic: { pauseAnimationAtEnd: true },
-    msw: [getAdminFormCollaborators()],
+    msw: baseMswRoutes,
   },
 } as Meta
 
@@ -58,7 +63,7 @@ export const Default = Template.bind({})
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: [getAdminFormCollaborators({ delay: 'infinite' })],
+  msw: [getAdminFormCollaborators({ delay: 'infinite' }), ...baseMswRoutes],
 }
 
 export const Mobile = Template.bind({})

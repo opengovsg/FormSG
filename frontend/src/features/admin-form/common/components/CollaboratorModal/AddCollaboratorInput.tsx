@@ -1,4 +1,5 @@
-import { Controller, useForm } from 'react-hook-form'
+import { useMemo } from 'react'
+import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import {
   FormControl,
   Skeleton,
@@ -12,6 +13,8 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+
+import { useAdminForm, useAdminFormCollaborators } from '../../queries'
 
 import { PermissionDropdown } from './PermissionDropdown'
 
@@ -28,25 +31,65 @@ export enum DropdownRole {
 
 interface AddCollaboratorInputProps {
   onSubmit: (inputs: AddCollaboratorInputs) => void
-  isLoading: boolean
 }
 
-export const AddCollaboratorInput = ({
-  onSubmit,
-  isLoading,
-}: AddCollaboratorInputProps): JSX.Element => {
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<AddCollaboratorInputs>({
+const useAddCollaboratorInput = () => {
+  // Admin form data required for checking for duplicate emails.
+  const { data: form } = useAdminForm()
+  const { isLoading, data: collaborators } = useAdminFormCollaborators({
+    enabled: !!form,
+  })
+
+  const formMethods = useForm<AddCollaboratorInputs>({
     defaultValues: {
       role: DropdownRole.Editor,
     },
   })
 
+  const validationRules: RegisterOptions = useMemo(() => {
+    return {
+      required: 'Collaborator email is required',
+      validate: {
+        validEmail: (value: string) =>
+          !value || isEmail(value) || 'Please enter a valid email',
+        duplicateEmail: (value: string) =>
+          !value ||
+          !collaborators?.find(
+            (c) => c.email.toLowerCase() === value.toLowerCase(),
+          ) ||
+          'This user is an existing collaborator. Edit role below.',
+        ownerEmail: (value: string) =>
+          !value ||
+          form?.admin.email.toLowerCase() !== value.toLowerCase() ||
+          'You cannot add the form owner as a collaborator',
+      },
+    }
+  }, [collaborators, form?.admin.email])
+
   const isFullWidth = useBreakpointValue({ base: true, xs: true, md: false })
+
+  return {
+    isLoading,
+    formMethods,
+    isFullWidth,
+    validationRules,
+  }
+}
+
+export const AddCollaboratorInput = ({
+  onSubmit,
+}: AddCollaboratorInputProps): JSX.Element => {
+  const {
+    formMethods: {
+      control,
+      register,
+      formState: { errors },
+      handleSubmit,
+    },
+    isFullWidth,
+    isLoading,
+    validationRules,
+  } = useAddCollaboratorInput()
 
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)}>
@@ -62,14 +105,7 @@ export const AddCollaboratorInput = ({
             <Input
               isDisabled={isLoading}
               type="email"
-              {...register('email', {
-                required: 'Collaborator email is required',
-                validate: (value) => {
-                  return (
-                    !value || isEmail(value) || 'Please enter a valid email'
-                  )
-                },
-              })}
+              {...register('email', validationRules)}
               placeholder="me@example.com"
             />
             <Controller

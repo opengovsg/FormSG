@@ -51,7 +51,7 @@ export const useFreeSmsQuota = () => {
 }
 
 export const useAdminFormCollaborators = (
-  props: UseQueryOptions<
+  props?: UseQueryOptions<
     FormPermissionsDto,
     ApiError,
     FormPermissionsDto,

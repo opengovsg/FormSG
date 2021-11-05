@@ -12,8 +12,6 @@ import { FormPermission } from '~shared/types/form/form'
 
 import { ModalCloseButton } from '~components/Modal'
 
-import { useAdminFormCollaborators } from '../../queries'
-
 import {
   AddCollaboratorInput,
   AddCollaboratorInputs,
@@ -29,8 +27,6 @@ export const CollaboratorModal = ({
   isOpen,
   onClose,
 }: CollaboratorModalProps): JSX.Element => {
-  const { data: collaborators } = useAdminFormCollaborators({ enabled: isOpen })
-
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -61,10 +57,7 @@ export const CollaboratorModal = ({
         <ModalCloseButton />
         <ModalHeader color="secondary.700">Manage collaborators</ModalHeader>
         <ModalBody whiteSpace="pre-line" pb="3.25rem">
-          <AddCollaboratorInput
-            isLoading={!collaborators}
-            onSubmit={handleAddCollaborators}
-          />
+          <AddCollaboratorInput onSubmit={handleAddCollaborators} />
           <Divider mt="2.5rem" mb="2rem" />
         </ModalBody>
       </ModalContent>
