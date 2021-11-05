@@ -81,6 +81,7 @@ import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
+import { TwilioCredentials } from './../../../services/sms/sms.types'
 import {
   PREVIEW_CORPPASS_UID,
   PREVIEW_CORPPASS_UINFIN,
@@ -2532,4 +2533,71 @@ export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
         return res.status(statusCode).json({ message: errorMessage })
       })
   )
+}
+
+/**
+ * Handler for PUT /:formId/twilio.
+ * @security session
+ *
+ * @returns 200 with updated form
+ * @returns 400 when form field has invalid updates to be performed
+ * @returns 403 when current user does not have permissions to update form
+ * @returns 404 when form to update cannot be found
+ * @returns 409 when saving updated form incurs a conflict in the database
+ * @returns 410 when form to update is archived
+ * @returns 413 when updated form is too large to be saved in the database
+ * @returns 422 when an invalid update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateTwilio: ControllerHandler<
+  { formId: string },
+  unknown,
+  TwilioCredentials
+> = (req, res) => {
+  const { formId } = req.params
+  const twilioCredentials = req.body
+  // TO DO: ADD REGEX CHECK FOR CREDENTIALS
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) => {
+      const { msgSrvcName } = retrievedForm
+
+      return msgSrvcName
+        ? AdminFormService.updateTwilioCredentials(
+            msgSrvcName,
+            twilioCredentials,
+          )
+        : AdminFormService.createTwilioCredentials(
+            retrievedForm,
+            twilioCredentials,
+            formId,
+          )
+    })
+    .map((twilioCredentials) =>
+      res.status(StatusCodes.OK).json(twilioCredentials),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating twilio credentials',
+        meta: {
+          action: 'handleUpdateTwilio',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          twilioCredentials,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
