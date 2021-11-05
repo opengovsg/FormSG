@@ -45,7 +45,7 @@ export const useMutateCollaborators = () => {
       toastDescription,
     }: {
       newData: FormPermissionsDto
-      toastDescription: string
+      toastDescription: React.ReactNode
     }) => {
       toast.closeAll()
       updateFormData(newData)
@@ -123,8 +123,32 @@ export const useMutateCollaborators = () => {
     },
   )
 
+  const mutateRemoveCollaborator = useMutation(
+    ({
+      permissionToRemove,
+      currentPermissions,
+    }: {
+      permissionToRemove: FormPermission
+      currentPermissions: FormPermissionsDto
+    }) => {
+      const filteredList = currentPermissions.filter(
+        (c) => c.email !== permissionToRemove.email,
+      )
+      return updateFormCollaborators(formId, filteredList)
+    },
+    {
+      onSuccess: (newData, { permissionToRemove }) => {
+        // TODO: Decide if we want to allow redo (via readding permission)
+        const toastDescription = `${permissionToRemove.email} has been removed as a collaborator`
+        handleSuccess({ newData, toastDescription })
+      },
+      onError: handleError,
+    },
+  )
+
   return {
     mutateAddCollaborator,
     mutateUpdateCollaborator,
+    mutateRemoveCollaborator,
   }
 }

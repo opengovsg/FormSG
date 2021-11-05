@@ -42,6 +42,7 @@ const useAddCollaboratorInput = () => {
 
   const formMethods = useForm<AddCollaboratorInputs>({
     defaultValues: {
+      email: '',
       role: DropdownRole.Editor,
     },
   })

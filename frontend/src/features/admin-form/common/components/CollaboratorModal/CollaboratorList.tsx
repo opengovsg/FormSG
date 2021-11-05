@@ -20,7 +20,8 @@ export const CollaboratorList = (): JSX.Element => {
     enabled: !!form,
   })
 
-  const { mutateUpdateCollaborator } = useMutateCollaborators()
+  const { mutateUpdateCollaborator, mutateRemoveCollaborator } =
+    useMutateCollaborators()
 
   const list = useMemo(() => {
     return (
@@ -67,6 +68,20 @@ export const CollaboratorList = (): JSX.Element => {
       })
     }
 
+  const handleRemoveCollaborator = (row: typeof list[number]) => () => {
+    if (!collaborators) return
+    // May seem redundant since we already have the email, but this may prevent
+    // issues arising from desync between `list` and `collaborators`.
+    const permissionToRemove: FormPermission = {
+      email: row.email,
+      ...roleToPermission(row.role),
+    }
+    return mutateRemoveCollaborator.mutate({
+      permissionToRemove,
+      currentPermissions: collaborators,
+    })
+  }
+
   return (
     <Grid templateColumns="1fr auto auto" overflowY="auto">
       {ownerRow}
@@ -83,15 +98,27 @@ export const CollaboratorList = (): JSX.Element => {
           <PermissionDropdown
             buttonVariant="clear"
             value={row.role}
-            isLoading={mutateUpdateCollaborator.isLoading}
+            isLoading={
+              mutateUpdateCollaborator.isLoading ||
+              mutateRemoveCollaborator.isLoading
+            }
             onChange={handleUpdateRole(row)}
           />
           <IconButton
             icon={<BiTrash />}
-            isDisabled={mutateUpdateCollaborator.isLoading}
+            isLoading={
+              mutateRemoveCollaborator.isLoading &&
+              mutateRemoveCollaborator.variables?.permissionToRemove.email ===
+                row.email
+            }
+            isDisabled={
+              mutateUpdateCollaborator.isLoading ||
+              mutateRemoveCollaborator.isLoading
+            }
             variant="clear"
             aria-label="Remove collaborator"
             colorScheme="danger"
+            onClick={handleRemoveCollaborator(row)}
           />
           <Divider gridColumn="1 / -1" />
         </Fragment>
