@@ -5,7 +5,7 @@ import { useDisclosure } from '@chakra-ui/hooks'
 import { Text } from '@chakra-ui/react'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
-import { ADMIN_FORM_ROUTE } from '~constants/routes'
+import { ADMINFORM_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { logout } from '~services/AuthService'
 import Button from '~components/Button'
@@ -44,7 +44,7 @@ export const WorkspacePage = (): JSX.Element => {
           <Link
             key={form._id}
             as={ReactLink}
-            to={`${ADMIN_FORM_ROUTE}/${form._id}`}
+            to={`${ADMINFORM_ROUTE}/${form._id}`}
           >
             {form.title}
           </Link>
