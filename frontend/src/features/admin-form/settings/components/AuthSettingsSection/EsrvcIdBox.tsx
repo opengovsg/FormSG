@@ -7,11 +7,20 @@ import {
   useState,
 } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { Flex, FormLabel, Input, Stack, VisuallyHidden } from '@chakra-ui/react'
+import {
+  Flex,
+  FormLabel,
+  InputGroup,
+  InputRightElement,
+  Stack,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings } from '~shared/types/form'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+import Input from '~components/Input'
+import Spinner from '~components/Spinner'
 
 import { useMutateFormSettings } from '../../mutations'
 
@@ -89,17 +98,22 @@ export const EsrvcIdBox = ({
         <FormLabel htmlFor="esrvc-id">e-service ID:</FormLabel>
       </VisuallyHidden>
       <Flex maxW="20rem" w="100%">
-        <Input
-          isDisabled={isDisabled}
-          isReadOnly={mutateFormEsrvcId.isLoading}
-          ref={inputRef}
-          value={value}
-          onChange={handleValueChange}
-          onKeyDown={handleKeydown}
-          onBlur={handleBlur}
-          id="esrvc-id"
-          placeholder="Enter Singpass e-service ID"
-        />
+        <InputGroup>
+          <InputRightElement pointerEvents="none">
+            <Spinner display={mutateFormEsrvcId.isLoading ? 'flex' : 'none'} />
+          </InputRightElement>
+          <Input
+            isDisabled={isDisabled}
+            isReadOnly={mutateFormEsrvcId.isLoading}
+            ref={inputRef}
+            value={value}
+            onChange={handleValueChange}
+            onKeyDown={handleKeydown}
+            onBlur={handleBlur}
+            id="esrvc-id"
+            placeholder="Enter Singpass e-service ID"
+          />
+        </InputGroup>
       </Flex>
     </Stack>
   )
