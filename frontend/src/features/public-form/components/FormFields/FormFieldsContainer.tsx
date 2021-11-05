@@ -8,16 +8,20 @@ import { FormColorTheme } from '~shared/types/form/form'
 import Button from '~components/Button'
 import {
   AttachmentField,
+  EmailField,
   HomeNoField,
+  ImageField,
   NricField,
   NumberField,
   ParagraphField,
   RatingField,
   SectionField,
   ShortTextField,
+  TableField,
   UenField,
   YesNoField,
 } from '~templates/Field'
+import { TableFieldSchema } from '~templates/Field/Table'
 
 import { usePublicForm } from '~features/public-form/queries'
 
@@ -92,6 +96,14 @@ export const FormFieldsContainer = (): JSX.Element => {
           return <ParagraphField key={field._id} schema={field} />
         case BasicField.Rating:
           return <RatingField key={field._id} schema={field} />
+        case BasicField.Email:
+          return <EmailField key={field._id} schema={field} />
+        case BasicField.Image:
+          return <ImageField key={field._id} schema={field} />
+        case BasicField.Table:
+          return (
+            <TableField key={field._id} schema={field as TableFieldSchema} />
+          )
         default:
           return (
             <Text w="100%" key={field._id}>
