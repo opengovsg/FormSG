@@ -7,14 +7,7 @@ import {
   useState,
 } from 'react'
 import ReactMarkdown from 'react-markdown'
-import {
-  FormLabel,
-  Input,
-  Stack,
-  VisuallyHidden,
-  Wrap,
-  WrapItem,
-} from '@chakra-ui/react'
+import { Flex, FormLabel, Input, Stack, VisuallyHidden } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings } from '~shared/types/form'
 
@@ -95,21 +88,19 @@ export const EsrvcIdBox = ({
       <VisuallyHidden>
         <FormLabel htmlFor="esrvc-id">e-service ID:</FormLabel>
       </VisuallyHidden>
-      <Wrap spacing="1rem">
-        <WrapItem maxW="20rem" w="100%">
-          <Input
-            isDisabled={isDisabled}
-            isReadOnly={mutateFormEsrvcId.isLoading}
-            ref={inputRef}
-            value={value}
-            onChange={handleValueChange}
-            onKeyDown={handleKeydown}
-            onBlur={handleBlur}
-            id="esrvc-id"
-            placeholder="Enter Singpass e-service ID"
-          />
-        </WrapItem>
-      </Wrap>
+      <Flex maxW="20rem" w="100%">
+        <Input
+          isDisabled={isDisabled}
+          isReadOnly={mutateFormEsrvcId.isLoading}
+          ref={inputRef}
+          value={value}
+          onChange={handleValueChange}
+          onKeyDown={handleKeydown}
+          onBlur={handleBlur}
+          id="esrvc-id"
+          placeholder="Enter Singpass e-service ID"
+        />
+      </Flex>
     </Stack>
   )
 }
