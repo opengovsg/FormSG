@@ -4,6 +4,7 @@ import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
 import { FORM_GUIDE } from '~constants/externalLinks'
+import { INVALID_EMAIL_ERROR } from '~constants/validation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -23,7 +24,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
     useForm<LoginFormInputs>()
 
   const validateEmail = useCallback((value: string) => {
-    return isEmail(value) || 'Please enter a valid email'
+    return isEmail(value) || INVALID_EMAIL_ERROR
   }, [])
 
   const onSubmitForm = async (inputs: LoginFormInputs) => {
