@@ -32,7 +32,14 @@ export const SettingsPage = (): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
   return (
-    <Tabs isLazy isManual orientation={tabOrientation} variant="line">
+    <Tabs
+      isLazy
+      isManual
+      orientation={tabOrientation}
+      variant="line"
+      py={{ base: '2.5rem', md: '3.5rem', lg: '4rem' }}
+      px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+    >
       <Flex
         h="max-content"
         flex={1}
@@ -43,7 +50,9 @@ export const SettingsPage = (): JSX.Element => {
         position={{ base: 'fixed', md: 'sticky' }}
         zIndex={{ base: 'docked', md: 0 }}
         bg={{ base: 'neutral.100', md: 'inherit' }}
-        top={{ base: 'initial', md: 0 }}
+        // Height align text with start of tab panel.
+        mt={{ md: '-1rem', lg: '-0.875rem' }}
+        top={{ base: 'initial', md: '2.5rem', lg: '3.125rem' }}
         bottom={{ base: 0, md: 'initial' }}
         left={{ base: 0, md: 'initial' }}
         borderTop={{ base: '1px solid', md: 'none' }}

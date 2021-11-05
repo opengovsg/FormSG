@@ -12,12 +12,7 @@ export const AdminFormPage = (): JSX.Element => {
         <Flex>
           <AdminFormNavbar />
         </Flex>
-        <TabPanels
-          overflow="auto"
-          flex={1}
-          py={{ base: '2.5rem', lg: '3.125rem' }}
-          px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-        >
+        <TabPanels overflow="auto" flex={1}>
           <TabPanel p={0}>
             <p>Insert builder page here!</p>
           </TabPanel>
