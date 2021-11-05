@@ -3,9 +3,12 @@ import ReactDOM from 'react-dom'
 import { useDisclosure } from '@chakra-ui/hooks'
 import { Meta, Story } from '@storybook/react'
 
+import { getAdminFormCollaborators } from '~/mocks/msw/handlers/admin-form'
+
 import {
   fullScreenDecorator,
   LoggedInDecorator,
+  StoryRouter,
   viewports,
 } from '~utils/storybook'
 
@@ -14,11 +17,16 @@ import { CollaboratorModal } from './CollaboratorModal'
 export default {
   title: 'Features/AdminForm/CollaboratorModal',
   component: CollaboratorModal,
-  decorators: [fullScreenDecorator, LoggedInDecorator],
+  decorators: [
+    fullScreenDecorator,
+    LoggedInDecorator,
+    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
+  ],
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
     chromatic: { pauseAnimationAtEnd: true },
+    msw: [getAdminFormCollaborators()],
   },
 } as Meta
 
@@ -49,6 +57,9 @@ const Template: Story = () => {
 export const Default = Template.bind({})
 
 export const Loading = Template.bind({})
+Loading.parameters = {
+  msw: [getAdminFormCollaborators({ delay: 'infinite' })],
+}
 
 export const Mobile = Template.bind({})
 Mobile.parameters = {
