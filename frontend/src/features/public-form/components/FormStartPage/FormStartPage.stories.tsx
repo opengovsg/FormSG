@@ -1,5 +1,4 @@
 import { Meta, Story } from '@storybook/react'
-import StoryRouter from 'storybook-react-router'
 
 import { FormColorTheme } from '~shared/types/form/form'
 import { FormLogoState } from '~shared/types/form/form_logo'
@@ -9,6 +8,8 @@ import {
   getCustomLogoResponse,
   getPublicFormResponse,
 } from '~/mocks/msw/handlers/public-form'
+
+import { StoryRouter } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormContext'
 
@@ -22,7 +23,10 @@ export default {
   title: 'Pages/PublicFormPage/FormStartPage',
   component: FormStartPage,
   decorators: [
-    StoryRouter(),
+    StoryRouter({
+      initialEntries: ['/12345'],
+      path: '/:formId',
+    }),
     (storyFn) => <PublicFormProvider>{storyFn()}</PublicFormProvider>,
   ],
   parameters: {

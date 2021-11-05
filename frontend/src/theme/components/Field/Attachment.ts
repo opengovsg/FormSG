@@ -17,9 +17,6 @@ export const Attachment: ComponentMultiStyleConfig = {
   },
   sizes: {
     md: {
-      container: {
-        maxW: '29.5rem',
-      },
       icon: {
         fontSize: '3.5rem',
       },

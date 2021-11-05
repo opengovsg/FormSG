@@ -14,7 +14,9 @@ export const adminFormResponsesKeys = {
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
 export const useFormResponsesCount = (): UseQueryResult<number> => {
-  const { formId } = useParams<{ formId: string }>()
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
   return useQuery(
     adminFormResponsesKeys.id(formId),
     () => countFormSubmissions({ formId }),

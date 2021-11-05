@@ -6,7 +6,7 @@ import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { fetchUser } from '~services/UserService'
 
-const userKeys = {
+export const userKeys = {
   base: ['user'] as const,
 }
 

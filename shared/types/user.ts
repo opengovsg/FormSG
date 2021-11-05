@@ -4,7 +4,7 @@ import { Opaque } from 'type-fest'
 import { DateString } from './generic'
 import { AgencyBase, AgencyDto, PublicAgencyDto } from './agency'
 
-type UserId = Opaque<string, 'UserId'>
+export type UserId = Opaque<string, 'UserId'>
 
 // Base used for being referenced by schema/model in the backend.
 // Note the lack of typing of _id.
@@ -38,4 +38,12 @@ export type UserDto = z.infer<typeof UserDto>
 
 export type PublicUserDto = {
   agency: PublicAgencyDto
+}
+
+export type SendUserContactOtpDto = { contact: string; userId: string }
+
+export type VerifyUserContactOtpDto = {
+  userId: string
+  otp: string
+  contact: string
 }

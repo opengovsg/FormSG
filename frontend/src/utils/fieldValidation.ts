@@ -7,6 +7,7 @@ import simplur from 'simplur'
 import validator from 'validator'
 
 import {
+  AttachmentFieldBase,
   EmailFieldBase,
   FieldBase,
   HomenoFieldBase,
@@ -60,6 +61,12 @@ export const createRatingValidationRules = (
       ...createRequiredInValidationRules(schema),
     },
   }
+}
+
+export const createAttachmentValidationRules = (
+  schema: AttachmentFieldBase,
+): RegisterOptions => {
+  return createBaseValidationRules(schema)
 }
 
 export const createHomeNoValidationRules = (

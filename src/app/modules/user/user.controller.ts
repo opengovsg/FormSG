@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 
+import { SendUserContactOtpDto } from '../../../../shared/types/user'
 import { IPopulatedUser } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { SmsFactory } from '../../services/sms/sms.factory'
@@ -29,7 +30,7 @@ const logger = createLoggerWithLabel(module)
 export const handleContactSendOtp: ControllerHandler<
   unknown,
   string,
-  { contact: string; userId: string }
+  SendUserContactOtpDto
 > = async (req, res) => {
   // Joi validation ensures existence.
   const { contact, userId } = req.body

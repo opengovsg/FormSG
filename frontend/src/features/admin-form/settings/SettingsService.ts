@@ -44,6 +44,13 @@ export const updateFormInactiveMessage = async (
   return updateFormSettings(formId, { inactiveMessage: newMessage })
 }
 
+export const updateFormTitle = async (
+  formId: string,
+  newTitle: string,
+): Promise<FormSettings> => {
+  return updateFormSettings(formId, { title: newTitle })
+}
+
 export const updateFormEmails = async (
   formId: string,
   newEmails: string[],

@@ -1,6 +1,5 @@
 import { useDisclosure } from '@chakra-ui/hooks'
 import {
-  Box,
   ButtonGroup,
   Modal,
   ModalBody,
@@ -11,22 +10,16 @@ import {
   ModalOverlay,
   ModalProps,
 } from '@chakra-ui/react'
-import { DecoratorFn, Meta, Story } from '@storybook/react'
+import { Meta, Story } from '@storybook/react'
 
-import { viewports } from '~utils/storybook'
+import { fullScreenDecorator, viewports } from '~utils/storybook'
 import Button from '~components/Button'
-
-// Required for Chromatic to know the dimensions of the snapshot to take,
-// since the modal is rendered in a portal and Chromatic only detects the
-// bounding box of the button that opens the modal.
-const fullScreenDecorator: DecoratorFn = (storyFn) => (
-  <Box w="100vw" h="100vh">
-    {storyFn()}
-  </Box>
-)
 
 export default {
   title: 'Components/Modal',
+  // Required for Chromatic to know the dimensions of the snapshot to take,
+  // since the modal is rendered in a portal and Chromatic only detects the
+  // bounding box of the button that opens the modal.
   decorators: [fullScreenDecorator],
   parameters: {
     layout: 'fullscreen',
