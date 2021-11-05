@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Components } from 'react-markdown/src/ast-to-react'
+import { Components } from 'react-markdown'
 import { CSSObject, ListItem, OrderedList, Text } from '@chakra-ui/react'
 
 import Link from '~components/Link'
@@ -36,18 +36,18 @@ export const useMdComponents = ({
 
   const mdComponents: Components = useMemo(
     () => ({
-      ol: (props) => (
+      ol: ({ node, ...props }) => (
         <OrderedList marginInlineStart="1.25rem" {...props} {...textStyles} />
       ),
-      li: (props) => <ListItem {...props} {...textStyles} />,
-      a: (props) => {
+      li: ({ node, ...props }) => <ListItem {...props} {...textStyles} />,
+      a: ({ node, ...props }) => {
         const { href } = props
         const isExternal =
           typeof href === 'string' && !href.startsWith(window.location.origin)
 
         return <Link {...props} isExternal={isExternal} {...linkStyles} />
       },
-      p: (props) => <Text {...props} {...textStyles} />,
+      p: ({ node, ...props }) => <Text {...props} {...textStyles} />,
       ...overrides,
     }),
     [linkStyles, overrides, textStyles],
