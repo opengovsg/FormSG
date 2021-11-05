@@ -13,11 +13,13 @@ import {
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
 import ResponsesPage from '~features/admin-form/responses/ResponsesPage'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
-import { PublicFormPage } from '~features/public-form/PublicFormPage'
 
 import { PrivateElement } from './PrivateElement'
 import { PublicElement } from './PublicElement'
 
+const PublicFormPage = lazy(
+  () => import('~features/public-form/PublicFormPage'),
+)
 const WorkspacePage = lazy(() => import('~features/workspace'))
 const LoginPage = lazy(() => import('~pages/login'))
 
