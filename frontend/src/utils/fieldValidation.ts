@@ -23,14 +23,20 @@ import { isUenValid } from '~shared/utils/uen-validation'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
-const createRequiredValidationRules = (schema: FieldBase) => {
+type OmitUnusedProps<T extends FieldBase = FieldBase> = Omit<
+  T,
+  'fieldType' | 'description' | 'disabled'
+>
+const createRequiredValidationRules = (schema: Pick<FieldBase, 'required'>) => {
   return {
     value: schema.required,
     message: REQUIRED_ERROR,
   }
 }
 
-const createRequiredInValidationRules = (schema: FieldBase) => {
+const createRequiredInValidationRules = (
+  schema: Pick<FieldBase, 'required'>,
+) => {
   return {
     required: (value: unknown) => {
       if (!schema.required) return true
@@ -40,7 +46,7 @@ const createRequiredInValidationRules = (schema: FieldBase) => {
 }
 
 export const createBaseValidationRules = (
-  schema: FieldBase,
+  schema: Pick<FieldBase, 'required'>,
 ): RegisterOptions => {
   return {
     required: createRequiredValidationRules(schema),
@@ -109,7 +115,7 @@ export const createNumberValidationRules = (
 }
 
 export const createShortTextValidationRules = (
-  schema: ShortTextFieldBase,
+  schema: OmitUnusedProps<ShortTextFieldBase>,
 ): RegisterOptions => {
   const { selectedValidation, customVal } = schema.ValidationOptions
   return {
@@ -141,7 +147,7 @@ export const createShortTextValidationRules = (
 }
 
 export const createUenValidationRules = (
-  schema: UenFieldBase,
+  schema: OmitUnusedProps<UenFieldBase>,
 ): RegisterOptions => {
   return {
     ...createBaseValidationRules(schema),
