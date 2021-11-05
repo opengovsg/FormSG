@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { FormProvider, useForm } from 'react-hook-form'
+import { FieldValues, FormProvider, useForm } from 'react-hook-form'
 import { Box, Flex, Skeleton, Spacer, Stack, Text } from '@chakra-ui/react'
+import { times } from 'lodash'
 
 import { BasicField } from '~shared/types/field'
 import { FormColorTheme } from '~shared/types/form/form'
@@ -31,8 +32,35 @@ import { SectionSidebar } from './SectionSidebar'
 export const FormFieldsContainer = (): JSX.Element => {
   const { data, isLoading } = usePublicForm()
 
+  // TODO: Cleanup messy code
   // TODO: Inject default values if field is MyInfo, or prefilled.
-  const formMethods = useForm()
+  const defaultFormValues = useMemo(() => {
+    return form.form_fields.reduce<FieldValues>((acc, field) => {
+      switch (field.fieldType) {
+        // Required so table column fields will render due to useFieldArray usage.
+        // See https://react-hook-form.com/api/usefieldarray
+        case BasicField.Table:
+          acc[field._id] = times(field.minimumRows, () =>
+            (field as TableFieldSchema).columns.reduce<FieldValues>(
+              (acc, c) => {
+                acc[c._id] = ''
+                return acc
+              },
+              {},
+            ),
+          )
+          break
+        default:
+          acc[field._id] = ''
+      }
+
+      return acc
+    }, {})
+  }, [form.form_fields])
+
+  const formMethods = useForm({
+    defaultValues: defaultFormValues,
+  })
 
   const onSubmit = (values: Record<string, string>) => {
     console.log(values)
