@@ -226,7 +226,7 @@ export const useMutateFormSettings = () => {
     onSuccess: (newData) => {
       handleSuccess({
         newData,
-        toastDescription: 'Form authentication successfully toggled.',
+        toastDescription: 'Form authentication successfully updated.',
       })
     },
     onError: (error, _newData, context) => {
