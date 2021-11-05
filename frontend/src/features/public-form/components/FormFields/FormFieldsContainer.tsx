@@ -7,8 +7,12 @@ import { FormColorTheme } from '~shared/types/form/form'
 
 import Button from '~components/Button'
 import {
+  AttachmentField,
+  HomeNoField,
   NricField,
   NumberField,
+  ParagraphField,
+  RatingField,
   SectionField,
   ShortTextField,
   UenField,
@@ -80,6 +84,14 @@ export const FormFieldsContainer = (): JSX.Element => {
           return <YesNoField key={field._id} schema={field} />
         case BasicField.Uen:
           return <UenField key={field._id} schema={field} />
+        case BasicField.Attachment:
+          return <AttachmentField key={field._id} schema={field} />
+        case BasicField.HomeNo:
+          return <HomeNoField key={field._id} schema={field} />
+        case BasicField.Statement:
+          return <ParagraphField key={field._id} schema={field} />
+        case BasicField.Rating:
+          return <RatingField key={field._id} schema={field} />
         default:
           return (
             <Text w="100%" key={field._id}>
