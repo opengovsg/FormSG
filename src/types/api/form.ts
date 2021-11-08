@@ -18,5 +18,4 @@ export type FormUpdateParams = {
   status?: IForm['status']
   title?: IForm['title']
   webhook?: IForm['webhook']
-  msgSrvcName?: IForm['msgSrvcName']
 }
