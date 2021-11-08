@@ -124,7 +124,7 @@ services:
     depends_on:
       - formsg
     environment:
-      - SERVICES=s3,sqs
+      - SERVICES=s3,sqs,secretsmanager
       - DATA_DIR=/tmp/localstack/data
     volumes:
       - './.localstack:/tmp/localstack'

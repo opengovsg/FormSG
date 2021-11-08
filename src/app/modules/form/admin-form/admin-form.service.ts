@@ -81,7 +81,10 @@ import {
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 
-const secretsManager = new SecretsManager({ region: config.aws.region })
+const secretsManager = new SecretsManager({
+  region: config.aws.region,
+  endpoint: process.env.AWS_ENDPOINT,
+})
 
 type PresignedPostUrlParams = {
   fileId: string
@@ -1184,7 +1187,7 @@ export const createTwilioCredentials = (
   }
 
   let reqError: AWSError | null
-  const request = secretsManager.createSecret(body, (err: AWSError, data) => {
+  secretsManager.createSecret(body, (err: AWSError, data) => {
     if (err) {
       logger.error({
         message: 'Error when creating Secret',
@@ -1196,8 +1199,8 @@ export const createTwilioCredentials = (
       })
       reqError = err
     }
+    console.log('DATA', data)
   })
-  request.send()
 
   return ResultAsync.fromPromise(Promise.resolve(body), () => {
     return new ApplicationError(reqError?.message)
