@@ -2,6 +2,7 @@ import MongoStore from 'connect-mongo'
 import cookieParser from 'cookie-parser'
 import { RequestHandler } from 'express'
 import session from 'express-session'
+import { MongoClient } from 'mongodb'
 import { Connection } from 'mongoose'
 
 import config from '../../config/config'
@@ -15,7 +16,7 @@ const sessionMiddlewares = (connection: Connection): RequestHandler[] => {
     cookie: config.cookieSettings,
     name: 'connect.sid',
     store: MongoStore.create({
-      client: connection.getClient(),
+      client: connection.getClient() as MongoClient,
     }),
   })
 

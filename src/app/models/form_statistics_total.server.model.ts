@@ -53,7 +53,7 @@ const compileFormStatisticsTotalModel = (db: Mongoose) => {
   FormStatisticsTotalSchema.statics.aggregateFormCount = function (
     minSubCount: number,
   ): Promise<AggregateFormCountResult> {
-    return this.aggregate([
+    return this.aggregate<{ numActiveForms: number }>([
       {
         $match: {
           totalCount: {
@@ -64,7 +64,7 @@ const compileFormStatisticsTotalModel = (db: Mongoose) => {
       {
         $count: 'numActiveForms',
       },
-    ]).exec()
+    ]).exec() as Promise<AggregateFormCountResult>
   }
 
   const FormStatisticsTotalModel = db.model<

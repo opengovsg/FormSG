@@ -1,12 +1,6 @@
 import BSON, { ObjectId } from 'bson-ext'
 import { compact, omit, pick, uniq } from 'lodash'
-import mongoose, {
-  Mongoose,
-  Query,
-  Schema,
-  SchemaOptions,
-  Types,
-} from 'mongoose'
+import mongoose, { Mongoose, Schema, SchemaOptions, Types } from 'mongoose'
 import validator from 'validator'
 
 import {
@@ -676,12 +670,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     formId: string,
     fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null> {
-    return this.findById(formId, fields).populate({
-      path: 'admin',
-      populate: {
-        path: 'agency',
-      },
-    }) as Query<IPopulatedForm, IFormDocument>
+    return this.findById(formId, fields)
+      .populate({
+        path: 'admin',
+        populate: {
+          path: 'agency',
+        },
+      })
+      .exec() as Promise<IPopulatedForm | null>
   }
 
   // Deactivate form by ID

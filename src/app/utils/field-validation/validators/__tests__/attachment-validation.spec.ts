@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+import { ObjectId } from 'bson-ext'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField } from 'src/app/utils/field-validation/'

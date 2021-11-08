@@ -24,8 +24,5 @@ export type AgencyDocument = EnforceDocument<
   Record<string, never>
 >
 
-export type IAgencyModel = Model<
-  IAgencyDocument,
-  Record<string, never>,
-  AgencyInstanceMethods
->
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type IAgencyModel = Model<IAgencySchema, {}, AgencyInstanceMethods>
