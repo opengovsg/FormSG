@@ -132,15 +132,10 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 
 const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
   emails: {
-    type: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
+    type: [{ type: String, trim: true }],
     set: transformEmails,
     validate: {
-      validator: (v: string[]) => {
+      validator: (v: unknown) => {
         if (!Array.isArray(v)) return false
         if (v.length === 0) return false
         return v.every((email) => validator.isEmail(email))
@@ -162,11 +157,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     {
       title: {
         type: String,
-        validate: [
-          /^[a-zA-Z0-9_\-./() &`;'"]*$/,
-          'Form name cannot contain special characters',
-        ],
-        required: 'Form name cannot be blank',
+        validate: {
+          validator: (v: string) => {
+            return /^[a-zA-Z0-9_\-./() &`;'"]*$/.test(v)
+          },
+          message: 'Form name cannot contain special characters',
+        },
+        required: [true, 'Form name cannot be blank'],
         minlength: [4, 'Form name must be at least 4 characters'],
         maxlength: [200, 'Form name can have a maximum of 200 characters'],
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -734,7 +731,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     logicId: string,
   ): Promise<IFormSchema | null> {
     return this.findByIdAndUpdate(
-      mongoose.Types.ObjectId(formId),
+      formId,
       {
         $pull: { form_logics: { _id: logicId } },
       },
