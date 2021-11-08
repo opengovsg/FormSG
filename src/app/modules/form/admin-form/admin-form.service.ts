@@ -1162,7 +1162,7 @@ export const createTwilioCredentials = (
   const msgSrvcName = `formsg/${config.nodeEnv}/form/${formId}/twilio`
 
   // TO DO: Add error handling to undo MongoDB
-  void updateForm(originalForm, { msgSrvcName })
+  await FormModel.updateByMsgSrvcName(formId, msgSrvcName)
 
   const body: SecretsManager.Types.CreateSecretRequest = {
     Name: msgSrvcName,

@@ -312,6 +312,11 @@ export interface IFormModel extends Model<IFormSchema> {
     logicId: string,
     updatedLogic: LogicDto,
   ): Promise<IFormSchema | null>
+
+  updateByMsgSrvcName(
+    formId: string,
+    msgSrvcName: string,
+  ): Promise<IFormDocument>
 }
 
 export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>

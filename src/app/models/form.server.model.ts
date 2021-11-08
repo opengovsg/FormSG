@@ -857,6 +857,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       .exec()
   }
 
+  FormSchema.statics.updateByMsgSrvcName = async function (
+    formId: string,
+    newMsgSrvcName: string,
+  ) {
+    return this.findByIdAndUpdate(formId, {
+      msgSrvcName: newMsgSrvcName,
+    }).exec()
+  }
+
   // Hooks
   FormSchema.pre<IFormSchema>('validate', function (next) {
     // Reject save if form document is too large
