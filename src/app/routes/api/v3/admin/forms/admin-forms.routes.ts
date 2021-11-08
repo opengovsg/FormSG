@@ -12,6 +12,7 @@ import { AdminFormsPresignRouter } from './admin-forms.presign.routes'
 import { AdminFormsPreviewRouter } from './admin-forms.preview.routes'
 import { AdminFormsSettingsRouter } from './admin-forms.settings.routes'
 import { AdminFormsSubmissionsRouter } from './admin-forms.submissions.routes'
+import { AdminFormsTwilioRouter } from './admin-forms.twilio.routes'
 
 export const AdminFormsRouter = Router()
 
@@ -28,3 +29,4 @@ AdminFormsRouter.use(AdminFormsSubmissionsRouter)
 AdminFormsRouter.use(AdminFormsPreviewRouter)
 AdminFormsRouter.use(AdminFormsPresignRouter)
 AdminFormsRouter.use(AdminFormsLogicRouter)
+AdminFormsRouter.use(AdminFormsTwilioRouter)

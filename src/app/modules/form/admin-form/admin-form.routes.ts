@@ -1,5 +1,6 @@
 /**
- * Old routes that has not been migrated to their new /api/v3/ root endpoints.
+ * This file is deprecated! Routes are migrated to routes/api/v3/admin-form.
+ * Remaining are old routes that has not been migrated to their new /api/v3/ root endpoints.
  */
 
 import JoiDate from '@joi/date'
@@ -445,14 +446,3 @@ AdminFormsRouter.post(
   withUserAuthentication,
   AdminFormController.handleEmailPreviewSubmission,
 )
-
-AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/twilio')
-  /**
-   * Update the specified form twilio credentials
-   * @route PUT /:formId/twilio
-   * @security session
-   *
-   * @returns 200 with updated twilio credentials
-   * @returns 500 when database error occurs
-   */
-  .put(withUserAuthentication, AdminFormController.handleUpdateTwilio)
