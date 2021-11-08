@@ -20,8 +20,12 @@ export interface IAgencyDocument extends IAgencySchema {
 // Used to cast created documents whenever needed.
 export type AgencyDocument = EnforceDocument<
   IAgencyDocument,
-  AgencyInstanceMethods
+  AgencyInstanceMethods,
+  Record<string, never>
 >
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type IAgencyModel = Model<IAgencyDocument, {}, AgencyInstanceMethods>
+export type IAgencyModel = Model<
+  IAgencyDocument,
+  Record<string, never>,
+  AgencyInstanceMethods
+>
