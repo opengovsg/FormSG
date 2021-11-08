@@ -409,6 +409,18 @@ export const streamEncryptedResponses: ControllerHandler<
   const { formId } = req.params
   const { startDate, endDate } = req.query
 
+  const logMeta = {
+    action: 'handleStreamEncryptedResponses',
+    ...createReqMeta(req),
+    formId,
+    sessionUserId,
+  }
+
+  logger.info({
+    message: 'Stream encrypted responses start',
+    meta: logMeta,
+  })
+
   // Step 1: Retrieve currently logged in user.
   const cursorResult = await getPopulatedUserById(sessionUserId)
     .andThen((user) =>
@@ -428,12 +440,6 @@ export const streamEncryptedResponses: ControllerHandler<
         endDate,
       }),
     )
-
-  const logMeta = {
-    action: 'handleStreamEncryptedResponses',
-    ...createReqMeta(req),
-    formId,
-  }
 
   if (cursorResult.isErr()) {
     logger.error({
@@ -549,6 +555,19 @@ export const getEncryptedResponseUsingQueryParams: ControllerHandler<
   const { submissionId } = req.query
   const { formId } = req.params
 
+  const logMeta = {
+    action: 'getEncryptedResponseUsingQueryParams',
+    submissionId,
+    sessionUserId,
+    formId,
+    ...createReqMeta(req),
+  }
+
+  logger.info({
+    message: 'Get encrypted response using submissionId start',
+    meta: logMeta,
+  })
+
   return (
     // Step 1: Retrieve logged in user.
     getPopulatedUserById(sessionUserId)
@@ -575,16 +594,17 @@ export const getEncryptedResponseUsingQueryParams: ControllerHandler<
           createEncryptedSubmissionDto(submissionData, presignedUrls),
         )
       })
-      .map((responseData) => res.json(responseData))
+      .map((responseData) => {
+        logger.info({
+          message: 'Get encrypted response using submissionId success',
+          meta: logMeta,
+        })
+        return res.json(responseData)
+      })
       .mapErr((error) => {
         logger.error({
           message: 'Failure retrieving encrypted submission response',
-          meta: {
-            action: 'handleGetEncryptedResponse',
-            submissionId,
-            formId,
-            ...createReqMeta(req),
-          },
+          meta: logMeta,
           error,
         })
 
@@ -626,6 +646,19 @@ export const handleGetEncryptedResponse: ControllerHandler<
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { formId, submissionId } = req.params
 
+  const logMeta = {
+    action: 'handleGetEncryptedResponse',
+    submissionId,
+    formId,
+    sessionUserId,
+    ...createReqMeta(req),
+  }
+
+  logger.info({
+    message: 'Get encrypted response using submissionId start',
+    meta: logMeta,
+  })
+
   return (
     // Step 1: Retrieve logged in user.
     getPopulatedUserById(sessionUserId)
@@ -652,16 +685,17 @@ export const handleGetEncryptedResponse: ControllerHandler<
           createEncryptedSubmissionDto(submissionData, presignedUrls),
         )
       })
-      .map((responseData) => res.json(responseData))
+      .map((responseData) => {
+        logger.info({
+          message: 'Get encrypted response using submissionId success',
+          meta: logMeta,
+        })
+        return res.json(responseData)
+      })
       .mapErr((error) => {
         logger.error({
           message: 'Failure retrieving encrypted submission response',
-          meta: {
-            action: 'handleGetEncryptedResponse',
-            submissionId,
-            formId,
-            ...createReqMeta(req),
-          },
+          meta: logMeta,
           error,
         })
 
@@ -701,6 +735,7 @@ export const getMetadata: ControllerHandler<
     formId,
     submissionId,
     page,
+    sessionUserId,
     ...createReqMeta(req),
   }
 
@@ -731,7 +766,13 @@ export const getMetadata: ControllerHandler<
         // Step 4b: Retrieve all submissions of given form id.
         return getSubmissionMetadataList(formId, page)
       })
-      .map((metadataList) => res.json(metadataList))
+      .map((metadataList) => {
+        logger.info({
+          message: 'Successfully retrieved metadata from database',
+          meta: logMeta,
+        })
+        return res.json(metadataList)
+      })
       .mapErr((error) => {
         logger.error({
           message: 'Failure retrieving metadata from database',
