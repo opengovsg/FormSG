@@ -6,6 +6,7 @@ import {
 } from 'aws-sdk/clients/secretsmanager'
 import { PromiseResult } from 'aws-sdk/lib/request'
 import { assignIn, last, omit } from 'lodash'
+import { ClientSession } from 'mongodb'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
@@ -1166,36 +1167,21 @@ const isMobileFieldUpdateAllowed = (
 export const createTwilioCredentials = (
   twilioCredentialsData: TwilioCredentialsData,
   formId: string,
-): ResultAsync<
-  PromiseResult<CreateSecretResponse, AWSError>,
-  ApplicationError
-> => {
+): ResultAsync<CreateSecretResponse, ApplicationError> => {
   const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${formId}/twilio`
-
-  // TO DO: Add regex for fields of Twilio credentials
-  // TO DO: Add transaction for MongoDB
-  void ResultAsync.fromPromise(
-    FormModel.updateByMsgSrvcName(formId, msgSrvcName),
-    (error) => {
-      logger.error({
-        message: 'Error when updating MongoDB',
-        meta: {
-          action: 'update msgSrvcName',
-          formId,
-          msgSrvcName,
-        },
-        error,
-      })
-    },
-  )
-
   const body: SecretsManager.Types.CreateSecretRequest = {
     Name: msgSrvcName,
     SecretString: twilioCredentialsData.toString(),
   }
 
+  // TO DO: Add regex for fields of Twilio credentials
   return ResultAsync.fromPromise(
-    secretsManager.createSecret(body).promise(),
+    mongoose.connection.transaction(async (session: ClientSession) => {
+      const doc = await FormModel.updateByMsgSrvcName(formId, msgSrvcName)
+      const result = secretsManager.createSecret(body).promise()
+      await doc.save({ session })
+      return result
+    }),
     (error) => {
       logger.error({
         message: 'Error encountered when creating Twilio Secret',
