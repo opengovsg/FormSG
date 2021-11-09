@@ -1,16 +1,21 @@
 import { Meta, Story } from '@storybook/react'
-import StoryRouter from 'storybook-react-router'
 
 import { authHandlers, otpGenerationResponse } from '~/mocks/msw/handlers/auth'
 
-import { viewports } from '~utils/storybook'
+import { LOGIN_ROUTE } from '~constants/routes'
+import { StoryRouter, viewports } from '~utils/storybook'
 
 import { LoginPage } from './LoginPage'
 
 export default {
   title: 'Pages/LoginPage',
   component: LoginPage,
-  decorators: [StoryRouter()],
+  decorators: [
+    StoryRouter({
+      initialEntries: [LOGIN_ROUTE],
+      path: LOGIN_ROUTE,
+    }),
+  ],
   parameters: {
     layout: 'fullscreen',
     msw: authHandlers,

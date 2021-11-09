@@ -1,33 +1,40 @@
 import { MemoryRouter, Route } from 'react-router'
+import { Routes } from 'react-router-dom'
 import { Meta, Story } from '@storybook/react'
 
 import { getAdminFormResponse } from '~/mocks/msw/handlers/admin-form'
 
 import { viewports } from '~utils/storybook'
 
-import { AdminFormPage } from './common/AdminFormPage'
+import { AdminFormLayout } from './common/AdminFormLayout'
 
 export default {
   title: 'Pages/AdminFormPage/Responses',
-  component: AdminFormPage,
+  // component: To be implemented,
   decorators: [
     (storyFn) => {
       // MemoryRouter is used so react-router-dom#Link components can work
-      // (and also to force the initial tab the page renders to be the response tab).
+      // (and also to force the initial tab the page renders to be the settings tab).
       return (
-        <MemoryRouter initialEntries={['/admin/form/1234/responses']}>
-          <Route path="/admin/form/:formId">{storyFn()}</Route>
+        <MemoryRouter initialEntries={['/:formId']}>
+          <Routes>
+            <Route path={'/:formId'} element={<AdminFormLayout />}>
+              <Route index element={storyFn()} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       )
     },
   ],
   parameters: {
+    // Required so skeleton "animation" does not hide content.
+    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
     msw: [getAdminFormResponse()],
   },
 } as Meta
 
-const Template: Story = () => <AdminFormPage />
+const Template: Story = () => <div>To be implemented</div>
 export const Desktop = Template.bind({})
 
 export const Tablet = Template.bind({})

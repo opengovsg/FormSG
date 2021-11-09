@@ -35,7 +35,7 @@ export const Link = forwardRef<LinkProps, 'a'>(
         <Text
           as="a"
           ref={ref}
-          sx={styles}
+          sx={props.sx ?? styles}
           aria-disabled
           d="inline-flex"
           alignItems="center"

@@ -8,6 +8,18 @@ import { setGlobalConfig } from '@storybook/testing-react'
 
 import * as globalStorybookConfig from '../.storybook/preview' // path of your preview.js file
 
+// Fixes TypeError: window.matchMedia is not a function in Jest
+// See https://github.com/ant-design/ant-design/issues/21096#issuecomment-725301551
+global.matchMedia =
+  global.matchMedia ||
+  function () {
+    return {
+      matches: false,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    }
+  }
+
 setGlobalConfig(globalStorybookConfig)
 
 // Mock the window.matchMedia function since jest environment may not contain it.

@@ -53,7 +53,7 @@ export const EmailFormSection = ({
 
   return (
     <FormProvider {...formMethods}>
-      <FormControl mt="2rem" isInvalid={!isEmpty(errors)}>
+      <FormControl isInvalid={!isEmpty(errors)}>
         <FormLabel
           isRequired
           useMarkdownForDescription
