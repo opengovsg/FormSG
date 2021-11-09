@@ -21,7 +21,8 @@ export interface IAgencyDocument extends IAgencySchema {
 export type AgencyDocument = EnforceDocument<
   IAgencyDocument,
   AgencyInstanceMethods,
-  Record<string, never>
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {}
 >
 
 // eslint-disable-next-line @typescript-eslint/ban-types
