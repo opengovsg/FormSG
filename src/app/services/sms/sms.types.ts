@@ -9,8 +9,6 @@ import {
   IUserSchema,
 } from '../../../types'
 
-import { TwilioCredentials } from './sms.types'
-
 export enum SmsType {
   Verification = 'VERIFICATION',
   AdminContact = 'ADMIN_CONTACT',
@@ -113,12 +111,9 @@ export class TwilioCredentialsData {
   apiSecret: string
   messagingServiceSid: string
 
-  constructor(
-    accountSid: string,
-    apiKey: string,
-    apiSecret: string,
-    messagingServiceSid: string,
-  ) {
+  constructor(twilioCredentials: TwilioCredentials) {
+    const { accountSid, apiKey, apiSecret, messagingServiceSid } =
+      twilioCredentials
     this.accountSid = accountSid
     this.apiKey = apiKey
     this.apiSecret = apiSecret
@@ -128,12 +123,7 @@ export class TwilioCredentialsData {
   static fromString(credentials: string): TwilioCredentials {
     const twilioCredentials: TwilioCredentials = JSON.parse(credentials)
 
-    return new TwilioCredentialsData(
-      twilioCredentials.accountSid,
-      twilioCredentials.apiKey,
-      twilioCredentials.apiSecret,
-      twilioCredentials.messagingServiceSid,
-    )
+    return new TwilioCredentialsData(twilioCredentials)
   }
 
   toString(): string {

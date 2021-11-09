@@ -81,7 +81,10 @@ import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
-import { TwilioCredentials } from './../../../services/sms/sms.types'
+import {
+  TwilioCredentials,
+  TwilioCredentialsData,
+} from './../../../services/sms/sms.types'
 import {
   PREVIEW_CORPPASS_UID,
   PREVIEW_CORPPASS_UINFIN,
@@ -2557,6 +2560,7 @@ export const handleUpdateTwilio: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const twilioCredentials = req.body
+  const twilioCredentialsData = new TwilioCredentialsData(twilioCredentials)
   // TO DO: ADD REGEX CHECK FOR CREDENTIALS
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
@@ -2574,11 +2578,10 @@ export const handleUpdateTwilio: ControllerHandler<
       return msgSrvcName
         ? AdminFormService.updateTwilioCredentials(
             msgSrvcName,
-            twilioCredentials,
+            twilioCredentialsData,
           )
         : AdminFormService.createTwilioCredentials(
-            retrievedForm,
-            twilioCredentials,
+            twilioCredentialsData,
             formId,
           )
     })

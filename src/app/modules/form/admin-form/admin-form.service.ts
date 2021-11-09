@@ -69,7 +69,7 @@ import {
 import { getFormModelByResponseMode } from '../form.service'
 import { getFormFieldById, getLogicById, isFormOnboarded } from '../form.utils'
 
-import { TwilioCredentials } from './../../../services/sms/sms.types'
+import { TwilioCredentialsData } from './../../../services/sms/sms.types'
 import { ApplicationError } from './../../core/core.errors'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -1163,8 +1163,7 @@ const isMobileFieldUpdateAllowed = (
 }
 
 export const createTwilioCredentials = (
-  originalForm: IPopulatedForm,
-  twilioCredentials: TwilioCredentials, // TO DO: Make Twilio Credentials a class
+  twilioCredentialsData: TwilioCredentialsData,
   formId: string,
 ): ResultAsync<
   PromiseResult<CreateSecretResponse, AWSError>,
@@ -1190,7 +1189,7 @@ export const createTwilioCredentials = (
 
   const body: SecretsManager.Types.CreateSecretRequest = {
     Name: msgSrvcName,
-    SecretString: JSON.stringify(twilioCredentials),
+    SecretString: twilioCredentialsData.toString(),
   }
 
   return ResultAsync.fromPromise(
@@ -1212,14 +1211,14 @@ export const createTwilioCredentials = (
 
 export const updateTwilioCredentials = (
   msgSrvcName: string,
-  twilioCredentials: TwilioCredentials,
+  twilioCredentialsData: TwilioCredentialsData,
 ): ResultAsync<
   PromiseResult<PutSecretValueResponse, AWSError>,
   ApplicationError
 > => {
   const body: SecretsManager.Types.PutSecretValueRequest = {
     SecretId: msgSrvcName,
-    SecretString: JSON.stringify(twilioCredentials),
+    SecretString: twilioCredentialsData.toString(),
   }
 
   // TO DO: Check if msgSrvcName does exist in Secrets Manager
