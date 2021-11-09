@@ -1222,6 +1222,7 @@ export const updateTwilioCredentials = (
     SecretString: JSON.stringify(twilioCredentials),
   }
 
+  // TO DO: Check if msgSrvcName does exist in Secrets Manager
   // TO DO: Clear twilio cache
 
   return ResultAsync.fromPromise(
