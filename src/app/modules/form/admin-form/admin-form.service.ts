@@ -1170,8 +1170,7 @@ export const createTwilioCredentials = (
   PromiseResult<CreateSecretResponse, AWSError>,
   ApplicationError
 > => {
-  // TO DO: Use SSM_PREFIX
-  const msgSrvcName = `formsg/${config.nodeEnv}/form/${formId}/twilio`
+  const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${formId}/twilio`
 
   // TO DO: Add transaction for MongoDB
   void ResultAsync.fromPromise(
