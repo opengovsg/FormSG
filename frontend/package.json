@@ -11,6 +11,7 @@
     "axios": "^0.24.0",
     "country-flag-icons": "^1.4.19",
     "date-fns": "^2.27.0",
+    "dayjs": "^1.10.7",
     "focus-visible": "^5.2.0",
     "framer-motion": "^5.4.5",
     "jszip": "^3.7.1",
