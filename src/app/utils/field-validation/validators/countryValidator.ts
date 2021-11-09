@@ -32,7 +32,5 @@ const makeCountryValidator: CountryValidatorConstructor = () => (response) => {
 /**
  * Returns a validation function for a country field when called.
  */
-export const constructCountryValidator: CountryValidatorConstructor = (
-  countryField,
-) =>
-  flow(notEmptySingleAnswerResponse, chain(makeCountryValidator(countryField)))
+export const constructCountryValidator: CountryValidatorConstructor = () =>
+  flow(notEmptySingleAnswerResponse, chain(makeCountryValidator()))
