@@ -1199,7 +1199,6 @@ export const createTwilioCredentials = (
       })
       reqError = err
     }
-    console.log('DATA', data)
   })
 
   return ResultAsync.fromPromise(Promise.resolve(body), () => {
@@ -1220,7 +1219,7 @@ export const updateTwilioCredentials = (
   }
 
   let reqError: AWSError | null
-  const request = secretsManager.putSecretValue(body, (err: AWSError, data) => {
+  secretsManager.putSecretValue(body, (err: AWSError, data) => {
     if (err) {
       logger.error({
         message: 'Error when updating Secret',
@@ -1233,7 +1232,6 @@ export const updateTwilioCredentials = (
       reqError = err
     }
   })
-  request.send()
 
   return ResultAsync.fromPromise(Promise.resolve(body), () => {
     return new ApplicationError(reqError?.message)
