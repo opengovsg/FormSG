@@ -32,7 +32,14 @@ export const Link = forwardRef<LinkProps, 'a'>(
 
     if (isDisabled) {
       return (
-        <Text as="a" ref={ref} sx={props.sx ?? styles} aria-disabled>
+        <Text
+          as="a"
+          ref={ref}
+          sx={props.sx ?? styles}
+          aria-disabled
+          d="inline-flex"
+          alignItems="center"
+        >
           {children}
           {props.isExternal && externalLinkIcon}
         </Text>
@@ -40,7 +47,7 @@ export const Link = forwardRef<LinkProps, 'a'>(
     }
 
     return (
-      <ChakraLink {...props} ref={ref}>
+      <ChakraLink d="inline-flex" alignItems="center" {...props} ref={ref}>
         {children}
         {props.isExternal && externalLinkIcon}
       </ChakraLink>

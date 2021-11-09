@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import {
   Box,
   chakra,
@@ -64,16 +63,6 @@ export const Footer = ({
 }: FooterProps): JSX.Element => {
   const currentYear = new Date().getFullYear()
 
-  const socialLinkStyles = useMemo(
-    () => ({
-      display: 'inline-flex',
-      alignItems: 'center',
-      minW: '2rem',
-      colorScheme: textColorScheme,
-    }),
-    [textColorScheme],
-  )
-
   return (
     <Footer.Container bg={bg}>
       <Footer.Section>
@@ -114,7 +103,7 @@ export const Footer = ({
       </Footer.Section>
       <Divider color={`${textColorScheme}.300`} my="1.5rem" />
       <Footer.Section>
-        <Box mb={{ base: '2rem', lg: 'initial' }}>
+        <Box>
           <Text
             textStyle="caption-1"
             color={`${textColorScheme}.500`}
@@ -124,8 +113,9 @@ export const Footer = ({
           </Text>
           <Link
             title="Open Government Products Logo"
+            colorScheme={textColorScheme}
+            mb="2rem"
             href={SOCIAL_MEDIA_LINKS.ogp}
-            {...socialLinkStyles}
           >
             <OgpLogoFull w="183px" />
           </Link>
@@ -140,36 +130,41 @@ export const Footer = ({
           >
             <Link
               title="link to LinkedIn page"
+              w="2rem"
               href={SOCIAL_MEDIA_LINKS.linkedin}
-              {...socialLinkStyles}
+              colorScheme={textColorScheme}
             >
               <BxlLinkedin />
             </Link>
             <Link
               title="link to Facebook page"
+              w="2rem"
               href={SOCIAL_MEDIA_LINKS.facebook}
-              {...socialLinkStyles}
+              colorScheme={textColorScheme}
             >
               <BxlFacebook />
             </Link>
             <Link
               title="link to YouTube page"
+              w="2rem"
               href={SOCIAL_MEDIA_LINKS.youtube}
-              {...socialLinkStyles}
+              colorScheme={textColorScheme}
             >
               <BxlYoutube />
             </Link>
             <Link
               title="link to Instagram page"
+              w="2rem"
               href={SOCIAL_MEDIA_LINKS.instagram}
-              {...socialLinkStyles}
+              colorScheme={textColorScheme}
             >
               <BxlInstagram />
             </Link>
             <Link
               title="link to OGP homepage"
+              w="2rem"
               href={SOCIAL_MEDIA_LINKS.ogp}
-              {...socialLinkStyles}
+              colorScheme={textColorScheme}
             >
               <OgpLogo />
             </Link>
