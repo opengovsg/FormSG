@@ -127,7 +127,7 @@ describe('radio validation', () => {
       render(<ValidationRequired />)
     })
     const submitButton = screen.getByRole('button', { name: /submit/i })
-    const otherCheckboxOption = screen.getByLabelText(/other/i)
+    const otherCheckboxOption = screen.getByRole('checkbox', { name: /other/i })
 
     // Act
     await act(async () => userEvent.click(otherCheckboxOption))
@@ -150,7 +150,7 @@ describe('radio validation', () => {
 
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const checkboxOption = screen.getByLabelText(checkboxOptionLabel)
-    const otherCheckboxOption = screen.getByLabelText(/other/i)
+    const otherCheckboxOption = screen.getByRole('checkbox', { name: /other/i })
 
     // Act
     await act(async () => userEvent.click(otherCheckboxOption))
