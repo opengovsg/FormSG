@@ -1,5 +1,10 @@
 import { AWSError, SecretsManager } from 'aws-sdk'
 import { PresignedPost } from 'aws-sdk/clients/s3'
+import {
+  CreateSecretResponse,
+  PutSecretValueResponse,
+} from 'aws-sdk/clients/secretsmanager'
+import { PromiseResult } from 'aws-sdk/lib/request'
 import { assignIn, last, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -1159,13 +1164,16 @@ const isMobileFieldUpdateAllowed = (
 
 export const createTwilioCredentials = (
   originalForm: IPopulatedForm,
-  twilioCredentials: TwilioCredentials,
+  twilioCredentials: TwilioCredentials, // TO DO: Make Twilio Credentials a class
   formId: string,
-): ResultAsync<SecretsManager.Types.CreateSecretRequest, ApplicationError> => {
+): ResultAsync<
+  PromiseResult<CreateSecretResponse, AWSError>,
+  ApplicationError
+> => {
+  // TO DO: Use SSM_PREFIX
   const msgSrvcName = `formsg/${config.nodeEnv}/form/${formId}/twilio`
 
-  // TO DO: Add error handling to undo MongoDB
-
+  // TO DO: Add transaction for MongoDB
   void ResultAsync.fromPromise(
     FormModel.updateByMsgSrvcName(formId, msgSrvcName),
     (error) => {
@@ -1186,31 +1194,28 @@ export const createTwilioCredentials = (
     SecretString: JSON.stringify(twilioCredentials),
   }
 
-  let reqError: AWSError | null
-  secretsManager.createSecret(body, (err: AWSError, data) => {
-    if (err) {
+  return ResultAsync.fromPromise(
+    secretsManager.createSecret(body).promise(),
+    (error) => {
       logger.error({
-        message: 'Error when creating Secret',
+        message: 'Error encountered when creating Twilio Secret',
         meta: {
-          action: 'Create Secret in SecretsManager',
-          data,
+          action: 'createTwilio',
+          body,
         },
-        error: err,
+        error,
       })
-      reqError = err
-    }
-  })
 
-  return ResultAsync.fromPromise(Promise.resolve(body), () => {
-    return new ApplicationError(reqError?.message)
-  })
+      return new ApplicationError('Error occurred when creating Twilio!')
+    },
+  )
 }
 
 export const updateTwilioCredentials = (
   msgSrvcName: string,
   twilioCredentials: TwilioCredentials,
 ): ResultAsync<
-  SecretsManager.Types.PutSecretValueRequest,
+  PromiseResult<PutSecretValueResponse, AWSError>,
   ApplicationError
 > => {
   const body: SecretsManager.Types.PutSecretValueRequest = {
@@ -1218,22 +1223,21 @@ export const updateTwilioCredentials = (
     SecretString: JSON.stringify(twilioCredentials),
   }
 
-  let reqError: AWSError | null
-  secretsManager.putSecretValue(body, (err: AWSError, data) => {
-    if (err) {
-      logger.error({
-        message: 'Error when updating Secret',
-        meta: {
-          action: 'Update Secret in SecretsManager',
-          data,
-        },
-        error: err,
-      })
-      reqError = err
-    }
-  })
+  // TO DO: Clear twilio cache
 
-  return ResultAsync.fromPromise(Promise.resolve(body), () => {
-    return new ApplicationError(reqError?.message)
-  })
+  return ResultAsync.fromPromise(
+    secretsManager.putSecretValue(body).promise(),
+    (error) => {
+      logger.error({
+        message: 'Error encountered when updating Twilio Secret',
+        meta: {
+          action: 'updateTwilio',
+          body,
+        },
+        error,
+      })
+
+      return new ApplicationError('Error occurred when updating Twilio!')
+    },
+  )
 }
