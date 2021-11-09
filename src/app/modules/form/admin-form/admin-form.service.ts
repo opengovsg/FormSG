@@ -1171,6 +1171,7 @@ export const createTwilioCredentials = (
 > => {
   const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${formId}/twilio`
 
+  // TO DO: Add regex for fields of Twilio credentials
   // TO DO: Add transaction for MongoDB
   void ResultAsync.fromPromise(
     FormModel.updateByMsgSrvcName(formId, msgSrvcName),
@@ -1216,12 +1217,30 @@ export const updateTwilioCredentials = (
   PromiseResult<PutSecretValueResponse, AWSError>,
   ApplicationError
 > => {
+  // Check if the msgSrvcName does exist in Secrets Manager
+  void ResultAsync.fromPromise(
+    secretsManager.getSecretValue({ SecretId: msgSrvcName }).promise(),
+    (error) => {
+      logger.error({
+        message: 'Error when retrieving msgSrvcName from Secrets Manager',
+        meta: {
+          action: 'updateTwilio',
+          msgSrvcName,
+        },
+        error,
+      })
+
+      return new ApplicationError(
+        'Error when retrieving msgSrvcName from Secrets Manager',
+      )
+    },
+  )
+
   const body: SecretsManager.Types.PutSecretValueRequest = {
     SecretId: msgSrvcName,
     SecretString: twilioCredentialsData.toString(),
   }
 
-  // TO DO: Check if msgSrvcName does exist in Secrets Manager
   // TO DO: Clear twilio cache
 
   return ResultAsync.fromPromise(
