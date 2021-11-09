@@ -2,7 +2,6 @@ const iconTypeMap = {
   // Regular fields
   textfield: 'bx bx-rename',
   dropdown: 'bx bx-select-arrows',
-  country: 'bx bx-globe',
   date: 'bx bx-calendar',
   checkbox: 'bx bx-checkbox-checked',
   email: 'bx bx-envelope',
