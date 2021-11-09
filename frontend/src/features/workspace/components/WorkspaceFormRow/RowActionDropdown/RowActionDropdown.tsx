@@ -5,12 +5,14 @@ import {
   BiTrash,
   BiUserPlus,
 } from 'react-icons/bi'
+import { useNavigate } from 'react-router'
 import { ButtonGroup, MenuButton, MenuDivider } from '@chakra-ui/react'
 
 import { FormId } from '~shared/types/form/form'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
+import { ADMINFORM_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
@@ -21,7 +23,9 @@ export interface RowActionDropdownProps {
 }
 
 const useRowActionDropdown = (formId: FormId) => {
+  const navigate = useNavigate()
   return {
+    handleEditForm: () => navigate(`${ADMINFORM_ROUTE}/${formId}`),
     handlePreviewForm: () =>
       console.log(`preview button clicked for ${formId}`),
     handleDuplicateForm: () =>
@@ -40,6 +44,7 @@ export const RowActionDropdown = ({
   formId,
 }: RowActionDropdownProps): JSX.Element => {
   const {
+    handleEditForm,
     handlePreviewForm,
     handleDeleteForm,
     handleDuplicateForm,
@@ -56,7 +61,7 @@ export const RowActionDropdown = ({
       {({ isOpen }) => (
         <>
           <ButtonGroup isAttached variant="outline" colorScheme="secondary">
-            <Button px="1.5rem" mr="-1px">
+            <Button px="1.5rem" mr="-1px" onClick={handleEditForm}>
               Edit
             </Button>
             <MenuButton
