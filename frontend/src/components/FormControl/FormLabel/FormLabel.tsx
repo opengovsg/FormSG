@@ -61,12 +61,14 @@ export const FormLabel = ({
   description,
   useMarkdownForDescription = false,
   children,
+  ...labelProps
 }: FormLabelProps): JSX.Element => {
   return (
     <FormLabel.Label
       requiredIndicator={<Box />}
       display="flex"
       flexDir="column"
+      {...labelProps}
     >
       <Box>
         {questionNumber && (
@@ -171,7 +173,8 @@ FormLabel.OptionalIndicator = ({
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const field = useFormControlContext()
 
-  if (isRequired || field?.isRequired) return null
+  // If isRequired is explicitly provided, ignore form control context value.
+  if (isRequired ?? field?.isRequired) return null
 
   return (
     <Text

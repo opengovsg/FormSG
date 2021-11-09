@@ -17,7 +17,7 @@ export const AttachmentDropzone = ({
 
   return (
     <>
-      <chakra.input {...inputProps} />
+      <chakra.input {...inputProps} data-testid={inputProps.name} />
       <Icon aria-hidden as={BxsCloudUpload} __css={styles.icon} />
 
       {isDragActive ? (

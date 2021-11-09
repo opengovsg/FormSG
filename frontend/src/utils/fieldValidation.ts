@@ -4,10 +4,14 @@
  */
 import { RegisterOptions } from 'react-hook-form'
 import simplur from 'simplur'
+import validator from 'validator'
 
 import {
+  AttachmentFieldBase,
   CheckboxFieldBase,
+  EmailFieldBase,
   FieldBase,
+  HomenoFieldBase,
   NricFieldBase,
   NumberFieldBase,
   NumberSelectedValidation,
@@ -17,18 +21,29 @@ import {
   UenFieldBase,
 } from '~shared/types/field'
 import { isNricValid } from '~shared/utils/nric-validation'
+import { isHomePhoneNumber } from '~shared/utils/phone-num-validation'
 import { isUenValid } from '~shared/utils/uen-validation'
 
-import { REQUIRED_ERROR } from '~constants/validation'
+import {
+  INVALID_EMAIL_DOMAIN_ERROR,
+  INVALID_EMAIL_ERROR,
+  REQUIRED_ERROR,
+} from '~constants/validation'
 
-const createRequiredValidationRules = (schema: FieldBase) => {
+type OmitUnusedProps<T extends FieldBase = FieldBase> = Omit<
+  T,
+  'fieldType' | 'description' | 'disabled'
+>
+const createRequiredValidationRules = (schema: Pick<FieldBase, 'required'>) => {
   return {
     value: schema.required,
     message: REQUIRED_ERROR,
   }
 }
 
-const createRequiredInValidationRules = (schema: FieldBase) => {
+const createRequiredInValidationRules = (
+  schema: Pick<FieldBase, 'required'>,
+) => {
   return {
     required: (value: unknown) => {
       if (!schema.required) return true
@@ -38,7 +53,7 @@ const createRequiredInValidationRules = (schema: FieldBase) => {
 }
 
 export const createBaseValidationRules = (
-  schema: FieldBase,
+  schema: Pick<FieldBase, 'required'>,
 ): RegisterOptions => {
   return {
     required: createRequiredValidationRules(schema),
@@ -51,6 +66,24 @@ export const createRatingValidationRules = (
   return {
     validate: {
       ...createRequiredInValidationRules(schema),
+    },
+  }
+}
+
+export const createAttachmentValidationRules = (
+  schema: AttachmentFieldBase,
+): RegisterOptions => {
+  return createBaseValidationRules(schema)
+}
+
+export const createHomeNoValidationRules = (
+  schema: HomenoFieldBase,
+): RegisterOptions => {
+  return {
+    ...createBaseValidationRules(schema),
+    validate: (val?: string) => {
+      if (!val) return true
+      return isHomePhoneNumber(val) || 'Please enter a valid landline number'
     },
   }
 }
@@ -89,7 +122,7 @@ export const createNumberValidationRules = (
 }
 
 export const createShortTextValidationRules = (
-  schema: ShortTextFieldBase,
+  schema: OmitUnusedProps<ShortTextFieldBase>,
 ): RegisterOptions => {
   const { selectedValidation, customVal } = schema.ValidationOptions
   return {
@@ -121,7 +154,7 @@ export const createShortTextValidationRules = (
 }
 
 export const createUenValidationRules = (
-  schema: UenFieldBase,
+  schema: OmitUnusedProps<UenFieldBase>,
 ): RegisterOptions => {
   return {
     ...createBaseValidationRules(schema),
@@ -148,4 +181,33 @@ export const createCheckboxValidationRules = (
   schema: CheckboxFieldBase,
 ): RegisterOptions => {
   return createBaseValidationRules(schema)
+}
+
+export const createEmailValidationRules = (
+  schema: EmailFieldBase,
+): RegisterOptions => {
+  const allowedDomains = schema.isVerifiable
+    ? new Set(schema.allowedEmailDomains)
+    : new Set()
+
+  return {
+    ...createBaseValidationRules(schema),
+    validate: {
+      validEmail: (val?: string) => {
+        if (!val) return true
+        return validator.isEmail(val) || INVALID_EMAIL_ERROR
+      },
+      validDomain: (val?: string) => {
+        // Return if no value, or has no whitelisted domains at all.
+        if (!val || allowedDomains.size === 0) return true
+
+        const domainInValue = val.split('@')[1]
+
+        return (
+          (domainInValue && allowedDomains.has(`@${domainInValue}`)) ||
+          INVALID_EMAIL_DOMAIN_ERROR
+        )
+      },
+    },
+  }
 }

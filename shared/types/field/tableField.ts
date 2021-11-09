@@ -19,7 +19,7 @@ export type Column = ShortTextColumnBase | DropdownColumnBase
 export interface TableFieldBase extends FieldBase {
   fieldType: BasicField.Table
   minimumRows: number
+  columns: Column[]
   addMoreRows?: boolean
   maximumRows?: number
-  columns: Column[]
 }

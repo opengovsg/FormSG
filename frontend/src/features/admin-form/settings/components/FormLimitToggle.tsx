@@ -33,7 +33,6 @@ const FormLimitBlock = ({
   const inputRef = useRef<HTMLInputElement>(null)
   const { mutateFormLimit } = useMutateFormSettings()
 
-  // TODO: Show error when given value is below current submission counts.
   const handleValueChange = useCallback(
     (val: string) => {
       // Only allow numeric inputs and remove leading zeroes.

@@ -96,6 +96,7 @@ export const textStyles = {
     fontWeight: 500,
     fontSize: '0.75rem',
     lineHeight: '1rem',
+    letterSpacing: 0,
     fontFeatureSettings: "'tnum' on, 'cv05' on",
   },
   'caption-2': {
