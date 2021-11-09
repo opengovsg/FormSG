@@ -44,6 +44,7 @@ import config, { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
+import { twilioClientCache } from '../../../services/sms/sms.service'
 import { dotifyObject } from '../../../utils/dotify-object'
 import { isVerifiableMobileField } from '../../../utils/field-validation/field-validation.guards'
 import {
@@ -1241,7 +1242,7 @@ export const updateTwilioCredentials = (
     SecretString: twilioCredentialsData.toString(),
   }
 
-  // TO DO: Clear twilio cache
+  twilioClientCache.del(msgSrvcName)
 
   return ResultAsync.fromPromise(
     secretsManager.putSecretValue(body).promise(),
