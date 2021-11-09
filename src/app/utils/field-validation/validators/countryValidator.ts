@@ -2,10 +2,6 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import Country from 'shared/constants/countries'
 
-import {
-  ICountryFieldSchema,
-  OmitUnusedValidatorProps,
-} from '../../../../types/field'
 import { ResponseValidator } from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
@@ -13,9 +9,7 @@ import { notEmptySingleAnswerResponse } from './common'
 import { isOneOfOptions } from './options'
 
 type CountryValidator = ResponseValidator<ProcessedSingleAnswerResponse>
-type CountryValidatorConstructor = (
-  countryField: OmitUnusedValidatorProps<ICountryFieldSchema>,
-) => CountryValidator
+type CountryValidatorConstructor = () => CountryValidator
 
 /**
  * Returns a validation function
