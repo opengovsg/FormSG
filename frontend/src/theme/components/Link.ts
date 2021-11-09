@@ -20,6 +20,7 @@ export const Link = {
 
     return {
       position: 'relative',
+      verticalAlign: 'middle',
       color: linkColor,
       borderRadius: '0.25rem',
       _hover: {
