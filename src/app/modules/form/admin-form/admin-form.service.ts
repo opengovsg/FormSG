@@ -57,6 +57,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  MalformedParametersError,
   PossibleDatabaseError,
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
@@ -1168,6 +1169,9 @@ export const createTwilioCredentials = (
   twilioCredentialsData: TwilioCredentialsData,
   formId: string,
 ): ResultAsync<CreateSecretResponse, ApplicationError> => {
+  if (!twilioCredentialsData.isCredentialsValid())
+    return errAsync(new MalformedParametersError('Credentials are invalid!'))
+
   const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${formId}/twilio`
   const body: SecretsManager.Types.CreateSecretRequest = {
     Name: msgSrvcName,
@@ -1204,6 +1208,9 @@ export const updateTwilioCredentials = (
   PromiseResult<PutSecretValueResponse, AWSError>,
   ApplicationError
 > => {
+  if (!twilioCredentialsData.isCredentialsValid())
+    return errAsync(new MalformedParametersError('Credentials are invalid!'))
+
   // Check if the msgSrvcName does exist in Secrets Manager
   void ResultAsync.fromPromise(
     secretsManager.getSecretValue({ SecretId: msgSrvcName }).promise(),

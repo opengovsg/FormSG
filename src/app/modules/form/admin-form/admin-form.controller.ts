@@ -2561,7 +2561,7 @@ export const handleUpdateTwilio: ControllerHandler<
   const { formId } = req.params
   const twilioCredentials = req.body
   const twilioCredentialsData = new TwilioCredentialsData(twilioCredentials)
-  // TO DO: ADD REGEX CHECK FOR CREDENTIALS
+
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return UserService.getPopulatedUserById(sessionUserId)

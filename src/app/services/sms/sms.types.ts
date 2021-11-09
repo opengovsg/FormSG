@@ -114,6 +114,7 @@ export class TwilioCredentialsData {
   constructor(twilioCredentials: TwilioCredentials) {
     const { accountSid, apiKey, apiSecret, messagingServiceSid } =
       twilioCredentials
+
     this.accountSid = accountSid
     this.apiKey = apiKey
     this.apiSecret = apiSecret
@@ -134,6 +135,14 @@ export class TwilioCredentialsData {
       messagingServiceSid: this.messagingServiceSid,
     }
     return JSON.stringify(body)
+  }
+
+  isCredentialsValid(): boolean {
+    return (
+      this.accountSid.startsWith('AC') &&
+      this.apiKey.startsWith('SK') &&
+      this.messagingServiceSid.startsWith('MG')
+    )
   }
 }
 
