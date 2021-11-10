@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Container, Divider, Stack } from '@chakra-ui/react'
+import { Box, Container, Divider, Flex, Stack } from '@chakra-ui/react'
 import { chunk } from 'lodash'
 
 import Pagination from '~components/Pagination'
@@ -81,22 +81,35 @@ export const WorkspacePage = (): JSX.Element => {
   } = useWorkspaceForms()
 
   return (
-    <Container maxW="67.5rem">
-      <WorkspaceHeader isLoading={isLoading} totalFormCount={totalFormCount} />
-      <Divider />
-      <Stack divider={<Divider />}>
-        {paginatedData?.map((form) => (
-          <WorkspaceFormRow key={form._id} formMeta={form} />
-        ))}
-      </Stack>
-      <Divider />
-      <Pagination
-        isDisabled={isLoading}
-        currentPage={currentPage}
-        totalCount={totalFormCount ?? 0}
-        onPageChange={setPageNumber}
-        pageSize={PAGE_DEFAULTS.size}
-      />
-    </Container>
+    <Flex bg="neutral.100" flexDir="column" h="100vh" overflow="hidden">
+      <Box flex={1} overflow="auto">
+        <Container maxW="67.5rem">
+          <WorkspaceHeader
+            isLoading={isLoading}
+            totalFormCount={totalFormCount}
+          />
+          <Stack divider={<Divider borderColor="neutral.300" />}>
+            {paginatedData?.map((form) => (
+              <WorkspaceFormRow key={form._id} formMeta={form} />
+            ))}
+          </Stack>
+        </Container>
+      </Box>
+      <Flex justify="center">
+        <Container
+          p="3rem"
+          maxW="67.5rem"
+          borderTop="1px solid var(--chakra-colors-neutral-300)"
+        >
+          <Pagination
+            isDisabled={isLoading}
+            currentPage={currentPage}
+            totalCount={totalFormCount ?? 0}
+            onPageChange={setPageNumber}
+            pageSize={PAGE_DEFAULTS.size}
+          />
+        </Container>
+      </Flex>
+    </Flex>
   )
 }
