@@ -1,9 +1,19 @@
 import { useMemo } from 'react'
-import { Flex, Grid, GridProps, Text } from '@chakra-ui/layout'
-import { Box, useBreakpointValue } from '@chakra-ui/react'
+import { Link as ReactLink } from 'react-router-dom'
+import {
+  Box,
+  Flex,
+  Grid,
+  GridProps,
+  Text,
+  useBreakpointValue,
+} from '@chakra-ui/react'
 import dayjs from 'dayjs'
 
 import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
+
+import { ADMINFORM_ROUTE } from '~constants/routes'
+import Link from '~components/Link'
 
 import { FormStatusLabel } from './FormStatusLabel'
 import { RowActionDropdown } from './RowActionDropdown'
@@ -51,17 +61,29 @@ export const WorkspaceFormRow = ({
       {...gridProps}
     >
       <Flex flexDir="column" gridArea="title">
-        <Text
-          isTruncated={isTruncated}
-          title={formMeta.title}
-          textStyle="subhead-1"
-          color="secondary.700"
+        <Link
+          as={ReactLink}
+          variant="inline"
+          textDecorationLine="unset"
+          display="inline-flex"
+          alignItems="flex-start"
+          colorScheme="secondary"
+          flexDir="column"
+          w="fit-content"
+          to={`${ADMINFORM_ROUTE}/${formMeta._id}`}
         >
-          {formMeta.title}
-        </Text>
-        <Text textStyle="body-2" color="secondary.400">
-          Edited {prettyLastModified}
-        </Text>
+          <Text
+            isTruncated={isTruncated}
+            title={formMeta.title}
+            textStyle="subhead-1"
+            color="secondary.700"
+          >
+            {formMeta.title}
+          </Text>
+          <Text textStyle="body-2" color="secondary.400">
+            Edited {prettyLastModified}
+          </Text>
+        </Link>
       </Flex>
       <Box gridArea="status" alignSelf="center">
         <FormStatusLabel status={formMeta.status} />

@@ -13,5 +13,7 @@ export const useWorkspace = (): UseQueryResult<
   AsyncReturnType<typeof getDashboardView>,
   ApiError
 > => {
-  return useQuery(workspaceKeys.all, () => getDashboardView())
+  return useQuery(workspaceKeys.all, () => getDashboardView(), {
+    staleTime: 5000,
+  })
 }
