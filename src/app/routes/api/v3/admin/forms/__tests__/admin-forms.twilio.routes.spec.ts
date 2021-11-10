@@ -152,15 +152,14 @@ describe('admin-form.twilio.routes', () => {
     })
 
     it('should return 404 when form to update cannot be found', async () => {
-      // Arrange
+      const { user } = await dbHandler.insertFormCollectionReqs()
+      const session = await createAuthedSession(user.email, request)
       const invalidFormId = new ObjectId()
 
-      // Act
-      const response = await request.put(`/${invalidFormId}/adminform`).send({
-        form: { permissionList: [{ email: 'test@example.com' }] },
-      })
+      const response = await session
+        .put(`/admin/forms/${invalidFormId}/twilio`)
+        .send(TWILIO_CREDENTIALS)
 
-      // Assert
       expect(response.status).toEqual(404)
       expect(response.body).toEqual({ message: 'Form not found' })
     })
