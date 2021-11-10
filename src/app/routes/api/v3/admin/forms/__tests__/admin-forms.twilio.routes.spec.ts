@@ -33,7 +33,7 @@ const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,
 })
 
-// const MOCK_FORM_ID = new ObjectId().toHexString()
+const MOCK_FORM_ID = new ObjectId().toHexString()
 const MOCK_ACCOUNT_SID = 'AC12345678'
 const MOCK_API_KEY_SID = 'SK12345678'
 const MOCK_API_KEY_SECRET = 'AZ12345678'
@@ -171,7 +171,7 @@ describe('admin-form.twilio.routes', () => {
         publicKey: 'some random key',
         // Current user only has read access.
         permissionList: [{ email: user.email }],
-        _id: new ObjectId(),
+        _id: MOCK_FORM_ID,
       })
 
       const response = await session
@@ -187,7 +187,7 @@ describe('admin-form.twilio.routes', () => {
     it('should return 404 when form to update cannot be found', async () => {
       const { user } = await dbHandler.insertFormCollectionReqs()
       const session = await createAuthedSession(user.email, request)
-      const invalidFormId = new ObjectId()
+      const invalidFormId = MOCK_FORM_ID
 
       const response = await session
         .put(`/admin/forms/${invalidFormId}/twilio`)
