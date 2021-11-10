@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
 
 import { FormStatusLabel } from './FormStatusLabel'
+import { RowActionDropdown } from './RowActionDropdown'
 
 export interface WorkspaceFormRowProps {
   formMeta: AdminDashboardFormMetaDto
@@ -42,6 +43,7 @@ export const WorkspaceFormRow = ({
         </Text>
       </Flex>
       <FormStatusLabel status={formMeta.status} />
+      <RowActionDropdown formId={formMeta._id} />
     </Flex>
   )
 }

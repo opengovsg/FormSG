@@ -1,59 +1,102 @@
-import { useCallback } from 'react'
-import { useQueryClient } from 'react-query'
-import { Link as ReactLink } from 'react-router-dom'
-import { useDisclosure } from '@chakra-ui/hooks'
-import { Text } from '@chakra-ui/react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { Container, Divider, Stack } from '@chakra-ui/react'
+import { chunk } from 'lodash'
 
-import { LOGGED_IN_KEY } from '~constants/localStorage'
-import { ADMINFORM_ROUTE } from '~constants/routes'
-import { useLocalStorage } from '~hooks/useLocalStorage'
-import { logout } from '~services/AuthService'
-import Button from '~components/Button'
-import Link from '~components/Link'
+import Pagination from '~components/Pagination'
 
-import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
-import { useUser } from '~features/user/queries'
-
+import { WorkspaceFormRow } from './components/WorkspaceFormRow'
+import { WorkspaceHeader } from './components/WorkspaceHeader'
 import { useWorkspace } from './queries'
 
-export const WorkspacePage = (): JSX.Element => {
-  const queryClient = useQueryClient()
-  const [isAuthenticated, setIsAuthenticated] =
-    useLocalStorage<boolean>(LOGGED_IN_KEY)
+const PAGE_DEFAULTS = {
+  size: 20,
+  pageNumber: 1,
+}
 
-  const modalProps = useDisclosure()
+const useWorkspaceForms = () => {
+  const { data: dashboardForms, isLoading } = useWorkspace()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [sortedForms, setSortedForms] = useState(dashboardForms)
+  const [isManipulating, setIsManipulating] = useState(false)
 
-  const handleLogout = useCallback(async () => {
-    await logout()
-    if (isAuthenticated) {
-      // Clear logged in state.
-      setIsAuthenticated(undefined)
+  const currentPage = Number(
+    searchParams.get('page') ?? PAGE_DEFAULTS.pageNumber,
+  )
+  const pageSize = Number(searchParams.get('size') ?? PAGE_DEFAULTS.size)
+  const sort = searchParams.get('sort')
+
+  const setSortOrder = useCallback(
+    (sort: string) => {
+      setSearchParams({ sort })
+    },
+    [setSearchParams],
+  )
+
+  const setPageNumber = useCallback(
+    (page: number) => {
+      setSearchParams({ page: String(page) })
+    },
+    [setSearchParams],
+  )
+
+  useEffect(() => {
+    setIsManipulating(true)
+    // TODO: Perform actual sorts
+    setIsManipulating(false)
+    setSortedForms(dashboardForms)
+
+    // Only run when sort changes
+  }, [dashboardForms, sort])
+
+  const chunkedData = useMemo(
+    () => chunk(sortedForms, pageSize),
+    [pageSize, sortedForms],
+  )
+
+  const paginatedData = useMemo(() => {
+    if (currentPage < 1 || currentPage > chunkedData.length) {
+      return []
     }
-    queryClient.clear()
-  }, [isAuthenticated, queryClient, setIsAuthenticated])
+    return chunkedData[currentPage - 1]
+  }, [chunkedData, currentPage])
 
-  const { user } = useUser()
+  return {
+    isLoading: isLoading || isManipulating,
+    currentPage,
+    totalFormCount: dashboardForms?.length,
+    paginatedData,
+    setPageNumber,
+    setSortOrder,
+  }
+}
 
-  const { data: dashboardForms } = useWorkspace()
+export const WorkspacePage = (): JSX.Element => {
+  const {
+    isLoading,
+    totalFormCount,
+    paginatedData,
+    currentPage,
+    setPageNumber,
+  } = useWorkspaceForms()
 
   return (
-    <div>
-      <Text>Logged in: {JSON.stringify(user)}</Text>
-      {dashboardForms?.map((form) => {
-        return (
-          <Link
-            key={form._id}
-            as={ReactLink}
-            to={`${ADMINFORM_ROUTE}/${form._id}`}
-          >
-            {form.title}
-          </Link>
-        )
-      })}
-      <Button onClick={handleLogout}>Logout</Button>
-      <br />
-      <Button onClick={modalProps.onOpen}>Emergency Contact</Button>
-      <EmergencyContactModal {...modalProps} />
-    </div>
+    <Container maxW="67.5rem">
+      <WorkspaceHeader isLoading={isLoading} totalFormCount={totalFormCount} />
+      <Divider />
+      <Stack divider={<Divider />}>
+        {paginatedData?.map((form) => (
+          <WorkspaceFormRow key={form._id} formMeta={form} />
+        ))}
+      </Stack>
+      <Divider />
+      <Pagination
+        isDisabled={isLoading}
+        currentPage={currentPage}
+        totalCount={totalFormCount ?? 0}
+        onPageChange={setPageNumber}
+        pageSize={PAGE_DEFAULTS.size}
+      />
+    </Container>
   )
 }
