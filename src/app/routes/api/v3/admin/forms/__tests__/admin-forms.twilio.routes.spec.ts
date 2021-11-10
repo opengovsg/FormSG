@@ -2,8 +2,12 @@ import {
   CreateSecretResponse,
   PutSecretValueResponse,
 } from 'aws-sdk/clients/secretsmanager'
-import { okAsync } from 'neverthrow'
+import mongoose from 'mongoose'
+import { errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
+
+import getUserModel from 'src/app/models/user.server.model'
+import { ApplicationError } from 'src/app/modules/core/core.errors'
 
 import {
   createAuthedSession,
@@ -35,6 +39,8 @@ const TWILIO_CREDENTIALS: TwilioCredentials = {
   apiSecret: MOCK_API_KEY_SECRET,
   messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
 }
+
+const UserModel = getUserModel(mongoose)
 
 describe('admin-form.twilio.routes', () => {
   let request: Session
@@ -88,44 +94,59 @@ describe('admin-form.twilio.routes', () => {
         .spyOn(AdminFormService, 'updateTwilioCredentials')
         .mockReturnValueOnce(okAsync(MOCK_PUT_SECRET_RESPONSE))
 
-      // Actual
       const response = await session
         .put(`/admin/forms/${formToUpdate._id}/twilio`)
         .send(TWILIO_CREDENTIALS)
 
-      // Assert
       expect(createwilioCredentialsSpy).toBeCalled()
       expect(response.status).toEqual(200)
       expect(response.body).toEqual({ Name: msgSrvcName })
     })
 
     it('should return 401 when user is not logged in', async () => {
-      // Arrange
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
       const session = await createAuthedSession(user.email, request)
       await logoutSession(request)
 
-      // Act
       const response = await session
         .put(`/admin/forms/${formToUpdate._id}/twilio`)
         .send(TWILIO_CREDENTIALS)
 
-      // Assert
       expect(response.status).toEqual(401)
       expect(response.body).toEqual({ message: 'User is unauthorized.' })
     })
 
     it('should return 422 when user of given id cannot be found in the database', async () => {
-      // Arrange
+      const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+
       // Delete user after login.
       await dbHandler.clearCollection(UserModel.collection.name)
 
-      // Act
-      const response = await request.get('/admin/forms')
+      const response = await session
+        .put(`/admin/forms/${formToUpdate._id}/twilio`)
+        .send(TWILIO_CREDENTIALS)
 
-      // Assert
       expect(response.status).toEqual(422)
       expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 500 when application error occurs whilst updating credentials', async () => {
+      const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+
+      jest
+        .spyOn(AdminFormService, 'createTwilioCredentials')
+        .mockReturnValueOnce(errAsync(new ApplicationError()))
+
+      const response = await session
+        .put(`/admin/forms/${formToUpdate._id}/twilio`)
+        .send(TWILIO_CREDENTIALS)
+
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: 'Something went wrong. Please try again.',
+      })
     })
   })
 })
