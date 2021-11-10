@@ -72,7 +72,11 @@ import {
 import { getFormModelByResponseMode } from '../form.service'
 import { getFormFieldById, getLogicById, isFormOnboarded } from '../form.utils'
 
-import { TwilioCredentialsData } from './../../../services/sms/sms.types'
+import {
+  TwilioCredentials,
+  TwilioCredentialsData,
+} from './../../../services/sms/sms.types'
+import { isCredentialsValid } from './../../../services/sms/sms.util'
 import { ApplicationError } from './../../core/core.errors'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -1166,11 +1170,14 @@ const isMobileFieldUpdateAllowed = (
 }
 
 export const createTwilioCredentials = (
-  twilioCredentialsData: TwilioCredentialsData,
+  twilioCredentials: TwilioCredentials,
   formId: string,
 ): ResultAsync<CreateSecretResponse, ApplicationError> => {
-  if (!twilioCredentialsData.isCredentialsValid())
+  if (!isCredentialsValid(twilioCredentials))
     return errAsync(new MalformedParametersError('Credentials are invalid!'))
+
+  const twilioCredentialsData: TwilioCredentialsData =
+    new TwilioCredentialsData(twilioCredentials)
 
   const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${formId}/twilio`
   const body: SecretsManager.Types.CreateSecretRequest = {
@@ -1203,13 +1210,16 @@ export const createTwilioCredentials = (
 
 export const updateTwilioCredentials = (
   msgSrvcName: string,
-  twilioCredentialsData: TwilioCredentialsData,
+  twilioCredentials: TwilioCredentials,
 ): ResultAsync<
   PromiseResult<PutSecretValueResponse, AWSError>,
   ApplicationError
 > => {
-  if (!twilioCredentialsData.isCredentialsValid())
+  if (!isCredentialsValid(twilioCredentials))
     return errAsync(new MalformedParametersError('Credentials are invalid!'))
+
+  const twilioCredentialsData: TwilioCredentialsData =
+    new TwilioCredentialsData(twilioCredentials)
 
   // Check if the msgSrvcName does exist in Secrets Manager
   void ResultAsync.fromPromise(

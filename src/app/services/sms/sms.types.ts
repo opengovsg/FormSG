@@ -136,14 +136,6 @@ export class TwilioCredentialsData {
     }
     return JSON.stringify(body)
   }
-
-  isCredentialsValid(): boolean {
-    return (
-      this.accountSid.startsWith('AC') &&
-      this.apiKey.startsWith('SK') &&
-      this.messagingServiceSid.startsWith('MG')
-    )
-  }
 }
 
 export type TwilioConfig = {

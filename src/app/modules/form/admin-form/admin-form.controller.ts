@@ -81,10 +81,7 @@ import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
-import {
-  TwilioCredentials,
-  TwilioCredentialsData,
-} from './../../../services/sms/sms.types'
+import { TwilioCredentials } from './../../../services/sms/sms.types'
 import {
   PREVIEW_CORPPASS_UID,
   PREVIEW_CORPPASS_UINFIN,
@@ -2560,7 +2557,6 @@ export const handleUpdateTwilio: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const twilioCredentials = req.body
-  const twilioCredentialsData = new TwilioCredentialsData(twilioCredentials)
 
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
@@ -2578,12 +2574,9 @@ export const handleUpdateTwilio: ControllerHandler<
       return msgSrvcName
         ? AdminFormService.updateTwilioCredentials(
             msgSrvcName,
-            twilioCredentialsData,
+            twilioCredentials,
           )
-        : AdminFormService.createTwilioCredentials(
-            twilioCredentialsData,
-            formId,
-          )
+        : AdminFormService.createTwilioCredentials(twilioCredentials, formId)
     })
     .map((twilioCredentials) =>
       res.status(StatusCodes.OK).json(twilioCredentials),
