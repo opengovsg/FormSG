@@ -1,10 +1,9 @@
-import { AWSError, SecretsManager } from 'aws-sdk'
+import { SecretsManager } from 'aws-sdk'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import {
   CreateSecretResponse,
   PutSecretValueResponse,
 } from 'aws-sdk/clients/secretsmanager'
-import { PromiseResult } from 'aws-sdk/lib/request'
 import { assignIn, last, omit } from 'lodash'
 import { ClientSession } from 'mongodb'
 import mongoose from 'mongoose'
@@ -1211,10 +1210,7 @@ export const createTwilioCredentials = (
 export const updateTwilioCredentials = (
   msgSrvcName: string,
   twilioCredentials: TwilioCredentials,
-): ResultAsync<
-  PromiseResult<PutSecretValueResponse, AWSError>,
-  ApplicationError
-> => {
+): ResultAsync<PutSecretValueResponse, ApplicationError> => {
   if (!isCredentialsValid(twilioCredentials))
     return errAsync(new MalformedParametersError('Credentials are invalid!'))
 

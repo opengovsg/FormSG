@@ -1,4 +1,7 @@
-import { CreateSecretResponse } from 'aws-sdk/clients/secretsmanager'
+import {
+  CreateSecretResponse,
+  PutSecretValueResponse,
+} from 'aws-sdk/clients/secretsmanager'
 import { okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
@@ -56,6 +59,31 @@ describe('admin-form.twilio.routes', () => {
       const createwilioCredentialsSpy = jest
         .spyOn(AdminFormService, 'createTwilioCredentials')
         .mockReturnValueOnce(okAsync(MOCK_CREATE_SECRET_RESPONSE))
+
+      // Actual
+      const response = await session
+        .put(`/admin/forms/${formToUpdate._id}/twilio`)
+        .send(TWILIO_CREDENTIALS)
+
+      // Assert
+      expect(createwilioCredentialsSpy).toBeCalled()
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({ Name: msgSrvcName })
+    })
+
+    it('should return 200 on successful twilio credentials update', async () => {
+      const { form: formToUpdate, user } =
+        await dbHandler.insertFormWithMsgSrvcName()
+      const session = await createAuthedSession(user.email, request)
+      const msgSrvcName = `formsg/testing/form/${formToUpdate._id}/twilio`
+
+      const MOCK_PUT_SECRET_RESPONSE: PutSecretValueResponse = {
+        Name: msgSrvcName,
+      }
+
+      const createwilioCredentialsSpy = jest
+        .spyOn(AdminFormService, 'updateTwilioCredentials')
+        .mockReturnValueOnce(okAsync(MOCK_PUT_SECRET_RESPONSE))
 
       // Actual
       const response = await session
