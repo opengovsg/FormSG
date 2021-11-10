@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Flex, Grid, GridProps, Text } from '@chakra-ui/layout'
+import { Box, useBreakpointValue } from '@chakra-ui/react'
 import dayjs from 'dayjs'
 
 import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
@@ -28,17 +29,30 @@ export const WorkspaceFormRow = ({
     return dayjs(formMeta.lastModified).calendar(null, RELATIVE_DATE_FORMAT)
   }, [formMeta.lastModified])
 
+  const isTruncated = useBreakpointValue({
+    base: false,
+    md: true,
+  })
+
   return (
     <Grid
       py="1.5rem"
       justify="space-between"
-      templateColumns="1fr min-content min-content"
-      gap="3.75rem"
+      templateColumns={{
+        base: '1fr min-content',
+        md: '1fr min-content min-content',
+      }}
+      templateAreas={{
+        base: "'title title' 'status actions'",
+        md: "'title status actions'",
+      }}
+      templateRows={{ base: 'auto', md: 'auto' }}
+      gap={{ base: '1rem', md: '3.75rem' }}
       {...gridProps}
     >
-      <Flex flexDir="column" flex={1}>
+      <Flex flexDir="column" gridArea="title">
         <Text
-          isTruncated
+          isTruncated={isTruncated}
           title={formMeta.title}
           textStyle="subhead-1"
           color="secondary.700"
@@ -49,8 +63,12 @@ export const WorkspaceFormRow = ({
           Edited {prettyLastModified}
         </Text>
       </Flex>
-      <FormStatusLabel status={formMeta.status} />
-      <RowActionDropdown formId={formMeta._id} />
+      <Box gridArea="status" alignSelf="center">
+        <FormStatusLabel status={formMeta.status} />
+      </Box>
+      <Box gridArea="actions" alignSelf="center">
+        <RowActionDropdown formId={formMeta._id} />
+      </Box>
     </Grid>
   )
 }

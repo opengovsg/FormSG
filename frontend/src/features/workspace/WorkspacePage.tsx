@@ -105,6 +105,7 @@ export const WorkspacePage = (): JSX.Element => {
       templateRows="auto 1fr auto"
       templateAreas="'header' 'main' 'footer'"
       h="100vh"
+      overflow="auto"
     >
       <Container
         gridArea="header"
@@ -117,7 +118,7 @@ export const WorkspacePage = (): JSX.Element => {
           totalFormCount={totalFormCount}
         />
       </Container>
-      <Box gridArea="main" overflow="auto">
+      <Box gridArea="main" overflow={{ base: 'initial', md: 'auto' }}>
         <Box ref={topRef} />
         <Stack
           maxW={CONTAINER_MAXW}
@@ -131,7 +132,7 @@ export const WorkspacePage = (): JSX.Element => {
       </Box>
       <Container
         gridArea="footer"
-        py="3rem"
+        py={{ base: '1rem', md: '3rem' }}
         px="2rem"
         maxW={CONTAINER_MAXW}
         borderTop="1px solid var(--chakra-colors-neutral-300)"

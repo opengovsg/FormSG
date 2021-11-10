@@ -1,6 +1,4 @@
 import {
-  Button,
-  ButtonProps,
   Menu as ChakraMenu,
   MenuButton as ChakraMenuButton,
   MenuItem as ChakraMenuItem,
@@ -10,6 +8,8 @@ import {
 
 import { BxsChevronDown } from '~/assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~/assets/icons/BxsChevronUp'
+
+import Button, { ButtonProps } from '~components/Button'
 
 /**
  * @preconditions Must be a child of Menu component,
@@ -26,6 +26,7 @@ const MenuButton = (props: ButtonProps): JSX.Element => {
       colorScheme="secondary"
       textAlign="left"
       rightIcon={ChevronIcon}
+      justifyContent="space-between"
       iconSpacing="1.5rem"
       _hover={{
         bgColor: 'white',

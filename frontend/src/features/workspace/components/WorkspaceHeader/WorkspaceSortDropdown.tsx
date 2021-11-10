@@ -1,10 +1,12 @@
 import { Box, Text } from '@chakra-ui/react'
 
+import { ButtonProps } from '~components/Button'
 import Menu from '~components/Menu'
 
 import { SortOption } from '~features/workspace/types'
 
-export interface WorkspaceSortDropdownProps {
+export interface WorkspaceSortDropdownProps
+  extends Omit<ButtonProps, 'onChange'> {
   isDisabled?: boolean
   value: SortOption
   onChange: (option: SortOption) => void
@@ -14,6 +16,7 @@ export const WorkspaceSortDropdown = ({
   isDisabled,
   value,
   onChange,
+  ...buttonProps
 }: WorkspaceSortDropdownProps): JSX.Element => {
   return (
     <Menu>
@@ -27,6 +30,7 @@ export const WorkspaceSortDropdown = ({
               variant="outline"
               colorScheme="secondary"
               isActive={isOpen}
+              {...buttonProps}
             >
               {value}
             </Menu.Button>

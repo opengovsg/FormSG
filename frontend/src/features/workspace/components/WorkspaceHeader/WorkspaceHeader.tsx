@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BiPlus } from 'react-icons/bi'
-import { Skeleton, Text, Wrap } from '@chakra-ui/react'
+import { Skeleton, Stack, Text, useBreakpointValue } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
@@ -26,21 +26,42 @@ export const WorkspaceHeader = ({
 }: WorkspaceHeaderProps): JSX.Element => {
   const [sortOption, setSortOption] = useState(SortOption.LastUpdated)
 
+  const isMobile = useBreakpointValue({
+    base: true,
+    xs: true,
+    md: false,
+  })
+
   return (
-    <Wrap justify="space-between" align="center" shouldWrapChildren>
-      <Text as="h2" textStyle="h2" display="flex" color="secondary.500">
+    <Stack justify="space-between" direction={{ base: 'column', md: 'row' }}>
+      <Text
+        flex={1}
+        as="h2"
+        textStyle="h2"
+        display="flex"
+        color="secondary.500"
+        my="0.75rem"
+      >
         All forms (<Skeleton isLoaded={!isLoading}>{totalFormCount}</Skeleton>)
       </Text>
-      <Wrap shouldWrapChildren spacing="1rem">
+      <Stack
+        spacing="1rem"
+        direction={{ base: 'column', md: 'row' }}
+        h="fit-content"
+      >
         <WorkspaceSortDropdown
           value={sortOption}
           onChange={setSortOption}
           isDisabled={isLoading}
         />
-        <Button isDisabled={isLoading} leftIcon={<BiPlus fontSize="1.5rem" />}>
+        <Button
+          isFullWidth={isMobile}
+          isDisabled={isLoading}
+          leftIcon={<BiPlus fontSize="1.5rem" />}
+        >
           Create form
         </Button>
-      </Wrap>
-    </Wrap>
+      </Stack>
+    </Stack>
   )
 }
