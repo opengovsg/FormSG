@@ -9,7 +9,10 @@ import supertest, { Session } from 'supertest-session'
 
 import getFormModel from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
-import { ApplicationError } from 'src/app/modules/core/core.errors'
+import {
+  ApplicationError,
+  MalformedParametersError,
+} from 'src/app/modules/core/core.errors'
 
 import {
   createAuthedSession,
@@ -37,6 +40,15 @@ const MOCK_API_KEY_SECRET = 'AZ12345678'
 const MOCK_MESSAGING_SERVICE_SID = 'MG12345678'
 const TWILIO_CREDENTIALS: TwilioCredentials = {
   accountSid: MOCK_ACCOUNT_SID,
+  apiKey: MOCK_API_KEY_SID,
+  apiSecret: MOCK_API_KEY_SECRET,
+  messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
+}
+
+const MOCK_INVALID_ACCOUNT_SID = 'ZZ12345678'
+
+const INVALID_TWILIO_CREDENTIALS: TwilioCredentials = {
+  accountSid: MOCK_INVALID_ACCOUNT_SID,
   apiKey: MOCK_API_KEY_SID,
   apiSecret: MOCK_API_KEY_SECRET,
   messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
@@ -104,6 +116,27 @@ describe('admin-form.twilio.routes', () => {
       expect(createwilioCredentialsSpy).toBeCalled()
       expect(response.status).toEqual(200)
       expect(response.body).toEqual({ Name: msgSrvcName })
+    })
+
+    it('should return 400 when twilio credentials are invalid', async () => {
+      const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+
+      const createwilioCredentialsSpy = jest
+        .spyOn(AdminFormService, 'createTwilioCredentials')
+        .mockReturnValueOnce(
+          errAsync(new MalformedParametersError('Credentials are invalid!')),
+        )
+
+      // Actual
+      const response = await session
+        .put(`/admin/forms/${formToUpdate._id}/twilio`)
+        .send(INVALID_TWILIO_CREDENTIALS)
+
+      // Assert
+      expect(createwilioCredentialsSpy).toBeCalled()
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({ message: 'Credentials are invalid!' })
     })
 
     it('should return 401 when user is not logged in', async () => {
