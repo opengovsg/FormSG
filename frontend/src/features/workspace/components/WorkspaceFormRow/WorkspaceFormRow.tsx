@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Flex, Text } from '@chakra-ui/layout'
+import { Flex, Grid, Text } from '@chakra-ui/layout'
 import dayjs from 'dayjs'
 
 import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
@@ -28,8 +28,13 @@ export const WorkspaceFormRow = ({
   }, [formMeta.lastModified])
 
   return (
-    <Flex py="1.5rem">
-      <Flex flexDir="column">
+    <Grid
+      py="1.5rem"
+      justify="space-between"
+      templateColumns="1fr min-content min-content"
+      gap="3.75rem"
+    >
+      <Flex flexDir="column" flex={1}>
         <Text
           isTruncated
           title={formMeta.title}
@@ -44,6 +49,6 @@ export const WorkspaceFormRow = ({
       </Flex>
       <FormStatusLabel status={formMeta.status} />
       <RowActionDropdown formId={formMeta._id} />
-    </Flex>
+    </Grid>
   )
 }
