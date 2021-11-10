@@ -6,14 +6,7 @@ import { values } from 'lodash'
 
 import Badge from '~components/Badge'
 
-import {
-  Tile,
-  TileListItem,
-  TileProps,
-  TileSubtitle,
-  TileText,
-  TileTitle,
-} from './Tile'
+import { Tile, TileProps } from './Tile'
 
 export default {
   title: 'Components/Tiles',
@@ -29,12 +22,12 @@ const List = ({
   listItems: string[]
 }) => (
   <>
-    <TileText textStyle="subhead-2">{listTitle}</TileText>
+    <Tile.Text textStyle="subhead-2">{listTitle}</Tile.Text>
     <UnorderedList>
       {listItems.map((text) => (
-        <TileListItem textStyle="body-2" textAlign="left">
+        <Tile.ListItem textStyle="body-2" textAlign="left">
           {text}
-        </TileListItem>
+        </Tile.ListItem>
       ))}
     </UnorderedList>
   </>
@@ -62,8 +55,8 @@ const Template: Story<TileTemplateProps> = ({
       onClick={() => setIsClicked(!isClicked)}
       isActive={isClicked}
     >
-      <TileTitle>{title}</TileTitle>
-      <TileSubtitle>{subtitle}</TileSubtitle>
+      <Tile.Title>{title}</Tile.Title>
+      <Tile.Subtitle>{subtitle}</Tile.Subtitle>
       {hasDescription && (
         <List listTitle={listTitle} listItems={values(listItems)} />
       )}
@@ -127,8 +120,8 @@ const EmailTile = ({ onClick, isActive }: StoryTileProps) => (
     onClick={onClick}
     isFullWidth
   >
-    <TileTitle>Email Mode</TileTitle>
-    <TileSubtitle>Receive responses in your inbox</TileSubtitle>
+    <Tile.Title>Email Mode</Tile.Title>
+    <Tile.Subtitle>Receive responses in your inbox</Tile.Subtitle>
     <List
       listTitle="Who is it for:"
       listItems={['Emailed copy of response', 'MyInfo fields']}
@@ -145,8 +138,8 @@ const StorageTile = ({ onClick, isActive }: StoryTileProps) => (
     onClick={onClick}
     isFullWidth
   >
-    <TileTitle>Storage Mode</TileTitle>
-    <TileSubtitle>Receive responses in Form</TileSubtitle>
+    <Tile.Title>Storage Mode</Tile.Title>
+    <Tile.Subtitle>Receive responses in Form</Tile.Subtitle>
     <List
       listTitle="Who is it for:"
       listItems={['High-volume forms', 'End to end encryption needs']}
