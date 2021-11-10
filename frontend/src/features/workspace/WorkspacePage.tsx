@@ -1,6 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Box, Container, Divider, Flex, Stack } from '@chakra-ui/react'
+import { Box, Container, Divider, Grid, Stack } from '@chakra-ui/react'
 import { chunk } from 'lodash'
 
 import Pagination from '~components/Pagination'
@@ -13,6 +21,8 @@ const PAGE_DEFAULTS = {
   size: 20,
   pageNumber: 1,
 }
+
+const CONTAINER_MAXW = '69.5rem'
 
 const useWorkspaceForms = () => {
   const { data: dashboardForms, isLoading } = useWorkspace()
@@ -80,36 +90,60 @@ export const WorkspacePage = (): JSX.Element => {
     setPageNumber,
   } = useWorkspaceForms()
 
+  useLayoutEffect(() => {
+    // Scroll to top on page change
+    // block='center' is required or overflow will happen.
+    topRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, [currentPage])
+
+  const topRef = useRef<HTMLDivElement>(null)
+
   return (
-    <Flex bg="neutral.100" flexDir="column" h="100vh" overflow="hidden">
-      <Box flex={1} overflow="auto">
-        <Container maxW="67.5rem">
-          <WorkspaceHeader
-            isLoading={isLoading}
-            totalFormCount={totalFormCount}
-          />
-          <Stack divider={<Divider borderColor="neutral.300" />}>
-            {paginatedData?.map((form) => (
-              <WorkspaceFormRow key={form._id} formMeta={form} />
-            ))}
-          </Stack>
-        </Container>
-      </Box>
-      <Flex justify="center">
-        <Container
-          p="3rem"
-          maxW="67.5rem"
-          borderTop="1px solid var(--chakra-colors-neutral-300)"
+    <Grid
+      bg="neutral.100"
+      templateColumns="1fr"
+      templateRows="auto 1fr auto"
+      templateAreas="'header' 'main' 'footer'"
+      h="100vh"
+    >
+      <Container
+        gridArea="header"
+        maxW={CONTAINER_MAXW}
+        borderBottom="1px solid var(--chakra-colors-neutral-300)"
+        p="2rem"
+      >
+        <WorkspaceHeader
+          isLoading={isLoading}
+          totalFormCount={totalFormCount}
+        />
+      </Container>
+      <Box gridArea="main" overflow="auto">
+        <Box ref={topRef} />
+        <Stack
+          maxW={CONTAINER_MAXW}
+          m="auto"
+          divider={<Divider borderColor="neutral.300" />}
         >
-          <Pagination
-            isDisabled={isLoading}
-            currentPage={currentPage}
-            totalCount={totalFormCount ?? 0}
-            onPageChange={setPageNumber}
-            pageSize={PAGE_DEFAULTS.size}
-          />
-        </Container>
-      </Flex>
-    </Flex>
+          {paginatedData?.map((form) => (
+            <WorkspaceFormRow px="2rem" key={form._id} formMeta={form} />
+          ))}
+        </Stack>
+      </Box>
+      <Container
+        gridArea="footer"
+        py="3rem"
+        px="2rem"
+        maxW={CONTAINER_MAXW}
+        borderTop="1px solid var(--chakra-colors-neutral-300)"
+      >
+        <Pagination
+          isDisabled={isLoading}
+          currentPage={currentPage}
+          totalCount={totalFormCount ?? 0}
+          onPageChange={setPageNumber}
+          pageSize={PAGE_DEFAULTS.size}
+        />
+      </Container>
+    </Grid>
   )
 }

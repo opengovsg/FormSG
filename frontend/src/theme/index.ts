@@ -10,6 +10,8 @@ export const theme = extendTheme({
   styles: {
     global: {
       body: {
+        // Prevent wonky scrolling.
+        overflow: 'hidden',
         fontFeatureSettings: "'tnum' on, 'cv05' on",
       },
       /**

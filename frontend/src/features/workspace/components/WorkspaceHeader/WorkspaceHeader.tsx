@@ -27,17 +27,7 @@ export const WorkspaceHeader = ({
   const [sortOption, setSortOption] = useState(SortOption.LastUpdated)
 
   return (
-    <Wrap
-      bg="neutral.100"
-      zIndex="docked"
-      borderBottom="1px solid var(--chakra-colors-neutral-300)"
-      py="2rem"
-      justify="space-between"
-      align="center"
-      shouldWrapChildren
-      position="sticky"
-      top={0}
-    >
+    <Wrap justify="space-between" align="center" shouldWrapChildren>
       <Text as="h2" textStyle="h2" display="flex" color="secondary.500">
         All forms (<Skeleton isLoaded={!isLoading}>{totalFormCount}</Skeleton>)
       </Text>

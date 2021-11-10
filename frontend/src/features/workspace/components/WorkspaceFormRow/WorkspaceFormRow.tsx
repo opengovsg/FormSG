@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Flex, Grid, Text } from '@chakra-ui/layout'
+import { Flex, Grid, GridProps, Text } from '@chakra-ui/layout'
 import dayjs from 'dayjs'
 
 import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
@@ -7,7 +7,7 @@ import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
 import { FormStatusLabel } from './FormStatusLabel'
 import { RowActionDropdown } from './RowActionDropdown'
 
-export interface WorkspaceFormRowProps {
+export interface WorkspaceFormRowProps extends GridProps {
   formMeta: AdminDashboardFormMetaDto
 }
 
@@ -22,6 +22,7 @@ const RELATIVE_DATE_FORMAT = {
 
 export const WorkspaceFormRow = ({
   formMeta,
+  ...gridProps
 }: WorkspaceFormRowProps): JSX.Element => {
   const prettyLastModified = useMemo(() => {
     return dayjs(formMeta.lastModified).calendar(null, RELATIVE_DATE_FORMAT)
@@ -33,6 +34,7 @@ export const WorkspaceFormRow = ({
       justify="space-between"
       templateColumns="1fr min-content min-content"
       gap="3.75rem"
+      {...gridProps}
     >
       <Flex flexDir="column" flex={1}>
         <Text
