@@ -15,6 +15,7 @@ import {
   NricFieldBase,
   NumberFieldBase,
   NumberSelectedValidation,
+  RadioFieldBase,
   RatingFieldBase,
   ShortTextFieldBase,
   TextSelectedValidation,
@@ -30,11 +31,18 @@ import {
   REQUIRED_ERROR,
 } from '~constants/validation'
 
-type OmitUnusedProps<T extends FieldBase = FieldBase> = Omit<
+type OmitUnusedProps<T extends FieldBase> = Omit<
   T,
   'fieldType' | 'description' | 'disabled'
 >
-const createRequiredValidationRules = (schema: Pick<FieldBase, 'required'>) => {
+
+type ValidationRuleFn<T extends FieldBase = FieldBase> = (
+  schema: OmitUnusedProps<T>,
+) => RegisterOptions
+
+const createRequiredValidationRules = (
+  schema: Pick<FieldBase, 'required'>,
+): RegisterOptions['required'] => {
   return {
     value: schema.required,
     message: REQUIRED_ERROR,
@@ -43,7 +51,7 @@ const createRequiredValidationRules = (schema: Pick<FieldBase, 'required'>) => {
 
 const createRequiredInValidationRules = (
   schema: Pick<FieldBase, 'required'>,
-) => {
+): RegisterOptions['validate'] => {
   return {
     required: (value: unknown) => {
       if (!schema.required) return true
@@ -60,8 +68,8 @@ export const createBaseValidationRules = (
   }
 }
 
-export const createRatingValidationRules = (
-  schema: RatingFieldBase,
+export const createRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (
+  schema,
 ): RegisterOptions => {
   return {
     validate: {
@@ -70,15 +78,14 @@ export const createRatingValidationRules = (
   }
 }
 
-export const createAttachmentValidationRules = (
-  schema: AttachmentFieldBase,
-): RegisterOptions => {
-  return createBaseValidationRules(schema)
-}
+export const createAttachmentValidationRules: ValidationRuleFn<AttachmentFieldBase> =
+  (schema) => {
+    return createBaseValidationRules(schema)
+  }
 
-export const createHomeNoValidationRules = (
-  schema: HomenoFieldBase,
-): RegisterOptions => {
+export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
+  schema,
+) => {
   return {
     ...createBaseValidationRules(schema),
     validate: (val?: string) => {
@@ -88,9 +95,9 @@ export const createHomeNoValidationRules = (
   }
 }
 
-export const createNumberValidationRules = (
-  schema: NumberFieldBase,
-): RegisterOptions => {
+export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
+  schema,
+) => {
   const { selectedValidation, customVal } = schema.ValidationOptions
 
   return {
@@ -121,41 +128,40 @@ export const createNumberValidationRules = (
   }
 }
 
-export const createShortTextValidationRules = (
-  schema: OmitUnusedProps<ShortTextFieldBase>,
-): RegisterOptions => {
-  const { selectedValidation, customVal } = schema.ValidationOptions
-  return {
-    ...createBaseValidationRules(schema),
-    validate: (val?: string) => {
-      if (!val || !customVal) return true
+export const createShortTextValidationRules: ValidationRuleFn<ShortTextFieldBase> =
+  (schema) => {
+    const { selectedValidation, customVal } = schema.ValidationOptions
+    return {
+      ...createBaseValidationRules(schema),
+      validate: (val?: string) => {
+        if (!val || !customVal) return true
 
-      const currLen = val.length
+        const currLen = val.length
 
-      switch (selectedValidation) {
-        case TextSelectedValidation.Exact:
-          return (
-            currLen === customVal ||
-            simplur`Please enter ${customVal} character[|s] (${currLen}/${customVal})`
-          )
-        case TextSelectedValidation.Minimum:
-          return (
-            currLen >= customVal ||
-            simplur`Please enter at least ${customVal} character[|s] (${currLen}/${customVal})`
-          )
-        case TextSelectedValidation.Maximum:
-          return (
-            currLen <= customVal ||
-            simplur`Please enter at most ${customVal} character[|s] (${currLen}/${customVal})`
-          )
-      }
-    },
+        switch (selectedValidation) {
+          case TextSelectedValidation.Exact:
+            return (
+              currLen === customVal ||
+              simplur`Please enter ${customVal} character[|s] (${currLen}/${customVal})`
+            )
+          case TextSelectedValidation.Minimum:
+            return (
+              currLen >= customVal ||
+              simplur`Please enter at least ${customVal} character[|s] (${currLen}/${customVal})`
+            )
+          case TextSelectedValidation.Maximum:
+            return (
+              currLen <= customVal ||
+              simplur`Please enter at most ${customVal} character[|s] (${currLen}/${customVal})`
+            )
+        }
+      },
+    }
   }
-}
 
-export const createUenValidationRules = (
-  schema: OmitUnusedProps<UenFieldBase>,
-): RegisterOptions => {
+export const createUenValidationRules: ValidationRuleFn<UenFieldBase> = (
+  schema,
+) => {
   return {
     ...createBaseValidationRules(schema),
     validate: (val?: string) => {
@@ -165,9 +171,9 @@ export const createUenValidationRules = (
   }
 }
 
-export const createNricValidationRules = (
-  schema: NricFieldBase,
-): RegisterOptions => {
+export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
+  schema,
+) => {
   return {
     ...createBaseValidationRules(schema),
     validate: (val?: string) => {
@@ -177,15 +183,20 @@ export const createNricValidationRules = (
   }
 }
 
-export const createCheckboxValidationRules = (
-  schema: CheckboxFieldBase,
-): RegisterOptions => {
+export const createCheckboxValidationRules: ValidationRuleFn<CheckboxFieldBase> =
+  (schema) => {
+    return createBaseValidationRules(schema)
+  }
+
+export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
+  schema,
+) => {
   return createBaseValidationRules(schema)
 }
 
-export const createEmailValidationRules = (
-  schema: EmailFieldBase,
-): RegisterOptions => {
+export const createEmailValidationRules: ValidationRuleFn<EmailFieldBase> = (
+  schema,
+) => {
   const allowedDomains = schema.isVerifiable
     ? new Set(schema.allowedEmailDomains)
     : new Set()
