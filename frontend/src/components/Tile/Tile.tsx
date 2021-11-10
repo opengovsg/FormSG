@@ -2,6 +2,7 @@ import { IconType } from 'react-icons/lib'
 import {
   Button,
   ButtonProps,
+  ComponentWithAs,
   forwardRef,
   HStack,
   Icon,
@@ -46,10 +47,16 @@ export interface TileProps
    * The variant of the tile - whether it is complex (many elements) or simple (title and subtitle only).
    * Defaults to simple.
    */
-  variant: TileVariant
+  variant: 'complex' | 'simple'
 }
 
-type TileVariant = 'complex' | 'simple'
+type TileWithParts = ComponentWithAs<'button', TileProps> & {
+  Subtitle: typeof TileSubtitle
+  Title: typeof TileTitle
+  Text: typeof TileText
+  ListItem: typeof TileListItem
+}
+
 export const Tile = forwardRef<TileProps, 'button'>(
   ({ badge, icon, variant = 'simple', children, isActive, ...props }, ref) => {
     const styles = useMultiStyleConfig('Tile', { variant, isActive })
@@ -66,28 +73,33 @@ export const Tile = forwardRef<TileProps, 'button'>(
       </StylesProvider>
     )
   },
-)
+) as TileWithParts
 
-export const TileTitle = (props: TextProps): JSX.Element => {
+const TileTitle = (props: TextProps): JSX.Element => {
   const styles = useStyles()
   // Allow consumers to override default style props with their own styling
   return <Text sx={styles.title} {...props} />
 }
 
-export const TileSubtitle = (props: TextProps): JSX.Element => {
+const TileSubtitle = (props: TextProps): JSX.Element => {
   const styles = useStyles()
   // Allow consumers to override default style props with their own styling
   return <Text sx={styles.subtitle} {...props} />
 }
 
-export const TileText = (props: TextProps): JSX.Element => {
+const TileText = (props: TextProps): JSX.Element => {
   return <Text color="secondary.400" {...props} />
 }
 
-export const TileListItem = (props: TextProps): JSX.Element => {
+const TileListItem = (props: TextProps): JSX.Element => {
   return (
     <ListItem>
       <TileText textStyle="body-2" textAlign="left" {...props} />
     </ListItem>
   )
 }
+
+Tile.Title = TileTitle
+Tile.Subtitle = TileSubtitle
+Tile.ListItem = TileListItem
+Tile.Text = TileText
