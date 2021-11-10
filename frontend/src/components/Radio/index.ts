@@ -1,1 +1,1 @@
-export { Radio as default } from './Radio'
+export { Radio as default, OthersInput } from './Radio'
