@@ -5,7 +5,10 @@ import {
 import { okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
-import { createAuthedSession } from 'tests/integration/helpers/express-auth'
+import {
+  createAuthedSession,
+  logoutSession,
+} from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -94,6 +97,35 @@ describe('admin-form.twilio.routes', () => {
       expect(createwilioCredentialsSpy).toBeCalled()
       expect(response.status).toEqual(200)
       expect(response.body).toEqual({ Name: msgSrvcName })
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+      await logoutSession(request)
+
+      // Act
+      const response = await session
+        .put(`/admin/forms/${formToUpdate._id}/twilio`)
+        .send(TWILIO_CREDENTIALS)
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 422 when user of given id cannot be found in the database', async () => {
+      // Arrange
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.get('/admin/forms')
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
     })
   })
 })
