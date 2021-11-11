@@ -57,12 +57,14 @@ export const WorkspaceFormRow = ({
         md: "'title status actions'",
       }}
       templateRows={{ base: 'auto', md: 'auto' }}
-      gap={{ base: '1rem', md: '3.75rem' }}
+      gap={{ base: '0.5rem', md: '3.75rem' }}
       {...gridProps}
     >
       <Flex flexDir="column" gridArea="title">
         <Link
           as={ReactLink}
+          m="-0.5rem"
+          p="0.5rem"
           variant="inline"
           textDecorationLine="unset"
           display="inline-flex"
