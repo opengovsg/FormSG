@@ -197,7 +197,7 @@ describe('admin-form.twilio.routes', () => {
       expect(response.body).toEqual({ message: 'Form not found' })
     })
 
-    it('should return 422 when id of user adding twilio credentials', async () => {
+    it('should return 422 when id of user adding twilio credentials is not found', async () => {
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
       const session = await createAuthedSession(user.email, request)
 

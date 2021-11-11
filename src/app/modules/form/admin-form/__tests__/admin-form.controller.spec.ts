@@ -18,6 +18,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
 import {
@@ -10334,8 +10335,17 @@ describe('admin-form.controller', () => {
     const MOCK_API_KEY_SID = 'SK12345678'
     const MOCK_API_KEY_SECRET = 'AZ12345678'
     const MOCK_MESSAGING_SERVICE_SID = 'MG12345678'
+    const MOCK_INVALID_ACCOUNT_SID = '12345678'
+
     const MOCK_TWILIO_CREDENTIALS: TwilioCredentials = {
       accountSid: MOCK_ACCOUNT_SID,
+      apiKey: MOCK_API_KEY_SID,
+      apiSecret: MOCK_API_KEY_SECRET,
+      messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
+    }
+
+    const MOCK_INVALID_TWILIO_CREDENTIALS: TwilioCredentials = {
+      accountSid: MOCK_INVALID_ACCOUNT_SID,
       apiKey: MOCK_API_KEY_SID,
       apiSecret: MOCK_API_KEY_SECRET,
       messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
@@ -10350,7 +10360,7 @@ describe('admin-form.controller', () => {
       'updateTwilioCredentials',
     )
 
-    it('should create the twilio credentials and return the Secrets Manager Response succesfully', async () => {
+    it('should return 200 after the twilio credentials are successfully created', async () => {
       // Arrange
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
         okAsync(MOCK_USER),
@@ -10394,7 +10404,7 @@ describe('admin-form.controller', () => {
       expect(updateTwilioSpy).not.toHaveBeenCalled()
     })
 
-    it('should update the twilio credentials and return the Secrets Manager Response succesfully', async () => {
+    it('should return 200 after the twilio credentials are successfully updated', async () => {
       // Arrange
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
         okAsync(MOCK_USER),
@@ -10435,6 +10445,184 @@ describe('admin-form.controller', () => {
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.json).toBeCalledWith(expected)
       expect(updateTwilioSpy).toHaveBeenCalledTimes(1)
+      expect(createTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 400 when twilio credentials are invalid', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM_WITH_MSG_SRVC_NAME),
+      )
+
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_INVALID_TWILIO_CREDENTIALS,
+      })
+
+      updateTwilioSpy.mockReturnValueOnce(
+        errAsync(new MalformedParametersError('Credentials are invalid!')),
+      )
+
+      const mockRes = expressHandler.mockResponse()
+      const expected = {
+        message: 'Credentials are invalid!',
+      }
+
+      // Act
+      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // // Assert
+      expect(mockRes.status).toBeCalledWith(400)
+      expect(mockRes.json).toBeCalledWith(expected)
+      expect(updateTwilioSpy).toHaveBeenCalledTimes(1)
+      expect(createTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 403 when current user does not have permissions to update form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'no write permissions'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(expectedErrorString)),
+      )
+
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_TWILIO_CREDENTIALS,
+      })
+
+      // Act
+      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(updateTwilioSpy).not.toHaveBeenCalled()
+      expect(createTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when form to update cannot be found', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'Form not found'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(expectedErrorString)),
+      )
+
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_TWILIO_CREDENTIALS,
+      })
+
+      // Act
+      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(updateTwilioSpy).not.toHaveBeenCalled()
+      expect(createTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 on MissingUserError', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'User not found'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(ERROR_MESSAGE)),
+      )
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_TWILIO_CREDENTIALS,
+      })
+
+      const expectedResponse = { message: ERROR_MESSAGE }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(422)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(updateTwilioSpy).not.toHaveBeenCalled()
+      expect(createTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when generic database error occurs during form field retrieval', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedErrorString = 'A Database error occured!'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_TWILIO_CREDENTIALS,
+      })
+
+      // Act
+      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(updateTwilioSpy).not.toHaveBeenCalled()
       expect(createTwilioSpy).not.toHaveBeenCalled()
     })
   })
