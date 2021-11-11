@@ -10341,6 +10341,15 @@ describe('admin-form.controller', () => {
       messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
     }
 
+    const createTwilioSpy = jest.spyOn(
+      AdminFormService,
+      'createTwilioCredentials',
+    )
+    const updateTwilioSpy = jest.spyOn(
+      AdminFormService,
+      'updateTwilioCredentials',
+    )
+
     it('should create the twilio credentials and return the Secrets Manager Response succesfully', async () => {
       // Arrange
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
@@ -10368,9 +10377,7 @@ describe('admin-form.controller', () => {
         Name: msgSrvcName,
       }
 
-      MockAdminFormService.createTwilioCredentials.mockReturnValue(
-        okAsync(MOCK_CREATE_SECRET_RESPONSE),
-      )
+      createTwilioSpy.mockReturnValueOnce(okAsync(MOCK_CREATE_SECRET_RESPONSE))
 
       const mockRes = expressHandler.mockResponse()
       const expected = {
@@ -10383,6 +10390,8 @@ describe('admin-form.controller', () => {
       // // Assert
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.json).toBeCalledWith(expected)
+      expect(createTwilioSpy).toHaveBeenCalledTimes(1)
+      expect(updateTwilioSpy).not.toHaveBeenCalled()
     })
 
     it('should update the twilio credentials and return the Secrets Manager Response succesfully', async () => {
@@ -10412,9 +10421,7 @@ describe('admin-form.controller', () => {
         Name: msgSrvcName,
       }
 
-      MockAdminFormService.updateTwilioCredentials.mockReturnValue(
-        okAsync(MOCK_PUT_SECRET_RESPONSE),
-      )
+      updateTwilioSpy.mockReturnValueOnce(okAsync(MOCK_PUT_SECRET_RESPONSE))
 
       const mockRes = expressHandler.mockResponse()
       const expected = {
@@ -10427,6 +10434,8 @@ describe('admin-form.controller', () => {
       // // Assert
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.json).toBeCalledWith(expected)
+      expect(updateTwilioSpy).toHaveBeenCalledTimes(1)
+      expect(createTwilioSpy).not.toHaveBeenCalled()
     })
   })
 })
