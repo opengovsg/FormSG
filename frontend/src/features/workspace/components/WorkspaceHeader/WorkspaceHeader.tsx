@@ -11,9 +11,9 @@ import { WorkspaceSortDropdown } from './WorkspaceSortDropdown'
 export interface WorkspaceHeaderProps {
   /**
    * Number of forms in the workspace.
-   * Defaults to '-' (to account for loading or error states)
+   * Defaults to '---' (to account for loading or error states)
    */
-  totalFormCount?: number | '-'
+  totalFormCount?: number | '---'
   isLoading: boolean
 }
 
@@ -21,7 +21,7 @@ export interface WorkspaceHeaderProps {
  * Header for listing number of forms, or updating the sort order of listed forms, etc.
  */
 export const WorkspaceHeader = ({
-  totalFormCount = '-',
+  totalFormCount = '---',
   isLoading,
 }: WorkspaceHeaderProps): JSX.Element => {
   const [sortOption, setSortOption] = useState(SortOption.LastUpdated)
