@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { PresignedPost } from 'aws-sdk/clients/s3'
+import {
+  CreateSecretResponse,
+  PutSecretValueResponse,
+} from 'aws-sdk/clients/secretsmanager'
 import { ObjectId } from 'bson-ext'
 import { StatusCodes } from 'http-status-codes'
 import { assignIn, cloneDeep, merge, pick } from 'lodash'
@@ -41,6 +45,7 @@ import {
   MailSendError,
 } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
+import { TwilioCredentials } from 'src/app/services/sms/sms.types'
 import { EditFieldActions } from 'src/shared/constants'
 import {
   FormFieldSchema,
@@ -10302,6 +10307,125 @@ describe('admin-form.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
+      expect(mockRes.json).toBeCalledWith(expected)
+    })
+  })
+  describe('handleUpdateTwilio', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_FORM_WITH_MSG_SRVC_NAME = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      msgSrvcName: '123',
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_ACCOUNT_SID = 'AC12345678'
+    const MOCK_API_KEY_SID = 'SK12345678'
+    const MOCK_API_KEY_SECRET = 'AZ12345678'
+    const MOCK_MESSAGING_SERVICE_SID = 'MG12345678'
+    const MOCK_TWILIO_CREDENTIALS: TwilioCredentials = {
+      accountSid: MOCK_ACCOUNT_SID,
+      apiKey: MOCK_API_KEY_SID,
+      apiSecret: MOCK_API_KEY_SECRET,
+      messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
+    }
+
+    it('should create the twilio credentials and return the Secrets Manager Response succesfully', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_TWILIO_CREDENTIALS,
+      })
+
+      const msgSrvcName = `formsg/testing/form/${MOCK_FORM._id}/twilio`
+
+      const MOCK_CREATE_SECRET_RESPONSE: CreateSecretResponse = {
+        Name: msgSrvcName,
+      }
+
+      MockAdminFormService.createTwilioCredentials.mockReturnValue(
+        okAsync(MOCK_CREATE_SECRET_RESPONSE),
+      )
+
+      const mockRes = expressHandler.mockResponse()
+      const expected = {
+        Name: msgSrvcName,
+      }
+
+      // Act
+      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // // Assert
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.json).toBeCalledWith(expected)
+    })
+
+    it('should update the twilio credentials and return the Secrets Manager Response succesfully', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM_WITH_MSG_SRVC_NAME),
+      )
+
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_TWILIO_CREDENTIALS,
+      })
+
+      const { msgSrvcName } = MOCK_FORM_WITH_MSG_SRVC_NAME
+
+      const MOCK_PUT_SECRET_RESPONSE: PutSecretValueResponse = {
+        Name: msgSrvcName,
+      }
+
+      MockAdminFormService.updateTwilioCredentials.mockReturnValue(
+        okAsync(MOCK_PUT_SECRET_RESPONSE),
+      )
+
+      const mockRes = expressHandler.mockResponse()
+      const expected = {
+        Name: msgSrvcName,
+      }
+
+      // Act
+      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // // Assert
+      expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.json).toBeCalledWith(expected)
     })
   })
