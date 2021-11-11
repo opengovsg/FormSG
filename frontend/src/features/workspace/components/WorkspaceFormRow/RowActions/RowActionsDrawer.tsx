@@ -54,7 +54,7 @@ export const RowActionsDrawer = ({
   )
 
   return (
-    <Box>
+    <Box display={{ md: 'none' }}>
       <IconButton
         variant="clear"
         aria-label="More options"

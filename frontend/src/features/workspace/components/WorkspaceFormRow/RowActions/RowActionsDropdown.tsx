@@ -37,7 +37,12 @@ export const RowActionsDropdown = ({
     >
       {({ isOpen }) => (
         <>
-          <ButtonGroup isAttached variant="outline" colorScheme="secondary">
+          <ButtonGroup
+            isAttached
+            variant="outline"
+            colorScheme="secondary"
+            display={{ base: 'none', md: 'flex' }}
+          >
             <Button px="1.5rem" mr="-1px" onClick={handleEditForm}>
               Edit
             </Button>

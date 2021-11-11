@@ -13,7 +13,7 @@ import { chunk } from 'lodash'
 
 import Pagination from '~components/Pagination'
 
-import { WorkspaceFormRow } from './components/WorkspaceFormRow'
+import { WorkspaceFormRows } from './components/WorkspaceFormRow'
 import { WorkspaceHeader } from './components/WorkspaceHeader'
 import { useWorkspace } from './queries'
 
@@ -125,9 +125,7 @@ export const WorkspacePage = (): JSX.Element => {
           m="auto"
           divider={<Divider borderColor="neutral.300" />}
         >
-          {paginatedData?.map((form) => (
-            <WorkspaceFormRow px="2rem" key={form._id} formMeta={form} />
-          ))}
+          <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
         </Stack>
       </Box>
       <Container

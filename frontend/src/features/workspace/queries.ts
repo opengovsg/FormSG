@@ -1,5 +1,6 @@
 import { useQuery, UseQueryResult } from 'react-query'
-import { AsyncReturnType } from 'type-fest'
+
+import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
 
 import { ApiError } from '~typings/core'
 
@@ -10,7 +11,7 @@ const workspaceKeys = {
 }
 
 export const useWorkspace = (): UseQueryResult<
-  AsyncReturnType<typeof getDashboardView>,
+  AdminDashboardFormMetaDto[],
   ApiError
 > => {
   return useQuery(workspaceKeys.all, () => getDashboardView(), {

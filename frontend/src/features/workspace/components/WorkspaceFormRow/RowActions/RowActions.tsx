@@ -12,6 +12,7 @@ export interface RowActionsProps {
 
 export const RowActions = (props: RowActionsProps): JSX.Element => {
   const isMobile = useIsMobile()
+
   return isMobile ? (
     <RowActionsDrawer {...props} />
   ) : (

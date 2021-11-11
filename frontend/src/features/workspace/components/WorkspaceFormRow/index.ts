@@ -1,1 +1,1 @@
-export { WorkspaceFormRow } from './WorkspaceFormRow'
+export { WorkspaceFormRows } from './WorkspaceFormRows'
