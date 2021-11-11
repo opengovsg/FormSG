@@ -4,7 +4,18 @@ import { FormId } from '~shared/types/form/form'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
 
-export const useRowActionDropdown = (formId: FormId) => {
+type UseRowActionDropdownReturn = {
+  handleEditForm: () => void
+  handlePreviewForm: () => void
+  handleDuplicateForm: () => void
+  handleShareForm: () => void
+  handleManageFormAccess: () => void
+  handleDeleteForm: () => void
+}
+
+export const useRowActionDropdown = (
+  formId: FormId,
+): UseRowActionDropdownReturn => {
   const navigate = useNavigate()
   return {
     handleEditForm: () => navigate(`${ADMINFORM_ROUTE}/${formId}`),
