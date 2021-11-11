@@ -5,44 +5,21 @@ import {
   BiTrash,
   BiUserPlus,
 } from 'react-icons/bi'
-import { useNavigate } from 'react-router'
 import { ButtonGroup, MenuButton, MenuDivider } from '@chakra-ui/react'
-
-import { FormId } from '~shared/types/form/form'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
-import { ADMINFORM_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 
-export interface RowActionDropdownProps {
-  formId: FormId
-  isDisabled?: boolean
-}
+import { RowActionsProps } from './RowActions'
+import { useRowActionDropdown } from './useRowActionDropdown'
 
-const useRowActionDropdown = (formId: FormId) => {
-  const navigate = useNavigate()
-  return {
-    handleEditForm: () => navigate(`${ADMINFORM_ROUTE}/${formId}`),
-    handlePreviewForm: () =>
-      console.log(`preview button clicked for ${formId}`),
-    handleDuplicateForm: () =>
-      console.log(`duplicate form button clicked for ${formId}`),
-    handleShareForm: () =>
-      console.log(`share form button clicked for ${formId}`),
-    handleManageFormAccess: () =>
-      console.log(`manage form access button clicked for ${formId}`),
-    handleDeleteForm: () =>
-      console.log(`delete form  button clicked for ${formId}`),
-  }
-}
-
-export const RowActionDropdown = ({
+export const RowActionsDropdown = ({
   isDisabled,
   formId,
-}: RowActionDropdownProps): JSX.Element => {
+}: RowActionsProps): JSX.Element => {
   const {
     handleEditForm,
     handlePreviewForm,

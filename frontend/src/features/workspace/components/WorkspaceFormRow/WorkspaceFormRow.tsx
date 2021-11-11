@@ -16,7 +16,7 @@ import { ADMINFORM_ROUTE } from '~constants/routes'
 import Link from '~components/Link'
 
 import { FormStatusLabel } from './FormStatusLabel'
-import { RowActionDropdown } from './RowActionDropdown'
+import { RowActions } from './RowActions'
 
 export interface WorkspaceFormRowProps extends GridProps {
   formMeta: AdminDashboardFormMetaDto
@@ -89,7 +89,7 @@ export const WorkspaceFormRow = ({
         <FormStatusLabel status={formMeta.status} />
       </Box>
       <Box gridArea="actions" alignSelf="center">
-        <RowActionDropdown formId={formMeta._id} />
+        <RowActions formId={formMeta._id} />
       </Box>
     </Grid>
   )
