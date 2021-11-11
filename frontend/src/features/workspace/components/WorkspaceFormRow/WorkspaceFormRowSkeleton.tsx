@@ -61,7 +61,6 @@ export const WorkspaceFormRowSkeleton = (): JSX.Element => {
           textDecorationLine="unset"
           display="inline-flex"
           alignItems="flex-start"
-          colorScheme="secondary"
           flexDir="column"
           w="fit-content"
         >
