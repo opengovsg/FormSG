@@ -46,6 +46,9 @@ export const WorkspaceFormRow = ({
 
   return (
     <Grid
+      _hover={{
+        bg: 'primary.100',
+      }}
       py="1.5rem"
       justify="space-between"
       templateColumns={{
