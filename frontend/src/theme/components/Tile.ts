@@ -52,6 +52,7 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
     },
     icon: {
       boxSize: '2.5rem',
+      color: 'secondary.500',
     },
     subtitle: {
       color: 'secondary.500',
