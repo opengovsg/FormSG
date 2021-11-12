@@ -126,6 +126,7 @@ const variantLink: SystemStyleFunction = (props) => {
     border: 'none',
     minHeight: 'auto',
     fontWeight: 'normal',
+    w: 'fit-content',
   })
 }
 
