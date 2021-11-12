@@ -1,5 +1,7 @@
+import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
+import { PUBLICFORM_REGEX } from '~constants/routes'
 import { HttpError } from '~services/ApiService'
 
 import FormFields from './components/FormFields'
@@ -8,9 +10,14 @@ import { PublicFormProvider } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
 export const PublicFormPage = (): JSX.Element => {
+  const { formId } = useParams()
   const { error } = usePublicFormView()
 
-  if (error instanceof HttpError && error.code === 404) {
+  if (
+    !formId ||
+    !PUBLICFORM_REGEX.test(formId) ||
+    (error instanceof HttpError && error.code === 404)
+  ) {
     return <div>404</div>
   }
 
