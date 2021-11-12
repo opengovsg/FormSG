@@ -13,11 +13,12 @@ export enum CreateFormFlowStates {
 
 type CreateFormWizardContextReturn = {
   currentStep: CreateFormFlowStates
-  setCurrentStep: (step: CreateFormFlowStates) => void
+  direction: number
   formMethods: UseFormReturn<CreateFormWizardInputProps>
   handleDetailsSubmit: ReturnType<
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
+  handleBackToDetails: () => void
 }
 
 const CreateFormWizardContext = createContext<
@@ -42,12 +43,17 @@ type CreateFormWizardInputProps =
   | CreateEmailFormWizardInputProps
 
 const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
-  const [currentStep, setCurrentStep] = useState(CreateFormFlowStates.Details)
+  const [[currentStep, direction], setCurrentStep] = useState([
+    CreateFormFlowStates.Details,
+    0,
+  ])
 
   const { user } = useUser()
   const formMethods = useForm<CreateFormWizardInputProps>({
     defaultValues: {
+      title: '',
       responseMode: FormResponseMode.Encrypt,
+      lostAck: undefined,
     },
   })
 
@@ -65,14 +71,20 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
         responseMode: inputs.responseMode,
       })
     }
-    return console.log(inputs)
+    console.log(inputs)
+    setCurrentStep([CreateFormFlowStates.Landing, 1])
   })
+
+  const handleBackToDetails = () => {
+    setCurrentStep([CreateFormFlowStates.Details, -1])
+  }
 
   return {
     currentStep,
-    setCurrentStep,
+    direction,
     formMethods,
     handleDetailsSubmit,
+    handleBackToDetails,
   }
 }
 

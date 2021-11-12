@@ -13,6 +13,7 @@ import Button from '~components/Button'
 import { SortOption } from '~features/workspace/types'
 
 import CreateFormModal from '../CreateFormModal'
+import { CreateFormWizardProvider } from '../CreateFormModal/CreateFormWizardContext'
 
 import { WorkspaceSortDropdown } from './WorkspaceSortDropdown'
 
@@ -43,7 +44,9 @@ export const WorkspaceHeader = ({
 
   return (
     <>
-      <CreateFormModal isOpen={isOpen} onClose={onClose} />
+      <CreateFormWizardProvider>
+        <CreateFormModal isOpen={isOpen} onClose={onClose} />
+      </CreateFormWizardProvider>
       <Stack
         justify="space-between"
         direction={{ base: 'column', md: 'row' }}

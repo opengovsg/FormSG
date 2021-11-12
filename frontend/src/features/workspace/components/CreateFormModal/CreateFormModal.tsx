@@ -1,121 +1,110 @@
-import { Controller } from 'react-hook-form'
-import { BiRightArrowAlt } from 'react-icons/bi'
+import { FC, useEffect, useState } from 'react'
 import {
-  Container,
-  FormControl,
+  Box,
+  BoxProps,
   Modal,
-  ModalBody,
   ModalContent,
-  ModalHeader,
   useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
+import { HTMLMotionProps, motion } from 'framer-motion'
 
-import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
+import { Merge } from '~shared/node_modules/type-fest'
+
 import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormFieldMessage from '~components/FormControl/FormFieldMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
 
+import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
 import {
-  CreateFormWizardProvider,
+  CreateFormFlowStates,
   useCreateFormWizard,
 } from './CreateFormWizardContext'
-import { FormResponseOptions } from './FormResponseOptions'
+
+type MotionBoxProps = Merge<BoxProps, HTMLMotionProps<'div'>>
+const MotionBox: FC<MotionBoxProps> = motion(Box)
 
 export type CreateFormModalProps = Pick<
   UseDisclosureReturn,
   'onClose' | 'isOpen'
 >
 
-/** The length of form title to start showing warning text */
-const FORM_TITLE_LENGTH_WARNING = 65
-
-const CreateDetailsScreen = () => {
-  const { formMethods, handleDetailsSubmit } = useCreateFormWizard()
-  const {
-    register,
-    control,
-    formState: { errors, isSubmitting },
-    watch,
-  } = formMethods
-
-  const titleInputValue = watch('title')
-
-  return (
-    <>
-      <ModalHeader color="secondary.700">
-        <Container maxW="42.5rem" p={0}>
-          Set up your form
-        </Container>
-      </ModalHeader>
-      <ModalBody whiteSpace="pre-line">
-        <Container maxW="42.5rem" p={0}>
-          <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
-            <FormLabel>Form name</FormLabel>
-            <Input {...register('title', FORM_TITLE_VALIDATION_RULES)} />
-            <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
-            {titleInputValue?.length > FORM_TITLE_LENGTH_WARNING ? (
-              <FormFieldMessage>
-                It is advised to use a shorter, more succinct form name.
-              </FormFieldMessage>
-            ) : null}
-          </FormControl>
-          <FormControl isRequired isInvalid={!!errors.responseMode} mb="2.5rem">
-            <FormLabel>
-              How do you want to receive your form responses?
-            </FormLabel>
-            <Controller
-              name="responseMode"
-              control={control}
-              render={({ field }) => <FormResponseOptions {...field} />}
-              rules={{ required: 'Please select a form response mode' }}
-            />
-            <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
-          </FormControl>
-          <Button
-            rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-            type="submit"
-            isLoading={isSubmitting}
-            onClick={handleDetailsSubmit}
-            isFullWidth
-          >
-            Next step
-          </Button>
-        </Container>
-      </ModalBody>
-    </>
-  )
+const SCREEN_ANIMATION_VARIANT = {
+  enter: (direction: number) => {
+    return {
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0,
+    }
+  },
+  center: {
+    x: 0,
+    opacity: 1,
+  },
 }
 
-export const CreateFormModalContainer = (
-  props: CreateFormModalProps,
-): JSX.Element => {
-  return (
-    <CreateFormWizardProvider>
-      <CreateFormModal {...props} />
-    </CreateFormWizardProvider>
-  )
-}
-
+/**
+ * @preconditions Requires CreateFormWizardProvider parent
+ */
 export const CreateFormModal = ({
-  onClose,
   isOpen,
+  onClose,
 }: CreateFormModalProps): JSX.Element => {
+  const {
+    formMethods: { reset },
+  } = useCreateFormWizard()
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
     md: 'full',
   })
 
+  const handleCloseModal = () => {
+    reset()
+    onClose()
+  }
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
+    <Modal isOpen={isOpen} onClose={handleCloseModal} size={modalSize}>
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
         <ModalCloseButton />
-        <CreateDetailsScreen />
+        <ScreenContent />
       </ModalContent>
     </Modal>
+  )
+}
+
+/**
+ * Display screen content depending on the current step (with animation).
+ */
+const ScreenContent = () => {
+  const { direction, currentStep, handleBackToDetails } = useCreateFormWizard()
+  const [isFirstLoad, setIsFirstLoad] = useState(true)
+
+  // So animation does not run on first load.
+  useEffect(() => {
+    if (isFirstLoad) {
+      setIsFirstLoad(false)
+    }
+  }, [isFirstLoad])
+
+  return (
+    <MotionBox
+      key={currentStep}
+      custom={direction}
+      variants={SCREEN_ANIMATION_VARIANT}
+      initial={isFirstLoad ? 'center' : 'enter'}
+      animate="center"
+      transition={{
+        x: { type: 'spring', stiffness: 300, damping: 30 },
+      }}
+    >
+      {currentStep === CreateFormFlowStates.Details && (
+        <CreateFormDetailsScreen />
+      )}
+      {currentStep === CreateFormFlowStates.Landing && (
+        <div>
+          <Button onClick={handleBackToDetails}>Back</Button>
+        </div>
+      )}
+    </MotionBox>
   )
 }
