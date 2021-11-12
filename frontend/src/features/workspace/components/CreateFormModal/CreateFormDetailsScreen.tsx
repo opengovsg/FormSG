@@ -5,6 +5,7 @@ import {
   FormControl,
   ModalBody,
   ModalHeader,
+  Text,
 } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types/form/form'
@@ -24,11 +25,11 @@ import { FormResponseOptions } from './FormResponseOptions'
 const FORM_TITLE_LENGTH_WARNING = 65
 
 export const CreateFormDetailsScreen = (): JSX.Element => {
-  const { formMethods, handleDetailsSubmit } = useCreateFormWizard()
+  const { formMethods, handleDetailsSubmit, isLoading } = useCreateFormWizard()
   const {
     register,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     watch,
   } = formMethods
 
@@ -83,11 +84,11 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
           <Button
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
             type="submit"
-            isLoading={isSubmitting}
+            isLoading={isLoading}
             onClick={handleDetailsSubmit}
             isFullWidth
           >
-            Next step
+            <Text lineHeight="1.5rem">Next step</Text>
           </Button>
         </Container>
       </ModalBody>

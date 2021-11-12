@@ -11,7 +11,6 @@ import { HTMLMotionProps, motion } from 'framer-motion'
 
 import { Merge } from '~shared/node_modules/type-fest'
 
-import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
 import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
@@ -19,6 +18,7 @@ import {
   CreateFormFlowStates,
   useCreateFormWizard,
 } from './CreateFormWizardContext'
+import { SaveSecretKeyScreen } from './SaveSecretKeyScreen'
 
 type MotionBoxProps = Merge<BoxProps, HTMLMotionProps<'div'>>
 const MotionBox: FC<MotionBoxProps> = motion(Box)
@@ -48,9 +48,7 @@ export const CreateFormModal = ({
   isOpen,
   onClose,
 }: CreateFormModalProps): JSX.Element => {
-  const {
-    formMethods: { reset },
-  } = useCreateFormWizard()
+  const { resetModal } = useCreateFormWizard()
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -58,7 +56,7 @@ export const CreateFormModal = ({
   })
 
   const handleCloseModal = () => {
-    reset()
+    resetModal()
     onClose()
   }
 
@@ -76,7 +74,7 @@ export const CreateFormModal = ({
  * Display screen content depending on the current step (with animation).
  */
 const ScreenContent = () => {
-  const { direction, currentStep, handleBackToDetails } = useCreateFormWizard()
+  const { direction, currentStep } = useCreateFormWizard()
   const [isFirstLoad, setIsFirstLoad] = useState(true)
 
   // So animation does not run on first load.
@@ -95,16 +93,13 @@ const ScreenContent = () => {
       animate="center"
       transition={{
         x: { type: 'spring', stiffness: 300, damping: 30 },
+        opacity: { duration: 0.2 },
       }}
     >
       {currentStep === CreateFormFlowStates.Details && (
         <CreateFormDetailsScreen />
       )}
-      {currentStep === CreateFormFlowStates.Landing && (
-        <div>
-          <Button onClick={handleBackToDetails}>Back</Button>
-        </div>
-      )}
+      {currentStep === CreateFormFlowStates.Landing && <SaveSecretKeyScreen />}
     </MotionBox>
   )
 }
