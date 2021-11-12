@@ -41,7 +41,7 @@ export const FormResponseOptions = forwardRef<
       <Tile
         variant="complex"
         icon={BiLockAlt}
-        badge={<Badge colorScheme="success">recommended</Badge>}
+        badge={<Badge colorScheme="success">Recommended</Badge>}
         isActive={value === FormResponseMode.Encrypt}
         onClick={() => onChange(FormResponseMode.Encrypt)}
         isFullWidth

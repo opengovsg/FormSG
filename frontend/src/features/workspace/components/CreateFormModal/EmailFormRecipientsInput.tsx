@@ -42,7 +42,6 @@ export const EmailFormRecipientsInput = (): JSX.Element => {
         rules={emailTransformRules.rules}
         render={({ field: { value, onChange, ...rest } }) => (
           <Input
-            autoFocus
             value={emailTransformRules.transform.input(value)}
             onChange={(e) =>
               onChange(emailTransformRules.transform.output(e.target.value))
