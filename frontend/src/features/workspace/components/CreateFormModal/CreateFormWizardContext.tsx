@@ -38,7 +38,11 @@ type CreateFormWizardInputProps =
 const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   const [currentStep, setCurrentStep] = useState(CreateFormFlowStates.Details)
 
-  const formMethods = useForm<CreateFormWizardInputProps>()
+  const formMethods = useForm<CreateFormWizardInputProps>({
+    defaultValues: {
+      responseMode: FormResponseMode.Encrypt,
+    },
+  })
 
   return { currentStep, setCurrentStep, formMethods }
 }
