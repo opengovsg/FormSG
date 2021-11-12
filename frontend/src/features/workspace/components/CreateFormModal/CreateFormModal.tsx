@@ -34,16 +34,15 @@ export type CreateFormModalProps = Pick<
 const FORM_TITLE_LENGTH_WARNING = 65
 
 const CreateDetailsScreen = () => {
-  const { formMethods } = useCreateFormWizard()
+  const { formMethods, handleDetailsSubmit } = useCreateFormWizard()
   const {
     register,
     control,
-    formState: { errors },
-    handleSubmit,
+    formState: { errors, isSubmitting },
     watch,
   } = formMethods
 
-  const formName = watch('formName')
+  const titleInputValue = watch('title')
 
   return (
     <>
@@ -54,46 +53,37 @@ const CreateDetailsScreen = () => {
       </ModalHeader>
       <ModalBody whiteSpace="pre-line">
         <Container maxW="42.5rem" p={0}>
-          <form
-            onSubmit={handleSubmit((inputs) => console.log('submit', inputs))}
-            noValidate
+          <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
+            <FormLabel>Form name</FormLabel>
+            <Input {...register('title', FORM_TITLE_VALIDATION_RULES)} />
+            <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
+            {titleInputValue?.length > FORM_TITLE_LENGTH_WARNING ? (
+              <FormFieldMessage>
+                It is advised to use a shorter, more succinct form name.
+              </FormFieldMessage>
+            ) : null}
+          </FormControl>
+          <FormControl isRequired isInvalid={!!errors.responseMode} mb="2.5rem">
+            <FormLabel>
+              How do you want to receive your form responses?
+            </FormLabel>
+            <Controller
+              name="responseMode"
+              control={control}
+              render={({ field }) => <FormResponseOptions {...field} />}
+              rules={{ required: 'Please select a form response mode' }}
+            />
+            <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
+          </FormControl>
+          <Button
+            rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+            type="submit"
+            isLoading={isSubmitting}
+            onClick={handleDetailsSubmit}
+            isFullWidth
           >
-            <FormControl isRequired isInvalid={!!errors.formName} mb="2.25rem">
-              <FormLabel>Form name</FormLabel>
-              <Input {...register('formName', FORM_TITLE_VALIDATION_RULES)} />
-              <FormErrorMessage>{errors.formName?.message}</FormErrorMessage>
-              {formName.length > FORM_TITLE_LENGTH_WARNING ? (
-                <FormFieldMessage>
-                  It is advised to use a shorter, more succinct form name.
-                </FormFieldMessage>
-              ) : null}
-            </FormControl>
-            <FormControl
-              isRequired
-              isInvalid={!!errors.responseMode}
-              mb="2.5rem"
-            >
-              <FormLabel>
-                How do you want to receive your form responses?
-              </FormLabel>
-              <Controller
-                name="responseMode"
-                control={control}
-                render={({ field }) => <FormResponseOptions {...field} />}
-                rules={{ required: 'Please select a form response mode' }}
-              />
-              <FormErrorMessage>
-                {errors.responseMode?.message}
-              </FormErrorMessage>
-            </FormControl>
-            <Button
-              rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-              type="submit"
-              isFullWidth
-            >
-              Next step
-            </Button>
-          </form>
+            Next step
+          </Button>
         </Container>
       </ModalBody>
     </>
