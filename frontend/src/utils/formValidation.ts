@@ -3,19 +3,30 @@ import validator from 'validator'
 
 const MAX_EMAIL_LENGTH = 30
 
-export const FORM_TITLE_VALIDATION_RULES = {
+const MAX_TITLE_LENGTH = 200
+const MIN_TITLE_LENGTH = 4
+
+export const FORM_TITLE_VALIDATION_RULES: UseControllerProps['rules'] = {
   required: 'Form name is required',
   minLength: {
-    value: 4,
-    message: 'Form name must be at least 4 characters',
+    value: MIN_TITLE_LENGTH,
+    message: `Form name must be at least ${MIN_TITLE_LENGTH} characters`,
   },
   maxLength: {
-    value: 200,
-    message: 'Form name must be at most 200 characters',
+    value: MAX_TITLE_LENGTH,
+    message: `Form name must be at most ${MAX_TITLE_LENGTH} characters`,
   },
   pattern: {
     value: /^[a-zA-Z0-9_\-./() &`;'"]*$/,
     message: 'Form name cannot contain special characters',
+  },
+  validate: {
+    trimMinLength: (value: string) => {
+      return (
+        value.trim().length >= MIN_TITLE_LENGTH ||
+        `Form name must be at least ${MIN_TITLE_LENGTH} characters`
+      )
+    },
   },
 }
 
