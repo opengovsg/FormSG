@@ -1,7 +1,10 @@
 import { createContext, useContext, useState } from 'react'
-import { useForm, UseFormReturn } from 'react-hook-form'
+import { useForm, UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 
 import { FormResponseMode } from '~shared/types/form/form'
+
+import { useUser } from '~features/user/queries'
+import { useCreateFormMutations } from '~features/workspace/mutations'
 
 export enum CreateFormFlowStates {
   Landing = 'landing',
@@ -12,6 +15,9 @@ type CreateFormWizardContextReturn = {
   currentStep: CreateFormFlowStates
   setCurrentStep: (step: CreateFormFlowStates) => void
   formMethods: UseFormReturn<CreateFormWizardInputProps>
+  handleDetailsSubmit: ReturnType<
+    UseFormHandleSubmit<CreateFormWizardInputProps>
+  >
 }
 
 const CreateFormWizardContext = createContext<
@@ -19,7 +25,7 @@ const CreateFormWizardContext = createContext<
 >(undefined)
 
 type BaseCreateFormWizardInputProps = {
-  formName: string
+  title: string
   responseMode: FormResponseMode
 }
 
@@ -38,13 +44,36 @@ type CreateFormWizardInputProps =
 const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   const [currentStep, setCurrentStep] = useState(CreateFormFlowStates.Details)
 
+  const { user } = useUser()
   const formMethods = useForm<CreateFormWizardInputProps>({
     defaultValues: {
       responseMode: FormResponseMode.Encrypt,
     },
   })
 
-  return { currentStep, setCurrentStep, formMethods }
+  const { handleSubmit } = formMethods
+
+  const { createEmailModeFormMutation } = useCreateFormMutations()
+
+  const handleDetailsSubmit = handleSubmit(async (inputs) => {
+    if (!user) return
+    if (inputs.responseMode === FormResponseMode.Email) {
+      return createEmailModeFormMutation.mutateAsync({
+        // TODO: Add email field for user? Or just defaults to current user.
+        emails: [user.email],
+        title: inputs.title,
+        responseMode: inputs.responseMode,
+      })
+    }
+    return console.log(inputs)
+  })
+
+  return {
+    currentStep,
+    setCurrentStep,
+    formMethods,
+    handleDetailsSubmit,
+  }
 }
 
 export const CreateFormWizardProvider = ({
