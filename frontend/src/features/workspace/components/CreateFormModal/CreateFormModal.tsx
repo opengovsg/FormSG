@@ -11,8 +11,10 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
+import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormFieldMessage from '~components/FormControl/FormFieldMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
@@ -28,6 +30,9 @@ export type CreateFormModalProps = Pick<
   'onClose' | 'isOpen'
 >
 
+/** The length of form title to start showing warning text */
+const FORM_TITLE_LENGTH_WARNING = 65
+
 const CreateDetailsScreen = () => {
   const { formMethods } = useCreateFormWizard()
   const {
@@ -35,7 +40,10 @@ const CreateDetailsScreen = () => {
     control,
     formState: { errors },
     handleSubmit,
+    watch,
   } = formMethods
+
+  const formName = watch('formName')
 
   return (
     <>
@@ -52,12 +60,13 @@ const CreateDetailsScreen = () => {
           >
             <FormControl isRequired isInvalid={!!errors.formName} mb="2.25rem">
               <FormLabel>Form name</FormLabel>
-              <Input
-                {...register('formName', {
-                  required: 'Please enter a title for the form',
-                })}
-              />
+              <Input {...register('formName', FORM_TITLE_VALIDATION_RULES)} />
               <FormErrorMessage>{errors.formName?.message}</FormErrorMessage>
+              {formName.length > FORM_TITLE_LENGTH_WARNING ? (
+                <FormFieldMessage>
+                  It is advised to use a shorter, more succinct form name.
+                </FormFieldMessage>
+              ) : null}
             </FormControl>
             <FormControl
               isRequired
