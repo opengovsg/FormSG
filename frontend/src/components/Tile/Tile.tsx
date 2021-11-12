@@ -58,14 +58,14 @@ type TileWithParts = ComponentWithAs<'button', TileProps> & {
 }
 
 export const Tile = forwardRef<TileProps, 'button'>(
-  ({ badge, icon, variant = 'simple', children, isActive, ...props }, ref) => {
-    const styles = useMultiStyleConfig('Tile', { variant, isActive })
+  ({ badge, icon, children, ...props }, ref) => {
+    const styles = useMultiStyleConfig('Tile', props)
     return (
       // Ref passed into the component as a whole so that it can be focused
       <StylesProvider value={styles}>
         <Button sx={styles.container} ref={ref} {...props}>
           <HStack spacing="1rem">
-            <Icon sx={styles.icon} as={icon}></Icon>
+            <Icon __css={styles.icon} as={icon} />
             {badge}
           </HStack>
           {children}

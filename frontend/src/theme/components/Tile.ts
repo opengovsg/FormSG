@@ -1,50 +1,48 @@
-import { anatomy, SystemStyleObject } from '@chakra-ui/theme-tools'
+import { anatomy } from '@chakra-ui/theme-tools'
 
 import { ComponentMultiStyleConfig } from '~theme/types'
 
 const parts = anatomy('tile').parts('container', 'title', 'icon', 'subtitle')
 
-const activeContainerStyle: SystemStyleObject = {
-  bgColor: 'primary.200',
-  borderColor: 'transparent',
-  // NOTE: For the boxShadow styling, due to conflicts with the focus-visible package,
-  // the !important is required to display the boxShadow styling correctly.
-  boxShadow: '0 0 0 3px var(--chakra-colors-primary-500) !important',
-  _hover: {
-    bgColor: 'primary.200',
-  },
-}
-
-const baseContainerStyle: SystemStyleObject = {
-  color: 'inherit',
-  borderRadius: '0.25rem',
-  padding: '1.5rem',
-  _hover: {
-    bgColor: 'primary.100',
-  },
-  _focus: {
-    borderColor: 'transparent',
-    // NOTE: For the boxShadow styling, due to conflicts with the focus-visible package,
-    // the !important is required to display the boxShadow styling correctly.
-    boxShadow: '0 0 0 2px var(--chakra-colors-primary-500) !important',
-  },
-  _active: activeContainerStyle,
-  bgColor: 'white',
-  border: '1px solid',
-  borderColor: 'neutral.300',
-  whiteSpace: 'pre-line',
-  flexDir: 'column',
-  alignItems: 'flex-start',
-  maxWidth: 'inherit',
-  textAlign: 'left',
-}
-
 export const Tile: ComponentMultiStyleConfig<typeof parts> = {
   parts: parts.keys,
-  baseStyle: ({ isActive }) => ({
-    container: isActive
-      ? { ...baseContainerStyle, ...activeContainerStyle }
-      : baseContainerStyle,
+  baseStyle: {
+    container: {
+      transitionProperty: 'common',
+      transitionDuration: 'normal',
+      color: 'inherit',
+      borderRadius: '0.25rem',
+      padding: '1.5rem',
+      _hover: {
+        bgColor: 'primary.100',
+      },
+      _focus: {
+        borderColor: 'transparent',
+        // NOTE: For the boxShadow styling, due to conflicts with the focus-visible package,
+        // the !important is required to display the boxShadow styling correctly.
+        boxShadow: '0 0 0 2px var(--chakra-colors-primary-500) !important',
+      },
+      _active: {
+        bgColor: 'primary.200',
+        // borderColor: 'transparent',
+        boxShadow: '0 0 0 3px var(--chakra-colors-primary-400)',
+        _focus: {
+          // NOTE: For the boxShadow styling, due to conflicts with the focus-visible package,
+          // the !important is required to display the boxShadow styling correctly.
+          boxShadow: '0 0 0 3px var(--chakra-colors-primary-500) !important',
+        },
+      },
+      bgColor: 'white',
+      border: '1px solid',
+      borderColor: 'neutral.300',
+      whiteSpace: 'pre-line',
+      flexDir: 'column',
+      alignItems: 'flex-start',
+      maxWidth: 'inherit',
+      textAlign: 'left',
+      alignSelf: 'stretch',
+      justifyContent: 'stretch',
+    },
     title: {
       color: 'secondary.700',
       textStyle: 'h4',
@@ -58,7 +56,7 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
       color: 'secondary.500',
       textStyle: 'body-2',
     },
-  }),
+  },
   variants: {
     complex: {
       title: {
@@ -71,5 +69,8 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
     simple: {
       title: { mb: '1rem' },
     },
+  },
+  defaultProps: {
+    variant: 'simple',
   },
 }
