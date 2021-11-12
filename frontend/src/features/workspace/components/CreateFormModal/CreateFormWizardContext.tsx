@@ -19,9 +19,13 @@ type CreateFormWizardContextReturn = {
   handleDetailsSubmit: ReturnType<
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
+  handleCreateStorageModeForm: ReturnType<
+    UseFormHandleSubmit<CreateFormWizardInputProps>
+  >
   handleBackToDetails: () => void
   resetModal: () => void
   keypair: ReturnType<typeof formsgSdk.crypto.generate>
+  isLoading: boolean
 }
 
 const CreateFormWizardContext = createContext<
@@ -31,8 +35,6 @@ const CreateFormWizardContext = createContext<
 type CreateFormWizardInputProps = {
   title: string
   responseMode: FormResponseMode
-  // Encrypt form
-  lostAck: boolean
   // Email form
   emails: string[]
 }
@@ -56,23 +58,34 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     defaultValues: {
       title: '',
       responseMode: FormResponseMode.Encrypt,
-      lostAck: undefined,
     },
   })
 
   const { handleSubmit, reset } = formMethods
 
-  const { createEmailModeFormMutation } = useCreateFormMutations()
+  const { createEmailModeFormMutation, createStorageModeFormMutation } =
+    useCreateFormMutations()
 
-  const handleDetailsSubmit = handleSubmit(async (inputs) => {
+  const handleCreateStorageModeForm = handleSubmit(
+    ({ title, responseMode }) => {
+      if (responseMode !== FormResponseMode.Encrypt) return
+
+      return createStorageModeFormMutation.mutate({
+        title,
+        responseMode,
+        publicKey: keypair.publicKey,
+      })
+    },
+  )
+
+  const handleDetailsSubmit = handleSubmit((inputs) => {
     if (inputs.responseMode === FormResponseMode.Email) {
-      return createEmailModeFormMutation.mutateAsync({
+      return createEmailModeFormMutation.mutate({
         emails: inputs.emails.filter(Boolean),
         title: inputs.title,
         responseMode: inputs.responseMode,
       })
     }
-    console.log(inputs)
     setCurrentStep([CreateFormFlowStates.Landing, 1])
   })
 
@@ -88,11 +101,15 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   }
 
   return {
+    isLoading:
+      createEmailModeFormMutation.isLoading ||
+      createStorageModeFormMutation.isLoading,
     keypair,
     currentStep,
     direction,
     formMethods,
     handleDetailsSubmit,
+    handleCreateStorageModeForm,
     handleBackToDetails,
     resetModal,
   }

@@ -1,6 +1,7 @@
 import {
   AdminDashboardFormMetaDto,
   CreateEmailFormBodyDto,
+  CreateStorageFormBodyDto,
   FormDto,
 } from '~shared/types/form/form'
 
@@ -23,6 +24,14 @@ export const getDashboardView = async (): Promise<
 
 export const createEmailModeForm = async (
   body: CreateEmailFormBodyDto,
+): Promise<FormDto> => {
+  return ApiService.post<FormDto>(ADMIN_FORM_ENDPOINT, { form: body }).then(
+    ({ data }) => data,
+  )
+}
+
+export const createStorageModeForm = async (
+  body: CreateStorageFormBodyDto,
 ): Promise<FormDto> => {
   return ApiService.post<FormDto>(ADMIN_FORM_ENDPOINT, { form: body }).then(
     ({ data }) => data,
