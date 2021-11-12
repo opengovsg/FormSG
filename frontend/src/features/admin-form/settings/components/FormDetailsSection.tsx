@@ -5,6 +5,7 @@ import { get, isEmpty } from 'lodash'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
+import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -59,25 +60,6 @@ const FormTitleInput = ({ initialTitle }: FormTitleInputProps): JSX.Element => {
     },
   })
 
-  const validationRules = useMemo(
-    () => ({
-      required: 'Form name is required',
-      minLength: {
-        value: 2,
-        message: 'Form name must be at least 4 characters',
-      },
-      maxLength: {
-        value: 200,
-        message: 'Form name must be at most 200 characters',
-      },
-      pattern: {
-        value: /^[a-zA-Z0-9_\-./() &`;'"]*$/,
-        message: 'Form name cannot contain special characters',
-      },
-    }),
-    [],
-  )
-
   const { mutateFormTitle } = useMutateFormSettings()
 
   const handleBlur = useCallback(() => {
@@ -108,7 +90,7 @@ const FormTitleInput = ({ initialTitle }: FormTitleInputProps): JSX.Element => {
       <Controller
         control={control}
         name="title"
-        rules={validationRules}
+        rules={FORM_TITLE_VALIDATION_RULES}
         render={({ field }) => (
           <Input {...field} onBlur={handleBlur} onKeyDown={handleKeyDown} />
         )}
