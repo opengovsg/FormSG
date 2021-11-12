@@ -3,7 +3,6 @@ import { useForm, UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
-import { useUser } from '~features/user/queries'
 import { useCreateFormMutations } from '~features/workspace/mutations'
 
 export enum CreateFormFlowStates {
@@ -25,22 +24,14 @@ const CreateFormWizardContext = createContext<
   CreateFormWizardContextReturn | undefined
 >(undefined)
 
-type BaseCreateFormWizardInputProps = {
+type CreateFormWizardInputProps = {
   title: string
   responseMode: FormResponseMode
-}
-
-interface CreateStorageFormWizardInputProps
-  extends BaseCreateFormWizardInputProps {
-  responseMode: FormResponseMode.Encrypt
+  // Encrypt form
   lostAck: boolean
+  // Email form
+  emails: string[]
 }
-
-type CreateEmailFormWizardInputProps = BaseCreateFormWizardInputProps
-
-type CreateFormWizardInputProps =
-  | CreateStorageFormWizardInputProps
-  | CreateEmailFormWizardInputProps
 
 const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   const [[currentStep, direction], setCurrentStep] = useState([
@@ -48,7 +39,6 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     0,
   ])
 
-  const { user } = useUser()
   const formMethods = useForm<CreateFormWizardInputProps>({
     defaultValues: {
       title: '',
@@ -62,11 +52,9 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   const { createEmailModeFormMutation } = useCreateFormMutations()
 
   const handleDetailsSubmit = handleSubmit(async (inputs) => {
-    if (!user) return
     if (inputs.responseMode === FormResponseMode.Email) {
       return createEmailModeFormMutation.mutateAsync({
-        // TODO: Add email field for user? Or just defaults to current user.
-        emails: [user.email],
+        emails: inputs.emails.filter(Boolean),
         title: inputs.title,
         responseMode: inputs.responseMode,
       })

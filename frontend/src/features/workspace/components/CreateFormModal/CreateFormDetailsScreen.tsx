@@ -7,6 +7,8 @@ import {
   ModalHeader,
 } from '@chakra-ui/react'
 
+import { FormResponseMode } from '~shared/types/form/form'
+
 import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -15,6 +17,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
 import { useCreateFormWizard } from './CreateFormWizardContext'
+import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
 import { FormResponseOptions } from './FormResponseOptions'
 
 /** The length of form title to start showing warning text */
@@ -30,6 +33,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   } = formMethods
 
   const titleInputValue = watch('title')
+  const responseModeValue = watch('responseMode')
 
   return (
     <>
@@ -41,8 +45,11 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
       <ModalBody whiteSpace="pre-line">
         <Container maxW="42.5rem" p={0}>
           <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
-            <FormLabel>Form name</FormLabel>
-            <Input {...register('title', FORM_TITLE_VALIDATION_RULES)} />
+            <FormLabel useMarkdownForDescription>Form name</FormLabel>
+            <Input
+              autoFocus
+              {...register('title', FORM_TITLE_VALIDATION_RULES)}
+            />
             <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
             {titleInputValue?.length > FORM_TITLE_LENGTH_WARNING ? (
               <FormFieldMessage>
@@ -62,6 +69,17 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             />
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
           </FormControl>
+          {responseModeValue === FormResponseMode.Email && (
+            <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
+              <FormLabel
+                useMarkdownForDescription
+                description="Specify up to 30 emails. [How to guard against bounce emails](https://go.gov.sg/form-prevent-bounce)."
+              >
+                Emails where responses will be sent
+              </FormLabel>
+              <EmailFormRecipientsInput />
+            </FormControl>
+          )}
           <Button
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
             type="submit"
