@@ -3,6 +3,8 @@ import { useForm, UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
+import formsgSdk from '~utils/formSdk'
+
 import { useCreateFormMutations } from '~features/workspace/mutations'
 
 export enum CreateFormFlowStates {
@@ -18,6 +20,8 @@ type CreateFormWizardContextReturn = {
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
   handleBackToDetails: () => void
+  resetModal: () => void
+  keypair: ReturnType<typeof formsgSdk.crypto.generate>
 }
 
 const CreateFormWizardContext = createContext<
@@ -33,11 +37,20 @@ type CreateFormWizardInputProps = {
   emails: string[]
 }
 
+const INITIAL_STEP_STATE: [CreateFormFlowStates, number] = [
+  CreateFormFlowStates.Details,
+  0 | 1 | -1,
+]
+
 const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
-  const [[currentStep, direction], setCurrentStep] = useState([
-    CreateFormFlowStates.Details,
-    0,
-  ])
+  const [[currentStep, direction], setCurrentStep] =
+    useState(INITIAL_STEP_STATE)
+
+  /**
+   * Only used for storage mode forms, but generated first so that the key is
+   * immutable per open of the modal.
+   */
+  const [keypair, setKeypair] = useState(formsgSdk.crypto.generate())
 
   const formMethods = useForm<CreateFormWizardInputProps>({
     defaultValues: {
@@ -47,7 +60,7 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     },
   })
 
-  const { handleSubmit } = formMethods
+  const { handleSubmit, reset } = formMethods
 
   const { createEmailModeFormMutation } = useCreateFormMutations()
 
@@ -67,12 +80,21 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
 
+  const resetModal = () => {
+    reset()
+    // Regenerate keypair for next open of modal.
+    setKeypair(formsgSdk.crypto.generate())
+    setCurrentStep(INITIAL_STEP_STATE)
+  }
+
   return {
+    keypair,
     currentStep,
     direction,
     formMethods,
     handleDetailsSubmit,
     handleBackToDetails,
+    resetModal,
   }
 }
 
