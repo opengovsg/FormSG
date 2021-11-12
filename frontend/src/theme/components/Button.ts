@@ -132,6 +132,7 @@ const variantLink: SystemStyleFunction = (props) => {
 
 export const Button = {
   baseStyle: {
+    whiteSpace: 'pre-wrap',
     borderRadius: '0.25rem',
     border: '1px solid',
     textStyle: 'subhead-1',
