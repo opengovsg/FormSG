@@ -1,8 +1,11 @@
-import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
+import {
+  AdminDashboardFormMetaDto,
+  CreateEmailFormBodyDto,
+  FormDto,
+} from '~shared/types/form/form'
 
 import { ApiService } from '~services/ApiService'
 
-// endpoint exported for testing
 export const ADMIN_FORM_ENDPOINT = '/admin/forms'
 
 /**
@@ -16,4 +19,12 @@ export const getDashboardView = async (): Promise<
   return ApiService.get<AdminDashboardFormMetaDto[]>(
     `${ADMIN_FORM_ENDPOINT}`,
   ).then(({ data }) => data)
+}
+
+export const createEmailModeForm = async (
+  body: CreateEmailFormBodyDto,
+): Promise<FormDto> => {
+  return ApiService.post<FormDto>(ADMIN_FORM_ENDPOINT, { form: body }).then(
+    ({ data }) => data,
+  )
 }
