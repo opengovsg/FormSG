@@ -53,17 +53,18 @@ export const Radio: ComponentMultiStyleConfig = {
         borderColor: `${c}.500`,
       },
       _disabled: {
-        borderColor: getColor(theme, `neutral.500`),
+        borderColor: 'neutral.500',
         bg: 'white',
         _checked: {
-          borderColor: getColor(theme, `neutral.500`),
-          color: getColor(theme, `neutral.500`),
+          borderColor: 'neutral.500',
+          color: 'neutral.500',
           bg: 'white',
         },
       },
     },
     container: {
       w: '100%',
+      color: 'secondary.700',
       _hover: {
         bg: `${c}.100`,
       },
@@ -74,19 +75,19 @@ export const Radio: ComponentMultiStyleConfig = {
       },
       _disabled: {
         bg: 'white',
+        color: 'neutral.500',
         cursor: 'not-allowed',
       },
     },
     // Text label
     label: {
       _disabled: {
-        color: getColor(theme, `neutral.500`),
+        color: 'neutral.500',
         // Chakra automatically sets opacity to 0.4, so override that
         opacity: 1,
       },
       textStyle: 'body-1',
       ml: '1rem',
-      color: 'secondary.700',
     },
     othersContainer: {
       _hover: {

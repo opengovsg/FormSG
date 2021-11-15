@@ -3,7 +3,14 @@ import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 import simplur from 'simplur'
 
-import { AdminFormDto, FormSettings, FormStatus } from '~shared/types/form/form'
+import {
+  AdminFormDto,
+  FormAuthType,
+  FormSettings,
+  FormStatus,
+} from '~shared/types/form/form'
+
+import { ApiError } from '~typings/core'
 
 import { useToast } from '~hooks/useToast'
 import { formatOrdinal } from '~utils/stringFormat'
@@ -12,8 +19,10 @@ import { adminFormKeys } from '../common/queries'
 
 import { adminFormSettingsKeys } from './queries'
 import {
+  updateFormAuthType,
   updateFormCaptcha,
   updateFormEmails,
+  updateFormEsrvcId,
   updateFormInactiveMessage,
   updateFormLimit,
   updateFormStatus,
@@ -26,6 +35,7 @@ export const useMutateFormSettings = () => {
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
+  const formSettingsQueryKey = adminFormSettingsKeys.id(formId)
 
   const updateFormData = useCallback(
     (newData: FormSettings) => {
@@ -45,29 +55,47 @@ export const useMutateFormSettings = () => {
     [formId, queryClient],
   )
 
+  const handleSuccess = useCallback(
+    ({
+      newData,
+      toastDescription,
+    }: {
+      newData: FormSettings
+      toastDescription: string
+    }) => {
+      toast.closeAll()
+      updateFormData(newData)
+      toast({
+        description: toastDescription,
+      })
+    },
+    [toast, updateFormData],
+  )
+
+  const handleError = useCallback(
+    (error: Error) => {
+      toast.closeAll()
+      toast({
+        description: error.message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
   const mutateFormStatus = useMutation(
     (nextStatus: FormStatus) => updateFormStatus(formId, nextStatus),
     {
       onSuccess: (newData) => {
-        toast.closeAll()
-        updateFormData(newData)
-
         // Show toast on success.
         const isNowPublic = newData.status === FormStatus.Public
         const toastStatusMessage = isNowPublic
           ? `Congrats! Your form is now open for submission.\n\nFor high-traffic forms, [AutoArchive your mailbox](https://go.gov.sg/form-prevent-bounce) to prevent lost responses.`
           : 'Your form is closed for submission.'
-        toast({
-          description: toastStatusMessage,
-        })
+
+        handleSuccess({ newData, toastDescription: toastStatusMessage })
       },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
+      onError: handleError,
     },
   )
 
@@ -75,10 +103,6 @@ export const useMutateFormSettings = () => {
     (nextLimit: number | null) => updateFormLimit(formId, nextLimit),
     {
       onSuccess: (newData) => {
-        toast.closeAll()
-        // Update new settings data in cache.
-        updateFormData(newData)
-
         // Show toast on success.
         const toastStatusMessage = newData.submissionLimit
           ? simplur`Your form will now automatically close on the ${[
@@ -86,17 +110,9 @@ export const useMutateFormSettings = () => {
               formatOrdinal,
             ]} submission.`
           : 'The submission limit on your form is removed.'
-        toast({
-          description: toastStatusMessage,
-        })
+        handleSuccess({ newData, toastDescription: toastStatusMessage })
       },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
+      onError: handleError,
     },
   )
 
@@ -104,25 +120,14 @@ export const useMutateFormSettings = () => {
     (nextHasCaptcha: boolean) => updateFormCaptcha(formId, nextHasCaptcha),
     {
       onSuccess: (newData) => {
-        toast.closeAll()
-        // Update new settings data in cache.
-        updateFormData(newData)
-
-        // Show toast on success.
-        const toastStatusMessage = `reCAPTCHA is now ${
-          newData.hasCaptcha ? 'enabled' : 'disabled'
-        } on your form.`
-        toast({
-          description: toastStatusMessage,
+        handleSuccess({
+          newData,
+          toastDescription: `reCAPTCHA is now ${
+            newData.hasCaptcha ? 'enabled' : 'disabled'
+          } on your form.`,
         })
       },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
+      onError: handleError,
     },
   )
 
@@ -153,22 +158,12 @@ export const useMutateFormSettings = () => {
     (nextMessage: string) => updateFormInactiveMessage(formId, nextMessage),
     {
       onSuccess: (newData) => {
-        toast.closeAll()
-        // Update new settings data in cache.
-        updateFormData(newData)
-
-        // Show toast on success.
-        toast({
-          description: "Your form's inactive message has been updated.",
+        handleSuccess({
+          newData,
+          toastDescription: "Your form's inactive message has been updated.",
         })
       },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
+      onError: handleError,
     },
   )
 
@@ -176,24 +171,77 @@ export const useMutateFormSettings = () => {
     (nextEmails: string[]) => updateFormEmails(formId, nextEmails),
     {
       onSuccess: (newData) => {
-        toast.closeAll()
-        // Update new settings data in cache.
-        updateFormData(newData)
-
-        // Show toast on success.
-        toast({
-          description: 'Emails successfully updated.',
+        handleSuccess({
+          newData,
+          toastDescription: 'Emails successfully updated.',
         })
       },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
+      onError: handleError,
     },
   )
+
+  const mutateFormEsrvcId = useMutation(
+    (nextEsrvcId?: string) => updateFormEsrvcId(formId, nextEsrvcId),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: 'E-service ID successfully updated.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormAuthType = useMutation<
+    FormSettings,
+    ApiError,
+    FormAuthType,
+    { previousSettings?: FormSettings }
+  >((nextAuthType: FormAuthType) => updateFormAuthType(formId, nextAuthType), {
+    // Optimistic update
+    onMutate: async (newData) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries(formSettingsQueryKey)
+
+      // Snapshot the previous value
+      const previousSettings =
+        queryClient.getQueryData<FormSettings>(formSettingsQueryKey)
+
+      // Optimistically update to the new value
+      queryClient.setQueryData<FormSettings | undefined>(
+        formSettingsQueryKey,
+        (old) => {
+          if (!old) return
+          return {
+            ...old,
+            authType: newData,
+          }
+        },
+      )
+
+      // Return a context object with the snapshotted value
+      return { previousSettings }
+    },
+    onSuccess: (newData) => {
+      handleSuccess({
+        newData,
+        toastDescription: 'Form authentication successfully updated.',
+      })
+    },
+    onError: (error, _newData, context) => {
+      if (context?.previousSettings) {
+        queryClient.setQueryData(formSettingsQueryKey, context.previousSettings)
+      }
+      handleError(error)
+    },
+    onSettled: (_data, error) => {
+      if (error) {
+        // Refetch data if any error occurs
+        queryClient.invalidateQueries(formSettingsQueryKey)
+      }
+    },
+  })
 
   return {
     mutateFormStatus,
@@ -202,5 +250,7 @@ export const useMutateFormSettings = () => {
     mutateFormCaptcha,
     mutateFormEmails,
     mutateFormTitle,
+    mutateFormAuthType,
+    mutateFormEsrvcId,
   }
 }

@@ -40,7 +40,6 @@ const PrivateFormMessageInput = ({
   const inputRef = useRef<HTMLInputElement>(null)
   const { mutateFormInactiveMessage } = useMutateFormSettings()
 
-  // TODO: Show error when given value is below current submission counts.
   const handleValueChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       setValue(e.target.value)
