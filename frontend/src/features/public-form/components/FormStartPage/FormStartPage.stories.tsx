@@ -24,7 +24,7 @@ export default {
   component: FormStartPage,
   decorators: [
     StoryRouter({
-      initialEntries: ['/12345'],
+      initialEntries: ['/61540ece3d4a6e50ac0cc6ff'],
       path: '/:formId',
     }),
     (storyFn) => <PublicFormProvider>{storyFn()}</PublicFormProvider>,
