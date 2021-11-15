@@ -5,6 +5,8 @@ import { PublicFormViewDto } from '~shared/types/form/form'
 
 import { ApiError } from '~typings/core'
 
+import { PUBLICFORM_REGEX } from '~constants/routes'
+
 import { getPublicFormView } from './PublicFormService'
 
 const publicFormKeys = {
@@ -21,8 +23,12 @@ export const usePublicFormView = (): UseQueryResult<
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  return useQuery<PublicFormViewDto, ApiError>(publicFormKeys.id(formId), () =>
-    getPublicFormView(formId),
+  return useQuery<PublicFormViewDto, ApiError>(
+    publicFormKeys.id(formId),
+    () => getPublicFormView(formId),
+    {
+      enabled: PUBLICFORM_REGEX.test(formId),
+    },
   )
 }
 

@@ -6,7 +6,7 @@ import {
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
   LOGIN_ROUTE,
-  PUBLIC_FORM_REGEX,
+  PUBLICFORM_ROUTE,
   ROOT_ROUTE,
 } from '~constants/routes'
 
@@ -37,7 +37,7 @@ export const AppRouter = (): JSX.Element => {
           element={<PublicElement strict element={<LoginPage />} />}
         />
         <Route
-          path={PUBLIC_FORM_REGEX}
+          path={PUBLICFORM_ROUTE}
           element={<PublicElement element={<PublicFormPage />} />}
         />
         <Route
