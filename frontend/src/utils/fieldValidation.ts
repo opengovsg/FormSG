@@ -8,6 +8,7 @@ import validator from 'validator'
 
 import {
   AttachmentFieldBase,
+  CheckboxFieldBase,
   EmailFieldBase,
   FieldBase,
   HomenoFieldBase,
@@ -181,6 +182,11 @@ export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
     },
   }
 }
+
+export const createCheckboxValidationRules: ValidationRuleFn<CheckboxFieldBase> =
+  (schema) => {
+    return createBaseValidationRules(schema)
+  }
 
 export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
   schema,
