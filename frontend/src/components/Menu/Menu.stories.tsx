@@ -18,6 +18,10 @@ import { Menu } from './Menu'
 export default {
   title: 'Components/Menu',
   component: Menu,
+  parameters: {
+    // Required so tooltip does not flake.
+    chromatic: { pauseAnimationAtEnd: true },
+  },
 } as Meta
 
 type MenuTemplateProps = {

@@ -11,6 +11,10 @@ export default {
   title: 'Components/Tooltip',
   component: Tooltip,
   decorators: [],
+  parameters: {
+    // Required so tooltip does not flake.
+    chromatic: { pauseAnimationAtEnd: true },
+  },
 } as Meta
 
 const TooltipStack = (
