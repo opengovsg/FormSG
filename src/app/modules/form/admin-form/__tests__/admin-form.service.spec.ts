@@ -2437,7 +2437,7 @@ describe('admin-form.service', () => {
     })
 
     describe('createTwilioCredentials', () => {
-      const MOCK_FORM_ID = new ObjectId().toHexString()
+      const MOCK_FORM_ID = new ObjectId()
 
       const MOCK_UPDATED_FORM = {
         _id: MOCK_FORM_ID,
@@ -2498,7 +2498,7 @@ describe('admin-form.service', () => {
     })
 
     describe('updateTwilioCredentials', () => {
-      const MOCK_FORM_ID = new ObjectId().toHexString()
+      const MOCK_FORM_ID = new ObjectId()
 
       const MOCK_ACCOUNT_SID = 'AC12345678'
       const MOCK_API_KEY_SID = 'SK12345678'
