@@ -864,16 +864,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     session?: ClientSession,
   ) {
     return session
-      ? this.findByIdAndUpdate(
-          formId,
-          {
-            msgSrvcName: newMsgSrvcName
-          },
-          { session },
-        ).exec()
-      : this.findByIdAndUpdate(formId, {
-          msgSrvcName: newMsgSrvcName,
-        }).exec()
+      ? this.findByIdAndUpdate(formId, { msgSrvcName }, { session }).exec()
+      : this.findByIdAndUpdate(formId, { msgSrvcName }).exec()
   }
 
   // Hooks

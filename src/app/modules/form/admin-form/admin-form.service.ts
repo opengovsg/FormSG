@@ -1180,6 +1180,14 @@ export const createTwilioCredentials = (
     Name: msgSrvcName,
     SecretString: twilioCredentialsData.toString(),
   }
+  logger.info({
+    message: `no msgSrvcName, creating Twilio credentials for form ${form._id}`,
+    meta: {
+      action: 'createTwilioCredentials',
+      formId: form._id.toHexString(),
+      msgSrvcName,
+    },
+  })
 
   return ResultAsync.fromPromise(
     mongoose.connection.transaction(async (session: ClientSession) => {
@@ -1229,6 +1237,14 @@ export const updateTwilioCredentials = (
       )
     },
   )
+
+  logger.info({
+    message: 'msgSrvcName has been found, updating Twilio credentials',
+    meta: {
+      action: 'updateTwilioCredentials',
+      msgSrvcName,
+    },
+  })
 
   const body: SecretsManager.Types.PutSecretValueRequest = {
     SecretId: msgSrvcName,
