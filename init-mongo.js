@@ -1,4 +1,7 @@
 /* eslint-disable */
+rs.initiate()
+
+print("RUNNING SEED")
 db.createCollection("agencies")
 db.agencies.insert([{
     "shortName" : "govtech",
@@ -9,5 +12,5 @@ db.agencies.insert([{
         "data.gov.sg",
         "form.sg",
         "open.gov.sg"
-    ],
+    ]
 }])

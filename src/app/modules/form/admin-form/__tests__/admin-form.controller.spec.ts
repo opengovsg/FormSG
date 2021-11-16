@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import {
-  CreateSecretResponse,
-  PutSecretValueResponse,
-} from 'aws-sdk/clients/secretsmanager'
+import { PutSecretValueResponse } from 'aws-sdk/clients/secretsmanager'
 import { ObjectId } from 'bson-ext'
 import { StatusCodes } from 'http-status-codes'
 import { assignIn, cloneDeep, merge, pick } from 'lodash'
@@ -10381,25 +10378,16 @@ describe('admin-form.controller', () => {
         body: MOCK_TWILIO_CREDENTIALS,
       })
 
-      const msgSrvcName = `formsg/testing/form/${MOCK_FORM._id}/twilio`
-
-      const MOCK_CREATE_SECRET_RESPONSE: CreateSecretResponse = {
-        Name: msgSrvcName,
-      }
-
-      createTwilioSpy.mockReturnValueOnce(okAsync(MOCK_CREATE_SECRET_RESPONSE))
+      // Returns empty response because mongo transaction returns Promise<any>
+      createTwilioSpy.mockReturnValueOnce(okAsync({}))
 
       const mockRes = expressHandler.mockResponse()
-      const expected = {
-        Name: msgSrvcName,
-      }
 
       // Act
       await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
 
       // // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expected)
       expect(createTwilioSpy).toHaveBeenCalledTimes(1)
       expect(updateTwilioSpy).not.toHaveBeenCalled()
     })
@@ -10435,7 +10423,7 @@ describe('admin-form.controller', () => {
 
       const mockRes = expressHandler.mockResponse()
       const expected = {
-        Name: msgSrvcName,
+        message: 'Successfully updated Twilio credentials',
       }
 
       // Act

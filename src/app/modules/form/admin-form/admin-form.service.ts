@@ -1,9 +1,6 @@
 import { SecretsManager } from 'aws-sdk'
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import {
-  CreateSecretResponse,
-  PutSecretValueResponse,
-} from 'aws-sdk/clients/secretsmanager'
+import { PutSecretValueResponse } from 'aws-sdk/clients/secretsmanager'
 import { assignIn, last, omit } from 'lodash'
 import { ClientSession } from 'mongodb'
 import mongoose from 'mongoose'
@@ -1171,7 +1168,7 @@ const isMobileFieldUpdateAllowed = (
 export const createTwilioCredentials = (
   twilioCredentials: TwilioCredentials,
   formId: string,
-): ResultAsync<CreateSecretResponse, ApplicationError> => {
+): ResultAsync<unknown, ApplicationError> => {
   if (!isCredentialsValid(twilioCredentials))
     return errAsync(new MalformedParametersError('Credentials are invalid!'))
 
@@ -1187,10 +1184,13 @@ export const createTwilioCredentials = (
   // TO DO: Add regex for fields of Twilio credentials
   return ResultAsync.fromPromise(
     mongoose.connection.transaction(async (session: ClientSession) => {
-      const doc = await FormModel.updateByMsgSrvcName(formId, msgSrvcName)
-      const result = secretsManager.createSecret(body).promise()
-      await doc.save({ session })
-      return result
+      const doc = await FormModel.findById(formId)
+
+      if (doc) {
+        doc.msgSrvcName = msgSrvcName
+        await secretsManager.createSecret(body).promise()
+        await doc.save({ session })
+      }
     }),
     (error) => {
       logger.error({

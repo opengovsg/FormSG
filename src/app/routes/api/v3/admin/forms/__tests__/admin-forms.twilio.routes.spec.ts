@@ -1,7 +1,4 @@
-import {
-  CreateSecretResponse,
-  PutSecretValueResponse,
-} from 'aws-sdk/clients/secretsmanager'
+import { PutSecretValueResponse } from 'aws-sdk/clients/secretsmanager'
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
@@ -54,6 +51,10 @@ const INVALID_TWILIO_CREDENTIALS: TwilioCredentials = {
   messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
 }
 
+const MOCK_SUCCESSFUL_UPDATE = {
+  message: 'Successfully updated Twilio credentials',
+}
+
 const UserModel = getUserModel(mongoose)
 const FormModel = getFormModel(mongoose)
 
@@ -74,15 +75,10 @@ describe('admin-form.twilio.routes', () => {
     it('should return 200 on successful twilio credentials addition', async () => {
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
       const session = await createAuthedSession(user.email, request)
-      const msgSrvcName = `formsg/testing/form/${formToUpdate._id}/twilio`
-
-      const MOCK_CREATE_SECRET_RESPONSE: CreateSecretResponse = {
-        Name: msgSrvcName,
-      }
 
       const createwilioCredentialsSpy = jest
         .spyOn(AdminFormService, 'createTwilioCredentials')
-        .mockReturnValueOnce(okAsync(MOCK_CREATE_SECRET_RESPONSE))
+        .mockReturnValueOnce(okAsync({}))
 
       // Actual
       const response = await session
@@ -92,7 +88,7 @@ describe('admin-form.twilio.routes', () => {
       // Assert
       expect(createwilioCredentialsSpy).toBeCalled()
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual({ Name: msgSrvcName })
+      expect(response.body).toEqual(MOCK_SUCCESSFUL_UPDATE)
     })
 
     it('should return 200 on successful twilio credentials update', async () => {
@@ -115,7 +111,7 @@ describe('admin-form.twilio.routes', () => {
 
       expect(createwilioCredentialsSpy).toBeCalled()
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual({ Name: msgSrvcName })
+      expect(response.body).toEqual(MOCK_SUCCESSFUL_UPDATE)
     })
 
     it('should return 400 when twilio credentials are invalid', async () => {
