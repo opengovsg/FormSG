@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile.development
     depends_on:
-      - database
+      - mongosetup
     volumes:
       - ./:/opt/formsg
       - /opt/formsg/node_modules
@@ -17,7 +17,7 @@ services:
       - '9229:9229' # Node debugger port
     environment:
       - NODE_ENV=development
-      - DB_HOST=mongodb://database:27017/formsg
+      - DB_HOST=mongodb://mongodb1:27017,mongodb2:27017,mongodb3:27017/formsg?replicaSet=rsmongo&retryWrites=false
       - APP_NAME=FormSG
       - APP_URL=http://localhost:5000
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket
@@ -106,18 +106,79 @@ services:
       - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
     network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:5156 to mockpass:5156
 
-  database:
+  mongodb1:
     image: 'mongo:4.0'
-    container_name: 'formsg-db'
+    restart: always
+    container_name: mongodb1
     environment:
       - MONGO_INITDB_DATABASE=formsg
     volumes:
-      - mongodata:/data/db
+      - mongodata1:/data/db
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     ports:
-      - '27017:27017'
-    logging:
-      driver: none
+      - 27017:27017
+    entrypoint:
+      [
+        '/usr/bin/mongod',
+        '--replSet',
+        'rsmongo',
+        '--bind_ip_all',
+        '--wiredTigerCacheSizeGB',
+        '1',
+      ]
+
+  mongodb2:
+    image: 'mongo:4.0'
+    restart: always
+    container_name: mongodb2
+    environment:
+      - MONGO_INITDB_DATABASE=formsg
+    volumes:
+      - mongodata2:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    ports:
+      - 27018:27017
+    entrypoint:
+      [
+        '/usr/bin/mongod',
+        '--replSet',
+        'rsmongo',
+        '--bind_ip_all',
+        '--wiredTigerCacheSizeGB',
+        '1',
+      ]
+
+  mongodb3:
+    image: 'mongo:4.0'
+    restart: always
+    container_name: mongodb3
+    environment:
+      - MONGO_INITDB_DATABASE=formsg
+    volumes:
+      - mongodata3:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    ports:
+      - 27019:27017
+    entrypoint:
+      [
+        '/usr/bin/mongod',
+        '--replSet',
+        'rsmongo',
+        '--bind_ip_all',
+        '--wiredTigerCacheSizeGB',
+        '1',
+      ]
+
+  mongosetup:
+    image: 'mongo-setup'
+    build: './mongo-setup'
+    container_name: 'mongosetup'
+    depends_on:
+      - mongodb1
+      - mongodb2
+      - mongodb3
+    volumes:
+      - mongostatus:/data/
 
   localstack:
     image: localstack/localstack:0.11.5
@@ -140,4 +201,7 @@ services:
       - '1080:80'
 
 volumes:
-  mongodata:
+  mongodata1:
+  mongodata2:
+  mongodata3:
+  mongostatus:

@@ -1,4 +1,5 @@
 /* eslint-disable */
+db = db.getSiblingDB("formsg")
 db.createCollection("agencies")
 db.agencies.insert([{
     "shortName" : "govtech",
