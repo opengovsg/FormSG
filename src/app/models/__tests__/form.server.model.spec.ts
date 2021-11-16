@@ -2029,6 +2029,24 @@ describe('Form Model', () => {
         expect(forms.length).toBe(0)
       })
     })
+
+    describe('updateByMsgSrvcName', () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
+      it('should update msgSrvcName of form to new msgSrvcName', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          title: 'mock mobile form',
+        })
+
+        // Act
+        await Form.updateByMsgSrvcName(form._id, MOCK_MSG_SRVC_NAME)
+        const updatedForm = await Form.getFullFormById(form._id)
+
+        // Assert
+        expect(updatedForm!.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
+      })
+    })
   })
 
   describe('Methods', () => {

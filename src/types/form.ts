@@ -317,7 +317,7 @@ export interface IFormModel extends Model<IFormSchema> {
   updateByMsgSrvcName(
     formId: string,
     msgSrvcName: string,
-    session: ClientSession,
+    session?: ClientSession,
   ): Promise<IFormDocument>
 }
 
