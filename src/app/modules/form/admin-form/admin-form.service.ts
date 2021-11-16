@@ -89,7 +89,7 @@ import {
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 
-const secretsManager = new SecretsManager({
+export const secretsManager = new SecretsManager({
   region: config.aws.region,
   endpoint: process.env.AWS_ENDPOINT,
 })
@@ -1167,7 +1167,7 @@ const isMobileFieldUpdateAllowed = (
 
 export const createTwilioCredentials = (
   twilioCredentials: TwilioCredentials,
-  formId: string,
+  form: IPopulatedForm,
 ): ResultAsync<unknown, ApplicationError> => {
   if (!isCredentialsValid(twilioCredentials))
     return errAsync(new MalformedParametersError('Credentials are invalid!'))
@@ -1175,22 +1175,17 @@ export const createTwilioCredentials = (
   const twilioCredentialsData: TwilioCredentialsData =
     new TwilioCredentialsData(twilioCredentials)
 
-  const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${formId}/twilio`
+  const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${form._id}/twilio`
   const body: SecretsManager.Types.CreateSecretRequest = {
     Name: msgSrvcName,
     SecretString: twilioCredentialsData.toString(),
   }
 
-  // TO DO: Add regex for fields of Twilio credentials
   return ResultAsync.fromPromise(
     mongoose.connection.transaction(async (session: ClientSession) => {
-      const doc = await FormModel.findById(formId)
-
-      if (doc) {
-        doc.msgSrvcName = msgSrvcName
-        await secretsManager.createSecret(body).promise()
-        await doc.save({ session })
-      }
+      form.msgSrvcName = msgSrvcName
+      await secretsManager.createSecret(body).promise()
+      await form.save({ session })
     }),
     (error) => {
       logger.error({

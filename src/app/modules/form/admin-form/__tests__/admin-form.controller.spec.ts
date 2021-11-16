@@ -10382,12 +10382,16 @@ describe('admin-form.controller', () => {
       createTwilioSpy.mockReturnValueOnce(okAsync({}))
 
       const mockRes = expressHandler.mockResponse()
+      const expected = {
+        message: 'Successfully updated Twilio credentials',
+      }
 
       // Act
       await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
 
       // // Assert
       expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.json).toBeCalledWith(expected)
       expect(createTwilioSpy).toHaveBeenCalledTimes(1)
       expect(updateTwilioSpy).not.toHaveBeenCalled()
     })

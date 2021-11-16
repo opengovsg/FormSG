@@ -2573,14 +2573,16 @@ export const handleUpdateTwilio: ControllerHandler<
             msgSrvcName,
             twilioCredentials,
           )
-        : AdminFormService.createTwilioCredentials(twilioCredentials, formId)
+        : AdminFormService.createTwilioCredentials(
+            twilioCredentials,
+            retrievedForm,
+          )
     })
-    .map((result) => {
-      console.log('RESULT', result)
+    .map(() =>
       res
         .status(StatusCodes.OK)
-        .json({ message: 'Successfully updated Twilio credentials' })
-    })
+        .json({ message: 'Successfully updated Twilio credentials' }),
+    )
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred when updating twilio credentials',

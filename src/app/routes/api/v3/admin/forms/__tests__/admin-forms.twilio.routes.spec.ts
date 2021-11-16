@@ -78,7 +78,7 @@ describe('admin-form.twilio.routes', () => {
 
       const createwilioCredentialsSpy = jest
         .spyOn(AdminFormService, 'createTwilioCredentials')
-        .mockReturnValueOnce(okAsync({}))
+        .mockReturnValueOnce(okAsync(null))
 
       // Actual
       const response = await session
