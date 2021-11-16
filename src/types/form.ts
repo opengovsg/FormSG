@@ -1,3 +1,4 @@
+import { ClientSession } from 'mongodb'
 import {
   Document,
   LeanDocument,
@@ -316,6 +317,7 @@ export interface IFormModel extends Model<IFormSchema> {
   updateByMsgSrvcName(
     formId: string,
     msgSrvcName: string,
+    session: ClientSession,
   ): Promise<IFormDocument>
 }
 

@@ -1183,9 +1183,8 @@ export const createTwilioCredentials = (
 
   return ResultAsync.fromPromise(
     mongoose.connection.transaction(async (session: ClientSession) => {
-      form.msgSrvcName = msgSrvcName
+      await FormModel.updateByMsgSrvcName(form._id, msgSrvcName, session)
       await secretsManager.createSecret(body).promise()
-      await form.save({ session })
     }),
     (error) => {
       logger.error({

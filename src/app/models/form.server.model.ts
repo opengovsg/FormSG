@@ -1,6 +1,7 @@
 import BSON, { ObjectId } from 'bson-ext'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
+  ClientSession,
   Mongoose,
   Query,
   Schema,
@@ -860,10 +861,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormSchema.statics.updateByMsgSrvcName = async function (
     formId: string,
     newMsgSrvcName: string,
+    session: ClientSession,
   ) {
-    return this.findByIdAndUpdate(formId, {
-      msgSrvcName: newMsgSrvcName,
-    }).exec()
+    return this.findByIdAndUpdate(
+      formId,
+      {
+        msgSrvcName: newMsgSrvcName,
+      },
+      { session },
+    ).exec()
   }
 
   // Hooks

@@ -2461,16 +2461,19 @@ describe('admin-form.service', () => {
         messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
       }
 
+      const formSpy = jest.spyOn(FormModel, 'updateByMsgSrvcName')
       const secretsManagerSpy = jest.spyOn(secretsManager, 'createSecret')
 
       it('should return MongoDB transaction in which Twilio credentials was created', async () => {
         // Arrange
+        formSpy.mockResolvedValueOnce(MOCK_UPDATED_FORM)
+        const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${MOCK_FORM_ID}/twilio`
 
         secretsManagerSpy.mockImplementationOnce(() => {
           return {
             promise: () => {
               return {
-                Name: 'Test',
+                Name: msgSrvcName,
               }
             },
           } as any
@@ -2482,12 +2485,11 @@ describe('admin-form.service', () => {
           MOCK_FORM,
         )
 
-        const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${MOCK_FORM_ID}/twilio`
-
         // // Assert
         expect(actualResult.isOk()).toEqual(true)
         expect(actualResult._unsafeUnwrap()).toEqual(null)
 
+        expect(formSpy).toHaveBeenCalled()
         expect(secretsManagerSpy).toHaveBeenCalledWith({
           Name: msgSrvcName,
           SecretString: JSON.stringify(TWILIO_CREDENTIALS),
