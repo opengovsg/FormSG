@@ -122,7 +122,7 @@
     "jwt-decode": "^3.1.2",
     "libphonenumber-js": "^1.9.39",
     "lodash": "^4.17.21",
-    "moment-timezone": "0.5.33",
+    "moment-timezone": "0.5.34",
     "mongodb-uri": "^0.9.7",
     "mongoose": "^5.13.5",
     "multiparty": ">=4.2.2",
