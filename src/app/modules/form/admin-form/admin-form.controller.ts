@@ -2634,12 +2634,11 @@ export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
         retrievedForm.msgSrvcName,
       )
     })
-    .map((result) => {
-      console.log(result)
+    .map(() =>
       res
         .status(StatusCodes.OK)
-        .json({ message: 'Successfully deleted Twilio credentials' })
-    })
+        .json({ message: 'Successfully deleted Twilio credentials' }),
+    )
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred when updating twilio credentials',
