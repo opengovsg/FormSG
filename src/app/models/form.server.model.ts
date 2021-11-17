@@ -858,7 +858,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       .exec()
   }
 
-  FormSchema.statics.updateByMsgSrvcName = async function (
+  FormSchema.statics.updateMsgSrvcName = async function (
     formId: string,
     msgSrvcName: string,
     session?: ClientSession,
@@ -866,6 +866,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return session
       ? this.findByIdAndUpdate(formId, { msgSrvcName }, { session }).exec()
       : this.findByIdAndUpdate(formId, { msgSrvcName }).exec()
+  }
+
+  FormSchema.statics.deleteMsgSrvcName = async function (
+    formId: string,
+    session?: ClientSession,
+  ) {
+    return session
+      ? this.findByIdAndUpdate(
+          formId,
+          { $unset: { msgSrvcName: '' } },
+          { session },
+        ).exec()
+      : this.findByIdAndUpdate(formId, { $unset: { msgSrvcName: '' } }).exec()
   }
 
   // Hooks

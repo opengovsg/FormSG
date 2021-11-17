@@ -2461,7 +2461,7 @@ describe('admin-form.service', () => {
         messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
       }
 
-      const formSpy = jest.spyOn(FormModel, 'updateByMsgSrvcName')
+      const formSpy = jest.spyOn(FormModel, 'updateMsgSrvcName')
       const secretsManagerSpy = jest.spyOn(secretsManager, 'createSecret')
 
       it('should return MongoDB transaction in which Twilio credentials was created', async () => {

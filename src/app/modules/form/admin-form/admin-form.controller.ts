@@ -3,7 +3,7 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import { ResultAsync } from 'neverthrow'
+import { okAsync, ResultAsync } from 'neverthrow'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
@@ -2592,6 +2592,62 @@ export const handleUpdateTwilio: ControllerHandler<
           userId: sessionUserId,
           formId,
           twilioCredentials,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for DELETE /:formId/twilio.
+ * @security session
+ *
+ * @returns 200 with twilio credentials succesfully updated
+ * @returns 401 when user is not logged in
+ * @returns 403 when user does not have permissions to update the form
+ * @returns 404 when form to delete credentials cannot be found
+ * @returns 422 when id of user who is updating the form cannot be found
+ * @returns 500 when database error occurs
+ */
+export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Delete,
+      }),
+    )
+    .andThen((retrievedForm) => {
+      if (!retrievedForm.msgSrvcName) return okAsync(null)
+
+      return AdminFormService.deleteTwilioCredentials(
+        retrievedForm._id,
+        retrievedForm.msgSrvcName,
+      )
+    })
+    .map((result) => {
+      console.log(result)
+      res
+        .status(StatusCodes.OK)
+        .json({ message: 'Successfully deleted Twilio credentials' })
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating twilio credentials',
+        meta: {
+          action: 'handleDeleteTwilio',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
         },
         error,
       })

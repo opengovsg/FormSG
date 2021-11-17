@@ -2030,7 +2030,7 @@ describe('Form Model', () => {
       })
     })
 
-    describe('updateByMsgSrvcName', () => {
+    describe('updateMsgSrvcName', () => {
       const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
       it('should update msgSrvcName of form to new msgSrvcName', async () => {
         // Arrange
@@ -2040,7 +2040,7 @@ describe('Form Model', () => {
         })
 
         // Act
-        await Form.updateByMsgSrvcName(form._id, MOCK_MSG_SRVC_NAME)
+        await Form.updateMsgSrvcName(form._id, MOCK_MSG_SRVC_NAME)
         const updatedForm = await Form.getFullFormById(form._id)
 
         // Assert

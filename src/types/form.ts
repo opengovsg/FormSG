@@ -314,9 +314,14 @@ export interface IFormModel extends Model<IFormSchema> {
     updatedLogic: LogicDto,
   ): Promise<IFormSchema | null>
 
-  updateByMsgSrvcName(
+  updateMsgSrvcName(
     formId: string,
     msgSrvcName: string,
+    session?: ClientSession,
+  ): Promise<IFormDocument>
+
+  deleteMsgSrvcName(
+    formId: string,
     session?: ClientSession,
   ): Promise<IFormDocument>
 }

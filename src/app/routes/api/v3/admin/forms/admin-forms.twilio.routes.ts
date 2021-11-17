@@ -19,3 +19,12 @@ AdminFormsTwilioRouter.route('/:formId([a-fA-F0-9]{24})/twilio')
    * @returns 500 when database error occurs
    */
   .put(AdminFormController.handleUpdateTwilio)
+  /**
+   * @returns 200 when twilio credentials successfully deleted
+   * @returns 401 when user does not exist in session
+   * @returns 403 when user does not have permissions to delete credentials
+   * @returns 404 when form to delete credentials cannot be found
+   * @returns 422 when user in session cannot be retrieved from the database
+   * @returns 500 when database error occurs
+   */
+  .delete(AdminFormController.handleDeleteTwilio)
