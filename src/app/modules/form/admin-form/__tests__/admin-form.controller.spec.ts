@@ -10308,6 +10308,7 @@ describe('admin-form.controller', () => {
       expect(mockRes.json).toBeCalledWith(expected)
     })
   })
+
   describe('handleUpdateTwilio', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
@@ -10379,7 +10380,7 @@ describe('admin-form.controller', () => {
       })
 
       // Returns empty response because mongo transaction returns Promise<any>
-      createTwilioSpy.mockReturnValueOnce(okAsync({}))
+      createTwilioSpy.mockReturnValueOnce(okAsync(null))
 
       const mockRes = expressHandler.mockResponse()
       const expected = {
@@ -10616,6 +10617,236 @@ describe('admin-form.controller', () => {
       })
       expect(updateTwilioSpy).not.toHaveBeenCalled()
       expect(createTwilioSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleDeleteTwilio', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_FORM_WITH_CREDENTIALS = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      msgSrvcName: '123',
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const deleteTwilioSpy = jest.spyOn(
+      AdminFormService,
+      'deleteTwilioCredentials',
+    )
+
+    it('should return 200 if twilio credentials are successfully deleted', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM_WITH_CREDENTIALS),
+      )
+
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_WITH_CREDENTIALS._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+
+      // Returns empty response because mongo transaction returns Promise<any>
+      deleteTwilioSpy.mockReturnValueOnce(okAsync(null))
+
+      const mockRes = expressHandler.mockResponse()
+      const expected = {
+        message: 'Successfully deleted Twilio credentials',
+      }
+
+      // Act
+      await AdminFormController.handleDeleteTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // // Assert
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.json).toBeCalledWith(expected)
+      expect(deleteTwilioSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return 200 if no twilio credentials need to be deleted', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+
+      // Returns empty response because mongo transaction returns Promise<any>
+      deleteTwilioSpy.mockReturnValueOnce(okAsync(null))
+
+      const mockRes = expressHandler.mockResponse()
+      const expected = {
+        message: 'Successfully deleted Twilio credentials',
+      }
+
+      // Act
+      await AdminFormController.handleDeleteTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // // Assert
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.json).toBeCalledWith(expected)
+      expect(deleteTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 403 when current user does not have permissions to update form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'no write permissions'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(expectedErrorString)),
+      )
+
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_WITH_CREDENTIALS._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+
+      // Act
+      await AdminFormController.handleDeleteTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(deleteTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when form to update cannot be found', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'Form not found'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(expectedErrorString)),
+      )
+
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_WITH_CREDENTIALS._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+
+      // Act
+      await AdminFormController.handleDeleteTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(deleteTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 on MissingUserError', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'User not found'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(ERROR_MESSAGE)),
+      )
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_WITH_CREDENTIALS._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+
+      const expectedResponse = { message: ERROR_MESSAGE }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleDeleteTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(422)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(deleteTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when generic database error occurs during form field retrieval', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedErrorString = 'A Database error occured!'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_WITH_CREDENTIALS._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+
+      // Act
+      await AdminFormController.handleDeleteTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(deleteTwilioSpy).not.toHaveBeenCalled()
     })
   })
 })
