@@ -2047,6 +2047,25 @@ describe('Form Model', () => {
         expect(updatedForm!.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
       })
     })
+
+    describe('deleteMsgSrvcName', () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
+      it('should delete msgSrvcName of form', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          title: 'mock mobile form',
+          msgSrvcName: MOCK_MSG_SRVC_NAME,
+        })
+
+        // Act
+        await Form.deleteMsgSrvcName(form._id)
+        const updatedForm = await Form.getFullFormById(form._id)
+
+        // Assert
+        expect(updatedForm!.msgSrvcName).toBe(undefined)
+      })
+    })
   })
 
   describe('Methods', () => {

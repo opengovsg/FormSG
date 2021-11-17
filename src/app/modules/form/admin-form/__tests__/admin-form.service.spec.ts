@@ -2567,5 +2567,69 @@ describe('admin-form.service', () => {
         })
       })
     })
+
+    describe('deleteTwilioCredentials', () => {
+      const MOCK_FORM_ID = new ObjectId()
+      const formSpy = jest.spyOn(FormModel, 'deleteMsgSrvcName')
+      const MOCK_FORM = {
+        _id: MOCK_FORM_ID,
+        save: () => MOCK_FORM,
+      } as unknown as IPopulatedForm
+
+      it('should return MongoDB transaction in which Twilio credentials was successfully deleted', async () => {
+        // Arrange
+        const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${MOCK_FORM_ID}/twilio`
+
+        formSpy.mockResolvedValueOnce(MOCK_FORM)
+
+        const getSecretsSpy = jest
+          .spyOn(secretsManager, 'getSecretValue')
+          .mockImplementationOnce(() => {
+            return {
+              promise: () => {
+                return Promise.resolve({
+                  Name: msgSrvcName,
+                })
+              },
+            } as any
+          })
+
+        const twilioCacheSpy = jest
+          .spyOn(SmsService.twilioClientCache, 'del')
+          .mockReturnValueOnce(1)
+
+        const deleteSecretsSpy = jest
+          .spyOn(secretsManager, 'deleteSecret')
+          .mockImplementationOnce(() => {
+            return {
+              promise: () => {
+                return Promise.resolve({
+                  Name: msgSrvcName,
+                })
+              },
+            } as any
+          })
+
+        // // Act
+
+        const actualResult = await AdminFormService.deleteTwilioCredentials(
+          MOCK_FORM_ID.toHexString(),
+          msgSrvcName,
+        )
+
+        // // Assert
+        expect(actualResult.isOk()).toEqual(true)
+        expect(actualResult._unsafeUnwrap()).toEqual(null)
+
+        expect(getSecretsSpy).toHaveBeenCalledWith({
+          SecretId: msgSrvcName,
+        })
+        expect(twilioCacheSpy).toHaveBeenCalledWith(msgSrvcName)
+        expect(deleteSecretsSpy).toHaveBeenCalledWith({
+          SecretId: msgSrvcName,
+          ForceDeleteWithoutRecovery: true,
+        })
+      })
+    })
   })
 })
