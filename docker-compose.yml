@@ -120,13 +120,12 @@ services:
     logging:
       driver: none
 
-  # mongo-seed:
-  #   build: ./mongo-seed
-  #   restart: on-failure
-  #   depends_on:
-  #     - database
-  #   links:
-  #     - database
+  mongo-seed:
+    build: ./mongo-seed
+    depends_on:
+      - database
+    links:
+      - database
 
   localstack:
     image: localstack/localstack:0.11.5
