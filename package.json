@@ -179,7 +179,7 @@
     "@types/has-ansi": "^3.0.0",
     "@types/helmet": "4.0.0",
     "@types/ip": "^1.1.0",
-    "@types/jest": "^27.0.2",
+    "@types/jest": "^27.0.3",
     "@types/json-stringify-safe": "^5.0.0",
     "@types/mongodb": "^3.6.20",
     "@types/mongodb-uri": "^0.9.1",
