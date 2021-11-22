@@ -1187,10 +1187,18 @@ export const createTwilioCredentials = (
   })
 
   return ResultAsync.fromPromise(
-    mongoose.connection.transaction(async (session: ClientSession) => {
-      await FormModel.updateMsgSrvcName(formId, msgSrvcName, session)
-      await secretsManager.createSecret(body).promise()
-    }),
+    FormModel.startSession().then((session: ClientSession) =>
+      session
+        .withTransaction(async () => {
+          const doc = await FormModel.updateMsgSrvcName(formId, msgSrvcName)
+
+          if (doc) {
+            await secretsManager.createSecret(body).promise()
+            await doc.save({ session })
+          }
+        })
+        .then(() => session.endSession()),
+    ),
     (error) => {
       logger.error({
         message: 'Error encountered when creating Twilio Secret',
@@ -1334,10 +1342,17 @@ export const deleteTwilioCredentials = (
   })
 
   return ResultAsync.fromPromise(
-    mongoose.connection.transaction(async (session: ClientSession) => {
-      await FormModel.deleteMsgSrvcName(formId, session)
-      await secretsManager.deleteSecret(body).promise()
-    }),
+    FormModel.startSession().then((session: ClientSession) =>
+      session
+        .withTransaction(async () => {
+          const doc = await FormModel.deleteMsgSrvcName(formId)
+          if (doc) {
+            await secretsManager.deleteSecret(body).promise()
+            await doc.save({ session })
+          }
+        })
+        .then(() => session.endSession()),
+    ),
     (error) => {
       logger.error({
         message: 'Error occurred when updating Twilio in Secret Manager!',

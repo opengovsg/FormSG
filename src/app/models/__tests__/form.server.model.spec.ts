@@ -2040,8 +2040,10 @@ describe('Form Model', () => {
         })
 
         // Act
-        await Form.updateMsgSrvcName(form._id, MOCK_MSG_SRVC_NAME)
-        const updatedForm = await Form.getFullFormById(form._id)
+        const updatedForm = await Form.updateMsgSrvcName(
+          form._id,
+          MOCK_MSG_SRVC_NAME,
+        )
 
         // Assert
         expect(updatedForm!.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
@@ -2059,8 +2061,7 @@ describe('Form Model', () => {
         })
 
         // Act
-        await Form.deleteMsgSrvcName(form._id)
-        const updatedForm = await Form.getFullFormById(form._id)
+        const updatedForm = await Form.deleteMsgSrvcName(form._id)
 
         // Assert
         expect(updatedForm!.msgSrvcName).toBe(undefined)

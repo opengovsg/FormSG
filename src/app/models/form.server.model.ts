@@ -1,7 +1,6 @@
 import BSON, { ObjectId } from 'bson-ext'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
-  ClientSession,
   Mongoose,
   Query,
   Schema,
@@ -861,24 +860,22 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormSchema.statics.updateMsgSrvcName = async function (
     formId: string,
     msgSrvcName: string,
-    session?: ClientSession,
   ) {
-    return session
-      ? this.findByIdAndUpdate(formId, { msgSrvcName }, { session }).exec()
-      : this.findByIdAndUpdate(formId, { msgSrvcName }).exec()
+    const form = await this.findById(formId).exec()
+
+    if (!form) return null
+
+    form.msgSrvcName = msgSrvcName
+    return form
   }
 
-  FormSchema.statics.deleteMsgSrvcName = async function (
-    formId: string,
-    session?: ClientSession,
-  ) {
-    return session
-      ? this.findByIdAndUpdate(
-          formId,
-          { $unset: { msgSrvcName: '' } },
-          { session },
-        ).exec()
-      : this.findByIdAndUpdate(formId, { $unset: { msgSrvcName: '' } }).exec()
+  FormSchema.statics.deleteMsgSrvcName = async function (formId: string) {
+    const form = await this.findById(formId).exec()
+
+    if (!form) return null
+
+    form.msgSrvcName = undefined
+    return form
   }
 
   // Hooks

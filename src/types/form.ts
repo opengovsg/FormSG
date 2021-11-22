@@ -1,4 +1,3 @@
-import { ClientSession } from 'mongodb'
 import {
   Document,
   LeanDocument,
@@ -317,13 +316,9 @@ export interface IFormModel extends Model<IFormSchema> {
   updateMsgSrvcName(
     formId: string,
     msgSrvcName: string,
-    session?: ClientSession,
-  ): Promise<IFormDocument>
+  ): Promise<IFormSchema | null>
 
-  deleteMsgSrvcName(
-    formId: string,
-    session?: ClientSession,
-  ): Promise<IFormDocument>
+  deleteMsgSrvcName(formId: string): Promise<IFormSchema | null>
 }
 
 export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>
