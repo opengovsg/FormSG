@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import { aws } from 'src/app/config/config'
+import config, { aws } from 'src/app/config/config'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
@@ -2444,11 +2444,6 @@ describe('admin-form.service', () => {
         msgSrvcName: 'test',
       } as unknown as IPopulatedForm
 
-      const MOCK_FORM = {
-        _id: MOCK_FORM_ID,
-        save: () => MOCK_UPDATED_FORM,
-      } as unknown as IPopulatedForm
-
       const MOCK_ACCOUNT_SID = 'AC12345678'
       const MOCK_API_KEY_SID = 'SK12345678'
       const MOCK_API_KEY_SECRET = 'AZ12345678'
@@ -2467,7 +2462,7 @@ describe('admin-form.service', () => {
       it('should return MongoDB transaction in which Twilio credentials was created', async () => {
         // Arrange
         formSpy.mockResolvedValueOnce(MOCK_UPDATED_FORM)
-        const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${MOCK_FORM_ID}/twilio`
+        const msgSrvcName = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
 
         secretsManagerSpy.mockImplementationOnce(() => {
           return {
@@ -2482,7 +2477,7 @@ describe('admin-form.service', () => {
         // Act
         const actualResult = await AdminFormService.createTwilioCredentials(
           TWILIO_CREDENTIALS,
-          MOCK_FORM,
+          MOCK_FORM_ID.toHexString(),
         )
 
         // Assert
@@ -2514,7 +2509,7 @@ describe('admin-form.service', () => {
 
       it('should return the response of performing PutSecretValue operation on the SecretsManager', async () => {
         // Arrange
-        const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${MOCK_FORM_ID}/twilio`
+        const msgSrvcName = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
 
         const getSecretsSpy = jest
           .spyOn(secretsManager, 'getSecretValue')
@@ -2578,7 +2573,7 @@ describe('admin-form.service', () => {
 
       it('should return MongoDB transaction in which Twilio credentials was successfully deleted', async () => {
         // Arrange
-        const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${MOCK_FORM_ID}/twilio`
+        const msgSrvcName = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
 
         formSpy.mockResolvedValueOnce(MOCK_FORM)
 

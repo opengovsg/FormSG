@@ -1175,7 +1175,7 @@ export const createTwilioCredentials = (
   const twilioCredentialsData: TwilioCredentialsData =
     new TwilioCredentialsData(twilioCredentials)
 
-  const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${formId}/twilio`
+  const msgSrvcName = `formsg/${config.secretEnv}/form/${formId}/twilio`
   const body: SecretsManager.Types.CreateSecretRequest = {
     Name: msgSrvcName,
     SecretString: twilioCredentialsData.toString(),

@@ -75,6 +75,7 @@ export type Config = {
   siteBannerContent: string
   adminBannerContent: string
   rateLimitConfig: RateLimitConfig
+  secretEnv: string
 
   // Functions
   configureAws: () => Promise<void>
