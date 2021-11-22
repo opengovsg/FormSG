@@ -10366,7 +10366,7 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM),
       )
 
-      const MOCK_REQ = expressHandler.mockRequest({
+      const mockReq = expressHandler.mockRequest({
         params: {
           formId: MOCK_FORM._id,
         },
@@ -10384,7 +10384,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
@@ -10404,7 +10404,7 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM_WITH_MSG_SRVC_NAME),
       )
 
-      const MOCK_REQ = expressHandler.mockRequest({
+      const mockReq = expressHandler.mockRequest({
         params: {
           formId: MOCK_FORM._id,
         },
@@ -10421,7 +10421,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
@@ -10441,7 +10441,7 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM_WITH_MSG_SRVC_NAME),
       )
 
-      const MOCK_REQ = expressHandler.mockRequest({
+      const mockReq = expressHandler.mockRequest({
         params: {
           formId: MOCK_FORM._id,
         },
@@ -10463,7 +10463,7 @@ describe('admin-form.controller', () => {
       }
 
       // Act
-      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(400)
@@ -10485,7 +10485,7 @@ describe('admin-form.controller', () => {
         errAsync(new ForbiddenFormError(expectedErrorString)),
       )
 
-      const MOCK_REQ = expressHandler.mockRequest({
+      const mockReq = expressHandler.mockRequest({
         params: {
           formId: MOCK_FORM._id,
         },
@@ -10498,7 +10498,7 @@ describe('admin-form.controller', () => {
       })
 
       // Act
-      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(403)
@@ -10522,7 +10522,7 @@ describe('admin-form.controller', () => {
         errAsync(new FormNotFoundError(expectedErrorString)),
       )
 
-      const MOCK_REQ = expressHandler.mockRequest({
+      const mockReq = expressHandler.mockRequest({
         params: {
           formId: MOCK_FORM._id,
         },
@@ -10535,7 +10535,7 @@ describe('admin-form.controller', () => {
       })
 
       // Act
-      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(404)
@@ -10548,11 +10548,11 @@ describe('admin-form.controller', () => {
 
     it('should return 422 on MissingUserError', async () => {
       // Arrange
-      const ERROR_MESSAGE = 'User not found'
+      const errorMessage = 'User not found'
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        errAsync(new MissingUserError(ERROR_MESSAGE)),
+        errAsync(new MissingUserError(errorMessage)),
       )
-      const MOCK_REQ = expressHandler.mockRequest({
+      const mockReq = expressHandler.mockRequest({
         params: {
           formId: MOCK_FORM._id,
         },
@@ -10564,11 +10564,11 @@ describe('admin-form.controller', () => {
         body: MOCK_TWILIO_CREDENTIALS,
       })
 
-      const expectedResponse = { message: ERROR_MESSAGE }
+      const expectedResponse = { message: errorMessage }
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
@@ -10586,7 +10586,7 @@ describe('admin-form.controller', () => {
         errAsync(new DatabaseError(expectedErrorString)),
       )
 
-      const MOCK_REQ = expressHandler.mockRequest({
+      const mockReq = expressHandler.mockRequest({
         params: {
           formId: MOCK_FORM._id,
         },
@@ -10599,7 +10599,7 @@ describe('admin-form.controller', () => {
       })
 
       // Act
-      await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
@@ -10645,7 +10645,7 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM_WITH_CREDENTIALS),
       )
 
-      const MOCK_REQ = expressHandler.mockRequest({
+      const mockReq = expressHandler.mockRequest({
         params: {
           formId: MOCK_FORM_WITH_CREDENTIALS._id,
         },
@@ -10657,7 +10657,7 @@ describe('admin-form.controller', () => {
       })
 
       // Returns empty response because mongo transaction returns Promise<any>
-      deleteTwilioSpy.mockReturnValueOnce(okAsync(null))
+      deleteTwilioSpy.mockReturnValueOnce(okAsync(1))
 
       const mockRes = expressHandler.mockResponse()
       const expected = {
@@ -10665,7 +10665,7 @@ describe('admin-form.controller', () => {
       }
 
       // Act
-      await AdminFormController.handleDeleteTwilio(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
@@ -10682,7 +10682,7 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM),
       )
 
-      const MOCK_REQ = expressHandler.mockRequest({
+      const mockReq = expressHandler.mockRequest({
         params: {
           formId: MOCK_FORM._id,
         },
@@ -10694,7 +10694,7 @@ describe('admin-form.controller', () => {
       })
 
       // Returns empty response because mongo transaction returns Promise<any>
-      deleteTwilioSpy.mockReturnValueOnce(okAsync(null))
+      deleteTwilioSpy.mockReturnValueOnce(okAsync(1))
 
       const mockRes = expressHandler.mockResponse()
       const expected = {
@@ -10702,7 +10702,7 @@ describe('admin-form.controller', () => {
       }
 
       // Act
-      await AdminFormController.handleDeleteTwilio(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
@@ -10723,7 +10723,7 @@ describe('admin-form.controller', () => {
         errAsync(new ForbiddenFormError(expectedErrorString)),
       )
 
-      const MOCK_REQ = expressHandler.mockRequest({
+      const mockReq = expressHandler.mockRequest({
         params: {
           formId: MOCK_FORM_WITH_CREDENTIALS._id,
         },
@@ -10735,7 +10735,7 @@ describe('admin-form.controller', () => {
       })
 
       // Act
-      await AdminFormController.handleDeleteTwilio(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(403)
@@ -10758,7 +10758,7 @@ describe('admin-form.controller', () => {
         errAsync(new FormNotFoundError(expectedErrorString)),
       )
 
-      const MOCK_REQ = expressHandler.mockRequest({
+      const mockReq = expressHandler.mockRequest({
         params: {
           formId: MOCK_FORM_WITH_CREDENTIALS._id,
         },
@@ -10770,7 +10770,7 @@ describe('admin-form.controller', () => {
       })
 
       // Act
-      await AdminFormController.handleDeleteTwilio(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(404)
@@ -10782,11 +10782,11 @@ describe('admin-form.controller', () => {
 
     it('should return 422 on MissingUserError', async () => {
       // Arrange
-      const ERROR_MESSAGE = 'User not found'
+      const errorMessage = 'User not found'
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        errAsync(new MissingUserError(ERROR_MESSAGE)),
+        errAsync(new MissingUserError(errorMessage)),
       )
-      const MOCK_REQ = expressHandler.mockRequest({
+      const mockReq = expressHandler.mockRequest({
         params: {
           formId: MOCK_FORM_WITH_CREDENTIALS._id,
         },
@@ -10797,15 +10797,14 @@ describe('admin-form.controller', () => {
         },
       })
 
-      const expectedResponse = { message: ERROR_MESSAGE }
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleDeleteTwilio(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.json).toBeCalledWith({ message: 'User not found' })
       expect(deleteTwilioSpy).not.toHaveBeenCalled()
     })
 
