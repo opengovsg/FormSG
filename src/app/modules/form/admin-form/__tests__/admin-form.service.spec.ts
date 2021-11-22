@@ -2610,8 +2610,6 @@ describe('admin-form.service', () => {
         msgSrvcName,
       )
 
-      console.log(actualResult)
-
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(1)
@@ -2624,6 +2622,56 @@ describe('admin-form.service', () => {
         SecretId: msgSrvcName,
         ForceDeleteWithoutRecovery: true,
       })
+    })
+
+    it('should successfully return successful when Twilio credentials do not exist in AWS Secrets Manager', async () => {
+      // Arrange
+      const msgSrvcName = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
+
+      formSpy.mockResolvedValueOnce(MOCK_FORM)
+
+      const getSecretsSpy = jest
+        .spyOn(secretsManager, 'getSecretValue')
+        .mockImplementationOnce(() => {
+          return {
+            promise: () => {
+              return Promise.reject('Reject!')
+            },
+          } as any
+        })
+
+      const twilioCacheSpy = jest
+        .spyOn(SmsService.twilioClientCache, 'del')
+        .mockReturnValueOnce(1)
+
+      const deleteSecretsSpy = jest
+        .spyOn(secretsManager, 'deleteSecret')
+        .mockImplementationOnce(() => {
+          return {
+            promise: () => {
+              return Promise.resolve({
+                Name: msgSrvcName,
+              })
+            },
+          } as any
+        })
+
+      // Act
+
+      const actualResult = await AdminFormService.deleteTwilioCredentials(
+        MOCK_FORM_ID.toHexString(),
+        msgSrvcName,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(1)
+
+      expect(getSecretsSpy).toHaveBeenCalledWith({
+        SecretId: msgSrvcName,
+      })
+      expect(twilioCacheSpy).not.toHaveBeenCalledWith()
+      expect(deleteSecretsSpy).not.toHaveBeenCalledWith()
     })
   })
 })
