@@ -54,6 +54,9 @@ import {
   DatabaseValidationError,
   MalformedParametersError,
   PossibleDatabaseError,
+  SecretsManagerError,
+  SecretsManagerNotFoundError,
+  TwilioCacheError,
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
@@ -1211,7 +1214,10 @@ export const createTwilioCredentials = (
 export const updateTwilioCredentials = (
   msgSrvcName: string,
   twilioCredentials: TwilioCredentials,
-): ResultAsync<number, DatabaseError> => {
+): ResultAsync<
+  number,
+  SecretsManagerError | SecretsManagerNotFoundError | TwilioCacheError
+> => {
   if (!isCredentialsValid(twilioCredentials))
     return errAsync(new MalformedParametersError('Credentials are invalid!'))
 
@@ -1235,7 +1241,7 @@ export const updateTwilioCredentials = (
         error,
       })
 
-      return new DatabaseError(
+      return new SecretsManagerNotFoundError(
         'Twilio Credentials do not exist in Secrets Manager',
       )
     },
@@ -1261,7 +1267,7 @@ export const updateTwilioCredentials = (
             error,
           })
 
-          return new DatabaseError(
+          return new SecretsManagerError(
             'Error occurred when updating Twilio in Secret Manager!',
           )
         },
@@ -1284,7 +1290,9 @@ export const updateTwilioCredentials = (
             error,
           })
 
-          return new DatabaseError('Error occurred when clearing cache entry!')
+          return new TwilioCacheError(
+            'Error occurred when clearing cache entry!',
+          )
         },
       )
     })
@@ -1293,7 +1301,7 @@ export const updateTwilioCredentials = (
 export const deleteTwilioCredentials = (
   formId: string,
   msgSrvcName: string,
-): ResultAsync<unknown, ApplicationError> => {
+): ResultAsync<unknown, SecretsManagerError | TwilioCacheError> => {
   const body: SecretsManager.Types.DeleteSecretRequest = {
     SecretId: msgSrvcName,
     ForceDeleteWithoutRecovery: true,
@@ -1302,70 +1310,71 @@ export const deleteTwilioCredentials = (
     // being dleted: https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_delete-secret.html
   }
 
-  return ResultAsync.fromPromise(
+  const result = ResultAsync.fromPromise(
     secretsManager
       .getSecretValue({
         SecretId: msgSrvcName,
       })
       .promise(),
-    (error) => {
-      logger.error({
+    () => {
+      logger.info({
         message: 'Twilio Credentials do not exist in Secrets Manager',
         meta: {
           action: 'deleteTwilioCredentials',
           msgSrvcName,
         },
-        error,
       })
 
-      return new DatabaseError(
+      return new SecretsManagerNotFoundError(
         'Twilio Credentials do not exist in Secrets Manager',
       )
     },
-  ).andThen(() => {
-    logger.info({
-      message: 'Twilio Credentials has been found in Secrets Manager',
-      meta: {
-        action: 'deleteTwilioCredentials',
-        msgSrvcName,
-      },
-    })
+  )
 
+  if (!(result instanceof SecretsManagerNotFoundError)) return okAsync(1)
+
+  logger.info({
+    message: 'Twilio Credentials has been found in Secrets Manager',
+    meta: {
+      action: 'deleteTwilioCredentials',
+      msgSrvcName,
+    },
+  })
+
+  return ResultAsync.fromPromise(
+    mongoose.connection.transaction(async (session: ClientSession) => {
+      await FormModel.deleteMsgSrvcName(formId, session)
+      await secretsManager.deleteSecret(body).promise()
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating Twilio in Secret Manager!',
+        meta: {
+          action: 'deleteTwilioCredentials',
+          body,
+        },
+        error,
+      })
+
+      return new SecretsManagerError(
+        'Error occurred when updating Twilio in Secret Manager!',
+      )
+    },
+  ).andThen(() => {
     return ResultAsync.fromPromise(
-      mongoose.connection.transaction(async (session: ClientSession) => {
-        await FormModel.deleteMsgSrvcName(formId, session)
-        await secretsManager.deleteSecret(body).promise()
-      }),
+      Promise.resolve(twilioClientCache.del(msgSrvcName)),
       (error) => {
         logger.error({
-          message: 'Error occurred when updating Twilio in Secret Manager!',
+          message: 'Error occurred when clearing cache in Secret Manager!',
           meta: {
-            action: 'deleteTwilioCredentials',
+            action: 'updateTwilioCredentials',
             body,
           },
           error,
         })
 
-        return new DatabaseError(
-          'Error occurred when updating Twilio in Secret Manager!',
-        )
+        return new TwilioCacheError('Error occurred when clearing cache entry!')
       },
-    ).andThen(() => {
-      return ResultAsync.fromPromise(
-        Promise.resolve(twilioClientCache.del(msgSrvcName)),
-        (error) => {
-          logger.error({
-            message: 'Error occurred when clearing cache in Secret Manager!',
-            meta: {
-              action: 'updateTwilioCredentials',
-              body,
-            },
-            error,
-          })
-
-          return new DatabaseError('Error occurred when clearing cache entry!')
-        },
-      )
-    })
+    )
   })
 }

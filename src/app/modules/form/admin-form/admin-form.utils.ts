@@ -22,6 +22,9 @@ import {
   DatabasePayloadSizeError,
   DatabaseValidationError,
   MalformedParametersError,
+  SecretsManagerError,
+  SecretsManagerNotFoundError,
+  TwilioCacheError,
 } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
 import { MissingUserError } from '../../user/user.errors'
@@ -122,6 +125,21 @@ export const mapRouteError = (
         errorMessage: error.message,
       }
     case DatabaseError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: coreErrorMessage ?? error.message,
+      }
+    case SecretsManagerNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: coreErrorMessage ?? error.message,
+      }
+    case SecretsManagerError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: coreErrorMessage ?? error.message,
+      }
+    case TwilioCacheError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage ?? error.message,
