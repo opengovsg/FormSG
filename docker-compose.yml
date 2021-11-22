@@ -114,7 +114,7 @@ services:
     volumes:
       - mongodata:/data/db
       # - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-    command: --bind_ip_all --replSet rs0 rs.initiate()
+    command: --bind_ip_all --replSet rs0
     ports:
       - '27017:27017'
     logging:

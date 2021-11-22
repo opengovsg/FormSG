@@ -61,7 +61,7 @@ describe('admin-form.twilio.routes', () => {
       messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
     }
 
-    const MOCK_INVALID_ACCOUNT_SID = 'ZZ12345678'
+    const MOCK_INVALID_ACCOUNT_SID = 'ZZ12345678' // Invalid AC prefix
 
     const INVALID_TWILIO_CREDENTIALS: TwilioCredentials = {
       accountSid: MOCK_INVALID_ACCOUNT_SID,

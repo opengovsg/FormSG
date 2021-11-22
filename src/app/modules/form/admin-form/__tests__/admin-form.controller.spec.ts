@@ -4089,8 +4089,8 @@ describe('admin-form.controller', () => {
   })
 
   describe('handleUpdateForm', () => {
-    const editFormFieldSpy = jest.spyOn(AdminFormService, 'editFormFields')
-    const updateFormSpy = jest.spyOn(AdminFormService, 'updateForm')
+    const editFormFieldSpy = jest.spyOn(MockAdminFormService, 'editFormFields')
+    const updateFormSpy = jest.spyOn(MockAdminFormService, 'updateForm')
 
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
@@ -10333,7 +10333,7 @@ describe('admin-form.controller', () => {
     const MOCK_API_KEY_SID = 'SK12345678'
     const MOCK_API_KEY_SECRET = 'AZ12345678'
     const MOCK_MESSAGING_SERVICE_SID = 'MG12345678'
-    const MOCK_INVALID_ACCOUNT_SID = '12345678'
+    const MOCK_INVALID_ACCOUNT_SID = '12345678' // Missing AC prefix
 
     const MOCK_TWILIO_CREDENTIALS: TwilioCredentials = {
       accountSid: MOCK_ACCOUNT_SID,
@@ -10350,11 +10350,11 @@ describe('admin-form.controller', () => {
     }
 
     const createTwilioSpy = jest.spyOn(
-      AdminFormService,
+      MockAdminFormService,
       'createTwilioCredentials',
     )
     const updateTwilioSpy = jest.spyOn(
-      AdminFormService,
+      MockAdminFormService,
       'updateTwilioCredentials',
     )
 
@@ -10641,7 +10641,7 @@ describe('admin-form.controller', () => {
     } as IPopulatedForm
 
     const deleteTwilioSpy = jest.spyOn(
-      AdminFormService,
+      MockAdminFormService,
       'deleteTwilioCredentials',
     )
 
