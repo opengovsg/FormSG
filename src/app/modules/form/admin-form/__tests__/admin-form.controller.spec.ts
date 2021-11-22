@@ -10416,11 +10416,7 @@ describe('admin-form.controller', () => {
         body: MOCK_TWILIO_CREDENTIALS,
       })
 
-      updateTwilioSpy.mockReturnValueOnce(
-        okAsync({
-          Name: MOCK_FORM_WITH_MSG_SRVC_NAME.msgSrvcName,
-        }),
-      )
+      updateTwilioSpy.mockReturnValueOnce(okAsync(1))
 
       const mockRes = expressHandler.mockResponse()
 
