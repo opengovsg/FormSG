@@ -121,10 +121,13 @@ export class TwilioCredentialsData {
     this.messagingServiceSid = messagingServiceSid
   }
 
-  static fromString(credentials: string): TwilioCredentials {
-    const twilioCredentials: TwilioCredentials = JSON.parse(credentials)
-
-    return new TwilioCredentialsData(twilioCredentials)
+  static fromString(credentials: string): TwilioCredentials | unknown {
+    try {
+      const twilioCredentials: TwilioCredentials = JSON.parse(credentials)
+      return new TwilioCredentialsData(twilioCredentials)
+    } catch (err) {
+      return err
+    }
   }
 
   toString(): string {

@@ -2548,9 +2548,7 @@ describe('admin-form.service', () => {
 
         // Assert
         expect(actualResult.isOk()).toEqual(true)
-        expect(actualResult._unsafeUnwrap()).toEqual({
-          Name: msgSrvcName,
-        })
+        expect(actualResult._unsafeUnwrap()).toEqual(1)
 
         expect(getSecretsSpy).toHaveBeenCalledWith({
           SecretId: msgSrvcName,
@@ -2571,7 +2569,7 @@ describe('admin-form.service', () => {
         save: () => MOCK_FORM,
       } as unknown as IPopulatedForm
 
-      it('should return MongoDB transaction in which Twilio credentials was successfully deleted', async () => {
+      it('should return result of clearing TwilioCache entry when Twilio credentials was successfully deleted', async () => {
         // Arrange
         const msgSrvcName = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
 
@@ -2614,7 +2612,7 @@ describe('admin-form.service', () => {
 
         // Assert
         expect(actualResult.isOk()).toEqual(true)
-        expect(actualResult._unsafeUnwrap()).toEqual(null)
+        expect(actualResult._unsafeUnwrap()).toEqual(1)
 
         expect(getSecretsSpy).toHaveBeenCalledWith({
           SecretId: msgSrvcName,
