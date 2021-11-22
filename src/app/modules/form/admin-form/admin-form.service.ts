@@ -1167,7 +1167,7 @@ const isMobileFieldUpdateAllowed = (
 
 export const createTwilioCredentials = (
   twilioCredentials: TwilioCredentials,
-  form: IPopulatedForm,
+  formId: string,
 ): ResultAsync<unknown, ApplicationError> => {
   if (!isCredentialsValid(twilioCredentials))
     return errAsync(new MalformedParametersError('Credentials are invalid!'))
@@ -1175,23 +1175,23 @@ export const createTwilioCredentials = (
   const twilioCredentialsData: TwilioCredentialsData =
     new TwilioCredentialsData(twilioCredentials)
 
-  const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${form._id}/twilio`
+  const msgSrvcName = `formsg/${process.env.SSM_PREFIX}/form/${formId}/twilio`
   const body: SecretsManager.Types.CreateSecretRequest = {
     Name: msgSrvcName,
     SecretString: twilioCredentialsData.toString(),
   }
   logger.info({
-    message: `no msgSrvcName, creating Twilio credentials for form ${form._id}`,
+    message: `no msgSrvcName, creating Twilio credentials for form ${formId}`,
     meta: {
       action: 'createTwilioCredentials',
-      formId: form._id.toHexString(),
+      formId: formId,
       msgSrvcName,
     },
   })
 
   return ResultAsync.fromPromise(
     mongoose.connection.transaction(async (session: ClientSession) => {
-      await FormModel.updateMsgSrvcName(form._id, msgSrvcName, session)
+      await FormModel.updateMsgSrvcName(formId, msgSrvcName, session)
       await secretsManager.createSecret(body).promise()
     }),
     (error) => {
