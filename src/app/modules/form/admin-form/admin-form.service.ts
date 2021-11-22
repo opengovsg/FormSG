@@ -1,6 +1,5 @@
 import { SecretsManager } from 'aws-sdk'
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { PutSecretValueResponse } from 'aws-sdk/clients/secretsmanager'
 import { assignIn, last, omit } from 'lodash'
 import { ClientSession } from 'mongodb'
 import mongoose from 'mongoose'
@@ -1212,7 +1211,7 @@ export const createTwilioCredentials = (
 export const updateTwilioCredentials = (
   msgSrvcName: string,
   twilioCredentials: TwilioCredentials,
-): ResultAsync<PutSecretValueResponse, DatabaseError> => {
+): ResultAsync<number, DatabaseError> => {
   if (!isCredentialsValid(twilioCredentials))
     return errAsync(new MalformedParametersError('Credentials are invalid!'))
 
@@ -1240,35 +1239,55 @@ export const updateTwilioCredentials = (
         'Twilio Credentials do not exist in Secrets Manager',
       )
     },
-  ).andThen(() => {
-    logger.info({
-      message: 'Twilio Credentials has been found in Secrets Manager',
-      meta: {
-        action: 'updateTwilioCredentials',
-        msgSrvcName,
-      },
+  )
+    .andThen(() => {
+      logger.info({
+        message: 'Twilio Credentials has been found in Secrets Manager',
+        meta: {
+          action: 'updateTwilioCredentials',
+          msgSrvcName,
+        },
+      })
+
+      return ResultAsync.fromPromise(
+        secretsManager.putSecretValue(body).promise(),
+        (error) => {
+          logger.error({
+            message: 'Error occurred when updating Twilio in Secret Manager!',
+            meta: {
+              action: 'updateTwilioCredentials',
+              body,
+            },
+            error,
+          })
+
+          return new DatabaseError(
+            'Error occurred when updating Twilio in Secret Manager!',
+          )
+        },
+      )
     })
+    .andThen(() => {
+      return ResultAsync.fromPromise(
+        Promise.resolve(twilioClientCache.del(msgSrvcName)),
+        // Currently, a call to get twilio credentials will cache the credentials in the twilioCache for ~10s
+        // If a call to retrieve twilio credentials occurs before 10s passes, it will be a cache hit, retrieving
+        // the wrong credentials. Hence we need to clear the cache entry
 
-    twilioClientCache.del(msgSrvcName)
+        (error) => {
+          logger.error({
+            message: 'Error occurred when clearing cache in Secret Manager!',
+            meta: {
+              action: 'updateTwilioCredentials',
+              body,
+            },
+            error,
+          })
 
-    return ResultAsync.fromPromise(
-      secretsManager.putSecretValue(body).promise(),
-      (error) => {
-        logger.error({
-          message: 'Error occurred when updating Twilio in Secret Manager!',
-          meta: {
-            action: 'updateTwilioCredentials',
-            body,
-          },
-          error,
-        })
-
-        return new DatabaseError(
-          'Error occurred when updating Twilio in Secret Manager!',
-        )
-      },
-    )
-  })
+          return new DatabaseError('Error occurred when clearing cache entry!')
+        },
+      )
+    })
 }
 
 export const deleteTwilioCredentials = (
@@ -1309,8 +1328,6 @@ export const deleteTwilioCredentials = (
       },
     })
 
-    twilioClientCache.del(msgSrvcName)
-
     return ResultAsync.fromPromise(
       mongoose.connection.transaction(async (session: ClientSession) => {
         await FormModel.deleteMsgSrvcName(formId, session)
@@ -1330,6 +1347,22 @@ export const deleteTwilioCredentials = (
           'Error occurred when updating Twilio in Secret Manager!',
         )
       },
-    )
+    ).andThen(() => {
+      return ResultAsync.fromPromise(
+        Promise.resolve(twilioClientCache.del(msgSrvcName)),
+        (error) => {
+          logger.error({
+            message: 'Error occurred when clearing cache in Secret Manager!',
+            meta: {
+              action: 'updateTwilioCredentials',
+              body,
+            },
+            error,
+          })
+
+          return new DatabaseError('Error occurred when clearing cache entry!')
+        },
+      )
+    })
   })
 }
