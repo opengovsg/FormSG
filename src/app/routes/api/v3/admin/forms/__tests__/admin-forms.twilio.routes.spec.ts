@@ -1,4 +1,3 @@
-import { PutSecretValueResponse } from 'aws-sdk/clients/secretsmanager'
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
@@ -97,15 +96,10 @@ describe('admin-form.twilio.routes', () => {
       const { form: formToUpdate, user } =
         await dbHandler.insertFormWithMsgSrvcName()
       const session = await createAuthedSession(user.email, request)
-      const msgSrvcName = `formsg/testing/form/${formToUpdate._id}/twilio`
-
-      const MOCK_PUT_SECRET_RESPONSE: PutSecretValueResponse = {
-        Name: msgSrvcName,
-      }
 
       const twilioCredentialsSpy = jest
         .spyOn(AdminFormService, 'updateTwilioCredentials')
-        .mockReturnValueOnce(okAsync(MOCK_PUT_SECRET_RESPONSE))
+        .mockReturnValueOnce(okAsync(1))
 
       const response = await session
         .put(`/admin/forms/${formToUpdate._id}/twilio`)
