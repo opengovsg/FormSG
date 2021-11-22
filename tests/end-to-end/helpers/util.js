@@ -217,10 +217,7 @@ function spec(path) {
  * Connects to mongo-memory-server instance.
  */
 async function makeMongooseFixtures() {
-  const connection = await mongoose.createConnection(dbUri, {
-    reconnectTries: 5,
-    useNewUrlParser: true,
-  })
+  const connection = await mongoose.createConnection(dbUri).asPromise()
   return connection
 }
 
