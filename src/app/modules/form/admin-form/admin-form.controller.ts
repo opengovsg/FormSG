@@ -2535,6 +2535,15 @@ export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
   )
 }
 
+// Validates Twilio Credentials
+const validateTwilioCredentials = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    accountSid: Joi.string().required().pattern(new RegExp('^AC')),
+    apiKey: Joi.string().required().pattern(new RegExp('^SK')),
+    apiSecret: Joi.string().required(),
+    messagingServiceSid: Joi.string().required().pattern(new RegExp('^MG')),
+  }),
+})
 /**
  * Handler for PUT /:formId/twilio.
  * @security session
@@ -2547,7 +2556,7 @@ export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
  * @returns 422 when id of user who is updating the form cannot be found
  * @returns 500 when database error occurs
  */
-export const handleUpdateTwilio: ControllerHandler<
+export const updateTwilioCredentials: ControllerHandler<
   { formId: string },
   unknown,
   TwilioCredentials
@@ -2646,3 +2655,9 @@ export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+// Handler for PUT /admin/forms/:formId/twilio
+export const handleUpdateTwilio = [
+  validateTwilioCredentials,
+  updateTwilioCredentials,
+] as ControllerHandler[]

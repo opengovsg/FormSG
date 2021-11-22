@@ -14,7 +14,6 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
-  MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
 import {
@@ -10308,7 +10307,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleUpdateTwilio', () => {
+  describe('updateTwilioCredentials', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -10332,17 +10331,9 @@ describe('admin-form.controller', () => {
     const MOCK_API_KEY_SID = 'SK12345678'
     const MOCK_API_KEY_SECRET = 'AZ12345678'
     const MOCK_MESSAGING_SERVICE_SID = 'MG12345678'
-    const MOCK_INVALID_ACCOUNT_SID = '12345678' // Missing AC prefix
 
     const MOCK_TWILIO_CREDENTIALS: TwilioCredentials = {
       accountSid: MOCK_ACCOUNT_SID,
-      apiKey: MOCK_API_KEY_SID,
-      apiSecret: MOCK_API_KEY_SECRET,
-      messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
-    }
-
-    const MOCK_INVALID_TWILIO_CREDENTIALS: TwilioCredentials = {
-      accountSid: MOCK_INVALID_ACCOUNT_SID,
       apiKey: MOCK_API_KEY_SID,
       apiSecret: MOCK_API_KEY_SECRET,
       messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
@@ -10384,7 +10375,11 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
+      await AdminFormController.updateTwilioCredentials(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
@@ -10421,53 +10416,17 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
+      await AdminFormController.updateTwilioCredentials(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.json).toBeCalledWith({
         message: 'Successfully updated Twilio credentials',
       })
-      expect(updateTwilioSpy).toHaveBeenCalledTimes(1)
-      expect(createTwilioSpy).not.toHaveBeenCalled()
-    })
-
-    it('should return 400 when twilio credentials are invalid', async () => {
-      // Arrange
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
-        okAsync(MOCK_FORM_WITH_MSG_SRVC_NAME),
-      )
-
-      const mockReq = expressHandler.mockRequest({
-        params: {
-          formId: MOCK_FORM._id,
-        },
-        session: {
-          user: {
-            _id: 'exists',
-          },
-        },
-        body: MOCK_INVALID_TWILIO_CREDENTIALS,
-      })
-
-      updateTwilioSpy.mockReturnValueOnce(
-        errAsync(new MalformedParametersError('Credentials are invalid!')),
-      )
-
-      const mockRes = expressHandler.mockResponse()
-      const expected = {
-        message: 'Credentials are invalid!',
-      }
-
-      // Act
-      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith(expected)
       expect(updateTwilioSpy).toHaveBeenCalledTimes(1)
       expect(createTwilioSpy).not.toHaveBeenCalled()
     })
@@ -10498,7 +10457,11 @@ describe('admin-form.controller', () => {
       })
 
       // Act
-      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
+      await AdminFormController.updateTwilioCredentials(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(403)
@@ -10535,7 +10498,11 @@ describe('admin-form.controller', () => {
       })
 
       // Act
-      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
+      await AdminFormController.updateTwilioCredentials(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(404)
@@ -10568,7 +10535,11 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
+      await AdminFormController.updateTwilioCredentials(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
@@ -10599,7 +10570,11 @@ describe('admin-form.controller', () => {
       })
 
       // Act
-      await AdminFormController.handleUpdateTwilio(mockReq, mockRes, jest.fn())
+      await AdminFormController.updateTwilioCredentials(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)

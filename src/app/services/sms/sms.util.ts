@@ -1,7 +1,5 @@
 import dedent from 'dedent-js'
 
-import { TwilioCredentials } from './sms.types'
-
 export const renderFormDeactivatedSms = (formTitle: string): string => dedent`
   Due to responses bouncing from all recipient inboxes, your form "${formTitle}" has been automatically deactivated to prevent further response loss.
 
@@ -20,11 +18,3 @@ export const renderVerificationSms = (
 ): string => dedent`Use the OTP ${otp} to submit on ${appHost}.
 
   Never share your OTP with anyone else. If you did not request this OTP, you can safely ignore this SMS.`
-
-export const isCredentialsValid = (credentials: TwilioCredentials): boolean => {
-  return (
-    credentials.accountSid.startsWith('AC') &&
-    credentials.apiKey.startsWith('SK') &&
-    credentials.messagingServiceSid.startsWith('MG')
-  )
-}

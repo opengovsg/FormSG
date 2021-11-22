@@ -52,7 +52,6 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
-  MalformedParametersError,
   PossibleDatabaseError,
   SecretsManagerError,
   SecretsManagerNotFoundError,
@@ -74,7 +73,6 @@ import {
   TwilioCredentials,
   TwilioCredentialsData,
 } from './../../../services/sms/sms.types'
-import { isCredentialsValid } from './../../../services/sms/sms.util'
 import { ApplicationError } from './../../core/core.errors'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -1171,9 +1169,6 @@ export const createTwilioCredentials = (
   twilioCredentials: TwilioCredentials,
   formId: string,
 ): ResultAsync<unknown, ApplicationError> => {
-  if (!isCredentialsValid(twilioCredentials))
-    return errAsync(new MalformedParametersError('Credentials are invalid!'))
-
   const twilioCredentialsData: TwilioCredentialsData =
     new TwilioCredentialsData(twilioCredentials)
 
@@ -1218,9 +1213,6 @@ export const updateTwilioCredentials = (
   number,
   SecretsManagerError | SecretsManagerNotFoundError | TwilioCacheError
 > => {
-  if (!isCredentialsValid(twilioCredentials))
-    return errAsync(new MalformedParametersError('Credentials are invalid!'))
-
   const twilioCredentialsData: TwilioCredentialsData =
     new TwilioCredentialsData(twilioCredentials)
 

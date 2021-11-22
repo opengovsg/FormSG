@@ -6,10 +6,7 @@ import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
-import {
-  MalformedParametersError,
-  SecretsManagerError,
-} from 'src/app/modules/core/core.errors'
+import { SecretsManagerError } from 'src/app/modules/core/core.errors'
 
 import {
   createAuthedSession,
@@ -45,7 +42,7 @@ describe('admin-form.twilio.routes', () => {
   })
   afterEach(async () => {
     await dbHandler.clearDatabase()
-    jest.restoreAllMocks()
+    jest.clearAllMocks()
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -118,21 +115,13 @@ describe('admin-form.twilio.routes', () => {
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
       const session = await createAuthedSession(user.email, request)
 
-      const createwilioCredentialsSpy = jest
-        .spyOn(MockAdminFormService, 'createTwilioCredentials')
-        .mockReturnValueOnce(
-          errAsync(new MalformedParametersError('Credentials are invalid!')),
-        )
-
       // Actual
       const response = await session
         .put(`/admin/forms/${formToUpdate._id}/twilio`)
         .send(INVALID_TWILIO_CREDENTIALS)
 
       // Assert
-      expect(createwilioCredentialsSpy).toBeCalled()
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({ message: 'Credentials are invalid!' })
     })
 
     it('should return 401 when user is not logged in', async () => {
