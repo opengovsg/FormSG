@@ -2424,9 +2424,11 @@ describe('admin-form.routes', () => {
       )
 
       // Assert
-      const populatedForm = await publicForm
-        .populate({ path: 'admin', populate: { path: 'agency' } })
-        .execPopulate()
+      const populatedForm = await publicForm.populate({
+        path: 'admin',
+        populate: { path: 'agency' },
+      })
+
       expect(response.status).toEqual(200)
       expect(response.body).toEqual({
         form: jsonParseStringify(populatedForm.getPublicView()),
@@ -2935,14 +2937,12 @@ describe('admin-form.routes', () => {
 
       // Assert
       const expectedForm = (
-        await formToPreview
-          .populate({
-            path: 'admin',
-            populate: {
-              path: 'agency',
-            },
-          })
-          .execPopulate()
+        await formToPreview.populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
       ).getPublicView()
       expect(response.status).toEqual(200)
       expect(response.body).toEqual({
@@ -2974,14 +2974,12 @@ describe('admin-form.routes', () => {
 
       // Assert
       const expectedForm = (
-        await collabFormToPreview
-          .populate({
-            path: 'admin',
-            populate: {
-              path: 'agency',
-            },
-          })
-          .execPopulate()
+        await collabFormToPreview.populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
       ).getPublicView()
       expect(response.status).toEqual(200)
       expect(response.body).toEqual({ form: jsonParseStringify(expectedForm) })

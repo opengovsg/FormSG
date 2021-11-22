@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { ObjectId } from 'bson-ext'
 import { cloneDeep, map, merge, omit, orderBy, pick, range } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 import {
@@ -42,7 +41,7 @@ const Form = getFormModel(mongoose)
 const EncryptedForm = getEncryptedFormModel(mongoose)
 const EmailForm = getEmailFormModel(mongoose)
 
-const MOCK_ADMIN_OBJ_ID = new ObjectId()
+const MOCK_ADMIN_OBJ_ID = new mongoose.Types.ObjectId()
 const MOCK_ADMIN_DOMAIN = 'example.com'
 const MOCK_ADMIN_EMAIL = `test@${MOCK_ADMIN_DOMAIN}`
 
@@ -126,7 +125,7 @@ describe('Form Model', () => {
           '__v',
         ])
         const expectedObject = merge({}, FORM_DEFAULTS, MOCK_FORM_PARAMS)
-        expect(actualSavedObject).toEqual(expectedObject)
+        expect(actualSavedObject).toMatchObject(expectedObject)
       })
 
       it('should create and save successfully with valid esrvcId', async () => {
@@ -154,7 +153,7 @@ describe('Form Model', () => {
           '__v',
         ])
         const expectedObject = merge({}, FORM_DEFAULTS, validFormParams)
-        expect(actualSavedObject).toEqual(expectedObject)
+        expect(actualSavedObject).toMatchObject(expectedObject)
       })
 
       it('should save successfully, but not save fields that is not defined in the schema', async () => {
@@ -181,7 +180,7 @@ describe('Form Model', () => {
           '__v',
         ])
         const expectedObject = merge({}, FORM_DEFAULTS, MOCK_FORM_PARAMS)
-        expect(actualSavedObject).toEqual(expectedObject)
+        expect(actualSavedObject).toMatchObject(expectedObject)
 
         // Extra key should not be saved
         expect(Object.keys(saved)).not.toContain('extra')
@@ -195,7 +194,7 @@ describe('Form Model', () => {
               conditions: [
                 {
                   _id: '',
-                  field: new ObjectId(),
+                  field: new mongoose.Types.ObjectId(),
                   state: 'is equals to',
                   value: '',
                   ifValueType: 'number',
@@ -235,7 +234,7 @@ describe('Form Model', () => {
           MOCK_FORM_PARAMS,
           FORM_LOGICS,
         )
-        expect(actualSavedObject).toEqual(expectedObject)
+        expect(actualSavedObject).toMatchObject(expectedObject)
       })
 
       it('should create and save successfully with valid permissionList emails', async () => {
@@ -270,7 +269,7 @@ describe('Form Model', () => {
           omit(FORM_DEFAULTS, 'permissionList'),
           MOCK_FORM_PARAMS,
         )
-        expect(actualSavedObject).toEqual(expectedObject)
+        expect(actualSavedObject).toMatchObject(expectedObject)
 
         // Remove indeterministic id from actual permission list
         const actualPermissionList = saved
@@ -306,7 +305,7 @@ describe('Form Model', () => {
 
       it('should reject when admin id is invalid', async () => {
         // Arrange
-        const invalidAdminId = new ObjectId()
+        const invalidAdminId = new mongoose.Types.ObjectId()
         const paramsWithInvalidAdmin = merge({}, MOCK_FORM_PARAMS, {
           admin: invalidAdminId,
         })
@@ -428,7 +427,7 @@ describe('Form Model', () => {
           ENCRYPT_FORM_DEFAULTS,
           MOCK_ENCRYPTED_FORM_PARAMS,
         )
-        expect(actualSavedObject).toEqual(expectedObject)
+        expect(actualSavedObject).toMatchObject(expectedObject)
       })
 
       it('should save successfully, but not save fields that is not defined in the schema', async () => {
@@ -459,7 +458,7 @@ describe('Form Model', () => {
           ENCRYPT_FORM_DEFAULTS,
           MOCK_ENCRYPTED_FORM_PARAMS,
         )
-        expect(actualSavedObject).toEqual(expectedObject)
+        expect(actualSavedObject).toMatchObject(expectedObject)
 
         // Extra key should not be saved
         expect(Object.keys(saved)).not.toContain('extra')
@@ -497,7 +496,7 @@ describe('Form Model', () => {
           omit(ENCRYPT_FORM_DEFAULTS, 'permissionList'),
           MOCK_ENCRYPTED_FORM_PARAMS,
         )
-        expect(actualSavedObject).toEqual(expectedObject)
+        expect(actualSavedObject).toMatchObject(expectedObject)
 
         // Remove indeterministic id from actual permission list
         const actualPermissionList = (
@@ -547,7 +546,7 @@ describe('Form Model', () => {
 
       it('should reject when admin id is invalid', async () => {
         // Arrange
-        const invalidAdminId = new ObjectId()
+        const invalidAdminId = new mongoose.Types.ObjectId()
         const paramsWithInvalidAdmin = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
           admin: invalidAdminId,
         })
@@ -679,7 +678,7 @@ describe('Form Model', () => {
           EMAIL_FORM_DEFAULTS,
           MOCK_EMAIL_FORM_PARAMS,
         )
-        expect(actualSavedObject).toEqual(expectedObject)
+        expect(actualSavedObject).toMatchObject(expectedObject)
       })
 
       it('should save successfully, but not save fields that is not defined in the schema', async () => {
@@ -710,7 +709,7 @@ describe('Form Model', () => {
           EMAIL_FORM_DEFAULTS,
           MOCK_EMAIL_FORM_PARAMS,
         )
-        expect(actualSavedObject).toEqual(expectedObject)
+        expect(actualSavedObject).toMatchObject(expectedObject)
 
         // Extra key should not be saved
         expect(Object.keys(saved)).not.toContain('extra')
@@ -747,7 +746,7 @@ describe('Form Model', () => {
           omit(EMAIL_FORM_DEFAULTS, 'permissionList'),
           omit(MOCK_EMAIL_FORM_PARAMS, 'emails'),
         )
-        expect(actualSavedObject).toEqual(expectedObject)
+        expect(actualSavedObject).toMatchObject(expectedObject)
 
         const actualEmails = saved.toObject().emails
         expect(actualEmails).toEqual(mockEmailsArray)
@@ -785,7 +784,7 @@ describe('Form Model', () => {
           omit(EMAIL_FORM_DEFAULTS, 'permissionList'),
           MOCK_EMAIL_FORM_PARAMS,
         )
-        expect(actualSavedObject).toEqual(expectedObject)
+        expect(actualSavedObject).toMatchObject(expectedObject)
 
         // Remove indeterministic id from actual permission list
         const actualPermissionList = saved
@@ -850,7 +849,7 @@ describe('Form Model', () => {
 
       it('should reject when admin id is invalid', async () => {
         // Arrange
-        const invalidAdminId = new ObjectId()
+        const invalidAdminId = new mongoose.Types.ObjectId()
         const paramsWithInvalidAdmin = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: invalidAdminId,
         })
@@ -953,7 +952,9 @@ describe('Form Model', () => {
       })
 
       it('should return null for invalid form ID', async () => {
-        const returned = await Form.deactivateById(String(new ObjectId()))
+        const returned = await Form.deactivateById(
+          String(new mongoose.Types.ObjectId()),
+        )
         expect(returned).toBeNull()
       })
     })
@@ -961,7 +962,7 @@ describe('Form Model', () => {
     describe('getFullFormById', () => {
       it('should return null when the formId is invalid', async () => {
         // Arrange
-        const invalidFormId = new ObjectId()
+        const invalidFormId = new mongoose.Types.ObjectId()
 
         // Act
         const form = await Form.getFullFormById(String(invalidFormId))
@@ -985,7 +986,7 @@ describe('Form Model', () => {
         // Form should be returned
         expect(actualForm).not.toBeNull()
         // Omit admin key since it is populated is not ObjectId anymore.
-        expect(omit(actualForm, 'admin')).toEqual(omit(form, 'admin'))
+        expect(omit(actualForm, 'admin')).toMatchObject(omit(form, 'admin'))
         // Verify populated admin shape
         expect(actualForm?.admin).not.toBeNull()
         expect(actualForm?.admin.email).toEqual(populatedAdmin.email)
@@ -996,9 +997,7 @@ describe('Form Model', () => {
           'lastModified',
           '__v',
         ])
-        expect(actualForm?.admin.agency).toEqual(
-          expect.objectContaining(expectedAgency),
-        )
+        expect(actualForm?.admin.agency).toMatchObject(expectedAgency)
       })
 
       it('should return the populated encrypt form when formId is valid', async () => {
@@ -1016,7 +1015,7 @@ describe('Form Model', () => {
         // Form should be returned
         expect(actualForm).not.toBeNull()
         // Omit admin key since it is populated is not ObjectId anymore.
-        expect(omit(actualForm, 'admin')).toEqual(omit(form, 'admin'))
+        expect(omit(actualForm, 'admin')).toMatchObject(omit(form, 'admin'))
         // Verify populated admin shape
         expect(actualForm?.admin).not.toBeNull()
         expect(actualForm?.admin.email).toEqual(populatedAdmin.email)
@@ -1027,16 +1026,14 @@ describe('Form Model', () => {
           'lastModified',
           '__v',
         ])
-        expect(actualForm?.admin.agency).toEqual(
-          expect.objectContaining(expectedAgency),
-        )
+        expect(actualForm?.admin.agency).toMatchObject(expectedAgency)
       })
     })
 
     describe('getOtpData', () => {
       it('should return null when formId does not exist', async () => {
         // Arrange
-        const invalidFormId = new ObjectId()
+        const invalidFormId = new mongoose.Types.ObjectId()
 
         // Act
         const form = await Form.getOtpData(String(invalidFormId))
@@ -1068,7 +1065,7 @@ describe('Form Model', () => {
           },
           msgSrvcName: emailFormParams.msgSrvcName,
         }
-        expect(actualOtpData).toEqual(expectedOtpData)
+        expect(actualOtpData).toMatchObject(expectedOtpData)
       })
 
       it('should return otpData of an encrypt form when formId is valid', async () => {
@@ -1094,14 +1091,14 @@ describe('Form Model', () => {
           },
           msgSrvcName: encryptFormParams.msgSrvcName,
         }
-        expect(actualOtpData).toEqual(expectedOtpData)
+        expect(actualOtpData).toMatchObject(expectedOtpData)
       })
     })
 
     describe('getMetaByUserIdOrEmail', () => {
       it('should return empty array when user has no forms to view', async () => {
         // Arrange
-        const randomUserId = new ObjectId()
+        const randomUserId = new mongoose.Types.ObjectId()
         const invalidEmail = 'not-valid@example.com'
 
         // Act
@@ -1117,7 +1114,7 @@ describe('Form Model', () => {
       it('should return array of forms user is permitted to view', async () => {
         // Arrange
         // Add additional user.
-        const differentUserId = new ObjectId()
+        const differentUserId = new mongoose.Types.ObjectId()
         const diffPreload = await dbHandler.insertFormCollectionReqs({
           userId: differentUserId,
           mailName: 'something-else',
@@ -1192,12 +1189,12 @@ describe('Form Model', () => {
         // even though there are 5 forms in the collection.
         await expect(Form.countDocuments()).resolves.toEqual(5)
         expect(actual.length).toEqual(3)
-        expect(actual).toEqual(expected)
+        expect(actual).toMatchObject(expected)
       })
     })
 
     describe('createFormLogic', () => {
-      const logicId = new ObjectId().toHexString()
+      const logicId = new mongoose.Types.ObjectId().toHexString()
 
       const mockExistingFormLogic = {
         form_logics: [
@@ -1325,7 +1322,7 @@ describe('Form Model', () => {
       it('should return null if formId is invalid', async () => {
         // arrange
 
-        const invalidFormId = new ObjectId().toHexString()
+        const invalidFormId = new mongoose.Types.ObjectId().toHexString()
 
         // act
         const modifiedForm = await Form.createFormLogic(
@@ -1340,7 +1337,7 @@ describe('Form Model', () => {
     })
 
     describe('deleteFormLogic', () => {
-      const logicId = new ObjectId().toHexString()
+      const logicId = new mongoose.Types.ObjectId().toHexString()
       const mockFormLogic = {
         form_logics: [
           {
@@ -1380,7 +1377,7 @@ describe('Form Model', () => {
       it('should return form with remaining logic upon successful delete of one logic', async () => {
         // arrange
 
-        const logicId2 = new ObjectId().toHexString()
+        const logicId2 = new mongoose.Types.ObjectId().toHexString()
         const mockFormLogicMultiple = {
           form_logics: [
             {
@@ -1425,7 +1422,7 @@ describe('Form Model', () => {
       it('should return null if formId is invalid', async () => {
         // arrange
 
-        const invalidFormId = new ObjectId().toHexString()
+        const invalidFormId = new mongoose.Types.ObjectId().toHexString()
 
         // act
         const modifiedForm = await Form.deleteFormLogic(invalidFormId, logicId)
@@ -1460,7 +1457,7 @@ describe('Form Model', () => {
         expect(actual?.toObject().form_fields).toEqual(expectedFormFields)
         // Check db state
         expect(retrievedForm).not.toBeNull()
-        expect(retrievedForm?.form_fields).toEqual(expectedFormFields)
+        expect(retrievedForm?.form_fields).toMatchObject(expectedFormFields)
       })
 
       it('should return form unchanged when field id is invalid', async () => {
@@ -1476,11 +1473,11 @@ describe('Form Model', () => {
         // Act
         const actual = await Form.deleteFormFieldById(
           form._id,
-          new ObjectId().toHexString(),
+          new mongoose.Types.ObjectId().toHexString(),
         )
 
         // Assert
-        expect(actual?.toObject()).toEqual({
+        expect(actual?.toObject()).toMatchObject({
           ...form.toObject(),
           lastModified: expect.any(Date),
         })
@@ -1508,7 +1505,7 @@ describe('Form Model', () => {
 
         // Assert
         // Should have defaults populated but also replace the endpage with the new params
-        expect(actual?.toObject()).toEqual({
+        expect(actual?.toObject()).toMatchObject({
           ...form,
           lastModified: expect.any(Date),
           endPage: { ...updatedEndPage },
@@ -1531,7 +1528,7 @@ describe('Form Model', () => {
 
         // Assert
         // Should have defaults populated but also replace the endpage with the new params
-        expect(actual?.toObject()).toEqual({
+        expect(actual?.toObject()).toMatchObject({
           ...form,
           lastModified: expect.any(Date),
           endPage: {
@@ -1554,7 +1551,7 @@ describe('Form Model', () => {
 
         // Act
         const actual = await Form.updateEndPageById(
-          new ObjectId().toHexString(),
+          new mongoose.Types.ObjectId().toHexString(),
           updatedEndPage,
         )
 
@@ -1565,8 +1562,8 @@ describe('Form Model', () => {
     })
 
     describe('updateFormLogic', () => {
-      const logicId1 = new ObjectId().toHexString()
-      const logicId2 = new ObjectId().toHexString()
+      const logicId1 = new mongoose.Types.ObjectId().toHexString()
+      const logicId2 = new mongoose.Types.ObjectId().toHexString()
 
       const mockExistingFormLogic = {
         form_logics: [
@@ -1670,7 +1667,7 @@ describe('Form Model', () => {
 
       it('should return null if formId is invalid', async () => {
         // arrange
-        const invalidFormId = new ObjectId().toHexString()
+        const invalidFormId = new mongoose.Types.ObjectId().toHexString()
 
         // act
         const modifiedForm = await Form.updateFormLogic(
@@ -1686,7 +1683,7 @@ describe('Form Model', () => {
 
       it('should return unmodified form if logicId is invalid', async () => {
         // arrange
-        const invalidLogicId = new ObjectId().toHexString()
+        const invalidLogicId = new mongoose.Types.ObjectId().toHexString()
         const mockExistingFormLogicSingle = {
           form_logics: [
             {
@@ -1789,7 +1786,7 @@ describe('Form Model', () => {
 
         // Assert
         // Should have defaults populated but also replace the start page with the new params
-        expect(actual?.toObject()).toEqual({
+        expect(actual?.toObject()).toMatchObject({
           ...form,
           lastModified: expect.any(Date),
           startPage: {
@@ -1816,7 +1813,7 @@ describe('Form Model', () => {
 
         // Act
         const actual = await Form.updateStartPageById(
-          new ObjectId().toHexString(),
+          new mongoose.Types.ObjectId().toHexString(),
           updatedStartPage,
         )
 
@@ -1910,7 +1907,7 @@ describe('Form Model', () => {
 
       it('should only disable sms verifications for a particular user', async () => {
         // Arrange
-        const MOCK_USER_ID = new ObjectId()
+        const MOCK_USER_ID = new mongoose.Types.ObjectId()
         await dbHandler.insertFormCollectionReqs({
           userId: MOCK_USER_ID,
           mailDomain: 'something.com',
@@ -2113,7 +2110,7 @@ describe('Form Model', () => {
         expect(form).toBeDefined()
         // Add additional user.
         const diffPreload = await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new mongoose.Types.ObjectId(),
           mailName: 'another',
           mailDomain: MOCK_ADMIN_DOMAIN,
         })
@@ -2125,7 +2122,7 @@ describe('Form Model', () => {
         const actual = form.getDashboardView(diffPopulatedAdmin)
 
         // Assert
-        expect(actual).toEqual({
+        expect(actual).toMatchObject({
           _id: form._id,
           title: form.title,
           status: form.status,
@@ -2147,7 +2144,7 @@ describe('Form Model', () => {
         expect(form).toBeDefined()
         // Add additional user.
         const diffPreload = await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new mongoose.Types.ObjectId(),
           mailName: 'another-thing',
           mailDomain: MOCK_ADMIN_DOMAIN,
         })
@@ -2159,7 +2156,7 @@ describe('Form Model', () => {
         const actual = form.getDashboardView(diffPopulatedAdmin)
 
         // Assert
-        expect(actual).toEqual({
+        expect(actual).toMatchObject({
           _id: form._id,
           title: form.title,
           status: form.status,
@@ -2208,9 +2205,9 @@ describe('Form Model', () => {
         const actual = emailForm.getPublicView()
 
         // Assert
-        expect(actual).toEqual(pick(emailForm, EMAIL_PUBLIC_FORM_FIELDS))
+        expect(actual).toMatchObject(pick(emailForm, EMAIL_PUBLIC_FORM_FIELDS))
         // Admin should be plain admin id since form is not populated.
-        expect(actual.admin).toBeInstanceOf(ObjectId)
+        expect(actual.admin).toBeInstanceOf(mongoose.Types.ObjectId)
       })
 
       it('should correctly return public view of populated email mode form', async () => {
@@ -2230,15 +2227,13 @@ describe('Form Model', () => {
         // Assert
         const expectedPublicAgencyView = populatedAdmin.agency.getPublicView()
 
-        expect(JSON.stringify(actual)).toEqual(
-          JSON.stringify({
-            ...pick(populatedEmailForm, STORAGE_PUBLIC_FORM_FIELDS),
-            // Admin should only contain public view of agency since agency is populated.
-            admin: {
-              agency: expectedPublicAgencyView,
-            },
-          }),
-        )
+        expect(actual).toMatchObject({
+          ...pick(populatedEmailForm, STORAGE_PUBLIC_FORM_FIELDS),
+          // Admin should only contain public view of agency since agency is populated.
+          admin: {
+            agency: expectedPublicAgencyView,
+          },
+        })
       })
 
       it('should correctly return public view of unpopulated encrypt mode form', async () => {
@@ -2254,9 +2249,11 @@ describe('Form Model', () => {
         const actual = encryptForm.getPublicView()
 
         // Assert
-        expect(actual).toEqual(pick(encryptForm, STORAGE_PUBLIC_FORM_FIELDS))
+        expect(actual).toMatchObject(
+          pick(encryptForm, STORAGE_PUBLIC_FORM_FIELDS),
+        )
         // Admin should be plain admin id since form is not populated.
-        expect(actual.admin).toBeInstanceOf(ObjectId)
+        expect(actual.admin).toBeInstanceOf(mongoose.Types.ObjectId)
       })
 
       it('should correctly return public view of populated encrypt mode form', async () => {
@@ -2276,15 +2273,13 @@ describe('Form Model', () => {
         // Assert
         const expectedPublicAgencyView = populatedAdmin.agency.getPublicView()
 
-        expect(JSON.stringify(actual)).toEqual(
-          JSON.stringify({
-            ...pick(populatedEncryptForm, STORAGE_PUBLIC_FORM_FIELDS),
-            // Admin should only contain public view of agency since agency is populated.
-            admin: {
-              agency: expectedPublicAgencyView,
-            },
-          }),
-        )
+        expect(actual).toMatchObject({
+          ...pick(populatedEncryptForm, STORAGE_PUBLIC_FORM_FIELDS),
+          // Admin should only contain public view of agency since agency is populated.
+          admin: {
+            agency: expectedPublicAgencyView,
+          },
+        })
       })
     })
 
@@ -2331,7 +2326,7 @@ describe('Form Model', () => {
 
       it('should return null if fieldId does not correspond to any field in the form', async () => {
         // Arrange
-        const invalidFieldId = new ObjectId().toHexString()
+        const invalidFieldId = new mongoose.Types.ObjectId().toHexString()
         const someNewField = {
           description: 'this does not matter',
         } as FormFieldDto
@@ -2406,10 +2401,9 @@ describe('Form Model', () => {
         // Assert
         const expectedField = {
           ...omit(newField, 'getQuestion'),
-          _id: new ObjectId(newField._id),
+          _id: new mongoose.Types.ObjectId(newField._id),
         }
-        // @ts-ignore
-        expect(actual?.form_fields.toObject()).toEqual([expectedField])
+        expect(actual?.form_fields).toMatchObject([expectedField])
       })
 
       it('should return validation error if model validation fails whilst creating field', async () => {
@@ -2450,7 +2444,7 @@ describe('Form Model', () => {
         // Assert
         const expectedOriginalField = {
           ...omit(fieldToDuplicate, ['getQuestion']),
-          _id: new ObjectId(fieldToDuplicate._id),
+          _id: new mongoose.Types.ObjectId(fieldToDuplicate._id),
         }
         const expectedDuplicatedField = omit(fieldToDuplicate, [
           '_id',
@@ -2458,14 +2452,13 @@ describe('Form Model', () => {
           'getQuestion',
         ])
 
-        // @ts-ignore
-        expect(actual?.form_fields.toObject()[0]).toEqual(expectedOriginalField)
+        expect(actual?.form_fields?.[0]).toMatchObject(expectedOriginalField)
         expect(actualDuplicatedField).toEqual(expectedDuplicatedField)
       })
 
       it('should return null if given fieldId is invalid', async () => {
         const updatedForm = await validForm.duplicateFormFieldById(
-          new ObjectId().toHexString(),
+          new mongoose.Types.ObjectId().toHexString(),
         )
 
         // Assert
@@ -2475,7 +2468,7 @@ describe('Form Model', () => {
 
     describe('reorderFormFieldById', () => {
       let form: IFormSchema
-      const FIELD_ID_TO_REORDER = new ObjectId().toHexString()
+      const FIELD_ID_TO_REORDER = new mongoose.Types.ObjectId().toHexString()
 
       beforeEach(async () => {
         form = await Form.create({
@@ -2548,7 +2541,7 @@ describe('Form Model', () => {
 
       it('should return null if given fieldId is invalid', async () => {
         const updatedForm = await form.reorderFormFieldById(
-          new ObjectId().toHexString(),
+          new mongoose.Types.ObjectId().toHexString(),
           3,
         )
 

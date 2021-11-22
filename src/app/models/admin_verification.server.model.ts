@@ -20,7 +20,7 @@ const AdminVerificationSchema = new Schema<
     admin: {
       type: Schema.Types.ObjectId,
       ref: USER_SCHEMA_ID,
-      required: 'AdminVerificationSchema must have an Admin',
+      required: [true, 'AdminVerificationSchema must have an Admin'],
     },
     hashedContact: {
       type: String,

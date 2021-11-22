@@ -43,9 +43,9 @@ describe('examples.service', () => {
 
           // Assert
           expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toEqual({
+          expect(actualResults._unsafeUnwrap()).toMatchObject({
             totalNumResults: testData.second.formCount,
-            forms: expect.arrayContaining(testData.second.expectedFormInfo),
+            forms: testData.second.expectedFormInfo,
           })
         })
 
@@ -77,8 +77,8 @@ describe('examples.service', () => {
 
           // Assert
           expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toEqual({
-            forms: expect.arrayContaining(testData.first.expectedFormInfo),
+          expect(actualResults._unsafeUnwrap()).toMatchObject({
+            forms: testData.first.expectedFormInfo,
           })
         })
 
@@ -110,9 +110,9 @@ describe('examples.service', () => {
 
           // Assert
           expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toEqual({
+          expect(actualResults._unsafeUnwrap()).toMatchObject({
             totalNumResults: testData.total.formCount,
-            forms: expect.arrayContaining(testData.total.expectedFormInfo),
+            forms: testData.total.expectedFormInfo,
           })
         })
 
@@ -128,7 +128,7 @@ describe('examples.service', () => {
 
           // Assert
           expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toEqual({
+          expect(actualResults._unsafeUnwrap()).toMatchObject({
             forms: [],
             totalNumResults: testData.total.formCount,
           })
@@ -145,8 +145,8 @@ describe('examples.service', () => {
 
           // Assert
           expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toEqual({
-            forms: expect.arrayContaining(testData.total.expectedFormInfo),
+          expect(actualResults._unsafeUnwrap()).toMatchObject({
+            forms: testData.total.expectedFormInfo,
           })
         })
 
@@ -182,7 +182,7 @@ describe('examples.service', () => {
 
       // Assert
       expect(actualResults.isOk()).toEqual(true)
-      expect(actualResults._unsafeUnwrap()).toEqual({
+      expect(actualResults._unsafeUnwrap()).toMatchObject({
         form: expectedFormInfo,
       })
     })

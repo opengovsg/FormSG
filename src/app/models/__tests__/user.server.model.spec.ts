@@ -175,9 +175,7 @@ describe('User Model', () => {
           agency: agency._id,
           email: VALID_USER_EMAIL,
         })
-        const populatedUser = await user
-          .populate({ path: 'agency' })
-          .execPopulate()
+        const populatedUser = await user.populate({ path: 'agency' })
         expect(populatedUser).toBeDefined()
 
         // Act
