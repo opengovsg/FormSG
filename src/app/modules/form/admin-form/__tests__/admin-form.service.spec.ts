@@ -2479,13 +2479,13 @@ describe('admin-form.service', () => {
           } as any
         })
 
-        // // Act
+        // Act
         const actualResult = await AdminFormService.createTwilioCredentials(
           TWILIO_CREDENTIALS,
           MOCK_FORM,
         )
 
-        // // Assert
+        // Assert
         expect(actualResult.isOk()).toEqual(true)
         expect(actualResult._unsafeUnwrap()).toEqual(null)
 
@@ -2544,14 +2544,14 @@ describe('admin-form.service', () => {
             } as any
           })
 
-        // // Act
+        // Act
 
         const actualResult = await AdminFormService.updateTwilioCredentials(
           msgSrvcName,
           TWILIO_CREDENTIALS,
         )
 
-        // // Assert
+        // Assert
         expect(actualResult.isOk()).toEqual(true)
         expect(actualResult._unsafeUnwrap()).toEqual({
           Name: msgSrvcName,
@@ -2610,14 +2610,14 @@ describe('admin-form.service', () => {
             } as any
           })
 
-        // // Act
+        // Act
 
         const actualResult = await AdminFormService.deleteTwilioCredentials(
           MOCK_FORM_ID.toHexString(),
           msgSrvcName,
         )
 
-        // // Assert
+        // Assert
         expect(actualResult.isOk()).toEqual(true)
         expect(actualResult._unsafeUnwrap()).toEqual(null)
 

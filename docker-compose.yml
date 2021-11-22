@@ -113,8 +113,8 @@ services:
       - MONGO_INITDB_DATABASE=formsg
     volumes:
       - mongodata:/data/db
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-    command: --bind_ip_all --replSet rs0
+      # - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    command: --bind_ip_all --replSet rs0 rs.initiate()
     ports:
       - '27017:27017'
     logging:

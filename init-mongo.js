@@ -1,7 +1,4 @@
 /* eslint-disable */
-rs.initiate()
-
-print("RUNNING SEED")
 db.createCollection("agencies")
 db.agencies.insert([{
     "shortName" : "govtech",
