@@ -38,7 +38,7 @@ export default async (): Promise<Connection> => {
     })
 
     // Store the uri to connect to later on
-    config.db.uri = await mongod.getConnectionString()
+    config.db.uri = await mongod.getUri()
   }
 
   // Actually connect to the database
