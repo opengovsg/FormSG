@@ -1297,6 +1297,9 @@ export const deleteTwilioCredentials = (
   const body: SecretsManager.Types.DeleteSecretRequest = {
     SecretId: msgSrvcName,
     ForceDeleteWithoutRecovery: true,
+    // Need ForceDeleteWithoutRecovery boolean flag for it to be deleted immediately
+    // If not, the key-value pair will remain in SecretsManager for another 14 days before
+    // being dleted: https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_delete-secret.html
   }
 
   return ResultAsync.fromPromise(

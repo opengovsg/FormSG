@@ -2,6 +2,7 @@ import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
+import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
@@ -24,6 +25,9 @@ import { TwilioCredentials } from './../../../../../../services/sms/sms.types'
 
 // Prevent rate limiting.
 jest.mock('src/app/utils/limit-rate')
+
+jest.mock('../admin-form.service')
+const MockAdminFormService = mocked(AdminFormService)
 
 const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,
@@ -78,7 +82,7 @@ describe('admin-form.twilio.routes', () => {
       const session = await createAuthedSession(user.email, request)
 
       const twilioCredentialsSpy = jest
-        .spyOn(AdminFormService, 'createTwilioCredentials')
+        .spyOn(MockAdminFormService, 'createTwilioCredentials')
         .mockReturnValueOnce(okAsync(null))
 
       // Actual
@@ -98,7 +102,7 @@ describe('admin-form.twilio.routes', () => {
       const session = await createAuthedSession(user.email, request)
 
       const twilioCredentialsSpy = jest
-        .spyOn(AdminFormService, 'updateTwilioCredentials')
+        .spyOn(MockAdminFormService, 'updateTwilioCredentials')
         .mockReturnValueOnce(okAsync(1))
 
       const response = await session
@@ -115,7 +119,7 @@ describe('admin-form.twilio.routes', () => {
       const session = await createAuthedSession(user.email, request)
 
       const createwilioCredentialsSpy = jest
-        .spyOn(AdminFormService, 'createTwilioCredentials')
+        .spyOn(MockAdminFormService, 'createTwilioCredentials')
         .mockReturnValueOnce(
           errAsync(new MalformedParametersError('Credentials are invalid!')),
         )
@@ -209,7 +213,7 @@ describe('admin-form.twilio.routes', () => {
       const session = await createAuthedSession(user.email, request)
 
       jest
-        .spyOn(AdminFormService, 'createTwilioCredentials')
+        .spyOn(MockAdminFormService, 'createTwilioCredentials')
         .mockReturnValueOnce(errAsync(new DatabaseError()))
 
       const response = await session
@@ -235,8 +239,8 @@ describe('admin-form.twilio.routes', () => {
       const session = await createAuthedSession(user.email, request)
 
       const twilioCredentialsSpy = jest
-        .spyOn(AdminFormService, 'deleteTwilioCredentials')
-        .mockReturnValueOnce(okAsync(null))
+        .spyOn(MockAdminFormService, 'deleteTwilioCredentials')
+        .mockReturnValueOnce(okAsync(1))
 
       // Actual
       const response = await session.delete(`/admin/forms/${form._id}/twilio`)
@@ -321,7 +325,7 @@ describe('admin-form.twilio.routes', () => {
       const session = await createAuthedSession(user.email, request)
 
       jest
-        .spyOn(AdminFormService, 'deleteTwilioCredentials')
+        .spyOn(MockAdminFormService, 'deleteTwilioCredentials')
         .mockReturnValueOnce(errAsync(new DatabaseError()))
 
       const response = await session.delete(`/admin/forms/${form._id}/twilio`)
