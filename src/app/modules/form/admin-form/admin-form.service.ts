@@ -1331,7 +1331,7 @@ export const deleteTwilioCredentials = (
     },
   )
 
-  if (!(result instanceof SecretsManagerNotFoundError)) return okAsync(1)
+  if (result instanceof SecretsManagerError) return okAsync(1)
 
   logger.info({
     message: 'Twilio Credentials has been found in Secrets Manager',

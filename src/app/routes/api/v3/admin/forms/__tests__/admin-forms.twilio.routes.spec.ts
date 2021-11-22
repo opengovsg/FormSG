@@ -7,8 +7,8 @@ import { mocked } from 'ts-jest/utils'
 import getFormModel from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import {
-  DatabaseError,
   MalformedParametersError,
+  SecretsManagerError,
 } from 'src/app/modules/core/core.errors'
 
 import {
@@ -25,8 +25,8 @@ import { TwilioCredentials } from './../../../../../../services/sms/sms.types'
 
 // Prevent rate limiting.
 jest.mock('src/app/utils/limit-rate')
+jest.mock('../../../../../../../app/modules/form/admin-form/admin-form.service')
 
-jest.mock('../admin-form.service')
 const MockAdminFormService = mocked(AdminFormService)
 
 const app = setupApp('/admin/forms', AdminFormsRouter, {
@@ -208,13 +208,13 @@ describe('admin-form.twilio.routes', () => {
       expect(response.body).toEqual({ message: 'User not found' })
     })
 
-    it('should return 500 when application error occurs whilst updating credentials', async () => {
+    it('should return 500 when SecretsManagerError occurs whilst updating credentials', async () => {
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
       const session = await createAuthedSession(user.email, request)
 
       jest
         .spyOn(MockAdminFormService, 'createTwilioCredentials')
-        .mockReturnValueOnce(errAsync(new DatabaseError()))
+        .mockReturnValueOnce(errAsync(new SecretsManagerError()))
 
       const response = await session
         .put(`/admin/forms/${formToUpdate._id}/twilio`)
@@ -320,13 +320,13 @@ describe('admin-form.twilio.routes', () => {
       expect(response.body).toEqual({ message: 'User not found' })
     })
 
-    it('should return 500 when database error occurs whilst updating credentials', async () => {
+    it('should return 500 when SecretsManagerError occurs whilst updating credentials', async () => {
       const { form, user } = await dbHandler.insertFormWithMsgSrvcName()
       const session = await createAuthedSession(user.email, request)
 
       jest
         .spyOn(MockAdminFormService, 'deleteTwilioCredentials')
-        .mockReturnValueOnce(errAsync(new DatabaseError()))
+        .mockReturnValueOnce(errAsync(new SecretsManagerError()))
 
       const response = await session.delete(`/admin/forms/${form._id}/twilio`)
 

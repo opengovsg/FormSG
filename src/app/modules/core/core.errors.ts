@@ -46,7 +46,7 @@ export class DatabasePayloadSizeError extends ApplicationError {
 }
 
 export class SecretsManagerError extends ApplicationError {
-  constructor(message: string) {
+  constructor(message?: string) {
     super(message)
   }
 }
@@ -58,7 +58,7 @@ export class SecretsManagerNotFoundError extends ApplicationError {
 }
 
 export class TwilioCacheError extends ApplicationError {
-  constructor(message: string) {
+  constructor(message?: string) {
     super(message)
   }
 }
