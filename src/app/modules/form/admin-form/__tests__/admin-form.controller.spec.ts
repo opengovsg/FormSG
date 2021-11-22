@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { PutSecretValueResponse } from 'aws-sdk/clients/secretsmanager'
 import { ObjectId } from 'bson-ext'
 import { StatusCodes } from 'http-status-codes'
 import { assignIn, cloneDeep, merge, pick } from 'lodash'
@@ -10383,16 +10382,15 @@ describe('admin-form.controller', () => {
       createTwilioSpy.mockReturnValueOnce(okAsync(null))
 
       const mockRes = expressHandler.mockResponse()
-      const expected = {
-        message: 'Successfully updated Twilio credentials',
-      }
 
       // Act
       await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expected)
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Successfully updated Twilio credentials',
+      })
       expect(createTwilioSpy).toHaveBeenCalledTimes(1)
       expect(updateTwilioSpy).not.toHaveBeenCalled()
     })
@@ -10418,25 +10416,22 @@ describe('admin-form.controller', () => {
         body: MOCK_TWILIO_CREDENTIALS,
       })
 
-      const { msgSrvcName } = MOCK_FORM_WITH_MSG_SRVC_NAME
-
-      const MOCK_PUT_SECRET_RESPONSE: PutSecretValueResponse = {
-        Name: msgSrvcName,
-      }
-
-      updateTwilioSpy.mockReturnValueOnce(okAsync(MOCK_PUT_SECRET_RESPONSE))
+      updateTwilioSpy.mockReturnValueOnce(
+        okAsync({
+          Name: MOCK_FORM_WITH_MSG_SRVC_NAME.msgSrvcName,
+        }),
+      )
 
       const mockRes = expressHandler.mockResponse()
-      const expected = {
-        message: 'Successfully updated Twilio credentials',
-      }
 
       // Act
       await AdminFormController.handleUpdateTwilio(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expected)
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Successfully updated Twilio credentials',
+      })
       expect(updateTwilioSpy).toHaveBeenCalledTimes(1)
       expect(createTwilioSpy).not.toHaveBeenCalled()
     })
