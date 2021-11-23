@@ -16,7 +16,7 @@ const {
 
 const fs = require('fs')
 const rimraf = require('rimraf')
-const parse = require('csv-parse/lib/sync')
+const parse = require('csv-parse/sync').parse
 const ngrok = require('ngrok')
 
 // Index of the column headers in the exported CSV. The first 4 rows are
