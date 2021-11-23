@@ -1,12 +1,14 @@
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
-import { errAsync, okAsync } from 'neverthrow'
+import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
+import config from 'src/app/config/config'
 import getFormModel from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import { SecretsManagerError } from 'src/app/modules/core/core.errors'
+import { IPopulatedForm } from 'src/types'
 
 import {
   createAuthedSession,
@@ -16,13 +18,15 @@ import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import * as AdminFormService from '../../../../../../../app/modules/form/admin-form/admin-form.service'
+import { secretsManager } from '../../../../../../../app/modules/form/admin-form/admin-form.service'
+import * as SmsService from '../../../../../../services/sms/sms.service'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
 import { TwilioCredentials } from './../../../../../../services/sms/sms.types'
 
 // Prevent rate limiting.
 jest.mock('src/app/utils/limit-rate')
-jest.mock('../../../../../../../app/modules/form/admin-form/admin-form.service')
+// jest.mock('../../../../../../../app/modules/form/admin-form/admin-form.service')
 
 const MockAdminFormService = mocked(AdminFormService)
 
@@ -74,13 +78,31 @@ describe('admin-form.twilio.routes', () => {
       message: 'Successfully updated Twilio credentials',
     }
 
+    const MOCK_FORM = {
+      _id: MOCK_FORM_ID,
+      save: () => MOCK_FORM,
+    } as unknown as IPopulatedForm
+
     it('should return 200 on successful twilio credentials addition', async () => {
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
       const session = await createAuthedSession(user.email, request)
+      const msgSrvcName = `formsg/${config.secretEnv}/form/${formToUpdate._id}/twilio`
 
-      const twilioCredentialsSpy = jest
-        .spyOn(MockAdminFormService, 'createTwilioCredentials')
-        .mockReturnValueOnce(okAsync(null))
+      const createSecretsSpy = jest
+        .spyOn(secretsManager, 'createSecret')
+        .mockImplementationOnce(() => {
+          return {
+            promise: () => {
+              return Promise.resolve({
+                Name: msgSrvcName,
+              })
+            },
+          } as any
+        })
+
+      const formSpy = jest
+        .spyOn(FormModel.prototype, 'save')
+        .mockImplementationOnce(() => null)
 
       // Actual
       const response = await session
@@ -88,7 +110,8 @@ describe('admin-form.twilio.routes', () => {
         .send(TWILIO_CREDENTIALS)
 
       // Assert
-      expect(twilioCredentialsSpy).toBeCalled()
+      expect(createSecretsSpy).toBeCalled()
+      expect(formSpy).toBeCalled()
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(MOCK_SUCCESSFUL_UPDATE)
     })
@@ -97,18 +120,51 @@ describe('admin-form.twilio.routes', () => {
       const { form: formToUpdate, user } =
         await dbHandler.insertFormWithMsgSrvcName()
       const session = await createAuthedSession(user.email, request)
+      const msgSrvcName = formToUpdate.msgSrvcName
 
-      const twilioCredentialsSpy = jest
-        .spyOn(MockAdminFormService, 'updateTwilioCredentials')
-        .mockReturnValueOnce(okAsync(1))
+      const getSecretsSpy = jest
+        .spyOn(secretsManager, 'getSecretValue')
+        .mockImplementationOnce(() => {
+          return {
+            promise: () => {
+              return Promise.resolve({
+                Name: msgSrvcName,
+              })
+            },
+          } as any
+        })
+
+      const twilioCacheSpy = jest
+        .spyOn(SmsService.twilioClientCache, 'del')
+        .mockReturnValueOnce(1)
+
+      const putSecretsSpy = jest
+        .spyOn(secretsManager, 'putSecretValue')
+        .mockImplementationOnce(() => {
+          return {
+            promise: () => {
+              return Promise.resolve({
+                Name: msgSrvcName,
+              })
+            },
+          } as any
+        })
 
       const response = await session
         .put(`/admin/forms/${formToUpdate._id}/twilio`)
         .send(TWILIO_CREDENTIALS)
 
-      expect(twilioCredentialsSpy).toBeCalled()
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(MOCK_SUCCESSFUL_UPDATE)
+
+      expect(getSecretsSpy).toHaveBeenCalledWith({
+        SecretId: msgSrvcName,
+      })
+      expect(twilioCacheSpy).toHaveBeenCalledWith(msgSrvcName)
+      expect(putSecretsSpy).toHaveBeenCalledWith({
+        SecretId: msgSrvcName,
+        SecretString: JSON.stringify(TWILIO_CREDENTIALS),
+      })
     })
 
     it('should return 400 when twilio credentials are invalid', async () => {
@@ -226,16 +282,53 @@ describe('admin-form.twilio.routes', () => {
     it('should return 200 on successful twilio credentials addition', async () => {
       const { form, user } = await dbHandler.insertFormWithMsgSrvcName()
       const session = await createAuthedSession(user.email, request)
+      const msgSrvcName = form.msgSrvcName
 
-      const twilioCredentialsSpy = jest
-        .spyOn(MockAdminFormService, 'deleteTwilioCredentials')
-        .mockReturnValueOnce(okAsync(1))
+      const formSpy = jest
+        .spyOn(FormModel.prototype, 'save')
+        .mockImplementationOnce(() => null)
+
+      const getSecretsSpy = jest
+        .spyOn(secretsManager, 'getSecretValue')
+        .mockImplementationOnce(() => {
+          return {
+            promise: () => {
+              return Promise.resolve({
+                Name: msgSrvcName,
+              })
+            },
+          } as any
+        })
+
+      const twilioCacheSpy = jest
+        .spyOn(SmsService.twilioClientCache, 'del')
+        .mockReturnValueOnce(1)
+
+      const deleteSecretSpy = jest
+        .spyOn(secretsManager, 'deleteSecret')
+        .mockImplementationOnce(() => {
+          return {
+            promise: () => {
+              return Promise.resolve({
+                Name: msgSrvcName,
+              })
+            },
+          } as any
+        })
 
       // Actual
       const response = await session.delete(`/admin/forms/${form._id}/twilio`)
 
       // Assert
-      expect(twilioCredentialsSpy).toBeCalled()
+      expect(getSecretsSpy).toHaveBeenCalledWith({
+        SecretId: msgSrvcName,
+      })
+      expect(twilioCacheSpy).toHaveBeenCalledWith(msgSrvcName)
+      expect(formSpy).toBeCalled()
+      expect(deleteSecretSpy).toHaveBeenCalledWith({
+        SecretId: msgSrvcName,
+        ForceDeleteWithoutRecovery: true,
+      })
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(MOCK_SUCCESSFUL_DELETE_RESPONSE)
     })

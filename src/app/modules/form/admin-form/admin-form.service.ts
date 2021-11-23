@@ -1176,12 +1176,12 @@ export const createTwilioCredentials = (
 ): ResultAsync<unknown, ApplicationError> => {
   const twilioCredentialsData: TwilioCredentialsData =
     new TwilioCredentialsData(twilioCredentials)
-
   const msgSrvcName = `formsg/${config.secretEnv}/form/${formId}/twilio`
   const body: CreateSecretRequest = {
     Name: msgSrvcName,
     SecretString: twilioCredentialsData.toString(),
   }
+
   logger.info({
     message: `no msgSrvcName, creating Twilio credentials for form ${formId}`,
     meta: {
@@ -1210,7 +1210,7 @@ export const createTwilioCredentials = (
         error,
       })
 
-      return new ApplicationError('Error occurred when creating Twilio!')
+      return new SecretsManagerError('Error occurred when creating Twilio!')
     },
   )
 }
