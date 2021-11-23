@@ -2,6 +2,7 @@
 import { ObjectId } from 'bson-ext'
 import { format, subDays } from 'date-fns'
 import { cloneDeep, omit, times } from 'lodash'
+import MockDate from 'mockdate'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import SparkMD5 from 'spark-md5'
@@ -3967,7 +3968,6 @@ describe('admin-form.routes', () => {
 
     it('should return 200 with counts of submissions made between given start and end dates.', async () => {
       // Arrange
-      const expectedSubmissionCount = 3
       const newForm = (await EmailFormModel.create({
         title: 'new form',
         responseMode: FormResponseMode.Email,
@@ -3979,16 +3979,15 @@ describe('admin-form.routes', () => {
         hash: 'some hash',
         salt: 'some salt',
       }
-      const results = await Promise.all(
-        times(expectedSubmissionCount, () =>
-          saveSubmissionMetadata(newForm, mockSubmissionHash),
-        ),
+      // Inconsequential submissions
+      await Promise.all(
+        times(2, () => saveSubmissionMetadata(newForm, mockSubmissionHash)),
       )
-      // Update first submission to be 5 days ago.
+
+      // Add submission with specific date.
       const now = new Date()
-      const firstSubmission = results[0]._unsafeUnwrap()
-      firstSubmission.created = subDays(now, 5)
-      await firstSubmission.save()
+      MockDate.set(subDays(now, 5))
+      await saveSubmissionMetadata(newForm, mockSubmissionHash)
 
       // Act
       const response = await request
@@ -4000,12 +3999,14 @@ describe('admin-form.routes', () => {
 
       // Assert
       expect(response.status).toEqual(200)
+      // Should have a single submission that fits the date range
       expect(response.body).toEqual(1)
+
+      MockDate.reset()
     })
 
     it('should return 200 with counts of submissions made with same start and end dates', async () => {
       // Arrange
-      const expectedSubmissionCount = 3
       const newForm = (await EmailFormModel.create({
         title: 'new form',
         responseMode: FormResponseMode.Email,
@@ -4017,15 +4018,15 @@ describe('admin-form.routes', () => {
         hash: 'some hash',
         salt: 'some salt',
       }
-      const results = await Promise.all(
-        times(expectedSubmissionCount, () =>
-          saveSubmissionMetadata(newForm, mockSubmissionHash),
-        ),
+
+      // Save two inconsequential submissions.
+      await Promise.all(
+        times(2, () => saveSubmissionMetadata(newForm, mockSubmissionHash)),
       )
+      // Save a submission with a specific expected date.
       const expectedDate = '2021-04-04'
-      const firstSubmission = results[0]._unsafeUnwrap()
-      firstSubmission.created = new Date(expectedDate)
-      await firstSubmission.save()
+      MockDate.set(expectedDate)
+      await saveSubmissionMetadata(newForm, mockSubmissionHash)
 
       // Act
       const response = await request
@@ -4037,7 +4038,10 @@ describe('admin-form.routes', () => {
 
       // Assert
       expect(response.status).toEqual(200)
+      // Should only have 1 submission from the specific date.
       expect(response.body).toEqual(1)
+
+      MockDate.reset()
     })
 
     it('should return 400 when query.startDate is missing when query.endDate is provided', async () => {
@@ -4588,6 +4592,18 @@ describe('admin-form.routes', () => {
       })) as IFormDocument
     })
 
+    const createEncryptSubmissionBody = (metaString: unknown) => {
+      return {
+        form: defaultForm,
+        encryptedContent: `any encrypted content ${metaString}`,
+        verifiedContent: `any verified content ${metaString}`,
+        attachmentMetadata: new Map([
+          ['fieldId1', `some.attachment.url.${metaString}`],
+          ['fieldId2', `some.other.attachment.url.${metaString}`],
+        ]),
+      }
+    }
+
     it('should return 200 with stream of encrypted responses without attachment URLs when query.downloadAttachments is false', async () => {
       // Arrange
       const submissions = await Promise.all(
@@ -4712,31 +4728,24 @@ describe('admin-form.routes', () => {
 
     it('should return 200 with stream of encrypted responses between given query.startDate and query.endDate', async () => {
       // Arrange
-      const submissions = await Promise.all(
-        times(5, (count) =>
-          createEncryptSubmission({
-            form: defaultForm,
-            encryptedContent: `any encrypted content ${count}`,
-            verifiedContent: `any verified content ${count}`,
-            attachmentMetadata: new Map([
-              ['fieldId1', `some.attachment.url.${count}`],
-              ['fieldId2', `some.other.attachment.url.${count}`],
-            ]),
-          }),
+      // Inconsequential submissions
+      await Promise.all(
+        times(3, (count) =>
+          createEncryptSubmission(createEncryptSubmissionBody(count)),
         ),
       )
 
       const startDateStr = '2020-02-03'
       const endDateStr = '2020-02-04'
+      MockDate.set(startDateStr)
       // Set 2 submissions to be submitted with specific date
-      submissions[2].created = new Date(startDateStr)
-      submissions[4].created = new Date(endDateStr)
-      await submissions[2].save()
-      await submissions[4].save()
-      const expectedSubmissionIds = [
-        String(submissions[2]._id),
-        String(submissions[4]._id),
-      ]
+      const specificSubmission1 = await createEncryptSubmission(
+        createEncryptSubmissionBody(startDateStr),
+      )
+      MockDate.set(endDateStr)
+      const specificSubmission2 = await createEncryptSubmission(
+        createEncryptSubmissionBody(endDateStr),
+      )
 
       // Act
       const response = await request
@@ -4755,7 +4764,7 @@ describe('admin-form.routes', () => {
         })
 
       // Assert
-      const expectedSorted = submissions
+      const expectedSorted = [specificSubmission1, specificSubmission2]
         .map((s) =>
           jsonParseStringify({
             _id: s._id,
@@ -4768,7 +4777,6 @@ describe('admin-form.routes', () => {
             version: s.version,
           }),
         )
-        .filter((s) => expectedSubmissionIds.includes(s._id))
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
 
       const actualSorted = (response.body as string)
@@ -4781,6 +4789,8 @@ describe('admin-form.routes', () => {
 
       expect(response.status).toEqual(200)
       expect(actualSorted).toEqual(expectedSorted)
+
+      MockDate.reset()
     })
 
     it('should return 400 when form of given formId is not an encrypt mode form', async () => {
