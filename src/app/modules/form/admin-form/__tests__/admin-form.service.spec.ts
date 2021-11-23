@@ -36,7 +36,6 @@ import {
 import { EditFormFieldParams } from 'src/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
 import {
@@ -84,13 +83,13 @@ const EncryptFormModel = getEncryptedFormModel(mongoose)
 jest.mock('src/app/modules/user/user.service')
 const MockUserService = mocked(UserService)
 
+jest.mock('../../../../services/sms/sms.service')
+const MockSmsService = mocked(SmsService)
+
 describe('admin-form.service', () => {
-  beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {
     jest.clearAllMocks()
   })
-  afterEach(async () => await dbHandler.clearDatabase())
-  afterAll(async () => await dbHandler.closeDatabase())
 
   describe('getDashboardForms', () => {
     it('should return list of forms user is authorized to view', async () => {
@@ -2509,7 +2508,7 @@ describe('admin-form.service', () => {
         })
 
       const twilioCacheSpy = jest
-        .spyOn(SmsService.twilioClientCache, 'del')
+        .spyOn(MockSmsService.twilioClientCache, 'del')
         .mockReturnValueOnce(1)
 
       const putSecretsSpy = jest
@@ -2580,7 +2579,7 @@ describe('admin-form.service', () => {
         })
 
       const twilioCacheSpy = jest
-        .spyOn(SmsService.twilioClientCache, 'del')
+        .spyOn(MockSmsService.twilioClientCache, 'del')
         .mockReturnValueOnce(1)
 
       // Act
@@ -2598,54 +2597,6 @@ describe('admin-form.service', () => {
         SecretId: msgSrvcName,
       })
       expect(twilioCacheSpy).toHaveBeenCalledWith(msgSrvcName)
-    })
-
-    it('should successfully return successful when Twilio credentials do not exist in AWS Secrets Manager', async () => {
-      // Arrange
-      const msgSrvcName = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
-
-      const getSecretsSpy = jest
-        .spyOn(secretsManager, 'getSecretValue')
-        .mockImplementationOnce(() => {
-          return {
-            promise: () => {
-              return Promise.reject('Reject!')
-            },
-          } as any
-        })
-
-      const twilioCacheSpy = jest
-        .spyOn(SmsService.twilioClientCache, 'del')
-        .mockReturnValueOnce(1)
-
-      const deleteSecretsSpy = jest
-        .spyOn(secretsManager, 'deleteSecret')
-        .mockImplementationOnce(() => {
-          return {
-            promise: () => {
-              return Promise.resolve({
-                Name: msgSrvcName,
-              })
-            },
-          } as any
-        })
-
-      // Act
-
-      const actualResult = await AdminFormService.deleteTwilioCredentials(
-        MOCK_FORM_ID.toHexString(),
-        msgSrvcName,
-      )
-
-      // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(1)
-
-      expect(getSecretsSpy).toHaveBeenCalledWith({
-        SecretId: msgSrvcName,
-      })
-      expect(twilioCacheSpy).not.toHaveBeenCalledWith()
-      expect(deleteSecretsSpy).not.toHaveBeenCalledWith()
     })
   })
 })
