@@ -7,8 +7,6 @@ import { mocked } from 'ts-jest/utils'
 import { ISpcpMyInfo } from 'src/app/config/features/spcp-myinfo.config'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-
 import { FormAuthType } from '../../../../../shared/types'
 import {
   CreateRedirectUrlError,
@@ -55,12 +53,9 @@ jest.mock('axios')
 const MockAxios = mocked(axios, true)
 
 describe('spcp.service', () => {
-  beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {
-    await dbHandler.clearDatabase()
     jest.clearAllMocks()
   })
-  afterAll(async () => await dbHandler.closeDatabase())
   describe('class constructor', () => {
     it('should instantiate auth clients with the correct params', () => {
       const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
