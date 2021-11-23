@@ -1,9 +1,11 @@
 import { ObjectId } from 'bson-ext'
+import MockDate from 'mockdate'
 import mongoose from 'mongoose'
 
 import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { PAGE_SIZE } from '../examples.constants'
 import { ResultsNotFoundError } from '../examples.errors'
@@ -24,11 +26,15 @@ describe('examples.service', () => {
   let testData: TestData
 
   beforeAll(async () => {
+    MockDate.set(new Date())
     await dbHandler.connect()
     const { user, agency } = await dbHandler.insertFormCollectionReqs()
     testData = await prepareTestData(user, agency)
   })
-  afterAll(async () => await dbHandler.closeDatabase())
+  afterAll(async () => {
+    MockDate.reset()
+    await dbHandler.closeDatabase()
+  })
 
   describe('getExampleForms', () => {
     describe('when query.searchTerm exists', () => {
@@ -43,9 +49,9 @@ describe('examples.service', () => {
 
           // Assert
           expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toMatchObject({
+          expect(jsonParseStringify(actualResults._unsafeUnwrap())).toEqual({
             totalNumResults: testData.second.formCount,
-            forms: testData.second.expectedFormInfo,
+            forms: jsonParseStringify(testData.second.expectedFormInfo),
           })
         })
 
@@ -77,8 +83,10 @@ describe('examples.service', () => {
 
           // Assert
           expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toMatchObject({
-            forms: testData.first.expectedFormInfo,
+          expect(jsonParseStringify(actualResults._unsafeUnwrap())).toEqual({
+            forms: expect.arrayContaining(
+              jsonParseStringify(testData.first.expectedFormInfo),
+            ),
           })
         })
 
@@ -110,9 +118,11 @@ describe('examples.service', () => {
 
           // Assert
           expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toMatchObject({
+          expect(jsonParseStringify(actualResults._unsafeUnwrap())).toEqual({
             totalNumResults: testData.total.formCount,
-            forms: testData.total.expectedFormInfo,
+            forms: expect.arrayContaining(
+              jsonParseStringify(testData.total.expectedFormInfo),
+            ),
           })
         })
 
@@ -128,7 +138,7 @@ describe('examples.service', () => {
 
           // Assert
           expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toMatchObject({
+          expect(actualResults._unsafeUnwrap()).toEqual({
             forms: [],
             totalNumResults: testData.total.formCount,
           })
@@ -145,8 +155,10 @@ describe('examples.service', () => {
 
           // Assert
           expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toMatchObject({
-            forms: testData.total.expectedFormInfo,
+          expect(jsonParseStringify(actualResults._unsafeUnwrap())).toEqual({
+            forms: expect.arrayContaining(
+              jsonParseStringify(testData.total.expectedFormInfo),
+            ),
           })
         })
 
@@ -182,8 +194,8 @@ describe('examples.service', () => {
 
       // Assert
       expect(actualResults.isOk()).toEqual(true)
-      expect(actualResults._unsafeUnwrap()).toMatchObject({
-        form: expectedFormInfo,
+      expect(jsonParseStringify(actualResults._unsafeUnwrap())).toEqual({
+        form: jsonParseStringify(expectedFormInfo),
       })
     })
 
