@@ -1194,8 +1194,9 @@ export const createTwilioCredentials = (
   return ResultAsync.fromPromise(
     FormModel.startSession().then((session: ClientSession) =>
       session
-        .withTransaction(() =>
-          createTwilioTransaction(formId, msgSrvcName, body, session),
+        .withTransaction(
+          async () =>
+            await createTwilioTransaction(formId, msgSrvcName, body, session),
         )
         .then(() => session.endSession()),
     ),
@@ -1214,12 +1215,12 @@ export const createTwilioCredentials = (
   )
 }
 
-const createTwilioTransaction = async (
+export const createTwilioTransaction = async (
   formId: string,
   msgSrvcName: string,
   body: CreateSecretRequest,
   session: ClientSession,
-) => {
+): Promise<void> => {
   const doc = await FormModel.updateMsgSrvcName(formId, msgSrvcName)
 
   if (doc) {
@@ -1358,7 +1359,9 @@ export const deleteTwilioCredentials = (
   return ResultAsync.fromPromise(
     FormModel.startSession().then((session: ClientSession) =>
       session
-        .withTransaction(() => deleteTwilioTransaction(formId, body, session))
+        .withTransaction(
+          async () => await deleteTwilioTransaction(formId, body, session),
+        )
         .then(() => session.endSession()),
     ),
     (error) => {
@@ -1398,7 +1401,7 @@ const deleteTwilioTransaction = async (
   formId: string,
   body: DeleteSecretRequest,
   session: ClientSession,
-) => {
+): Promise<void> => {
   const doc = await FormModel.deleteMsgSrvcName(formId)
   if (doc) {
     await secretsManager.deleteSecret(body).promise()

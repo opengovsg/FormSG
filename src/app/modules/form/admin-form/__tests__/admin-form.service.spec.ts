@@ -2457,13 +2457,20 @@ describe('admin-form.service', () => {
       messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
     }
 
-    const formSpy = jest.spyOn(FormModel, 'updateMsgSrvcName')
     const secretsManagerSpy = jest.spyOn(secretsManager, 'createSecret')
+    const sessionSpy = jest.spyOn(FormModel, 'startSession')
+    const formSpy = jest.spyOn(FormModel, 'updateMsgSrvcName')
 
     it('should return undefined when Twilio credentials was created successfully', async () => {
       // Arrange
-      formSpy.mockResolvedValueOnce(MOCK_UPDATED_FORM)
+
       const msgSrvcName = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
+      const createSecretBody = {
+        Name: msgSrvcName,
+        SecretString: JSON.stringify(TWILIO_CREDENTIALS),
+      }
+
+      formSpy.mockResolvedValueOnce(MOCK_UPDATED_FORM)
 
       secretsManagerSpy.mockImplementationOnce(() => {
         return {
@@ -2475,6 +2482,19 @@ describe('admin-form.service', () => {
         } as any
       })
 
+      sessionSpy.mockResolvedValueOnce({
+        withTransaction: () => {
+          void FormModel.updateMsgSrvcName(
+            MOCK_FORM_ID.toHexString(),
+            msgSrvcName,
+          )
+          void secretsManager.createSecret(createSecretBody).promise()
+          return {
+            then: () => undefined,
+          }
+        },
+      } as any)
+
       // Act
       const actualResult = await AdminFormService.createTwilioCredentials(
         TWILIO_CREDENTIALS,
@@ -2485,7 +2505,11 @@ describe('admin-form.service', () => {
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(undefined)
 
-      expect(formSpy).toHaveBeenCalled()
+      expect(sessionSpy).toHaveBeenCalled()
+      expect(formSpy).toHaveBeenCalledWith(
+        MOCK_FORM_ID.toHexString(),
+        msgSrvcName,
+      )
       expect(secretsManagerSpy).toHaveBeenCalledWith({
         Name: msgSrvcName,
         SecretString: JSON.stringify(TWILIO_CREDENTIALS),
