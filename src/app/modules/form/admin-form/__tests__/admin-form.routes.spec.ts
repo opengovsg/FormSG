@@ -1288,8 +1288,8 @@ describe('admin-form.routes', () => {
         .lean()
       expect(response.status).toEqual(200)
       expect(response.body).not.toBeNull()
-      expect(response.body).toEqual({
-        form: jsonParseStringify(expected),
+      expect(response.body).toMatchObject({
+        form: expected,
       })
     })
 
@@ -1325,8 +1325,8 @@ describe('admin-form.routes', () => {
         .lean()
       expect(response.status).toEqual(200)
       expect(response.body).not.toBeNull()
-      expect(response.body).toEqual({
-        form: jsonParseStringify(expected),
+      expect(response.body).toMatchObject({
+        form: expected,
       })
     })
 
@@ -1473,7 +1473,7 @@ describe('admin-form.routes', () => {
       expect(response.status).toEqual(200)
       expect(expected?.form_fields![0].description).toEqual(updatedDescription)
       expect(expected?.__v).toEqual(1)
-      expect(response.body).toEqual(jsonParseStringify(expected))
+      expect(response.body).toMatchObject(expected)
     })
 
     it('should return 401 when user is not logged in', async () => {
