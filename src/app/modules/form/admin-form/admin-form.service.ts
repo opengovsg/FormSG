@@ -1,5 +1,10 @@
 import { SecretsManager } from 'aws-sdk'
 import { PresignedPost } from 'aws-sdk/clients/s3'
+import {
+  CreateSecretRequest,
+  DeleteSecretRequest,
+  PutSecretValueRequest,
+} from 'aws-sdk/clients/secretsmanager'
 import { assignIn, last, omit } from 'lodash'
 import { ClientSession } from 'mongodb'
 import mongoose from 'mongoose'
@@ -1173,7 +1178,7 @@ export const createTwilioCredentials = (
     new TwilioCredentialsData(twilioCredentials)
 
   const msgSrvcName = `formsg/${config.secretEnv}/form/${formId}/twilio`
-  const body: SecretsManager.Types.CreateSecretRequest = {
+  const body: CreateSecretRequest = {
     Name: msgSrvcName,
     SecretString: twilioCredentialsData.toString(),
   }
@@ -1189,14 +1194,9 @@ export const createTwilioCredentials = (
   return ResultAsync.fromPromise(
     FormModel.startSession().then((session: ClientSession) =>
       session
-        .withTransaction(async () => {
-          const doc = await FormModel.updateMsgSrvcName(formId, msgSrvcName)
-
-          if (doc) {
-            await secretsManager.createSecret(body).promise()
-            await doc.save({ session })
-          }
-        })
+        .withTransaction(() =>
+          createTwilioTransaction(formId, msgSrvcName, body, session),
+        )
         .then(() => session.endSession()),
     ),
     (error) => {
@@ -1214,6 +1214,20 @@ export const createTwilioCredentials = (
   )
 }
 
+const createTwilioTransaction = async (
+  formId: string,
+  msgSrvcName: string,
+  body: CreateSecretRequest,
+  session: ClientSession,
+) => {
+  const doc = await FormModel.updateMsgSrvcName(formId, msgSrvcName)
+
+  if (doc) {
+    await secretsManager.createSecret(body).promise()
+    await doc.save({ session })
+  }
+}
+
 export const updateTwilioCredentials = (
   msgSrvcName: string,
   twilioCredentials: TwilioCredentials,
@@ -1224,7 +1238,7 @@ export const updateTwilioCredentials = (
   const twilioCredentialsData: TwilioCredentialsData =
     new TwilioCredentialsData(twilioCredentials)
 
-  const body: SecretsManager.Types.PutSecretValueRequest = {
+  const body: PutSecretValueRequest = {
     SecretId: msgSrvcName,
     SecretString: twilioCredentialsData.toString(),
   }
@@ -1302,7 +1316,7 @@ export const deleteTwilioCredentials = (
   formId: string,
   msgSrvcName: string,
 ): ResultAsync<unknown, SecretsManagerError | TwilioCacheError> => {
-  const body: SecretsManager.Types.DeleteSecretRequest = {
+  const body: DeleteSecretRequest = {
     SecretId: msgSrvcName,
     ForceDeleteWithoutRecovery: true,
     // Need ForceDeleteWithoutRecovery boolean flag for it to be deleted immediately
@@ -1344,13 +1358,7 @@ export const deleteTwilioCredentials = (
   return ResultAsync.fromPromise(
     FormModel.startSession().then((session: ClientSession) =>
       session
-        .withTransaction(async () => {
-          const doc = await FormModel.deleteMsgSrvcName(formId)
-          if (doc) {
-            await secretsManager.deleteSecret(body).promise()
-            await doc.save({ session })
-          }
-        })
+        .withTransaction(() => deleteTwilioTransaction(formId, body, session))
         .then(() => session.endSession()),
     ),
     (error) => {
@@ -1384,4 +1392,16 @@ export const deleteTwilioCredentials = (
       },
     )
   })
+}
+
+const deleteTwilioTransaction = async (
+  formId: string,
+  body: DeleteSecretRequest,
+  session: ClientSession,
+) => {
+  const doc = await FormModel.deleteMsgSrvcName(formId)
+  if (doc) {
+    await secretsManager.deleteSecret(body).promise()
+    await doc.save({ session })
+  }
 }
