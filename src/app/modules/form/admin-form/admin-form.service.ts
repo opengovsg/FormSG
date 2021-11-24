@@ -1339,7 +1339,7 @@ export const deleteTwilioCredentials = (
 ): ResultAsync<unknown, SecretsManagerError | TwilioCacheError> => {
   if (!form.msgSrvcName) return okAsync(null)
 
-  const msgSrvcName = form.msgSrvcName as string
+  const msgSrvcName = form.msgSrvcName
   const body: DeleteSecretRequest = {
     SecretId: msgSrvcName,
     ForceDeleteWithoutRecovery: true,
@@ -1380,17 +1380,23 @@ export const deleteTwilioCredentials = (
       })
       .promise(),
     (error) => {
-      logger.info({
-        message: 'Twilio Credentials do not exist in Secrets Manager',
-        meta: logMeta,
-      })
-
       const awsError = error as AWSError
 
-      if (awsError.code === 'ResourceNotFoundException')
+      if (awsError.code === 'ResourceNotFoundException') {
+        logger.error({
+          message: 'Twilio Credentials do not exist in Secrets Manager',
+          meta: logMeta,
+          error: awsError,
+        })
         return new SecretsManagerNotFoundError(
           'Twilio Credentials do not exist in Secrets Manager',
         )
+      }
+      logger.error({
+        message: 'Unknown Secrets Manager Error has occured',
+        meta: logMeta,
+        error: awsError,
+      })
 
       return new SecretsManagerError(
         'Error occurred when updating Twilio in Secret Manager!',
