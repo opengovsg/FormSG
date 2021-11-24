@@ -2438,6 +2438,10 @@ describe('admin-form.service', () => {
   describe('createTwilioCredentials', () => {
     const MOCK_FORM_ID = new ObjectId()
 
+    const MOCK_FORM = {
+      _id: MOCK_FORM_ID,
+    } as unknown as IPopulatedForm
+
     const MOCK_ACCOUNT_SID = 'AC12345678'
     const MOCK_API_KEY_SID = 'SK12345678'
     const MOCK_API_KEY_SECRET = 'AZ12345678'
@@ -2465,7 +2469,7 @@ describe('admin-form.service', () => {
       // Act
       const actualResult = await AdminFormService.createTwilioCredentials(
         TWILIO_CREDENTIALS,
-        MOCK_FORM_ID.toHexString(),
+        MOCK_FORM,
       )
 
       // Assert
@@ -2585,7 +2589,7 @@ describe('admin-form.service', () => {
       // Act
 
       const actualResult = await AdminFormService.deleteTwilioCredentials(
-        MOCK_FORM_ID.toHexString(),
+        MOCK_FORM,
         msgSrvcName,
       )
 
