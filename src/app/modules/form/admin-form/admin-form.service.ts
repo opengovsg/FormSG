@@ -1173,11 +1173,10 @@ const isMobileFieldUpdateAllowed = (
 /**
  * Creates msgSrvcName and updates the form in MongoDB, uses the created msgSrvcName as the
  * key to store the Twilio Credentials in AWS Secrets Manager
- * @param TwilioCredentials The twilio credentials to add
+ * @param twilioCredentials The twilio credentials to add
  * @param form The form to add Twilio Credentials
- * @returns ok(form) if the update is valid
- * @returns err(PossibleDatabaseError) if an error occurred while retrieving counts from database
- * @returns err(SmsLimitExceededError) if the admin of the form has exceeded their free sms quota
+ * @returns ok(undefined) if the creation is successful
+ * @returns err(SecretsManagerError) if an error occurs while creating credentials in secrets manager
  */
 export const createTwilioCredentials = (
   twilioCredentials: TwilioCredentials,
@@ -1222,13 +1221,23 @@ export const createTwilioCredentials = (
         error,
       })
 
+      // if (error.name) console.log(error.name)
+
       return new SecretsManagerError('Error occurred when creating Twilio!')
     },
   )
 }
 
+/**
+ * updates msgSrvcName of the form in the database, uses the msgSrvcName as the
+ * key to store the Twilio Credentials in AWS Secrets Manager
+ * @param form The form to add Twilio Credentials
+ * @param msgSrvcName The key under which the credentials is stored in AWS Secrets Manager
+ * @param body the request body used to create the secret in secrets manager
+ * @param session session of the transaction
+ * @returns Promise.ok(void) if the creation is successful
+ */
 // Exported to use in tests
-
 export const createTwilioTransaction = async (
   form: IPopulatedForm,
   msgSrvcName: string,
@@ -1236,10 +1245,18 @@ export const createTwilioTransaction = async (
   session: ClientSession,
 ): Promise<void> => {
   await form.updateMsgSrvcName(msgSrvcName, session)
-  throw new Error('AIOWJEHIOWQJE')
   await secretsManager.createSecret(body).promise()
 }
 
+/**
+ * Uses the msgSrvcName to update the Twilio Credentials in AWS Secrets Manager
+ * Clears the cache entry in which the Twilio Credentials are stored under
+ * @param twilioCredentials The twilio credentials to add
+ * @param msgSrvcName The key under which the credentials are stored in Secrets Manager
+ * @returns ok(number) if the update is successful
+ * @returns err(SecretsManagerNotFoundError) if there is no secret stored under msgSrvcName in secrets manager
+ * @returns err(SecretsManagerError) if an error occurs while updating credentials in secrets manager
+ */
 export const updateTwilioCredentials = (
   msgSrvcName: string,
   twilioCredentials: TwilioCredentials,
@@ -1298,31 +1315,21 @@ export const updateTwilioCredentials = (
         },
       )
     })
-    .andThen(() => {
-      return ResultAsync.fromPromise(
-        Promise.resolve(twilioClientCache.del(msgSrvcName)),
-        // Currently, a call to get twilio credentials will cache the credentials in the twilioCache for ~10s
-        // If a call to retrieve twilio credentials occurs before 10s passes, it will be a cache hit, retrieving
-        // the wrong credentials. Hence we need to clear the cache entry
-
-        (error) => {
-          logger.error({
-            message: 'Error occurred when clearing cache in Secret Manager!',
-            meta: {
-              ...logMeta,
-              body,
-            },
-            error,
-          })
-
-          return new TwilioCacheError(
-            'Error occurred when clearing cache entry!',
-          )
-        },
-      )
-    })
+    .map(() => twilioClientCache.del(msgSrvcName))
+  // Currently, a call to get twilio credentials will cache the credentials in the twilioCache for ~10s
+  // If a call to retrieve twilio credentials occurs before 10s passes, it will be a cache hit, retrieving
+  // the wrong credentials. Hence we need to clear the cache entry
 }
 
+/**
+ * Uses the msgSrvcName to delete the Twilio Credentials in AWS Secrets Manager and removes msgSrvcName from the form
+ * Clears the cache entry in which the Twilio Credentials are stored under
+ * @param form The form to delete Twilio Credentials
+ * @param msgSrvcName The key under which the credentials are stored in Secrets Manager
+ * @returns ok(number) if the deletion is successful
+ * @returns err(SecretsManagerNotFoundError) if there is no secret stored under msgSrvcName in secrets manager
+ * @returns err(SecretsManagerError) if an error occurs while deleting credentials in secrets manager
+ */
 export const deleteTwilioCredentials = (
   form: IPopulatedForm,
   msgSrvcName: string,
@@ -1384,28 +1391,19 @@ export const deleteTwilioCredentials = (
           'Error occurred when updating Twilio in Secret Manager!',
         )
       },
-    ).andThen(() => {
-      return ResultAsync.fromPromise(
-        Promise.resolve(twilioClientCache.del(msgSrvcName)),
-        (error) => {
-          logger.error({
-            message: 'Error occurred when clearing cache in Secret Manager!',
-            meta: {
-              ...logMeta,
-              body,
-            },
-            error,
-          })
-
-          return new TwilioCacheError(
-            'Error occurred when clearing cache entry!',
-          )
-        },
-      )
-    })
+    ).map(() => twilioClientCache.del(msgSrvcName))
   })
 }
 
+/**
+ * Deletes the msgSrvcName of the specified form in the database and uses the msgSrvcName as the
+ * key to delete the Twilio Credentials in AWS Secrets Manager
+ * @param form The form to delete Twilio Credentials
+ * @param msgSrvcName The key under which the credentials is stored in AWS Secrets Manager
+ * @param body the request body used to delete the secret in secrets manager
+ * @param session session of the transaction
+ * @returns Promise.ok(void) if the creation is successful
+ */
 const deleteTwilioTransaction = async (
   form: IPopulatedForm,
   body: DeleteSecretRequest,

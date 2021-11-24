@@ -194,11 +194,13 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   /**
    * Updates the msgSrvcName of the form with the specified msgSrvcName
    * @param msgSrvcName msgSrvcName to update the Form docuemnt with
+   * @param session transaction session in which update operation is a part of
    */
   updateMsgSrvcName(msgSrvcName: string, session?: ClientSession): Promise<void>
 
   /**
    * Deletes the msgSrvcName of the form
+   * @param session transaction session in which delete operation is a part of
    */
   deleteMsgSrvcName(session?: ClientSession): Promise<void>
 }
