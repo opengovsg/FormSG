@@ -1,19 +1,39 @@
+import { memo, useCallback, useMemo } from 'react'
 import { BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
 import { Box, ButtonGroup, Collapse, Flex, Icon } from '@chakra-ui/react'
 
-import { FormFieldDto } from '~shared/types/field'
+import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
 
+import {
+  activeFieldSelector,
+  updateFieldSelector,
+  useEditFieldStore,
+} from '../editFieldStore'
+
+import { SectionFieldRow } from './SectionFieldRow'
+
 export interface FieldRowContainerProps {
-  isActive: boolean
   field: FormFieldDto
 }
 
 export const FieldRowContainer = ({
-  isActive,
   field,
 }: FieldRowContainerProps): JSX.Element => {
+  const updateActiveField = useEditFieldStore(updateFieldSelector)
+  const activeField = useEditFieldStore(activeFieldSelector)
+
+  const isActive = useMemo(
+    () => activeField?._id === field._id,
+    [activeField, field],
+  )
+
+  const handleFieldClick = useCallback(
+    () => updateActiveField(field),
+    [field, updateActiveField],
+  )
+
   return (
     <Flex
       transitionDuration="normal"
@@ -30,6 +50,7 @@ export const FieldRowContainer = ({
       }}
       flexDir="column"
       align="center"
+      onClick={handleFieldClick}
     >
       <Icon
         as={BiGridHorizontal}
@@ -42,7 +63,7 @@ export const FieldRowContainer = ({
         }}
       />
       <Box p="1.5rem" pt={0} w="100%">
-        TODO: Add field row for {field.fieldType}
+        <MemoFieldRow field={isActive && activeField ? activeField : field} />
       </Box>
       <Collapse in={isActive} style={{ width: '100%' }}>
         <Flex
@@ -67,3 +88,12 @@ export const FieldRowContainer = ({
     </Flex>
   )
 }
+
+const MemoFieldRow = memo(({ field }: { field: FormFieldDto }) => {
+  switch (field.fieldType) {
+    case BasicField.Section:
+      return <SectionFieldRow field={field} />
+    default:
+      return <div>TODO: Add field row for {field.fieldType}</div>
+  }
+})

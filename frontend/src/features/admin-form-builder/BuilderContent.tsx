@@ -43,7 +43,7 @@ export const BuilderFields = () => {
   return (
     <>
       {data.form_fields.map((f) => (
-        <FieldRowContainer isActive={false} field={f} />
+        <FieldRowContainer key={f._id} field={f} />
       ))}
     </>
   )

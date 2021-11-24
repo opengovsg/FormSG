@@ -13,7 +13,7 @@ export type EditFieldStoreState = {
 
 export const activeFieldSelector = (
   state: EditFieldStoreState,
-): FormFieldDto | undefined => state.activeField
+): EditFieldStoreState['activeField'] => state.activeField
 
 export const activeFieldIdSelector = (
   state: EditFieldStoreState,
@@ -21,7 +21,11 @@ export const activeFieldIdSelector = (
 
 export const clearActiveFieldSelector = (
   state: EditFieldStoreState,
-): (() => void) => state.clearActiveField
+): EditFieldStoreState['clearActiveField'] => state.clearActiveField
+
+export const updateFieldSelector = (
+  state: EditFieldStoreState,
+): EditFieldStoreState['updateActiveField'] => state.updateActiveField
 
 export const useEditFieldStore = create<EditFieldStoreState>(
   devtools((set) => ({
