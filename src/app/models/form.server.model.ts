@@ -536,14 +536,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   ) {
     this.msgSrvcName = msgSrvcName
 
-    session ? await this.save({ session }) : await this.save()
+    return await this.save({ isNew: true, session })
   }
 
   FormSchema.methods.deleteMsgSrvcName = async function (
     session?: ClientSession,
   ) {
     this.msgSrvcName = undefined
-    session ? await this.save({ session }) : await this.save()
+    return await this.save({ sNew: true, session })
   }
 
   const FormDocumentSchema = FormSchema as unknown as Schema<IFormDocument>

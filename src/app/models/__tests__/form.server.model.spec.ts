@@ -2607,8 +2607,7 @@ describe('Form Model', () => {
         })
 
         // Act
-        await form.updateMsgSrvcName(MOCK_MSG_SRVC_NAME)
-        const updatedForm = await Form.findById(form._id)
+        const updatedForm = await form.updateMsgSrvcName(MOCK_MSG_SRVC_NAME)
         // Assert
         expect(updatedForm!.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
       })
@@ -2625,8 +2624,7 @@ describe('Form Model', () => {
         })
 
         // Act
-        await form.deleteMsgSrvcName()
-        const updatedForm = await Form.findById(form._id)
+        const updatedForm = await form.deleteMsgSrvcName()
 
         // Assert
         expect(updatedForm!.msgSrvcName).toBeUndefined()
