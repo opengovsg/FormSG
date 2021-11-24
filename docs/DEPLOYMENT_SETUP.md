@@ -117,10 +117,10 @@ The list of categories can be inferred by looking at the file `.ebextensions/env
 
 #### AWS Service Manager
 
-| Variable     | Description                                                                                                  |
-| :----------- | ------------------------------------------------------------------------------------------------------------ |
-| `SSM_PREFIX` | String prefix (typically the environment name) for AWS SSM parameter names to create a .env file for FormSG. |
-| `SECRET_ENV` | String prefix (typically the environment name) used in building of AWS Secrets Manager key.                  |
+| Variable     | Description                                                                                                           |
+| :----------- | --------------------------------------------------------------------------------------------------------------------- |
+| `SSM_PREFIX` | String prefix (typically the environment name) for AWS SSM parameter names to create a .env file for FormSG.          |
+| `SECRET_ENV` | String (typically the environment name) to be used in building of AWS Secrets Manager keys in different environments. |
 
 #### App Config
 
