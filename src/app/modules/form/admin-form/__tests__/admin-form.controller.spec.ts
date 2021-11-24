@@ -10669,7 +10669,7 @@ describe('admin-form.controller', () => {
       })
 
       // Returns empty response because mongo transaction returns Promise<any>
-      deleteTwilioSpy.mockReturnValueOnce(okAsync(1))
+      deleteTwilioSpy.mockReturnValueOnce(okAsync(null))
 
       const mockRes = expressHandler.mockResponse()
       const expected = {
@@ -10682,7 +10682,7 @@ describe('admin-form.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.json).toBeCalledWith(expected)
-      expect(deleteTwilioSpy).not.toHaveBeenCalled()
+      expect(deleteTwilioSpy).toHaveBeenCalled()
     })
 
     it('should return 403 when current user does not have permissions to update form', async () => {
