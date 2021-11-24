@@ -2629,7 +2629,7 @@ describe('Form Model', () => {
         const updatedForm = await Form.findById(form._id)
 
         // Assert
-        expect(updatedForm!.msgSrvcName).toBe(undefined)
+        expect(updatedForm!.msgSrvcName).toBeUndefined()
       })
     })
   })
