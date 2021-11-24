@@ -1,4 +1,5 @@
 import {
+  ClientSession,
   Document,
   LeanDocument,
   Model,
@@ -189,6 +190,17 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   getDuplicateParams(
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
+
+  /**
+   * Updates the msgSrvcName of the form with the specified msgSrvcName
+   * @param msgSrvcName msgSrvcName to update the Form docuemnt with
+   */
+  updateMsgSrvcName(msgSrvcName: string, session?: ClientSession): Promise<void>
+
+  /**
+   * Deletes the msgSrvcName of the form
+   */
+  deleteMsgSrvcName(session?: ClientSession): Promise<void>
 }
 
 /**
@@ -312,13 +324,6 @@ export interface IFormModel extends Model<IFormSchema> {
     logicId: string,
     updatedLogic: LogicDto,
   ): Promise<IFormSchema | null>
-
-  updateMsgSrvcName(
-    formId: string,
-    msgSrvcName: string,
-  ): Promise<IFormSchema | null>
-
-  deleteMsgSrvcName(formId: string): Promise<IFormSchema | null>
 }
 
 export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>

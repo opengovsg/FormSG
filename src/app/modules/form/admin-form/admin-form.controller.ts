@@ -2574,13 +2574,18 @@ export const updateTwilioCredentials: ControllerHandler<
         level: PermissionLevel.Write,
       }),
     )
-    .andThen(({ msgSrvcName }) => {
+    .andThen((retrievedForm) => {
+      const { msgSrvcName } = retrievedForm
+
       return msgSrvcName
         ? AdminFormService.updateTwilioCredentials(
             msgSrvcName,
             twilioCredentials,
           )
-        : AdminFormService.createTwilioCredentials(twilioCredentials, formId)
+        : AdminFormService.createTwilioCredentials(
+            twilioCredentials,
+            retrievedForm,
+          )
     })
     .map(() =>
       res
@@ -2630,10 +2635,14 @@ export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
         level: PermissionLevel.Delete,
       }),
     )
-    .andThen(({ msgSrvcName }) => {
+    .andThen((retrievedForm) => {
+      const { msgSrvcName } = retrievedForm
       if (!msgSrvcName) return okAsync(null)
 
-      return AdminFormService.deleteTwilioCredentials(formId, msgSrvcName)
+      return AdminFormService.deleteTwilioCredentials(
+        retrievedForm,
+        msgSrvcName,
+      )
     })
     .map(() =>
       res

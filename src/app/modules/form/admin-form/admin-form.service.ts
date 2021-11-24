@@ -1170,12 +1170,23 @@ const isMobileFieldUpdateAllowed = (
   )
 }
 
+/**
+ * Creates msgSrvcName and updates the form in MongoDB, uses the created msgSrvcName as the
+ * key to store the Twilio Credentials in AWS Secrets Manager
+ * @param TwilioCredentials The twilio credentials to add
+ * @param form The form to add Twilio Credentials
+ * @returns ok(form) if the update is valid
+ * @returns err(PossibleDatabaseError) if an error occurred while retrieving counts from database
+ * @returns err(SmsLimitExceededError) if the admin of the form has exceeded their free sms quota
+ */
 export const createTwilioCredentials = (
   twilioCredentials: TwilioCredentials,
-  formId: string,
+  form: IPopulatedForm,
 ): ResultAsync<unknown, ApplicationError> => {
   const twilioCredentialsData: TwilioCredentialsData =
     new TwilioCredentialsData(twilioCredentials)
+  const formId = form._id
+
   const msgSrvcName = `formsg/${config.secretEnv}/form/${formId}/twilio`
   const body: CreateSecretRequest = {
     Name: msgSrvcName,
@@ -1196,9 +1207,8 @@ export const createTwilioCredentials = (
   return ResultAsync.fromPromise(
     FormModel.startSession().then((session: ClientSession) =>
       session
-        .withTransaction(
-          async () =>
-            await createTwilioTransaction(formId, msgSrvcName, body, session),
+        .withTransaction(() =>
+          createTwilioTransaction(form, msgSrvcName, body, session),
         )
         .then(() => session.endSession()),
     ),
@@ -1217,18 +1227,17 @@ export const createTwilioCredentials = (
   )
 }
 
+// Exported to use in tests
+
 export const createTwilioTransaction = async (
-  formId: string,
+  form: IPopulatedForm,
   msgSrvcName: string,
   body: CreateSecretRequest,
   session: ClientSession,
 ): Promise<void> => {
-  const doc = await FormModel.updateMsgSrvcName(formId, msgSrvcName)
-
-  if (doc) {
-    await secretsManager.createSecret(body).promise()
-    await doc.save({ session })
-  }
+  await form.updateMsgSrvcName(msgSrvcName, session)
+  throw new Error('AIOWJEHIOWQJE')
+  await secretsManager.createSecret(body).promise()
 }
 
 export const updateTwilioCredentials = (
@@ -1315,7 +1324,7 @@ export const updateTwilioCredentials = (
 }
 
 export const deleteTwilioCredentials = (
-  formId: string,
+  form: IPopulatedForm,
   msgSrvcName: string,
 ): ResultAsync<unknown, SecretsManagerError | TwilioCacheError> => {
   const body: DeleteSecretRequest = {
@@ -1326,8 +1335,11 @@ export const deleteTwilioCredentials = (
     // being dleted: https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_delete-secret.html
   }
 
+  const formId = form._id
+
   const logMeta = {
     action: 'deleteTwilioCredentials',
+    formId,
     msgSrvcName,
   }
 
@@ -1355,9 +1367,7 @@ export const deleteTwilioCredentials = (
     return ResultAsync.fromPromise(
       FormModel.startSession().then((session: ClientSession) =>
         session
-          .withTransaction(
-            async () => await deleteTwilioTransaction(formId, body, session),
-          )
+          .withTransaction(() => deleteTwilioTransaction(form, body, session))
           .then(() => session.endSession()),
       ),
       (error) => {
@@ -1397,13 +1407,10 @@ export const deleteTwilioCredentials = (
 }
 
 const deleteTwilioTransaction = async (
-  formId: string,
+  form: IPopulatedForm,
   body: DeleteSecretRequest,
   session: ClientSession,
 ): Promise<void> => {
-  const doc = await FormModel.deleteMsgSrvcName(formId)
-  if (doc) {
-    await secretsManager.deleteSecret(body).promise()
-    await doc.save({ session })
-  }
+  await form.deleteMsgSrvcName(session)
+  await secretsManager.deleteSecret(body).promise()
 }

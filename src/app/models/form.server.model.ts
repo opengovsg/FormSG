@@ -1,6 +1,7 @@
 import BSON, { ObjectId } from 'bson-ext'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
+  ClientSession,
   Mongoose,
   Query,
   Schema,
@@ -529,6 +530,22 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
+  FormSchema.methods.updateMsgSrvcName = async function (
+    msgSrvcName: string,
+    session?: ClientSession,
+  ) {
+    this.msgSrvcName = msgSrvcName
+
+    session ? await this.save({ session }) : await this.save()
+  }
+
+  FormSchema.methods.deleteMsgSrvcName = async function (
+    session?: ClientSession,
+  ) {
+    this.msgSrvcName = undefined
+    session ? await this.save({ session }) : await this.save()
+  }
+
   const FormDocumentSchema = FormSchema as unknown as Schema<IFormDocument>
 
   FormDocumentSchema.methods.getDashboardView = function (
@@ -855,27 +872,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     })
       .read('secondary')
       .exec()
-  }
-
-  FormSchema.statics.updateMsgSrvcName = async function (
-    formId: string,
-    msgSrvcName: string,
-  ) {
-    const form = await this.findById(formId).exec()
-
-    if (!form) return null
-
-    form.msgSrvcName = msgSrvcName
-    return form
-  }
-
-  FormSchema.statics.deleteMsgSrvcName = async function (formId: string) {
-    const form = await this.findById(formId).exec()
-
-    if (!form) return null
-
-    form.msgSrvcName = undefined
-    return form
   }
 
   // Hooks
