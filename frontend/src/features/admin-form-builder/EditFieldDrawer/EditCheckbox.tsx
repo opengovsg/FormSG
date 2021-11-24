@@ -3,6 +3,7 @@ import { useDebounce } from 'react-use'
 import { Divider, FormControl, Stack } from '@chakra-ui/react'
 import { extend } from 'lodash'
 
+import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -43,6 +44,21 @@ const transformToFormField = ({
     ...rest,
     fieldOptions: transformCheckboxOpts.toArray(fieldOptions),
   }
+}
+
+const requiredValidationRule = createBaseValidationRules({ required: true })
+
+const fieldOptionsValidationRule = {
+  ...requiredValidationRule,
+  validate: {
+    duplicate: (opts: string) => {
+      const optsArray = transformCheckboxOpts.toArray(opts)
+      return (
+        new Set(optsArray).size === optsArray.length ||
+        'Please remove duplicate options.'
+      )
+    },
+  },
 }
 
 export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
@@ -100,7 +116,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
         isInvalid={!!errors.title}
       >
         <FormLabel>Question</FormLabel>
-        <Input autoFocus {...register('title')} />
+        <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl
@@ -118,13 +134,13 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
         isInvalid={!!errors.fieldOptions}
       >
         <FormLabel>Options</FormLabel>
-        <Textarea {...register('fieldOptions')} />
+        <Textarea {...register('fieldOptions', fieldOptionsValidationRule)} />
         <FormErrorMessage>{errors?.fieldOptions?.message}</FormErrorMessage>
       </FormControl>
       <Toggle
         isLoading={mutateFormField.isLoading}
         label="Required"
-        {...register('required')}
+        {...register('required', requiredValidationRule)}
       />
       <FormFieldDrawerActions
         isLoading={mutateFormField.isLoading}
