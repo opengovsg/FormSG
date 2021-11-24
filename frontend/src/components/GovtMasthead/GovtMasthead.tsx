@@ -33,7 +33,6 @@ export const GovtMasthead = ({}: GovtMastheadProps): JSX.Element => {
         onClick={onToggle}
         display="flex"
         width="100%"
-        _focus={{ bg: 'red' }}
       >
         <GovtMastheadIcon
           fontSize="1rem"
@@ -42,7 +41,7 @@ export const GovtMasthead = ({}: GovtMastheadProps): JSX.Element => {
         />
         <Flex alignItems="center" flexWrap="wrap">
           <Text my="2px">A Singapore government agency website.&nbsp;</Text>
-          <Link>
+          <Link tabIndex={0}>
             How to identify{' '}
             {isOpen ? (
               <Icon
