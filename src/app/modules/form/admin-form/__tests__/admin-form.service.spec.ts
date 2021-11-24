@@ -2552,9 +2552,11 @@ describe('admin-form.service', () => {
   describe('deleteTwilioCredentials', () => {
     const MOCK_FORM_ID = new ObjectId()
     const sessionSpy = jest.spyOn(FormModel, 'startSession')
+    const MSG_SRVC_NAME = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
     const MOCK_FORM = {
       _id: MOCK_FORM_ID,
       save: () => MOCK_FORM,
+      msgSrvcName: MSG_SRVC_NAME,
     } as unknown as IPopulatedForm
 
     it('should return result of clearing TwilioCache entry when Twilio credentials was successfully deleted', async () => {
@@ -2566,7 +2568,6 @@ describe('admin-form.service', () => {
           }
         },
       } as any)
-      const msgSrvcName = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
 
       // formSpy.mockResolvedValueOnce(MOCK_FORM)
 
@@ -2576,7 +2577,7 @@ describe('admin-form.service', () => {
           return {
             promise: () => {
               return Promise.resolve({
-                Name: msgSrvcName,
+                Name: MSG_SRVC_NAME,
               })
             },
           } as any
@@ -2590,7 +2591,6 @@ describe('admin-form.service', () => {
 
       const actualResult = await AdminFormService.deleteTwilioCredentials(
         MOCK_FORM,
-        msgSrvcName,
       )
 
       // Assert
@@ -2598,9 +2598,9 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(1)
 
       expect(getSecretsSpy).toHaveBeenCalledWith({
-        SecretId: msgSrvcName,
+        SecretId: MSG_SRVC_NAME,
       })
-      expect(twilioCacheSpy).toHaveBeenCalledWith(msgSrvcName)
+      expect(twilioCacheSpy).toHaveBeenCalledWith(MSG_SRVC_NAME)
     })
   })
 })

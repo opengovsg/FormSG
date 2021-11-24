@@ -1336,8 +1336,10 @@ export const updateTwilioCredentials = (
  */
 export const deleteTwilioCredentials = (
   form: IPopulatedForm,
-  msgSrvcName: string,
 ): ResultAsync<unknown, SecretsManagerError | TwilioCacheError> => {
+  if (!form.msgSrvcName) return okAsync(null)
+
+  const msgSrvcName = form.msgSrvcName as string
   const body: DeleteSecretRequest = {
     SecretId: msgSrvcName,
     ForceDeleteWithoutRecovery: true,

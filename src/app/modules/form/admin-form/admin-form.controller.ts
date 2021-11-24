@@ -3,7 +3,7 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import { okAsync, ResultAsync } from 'neverthrow'
+import { ResultAsync } from 'neverthrow'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
@@ -2636,13 +2636,7 @@ export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
       }),
     )
     .andThen((retrievedForm) => {
-      const { msgSrvcName } = retrievedForm
-      if (!msgSrvcName) return okAsync(null)
-
-      return AdminFormService.deleteTwilioCredentials(
-        retrievedForm,
-        msgSrvcName,
-      )
+      return AdminFormService.deleteTwilioCredentials(retrievedForm)
     })
     .map(() =>
       res
