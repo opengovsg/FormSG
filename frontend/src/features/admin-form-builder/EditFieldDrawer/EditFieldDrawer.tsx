@@ -14,6 +14,7 @@ import {
 import { BuilderDrawerCloseButton } from '../FieldRow/BuilderDrawerCloseButton'
 import { transformBasicFieldToText } from '../utils'
 
+import { EditCheckbox } from './EditCheckbox'
 import { EditHeader } from './EditHeader'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
@@ -61,6 +62,8 @@ const MemoFieldDrawerContent = memo(({ field }: { field: FormFieldDto }) => {
   switch (field.fieldType) {
     case BasicField.Section:
       return <EditHeader field={field} />
+    case BasicField.Checkbox:
+      return <EditCheckbox field={field} />
     default:
       return <div>TODO: Insert field options here</div>
   }
