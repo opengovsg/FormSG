@@ -62,7 +62,7 @@ export const GovtMasthead = ({}: GovtMastheadProps): JSX.Element => {
       <Collapse in={isOpen} animateOpacity>
         <Stack
           direction={{ base: 'column', md: 'row' }}
-          spacing={{ md: '4.5rem', lg: '9.5rem' }}
+          spacing={{ base: '1rem', md: '4.5rem', lg: '9.5rem' }}
           bg="neutral.200"
           px="2rem"
           py={{ base: '1.5rem', md: '2.25rem', lg: '2.75rem' }}
