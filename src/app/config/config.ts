@@ -202,7 +202,6 @@ const configureAws = async () => {
     }
   }
 }
-const secretEnv = process.env.SECRET_ENV || ''
 
 const config: Config = {
   app: basicVars.appConfig,
@@ -226,7 +225,7 @@ const config: Config = {
   adminBannerContent: basicVars.banner.adminBannerContent,
   rateLimitConfig: basicVars.rateLimit,
   configureAws,
-  secretEnv,
+  secretEnv: basicVars.core.secretEnv,
 }
 
 export = config

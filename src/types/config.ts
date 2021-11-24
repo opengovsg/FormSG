@@ -93,6 +93,7 @@ export interface IProdOnlyVarsSchema {
 export interface ICompulsoryVarsSchema {
   core: {
     sessionSecret: string
+    secretEnv: string
   }
   awsConfig: {
     imageS3Bucket: string
