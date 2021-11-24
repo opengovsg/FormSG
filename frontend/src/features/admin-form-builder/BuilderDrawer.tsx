@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion'
 
 import { MotionBox } from '~components/motion'
 
+import { EditFieldDrawer } from './EditFieldDrawer/EditFieldDrawer'
 import { useBuilderDrawer } from './BuilderDrawerContext'
 
 const DRAWER_MOTION_PROPS = {
@@ -39,7 +40,7 @@ export const BuilderDrawer = (): JSX.Element => {
           {...DRAWER_MOTION_PROPS}
         >
           <Box w="100%" h="100%" minW="max-content">
-            Drawer stuff
+            <EditFieldDrawer />
           </Box>
         </MotionBox>
       )}
