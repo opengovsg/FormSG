@@ -1,8 +1,7 @@
-import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
+import { useDebounce } from 'react-use'
 import { Divider, FormControl, Stack } from '@chakra-ui/react'
-import { merge } from 'lodash'
-import { useDebouncedCallback } from 'use-debounce'
+import { extend } from 'lodash'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -11,11 +10,7 @@ import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 import { CheckboxFieldSchema } from '~templates/Field/Checkbox/CheckboxField'
 
-import {
-  clearActiveFieldSelector,
-  updateFieldSelector,
-  useEditFieldStore,
-} from '../editFieldStore'
+import { useEditFieldStore } from '../editFieldStore'
 import { useMutateFormFields } from '../mutations'
 
 import { FormFieldDrawerActions } from './FormFieldDrawerActions'
@@ -31,26 +26,27 @@ interface EditCheckboxInputs {
   required: boolean
 }
 
-export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
-  const updateActiveField = useEditFieldStore(updateFieldSelector)
-  const clearActiveField = useEditFieldStore(clearActiveFieldSelector)
-  const debouncedUpdateField = useDebouncedCallback(
-    updateActiveField,
-    // delay in ms
-    300,
-  )
+const transformCheckboxOpts = {
+  toArray: (input?: string) =>
+    input
+      ?.split('\n')
+      .map((opt) => opt.trim())
+      .filter(Boolean) ?? [],
+  toString: (output?: string[]) => output?.filter(Boolean).join('\n'),
+}
 
-  const transformCheckboxOpts = useMemo(
-    () => ({
-      toArray: (input?: string) =>
-        input
-          ?.split('\n')
-          .map((opt) => opt.trim())
-          .filter(Boolean),
-      toString: (output?: string[]) => output?.filter(Boolean).join('\n'),
-    }),
-    [],
-  )
+const transformToFormField = ({
+  fieldOptions,
+  ...rest
+}: EditCheckboxInputs): Partial<CheckboxFieldSchema> => {
+  return {
+    ...rest,
+    fieldOptions: transformCheckboxOpts.toArray(fieldOptions),
+  }
+}
+
+export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
+  const { updateActiveField, clearActiveField } = useEditFieldStore()
 
   const {
     handleSubmit,
@@ -69,30 +65,27 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
 
   const watchedInputs = watch()
 
-  useEffect(() => {
-    debouncedUpdateField({
-      title: watchedInputs.title,
-      description: watchedInputs.description,
-      fieldOptions: transformCheckboxOpts.toArray(watchedInputs.fieldOptions),
-      required: watchedInputs.required,
-    })
-  }, [
-    debouncedUpdateField,
-    transformCheckboxOpts,
-    watchedInputs.description,
-    watchedInputs.fieldOptions,
-    watchedInputs.required,
-    watchedInputs.title,
-  ])
+  useDebounce(
+    () => {
+      if (!watchedInputs) return
+      return updateActiveField(transformToFormField(watchedInputs))
+    },
+    300,
+    [
+      transformCheckboxOpts,
+      // Required destructure to prevent debounce firing infinitely.
+      watchedInputs.description,
+      watchedInputs.fieldOptions,
+      watchedInputs.required,
+      watchedInputs.title,
+    ],
+  )
 
   const { mutateFormField } = useMutateFormFields()
 
-  const handleUpdateField = handleSubmit(({ fieldOptions, ...inputs }) => {
-    const updatedFormField: CheckboxFieldSchema = merge({}, field, {
-      ...inputs,
-      fieldOptions: transformCheckboxOpts.toArray(fieldOptions),
-    })
-    return mutateFormField.mutate(updatedFormField, {
+  const handleUpdateField = handleSubmit((inputs) => {
+    const updatedField = extend({}, field, transformToFormField(inputs))
+    return mutateFormField.mutate(updatedField, {
       onSuccess: () => {
         reset(inputs)
       },
