@@ -61,7 +61,12 @@ export const BaseSectionField = forwardRef<
       <Text textStyle="h2" color="primary.600">
         {schema.title}
       </Text>
-      <Text textStyle="body-1" color="secondary.700" mt="1rem" whiteSpace="pre">
+      <Text
+        textStyle="body-1"
+        color="secondary.700"
+        mt="1rem"
+        whiteSpace="break-spaces"
+      >
         {schema.description}
       </Text>
     </Box>
