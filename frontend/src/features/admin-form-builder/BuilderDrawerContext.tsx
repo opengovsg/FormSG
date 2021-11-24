@@ -3,9 +3,12 @@ import {
   FC,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
+
+import { activeFieldSelector, useEditFieldStore } from './editFieldStore'
 
 export enum DrawerTabs {
   Builder,
@@ -55,6 +58,13 @@ export const useBuilderDrawer = (): BuilderDrawerContextProps => {
 
 const useProvideDrawerContext = (): BuilderDrawerContextProps => {
   const [activeTab, setActiveTab] = useState<DrawerTabs | null>(null)
+  const activeField = useEditFieldStore(activeFieldSelector)
+
+  useEffect(() => {
+    if (activeField) {
+      setActiveTab(DrawerTabs.Builder)
+    }
+  }, [activeField])
 
   const isShowDrawer = useMemo(
     () => activeTab !== null && activeTab !== DrawerTabs.Logic,
