@@ -1,13 +1,18 @@
 import { Meta, Story } from '@storybook/react'
 
-import { GovtMasthead, GovtMastheadProps } from './GovtMasthead'
+import {
+  GovtMasthead as GovtMastheadComponent,
+  GovtMastheadProps,
+} from './GovtMasthead'
 
 export default {
   title: 'Components/GovtMasthead',
-  component: GovtMasthead,
+  component: GovtMastheadComponent,
   decorators: [],
 } as Meta
 
-const Template: Story<GovtMastheadProps> = (args) => <GovtMasthead {...args} />
-export const Default = Template.bind({})
-Default.args = {}
+const Template: Story<GovtMastheadProps> = (args) => (
+  <GovtMastheadComponent {...args} />
+)
+export const GovtMasthead = Template.bind({})
+GovtMasthead.storyName = 'GovtMasthead'
