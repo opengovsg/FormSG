@@ -2,12 +2,12 @@ import React from 'react'
 import { BiChevronDown, BiChevronUp } from 'react-icons/bi'
 import {
   Box,
+  chakra,
   Collapse,
   Flex,
   Icon,
   Stack,
   Text,
-  useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
 
@@ -23,26 +23,17 @@ export interface GovtMastheadProps {}
 export const GovtMasthead = ({}: GovtMastheadProps): JSX.Element => {
   const { isOpen, onToggle } = useDisclosure()
 
-  // Custom function for collapsing/expanding the header,
-  // because you should only be able to tap the whole header when rendering on mobile
-  const isMobile = useBreakpointValue({
-    base: true,
-    xs: true,
-    md: false,
-  })
-  const handleTapBarToggle = () => {
-    if (!isMobile) return
-    onToggle()
-  }
-
   return (
     <Box>
-      <Flex
+      <chakra.button
         bg="neutral.200"
         py={{ base: '0.5rem', md: '0.375rem' }}
         px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-        onClick={handleTapBarToggle}
         textStyle={{ base: 'legal', md: 'caption-2' }}
+        onClick={onToggle}
+        display="flex"
+        width="100%"
+        _focus={{ bg: 'red' }}
       >
         <GovtMastheadIcon
           fontSize="1rem"
@@ -51,7 +42,7 @@ export const GovtMasthead = ({}: GovtMastheadProps): JSX.Element => {
         />
         <Flex alignItems="center" flexWrap="wrap">
           <Text my="2px">A Singapore government agency website.&nbsp;</Text>
-          <Link onClick={onToggle}>
+          <Link>
             How to identify{' '}
             {isOpen ? (
               <Icon
@@ -66,7 +57,8 @@ export const GovtMasthead = ({}: GovtMastheadProps): JSX.Element => {
             )}
           </Link>
         </Flex>
-      </Flex>
+      </chakra.button>
+
       <Collapse in={isOpen} animateOpacity>
         <Stack
           direction={{ base: 'column', md: 'row' }}
