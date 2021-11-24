@@ -1,19 +1,17 @@
-import { Controller, useForm } from 'react-hook-form'
+import { useMemo } from 'react'
+import { useForm } from 'react-hook-form'
+import { useDebounce } from 'react-use'
 import { Divider, FormControl, Stack } from '@chakra-ui/react'
-import { merge } from 'lodash'
-import { useDebouncedCallback } from 'use-debounce'
+import { extend } from 'lodash'
 
+import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import { SectionFieldSchema } from '~templates/Field/Section/SectionFieldContainer'
 
-import {
-  clearActiveFieldSelector,
-  updateFieldSelector,
-  useEditFieldStore,
-} from '../editFieldStore'
+import { useEditFieldStore } from '../editFieldStore'
 import { useMutateFormFields } from '../mutations'
 
 import { FormFieldDrawerActions } from './FormFieldDrawerActions'
@@ -28,18 +26,13 @@ interface EditHeaderInputs {
 }
 
 export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
-  const updateActiveField = useEditFieldStore(updateFieldSelector)
-  const clearActiveField = useEditFieldStore(clearActiveFieldSelector)
-  const debouncedUpdateField = useDebouncedCallback(
-    updateActiveField,
-    // delay in ms
-    300,
-  )
+  const { updateActiveField, clearActiveField } = useEditFieldStore()
 
   const {
-    control,
     handleSubmit,
     reset,
+    watch,
+    register,
     formState: { errors, isDirty },
   } = useForm<EditHeaderInputs>({
     defaultValues: {
@@ -48,17 +41,26 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
     },
   })
 
+  const watchedInputs = watch()
+
+  useDebounce(() => updateActiveField(watchedInputs), 300, [
+    watchedInputs.description,
+    watchedInputs.title,
+  ])
+
   const { mutateFormField } = useMutateFormFields()
 
   const handleUpdateField = handleSubmit((inputs) => {
-    const updatedFormField: SectionFieldSchema = merge({}, field, inputs)
+    const updatedFormField: SectionFieldSchema = extend({}, field, inputs)
     return mutateFormField.mutate(updatedFormField, {
-      onSuccess: () =>
-        reset({
-          ...inputs,
-        }),
+      onSuccess: () => reset(inputs),
     })
   })
+
+  const requiredValidationRule = useMemo(
+    () => createBaseValidationRules({ required: true }),
+    [],
+  )
 
   return (
     <Stack spacing="2rem" divider={<Divider />}>
@@ -68,50 +70,17 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
         isInvalid={!!errors.title}
       >
         <FormLabel>Section header title</FormLabel>
-        <Controller
-          control={control}
-          name="title"
-          render={({ field: { onChange, ...rest } }) => (
-            <Input
-              autoFocus
-              onChange={(e) => {
-                onChange(e)
-                debouncedUpdateField({
-                  title: e.target.value,
-                })
-              }}
-              {...rest}
-            />
-          )}
-        />
-        <FormErrorMessage>
-          {errors.title && errors.title.message}
-        </FormErrorMessage>
+        <Input autoFocus {...register('title', requiredValidationRule)} />
+        <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl
         isRequired
         isReadOnly={mutateFormField.isLoading}
-        isInvalid={!!errors.title}
+        isInvalid={!!errors.description}
       >
         <FormLabel>Description</FormLabel>
-        <Controller
-          control={control}
-          name="description"
-          render={({ field: { onChange, ...rest } }) => (
-            <Textarea
-              onChange={(e) => {
-                onChange(e)
-                debouncedUpdateField({
-                  description: e.target.value,
-                })
-              }}
-              {...rest}
-            />
-          )}
-        />
-        <FormErrorMessage>
-          {errors.title && errors.title.message}
-        </FormErrorMessage>
+        <Textarea {...register('description')} />
+        <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormFieldDrawerActions
         isLoading={mutateFormField.isLoading}
