@@ -39,3 +39,28 @@ it('expands and collapses content on desktop after clicking on header', async ()
     expect(screen.queryByText(/trusted websites/i)).not.toBeVisible()
   })
 })
+
+it('renders an external link to "https://go.gov.sg/trusted-sites" when expanded', async () => {
+  // Arrange
+  await act(async () => {
+    render(<GovtMasthead />)
+  })
+  const headerBar = screen.getByRole('button', {
+    name: /singapore government agency website/i,
+  })
+
+  expect(screen.getByText(/trusted websites/i)).not.toBeVisible()
+
+  // Act
+  await act(async () => userEvent.click(headerBar))
+
+  // Assert
+  // Should render an external link
+  await waitFor(() => {
+    expect(
+      screen.getByRole('link', {
+        name: /trusted websites/i,
+      }),
+    ).toBeVisible()
+  })
+})
