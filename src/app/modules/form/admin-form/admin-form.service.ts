@@ -1182,13 +1182,15 @@ export const createTwilioCredentials = (
     SecretString: twilioCredentialsData.toString(),
   }
 
+  const logMeta = {
+    action: 'createTwilioCredentials',
+    formId: formId,
+    msgSrvcName,
+  }
+
   logger.info({
     message: `no msgSrvcName, creating Twilio credentials for form ${formId}`,
-    meta: {
-      action: 'createTwilioCredentials',
-      formId: formId,
-      msgSrvcName,
-    },
+    meta: logMeta,
   })
 
   return ResultAsync.fromPromise(
@@ -1204,7 +1206,7 @@ export const createTwilioCredentials = (
       logger.error({
         message: 'Error encountered when creating Twilio Secret',
         meta: {
-          action: 'createTwilio',
+          ...logMeta,
           body,
         },
         error,
@@ -1244,15 +1246,17 @@ export const updateTwilioCredentials = (
     SecretString: twilioCredentialsData.toString(),
   }
 
+  const logMeta = {
+    action: 'updateTwilioCredentials',
+    msgSrvcName,
+  }
+
   return ResultAsync.fromPromise(
     secretsManager.getSecretValue({ SecretId: msgSrvcName }).promise(),
     (error) => {
       logger.error({
         message: 'Twilio Credentials do not exist in Secrets Manager',
-        meta: {
-          action: 'updateTwilioCredentials',
-          msgSrvcName,
-        },
+        meta: logMeta,
         error,
       })
 
@@ -1264,10 +1268,7 @@ export const updateTwilioCredentials = (
     .andThen(() => {
       logger.info({
         message: 'Twilio Credentials has been found in Secrets Manager',
-        meta: {
-          action: 'updateTwilioCredentials',
-          msgSrvcName,
-        },
+        meta: logMeta,
       })
 
       return ResultAsync.fromPromise(
@@ -1276,7 +1277,7 @@ export const updateTwilioCredentials = (
           logger.error({
             message: 'Error occurred when updating Twilio in Secret Manager!',
             meta: {
-              action: 'updateTwilioCredentials',
+              ...logMeta,
               body,
             },
             error,
@@ -1299,7 +1300,7 @@ export const updateTwilioCredentials = (
           logger.error({
             message: 'Error occurred when clearing cache in Secret Manager!',
             meta: {
-              action: 'updateTwilioCredentials',
+              ...logMeta,
               body,
             },
             error,
@@ -1325,6 +1326,11 @@ export const deleteTwilioCredentials = (
     // being dleted: https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_delete-secret.html
   }
 
+  const logMeta = {
+    action: 'deleteTwilioCredentials',
+    msgSrvcName,
+  }
+
   return ResultAsync.fromPromise(
     secretsManager
       .getSecretValue({
@@ -1334,10 +1340,7 @@ export const deleteTwilioCredentials = (
     () => {
       logger.info({
         message: 'Twilio Credentials do not exist in Secrets Manager',
-        meta: {
-          action: 'deleteTwilioCredentials',
-          msgSrvcName,
-        },
+        meta: logMeta,
       })
 
       return new SecretsManagerNotFoundError(
@@ -1347,10 +1350,7 @@ export const deleteTwilioCredentials = (
   ).andThen(() => {
     logger.info({
       message: 'Twilio Credentials has been found in Secrets Manager',
-      meta: {
-        action: 'deleteTwilioCredentials',
-        msgSrvcName,
-      },
+      meta: logMeta,
     })
     return ResultAsync.fromPromise(
       FormModel.startSession().then((session: ClientSession) =>
@@ -1364,7 +1364,7 @@ export const deleteTwilioCredentials = (
         logger.error({
           message: 'Error occurred when updating Twilio in Secret Manager!',
           meta: {
-            action: 'deleteTwilioCredentials',
+            ...logMeta,
             body,
           },
           error,
@@ -1381,7 +1381,7 @@ export const deleteTwilioCredentials = (
           logger.error({
             message: 'Error occurred when clearing cache in Secret Manager!',
             meta: {
-              action: 'updateTwilioCredentials',
+              ...logMeta,
               body,
             },
             error,
