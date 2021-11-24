@@ -29,20 +29,34 @@ export const FieldRowContainer = ({
     [activeField, field],
   )
 
-  const handleFieldClick = useCallback(
-    () => updateActiveField(field),
-    [field, updateActiveField],
+  const handleFieldClick = useCallback(() => {
+    if (!isActive) {
+      updateActiveField(field)
+    }
+  }, [field, isActive, updateActiveField])
+
+  const handleKeydown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        handleFieldClick()
+      }
+    },
+    [handleFieldClick],
   )
 
   return (
     <Flex
+      // Focusable
+      tabIndex={0}
+      role="button"
       transitionDuration="normal"
       bg="white"
       _hover={{ bg: 'secondary.100' }}
       borderRadius="4px"
       {...(isActive ? { 'data-active': true } : {})}
       _focusWithin={{
-        boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
+        boxShadow: '0 0 0 2px var(--chakra-colors-primary-500) !important',
       }}
       _active={{
         bg: 'secondary.100',
@@ -51,6 +65,7 @@ export const FieldRowContainer = ({
       flexDir="column"
       align="center"
       onClick={handleFieldClick}
+      onKeyDown={handleKeydown}
     >
       <Icon
         as={BiGridHorizontal}
