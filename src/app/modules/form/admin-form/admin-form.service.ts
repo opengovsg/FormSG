@@ -1,4 +1,4 @@
-import { SecretsManager } from 'aws-sdk'
+import { AWSError, SecretsManager } from 'aws-sdk'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import {
   CreateSecretRequest,
@@ -1356,14 +1356,21 @@ export const deleteTwilioCredentials = (
         SecretId: msgSrvcName,
       })
       .promise(),
-    () => {
+    (error) => {
       logger.info({
         message: 'Twilio Credentials do not exist in Secrets Manager',
         meta: logMeta,
       })
 
-      return new SecretsManagerNotFoundError(
-        'Twilio Credentials do not exist in Secrets Manager',
+      const awsError = error as AWSError
+
+      if (awsError.code === 'ResourceNotFoundException')
+        return new SecretsManagerNotFoundError(
+          'Twilio Credentials do not exist in Secrets Manager',
+        )
+
+      return new SecretsManagerError(
+        'Error occurred when updating Twilio in Secret Manager!',
       )
     },
   ).andThen(() => {
