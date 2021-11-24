@@ -2029,44 +2029,6 @@ describe('Form Model', () => {
         expect(forms.length).toBe(0)
       })
     })
-
-    describe('updateMsgSrvcName', () => {
-      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
-      it('should update msgSrvcName of form to new msgSrvcName', async () => {
-        // Arrange
-        const form = await Form.create({
-          admin: populatedAdmin._id,
-          title: 'mock mobile form',
-        })
-
-        // Act
-        const updatedForm = await Form.updateMsgSrvcName(
-          form._id,
-          MOCK_MSG_SRVC_NAME,
-        )
-
-        // Assert
-        expect(updatedForm!.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
-      })
-    })
-
-    describe('deleteMsgSrvcName', () => {
-      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
-      it('should delete msgSrvcName of form', async () => {
-        // Arrange
-        const form = await Form.create({
-          admin: populatedAdmin._id,
-          title: 'mock mobile form',
-          msgSrvcName: MOCK_MSG_SRVC_NAME,
-        })
-
-        // Act
-        const updatedForm = await Form.deleteMsgSrvcName(form._id)
-
-        // Assert
-        expect(updatedForm!.msgSrvcName).toBe(undefined)
-      })
-    })
   })
 
   describe('Methods', () => {
@@ -2632,6 +2594,42 @@ describe('Form Model', () => {
         await expect(actual).rejects.toBeInstanceOf(
           mongoose.Error.ValidationError,
         )
+      })
+    })
+
+    describe('updateMsgSrvcName', () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
+      it('should update msgSrvcName of form to new msgSrvcName', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          title: 'mock mobile form',
+        })
+
+        // Act
+        await form.updateMsgSrvcName(MOCK_MSG_SRVC_NAME)
+        const updatedForm = await Form.findById(form._id)
+        // Assert
+        expect(updatedForm!.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
+      })
+    })
+
+    describe('deleteMsgSrvcName', () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
+      it('should delete msgSrvcName of form', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          title: 'mock mobile form',
+          msgSrvcName: MOCK_MSG_SRVC_NAME,
+        })
+
+        // Act
+        await form.deleteMsgSrvcName()
+        const updatedForm = await Form.findById(form._id)
+
+        // Assert
+        expect(updatedForm!.msgSrvcName).toBe(undefined)
       })
     })
   })
