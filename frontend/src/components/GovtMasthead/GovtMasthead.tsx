@@ -40,17 +40,10 @@ export const GovtMasthead = (): JSX.Element => {
           <Text my="2px">A Singapore government agency website.&nbsp;</Text>
           <Link tabIndex={0}>
             How to identify{' '}
-            {isOpen ? (
-              <Icon
-                as={BiChevronUp}
-                fontSize={{ base: '1rem', md: '1.25rem' }}
-              />
-            ) : (
-              <Icon
-                as={BiChevronDown}
-                fontSize={{ base: '1rem', md: '1.25rem' }}
-              />
-            )}
+            <Icon
+              as={isOpen ? BiChevronUp : BiChevronDown}
+              fontSize={{ base: '1rem', md: '1.25rem' }}
+            />
           </Link>
         </Flex>
       </chakra.button>
