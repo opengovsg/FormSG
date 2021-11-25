@@ -1,9 +1,6 @@
 import { Meta, Story } from '@storybook/react'
 
-import {
-  GovtMasthead as GovtMastheadComponent,
-  GovtMastheadProps,
-} from './GovtMasthead'
+import { GovtMasthead as GovtMastheadComponent } from './GovtMasthead'
 
 export default {
   title: 'Components/GovtMasthead',
@@ -11,8 +8,6 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<GovtMastheadProps> = (args) => (
-  <GovtMastheadComponent {...args} />
-)
+const Template: Story = (args) => <GovtMastheadComponent {...args} />
 export const GovtMasthead = Template.bind({})
 GovtMasthead.storyName = 'GovtMasthead'

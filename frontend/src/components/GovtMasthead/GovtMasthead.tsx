@@ -17,10 +17,7 @@ import Link from '~components/Link'
 
 import { GovtMastheadIcon } from './GovtMastheadIcon'
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface GovtMastheadProps {}
-
-export const GovtMasthead = ({}: GovtMastheadProps): JSX.Element => {
+export const GovtMasthead = (): JSX.Element => {
   const { isOpen, onToggle } = useDisclosure()
 
   return (
