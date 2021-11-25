@@ -1,6 +1,6 @@
-import { Box, BoxProps } from '@chakra-ui/layout'
+import { Flex, FlexProps } from '@chakra-ui/layout'
 
-export interface DrawerContentContainerProps extends BoxProps {
+export interface DrawerContentContainerProps extends FlexProps {
   children: React.ReactNode
 }
 /**
@@ -12,8 +12,16 @@ export const DrawerContentContainer = ({
   ...props
 }: DrawerContentContainerProps): JSX.Element => {
   return (
-    <Box py="2rem" px="1.5rem" {...props}>
+    <Flex
+      py="2rem"
+      px="1.5rem"
+      flexDir="column"
+      flex={1}
+      pos="relative"
+      overflow="auto"
+      {...props}
+    >
       {children}
-    </Box>
+    </Flex>
   )
 }

@@ -29,7 +29,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   if (!activeField) return null
 
   return (
-    <Box>
+    <>
       <Flex
         pos="sticky"
         top={0}
@@ -52,7 +52,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
         <BuilderDrawerCloseButton />
       </Flex>
       <MemoFieldDrawerContent field={activeField} />
-    </Box>
+    </>
   )
 }
 

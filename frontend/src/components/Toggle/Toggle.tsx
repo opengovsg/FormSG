@@ -13,7 +13,7 @@ import FormLabel from '../FormControl/FormLabel'
 
 import { Switch, SwitchProps } from './Switch'
 
-export interface ToggleProps extends SwitchProps {
+export interface ToggleProps extends Omit<SwitchProps, 'children'> {
   /**
    * Main label of the toggle
    */
