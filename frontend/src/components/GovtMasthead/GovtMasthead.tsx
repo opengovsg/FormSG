@@ -16,6 +16,7 @@ import { BxsLockAlt } from '~assets/icons/BxsLockAlt'
 import Link from '~components/Link'
 
 import { GovtMastheadIcon } from './GovtMastheadIcon'
+import { GovtMastheadItem } from './GovtMastheadItem'
 
 export const GovtMasthead = (): JSX.Element => {
   const { isOpen, onToggle } = useDisclosure()
@@ -57,42 +58,24 @@ export const GovtMasthead = (): JSX.Element => {
           py={{ base: '1.5rem', md: '2.25rem', lg: '2.75rem' }}
           textStyle={{ base: 'caption-2', lg: 'body-1' }}
         >
-          <Flex flex={1} maxW="32rem">
-            <Icon
-              as={BxsBank}
-              fontSize={{ base: '1rem', lg: '1.5rem' }}
-              mr={{ base: '0.5rem', lg: '0.75rem' }}
-            />
-            <Flex flexDir="column">
-              <Text
-                textStyle={{ base: 'caption-1', lg: 'subhead-1' }}
-                mb="0.75rem"
-              >
-                Official website links end with .gov.sg
-              </Text>
-              <Text>
+          <GovtMastheadItem
+            icon={BxsBank}
+            header={<>Official website links end with .gov.sg</>}
+            subtext={
+              <>
                 Government agencies communicate via <b>.gov.sg</b> websites(e.g.
                 go.gov.sg/open).{' '}
                 <Link href="https://go.gov.sg/trusted-sites" isExternal>
                   Trusted websites
                 </Link>
-              </Text>
-            </Flex>
-          </Flex>
-          <Flex flex={1}>
-            <Icon
-              as={BxsLockAlt}
-              fontSize={{ base: '1rem', lg: '1.5rem' }}
-              mr={{ base: '0.5rem', lg: '0.75rem' }}
-            />
-            <Flex flexDir="column">
-              <Text
-                textStyle={{ base: 'caption-1', lg: 'subhead-1' }}
-                mb="0.75rem"
-              >
-                Secure websites use HTTPS
-              </Text>
-              <Text>
+              </>
+            }
+          />
+          <GovtMastheadItem
+            icon={BxsLockAlt}
+            header={<>Secure websites use HTTPS</>}
+            subtext={
+              <>
                 Look for a lock (
                 <Icon
                   as={BxsLockAlt}
@@ -101,9 +84,9 @@ export const GovtMasthead = (): JSX.Element => {
                 ) or https:// as an added precaution.
                 <br></br>Share sensitive information only on official, secure
                 websites.
-              </Text>
-            </Flex>
-          </Flex>
+              </>
+            }
+          />
         </Stack>
       </Collapse>
     </Box>
