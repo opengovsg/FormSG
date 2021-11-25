@@ -40,7 +40,7 @@ export const GovtMasthead = (): JSX.Element => {
         <Flex alignItems="center" flexWrap="wrap">
           <Text my="2px">A Singapore government agency website.&nbsp;</Text>
           <Link tabIndex={0}>
-            How to identify{' '}
+            How to identify
             <Icon
               as={isOpen ? BiChevronUp : BiChevronDown}
               fontSize={{ base: '1rem', md: '1.25rem' }}
