@@ -1,12 +1,22 @@
 import { useForm } from 'react-hook-form'
 import { useDebounce } from 'react-use'
-import { Divider, FormControl, Stack } from '@chakra-ui/react'
+import {
+  Box,
+  Divider,
+  FormControl,
+  Stack,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+} from '@chakra-ui/react'
 import { extend } from 'lodash'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+import { Tab } from '~components/Tabs'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 import { CheckboxFieldSchema } from '~templates/Field/Checkbox/CheckboxField'
@@ -14,6 +24,7 @@ import { CheckboxFieldSchema } from '~templates/Field/Checkbox/CheckboxField'
 import { useEditFieldStore } from '../editFieldStore'
 import { useMutateFormFields } from '../mutations'
 
+import { DrawerContentContainer } from './DrawerContentContainer'
 import { FormFieldDrawerActions } from './FormFieldDrawerActions'
 
 export interface EditCheckboxProps {
@@ -109,45 +120,79 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
   })
 
   return (
-    <Stack spacing="2rem" divider={<Divider />}>
-      <FormControl
-        isRequired
-        isReadOnly={mutateFormField.isLoading}
-        isInvalid={!!errors.title}
+    <Tabs variant="line-light">
+      <Box
+        px="1rem"
+        pt="1.5rem"
+        borderBottom="1px solid"
+        overflow="hidden"
+        borderBottomColor="neutral.300"
       >
-        <FormLabel>Question</FormLabel>
-        <Input autoFocus {...register('title', requiredValidationRule)} />
-        <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
-      </FormControl>
-      <FormControl
-        isRequired
-        isReadOnly={mutateFormField.isLoading}
-        isInvalid={!!errors.description}
-      >
-        <FormLabel>Description</FormLabel>
-        <Textarea {...register('description')} />
-        <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
-      </FormControl>
-      <FormControl
-        isRequired
-        isReadOnly={mutateFormField.isLoading}
-        isInvalid={!!errors.fieldOptions}
-      >
-        <FormLabel>Options</FormLabel>
-        <Textarea {...register('fieldOptions', fieldOptionsValidationRule)} />
-        <FormErrorMessage>{errors?.fieldOptions?.message}</FormErrorMessage>
-      </FormControl>
-      <Toggle
-        isLoading={mutateFormField.isLoading}
-        label="Required"
-        {...register('required', requiredValidationRule)}
-      />
-      <FormFieldDrawerActions
-        isLoading={mutateFormField.isLoading}
-        isDirty={isDirty}
-        handleClick={handleUpdateField}
-        handleCancel={clearActiveField}
-      />
-    </Stack>
+        <TabList
+          overflowX="initial"
+          display="inline-flex"
+          w="max-content"
+          mb="-1px"
+        >
+          <Tab>General</Tab>
+          <Tab>Options</Tab>
+        </TabList>
+      </Box>
+      <DrawerContentContainer>
+        <TabPanels>
+          <TabPanel>
+            <Stack spacing="2rem" divider={<Divider />}>
+              <FormControl
+                isRequired
+                isReadOnly={mutateFormField.isLoading}
+                isInvalid={!!errors.title}
+              >
+                <FormLabel>Question</FormLabel>
+                <Input
+                  autoFocus
+                  {...register('title', requiredValidationRule)}
+                />
+                <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
+              </FormControl>
+              <FormControl
+                isRequired
+                isReadOnly={mutateFormField.isLoading}
+                isInvalid={!!errors.description}
+              >
+                <FormLabel>Description</FormLabel>
+                <Textarea {...register('description')} />
+                <FormErrorMessage>
+                  {errors?.description?.message}
+                </FormErrorMessage>
+              </FormControl>
+              <FormControl
+                isRequired
+                isReadOnly={mutateFormField.isLoading}
+                isInvalid={!!errors.fieldOptions}
+              >
+                <FormLabel>Options</FormLabel>
+                <Textarea
+                  {...register('fieldOptions', fieldOptionsValidationRule)}
+                />
+                <FormErrorMessage>
+                  {errors?.fieldOptions?.message}
+                </FormErrorMessage>
+              </FormControl>
+              <Toggle
+                isLoading={mutateFormField.isLoading}
+                label="Required"
+                {...register('required', requiredValidationRule)}
+              />
+              <FormFieldDrawerActions
+                isLoading={mutateFormField.isLoading}
+                isDirty={isDirty}
+                handleClick={handleUpdateField}
+                handleCancel={clearActiveField}
+              />
+            </Stack>
+          </TabPanel>
+        </TabPanels>
+      </DrawerContentContainer>
+    </Tabs>
   )
 }
