@@ -60,7 +60,7 @@ export const GovtMasthead = (): JSX.Element => {
         >
           <GovtMastheadItem
             icon={BxsBank}
-            header={<>Official website links end with .gov.sg</>}
+            header="Official website links end with .gov.sg"
             subtext={
               <>
                 Government agencies communicate via <b>.gov.sg</b> websites(e.g.
@@ -73,7 +73,7 @@ export const GovtMasthead = (): JSX.Element => {
           />
           <GovtMastheadItem
             icon={BxsLockAlt}
-            header={<>Secure websites use HTTPS</>}
+            header="Secure websites use HTTPS"
             subtext={
               <>
                 Look for a lock (

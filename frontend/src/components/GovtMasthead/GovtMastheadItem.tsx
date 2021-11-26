@@ -5,8 +5,8 @@ import { BxsBank } from '~assets/icons/BxsBank'
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface GovtMastheadItemProps {
   icon: React.ReactNode
-  header: React.ReactNode
-  subtext: React.ReactNode
+  header: string
+  subtext: string
 }
 
 export const GovtMastheadItem = ({
