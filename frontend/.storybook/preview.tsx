@@ -15,7 +15,9 @@ import { StorybookTheme } from './themes'
 initialize()
 
 const withReactQuery: DecoratorFn = (storyFn) => {
-  const queryClient = new QueryClient()
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { staleTime: Infinity } },
+  })
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>{storyFn()}</AuthProvider>

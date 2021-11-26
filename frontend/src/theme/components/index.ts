@@ -6,6 +6,7 @@ import { Banner } from './Banner'
 import { Button } from './Button'
 import { Checkbox, CHECKBOX_THEME_KEY } from './Checkbox'
 import { CloseButton } from './CloseButton'
+import { Drawer } from './Drawer'
 import { Form } from './Form'
 import { FormError } from './FormError'
 import { FormLabel } from './FormLabel'
@@ -20,6 +21,7 @@ import { PhoneNumberInput } from './PhoneNumberInput'
 import { Radio, RADIO_THEME_KEY } from './Radio'
 import { Searchbar, SEARCHBAR_THEME_KEY } from './Searchbar'
 import { SingleCountryPhoneNumberInput } from './SingleCountryPhoneNumberInput'
+import { Table } from './Table'
 import { Tabs } from './Tabs'
 import { Textarea } from './Textarea'
 import { Tile } from './Tile'
@@ -32,6 +34,7 @@ export const components = {
   Banner,
   Button,
   CloseButton,
+  Drawer,
   Form,
   FormError,
   FormLabel,
@@ -44,6 +47,7 @@ export const components = {
   PhoneNumberInput,
   SingleCountryPhoneNumberInput,
   Textarea,
+  Table,
   Tabs,
   [ATTACHMENT_THEME_KEY]: Attachment,
   [PAGINATION_THEME_KEY]: Pagination,

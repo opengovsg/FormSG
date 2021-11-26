@@ -1,9 +1,8 @@
 import {
-  ComponentMultiStyleConfig,
   StyleObjectOrFn,
   SystemStyleObjectRecord,
   ThemeComponentFunction,
-  ThemingPropsThunk,
+  ThemeComponentProps,
 } from '@chakra-ui/react'
 
 import { textStyles } from '../textStyles'
@@ -33,7 +32,7 @@ const baseStyleDialog: ThemeComponentFunction<StyleObjectOrFn> = (props) => {
   }
 }
 
-const baseStyle: ThemingPropsThunk<SystemStyleObjectRecord> = (props) => ({
+const baseStyle = (props: ThemeComponentProps) => ({
   overlay: baseStyleOverlay,
   dialog: baseStyleDialog(props),
 })
@@ -72,6 +71,7 @@ const getSize = (value: string): SystemStyleObjectRecord => {
         },
         dialog: fullDialogStyle,
         header: {
+          ...textStyles['h2'],
           p: '1.5rem',
         },
         closeButton: {
@@ -111,7 +111,7 @@ const sizes = {
   full: getSize('full'),
 }
 
-export const Modal: ComponentMultiStyleConfig = {
+export const Modal = {
   parts,
   baseStyle,
   sizes,

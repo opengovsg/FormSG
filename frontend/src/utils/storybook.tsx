@@ -1,11 +1,50 @@
-import { Center } from '@chakra-ui/layout'
+import { useEffect } from 'react'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { Box, Center } from '@chakra-ui/react'
 import { DecoratorFn } from '@storybook/react'
 
 import { theme } from '~/theme'
 
+import { LOGGED_IN_KEY } from '~constants/localStorage'
+
 export const centerDecorator: DecoratorFn = (storyFn) => (
   <Center>{storyFn()}</Center>
 )
+
+export const fullScreenDecorator: DecoratorFn = (storyFn) => (
+  <Box w="100vw" h="100vh">
+    {storyFn()}
+  </Box>
+)
+
+export const LoggedInDecorator: DecoratorFn = (storyFn) => {
+  useEffect(() => {
+    window.localStorage.setItem(LOGGED_IN_KEY, JSON.stringify(true))
+
+    return () => window.localStorage.removeItem(LOGGED_IN_KEY)
+  }, [])
+
+  return storyFn()
+}
+
+interface StoryRouterProps {
+  initialEntries: string[]
+  path: string
+}
+/**
+ * Decorator to instantiate a story with an initial route.
+ */
+export const StoryRouter =
+  ({ path, initialEntries }: StoryRouterProps): DecoratorFn =>
+  (storyFn) => {
+    return (
+      <MemoryRouter initialEntries={initialEntries}>
+        <Routes>
+          <Route path={path} element={storyFn()} />
+        </Routes>
+      </MemoryRouter>
+    )
+  }
 
 /**
  * Helper function to convert theme breakpoint into viewport width in px for

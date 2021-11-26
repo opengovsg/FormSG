@@ -1,4 +1,8 @@
-import { UserDto } from '~shared/types/user'
+import {
+  SendUserContactOtpDto,
+  UserDto,
+  VerifyUserContactOtpDto,
+} from '~shared/types/user'
 
 import { ApiService } from './ApiService'
 
@@ -11,4 +15,19 @@ const USER_ENDPOINT = '/user'
  */
 export const fetchUser = async (): Promise<UserDto> => {
   return ApiService.get<UserDto>(USER_ENDPOINT).then(({ data }) => data)
+}
+
+export const generateUserContactOtp = (
+  params: SendUserContactOtpDto,
+): Promise<void> => {
+  return ApiService.post(`${USER_ENDPOINT}/contact/otp/generate`, params)
+}
+
+export const verifyUserContactOtp = (
+  params: VerifyUserContactOtpDto,
+): Promise<UserDto> => {
+  return ApiService.post<UserDto>(
+    `${USER_ENDPOINT}/contact/otp/verify`,
+    params,
+  ).then(({ data }) => data)
 }
