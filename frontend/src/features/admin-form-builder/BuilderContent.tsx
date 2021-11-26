@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
+import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import { Flex, Stack } from '@chakra-ui/react'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -8,6 +9,22 @@ import { clearActiveFieldSelector, useEditFieldStore } from './editFieldStore'
 
 export const BuilderContent = (): JSX.Element => {
   const clearActiveField = useEditFieldStore(clearActiveFieldSelector)
+
+  const onBeforeCapture = useCallback(() => {
+    /*...*/
+  }, [])
+  const onBeforeDragStart = useCallback(() => {
+    /*...*/
+  }, [])
+  const onDragStart = useCallback(() => {
+    /*...*/
+  }, [])
+  const onDragUpdate = useCallback(() => {
+    /*...*/
+  }, [])
+  const onDragEnd = useCallback(() => {
+    // the only one that is required
+  }, [])
 
   useEffect(() => {
     // Clear field on component unmount.
@@ -33,9 +50,26 @@ export const BuilderContent = (): JSX.Element => {
           w="100%"
           flexDir="column"
         >
-          <Stack spacing="2.25rem">
-            <BuilderFields />
-          </Stack>
+          <DragDropContext
+            onBeforeCapture={onBeforeCapture}
+            onBeforeDragStart={onBeforeDragStart}
+            onDragStart={onDragStart}
+            onDragUpdate={onDragUpdate}
+            onDragEnd={onDragEnd}
+          >
+            <Droppable droppableId="formFieldList">
+              {(provided) => (
+                <Stack
+                  spacing="2.25rem"
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  <BuilderFields />
+                  {provided.placeholder}
+                </Stack>
+              )}
+            </Droppable>
+          </DragDropContext>
         </Flex>
       </Flex>
     </Flex>
@@ -51,8 +85,8 @@ export const BuilderFields = () => {
 
   return (
     <>
-      {data.form_fields.map((f) => (
-        <FieldRowContainer key={f._id} field={f} />
+      {data.form_fields.map((f, i) => (
+        <FieldRowContainer index={i} key={f._id} field={f} />
       ))}
     </>
   )
