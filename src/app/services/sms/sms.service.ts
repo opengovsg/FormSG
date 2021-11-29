@@ -251,7 +251,7 @@ const sendSms = (
         logType: LogType.success,
       })
 
-      return result
+      return result as true
     })
     .mapErr((error) => {
       // Fire log sms failure promise without waiting.
@@ -262,7 +262,7 @@ const sendSms = (
         logType: LogType.failure,
       })
 
-      return error
+      return error as SmsSendError | InvalidNumberError
     })
 }
 /**
