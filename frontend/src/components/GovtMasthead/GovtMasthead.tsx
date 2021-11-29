@@ -61,32 +61,23 @@ export const GovtMasthead = (): JSX.Element => {
           <GovtMastheadItem
             icon={BxsBank}
             header="Official website links end with .gov.sg"
-            subtext={
-              <>
-                Government agencies communicate via <b>.gov.sg</b> websites(e.g.
-                go.gov.sg/open).{' '}
-                <Link href="https://go.gov.sg/trusted-sites" isExternal>
-                  Trusted websites
-                </Link>
-              </>
-            }
-          />
+          >
+            Government agencies communicate via <b>.gov.sg</b> websites(e.g.
+            go.gov.sg/open).{' '}
+            <Link href="https://go.gov.sg/trusted-sites" isExternal>
+              Trusted websites
+            </Link>
+          </GovtMastheadItem>
           <GovtMastheadItem
             icon={BxsLockAlt}
             header="Secure websites use HTTPS"
-            subtext={
-              <>
-                Look for a lock (
-                <Icon
-                  as={BxsLockAlt}
-                  fontSize={{ base: '0.75rem', lg: '1rem' }}
-                />
-                ) or https:// as an added precaution.
-                <br></br>Share sensitive information only on official, secure
-                websites.
-              </>
-            }
-          />
+          >
+            Look for a lock (
+            <Icon as={BxsLockAlt} fontSize={{ base: '0.75rem', lg: '1rem' }} />)
+            or https:// as an added precaution.
+            <br></br>Share sensitive information only on official, secure
+            websites.
+          </GovtMastheadItem>
         </Stack>
       </Collapse>
     </Box>

@@ -6,13 +6,13 @@ import { BxsBank } from '~assets/icons/BxsBank'
 export interface GovtMastheadItemProps {
   icon: React.ReactNode
   header: string
-  subtext: string
+  children: React.ReactNode
 }
 
 export const GovtMastheadItem = ({
   icon,
   header,
-  subtext,
+  children,
 }: GovtMastheadItemProps): JSX.Element => {
   return (
     <Flex flex={1} maxW="32rem">
@@ -25,7 +25,7 @@ export const GovtMastheadItem = ({
         <Text textStyle={{ base: 'caption-1', lg: 'subhead-1' }} mb="0.75rem">
           {header}
         </Text>
-        <Text>{subtext}</Text>
+        <Text>{children}</Text>
       </Flex>
     </Flex>
   )
