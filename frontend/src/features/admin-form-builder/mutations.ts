@@ -98,6 +98,7 @@ export const useMutateFormFields = () => {
       })
     },
     {
+      mutationKey: adminFormFieldKeys.id(formId),
       onMutate: async ({ from, to }) => {
         // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
         await queryClient.cancelQueries(adminFormKey)

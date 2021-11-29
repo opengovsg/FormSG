@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo } from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
 import { BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
+import { useIsMutating } from 'react-query'
 import {
   Box,
   ButtonGroup,
@@ -22,6 +23,7 @@ import {
   updateFieldSelector,
   useEditFieldStore,
 } from '../editFieldStore'
+import { adminFormFieldKeys } from '../mutations'
 
 import { SectionFieldRow } from './SectionFieldRow'
 
@@ -36,6 +38,7 @@ export const FieldRowContainer = ({
 }: FieldRowContainerProps): JSX.Element => {
   const updateActiveField = useEditFieldStore(updateFieldSelector)
   const activeField = useEditFieldStore(activeFieldSelector)
+  const numFormFieldMutations = useIsMutating(adminFormFieldKeys.base)
 
   const formMethods = useForm({ mode: 'onChange' })
 
@@ -63,7 +66,7 @@ export const FieldRowContainer = ({
   return (
     <Draggable
       index={index}
-      isDragDisabled={!isActive}
+      isDragDisabled={!isActive || !!numFormFieldMutations}
       disableInteractiveElementBlocking
       draggableId={field._id}
     >
