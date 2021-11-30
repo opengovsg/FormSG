@@ -16,10 +16,10 @@ jobs:
         with:
           node-version: '14'
           cache: 'npm'
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-          cache: 'pip'
+      # - uses: actions/setup-python@v2
+      #   with:
+      #     python-version: '3.9'
+      #     cache: 'pip'
       - name: build script
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
