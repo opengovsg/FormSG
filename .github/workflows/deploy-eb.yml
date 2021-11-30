@@ -1,0 +1,69 @@
+name: Deploy to AWS Elastic Beanstalk
+on:
+  push:
+    branches:
+      - release
+      - staging
+      - staging-alt
+      - uat
+
+jobs:
+  build-application:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          cache: 'npm'
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      - name: build script
+        env:
+          - NODE_OPTIONS: '--max-old-space-size=4096'
+        run: |
+          npm ci
+          set -e
+          npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
+          npm run lint-ci
+          npm run build
+
+  deploy-application:
+    needs: build-application
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.github_run_id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
+        run: |
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REPOSITORY:$IMAGE_TAG
+          sed -i -e "s/@TAG/$IMAGE_TAG/g" Dockerrun.aws.json 
+          zip -r "$IMAGE_TAG.zip" .ebextensions Dockerrun.aws.json
+
+      - name: Deploy to Elastic Beanstalk
+        if: github.ref == 'staging'
+        uses: einaregilsson/beanstalk-deploy@v18
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ secrets.STAGING_APP_NAME }}
+          environment_name: ${{ secrets.STAGING_DEPLOY_ENV }}
+          version_label: $IMAGE_TAG
+          region: ${{ secrets.AWS_REGION }}
+          deployment_package: $IMAGE_TAG.zip
