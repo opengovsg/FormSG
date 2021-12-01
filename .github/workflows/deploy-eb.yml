@@ -75,6 +75,8 @@ jobs:
           APP_NAME: ${{ secrets.STAGING_APP_NAME }}
           ENV: ${{ secrets.STAGING_DEPLOY_ENV }}
         run: |
+          aws s3 cp $IMAGE_TAG.zip s3://$BUCKET_NAME/$IMAGE_TAG.zip
+
           aws elasticbeanstalk create-application-version --application-name $APP_NAME \
           --version-label $APP_VERSION \
           --source-bundle S3Bucket=$BUCKET_NAME,S3Key=$IMAGE_TAG.zip \
@@ -83,3 +85,17 @@ jobs:
           aws elasticbeanstalk update-environment --application-name $APP_NAME \
             --environment-name $ENV \
             --version-label $APP_VERSION
+
+      - name: Configure Sentry
+        env:
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_URL: ${{ secrets.SENTRY_URL }}
+        run: |
+        if [[ "$SENTRY_PROJECT" &&  "$SENTRY_AUTH_TOKEN" && "$SENTRY_ORG" && "$SENTRY_URL" ]]; then
+            curl -sL https://sentry.io/get-cli/ | bash
+            sentry-cli releases --org $SENTRY_ORG --project $SENTRY_PROJECT new "$TAG"
+            sentry-cli releases files "$TAG" upload-sourcemaps ./ --rewrite --ignore-file .sentryignore
+            sentry-cli releases finalize "$TAG"
+        fi
