@@ -71,9 +71,9 @@ jobs:
       - name: Deploy to Elastic Beanstalk
         env:
           APP_VERSION: v${{ steps.get-version.outputs.app-version }}
-          BUCKET_NAME: ${{ secrets.STAGING_BUCKET_NAME }}
-          APP_NAME: ${{ secrets.STAGING_APP_NAME }}
-          DEPLOY_ENV: ${{ secrets.STAGING_DEPLOY_ENV }}
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+          APP_NAME: ${{ secrets.APP_NAME }}
+          DEPLOY_ENV: ${{ secrets.DEPLOY_ENV }}
         run: |
           aws s3 cp $IMAGE_TAG.zip s3://$BUCKET_NAME/$IMAGE_TAG.zip
 
