@@ -15,5 +15,9 @@ NotificationsRouter.use('/bounces', BouncesRouter)
  * status updates
  *
  * @route POST /api/v3/notifications/twilio
+ *
+ * @returns 200 when message succesfully received and logged
+ * @returns 400 when request is not coming from Twilio
+ * @returns 403 when twilio request validation failed
  */
 NotificationsRouter.post('/twilio', handleTwilioSmsUpdates)
