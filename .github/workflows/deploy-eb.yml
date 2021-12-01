@@ -78,13 +78,13 @@ jobs:
           aws s3 cp $IMAGE_TAG.zip s3://$BUCKET_NAME/$IMAGE_TAG.zip
 
           aws elasticbeanstalk create-application-version --application-name $APP_NAME \
-          --version-label $APP_VERSION \
+          --version-label $IMAGE_TAG \
           --source-bundle S3Bucket=$BUCKET_NAME,S3Key=$IMAGE_TAG.zip \
           --description "${{ github.event.head_commit.message }}"
 
           aws elasticbeanstalk update-environment --application-name $APP_NAME \
             --environment-name $ENV \
-            --version-label $APP_VERSION
+            --version-label $IMAGE_TAG
 
       - name: Configure Sentry
         env:
