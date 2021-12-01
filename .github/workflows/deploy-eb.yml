@@ -8,7 +8,15 @@ on:
       - uat
 
 jobs:
-  build-application:
+  set_environment:
+    outputs:
+      current_env: ${{ steps.set-environment.outputs.current_env }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: set-environment
+        run: echo "::set-output name=current_env::${{github.ref_name}}"
+
+  build_application:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -16,10 +24,6 @@ jobs:
         with:
           node-version: '14'
           cache: 'npm'
-      # - uses: actions/setup-python@v2
-      #   with:
-      #     python-version: '3.9'
-      #     cache: 'pip'
       - name: build script
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
@@ -30,9 +34,11 @@ jobs:
           npm run lint-ci
           npm run build
 
-  deploy-application:
-    needs: build-application
+  deploy_application:
+    needs: [build_application, set_environment]
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ needs.set_environment.outputs.current_env }}
     env:
       IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.github_run_id }}
     steps:
@@ -64,7 +70,6 @@ jobs:
           zip -r "$IMAGE_TAG.zip" .ebextensions Dockerrun.aws.json
 
       - name: Deploy to Elastic Beanstalk
-        if: github.ref == 'staging'
         env:
           APP_VERSION: v${{ steps.get-version.outputs.app-version }}
           BUCKET_NAME: ${{ secrets.STAGING_BUCKET_NAME }}
