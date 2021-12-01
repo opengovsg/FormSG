@@ -1,9 +1,9 @@
 import { StatusCodes } from 'http-status-codes'
 import Twilio from 'twilio'
 
-import { createLoggerWithLabel } from 'src/app/config/logger'
 import { ITwilioSmsWebhookBody } from 'src/types/twilio'
 
+import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 
 const logger = createLoggerWithLabel(module)
@@ -25,6 +25,12 @@ export const twilioSmsUpdates: ControllerHandler<
   ITwilioSmsWebhookBody
 > = async (req, res) => {
   const smsDeliveryFailedStatus = ['undelivered', 'failed']
+  /**
+   * Currently, it seems like the status are provided as string values, theres
+   * no other documentation stating the properties and values in the Node SDK
+   *
+   * Example: https://www.twilio.com/docs/usage/webhooks/sms-webhooks.
+   */
 
   if (smsDeliveryFailedStatus.includes(req.body.MessageStatus)) {
     logger.error({

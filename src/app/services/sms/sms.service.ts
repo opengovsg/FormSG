@@ -194,7 +194,9 @@ const sendSms = (
       body: message,
       from: msgSrvcSid,
       forceDelivery: true,
-      statusCallback: config.app.appUrl + statusCallbackRoute,
+      statusCallback:
+        'https://2ea7-2406-3003-206e-b1-c81c-c26e-cf13-bf4e.ngrok.io' +
+        statusCallbackRoute, //config.app.appUrl + statusCallbackRoute,
     }),
     (error) => {
       logger.error({
