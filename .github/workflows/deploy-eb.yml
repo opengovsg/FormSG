@@ -73,7 +73,7 @@ jobs:
           APP_VERSION: v${{ steps.get-version.outputs.app-version }}
           BUCKET_NAME: ${{ secrets.STAGING_BUCKET_NAME }}
           APP_NAME: ${{ secrets.STAGING_APP_NAME }}
-          ENV: ${{ secrets.STAGING_DEPLOY_ENV }}
+          DEPLOY_ENV: ${{ secrets.STAGING_DEPLOY_ENV }}
         run: |
           aws s3 cp $IMAGE_TAG.zip s3://$BUCKET_NAME/$IMAGE_TAG.zip
 
@@ -83,7 +83,7 @@ jobs:
           --description "${{ github.event.head_commit.message }}"
 
           aws elasticbeanstalk update-environment --application-name $APP_NAME \
-            --environment-name $ENV \
+            --environment-name $DEPLOY_ENV \
             --version-label $IMAGE_TAG
 
       - name: Configure Sentry
