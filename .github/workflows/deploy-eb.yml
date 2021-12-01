@@ -21,7 +21,7 @@ jobs:
     environment:
       name: ${{ needs.set_environment.outputs.current_env }}
     env:
-      IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.github_run_id }}
+      IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.run_id }}
       BRANCH: ${{ needs.set_environment.outputs.current_env }}
     runs-on: ubuntu-latest
     steps:
