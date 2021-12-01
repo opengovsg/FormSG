@@ -61,7 +61,7 @@ jobs:
         env:
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
         run: |
-          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -f Dockerfile.production -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REPOSITORY:$IMAGE_TAG
           sed -i -e "s/@TAG/$IMAGE_TAG/g" Dockerrun.aws.json 
           zip -r "$IMAGE_TAG.zip" .ebextensions Dockerrun.aws.json
