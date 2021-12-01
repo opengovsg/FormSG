@@ -37,7 +37,7 @@ Notable features include:
 - (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus)
 - (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus)
 - (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo/common/aboutus)
-- (beta) Webhooks functionality via the [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk).
+- Webhooks functionality via the official [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk) and contributor-supported [FormSG Ruby SDK] (https://github.com/opengovsg/formsg-ruby-sdk)
 
 The current product roadmap includes:
 
