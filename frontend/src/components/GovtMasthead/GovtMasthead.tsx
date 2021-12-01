@@ -39,7 +39,10 @@ export const GovtMasthead = (): JSX.Element => {
         />
         <Flex alignItems="center" flexWrap="wrap">
           <Text my="2px">A Singapore government agency website.&nbsp;</Text>
-          <Link tabIndex={0}>
+          <Link
+            tabIndex={0}
+            aria-label="Click to expand masthead for more information"
+          >
             How to identify
             <Icon
               as={isOpen ? BiChevronUp : BiChevronDown}
