@@ -64,7 +64,7 @@ jobs:
         run: |
           docker build -f Dockerfile.production -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REPOSITORY:$BRANCH
-          docker push $ECR_REPOSITORY:$IMAGE_TAG
+          docker push -a $ECR_REPOSITORY
           sed -i -e "s/@TAG/$IMAGE_TAG/g" Dockerrun.aws.json 
           zip -r "$IMAGE_TAG.zip" .ebextensions Dockerrun.aws.json
 
