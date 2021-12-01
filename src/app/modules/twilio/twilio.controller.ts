@@ -1,13 +1,12 @@
 import { StatusCodes } from 'http-status-codes'
 import Twilio from 'twilio'
 
+import { createLoggerWithLabel } from 'src/app/config/logger'
 import { ITwilioSmsWebhookBody } from 'src/types/twilio'
 
 import { ControllerHandler } from '../core/core.types'
 
-import { logFailedSmsDelivery } from './twilio.service'
-
-const smsDeliveryFailedStatus = ['undelivered', 'failed']
+const logger = createLoggerWithLabel(module)
 
 /**
  * Middleware which validates that a request came from Twilio Webhook
@@ -25,9 +24,27 @@ export const twilioSmsUpdates: ControllerHandler<
   never,
   ITwilioSmsWebhookBody
 > = async (req, res) => {
-  if (smsDeliveryFailedStatus.includes(req.body.MessageStatus))
-    logFailedSmsDelivery(req.body)
-  res.sendStatus(StatusCodes.OK)
+  const smsDeliveryFailedStatus = ['undelivered', 'failed']
+
+  if (smsDeliveryFailedStatus.includes(req.body.MessageStatus)) {
+    logger.error({
+      message: 'Error occurred when attempting to send SMS on twillio',
+      meta: {
+        action: 'twilioSmsUpdates',
+        body: req.body,
+      },
+    })
+  } else {
+    logger.info({
+      message: 'Sms Delivery update',
+      meta: {
+        action: 'twilioSmsUpdates',
+        body: req.body,
+      },
+    })
+  }
+
+  return res.sendStatus(StatusCodes.OK)
 }
 
 export const handleTwilioSmsUpdates = [validateTwilioWebhook, twilioSmsUpdates]
