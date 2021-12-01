@@ -93,9 +93,9 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_URL: ${{ secrets.SENTRY_URL }}
         run: |
-        if [[ "$SENTRY_PROJECT" &&  "$SENTRY_AUTH_TOKEN" && "$SENTRY_ORG" && "$SENTRY_URL" ]]; then
-            curl -sL https://sentry.io/get-cli/ | bash
-            sentry-cli releases --org $SENTRY_ORG --project $SENTRY_PROJECT new "$TAG"
-            sentry-cli releases files "$TAG" upload-sourcemaps ./ --rewrite --ignore-file .sentryignore
-            sentry-cli releases finalize "$TAG"
-        fi
+          if [[ "$SENTRY_PROJECT" &&  "$SENTRY_AUTH_TOKEN" && "$SENTRY_ORG" && "$SENTRY_URL" ]]; then
+              curl -sL https://sentry.io/get-cli/ | bash
+              sentry-cli releases --org $SENTRY_ORG --project $SENTRY_PROJECT new "$TAG"
+              sentry-cli releases files "$TAG" upload-sourcemaps ./ --rewrite --ignore-file .sentryignore
+              sentry-cli releases finalize "$TAG"
+          fi
