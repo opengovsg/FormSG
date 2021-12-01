@@ -51,13 +51,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Get App Version
-        id: get-version
-        run: |
-          versionValue=$(cat package.json | jq '.version')
-          appVersion="${versionValue%\"}"
-          appVersion="${appVersion#\"}"
-
       - name: Build, tag, and push image to Amazon ECR
         env:
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
@@ -70,7 +63,6 @@ jobs:
 
       - name: Deploy to Elastic Beanstalk
         env:
-          APP_VERSION: v${{ steps.get-version.outputs.app-version }}
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
           APP_NAME: ${{ secrets.APP_NAME }}
           DEPLOY_ENV: ${{ secrets.DEPLOY_ENV }}
