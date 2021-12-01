@@ -16,7 +16,12 @@ jobs:
       - id: set-environment
         run: echo "::set-output name=current_env::${{github.ref_name}}"
 
-  build_application:
+  build_deploy_application:
+    needs: set_environment
+    environment:
+      name: ${{ needs.set_environment.outputs.current_env }}
+    env:
+      IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.github_run_id }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -24,7 +29,7 @@ jobs:
         with:
           node-version: '14'
           cache: 'npm'
-      - name: build script
+      - name: Build
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
         run: |
@@ -34,14 +39,6 @@ jobs:
           npm run lint-ci
           npm run build
 
-  deploy_application:
-    needs: [build_application, set_environment]
-    runs-on: ubuntu-latest
-    environment:
-      name: ${{ needs.set_environment.outputs.current_env }}
-    env:
-      IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.github_run_id }}
-    steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
