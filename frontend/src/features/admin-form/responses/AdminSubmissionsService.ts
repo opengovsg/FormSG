@@ -68,7 +68,7 @@ export const downloadEncryptedResponses = async (
     workerPool.push({ worker, workerApi })
   }
 
-  // TO DO: Implemantation of decrypting and downloading responses in later PRs
+  // TO DO: Implementation of decrypting and downloading responses in later PRs
 
   Promise.all(
     workerPool.map(async (worker: Worker, idx: number) => {
