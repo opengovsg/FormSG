@@ -21,7 +21,7 @@ jobs:
     environment:
       name: ${{ needs.set_environment.outputs.current_env }}
     env:
-      IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.run_id }}
+      IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.run_id }}-${{github.run_attempt}}
       BRANCH: ${{ needs.set_environment.outputs.current_env }}
     runs-on: ubuntu-latest
     steps:
@@ -71,7 +71,6 @@ jobs:
         env:
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
           APP_NAME: ${{ secrets.APP_NAME }}
-        continue-on-error: true # Allow to skip so that workflow can be rerun if environment update fails
         run: |
           aws elasticbeanstalk create-application-version --application-name $APP_NAME \
           --version-label $IMAGE_TAG \
