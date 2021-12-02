@@ -82,17 +82,6 @@ jobs:
         env:
           APP_NAME: ${{ secrets.APP_NAME }}
           DEPLOY_ENV: ${{ secrets.DEPLOY_ENV }}
-        continue-on-error: true # Retry in next step
-        run: |
-          aws elasticbeanstalk update-environment --application-name $APP_NAME \
-            --environment-name $DEPLOY_ENV \
-            --version-label $IMAGE_TAG
-
-      - name: Update EB environment (retry) # Update is sometimes flaky
-        if: steps.update-eb-1.outcome == 'failure'
-        env:
-          APP_NAME: ${{ secrets.APP_NAME }}
-          DEPLOY_ENV: ${{ secrets.DEPLOY_ENV }}
         run: |
           aws elasticbeanstalk update-environment --application-name $APP_NAME \
             --environment-name $DEPLOY_ENV \
