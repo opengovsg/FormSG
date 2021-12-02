@@ -1,6 +1,6 @@
 # FormSG
 
-[![Build Status](https://travis-ci.com/opengovsg/formsg.svg?branch=release)](https://travis-ci.com/opengovsg/formsg)
+[![Build Status](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)
 [![Coverage Status](https://coveralls.io/repos/github/opengovsg/FormSG/badge.svg?branch=develop)](https://coveralls.io/github/opengovsg/FormSG?branch=develop)
 
 ## Table of Contents
