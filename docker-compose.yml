@@ -17,7 +17,7 @@ services:
       - '9229:9229' # Node debugger port
     environment:
       - NODE_ENV=development
-      - DB_HOST=mongodb://database:27017/formsg?replicaSet=rs0&retryWrites=false
+      - DB_HOST=mongodb://database:27017/formsg?replicaSet=rs0
       - APP_NAME=FormSG
       - APP_URL=http://localhost:5000
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket

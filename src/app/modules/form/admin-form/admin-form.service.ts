@@ -4,6 +4,7 @@ import {
   CreateSecretRequest,
   DeleteSecretRequest,
   PutSecretValueRequest,
+  RestoreSecretRequest,
 } from 'aws-sdk/clients/secretsmanager'
 import { assignIn, last, omit } from 'lodash'
 import { ClientSession } from 'mongodb'
@@ -1244,8 +1245,36 @@ export const createTwilioTransaction = async (
   body: CreateSecretRequest,
   session: ClientSession,
 ): Promise<void> => {
+  const logMeta = {
+    action: 'updateTwilioCredentials',
+    msgSrvcName,
+  }
   await form.updateMsgSrvcName(msgSrvcName, session)
-  await secretsManager.createSecret(body).promise()
+  try {
+    await secretsManager.createSecret(body).promise()
+  } catch (err) {
+    const awsError = err as AWSError
+
+    if (awsError.code === 'ResourceExistsException') {
+      logger.info({
+        message:
+          'Twilio Credentials exists in Secrets Manager, proceeeding to restore and update secret',
+        meta: logMeta,
+      })
+
+      const restoreRequestBody: RestoreSecretRequest = {
+        SecretId: msgSrvcName,
+      }
+
+      const putRequestBody: PutSecretValueRequest = {
+        SecretId: msgSrvcName,
+        SecretString: body.SecretString,
+      }
+
+      await secretsManager.restoreSecret(restoreRequestBody).promise()
+      await secretsManager.putSecretValue(putRequestBody).promise()
+    }
+  }
 }
 
 /**
@@ -1342,7 +1371,6 @@ export const deleteTwilioCredentials = (
   const msgSrvcName = form.msgSrvcName
   const body: DeleteSecretRequest = {
     SecretId: msgSrvcName,
-    ForceDeleteWithoutRecovery: true,
   }
   /**
    * We need the ForceDeleteWithoutRecovery boolean flag for it to be deleted immediately
