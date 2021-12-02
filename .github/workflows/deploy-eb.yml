@@ -77,17 +77,3 @@ jobs:
           aws elasticbeanstalk update-environment --application-name $APP_NAME \
             --environment-name $DEPLOY_ENV \
             --version-label $IMAGE_TAG
-
-      - name: Configure Sentry
-        env:
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_URL: ${{ secrets.SENTRY_URL }}
-        run: |
-          if [[ "$SENTRY_PROJECT" &&  "$SENTRY_AUTH_TOKEN" && "$SENTRY_ORG" && "$SENTRY_URL" ]]; then
-              curl -sL https://sentry.io/get-cli/ | bash
-              sentry-cli releases --org $SENTRY_ORG --project $SENTRY_PROJECT new "$IMAGE_TAG"
-              sentry-cli releases files "$IMAGE_TAG" upload-sourcemaps ./ --rewrite --ignore-file .sentryignore
-              sentry-cli releases finalize "$IMAGE_TAG"
-          fi

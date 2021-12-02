@@ -86,10 +86,6 @@ The following repository secrets are set in Github Actions:
 |`AWS_DEFAULT_REGION`|AWS region to use.|
 |`ECR_REPO`|ECR Repository which stores the docker images.|
 |`BUCKET_NAME`| S3 Bucket used to store zipped `Dockerrun.aws.json`.|
-|`SENTRY_ORG`|Organisation that source-maps should be linked to on sentry dashboard.|
-|`SENTRY_AUTH_TOKEN`|Authentication token used by sentry cli to authenticate with sentry service.|
-|`SENTRY_PROJECT`|Project that source-maps should be linked to on sentry dashboard.|
-|`SENTRY_URL`|Sentry service that source-maps should be pushed to.|
 
 There are also environment secrets for each environment (`staging`, `staging-alt`, `release`, `uat`):
 | Secret | Description|
