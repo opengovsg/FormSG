@@ -73,7 +73,7 @@ export const downloadEncryptedResponses = async (
 
   Promise.all(
     workerPool.map(async (worker: Worker, idx: number) => {
-      await worker.workerApi.log(idx)
+      console.log(await worker.workerApi.log(idx), ' finished running!')
       return worker.worker
     }),
   ).then((workers) =>
