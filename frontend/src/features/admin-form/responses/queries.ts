@@ -39,8 +39,7 @@ export const useFormResponses =
     if (!formId) throw new Error('No formId provided')
 
     return useQuery(
-      'test',
-      //adminFormResponsesKeys.id(formId),
+      adminFormResponsesKeys.id(formId),
       () => getFormSubmissionsMetadata(formId),
       { staleTime: 10 * 60 * 1000 },
     )

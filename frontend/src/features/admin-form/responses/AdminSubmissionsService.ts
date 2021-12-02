@@ -41,10 +41,7 @@ export const getFormSubmissionsMetadata = async (
   formId: string,
 ): Promise<StorageModeSubmissionMetadataList> => {
   const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata?page=1`
-  return ApiService.get(queryUrl).then(({ data }) => {
-    console.log('DATA', data)
-    return data
-  })
+  return ApiService.get(queryUrl).then(({ data }) => data)
 }
 
 interface Worker {
