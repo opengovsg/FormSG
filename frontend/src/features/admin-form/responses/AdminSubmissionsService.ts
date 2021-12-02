@@ -77,7 +77,8 @@ export const downloadEncryptedResponses = async (
       return worker.worker
     }),
   ).then((workers) =>
-    workers.forEach((worker) => {
+    workers.forEach((worker, idx) => {
+      console.log('Terminating worker ' + idx)
       worker.terminate() // Workerpool teardown
     }),
   )
