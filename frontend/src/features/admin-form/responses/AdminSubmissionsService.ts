@@ -34,8 +34,8 @@ export const countFormSubmissions = async ({
 
 /**
  * Get of submissions metadata for a given form
- * @param urlParameters Mapping of the url parameters to values
- * @returns The number of form submissions
+ * @param formId fomID to retrieve metadata on
+ * @returns The metadata of the form
  */
 export const getFormSubmissionsMetadata = async (
   formId: string,
