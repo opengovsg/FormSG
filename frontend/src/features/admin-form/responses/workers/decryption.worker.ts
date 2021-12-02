@@ -1,12 +1,12 @@
 import { expose } from 'comlink'
 
-function decryptIntoCsv(data: any) {
-  console.log(data)
-  return data
+async function log(id: number): Promise<string> {
+  console.log(id + ' web worker is running')
+  return id.toString()
 }
 
 const exports = {
-  decryptIntoCsv,
+  log,
 }
 
 export type DecryptionWorker = typeof exports

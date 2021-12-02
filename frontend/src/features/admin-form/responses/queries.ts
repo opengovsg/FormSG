@@ -1,6 +1,8 @@
 import { useQuery, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
+import { StorageModeSubmissionMetadataList } from '~shared/types/submission'
+
 import { adminFormKeys } from '../common/queries'
 
 import {
@@ -31,17 +33,15 @@ export const useFormResponsesCount = (): UseQueryResult<number> => {
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useFormResponses = (): UseQueryResult<any> => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
+export const useFormResponses =
+  (): UseQueryResult<StorageModeSubmissionMetadataList> => {
+    const { formId } = useParams()
+    if (!formId) throw new Error('No formId provided')
 
-  return useQuery(
-    adminFormResponsesKeys.id(formId),
-    () => getFormSubmissionsMetadata(formId),
-    { staleTime: 10 * 60 * 1000 },
-  )
-}
-
-export const downloadResponses = (formId: string, secretKey: string): any => {
-  return ['Here']
-}
+    return useQuery(
+      'test',
+      //adminFormResponsesKeys.id(formId),
+      () => getFormSubmissionsMetadata(formId),
+      { staleTime: 10 * 60 * 1000 },
+    )
+  }

@@ -16,12 +16,7 @@ const ResponsesPage = (): JSX.Element => {
   const [secretKey, setSecretKey] = useState<string>('')
 
   const handleCsvExport = async () => {
-    console.log('EXPORTING CSV')
-    const title = settings!.title
-    console.log(title)
-    console.log(formId)
-    console.log(secretKey)
-    await downloadEncryptedResponses(formId!, title, secretKey)
+    await downloadEncryptedResponses(formId!, settings!.title, secretKey)
   }
 
   return (
@@ -29,7 +24,7 @@ const ResponsesPage = (): JSX.Element => {
       <div>
         Enter secret key:
         <input
-          style={{ backgroundColor: 'red' }}
+          style={{ backgroundColor: 'grey' }}
           type="text"
           value={secretKey}
           onChange={(e) => setSecretKey(e.target.value)}

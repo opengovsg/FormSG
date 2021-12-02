@@ -2,7 +2,10 @@ import { Remote, wrap } from 'comlink'
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import DecryptionWorker from 'worker-loader!./workers/decryption.worker'
 
-import { SubmissionCountQueryDto } from '~shared/types/submission'
+import {
+  StorageModeSubmissionMetadataList,
+  SubmissionCountQueryDto,
+} from '~shared/types/submission'
 
 import { ApiService } from '~services/ApiService'
 
@@ -36,15 +39,18 @@ export const countFormSubmissions = async ({
  */
 export const getFormSubmissionsMetadata = async (
   formId: string,
-): Promise<any> => {
+): Promise<StorageModeSubmissionMetadataList> => {
   const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata?page=1`
-  return ApiService.get(queryUrl).then(({ data }) => data)
+  return ApiService.get(queryUrl).then(({ data }) => {
+    console.log('DATA', data)
+    return data
+  })
 }
 
 interface Worker {
   worker: DecryptionWorker
   workerApi: Remote<{
-    decryptIntoCsv: (data: any) => any
+    log: (id: number) => string
   }>
 }
 
@@ -52,26 +58,27 @@ export const downloadEncryptedResponses = async (
   formId: string,
   formTitle: string,
   secretKey: string,
-) => {
-  console.log('DECRYPTING')
-
+): Promise<void> => {
   const numWorkers = window.navigator.hardwareConcurrency || 4
 
   const workerPool: Worker[] = []
 
+  // Workerpool sample setup
   for (let i = 0; i < numWorkers; i++) {
     const worker = new DecryptionWorker()
     const workerApi =
       wrap<import('./workers/decryption.worker').DecryptionWorker>(worker)
-    console.log('New Worker!', i)
     workerPool.push({ worker, workerApi })
-    const test = i + ' is running!'
-    workerPool[i].workerApi.decryptIntoCsv(test)
   }
 
-  for (let i = 0; i < numWorkers; i++) {
-    workerPool[i].worker.terminate()
-  }
-
-  return null
+  Promise.all(
+    workerPool.map(async (worker: Worker, idx: number) => {
+      await worker.workerApi.log(idx)
+      return worker.worker
+    }),
+  ).then((workers) =>
+    workers.forEach((worker) => {
+      worker.terminate() // Workerpool teardown
+    }),
+  )
 }
