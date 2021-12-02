@@ -40,7 +40,7 @@ export const countFormSubmissions = async ({
 export const getFormSubmissionsMetadata = async (
   formId: string,
 ): Promise<StorageModeSubmissionMetadataList> => {
-  const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata?page=1`
+  const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata?page=1` // To be generalized in later PRs
   return ApiService.get(queryUrl).then(({ data }) => data)
 }
 
@@ -67,6 +67,8 @@ export const downloadEncryptedResponses = async (
       wrap<import('./workers/decryption.worker').DecryptionWorker>(worker)
     workerPool.push({ worker, workerApi })
   }
+
+  // TO DO: Implemantation of decrypting and downloading responses in later PRs
 
   Promise.all(
     workerPool.map(async (worker: Worker, idx: number) => {
