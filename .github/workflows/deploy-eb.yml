@@ -87,7 +87,7 @@ jobs:
         run: |
           if [[ "$SENTRY_PROJECT" &&  "$SENTRY_AUTH_TOKEN" && "$SENTRY_ORG" && "$SENTRY_URL" ]]; then
               curl -sL https://sentry.io/get-cli/ | bash
-              sentry-cli releases --org $SENTRY_ORG --project $SENTRY_PROJECT new "$TAG"
-              sentry-cli releases files "$TAG" upload-sourcemaps ./ --rewrite --ignore-file .sentryignore
-              sentry-cli releases finalize "$TAG"
+              sentry-cli releases --org $SENTRY_ORG --project $SENTRY_PROJECT new "$IMAGE_TAG"
+              sentry-cli releases files "$IMAGE_TAG" upload-sourcemaps ./ --rewrite --ignore-file .sentryignore
+              sentry-cli releases finalize "$IMAGE_TAG"
           fi
