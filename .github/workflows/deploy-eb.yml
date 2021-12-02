@@ -61,18 +61,31 @@ jobs:
           sed -i -e "s/@TAG/$IMAGE_TAG/g" Dockerrun.aws.json 
           zip -r "$IMAGE_TAG.zip" .ebextensions Dockerrun.aws.json
 
-      - name: Deploy to Elastic Beanstalk
+      - name: Copy to S3
         env:
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
-          APP_NAME: ${{ secrets.APP_NAME }}
-          DEPLOY_ENV: ${{ secrets.DEPLOY_ENV }}
         run: |
           aws s3 cp $IMAGE_TAG.zip s3://$BUCKET_NAME/$IMAGE_TAG.zip
 
+      - name: Create application version
+        env:
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+          APP_NAME: ${{ secrets.APP_NAME }}
+        continue-on-error: true # Allow to skip so that workflow can be rerun if environment update fails
+        run: |
           aws elasticbeanstalk create-application-version --application-name $APP_NAME \
           --version-label $IMAGE_TAG \
           --source-bundle S3Bucket=$BUCKET_NAME,S3Key=$IMAGE_TAG.zip \
           --description "${{ github.event.head_commit.message }}"
+
+      - name: Update EB environment
+        env:
+          APP_NAME: ${{ secrets.APP_NAME }}
+          DEPLOY_ENV: ${{ secrets.DEPLOY_ENV }}
+        run: |
+          aws elasticbeanstalk update-environment --application-name $APP_NAME \
+            --environment-name $DEPLOY_ENV \
+            --version-label $IMAGE_TAG
 
           aws elasticbeanstalk update-environment --application-name $APP_NAME \
             --environment-name $DEPLOY_ENV \
