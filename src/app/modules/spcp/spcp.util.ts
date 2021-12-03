@@ -65,11 +65,7 @@ export const isValidAuthenticationQuery = (
   destination: string,
   idpPartnerEntityId: string,
 ): boolean => {
-  return (
-    !!destination &&
-    isArtifactValid(idpPartnerEntityId, samlArt) &&
-    DESTINATION_REGEX.test(destination)
-  )
+  return !!destination && isArtifactValid(idpPartnerEntityId, samlArt)
 }
 
 /**
@@ -299,10 +295,11 @@ export const getRedirectTarget = (
   formId: string,
   authType: FormAuthType.SP | FormAuthType.CP,
   isPersistentLogin?: boolean,
+  encodedQuery?: string,
 ): string =>
   `/${formId},${
     // Need to cast to boolean because undefined is allowed as a valid value
     // We are not following corppass's official spec for
     // the target parameter
     authType === FormAuthType.SP ? !!isPersistentLogin : false
-  }`
+  },${encodedQuery ?? ''}`
