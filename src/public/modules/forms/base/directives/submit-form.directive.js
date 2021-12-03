@@ -101,7 +101,7 @@ function submitFormDirective(
         if (isPersistentLogin) GTag.persistentLoginUse(scope.form)
 
         const query = $location.url().split('?')
-        const encodedQuery = btoa(query.length > 1 ? query[1] : '')
+        const encodedQuery = query.length > 1 ? btoa(query[1]) : undefined
 
         return $q
           .when(
