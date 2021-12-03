@@ -28,7 +28,7 @@ describe('PublicFormAuthService', () => {
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${MOCK_FORM_ID}/auth/redirect`,
         {
-          params: { isPersistentLogin: false },
+          params: { isPersistentLogin: false, encodedQuery: '' },
         },
       )
       expect(result).toEqual(mockData)
@@ -49,7 +49,7 @@ describe('PublicFormAuthService', () => {
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${MOCK_FORM_ID}/auth/redirect`,
         {
-          params: { isPersistentLogin: true },
+          params: { isPersistentLogin: true, encodedQuery: '' },
         },
       )
       expect(result).toEqual(mockData)
@@ -69,7 +69,7 @@ describe('PublicFormAuthService', () => {
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${MOCK_FORM_ID}/auth/redirect`,
         {
-          params: { isPersistentLogin: false },
+          params: { isPersistentLogin: false, encodedQuery: '' },
         },
       )
     })

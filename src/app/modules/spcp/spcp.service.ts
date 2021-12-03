@@ -336,7 +336,7 @@ export class SpcpServiceClass {
     const encodedQuery = payloads.length === 3 ? payloads[2] : ''
     const decodedQuery =
       encodedQuery.length > 0
-        ? `?Buffer.from(encodedQuery, 'base64').toString('utf8')`
+        ? `?${Buffer.from(encodedQuery, 'base64').toString('utf8')}`
         : ''
 
     const destination = `${payloads[0]}${decodedQuery}`
