@@ -16,7 +16,7 @@ const ResponsesPage = (): JSX.Element => {
   const [secretKey, setSecretKey] = useState<string>('')
 
   const handleCsvExport = async () => {
-    await downloadEncryptedResponses(formId!, settings!.title, secretKey)
+    downloadEncryptedResponses(formId!, settings!.title, secretKey)
   }
 
   return (

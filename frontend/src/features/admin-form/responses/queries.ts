@@ -13,7 +13,7 @@ import {
 export const adminFormResponsesKeys = {
   base: [...adminFormKeys.base, 'responses'] as const,
   id: (id: string) => [...adminFormResponsesKeys.base, id] as const,
-  count: (id: string) => [...adminFormResponsesKeys.base, id, 'count'] as const,
+  count: (id: string) => [...adminFormResponsesKeys.id(id), 'count'] as const,
 }
 
 /**
