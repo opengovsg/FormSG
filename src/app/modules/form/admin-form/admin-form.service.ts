@@ -4,7 +4,6 @@ import {
   CreateSecretRequest,
   DeleteSecretRequest,
   PutSecretValueRequest,
-  RestoreSecretRequest,
 } from 'aws-sdk/clients/secretsmanager'
 import { assignIn, last, omit } from 'lodash'
 import { ClientSession } from 'mongodb'
@@ -59,6 +58,7 @@ import {
   DatabasePayloadSizeError,
   DatabaseValidationError,
   PossibleDatabaseError,
+  SecretsManagerConflictError,
   SecretsManagerError,
   SecretsManagerNotFoundError,
   TwilioCacheError,
@@ -1200,7 +1200,7 @@ export const createTwilioCredentials = (
   }
 
   logger.info({
-    message: `no msgSrvcName, creating Twilio credentials for form ${formId}`,
+    message: `No msgSrvcName, creating Twilio credentials for form ${formId}`,
     meta: logMeta,
   })
 
@@ -1221,8 +1221,6 @@ export const createTwilioCredentials = (
         },
         error,
       })
-
-      // if (error.name) console.log(error.name)
 
       return new SecretsManagerError('Error occurred when creating Twilio!')
     },
@@ -1246,33 +1244,70 @@ export const createTwilioTransaction = async (
   session: ClientSession,
 ): Promise<void> => {
   const logMeta = {
-    action: 'updateTwilioCredentials',
+    action: 'createTwilioTransaction',
     msgSrvcName,
   }
-  await form.updateMsgSrvcName(msgSrvcName, session)
-  try {
-    await secretsManager.createSecret(body).promise()
-  } catch (err) {
-    const awsError = err as AWSError
 
-    if (awsError.code === 'ResourceExistsException') {
-      logger.info({
-        message:
-          'Twilio Credentials exists in Secrets Manager, proceeeding to restore and update secret',
+  await form.updateMsgSrvcName(msgSrvcName, session)
+
+  try {
+    const awsResponse = await secretsManager.createSecret(body).promise()
+
+    logger.info({
+      message: 'Created secrets in AWS Secrets Manager',
+      meta: {
+        action: 'createTwilioTransaction',
+        awsResponse,
+      },
+    })
+  } catch (err) {
+    const createSecretError = err as AWSError
+
+    if (createSecretError.code === 'ResourceExistsException') {
+      logger.error({
+        message: 'Secret with specified SecretId already exists',
         meta: logMeta,
       })
 
-      const restoreRequestBody: RestoreSecretRequest = {
-        SecretId: msgSrvcName,
-      }
+      try {
+        await secretsManager.getSecretValue({ SecretId: msgSrvcName }).promise()
+      } catch (err) {
+        const getSecretError = err as AWSError
 
-      const putRequestBody: PutSecretValueRequest = {
-        SecretId: msgSrvcName,
-        SecretString: body.SecretString,
-      }
+        if (getSecretError.code === 'InvalidRequestException') {
+          /**
+           * If secret is scheduled for deletion, requests to retrieve the secret from AWS will be
+           * met with a InvalidRequestExcetion
+           */
+          logger.info({
+            message:
+              'Twilio Credentials exists in Secrets Manager and is scheduled for deletion, proceeding to restore and update secret',
+            meta: logMeta,
+          })
 
-      await secretsManager.restoreSecret(restoreRequestBody).promise()
-      await secretsManager.putSecretValue(putRequestBody).promise()
+          await secretsManager
+            .restoreSecret({ SecretId: msgSrvcName })
+            .promise()
+          await secretsManager
+            .putSecretValue({
+              SecretId: msgSrvcName,
+              SecretString: body.SecretString,
+            })
+            .promise()
+        } else {
+          logger.error({
+            message:
+              'Twilio Credentials exists in Secrets Manager but is not scheduled for deletion!',
+            meta: logMeta,
+          })
+
+          throw new SecretsManagerConflictError(
+            'Resource in SecretsManager not scheduled for deletion!',
+          )
+        }
+      }
+    } else {
+      throw createSecretError
     }
   }
 }
@@ -1353,8 +1388,8 @@ export const updateTwilioCredentials = (
 }
 
 /**
- * Uses the msgSrvcName to delete the Twilio Credentials in AWS Secrets Manager and removes msgSrvcName from
- * the form in MongoDB as part of a transaction
+ * Uses the msgSrvcName to schedule the Twilio Credentials for deletion in AWS Secrets Manager and removes
+ * msgSrvcName from the form in MongoDB as part of a transaction
  *
  * Clears the cache entry in which the Twilio Credentials are stored under
  * @param form The form to delete Twilio Credentials
@@ -1373,24 +1408,8 @@ export const deleteTwilioCredentials = (
     SecretId: msgSrvcName,
   }
   /**
-   * We need the ForceDeleteWithoutRecovery boolean flag for it to be deleted immediately
-   *
-   * If not, the key-value pair will remain in SecretsManager for another 14 days before
-   * being deleted: https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_delete-secret.html
-   *
-   * This will result in user not being able to add new Twilio Credentials immediately
-   *
-   * Currently, there also dosen't seem to be a way to signal to secrets manager to upsert the data if a secret
-   * is scheduled to be deleted.
-   *
-   * The only way it can be done is to use the Restore Secret Command
-   *
-   * We will need to do is to catch the ResourceExistsException during create operation, restore the secret,
-   * force delete the restored one and then retry the whole create credentials operation.
-   *
-   * However, there is also a problem with this approach which is if ResourceExistsException is thrown for a key
-   * that exists and is not being scheduled for deletion (key collision, even though unlikely and not suppsoed
-   * to happen)
+   * The key-value pair will not be deleted immediately, but instead remain in SecretsManager for another 30 days
+   * before being deleted: https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_delete-secret.html
    */
 
   const formId = form._id
@@ -1420,6 +1439,7 @@ export const deleteTwilioCredentials = (
           'Twilio Credentials do not exist in Secrets Manager',
         )
       }
+
       logger.error({
         message: 'Unknown Secrets Manager Error has occured',
         meta: logMeta,
@@ -1474,5 +1494,12 @@ const deleteTwilioTransaction = async (
   session: ClientSession,
 ): Promise<void> => {
   await form.deleteMsgSrvcName(session)
-  await secretsManager.deleteSecret(body).promise()
+  const awsResponse = await secretsManager.deleteSecret(body).promise()
+  logger.info({
+    message: 'Scheduled Secrets for deletion in AWS Secrets Manager',
+    meta: {
+      action: 'deleteTwilioTransaction',
+      awsResponse,
+    },
+  })
 }

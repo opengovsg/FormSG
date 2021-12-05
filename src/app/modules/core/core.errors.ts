@@ -57,6 +57,12 @@ export class SecretsManagerNotFoundError extends ApplicationError {
   }
 }
 
+export class SecretsManagerConflictError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}
+
 export class TwilioCacheError extends ApplicationError {
   constructor(message?: string) {
     super(message)

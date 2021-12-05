@@ -327,7 +327,6 @@ describe('admin-form.twilio.routes', () => {
       expect(formSpy).toBeCalled()
       expect(deleteSecretSpy).toHaveBeenCalledWith({
         SecretId: msgSrvcName,
-        ForceDeleteWithoutRecovery: true,
       })
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(MOCK_SUCCESSFUL_DELETE_RESPONSE)

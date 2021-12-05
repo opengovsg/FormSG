@@ -22,6 +22,7 @@ import {
   DatabasePayloadSizeError,
   DatabaseValidationError,
   MalformedParametersError,
+  SecretsManagerConflictError,
   SecretsManagerError,
   SecretsManagerNotFoundError,
   TwilioCacheError,
@@ -132,6 +133,11 @@ export const mapRouteError = (
     case SecretsManagerNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: coreErrorMessage ?? error.message,
+      }
+    case SecretsManagerConflictError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
         errorMessage: coreErrorMessage ?? error.message,
       }
     case SecretsManagerError:
