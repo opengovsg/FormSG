@@ -15,7 +15,7 @@ const logger = createLoggerWithLabel(module)
 const validateTwilioWebhook = Twilio.webhook({ validate: !isDev })
 
 /**
- * Process the Webhook requests if they are failed or unsuccessful, ignoring the rest
+ * Logs all incoming Webhook requests from Twilio in AWS
  *
  * @param req Express request object
  * @param res - Express response object
