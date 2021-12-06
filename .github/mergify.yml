@@ -11,7 +11,6 @@ pull_request_rules:
       - check-success~=CodeQL # CodeQL code scanning results
       - check-success~=GitGuardian
       - check-success~=Semantic Pull Request
-      - check-success~=build_deploy_application
       - check-success~=coverage/coveralls
       - check-success~=license/snyk
       - check-success~=security/snyk
@@ -32,7 +31,6 @@ pull_request_rules:
       - check-success~=CodeQL # CodeQL code scanning results
       - check-success~=GitGuardian
       - check-success~=Semantic Pull Request
-      - check-success~=build_deploy_application
       - check-success~=coverage/coveralls
       - check-success~=license/snyk
       - check-success~=security/snyk
