@@ -305,9 +305,8 @@ export const getRedirectTarget = (
   // Need to cast to boolean because undefined is allowed as a valid value
   // We are not following corppass's official spec for
   // the target parameter
-  const persistentLogin = `${
+  const persistentLogin =
     authType === FormAuthType.SP ? !!isPersistentLogin : false
-  }`
   return encodedQuery
     ? `/${formId},${persistentLogin},${encodedQuery}`
     : `/${formId},${persistentLogin}`
