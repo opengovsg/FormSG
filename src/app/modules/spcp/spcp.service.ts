@@ -334,10 +334,21 @@ export class SpcpServiceClass {
 
     const rememberMe = payloads[1] === 'true'
     const encodedQuery = payloads.length === 3 ? payloads[2] : ''
-    const decodedQuery =
-      encodedQuery.length > 0
+    let decodedQuery = ''
+
+    try {
+      decodedQuery = encodedQuery
         ? `?${Buffer.from(encodedQuery, 'base64').toString('utf8')}`
         : ''
+    } catch (err) {
+      logger.warn({
+        message: 'Unable to decode encodedQuery',
+        meta: {
+          encodedQuery,
+        },
+        error: err,
+      })
+    }
 
     const destination = `${payloads[0]}${decodedQuery}`
 

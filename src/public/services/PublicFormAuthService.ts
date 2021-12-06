@@ -13,7 +13,7 @@ export const PUBLIC_FORMS_ENDPOINT = '/api/v3/forms'
 export const createRedirectURL = (
   formId: string,
   isPersistentLogin = false,
-  encodedQuery = '',
+  encodedQuery?,
 ): Promise<PublicFormAuthRedirectDto> => {
   return axios
     .get<PublicFormAuthRedirectDto>(

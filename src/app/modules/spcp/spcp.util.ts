@@ -53,6 +53,8 @@ const isArtifactValid = function (
   )
 }
 
+export type RedirectTarget = `${string},${boolean},${string}`
+
 /**
  * Returns true if the SAML artifact and destination have the correct format,
  * false otherwise.
@@ -296,10 +298,10 @@ export const getRedirectTarget = (
   authType: FormAuthType.SP | FormAuthType.CP,
   isPersistentLogin?: boolean,
   encodedQuery?: string,
-): string =>
+): RedirectTarget =>
   `/${formId},${
     // Need to cast to boolean because undefined is allowed as a valid value
     // We are not following corppass's official spec for
     // the target parameter
     authType === FormAuthType.SP ? !!isPersistentLogin : false
-  },${encodedQuery ?? ''}`
+  }${encodedQuery ? `,${encodedQuery}` : ''}`
