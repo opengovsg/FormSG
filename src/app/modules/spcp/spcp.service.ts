@@ -344,6 +344,7 @@ export class SpcpServiceClass {
       logger.warn({
         message: 'Unable to decode encodedQuery',
         meta: {
+          action: 'parseOOBParams',
           encodedQuery,
         },
         error: err,
