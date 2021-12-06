@@ -53,7 +53,7 @@ const isArtifactValid = function (
   )
 }
 
-// either <formId>,true or <formId>,true,encodedQuery
+// either <formId>,boolean or <formId>,boolean,encodedQuery
 export type RedirectTarget =
   | `${string},${boolean}`
   | `${string},${boolean},${string}`
@@ -301,10 +301,14 @@ export const getRedirectTarget = (
   authType: FormAuthType.SP | FormAuthType.CP,
   isPersistentLogin?: boolean,
   encodedQuery?: string,
-): RedirectTarget =>
-  `/${formId},${
-    // Need to cast to boolean because undefined is allowed as a valid value
-    // We are not following corppass's official spec for
-    // the target parameter
+): RedirectTarget => {
+  // Need to cast to boolean because undefined is allowed as a valid value
+  // We are not following corppass's official spec for
+  // the target parameter
+  const persistentLogin = `${
     authType === FormAuthType.SP ? !!isPersistentLogin : false
-  }${encodedQuery ? `,${encodedQuery}` : ''}`
+  }`
+  return encodedQuery
+    ? `/${formId},${persistentLogin},${encodedQuery}`
+    : `/${formId},${persistentLogin}`
+}
