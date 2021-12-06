@@ -54,7 +54,9 @@ const isArtifactValid = function (
 }
 
 // either <formId>,true or <formId>,true,encodedQuery
-export type RedirectTarget = `${string},${boolean}${string}`
+export type RedirectTarget =
+  | `${string},${boolean}`
+  | `${string},${boolean},${string}`
 
 /**
  * Returns true if the SAML artifact and destination have the correct format,
