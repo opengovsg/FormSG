@@ -340,14 +340,14 @@ export class SpcpServiceClass {
       decodedQuery = encodedQuery
         ? `?${Buffer.from(encodedQuery, 'base64').toString('utf8')}`
         : ''
-    } catch (err) {
+    } catch (e) {
       logger.error({
         message: 'Unable to decode encodedQuery',
         meta: {
           action: 'parseOOBParams',
           encodedQuery,
         },
-        error: err,
+        error: e,
       })
       return err(new InvalidOOBParamsError())
     }
