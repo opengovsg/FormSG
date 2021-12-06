@@ -1,4 +1,5 @@
 import { Remote, wrap } from 'comlink'
+// eslint-disable-next-line import/no-webpack-loader-syntax
 import DecryptionWorker from 'worker-loader!./workers/decryption.worker'
 
 import {
