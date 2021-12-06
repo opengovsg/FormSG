@@ -660,14 +660,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     formId: string,
     fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null> {
-    return this.findById(formId, fields)
-      .populate({
-        path: 'admin',
-        populate: {
-          path: 'agency',
-        },
-      })
-      .exec() as Promise<IPopulatedForm | null>
+    return (
+      // @ts-expect-error Type instantiation excessively deep, mongoose type bug.
+      this.findById(formId, fields)
+        .populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
+        .exec() as Promise<IPopulatedForm | null>
+    )
   }
 
   // Deactivate form by ID
