@@ -14,6 +14,9 @@ NotificationsRouter.use('/bounces', BouncesRouter)
  * Logs any errors or failures in SMS delivery while ignoring succesful
  * status updates
  *
+ * Path here is required to be synced with statusCallbackRoute under
+ * sms.service#sendSms
+ *
  * @route POST /api/v3/notifications/twilio
  *
  * @returns 200 when message succesfully received and logged
