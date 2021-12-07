@@ -1250,6 +1250,12 @@ export const createTwilioTransaction = async (
 
   await form.updateMsgSrvcName(msgSrvcName, session)
 
+  /**
+   * Implemented using try-catch here because ResultAsync chain block wraps the error, causing the
+   * transaction to not rollback. Errors thrown in the withTransaction() callback function dosen't
+   * seem to rollback properly too.
+   */
+
   try {
     const awsResponse = await secretsManager.createSecret(body).promise()
 
