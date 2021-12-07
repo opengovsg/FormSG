@@ -91,9 +91,8 @@ export const WorkspacePage = (): JSX.Element => {
   } = useWorkspaceForms()
 
   useLayoutEffect(() => {
-    // Scroll to top on page change
-    // block='center' is required or overflow will happen.
-    topRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    // Scroll to top on workspace list page on change
+    topRef.current?.scrollIntoView()
   }, [currentPage])
 
   const topRef = useRef<HTMLDivElement>(null)
@@ -103,9 +102,8 @@ export const WorkspacePage = (): JSX.Element => {
       bg="neutral.100"
       templateColumns="1fr"
       templateRows="auto 1fr auto"
+      minH="100vh"
       templateAreas="'header' 'main' 'footer'"
-      h="100vh"
-      overflow="auto"
     >
       <Container
         gridArea="header"
@@ -118,7 +116,7 @@ export const WorkspacePage = (): JSX.Element => {
           totalFormCount={totalFormCount}
         />
       </Container>
-      <Box gridArea="main" overflow={{ base: 'initial', md: 'auto' }}>
+      <Box gridArea="main">
         <Box ref={topRef} />
         <Stack
           maxW={CONTAINER_MAXW}

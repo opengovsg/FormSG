@@ -9,11 +9,6 @@ import { textStyles } from './textStyles'
 export const theme = extendTheme({
   styles: {
     global: {
-      body: {
-        // Prevent wonky scrolling.
-        overflow: 'hidden',
-        fontFeatureSettings: "'tnum' on, 'cv05' on",
-      },
       /**
        * This will hide the focus indicator if the element receives focus via
        * the mouse,but it will still show up on keyboard focus.
