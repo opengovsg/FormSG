@@ -49,7 +49,7 @@ describe('Country validation', () => {
     const formField = generateDefaultField(BasicField.Country, {
       required: false,
     })
-    const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
+    const response = generateNewSingleAnswerResponse(BasicField.Country, {
       answer: '',
     })
     const validateResult = validateField('formId', formField, response)
@@ -70,7 +70,7 @@ describe('Country validation', () => {
 
   it('should disallow empty answer when it is required and visible', () => {
     const formField = generateDefaultField(BasicField.Country, {})
-    const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
+    const response = generateNewSingleAnswerResponse(BasicField.Country, {
       answer: '',
     })
     const validateResult = validateField('formId', formField, response)
