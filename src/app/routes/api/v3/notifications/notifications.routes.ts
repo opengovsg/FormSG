@@ -9,10 +9,7 @@ export const NotificationsRouter = Router()
 NotificationsRouter.use('/bounces', BouncesRouter)
 
 /**
- * Receives SMS delivery status updates from Twilio webhook
- *
- * Logs any errors or failures in SMS delivery while ignoring succesful
- * status updates
+ * Receives and logs all SMS delivery status updates from Twilio webhook
  *
  * Path here is required to be synced with statusCallbackRoute under
  * sms.service#sendSms
@@ -20,7 +17,6 @@ NotificationsRouter.use('/bounces', BouncesRouter)
  * @route POST /api/v3/notifications/twilio
  *
  * @returns 200 when message succesfully received and logged
- * @returns 400 when request is not coming from Twilio
- * @returns 403 when twilio request validation failed
+ * @returns 400 when request is not coming from Twilio or request body s invalid
  */
 NotificationsRouter.post('/twilio', handleTwilioSmsUpdates)
