@@ -76,7 +76,7 @@ jobs:
           aws elasticbeanstalk create-application-version --application-name $APP_NAME \
           --version-label $IMAGE_TAG \
           --source-bundle S3Bucket=$BUCKET_NAME,S3Key=$IMAGE_TAG.zip \
-          --description $TRUNCATED_DESC
+          --description "$TRUNCATED_DESC"
 
       - name: Update EB environment
         id: update-eb-1
