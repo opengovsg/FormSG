@@ -45,11 +45,15 @@ describe('notifications.routes', () => {
     ErrorMessage: 'Twilio is down!',
   }
 
+  const TWILIO_SIGNATURE_HEADER_KEY = 'x-twilio-signature'
+  const MOCK_TWILIO_SIGNATURE = 'mockSignature'
+
   describe('POST notifications/twilio', () => {
     it('should return 200 on sending successful delivery status message', async () => {
       const response = await request
         .post('/notifications/twilio')
         .send(MOCK_SUCCESSFUL_MESSAGE)
+        .set(TWILIO_SIGNATURE_HEADER_KEY, MOCK_TWILIO_SIGNATURE)
 
       expect(response.status).toEqual(200)
       expect(response.body).toBeEmpty()
@@ -59,9 +63,18 @@ describe('notifications.routes', () => {
       const response = await request
         .post('/notifications/twilio')
         .send(MOCK_FAILED_MESSAGE)
+        .set(TWILIO_SIGNATURE_HEADER_KEY, MOCK_TWILIO_SIGNATURE)
 
       expect(response.status).toEqual(200)
       expect(response.body).toBeEmpty()
+    })
+
+    it('should return 400 on sending successful delivery status message without wilio signature', async () => {
+      const response = await request
+        .post('/notifications/twilio')
+        .send(MOCK_SUCCESSFUL_MESSAGE)
+
+      expect(response.status).toEqual(400)
     })
   })
 })
