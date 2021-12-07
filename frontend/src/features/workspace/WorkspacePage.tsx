@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Box, Container, Divider, Grid, Stack } from '@chakra-ui/react'
+import { Box, Container, Grid, Stack, StackDivider } from '@chakra-ui/react'
 import { chunk } from 'lodash'
 
 import Pagination from '~components/Pagination'
@@ -22,7 +22,7 @@ const PAGE_DEFAULTS = {
   pageNumber: 1,
 }
 
-const CONTAINER_MAXW = '69.5rem'
+export const CONTAINER_MAXW = '69.5rem'
 
 const useWorkspaceForms = () => {
   const { data: dashboardForms, isLoading } = useWorkspace()
@@ -119,13 +119,7 @@ export const WorkspacePage = (): JSX.Element => {
       </Container>
       <Box gridArea="main">
         <Box ref={topRef} />
-        <Stack
-          maxW={CONTAINER_MAXW}
-          m="auto"
-          divider={<Divider borderColor="neutral.300" />}
-        >
-          <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
-        </Stack>
+        <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
       </Box>
       <Container
         gridArea="footer"
