@@ -189,12 +189,15 @@ const sendSms = (
     smsType,
   }
 
+  const statusCallbackRoute = '/api/v3/notifications/twilio'
+
   return ResultAsync.fromPromise(
     client.messages.create({
       to: recipient,
       body: message,
       from: msgSrvcSid,
       forceDelivery: true,
+      statusCallback: config.app.appUrl + statusCallbackRoute,
     }),
     (error) => {
       logger.error({
