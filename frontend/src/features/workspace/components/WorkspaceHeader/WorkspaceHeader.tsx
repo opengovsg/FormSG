@@ -33,18 +33,23 @@ export const WorkspaceHeader = ({
   })
 
   return (
-    <Stack justify="space-between" direction={{ base: 'column', md: 'row' }}>
+    <Stack
+      justify="space-between"
+      direction={{ base: 'column', md: 'row' }}
+      align={{ base: 'flex-start', md: 'center' }}
+      spacing="1rem"
+    >
       <Text
         flex={1}
         as="h2"
         textStyle="h2"
         display="flex"
         color="secondary.500"
-        my="0.75rem"
       >
         All forms (<Skeleton isLoaded={!isLoading}>{totalFormCount}</Skeleton>)
       </Text>
       <Stack
+        w={{ base: '100%', md: 'auto' }}
         spacing="1rem"
         direction={{ base: 'column', md: 'row' }}
         h="fit-content"

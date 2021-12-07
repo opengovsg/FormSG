@@ -109,7 +109,8 @@ export const WorkspacePage = (): JSX.Element => {
         gridArea="header"
         maxW={CONTAINER_MAXW}
         borderBottom="1px solid var(--chakra-colors-neutral-300)"
-        p="2rem"
+        px="2rem"
+        py="1rem"
       >
         <WorkspaceHeader
           isLoading={isLoading}
