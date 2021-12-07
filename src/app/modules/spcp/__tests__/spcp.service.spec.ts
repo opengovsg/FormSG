@@ -28,7 +28,9 @@ import {
   MOCK_COOKIES,
   MOCK_CP_JWT_PAYLOAD,
   MOCK_CP_SAML,
+  MOCK_DECODED_QUERY,
   MOCK_DESTINATION,
+  MOCK_ENCODED_QUERY,
   MOCK_ERROR_CODE,
   MOCK_ESRVCID,
   MOCK_GET_ATTRIBUTES_RETURN_VALUE,
@@ -430,6 +432,23 @@ describe('spcp.service', () => {
       })
     })
 
+    it('should parse SP params correctly when there is encodedQuery payload', () => {
+      const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
+      const mockRelayState = `/${MOCK_TARGET},true,${MOCK_ENCODED_QUERY}`
+
+      const parsedResult = spcpServiceClass.parseOOBParams(
+        MOCK_SP_SAML,
+        mockRelayState,
+        FormAuthType.SP,
+      )
+      expect(parsedResult._unsafeUnwrap()).toEqual({
+        formId: MOCK_TARGET,
+        destination: `/${MOCK_TARGET}${MOCK_DECODED_QUERY}`,
+        rememberMe: true,
+        cookieDuration: MOCK_PARAMS.spCookieMaxAgePreserved,
+      })
+    })
+
     it('should return InvalidOOBParamsError when SP relay state has 0 commas', () => {
       const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
       const mockRelayState = `/${MOCK_TARGET}true`
@@ -456,9 +475,9 @@ describe('spcp.service', () => {
       )
     })
 
-    it('should return InvalidOOBParamsError when SP relay state has >1 commas', () => {
+    it('should return InvalidOOBParamsError when SP relay state has >2 commas', () => {
       const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
-      const mockRelayState = `/${MOCK_TARGET},t,rue`
+      const mockRelayState = `/${MOCK_TARGET},t,r,ue`
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_SP_SAML,
         mockRelayState,
@@ -469,9 +488,9 @@ describe('spcp.service', () => {
       )
     })
 
-    it('should return InvalidOOBParamsError when CP relay state has >1 commas', () => {
+    it('should return InvalidOOBParamsError when CP relay state has >2 commas', () => {
       const spcpServiceClass = new SpcpServiceClass(MOCK_PARAMS)
-      const mockRelayState = `/${MOCK_TARGET},t,rue`
+      const mockRelayState = `/${MOCK_TARGET},t,r,ue`
       const parsedResult = spcpServiceClass.parseOOBParams(
         MOCK_CP_SAML,
         mockRelayState,

@@ -395,6 +395,7 @@ export const handleGetPublicForm: ControllerHandler<
  * NOTE: This is exported only for testing
  * Generates redirect URL to Official SingPass/CorpPass log in page
  * @param isPersistentLogin whether the client wants to have their login information stored
+ * @param encodedQuery base64 encoded querystring (usually contains prefilled form information)
  * @returns 200 with the redirect url when the user authenticates successfully
  * @returns 400 when there is an error on the authType of the form
  * @returns 400 when the eServiceId of the form does not exist
@@ -407,10 +408,10 @@ export const _handleFormAuthRedirect: ControllerHandler<
   { formId: string },
   PublicFormAuthRedirectDto | ErrorDto,
   unknown,
-  { isPersistentLogin?: boolean }
+  { isPersistentLogin?: boolean; encodedQuery?: string }
 > = (req, res) => {
   const { formId } = req.params
-  const { isPersistentLogin } = req.query
+  const { isPersistentLogin, encodedQuery } = req.query
   const logMeta = {
     action: 'handleFormAuthRedirect',
     ...createReqMeta(req),
@@ -437,6 +438,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
               formId,
               form.authType,
               isPersistentLogin,
+              encodedQuery,
             )
             return SpcpService.createRedirectUrl(
               form.authType,
@@ -482,6 +484,7 @@ export const handleFormAuthRedirect = [
     }),
     [Segments.QUERY]: Joi.object({
       isPersistentLogin: Joi.boolean().optional(),
+      encodedQuery: Joi.string().allow('').optional(),
     }),
   }),
   _handleFormAuthRedirect,

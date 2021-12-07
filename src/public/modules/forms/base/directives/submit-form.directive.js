@@ -39,6 +39,7 @@ angular
     'Submissions',
     '$uibModal',
     '$timeout',
+    '$location',
     submitFormDirective,
   ])
 
@@ -54,6 +55,7 @@ function submitFormDirective(
   Submissions,
   $uibModal,
   $timeout,
+  $location,
 ) {
   return {
     restrict: 'E',
@@ -98,11 +100,15 @@ function submitFormDirective(
         // Fire GA tracking event
         if (isPersistentLogin) GTag.persistentLoginUse(scope.form)
 
+        const query = $location.url().split('?')
+        const encodedQuery = query.length > 1 ? btoa(query[1]) : undefined
+
         return $q
           .when(
             PublicFormAuthService.createRedirectURL(
               scope.form._id,
               isPersistentLogin,
+              encodedQuery,
             ),
           )
           .then((response) => {
