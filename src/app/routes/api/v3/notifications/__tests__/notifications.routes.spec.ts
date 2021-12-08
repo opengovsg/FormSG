@@ -1,8 +1,9 @@
 import supertest, { Session } from 'supertest-session'
 
+import { ITwilioSmsWebhookBody } from 'src/types'
+
 import { setupApp } from 'tests/integration/helpers/express-setup'
 
-import { ITwilioSmsWebhookBody } from './../../../../../../types/twilio'
 import { NotificationsRouter } from './../notifications.routes'
 
 // Prevent rate limiting.
