@@ -17,18 +17,20 @@ const validateTwilioWebhook = celebrate({
   [Segments.HEADERS]: Joi.object({
     'x-twilio-signature': Joi.string().required(),
   }).unknown(),
-  [Segments.BODY]: Joi.object().keys({
-    SmsSid: Joi.string().required(),
-    SmsStatus: Joi.string().required(),
-    MessageStatus: Joi.string().required(),
-    To: Joi.string().required(),
-    MessageSid: Joi.string().required(),
-    AccountSid: Joi.string().required(),
-    From: Joi.string().required(),
-    ApiVersion: Joi.string().required(),
-    ErrorCode: Joi.number(), //Unable to find any official documentation stating the ErrorCode type but should be a number
-    ErrorMessage: Joi.string(),
-  }),
+  [Segments.BODY]: Joi.object()
+    .keys({
+      SmsSid: Joi.string().required(),
+      SmsStatus: Joi.string().required(),
+      MessageStatus: Joi.string().required(),
+      To: Joi.string().required(),
+      MessageSid: Joi.string().required(),
+      AccountSid: Joi.string().required(),
+      From: Joi.string().required(),
+      ApiVersion: Joi.string().required(),
+      ErrorCode: Joi.number(), //Unable to find any official documentation stating the ErrorCode type but should be a number
+      ErrorMessage: Joi.string(),
+    })
+    .unknown(),
 })
 
 /**
