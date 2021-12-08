@@ -1,10 +1,7 @@
-import { Flex, Icon, Text } from '@chakra-ui/react'
+import { As, Flex, Icon, Text } from '@chakra-ui/react'
 
-import { BxsBank } from '~assets/icons/BxsBank'
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface GovtMastheadItemProps {
-  icon: React.ReactNode
+  icon: As
   header: string
   children: React.ReactNode
 }
@@ -17,7 +14,7 @@ export const GovtMastheadItem = ({
   return (
     <Flex flex={1} maxW="32rem">
       <Icon
-        as={BxsBank}
+        as={icon}
         fontSize={{ base: '1rem', lg: '1.5rem' }}
         mr={{ base: '0.5rem', lg: '0.75rem' }}
       />
