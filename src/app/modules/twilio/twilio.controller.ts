@@ -1,9 +1,8 @@
+import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
-import Twilio from 'twilio'
 
 import { ITwilioSmsWebhookBody } from 'src/types/twilio'
 
-import { isDev } from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 
@@ -11,8 +10,28 @@ const logger = createLoggerWithLabel(module)
 
 /**
  * Middleware which validates that a request came from Twilio Webhook
+ * by checking the presence of X-Twilio-Sgnature in request header and
+ * sms delivery status request body parameters
  */
-const validateTwilioWebhook = Twilio.webhook({ validate: !isDev })
+const validateTwilioWebhook = celebrate({
+  [Segments.HEADERS]: Joi.object({
+    'x-twilio-signature': Joi.string().required(),
+  }).unknown(),
+  [Segments.BODY]: Joi.object()
+    .keys({
+      SmsSid: Joi.string().required(),
+      SmsStatus: Joi.string().required(),
+      MessageStatus: Joi.string().required(),
+      To: Joi.string().required(),
+      MessageSid: Joi.string().required(),
+      AccountSid: Joi.string().required(),
+      From: Joi.string().required(),
+      ApiVersion: Joi.string().required(),
+      ErrorCode: Joi.number(), //Unable to find any official documentation stating the ErrorCode type but should be a number
+      ErrorMessage: Joi.string(),
+    })
+    .unknown(),
+})
 
 /**
  * Logs all incoming Webhook requests from Twilio in AWS

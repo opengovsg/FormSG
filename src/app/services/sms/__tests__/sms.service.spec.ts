@@ -13,7 +13,6 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormResponseMode } from '../../../../../shared/types'
 import { VfnErrors } from '../../../../../shared/utils/verification'
-import config from '../../../config/config'
 import { InvalidNumberError } from '../sms.errors'
 import * as SmsService from '../sms.service'
 import { LogType, SmsType, TwilioConfig } from '../sms.types'
@@ -36,8 +35,7 @@ const MOCK_ADMIN_ID = new ObjectId().toHexString()
 const MOCK_FORM_ID = new ObjectId().toHexString()
 const MOCK_FORM_TITLE = 'formTitle'
 
-const MOCK_TWILIO_WEBHOOK_ENDPOINT =
-  config.app.appUrl + '/api/v3/notifications/twilio'
+const MOCK_TWILIO_WEBHOOK_ROUTE = '/api/v3/notifications/twilio'
 
 const twilioSuccessSpy = jest.fn().mockResolvedValue({
   status: 'testStatus',
@@ -103,7 +101,7 @@ describe('sms.service', () => {
         body: expectedMessage,
         from: MOCK_VALID_CONFIG.msgSrvcSid,
         forceDelivery: true,
-        statusCallback: MOCK_TWILIO_WEBHOOK_ENDPOINT,
+        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
@@ -145,7 +143,7 @@ describe('sms.service', () => {
         body: expectedMessage,
         from: MOCK_INVALID_CONFIG.msgSrvcSid,
         forceDelivery: true,
-        statusCallback: MOCK_TWILIO_WEBHOOK_ENDPOINT,
+        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
@@ -185,7 +183,7 @@ describe('sms.service', () => {
         body: expectedMessage,
         from: MOCK_VALID_CONFIG.msgSrvcSid,
         forceDelivery: true,
-        statusCallback: MOCK_TWILIO_WEBHOOK_ENDPOINT,
+        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
@@ -227,7 +225,7 @@ describe('sms.service', () => {
         body: expectedMessage,
         from: MOCK_INVALID_CONFIG.msgSrvcSid,
         forceDelivery: true,
-        statusCallback: MOCK_TWILIO_WEBHOOK_ENDPOINT,
+        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {

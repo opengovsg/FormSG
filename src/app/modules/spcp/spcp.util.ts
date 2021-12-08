@@ -53,6 +53,11 @@ const isArtifactValid = function (
   )
 }
 
+// either <formId>,boolean or <formId>,boolean,encodedQuery
+export type RedirectTarget =
+  | `${string},${boolean}`
+  | `${string},${boolean},${string}`
+
 /**
  * Returns true if the SAML artifact and destination have the correct format,
  * false otherwise.
@@ -65,11 +70,7 @@ export const isValidAuthenticationQuery = (
   destination: string,
   idpPartnerEntityId: string,
 ): boolean => {
-  return (
-    !!destination &&
-    isArtifactValid(idpPartnerEntityId, samlArt) &&
-    DESTINATION_REGEX.test(destination)
-  )
+  return !!destination && isArtifactValid(idpPartnerEntityId, samlArt)
 }
 
 /**
@@ -299,10 +300,14 @@ export const getRedirectTarget = (
   formId: string,
   authType: FormAuthType.SP | FormAuthType.CP,
   isPersistentLogin?: boolean,
-): string =>
-  `/${formId},${
-    // Need to cast to boolean because undefined is allowed as a valid value
-    // We are not following corppass's official spec for
-    // the target parameter
+  encodedQuery?: string,
+): RedirectTarget => {
+  // Need to cast to boolean because undefined is allowed as a valid value
+  // We are not following corppass's official spec for
+  // the target parameter
+  const persistentLogin =
     authType === FormAuthType.SP ? !!isPersistentLogin : false
-  }`
+  return encodedQuery
+    ? `/${formId},${persistentLogin},${encodedQuery}`
+    : `/${formId},${persistentLogin}`
+}
