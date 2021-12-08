@@ -58,7 +58,6 @@ import {
   DatabasePayloadSizeError,
   DatabaseValidationError,
   PossibleDatabaseError,
-  SecretsManagerConflictError,
   SecretsManagerError,
   SecretsManagerNotFoundError,
   TwilioCacheError,
@@ -1247,84 +1246,21 @@ export const createTwilioTransaction = async (
   body: CreateSecretRequest,
   session: ClientSession,
 ): Promise<void> => {
-  const logMeta = {
-    action: 'createTwilioTransaction',
-    msgSrvcName,
-  }
-
-  await form.updateMsgSrvcName(msgSrvcName, session)
-
-  /**
-   * Implemented using try-catch here because ResultAsync chain block wraps the error, causing the
-   * transaction to not rollback. Errors thrown in the withTransaction() callback function dosen't
-   * seem to rollback properly too.
-   */
-
   try {
-    const awsResponse = await secretsManager.createSecret(body).promise()
-
-    logger.info({
-      message: 'Created secrets in AWS Secrets Manager',
+    await form.updateMsgSrvcName(msgSrvcName, session)
+    await secretsManager.createSecret(body).promise()
+  } catch (err) {
+    logger.error({
+      message:
+        'Error occured during transaction, aborting transaction and rolling back!',
       meta: {
         action: 'createTwilioTransaction',
-        awsResponse,
+        formId: form._id,
+        msgSrvcName,
       },
+      error: err,
     })
-  } catch (err) {
-    const createSecretError = err as AWSError
-
-    if (createSecretError.code === 'ResourceExistsException') {
-      logger.error({
-        message: 'Secret with specified SecretId already exists',
-        meta: logMeta,
-      })
-
-      try {
-        await secretsManager.getSecretValue({ SecretId: msgSrvcName }).promise()
-      } catch (err) {
-        const getSecretError = err as AWSError
-
-        if (getSecretError.code === 'InvalidRequestException') {
-          /**
-           * If secret is scheduled for deletion, requests to retrieve the secret from AWS will be
-           * met with a InvalidRequestExcetion
-           */
-          logger.info({
-            message:
-              'Twilio Credentials exists in Secrets Manager and is scheduled for deletion, proceeding to restore and update secret',
-            meta: logMeta,
-          })
-
-          await secretsManager
-            .restoreSecret({ SecretId: msgSrvcName })
-            .promise()
-          await secretsManager
-            .putSecretValue({
-              SecretId: msgSrvcName,
-              SecretString: body.SecretString,
-            })
-            .promise()
-        } else {
-          logger.error({
-            message:
-              'Twilio Credentials exists in Secrets Manager but is not scheduled for deletion!',
-            meta: logMeta,
-          })
-
-          throw new SecretsManagerConflictError(
-            'Resource in SecretsManager not scheduled for deletion!',
-          )
-        }
-      }
-    } else {
-      logger.error({
-        message:
-          'Unknown Error while trying to create credentials in AWS Secrets occured',
-        meta: logMeta,
-        error: createSecretError,
-      })
-      throw new SecretsManagerError(createSecretError.message)
-    }
+    throw err
   }
 }
 
@@ -1422,10 +1358,19 @@ export const deleteTwilioCredentials = (
   const msgSrvcName = form.msgSrvcName
   const body: DeleteSecretRequest = {
     SecretId: msgSrvcName,
+    ForceDeleteWithoutRecovery: true,
   }
   /**
-   * The key-value pair will not be deleted immediately, but instead remain in SecretsManager for another 30 days
-   * before being deleted: https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_delete-secret.html
+   * We need the ForceDeleteWithoutRecovery boolean flag for it to be deleted immediately
+   *
+   * If not, the key-value pair will remain in SecretsManager for another 30 days before
+   * being deleted: https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_delete-secret.html
+   *
+   * This will result in user not being able to add new Twilio Credentials immediately
+   *
+   * Currently, there also dosen't seem to be a way to signal to secrets manager to upsert the data if a secret
+   * is scheduled to be deleted.
+   *
    */
 
   const formId = form._id
@@ -1463,7 +1408,7 @@ export const deleteTwilioCredentials = (
       })
 
       return new SecretsManagerError(
-        'Error occurred when updating Twilio in Secret Manager!',
+        'Error occurred when retrieving Twilio from Secret Manager!',
       )
     },
   ).andThen(() => {
@@ -1479,7 +1424,7 @@ export const deleteTwilioCredentials = (
       ),
       (error) => {
         logger.error({
-          message: 'Error occurred when updating Twilio in Secret Manager!',
+          message: 'Error occurred when deleting Twilio in Secret Manager!',
           meta: {
             ...logMeta,
             body,
@@ -1488,7 +1433,7 @@ export const deleteTwilioCredentials = (
         })
 
         return new SecretsManagerError(
-          'Error occurred when updating Twilio in Secret Manager!',
+          'Error occurred when deleting Twilio in Secret Manager!',
         )
       },
     ).map(() => twilioClientCache.del(msgSrvcName))
@@ -1509,13 +1454,19 @@ const deleteTwilioTransaction = async (
   body: DeleteSecretRequest,
   session: ClientSession,
 ): Promise<void> => {
-  await form.deleteMsgSrvcName(session)
-  const awsResponse = await secretsManager.deleteSecret(body).promise()
-  logger.info({
-    message: 'Scheduled Secrets for deletion in AWS Secrets Manager',
-    meta: {
-      action: 'deleteTwilioTransaction',
-      awsResponse,
-    },
-  })
+  try {
+    await form.deleteMsgSrvcName(session)
+    await secretsManager.deleteSecret(body).promise()
+  } catch (err) {
+    logger.error({
+      message:
+        'Error occured during transaction, aborting transaction and rolling back!',
+      meta: {
+        action: 'deleteTwilioTransaction',
+        formId: form._id,
+      },
+      error: err,
+    })
+    throw err
+  }
 }

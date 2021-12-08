@@ -2645,7 +2645,7 @@ export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
     )
     .mapErr((error) => {
       logger.error({
-        message: 'Error occurred when updating twilio credentials',
+        message: 'Error occurred when deleting twilio credentials',
         meta: {
           action: 'handleDeleteTwilio',
           ...createReqMeta(req),
