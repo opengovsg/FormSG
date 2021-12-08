@@ -35,6 +35,8 @@ const MOCK_ADMIN_ID = new ObjectId().toHexString()
 const MOCK_FORM_ID = new ObjectId().toHexString()
 const MOCK_FORM_TITLE = 'formTitle'
 
+const MOCK_TWILIO_WEBHOOK_ROUTE = '/api/v3/notifications/twilio'
+
 const twilioSuccessSpy = jest.fn().mockResolvedValue({
   status: 'testStatus',
   sid: 'testSid',
@@ -99,6 +101,7 @@ describe('sms.service', () => {
         body: expectedMessage,
         from: MOCK_VALID_CONFIG.msgSrvcSid,
         forceDelivery: true,
+        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
@@ -140,6 +143,7 @@ describe('sms.service', () => {
         body: expectedMessage,
         from: MOCK_INVALID_CONFIG.msgSrvcSid,
         forceDelivery: true,
+        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
@@ -179,6 +183,7 @@ describe('sms.service', () => {
         body: expectedMessage,
         from: MOCK_VALID_CONFIG.msgSrvcSid,
         forceDelivery: true,
+        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
@@ -220,6 +225,7 @@ describe('sms.service', () => {
         body: expectedMessage,
         from: MOCK_INVALID_CONFIG.msgSrvcSid,
         forceDelivery: true,
+        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
