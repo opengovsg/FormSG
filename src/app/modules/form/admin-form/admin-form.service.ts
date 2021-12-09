@@ -1204,6 +1204,7 @@ export const createTwilioCredentials = (
     action: 'createTwilioCredentials',
     formId: formId,
     msgSrvcName,
+    body,
   }
 
   logger.info({
@@ -1222,10 +1223,7 @@ export const createTwilioCredentials = (
     (error) => {
       logger.error({
         message: 'Error encountered when creating Twilio Secret',
-        meta: {
-          ...logMeta,
-          body,
-        },
+        meta: logMeta,
         error,
       })
 
@@ -1256,6 +1254,7 @@ export const createTwilioTransaction = async (
     action: 'createTwilioTransaction',
     formId: form._id,
     msgSrvcName,
+    body,
   }
 
   try {
@@ -1312,6 +1311,7 @@ export const updateTwilioCredentials = (
   const logMeta = {
     action: 'updateTwilioCredentials',
     msgSrvcName,
+    body,
   }
 
   return (
@@ -1411,6 +1411,7 @@ export const deleteTwilioCredentials = (
     action: 'deleteTwilioCredentials',
     formId,
     msgSrvcName,
+    body,
   }
 
   return ResultAsync.fromPromise(
@@ -1422,10 +1423,7 @@ export const deleteTwilioCredentials = (
     (error) => {
       logger.error({
         message: 'Error occurred when deleting Twilio in Secret Manager!',
-        meta: {
-          ...logMeta,
-          body,
-        },
+        meta: logMeta,
         error,
       })
 
@@ -1455,6 +1453,7 @@ const deleteTwilioTransaction = async (
     action: 'deleteTwilioTransaction',
     formId: form._id,
     msgSrvcName,
+    body,
   }
 
   try {
