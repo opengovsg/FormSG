@@ -414,6 +414,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   ) as Schema.Types.DocumentArray
 
   const TableFieldSchema = createTableFieldSchema()
+  const TableColumnPath = TableFieldSchema.path(
+    'columns',
+  ) as Schema.Types.DocumentArray
+  TableColumnPath.discriminator(
+    BasicField.ShortText,
+    createShortTextFieldSchema(),
+  )
+  TableColumnPath.discriminator(
+    BasicField.Dropdown,
+    createDropdownFieldSchema(),
+  )
 
   FormFieldPath.discriminator(BasicField.Email, createEmailFieldSchema())
   FormFieldPath.discriminator(BasicField.Rating, createRatingFieldSchema())
@@ -444,17 +455,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   )
   FormFieldPath.discriminator(BasicField.Section, createSectionFieldSchema())
   FormFieldPath.discriminator(BasicField.Table, TableFieldSchema)
-  const TableColumnPath = TableFieldSchema.path(
-    'columns',
-  ) as Schema.Types.DocumentArray
-  TableColumnPath.discriminator(
-    BasicField.ShortText,
-    createShortTextFieldSchema(),
-  )
-  TableColumnPath.discriminator(
-    BasicField.Dropdown,
-    createDropdownFieldSchema(),
-  )
 
   // Discriminator defines all possible values of startPage.logo
   const StartPageLogoPath = FormSchema.path(
