@@ -22,6 +22,7 @@ import { secretsManager } from '../../../../../../../app/modules/form/admin-form
 import * as SmsService from '../../../../../../services/sms/sms.service'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
+import { generateTwilioCredSecretKeyName } from './../../../../../../modules/form/admin-form/admin-form.utils'
 import { TwilioCredentials } from './../../../../../../services/sms/sms.types'
 
 // Prevent rate limiting.
@@ -274,7 +275,7 @@ describe('admin-form.twilio.routes', () => {
 
   describe('DELETE /admin/forms/:formId/twilio', () => {
     const MOCK_FORM_ID = new ObjectId()
-    const MOCK_MSG_SRVC_NAME = AdminFormService.generateTwilioCredSecretKeyName(
+    const MOCK_MSG_SRVC_NAME = generateTwilioCredSecretKeyName(
       MOCK_FORM_ID.toHexString(),
     )
 
