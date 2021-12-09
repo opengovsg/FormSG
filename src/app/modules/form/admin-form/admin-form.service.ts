@@ -1179,11 +1179,8 @@ const isMobileFieldUpdateAllowed = (
  * @returns string representing the msgSrvcName
  */
 // Export for testing
-export const generateMsgSrvcName = (formId: string) => {
-  const res = `formsg/${config.secretEnv}/api/${formId}/twilio/${uuidv4()}`
-  console.log(res)
-  return res
-}
+export const generateMsgSrvcName = (formId: string) =>
+  `formsg/${config.secretEnv}/api/${formId}/twilio/${uuidv4()}`
 
 export const isApiGenerated = (msgSrvcName: string) => {
   const prefix = `formsg/${config.secretEnv}/api`
