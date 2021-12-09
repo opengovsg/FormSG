@@ -55,6 +55,31 @@ describe('PublicFormAuthService', () => {
       expect(result).toEqual(mockData)
     })
 
+    it('should return the redirect URL when encodedQuery is set', async () => {
+      // Arrange
+      const mockData = { redirectURL: MOCK_REDIRECT_URL }
+      MockAxios.get.mockResolvedValueOnce({ data: mockData })
+
+      // Act
+      const result = await PublicFormAuthService.createRedirectURL(
+        MOCK_FORM_ID,
+        false,
+        'hereIsSomeEncodedData',
+      )
+
+      // Assert
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${MOCK_FORM_ID}/auth/redirect`,
+        {
+          params: {
+            isPersistentLogin: false,
+            encodedQuery: 'hereIsSomeEncodedData',
+          },
+        },
+      )
+      expect(result).toEqual(mockData)
+    })
+
     it('should reject with error when API call fails', async () => {
       // Arrange
       const error = new Error('rejected')
