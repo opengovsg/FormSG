@@ -10,6 +10,7 @@ import { ClientSession } from 'mongodb'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
+import { v4 as uuidv4 } from 'uuid'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
@@ -58,6 +59,7 @@ import {
   DatabasePayloadSizeError,
   DatabaseValidationError,
   PossibleDatabaseError,
+  SecretsManagerConflictError,
   SecretsManagerError,
   SecretsManagerNotFoundError,
   TwilioCacheError,
@@ -1177,8 +1179,16 @@ const isMobileFieldUpdateAllowed = (
  * @returns string representing the msgSrvcName
  */
 // Export for testing
-export const generateMsgSrvcName = (formId: string) =>
-  `formsg/${config.secretEnv}/form/${formId}/twilio`
+export const generateMsgSrvcName = (formId: string) => {
+  const res = `formsg/${config.secretEnv}/api/${formId}/twilio/${uuidv4()}`
+  console.log(res)
+  return res
+}
+
+export const isApiGenerated = (msgSrvcName: string) => {
+  const prefix = `formsg/${config.secretEnv}/api`
+  return msgSrvcName.startsWith(prefix)
+}
 
 /**
  * Creates msgSrvcName and updates the form in MongoDB as part of a transaction, uses the created
@@ -1226,6 +1236,19 @@ export const createTwilioCredentials = (
         .then(() => session.endSession()),
     ),
     (error) => {
+      const awsError = error as AWSError
+
+      if (awsError.message && awsError.code === 'ResourceExistsException') {
+        logger.error({
+          message: 'Twilio Credentials already exist in Secrets Manager',
+          meta: logMeta,
+          error: awsError,
+        })
+        return new SecretsManagerConflictError(
+          'Twilio Credentials already exist in Secrets Manager',
+        )
+      }
+
       logger.error({
         message: 'Error encountered when creating Twilio Secret',
         meta: {
@@ -1307,14 +1330,31 @@ export const updateTwilioCredentials = (
     ResultAsync.fromPromise(
       secretsManager.getSecretValue({ SecretId: msgSrvcName }).promise(),
       (error) => {
+        const awsError = error as AWSError
+
+        if (awsError.code === 'ResourceNotFoundException') {
+          logger.error({
+            message: 'Twilio Credentials do not exist in Secrets Manager',
+            meta: logMeta,
+            error,
+          })
+
+          return new SecretsManagerNotFoundError(
+            'Twilio Credentials do not exist in Secrets Manager',
+          )
+        }
+
         logger.error({
-          message: 'Twilio Credentials do not exist in Secrets Manager',
-          meta: logMeta,
+          message: 'Error occurred when retrieving Twilio in Secret Manager!',
+          meta: {
+            ...logMeta,
+            body,
+          },
           error,
         })
 
-        return new SecretsManagerNotFoundError(
-          'Twilio Credentials do not exist in Secrets Manager',
+        return new SecretsManagerError(
+          'Error occurred when retrieving Twilio in Secret Manager!',
         )
       },
     )
@@ -1368,18 +1408,11 @@ export const deleteTwilioCredentials = (
   const msgSrvcName = form.msgSrvcName
   const body: DeleteSecretRequest = {
     SecretId: msgSrvcName,
-    ForceDeleteWithoutRecovery: true,
   }
   /**
-   * We need the ForceDeleteWithoutRecovery boolean flag for it to be deleted immediately
    *
-   * If not, the key-value pair will remain in SecretsManager for another 30 days before
+   * The key-value pair will remain in SecretsManager for another 30 days before
    * being deleted: https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_delete-secret.html
-   *
-   * This will result in user not being able to add new Twilio Credentials immediately
-   *
-   * Currently, there also dosen't seem to be a way to signal to secrets manager to upsert the data if a secret
-   * is scheduled to be deleted.
    *
    */
 
@@ -1444,7 +1477,7 @@ const deleteTwilioTransaction = async (
   try {
     await form.deleteMsgSrvcName(session)
 
-    if (generateMsgSrvcName(form._id) === body.SecretId)
+    if (isApiGenerated(body.SecretId))
       await secretsManager.deleteSecret(body).promise()
   } catch (err) {
     logger.error({
