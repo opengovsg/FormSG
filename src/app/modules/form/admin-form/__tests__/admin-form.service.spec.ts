@@ -2575,18 +2575,6 @@ describe('admin-form.service', () => {
 
       // formSpy.mockResolvedValueOnce(MOCK_FORM)
 
-      const getSecretsSpy = jest
-        .spyOn(secretsManager, 'getSecretValue')
-        .mockImplementationOnce(() => {
-          return {
-            promise: () => {
-              return Promise.resolve({
-                Name: MSG_SRVC_NAME,
-              })
-            },
-          } as any
-        })
-
       const twilioCacheSpy = jest
         .spyOn(MockSmsService.twilioClientCache, 'del')
         .mockReturnValueOnce(1)
@@ -2601,9 +2589,6 @@ describe('admin-form.service', () => {
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(1)
 
-      expect(getSecretsSpy).toHaveBeenCalledWith({
-        SecretId: MSG_SRVC_NAME,
-      })
       expect(twilioCacheSpy).toHaveBeenCalledWith(MSG_SRVC_NAME)
     })
   })

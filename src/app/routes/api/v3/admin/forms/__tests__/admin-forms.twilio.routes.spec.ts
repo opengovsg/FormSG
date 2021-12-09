@@ -274,31 +274,25 @@ describe('admin-form.twilio.routes', () => {
 
   describe('DELETE /admin/forms/:formId/twilio', () => {
     const MOCK_FORM_ID = new ObjectId()
+    const MOCK_MSG_SRVC_NAME = AdminFormService.generateMsgSrvcName(
+      MOCK_FORM_ID.toHexString(),
+    )
 
     const MOCK_SUCCESSFUL_DELETE_RESPONSE = {
       message: 'Successfully deleted Twilio credentials',
     }
 
     it('should return 200 on successful twilio credentials deletion', async () => {
-      const { form, user } = await dbHandler.insertFormWithMsgSrvcName()
+      const { form, user } = await dbHandler.insertFormWithMsgSrvcName({
+        formId: MOCK_FORM_ID,
+        msgSrvcName: MOCK_MSG_SRVC_NAME,
+      })
       const session = await createAuthedSession(user.email, request)
       const msgSrvcName = form.msgSrvcName
 
       const formSpy = jest
         .spyOn(FormModel.prototype, 'save')
         .mockImplementationOnce(() => null)
-
-      const getSecretsSpy = jest
-        .spyOn(secretsManager, 'getSecretValue')
-        .mockImplementationOnce(() => {
-          return {
-            promise: () => {
-              return Promise.resolve({
-                Name: msgSrvcName,
-              })
-            },
-          } as any
-        })
 
       const twilioCacheSpy = jest
         .spyOn(SmsService.twilioClientCache, 'del')
@@ -320,9 +314,6 @@ describe('admin-form.twilio.routes', () => {
       const response = await session.delete(`/admin/forms/${form._id}/twilio`)
 
       // Assert
-      expect(getSecretsSpy).toHaveBeenCalledWith({
-        SecretId: msgSrvcName,
-      })
       expect(twilioCacheSpy).toHaveBeenCalledWith(msgSrvcName)
       expect(formSpy).toBeCalled()
       expect(deleteSecretSpy).toHaveBeenCalledWith({

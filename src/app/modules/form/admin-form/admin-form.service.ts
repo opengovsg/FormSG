@@ -1171,6 +1171,16 @@ const isMobileFieldUpdateAllowed = (
 }
 
 /**
+ * Returns a msgSrvcName that will be used to store secrets under AWS Secrets Manager
+ *
+ * @param formId in which the secrets belong to
+ * @returns string representing the msgSrvcName
+ */
+// Export for testing
+export const generateMsgSrvcName = (formId: string) =>
+  `formsg/${config.secretEnv}/form/${formId}/twilio`
+
+/**
  * Creates msgSrvcName and updates the form in MongoDB as part of a transaction, uses the created
  * msgSrvcName as the key to store the Twilio Credentials in AWS Secrets Manager
  * @param twilioCredentials The twilio credentials to add
@@ -1186,7 +1196,7 @@ export const createTwilioCredentials = (
     new TwilioCredentialsData(twilioCredentials)
   const formId = form._id
 
-  const msgSrvcName = `formsg/${config.secretEnv}/form/${formId}/twilio`
+  const msgSrvcName = generateMsgSrvcName(formId)
 
   const body: CreateSecretRequest = {
     Name: msgSrvcName,
@@ -1382,62 +1392,39 @@ export const deleteTwilioCredentials = (
   }
 
   return ResultAsync.fromPromise(
-    secretsManager
-      .getSecretValue({
-        SecretId: msgSrvcName,
-      })
-      .promise(),
+    FormModel.startSession().then((session: ClientSession) =>
+      session
+        .withTransaction(() => deleteTwilioTransaction(form, body, session))
+        .then(() => session.endSession()),
+    ),
     (error) => {
       const awsError = error as AWSError
 
       if (awsError.code === 'ResourceNotFoundException') {
         logger.error({
-          message: 'Twilio Credentials do not exist in Secrets Manager',
+          message: 'Twilio Credentials does not exist in Secrets Manager',
           meta: logMeta,
           error: awsError,
         })
         return new SecretsManagerNotFoundError(
-          'Twilio Credentials do not exist in Secrets Manager',
+          'Twilio Credentials does not exist in Secrets Manager',
         )
       }
 
       logger.error({
-        message: 'Unknown Secrets Manager Error has occured',
-        meta: logMeta,
-        error: awsError,
+        message: 'Error occurred when deleting Twilio in Secret Manager!',
+        meta: {
+          ...logMeta,
+          body,
+        },
+        error,
       })
 
       return new SecretsManagerError(
-        'Error occurred when retrieving Twilio from Secret Manager!',
+        'Error occurred when deleting Twilio in Secret Manager!',
       )
     },
-  ).andThen(() => {
-    logger.info({
-      message: 'Twilio Credentials has been found in Secrets Manager',
-      meta: logMeta,
-    })
-    return ResultAsync.fromPromise(
-      FormModel.startSession().then((session: ClientSession) =>
-        session
-          .withTransaction(() => deleteTwilioTransaction(form, body, session))
-          .then(() => session.endSession()),
-      ),
-      (error) => {
-        logger.error({
-          message: 'Error occurred when deleting Twilio in Secret Manager!',
-          meta: {
-            ...logMeta,
-            body,
-          },
-          error,
-        })
-
-        return new SecretsManagerError(
-          'Error occurred when deleting Twilio in Secret Manager!',
-        )
-      },
-    ).map(() => twilioClientCache.del(msgSrvcName))
-  })
+  ).map(() => twilioClientCache.del(msgSrvcName))
 }
 
 /**
@@ -1456,7 +1443,9 @@ const deleteTwilioTransaction = async (
 ): Promise<void> => {
   try {
     await form.deleteMsgSrvcName(session)
-    await secretsManager.deleteSecret(body).promise()
+
+    if (generateMsgSrvcName(form._id) === body.SecretId)
+      await secretsManager.deleteSecret(body).promise()
   } catch (err) {
     logger.error({
       message:

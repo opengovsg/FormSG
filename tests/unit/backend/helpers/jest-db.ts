@@ -227,6 +227,7 @@ const insertFormWithMsgSrvcName = async ({
   mailName = 'test',
   shortName = 'govtest',
   formOptions = {},
+  msgSrvcName = 'mockMsgSrvcname',
 }: {
   formId?: ObjectID
   userId?: ObjectID
@@ -234,6 +235,7 @@ const insertFormWithMsgSrvcName = async ({
   mailDomain?: string
   shortName?: string
   formOptions?: Partial<IForm>
+  msgSrvcName?: string
 } = {}): Promise<{
   form: IFormSchema
   user: IUserSchema
@@ -252,7 +254,7 @@ const insertFormWithMsgSrvcName = async ({
     admin: user._id,
     _id: formId,
     ...formOptions,
-    msgSrvcName: 'mockMsgSrvcname',
+    msgSrvcName: msgSrvcName,
   })
 
   return {
