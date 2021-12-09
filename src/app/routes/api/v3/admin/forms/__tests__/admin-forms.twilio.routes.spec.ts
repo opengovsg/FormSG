@@ -274,7 +274,7 @@ describe('admin-form.twilio.routes', () => {
 
   describe('DELETE /admin/forms/:formId/twilio', () => {
     const MOCK_FORM_ID = new ObjectId()
-    const MOCK_MSG_SRVC_NAME = AdminFormService.generateMsgSrvcName(
+    const MOCK_MSG_SRVC_NAME = AdminFormService.generateTwilioCredSecretKeyName(
       MOCK_FORM_ID.toHexString(),
     )
 

@@ -10,7 +10,6 @@ import { ClientSession } from 'mongodb'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
-import { v4 as uuidv4 } from 'uuid'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
@@ -89,6 +88,8 @@ import {
   InvalidFileTypeError,
 } from './admin-form.errors'
 import {
+  checkIsApiSecretKeyName,
+  generateTwilioCredSecretKeyName,
   getUpdatedFormFields,
   processDuplicateOverrideProps,
 } from './admin-form.utils'
@@ -1173,21 +1174,6 @@ const isMobileFieldUpdateAllowed = (
 }
 
 /**
- * Returns a msgSrvcName that will be used to store secrets under AWS Secrets Manager
- *
- * @param formId in which the secrets belong to
- * @returns string representing the msgSrvcName
- */
-// Export for testing
-export const generateMsgSrvcName = (formId: string): string =>
-  `formsg/${config.secretEnv}/api/${formId}/twilio/${uuidv4()}`
-
-export const isApiGenerated = (msgSrvcName: string): boolean => {
-  const prefix = `formsg/${config.secretEnv}/api`
-  return msgSrvcName.startsWith(prefix)
-}
-
-/**
  * Creates msgSrvcName and updates the form in MongoDB as part of a transaction, uses the created
  * msgSrvcName as the key to store the Twilio Credentials in AWS Secrets Manager
  * @param twilioCredentials The twilio credentials to add
@@ -1203,7 +1189,7 @@ export const createTwilioCredentials = (
     new TwilioCredentialsData(twilioCredentials)
   const formId = form._id
 
-  const msgSrvcName = generateMsgSrvcName(formId)
+  const msgSrvcName = generateTwilioCredSecretKeyName(formId)
 
   const body: CreateSecretRequest = {
     Name: msgSrvcName,
@@ -1276,6 +1262,22 @@ export const createTwilioTransaction = async (
   body: CreateSecretRequest,
   session: ClientSession,
 ): Promise<void> => {
+  try {
+    await form.updateMsgSrvcName(msgSrvcName, session)
+    await secretsManager.createSecret(body).promise()
+  } catch (err) {
+    logger.error({
+      message:
+        'Error occured during transaction, aborting transaction and rolling back!',
+      meta: {
+        action: 'createTwilioTransaction',
+        formId: form._id,
+        msgSrvcName,
+      },
+      error: err,
+    })
+    throw err
+  }
   try {
     await form.updateMsgSrvcName(msgSrvcName, session)
     await secretsManager.createSecret(body).promise()
@@ -1474,7 +1476,7 @@ const deleteTwilioTransaction = async (
   try {
     await form.deleteMsgSrvcName(session)
 
-    if (isApiGenerated(body.SecretId))
+    if (checkIsApiSecretKeyName(body.SecretId))
       await secretsManager.deleteSecret(body).promise()
   } catch (err) {
     logger.error({
