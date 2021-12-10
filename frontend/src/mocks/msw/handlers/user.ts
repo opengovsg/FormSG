@@ -31,7 +31,7 @@ export const getUser = ({
   delay,
   mockUser = MOCK_USER,
 }: { mockUser?: UserDto } & WithDelayProps = {}): DefaultRequestReturn => {
-  return rest.get<never, UserDto | ErrorDto>(
+  return rest.get<never, never, UserDto | ErrorDto>(
     '/api/v3/user',
     (_req, res, ctx) => {
       // Check if the user is authenticated in this session
@@ -64,7 +64,7 @@ export const postVerifyContactOtp = ({
   delay,
   mockOtp,
 }: WithDelayProps & { mockOtp?: string } = {}): DefaultRequestReturn => {
-  return rest.post<VerifyUserContactOtpDto, UserDto | ErrorDto>(
+  return rest.post<VerifyUserContactOtpDto, never, UserDto | ErrorDto>(
     '/api/v3/user/contact/otp/verify',
     (req, res, ctx) => {
       const nextContact = req.body.contact

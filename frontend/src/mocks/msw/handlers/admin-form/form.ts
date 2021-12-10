@@ -78,7 +78,9 @@ export const getAdminFormResponse = (
       return res(
         ctx.delay(delay),
         ctx.status(200),
-        ctx.json(createMockForm({ _id: req.params.formId, ...props })),
+        ctx.json(
+          createMockForm({ _id: req.params.formId as FormId, ...props }),
+        ),
       )
     },
   )
