@@ -2,7 +2,6 @@
 const CracoAlias = require('craco-alias')
 const merge = require('lodash/merge')
 const path = require('path')
-const { addAfterLoader, loaderByName } = require('@craco/craco')
 
 const customJestConfig = require('./jest.config')
 
@@ -47,13 +46,6 @@ module.exports = {
               }
             }
           }
-
-          const workerLoader = {
-            test: /\.worker\.ts$/,
-            use: { loader: 'worker-loader' },
-          }
-
-          addAfterLoader(webpackConfig, loaderByName('ts-loader'), workerLoader)
 
           return webpackConfig
         },
