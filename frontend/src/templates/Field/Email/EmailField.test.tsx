@@ -52,7 +52,7 @@ describe('validation required', () => {
     // Assert
     // Should show success message.
     expect(
-      screen.queryByText(`You have submitted: ${expectedValue}`),
+      screen.getByText(`You have submitted: ${expectedValue}`),
     ).not.toBeNull()
     expect(screen.queryByText(REQUIRED_ERROR)).toBeNull()
   })
@@ -72,7 +72,7 @@ describe('validation optional', () => {
     // Assert
     // Should show success message.
     expect(
-      screen.queryByText('You have submitted: Nothing was selected'),
+      screen.getByText('You have submitted: Nothing was selected'),
     ).not.toBeNull()
   })
 
@@ -99,7 +99,7 @@ describe('validation optional', () => {
     // Assert
     // Should show success message.
     expect(
-      screen.queryByText(`You have submitted: ${expectedValue}`),
+      screen.getByText(`You have submitted: ${expectedValue}`),
     ).not.toBeNull()
     expect(screen.queryByText(REQUIRED_ERROR)).toBeNull()
   })
@@ -124,7 +124,7 @@ describe('email validation', () => {
 
     // Assert
     // Should show error message.
-    expect(screen.queryByText(INVALID_EMAIL_ERROR)).not.toBeNull()
+    expect(screen.getByText(INVALID_EMAIL_ERROR)).not.toBeNull()
   })
 
   it('renders error when email with disallowed email domain is submitted', async () => {
@@ -148,6 +148,6 @@ describe('email validation', () => {
 
     // Assert
     // Should show error message.
-    expect(screen.queryByText(INVALID_EMAIL_DOMAIN_ERROR)).not.toBeNull()
+    expect(screen.getByText(INVALID_EMAIL_DOMAIN_ERROR)).not.toBeNull()
   })
 })

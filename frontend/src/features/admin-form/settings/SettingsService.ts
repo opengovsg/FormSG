@@ -47,10 +47,11 @@ export const updateFormCaptcha: UpdateFormFn<'hasCaptcha'> = async (
   return updateFormSettings(formId, { hasCaptcha: newHasCaptcha })
 }
 
-export const updateFormInactiveMessage: UpdateFormFn<'inactiveMessage'> =
-  async (formId, newMessage) => {
-    return updateFormSettings(formId, { inactiveMessage: newMessage })
-  }
+export const updateFormInactiveMessage: UpdateFormFn<
+  'inactiveMessage'
+> = async (formId, newMessage) => {
+  return updateFormSettings(formId, { inactiveMessage: newMessage })
+}
 
 export const updateFormTitle: UpdateFormFn<'title'> = async (
   formId,
