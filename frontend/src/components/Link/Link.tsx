@@ -56,7 +56,9 @@ export const Link = forwardRef<LinkProps, 'a'>(
 ) as LinkWithParts
 
 const ExternalIcon = (): JSX.Element => {
-  return <Icon aria-hidden as={BiLinkExternal} ml="0.25rem" />
+  return (
+    <Icon aria-hidden as={BiLinkExternal} ml="0.25rem" verticalAlign="middle" />
+  )
 }
 
 Link.ExternalIcon = ExternalIcon

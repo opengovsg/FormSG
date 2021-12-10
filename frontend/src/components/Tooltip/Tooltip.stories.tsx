@@ -26,7 +26,6 @@ const TooltipStack = (
             {...args}
             label="Tooltip content goes here"
             placement={placement}
-            wrapperStyles={{ verticalAlign: 'text-bottom' }}
           >
             <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
           </Tooltip>
