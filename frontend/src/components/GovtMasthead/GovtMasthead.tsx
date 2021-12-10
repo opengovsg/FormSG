@@ -2,6 +2,7 @@ import React from 'react'
 import { BiChevronDown, BiChevronUp } from 'react-icons/bi'
 import {
   Box,
+  chakra,
   Collapse,
   Flex,
   Icon,
@@ -37,6 +38,7 @@ export const GovtMasthead = (): JSX.Element => {
 
   interface HowToIdentifyProps {
     isMobile: boolean
+    children: React.ReactNode
   }
 
   const HeaderBar = ({ isMobile, children }: HeaderBarProps): JSX.Element => {
@@ -48,27 +50,41 @@ export const GovtMasthead = (): JSX.Element => {
       display: 'flex',
       width: '100%',
     }
-    return (
-      <Flex {...styleProps} {...(isMobile ? { onClick: onToggle } : {})}>
-        {children}
-      </Flex>
-    )
-  }
 
-  const HowToIdentify = ({ isMobile }: HowToIdentifyProps): JSX.Element => {
-    const howToIdentifyProps = {
-      tabIndex: 0,
-      ariaLabel: 'Click to expand masthead for more information',
-      onClick: onToggle,
+    // Mobile
+    if (isMobile) {
+      return (
+        <chakra.button {...styleProps} onClick={onToggle}>
+          {children}
+        </chakra.button>
+      )
     }
 
+    // Non-mobile
+    return <Flex {...styleProps}>{children}</Flex>
+  }
+
+  const HowToIdentify = ({
+    isMobile,
+    children,
+  }: HowToIdentifyProps): JSX.Element => {
+    // Mobile
+    if (isMobile) {
+      return (
+        <Text color="primary.500" textDecorationLine="underline">
+          How to identify {children}
+        </Text>
+      )
+    }
+
+    // Non-mobile
     return (
-      <Link {...(isMobile ? {} : howToIdentifyProps)}>
-        How to identify
-        <Icon
-          as={isOpen ? BiChevronUp : BiChevronDown}
-          fontSize={{ base: '1rem', md: '1.25rem' }}
-        />
+      <Link
+        tabIndex={0}
+        ariaLabel="Click to expand masthead for more information"
+        onClick={onToggle}
+      >
+        How to identify {children}
       </Link>
     )
   }
@@ -83,7 +99,12 @@ export const GovtMasthead = (): JSX.Element => {
         />
         <Flex alignItems="center" flexWrap="wrap">
           <Text my="2px">A Singapore government agency website.&nbsp;</Text>
-          <HowToIdentify isMobile={isMobile} />
+          <HowToIdentify isMobile={isMobile}>
+            <Icon
+              as={isOpen ? BiChevronUp : BiChevronDown}
+              fontSize={{ base: '1rem', md: '1.25rem' }}
+            />
+          </HowToIdentify>
         </Flex>
       </HeaderBar>
 
