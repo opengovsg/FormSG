@@ -47,10 +47,10 @@ export const getFormSubmissionsMetadata = async (
   return ApiService.get(queryUrl).then(({ data }) => data)
 }
 
-interface Worker {
+export interface IWorker {
   worker: DecryptionWorker
   workerApi: Remote<{
-    log: (id: number) => string
+    log: (id: number) => Promise<string>
   }>
 }
 
@@ -61,7 +61,7 @@ export const downloadEncryptedResponses = async (
 ): Promise<void> => {
   const numWorkers = window.navigator.hardwareConcurrency || 4
 
-  const workerPool: Worker[] = []
+  const workerPool: IWorker[] = []
 
   // Workerpool sample setup
   for (let i = 0; i < numWorkers; i++) {
@@ -74,7 +74,7 @@ export const downloadEncryptedResponses = async (
   // TO DO: Implementation of decrypting and downloading responses in later PRs
 
   Promise.all(
-    workerPool.map(async (worker: Worker, idx: number) => {
+    workerPool.map(async (worker: IWorker, idx: number) => {
       console.log(await worker.workerApi.log(idx), ' finished running!')
       return worker.worker
     }),
