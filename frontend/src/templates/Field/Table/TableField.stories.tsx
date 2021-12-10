@@ -106,7 +106,7 @@ const Template: Story<StoryTableFieldProps> = ({ defaultValue, ...args }) => {
       args.schema.columns.reduce((acc, c) => {
         acc[c._id] = ''
         return acc
-      }, {} as Record<string, unknown>),
+      }, {} as Record<string, string>),
     [args.schema.columns],
   )
 
