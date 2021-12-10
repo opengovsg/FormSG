@@ -8,6 +8,8 @@ import { wrap } from 'comlink'
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import DecryptionWorker from 'worker-loader!./workers/decryption.worker'
 
+import { StorageModeSubmissionMetadata } from '~shared/types/submission'
+
 import Button from '~components/Button'
 
 import { useAdminFormSettings } from '../settings/queries'
@@ -84,7 +86,7 @@ const ResponsesPage = (): JSX.Element => {
         </Button>
         <Button>Export csv and attachments</Button>
         {!!data &&
-          data.metadata.map((submission: any) => {
+          data.metadata.map((submission: StorageModeSubmissionMetadata) => {
             return (
               <div key={submission.refNo}>
                 Submission Ref No: {submission.refNo}
