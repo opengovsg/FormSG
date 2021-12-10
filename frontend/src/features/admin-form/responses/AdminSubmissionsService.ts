@@ -1,10 +1,3 @@
-import { Remote, wrap } from 'comlink'
-// Need to use inline loading in order to use comlink syntax
-// Typescript documentation for worker-loader webpack v4 also seems outdated,
-// loading the worker script via webpack config no longer works
-// eslint-disable-next-line import/no-webpack-loader-syntax
-import DecryptionWorker from 'worker-loader!./workers/decryption.worker'
-
 import {
   StorageModeSubmissionMetadataList,
   SubmissionCountQueryDto,
@@ -13,6 +6,8 @@ import {
 import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
+
+import { WorkerInterface } from './workers/type/workerinterface'
 
 /**
  * Counts the number of submissions for a given form
@@ -47,41 +42,9 @@ export const getFormSubmissionsMetadata = async (
   return ApiService.get(queryUrl).then(({ data }) => data)
 }
 
-export interface IWorker {
-  worker: DecryptionWorker
-  workerApi: Remote<{
-    log: (id: number) => Promise<string>
-  }>
-}
-
-export const downloadEncryptedResponses = async (
-  formId: string,
-  formTitle: string,
-  secretKey: string,
-): Promise<void> => {
-  const numWorkers = window.navigator.hardwareConcurrency || 4
-
-  const workerPool: IWorker[] = []
-
-  // Workerpool sample setup
-  for (let i = 0; i < numWorkers; i++) {
-    const worker = new DecryptionWorker()
-    const workerApi =
-      wrap<import('./workers/decryption.worker').DecryptionWorker>(worker)
-    workerPool.push({ worker, workerApi })
-  }
-
-  // TO DO: Implementation of decrypting and downloading responses in later PRs
-
-  Promise.all(
-    workerPool.map(async (worker: IWorker, idx: number) => {
-      console.log(await worker.workerApi.log(idx), ' finished running!')
-      return worker.worker
-    }),
-  ).then((workers) =>
-    workers.forEach((worker, idx) => {
-      console.log('Terminating worker ' + idx)
-      worker.terminate() // Workerpool teardown
-    }),
-  )
-}
+/**
+ * Terminates all workers
+ * @param workers an array of workers
+ */
+export const killWorkers = (workers: WorkerInterface[]): void =>
+  workers.forEach((worker) => worker.worker.terminate())
