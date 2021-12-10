@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
+import { userEvent, within } from '@storybook/testing-library'
 
 import { AttachmentSize, BasicField } from '~shared/types/field'
 
@@ -68,10 +69,6 @@ const Template: Story<StoryAttachmentFieldProps> = ({
     )
   }
 
-  useEffect(() => {
-    formMethods.trigger()
-  }, [])
-
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
@@ -93,6 +90,14 @@ const Template: Story<StoryAttachmentFieldProps> = ({
 export const ValidationRequired = Template.bind({})
 ValidationRequired.args = {
   schema: baseSchema,
+}
+ValidationRequired.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  await userEvent.click(
+    canvas.getByRole('button', {
+      name: /submit/i,
+    }),
+  )
 }
 
 export const ValidationOptional = Template.bind({})
