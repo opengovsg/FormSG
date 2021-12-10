@@ -19,11 +19,5 @@ module.exports = {
     'storybook-preset-craco',
     // Note that @storybook/addon-interactions must be listed after @storybook/addon-actions or @storybook/addon-essentials.
     '@storybook/addon-interactions',
-    {
-      name: 'storybook-addon-turbo-build',
-      options: {
-        optimizationLevel: 2,
-      },
-    },
   ],
 }
