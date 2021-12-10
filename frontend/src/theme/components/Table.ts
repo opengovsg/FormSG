@@ -1,14 +1,11 @@
-import {
-  ComponentMultiStyleConfig,
-  SystemStyleObjectRecord,
-  ThemingPropsThunk,
-} from '@chakra-ui/theme'
+import { tableAnatomy as parts } from '@chakra-ui/anatomy'
+import { PartsStyleFunction } from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 import { textStyles } from '../textStyles'
 
-const parts = ['table', 'th', 'td', 'caption']
-
-const variantColumnStripe: ThemingPropsThunk<SystemStyleObjectRecord> = ({
+const variantColumnStripe: PartsStyleFunction<typeof parts> = ({
   colorScheme: c,
 }) => {
   return {
@@ -43,7 +40,7 @@ const variantColumnStripe: ThemingPropsThunk<SystemStyleObjectRecord> = ({
   }
 }
 
-const sizes: Record<string, ThemingPropsThunk<SystemStyleObjectRecord>> = {
+const sizes: ComponentMultiStyleConfig<typeof parts>['sizes'] = {
   sm: {
     th: {
       fontSize: textStyles['subhead-2']['fontSize'],
@@ -57,8 +54,8 @@ const sizes: Record<string, ThemingPropsThunk<SystemStyleObjectRecord>> = {
   },
 }
 
-export const Table: ComponentMultiStyleConfig = {
-  parts,
+export const Table: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   variants: {
     'column-stripe': variantColumnStripe,
   },

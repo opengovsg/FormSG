@@ -1,4 +1,4 @@
-import { ComponentStyleConfig } from '@chakra-ui/react'
+import { ComponentStyleConfig } from '~theme/types'
 
 import { textStyles } from '../textStyles'
 

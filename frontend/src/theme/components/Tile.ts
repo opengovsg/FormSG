@@ -1,6 +1,10 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
+import { anatomy, SystemStyleObject } from '@chakra-ui/theme-tools'
 
-const activeContainerStyle = {
+import { ComponentMultiStyleConfig } from '~theme/types'
+
+const parts = anatomy('tile').parts('container', 'title', 'icon', 'subtitle')
+
+const activeContainerStyle: SystemStyleObject = {
   bgColor: 'primary.200',
   borderColor: 'transparent',
   // NOTE: For the boxShadow styling, due to conflicts with the focus-visible package,
@@ -11,7 +15,7 @@ const activeContainerStyle = {
   },
 }
 
-const baseContainerStyle = {
+const baseContainerStyle: SystemStyleObject = {
   color: 'inherit',
   borderRadius: '0.25rem',
   padding: '1.5rem',
@@ -35,8 +39,8 @@ const baseContainerStyle = {
   textAlign: 'left',
 }
 
-export const Tile: ComponentMultiStyleConfig = {
-  parts: ['container', 'title', 'icon', 'subtitle'],
+export const Tile: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle: ({ isActive }) => ({
     container: isActive
       ? { ...baseContainerStyle, ...activeContainerStyle }

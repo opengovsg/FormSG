@@ -35,6 +35,7 @@ export const Tooltip = ({
           onMouseEnter={() => setIsLabelOpen(true)}
           onMouseLeave={() => setIsLabelOpen(false)}
           onClick={() => setIsLabelOpen((currentState) => !currentState)}
+          verticalAlign="middle"
           __css={wrapperStyles}
         >
           {children}

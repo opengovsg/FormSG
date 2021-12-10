@@ -1,22 +1,27 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
+import { anatomy, PartsStyleFunction } from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 import { Input } from './Input'
 
-const parts = [
+// This numberinput component anatomy is distinct from the one in ChakraUI's
+// core library.
+const parts = anatomy('numberinput').parts(
   'root',
   'field',
+  'stepper',
   'stepperButton',
   'stepperWrapper',
   'stepperDivider',
-]
+)
 
 const baseStyleRoot = {
   position: 'relative',
   zIndex: 0,
 }
 
-export const NumberInput: ComponentMultiStyleConfig = {
-  parts,
+export const NumberInput: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle: {
     root: baseStyleRoot,
     stepperWrapper: {
@@ -58,7 +63,7 @@ export const NumberInput: ComponentMultiStyleConfig = {
   },
   variants: {
     ...Input.variants,
-    outline: (props: Record<string, any>) => {
+    outline: ((props) => {
       const inputOutlineStyles = Input.variants.outline(props)
 
       return {
@@ -67,7 +72,7 @@ export const NumberInput: ComponentMultiStyleConfig = {
           ...inputOutlineStyles.field,
         },
       }
-    },
+    }) as PartsStyleFunction,
   },
   defaultProps: Input.defaultProps,
 }

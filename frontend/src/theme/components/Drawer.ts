@@ -1,4 +1,4 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/react'
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 import { Modal } from './Modal'
 
@@ -16,6 +16,9 @@ const parts = [
 export const Drawer: ComponentMultiStyleConfig = {
   parts,
   baseStyle: (props) => ({
-    overlay: Modal.baseStyle(props).overlay,
+    overlay:
+      Modal.baseStyle instanceof Function
+        ? Modal.baseStyle(props).overlay
+        : undefined,
   }),
 }

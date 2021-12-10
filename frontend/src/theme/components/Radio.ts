@@ -1,5 +1,7 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/react'
+import { radioAnatomy } from '@chakra-ui/anatomy'
 import { getColor } from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 /**
  * This must be kept in line with the key from Chakra's internal
@@ -12,18 +14,14 @@ export const RADIO_THEME_KEY = 'Radio'
  * With reference to
  * https://github.com/chakra-ui/chakra-ui/blob/main/packages/theme/src/components/radio.ts
  */
-
-const parts = [
-  'container', // Container for the circle as well as label
-  'control', // Control is the circular part of the radio button
-  'label',
+const parts = radioAnatomy.extend(
   'othersInput',
   'othersContainer',
   'othersRadio',
-]
+)
 
-export const Radio: ComponentMultiStyleConfig = {
-  parts,
+export const Radio: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle: ({ colorScheme: c, theme }) => ({
     control: {
       bg: 'white',
