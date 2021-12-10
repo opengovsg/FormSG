@@ -68,7 +68,7 @@ export const Playground: Story<AttachmentProps> = ({
 
   const isInvalid = !!errors?.[args.name]
 
-  const onSubmit = (values: any) => {
+  const onSubmit = (values: Record<string, File>) => {
     const stringifyFile = (obj: File) => {
       const replacer = []
       for (const key in obj) {
