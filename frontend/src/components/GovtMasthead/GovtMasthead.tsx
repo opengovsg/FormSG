@@ -2,12 +2,12 @@ import React from 'react'
 import { BiChevronDown, BiChevronUp } from 'react-icons/bi'
 import {
   Box,
-  chakra,
   Collapse,
   Flex,
   Icon,
   Stack,
   Text,
+  useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
 
@@ -21,17 +21,61 @@ import { GovtMastheadItem } from './GovtMastheadItem'
 export const GovtMasthead = (): JSX.Element => {
   const { isOpen, onToggle } = useDisclosure()
 
+  // Custom function for collapsing/expanding the header,
+  // because in mobile you tap the whole header, on desktop only on the link
+  const isMobile =
+    useBreakpointValue({
+      base: true,
+      xs: true,
+      md: false,
+    }) ?? true
+
+  interface HeaderBarProps {
+    isMobile: boolean
+    children: React.ReactNode
+  }
+
+  interface HowToIdentifyProps {
+    isMobile: boolean
+  }
+
+  const HeaderBar = ({ isMobile, children }: HeaderBarProps): JSX.Element => {
+    const styleProps = {
+      bg: 'neutral.200',
+      py: { base: '0.5rem', md: '0.375rem' },
+      px: { base: '1.5rem', md: '1.75rem', lg: '2rem' },
+      textStyle: { base: 'legal', md: 'caption-2' },
+      display: 'flex',
+      width: '100%',
+    }
+    return (
+      <Flex {...styleProps} {...(isMobile ? { onClick: onToggle } : {})}>
+        {children}
+      </Flex>
+    )
+  }
+
+  const HowToIdentify = ({ isMobile }: HowToIdentifyProps): JSX.Element => {
+    const howToIdentifyProps = {
+      tabIndex: 0,
+      ariaLabel: 'Click to expand masthead for more information',
+      onClick: onToggle,
+    }
+
+    return (
+      <Link {...(isMobile ? {} : howToIdentifyProps)}>
+        How to identify
+        <Icon
+          as={isOpen ? BiChevronUp : BiChevronDown}
+          fontSize={{ base: '1rem', md: '1.25rem' }}
+        />
+      </Link>
+    )
+  }
+
   return (
     <Box>
-      <chakra.button
-        bg="neutral.200"
-        py={{ base: '0.5rem', md: '0.375rem' }}
-        px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-        textStyle={{ base: 'legal', md: 'caption-2' }}
-        onClick={onToggle}
-        display="flex"
-        width="100%"
-      >
+      <HeaderBar isMobile={isMobile}>
         <GovtMastheadIcon
           fontSize="1rem"
           mr={{ base: '0.25rem', lg: '0.5rem' }}
@@ -39,18 +83,9 @@ export const GovtMasthead = (): JSX.Element => {
         />
         <Flex alignItems="center" flexWrap="wrap">
           <Text my="2px">A Singapore government agency website.&nbsp;</Text>
-          <Link
-            tabIndex={0}
-            aria-label="Click to expand masthead for more information"
-          >
-            How to identify
-            <Icon
-              as={isOpen ? BiChevronUp : BiChevronDown}
-              fontSize={{ base: '1rem', md: '1.25rem' }}
-            />
-          </Link>
+          <HowToIdentify isMobile={isMobile} />
         </Flex>
-      </chakra.button>
+      </HeaderBar>
 
       <Collapse in={isOpen} animateOpacity>
         <Stack
