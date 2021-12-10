@@ -429,7 +429,7 @@ export const getUpdatedFormFields = (
  * @returns string representing the msgSrvcName
  */
 export const generateTwilioCredSecretKeyName = (formId: string): string =>
-  `formsg/${config.secretEnv}/api/${formId}/twilio/${uuidv4()}`
+  `formsg/${config.secretEnv}/api/form/${formId}/twilio/${uuidv4()}`
 
 /**
  * Returns boolean indicating if the key to store the secret in AWS Secrets Manager
