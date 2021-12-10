@@ -1,5 +1,8 @@
 /* eslint-env node */
 module.exports = {
+  features: {
+    storyStoreV7: true,
+  },
   stories: [
     // Introduction stories set first so stories are ordered correctly.
     './introduction/Welcome/Welcome.stories.tsx',
