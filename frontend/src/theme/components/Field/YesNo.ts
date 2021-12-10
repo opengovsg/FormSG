@@ -1,11 +1,12 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
-import { getColor } from '@chakra-ui/theme-tools'
+import { anatomy, getColor, SystemStyleFunction } from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 export const YESNO_THEME_KEY = 'YesNoField'
 
-const parts = ['option', 'container', 'icon']
+const parts = anatomy('rating').parts('option', 'container', 'icon')
 
-const outlineOptionStyle = (props: Record<string, any>) => {
+const outlineOptionStyle: SystemStyleFunction = (props) => {
   const { colorScheme: c = 'primary', theme, side } = props
 
   const isLighterTheme = ['theme-yellow', 'theme-orange', 'theme-red'].includes(
@@ -73,7 +74,7 @@ const outlineOptionStyle = (props: Record<string, any>) => {
   }
 }
 
-const outlineContainerStyle = (props: Record<string, any>) => {
+const outlineContainerStyle: SystemStyleFunction = (props) => {
   const { isChecked } = props
 
   return {
@@ -84,8 +85,8 @@ const outlineContainerStyle = (props: Record<string, any>) => {
   }
 }
 
-export const YesNoField: ComponentMultiStyleConfig = {
-  parts,
+export const YesNoField: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   variants: {
     outline: (props) => {
       return {

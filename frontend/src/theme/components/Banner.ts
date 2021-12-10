@@ -1,9 +1,13 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
+import { anatomy, MultiStyleConfig } from '@chakra-ui/theme-tools'
 
 export type BannerVariant = 'info' | 'error' | 'warn'
 
-export const Banner: ComponentMultiStyleConfig = {
-  parts: ['banner', 'item', 'icon', 'link', 'close'],
+const parts = anatomy('banner').parts('banner', 'item', 'icon', 'link', 'close')
+
+export const Banner: MultiStyleConfig<typeof parts> & {
+  parts: typeof parts.keys
+} = {
+  parts: parts.keys,
   baseStyle: {
     item: {
       display: 'flex',

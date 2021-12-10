@@ -1,7 +1,9 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
+import { formErrorAnatomy as parts } from '@chakra-ui/anatomy'
 
-export const FormError: ComponentMultiStyleConfig = {
-  parts: ['text', 'icon'],
+import { ComponentMultiStyleConfig } from '~theme/types'
+
+export const FormError: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle: {
     text: {
       color: 'danger.500',

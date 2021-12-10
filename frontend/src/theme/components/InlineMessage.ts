@@ -1,9 +1,13 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
+import { anatomy } from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 export type InlineMessageVariant = 'info' | 'error' | 'warning'
 
-export const InlineMessage: ComponentMultiStyleConfig = {
-  parts: ['messagebox', 'icon'],
+const parts = anatomy('inline-message').parts('messagebox', 'icon')
+
+export const InlineMessage: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle: {
     messagebox: {
       padding: '8px',

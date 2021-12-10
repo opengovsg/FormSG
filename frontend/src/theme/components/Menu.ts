@@ -1,7 +1,9 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/react'
+import { menuAnatomy as parts } from '@chakra-ui/anatomy'
 
-export const Menu: ComponentMultiStyleConfig = {
-  parts: ['list', 'item'],
+import { ComponentMultiStyleConfig } from '~theme/types'
+
+export const Menu: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle: {
     item: {
       padding: '0.75rem 1rem',
