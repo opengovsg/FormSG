@@ -12,6 +12,19 @@ module.exports = {
       return newConfig
     },
   },
+  webpack: {
+    configure: {
+      module: {
+        rules: [
+          {
+            type: 'javascript/auto',
+            test: /\.mjs$/,
+            include: /node_modules/,
+          },
+        ],
+      },
+    },
+  },
   plugins: [
     {
       plugin: CracoAlias,

@@ -26,6 +26,16 @@ module.exports = {
     // Required to sync aliases between storybook and overriden configs
     return {
       ...storybookConfig,
+      module: {
+        rules: [
+          ...storybookConfig.module.rules,
+          {
+            type: 'javascript/auto',
+            test: /\.mjs$/,
+            include: /node_modules/,
+          },
+        ],
+      },
       resolve: {
         ...storybookConfig.resolve,
         alias: {
