@@ -86,18 +86,17 @@ export const RadioField = ({
       <Controller
         name={radioInputName}
         rules={validationRules}
-        defaultValue={{}}
         // `ref` omitted so the radiogroup will not have a ref and only the
         // radio themselves get the ref.
         render={({ field: { ref, ...rest } }) => (
           <Radio.RadioGroup {...rest}>
             {schema.fieldOptions.map((option, idx) => (
-              <Radio key={idx} value={option} ref={ref}>
+              <Radio key={idx} value={option} {...(idx === 0 ? { ref } : {})}>
                 {option}
               </Radio>
             ))}
             {schema.othersRadioButton ? (
-              <Radio.OthersWrapper ref={ref} value={RADIO_OTHERS_INPUT_VALUE}>
+              <Radio.OthersWrapper value={RADIO_OTHERS_INPUT_VALUE}>
                 <FormControl
                   isRequired={schema.required}
                   isDisabled={schema.disabled}
