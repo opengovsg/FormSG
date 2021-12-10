@@ -1,28 +1,20 @@
+import { modalAnatomy as parts } from '@chakra-ui/anatomy'
 import {
-  StyleObjectOrFn,
-  SystemStyleObjectRecord,
-  ThemeComponentFunction,
-  ThemeComponentProps,
-} from '@chakra-ui/react'
+  PartsStyleFunction,
+  PartsStyleObject,
+  SystemStyleFunction,
+  SystemStyleObject,
+} from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 import { textStyles } from '../textStyles'
 
-// Default parts.
-const parts = [
-  'overlay',
-  'dialogContainer',
-  'dialog',
-  'header',
-  'closeButton',
-  'body',
-  'footer',
-]
-
-const baseStyleOverlay: StyleObjectOrFn = {
+const baseStyleOverlay: SystemStyleObject = {
   bg: 'rgba(0, 0, 0, 0.65)',
 }
 
-const baseStyleDialog: ThemeComponentFunction<StyleObjectOrFn> = (props) => {
+const baseStyleDialog: SystemStyleFunction = (props) => {
   const { scrollBehavior } = props
   return {
     borderRadius: '0.25rem',
@@ -32,13 +24,13 @@ const baseStyleDialog: ThemeComponentFunction<StyleObjectOrFn> = (props) => {
   }
 }
 
-const baseStyle = (props: ThemeComponentProps) => ({
+const baseStyle: PartsStyleFunction<typeof parts> = (props) => ({
   overlay: baseStyleOverlay,
   dialog: baseStyleDialog(props),
 })
 
-const getSize = (value: string): SystemStyleObjectRecord => {
-  const fullDialogStyle: StyleObjectOrFn = {
+const getSize = (value: string): PartsStyleObject<typeof parts> => {
+  const fullDialogStyle: SystemStyleObject = {
     maxW: '100vw',
     minH: '100vh',
     my: 0,
@@ -111,8 +103,8 @@ const sizes = {
   full: getSize('full'),
 }
 
-export const Modal = {
-  parts,
+export const Modal: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle,
   sizes,
 }

@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { ComponentStyleConfig } from '@chakra-ui/theme'
+import { StyleFunctionProps } from '@chakra-ui/theme-tools'
 
 import { Input } from './Input'
 
-export const Textarea: ComponentStyleConfig = {
+export const Textarea = {
   variants: {
-    outline: (props) => {
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    outline: (props: StyleFunctionProps) => {
       return {
         ...Input.variants.outline(props).field,
         transitionProperty: 'common',

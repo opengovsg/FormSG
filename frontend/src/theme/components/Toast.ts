@@ -1,7 +1,11 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
+import { alertAnatomy } from '@chakra-ui/anatomy'
 
-export const Toast: ComponentMultiStyleConfig = {
-  parts: ['icon', 'close', 'content'],
+import { ComponentMultiStyleConfig } from '~theme/types'
+
+const parts = alertAnatomy.extend('close', 'content', 'wrapper')
+
+export const Toast: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle: {
     icon: {
       position: 'absolute',

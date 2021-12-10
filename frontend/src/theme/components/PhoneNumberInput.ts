@@ -1,12 +1,18 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
-import { getColor } from '@chakra-ui/theme-tools'
+import { anatomy, getColor } from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 import { Input } from './Input'
 
-const parts = ['field', 'country', 'icon', 'selector']
+const parts = anatomy('phonenumberinput').parts(
+  'field',
+  'country',
+  'icon',
+  'selector',
+)
 
-export const PhoneNumberInput: ComponentMultiStyleConfig = {
-  parts,
+export const PhoneNumberInput: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   variants: {
     outline: (props) => {
       const inputStyle = Input.variants.outline(props)
@@ -24,7 +30,7 @@ export const PhoneNumberInput: ComponentMultiStyleConfig = {
           border: '1px solid',
           borderColor: 'neutral.400',
           _disabled: {
-            ...inputStyle.field._disabled,
+            ...inputStyle.field?._disabled,
             cursor: 'not-allowed',
 
             _active: {

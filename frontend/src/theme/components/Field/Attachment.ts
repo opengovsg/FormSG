@@ -1,14 +1,15 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/react'
-import { getColor } from '@chakra-ui/theme-tools'
+import { anatomy, getColor } from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 import { Input } from '../Input'
 
 export const ATTACHMENT_THEME_KEY = 'AttachmentField'
 
-const parts = ['container', 'dropzone', 'icon']
+const parts = anatomy('attachment').parts('container', 'dropzone', 'icon')
 
-export const Attachment: ComponentMultiStyleConfig = {
-  parts,
+export const Attachment: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle: {
     dropzone: {
       transitionProperty: 'common',
