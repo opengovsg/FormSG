@@ -1,8 +1,9 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
-import { getColor } from '@chakra-ui/theme-tools'
+import { anatomy, getColor, SystemStyleFunction } from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 export const RATING_THEME_KEY = 'RatingField'
-const parts = ['option']
+const parts = anatomy('rating').parts('option')
 
 const getOptionThemeColor = (colorScheme: string) => {
   switch (colorScheme) {
@@ -15,7 +16,7 @@ const getOptionThemeColor = (colorScheme: string) => {
   }
 }
 
-const numberOptionStyle = (props: Record<string, any>) => {
+const numberOptionStyle: SystemStyleFunction = (props) => {
   const { colorScheme: c } = props
   const themeColor = getOptionThemeColor(c)
 
@@ -66,7 +67,7 @@ const numberOptionStyle = (props: Record<string, any>) => {
   }
 }
 
-const iconOptionStyle = (props: Record<string, any>) => {
+const iconOptionStyle: SystemStyleFunction = (props) => {
   const { colorScheme: c, theme } = props
   const themeColor = getOptionThemeColor(c)
 
@@ -91,8 +92,8 @@ const iconOptionStyle = (props: Record<string, any>) => {
   }
 }
 
-export const RatingField: ComponentMultiStyleConfig = {
-  parts,
+export const RatingField: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle: {
     option: {
       display: 'flex',

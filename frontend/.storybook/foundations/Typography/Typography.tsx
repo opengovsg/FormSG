@@ -78,12 +78,34 @@ export const Typography: FC = () => {
         </Wrap>
         <Wrap justify="space-between">
           <WrapItem>
+            <Box w="43rem" textStyle="display-1-mobile" color="secondary.700">
+              <Text>Display 1 mobile</Text>
+              <Text>Build forms in minutes.</Text>
+            </Box>
+          </WrapItem>
+          <WrapItem>
+            {prettyPrint(theme.textStyles['display-1-mobile'])}
+          </WrapItem>
+        </Wrap>
+        <Wrap justify="space-between">
+          <WrapItem>
             <Box w="43rem" textStyle="display-2" color="secondary.700">
               <Text>Display 2</Text>
               <Text>Build government forms in minutes.</Text>
             </Box>
           </WrapItem>
           <WrapItem>{prettyPrint(theme.textStyles['display-2'])}</WrapItem>
+        </Wrap>
+        <Wrap justify="space-between">
+          <WrapItem>
+            <Box w="43rem" textStyle="display-2-mobile" color="secondary.700">
+              <Text>Display 2 mobile</Text>
+              <Text>Build government forms in minutes.</Text>
+            </Box>
+          </WrapItem>
+          <WrapItem>
+            {prettyPrint(theme.textStyles['display-2-mobile'])}
+          </WrapItem>
         </Wrap>
         <Wrap justify="space-between">
           <WrapItem>

@@ -72,6 +72,7 @@ export const Footer = ({
           spacing={{ base: 0, lg: '1rem' }}
           paddingBottom={{ base: '1.5rem', lg: 0 }}
           paddingEnd={{ base: 0, lg: '1.5rem' }}
+          align="baseline"
         >
           <Text textStyle="h4" color={`${textColorScheme}.500`}>
             {appName}
@@ -90,6 +91,7 @@ export const Footer = ({
         >
           {footerLinks?.map(({ label, href }, index) => (
             <Link
+              m="-0.25rem"
               key={index}
               colorScheme={textColorScheme}
               variant="standalone"

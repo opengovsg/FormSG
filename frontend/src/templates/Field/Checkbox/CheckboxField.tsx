@@ -1,10 +1,6 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { FieldError, useFormContext } from 'react-hook-form'
-import {
-  FormControl,
-  useMultiStyleConfig,
-  VisuallyHidden,
-} from '@chakra-ui/react'
+import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
 import { CheckboxFieldBase, FormFieldWithId } from '~shared/types/field'
@@ -13,7 +9,6 @@ import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 import { createCheckboxValidationRules } from '~utils/fieldValidation'
 import Checkbox from '~components/Checkbox'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 
@@ -41,14 +36,15 @@ export const CheckboxField = ({
   )
   const checkboxInputName = `${schema._id}.value`
 
-  const validationRules = useMemo(
-    () => createCheckboxValidationRules(schema),
-    [schema],
-  )
+  const validationRules = useMemo(() => {
+    return {
+      ...createCheckboxValidationRules(schema),
+      deps: [othersInputName],
+    }
+  }, [othersInputName, schema])
 
   const {
     watch,
-    trigger,
     register,
     formState: { isValid, isSubmitting, errors },
   } = useFormContext()
@@ -72,21 +68,6 @@ export const CheckboxField = ({
     }),
     [isOthersSelected],
   )
-
-  useEffect(() => {
-    // When unchecking others, manually trigger input validation. This is
-    // to ensure that if you select then unselect Others, the form knows
-    // that the text input is now optional.
-    if (schema.othersRadioButton && !isOthersSelected) {
-      trigger(othersInputName)
-    }
-  }, [
-    othersInputName,
-    checkboxValues,
-    schema.othersRadioButton,
-    trigger,
-    isOthersSelected,
-  ])
 
   const othersInputError: FieldError | undefined = get(errors, othersInputName)
 
@@ -117,13 +98,8 @@ export const CheckboxField = ({
               value={CHECKBOX_OTHERS_INPUT_VALUE}
               {...register(checkboxInputName, validationRules)}
             />
-            <VisuallyHidden>
-              <FormLabel id={`${schema._id}-others`}>
-                Enter value for "Others" option
-              </FormLabel>
-            </VisuallyHidden>
             <Checkbox.OthersInput
-              aria-labelledby={`${schema._id}-others`}
+              aria-label='Enter value for "Others" option'
               {...register(othersInputName, othersValidationRules)}
             />
             <FormErrorMessage ml={styles.othersInput?.ml as string} mb={0}>

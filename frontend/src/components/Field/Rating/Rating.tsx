@@ -147,7 +147,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
                       numberOfRatings={numberOfRatings}
                       onChange={handleRatingChange}
                       selectedValue={currentValue}
-                      ref={ref}
+                      {...(i === 0 ? { ref } : {})}
                     >
                       {value}
                     </RatingOption>

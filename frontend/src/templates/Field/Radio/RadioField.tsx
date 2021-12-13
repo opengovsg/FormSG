@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Controller, FieldError, useFormContext } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
@@ -35,14 +35,15 @@ export const RadioField = ({
   )
   const radioInputName = `${schema._id}.value`
 
-  const validationRules = useMemo(
-    () => createRadioValidationRules(schema),
-    [schema],
-  )
+  const validationRules = useMemo(() => {
+    return {
+      ...createRadioValidationRules(schema),
+      deps: [othersInputName],
+    }
+  }, [othersInputName, schema])
 
   const {
     watch,
-    trigger,
     register,
     formState: { isValid, isSubmitting, errors },
   } = useFormContext()
@@ -66,15 +67,6 @@ export const RadioField = ({
     [isOthersSelected],
   )
 
-  useEffect(() => {
-    // When unchecking others, manually trigger input validation. This is
-    // to ensure that if you select then unselect Others, the form knows
-    // that the text input is now optional.
-    if (!isOthersSelected) {
-      trigger(othersInputName)
-    }
-  }, [isOthersSelected, othersInputName, trigger])
-
   const othersInputError: FieldError | undefined = get(errors, othersInputName)
 
   return (
@@ -86,18 +78,17 @@ export const RadioField = ({
       <Controller
         name={radioInputName}
         rules={validationRules}
-        defaultValue={{}}
         // `ref` omitted so the radiogroup will not have a ref and only the
         // radio themselves get the ref.
         render={({ field: { ref, ...rest } }) => (
           <Radio.RadioGroup {...rest}>
             {schema.fieldOptions.map((option, idx) => (
-              <Radio key={idx} value={option} ref={ref}>
+              <Radio key={idx} value={option} {...(idx === 0 ? { ref } : {})}>
                 {option}
               </Radio>
             ))}
             {schema.othersRadioButton ? (
-              <Radio.OthersWrapper ref={ref} value={RADIO_OTHERS_INPUT_VALUE}>
+              <Radio.OthersWrapper value={RADIO_OTHERS_INPUT_VALUE}>
                 <FormControl
                   isRequired={schema.required}
                   isDisabled={schema.disabled}
@@ -105,7 +96,7 @@ export const RadioField = ({
                   isInvalid={!!othersInputError}
                 >
                   <OthersInput
-                    aria-label="Enter others input"
+                    aria-label='Enter value for "Others" option'
                     {...register(othersInputName, othersValidationRules)}
                   />
                   <FormErrorMessage

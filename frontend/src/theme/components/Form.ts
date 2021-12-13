@@ -1,14 +1,14 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
+import { formAnatomy as parts } from '@chakra-ui/anatomy'
 
-import { textStyles } from '../textStyles'
+import { ComponentMultiStyleConfig } from '~theme/types'
 
-export const Form: ComponentMultiStyleConfig = {
-  parts: ['helperText'],
+export const Form: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle: {
     helperText: {
       color: 'secondary.400',
       mt: 2,
-      ...textStyles['body-2'],
+      textStyle: 'body-2',
     },
   },
 }

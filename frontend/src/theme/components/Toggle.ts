@@ -1,22 +1,21 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
+import { switchAnatomy } from '@chakra-ui/anatomy'
 import { getColor } from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 // Call it Switch to be consistent with Chakra UI so the styles
 // are merged correctly
 export const TOGGLE_THEME_KEY = 'Switch'
 
-const parts = [
-  'container', // default container for the toggle itself
-  'track', // oval part along which circle travels
-  'thumb', // circle part
+const parts = switchAnatomy.extend(
   'textContainer', // container for label and description
   'label',
   'description',
   'overallContainer', // container for our custom component which contains text + toggle
   'icon', // icon in centre of thumb
-]
+)
 
-export const Toggle: ComponentMultiStyleConfig = {
-  parts,
+export const Toggle: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle: ({ theme }) => ({
     overallContainer: {
       display: 'flex',

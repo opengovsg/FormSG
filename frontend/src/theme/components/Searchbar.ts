@@ -1,14 +1,17 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
+import { anatomy } from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 import { Input } from './Input'
 
 export const SEARCHBAR_THEME_KEY = 'Searchbar'
 
-export const Searchbar: ComponentMultiStyleConfig = {
-  parts: ['icon', 'field'],
-  baseStyle: {},
+const parts = anatomy('searchbar').parts('icon', 'field')
+
+export const Searchbar: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   variants: {
-    outline: (props: Record<string, any>) => {
+    outline: (props) => {
       const { field } = Input.variants.outline(props)
       const { isExpanded } = props
 

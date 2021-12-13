@@ -1,11 +1,19 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/theme'
+import { anatomy } from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 import { Input } from './Input'
 
-const parts = ['field', 'iconContainer', 'icon']
+const parts = anatomy('singlecountryphonenumberinput').parts(
+  'field',
+  'iconContainer',
+  'icon',
+)
 
-export const SingleCountryPhoneNumberInput: ComponentMultiStyleConfig = {
-  parts,
+export const SingleCountryPhoneNumberInput: ComponentMultiStyleConfig<
+  typeof parts
+> = {
+  parts: parts.keys,
   variants: {
     outline: (props) => {
       const { isSuccess } = props
