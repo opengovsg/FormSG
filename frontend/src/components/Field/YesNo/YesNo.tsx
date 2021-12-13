@@ -59,7 +59,6 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
     const groupProps = getRootProps()
     const [noProps, yesProps] = useMemo(() => {
       const baseProps = {
-        enterKeyHint: '',
         ...pick(formControlProps, [
           'isDisabled',
           'isReadOnly',
@@ -94,14 +93,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           <Icon as={BiX} __css={styles.icon} />
           No
         </YesNoOption>
-        <YesNoOption
-          side="right"
-          colorScheme={colorScheme}
-          {...yesProps}
-          // Ref is set here for tracking current value, and also so any errors
-          // can focus this input.
-          ref={ref}
-        >
+        <YesNoOption side="right" colorScheme={colorScheme} {...yesProps}>
           <Icon as={BiCheck} __css={styles.icon} />
           Yes
         </YesNoOption>

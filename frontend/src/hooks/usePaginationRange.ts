@@ -7,7 +7,7 @@
 import { useMemo } from 'react'
 import range from 'lodash/range'
 
-interface UsePaginationRangeProps<T extends unknown = string> {
+interface UsePaginationRangeProps<T = string> {
   /**
    * Number of pages to display to left and right of current page.
    */
@@ -34,7 +34,7 @@ interface UsePaginationRangeProps<T extends unknown = string> {
   separator: T
 }
 
-export const usePaginationRange = <T extends unknown = string>({
+export const usePaginationRange = <T = string>({
   totalCount,
   pageSize,
   siblingCount,

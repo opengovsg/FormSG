@@ -1,8 +1,8 @@
-import { useEffect, useMemo } from 'react'
-import { Controller, useForm, useWatch } from 'react-hook-form'
+import { useMemo } from 'react'
+import { FieldError, useForm } from 'react-hook-form'
 import { FormControl, VStack } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
-import { isEmpty, omit } from 'lodash'
+import { get, isEmpty } from 'lodash'
 
 import { viewports } from '~utils/storybook'
 
@@ -85,25 +85,12 @@ const PlaygroundTemplate: Story = ({
   const {
     handleSubmit,
     formState: { errors },
-    control,
     register,
-    trigger,
+    getValues,
   } = useForm()
-  const radioValue = useWatch({
-    name,
-    control,
-  })
+  const othersInputError: FieldError | undefined = get(errors, othersInputName)
 
   const othersInputValue = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
-
-  useEffect(() => {
-    // When unchecking others, manually trigger input validation. This is
-    // to ensure that if you select then unselect Others, the form knows
-    // that the text input is now optional.
-    if (hasOthers && radioValue !== othersInputValue) {
-      trigger(othersInputName)
-    }
-  }, [hasOthers, radioValue, trigger, othersInputName])
 
   const onSubmit = (data: unknown) => {
     alert(JSON.stringify(data))
@@ -112,47 +99,55 @@ const PlaygroundTemplate: Story = ({
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <FormControl isRequired={isRequired} isInvalid={!isEmpty(errors)} mb={6}>
         <FormLabel>{label}</FormLabel>
-        <Controller
-          control={control}
-          name={name}
-          render={({ field }) => (
-            // Don't pass the ref to the surrounding div
-            // so we don't have conflicting refs
-            <Radio.RadioGroup {...omit(field, 'ref')}>
-              {options.map((o, idx) => (
-                <Radio key={idx} value={o} ref={field.ref} {...args}>
-                  {o}
-                </Radio>
-              ))}
-              {hasOthers && (
-                <Radio.OthersWrapper
-                  ref={field.ref}
-                  {...args}
-                  value={othersInputValue}
-                >
-                  <OthersInput
-                    isInvalid={!!errors[othersInputName]}
-                    {...register(othersInputName, {
-                      validate: (value) => {
-                        const isOthersSelected = radioValue === othersInputValue
-                        if (isOthersSelected && !value) {
-                          return 'Please specify a value for Others'
-                        }
-                        return true
-                      },
-                    })}
-                  />
-                </Radio.OthersWrapper>
-              )}
-            </Radio.RadioGroup>
+        <Radio.RadioGroup>
+          {options.map((o, idx) => (
+            <Radio
+              key={idx}
+              value={o}
+              {...args}
+              {...register(name, {
+                required: {
+                  value: isRequired,
+                  message: 'This field is required',
+                },
+                deps: [othersInputName],
+              })}
+            >
+              {o}
+            </Radio>
+          ))}
+          {hasOthers && (
+            <Radio.OthersWrapper
+              {...register(name, {
+                required: {
+                  value: isRequired,
+                  message: 'This field is required',
+                },
+                deps: [othersInputName],
+              })}
+              {...args}
+              value={othersInputValue}
+            >
+              <FormControl
+                isRequired={isRequired}
+                isInvalid={!!othersInputError}
+              >
+                <OthersInput
+                  aria-label="Enter others input"
+                  {...register(othersInputName, {
+                    validate: (value) => {
+                      return (
+                        getValues(name) !== othersInputValue ||
+                        !!value ||
+                        'Please specify a value for the "others" option'
+                      )
+                    },
+                  })}
+                />
+              </FormControl>
+            </Radio.OthersWrapper>
           )}
-          rules={{
-            required: {
-              value: isRequired,
-              message: 'This field is required',
-            },
-          }}
-        />
+        </Radio.RadioGroup>
         <FormErrorMessage>
           {errors[name]?.message ?? errors[othersInputName]?.message}
         </FormErrorMessage>

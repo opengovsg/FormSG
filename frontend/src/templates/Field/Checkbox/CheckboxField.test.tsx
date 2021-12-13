@@ -136,7 +136,7 @@ describe('radio validation', () => {
     // Assert
     // Should show specific other required error message.
     expect(
-      screen.queryByText(/Please specify a value for the "others" option/i),
+      screen.getByText(/Please specify a value for the "others" option/i),
     ).toBeInTheDocument()
   })
 

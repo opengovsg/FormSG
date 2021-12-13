@@ -78,10 +78,11 @@ export const createRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (
   }
 }
 
-export const createAttachmentValidationRules: ValidationRuleFn<AttachmentFieldBase> =
-  (schema) => {
-    return createBaseValidationRules(schema)
-  }
+export const createAttachmentValidationRules: ValidationRuleFn<
+  AttachmentFieldBase
+> = (schema) => {
+  return createBaseValidationRules(schema)
+}
 
 export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
   schema,
@@ -128,36 +129,37 @@ export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
   }
 }
 
-export const createShortTextValidationRules: ValidationRuleFn<ShortTextFieldBase> =
-  (schema) => {
-    const { selectedValidation, customVal } = schema.ValidationOptions
-    return {
-      ...createBaseValidationRules(schema),
-      validate: (val?: string) => {
-        if (!val || !customVal) return true
+export const createShortTextValidationRules: ValidationRuleFn<
+  ShortTextFieldBase
+> = (schema) => {
+  const { selectedValidation, customVal } = schema.ValidationOptions
+  return {
+    ...createBaseValidationRules(schema),
+    validate: (val?: string) => {
+      if (!val || !customVal) return true
 
-        const currLen = val.length
+      const currLen = val.length
 
-        switch (selectedValidation) {
-          case TextSelectedValidation.Exact:
-            return (
-              currLen === customVal ||
-              simplur`Please enter ${customVal} character[|s] (${currLen}/${customVal})`
-            )
-          case TextSelectedValidation.Minimum:
-            return (
-              currLen >= customVal ||
-              simplur`Please enter at least ${customVal} character[|s] (${currLen}/${customVal})`
-            )
-          case TextSelectedValidation.Maximum:
-            return (
-              currLen <= customVal ||
-              simplur`Please enter at most ${customVal} character[|s] (${currLen}/${customVal})`
-            )
-        }
-      },
-    }
+      switch (selectedValidation) {
+        case TextSelectedValidation.Exact:
+          return (
+            currLen === customVal ||
+            simplur`Please enter ${customVal} character[|s] (${currLen}/${customVal})`
+          )
+        case TextSelectedValidation.Minimum:
+          return (
+            currLen >= customVal ||
+            simplur`Please enter at least ${customVal} character[|s] (${currLen}/${customVal})`
+          )
+        case TextSelectedValidation.Maximum:
+          return (
+            currLen <= customVal ||
+            simplur`Please enter at most ${customVal} character[|s] (${currLen}/${customVal})`
+          )
+      }
+    },
   }
+}
 
 export const createUenValidationRules: ValidationRuleFn<UenFieldBase> = (
   schema,
@@ -183,10 +185,11 @@ export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
   }
 }
 
-export const createCheckboxValidationRules: ValidationRuleFn<CheckboxFieldBase> =
-  (schema) => {
-    return createBaseValidationRules(schema)
-  }
+export const createCheckboxValidationRules: ValidationRuleFn<
+  CheckboxFieldBase
+> = (schema) => {
+  return createBaseValidationRules(schema)
+}
 
 export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
   schema,
