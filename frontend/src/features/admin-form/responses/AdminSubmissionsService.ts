@@ -1,3 +1,9 @@
+// Need to use inline loading in order to use comlink syntax
+// Typescript documentation for worker-loader webpack v4 also seems outdated,
+// loading the worker script via webpack config no longer works
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import DecryptionWorker from 'worker-loader!./workers/decryption.worker'
+
 import {
   StorageModeSubmissionMetadataList,
   SubmissionCountQueryDto,
@@ -6,8 +12,6 @@ import {
 import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
-
-import { WorkerInterface } from './workers/type/workerinterface'
 
 /**
  * Counts the number of submissions for a given form
@@ -46,5 +50,5 @@ export const getFormSubmissionsMetadata = async (
  * Terminates all workers
  * @param workers an array of workers
  */
-export const killWorkers = (workers: WorkerInterface[]): void =>
-  workers.forEach((worker) => worker.worker.terminate())
+export const killWorkers = (workers: DecryptionWorker[]): void =>
+  workers.forEach((worker) => worker.terminate())
