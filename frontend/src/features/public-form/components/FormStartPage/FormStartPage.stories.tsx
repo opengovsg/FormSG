@@ -30,6 +30,8 @@ export default {
     (storyFn) => <PublicFormProvider>{storyFn()}</PublicFormProvider>,
   ],
   parameters: {
+    // Required so skeleton "animation" does not hide content.
+    chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
   },
 } as Meta
