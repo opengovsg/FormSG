@@ -6,19 +6,19 @@ import * as stories from './GovtMasthead.stories'
 
 const { GovtMasthead } = composeStories(stories)
 
-it('expands and collapses content on desktop after clicking on header', async () => {
+it('expands and collapses content on desktop after clicking on "how to identify"', async () => {
   // Arrange
   await act(async () => {
     render(<GovtMasthead />)
   })
-  const headerBar = screen.getByRole('button', {
-    name: /singapore government agency website/i,
+  const howToIdentifyLink = screen.getByRole('link', {
+    name: /how to identify/i,
   })
 
   expect(screen.getByText(/trusted websites/i)).not.toBeVisible()
 
   // Act
-  await act(async () => userEvent.click(headerBar))
+  await act(async () => userEvent.click(howToIdentifyLink))
 
   // Assert
   // Should expand content.
@@ -29,7 +29,7 @@ it('expands and collapses content on desktop after clicking on header', async ()
   })
 
   // Act again
-  await act(async () => userEvent.click(headerBar))
+  await act(async () => userEvent.click(howToIdentifyLink))
 
   // Assert again
   // Should collapse content.
@@ -45,14 +45,14 @@ it('renders an external link to "https://go.gov.sg/trusted-sites" when expanded'
   await act(async () => {
     render(<GovtMasthead />)
   })
-  const headerBar = screen.getByRole('button', {
-    name: /singapore government agency website/i,
+  const howToIdentifyLink = screen.getByRole('link', {
+    name: /how to identify/i,
   })
 
   expect(screen.getByText(/trusted websites/i)).not.toBeVisible()
 
   // Act
-  await act(async () => userEvent.click(headerBar))
+  await act(async () => userEvent.click(howToIdentifyLink))
 
   // Assert
   // Should render an external link
