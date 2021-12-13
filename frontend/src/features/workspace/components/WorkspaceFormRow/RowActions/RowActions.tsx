@@ -1,3 +1,6 @@
+import { useMemo } from 'react'
+import { Box } from '@chakra-ui/react'
+
 import { FormId } from '~shared/types/form/form'
 
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -13,9 +16,18 @@ export interface RowActionsProps {
 export const RowActions = (props: RowActionsProps): JSX.Element => {
   const isMobile = useIsMobile()
 
-  return isMobile ? (
-    <RowActionsDrawer {...props} />
-  ) : (
-    <RowActionsDropdown {...props} />
+  const ComponentToRender = useMemo(() => {
+    return isMobile ? RowActionsDrawer : RowActionsDropdown
+  }, [isMobile])
+
+  return (
+    <Box
+      pos="absolute"
+      right="2rem"
+      top={{ md: '1.5rem' }}
+      bottom={{ base: '1.5rem', md: 'initial' }}
+    >
+      <ComponentToRender {...props} />
+    </Box>
   )
 }

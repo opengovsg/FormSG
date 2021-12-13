@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
-import { Link as ReactLink } from 'react-router-dom'
 import {
   Box,
+  ButtonProps,
+  chakra,
   Flex,
-  Grid,
-  GridProps,
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
@@ -12,13 +11,11 @@ import dayjs from 'dayjs'
 
 import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
 
-import { ADMINFORM_ROUTE } from '~constants/routes'
-import Link from '~components/Link'
-
+import { useRowActionDropdown } from './RowActions/useRowActionDropdown'
 import { FormStatusLabel } from './FormStatusLabel'
 import { RowActions } from './RowActions'
 
-export interface WorkspaceFormRowProps extends GridProps {
+export interface WorkspaceFormRowProps extends ButtonProps {
   formMeta: AdminDashboardFormMetaDto
 }
 
@@ -33,11 +30,13 @@ const RELATIVE_DATE_FORMAT = {
 
 export const WorkspaceFormRow = ({
   formMeta,
-  ...gridProps
+  ...buttonProps
 }: WorkspaceFormRowProps): JSX.Element => {
   const prettyLastModified = useMemo(() => {
     return dayjs(formMeta.lastModified).calendar(null, RELATIVE_DATE_FORMAT)
   }, [formMeta.lastModified])
+
+  const { handleEditForm } = useRowActionDropdown(formMeta._id)
 
   const isTruncated = useBreakpointValue({
     base: false,
@@ -45,35 +44,37 @@ export const WorkspaceFormRow = ({
   })
 
   return (
-    <Grid
-      py="1.5rem"
-      justify="space-between"
-      templateColumns={{
-        base: '1fr min-content',
-        md: '1fr min-content min-content',
-      }}
-      templateAreas={{
-        base: "'title title' 'status actions'",
-        md: "'title status actions'",
-      }}
-      templateRows={{ base: 'auto', md: 'auto' }}
-      gap={{ base: '0.5rem', md: '3.75rem' }}
-      {...gridProps}
-    >
-      <Flex flexDir="column" gridArea="title">
-        <Link
-          as={ReactLink}
-          m="-0.5rem"
-          p="0.5rem"
-          variant="inline"
-          textDecorationLine="unset"
-          display="inline-flex"
-          alignItems="flex-start"
-          colorScheme="secondary"
-          flexDir="column"
-          w="fit-content"
-          to={`${ADMINFORM_ROUTE}/${formMeta._id}`}
-        >
+    <Box pos="relative">
+      <chakra.button
+        transitionProperty="common"
+        transitionDuration="normal"
+        onClick={handleEditForm}
+        w="100%"
+        py="1.5rem"
+        display="grid"
+        justifyContent="space-between"
+        gridTemplateColumns={{
+          base: '1fr 2.75rem',
+          md: '1fr min-content 8rem',
+        }}
+        gridTemplateRows={{ base: 'auto 2.75rem', md: 'auto' }}
+        gridTemplateAreas={{
+          base: "'title title' 'status actions'",
+          md: "'title status actions'",
+        }}
+        gridGap={{ base: '0.5rem', md: '1.5rem' }}
+        _hover={{
+          bg: 'primary.100',
+        }}
+        _active={{
+          bg: 'primary.200',
+        }}
+        _focus={{
+          boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
+        }}
+        {...buttonProps}
+      >
+        <Flex flexDir="column" gridArea="title" textAlign="initial">
           <Text
             isTruncated={isTruncated}
             title={formMeta.title}
@@ -85,14 +86,14 @@ export const WorkspaceFormRow = ({
           <Text textStyle="body-2" color="secondary.400">
             Edited {prettyLastModified}
           </Text>
-        </Link>
-      </Flex>
-      <Box gridArea="status" alignSelf="center">
-        <FormStatusLabel status={formMeta.status} />
-      </Box>
-      <Box gridArea="actions" alignSelf="center">
-        <RowActions formId={formMeta._id} />
-      </Box>
-    </Grid>
+        </Flex>
+        <Box gridArea="status" alignSelf="center">
+          <FormStatusLabel status={formMeta.status} />
+        </Box>
+        {/* Blank spacing for absolutely positioned RowActions component */}
+        <Box gridArea="actions" />
+      </chakra.button>
+      <RowActions formId={formMeta._id} />
+    </Box>
   )
 }
