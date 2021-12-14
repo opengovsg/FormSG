@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
-    "date-fns": "^2.23.0",
+    "date-fns": "^2.26.0",
     "json-stringify-safe": "^5.0.1",
     "jszip": "^3.7.1",
-    "libphonenumber-js": "^1.9.23",
+    "libphonenumber-js": "^1.9.43",
     "lodash": "^4.17.21",
     "type-fest": "^1.4.0",
     "validator": "^13.6.0",
-    "zod": "^3.7.2"
+    "zod": "^3.11.6"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.177",
