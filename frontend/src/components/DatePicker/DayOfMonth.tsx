@@ -1,6 +1,6 @@
 import {
-  Box,
-  BoxProps,
+  ButtonProps,
+  chakra,
   forwardRef,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
@@ -8,7 +8,7 @@ import { format } from 'date-fns'
 
 import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
 
-export interface DayOfMonthProps extends BoxProps {
+export interface DayOfMonthProps extends ButtonProps {
   /**
    * Date represented by this day of month.
    */
@@ -57,8 +57,9 @@ export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
     })
 
     return (
-      <Box
-        as="button"
+      <chakra.button
+        // Prevent form submission if this component is nested in a form.
+        type="button"
         {...props}
         __css={styles.dayOfMonth}
         aria-label={format(date, "do 'of' MMMM',' EEEE")}
@@ -67,7 +68,7 @@ export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
         ref={ref}
       >
         {date.getDate()}
-      </Box>
+      </chakra.button>
     )
   },
 )
