@@ -2589,5 +2589,39 @@ describe('Form Model', () => {
         )
       })
     })
+
+    describe('updateMsgSrvcName', () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
+      it('should update msgSrvcName of form to new msgSrvcName', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          title: 'mock mobile form',
+        })
+
+        // Act
+        const updatedForm = await form.updateMsgSrvcName(MOCK_MSG_SRVC_NAME)
+        // Assert
+        expect(updatedForm!.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
+      })
+    })
+
+    describe('deleteMsgSrvcName', () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
+      it('should delete msgSrvcName of form', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          title: 'mock mobile form',
+          msgSrvcName: MOCK_MSG_SRVC_NAME,
+        })
+
+        // Act
+        const updatedForm = await form.deleteMsgSrvcName()
+
+        // Assert
+        expect(updatedForm!.msgSrvcName).toBeUndefined()
+      })
+    })
   })
 })

@@ -75,6 +75,7 @@ export type Config = {
   siteBannerContent: string
   adminBannerContent: string
   rateLimitConfig: RateLimitConfig
+  secretEnv: string
 
   // Functions
   configureAws: () => Promise<void>
@@ -92,6 +93,7 @@ export interface IProdOnlyVarsSchema {
 export interface ICompulsoryVarsSchema {
   core: {
     sessionSecret: string
+    secretEnv: string
   }
   awsConfig: {
     imageS3Bucket: string

@@ -217,6 +217,7 @@ const config: Config = {
   adminBannerContent: basicVars.banner.adminBannerContent,
   rateLimitConfig: basicVars.rateLimit,
   configureAws,
+  secretEnv: basicVars.core.secretEnv,
 }
 
 export = config

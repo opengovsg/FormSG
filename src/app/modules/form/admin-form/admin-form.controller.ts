@@ -81,6 +81,7 @@ import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
+import { TwilioCredentials } from './../../../services/sms/sms.types'
 import {
   PREVIEW_CORPPASS_UID,
   PREVIEW_CORPPASS_UINFIN,
@@ -2533,3 +2534,133 @@ export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
       })
   )
 }
+
+// Validates Twilio Credentials
+const validateTwilioCredentials = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    accountSid: Joi.string().required().pattern(new RegExp('^AC')),
+    apiKey: Joi.string().required().pattern(new RegExp('^SK')),
+    apiSecret: Joi.string().required(),
+    messagingServiceSid: Joi.string().required().pattern(new RegExp('^MG')),
+  }),
+})
+/**
+ * Handler for PUT /:formId/twilio.
+ * @security session
+ *
+ * @returns 200 with twilio credentials succesfully updated
+ * @returns 400 with twilio credentials are invalid
+ * @returns 401 when user is not logged in
+ * @returns 403 when user does not have permissions to update the form
+ * @returns 404 when form to update cannot be found
+ * @returns 422 when id of user who is updating the form cannot be found
+ * @returns 500 when database error occurs
+ */
+export const updateTwilioCredentials: ControllerHandler<
+  { formId: string },
+  unknown,
+  TwilioCredentials
+> = (req, res) => {
+  const { formId } = req.params
+  const twilioCredentials = req.body
+
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) => {
+      const { msgSrvcName } = retrievedForm
+
+      return msgSrvcName
+        ? AdminFormService.updateTwilioCredentials(
+            msgSrvcName,
+            twilioCredentials,
+          )
+        : AdminFormService.createTwilioCredentials(
+            twilioCredentials,
+            retrievedForm,
+          )
+    })
+    .map(() =>
+      res
+        .status(StatusCodes.OK)
+        .json({ message: 'Successfully updated Twilio credentials' }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating twilio credentials',
+        meta: {
+          action: 'handleUpdateTwilio',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          twilioCredentials,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for DELETE /:formId/twilio.
+ * @security session
+ *
+ * @returns 200 with twilio credentials succesfully updated
+ * @returns 401 when user is not logged in
+ * @returns 403 when user does not have permissions to update the form
+ * @returns 404 when form to delete credentials cannot be found
+ * @returns 422 when id of user who is updating the form cannot be found
+ * @returns 500 when database error occurs
+ */
+export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Delete,
+      }),
+    )
+    .andThen((retrievedForm) => {
+      return AdminFormService.deleteTwilioCredentials(retrievedForm)
+    })
+    .map(() =>
+      res
+        .status(StatusCodes.OK)
+        .json({ message: 'Successfully deleted Twilio credentials' }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when deleting twilio credentials',
+        meta: {
+          action: 'handleDeleteTwilio',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+// Handler for PUT /admin/forms/:formId/twilio
+export const handleUpdateTwilio = [
+  validateTwilioCredentials,
+  updateTwilioCredentials,
+] as ControllerHandler[]

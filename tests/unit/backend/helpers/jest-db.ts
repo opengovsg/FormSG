@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import { FormResponseMode } from 'shared/types'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
-import {
+import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
@@ -15,6 +15,8 @@ import {
   IEmailFormSchema,
   IEncryptedForm,
   IEncryptedFormSchema,
+  IForm,
+  IFormSchema,
   IPopulatedForm,
   IUserSchema,
 } from 'src/types'
@@ -211,10 +213,54 @@ const insertEncryptForm = async ({
   }
 }
 
+const insertFormWithMsgSrvcName = async ({
+  formId,
+  userId,
+  mailDomain = 'test.gov.sg',
+  mailName = 'test',
+  shortName = 'govtest',
+  formOptions = {},
+  msgSrvcName = 'mockMsgSrvcname',
+}: {
+  formId?: ObjectID
+  userId?: ObjectID
+  mailName?: string
+  mailDomain?: string
+  shortName?: string
+  formOptions?: Partial<IForm>
+  msgSrvcName?: string
+} = {}): Promise<{
+  form: IFormSchema
+  user: IUserSchema
+  agency: IAgencySchema
+}> => {
+  const { user, agency } = await insertFormCollectionReqs({
+    userId,
+    mailDomain,
+    mailName,
+    shortName,
+  })
+
+  const FormModel = getFormModel(mongoose)
+  const form = await FormModel.create({
+    title: 'example form title',
+    admin: user._id,
+    _id: formId,
+    ...formOptions,
+    msgSrvcName: msgSrvcName,
+  })
+
+  return {
+    form: form as IFormSchema,
+    user,
+    agency,
+  }
+}
+
 const getFullFormById = async (
   formId: string,
 ): Promise<IPopulatedForm | null> =>
-  await getEmailFormModel(mongoose).getFullFormById(formId)
+  await getFormModel(mongoose).getFullFormById(formId)
 
 const dbHandler = {
   connect,
@@ -226,6 +272,7 @@ const dbHandler = {
   clearCollection,
   insertEmailForm,
   insertEncryptForm,
+  insertFormWithMsgSrvcName,
   getFullFormById,
 }
 
