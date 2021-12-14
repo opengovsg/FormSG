@@ -36,7 +36,7 @@ describe('Bounce Model', () => {
       const savedBounceObject = extractBounceObject(savedBounce)
       expect(savedBounce._id).toBeDefined()
       expect(savedBounce.expireAt).toBeInstanceOf(Date)
-      expect(omit(savedBounceObject, 'expireAt')).toEqual({
+      expect(omit(savedBounceObject, 'expireAt')).toMatchObject({
         formId,
         bounces: [{ email: MOCK_EMAIL, hasBounced: false }],
         hasAutoEmailed: false,
@@ -56,7 +56,7 @@ describe('Bounce Model', () => {
       }
       const savedBounce = await new Bounce(params).save()
       const savedBounceObject = extractBounceObject(savedBounce)
-      expect(savedBounceObject).toEqual(params)
+      expect(savedBounceObject).toMatchObject(params)
     })
 
     it('should reject emails when they are invalid', async () => {
@@ -195,7 +195,7 @@ describe('Bounce Model', () => {
             { email: MOCK_EMAIL_2, hasBounced: false },
           ],
         })
-        expect(bounce.getEmails()).toEqual([MOCK_EMAIL, MOCK_EMAIL_2])
+        expect(bounce.getEmails()).toMatchObject([MOCK_EMAIL, MOCK_EMAIL_2])
       })
 
       it('should return the full email list when hasBounced is true for all', () => {
@@ -206,7 +206,7 @@ describe('Bounce Model', () => {
             { email: MOCK_EMAIL_2, hasBounced: true, bounceType: 'Transient' },
           ],
         })
-        expect(bounce.getEmails()).toEqual([MOCK_EMAIL, MOCK_EMAIL_2])
+        expect(bounce.getEmails()).toMatchObject([MOCK_EMAIL, MOCK_EMAIL_2])
       })
 
       it('should return the full email list when hasBounced is mixed', () => {
@@ -217,7 +217,7 @@ describe('Bounce Model', () => {
             { email: MOCK_EMAIL_2, hasBounced: true, bounceType: 'Transient' },
           ],
         })
-        expect(bounce.getEmails()).toEqual([MOCK_EMAIL, MOCK_EMAIL_2])
+        expect(bounce.getEmails()).toMatchObject([MOCK_EMAIL, MOCK_EMAIL_2])
       })
     })
 
@@ -318,7 +318,7 @@ describe('Bounce Model', () => {
           bounceType: BounceType.Transient,
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Transient' },
@@ -339,7 +339,7 @@ describe('Bounce Model', () => {
           bounceType: BounceType.Permanent,
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
@@ -360,7 +360,7 @@ describe('Bounce Model', () => {
           bounceType: BounceType.Permanent,
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: false },
@@ -384,7 +384,7 @@ describe('Bounce Model', () => {
           bounceType: BounceType.Permanent,
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Transient' },
@@ -406,7 +406,7 @@ describe('Bounce Model', () => {
           bounceType: BounceType.Permanent,
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: false },
@@ -429,7 +429,7 @@ describe('Bounce Model', () => {
           bounceType: BounceType.Permanent,
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
@@ -452,7 +452,7 @@ describe('Bounce Model', () => {
           deliveredList: [MOCK_EMAIL],
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [{ email: MOCK_EMAIL, hasBounced: false }],
         })
@@ -470,7 +470,7 @@ describe('Bounce Model', () => {
           deliveredList: [MOCK_EMAIL],
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [{ email: MOCK_EMAIL, hasBounced: false }],
         })
@@ -488,7 +488,7 @@ describe('Bounce Model', () => {
           deliveredList: [MOCK_EMAIL_2],
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: false },
@@ -511,7 +511,7 @@ describe('Bounce Model', () => {
           deliveredList: [MOCK_EMAIL_2],
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Transient' },
@@ -532,7 +532,7 @@ describe('Bounce Model', () => {
           deliveredList: [MOCK_EMAIL_2],
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: false },
@@ -553,7 +553,7 @@ describe('Bounce Model', () => {
           deliveredList: [MOCK_EMAIL_2, MOCK_EMAIL_2],
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: false },
@@ -574,7 +574,7 @@ describe('Bounce Model', () => {
           deliveredList: [MOCK_EMAIL_2],
         })
         const updated = bounce.updateBounceInfo(snsInfo)
-        expect(pick(updated.toObject(), ['formId', 'bounces'])).toEqual({
+        expect(pick(updated.toObject(), ['formId', 'bounces'])).toMatchObject({
           formId,
           bounces: [{ email: MOCK_EMAIL_2, hasBounced: false }],
         })
@@ -595,7 +595,7 @@ describe('Bounce Model', () => {
         })
 
         const actual = Bounce.fromSnsNotification(notification, String(formId))
-        expect(omit(extractBounceObject(actual!), 'expireAt')).toEqual({
+        expect(omit(extractBounceObject(actual!), 'expireAt')).toMatchObject({
           formId,
           bounces: [{ email: MOCK_EMAIL, hasBounced: false }],
           hasAutoEmailed: false,
@@ -616,7 +616,7 @@ describe('Bounce Model', () => {
         })
 
         const actual = Bounce.fromSnsNotification(notification, String(formId))
-        expect(omit(extractBounceObject(actual!), 'expireAt')).toEqual({
+        expect(omit(extractBounceObject(actual!), 'expireAt')).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Transient' },
@@ -639,7 +639,7 @@ describe('Bounce Model', () => {
         })
 
         const actual = Bounce.fromSnsNotification(notification, String(formId))
-        expect(omit(extractBounceObject(actual!), 'expireAt')).toEqual({
+        expect(omit(extractBounceObject(actual!), 'expireAt')).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
@@ -662,7 +662,7 @@ describe('Bounce Model', () => {
         })
 
         const actual = Bounce.fromSnsNotification(notification, String(formId))
-        expect(omit(extractBounceObject(actual!), 'expireAt')).toEqual({
+        expect(omit(extractBounceObject(actual!), 'expireAt')).toMatchObject({
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },

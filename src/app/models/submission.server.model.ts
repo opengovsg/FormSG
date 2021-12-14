@@ -299,6 +299,7 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
       .match({
         // Casting to ObjectId as Mongoose does not cast pipeline stages.
         // See https://mongoosejs.com/docs/api.html#aggregate_Aggregate.
+        // @ts-expect-error Type error in definitions, see https://github.com/Automattic/mongoose/issues/10960.
         form: mongoose.Types.ObjectId(formId),
         submissionType: SubmissionType.Encrypt,
       })

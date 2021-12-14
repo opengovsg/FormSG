@@ -68,7 +68,7 @@ describe('SmsCount', () => {
         'createdAt',
         '__v',
       ])
-      expect(actualSavedObject).toEqual(MOCK_FORM_DEACTIVATED_PARAMS)
+      expect(actualSavedObject).toMatchObject(MOCK_FORM_DEACTIVATED_PARAMS)
     })
 
     it('should reject if form is missing', async () => {
@@ -157,7 +157,7 @@ describe('SmsCount', () => {
         'createdAt',
         '__v',
       ])
-      expect(actualSavedObject).toEqual(MOCK_BOUNCED_SUBMISSION_PARAMS)
+      expect(actualSavedObject).toMatchObject(MOCK_BOUNCED_SUBMISSION_PARAMS)
     })
 
     it('should reject if form is missing', async () => {
@@ -268,7 +268,7 @@ describe('SmsCount', () => {
         'createdAt',
         '__v',
       ])
-      expect(actualSavedObject).toEqual(expected)
+      expect(actualSavedObject).toMatchObject(expected)
     })
 
     it('should save successfully, but not save fields that is not defined in the schema', async () => {
@@ -300,7 +300,7 @@ describe('SmsCount', () => {
         'createdAt',
         '__v',
       ])
-      expect(actualSavedObject).toEqual(expected)
+      expect(actualSavedObject).toMatchObject(expected)
     })
 
     it('should save successfully and set isOnboarded to true when the credentials are different from default', async () => {
@@ -328,7 +328,7 @@ describe('SmsCount', () => {
         'createdAt',
         '__v',
       ]) as IVerificationSmsCountSchema
-      expect(omit(actualSavedObject, 'isOnboardedAccount')).toEqual(
+      expect(omit(actualSavedObject, 'isOnboardedAccount')).toMatchObject(
         verificationParams,
       )
       expect(actualSavedObject.isOnboardedAccount).toBe(true)
@@ -451,7 +451,7 @@ describe('SmsCount', () => {
           'createdAt',
           '__v',
         ])
-        expect(actualSavedObject).toEqual(
+        expect(actualSavedObject).toMatchObject(
           merge({}, MOCK_BOUNCED_SUBMISSION_PARAMS, {
             logType: LogType.success,
           }),
@@ -477,7 +477,7 @@ describe('SmsCount', () => {
           'createdAt',
           '__v',
         ])
-        expect(actualSavedObject).toEqual(
+        expect(actualSavedObject).toMatchObject(
           merge({}, MOCK_BOUNCED_SUBMISSION_PARAMS, {
             logType: LogType.failure,
           }),
@@ -503,7 +503,7 @@ describe('SmsCount', () => {
           'createdAt',
           '__v',
         ])
-        expect(actualSavedObject).toEqual(
+        expect(actualSavedObject).toMatchObject(
           merge({}, MOCK_FORM_DEACTIVATED_PARAMS, { logType: LogType.success }),
         )
       })
@@ -527,7 +527,7 @@ describe('SmsCount', () => {
           'createdAt',
           '__v',
         ])
-        expect(actualSavedObject).toEqual(
+        expect(actualSavedObject).toMatchObject(
           merge({}, MOCK_FORM_DEACTIVATED_PARAMS, { logType: LogType.failure }),
         )
       })
@@ -555,7 +555,7 @@ describe('SmsCount', () => {
         expect(actualLog?._id).toBeDefined()
         // Retrieve object and compare to params, remove indeterministic keys
         const actualSavedObject = omit(actualLog, ['_id', 'createdAt', '__v'])
-        expect(actualSavedObject).toEqual(expectedLog)
+        expect(actualSavedObject).toMatchObject(expectedLog)
       })
 
       it('should successfully log verification failures in the collection', async () => {
@@ -581,7 +581,7 @@ describe('SmsCount', () => {
         expect(actualLog?._id).toBeDefined()
         // Retrieve object and compare to params, remove indeterministic keys
         const actualSavedObject = omit(actualLog, ['_id', 'createdAt', '__v'])
-        expect(actualSavedObject).toEqual(expectedLog)
+        expect(actualSavedObject).toMatchObject(expectedLog)
       })
 
       it('should reject if smsType is invalid', async () => {

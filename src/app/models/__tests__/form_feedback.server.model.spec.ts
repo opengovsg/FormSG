@@ -26,13 +26,11 @@ describe('form_feedback.server.model', () => {
       const actual = await FeedbackModel.create(DEFAULT_PARAMS)
 
       // Assert
-      expect(actual).toEqual(
-        expect.objectContaining({
-          ...DEFAULT_PARAMS,
-          created: expect.any(Date),
-          lastModified: expect.any(Date),
-        }),
-      )
+      expect(actual).toMatchObject({
+        ...DEFAULT_PARAMS,
+        created: expect.any(Date),
+        lastModified: expect.any(Date),
+      })
     })
 
     it('should save successfully even when comment param is missing', async () => {
@@ -42,13 +40,11 @@ describe('form_feedback.server.model', () => {
       const actual = await FeedbackModel.create(paramsWithoutComment)
 
       // Assert
-      expect(actual).toEqual(
-        expect.objectContaining({
-          ...paramsWithoutComment,
-          created: expect.any(Date),
-          lastModified: expect.any(Date),
-        }),
-      )
+      expect(actual).toMatchObject({
+        ...paramsWithoutComment,
+        created: expect.any(Date),
+        lastModified: expect.any(Date),
+      })
     })
 
     it('should throw validation error when formId param is missing', async () => {
@@ -99,7 +95,7 @@ describe('form_feedback.server.model', () => {
 
         // Assert
         // Cursor should return a lean object instead of a document.
-        expect(actualFeedback).toEqual([mockFeedbackDoc.toObject()])
+        expect(actualFeedback).toMatchObject([mockFeedbackDoc.toObject()])
       })
     })
   })
