@@ -28,13 +28,13 @@ import {
 
 export interface DatePickerProps {
   /**
-   * Initially selected date.
+   * Selected date. Undefined if no date is selected.
    */
-  selected?: Date
+  date?: Date
   /**
    * Handler for when date is selected.
    */
-  onDateSelected?: (d: Date) => void
+  onSelectDate: (d: Date) => void
   /**
    * Function to determine whether a date should be made
    * unavailable.
@@ -45,10 +45,7 @@ export interface DatePickerProps {
 const ARROW_KEY_NAMES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
 
 export const DatePicker = forwardRef<DatePickerProps, 'input'>(
-  (
-    { selected: initiallySelected, onDateSelected, isDateUnavailable },
-    initialFocusRef,
-  ) => {
+  ({ date, onSelectDate, isDateUnavailable }, initialFocusRef) => {
     // Ensure that calculations are always made based on date of initial render,
     // so component state doesn't suddenly jump at midnight
     const today = useMemo(() => new Date(), [])
@@ -56,13 +53,10 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
     const uuid = useMemo(() => generateValidUuidClass(), [])
     const yearOptions = useMemo(() => getYearOptions(), [])
 
-    const [selected, setSelected] = useState<Date | undefined>(
-      initiallySelected,
-    )
     // Date to focus on initial render if initialFocusRef is passed
-    const dateToFocus = useMemo(() => selected ?? today, [today, selected])
-    const [currMonth, setCurrMonth] = useState<number>(today.getMonth())
-    const [currYear, setCurrYear] = useState<number>(today.getFullYear())
+    const dateToFocus = useMemo(() => date ?? today, [today, date])
+    const [currMonth, setCurrMonth] = useState<number>(dateToFocus.getMonth())
+    const [currYear, setCurrYear] = useState<number>(dateToFocus.getFullYear())
 
     /**
      * Whether the full name of the month should be used in the dropdown
@@ -149,14 +143,13 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
     const handleDateSelected = useCallback(
       (d: Date) => {
         if (isDateUnavailable?.(d)) return
-        setSelected(d)
         // Set current month/year to that of selected
         setCurrMonth(d.getMonth())
         setCurrYear(d.getFullYear())
         // Call parent callback
-        onDateSelected?.(d)
+        onSelectDate?.(d)
       },
-      [isDateUnavailable, onDateSelected],
+      [isDateUnavailable, onSelectDate],
     )
 
     const renderProps = useDayzed({
@@ -165,7 +158,7 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
       showOutsideDays: true,
       offset: getMonthOffsetFromToday(today, currMonth, currYear),
       onOffsetChanged,
-      selected,
+      selected: date,
     })
 
     /**
@@ -176,8 +169,8 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
       (d: Date) => {
         // If there is a selected date in the current month, make it
         // the only focusable date
-        if (selected && selected.getMonth() === currMonth) {
-          return isSameDay(d, selected)
+        if (date && date.getMonth() === currMonth) {
+          return isSameDay(d, date)
         }
         // If today is in the current month, make it the only focusable date
         // Use the latest today instead of memoised today since this doesn't affect
@@ -191,7 +184,7 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
         // currMonth or the spillover dates for the next month will be included.
         return d.getMonth() === currMonth && isFirstDayOfMonth(d)
       },
-      [selected, currMonth],
+      [date, currMonth],
     )
 
     const styles = useMultiStyleConfig(DATE_INPUT_THEME_KEY, {})

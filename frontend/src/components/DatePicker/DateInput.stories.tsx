@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
@@ -18,10 +18,19 @@ export default {
 } as Meta
 
 const DatePickerOnlyTemplate: Story<DatePickerProps> = (args) => {
-  return <DateInput.DatePicker {...args} />
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(args.date)
+
+  return (
+    <DateInput.DatePicker date={selectedDate} onSelectDate={setSelectedDate} />
+  )
 }
 
 export const DatePickerDefault = DatePickerOnlyTemplate.bind({})
+
+export const DatePickerWithDate = DatePickerOnlyTemplate.bind({})
+DatePickerWithDate.args = {
+  date: new Date('2001-01-01'),
+}
 
 export const DatePickerWeekdayOnly = DatePickerOnlyTemplate.bind({})
 DatePickerWeekdayOnly.args = {
