@@ -23,6 +23,8 @@ const MonthYearSelect = ({
 }: { children: React.ReactNode } & SelectProps) => {
   return (
     <Select
+      // Prevents any parent form control from applying error styles to this select.
+      isInvalid={false}
       color="secondary.500"
       flexBasis="fit-content"
       borderColor="transparent"

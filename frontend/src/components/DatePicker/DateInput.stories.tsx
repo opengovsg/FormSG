@@ -59,12 +59,15 @@ const PlaygroundTemplate: Story<DateInputProps> = (args) => {
   useEffect(() => console.log('val', val), [val])
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <FormControl isRequired>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <FormControl isRequired isInvalid={!!errors[name]}>
         <FormLabel>Date</FormLabel>
         <Controller
           control={control}
           name={name}
+          rules={{
+            required: 'Date is required',
+          }}
           render={({ field }) => <DateInput {...field} />}
         />
         <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>

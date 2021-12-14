@@ -28,7 +28,6 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
     return {
       container: {
         display: 'inline-block',
-        py: '1rem',
       },
       monthYearSelectorContainer: {
         display: 'flex',
@@ -103,7 +102,7 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
       },
       todayLinkContainer: {
         textAlign: 'center',
-        pt: '1rem',
+        py: '1rem',
       },
     }
   },

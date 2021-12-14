@@ -1,13 +1,13 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import {
   Flex,
-  IconButton,
   Popover,
   PopoverBody,
   PopoverCloseButton,
   PopoverContent,
   PopoverHeader,
   PopoverTrigger,
+  Portal,
   Text,
 } from '@chakra-ui/react'
 import { ComponentWithAs, forwardRef } from '@chakra-ui/system'
@@ -15,13 +15,16 @@ import { css } from '@emotion/react'
 import { format } from 'date-fns'
 
 import { BxCalendar } from '~assets/icons'
+import IconButton from '~components/IconButton'
 
 import Input, { InputProps } from '../Input'
 
 import { DatePicker } from './DatePicker'
 
-export interface DateInputProps extends InputProps {
+export interface DateInputProps extends Omit<InputProps, 'value' | 'onChange'> {
   name: string
+  value?: string
+  onChange?: (val: string) => void
 }
 
 type DateInputWithSubcomponents = ComponentWithAs<'input', DateInputProps> & {
@@ -29,19 +32,21 @@ type DateInputWithSubcomponents = ComponentWithAs<'input', DateInputProps> & {
 }
 
 export const DateInput = forwardRef<DateInputProps, 'input'>(
-  ({ onChange, ...props }, ref) => {
+  ({ onChange, value = '', ...props }, ref) => {
     const initialFocusRef = useRef<HTMLInputElement>(null)
+
     const handleDatepickerSelection = useCallback(
       (d: Date) => {
-        console.log('invoking onChange with', format(d, 'yyyy-MM-dd'))
-        onChange?.({
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          target: { value: format(d, 'yyyy-MM-dd'), name: props.name },
-        })
+        onChange?.(format(d, 'yyyy-MM-dd'))
       },
-      [onChange, props.name],
+      [onChange],
     )
+
+    const datePickerDate = useMemo(() => {
+      const dateFromValue = new Date(value)
+      return isNaN(dateFromValue.getTime()) ? undefined : dateFromValue
+    }, [value])
+
     return (
       <Flex>
         <Input
@@ -56,7 +61,9 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
           sx={{
             borderRadius: '4px 0 0 4px',
           }}
-          onChange={onChange}
+          onChange={(e) => onChange?.(e.target.value)}
+          ref={ref}
+          value={value}
           {...props}
         />
         <Popover
@@ -64,37 +71,43 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
           initialFocusRef={initialFocusRef}
           isLazy
         >
-          <PopoverTrigger>
-            {/* Internal IconButton doesn't position popover correctly, so
-              use Chakra's directly */}
-            <IconButton
-              aria-label="Open calendar"
-              icon={<BxCalendar />}
-              fontSize="1.25rem"
-              variant="outline"
-              color="secondary.500"
-              borderColor="neutral.400"
-              borderRadius="0"
-              // Avoid double border with input
-              ml="-1px"
-            />
-          </PopoverTrigger>
-          <PopoverContent borderRadius="4px" w="unset" maxW="100vw">
-            <PopoverHeader py="1rem" px="1.5rem">
-              <Flex justifyContent="space-between" alignItems="center">
-                <Text textStyle="subhead-2" color="secondary.500">
-                  Select a date
-                </Text>
-                <PopoverCloseButton position="static" />
-              </Flex>
-            </PopoverHeader>
-            <PopoverBody>
-              <DateInput.DatePicker
-                onDateSelected={handleDatepickerSelection}
-                ref={initialFocusRef}
-              />
-            </PopoverBody>
-          </PopoverContent>
+          {({ isOpen }) => (
+            <>
+              <PopoverTrigger>
+                <IconButton
+                  aria-label="Open calendar"
+                  icon={<BxCalendar />}
+                  isActive={isOpen}
+                  fontSize="1.25rem"
+                  variant="outline"
+                  color="secondary.500"
+                  borderColor="neutral.400"
+                  borderRadius="0"
+                  // Avoid double border with input
+                  ml="-1px"
+                />
+              </PopoverTrigger>
+              <Portal>
+                <PopoverContent borderRadius="4px" w="unset" maxW="100vw">
+                  <PopoverHeader py="1rem" px="1.5rem">
+                    <Flex justifyContent="space-between" alignItems="center">
+                      <Text textStyle="subhead-2" color="secondary.500">
+                        Select a date
+                      </Text>
+                      <PopoverCloseButton position="static" />
+                    </Flex>
+                  </PopoverHeader>
+                  <PopoverBody>
+                    <DateInput.DatePicker
+                      date={datePickerDate}
+                      onSelectDate={handleDatepickerSelection}
+                      ref={initialFocusRef}
+                    />
+                  </PopoverBody>
+                </PopoverContent>
+              </Portal>
+            </>
+          )}
         </Popover>
       </Flex>
     )
