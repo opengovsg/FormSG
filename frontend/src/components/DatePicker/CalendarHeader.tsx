@@ -70,6 +70,7 @@ export const CalendarHeader = ({
         <MonthYearSelect
           value={currMonth}
           onChange={handleMonthChange}
+          aria-label="Change displayed month"
           // Align with dates
           pl={{ base: '0', md: '2px' }}
         >
@@ -79,7 +80,11 @@ export const CalendarHeader = ({
             </option>
           ))}
         </MonthYearSelect>
-        <MonthYearSelect value={currYear} onChange={handleYearChange}>
+        <MonthYearSelect
+          value={currYear}
+          onChange={handleYearChange}
+          aria-label="Change displayed year"
+        >
           {yearOptions.map((year, index) => (
             <option value={year} key={index}>
               {year}
