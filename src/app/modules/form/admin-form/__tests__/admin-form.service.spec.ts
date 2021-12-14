@@ -2428,8 +2428,8 @@ describe('admin-form.service', () => {
     })
   })
   describe('createTwilioCredentials', () => {
-    const MOCK_FORM_ID = new ObjectId()
-    const MOCK_ADMIN_ID = new ObjectId()
+    const MOCK_FORM_ID = new mongoose.Types.ObjectId()
+    const MOCK_ADMIN_ID = new mongoose.Types.ObjectId()
 
     const MOCK_FORM = {
       _id: MOCK_FORM_ID,
@@ -2477,7 +2477,7 @@ describe('admin-form.service', () => {
   })
 
   describe('updateTwilioCredentials', () => {
-    const MOCK_FORM_ID = new ObjectId()
+    const MOCK_FORM_ID = new mongoose.Types.ObjectId()
 
     const MOCK_ACCOUNT_SID = 'AC12345678'
     const MOCK_API_KEY_SID = 'SK12345678'
@@ -2546,7 +2546,7 @@ describe('admin-form.service', () => {
   })
 
   describe('deleteTwilioCredentials', () => {
-    const MOCK_FORM_ID = new ObjectId()
+    const MOCK_FORM_ID = new mongoose.Types.ObjectId()
     const sessionSpy = jest.spyOn(FormModel, 'startSession')
     const MSG_SRVC_NAME = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
     const MOCK_FORM = {
