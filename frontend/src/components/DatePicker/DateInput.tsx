@@ -11,7 +11,6 @@ import {
   Text,
 } from '@chakra-ui/react'
 import { ComponentWithAs, forwardRef } from '@chakra-ui/system'
-import { css } from '@emotion/react'
 import { format } from 'date-fns'
 
 import { BxCalendar } from '~assets/icons'
@@ -51,15 +50,13 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
       <Flex>
         <Input
           type="date"
-          // Chrome displays a default calendar icon, which we want to hide
-          // so all browsers display our icon consistently.
-          css={css`
-            ::-webkit-calendar-picker-indicator {
-              display: none;
-            }
-          `}
           sx={{
             borderRadius: '4px 0 0 4px',
+            // Chrome displays a default calendar icon, which we want to hide
+            // so all browsers display our icon consistently.
+            '::-webkit-calendar-picker-indicator': {
+              display: 'none',
+            },
           }}
           onChange={(e) => onChange?.(e.target.value)}
           ref={ref}
