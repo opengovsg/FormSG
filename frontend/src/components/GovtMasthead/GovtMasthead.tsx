@@ -23,6 +23,65 @@ export interface GovtMastheadProps {
   onToggle: () => void
 }
 
+interface GovtMastheadChildrenProps {
+  isMobile: boolean
+  children: React.ReactNode
+  onToggle: () => void
+}
+
+const HeaderBar = ({
+  isMobile,
+  children,
+  onToggle,
+}: GovtMastheadChildrenProps): JSX.Element => {
+  const styleProps = {
+    bg: 'neutral.200',
+    py: { base: '0.5rem', md: '0.375rem' },
+    px: { base: '1.5rem', md: '1.75rem', lg: '2rem' },
+    textStyle: { base: 'legal', md: 'caption-2' },
+    display: 'flex',
+    width: '100%',
+  }
+
+  // Mobile
+  if (isMobile) {
+    return (
+      <chakra.button {...styleProps} onClick={onToggle}>
+        {children}
+      </chakra.button>
+    )
+  }
+
+  // Non-mobile
+  return <Flex {...styleProps}>{children}</Flex>
+}
+
+const HowToIdentify = ({
+  isMobile,
+  children,
+  onToggle,
+}: GovtMastheadChildrenProps): JSX.Element => {
+  // Mobile
+  if (isMobile) {
+    return (
+      <Text color="primary.500" textDecorationLine="underline">
+        How to identify {children}
+      </Text>
+    )
+  }
+
+  // Non-mobile
+  return (
+    <Link
+      tabIndex={0}
+      ariaLabel="Click to expand masthead for more information"
+      onClick={onToggle}
+    >
+      How to identify {children}
+    </Link>
+  )
+}
+
 export const GovtMasthead = ({
   isOpen,
   onToggle,
@@ -36,67 +95,14 @@ export const GovtMasthead = ({
       md: false,
     }) ?? true
 
-  interface HeaderBarProps {
-    isMobile: boolean
-    children: React.ReactNode
+  const childrenProps = {
+    isOpen: isOpen,
+    isMobile: isMobile,
+    onToggle: onToggle,
   }
-
-  interface HowToIdentifyProps {
-    isMobile: boolean
-    children: React.ReactNode
-  }
-
-  const HeaderBar = ({ isMobile, children }: HeaderBarProps): JSX.Element => {
-    const styleProps = {
-      bg: 'neutral.200',
-      py: { base: '0.5rem', md: '0.375rem' },
-      px: { base: '1.5rem', md: '1.75rem', lg: '2rem' },
-      textStyle: { base: 'legal', md: 'caption-2' },
-      display: 'flex',
-      width: '100%',
-    }
-
-    // Mobile
-    if (isMobile) {
-      return (
-        <chakra.button {...styleProps} onClick={onToggle}>
-          {children}
-        </chakra.button>
-      )
-    }
-
-    // Non-mobile
-    return <Flex {...styleProps}>{children}</Flex>
-  }
-
-  const HowToIdentify = ({
-    isMobile,
-    children,
-  }: HowToIdentifyProps): JSX.Element => {
-    // Mobile
-    if (isMobile) {
-      return (
-        <Text color="primary.500" textDecorationLine="underline">
-          How to identify {children}
-        </Text>
-      )
-    }
-
-    // Non-mobile
-    return (
-      <Link
-        tabIndex={0}
-        ariaLabel="Click to expand masthead for more information"
-        onClick={onToggle}
-      >
-        How to identify {children}
-      </Link>
-    )
-  }
-
   return (
     <Box>
-      <HeaderBar isMobile={isMobile}>
+      <HeaderBar {...childrenProps}>
         <GovtMastheadIcon
           fontSize="1rem"
           mr={{ base: '0.25rem', lg: '0.5rem' }}
@@ -104,7 +110,7 @@ export const GovtMasthead = ({
         />
         <Flex alignItems="center" flexWrap="wrap">
           <Text my="2px">A Singapore government agency website.&nbsp;</Text>
-          <HowToIdentify isMobile={isMobile}>
+          <HowToIdentify {...childrenProps}>
             <Icon
               as={isOpen ? BiChevronUp : BiChevronDown}
               fontSize={{ base: '1rem', md: '1.25rem' }}
