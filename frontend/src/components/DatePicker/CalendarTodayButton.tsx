@@ -1,6 +1,6 @@
 import { Box, useStyles } from '@chakra-ui/react'
 
-import Link from '~components/Link'
+import Button from '~components/Button'
 
 import { useCalendar } from './CalendarContext'
 
@@ -9,9 +9,14 @@ export const CalendarTodayButton = (): JSX.Element => {
   const { handleTodayClick } = useCalendar()
   return (
     <Box sx={styles.todayLinkContainer}>
-      <Link onClick={handleTodayClick} role="button" tabIndex={0}>
+      <Button
+        variant="link"
+        type="button"
+        onClick={handleTodayClick}
+        tabIndex={0}
+      >
         Today
-      </Link>
+      </Button>
     </Box>
   )
 }
