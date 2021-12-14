@@ -17,11 +17,19 @@ export default {
   component: DateInput,
 } as Meta
 
-const DatePickerOnlyTemplate: Story<DatePickerProps> = (args) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(args.date)
+const DatePickerOnlyTemplate: Story<DatePickerProps> = ({
+  date,
+  onSelectDate,
+  ...args
+}) => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(date)
 
   return (
-    <DateInput.DatePicker date={selectedDate} onSelectDate={setSelectedDate} />
+    <DateInput.DatePicker
+      date={selectedDate}
+      onSelectDate={onSelectDate ?? setSelectedDate}
+      {...args}
+    />
   )
 }
 
