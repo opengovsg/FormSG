@@ -33,6 +33,7 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
       monthYearSelectorContainer: {
         display: 'flex',
         justifyContent: 'space-between',
+        py: '0.375rem',
       },
       monthYearDropdownContainer: {
         display: 'flex',

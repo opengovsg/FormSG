@@ -1,5 +1,5 @@
 import { ChangeEvent, useCallback } from 'react'
-import { Flex, Select, useStyles } from '@chakra-ui/react'
+import { Flex, HStack, Select, SelectProps, useStyles } from '@chakra-ui/react'
 import { RenderProps } from 'dayzed'
 
 import { BxChevronLeft, BxChevronRight } from '~assets/icons'
@@ -15,6 +15,29 @@ export interface CalendarHeaderProps {
   onYearChange: (year: number) => void
   shouldUseMonthFullName?: boolean
   yearOptions: number[]
+}
+
+const MonthYearSelect = ({
+  children,
+  ...props
+}: { children: React.ReactNode } & SelectProps) => {
+  return (
+    <Select
+      color="secondary.500"
+      flexBasis="fit-content"
+      borderColor="transparent"
+      cursor="pointer"
+      _hover={{
+        borderColor: 'transparent',
+      }}
+      _focus={{
+        boxShadow: '0 0 0 4px var(--chakra-colors-secondary-300)',
+      }}
+      {...props}
+    >
+      {children}
+    </Select>
+  )
 }
 
 export const CalendarHeader = ({
@@ -43,50 +66,41 @@ export const CalendarHeader = ({
 
   return (
     <Flex sx={styles.monthYearSelectorContainer}>
-      <Flex sx={styles.monthYearDropdownContainer}>
-        <Select
+      <HStack>
+        <MonthYearSelect
           value={currMonth}
           onChange={handleMonthChange}
-          // Set styles here since useMultiStyleConfig doesn't play nicely with
-          // __css property on Select
-          flexBasis="fit-content"
-          borderColor="transparent"
-          pl={{ base: '0', md: '2px' }} // Align with dates
+          // Align with dates
+          pl={{ base: '0', md: '2px' }}
         >
           {MONTH_NAMES.map(({ shortName, fullName }, index) => (
             <option value={index} key={index}>
               {shouldUseMonthFullName ? fullName : shortName}
             </option>
           ))}
-        </Select>
-        <Select
-          value={currYear}
-          onChange={handleYearChange}
-          flexBasis="fit-content"
-          borderColor="transparent"
-        >
+        </MonthYearSelect>
+        <MonthYearSelect value={currYear} onChange={handleYearChange}>
           {yearOptions.map((year, index) => (
             <option value={year} key={index}>
               {year}
             </option>
           ))}
-        </Select>
-      </Flex>
+        </MonthYearSelect>
+      </HStack>
       <Flex __css={styles.monthArrowContainer}>
         <IconButton
           variant="clear"
+          colorScheme="secondary"
           icon={<BxChevronLeft />}
           aria-label="Back one month"
-          // Styles here because __css property does not achieve our intended styles
-          color="secondary.500"
           minW={{ base: '1.75rem', xs: '2.75rem', sm: '2.75rem' }}
           {...getBackProps({ calendars })}
         />
         <IconButton
           variant="clear"
+          colorScheme="secondary"
           icon={<BxChevronRight />}
           aria-label="Forward one month"
-          color="secondary.500"
           minW={{ base: '1.75rem', xs: '2.75rem', sm: '2.75rem' }}
           {...getForwardProps({ calendars })}
         />
