@@ -9,7 +9,6 @@ import {
   Stack,
   Text,
   useBreakpointValue,
-  useDisclosure,
 } from '@chakra-ui/react'
 
 import { BxsBank } from '~assets/icons/BxsBank'
@@ -19,9 +18,15 @@ import Link from '~components/Link'
 import { GovtMastheadIcon } from './GovtMastheadIcon'
 import { GovtMastheadItem } from './GovtMastheadItem'
 
-export const GovtMasthead = (): JSX.Element => {
-  const { isOpen, onToggle } = useDisclosure()
+export interface GovtMastheadProps {
+  isOpen: boolean
+  onToggle: () => void
+}
 
+export const GovtMasthead = ({
+  isOpen,
+  onToggle,
+}: GovtMastheadProps): JSX.Element => {
   // Custom function for collapsing/expanding the header,
   // because in mobile you tap the whole header, on desktop only on the link
   const isMobile =
@@ -108,7 +113,7 @@ export const GovtMasthead = (): JSX.Element => {
         </Flex>
       </HeaderBar>
 
-      <Collapse in={isOpen} animateOpacity>
+      <Collapse in={isOpen} animateOpacity unmountOnExit>
         <Stack
           direction={{ base: 'column', md: 'row' }}
           spacing={{ base: '1rem', md: '4.5rem', lg: '9.5rem' }}
@@ -116,6 +121,7 @@ export const GovtMasthead = (): JSX.Element => {
           px="2rem"
           py={{ base: '1.5rem', md: '2.25rem', lg: '2.75rem' }}
           textStyle={{ base: 'caption-2', lg: 'body-1' }}
+          data-testid="govtMastheadExpandedContent"
         >
           <GovtMastheadItem
             icon={BxsBank}
