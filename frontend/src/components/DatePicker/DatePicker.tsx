@@ -2,21 +2,19 @@ import { useCallback, useMemo, useState } from 'react'
 import { useKey } from 'react-use'
 import {
   Box,
-  Flex,
   forwardRef,
-  Select,
   SimpleGrid,
+  StylesProvider,
   useBreakpointValue,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
-import { addMonths, isFirstDayOfMonth, isSameDay, isToday } from 'date-fns'
+import { addMonths, isFirstDayOfMonth, isSameDay } from 'date-fns'
 import { useDayzed } from 'dayzed'
 
-import { BxChevronLeft, BxChevronRight } from '~assets/icons'
 import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
-import IconButton from '~components/IconButton'
 import Link from '~components/Link'
 
+import { CalendarHeader } from './CalendarHeader'
 import { DayOfMonth } from './DayOfMonth'
 import {
   DAY_NAMES,
@@ -26,7 +24,6 @@ import {
   getMonthOffsetFromToday,
   getNewDateFromKeyPress,
   getYearOptions,
-  MONTH_NAMES,
 } from './utils'
 
 export interface DatePickerProps {
@@ -136,6 +133,7 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
         // Prevent arrow key from scrolling screen
         e.preventDefault()
         const newDate = getNewDateFromKeyPress(focusedDate, e.key)
+        if (newDate === focusedDate) return
         // If newDate is outside current month, scroll to that month
         setCurrMonth(newDate.getMonth())
         setCurrYear(newDate.getFullYear())
@@ -160,15 +158,14 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
       [onDateSelected],
     )
 
-    const { calendars, getForwardProps, getBackProps, getDateProps } =
-      useDayzed({
-        date: today,
-        onDateSelected: ({ date }) => handleDateSelected(date),
-        showOutsideDays: true,
-        offset: getMonthOffsetFromToday(today, currMonth, currYear),
-        onOffsetChanged,
-        selected,
-      })
+    const renderProps = useDayzed({
+      date: today,
+      onDateSelected: ({ date }) => handleDateSelected(date),
+      showOutsideDays: true,
+      offset: getMonthOffsetFromToday(today, currMonth, currYear),
+      onOffsetChanged,
+      selected,
+    })
 
     /**
      * Determines whether a given date should be in the tabbing sequence.
@@ -199,110 +196,71 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
     const styles = useMultiStyleConfig(DATE_INPUT_THEME_KEY, {})
 
     return (
-      // Overall container
-      <Box __css={styles.container}>
-        {/* Month, year selectors */}
-        <Flex __css={styles.monthYearSelectorContainer}>
-          <Flex __css={styles.monthYearDropdownContainer}>
-            <Select
-              value={currMonth}
-              onChange={(e) => setCurrMonth(Number(e.target.value))}
-              // Set styles here since useMultiStyleConfig doesn't play nicely with
-              // __css property on Select
-              flexBasis="fit-content"
-              borderColor="transparent"
-              pl={{ base: '0', md: '2px' }} // Align with dates
-            >
-              {MONTH_NAMES.map(({ shortName, fullName }, index) => (
-                <option value={index} key={index}>
-                  {shouldUseMonthFullName ? fullName : shortName}
-                </option>
-              ))}
-            </Select>
-            <Select
-              value={currYear}
-              onChange={(e) => setCurrYear(Number(e.target.value))}
-              flexBasis="fit-content"
-              borderColor="transparent"
-            >
-              {yearOptions.map((year, index) => (
-                <option value={year} key={index}>
-                  {year}
-                </option>
-              ))}
-            </Select>
-          </Flex>
-          <Flex __css={styles.monthArrowContainer}>
-            <IconButton
-              variant="clear"
-              icon={<BxChevronLeft />}
-              aria-label="Back one month"
-              // Styles here because __css property does not achieve our intended styles
-              color="secondary.500"
-              minW={{ base: '1.75rem', xs: '2.75rem', sm: '2.75rem' }}
-              {...getBackProps({ calendars })}
-            />
-            <IconButton
-              variant="clear"
-              icon={<BxChevronRight />}
-              aria-label="Forward one month"
-              color="secondary.500"
-              minW={{ base: '1.75rem', xs: '2.75rem', sm: '2.75rem' }}
-              {...getForwardProps({ calendars })}
-            />
-          </Flex>
-        </Flex>
-        {/* Calendars is an array, but it should only have 1 element since
+      <StylesProvider value={styles}>
+        {/* Overall container */}
+        <Box sx={styles.container}>
+          {/* Month, year selectors */}
+          <CalendarHeader
+            currMonth={currMonth}
+            currYear={currYear}
+            onMonthChange={setCurrMonth}
+            onYearChange={setCurrYear}
+            renderProps={renderProps}
+            yearOptions={yearOptions}
+            shouldUseMonthFullName={shouldUseMonthFullName}
+          />
+          {/* Calendars is an array, but it should only have 1 element since
       we only render 1 month at a time */}
-        <Box __css={styles.calendarContainer}>
-          {calendars.map((calendar) => (
-            <Box key={`${calendar.month}${calendar.year}`}>
-              <SimpleGrid columns={DAY_NAMES.length} sx={styles.monthGrid}>
-                {DAY_NAMES.map((dayName, index) => (
-                  <Box key={index} __css={styles.dayNamesContainer}>
-                    {dayName}
-                  </Box>
-                ))}
-                {calendar.weeks.map((week, windex) =>
-                  week.map((dateObj, index) => {
-                    if (!dateObj) {
-                      return null
-                    }
-                    const { date, selected } = dateObj
-                    return (
-                      <DayOfMonth
-                        key={`${calendar.month}${calendar.year}${windex}${index}`}
-                        {...getDateProps({
-                          dateObj,
-                        })}
-                        date={date}
-                        isSelected={selected}
-                        isAvailable={!isDateUnavailable?.(date)}
-                        // Use the latest date for today rather than the memoised today,
-                        // since this doesn't affect offset logic
-                        isToday={isToday(date)}
-                        isOutsideCurrMonth={currMonth !== date.getMonth()}
-                        isFocusable={isDateFocusable(date)}
-                        className={generateClassNameForDate(uuid, date)}
-                        ref={
-                          isSameDay(date, dateToFocus)
-                            ? initialFocusRef
-                            : undefined
-                        }
-                      />
-                    )
-                  }),
-                )}
-              </SimpleGrid>
-            </Box>
-          ))}
+          <Box __css={styles.calendarContainer}>
+            {renderProps.calendars.map((calendar) => (
+              <Box key={`${calendar.month}${calendar.year}`}>
+                <SimpleGrid columns={DAY_NAMES.length} sx={styles.monthGrid}>
+                  {DAY_NAMES.map((dayName, index) => (
+                    <Box key={index} __css={styles.dayNamesContainer}>
+                      {dayName}
+                    </Box>
+                  ))}
+                  {calendar.weeks.map((week, windex) =>
+                    week.map((dateObj, index) => {
+                      if (!dateObj) {
+                        return null
+                      }
+                      const { date, selected, today } = dateObj
+                      return (
+                        <DayOfMonth
+                          key={`${calendar.month}${calendar.year}${windex}${index}`}
+                          {...renderProps.getDateProps({
+                            dateObj,
+                          })}
+                          date={date}
+                          isSelected={selected}
+                          isAvailable={!isDateUnavailable?.(date)}
+                          // Use the latest date for today rather than the memoised today,
+                          // since this doesn't affect offset logic
+                          isToday={today}
+                          isOutsideCurrMonth={currMonth !== date.getMonth()}
+                          isFocusable={isDateFocusable(date)}
+                          className={generateClassNameForDate(uuid, date)}
+                          ref={
+                            isSameDay(date, dateToFocus)
+                              ? initialFocusRef
+                              : undefined
+                          }
+                        />
+                      )
+                    }),
+                  )}
+                </SimpleGrid>
+              </Box>
+            ))}
+          </Box>
+          <Box __css={styles.todayLinkContainer}>
+            <Link onClick={handleTodayClick} role="button" tabIndex={0}>
+              Today
+            </Link>
+          </Box>
         </Box>
-        <Box __css={styles.todayLinkContainer}>
-          <Link onClick={handleTodayClick} role="button" tabIndex={0}>
-            Today
-          </Link>
-        </Box>
-      </Box>
+      </StylesProvider>
     )
   },
 )
