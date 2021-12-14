@@ -148,6 +148,7 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
 
     const handleDateSelected = useCallback(
       (d: Date) => {
+        if (isDateUnavailable?.(d)) return
         setSelected(d)
         // Set current month/year to that of selected
         setCurrMonth(d.getMonth())
@@ -155,7 +156,7 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
         // Call parent callback
         onDateSelected?.(d)
       },
-      [onDateSelected],
+      [isDateUnavailable, onDateSelected],
     )
 
     const renderProps = useDayzed({

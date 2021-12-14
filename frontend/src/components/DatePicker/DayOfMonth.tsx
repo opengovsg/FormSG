@@ -62,8 +62,8 @@ export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
         {...props}
         __css={styles.dayOfMonth}
         aria-label={format(date, "do 'of' MMMM',' EEEE")}
-        disabled={!isAvailable}
         tabIndex={isFocusable ? 0 : -1}
+        aria-disabled={!isAvailable}
         ref={ref}
       >
         {date.getDate()}
