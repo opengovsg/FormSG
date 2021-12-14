@@ -1,13 +1,16 @@
 import { ObjectId } from 'bson-ext'
+import MockDate from 'mockdate'
 import mongoose from 'mongoose'
 
 import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { PAGE_SIZE } from '../examples.constants'
 import { ResultsNotFoundError } from '../examples.errors'
 import * as ExamplesService from '../examples.service'
+import { QueryPageResultWithTotal } from '../examples.types'
 
 import prepareTestData, { TestData } from './helpers/prepareTestData'
 
@@ -24,11 +27,15 @@ describe('examples.service', () => {
   let testData: TestData
 
   beforeAll(async () => {
+    MockDate.set(new Date())
     await dbHandler.connect()
     const { user, agency } = await dbHandler.insertFormCollectionReqs()
     testData = await prepareTestData(user, agency)
   })
-  afterAll(async () => await dbHandler.closeDatabase())
+  afterAll(async () => {
+    MockDate.reset()
+    await dbHandler.closeDatabase()
+  })
 
   describe('getExampleForms', () => {
     describe('when query.searchTerm exists', () => {
@@ -42,11 +49,19 @@ describe('examples.service', () => {
           })
 
           // Assert
-          expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toEqual({
-            totalNumResults: testData.second.formCount,
-            forms: expect.arrayContaining(testData.second.expectedFormInfo),
-          })
+          const actualParsed = jsonParseStringify(
+            actualResults._unsafeUnwrap() as QueryPageResultWithTotal,
+          )
+          const actualFormsSorted = actualParsed.forms.sort((a, b) =>
+            String(a._id).localeCompare(String(b._id)),
+          )
+          const expectedFormsSorted = jsonParseStringify(
+            testData.second.expectedFormInfo,
+          ).sort((a, b) => String(a._id).localeCompare(String(b._id)))
+          expect(actualParsed.totalNumResults).toEqual(
+            testData.second.formCount,
+          )
+          expect(actualFormsSorted).toEqual(expectedFormsSorted)
         })
 
         it('should return empty list if no forms match search term with 0 result count', async () => {
@@ -76,10 +91,14 @@ describe('examples.service', () => {
           })
 
           // Assert
-          expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toEqual({
-            forms: expect.arrayContaining(testData.first.expectedFormInfo),
-          })
+          const actualParsed = jsonParseStringify(actualResults._unsafeUnwrap())
+          const actualFormsSorted = actualParsed.forms.sort((a, b) =>
+            String(a._id).localeCompare(String(b._id)),
+          )
+          const expectedFormsSorted = jsonParseStringify(
+            testData.first.expectedFormInfo,
+          ).sort((a, b) => String(a._id).localeCompare(String(b._id)))
+          expect(actualFormsSorted).toEqual(expectedFormsSorted)
         })
 
         it('should return empty list if no forms match search term', async () => {
@@ -109,11 +128,17 @@ describe('examples.service', () => {
           })
 
           // Assert
-          expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toEqual({
-            totalNumResults: testData.total.formCount,
-            forms: expect.arrayContaining(testData.total.expectedFormInfo),
-          })
+          const actualParsed = jsonParseStringify(
+            actualResults._unsafeUnwrap() as QueryPageResultWithTotal,
+          )
+          const actualFormsSorted = actualParsed.forms.sort((a, b) =>
+            String(a._id).localeCompare(String(b._id)),
+          )
+          const expectedFormsSorted = jsonParseStringify(
+            testData.total.expectedFormInfo,
+          ).sort((a, b) => String(a._id).localeCompare(String(b._id)))
+          expect(actualParsed.totalNumResults).toEqual(testData.total.formCount)
+          expect(actualFormsSorted).toEqual(expectedFormsSorted)
         })
 
         it('should return empty list with number of forms with submissions when offset is more than number of documents in collection', async () => {
@@ -144,10 +169,14 @@ describe('examples.service', () => {
           })
 
           // Assert
-          expect(actualResults.isOk()).toEqual(true)
-          expect(actualResults._unsafeUnwrap()).toEqual({
-            forms: expect.arrayContaining(testData.total.expectedFormInfo),
-          })
+          const actualParsed = jsonParseStringify(actualResults._unsafeUnwrap())
+          const actualFormsSorted = actualParsed.forms.sort((a, b) =>
+            String(a._id).localeCompare(String(b._id)),
+          )
+          const expectedFormsSorted = jsonParseStringify(
+            testData.total.expectedFormInfo,
+          ).sort((a, b) => String(a._id).localeCompare(String(b._id)))
+          expect(actualFormsSorted).toEqual(expectedFormsSorted)
         })
 
         it('should return empty list when offset is more than number of documents', async () => {
@@ -182,8 +211,8 @@ describe('examples.service', () => {
 
       // Assert
       expect(actualResults.isOk()).toEqual(true)
-      expect(actualResults._unsafeUnwrap()).toEqual({
-        form: expectedFormInfo,
+      expect(jsonParseStringify(actualResults._unsafeUnwrap())).toEqual({
+        form: jsonParseStringify(expectedFormInfo),
       })
     })
 

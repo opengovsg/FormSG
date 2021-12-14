@@ -71,7 +71,7 @@ describe('encrypt-submission.service', () => {
       })
 
       expect(result.encryptedContent).toBe(MOCK_ENCRYPTED_CONTENT)
-      expect(result.form).toEqual(MOCK_FORM._id)
+      expect(result.form).toMatchObject(MOCK_FORM._id)
       expect(result.verifiedContent).toEqual(MOCK_VERIFIED_CONTENT)
       expect(Object.fromEntries(result.attachmentMetadata!)).toEqual(
         Object.fromEntries(MOCK_ATTACHMENT_METADATA),

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { ObjectId } from 'bson-ext'
 import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
@@ -359,8 +358,8 @@ describe('admin-form.service', () => {
     it('should true when form is successfully archived', async () => {
       // Arrange
       const mockArchivedForm = {
-        _id: new ObjectId(),
-        admin: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
+        admin: new mongoose.Types.ObjectId(),
         status: FormStatus.Archived,
       } as IEmailFormSchema
       const mockArchiveFn = jest.fn().mockResolvedValue(mockArchivedForm)
@@ -398,10 +397,10 @@ describe('admin-form.service', () => {
   })
 
   describe('duplicateForm', () => {
-    const MOCK_NEW_ADMIN_ID = new ObjectId().toHexString()
+    const MOCK_NEW_ADMIN_ID = new mongoose.Types.ObjectId().toHexString()
     const MOCK_VALID_FORM = {
-      _id: new ObjectId(),
-      admin: new ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
+      admin: new mongoose.Types.ObjectId(),
       endPage: {
         buttonLink: 'original form endpage link',
       },
@@ -432,7 +431,7 @@ describe('admin-form.service', () => {
 
     it('should successfully duplicate form', async () => {
       // Arrange
-      const mockNewAdminId = new ObjectId().toHexString()
+      const mockNewAdminId = new mongoose.Types.ObjectId().toHexString()
       const expectedParams: PickDuplicateForm & OverrideProps = {
         admin: MOCK_NEW_ADMIN_ID,
         ...MOCK_ENCRYPT_OVERRIDE_PARAMS,
@@ -473,7 +472,7 @@ describe('admin-form.service', () => {
 
     it('should omit buttonLink if original form link is to the form itself', async () => {
       // Arrange
-      const mockNewAdminId = new ObjectId().toHexString()
+      const mockNewAdminId = new mongoose.Types.ObjectId().toHexString()
       const expectedParams: PickDuplicateForm & OverrideProps = {
         admin: MOCK_NEW_ADMIN_ID,
         ...omit(MOCK_ENCRYPT_OVERRIDE_PARAMS, 'isTemplate'),
@@ -522,7 +521,7 @@ describe('admin-form.service', () => {
 
     it('should return DatabaseError if error occurred during the duplication', async () => {
       // Arrange
-      const mockNewAdminId = new ObjectId().toHexString()
+      const mockNewAdminId = new mongoose.Types.ObjectId().toHexString()
       const expectedParams: PickDuplicateForm & OverrideProps = {
         admin: MOCK_NEW_ADMIN_ID,
         ...omit(MOCK_ENCRYPT_OVERRIDE_PARAMS, 'isTemplate'),
@@ -567,11 +566,11 @@ describe('admin-form.service', () => {
   describe('transferFormOwnership', () => {
     const MOCK_NEW_OWNER_EMAIL = 'random@example.com'
     const MOCK_CURRENT_OWNER = {
-      _id: new ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       email: 'someemail@example.com',
     } as IUserSchema
     const MOCK_NEW_OWNER = {
-      _id: new ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       email: MOCK_NEW_OWNER_EMAIL,
     } as IUserSchema
 
@@ -582,14 +581,12 @@ describe('admin-form.service', () => {
       } as IPopulatedForm
 
       const mockUpdatedForm = {
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         admin: MOCK_CURRENT_OWNER,
         emails: [MOCK_NEW_OWNER_EMAIL],
         responseMode: FormResponseMode.Email,
         title: 'some mock form',
-        populate: jest.fn().mockReturnValue({
-          execPopulate: jest.fn().mockResolvedValue(expectedPopulateResult),
-        }),
+        populate: jest.fn().mockResolvedValue(expectedPopulateResult),
       } as unknown as IFormSchema
 
       const mockValidForm = {
@@ -759,17 +756,12 @@ describe('admin-form.service', () => {
       // Arrange
       const mockPopulateErrorStr = 'population failed!'
       const mockUpdatedForm = {
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         admin: MOCK_CURRENT_OWNER,
         emails: [MOCK_NEW_OWNER_EMAIL],
         responseMode: FormResponseMode.Email,
         title: 'some mock form',
-        populate: jest.fn().mockReturnValue({
-          // Mock populate error.
-          execPopulate: jest
-            .fn()
-            .mockRejectedValue(new Error(mockPopulateErrorStr)),
-        }),
+        populate: jest.fn().mockRejectedValue(new Error(mockPopulateErrorStr)),
       } as unknown as IFormSchema
 
       const mockValidForm = {
@@ -809,12 +801,12 @@ describe('admin-form.service', () => {
       // Arrange
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
-        admin: new ObjectId().toHexString(),
+        admin: new mongoose.Types.ObjectId().toHexString(),
         responseMode: FormResponseMode.Email,
         emails: 'example@example.com',
       }
       const expectedForm = {
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         ...formParams,
       } as IFormSchema
       const createSpy = jest
@@ -833,7 +825,7 @@ describe('admin-form.service', () => {
       // Arrange
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
-        admin: new ObjectId().toHexString(),
+        admin: new mongoose.Types.ObjectId().toHexString(),
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'some key',
       }
@@ -857,7 +849,7 @@ describe('admin-form.service', () => {
       // Arrange
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
-        admin: new ObjectId().toHexString(),
+        admin: new mongoose.Types.ObjectId().toHexString(),
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'some key',
       }
@@ -880,7 +872,7 @@ describe('admin-form.service', () => {
       // Arrange
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
-        admin: new ObjectId().toHexString(),
+        admin: new mongoose.Types.ObjectId().toHexString(),
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'some key',
       }
@@ -908,7 +900,7 @@ describe('admin-form.service', () => {
       // Arrange
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
-        admin: new ObjectId().toHexString(),
+        admin: new mongoose.Types.ObjectId().toHexString(),
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'some key',
       }
@@ -930,8 +922,8 @@ describe('admin-form.service', () => {
 
   describe('editFormFields', () => {
     const MOCK_UPDATED_FORM = {
-      _id: new ObjectId(),
-      admin: new ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
+      admin: new mongoose.Types.ObjectId(),
       form_fields: [
         generateDefaultField(BasicField.Email),
         generateDefaultField(BasicField.Mobile),
@@ -1033,8 +1025,8 @@ describe('admin-form.service', () => {
 
   describe('updateForm', () => {
     const MOCK_UPDATED_FORM = {
-      _id: new ObjectId(),
-      admin: new ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
+      admin: new mongoose.Types.ObjectId(),
       status: FormStatus.Private,
       form_fields: [
         generateDefaultField(BasicField.Mobile),
@@ -1123,12 +1115,12 @@ describe('admin-form.service', () => {
     } as unknown as IFormDocument
 
     const MOCK_EMAIL_FORM = mocked({
-      _id: new ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       status: FormStatus.Public,
       responseMode: FormResponseMode.Email,
     } as unknown as IPopulatedForm)
     const MOCK_ENCRYPT_FORM = mocked({
-      _id: new ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       status: FormStatus.Public,
       responseMode: FormResponseMode.Encrypt,
     } as unknown as IPopulatedForm)
@@ -1274,7 +1266,7 @@ describe('admin-form.service', () => {
         updateFormFieldById: jest.fn().mockResolvedValue(null),
       } as unknown as IPopulatedForm
 
-      const invalidFieldId = new ObjectId().toHexString()
+      const invalidFieldId = new mongoose.Types.ObjectId().toHexString()
       const mockNewField = generateDefaultField(
         BasicField.Number,
       ) as FieldUpdateDto
@@ -1301,7 +1293,7 @@ describe('admin-form.service', () => {
         ),
       } as unknown as IPopulatedForm
 
-      const invalidFieldId = new ObjectId().toHexString()
+      const invalidFieldId = new mongoose.Types.ObjectId().toHexString()
       const mockNewField = generateDefaultField(
         BasicField.Number,
       ) as FieldUpdateDto
@@ -1385,7 +1377,7 @@ describe('admin-form.service', () => {
   })
 
   describe('deleteFormLogic', () => {
-    const logicId = new ObjectId().toHexString()
+    const logicId = new mongoose.Types.ObjectId().toHexString()
     const mockFormLogic = {
       form_logics: [
         {
@@ -1401,13 +1393,13 @@ describe('admin-form.service', () => {
 
     beforeEach(() => {
       mockEmailForm = {
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         status: FormStatus.Public,
         responseMode: FormResponseMode.Email,
         ...mockFormLogic,
       } as unknown as IPopulatedForm
       mockEncryptForm = {
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         status: FormStatus.Public,
         responseMode: FormResponseMode.Encrypt,
         ...mockFormLogic,
@@ -1435,7 +1427,7 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(mockEmailForm)
 
       expect(UPDATE_SPY).toHaveBeenCalledWith(
-        mockEmailForm._id,
+        String(mockEmailForm._id),
         {
           $pull: { form_logics: { _id: logicId } },
         },
@@ -1472,7 +1464,7 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(mockEncryptForm)
 
       expect(UPDATE_SPY).toHaveBeenCalledWith(
-        mockEncryptForm._id,
+        String(mockEncryptForm._id),
         {
           $pull: { form_logics: { _id: logicId } },
         },
@@ -1490,7 +1482,7 @@ describe('admin-form.service', () => {
 
     it('should return LogicNotFoundError if logic does not exist on form', async () => {
       // Act
-      const wrongLogicId = new ObjectId().toHexString()
+      const wrongLogicId = new mongoose.Types.ObjectId().toHexString()
       const actualResult = await AdminFormService.deleteFormLogic(
         mockEmailForm,
         wrongLogicId,
@@ -1516,7 +1508,7 @@ describe('admin-form.service', () => {
       const mockForm = {
         title: 'some mock form',
         form_fields: [fieldToDuplicate],
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         duplicateFormFieldById: jest.fn().mockResolvedValue(mockUpdatedForm),
       } as unknown as IPopulatedForm
 
@@ -1546,7 +1538,7 @@ describe('admin-form.service', () => {
       const mockForm = {
         title: 'some mock form',
         form_fields: [fieldToDuplicate],
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         duplicateFormFieldById: jest.fn().mockResolvedValue(null),
       } as unknown as IPopulatedForm
 
@@ -1621,7 +1613,7 @@ describe('admin-form.service', () => {
         form_fields: [generateDefaultField(BasicField.YesNo)],
         reorderFormFieldById: jest.fn().mockResolvedValue(null),
       } as unknown as IPopulatedForm
-      const fieldToReorder = new ObjectId().toHexString()
+      const fieldToReorder = new mongoose.Types.ObjectId().toHexString()
       const newPosition = 2
 
       // Act
@@ -1648,7 +1640,7 @@ describe('admin-form.service', () => {
           .fn()
           .mockRejectedValue(new Error('some error')),
       } as unknown as IPopulatedForm
-      const fieldToReorder = new ObjectId().toHexString()
+      const fieldToReorder = new mongoose.Types.ObjectId().toHexString()
       const newPosition = 2
 
       // Act
@@ -1728,11 +1720,11 @@ describe('admin-form.service', () => {
   })
 
   describe('createFormLogic', () => {
-    const logicId1 = new ObjectId()
-    const logicId2 = new ObjectId()
-    const logicId3 = new ObjectId()
-    const mockEmailFormId = new ObjectId()
-    const mockEncryptFormId = new ObjectId()
+    const logicId1 = new mongoose.Types.ObjectId()
+    const logicId2 = new mongoose.Types.ObjectId()
+    const logicId3 = new mongoose.Types.ObjectId()
+    const mockEmailFormId = new mongoose.Types.ObjectId()
+    const mockEncryptFormId = new mongoose.Types.ObjectId()
 
     const mockFormLogicOld = {
       form_logics: [
@@ -1932,7 +1924,7 @@ describe('admin-form.service', () => {
       const mockForm = {
         title: 'some mock form',
         form_fields: initialFields,
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
       } as unknown as IPopulatedForm
       deleteSpy.mockResolvedValueOnce(mockUpdatedForm)
 
@@ -1955,13 +1947,13 @@ describe('admin-form.service', () => {
       const mockForm = {
         title: 'some mock form',
         form_fields: [generateDefaultField(BasicField.Nric)],
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
       } as unknown as IPopulatedForm
 
       // Act
       const actual = await AdminFormService.deleteFormField(
         mockForm,
-        new ObjectId().toHexString(),
+        new mongoose.Types.ObjectId().toHexString(),
       )
 
       // Assert
@@ -1975,7 +1967,7 @@ describe('admin-form.service', () => {
       const mockForm = {
         title: 'some mock form',
         form_fields: [fieldToDelete],
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
       } as unknown as IPopulatedForm
       deleteSpy.mockResolvedValueOnce(null)
 
@@ -1996,7 +1988,7 @@ describe('admin-form.service', () => {
 
   describe('updateEndPage', () => {
     const updateSpy = jest.spyOn(FormModel, 'updateEndPageById')
-    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new mongoose.Types.ObjectId().toHexString()
     const MOCK_NEW_END_PAGE: FormEndPage = {
       title: 'expected end page title',
       buttonLink: 'https://some-button-link.example.com',
@@ -2058,7 +2050,7 @@ describe('admin-form.service', () => {
 
   describe('updateStartPage', () => {
     const updateSpy = jest.spyOn(FormModel, 'updateStartPageById')
-    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new mongoose.Types.ObjectId().toHexString()
     const MOCK_NEW_START_PAGE: FormStartPage = {
       colorTheme: FormColorTheme.Blue,
       paragraph: 'some paragraph',
@@ -2121,10 +2113,10 @@ describe('admin-form.service', () => {
   })
 
   describe('updateFormLogic', () => {
-    const logicId1 = new ObjectId()
-    const logicId2 = new ObjectId()
-    const mockEmailFormId = new ObjectId()
-    const mockEncryptFormId = new ObjectId()
+    const logicId1 = new mongoose.Types.ObjectId()
+    const logicId2 = new mongoose.Types.ObjectId()
+    const mockEmailFormId = new mongoose.Types.ObjectId()
+    const mockEncryptFormId = new mongoose.Types.ObjectId()
 
     const mockFormLogicOld = {
       form_logics: [
@@ -2238,7 +2230,7 @@ describe('admin-form.service', () => {
 
     it('should return LogicNotFoundError if logic does not exist on form', async () => {
       // Act
-      const wrongLogicId = new ObjectId().toHexString()
+      const wrongLogicId = new mongoose.Types.ObjectId().toHexString()
       const actualResult = await AdminFormService.updateFormLogic(
         mockEmailForm,
         wrongLogicId,
@@ -2260,7 +2252,7 @@ describe('admin-form.service', () => {
         title: 'some mock form',
         // Append created field to end of form_fields.
         form_fields: [MOCK_FIELD],
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
       } as IPopulatedForm
 
       // Act
@@ -2275,12 +2267,12 @@ describe('admin-form.service', () => {
 
     it("should return FieldNotFoundError when the fieldId does not exist in the form's fields", async () => {
       // Arrange
-      const MOCK_ID = new ObjectId().toHexString()
+      const MOCK_ID = new mongoose.Types.ObjectId().toHexString()
       const MOCK_FORM = {
         title: 'some mock form',
         // Append created field to end of form_fields.
         form_fields: [],
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
       } as unknown as IPopulatedForm
       const expectedError = new FieldNotFoundError(
         `Attempted to retrieve field ${MOCK_ID} from ${MOCK_FORM._id} but field was not present`,
@@ -2297,7 +2289,7 @@ describe('admin-form.service', () => {
   describe('disableSmsVerificationsForUser', () => {
     it('should return true when the forms are updated successfully', async () => {
       // Arrange
-      const MOCK_ADMIN_ID = new ObjectId().toHexString()
+      const MOCK_ADMIN_ID = new mongoose.Types.ObjectId().toHexString()
       const disableSpy = jest.spyOn(FormModel, 'disableSmsVerificationsForUser')
       disableSpy.mockResolvedValueOnce({ n: 0, nModified: 0, ok: 0 })
 
@@ -2313,7 +2305,7 @@ describe('admin-form.service', () => {
 
     it('should return a database error when the operation fails', async () => {
       // Arrange
-      const MOCK_ADMIN_ID = new ObjectId().toHexString()
+      const MOCK_ADMIN_ID = new mongoose.Types.ObjectId().toHexString()
       const disableSpy = jest.spyOn(FormModel, 'disableSmsVerificationsForUser')
       disableSpy.mockRejectedValueOnce('whoops')
 
@@ -2331,7 +2323,7 @@ describe('admin-form.service', () => {
   describe('shouldUpdateFormField', () => {
     const MOCK_FORM = {
       admin: {
-        _id: new ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
       },
     } as unknown as IPopulatedForm
 

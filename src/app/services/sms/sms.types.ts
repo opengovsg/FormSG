@@ -61,17 +61,21 @@ export interface IVerificationSmsCount extends ISmsCount {
     userId: IUserSchema['_id']
   }
   isOnboardedAccount: boolean
+  smsType: SmsType.Verification
 }
 
-export interface IVerificationSmsCountSchema extends ISmsCountSchema {
-  isOnboardedAccount: boolean
-}
+export interface IVerificationSmsCountSchema
+  extends IVerificationSmsCount,
+    Document {}
 
 export interface IAdminContactSmsCount extends ISmsCount {
   admin: IUserSchema['_id']
+  smsType: SmsType.AdminContact
 }
 
-export type IAdminContactSmsCountSchema = ISmsCountSchema
+export interface IAdminContactSmsCountSchema
+  extends IAdminContactSmsCount,
+    Document {}
 
 export interface IFormDeactivatedSmsCount
   extends ISmsCount,

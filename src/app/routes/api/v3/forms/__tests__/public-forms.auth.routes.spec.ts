@@ -47,7 +47,7 @@ describe('public-form.auth.routes', () => {
         formOptions: {
           authType: FormAuthType.SP,
           status: FormStatus.Public,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
         },
       })
 
@@ -72,7 +72,7 @@ describe('public-form.auth.routes', () => {
         formOptions: {
           authType: FormAuthType.CP,
           status: FormStatus.Public,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
         },
       })
 
@@ -97,7 +97,7 @@ describe('public-form.auth.routes', () => {
         formOptions: {
           authType: FormAuthType.MyInfo,
           status: FormStatus.Public,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
         },
       })
 
@@ -122,7 +122,7 @@ describe('public-form.auth.routes', () => {
         formOptions: {
           authType: FormAuthType.MyInfo,
           status: FormStatus.Public,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
         },
       })
       const expectedResponse = buildCelebrateError({
@@ -147,7 +147,7 @@ describe('public-form.auth.routes', () => {
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           status: FormStatus.Public,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
         },
       })
       const expectedResponse = jsonParseStringify({
@@ -194,10 +194,11 @@ describe('public-form.auth.routes', () => {
         message:
           'Could not find the form requested. Please refresh and try again.',
       })
+      const mockFormId = new ObjectId().toHexString()
 
       // Act
       const response = await request
-        .get(`/forms/${new ObjectId().toHexString()}/auth/redirect`)
+        .get(`/forms/${mockFormId}/auth/redirect`)
         .query({ isPersistentLogin: false })
 
       // Assert
@@ -211,7 +212,7 @@ describe('public-form.auth.routes', () => {
         formOptions: {
           authType: FormAuthType.SP,
           status: FormStatus.Public,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
         },
       })
       const expectedResponse = jsonParseStringify({
@@ -237,7 +238,7 @@ describe('public-form.auth.routes', () => {
         formOptions: {
           authType: FormAuthType.SP,
           status: FormStatus.Public,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
         },
       })
       const expectedResponse = jsonParseStringify({
@@ -264,7 +265,7 @@ describe('public-form.auth.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           authType: FormAuthType.SP,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
           status: FormStatus.Public,
         },
       })
@@ -284,7 +285,7 @@ describe('public-form.auth.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           authType: FormAuthType.SP,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
           status: FormStatus.Public,
         },
       })
@@ -309,7 +310,7 @@ describe('public-form.auth.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           authType: FormAuthType.NIL,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
           status: FormStatus.Public,
         },
       })
@@ -331,7 +332,7 @@ describe('public-form.auth.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           authType: FormAuthType.CP,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
           status: FormStatus.Public,
         },
       })
@@ -375,11 +376,10 @@ describe('public-form.auth.routes', () => {
         message:
           'Could not find the form requested. Please refresh and try again.',
       })
+      const mockFormId = new ObjectId().toHexString()
 
       // Act
-      const response = await request.get(
-        `/forms/${new ObjectId().toHexString()}/auth/validate`,
-      )
+      const response = await request.get(`/forms/${mockFormId}/auth/validate`)
 
       // Assert
       expect(response.status).toEqual(404)
@@ -391,7 +391,7 @@ describe('public-form.auth.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           authType: FormAuthType.SP,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
           status: FormStatus.Public,
         },
       })
@@ -415,7 +415,7 @@ describe('public-form.auth.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           authType: FormAuthType.SP,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
           status: FormStatus.Public,
         },
       })
@@ -440,7 +440,7 @@ describe('public-form.auth.routes', () => {
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           authType: FormAuthType.SP,
-          esrvcId: new ObjectId().toHexString(),
+          esrvcId: 'rubbish-esrvcId',
           status: FormStatus.Public,
         },
       })

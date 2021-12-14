@@ -25,7 +25,6 @@ import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import {
   BasicField,
@@ -55,7 +54,7 @@ const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,
 })
 
-describe('admin-form.form.routes', () => {
+describe('admin-forms.form.routes', () => {
   let request: Session
   let defaultUser: IUserSchema
 
@@ -141,7 +140,7 @@ describe('admin-form.form.routes', () => {
           },
         })
         .lean()
-      expect(response.body).toEqual(jsonParseStringify(expected))
+      expect(response.body).toMatchObject(expected)
       expect(response.status).toEqual(200)
     })
 
@@ -545,8 +544,8 @@ describe('admin-form.form.routes', () => {
         .lean()
       expect(response.status).toEqual(200)
       expect(response.body).not.toBeNull()
-      expect(response.body).toEqual({
-        form: jsonParseStringify(expected),
+      expect(response.body).toMatchObject({
+        form: expected,
       })
     })
 
@@ -582,8 +581,8 @@ describe('admin-form.form.routes', () => {
         .lean()
       expect(response.status).toEqual(200)
       expect(response.body).not.toBeNull()
-      expect(response.body).toEqual({
-        form: jsonParseStringify(expected),
+      expect(response.body).toMatchObject({
+        form: expected,
       })
     })
 
@@ -1470,7 +1469,7 @@ describe('admin-form.form.routes', () => {
 
       // Assert
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual(jsonParseStringify(MOCK_FIELD))
+      expect(response.body).toMatchObject(MOCK_FIELD)
     })
 
     it('should return 403 when user does not have permissions to retrieve form field', async () => {
@@ -1857,7 +1856,7 @@ describe('admin-form.form.routes', () => {
 
       // Assert
       expect(resp.status).toBe(200)
-      expect(resp.body).toEqual(jsonParseStringify(MOCK_UPDATED_START_PAGE))
+      expect(resp.body).toMatchObject(MOCK_UPDATED_START_PAGE)
     })
 
     it('should return 403 when the user does not have permission to update the start page', async () => {
@@ -1884,7 +1883,7 @@ describe('admin-form.form.routes', () => {
 
       // Assert
       expect(resp.status).toBe(403)
-      expect(resp.body).toEqual(jsonParseStringify(expectedResponse))
+      expect(resp.body).toMatchObject(expectedResponse)
     })
 
     it('should  return 404 when the form cannot be found', async () => {
@@ -1896,7 +1895,7 @@ describe('admin-form.form.routes', () => {
 
       // Assert
       expect(resp.status).toBe(404)
-      expect(resp.body).toEqual(jsonParseStringify(expectedResponse))
+      expect(resp.body).toMatchObject(expectedResponse)
     })
 
     it('should return 410 when updating the start page for a form that has been archived', async () => {

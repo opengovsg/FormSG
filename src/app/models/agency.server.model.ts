@@ -2,11 +2,7 @@ import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
 import { PublicAgencyDto } from '../../../shared/types'
-import {
-  AgencyInstanceMethods,
-  IAgencyDocument,
-  IAgencyModel,
-} from '../../types'
+import { AgencyInstanceMethods, IAgencyModel, IAgencySchema } from '../../types'
 
 export const AGENCY_SCHEMA_ID = 'Agency'
 
@@ -19,9 +15,8 @@ export const AGENCY_PUBLIC_FIELDS = [
 ]
 
 const AgencySchema = new Schema<
-  IAgencyDocument,
+  IAgencySchema,
   IAgencyModel,
-  undefined,
   AgencyInstanceMethods
 >(
   {
@@ -65,7 +60,7 @@ AgencySchema.methods.getPublicView = function (): PublicAgencyDto {
 }
 
 const compileAgencyModel = (db: Mongoose): IAgencyModel => {
-  return db.model(AGENCY_SCHEMA_ID, AgencySchema)
+  return db.model(AGENCY_SCHEMA_ID, AgencySchema) as IAgencyModel
 }
 
 /**

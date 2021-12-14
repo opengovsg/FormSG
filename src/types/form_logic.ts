@@ -10,7 +10,7 @@ import {
   ShowFieldLogic,
 } from '../../shared/types'
 
-import { IFieldSchema } from './field'
+import { FormFieldSchema, IFieldSchema } from './field'
 
 export interface ICondition extends FormCondition {
   field: IFieldSchema['_id']
@@ -27,6 +27,7 @@ export interface IShowFieldsLogicSchema
   extends ILogicSchema,
     ShowFieldLogic,
     Document {
+  show: FormFieldSchema['_id'][]
   logicType: LogicType.ShowFields
   conditions: IConditionSchema[]
 }

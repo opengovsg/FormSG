@@ -1,26 +1,36 @@
 const { MongoMemoryServer } = require('mongodb-memory-server-core')
 
 class MemoryDatabaseServer {
-  constructor() {
-    this.mongod = new MongoMemoryServer({
+  constructor() {}
+
+  async init() {
+    this.mongod = await MongoMemoryServer.create({
       binary: {
         version: process.env.MONGO_BINARY_VERSION || '4.0.22',
-        checkMD5: true,
+        skipMD5: true,
       },
       instance: {},
       autoStart: false,
     })
   }
 
-  start() {
+  async start() {
+    if (!this.mongod) {
+      await this.init()
+    }
     return this.mongod.start()
   }
 
   stop() {
-    return this.mongod.stop()
+    if (this.mongod) {
+      return this.mongod.stop()
+    }
   }
 
-  getConnectionString() {
+  async getConnectionString() {
+    if (!this.mongod) {
+      await this.init()
+    }
     return this.mongod.getUri(true)
   }
 }
