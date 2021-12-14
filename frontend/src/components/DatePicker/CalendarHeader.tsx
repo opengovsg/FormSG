@@ -1,10 +1,18 @@
 import { ChangeEvent, useCallback } from 'react'
-import { Flex, HStack, Select, SelectProps, useStyles } from '@chakra-ui/react'
+import {
+  Flex,
+  HStack,
+  Select,
+  SelectProps,
+  useBreakpointValue,
+  useStyles,
+} from '@chakra-ui/react'
 import { RenderProps } from 'dayzed'
 
 import { BxChevronLeft, BxChevronRight } from '~assets/icons'
 import IconButton from '~components/IconButton'
 
+import { useCalendar } from './CalendarContext'
 import { MONTH_NAMES } from './utils'
 
 export interface CalendarHeaderProps {
@@ -42,28 +50,33 @@ const MonthYearSelect = ({
   )
 }
 
-export const CalendarHeader = ({
-  currMonth,
-  onMonthChange,
-  shouldUseMonthFullName,
-  currYear,
-  onYearChange,
-  yearOptions,
-  renderProps: { calendars, getBackProps, getForwardProps },
-}: CalendarHeaderProps): JSX.Element => {
+export const CalendarHeader = (): JSX.Element => {
   const styles = useStyles()
+  const {
+    currMonth,
+    setCurrMonth,
+    currYear,
+    setCurrYear,
+    yearOptions,
+    renderProps: { calendars, getBackProps, getForwardProps },
+  } = useCalendar()
+
+  const shouldUseMonthFullName = useBreakpointValue({
+    base: false,
+    md: true,
+  })
 
   const handleMonthChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
-      onMonthChange(parseInt(e.target.value))
+      setCurrMonth(parseInt(e.target.value))
     },
-    [onMonthChange],
+    [setCurrMonth],
   )
   const handleYearChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
-      onYearChange(parseInt(e.target.value))
+      setCurrYear(parseInt(e.target.value))
     },
-    [onYearChange],
+    [setCurrYear],
   )
 
   return (
@@ -94,7 +107,7 @@ export const CalendarHeader = ({
           ))}
         </MonthYearSelect>
       </HStack>
-      <Flex __css={styles.monthArrowContainer}>
+      <Flex sx={styles.monthArrowContainer}>
         <IconButton
           variant="clear"
           colorScheme="secondary"
