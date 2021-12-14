@@ -7,10 +7,12 @@ import {
 
 import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
 
-import { CalendarProvider } from './CalendarContext'
-import { CalendarHeader } from './CalendarHeader'
-import { CalendarPanel } from './CalendarPanel'
-import { CalendarTodayButton } from './CalendarTodayButton'
+import {
+  CalendarHeader,
+  CalendarPanel,
+  CalendarProvider,
+  CalendarTodayButton,
+} from './Calendar'
 
 export interface DatePickerProps {
   /**

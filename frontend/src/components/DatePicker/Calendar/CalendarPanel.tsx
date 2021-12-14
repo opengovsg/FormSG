@@ -1,9 +1,10 @@
 import { Box, forwardRef, SimpleGrid, useStyles } from '@chakra-ui/react'
 import { isSameDay } from 'date-fns'
 
+import { DAY_NAMES, generateClassNameForDate } from '../utils'
+
 import { useCalendar } from './CalendarContext'
 import { DayOfMonth } from './DayOfMonth'
-import { DAY_NAMES, generateClassNameForDate } from './utils'
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const CalendarPanel = forwardRef<{}, 'button'>(

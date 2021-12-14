@@ -12,8 +12,9 @@ import { RenderProps } from 'dayzed'
 import { BxChevronLeft, BxChevronRight } from '~assets/icons'
 import IconButton from '~components/IconButton'
 
+import { MONTH_NAMES } from '../utils'
+
 import { useCalendar } from './CalendarContext'
-import { MONTH_NAMES } from './utils'
 
 export interface CalendarHeaderProps {
   renderProps: RenderProps

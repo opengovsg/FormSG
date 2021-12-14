@@ -11,7 +11,7 @@ import { useKey } from 'react-use'
 import { addMonths, isFirstDayOfMonth, isSameDay } from 'date-fns'
 import { Props as DayzedProps, RenderProps, useDayzed } from 'dayzed'
 
-import { DatePickerProps } from './DatePicker'
+import { DatePickerProps } from '../DatePicker'
 import {
   generateClassNameForDate,
   generateValidUuidClass,
@@ -19,7 +19,7 @@ import {
   getMonthOffsetFromToday,
   getNewDateFromKeyPress,
   getYearOptions,
-} from './utils'
+} from '../utils'
 
 const ARROW_KEY_NAMES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
 
