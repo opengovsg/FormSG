@@ -324,15 +324,36 @@ export class SpcpServiceClass {
     }
     const payloads = relayState.split(',')
     const formId = extractFormId(payloads[0])
-    if (payloads.length !== 2 || !formId) {
+    if ((payloads.length !== 2 && payloads.length !== 3) || !formId) {
       logger.error({
         message: 'RelayState incorrectly formatted',
         meta: logMeta,
       })
       return err(new InvalidOOBParamsError())
     }
-    const destination = payloads[0]
+
     const rememberMe = payloads[1] === 'true'
+    const encodedQuery = payloads.length === 3 ? payloads[2] : ''
+    let decodedQuery = ''
+
+    try {
+      decodedQuery = encodedQuery
+        ? `?${Buffer.from(encodedQuery, 'base64').toString('utf8')}`
+        : ''
+    } catch (e) {
+      logger.error({
+        message: 'Unable to decode encodedQuery',
+        meta: {
+          action: 'parseOOBParams',
+          encodedQuery,
+        },
+        error: e,
+      })
+      return err(new InvalidOOBParamsError())
+    }
+
+    const destination = `${payloads[0]}${decodedQuery}`
+
     const idpId =
       authType === FormAuthType.SP
         ? this.#spcpProps.spIdpId

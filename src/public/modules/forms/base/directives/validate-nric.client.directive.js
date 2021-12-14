@@ -2,6 +2,7 @@
 
 const {
   isNricValid,
+  isMFinSeriesValid,
 } = require('../../../../../../shared/utils/nric-validation')
 
 angular.module('forms').directive('validateNric', validateNric)
@@ -12,7 +13,9 @@ function validateNric() {
     require: 'ngModel',
     link: function (_scope, _elem, _attrs, ctrl) {
       ctrl.$validators.nricValidator = function (modelValue) {
-        return ctrl.$isEmpty(modelValue) ? true : isNricValid(modelValue)
+        return ctrl.$isEmpty(modelValue)
+          ? true
+          : isNricValid(modelValue) || isMFinSeriesValid(modelValue)
       }
     },
   }
