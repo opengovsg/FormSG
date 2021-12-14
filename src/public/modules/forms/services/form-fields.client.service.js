@@ -4,6 +4,7 @@ const get = require('lodash/get')
 
 const {
   types: basicTypes,
+  BasicField,
 } = require('../../../../../shared/constants/field/basic')
 const {
   types: myInfoTypes,
@@ -12,7 +13,10 @@ const {
 angular.module('forms').service('FormFields', [FormFields])
 
 function FormFields() {
-  this.basicTypes = basicTypes
+  // TODO: Unhide Country field once the frontend for Country field is done
+  this.basicTypes = basicTypes.filter(
+    (type) => type.name !== BasicField.Country,
+  )
   this.myInfoTypes = myInfoTypes
   this.customValFields = ['textarea', 'textfield', 'number']
 
