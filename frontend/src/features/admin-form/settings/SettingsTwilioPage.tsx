@@ -3,6 +3,7 @@ import { Text } from '@chakra-ui/react'
 import InlineMessage from '~components/InlineMessage'
 
 import { CategoryHeader } from './components/CategoryHeader'
+import { TwilioSettingsSection } from './components/TwilioSettingsSection'
 
 export const SettingsTwilioPage = (): JSX.Element => {
   return (
@@ -16,6 +17,7 @@ export const SettingsTwilioPage = (): JSX.Element => {
         To verify your credentials are correct, please test it in your form
         before activating.
       </InlineMessage>
+      <TwilioSettingsSection />
     </>
   )
 }
