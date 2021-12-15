@@ -144,6 +144,9 @@ const TwilioDetailsInput = ({
           {get(errors, 'messagingServiceSid.message')}
         </FormErrorMessage>
       </FormControl>
+      <Text color="#C05050" as="u" onClick={() => console.log('DELETE')}>
+        Remove and Delete Twilio Credentials
+      </Text>
     </>
   )
 }
