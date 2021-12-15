@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useParams } from 'react-router'
 import { Skeleton } from '@chakra-ui/react'
 
@@ -18,6 +18,12 @@ const ResponsesPage = (): JSX.Element => {
   const [secretKey, setSecretKey] = useState<string>('')
   const { downloadEncryptedResponses } = useDecryptionWorkers()
 
+  const handleExportCsv = useCallback(() => {
+    console.log(formId, settings?.title)
+    if (!formId || !settings?.title) return
+    return downloadEncryptedResponses(formId, settings.title, secretKey)
+  }, [])
+
   return (
     <Skeleton isLoaded={!isLoading && !!data}>
       <div>
@@ -28,22 +34,15 @@ const ResponsesPage = (): JSX.Element => {
           value={secretKey}
           onChange={(e) => setSecretKey(e.target.value)}
         />
-        <Button
-          onClick={() =>
-            downloadEncryptedResponses(formId!, settings!.title, secretKey)
-          }
-        >
-          Export csv
-        </Button>
+        <Button onClick={handleExportCsv}>Export csv</Button>
         <Button>Export csv and attachments</Button>
-        {!!data &&
-          data.metadata.map((submission: StorageModeSubmissionMetadata) => {
-            return (
-              <div key={submission.refNo}>
-                Submission Ref No: {submission.refNo}
-              </div>
-            )
-          })}
+        {data?.metadata.map((submission: StorageModeSubmissionMetadata) => {
+          return (
+            <div key={submission.refNo}>
+              Submission Ref No: {submission.refNo}
+            </div>
+          )
+        })}
       </div>
     </Skeleton>
   )
