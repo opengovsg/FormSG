@@ -28,9 +28,46 @@ import {
 
 const ARROW_KEY_NAMES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
 
-type UseProvideCalendarProps = DatePickerProps &
-  Pick<DayzedProps, 'monthsToDisplay'>
-interface CalendarContextProps extends DatePickerProps {
+type PassthroughProps = {
+  /**
+   * Function to be passed to CalendarPanel to determine range styling.
+   * Used for multi-calendar variant.
+   */
+  isDateInRange?: (d: Date) => boolean | null
+  /**
+   * Function to be passed to CalendarPanel to determine range styling.
+   * Called when a date is selected and a mouseover is detected over a date.
+   * Used for multi-calendar variant.
+   */
+  onMouseEnterHighlight?: (date: Date) => void
+  /**
+   * Function to be passed to CalendarPanel to determine range styling.
+   * Called when mouse leaves the calendar.
+   * Used for multi-calendar variant.
+   */
+  onMouseLeaveCalendar?: () => void
+  /**
+   * The dates that are selected.
+   */
+  selectedDates?: Date | Date[]
+  /**
+   * Handler for when date is selected.
+   */
+  onSelectDate: (d: Date) => void
+  /**
+   * Function to determine whether a date should be made
+   * unavailable.
+   */
+  isDateUnavailable?: (d: Date) => boolean
+  /**
+   * Date currently being hovered, if any.
+   */
+  hoveredDate?: Date
+}
+type UseProvideCalendarProps = Pick<DayzedProps, 'monthsToDisplay'> &
+  PassthroughProps
+
+interface CalendarContextProps extends DatePickerProps, PassthroughProps {
   uuid: string
   currMonth: number
   currYear: number
@@ -41,6 +78,7 @@ interface CalendarContextProps extends DatePickerProps {
   isDateFocusable: (d: Date) => boolean
   handleTodayClick: () => void
   dateToFocus: Date
+  selectedDates?: Date | Date[]
 }
 
 const CalendarContext = createContext<CalendarContextProps | undefined>(
@@ -75,10 +113,14 @@ export const useCalendar = (): CalendarContextProps => {
 }
 
 const useProvideCalendar = ({
-  date,
+  selectedDates,
   onSelectDate,
   isDateUnavailable,
   monthsToDisplay = 1,
+  onMouseEnterHighlight,
+  onMouseLeaveCalendar,
+  isDateInRange,
+  hoveredDate,
 }: UseProvideCalendarProps) => {
   // Ensure that calculations are always made based on date of initial render,
   // so component state doesn't suddenly jump at midnight
@@ -88,7 +130,12 @@ const useProvideCalendar = ({
   const yearOptions = useMemo(() => getYearOptions(), [])
 
   // Date to focus on initial render if initialFocusRef is passed
-  const dateToFocus = useMemo(() => date ?? today, [today, date])
+  const dateToFocus = useMemo(() => {
+    if (Array.isArray(selectedDates)) {
+      return selectedDates[0] ?? today
+    }
+    return selectedDates ?? today
+  }, [today, selectedDates])
   const [currMonth, setCurrMonth] = useState<number>(dateToFocus.getMonth())
   const [currYear, setCurrYear] = useState<number>(dateToFocus.getFullYear())
 
@@ -191,10 +238,10 @@ const useProvideCalendar = ({
   const renderProps = useDayzed({
     date: today,
     onDateSelected: ({ date }) => handleDateSelected(date),
-    showOutsideDays: true,
+    showOutsideDays: monthsToDisplay === 1,
     offset: getMonthOffsetFromToday(today, currMonth, currYear),
     onOffsetChanged,
-    selected: date,
+    selected: selectedDates,
     monthsToDisplay: monthsToDisplay,
   })
 
@@ -206,8 +253,8 @@ const useProvideCalendar = ({
     (d: Date) => {
       // If there is a selected date in the current month, make it
       // the only focusable date
-      if (date && date.getMonth() === currMonth) {
-        return isSameDay(d, date)
+      if (dateToFocus && dateToFocus.getMonth() === currMonth) {
+        return isSameDay(d, dateToFocus)
       }
       // If today is in the current month, make it the only focusable date
       // Use the latest today instead of memoised today since this doesn't affect
@@ -221,7 +268,7 @@ const useProvideCalendar = ({
       // currMonth or the spillover dates for the next month will be included.
       return d.getMonth() === currMonth && isFirstDayOfMonth(d)
     },
-    [date, currMonth],
+    [dateToFocus, currMonth],
   )
 
   return {
@@ -233,10 +280,14 @@ const useProvideCalendar = ({
     renderProps,
     yearOptions,
     isDateUnavailable,
-    date,
+    selectedDates,
     onSelectDate,
     isDateFocusable,
     handleTodayClick,
     dateToFocus,
+    onMouseEnterHighlight,
+    onMouseLeaveCalendar,
+    isDateInRange,
+    hoveredDate,
   }
 }
