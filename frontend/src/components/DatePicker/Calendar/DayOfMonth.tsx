@@ -6,7 +6,7 @@ import {
   forwardRef,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
-import { compareAsc, format, isEqual } from 'date-fns'
+import { compareAsc, format, isSameDay } from 'date-fns'
 import { DateObj } from 'dayzed'
 
 import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
@@ -69,19 +69,19 @@ export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
       // Only style background if it is a range.
       if (Array.isArray(selectedDates)) {
         // Case 1: Both dates selected and equal, no need for background.
-        if (isEqual(selectedDates[0], selectedDates[1])) {
+        if (isSameDay(selectedDates[0], selectedDates[1])) {
           return
         }
         // Case 2: Hovered date with previously selected date.
         // Background corner should follow date that is hovered.
         if (hoveredDate && selectedDates.length === 1) {
-          if (isEqual(hoveredDate, date)) {
+          if (isSameDay(hoveredDate, date)) {
             gradientTo =
               compareAsc(hoveredDate, selectedDates[0]) === 1 ? 'left' : 'right'
           }
         }
         // Case 3: Current date is a selected date.
-        if (isEqual(selectedDates[0], date)) {
+        if (isSameDay(selectedDates[0], date)) {
           gradientTo = 'right'
           // Case 4: Only one date selected, background corner should follow
           // date that is selected.
@@ -94,7 +94,7 @@ export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
           }
         }
         // Case 5: Current date is the later selected date.
-        if (isEqual(selectedDates[1], date)) {
+        if (isSameDay(selectedDates[1], date)) {
           gradientTo = 'left'
         }
         if (gradientTo) {
