@@ -1,75 +1,130 @@
+import { useCallback, useMemo } from 'react'
 import {
+  Box,
   ButtonProps,
   chakra,
   forwardRef,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
-import { format } from 'date-fns'
+import { compareAsc, format, isEqual } from 'date-fns'
+import { DateObj } from 'dayzed'
 
 import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
 
+import { useCalendar } from './CalendarContext'
+
 export interface DayOfMonthProps extends ButtonProps {
   /**
-   * Date represented by this day of month.
+   * DateObj to decide what is rendered.
    */
-  date: Date
-  /**
-   * Whether this date is currently selected.
-   */
-  isSelected?: boolean
-  /**
-   * Whether this date is available to be selected.
-   */
-  isAvailable?: boolean
-  /**
-   * Whether this date is the current date.
-   */
-  isToday?: boolean
+  dateObj: DateObj
   /**
    * Whether this date falls outside the range of the
    * month currently being displayed.
    */
   isOutsideCurrMonth?: boolean
-  /**
-   * Whether this date should be placed in the tabbing
-   * sequence.
-   */
-  isFocusable?: boolean
 }
 
 export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
   (
-    {
-      date,
-      isSelected,
-      isAvailable,
-      isToday,
-      isOutsideCurrMonth,
-      isFocusable,
-      ...props
-    },
+    { dateObj: { date, selected, today }, isOutsideCurrMonth, ...props },
     ref,
   ) => {
+    const {
+      isDateUnavailable,
+      isDateFocusable,
+      onMouseEnterHighlight,
+      isDateInRange,
+      selectedDates,
+      hoveredDate,
+    } = useCalendar()
+
+    const isAvailable = useMemo(
+      () => !isDateUnavailable?.(date),
+      [date, isDateUnavailable],
+    )
+    const isFocusable = useMemo(
+      () => isDateFocusable(date),
+      [date, isDateFocusable],
+    )
+    const isInRange = useMemo(
+      () => isDateInRange?.(date),
+      [date, isDateInRange],
+    )
+
+    const handleMouseEnter = useCallback(
+      () => onMouseEnterHighlight?.(date),
+      [date, onMouseEnterHighlight],
+    )
+
     const styles = useMultiStyleConfig(DATE_INPUT_THEME_KEY, {
-      isSelected,
+      isSelected: selected,
+      isToday: today,
+      isInRange,
       isOutsideCurrMonth,
-      isToday,
     })
 
+    const buttonBg = useMemo(() => {
+      let gradientTo: 'left' | 'right' | undefined
+      // Only style background if it is a range.
+      if (Array.isArray(selectedDates)) {
+        // Case 1: Both dates selected and equal, no need for background.
+        if (isEqual(selectedDates[0], selectedDates[1])) {
+          return
+        }
+        // Case 2: Hovered date with previously selected date.
+        // Background corner should follow date that is hovered.
+        if (hoveredDate && selectedDates.length === 1) {
+          if (isEqual(hoveredDate, date)) {
+            gradientTo =
+              compareAsc(hoveredDate, selectedDates[0]) === 1 ? 'left' : 'right'
+          }
+        }
+        // Case 3: Current date is a selected date.
+        if (isEqual(selectedDates[0], date)) {
+          gradientTo = 'right'
+          // Case 4: Only one date selected, background corner should follow
+          // date that is selected.
+          if (
+            hoveredDate &&
+            selectedDates.length === 1 &&
+            compareAsc(selectedDates[0], hoveredDate) === 1
+          ) {
+            gradientTo = 'left'
+          }
+        }
+        // Case 5: Current date is the later selected date.
+        if (isEqual(selectedDates[1], date)) {
+          gradientTo = 'left'
+        }
+        if (gradientTo) {
+          return `linear-gradient(to ${gradientTo}, transparent 50%,var(--chakra-colors-primary-200) 50%)`
+        }
+        // Case 6: In range but none of the above criteria. Means in between range.
+        if (isInRange) {
+          return 'primary.200'
+        }
+      }
+      // Case 7. Not in a range, no background
+      return
+    }, [date, hoveredDate, isInRange, selectedDates])
+
     return (
-      <chakra.button
-        // Prevent form submission if this component is nested in a form.
-        type="button"
-        {...props}
-        __css={styles.dayOfMonth}
-        aria-label={format(date, "do 'of' MMMM',' EEEE")}
-        tabIndex={isFocusable ? 0 : -1}
-        // disabled not used as we want to still allow arrow navigation.
-        aria-disabled={!isAvailable}
-        ref={ref}
-      >
-        {date.getDate()}
-      </chakra.button>
+      <Box bg={buttonBg} px="2px">
+        <chakra.button
+          onMouseEnter={handleMouseEnter}
+          // Prevent form submission if this component is nested in a form.
+          type="button"
+          sx={styles.dayOfMonth}
+          aria-label={format(date, "do 'of' MMMM',' EEEE")}
+          tabIndex={isFocusable ? 0 : -1}
+          aria-disabled={!isAvailable}
+          ref={ref}
+          {...props}
+        >
+          {date.getDate()}
+        </chakra.button>
+      </Box>
     )
   },
 )

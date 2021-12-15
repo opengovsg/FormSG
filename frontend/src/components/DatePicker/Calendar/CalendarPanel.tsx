@@ -16,18 +16,22 @@ import { DayOfMonth } from './DayOfMonth'
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const CalendarPanel = forwardRef<{}, 'button'>(
-  (_, initialFocusRef): JSX.Element => {
+  (_props, initialFocusRef): JSX.Element => {
     const styles = useStyles()
     const {
       uuid,
-      isDateUnavailable,
-      isDateFocusable,
       dateToFocus,
+      onMouseLeaveCalendar,
       renderProps: { calendars, getDateProps },
     } = useCalendar()
 
     return (
-      <Wrap shouldWrapChildren spacing="2rem" sx={styles.calendarContainer}>
+      <Wrap
+        shouldWrapChildren
+        spacing="2rem"
+        sx={styles.calendarContainer}
+        onMouseLeave={onMouseLeaveCalendar}
+      >
         {calendars.map((calendar, i) => (
           <Stack key={i} spacing={0}>
             <CalendarHeader monthOffset={i} />
@@ -44,26 +48,22 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
               {calendar.weeks.map((week, windex) =>
                 week.map((dateObj, index) => {
                   if (!dateObj) {
-                    return null
+                    return (
+                      <Box
+                        key={`${calendar.month}${calendar.year}${windex}${index}`}
+                      />
+                    )
                   }
-                  const { date, selected, today } = dateObj
                   return (
                     <DayOfMonth
                       key={`${calendar.month}${calendar.year}${windex}${index}`}
                       {...getDateProps({
                         dateObj,
                       })}
-                      date={date}
-                      isSelected={selected}
-                      isAvailable={!isDateUnavailable?.(date)}
-                      // Use the latest date for today rather than the memoised today,
-                      // since this doesn't affect offset logic
-                      isToday={today}
-                      isOutsideCurrMonth={date.getMonth() !== calendar.month}
-                      isFocusable={isDateFocusable(date)}
-                      className={generateClassNameForDate(uuid, date)}
+                      dateObj={dateObj}
+                      className={generateClassNameForDate(uuid, dateObj.date)}
                       ref={
-                        isSameDay(date, dateToFocus)
+                        isSameDay(dateObj.date, dateToFocus)
                           ? initialFocusRef
                           : undefined
                       }

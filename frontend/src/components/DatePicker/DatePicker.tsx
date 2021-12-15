@@ -30,11 +30,11 @@ export interface DatePickerProps {
 }
 
 export const DatePicker = forwardRef<DatePickerProps, 'input'>(
-  (props, initialFocusRef) => {
+  ({ date, ...props }, initialFocusRef) => {
     const styles = useMultiStyleConfig(DATE_INPUT_THEME_KEY, {})
 
     return (
-      <CalendarProvider {...props}>
+      <CalendarProvider {...props} selectedDates={date}>
         <StylesProvider value={styles}>
           {/* Overall container */}
           <Box sx={styles.container}>
