@@ -1,4 +1,11 @@
-import { Box, forwardRef, SimpleGrid, useStyles } from '@chakra-ui/react'
+import {
+  Box,
+  forwardRef,
+  SimpleGrid,
+  Stack,
+  useStyles,
+  Wrap,
+} from '@chakra-ui/react'
 import { isSameDay } from 'date-fns'
 
 import { DAY_NAMES, generateClassNameForDate } from '../utils'
@@ -11,7 +18,6 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
   (_, initialFocusRef): JSX.Element => {
     const styles = useStyles()
     const {
-      currMonth,
       uuid,
       isDateUnavailable,
       isDateFocusable,
@@ -20,9 +26,9 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
     } = useCalendar()
 
     return (
-      <Box sx={styles.calendarContainer}>
+      <Wrap shouldWrapChildren spacing="2rem" sx={styles.calendarContainer}>
         {calendars.map((calendar) => (
-          <Box key={`${calendar.month}${calendar.year}`}>
+          <Stack key={`${calendar.month}${calendar.year}`}>
             <SimpleGrid columns={DAY_NAMES.length} sx={styles.monthGrid}>
               {DAY_NAMES.map((dayName, index) => (
                 <Box key={index} sx={styles.dayNamesContainer}>
@@ -47,7 +53,7 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
                       // Use the latest date for today rather than the memoised today,
                       // since this doesn't affect offset logic
                       isToday={today}
-                      isOutsideCurrMonth={currMonth !== date.getMonth()}
+                      isOutsideCurrMonth={date.getMonth() !== calendar.month}
                       isFocusable={isDateFocusable(date)}
                       className={generateClassNameForDate(uuid, date)}
                       ref={
@@ -60,9 +66,9 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
                 }),
               )}
             </SimpleGrid>
-          </Box>
+          </Stack>
         ))}
-      </Box>
+      </Wrap>
     )
   },
 )
