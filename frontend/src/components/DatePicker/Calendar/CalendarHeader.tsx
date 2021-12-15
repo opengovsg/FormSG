@@ -35,6 +35,7 @@ const MonthYearSelect = ({
       // Prevents any parent form control from applying error styles to this select.
       isInvalid={false}
       color="secondary.500"
+      textStyle="subhead-1"
       flexBasis="fit-content"
       borderColor="transparent"
       cursor="pointer"
