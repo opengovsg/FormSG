@@ -13,7 +13,8 @@ export const SettingsTwilioPage = (): JSX.Element => {
         tier of 10,000 SMSes. How to find your credentials ↪
       </Text>
       <InlineMessage mb="1.25rem">
-        To change authentication method, close your form to new responses.
+        To verify your credentials are correct, please test it in your form
+        before activating.
       </InlineMessage>
     </>
   )
