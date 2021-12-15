@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { KeyboardEventHandler, useCallback, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { FormControl, Skeleton, Stack, Text } from '@chakra-ui/react'
 import { get, isEmpty } from 'lodash'
@@ -7,6 +7,8 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
+
+import { useMutateFormSettings } from '../mutations'
 
 export const TwilioSettingsSection = (): JSX.Element => {
   return (
@@ -47,6 +49,8 @@ const TwilioDetailsInput = ({
 }: TwilioDetailsInputProps): JSX.Element => {
   const {
     control,
+    handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     mode: 'onChange',
@@ -98,6 +102,46 @@ const TwilioDetailsInput = ({
     [],
   )
 
+  const { mutateFormTwilioDetails } = useMutateFormSettings()
+
+  const handleBlur = useCallback(() => {
+    return handleSubmit(
+      ({ accountSid, apiKeySid, apiKeySecret, messagingServiceSid }) => {
+        if (!accountSid) return
+
+        console.log(accountSid, apiKeySid, apiKeySecret, messagingServiceSid)
+        mutateFormTwilioDetails.mutate(
+          {
+            accountSid,
+            apiKeySid,
+            apiKeySecret,
+            messagingServiceSid,
+          },
+          { onError: () => reset() },
+        )
+      },
+      () => reset(),
+    )()
+  }, [
+    handleSubmit,
+    accountSid,
+    apiKeySid,
+    apiKeySecret,
+    messagingServiceSid,
+    mutateFormTwilioDetails,
+    reset,
+  ])
+
+  const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        handleBlur()
+      }
+    },
+    [handleBlur],
+  )
+
   return (
     <>
       <FormControl isInvalid={!isEmpty(errors.accountSid)}>
@@ -106,7 +150,14 @@ const TwilioDetailsInput = ({
           control={control}
           name="accountSid"
           rules={accountSidRules}
-          render={({ field }) => <Input {...field} type="password" />}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type="password"
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+            />
+          )}
         />
         <FormErrorMessage>{get(errors, 'accountSid.message')}</FormErrorMessage>
       </FormControl>
@@ -116,7 +167,14 @@ const TwilioDetailsInput = ({
           control={control}
           name="apiKeySid"
           rules={apiKeySidRules}
-          render={({ field }) => <Input {...field} type="password" />}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type="password"
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+            />
+          )}
         />
         <FormErrorMessage>{get(errors, 'apiKeySid.message')}</FormErrorMessage>
       </FormControl>
@@ -126,7 +184,14 @@ const TwilioDetailsInput = ({
           control={control}
           name="apiKeySecret"
           rules={apiKeySecretRules}
-          render={({ field }) => <Input {...field} type="password" />}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type="password"
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+            />
+          )}
         />
         <FormErrorMessage>
           {get(errors, 'apiKeySecret.message')}
@@ -138,13 +203,31 @@ const TwilioDetailsInput = ({
           control={control}
           name="messagingServiceSid"
           rules={messagingServiceSidRules}
-          render={({ field }) => <Input {...field} type="password" />}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type="password"
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+            />
+          )}
         />
         <FormErrorMessage>
           {get(errors, 'messagingServiceSid.message')}
         </FormErrorMessage>
       </FormControl>
-      <Text color="#C05050" as="u" onClick={() => console.log('DELETE')}>
+      <Text
+        color="#C05050"
+        as="u"
+        onClick={() =>
+          reset({
+            accountSid: '',
+            apiKeySid: '',
+            apiKeySecret: '',
+            messagingServiceSid: '',
+          })
+        }
+      >
         Remove and Delete Twilio Credentials
       </Text>
     </>

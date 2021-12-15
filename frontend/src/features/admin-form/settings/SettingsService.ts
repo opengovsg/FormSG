@@ -96,3 +96,28 @@ const updateFormSettings = async (
     settingsToUpdate,
   ).then(({ data }) => data)
 }
+
+export const updateTwilioCredentials = async (
+  formId: string,
+  accountSid: string,
+  apiKeySid: string,
+  apiKeySecret: string,
+  messagingServiceSid: string,
+) => {
+  console.log(
+    'HERE',
+    formId,
+    accountSid,
+    apiKeySid,
+    apiKeySecret,
+    messagingServiceSid,
+  )
+
+  return {
+    formId,
+    accountSid,
+    apiKeySid,
+    apiKeySecret,
+    messagingServiceSid,
+  }
+}

@@ -27,6 +27,7 @@ import {
   updateFormLimit,
   updateFormStatus,
   updateFormTitle,
+  updateTwilioCredentials,
 } from './SettingsService'
 
 export const useMutateFormSettings = () => {
@@ -243,6 +244,41 @@ export const useMutateFormSettings = () => {
     },
   })
 
+  const mutateFormTwilioDetails = useMutation(
+    (credentials: {
+      accountSid: string
+      apiKeySid: string
+      apiKeySecret: string
+      messagingServiceSid: string
+    }) =>
+      updateTwilioCredentials(
+        formId,
+        credentials.accountSid,
+        credentials.apiKeySid,
+        credentials.apiKeySecret,
+        credentials.messagingServiceSid,
+      ),
+    {
+      onSuccess: (newData) => {
+        toast.closeAll()
+        // Update new settings data in cache.
+        console.log(newData)
+
+        // Show toast on success.
+        toast({
+          description: "Your form's title has been updated.",
+        })
+      },
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message,
+          status: 'danger',
+        })
+      },
+    },
+  )
+
   return {
     mutateFormStatus,
     mutateFormLimit,
@@ -252,5 +288,6 @@ export const useMutateFormSettings = () => {
     mutateFormTitle,
     mutateFormAuthType,
     mutateFormEsrvcId,
+    mutateFormTwilioDetails,
   }
 }
