@@ -12,10 +12,10 @@ export const TwilioSettingsSection = (): JSX.Element => {
     <Skeleton isLoaded={true}>
       <Stack spacing="2rem">
         <TwilioDetailsInput
-          accountSid={'Lorem ipsum'}
-          apiKeySid={'Lorem ipsum'}
-          apiKeySecret={'Lorem ipsum'}
-          messagingServiceSid={'LoLorem ipsum'}
+          accountSid={'AC12345678'}
+          apiKeySid={'SK12345678'}
+          apiKeySecret={'CX123456'}
+          messagingServiceSid={'MG12345678'}
         />
       </Stack>
     </Skeleton>
@@ -69,6 +69,24 @@ const TwilioDetailsInput = ({
     [],
   )
 
+  const apiKeySecretRules = useMemo(
+    () => ({
+      required: 'API key Secret is required',
+    }),
+    [],
+  )
+
+  const messagingServiceSidRules = useMemo(
+    () => ({
+      required: 'Messaging service SID is required',
+      pattern: {
+        value: /^MG/,
+        message: 'Messaging service SID must start with MG',
+      },
+    }),
+    [],
+  )
+
   return (
     <>
       <FormControl isInvalid={!isEmpty(errors.accountSid)}>
@@ -90,6 +108,30 @@ const TwilioDetailsInput = ({
           render={({ field }) => <Input {...field} />}
         />
         <FormErrorMessage>{get(errors, 'apiKeySid.message')}</FormErrorMessage>
+      </FormControl>
+      <FormControl isInvalid={!isEmpty(errors.apiKeySecret)}>
+        <FormLabel isRequired>API key secret</FormLabel>
+        <Controller
+          control={control}
+          name="apiKeySecret"
+          rules={apiKeySecretRules}
+          render={({ field }) => <Input {...field} />}
+        />
+        <FormErrorMessage>
+          {get(errors, 'apiKeySecret.message')}
+        </FormErrorMessage>
+      </FormControl>
+      <FormControl isInvalid={!isEmpty(errors.messagingServiceSid)}>
+        <FormLabel isRequired>Messaging service SID</FormLabel>
+        <Controller
+          control={control}
+          name="messagingServiceSid"
+          rules={messagingServiceSidRules}
+          render={({ field }) => <Input {...field} />}
+        />
+        <FormErrorMessage>
+          {get(errors, 'messagingServiceSid.message')}
+        </FormErrorMessage>
       </FormControl>
     </>
   )
