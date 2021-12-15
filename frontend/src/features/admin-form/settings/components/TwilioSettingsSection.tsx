@@ -49,6 +49,7 @@ const TwilioDetailsInput = ({
 
   const accountSidRules = useMemo(
     () => ({
+      required: 'Account SID is required',
       pattern: {
         value: /^AC/,
         message: 'Account SID must start with AC',
@@ -57,16 +58,39 @@ const TwilioDetailsInput = ({
     [],
   )
 
+  const apiKeySidRules = useMemo(
+    () => ({
+      required: 'API key SID is required',
+      pattern: {
+        value: /^SK/,
+        message: 'API key SID must start with SK',
+      },
+    }),
+    [],
+  )
+
   return (
-    <FormControl isInvalid={!isEmpty(errors)}>
-      <FormLabel isRequired>Account SID</FormLabel>
-      <Controller
-        control={control}
-        name="accountSid"
-        rules={accountSidRules}
-        render={({ field }) => <Input {...field} />}
-      />
-      <FormErrorMessage>{get(errors, 'accountSid.message')}</FormErrorMessage>
-    </FormControl>
+    <>
+      <FormControl isInvalid={!isEmpty(errors.accountSid)}>
+        <FormLabel isRequired>Account SID</FormLabel>
+        <Controller
+          control={control}
+          name="accountSid"
+          rules={accountSidRules}
+          render={({ field }) => <Input {...field} />}
+        />
+        <FormErrorMessage>{get(errors, 'accountSid.message')}</FormErrorMessage>
+      </FormControl>
+      <FormControl isInvalid={!isEmpty(errors.apiKeySid)}>
+        <FormLabel isRequired>API Key SID</FormLabel>
+        <Controller
+          control={control}
+          name="apiKeySid"
+          rules={apiKeySidRules}
+          render={({ field }) => <Input {...field} />}
+        />
+        <FormErrorMessage>{get(errors, 'apiKeySid.message')}</FormErrorMessage>
+      </FormControl>
+    </>
   )
 }
