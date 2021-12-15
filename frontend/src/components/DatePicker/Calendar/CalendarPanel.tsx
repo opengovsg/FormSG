@@ -1,10 +1,10 @@
 import {
   Box,
   forwardRef,
+  HStack,
   SimpleGrid,
   Stack,
   useStyles,
-  Wrap,
 } from '@chakra-ui/react'
 import { isSameDay } from 'date-fns'
 
@@ -27,9 +27,9 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
     } = useCalendar()
 
     return (
-      <Wrap shouldWrapChildren spacing="2rem" sx={styles.calendarContainer}>
+      <HStack spacing="2rem" sx={styles.calendarContainer}>
         {calendars.map((calendar, i) => (
-          <Stack key={i}>
+          <Stack key={i} spacing={0}>
             <CalendarHeader />
             <SimpleGrid
               key={`${calendar.month}${calendar.year}`}
@@ -74,7 +74,7 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
             </SimpleGrid>
           </Stack>
         ))}
-      </Wrap>
+      </HStack>
     )
   },
 )

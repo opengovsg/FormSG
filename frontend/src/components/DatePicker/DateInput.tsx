@@ -94,7 +94,7 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                       <PopoverCloseButton position="static" />
                     </Flex>
                   </PopoverHeader>
-                  <PopoverBody>
+                  <PopoverBody p={0}>
                     <DateInput.DatePicker
                       date={datePickerDate}
                       onSelectDate={handleDatepickerSelection}

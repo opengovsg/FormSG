@@ -7,7 +7,6 @@ import {
   useBreakpointValue,
   useStyles,
 } from '@chakra-ui/react'
-import { RenderProps } from 'dayzed'
 
 import { BxChevronLeft, BxChevronRight } from '~assets/icons'
 import IconButton from '~components/IconButton'
@@ -15,16 +14,6 @@ import IconButton from '~components/IconButton'
 import { MONTH_NAMES } from '../utils'
 
 import { useCalendar } from './CalendarContext'
-
-export interface CalendarHeaderProps {
-  renderProps: RenderProps
-  currMonth: number
-  onMonthChange: (month: number) => void
-  currYear: number
-  onYearChange: (year: number) => void
-  shouldUseMonthFullName?: boolean
-  yearOptions: number[]
-}
 
 const MonthYearSelect = ({
   children,

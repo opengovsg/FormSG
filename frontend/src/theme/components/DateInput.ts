@@ -44,18 +44,31 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
       },
       calendarContainer: {
         pb: '1rem',
+        px: '0.625rem',
+        mb: '-1px',
         borderBottom: '1px solid',
         borderColor: 'neutral.300',
       },
       monthGrid: {
         rowGap: '0.5rem',
+        columnGap: '0.25rem',
         display: 'inline-grid',
         justifyItems: 'left',
       },
       dayNamesContainer: {
         textStyle: 'subhead-2',
         color: 'secondary.700',
-        margin: 'auto',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        w: {
+          base: '2rem',
+          md: '3rem',
+        },
+        h: {
+          base: '2rem',
+          md: '3rem',
+        },
       },
       dayOfMonth: {
         transitionDuration: 'normal',
@@ -98,11 +111,10 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
           base: '2rem',
           md: '3rem',
         },
-        mx: '0.25rem',
       },
       todayLinkContainer: {
         textAlign: 'center',
-        py: '1rem',
+        py: '0.75rem',
       },
     }
   },
