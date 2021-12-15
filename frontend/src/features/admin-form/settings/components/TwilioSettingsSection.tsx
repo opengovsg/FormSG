@@ -95,7 +95,7 @@ const TwilioDetailsInput = ({
           control={control}
           name="accountSid"
           rules={accountSidRules}
-          render={({ field }) => <Input {...field} />}
+          render={({ field }) => <Input {...field} type="password" />}
         />
         <FormErrorMessage>{get(errors, 'accountSid.message')}</FormErrorMessage>
       </FormControl>
@@ -105,7 +105,7 @@ const TwilioDetailsInput = ({
           control={control}
           name="apiKeySid"
           rules={apiKeySidRules}
-          render={({ field }) => <Input {...field} />}
+          render={({ field }) => <Input {...field} type="password" />}
         />
         <FormErrorMessage>{get(errors, 'apiKeySid.message')}</FormErrorMessage>
       </FormControl>
@@ -115,7 +115,7 @@ const TwilioDetailsInput = ({
           control={control}
           name="apiKeySecret"
           rules={apiKeySecretRules}
-          render={({ field }) => <Input {...field} />}
+          render={({ field }) => <Input {...field} type="password" />}
         />
         <FormErrorMessage>
           {get(errors, 'apiKeySecret.message')}
@@ -127,7 +127,7 @@ const TwilioDetailsInput = ({
           control={control}
           name="messagingServiceSid"
           rules={messagingServiceSidRules}
-          render={({ field }) => <Input {...field} />}
+          render={({ field }) => <Input {...field} type="password" />}
         />
         <FormErrorMessage>
           {get(errors, 'messagingServiceSid.message')}
