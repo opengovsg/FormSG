@@ -30,7 +30,7 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
       <Wrap shouldWrapChildren spacing="2rem" sx={styles.calendarContainer}>
         {calendars.map((calendar, i) => (
           <Stack key={i} spacing={0}>
-            <CalendarHeader />
+            <CalendarHeader monthOffset={i} />
             <SimpleGrid
               key={`${calendar.month}${calendar.year}`}
               columns={DAY_NAMES.length}
