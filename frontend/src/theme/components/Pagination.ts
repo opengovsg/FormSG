@@ -53,6 +53,7 @@ export const Pagination: ComponentMultiStyleConfig<typeof parts> = {
       return {
         container: {
           display: 'flex',
+          justifyContent: 'center',
           textStyle: 'body-2',
         },
         separator: {
