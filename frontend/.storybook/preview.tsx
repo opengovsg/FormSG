@@ -7,12 +7,14 @@ import { DecoratorFn } from '@storybook/react'
 import { initialize, mswDecorator } from 'msw-storybook-addon'
 
 import { AuthProvider } from '~contexts/AuthContext'
+import * as dayjsUtils from '~utils/dayjs'
 
 import { theme } from '../src/theme'
 
 import { StorybookTheme } from './themes'
 
 initialize()
+dayjsUtils.init()
 
 const withReactQuery: DecoratorFn = (storyFn) => {
   const queryClient = new QueryClient({

@@ -11,41 +11,31 @@ import {
 } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import { ThemeButtonVariant } from '~theme/components/Button'
+import { MenuVariant } from '~theme/components/Menu'
 
-import { Menu } from './Menu'
+import { Menu, MenuButtonProps } from './Menu'
 
 export default {
   title: 'Components/Menu',
   component: Menu,
 } as Meta
 
-type MenuTemplateProps = {
-  isFullWidth?: boolean
-  isOpen?: boolean
-  variant: ThemeButtonVariant
-  children: string
-}
-
+type MenuTemplateProps = MenuButtonProps
 type MenuGroupTemplateProps = {
-  variant: ThemeButtonVariant
+  variant: MenuVariant
 }
 
 const MenuTemplate: Story<MenuTemplateProps> = ({
   variant,
   children,
-  isFullWidth,
+  isStretch,
   isOpen,
 }) => {
   return (
     <Menu {...(isOpen ? { isOpen } : {})}>
       {({ isOpen }) => (
         <>
-          <Menu.Button
-            variant={variant}
-            isFullWidth={isFullWidth}
-            isActive={isOpen}
-          >
+          <Menu.Button variant={variant} isStretch={isStretch} isOpen={isOpen}>
             {children}
           </Menu.Button>
           <Menu.List>
@@ -75,7 +65,7 @@ const MenuGroupTemplate: Story<MenuGroupTemplateProps> = ({ variant }) => {
         alignItems="center"
       >
         <MenuTemplate variant={variant}>Menu</MenuTemplate>
-        <MenuTemplate variant={variant} isFullWidth>
+        <MenuTemplate variant={variant} isStretch>
           Menu Stretch
         </MenuTemplate>
       </SimpleGrid>
@@ -89,7 +79,7 @@ const MenuGroupTemplate: Story<MenuGroupTemplateProps> = ({ variant }) => {
         <MenuTemplate variant={variant} isOpen>
           Menu
         </MenuTemplate>
-        <MenuTemplate variant={variant} isFullWidth isOpen>
+        <MenuTemplate variant={variant} isStretch isOpen>
           Menu Stretch
         </MenuTemplate>
       </SimpleGrid>
@@ -100,7 +90,7 @@ export const Default = MenuTemplate.bind({})
 Default.args = {
   children: 'Menu Default',
   variant: 'outline',
-  isFullWidth: false,
+  isStretch: false,
 }
 
 export const Outline = MenuGroupTemplate.bind({})
@@ -115,7 +105,7 @@ export const Playground: Story = () => {
       <Menu>
         {({ isOpen }) => (
           <>
-            <Menu.Button isActive={isOpen}>EXPORT</Menu.Button>
+            <Menu.Button isOpen={isOpen}>EXPORT</Menu.Button>
             <Menu.List>
               <Menu.Item
                 onClick={() => {

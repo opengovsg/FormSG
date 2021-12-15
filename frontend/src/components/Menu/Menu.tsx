@@ -1,41 +1,65 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useMemo } from 'react'
 import {
-  Button,
-  ButtonProps,
   Menu as ChakraMenu,
   MenuButton as ChakraMenuButton,
   MenuItem as ChakraMenuItem,
   MenuList as ChakraMenuList,
   MenuProps,
+  useMultiStyleConfig,
 } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~/assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~/assets/icons/BxsChevronUp'
 
+import { MenuVariant } from '~theme/components/Menu'
+import Button, { ButtonProps } from '~components/Button'
+
+export interface MenuButtonProps extends Omit<ButtonProps, 'isFullWidth'> {
+  variant?: MenuVariant
+  isStretch?: boolean
+  isOpen?: boolean
+  focusItemBorderColor?: string
+}
+
 /**
  * @preconditions Must be a child of Menu component,
  * and returned using a render prop (see implementation in Menu.stories).
  */
-const MenuButton = (props: ButtonProps): JSX.Element => {
-  const ChevronIcon = props.isActive ? <BxsChevronUp /> : <BxsChevronDown />
-  const isVariantOutline = !props.variant || props.variant === 'outline'
+const MenuButton = ({
+  isOpen,
+  variant = 'outline',
+  colorScheme = 'secondary',
+  focusItemBorderColor,
+  isStretch,
+  ...props
+}: MenuButtonProps): JSX.Element => {
+  const ChevronIcon = useMemo(
+    () =>
+      isOpen ? (
+        <BxsChevronUp fontSize="1.25rem" />
+      ) : (
+        <BxsChevronDown fontSize="1.25rem" />
+      ),
+    [isOpen],
+  )
+  const style = useMultiStyleConfig('Menu', {
+    ...props,
+    variant,
+    colorScheme,
+    isStretch,
+    focusItemBorderColor,
+  })
 
   return (
     <ChakraMenuButton
       as={Button}
-      variant="outline"
-      colorScheme="secondary"
-      textAlign="left"
+      colorScheme={colorScheme}
+      variant={variant}
       rightIcon={ChevronIcon}
+      justifyContent="space-between"
       iconSpacing="1.5rem"
-      _hover={{
-        bgColor: 'white',
-        borderColor: isVariantOutline ? 'secondary.900' : '',
-        color: 'secondary.900',
-      }}
-      _active={{
-        bgColor: 'white',
-        boxShadow: isVariantOutline ? '0 0 0 0.0625rem black' : '',
-      }}
+      sx={style.button}
       {...props}
     />
   )
