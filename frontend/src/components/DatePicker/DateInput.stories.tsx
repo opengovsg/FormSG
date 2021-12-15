@@ -13,7 +13,7 @@ import { DateInput, DateInputProps } from './DateInput'
 import { DatePickerProps } from './DatePicker'
 
 export default {
-  title: 'Components/DateInput',
+  title: 'Components/Date/DateInput',
   component: DateInput,
 } as Meta
 
