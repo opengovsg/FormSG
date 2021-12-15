@@ -1,24 +1,35 @@
 import { useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
+import { FormControl, Skeleton, Stack, Text } from '@chakra-ui/react'
 import { get, isEmpty } from 'lodash'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 
 export const TwilioSettingsSection = (): JSX.Element => {
   return (
-    <Skeleton isLoaded={true}>
-      <Stack spacing="2rem">
-        <TwilioDetailsInput
-          accountSid={'AC12345678'}
-          apiKeySid={'SK12345678'}
-          apiKeySecret={'CX123456'}
-          messagingServiceSid={'MG12345678'}
-        />
-      </Stack>
-    </Skeleton>
+    <>
+      <Text mb="1rem">
+        Add your Twilio credentials to pay for Verified SMSes beyond the free
+        tier of 10,000 SMSes. How to find your credentials ↪
+      </Text>
+      <InlineMessage mb="1rem">
+        To verify your credentials are correct, please test it in your form
+        before activating.
+      </InlineMessage>
+      <Skeleton isLoaded={true}>
+        <Stack spacing="2rem">
+          <TwilioDetailsInput
+            accountSid={'AC12345678'}
+            apiKeySid={'SK12345678'}
+            apiKeySecret={'CX123456'}
+            messagingServiceSid={'MG12345678'}
+          />
+        </Stack>
+      </Skeleton>
+    </>
   )
 }
 
