@@ -43,8 +43,8 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
         justifyContent: 'flex-end',
       },
       calendarContainer: {
-        py: '1rem',
-        borderY: '1px solid',
+        pb: '1rem',
+        borderBottom: '1px solid',
         borderColor: 'neutral.300',
       },
       monthGrid: {

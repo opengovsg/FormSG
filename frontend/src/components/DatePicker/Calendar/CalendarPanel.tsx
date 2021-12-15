@@ -11,6 +11,7 @@ import { isSameDay } from 'date-fns'
 import { DAY_NAMES, generateClassNameForDate } from '../utils'
 
 import { useCalendar } from './CalendarContext'
+import { CalendarHeader } from './CalendarHeader'
 import { DayOfMonth } from './DayOfMonth'
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -27,9 +28,14 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
 
     return (
       <Wrap shouldWrapChildren spacing="2rem" sx={styles.calendarContainer}>
-        {calendars.map((calendar) => (
-          <Stack key={`${calendar.month}${calendar.year}`}>
-            <SimpleGrid columns={DAY_NAMES.length} sx={styles.monthGrid}>
+        {calendars.map((calendar, i) => (
+          <Stack key={i}>
+            <CalendarHeader />
+            <SimpleGrid
+              key={`${calendar.month}${calendar.year}`}
+              columns={DAY_NAMES.length}
+              sx={styles.monthGrid}
+            >
               {DAY_NAMES.map((dayName, index) => (
                 <Box key={index} sx={styles.dayNamesContainer}>
                   {dayName}

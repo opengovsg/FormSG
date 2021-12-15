@@ -8,7 +8,6 @@ import {
 import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
 
 import {
-  CalendarHeader,
   CalendarPanel,
   CalendarProvider,
   CalendarTodayButton,
@@ -39,10 +38,6 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
         <StylesProvider value={styles}>
           {/* Overall container */}
           <Box sx={styles.container}>
-            {/* Month, year selectors */}
-            <CalendarHeader />
-            {/* Calendars is an array, but it should only have 1 element since
-      we only render 1 month at a time */}
             <CalendarPanel ref={initialFocusRef} />
             <CalendarTodayButton />
           </Box>

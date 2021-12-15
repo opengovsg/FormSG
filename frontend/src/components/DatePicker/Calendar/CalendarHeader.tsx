@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback } from 'react'
+import { ChangeEvent, memo, useCallback, useMemo } from 'react'
 import {
   Flex,
   HStack,
@@ -51,7 +51,7 @@ const MonthYearSelect = ({
   )
 }
 
-export const CalendarHeader = (): JSX.Element => {
+export const CalendarHeader = memo((): JSX.Element => {
   const styles = useStyles()
   const {
     currMonth,
@@ -66,6 +66,22 @@ export const CalendarHeader = (): JSX.Element => {
     base: false,
     md: true,
   })
+
+  const memoizedMonthOptions = useMemo(() => {
+    return MONTH_NAMES.map(({ shortName, fullName }, index) => (
+      <option value={index} key={index}>
+        {shouldUseMonthFullName ? fullName : shortName}
+      </option>
+    ))
+  }, [shouldUseMonthFullName])
+
+  const memoizedYearOptions = useMemo(() => {
+    return yearOptions.map((year, index) => (
+      <option value={year} key={index}>
+        {year}
+      </option>
+    ))
+  }, [yearOptions])
 
   const handleMonthChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
@@ -90,22 +106,14 @@ export const CalendarHeader = (): JSX.Element => {
           // Align with dates
           pl={{ base: '0', md: '2px' }}
         >
-          {MONTH_NAMES.map(({ shortName, fullName }, index) => (
-            <option value={index} key={index}>
-              {shouldUseMonthFullName ? fullName : shortName}
-            </option>
-          ))}
+          {memoizedMonthOptions}
         </MonthYearSelect>
         <MonthYearSelect
           value={currYear}
           onChange={handleYearChange}
           aria-label="Change displayed year"
         >
-          {yearOptions.map((year, index) => (
-            <option value={year} key={index}>
-              {year}
-            </option>
-          ))}
+          {memoizedYearOptions}
         </MonthYearSelect>
       </HStack>
       <Flex sx={styles.monthArrowContainer}>
@@ -128,4 +136,4 @@ export const CalendarHeader = (): JSX.Element => {
       </Flex>
     </Flex>
   )
-}
+})
