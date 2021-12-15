@@ -129,6 +129,20 @@ const useProvideCalendar = ({
     })
   }, [uuid])
 
+  const updateMonthYear = useCallback(
+    (newDate: Date) => {
+      const monthDiff = differenceInCalendarMonths(
+        newDate,
+        new Date(currYear, currMonth),
+      )
+      if (monthDiff < 0 || monthDiff > monthsToDisplay - 1) {
+        setCurrMonth(newDate.getMonth())
+        setCurrYear(newDate.getFullYear())
+      }
+    },
+    [currMonth, currYear, monthsToDisplay],
+  )
+
   /**
    * Allows user to change focus across rows/columns using arrow keys. The
    * idea is to attach a unique classname to each day, from which we can derive
@@ -152,20 +166,14 @@ const useProvideCalendar = ({
       const newDate = getNewDateFromKeyPress(focusedDate, e.key)
       if (newDate === focusedDate) return
       // If newDate is outside current displayed months, scroll to that month
-      const monthDiff = differenceInCalendarMonths(
-        newDate,
-        new Date(currYear, currMonth),
-      )
-      if (monthDiff < 0 || monthDiff > monthsToDisplay - 1) {
-        setCurrMonth(newDate.getMonth())
-        setCurrYear(newDate.getFullYear())
-      }
+      updateMonthYear(newDate)
+
       const elementToFocus = document.querySelector(
         `.${generateClassNameForDate(uuid, newDate)}`,
       ) as HTMLButtonElement | null
       elementToFocus?.focus()
     },
-    [currMonth, currYear, monthsToDisplay, uuid],
+    [updateMonthYear, uuid],
   )
   useKey((e) => ARROW_KEY_NAMES.includes(e.key), handleArrowKey)
 
@@ -173,12 +181,11 @@ const useProvideCalendar = ({
     (d: Date) => {
       if (isDateUnavailable?.(d)) return
       // Set current month/year to that of selected
-      setCurrMonth(d.getMonth())
-      setCurrYear(d.getFullYear())
+      updateMonthYear(d)
       // Call parent callback
       onSelectDate?.(d)
     },
-    [isDateUnavailable, onSelectDate],
+    [isDateUnavailable, onSelectDate, updateMonthYear],
   )
 
   const renderProps = useDayzed({
