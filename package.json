@@ -119,7 +119,7 @@
     "moment-timezone": "0.5.34",
     "mongodb": "^4.2.2",
     "mongodb-uri": "^0.9.7",
-    "mongoose": "^6.0.13",
+    "mongoose": "^6.1.2",
     "multiparty": ">=4.2.2",
     "neverthrow": "^4.3.1",
     "ng-infinite-scroll": "^1.3.0",
