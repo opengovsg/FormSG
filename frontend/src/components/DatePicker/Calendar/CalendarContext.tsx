@@ -8,7 +8,12 @@ import {
   useState,
 } from 'react'
 import { useKey } from 'react-use'
-import { addMonths, isFirstDayOfMonth, isSameDay } from 'date-fns'
+import {
+  addMonths,
+  differenceInCalendarMonths,
+  isFirstDayOfMonth,
+  isSameDay,
+} from 'date-fns'
 import { Props as DayzedProps, RenderProps, useDayzed } from 'dayzed'
 
 import { DatePickerProps } from '../DatePicker'
@@ -23,6 +28,8 @@ import {
 
 const ARROW_KEY_NAMES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
 
+type UseProvideCalendarProps = DatePickerProps &
+  Pick<DayzedProps, 'monthsToDisplay'>
 interface CalendarContextProps extends DatePickerProps {
   uuid: string
   currMonth: number
@@ -40,12 +47,14 @@ const CalendarContext = createContext<CalendarContextProps | undefined>(
   undefined,
 )
 
+interface CalendarProviderProps extends UseProvideCalendarProps {
+  children: React.ReactNode
+}
+
 export const CalendarProvider = ({
   children,
   ...props
-}: {
-  children: React.ReactNode
-} & DatePickerProps) => {
+}: CalendarProviderProps) => {
   const value = useProvideCalendar(props)
 
   return (
@@ -65,13 +74,11 @@ export const useCalendar = (): CalendarContextProps => {
   return context
 }
 
-type UseProvideCalendarProps = DatePickerProps & Partial<DayzedProps>
-
 const useProvideCalendar = ({
   date,
   onSelectDate,
   isDateUnavailable,
-  ...dayzedProps
+  monthsToDisplay = 1,
 }: UseProvideCalendarProps) => {
   // Ensure that calculations are always made based on date of initial render,
   // so component state doesn't suddenly jump at midnight
@@ -144,15 +151,21 @@ const useProvideCalendar = ({
       e.preventDefault()
       const newDate = getNewDateFromKeyPress(focusedDate, e.key)
       if (newDate === focusedDate) return
-      // If newDate is outside current month, scroll to that month
-      setCurrMonth(newDate.getMonth())
-      setCurrYear(newDate.getFullYear())
+      // If newDate is outside current displayed months, scroll to that month
+      const monthDiff = differenceInCalendarMonths(
+        newDate,
+        new Date(currYear, currMonth),
+      )
+      if (monthDiff < 0 || monthDiff > monthsToDisplay - 1) {
+        setCurrMonth(newDate.getMonth())
+        setCurrYear(newDate.getFullYear())
+      }
       const elementToFocus = document.querySelector(
         `.${generateClassNameForDate(uuid, newDate)}`,
       ) as HTMLButtonElement | null
       elementToFocus?.focus()
     },
-    [uuid],
+    [currMonth, currYear, monthsToDisplay, uuid],
   )
   useKey((e) => ARROW_KEY_NAMES.includes(e.key), handleArrowKey)
 
@@ -175,7 +188,7 @@ const useProvideCalendar = ({
     offset: getMonthOffsetFromToday(today, currMonth, currYear),
     onOffsetChanged,
     selected: date,
-    ...dayzedProps,
+    monthsToDisplay: monthsToDisplay,
   })
 
   /**
