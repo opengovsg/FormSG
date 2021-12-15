@@ -33,7 +33,7 @@ const ResponsesPage = (): JSX.Element => {
             downloadEncryptedResponses(formId!, settings!.title, secretKey)
           }
         >
-          Export csv{' '}
+          Export csv
         </Button>
         <Button>Export csv and attachments</Button>
         {!!data &&
