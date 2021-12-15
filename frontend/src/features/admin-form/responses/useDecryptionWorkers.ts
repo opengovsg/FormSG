@@ -6,7 +6,8 @@ import { wrap } from 'comlink'
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import DecryptionWorker from 'worker-loader!./workers/decryption.worker'
 
-import { killWorkers } from './AdminSubmissionsService'
+const killWorkers = (workers: DecryptionWorker[]): void =>
+  workers.forEach((worker) => worker.terminate())
 
 const useDecryptionWorkers = () => {
   const [workers, setWorkers] = useState<DecryptionWorker[]>([])
