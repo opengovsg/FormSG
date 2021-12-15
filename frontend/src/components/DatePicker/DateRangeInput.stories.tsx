@@ -9,7 +9,7 @@ import {
 import { Meta, Story } from '@storybook/react'
 
 import { DateRangeInput, DateRangeInputProps } from './DateRangeInput'
-import { DateRangePicker } from './DateRangePicker'
+import { DateRangePicker, DateRangePickerProps } from './DateRangePicker'
 
 export default {
   title: 'Components/Date/DateRangeInput',
@@ -17,8 +17,10 @@ export default {
   decorators: [],
 } as Meta
 
-const PickerOnlyTemplate: Story = () => {
-  const [selectedDates, setSelectedDates] = useState<Date[]>([])
+const PickerOnlyTemplate: Story<DateRangePickerProps> = (args) => {
+  const [selectedDates, setSelectedDates] = useState<Date[]>(
+    args.selectedDates ?? [],
+  )
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null)
 
   const handleOnDateSelected = (date: Date) => {
@@ -88,6 +90,11 @@ const PickerOnlyTemplate: Story = () => {
 }
 export const PickerOnly = PickerOnlyTemplate.bind({})
 PickerOnly.args = {}
+
+export const PickerWithDate = PickerOnlyTemplate.bind({})
+PickerWithDate.args = {
+  selectedDates: [new Date('2001-01-01'), new Date('2001-01-08')],
+}
 
 const PlaygroundTemplate: Story<DateRangeInputProps> = (args) => {
   const name = 'Date'
