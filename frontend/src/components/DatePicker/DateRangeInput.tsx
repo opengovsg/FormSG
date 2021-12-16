@@ -18,18 +18,19 @@ import {
   Text,
   Wrap,
 } from '@chakra-ui/react'
-import { compareAsc, format } from 'date-fns'
+import { compareAsc } from 'date-fns'
 
 import { BxCalendar } from '~assets/icons'
 import IconButton from '~components/IconButton'
 import Input, { InputProps } from '~components/Input'
 
 import { DateRangePicker } from './DateRangePicker'
+import { convertToDateString, IsoDateString } from './utils'
 
 export interface DateRangeInputProps
   extends Omit<InputProps, 'value' | 'onChange'> {
-  value?: Date[]
-  onChange?: (val: Date[]) => void
+  value?: IsoDateString[]
+  onChange?: (val: IsoDateString[]) => void
 }
 
 export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
@@ -38,6 +39,11 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
 
     const [hoveredDate, setHoveredDate] = useState<Date | null>(null)
 
+    const datePickerDates = useMemo(
+      () => value.map((v) => new Date(v)).filter((d) => !isNaN(d.getTime())),
+      [value],
+    )
+
     /**
      * Handles date selection in calendar panel.
      * Calls onChange prop (if provided) with sorted dates.
@@ -45,22 +51,24 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
      */
     const handleOnDateSelected = useCallback(
       (date: Date) => {
+        const dateString = convertToDateString(date)
+
         let newDates = value.slice()
         if (value.length) {
           if (value.length === 1) {
             const firstTime = value[0]
-            if (firstTime < date) {
-              newDates.push(date)
+            if (compareAsc(new Date(firstTime), date) === -1) {
+              newDates.push(dateString)
             } else {
-              newDates.unshift(date)
+              newDates.unshift(dateString)
             }
           } else if (newDates.length === 2) {
-            newDates = [date]
+            newDates = [dateString]
           }
         } else {
-          newDates.push(date)
+          newDates.push(dateString)
         }
-        onChange?.(newDates.sort(compareAsc))
+        onChange?.(newDates.sort())
       },
       [onChange, value],
     )
@@ -70,17 +78,22 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
         if (!value?.length) {
           return false
         }
+        const dateString = convertToDateString(date)
         const firstSelected = value[0]
         if (value.length === 2) {
           const secondSelected = value[1]
-          return firstSelected < date && secondSelected > date
-        } else {
-          return (
-            hoveredDate &&
-            ((firstSelected < date && hoveredDate >= date) ||
-              (date < firstSelected && date >= hoveredDate))
-          )
+          return firstSelected < dateString && secondSelected > dateString
         }
+
+        if (!hoveredDate) {
+          return false
+        }
+        const hoveredDateString = convertToDateString(hoveredDate)
+
+        return (
+          (firstSelected < dateString && hoveredDateString >= dateString) ||
+          (dateString < firstSelected && dateString >= hoveredDateString)
+        )
       },
       [hoveredDate, value],
     )
@@ -108,14 +121,14 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
           clonedValue = []
         }
       } else {
-        clonedValue[0] = dateFromValue
+        clonedValue[0] = convertToDateString(dateFromValue)
       }
 
       onChange?.(clonedValue)
     }
 
     const startDateRenderedValue = useMemo(() => {
-      return value[0] ? format(value[0], 'yyyy-MM-dd') ?? '' : ''
+      return value[0] ?? ''
     }, [value])
 
     const handleEndDateChange: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -126,14 +139,14 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
           clonedValue.pop()
         }
       } else {
-        clonedValue[1] = dateFromValue
+        clonedValue[1] = convertToDateString(dateFromValue)
       }
 
       onChange?.(clonedValue)
     }
 
     const endDateRenderedValue = useMemo(() => {
-      return value[1] ? format(value[1], 'yyyy-MM-dd') ?? '' : ''
+      return value[1] ?? ''
     }, [value])
 
     return (
@@ -210,7 +223,7 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
                   </PopoverHeader>
                   <PopoverBody p={0}>
                     <DateRangePicker
-                      selectedDates={value}
+                      selectedDates={datePickerDates}
                       hoveredDate={hoveredDate}
                       isDateInRange={isDateInRange}
                       onMouseEnterHighlight={onMouseEnterHighlight}

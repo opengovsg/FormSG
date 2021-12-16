@@ -1,11 +1,16 @@
 import {
   addDays,
   differenceInCalendarMonths,
+  format,
   startOfDay,
   subDays,
 } from 'date-fns'
 import range from 'lodash/range'
+import { Opaque } from 'type-fest'
 import { v4 as uuidv4 } from 'uuid'
+
+// Format yyyy-MM-dd
+export type IsoDateString = Opaque<string, 'IsoDateString'>
 
 /**
  * Full names of calendar months
@@ -113,4 +118,8 @@ export const generateValidUuidClass = (): string => {
   // Ensure className starts with alphabet and has no hyphens
   // followed by digits
   return `a${uuidv4().replaceAll('-', '_')}`
+}
+
+export const convertToDateString = (date: Date): IsoDateString => {
+  return format(date, 'yyyy-MM-dd') as IsoDateString
 }
