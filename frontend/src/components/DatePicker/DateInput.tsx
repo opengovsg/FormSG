@@ -1,4 +1,5 @@
 import { KeyboardEventHandler, useCallback, useMemo, useRef } from 'react'
+import FocusLock from 'react-focus-lock'
 import {
   Flex,
   Popover,
@@ -118,31 +119,33 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                   maxW="100vw"
                   bg="white"
                 >
-                  <PopoverHeader p={0}>
-                    <Flex
-                      h="3.5rem"
-                      mx={{ base: '1rem', md: '1.5rem' }}
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Text textStyle="subhead-2" color="secondary.500">
-                        Select a date
-                      </Text>
-                      <PopoverCloseButton
-                        position="static"
-                        variant="clear"
-                        colorScheme="secondary"
+                  <FocusLock returnFocus persistentFocus={false}>
+                    <PopoverHeader p={0}>
+                      <Flex
+                        h="3.5rem"
+                        mx={{ base: '1rem', md: '1.5rem' }}
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
+                        <Text textStyle="subhead-2" color="secondary.500">
+                          Select a date
+                        </Text>
+                        <PopoverCloseButton
+                          position="static"
+                          variant="clear"
+                          colorScheme="secondary"
+                        />
+                      </Flex>
+                    </PopoverHeader>
+                    <PopoverBody p={0}>
+                      <DateInput.DatePicker
+                        date={datePickerDate}
+                        isDateUnavailable={isDateUnavailable}
+                        onSelectDate={handleDatepickerSelection}
+                        ref={initialFocusRef}
                       />
-                    </Flex>
-                  </PopoverHeader>
-                  <PopoverBody p={0}>
-                    <DateInput.DatePicker
-                      date={datePickerDate}
-                      isDateUnavailable={isDateUnavailable}
-                      onSelectDate={handleDatepickerSelection}
-                      ref={initialFocusRef}
-                    />
-                  </PopoverBody>
+                    </PopoverBody>
+                  </FocusLock>
                 </PopoverContent>
               </Portal>
             </>

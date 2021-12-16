@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import FocusLock from 'react-focus-lock'
 import {
   Flex,
   forwardRef,
@@ -243,34 +244,36 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
                   maxW="100vw"
                   bg="white"
                 >
-                  <PopoverHeader>
-                    <Flex
-                      h="3.5rem"
-                      mx={{ base: '1rem', md: '1.5rem' }}
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Text textStyle="subhead-2" color="secondary.500">
-                        Select date range
-                      </Text>
-                      <PopoverCloseButton
-                        variant="clear"
-                        colorScheme="secondary"
-                        position="static"
+                  <FocusLock returnFocus persistentFocus={false}>
+                    <PopoverHeader>
+                      <Flex
+                        h="3.5rem"
+                        mx={{ base: '1rem', md: '1.5rem' }}
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
+                        <Text textStyle="subhead-2" color="secondary.500">
+                          Select date range
+                        </Text>
+                        <PopoverCloseButton
+                          variant="clear"
+                          colorScheme="secondary"
+                          position="static"
+                        />
+                      </Flex>
+                    </PopoverHeader>
+                    <PopoverBody p={0}>
+                      <DateRangePicker
+                        selectedDates={datePickerDates}
+                        hoveredDate={hoveredDate}
+                        isDateInRange={isDateInRange}
+                        onMouseEnterHighlight={onMouseEnterHighlight}
+                        onMouseLeaveCalendar={onMouseLeaveCalendar}
+                        onSelectDate={handleOnDateSelected}
+                        ref={initialFocusRef}
                       />
-                    </Flex>
-                  </PopoverHeader>
-                  <PopoverBody p={0}>
-                    <DateRangePicker
-                      selectedDates={datePickerDates}
-                      hoveredDate={hoveredDate}
-                      isDateInRange={isDateInRange}
-                      onMouseEnterHighlight={onMouseEnterHighlight}
-                      onMouseLeaveCalendar={onMouseLeaveCalendar}
-                      onSelectDate={handleOnDateSelected}
-                      ref={initialFocusRef}
-                    />
-                  </PopoverBody>
+                    </PopoverBody>
+                  </FocusLock>
                 </PopoverContent>
               </Portal>
             </>
