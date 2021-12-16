@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { KeyboardEventHandler, useCallback, useMemo, useRef } from 'react'
 import {
   Flex,
   Popover,
@@ -46,10 +46,21 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
       return isNaN(dateFromValue.getTime()) ? undefined : dateFromValue
     }, [value])
 
+    /**
+     * Disable spacebar from opening native calendar
+     */
+    const handlePreventOpenNativeCalendar: KeyboardEventHandler<HTMLInputElement> =
+      useCallback((e) => {
+        if (e.key === ' ') {
+          e.preventDefault()
+        }
+      }, [])
+
     return (
       <Flex>
         <Input
           type="date"
+          onKeyDown={handlePreventOpenNativeCalendar}
           sx={{
             borderRadius: '4px 0 0 4px',
             // Chrome displays a default calendar icon, which we want to hide
