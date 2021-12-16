@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ChangeEventHandler,
   useCallback,
@@ -7,10 +8,10 @@ import {
 } from 'react'
 import {
   Box,
-  chakra,
   CSSObject,
   Flex,
   forwardRef,
+  HStack,
   Popover,
   PopoverBody,
   PopoverCloseButton,
@@ -20,26 +21,26 @@ import {
   Portal,
   Text,
   useMultiStyleConfig,
+  Wrap,
 } from '@chakra-ui/react'
 import { compareAsc, format } from 'date-fns'
 
 import { BxCalendar } from '~assets/icons'
 import IconButton from '~components/IconButton'
+import Input, { InputProps } from '~components/Input'
 
 import { DateRangePicker } from './DateRangePicker'
 
-export interface DateRangeInputProps {
+export interface DateRangeInputProps extends InputProps {
   value?: Date[]
   onChange?: (val: Date[]) => void
 }
 
 export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
-  ({ onChange, value = [] }, ref) => {
+  ({ onChange, value = [], ...props }, ref) => {
     const initialFocusRef = useRef<HTMLInputElement>(null)
 
     const [hoveredDate, setHoveredDate] = useState<Date | null>(null)
-
-    const inputStyles = useMultiStyleConfig('Input', {})
 
     /**
      * Handles date selection in calendar panel.
@@ -140,19 +141,13 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
     }, [value])
 
     return (
-      <Flex>
-        <Box
-          alignItems="center"
-          display="flex"
-          __css={inputStyles.field}
-          borderEndRadius={0}
-          _focusWithin={
-            (inputStyles.field as Record<string, CSSObject>)?._focus
-          }
-        >
-          <chakra.input
+      <Wrap shouldWrapChildren spacing="0.25rem">
+        <Wrap shouldWrapChildren spacing="0.5rem" align="center">
+          <Input
             aria-label="Start date"
+            id={`${props.name}-start-date`}
             type="date"
+            w="fit-content"
             sx={{
               // Chrome displays a default calendar icon, which we want to hide
               // so all browsers display our icon consistently.
@@ -163,18 +158,16 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
             onChange={handleStartDateChange}
             value={startDateRenderedValue}
             ref={ref}
+            {...props}
           />
-          <Text textStyle="body-1" color="secondary.400" pr="1.5rem">
+          <Text textStyle="body-1" color="secondary.400" px="0.5rem">
             to
           </Text>
-          <chakra.input
+          <Input
             aria-label="End date"
+            id={`${props.name}-end-date`}
             type="date"
-            _disabled={{
-              opacity: 0.5,
-              bg: 'transparent',
-              cursor: 'not-allowed',
-            }}
+            w="fit-content"
             sx={{
               // Chrome displays a default calendar icon, which we want to hide
               // so all browsers display our icon consistently.
@@ -182,12 +175,12 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
                 display: 'none',
               },
             }}
-            disabled={!startDateRenderedValue}
+            isDisabled={!startDateRenderedValue}
             onChange={handleEndDateChange}
             value={endDateRenderedValue}
-            ref={ref}
+            {...props}
           />
-        </Box>
+        </Wrap>
         <Popover
           placement="bottom-end"
           initialFocusRef={initialFocusRef}
@@ -235,7 +228,7 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
             </>
           )}
         </Popover>
-      </Flex>
+      </Wrap>
     )
   },
 )
