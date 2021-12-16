@@ -97,11 +97,11 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
                 })}
               </chakra.tbody>
             </chakra.table>
+            <VisuallyHidden aria-live="polite">
+              Cursor keys can navigate dates when a date is being focused.
+            </VisuallyHidden>
           </Stack>
         ))}
-        <VisuallyHidden aria-live="polite">
-          Cursor keys can navigate dates when a date is being focused.
-        </VisuallyHidden>
       </Stack>
     )
   },
