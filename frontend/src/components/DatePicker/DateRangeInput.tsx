@@ -1,5 +1,6 @@
 import {
   ChangeEventHandler,
+  KeyboardEventHandler,
   useCallback,
   useMemo,
   useRef,
@@ -127,6 +128,16 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
       onChange?.(clonedValue)
     }
 
+    /**
+     * Disable spacebar from opening native calendar
+     */
+    const handlePreventOpenNativeCalendar: KeyboardEventHandler<HTMLInputElement> =
+      useCallback((e) => {
+        if (e.key === ' ') {
+          e.preventDefault()
+        }
+      }, [])
+
     const startDateRenderedValue = useMemo(() => {
       return value[0] ?? ''
     }, [value])
@@ -155,6 +166,7 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
           <Input
             aria-label="Start date"
             id={`${props.name}-start-date`}
+            onKeyDown={handlePreventOpenNativeCalendar}
             type="date"
             w="fit-content"
             sx={{
@@ -175,6 +187,7 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
           <Input
             aria-label="End date"
             id={`${props.name}-end-date`}
+            onKeyDown={handlePreventOpenNativeCalendar}
             type="date"
             w="fit-content"
             sx={{
