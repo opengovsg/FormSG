@@ -19,17 +19,10 @@ const parts = anatomy('dateinput').parts(
 const baseDayOfMonthStyles: SystemStyleFunction = ({
   isToday,
   isOutsideCurrMonth,
-  isInRange,
   isSelected,
   colorScheme: c,
   theme,
 }) => {
-  const bgColor = isSelected
-    ? `${c}.500`
-    : isInRange
-    ? `${c}.200`
-    : 'transparent'
-
   return {
     display: 'inline-block',
     textStyle: 'body-1',
@@ -50,7 +43,6 @@ const baseDayOfMonthStyles: SystemStyleFunction = ({
         ? 'secondary.300'
         : `${c}.500`
       : 'transparent',
-    bg: bgColor,
     _hover: {
       bg: isSelected ? `${c}.500` : `${c}.200`,
     },
