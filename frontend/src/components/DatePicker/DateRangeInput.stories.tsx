@@ -8,13 +8,18 @@ import {
 } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
+import { mockDateDecorator } from '~utils/storybook'
+
 import { DateRangeInput, DateRangeInputProps } from './DateRangeInput'
 import { DateRangePicker, DateRangePickerProps } from './DateRangePicker'
 
 export default {
   title: 'Components/Date/DateRangeInput',
   component: DateRangeInput,
-  decorators: [],
+  decorators: [mockDateDecorator],
+  parameters: {
+    mockdate: new Date('2021-12-25T06:22:27.219Z'),
+  },
 } as Meta
 
 const PickerOnlyTemplate: Story<DateRangePickerProps> = (args) => {
