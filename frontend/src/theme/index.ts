@@ -9,8 +9,22 @@ import { textStyles } from './textStyles'
 export const theme = extendTheme({
   styles: {
     global: {
+      '*': {
+        margin: 0,
+      },
+      html: {
+        height: '100%',
+      },
+      'th, td': {
+        padding: 0,
+      },
       body: {
+        height: '100%',
         fontFeatureSettings: "'tnum' on, 'cv05' on",
+        '-webkit-font-smoothing': 'antialiased',
+      },
+      '#root, #__next': {
+        isolation: 'isolate',
       },
       /**
        * This will hide the focus indicator if the element receives focus via
