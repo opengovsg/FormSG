@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ChangeEventHandler,
   useCallback,
@@ -7,11 +6,8 @@ import {
   useState,
 } from 'react'
 import {
-  Box,
-  CSSObject,
   Flex,
   forwardRef,
-  HStack,
   Popover,
   PopoverBody,
   PopoverCloseButton,
@@ -20,7 +16,6 @@ import {
   PopoverTrigger,
   Portal,
   Text,
-  useMultiStyleConfig,
   Wrap,
 } from '@chakra-ui/react'
 import { compareAsc, format } from 'date-fns'
@@ -31,7 +26,8 @@ import Input, { InputProps } from '~components/Input'
 
 import { DateRangePicker } from './DateRangePicker'
 
-export interface DateRangeInputProps extends InputProps {
+export interface DateRangeInputProps
+  extends Omit<InputProps, 'value' | 'onChange'> {
   value?: Date[]
   onChange?: (val: Date[]) => void
 }
