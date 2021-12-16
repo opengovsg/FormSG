@@ -18,6 +18,7 @@ import {
   PopoverTrigger,
   Portal,
   Text,
+  VisuallyHidden,
   Wrap,
 } from '@chakra-ui/react'
 import { compareAsc } from 'date-fns'
@@ -244,8 +245,13 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
                   maxW="100vw"
                   bg="white"
                 >
-                  <FocusLock returnFocus persistentFocus={false}>
-                    <PopoverHeader>
+                  <FocusLock returnFocus>
+                    {/* Having this extra guard here allows for tab rotation instead of closing the 
+                    calendar on certain tab key presses.
+                    data-focus-guard is required to work with FocusLock
+                    NFI why this is necessary, just that it works. Such is the life of a software engineer. */}
+                    <VisuallyHidden data-focus-guard tabIndex={2} />
+                    <PopoverHeader p={0}>
                       <Flex
                         h="3.5rem"
                         mx={{ base: '1rem', md: '1.5rem' }}

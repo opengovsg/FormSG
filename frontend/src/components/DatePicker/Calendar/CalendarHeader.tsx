@@ -92,6 +92,7 @@ const SelectableMonthYear = memo(() => {
         Currently displaying {MONTH_NAMES[currMonth].fullName} {currYear}
       </VisuallyHidden>
       <MonthYearSelect
+        tabIndex={1}
         value={currMonth}
         onChange={handleMonthChange}
         aria-label="Change displayed month"
@@ -101,6 +102,7 @@ const SelectableMonthYear = memo(() => {
         {memoizedMonthOptions}
       </MonthYearSelect>
       <MonthYearSelect
+        tabIndex={1}
         value={currYear}
         onChange={handleYearChange}
         aria-label="Change displayed year"
@@ -162,6 +164,7 @@ export const CalendarHeader = memo(
         {calendars.length - 1 === monthOffset ? (
           <Flex sx={styles.monthArrowContainer}>
             <IconButton
+              tabIndex={1}
               variant="clear"
               colorScheme="secondary"
               icon={<BxChevronLeft />}
@@ -170,6 +173,7 @@ export const CalendarHeader = memo(
               {...getBackProps({ calendars })}
             />
             <IconButton
+              tabIndex={1}
               variant="clear"
               colorScheme="secondary"
               icon={<BxChevronRight />}

@@ -14,7 +14,6 @@ export const CalendarTodayButton = (): JSX.Element => {
         variant="link"
         type="button"
         onClick={handleTodayClick}
-        tabIndex={0}
       >
         Today
       </Button>
