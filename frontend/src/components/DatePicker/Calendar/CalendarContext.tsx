@@ -15,6 +15,7 @@ import {
   isSameDay,
 } from 'date-fns'
 import { Props as DayzedProps, RenderProps, useDayzed } from 'dayzed'
+import { inRange } from 'lodash'
 
 import { DatePickerProps } from '../DatePicker'
 import {
@@ -253,7 +254,10 @@ const useProvideCalendar = ({
     (d: Date) => {
       // If there is a selected date in the current month, make it
       // the only focusable date
-      if (dateToFocus && dateToFocus.getMonth() === currMonth) {
+      if (
+        dateToFocus &&
+        inRange(dateToFocus.getMonth(), currMonth, currMonth + monthsToDisplay)
+      ) {
         return isSameDay(d, dateToFocus)
       }
       // If today is in the current month, make it the only focusable date
@@ -268,7 +272,7 @@ const useProvideCalendar = ({
       // currMonth or the spillover dates for the next month will be included.
       return d.getMonth() === currMonth && isFirstDayOfMonth(d)
     },
-    [dateToFocus, currMonth],
+    [dateToFocus, currMonth, monthsToDisplay],
   )
 
   return {
