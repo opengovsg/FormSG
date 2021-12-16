@@ -93,7 +93,7 @@ PickerOnly.args = {}
 
 export const PickerWithDate = PickerOnlyTemplate.bind({})
 PickerWithDate.args = {
-  selectedDates: [new Date('2001-01-01'), new Date('2001-01-08')],
+  selectedDates: [new Date('2001-01-01'), new Date('2001-02-08')],
 }
 
 const PlaygroundTemplate: Story<DateRangeInputProps> = (args) => {
