@@ -160,6 +160,18 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
       return value[1] ?? ''
     }, [value])
 
+    const calendarButtonAria = useMemo(() => {
+      let ariaLabel = 'Choose date. '
+      if (value.length === 1) {
+        ariaLabel += `Selected date is ${new Date(value[0]).toDateString()}.`
+      } else if (value.length === 2) {
+        ariaLabel += `Selected date range is ${new Date(
+          value[0],
+        ).toDateString()} to ${new Date(value[1]).toDateString()}.`
+      }
+      return ariaLabel
+    }, [value])
+
     return (
       <Wrap shouldWrapChildren spacing="0.25rem">
         <Wrap shouldWrapChildren spacing="0.5rem" align="center">
@@ -212,7 +224,7 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
             <>
               <PopoverTrigger>
                 <IconButton
-                  aria-label="Open calendar"
+                  aria-label={calendarButtonAria}
                   icon={<BxCalendar />}
                   isActive={isOpen}
                   fontSize="1.25rem"

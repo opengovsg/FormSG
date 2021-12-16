@@ -1,7 +1,14 @@
-import { chakra, forwardRef, Stack, Td, useStyles } from '@chakra-ui/react'
+import {
+  chakra,
+  forwardRef,
+  Stack,
+  Td,
+  useStyles,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 import { isSameDay } from 'date-fns'
 
-import { DAY_NAMES, generateClassNameForDate } from '../utils'
+import { DAY_NAMES, generateClassNameForDate, MONTH_NAMES } from '../utils'
 
 import { useCalendar } from './CalendarContext'
 import { CalendarHeader } from './CalendarHeader'
@@ -29,6 +36,9 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
           <Stack spacing={0} key={i}>
             <CalendarHeader monthOffset={i} />
             <chakra.table
+              aria-label={`${MONTH_NAMES[calendar.month].fullName} ${
+                calendar.year
+              }`}
               key={`${calendar.month}${calendar.year}`}
               sx={styles.monthGrid}
             >
@@ -89,6 +99,9 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
             </chakra.table>
           </Stack>
         ))}
+        <VisuallyHidden aria-live="polite">
+          Cursor keys can navigate dates when a date is being focused.
+        </VisuallyHidden>
       </Stack>
     )
   },

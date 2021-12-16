@@ -7,6 +7,7 @@ import {
   Text,
   useBreakpointValue,
   useStyles,
+  VisuallyHidden,
 } from '@chakra-ui/react'
 import { addMonths } from 'date-fns/esm'
 
@@ -87,6 +88,9 @@ const SelectableMonthYear = memo(() => {
 
   return (
     <HStack>
+      <VisuallyHidden aria-live="polite" aria-atomic>
+        Currently displaying {MONTH_NAMES[currMonth].fullName} {currYear}
+      </VisuallyHidden>
       <MonthYearSelect
         value={currMonth}
         onChange={handleMonthChange}

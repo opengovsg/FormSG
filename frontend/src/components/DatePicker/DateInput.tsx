@@ -51,6 +51,14 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
       return isNaN(dateFromValue.getTime()) ? undefined : dateFromValue
     }, [value])
 
+    const calendarButtonAria = useMemo(() => {
+      let ariaLabel = 'Choose date. '
+      if (value.length === 1) {
+        ariaLabel += `Selected date is ${new Date(value[0]).toDateString()}.`
+      }
+      return ariaLabel
+    }, [value])
+
     /**
      * Disable spacebar from opening native calendar
      */
@@ -91,7 +99,7 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
             <>
               <PopoverTrigger>
                 <IconButton
-                  aria-label="Open calendar"
+                  aria-label={calendarButtonAria}
                   icon={<BxCalendar />}
                   isActive={isOpen}
                   fontSize="1.25rem"
