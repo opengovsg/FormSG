@@ -4,6 +4,7 @@ import { FormControl } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 import { isWeekend } from 'date-fns'
 
+import { mockDateDecorator } from '~utils/storybook'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 
@@ -15,6 +16,10 @@ import { DatePickerProps } from './DatePicker'
 export default {
   title: 'Components/Date/DateInput',
   component: DateInput,
+  decorators: [mockDateDecorator],
+  parameters: {
+    mockdate: new Date('2021-12-25T06:22:27.219Z'),
+  },
 } as Meta
 
 const DatePickerOnlyTemplate: Story<DatePickerProps> = ({
