@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { BiLogInCircle } from 'react-icons/bi'
-import { Box, Stack, Text } from '@chakra-ui/react'
+import { Stack, Text } from '@chakra-ui/react'
 
 import { FormAuthType } from '~shared/types/form'
 
@@ -44,15 +44,13 @@ export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
   return (
     <Stack spacing="1.5rem" align="center">
       <AuthImageSvgr />
-      <Box>
-        <Button
-          rightIcon={<BiLogInCircle fontSize="1.5rem" />}
-          onClick={() => handleLoginMutation.mutate()}
-          isLoading={handleLoginMutation.isLoading}
-        >
-          Log in with {displayedInfo.authType}
-        </Button>
-      </Box>
+      <Button
+        rightIcon={<BiLogInCircle fontSize="1.5rem" />}
+        onClick={() => handleLoginMutation.mutate()}
+        isLoading={handleLoginMutation.isLoading}
+      >
+        Log in with {displayedInfo.authType}
+      </Button>
       <Text
         textStyle="body-2"
         color="secondary.500"
