@@ -9,8 +9,6 @@ import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 
-// import { useMutateFormSettings } from '../mutations'
-
 export const TwilioSettingsSection = (): JSX.Element => {
   return (
     <>
@@ -23,22 +21,24 @@ export const TwilioSettingsSection = (): JSX.Element => {
         before activating.
       </InlineMessage>
       <Skeleton isLoaded={true}>
-        <Stack spacing="2rem">
-          <TwilioDetailsInput fill={true} />
-        </Stack>
+        <TwilioDetailsInput credentialsExist={true} />
       </Skeleton>
     </>
   )
 }
 
 interface TwilioDetailsInputProps {
-  fill: boolean
+  credentialsExist: boolean
 }
-const TwilioDetailsInput = ({ fill }: TwilioDetailsInputProps): JSX.Element => {
+const TwilioDetailsInput = ({
+  credentialsExist,
+}: TwilioDetailsInputProps): JSX.Element => {
   const {
     control,
     reset,
     formState: { errors },
+    handleSubmit,
+    getValues,
   } = useForm({
     mode: 'onChange',
     defaultValues: {
@@ -46,6 +46,7 @@ const TwilioDetailsInput = ({ fill }: TwilioDetailsInputProps): JSX.Element => {
       apiKeySid: '',
       apiKeySecret: '',
       messagingServiceSid: '',
+      isDisabled: credentialsExist,
     },
   })
 
@@ -89,52 +90,21 @@ const TwilioDetailsInput = ({ fill }: TwilioDetailsInputProps): JSX.Element => {
     [],
   )
 
-  // /const { mutateFormTwilioDetails } = useMutateFormSettings()
-
-  // const handleBlur = useCallback(() => {
-  //   return handleSubmit(
-  //     ({ accountSid, apiKeySid, apiKeySecret, messagingServiceSid }) => {
-  //       console.log(accountSid, apiKeySid)
-  //       if (!accountSid) return
-
-  //       console.log(accountSid, apiKeySid, apiKeySecret, messagingServiceSid)
-  //       mutateFormTwilioDetails.mutate(
-  //         {
-  //           accountSid,
-  //           apiKeySid,
-  //           apiKeySecret,
-  //           messagingServiceSid,
-  //         },
-  //         {
-  //           onError: () => {
-  //             console.log('HERE')
-  //             reset()
-  //           },
-  //         },
-  //       )
-  //     },
-  //   )()
-  // }, [handleSubmit, mutateFormTwilioDetails, reset])
-
-  // const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = useCallback(
-  //   (e) => {
-  //     if (e.key === 'Enter') {
-  //       e.preventDefault()
-  //       handleBlur()
-  //     }
-  //   },
-  //   [handleBlur],
-  // )
-
   return (
-    <form>
+    <Stack spacing="2rem">
       <FormControl isInvalid={!isEmpty(errors.accountSid)}>
         <FormLabel isRequired>Account SID</FormLabel>
         <Controller
           control={control}
           name="accountSid"
           rules={accountSidRules}
-          render={({ field }) => <Input {...field} type="password" />}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type="password"
+              isDisabled={getValues('isDisabled')}
+            />
+          )}
         />
         <FormErrorMessage>{get(errors, 'accountSid.message')}</FormErrorMessage>
       </FormControl>
@@ -144,7 +114,13 @@ const TwilioDetailsInput = ({ fill }: TwilioDetailsInputProps): JSX.Element => {
           control={control}
           name="apiKeySid"
           rules={apiKeySidRules}
-          render={({ field }) => <Input {...field} type="password" />}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type="password"
+              isDisabled={getValues('isDisabled')}
+            />
+          )}
         />
         <FormErrorMessage>{get(errors, 'apiKeySid.message')}</FormErrorMessage>
       </FormControl>
@@ -154,7 +130,13 @@ const TwilioDetailsInput = ({ fill }: TwilioDetailsInputProps): JSX.Element => {
           control={control}
           name="apiKeySecret"
           rules={apiKeySecretRules}
-          render={({ field }) => <Input {...field} type="password" />}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type="password"
+              isDisabled={getValues('isDisabled')}
+            />
+          )}
         />
         <FormErrorMessage>
           {get(errors, 'apiKeySecret.message')}
@@ -166,30 +148,61 @@ const TwilioDetailsInput = ({ fill }: TwilioDetailsInputProps): JSX.Element => {
           control={control}
           name="messagingServiceSid"
           rules={messagingServiceSidRules}
-          render={({ field }) => <Input {...field} type="password" />}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type="password"
+              isDisabled={getValues('isDisabled')}
+            />
+          )}
         />
         <FormErrorMessage>
           {get(errors, 'messagingServiceSid.message')}
         </FormErrorMessage>
       </FormControl>
-      {fill ? (
-        <Button my="2rem"> Save credentials</Button>
-      ) : (
-        <Text
-          color="#C05050"
-          as="u"
-          onClick={() =>
-            reset({
-              accountSid: '',
-              apiKeySid: '',
-              apiKeySecret: '',
-              messagingServiceSid: '',
-            })
-          }
-        >
-          Remove and Delete Twilio Credentials
-        </Text>
-      )}
-    </form>
+      <Skeleton isLoaded={true} my="2rem">
+        {getValues('isDisabled') ? (
+          <Text
+            color="#C05050"
+            as="u"
+            onClick={() => {
+              reset({
+                accountSid: '',
+                apiKeySid: '',
+                apiKeySecret: '',
+                messagingServiceSid: '',
+                isDisabled: false,
+              })
+            }}
+          >
+            Remove and Delete Twilio Credentials
+          </Text>
+        ) : (
+          <Button
+            onClick={() => {
+              handleSubmit(
+                ({
+                  apiKeySecret,
+                  apiKeySid,
+                  accountSid,
+                  messagingServiceSid,
+                  isDisabled,
+                }) =>
+                  console.log(
+                    apiKeySecret,
+                    apiKeySid,
+                    accountSid,
+                    messagingServiceSid,
+                    isDisabled,
+                  ),
+                () => reset(),
+              )
+            }}
+          >
+            Save credentials
+          </Button>
+        )}
+      </Skeleton>
+    </Stack>
   )
 }
