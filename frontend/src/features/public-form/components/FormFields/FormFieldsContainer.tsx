@@ -31,6 +31,11 @@ export const FormFieldsContainer = (): JSX.Element => {
     }
   }, [data, isLoading])
 
+  const isAuthRequired = useMemo(
+    () => data && data.form.authType !== FormAuthType.NIL && !data.spcpSession,
+    [data],
+  )
+
   const renderFields = useMemo(() => {
     // Render skeleton when no data
     if (isLoading) {
@@ -42,7 +47,8 @@ export const FormFieldsContainer = (): JSX.Element => {
       return <div>Something went wrong</div>
     }
 
-    if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
+    // Redundant conditional for type narrowing
+    if (isAuthRequired && data.form.authType !== FormAuthType.NIL) {
       return <FormAuth authType={data.form.authType} />
     }
 
@@ -53,12 +59,12 @@ export const FormFieldsContainer = (): JSX.Element => {
         onSubmit={onSubmit}
       />
     )
-  }, [data, isLoading, onSubmit])
+  }, [data, isAuthRequired, isLoading, onSubmit])
 
   return (
     <FormSectionsProvider>
       <Flex bg={bgColour} flex={1} justify="center" p="1.5rem">
-        <SectionSidebar />
+        {isAuthRequired ? null : <SectionSidebar />}
         <Box
           bg="white"
           p="2.5rem"
@@ -69,7 +75,7 @@ export const FormFieldsContainer = (): JSX.Element => {
         >
           {renderFields}
         </Box>
-        <Spacer />
+        {isAuthRequired ? null : <Spacer />}
       </Flex>
     </FormSectionsProvider>
   )
