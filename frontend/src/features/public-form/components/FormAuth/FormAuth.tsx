@@ -6,6 +6,8 @@ import { FormAuthType } from '~shared/types/form'
 
 import Button from '~components/Button'
 
+import { usePublicAuthMutations } from '~features/public-form/mutations'
+
 import { AuthImageSvgr } from './AuthImageSvgr'
 
 export interface FormAuthProps {
@@ -37,11 +39,17 @@ export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
     }
   }, [authType])
 
+  const { handleLoginMutation } = usePublicAuthMutations()
+
   return (
     <Stack spacing="1.5rem" align="center">
       <AuthImageSvgr />
       <Box>
-        <Button rightIcon={<BiLogInCircle fontSize="1.5rem" />}>
+        <Button
+          rightIcon={<BiLogInCircle fontSize="1.5rem" />}
+          onClick={() => handleLoginMutation.mutate()}
+          isLoading={handleLoginMutation.isLoading}
+        >
           Log in with {displayedInfo.authType}
         </Button>
       </Box>
