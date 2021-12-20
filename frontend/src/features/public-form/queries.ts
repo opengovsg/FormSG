@@ -28,6 +28,7 @@ export const usePublicFormView = (): UseQueryResult<
     () => getPublicFormView(formId),
     {
       enabled: PUBLICFORM_REGEX.test(formId),
+      refetchOnWindowFocus: false,
     },
   )
 }
