@@ -5,6 +5,8 @@ import { FormAuthType, FormColorTheme } from '~shared/types/form/form'
 
 import { usePublicFormView } from '~features/public-form/queries'
 
+import { FormAuth } from '../FormAuth'
+
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 import { FormSectionsProvider } from './FormSectionsContext'
@@ -41,7 +43,7 @@ export const FormFieldsContainer = (): JSX.Element => {
     }
 
     if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
-      return <div>NO ENTRY</div>
+      return <FormAuth authType={data.form.authType} />
     }
 
     return (
