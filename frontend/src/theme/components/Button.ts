@@ -137,7 +137,6 @@ export const Button = {
     borderRadius: '0.25rem',
     border: '1px solid',
     textStyle: 'subhead-1',
-    fontWeight: 'medium',
     flexShrink: 0,
     // -1px for border
     px: '15px',
