@@ -1,15 +1,22 @@
-import { useMutation } from 'react-query'
+import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
+
+import { FormAuthType } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 
-import { getPublicFormAuthRedirectUrl } from './PublicFormService'
+import {
+  getPublicFormAuthRedirectUrl,
+  logoutPublicForm,
+} from './PublicFormService'
+import { publicFormKeys } from './queries'
 
 export const usePublicAuthMutations = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
+  const queryClient = useQueryClient()
 
-  const toast = useToast({ status: 'danger', isClosable: true })
+  const toast = useToast({ status: 'success', isClosable: true })
 
   const handleLoginMutation = useMutation(
     () => getPublicFormAuthRedirectUrl(formId),
@@ -26,5 +33,18 @@ export const usePublicAuthMutations = () => {
     },
   )
 
-  return { handleLoginMutation }
+  const handleLogoutMutation = useMutation(
+    (authType: Exclude<FormAuthType, FormAuthType.NIL>) =>
+      logoutPublicForm(authType),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(publicFormKeys.base)
+        toast({
+          description: 'Logged out successfully',
+        })
+      },
+    },
+  )
+
+  return { handleLoginMutation, handleLogoutMutation }
 }

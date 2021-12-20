@@ -9,7 +9,7 @@ import { PUBLICFORM_REGEX } from '~constants/routes'
 
 import { getPublicFormView } from './PublicFormService'
 
-const publicFormKeys = {
+export const publicFormKeys = {
   // All keys map to either an array or function returning an array for
   // consistency
   base: ['publicForm'] as const,

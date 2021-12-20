@@ -1,5 +1,8 @@
-import { PublicFormAuthRedirectDto } from '~shared/types/form'
-import { PublicFormViewDto } from '~shared/types/form/form'
+import {
+  PublicFormAuthLogoutDto,
+  PublicFormAuthRedirectDto,
+} from '~shared/types/form'
+import { FormAuthType, PublicFormViewDto } from '~shared/types/form/form'
 
 import { ApiService } from '~services/ApiService'
 
@@ -35,4 +38,17 @@ export const getPublicFormAuthRedirectUrl = async (
       params: { isPersistentLogin },
     },
   ).then(({ data }) => data.redirectURL)
+}
+
+/**
+ * Logs out of current public form session
+ * @param authType authType of form to log out.
+ * @returns Success message
+ */
+export const logoutPublicForm = async (
+  authType: Exclude<FormAuthType, FormAuthType.NIL>,
+): Promise<PublicFormAuthLogoutDto> => {
+  return ApiService.get<PublicFormAuthLogoutDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/auth/${authType}/logout`,
+  ).then(({ data }) => data)
 }
