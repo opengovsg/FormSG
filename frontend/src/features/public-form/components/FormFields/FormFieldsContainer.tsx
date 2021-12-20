@@ -1,39 +1,26 @@
-import { useMemo } from 'react'
-import { FormProvider, useForm } from 'react-hook-form'
-import { Box, Flex, Skeleton, Spacer, Stack, Text } from '@chakra-ui/react'
+import { useCallback, useMemo } from 'react'
+import { Box, Flex, Spacer } from '@chakra-ui/react'
 
-import { BasicField } from '~shared/types/field'
-import { FormColorTheme } from '~shared/types/form/form'
+import { FormAuthType, FormColorTheme } from '~shared/types/form/form'
 
-import Button from '~components/Button'
-import {
-  NricField,
-  NumberField,
-  SectionField,
-  ShortTextField,
-  UenField,
-  YesNoField,
-} from '~templates/Field'
+import { usePublicFormView } from '~features/public-form/queries'
 
-import { usePublicForm } from '~features/public-form/queries'
-
+import { FormFields } from './FormFields'
+import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
 
 export const FormFieldsContainer = (): JSX.Element => {
-  const { data, isLoading } = usePublicForm()
+  const { data, isLoading } = usePublicFormView()
 
-  // TODO: Inject default values if field is MyInfo, or prefilled.
-  const formMethods = useForm()
-
-  const onSubmit = (values: Record<string, string>) => {
+  const onSubmit = useCallback((values: Record<string, string>) => {
     console.log(values)
-  }
+  }, [])
 
   const bgColour = useMemo(() => {
     if (isLoading) return 'neutral.100'
-    if (!data) return ''
-    const { colorTheme } = data.startPage
+    if (!data?.form) return ''
+    const { colorTheme } = data.form.startPage
     switch (colorTheme) {
       case FormColorTheme.Blue:
         return 'secondary.100'
@@ -45,70 +32,41 @@ export const FormFieldsContainer = (): JSX.Element => {
   const renderFields = useMemo(() => {
     // Render skeleton when no data
     if (isLoading) {
-      return (
-        <Flex flexDir="column">
-          <Skeleton height="2rem" />
-          <Skeleton height="1.5rem" mt="2.25rem" />
-          <Skeleton height="2.75rem" mt="0.75rem" />
-          <Skeleton height="1.5rem" mt="2.25rem" />
-          <Skeleton height="2.75rem" mt="0.75rem" />
-          <Skeleton height="1.5rem" mt="2.25rem" />
-          <Skeleton height="2.75rem" mt="0.75rem" />
-          <Skeleton height="1.5rem" mt="2.25rem" />
-          <Skeleton height="2.75rem" mt="0.75rem" />
-        </Flex>
-      )
+      return <FormFieldsSkeleton />
     }
 
-    return data?.form_fields.map((field) => {
-      switch (field.fieldType) {
-        case BasicField.Section:
-          return (
-            <SectionField
-              key={field._id}
-              dividerColor={bgColour}
-              schema={field}
-            />
-          )
-        case BasicField.Nric:
-          return <NricField key={field._id} schema={field} />
-        case BasicField.Number:
-          return <NumberField key={field._id} schema={field} />
-        case BasicField.ShortText:
-          return <ShortTextField key={field._id} schema={field} />
-        case BasicField.YesNo:
-          return <YesNoField key={field._id} schema={field} />
-        case BasicField.Uen:
-          return <UenField key={field._id} schema={field} />
-        default:
-          return (
-            <Text w="100%" key={field._id}>
-              {JSON.stringify(field)}
-            </Text>
-          )
-      }
-    })
-  }, [bgColour, data?.form_fields, isLoading])
+    if (!data) {
+      // TODO: Add/redirect to error page
+      return <div>Something went wrong</div>
+    }
+
+    if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
+      return <div>NO ENTRY</div>
+    }
+
+    return (
+      <FormFields
+        formFields={data.form.form_fields}
+        colorTheme={data.form.startPage.colorTheme}
+        onSubmit={onSubmit}
+      />
+    )
+  }, [data, isLoading, onSubmit])
 
   return (
     <FormSectionsProvider>
       <Flex bg={bgColour} flex={1} justify="center" p="1.5rem">
         <SectionSidebar />
-        <FormProvider {...formMethods}>
-          <Box bg="white" p="2.5rem" w="100%" minW={0} maxW="57rem">
-            <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
-              <Stack spacing="2.25rem">{renderFields}</Stack>
-              <Button
-                mt="1rem"
-                type="submit"
-                isLoading={formMethods.formState.isSubmitting}
-                loadingText="Submitting"
-              >
-                Submit
-              </Button>
-            </form>
-          </Box>
-        </FormProvider>
+        <Box
+          bg="white"
+          p="2.5rem"
+          w="100%"
+          minW={0}
+          h="fit-content"
+          maxW="57rem"
+        >
+          {renderFields}
+        </Box>
         <Spacer />
       </Flex>
     </FormSectionsProvider>
