@@ -64,6 +64,7 @@ export const FormStatusToggle = (): JSX.Element => {
           responses
         </Text>
         <Switch
+          aria-label="Toggle form status"
           aria-describedby="form-status"
           isLoading={mutateFormStatus.isLoading}
           isChecked={isFormPublic}
