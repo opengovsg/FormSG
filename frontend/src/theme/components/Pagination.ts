@@ -18,6 +18,7 @@ const baseButtonStyling: SystemStyleFunction = (props) => {
     p: '0.25rem 0.625rem',
     minH: '2rem',
     minW: '2rem',
+    h: 'auto',
     border: 'none',
     borderRadius: '0.25rem',
     bg: isSelected ? 'secondary.500' : 'transparent',
