@@ -326,7 +326,7 @@ const assertHashesMatch = (
   // Compare OTP hashes first.
   return (
     compareHash(otp, otpHash, logMeta)
-      .andThen<true, InvalidOtpError>((isOtpMatch) => {
+      .andThen((isOtpMatch) => {
         if (isOtpMatch) return okAsync(true)
         return errAsync(
           new InvalidOtpError('OTP is invalid. Please try again.'),
@@ -335,7 +335,7 @@ const assertHashesMatch = (
       // Must be success match if reaches here.
       .andThen(() => compareHash(contact, contactHash, logMeta))
       .andThen((isContactMatch) => {
-        if (isContactMatch) return okAsync(true)
+        if (isContactMatch) return okAsync(isContactMatch)
         return errAsync(
           new InvalidOtpError(
             'Contact number given does not match the number the OTP is sent to. Please try again with the correct contact number.',

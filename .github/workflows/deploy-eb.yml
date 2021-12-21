@@ -1,0 +1,89 @@
+name: Deploy to AWS Elastic Beanstalk
+on:
+  push:
+    branches: # There should be 4 environments in github actions secrets: release, staging, staging-alt, uat. This is different from the DEPLOY_ENV secret which corresponds to elastic beanstalk environment name
+      - release
+      - staging
+      - staging-alt
+      - uat
+
+jobs:
+  set_environment:
+    outputs:
+      current_env: ${{ steps.set-environment.outputs.current_env }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: set-environment
+        run: echo "::set-output name=current_env::${{github.ref_name}}"
+
+  build_deploy_application:
+    needs: set_environment
+    environment:
+      name: ${{ needs.set_environment.outputs.current_env }}
+    env:
+      IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.run_id }}-${{github.run_attempt}}
+      BRANCH: ${{ needs.set_environment.outputs.current_env }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          cache: 'npm'
+      - name: Build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
+        run: |
+          npm ci
+          set -e
+          npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
+          npm run lint-ci
+          npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
+        run: |
+          docker build -f Dockerfile.production -t $ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REPOSITORY:$BRANCH
+          docker push -a $ECR_REPOSITORY
+          sed -i -e "s/@TAG/$IMAGE_TAG/g" Dockerrun.aws.json 
+          zip -r "$IMAGE_TAG.zip" .ebextensions Dockerrun.aws.json
+
+      - name: Copy to S3
+        env:
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+        run: |
+          aws s3 cp $IMAGE_TAG.zip s3://$BUCKET_NAME/$IMAGE_TAG.zip
+
+      - name: Create application version
+        env:
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+          APP_NAME: ${{ secrets.APP_NAME }}
+        run: |
+          TRUNCATED_DESC=$(echo "${{github.event.head_commit.message}}" | cut -b1-180)
+          aws elasticbeanstalk create-application-version --application-name $APP_NAME \
+          --version-label $IMAGE_TAG \
+          --source-bundle S3Bucket=$BUCKET_NAME,S3Key=$IMAGE_TAG.zip \
+          --description "$TRUNCATED_DESC"
+
+      - name: Update EB environment
+        id: update-eb-1
+        env:
+          APP_NAME: ${{ secrets.APP_NAME }}
+          DEPLOY_ENV: ${{ secrets.DEPLOY_ENV }}
+        run: |
+          aws elasticbeanstalk update-environment --application-name $APP_NAME \
+            --environment-name $DEPLOY_ENV \
+            --version-label $IMAGE_TAG

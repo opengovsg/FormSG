@@ -28,7 +28,9 @@ import {
 } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
-const DESTINATION_REGEX = /^\/([\w]+)\/?/
+
+// Matches the MongoDB ObjectID hex format exactly (24 hex characters)
+const DESTINATION_REGEX = /^\/([a-fA-F0-9]{24})\/?$/
 
 // Checks the format of a SAML artifact
 const isArtifactValid = function (
@@ -51,6 +53,11 @@ const isArtifactValid = function (
   )
 }
 
+// either <formId>,boolean or <formId>,boolean,encodedQuery
+export type RedirectTarget =
+  | `${string},${boolean}`
+  | `${string},${boolean},${string}`
+
 /**
  * Returns true if the SAML artifact and destination have the correct format,
  * false otherwise.
@@ -63,11 +70,7 @@ export const isValidAuthenticationQuery = (
   destination: string,
   idpPartnerEntityId: string,
 ): boolean => {
-  return (
-    !!destination &&
-    isArtifactValid(idpPartnerEntityId, samlArt) &&
-    DESTINATION_REGEX.test(destination)
-  )
+  return !!destination && isArtifactValid(idpPartnerEntityId, samlArt)
 }
 
 /**
@@ -75,7 +78,7 @@ export const isValidAuthenticationQuery = (
  * @param destination Redirect destination
  */
 export const extractFormId = (destination: string): string | null => {
-  const regexSplit = DESTINATION_REGEX.exec(destination)
+  const regexSplit = destination.match(DESTINATION_REGEX)
   if (!regexSplit || regexSplit.length < 2) {
     return null
   }
@@ -297,10 +300,14 @@ export const getRedirectTarget = (
   formId: string,
   authType: FormAuthType.SP | FormAuthType.CP,
   isPersistentLogin?: boolean,
-): string =>
-  `/${formId},${
-    // Need to cast to boolean because undefined is allowed as a valid value
-    // We are not following corppass's official spec for
-    // the target parameter
+  encodedQuery?: string,
+): RedirectTarget => {
+  // Need to cast to boolean because undefined is allowed as a valid value
+  // We are not following corppass's official spec for
+  // the target parameter
+  const persistentLogin =
     authType === FormAuthType.SP ? !!isPersistentLogin : false
-  }`
+  return encodedQuery
+    ? `/${formId},${persistentLogin},${encodedQuery}`
+    : `/${formId},${persistentLogin}`
+}

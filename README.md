@@ -1,6 +1,6 @@
 # FormSG
 
-[![Build Status](https://travis-ci.com/opengovsg/formsg.svg?branch=release)](https://travis-ci.com/opengovsg/formsg)
+[![Build Status](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)
 [![Coverage Status](https://coveralls.io/repos/github/opengovsg/FormSG/badge.svg?branch=develop)](https://coveralls.io/github/opengovsg/FormSG?branch=develop)
 
 ## Table of Contents
@@ -37,7 +37,7 @@ Notable features include:
 - (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus)
 - (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus)
 - (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo/common/aboutus)
-- (beta) Webhooks functionality via the [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk).
+- Webhooks functionality via the official [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk) and contributor-supported [FormSG Ruby SDK] (https://github.com/opengovsg/formsg-ruby-sdk)
 
 The current product roadmap includes:
 
@@ -145,17 +145,7 @@ npm run test-ci
 
 #### End-to-end tests
 
-```bash
-npm run test-e2e
-```
-
-will build both the frontend and backend then run our end-to-end tests. The tests are located at [`tests/end-to-end`](./tests/end-to-end). You will need to stop the Docker dev container to be able to run the end-to-end tests.
-
-If you do not need to rebuild the frontend and backend, you can run
-
-```bash
-npm run test-e2e-ci
-```
+Removed in [#3146](https://github.com/opengovsg/FormSG/pull/3146). Will be reimplemented when the React app is ready.
 
 ## Architecture
 

@@ -186,12 +186,15 @@ const sendSms = (
     smsType,
   }
 
+  const statusCallbackRoute = '/api/v3/notifications/twilio'
+
   return ResultAsync.fromPromise(
     client.messages.create({
       to: recipient,
       body: message,
       from: msgSrvcSid,
       forceDelivery: true,
+      statusCallback: config.app.appUrl + statusCallbackRoute,
     }),
     (error) => {
       logger.error({
@@ -205,42 +208,40 @@ const sendSms = (
       })
     },
   )
-    .andThen<true, SmsSendError | InvalidNumberError>(
-      ({ status, sid, errorCode, errorMessage }) => {
-        if (!sid || errorCode) {
-          logger.error({
-            message: 'Encountered error code or missing sid after sending SMS',
-            meta: {
-              ...logMeta,
-              status,
-              errorCode,
-              errorMessage,
-            },
-          })
-
-          // Invalid number error code, throw a more reasonable error for error
-          // handling.
-          // See https://www.twilio.com/docs/api/errors/21211
-          return errAsync(
-            errorCode === 21211
-              ? new InvalidNumberError()
-              : new SmsSendError('Error sending SMS to given number', {
-                  status,
-                  errorCode,
-                  errorMessage,
-                }),
-          )
-        }
-
-        // No errors.
-        logger.info({
-          message: 'Successfully sent sms',
-          meta: logMeta,
+    .andThen(({ status, sid, errorCode, errorMessage }) => {
+      if (!sid || errorCode) {
+        logger.error({
+          message: 'Encountered error code or missing sid after sending SMS',
+          meta: {
+            ...logMeta,
+            status,
+            errorCode,
+            errorMessage,
+          },
         })
 
-        return okAsync(true)
-      },
-    )
+        // Invalid number error code, throw a more reasonable error for error
+        // handling.
+        // See https://www.twilio.com/docs/api/errors/21211
+        return errAsync(
+          errorCode === 21211
+            ? new InvalidNumberError()
+            : new SmsSendError('Error sending SMS to given number', {
+                status,
+                errorCode,
+                errorMessage,
+              }),
+        )
+      }
+
+      // No errors.
+      logger.info({
+        message: 'Successfully sent sms',
+        meta: logMeta,
+      })
+
+      return okAsync(true as const)
+    })
     .map((result) => {
       // Fire log sms success promise without waiting.
       void logSmsSend({
@@ -315,10 +316,7 @@ export const sendVerificationOtp = (
     return ResultAsync.fromSafePromise<
       TwilioConfig,
       SmsSendError | InvalidNumberError
-    >(getTwilio(otpData.msgSrvcName, defaultConfig)).andThen<
-      true,
-      SmsSendError | InvalidNumberError
-    >((twilioConfig) => {
+    >(getTwilio(otpData.msgSrvcName, defaultConfig)).andThen((twilioConfig) => {
       const message = renderVerificationSms(
         otp,
         new URL(config.app.appUrl).host,
