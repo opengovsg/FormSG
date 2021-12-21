@@ -38,7 +38,7 @@ describe('Verification Model', () => {
         '__v',
       ])
       const expectedSavedFields = merge({}, VFN_DEFAULTS, VFN_PARAMS)
-      expect(actualSavedFields).toEqual(expectedSavedFields)
+      expect(actualSavedFields).toMatchObject(expectedSavedFields)
     })
 
     it('should save successfully when expireAt is specified', async () => {
@@ -51,7 +51,7 @@ describe('Verification Model', () => {
         '__v',
       ])
       const expectedSavedFields = merge({}, VFN_DEFAULTS, params)
-      expect(actualSavedFields).toEqual(expectedSavedFields)
+      expect(actualSavedFields).toMatchObject(expectedSavedFields)
     })
 
     it('should save successfully with defaults when field keys are not specified', async () => {
@@ -67,7 +67,7 @@ describe('Verification Model', () => {
         '__v',
       ])
       const expectedSavedFields = merge({}, VFN_DEFAULTS, VFN_PARAMS, vfnParams)
-      expect(actualSavedFields).toEqual(expectedSavedFields)
+      expect(actualSavedFields).toMatchObject(expectedSavedFields)
     })
 
     it('should save successfully when field keys are specified', async () => {
@@ -88,7 +88,7 @@ describe('Verification Model', () => {
         '__v',
       ])
       const expectedSavedFields = merge({}, VFN_DEFAULTS, VFN_PARAMS, vfnParams)
-      expect(actualSavedFields).toEqual(expectedSavedFields)
+      expect(actualSavedFields).toMatchObject(expectedSavedFields)
     })
 
     it('should not save when field IDs are identical', async () => {
@@ -127,7 +127,7 @@ describe('Verification Model', () => {
 
         const result = transaction.getField(field1._id)!.toJSON()
 
-        expect(omit(result, '_id')).toEqual(omit(field1, '_id'))
+        expect(omit(result, '_id')).toMatchObject(omit(field1, '_id'))
         expect(String(result._id)).toEqual(field1._id)
       })
 
@@ -156,7 +156,7 @@ describe('Verification Model', () => {
           verificationSaved._id,
         )
         const expected = pick(verificationSaved, ['formId', 'expireAt', '_id'])
-        expect(actual).toEqual(expected)
+        expect(actual).toMatchObject(expected)
       })
 
       it('should return null when transaction does not exist', async () => {

@@ -110,14 +110,6 @@ const dbConfig: DbConfig = {
     pass: '',
     // Only create indexes in dev env to avoid adverse production impact.
     autoIndex: isDev,
-    // Avoid using deprecated URL string parser in MongoDB driver
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    // Avoid using deprecated collection.ensureIndex internally
-    useCreateIndex: true,
-    // upgrade to mongo driver's native findOneAndUpdate function instead of
-    // findAndModify.
-    useFindAndModify: false,
     promiseLibrary: global.Promise,
   },
 }
@@ -180,7 +172,7 @@ const cookieSettings: SessionOptions['cookie'] = {
 /**
  * Fetches AWS credentials
  */
-const configureAws = async () => {
+const configureAws = async (): Promise<void> => {
   if (!isDev) {
     const getCredentials = () => {
       return new Promise<void>((resolve, reject) => {
@@ -225,6 +217,7 @@ const config: Config = {
   adminBannerContent: basicVars.banner.adminBannerContent,
   rateLimitConfig: basicVars.rateLimit,
   configureAws,
+  secretEnv: basicVars.core.secretEnv,
 }
 
 export = config

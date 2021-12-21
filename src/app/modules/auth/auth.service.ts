@@ -55,7 +55,7 @@ export const validateEmailDomain = (
 
   const emailDomain = email.split('@').pop()
   return ResultAsync.fromPromise(
-    AgencyModel.findOne({ emailDomain }).exec(),
+    AgencyModel.findOne({ emailDomain }).exec() as Promise<AgencyDocument>,
     (error) => {
       logger.error({
         message: 'Database error when retrieving agency',

@@ -15,3 +15,13 @@ updates:
       prefix: 'fix'
       prefix-development: 'chore'
       include: 'scope'
+  - package-ecosystem: 'npm' # See documentation for possible values
+    directory: '/shared' # Location of package manifests
+    schedule:
+      interval: 'daily'
+      time: '03:00'
+      timezone: 'Asia/Singapore'
+    commit-message:
+      prefix: 'fix'
+      prefix-development: 'chore'
+      include: 'scope'

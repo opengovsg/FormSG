@@ -61,17 +61,21 @@ export interface IVerificationSmsCount extends ISmsCount {
     userId: IUserSchema['_id']
   }
   isOnboardedAccount: boolean
+  smsType: SmsType.Verification
 }
 
-export interface IVerificationSmsCountSchema extends ISmsCountSchema {
-  isOnboardedAccount: boolean
-}
+export interface IVerificationSmsCountSchema
+  extends IVerificationSmsCount,
+    Document {}
 
 export interface IAdminContactSmsCount extends ISmsCount {
   admin: IUserSchema['_id']
+  smsType: SmsType.AdminContact
 }
 
-export type IAdminContactSmsCountSchema = ISmsCountSchema
+export interface IAdminContactSmsCountSchema
+  extends IAdminContactSmsCount,
+    Document {}
 
 export interface IFormDeactivatedSmsCount
   extends ISmsCount,
@@ -103,6 +107,42 @@ export type TwilioCredentials = {
   apiKey: string
   apiSecret: string
   messagingServiceSid: string
+}
+
+export class TwilioCredentialsData {
+  accountSid: string
+  apiKey: string
+  apiSecret: string
+  messagingServiceSid: string
+
+  constructor(twilioCredentials: TwilioCredentials) {
+    const { accountSid, apiKey, apiSecret, messagingServiceSid } =
+      twilioCredentials
+
+    this.accountSid = accountSid
+    this.apiKey = apiKey
+    this.apiSecret = apiSecret
+    this.messagingServiceSid = messagingServiceSid
+  }
+
+  static fromString(credentials: string): TwilioCredentials | unknown {
+    try {
+      const twilioCredentials: TwilioCredentials = JSON.parse(credentials)
+      return new TwilioCredentialsData(twilioCredentials)
+    } catch (err) {
+      return err
+    }
+  }
+
+  toString(): string {
+    const body: TwilioCredentials = {
+      accountSid: this.accountSid,
+      apiKey: this.apiKey,
+      apiSecret: this.apiSecret,
+      messagingServiceSid: this.messagingServiceSid,
+    }
+    return JSON.stringify(body)
+  }
 }
 
 export type TwilioConfig = {

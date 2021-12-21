@@ -1,7 +1,7 @@
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import aws from 'aws-sdk'
 import { SessionOptions } from 'express-session'
-import { ConnectionOptions } from 'mongoose'
+import { ConnectOptions } from 'mongoose'
 import Mail from 'nodemailer/lib/mailer'
 
 // Enums
@@ -23,7 +23,7 @@ export type AppConfig = {
 
 export type DbConfig = {
   uri: string
-  options: ConnectionOptions
+  options: ConnectOptions
 }
 
 export type AwsConfig = {
@@ -75,6 +75,7 @@ export type Config = {
   siteBannerContent: string
   adminBannerContent: string
   rateLimitConfig: RateLimitConfig
+  secretEnv: string
 
   // Functions
   configureAws: () => Promise<void>
@@ -92,6 +93,7 @@ export interface IProdOnlyVarsSchema {
 export interface ICompulsoryVarsSchema {
   core: {
     sessionSecret: string
+    secretEnv: string
   }
   awsConfig: {
     imageS3Bucket: string

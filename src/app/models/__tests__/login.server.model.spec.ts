@@ -37,12 +37,10 @@ describe('login.server.model', () => {
       const actual = await LoginModel.create(DEFAULT_PARAMS)
 
       // Assert
-      expect(actual).toEqual(
-        expect.objectContaining({
-          ...DEFAULT_PARAMS,
-          created: expect.any(Date),
-        }),
-      )
+      expect(actual).toMatchObject({
+        ...DEFAULT_PARAMS,
+        created: expect.any(Date),
+      })
     })
 
     it('should throw validation error when admin param is missing', async () => {
@@ -129,18 +127,19 @@ describe('login.server.model', () => {
       it('should save the correct form data', async () => {
         const saved = await LoginModel.addLoginFromForm(fullForm)
         const found = await LoginModel.findOne({ form: formId })
+
+        const expected = {
+          form: formId,
+          admin: adminId,
+          agency: agencyId,
+          authType: mockAuthType,
+          esrvcId: mockEsrvcId,
+        }
+
         // Returned document should match
-        expect(saved.form).toEqual(formId)
-        expect(saved.admin).toEqual(adminId)
-        expect(saved.agency).toEqual(agencyId)
-        expect(saved.authType).toBe(mockAuthType)
-        expect(saved.esrvcId).toBe(mockEsrvcId)
+        expect(saved).toMatchObject(expected)
         // Found document should match
-        expect(found!.form).toEqual(formId)
-        expect(found!.admin).toEqual(adminId)
-        expect(found!.agency).toEqual(agencyId)
-        expect(found!.authType).toBe(mockAuthType)
-        expect(found!.esrvcId).toBe(mockEsrvcId)
+        expect(found).toMatchObject(expected)
       })
 
       it('should reject when the form does not contain an e-service ID', async () => {
@@ -256,7 +255,7 @@ describe('login.server.model', () => {
             total: loginsInRange.length,
           },
         ]
-        expect(result).toEqual(expected)
+        expect(result).toMatchObject(expected)
       })
 
       it('should return empty array when given dates do not correspond to any login documents', async () => {
