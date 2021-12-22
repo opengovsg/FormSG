@@ -42,4 +42,4 @@ rs.slaveOk();
 db.getMongo().setReadPref('nearest');
 db.getMongo().setSlaveOk(); 
 EOF
-mongoimport --host ${MONGODB1}:27017 --db formsg --collection agencies --type json --file init.json --jsonArray
+mongoimport --host ${MONGODB1}:27017 --db formsg --collection agencies --type json --file init.json --jsonArray --upsert --upsertFields shortName
