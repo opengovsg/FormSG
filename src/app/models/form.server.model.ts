@@ -1,6 +1,7 @@
 import BSON, { ObjectId } from 'bson-ext'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
+  ClientSession,
   Mongoose,
   Query,
   Schema,
