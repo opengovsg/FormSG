@@ -91,9 +91,6 @@ export type BounceNotificationHtmlData = {
 }
 
 export type AdminSmsDisabledData = {
-  // Type instantiation is excessively deep and possibly infinite.
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   forms: FormLinkView<IPopulatedForm>[]
 } & SmsVerificationTiers
 

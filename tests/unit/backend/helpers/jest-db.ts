@@ -28,7 +28,14 @@ import MemoryDatabaseServer from 'tests/database'
  */
 const connect = async (): Promise<typeof mongoose> => {
   const dbUrl = await MemoryDatabaseServer.getConnectionString()
-  return mongoose.connect(dbUrl)
+
+  const conn = await mongoose.connect(dbUrl, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+  })
+  return conn
 }
 
 /**

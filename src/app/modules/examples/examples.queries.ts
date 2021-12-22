@@ -33,7 +33,6 @@ export const searchFormsWithText = (
 export const searchFormsById = (formId: string): Record<string, unknown>[] => [
   {
     $match: {
-      // @ts-expect-error Type error in definitions, see https://github.com/Automattic/mongoose/issues/10960.
       _id: mongoose.Types.ObjectId(formId),
     },
   },
@@ -108,7 +107,6 @@ export const filterByAgencyId = (
 ): Record<string, unknown>[] => [
   {
     $match: {
-      // @ts-expect-error Type error in definitions, see https://github.com/Automattic/mongoose/issues/10960.
       'agencyInfo._id': mongoose.Types.ObjectId(agencyId),
     },
   },
@@ -350,7 +348,6 @@ export const searchSubmissionsForForm = (
 ): Record<string, unknown>[] => [
   {
     $match: {
-      // @ts-expect-error Type error in definitions, see https://github.com/Automattic/mongoose/issues/10960.
       [key]: mongoose.Types.ObjectId(formId),
     },
   },

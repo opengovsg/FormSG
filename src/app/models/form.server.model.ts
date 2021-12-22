@@ -1,8 +1,9 @@
-import { calculateObjectSize } from 'bson-ext'
+import BSON, { ObjectId } from 'bson-ext'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   ClientSession,
   Mongoose,
+  Query,
   Schema,
   SchemaOptions,
   Types,
@@ -93,6 +94,23 @@ import getUserModel from './user.server.model'
 
 export const FORM_SCHEMA_ID = 'Form'
 
+const bson = new BSON([
+  BSON.Binary,
+  BSON.Code,
+  BSON.DBRef,
+  BSON.Decimal128,
+  BSON.Double,
+  BSON.Int32,
+  BSON.Long,
+  BSON.Map,
+  BSON.MaxKey,
+  BSON.MinKey,
+  BSON.ObjectId,
+  BSON.BSONRegExp,
+  BSON.Symbol,
+  BSON.Timestamp,
+])
+
 const formSchemaOptions: SchemaOptions = {
   id: false,
   toJSON: {
@@ -115,10 +133,15 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 
 const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
   emails: {
-    type: [{ type: String, trim: true }],
+    type: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
     set: transformEmails,
     validate: {
-      validator: (v: unknown) => {
+      validator: (v: string[]) => {
         if (!Array.isArray(v)) return false
         if (v.length === 0) return false
         return v.every((email) => validator.isEmail(email))
@@ -140,13 +163,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     {
       title: {
         type: String,
-        validate: {
-          validator: (v: string) => {
-            return /^[a-zA-Z0-9_\-./() &`;'"]*$/.test(v)
-          },
-          message: 'Form name cannot contain special characters',
-        },
-        required: [true, 'Form name cannot be blank'],
+        validate: [
+          /^[a-zA-Z0-9_\-./() &`;'"]*$/,
+          'Form name cannot contain special characters',
+        ],
+        required: 'Form name cannot be blank',
         minlength: [4, 'Form name must be at least 4 characters'],
         maxlength: [200, 'Form name can have a maximum of 200 characters'],
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -205,10 +226,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
                   const {
                     field,
                     state,
-                  }: {
-                    field: Types.ObjectId | string
-                    state: LogicConditionState
-                  } = condition
+                  }: { field: ObjectId | string; state: LogicConditionState } =
+                    condition
                   return {
                     state,
                     fieldType: this.form_fields?.find(
@@ -341,16 +360,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         },
       },
 
-      // This must be before `status` since `status` has setters reliant on
-      // whether esrvcId is available, and mongoose@v6 now saves objects with keys
-      // in the order the keys are specifified in the schema instead of the object.
-      // See https://mongoosejs.com/docs/migrating_to_6.html#schema-defined-document-key-order.
-      esrvcId: {
-        type: String,
-        required: false,
-        validate: [/^\S*$/i, 'e-service ID must not contain whitespace'],
-      },
-
       status: {
         type: String,
         enum: Object.values(FormStatus),
@@ -380,6 +389,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       isListed: {
         type: Boolean,
         default: true,
+      },
+      esrvcId: {
+        type: String,
+        required: false,
+        validate: [/^\S*$/i, 'e-service ID must not contain whitespace'],
       },
 
       webhook: {
@@ -420,17 +434,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   ) as Schema.Types.DocumentArray
 
   const TableFieldSchema = createTableFieldSchema()
-  const TableColumnPath = TableFieldSchema.path(
-    'columns',
-  ) as Schema.Types.DocumentArray
-  TableColumnPath.discriminator(
-    BasicField.ShortText,
-    createShortTextFieldSchema(),
-  )
-  TableColumnPath.discriminator(
-    BasicField.Dropdown,
-    createDropdownFieldSchema(),
-  )
 
   FormFieldPath.discriminator(BasicField.Email, createEmailFieldSchema())
   FormFieldPath.discriminator(BasicField.Rating, createRatingFieldSchema())
@@ -461,6 +464,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   )
   FormFieldPath.discriminator(BasicField.Section, createSectionFieldSchema())
   FormFieldPath.discriminator(BasicField.Table, TableFieldSchema)
+  const TableColumnPath = TableFieldSchema.path(
+    'columns',
+  ) as Schema.Types.DocumentArray
+  TableColumnPath.discriminator(
+    BasicField.ShortText,
+    createShortTextFieldSchema(),
+  )
+  TableColumnPath.discriminator(
+    BasicField.Dropdown,
+    createDropdownFieldSchema(),
+  )
 
   // Discriminator defines all possible values of startPage.logo
   const StartPageLogoPath = FormSchema.path(
@@ -682,17 +696,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     formId: string,
     fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null> {
-    return (
-      // @ts-expect-error Type instantiation excessively deep, mongoose type bug.
-      this.findById(formId, fields)
-        .populate({
-          path: 'admin',
-          populate: {
-            path: 'agency',
-          },
-        })
-        .exec() as Promise<IPopulatedForm | null>
-    )
+    return this.findById(formId, fields).populate({
+      path: 'admin',
+      populate: {
+        path: 'agency',
+      },
+    }) as Query<IPopulatedForm, IFormDocument>
   }
 
   // Deactivate form by ID
@@ -742,7 +751,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     logicId: string,
   ): Promise<IFormSchema | null> {
     return this.findByIdAndUpdate(
-      formId,
+      mongoose.Types.ObjectId(formId),
       {
         $pull: { form_logics: { _id: logicId } },
       },
@@ -868,7 +877,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Hooks
   FormSchema.pre<IFormSchema>('validate', function (next) {
     // Reject save if form document is too large
-    if (calculateObjectSize(this) > 10 * MB) {
+    if (bson.calculateObjectSize(this) > 10 * MB) {
       const err = new Error('Form size exceeded.')
       err.name = 'FormSizeError'
       return next(err)

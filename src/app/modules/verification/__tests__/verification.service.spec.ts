@@ -1,4 +1,5 @@
 /* eslint-disable import/first */
+import { ObjectId } from 'bson'
 import { addHours, subHours, subMinutes, subSeconds } from 'date-fns'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
@@ -80,11 +81,11 @@ jest.mock('src/app/utils/hash')
 const MockHashUtils = mocked(HashUtils, true)
 
 describe('Verification service', () => {
-  const mockFieldIdObj = new mongoose.Types.ObjectId()
+  const mockFieldIdObj = new ObjectId()
   const mockFieldId = mockFieldIdObj.toHexString()
   const mockField = { ...generateFieldParams(), _id: mockFieldId }
-  const mockTransactionId = new mongoose.Types.ObjectId().toHexString()
-  const mockFormId = new mongoose.Types.ObjectId().toHexString()
+  const mockTransactionId = new ObjectId().toHexString()
+  const mockFormId = new ObjectId().toHexString()
   let mockTransaction: IVerificationSchema
 
   beforeAll(async () => await dbHandler.connect())
@@ -106,7 +107,7 @@ describe('Verification service', () => {
 
   describe('createTransaction', () => {
     const mockForm = {
-      _id: new mongoose.Types.ObjectId(),
+      _id: new ObjectId(),
       title: 'mockForm',
       form_fields: [],
     } as unknown as IFormSchema
@@ -170,7 +171,7 @@ describe('Verification service', () => {
       mockPublicView = {
         expireAt: mockTransaction.expireAt,
         formId: mockTransaction.formId,
-        _id: new mongoose.Types.ObjectId(),
+        _id: new ObjectId(),
       }
       getPublicViewByIdSpy = jest
         .spyOn(VerificationModel, 'getPublicViewById')
@@ -223,7 +224,7 @@ describe('Verification service', () => {
     it('should return TransactionNotFoundError when transaction ID does not exist', async () => {
       const result = await VerificationService.resetFieldForTransaction(
         // non-existent transaction ID
-        new mongoose.Types.ObjectId().toHexString(),
+        new ObjectId().toHexString(),
         mockFieldId,
       )
 
@@ -251,7 +252,7 @@ describe('Verification service', () => {
       const result = await VerificationService.resetFieldForTransaction(
         mockTransactionId,
         // ObjectId which does not exist in mockTransaction
-        new mongoose.Types.ObjectId().toHexString(),
+        new ObjectId().toHexString(),
       )
 
       expect(resetFieldSpy).not.toHaveBeenCalled()
@@ -292,7 +293,7 @@ describe('Verification service', () => {
     >
 
     const mockForm = {
-      _id: new mongoose.Types.ObjectId(),
+      _id: new ObjectId(),
       title: 'mockForm',
       form_fields: [
         generateDefaultField(BasicField.Mobile, {
@@ -351,7 +352,7 @@ describe('Verification service', () => {
     it('should return TransactionNotFoundError when transaction ID does not exist', async () => {
       const result = await VerificationService.sendNewOtp({
         // non-existent transaction ID
-        transactionId: new mongoose.Types.ObjectId().toHexString(),
+        transactionId: new ObjectId().toHexString(),
         fieldId: mockFieldId,
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
@@ -395,7 +396,7 @@ describe('Verification service', () => {
       const result = await VerificationService.sendNewOtp({
         transactionId: mockTransactionId,
         // ObjectId which does not exist in mockTransaction
-        fieldId: new mongoose.Types.ObjectId().toHexString(),
+        fieldId: new ObjectId().toHexString(),
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
@@ -497,7 +498,7 @@ describe('Verification service', () => {
       expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
         MOCK_RECIPIENT,
         MOCK_OTP,
-        new mongoose.Types.ObjectId(mockFormId),
+        new ObjectId(mockFormId),
       )
       expect(
         MockFormsgSdk.verification.generateSignature,
@@ -523,12 +524,12 @@ describe('Verification service', () => {
       expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
         MOCK_RECIPIENT,
         MOCK_OTP,
-        new mongoose.Types.ObjectId(mockFormId),
+        new ObjectId(mockFormId),
       )
       expect(MockFormsgSdk.verification.generateSignature).toHaveBeenCalledWith(
         {
           transactionId: mockTransactionId,
-          formId: new mongoose.Types.ObjectId(mockFormId),
+          formId: new ObjectId(mockFormId),
           fieldId: mockFieldId,
           answer: MOCK_RECIPIENT,
         },
@@ -594,7 +595,7 @@ describe('Verification service', () => {
 
     it('should return TransactionNotFoundError when transaction ID does not exist', async () => {
       const result = await VerificationService.verifyOtp(
-        new mongoose.Types.ObjectId().toHexString(),
+        new ObjectId().toHexString(),
         mockFieldId,
         MOCK_OTP,
       )
@@ -623,7 +624,7 @@ describe('Verification service', () => {
     it('should return FieldNotFoundInTransactionError when field ID does not exist', async () => {
       const result = await VerificationService.verifyOtp(
         mockTransactionId,
-        new mongoose.Types.ObjectId().toHexString(),
+        new ObjectId().toHexString(),
         MOCK_OTP,
       )
 
@@ -728,9 +729,9 @@ describe('Verification service', () => {
   describe('disableVerifiedFieldsIfRequired', () => {
     const MOCK_FORM = {
       title: 'some mock form',
-      _id: new mongoose.Types.ObjectId(),
+      _id: new ObjectId(),
       admin: {
-        _id: new mongoose.Types.ObjectId(),
+        _id: new ObjectId(),
       },
       permissionList: [{ email: 'some@user.gov.sg' }],
     } as IPopulatedForm
@@ -948,7 +949,7 @@ describe('Verification service', () => {
   describe('shouldGenerateMobileOtp', () => {
     it('should return true when the fieldId is valid and verifiable', async () => {
       // Arrange
-      const fieldId = new mongoose.Types.ObjectId().toHexString()
+      const fieldId = new ObjectId().toHexString()
       const mockForm = {
         form_fields: [
           generateDefaultField(BasicField.Mobile, {
@@ -970,7 +971,7 @@ describe('Verification service', () => {
 
     it('should return OtpRequestError when an OTP is requested on a field that is not verifiable', async () => {
       // Arrange
-      const fieldId = new mongoose.Types.ObjectId().toHexString()
+      const fieldId = new ObjectId().toHexString()
       const mockForm = {
         // Not enabled.
         form_fields: [
@@ -996,12 +997,12 @@ describe('Verification service', () => {
       const mockForm = {
         form_fields: [
           generateDefaultField(BasicField.Mobile, {
-            _id: new mongoose.Types.ObjectId().toHexString(),
+            _id: new ObjectId().toHexString(),
             isVerifiable: true,
           }),
         ],
       }
-      const fieldIdOtherString = new mongoose.Types.ObjectId().toHexString()
+      const fieldIdOtherString = new ObjectId().toHexString()
 
       // Act
       const actual = await VerificationService.shouldGenerateMobileOtp(
@@ -1018,7 +1019,7 @@ describe('Verification service', () => {
       const mockForm = {
         form_fields: [],
       }
-      const fieldId = new mongoose.Types.ObjectId().toHexString()
+      const fieldId = new ObjectId().toHexString()
 
       // Act
       const actual = await VerificationService.shouldGenerateMobileOtp(

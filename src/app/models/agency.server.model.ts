@@ -17,6 +17,7 @@ export const AGENCY_PUBLIC_FIELDS = [
 const AgencySchema = new Schema<
   IAgencySchema,
   IAgencyModel,
+  undefined,
   AgencyInstanceMethods
 >(
   {
@@ -60,7 +61,7 @@ AgencySchema.methods.getPublicView = function (): PublicAgencyDto {
 }
 
 const compileAgencyModel = (db: Mongoose): IAgencyModel => {
-  return db.model(AGENCY_SCHEMA_ID, AgencySchema) as IAgencyModel
+  return db.model<IAgencySchema, IAgencyModel>(AGENCY_SCHEMA_ID, AgencySchema)
 }
 
 /**
@@ -71,7 +72,7 @@ const compileAgencyModel = (db: Mongoose): IAgencyModel => {
  */
 const getAgencyModel = (db: Mongoose): IAgencyModel => {
   try {
-    return db.model(AGENCY_SCHEMA_ID) as IAgencyModel
+    return db.model<IAgencySchema, IAgencyModel>(AGENCY_SCHEMA_ID)
   } catch {
     return compileAgencyModel(db)
   }

@@ -22,7 +22,7 @@ const MyInfoHashSchema = new Schema<IMyInfoHashSchema, IMyInfoHashModel>(
       required: true,
     },
     fields: {
-      type: Schema.Types.Mixed,
+      type: Object,
       required: true,
     },
     expireAt: {
