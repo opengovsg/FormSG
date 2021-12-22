@@ -72,7 +72,7 @@ describe('email-submission.service', () => {
         _id: result._id,
       })
 
-      expect(result.form).toMatchObject(MOCK_FORM._id)
+      expect(result.form).toEqual(MOCK_FORM._id)
       expect(result.responseHash).toEqual(MOCK_RESPONSE_HASH)
       expect(result.responseSalt).toEqual(MOCK_RESPONSE_SALT)
       expect(foundInDatabase).toBeNull()

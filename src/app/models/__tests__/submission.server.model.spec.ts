@@ -116,7 +116,7 @@ describe('Submission Model', () => {
           String(submission._id),
         )
 
-        expect(result).toMatchObject({
+        expect(result).toEqual({
           webhookUrl: '',
           isRetryEnabled: false,
           webhookView: {
@@ -152,7 +152,7 @@ describe('Submission Model', () => {
           String(submission._id),
         )
 
-        expect(result).toMatchObject({
+        expect(result).toEqual({
           webhookUrl: MOCK_WEBHOOK_URL,
           isRetryEnabled: false,
           webhookView: {
@@ -175,7 +175,7 @@ describe('Submission Model', () => {
         // Arrange
         const formCounts = [4, 2, 4]
         const formIdsAndCounts = times(formCounts.length, (it) => ({
-          _id: new mongoose.Types.ObjectId(),
+          _id: mongoose.Types.ObjectId(),
           count: formCounts[it],
         }))
         const submissionPromises: Promise<ISubmissionSchema>[] = []
@@ -204,14 +204,14 @@ describe('Submission Model', () => {
         const expectedResult = formIdsAndCounts.filter(
           ({ count }) => count > minSubCount,
         )
-        expect(actualResult).toMatchObject(expectedResult)
+        expect(actualResult).toEqual(expect.arrayContaining(expectedResult))
       })
 
       it('should return an empty array if no forms have submission counts higher than given count', async () => {
         // Arrange
         const formCounts = [1, 1, 2]
         const formIdsAndCounts = times(formCounts.length, (it) => ({
-          _id: new mongoose.Types.ObjectId(),
+          _id: mongoose.Types.ObjectId(),
           count: formCounts[it],
         }))
         const submissionPromises: Promise<ISubmissionSchema>[] = []
@@ -264,7 +264,7 @@ describe('Submission Model', () => {
         const actualWebhookView = submission.getWebhookView()
 
         // Assert
-        expect(actualWebhookView).toMatchObject({
+        expect(actualWebhookView).toEqual({
           data: {
             formId: expect.any(String),
             submissionId: expect.any(String),
@@ -296,7 +296,7 @@ describe('Submission Model', () => {
         const actualWebhookView = submission.getWebhookView()
 
         // Assert
-        expect(actualWebhookView).toMatchObject({
+        expect(actualWebhookView).toEqual({
           data: {
             attachmentDownloadUrls: {},
             formId: expect.any(String),
@@ -339,7 +339,7 @@ describe('Submission Model', () => {
         const actualWebhookView = populatedSubmission!.getWebhookView()
 
         // Assert
-        expect(actualWebhookView).toMatchObject({
+        expect(actualWebhookView).toEqual({
           data: {
             attachmentDownloadUrls: {},
             formId: expect.any(String),

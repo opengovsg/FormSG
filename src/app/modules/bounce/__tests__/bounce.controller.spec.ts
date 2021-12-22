@@ -90,7 +90,9 @@ describe('handleSns', () => {
       _id: bounceDoc.formId,
       admin: user._id,
       title: 'mockTitle',
-    }).populate('admin')) as IPopulatedForm
+    })
+      .populate('admin')
+      .execPopulate()) as IPopulatedForm
   })
 
   afterAll(async () => await dbHandler.closeDatabase())

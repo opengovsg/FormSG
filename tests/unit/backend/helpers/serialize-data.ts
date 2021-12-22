@@ -1,3 +1,3 @@
-export const jsonParseStringify = <T extends unknown>(obj: T): T => {
+export const jsonParseStringify = (obj: unknown) => {
   return JSON.parse(JSON.stringify(obj))
 }

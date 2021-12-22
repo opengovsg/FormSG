@@ -152,7 +152,7 @@ describe('BounceService', () => {
         'bounces',
         'hasAutoEmailed',
       ])
-      expect(actual).toMatchObject({
+      expect(actual).toEqual({
         formId: MOCK_FORM_ID,
         bounces: [],
         hasAutoEmailed: false,
@@ -288,7 +288,9 @@ describe('BounceService', () => {
       const form = (await new Form({
         admin: testUser._id,
         title: MOCK_FORM_TITLE,
-      }).populate('admin')) as IPopulatedForm
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
         formId: form._id,
         bounces: [
@@ -315,7 +317,9 @@ describe('BounceService', () => {
         admin: testUser._id,
         title: MOCK_FORM_TITLE,
         permissionList: [{ email: collabEmail, write: true }],
-      }).populate('admin')) as IPopulatedForm
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
         formId: form._id,
         bounces: [
@@ -340,7 +344,9 @@ describe('BounceService', () => {
       const form = (await new Form({
         admin: testUser._id,
         title: MOCK_FORM_TITLE,
-      }).populate('admin')) as IPopulatedForm
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
         formId: form._id,
         bounces: [
@@ -361,7 +367,9 @@ describe('BounceService', () => {
         admin: testUser._id,
         title: MOCK_FORM_TITLE,
         permissionList: [{ email: collabEmail, write: false }],
-      }).populate('admin')) as IPopulatedForm
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
         formId: form._id,
         bounces: [
@@ -397,7 +405,9 @@ describe('BounceService', () => {
       const form = (await new Form({
         admin: testUser._id,
         title: MOCK_FORM_TITLE,
-      }).populate('admin')) as IPopulatedForm
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
         formId: form._id,
         bounces: [],
@@ -437,7 +447,9 @@ describe('BounceService', () => {
       const form = (await new Form({
         admin: testUser._id,
         title: MOCK_FORM_TITLE,
-      }).populate('admin')) as IPopulatedForm
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
         formId: form._id,
         bounces: [],
@@ -802,7 +814,9 @@ describe('BounceService', () => {
           { email: MOCK_EMAIL, write: true },
           { email: MOCK_EMAIL_2, write: false },
         ],
-      }).populate('admin')) as IPopulatedForm
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       MockUserService.findContactsForEmails.mockReturnValueOnce(
         okAsync([MOCK_CONTACT]),
       )
@@ -824,7 +838,9 @@ describe('BounceService', () => {
           { email: MOCK_EMAIL, write: true },
           { email: MOCK_EMAIL_2, write: false },
         ],
-      }).populate('admin')) as IPopulatedForm
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       MockUserService.findContactsForEmails.mockReturnValueOnce(
         okAsync([omit(MOCK_CONTACT, 'contact'), MOCK_CONTACT_2]),
       )
@@ -846,7 +862,9 @@ describe('BounceService', () => {
           { email: MOCK_EMAIL, write: true },
           { email: MOCK_EMAIL_2, write: false },
         ],
-      }).populate('admin')) as IPopulatedForm
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       MockUserService.findContactsForEmails.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
@@ -880,7 +898,9 @@ describe('BounceService', () => {
       const form = (await new Form({
         admin: testUser._id,
         title: MOCK_FORM_TITLE,
-      }).populate('admin')) as IPopulatedForm
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       MockSmsFactory.sendFormDeactivatedSms.mockReturnValue(okAsync(true))
 
       const result = await BounceService.notifyAdminsOfDeactivation(form, [
@@ -912,7 +932,9 @@ describe('BounceService', () => {
       const form = (await new Form({
         admin: testUser._id,
         title: MOCK_FORM_TITLE,
-      }).populate('admin')) as IPopulatedForm
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       MockSmsFactory.sendFormDeactivatedSms
         .mockReturnValueOnce(okAsync(true))
         .mockReturnValueOnce(errAsync(new SmsSendError()))

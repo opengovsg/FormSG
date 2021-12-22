@@ -3,7 +3,6 @@ import {
   Document,
   LeanDocument,
   Model,
-  PopulatedDoc,
   ToObjectOptions,
   Types,
   UpdateWriteOpResult,
@@ -69,7 +68,7 @@ export type IForm = Merge<
   SetOptional<FormBase, FormDefaultableKey>,
   {
     // Loosen types here to allow for IPopulatedForm extension
-    admin: PopulatedDoc<IUserSchema>
+    admin: any
     permission?: FormPermission[]
     form_fields?: FormFieldSchema[]
     form_logics?: FormLogicSchema[]
