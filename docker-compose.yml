@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile.development
     depends_on:
-      - database
+      - mongo-setup
     volumes:
       - ./:/opt/formsg
       - /opt/formsg/node_modules
@@ -17,7 +17,7 @@ services:
       - '9229:9229' # Node debugger port
     environment:
       - NODE_ENV=development
-      - DB_HOST=mongodb://database:27017/formsg
+      - DB_HOST=mongodb://mongo1:27017,mongo2:27017/formsg
       - APP_NAME=FormSG
       - APP_URL=http://localhost:5000
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket
@@ -106,25 +106,42 @@ services:
       - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
     network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:5156 to mockpass:5156
 
-  database:
+  mongo-setup:
+    build: ./mongoseed
+    container_name: mongo-setup
     image: 'mongo:4.0'
-    container_name: 'formsg-db'
-    environment:
-      - MONGO_INITDB_DATABASE=formsg
+    restart: on-failure
+    networks:
+      default:
     volumes:
-      - mongodata:/data/db
-    command: --bind_ip_all --replSet rs0
-    ports:
-      - '27017:27017'
-    logging:
-      driver: none
-
-  mongo-seed:
-    build: ./mongo-seed
+      - ./mongoseed:/scripts
     depends_on:
-      - database
-    links:
-      - database
+      - mongo1
+      - mongo2
+
+  mongo1:
+    hostname: mongo1
+    image: 'mongo:4.0'
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+    restart: always
+    entrypoint: /usr/bin/mongod --bind_ip_all --replSet rs0
+    volumes:
+      - mongodata1:/data/db
+
+  mongo2:
+    hostname: mongo2
+    image: 'mongo:4.0'
+    expose:
+      - 27017
+    ports:
+      - 27018:27017
+    restart: always
+    entrypoint: /usr/bin/mongod --bind_ip_all --replSet rs0
+    volumes:
+      - mongodata2:/data/db
 
   localstack:
     image: localstack/localstack:0.11.5
@@ -147,4 +164,6 @@ services:
       - '1080:80'
 
 volumes:
-  mongodata:
+  mongodata1:
+  mongodata2:
+  mongoseed:
