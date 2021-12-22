@@ -1,7 +1,7 @@
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import aws from 'aws-sdk'
 import { SessionOptions } from 'express-session'
-import { ConnectOptions } from 'mongoose'
+import { ConnectionOptions } from 'mongoose'
 import Mail from 'nodemailer/lib/mailer'
 
 // Enums
@@ -23,7 +23,7 @@ export type AppConfig = {
 
 export type DbConfig = {
   uri: string
-  options: ConnectOptions
+  options: ConnectionOptions
 }
 
 export type AwsConfig = {

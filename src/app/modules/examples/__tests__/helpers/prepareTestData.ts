@@ -209,7 +209,7 @@ const prepareTestData = async (
       form_fields: [],
       logo: agency.logo,
       timeText: 'less than 1 day ago',
-      lastSubmission: new Date(),
+      lastSubmission: expect.anything(),
       title: form.title,
       authType: form.authType,
     }))

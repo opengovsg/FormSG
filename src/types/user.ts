@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson-ext'
-import { Document, Model, PopulatedDoc } from 'mongoose'
+import { Document, Model } from 'mongoose'
 import { SetOptional } from 'type-fest'
 
 import { PublicAgencyDto, UserBase } from '../../shared/types'
@@ -17,7 +17,7 @@ export type AdminContactOtpData = {
 
 export interface IUser
   extends SetOptional<UserBase, 'created' | 'lastAccessed' | 'updatedAt'> {
-  agency: PopulatedDoc<IAgencySchema>
+  agency: IAgencySchema['_id']
 }
 
 export type UserContactView = Pick<IUser, 'email' | 'contact'>

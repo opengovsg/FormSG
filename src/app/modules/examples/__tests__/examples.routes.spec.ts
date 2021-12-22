@@ -1,6 +1,5 @@
 import { ObjectId } from 'bson-ext'
 import { keyBy } from 'lodash'
-import MockDate from 'mockdate'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
@@ -10,11 +9,11 @@ import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { DatabaseError } from '../../core/core.errors'
 import { ExamplesRouter } from '../examples.routes'
 import * as ExamplesService from '../examples.service'
+import { FormInfo } from '../examples.types'
 
 import prepareTestData, {
   SearchTerm,
@@ -40,8 +39,6 @@ describe('examples.routes', () => {
   let orgAgency: IAgencySchema
 
   beforeAll(async () => {
-    // Mockdate requires for deterministic return of example objects.
-    MockDate.set(new Date())
     await dbHandler.connect()
     const orgData = await dbHandler.insertFormCollectionReqs({
       mailDomain: 'example.org',
@@ -66,10 +63,7 @@ describe('examples.routes', () => {
   afterEach(async () => {
     jest.clearAllMocks()
   })
-  afterAll(async () => {
-    MockDate.reset()
-    await dbHandler.closeDatabase()
-  })
+  afterAll(async () => await dbHandler.closeDatabase())
 
   describe('GET /examples', () => {
     it('should return 200 with array of example forms for all agencies when query.agency is missing', async () => {
@@ -86,8 +80,8 @@ describe('examples.routes', () => {
       // agencies.
       const expectedBody = keyBy(
         [
-          ...jsonParseStringify(comTestData.total.expectedFormInfo),
-          ...jsonParseStringify(orgTestData.total.expectedFormInfo),
+          ...stringifyFormInfoArray(comTestData.total.expectedFormInfo),
+          ...stringifyFormInfoArray(orgTestData.total.expectedFormInfo),
         ],
         '_id',
       )
@@ -113,7 +107,7 @@ describe('examples.routes', () => {
       // Assert
       // Should only have orgTestData since its agency id is provided.
       const expectedBody = keyBy(
-        jsonParseStringify(orgTestData.total.expectedFormInfo),
+        stringifyFormInfoArray(orgTestData.total.expectedFormInfo),
         '_id',
       )
       const actualBody = keyBy(response.body.forms, '_id')
@@ -158,7 +152,7 @@ describe('examples.routes', () => {
       // Assert
       // Should only have comTestData since its agency id is provided.
       const expectedBody = keyBy(
-        jsonParseStringify(comTestData.first.expectedFormInfo),
+        stringifyFormInfoArray(comTestData.first.expectedFormInfo),
         '_id',
       )
       const actualBody = keyBy(response.body.forms, '_id')
@@ -211,7 +205,7 @@ describe('examples.routes', () => {
       // Assert
       // Should only have comTestData since its agency id is provided.
       const expectedBody = keyBy(
-        jsonParseStringify(comTestData.total.expectedFormInfo),
+        stringifyFormInfoArray(comTestData.total.expectedFormInfo),
         '_id',
       )
       const actualBody = keyBy(response.body.forms, '_id')
@@ -353,7 +347,7 @@ describe('examples.routes', () => {
       const response = await session.get(`/examples/${validFormId}`)
 
       // Assert
-      const expectedFormInfo = jsonParseStringify(
+      const expectedFormInfo = stringifyFormInfo(
         comTestData.second.expectedFormInfo[0],
       )
 
@@ -408,3 +402,20 @@ describe('examples.routes', () => {
     })
   })
 })
+
+// Helper functions
+/**
+ * Stringifies expected form info arrays. Unable to do the usual JSON.stringify
+ * -> parse combination due to mongoose dates being converted to an empty
+ * object.
+ */
+const stringifyFormInfoArray = (array: FormInfo[]) => {
+  return array.map(stringifyFormInfo)
+}
+
+const stringifyFormInfo = (formInfo: FormInfo) => {
+  return {
+    ...formInfo,
+    _id: formInfo._id.toString(),
+  }
+}
