@@ -1,4 +1,4 @@
-import { HydratedDocument, Model } from 'mongoose'
+import { EnforceDocument, Model } from 'mongoose'
 
 import { AgencyBase, PublicAgencyDto } from '../../shared/types'
 
@@ -18,12 +18,10 @@ export interface IAgencyDocument extends IAgencySchema {
 }
 
 // Used to cast created documents whenever needed.
-export type AgencyDocument = HydratedDocument<
+export type AgencyDocument = EnforceDocument<
   IAgencyDocument,
-  AgencyInstanceMethods,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {}
+  AgencyInstanceMethods
 >
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type IAgencyModel = Model<IAgencySchema, {}, AgencyInstanceMethods>
+export type IAgencyModel = Model<IAgencyDocument, {}, AgencyInstanceMethods>

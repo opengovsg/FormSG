@@ -53,7 +53,7 @@ describe('MyInfo Hash Model', () => {
       expect(actual._id).toBeDefined()
       expect(
         pick(actual, ['uinFin', 'form', 'fields', 'created', 'expireAt']),
-      ).toMatchObject(DEFAULT_INPUT_PARAMS)
+      ).toEqual(DEFAULT_INPUT_PARAMS)
     })
 
     it('should throw validation error on missing uinFin', async () => {
@@ -134,10 +134,10 @@ describe('MyInfo Hash Model', () => {
         const found = await MyInfoHash.findOne({})
         // Both the returned document and the found document should match
         // Note: we are checking that the document contains the HASHED uinFin
-        expect(pick(actual, ['uinFin', 'form', 'fields'])).toMatchObject(
+        expect(pick(actual, ['uinFin', 'form', 'fields'])).toEqual(
           pick(DEFAULT_SAVED_PARAMS, ['uinFin', 'form', 'fields']),
         )
-        expect(pick(found, ['uinFin', 'form', 'fields'])).toMatchObject(
+        expect(pick(found, ['uinFin', 'form', 'fields'])).toEqual(
           pick(DEFAULT_SAVED_PARAMS, ['uinFin', 'form', 'fields']),
         )
       })

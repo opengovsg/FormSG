@@ -53,7 +53,7 @@ describe('Encrypt Submission Model', () => {
             .tz('Asia/Singapore')
             .format('Do MMM YYYY, h:mm:ss a'),
         }
-        expect(result).toMatchObject(expected)
+        expect(result).toEqual(expected)
       })
 
       it('should return null when submission is of SubmissionType.Email', async () => {
@@ -137,7 +137,7 @@ describe('Encrypt Submission Model', () => {
             }))
             .reverse(),
         }
-        expect(actual).toMatchObject(expected)
+        expect(actual).toEqual(expected)
       })
 
       it('should return offset metadata with correct count when page number is provided', async () => {
@@ -179,7 +179,7 @@ describe('Encrypt Submission Model', () => {
             },
           ],
         }
-        expect(actual).toMatchObject(expected)
+        expect(actual).toEqual(expected)
       })
 
       it('should return offset metadata with correct count when page size is provided', async () => {
@@ -221,7 +221,7 @@ describe('Encrypt Submission Model', () => {
             },
           ],
         }
-        expect(actual).toMatchObject(expected)
+        expect(actual).toEqual(expected)
       })
 
       it('should return empty metadata array when given page has no metadata', async () => {
@@ -254,7 +254,7 @@ describe('Encrypt Submission Model', () => {
           // show
           metadata: [],
         }
-        expect(actual).toMatchObject(expected)
+        expect(actual).toEqual(expected)
       })
 
       it('should return empty metadata array when formId has no metadata', async () => {
@@ -272,7 +272,7 @@ describe('Encrypt Submission Model', () => {
           // show
           metadata: [],
         }
-        expect(actual).toMatchObject(expected)
+        expect(actual).toEqual(expected)
       })
     })
 
@@ -284,7 +284,6 @@ describe('Encrypt Submission Model', () => {
           submissionType: SubmissionType.Encrypt,
           form: validFormId,
           encryptedContent: 'mock encrypted content abc',
-          verifiedContent: 'mock verified content',
           version: 3,
         })
         const expectedSubmission = pick(
@@ -310,7 +309,7 @@ describe('Encrypt Submission Model', () => {
           retrievedSubmissions.push(submission)
         }
         // Cursor stream should contain only that single submission.
-        expect(retrievedSubmissions).toMatchObject([expectedSubmission])
+        expect(retrievedSubmissions).toEqual([expectedSubmission])
       })
 
       it('should return cursor even if no submissions are found', async () => {
@@ -330,7 +329,7 @@ describe('Encrypt Submission Model', () => {
           retrievedSubmissions.push(submission)
         }
         // Cursor stream should return nothing.
-        expect(retrievedSubmissions).toMatchObject([])
+        expect(retrievedSubmissions).toEqual([])
       })
     })
 
@@ -363,7 +362,7 @@ describe('Encrypt Submission Model', () => {
           'version',
         )
         expect(actual).not.toBeNull()
-        expect(actual?.toJSON()).toMatchObject(expected)
+        expect(actual?.toJSON()).toEqual(expected)
       })
 
       it('should return null when submission id does not exist', async () => {

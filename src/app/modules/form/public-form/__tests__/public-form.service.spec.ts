@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
+import mockingoose from 'mockingoose'
 import mongoose from 'mongoose'
 import { PartialDeep } from 'type-fest'
 
@@ -78,10 +79,8 @@ describe('public-form.service', () => {
     it('should return DatabaseError when error occurs whilst inserting feedback', async () => {
       // Arrange
       // Mock failure
-      const insertSpy = jest
-        .spyOn(FormFeedbackModel, 'create')
-        // @ts-ignore
-        .mockRejectedValueOnce(new Error('some error'))
+      mockingoose(FormFeedbackModel).toReturn(new Error('some error'), 'save')
+      const insertSpy = jest.spyOn(FormFeedbackModel, 'create')
 
       // Act
       const actualResult = await PublicFormService.insertFormFeedback(
@@ -152,12 +151,8 @@ describe('public-form.service', () => {
       }
 
       // Mock form return.
-      const findByIdSpy = jest
-        .spyOn(FormModel, 'findById')
-        // @ts-ignore
-        .mockReturnValueOnce({
-          exec: jest.fn().mockResolvedValue(mockForm),
-        })
+      mockingoose(FormModel).toReturn(mockForm, 'findOne')
+      const findByIdSpy = jest.spyOn(FormModel, 'findById')
 
       // Act
       const createResult = await PublicFormService.createMetatags(
@@ -185,12 +180,8 @@ describe('public-form.service', () => {
     it('should return FormNotFoundError when form cannot be retrieved with given formId', async () => {
       // Arrange
       // Mock null form return.
-      const findByIdSpy = jest
-        .spyOn(FormModel, 'findById')
-        // @ts-ignore
-        .mockReturnValueOnce({
-          exec: jest.fn().mockResolvedValue(null),
-        })
+      mockingoose(FormModel).toReturn(null, 'findOne')
+      const findByIdSpy = jest.spyOn(FormModel, 'findById')
 
       // Act
       const createResult = await PublicFormService.createMetatags(
@@ -208,12 +199,8 @@ describe('public-form.service', () => {
     it('should return DatabaseError when error occurs whilst querying database', async () => {
       // Arrange
       // Mock failure
-      const findByIdSpy = jest
-        .spyOn(FormModel, 'findById')
-        // @ts-ignore
-        .mockReturnValueOnce({
-          exec: jest.fn().mockRejectedValue(new Error('some error')),
-        })
+      mockingoose(FormModel).toReturn(new Error('some error'), 'findOne')
+      const findByIdSpy = jest.spyOn(FormModel, 'findById')
 
       // Act
       const createResult = await PublicFormService.createMetatags(

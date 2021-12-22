@@ -1,3 +1,4 @@
+import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
 import getAdminVerificationModel from 'src/app/models/admin_verification.server.model'
@@ -17,7 +18,7 @@ describe('AdminVerification Model', () => {
 
   describe('Schema', () => {
     const DEFAULT_PARAMS: IAdminVerification = {
-      admin: new mongoose.Types.ObjectId(),
+      admin: new ObjectID(),
       expireAt: new Date(),
       hashedContact: 'mockHashedContact',
       hashedOtp: 'mockHashedOtp',
@@ -56,11 +57,13 @@ describe('AdminVerification Model', () => {
       expect(actual._id).toBeDefined()
       expect(actual.createdAt).toBeInstanceOf(Date)
       expect(actual.updatedAt).toBeInstanceOf(Date)
-      expect(actual).toMatchObject({
-        ...customParams,
-        // Add defaults that has not been overridden.
-        numOtpSent: 0,
-      })
+      expect(actual).toEqual(
+        expect.objectContaining({
+          ...customParams,
+          // Add defaults that has not been overridden.
+          numOtpSent: 0,
+        }),
+      )
     })
 
     it('should throw validation error on missing admin', async () => {
@@ -130,7 +133,7 @@ describe('AdminVerification Model', () => {
       it('should create successfully when document does not exist', async () => {
         // Arrange
         const params: UpsertOtpParams = {
-          admin: new mongoose.Types.ObjectId(),
+          admin: new ObjectID(),
           expireAt: new Date(),
           hashedContact: 'mockHashedContact',
           hashedOtp: 'mockHashedOtp',
@@ -146,13 +149,13 @@ describe('AdminVerification Model', () => {
         const expected = { ...params, numOtpAttempts: 0, numOtpSent: 1 }
         // Should now have one document.
         await expect(AdminVerification.countDocuments()).resolves.toEqual(1)
-        expect(actual).toMatchObject(expected)
+        expect(actual).toEqual(expect.objectContaining(expected))
       })
 
       it('should update successfully when a document already exists', async () => {
         // Arrange
         // Insert mock document into collection.
-        const adminId = new mongoose.Types.ObjectId()
+        const adminId = new ObjectID()
         const oldExpireAt = new Date()
         const newExpireAt = new Date(Date.now() + 9000000)
         const oldNumOtpSent = 3
@@ -187,14 +190,14 @@ describe('AdminVerification Model', () => {
         }
         // Should still only have one document.
         await expect(AdminVerification.countDocuments()).resolves.toEqual(1)
-        expect(actual).toMatchObject(expected)
+        expect(actual).toEqual(expect.objectContaining(expected))
       })
 
       it('should throw error if validation fails due to invalid upsert parameters', async () => {
         // Arrange
         const invalidParams: UpsertOtpParams = {
           // Invalid admin parameter.
-          admin: null,
+          admin: undefined,
           expireAt: new Date(),
           hashedContact: 'mockHashedContact',
           hashedOtp: 'mockHashedOtp',
@@ -216,7 +219,7 @@ describe('AdminVerification Model', () => {
       it('should increment successfully', async () => {
         // Arrange
         // Insert mock document into collection.
-        const adminId = new mongoose.Types.ObjectId()
+        const adminId = new ObjectID()
         const initialOtpAttempts = 5
         const adminVerificationParams = {
           admin: adminId,
@@ -237,17 +240,19 @@ describe('AdminVerification Model', () => {
         // Assert
         // Exactly the same as initial params, but with numOtpAttempts
         // incremented by 1.
-        await expect(actualPromise).resolves.toMatchObject({
-          ...adminVerificationParams,
-          numOtpAttempts: initialOtpAttempts + 1,
-        })
+        await expect(actualPromise).resolves.toEqual(
+          expect.objectContaining({
+            ...adminVerificationParams,
+            numOtpAttempts: initialOtpAttempts + 1,
+          }),
+        )
       })
 
       it('should return null if document cannot be retrieved', async () => {
         // Arrange
         // Should have no documents yet.
         await expect(AdminVerification.countDocuments()).resolves.toEqual(0)
-        const freshAdminId = new mongoose.Types.ObjectId()
+        const freshAdminId = new ObjectID()
 
         // Act
         const actualPromise =

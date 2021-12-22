@@ -27,8 +27,6 @@ import {
   MOCK_OPTIONAL_VERIFIED_RESPONSE,
   MOCK_SECTION_FIELD,
   MOCK_SECTION_RESPONSE,
-  MOCK_TABLE_FIELD,
-  MOCK_TABLE_RESPONSE,
   MOCK_TEXT_FIELD,
   MOCK_TEXTFIELD_RESPONSE,
   MOCK_UINFIN,
@@ -89,7 +87,7 @@ describe('public-form.submissions.routes', () => {
     const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
 
     describe('Joi validation', () => {
-      it('should return 200 when submission is valid for non-table field', async () => {
+      it('should return 200 when submission is valid', async () => {
         // Arrange
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
@@ -107,39 +105,6 @@ describe('public-form.submissions.routes', () => {
             'body',
             JSON.stringify({
               responses: [MOCK_TEXTFIELD_RESPONSE],
-            }),
-          )
-          .query({ captchaResponse: 'null' })
-
-        // Assert
-        expect(response.status).toBe(200)
-        expect(response.body).toEqual({
-          message: 'Form submission successful.',
-          submissionId: expect.any(String),
-        })
-      })
-
-      /**
-       * This test tests to ensure that deep nested discriminator fields still continue to work.
-       */
-      it('should return 200 when submission is valid for table field', async () => {
-        // Arrange
-        const { form } = await dbHandler.insertEmailForm({
-          formOptions: {
-            hasCaptcha: false,
-            status: FormStatus.Public,
-            form_fields: [MOCK_TABLE_FIELD],
-          },
-        })
-
-        // Act
-        const response = await request
-          .post(`/forms/${form._id}/submissions/email`)
-          // MOCK_RESPONSE contains all required keys
-          .field(
-            'body',
-            JSON.stringify({
-              responses: [MOCK_TABLE_RESPONSE],
             }),
           )
           .query({ captchaResponse: 'null' })

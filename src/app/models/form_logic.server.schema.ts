@@ -26,8 +26,7 @@ const LogicConditionSchema = new Schema<IConditionSchema>({
     enum: Object.values(LogicConditionState),
   },
   value: {
-    // Bug where Mixed is not an `any` type, resulting in TypeScript errors.
-    type: Schema.Types.Mixed as any,
+    type: Schema.Types.Mixed,
     required: true,
   },
   ifValueType: {

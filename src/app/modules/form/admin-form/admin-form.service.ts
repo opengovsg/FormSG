@@ -357,21 +357,23 @@ export const transferFormOwnership = (
             ),
           ),
       )
-      .andThen((updatedForm) => {
-        const populatePromise = updatedForm.populate<IPopulatedForm>({
-          path: 'admin',
-          populate: { path: 'agency' },
-        }) as Promise<IPopulatedForm>
-        return ResultAsync.fromPromise(populatePromise, (error) => {
-          logger.error({
-            message: 'Error occurred whilst populating form with admin',
-            meta: logMeta,
-            error,
-          })
+      // Step 4: Populate updated form.
+      .andThen((updatedForm) =>
+        ResultAsync.fromPromise(
+          updatedForm
+            .populate({ path: 'admin', populate: { path: 'agency' } })
+            .execPopulate(),
+          (error) => {
+            logger.error({
+              message: 'Error occurred whilst populating form with admin',
+              meta: logMeta,
+              error,
+            })
 
-          return new DatabaseError(getMongoErrorMessage(error))
-        })
-      })
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        ),
+      )
   )
 }
 
@@ -661,9 +663,7 @@ export const editFormFields = (
   ).asyncAndThen((newFormFields) => {
     // Update form fields of original form.
     originalForm.form_fields = newFormFields
-
-    const savePromise = originalForm.save() as Promise<IPopulatedForm>
-    return ResultAsync.fromPromise(savePromise, (error) => {
+    return ResultAsync.fromPromise(originalForm.save(), (error) => {
       logger.error({
         message: 'Error encountered while editing form fields',
         meta: {
@@ -704,12 +704,8 @@ export const updateForm = (
 
   // Updating some part of form, override original form with new updated form.
   assignIn(originalForm, scrubbedFormParams)
-  // Type instantiation is excessively deep and possibly infinite.
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const savePromise = originalForm.save() as Promise<IPopulatedForm>
 
-  return ResultAsync.fromPromise(savePromise, (error) => {
+  return ResultAsync.fromPromise(originalForm.save(), (error) => {
     logger.error({
       message: 'Error encountered while updating form',
       meta: {
