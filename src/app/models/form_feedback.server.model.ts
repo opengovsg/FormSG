@@ -52,13 +52,15 @@ FormFeedbackSchema.statics.getFeedbackCursorByFormId = function (
  */
 const getFormFeedbackModel = (db: Mongoose): IFormFeedbackModel => {
   try {
-    return db.model(FORM_FEEDBACK_SCHEMA_ID) as IFormFeedbackModel
+    return db.model<IFormFeedbackSchema, IFormFeedbackModel>(
+      FORM_FEEDBACK_SCHEMA_ID,
+    )
   } catch {
-    return db.model(
+    return db.model<IFormFeedbackSchema, IFormFeedbackModel>(
       FORM_FEEDBACK_SCHEMA_ID,
       FormFeedbackSchema,
       FORM_FEEDBACK_COLLECTION_NAME,
-    ) as IFormFeedbackModel
+    )
   }
 }
 

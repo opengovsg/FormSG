@@ -24,4 +24,4 @@ export type AgencyDocument = EnforceDocument<
 >
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type IAgencyModel = Model<IAgencyDocument, {}, AgencyInstanceMethods>
+export type IAgencyModel = Model<IAgencySchema, {}, AgencyInstanceMethods>
