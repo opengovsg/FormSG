@@ -9,6 +9,8 @@ import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 
+import { useMutateFormSettings } from '../mutations'
+
 export const TwilioSettingsSection = (): JSX.Element => {
   return (
     <>
@@ -39,6 +41,7 @@ const TwilioDetailsInput = ({
     formState: { errors },
     handleSubmit,
     getValues,
+    setValue,
   } = useForm({
     mode: 'onChange',
     defaultValues: {
@@ -89,6 +92,8 @@ const TwilioDetailsInput = ({
     }),
     [],
   )
+
+  const { mutateFormTwilioDetails } = useMutateFormSettings()
 
   return (
     <Stack spacing="2rem">
@@ -179,25 +184,23 @@ const TwilioDetailsInput = ({
           </Text>
         ) : (
           <Button
-            onClick={() => {
-              handleSubmit(
-                ({
+            onClick={handleSubmit(
+              ({
+                apiKeySecret,
+                apiKeySid,
+                accountSid,
+                messagingServiceSid,
+                isDisabled,
+              }) => {
+                mutateFormTwilioDetails.mutate({
                   apiKeySecret,
                   apiKeySid,
                   accountSid,
                   messagingServiceSid,
-                  isDisabled,
-                }) =>
-                  console.log(
-                    apiKeySecret,
-                    apiKeySid,
-                    accountSid,
-                    messagingServiceSid,
-                    isDisabled,
-                  ),
-                () => reset(),
-              )
-            }}
+                })
+                setValue('isDisabled', true)
+              },
+            )}
           >
             Save credentials
           </Button>
