@@ -11,11 +11,14 @@ import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
+
 import { useMutateFormSettings } from '../mutations'
 
 import { DeleteTwilioModal } from './DeleteTwilioModal'
 
 export const TwilioSettingsSection = (): JSX.Element => {
+  const { data: form } = useAdminForm()
   return (
     <>
       <Text mb="1rem">
@@ -27,7 +30,7 @@ export const TwilioSettingsSection = (): JSX.Element => {
         before activating.
       </InlineMessage>
       <Skeleton isLoaded={true}>
-        <TwilioDetailsInput credentialsExist={true} />
+        <TwilioDetailsInput credentialsExist={!!form?.msgSrvcName} />
       </Skeleton>
     </>
   )
@@ -48,13 +51,21 @@ const TwilioDetailsInput = ({
     setValue,
   } = useForm({
     mode: 'onChange',
-    defaultValues: {
-      accountSid: 'AC12345678',
-      apiKeySid: '',
-      apiKeySecret: '',
-      messagingServiceSid: '',
-      isDisabled: credentialsExist,
-    },
+    defaultValues: credentialsExist
+      ? {
+          accountSid: 'AC12345678',
+          apiKeySid: 'SK12345678',
+          apiKeySecret: '12345678',
+          messagingServiceSid: 'MG12345678',
+          isDisabled: credentialsExist,
+        }
+      : {
+          accountSid: '',
+          apiKeySid: '',
+          apiKeySecret: '',
+          messagingServiceSid: '',
+          isDisabled: credentialsExist,
+        },
   })
 
   const [isOpen, setOpen] = useState<boolean>(false)
