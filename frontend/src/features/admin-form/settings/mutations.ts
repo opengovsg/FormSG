@@ -9,6 +9,7 @@ import {
   FormSettings,
   FormStatus,
 } from '~shared/types/form/form'
+import { TwilioCredentials } from '~shared/types/twilio'
 
 import { ApiError } from '~typings/core'
 
@@ -19,6 +20,7 @@ import { adminFormKeys } from '../common/queries'
 
 import { adminFormSettingsKeys } from './queries'
 import {
+  deleteTwilioCredentials,
   updateFormAuthType,
   updateFormCaptcha,
   updateFormEmails,
@@ -245,28 +247,38 @@ export const useMutateFormSettings = () => {
   })
 
   const mutateFormTwilioDetails = useMutation(
-    (credentials: {
-      accountSid: string
-      apiKeySid: string
-      apiKeySecret: string
-      messagingServiceSid: string
-    }) =>
-      updateTwilioCredentials(
-        formId,
-        credentials.accountSid,
-        credentials.apiKeySid,
-        credentials.apiKeySecret,
-        credentials.messagingServiceSid,
-      ),
+    (credentials: TwilioCredentials) =>
+      updateTwilioCredentials(formId, credentials),
     {
       onSuccess: (newData) => {
         toast.closeAll()
         // Update new settings data in cache.
-        console.log(newData)
 
         // Show toast on success.
         toast({
-          description: "Your form's title has been updated.",
+          description: "Your form's twilio details has been updated.",
+        })
+      },
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message,
+          status: 'danger',
+        })
+      },
+    },
+  )
+
+  const mutateFormTwilioDeletion = useMutation(
+    () => deleteTwilioCredentials(formId),
+    {
+      onSuccess: (newData) => {
+        toast.closeAll()
+        // Update new settings data in cache.
+
+        // Show toast on success.
+        toast({
+          description: 'Your form twilio credentials have been deleted',
         })
       },
       onError: (error: Error) => {
@@ -289,5 +301,6 @@ export const useMutateFormSettings = () => {
     mutateFormAuthType,
     mutateFormEsrvcId,
     mutateFormTwilioDetails,
+    mutateFormTwilioDeletion,
   }
 }

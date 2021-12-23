@@ -1,7 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { FormControl, Skeleton, Stack, Text } from '@chakra-ui/react'
 import { get, isEmpty } from 'lodash'
+
+import { TwilioCredentials } from '~shared/types/twilio'
 
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -10,6 +12,8 @@ import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 
 import { useMutateFormSettings } from '../mutations'
+
+import { DeleteTwilioModal } from './DeleteTwilioModal'
 
 export const TwilioSettingsSection = (): JSX.Element => {
   return (
@@ -52,6 +56,8 @@ const TwilioDetailsInput = ({
       isDisabled: credentialsExist,
     },
   })
+
+  const [isOpen, setOpen] = useState<boolean>(false)
 
   const accountSidRules = useMemo(
     () => ({
@@ -171,13 +177,7 @@ const TwilioDetailsInput = ({
             color="#C05050"
             as="u"
             onClick={() => {
-              reset({
-                accountSid: '',
-                apiKeySid: '',
-                apiKeySecret: '',
-                messagingServiceSid: '',
-                isDisabled: false,
-              })
+              setOpen(true)
             }}
           >
             Remove and Delete Twilio Credentials
@@ -190,14 +190,14 @@ const TwilioDetailsInput = ({
                 apiKeySid,
                 accountSid,
                 messagingServiceSid,
-                isDisabled,
               }) => {
-                mutateFormTwilioDetails.mutate({
-                  apiKeySecret,
-                  apiKeySid,
+                const credentials: TwilioCredentials = {
+                  apiSecret: apiKeySecret,
+                  apiKey: apiKeySid,
                   accountSid,
                   messagingServiceSid,
-                })
+                }
+                mutateFormTwilioDetails.mutate(credentials)
                 setValue('isDisabled', true)
               },
             )}
@@ -206,6 +206,11 @@ const TwilioDetailsInput = ({
           </Button>
         )}
       </Skeleton>
+      <DeleteTwilioModal
+        isOpen={isOpen}
+        onClose={() => setOpen(false)}
+        reset={reset}
+      />
     </Stack>
   )
 }
