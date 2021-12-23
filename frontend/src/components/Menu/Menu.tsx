@@ -57,6 +57,7 @@ const MenuButton = ({
       colorScheme={colorScheme}
       variant={variant}
       rightIcon={ChevronIcon}
+      justifyContent="space-between"
       iconSpacing="1.5rem"
       sx={style.button}
       {...props}

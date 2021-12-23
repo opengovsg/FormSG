@@ -31,8 +31,9 @@ export const Badge: ComponentStyleConfig = {
   },
   sizes: {
     md: {
-      p: '0.25rem',
-      borderRadius: '0.25rem',
+      py: '0.25rem',
+      px: '0.5rem',
+      borderRadius: '4px',
     },
   },
   defaultProps: {

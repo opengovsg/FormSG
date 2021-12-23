@@ -5,12 +5,16 @@ import * as React from 'react'
 import ReactDOM from 'react-dom'
 
 import { App } from './app/App'
+import * as dayjs from './utils/dayjs'
 import reportWebVitals from './reportWebVitals'
 import * as serviceWorker from './serviceWorker'
 
 if (process.env.NODE_ENV === 'test') {
   import('./mocks/msw/browser').then(({ worker }) => worker.start())
 }
+
+// Init dayjs
+dayjs.init()
 
 ReactDOM.render(
   <React.StrictMode>
