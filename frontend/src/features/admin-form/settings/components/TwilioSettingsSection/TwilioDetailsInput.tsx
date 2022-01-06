@@ -1,7 +1,6 @@
-import { useMemo, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { FormControl, Skeleton, Stack, Text } from '@chakra-ui/react'
-import { get, isEmpty } from 'lodash'
+import { useState } from 'react'
+import { RegisterOptions, useForm } from 'react-hook-form'
+import { Box, FormControl, Stack, Text } from '@chakra-ui/react'
 
 import { TwilioCredentials } from '~shared/types/twilio'
 
@@ -14,6 +13,33 @@ import { useMutateFormSettings } from '../../mutations'
 
 import { DeleteTwilioModal } from './DeleteTwilioModal'
 
+const TWILIO_INPUT_RULES: Record<keyof TwilioCredentials, RegisterOptions> = {
+  accountSid: {
+    required: 'Account SID is required',
+    pattern: {
+      value: /^AC/,
+      message: 'Account SID must start with AC',
+    },
+  },
+  apiKey: {
+    required: 'API key SID is required',
+    pattern: {
+      value: /^SK/,
+      message: 'API key SID must start with SK',
+    },
+  },
+  apiSecret: {
+    required: 'API key secret is required',
+  },
+  messagingServiceSid: {
+    required: 'Messaging service SID is required',
+    pattern: {
+      value: /^MG/,
+      message: 'Messaging service SID must start with MG',
+    },
+  },
+}
+
 interface TwilioDetailsInputProps {
   hasExistingTwilioCreds: boolean
 }
@@ -21,147 +47,53 @@ export const TwilioDetailsInput = ({
   hasExistingTwilioCreds,
 }: TwilioDetailsInputProps): JSX.Element => {
   const {
-    control,
+    register,
     reset,
     formState: { errors },
     handleSubmit,
-    getValues,
-    setValue,
-  } = useForm({
-    mode: 'onChange',
-    defaultValues: hasExistingTwilioCreds
-      ? {
-          accountSid: 'AC12345678',
-          apiKeySid: 'SK12345678',
-          apiKeySecret: '12345678',
-          messagingServiceSid: 'MG12345678',
-          isDisabled: hasExistingTwilioCreds,
-        }
-      : {
-          accountSid: '',
-          apiKeySid: '',
-          apiKeySecret: '',
-          messagingServiceSid: '',
-          isDisabled: hasExistingTwilioCreds,
-        },
-  })
+  } = useForm<TwilioCredentials>()
 
   const [isOpen, setOpen] = useState<boolean>(false)
 
-  const accountSidRules = useMemo(
-    () => ({
-      required: 'Account SID is required',
-      pattern: {
-        value: /^AC/,
-        message: 'Account SID must start with AC',
-      },
-    }),
-    [],
-  )
-
-  const apiKeySidRules = useMemo(
-    () => ({
-      required: 'API key SID is required',
-      pattern: {
-        value: /^SK/,
-        message: 'API key SID must start with SK',
-      },
-    }),
-    [],
-  )
-
-  const apiKeySecretRules = useMemo(
-    () => ({
-      required: 'API key Secret is required',
-    }),
-    [],
-  )
-
-  const messagingServiceSidRules = useMemo(
-    () => ({
-      required: 'Messaging service SID is required',
-      pattern: {
-        value: /^MG/,
-        message: 'Messaging service SID must start with MG',
-      },
-    }),
-    [],
-  )
-
   const { mutateFormTwilioDetails } = useMutateFormSettings()
 
+  const handleUpdateTwilioDetails = handleSubmit((credentials) => {
+    return mutateFormTwilioDetails.mutate(credentials)
+  })
+
   return (
-    <Stack spacing="2rem">
-      <FormControl isInvalid={!isEmpty(errors.accountSid)}>
-        <FormLabel isRequired>Account SID</FormLabel>
-        <Controller
-          control={control}
-          name="accountSid"
-          rules={accountSidRules}
-          render={({ field }) => (
-            <Input
-              {...field}
-              type="password"
-              isDisabled={getValues('isDisabled')}
-            />
-          )}
-        />
-        <FormErrorMessage>{get(errors, 'accountSid.message')}</FormErrorMessage>
-      </FormControl>
-      <FormControl isInvalid={!isEmpty(errors.apiKeySid)}>
-        <FormLabel isRequired>API Key SID</FormLabel>
-        <Controller
-          control={control}
-          name="apiKeySid"
-          rules={apiKeySidRules}
-          render={({ field }) => (
-            <Input
-              {...field}
-              type="password"
-              isDisabled={getValues('isDisabled')}
-            />
-          )}
-        />
-        <FormErrorMessage>{get(errors, 'apiKeySid.message')}</FormErrorMessage>
-      </FormControl>
-      <FormControl isInvalid={!isEmpty(errors.apiKeySecret)}>
-        <FormLabel isRequired>API key secret</FormLabel>
-        <Controller
-          control={control}
-          name="apiKeySecret"
-          rules={apiKeySecretRules}
-          render={({ field }) => (
-            <Input
-              {...field}
-              type="password"
-              isDisabled={getValues('isDisabled')}
-            />
-          )}
-        />
-        <FormErrorMessage>
-          {get(errors, 'apiKeySecret.message')}
-        </FormErrorMessage>
-      </FormControl>
-      <FormControl isInvalid={!isEmpty(errors.messagingServiceSid)}>
-        <FormLabel isRequired>Messaging service SID</FormLabel>
-        <Controller
-          control={control}
-          name="messagingServiceSid"
-          rules={messagingServiceSidRules}
-          render={({ field }) => (
-            <Input
-              {...field}
-              type="password"
-              isDisabled={getValues('isDisabled')}
-            />
-          )}
-        />
-        <FormErrorMessage>
-          {get(errors, 'messagingServiceSid.message')}
-        </FormErrorMessage>
-      </FormControl>
-      <Skeleton isLoaded={true} my="2rem">
-        {getValues('isDisabled') ? (
+    <form onSubmit={handleUpdateTwilioDetails} noValidate>
+      <Stack spacing="2rem">
+        <FormControl isInvalid={!!errors.accountSid}>
+          <FormLabel isRequired>Account SID</FormLabel>
+          <Input {...register('accountSid', TWILIO_INPUT_RULES.accountSid)} />
+          <FormErrorMessage>{errors.accountSid?.message}</FormErrorMessage>
+        </FormControl>
+        <FormControl isInvalid={!!errors.apiKey}>
+          <FormLabel isRequired>API Key SID</FormLabel>
+          <Input {...register('apiKey', TWILIO_INPUT_RULES.apiKey)} />
+          <FormErrorMessage>{errors.apiKey?.message}</FormErrorMessage>
+        </FormControl>
+        <FormControl isInvalid={!!errors.apiSecret}>
+          <FormLabel isRequired>API key secret</FormLabel>
+          <Input {...register('apiSecret', TWILIO_INPUT_RULES.apiSecret)} />
+          <FormErrorMessage>{errors.apiSecret?.message}</FormErrorMessage>
+        </FormControl>
+        <FormControl isInvalid={!!errors.messagingServiceSid}>
+          <FormLabel isRequired>Messaging service SID</FormLabel>
+          <Input
+            {...register(
+              'messagingServiceSid',
+              TWILIO_INPUT_RULES.messagingServiceSid,
+            )}
+          />
+          <FormErrorMessage>
+            {errors.messagingServiceSid?.message}
+          </FormErrorMessage>
+        </FormControl>
+      </Stack>
+      <Box mt="2.5rem">
+        {hasExistingTwilioCreds ? (
           <Text
             color="#C05050"
             as="u"
@@ -172,34 +104,14 @@ export const TwilioDetailsInput = ({
             Remove and Delete Twilio Credentials
           </Text>
         ) : (
-          <Button
-            onClick={handleSubmit(
-              ({
-                apiKeySecret,
-                apiKeySid,
-                accountSid,
-                messagingServiceSid,
-              }) => {
-                const credentials: TwilioCredentials = {
-                  apiSecret: apiKeySecret,
-                  apiKey: apiKeySid,
-                  accountSid,
-                  messagingServiceSid,
-                }
-                mutateFormTwilioDetails.mutate(credentials)
-                setValue('isDisabled', true)
-              },
-            )}
-          >
-            Save credentials
-          </Button>
+          <Button type="submit">Save credentials</Button>
         )}
-      </Skeleton>
+      </Box>
       <DeleteTwilioModal
         isOpen={isOpen}
         onClose={() => setOpen(false)}
         reset={reset}
       />
-    </Stack>
+    </form>
   )
 }
