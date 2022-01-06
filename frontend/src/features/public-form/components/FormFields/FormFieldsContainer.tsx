@@ -90,13 +90,7 @@ export const FormFieldsContainer = ({
     return form.form_fields.map((field) => {
       switch (field.fieldType) {
         case BasicField.Section:
-          return (
-            <SectionField
-              key={field._id}
-              dividerColor={bgColour}
-              schema={field}
-            />
-          )
+          return <SectionField key={field._id} schema={field} />
         case BasicField.Checkbox:
           return <CheckboxField key={field._id} schema={field} />
         case BasicField.Radio:
