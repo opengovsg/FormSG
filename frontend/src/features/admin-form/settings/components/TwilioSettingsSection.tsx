@@ -10,6 +10,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
+import Link from '~components/Link'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -23,7 +24,13 @@ export const TwilioSettingsSection = (): JSX.Element => {
     <>
       <Text mb="1rem">
         Add your Twilio credentials to pay for Verified SMSes beyond the free
-        tier of 10,000 SMSes. How to find your credentials ↪
+        tier of 10,000 SMSes.{' '}
+        <Link
+          href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-arrange-payment-for-verified-sms"
+          isExternal
+        >
+          How to find your credentials
+        </Link>
       </Text>
       <InlineMessage mb="1rem">
         To verify your credentials are correct, please test it in your form
