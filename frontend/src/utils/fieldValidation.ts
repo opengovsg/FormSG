@@ -13,6 +13,7 @@ import {
   EmailFieldBase,
   FieldBase,
   HomenoFieldBase,
+  LongTextFieldBase,
   NricFieldBase,
   NumberFieldBase,
   NumberSelectedValidation,
@@ -178,8 +179,8 @@ export const createDecimalValidationRules: ValidationRuleFn<
   }
 }
 
-export const createShortTextValidationRules: ValidationRuleFn<
-  ShortTextFieldBase
+export const createTextValidationRules: ValidationRuleFn<
+  ShortTextFieldBase | LongTextFieldBase
 > = (schema) => {
   const { selectedValidation, customVal } = schema.ValidationOptions
   return {

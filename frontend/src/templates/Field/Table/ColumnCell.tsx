@@ -6,7 +6,7 @@ import { get } from 'lodash'
 
 import { BasicField, Column, ShortTextColumnBase } from '~shared/types/field'
 
-import { createShortTextValidationRules } from '~utils/fieldValidation'
+import { createTextValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -28,7 +28,7 @@ const ShortTextColumnCell = ({
   schema,
   inputName,
 }: FieldColumnCellProps<ShortTextColumnBase>) => {
-  const rules = useMemo(() => createShortTextValidationRules(schema), [schema])
+  const rules = useMemo(() => createTextValidationRules(schema), [schema])
 
   return (
     <Controller
