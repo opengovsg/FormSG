@@ -1,12 +1,17 @@
-import { RegisterOptions, useForm } from 'react-hook-form'
-import { Box, FormControl, Stack, Text, useDisclosure } from '@chakra-ui/react'
+import { useCallback } from 'react'
+import {
+  RegisterOptions,
+  useForm,
+  UseFormRegisterReturn,
+} from 'react-hook-form'
+import { Box, FormControl, Stack, useDisclosure } from '@chakra-ui/react'
 
 import { TwilioCredentials } from '~shared/types/twilio'
 
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
+import Input, { InputProps } from '~components/Input'
 
 import { useMutateTwilioCreds } from '../../mutations'
 
@@ -42,7 +47,7 @@ const TWILIO_INPUT_RULES: Record<keyof TwilioCredentials, RegisterOptions> = {
 interface TwilioDetailsInputProps {
   hasExistingTwilioCreds: boolean
 }
-export const TwilioDetailsInput = ({
+export const TwilioDetailsInputs = ({
   hasExistingTwilioCreds,
 }: TwilioDetailsInputProps): JSX.Element => {
   const {
@@ -60,32 +65,53 @@ export const TwilioDetailsInput = ({
     return mutateFormTwilioDetails.mutate(credentials)
   })
 
+  const registerPropsOrDisabled = useCallback(
+    (name: keyof TwilioCredentials): UseFormRegisterReturn | InputProps => {
+      if (hasExistingTwilioCreds) {
+        return {
+          isDisabled: true,
+          placeholder: '********************',
+        }
+      }
+
+      return register(name, TWILIO_INPUT_RULES[name])
+    },
+    [hasExistingTwilioCreds, register],
+  )
+
   return (
-    <form onSubmit={handleUpdateTwilioDetails} noValidate>
+    <>
       <Stack spacing="2rem">
-        <FormControl isInvalid={!!errors.accountSid}>
+        <FormControl
+          isReadOnly={mutateFormTwilioDetails.isLoading}
+          isInvalid={!!errors.accountSid}
+        >
           <FormLabel isRequired>Account SID</FormLabel>
-          <Input {...register('accountSid', TWILIO_INPUT_RULES.accountSid)} />
+          <Input {...registerPropsOrDisabled('accountSid')} />
           <FormErrorMessage>{errors.accountSid?.message}</FormErrorMessage>
         </FormControl>
-        <FormControl isInvalid={!!errors.apiKey}>
+        <FormControl
+          isReadOnly={mutateFormTwilioDetails.isLoading}
+          isInvalid={!!errors.apiKey}
+        >
           <FormLabel isRequired>API Key SID</FormLabel>
-          <Input {...register('apiKey', TWILIO_INPUT_RULES.apiKey)} />
+          <Input {...registerPropsOrDisabled('apiKey')} />
           <FormErrorMessage>{errors.apiKey?.message}</FormErrorMessage>
         </FormControl>
-        <FormControl isInvalid={!!errors.apiSecret}>
+        <FormControl
+          isReadOnly={mutateFormTwilioDetails.isLoading}
+          isInvalid={!!errors.apiSecret}
+        >
           <FormLabel isRequired>API key secret</FormLabel>
-          <Input {...register('apiSecret', TWILIO_INPUT_RULES.apiSecret)} />
+          <Input {...registerPropsOrDisabled('apiSecret')} />
           <FormErrorMessage>{errors.apiSecret?.message}</FormErrorMessage>
         </FormControl>
-        <FormControl isInvalid={!!errors.messagingServiceSid}>
+        <FormControl
+          isReadOnly={mutateFormTwilioDetails.isLoading}
+          isInvalid={!!errors.messagingServiceSid}
+        >
           <FormLabel isRequired>Messaging service SID</FormLabel>
-          <Input
-            {...register(
-              'messagingServiceSid',
-              TWILIO_INPUT_RULES.messagingServiceSid,
-            )}
-          />
+          <Input {...registerPropsOrDisabled('messagingServiceSid')} />
           <FormErrorMessage>
             {errors.messagingServiceSid?.message}
           </FormErrorMessage>
@@ -93,14 +119,19 @@ export const TwilioDetailsInput = ({
       </Stack>
       <Box mt="2.5rem">
         {hasExistingTwilioCreds ? (
-          <Text color="#C05050" as="u" onClick={onOpen}>
-            Remove and Delete Twilio Credentials
-          </Text>
+          <Button variant="link" colorScheme="danger" onClick={onOpen}>
+            Remove and re-enter credentials
+          </Button>
         ) : (
-          <Button type="submit">Save credentials</Button>
+          <Button
+            isLoading={mutateFormTwilioDetails.isLoading}
+            onClick={handleUpdateTwilioDetails}
+          >
+            Save credentials
+          </Button>
         )}
       </Box>
       <DeleteTwilioModal isOpen={isOpen} onClose={onClose} reset={reset} />
-    </form>
+    </>
   )
 }

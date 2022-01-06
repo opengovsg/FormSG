@@ -8,7 +8,7 @@ import {
   useFreeSmsQuota,
 } from '~features/admin-form/common/queries'
 
-import { TwilioDetailsInput } from './TwilioDetailsInput'
+import { TwilioDetailsInputs } from './TwilioDetailsInputs'
 
 export const TwilioSettingsSection = (): JSX.Element => {
   const { data: form } = useAdminForm()
@@ -35,7 +35,7 @@ export const TwilioSettingsSection = (): JSX.Element => {
         before activating.
       </InlineMessage>
       <Skeleton isLoaded={!!form}>
-        <TwilioDetailsInput hasExistingTwilioCreds={!!form?.msgSrvcName} />
+        <TwilioDetailsInputs hasExistingTwilioCreds={!!form?.msgSrvcName} />
       </Skeleton>
     </>
   )
