@@ -14,6 +14,7 @@ import {
   FieldBase,
   HomenoFieldBase,
   LongTextFieldBase,
+  MobileFieldBase,
   NricFieldBase,
   NumberFieldBase,
   NumberSelectedValidation,
@@ -24,7 +25,10 @@ import {
   UenFieldBase,
 } from '~shared/types/field'
 import { isNricValid } from '~shared/utils/nric-validation'
-import { isHomePhoneNumber } from '~shared/utils/phone-num-validation'
+import {
+  isHomePhoneNumber,
+  isMobilePhoneNumber,
+} from '~shared/utils/phone-num-validation'
 import { isUenValid } from '~shared/utils/uen-validation'
 
 import {
@@ -96,6 +100,18 @@ export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
     validate: (val?: string) => {
       if (!val) return true
       return isHomePhoneNumber(val) || 'Please enter a valid landline number'
+    },
+  }
+}
+
+export const createMobileValidationRules: ValidationRuleFn<MobileFieldBase> = (
+  schema,
+) => {
+  return {
+    ...createBaseValidationRules(schema),
+    validate: (val?: string) => {
+      if (!val) return true
+      return isMobilePhoneNumber(val) || 'Please enter a valid mobile number'
     },
   }
 }

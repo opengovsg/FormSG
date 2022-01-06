@@ -15,6 +15,7 @@ import {
   HomeNoField,
   ImageField,
   LongTextField,
+  MobileField,
   NricField,
   NumberField,
   ParagraphField,
@@ -55,9 +56,6 @@ export const FormFieldsContainer = ({
               {},
             ),
           )
-          break
-        default:
-          acc[field._id] = ''
       }
 
       return acc
@@ -68,6 +66,11 @@ export const FormFieldsContainer = ({
     defaultValues: defaultFormValues,
     mode: 'onTouched',
   })
+
+  const {
+    formState: { isSubmitting },
+    handleSubmit,
+  } = formMethods
 
   const onSubmit = (values: Record<string, string>) => {
     console.log(values)
@@ -116,6 +119,8 @@ export const FormFieldsContainer = ({
           return <AttachmentField key={field._id} schema={field} />
         case BasicField.HomeNo:
           return <HomeNoField key={field._id} schema={field} />
+        case BasicField.Mobile:
+          return <MobileField key={field._id} schema={field} />
         case BasicField.Statement:
           return <ParagraphField key={field._id} schema={field} />
         case BasicField.Rating:
@@ -144,17 +149,16 @@ export const FormFieldsContainer = ({
         <SectionSidebar />
         <FormProvider {...formMethods}>
           <Box bg="white" p="2.5rem" w="100%" minW={0} maxW="57rem">
-            <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
-              <Stack spacing="2.25rem">{renderFields}</Stack>
-              <Button
-                mt="1rem"
-                type="submit"
-                isLoading={formMethods.formState.isSubmitting}
-                loadingText="Submitting"
-              >
-                Submit
-              </Button>
-            </form>
+            <Stack spacing="2.25rem">{renderFields}</Stack>
+            <Button
+              mt="1rem"
+              type="submit"
+              onClick={handleSubmit(onSubmit)}
+              isLoading={isSubmitting}
+              loadingText="Submitting"
+            >
+              Submit
+            </Button>
           </Box>
         </FormProvider>
         <Spacer />

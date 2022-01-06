@@ -5,6 +5,7 @@ import EmailField from './Email'
 import HomeNoField from './HomeNo'
 import ImageField from './Image'
 import LongTextField from './LongText'
+import MobileField from './Mobile'
 import NricField from './Nric'
 import NumberField from './Number'
 import ParagraphField from './Paragraph'
@@ -24,6 +25,7 @@ export {
   HomeNoField,
   ImageField,
   LongTextField,
+  MobileField,
   NricField,
   NumberField,
   ParagraphField,
