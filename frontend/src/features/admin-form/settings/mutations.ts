@@ -293,8 +293,6 @@ export const useMutateTwilioCreds = () => {
       onSuccess: () => {
         queryClient.invalidateQueries(adminFormKeys.id(formId))
         toast.closeAll()
-        // Update new settings data in cache.
-
         // Show toast on success.
         toast({
           description: 'Your form twilio credentials have been deleted',

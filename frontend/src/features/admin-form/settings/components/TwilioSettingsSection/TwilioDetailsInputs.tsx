@@ -52,7 +52,6 @@ export const TwilioDetailsInputs = ({
 }: TwilioDetailsInputProps): JSX.Element => {
   const {
     register,
-    reset,
     formState: { errors },
     handleSubmit,
   } = useForm<TwilioCredentials>()
@@ -131,7 +130,7 @@ export const TwilioDetailsInputs = ({
           </Button>
         )}
       </Box>
-      <DeleteTwilioModal isOpen={isOpen} onClose={onClose} reset={reset} />
+      <DeleteTwilioModal isOpen={isOpen} onClose={onClose} />
     </>
   )
 }

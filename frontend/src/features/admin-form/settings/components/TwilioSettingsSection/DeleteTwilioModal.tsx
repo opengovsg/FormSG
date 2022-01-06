@@ -1,15 +1,18 @@
+import { useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import {
-  Button,
   Modal,
   ModalBody,
   ModalContent,
+  ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Stack,
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
 
+import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
 import { useMutateTwilioCreds } from '../../mutations'
@@ -17,13 +20,11 @@ import { useMutateTwilioCreds } from '../../mutations'
 interface DeleteTwilioModalProps {
   isOpen: boolean
   onClose: () => void
-  reset: (x: any) => void
 }
 
 export const DeleteTwilioModal = ({
   isOpen,
   onClose,
-  reset,
 }: DeleteTwilioModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -36,6 +37,12 @@ export const DeleteTwilioModal = ({
 
   const { mutateFormTwilioDeletion } = useMutateTwilioCreds()
 
+  const handleConfirmDeleteCreds = useCallback(() => {
+    mutateFormTwilioDeletion.mutate(undefined, {
+      onSuccess: onClose,
+    })
+  }, [mutateFormTwilioDeletion, onClose])
+
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -44,47 +51,37 @@ export const DeleteTwilioModal = ({
         <ModalHeader color="secondary.700">
           Remove Twilio credentials
         </ModalHeader>
-        <ModalBody whiteSpace="pre-line" pb="3.25rem">
+        <ModalBody whiteSpace="pre-line">
           <Text textStyle="body-2" color="secondary.500">
             Are you sure you want to remove your Twilio credentials? You will
             not be able to use the Verified SMS feature unless you have free
             SMSes remaining.
           </Text>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'right',
-              alignItems: 'center',
-            }}
+        </ModalBody>
+        <ModalFooter>
+          <Stack
+            direction={modalSize === 'mobile' ? 'column' : 'row'}
+            w="100%"
+            justify="flex-end"
           >
-            <Text
-              style={{ padding: '10px 16px', alignItems: 'center' }}
+            <Button
+              variant="clear"
+              colorScheme="secondary"
+              isFullWidth={modalSize === 'mobile'}
               onClick={onClose}
             >
-              No, don’t remove
-            </Text>
+              No, don't remove
+            </Button>
             <Button
-              style={{
-                background: '#C05050',
-                padding: '10px 16px',
-                alignItems: 'center',
-              }}
-              onClick={() => {
-                reset({
-                  accountSid: '',
-                  apiKeySid: '',
-                  apiKeySecret: '',
-                  messagingServiceSid: '',
-                  isDisabled: false,
-                })
-                mutateFormTwilioDeletion.mutate()
-                onClose()
-              }}
+              colorScheme="danger"
+              isFullWidth={modalSize === 'mobile'}
+              isLoading={mutateFormTwilioDeletion.isLoading}
+              onClick={handleConfirmDeleteCreds}
             >
               Yes, remove Twilio credentials
             </Button>
-          </div>
-        </ModalBody>
+          </Stack>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   )
