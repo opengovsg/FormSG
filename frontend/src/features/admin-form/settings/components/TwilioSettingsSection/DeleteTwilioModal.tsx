@@ -12,7 +12,7 @@ import {
 
 import { ModalCloseButton } from '~components/Modal'
 
-import { useMutateFormSettings } from '../mutations'
+import { useMutateFormSettings } from '../../mutations'
 
 interface DeleteTwilioModalProps {
   isOpen: boolean

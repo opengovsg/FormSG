@@ -8,46 +8,17 @@ import { TwilioCredentials } from '~shared/types/twilio'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
-import Link from '~components/Link'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
-
-import { useMutateFormSettings } from '../mutations'
+import { useMutateFormSettings } from '../../mutations'
 
 import { DeleteTwilioModal } from './DeleteTwilioModal'
 
-export const TwilioSettingsSection = (): JSX.Element => {
-  const { data: form } = useAdminForm()
-  return (
-    <>
-      <Text mb="1rem">
-        Add your Twilio credentials to pay for Verified SMSes beyond the free
-        tier of 10,000 SMSes.{' '}
-        <Link
-          href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-arrange-payment-for-verified-sms"
-          isExternal
-        >
-          How to find your credentials
-        </Link>
-      </Text>
-      <InlineMessage mb="1rem">
-        To verify your credentials are correct, please test it in your form
-        before activating.
-      </InlineMessage>
-      <Skeleton isLoaded={true}>
-        <TwilioDetailsInput credentialsExist={!!form?.msgSrvcName} />
-      </Skeleton>
-    </>
-  )
-}
-
 interface TwilioDetailsInputProps {
-  credentialsExist: boolean
+  hasExistingTwilioCreds: boolean
 }
-const TwilioDetailsInput = ({
-  credentialsExist,
+export const TwilioDetailsInput = ({
+  hasExistingTwilioCreds,
 }: TwilioDetailsInputProps): JSX.Element => {
   const {
     control,
@@ -58,20 +29,20 @@ const TwilioDetailsInput = ({
     setValue,
   } = useForm({
     mode: 'onChange',
-    defaultValues: credentialsExist
+    defaultValues: hasExistingTwilioCreds
       ? {
           accountSid: 'AC12345678',
           apiKeySid: 'SK12345678',
           apiKeySecret: '12345678',
           messagingServiceSid: 'MG12345678',
-          isDisabled: credentialsExist,
+          isDisabled: hasExistingTwilioCreds,
         }
       : {
           accountSid: '',
           apiKeySid: '',
           apiKeySecret: '',
           messagingServiceSid: '',
-          isDisabled: credentialsExist,
+          isDisabled: hasExistingTwilioCreds,
         },
   })
 
