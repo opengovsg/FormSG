@@ -4,6 +4,7 @@ import {
   RefObject,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react'
 
@@ -30,17 +31,23 @@ export const FormSectionsProvider = ({
   const [sectionRefs, setSectionRefs] = useState<
     Record<string, RefObject<HTMLDivElement>>
   >({})
-  const [activeSectionId, setActiveSectionId] = useState<string>()
+
+  const orderedSectionFields = useMemo(
+    () => data?.form_fields.filter((f) => f.fieldType === BasicField.Section),
+    [data],
+  )
+  const [activeSectionId, setActiveSectionId] = useState<string | undefined>(
+    orderedSectionFields?.[0]._id,
+  )
 
   useEffect(() => {
     if (!data) return
     const nextSectionRefs: Record<string, RefObject<HTMLDivElement>> = {}
-    data.form_fields.forEach((f) => {
-      if (f.fieldType !== BasicField.Section) return
+    orderedSectionFields?.forEach((f) => {
       nextSectionRefs[f._id] = createRef()
     })
     setSectionRefs(nextSectionRefs)
-  }, [data])
+  }, [activeSectionId, data, orderedSectionFields])
 
   return (
     <FormSectionsContext.Provider
