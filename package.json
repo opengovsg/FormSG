@@ -155,7 +155,7 @@
   "devDependencies": {
     "@babel/core": "^7.16.5",
     "@babel/plugin-transform-runtime": "^7.16.5",
-    "@babel/preset-env": "^7.16.5",
+    "@babel/preset-env": "^7.16.7",
     "@opengovsg/mockpass": "^2.7.9",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.36",
@@ -204,7 +204,7 @@
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-angular": "^4.1.0",
-    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-jest": "^25.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
