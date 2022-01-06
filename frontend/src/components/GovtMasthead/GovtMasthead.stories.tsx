@@ -21,4 +21,4 @@ export const GovtMastheadExpanded = Template.bind({})
 GovtMastheadExpanded.args = { isOpen: true }
 
 export const GovtMastheadCollapsed = Template.bind({})
-GovtMastheadExpanded.args = { isOpen: false }
+GovtMastheadCollapsed.args = { isOpen: false }
