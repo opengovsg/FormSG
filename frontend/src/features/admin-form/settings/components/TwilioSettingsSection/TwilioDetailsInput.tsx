@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { RegisterOptions, useForm } from 'react-hook-form'
-import { Box, FormControl, Stack, Text } from '@chakra-ui/react'
+import { Box, FormControl, Stack, Text, useDisclosure } from '@chakra-ui/react'
 
 import { TwilioCredentials } from '~shared/types/twilio'
 
@@ -53,7 +52,7 @@ export const TwilioDetailsInput = ({
     handleSubmit,
   } = useForm<TwilioCredentials>()
 
-  const [isOpen, setOpen] = useState<boolean>(false)
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   const { mutateFormTwilioDetails } = useMutateFormSettings()
 
@@ -94,24 +93,14 @@ export const TwilioDetailsInput = ({
       </Stack>
       <Box mt="2.5rem">
         {hasExistingTwilioCreds ? (
-          <Text
-            color="#C05050"
-            as="u"
-            onClick={() => {
-              setOpen(true)
-            }}
-          >
+          <Text color="#C05050" as="u" onClick={onOpen}>
             Remove and Delete Twilio Credentials
           </Text>
         ) : (
           <Button type="submit">Save credentials</Button>
         )}
       </Box>
-      <DeleteTwilioModal
-        isOpen={isOpen}
-        onClose={() => setOpen(false)}
-        reset={reset}
-      />
+      <DeleteTwilioModal isOpen={isOpen} onClose={onClose} reset={reset} />
     </form>
   )
 }
