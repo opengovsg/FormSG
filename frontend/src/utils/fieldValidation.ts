@@ -9,6 +9,7 @@ import validator from 'validator'
 import {
   AttachmentFieldBase,
   CheckboxFieldBase,
+  DecimalFieldBase,
   EmailFieldBase,
   FieldBase,
   HomenoFieldBase,
@@ -30,6 +31,8 @@ import {
   INVALID_EMAIL_ERROR,
   REQUIRED_ERROR,
 } from '~constants/validation'
+
+import { formatNumberToLocaleString } from './stringFormat'
 
 type OmitUnusedProps<T extends FieldBase> = Omit<
   T,
@@ -125,6 +128,52 @@ export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
             simplur`Please enter at most ${customVal} digit[|s] (${currLen}/${customVal})`
           )
       }
+    },
+  }
+}
+
+export const createDecimalValidationRules: ValidationRuleFn<
+  DecimalFieldBase
+> = (schema) => {
+  return {
+    ...createBaseValidationRules(schema),
+    validate: (val: string) => {
+      const {
+        ValidationOptions: { customMax, customMin },
+        validateByValue,
+      } = schema
+      if (!val) return true
+
+      const numVal = Number(val)
+      if (isNaN(numVal)) {
+        return 'Please enter a valid decimal'
+      }
+
+      if (!validateByValue) return true
+
+      if (
+        customMin &&
+        customMax &&
+        (numVal < customMin || numVal > customMax)
+      ) {
+        return `Please enter a decimal between ${formatNumberToLocaleString(
+          customMin,
+        )} and ${formatNumberToLocaleString(customMax)} (inclusive)`
+      }
+
+      if (customMin && numVal < customMin) {
+        return `Please enter a decimal greater than or equal to ${formatNumberToLocaleString(
+          customMin,
+        )}`
+      }
+
+      if (customMax && numVal > customMax) {
+        return `Please enter a decimal less than or equal to ${formatNumberToLocaleString(
+          customMax,
+        )}`
+      }
+
+      return true
     },
   }
 }

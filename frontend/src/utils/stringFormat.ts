@@ -19,3 +19,10 @@ export const formatOrdinal = (number: number): string => {
   const suffix = suffixes[englishOrdinalRules.select(number)]
   return number + suffix
 }
+
+export const formatNumberToLocaleString = (num: number): string => {
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 20,
+  })
+}
