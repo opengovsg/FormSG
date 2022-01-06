@@ -3,17 +3,26 @@ import { Skeleton, Text } from '@chakra-ui/react'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
+import {
+  useAdminForm,
+  useFreeSmsQuota,
+} from '~features/admin-form/common/queries'
 
 import { TwilioDetailsInput } from './TwilioDetailsInput'
 
 export const TwilioSettingsSection = (): JSX.Element => {
   const { data: form } = useAdminForm()
+  const { data: freeSmsQuota } = useFreeSmsQuota()
+
   return (
     <>
-      <Text mb="1rem">
+      <Text mb="1rem" display="flex" whiteSpace="pre" flexWrap="wrap">
         Add your Twilio credentials to pay for Verified SMSes beyond the free
-        tier of 10,000 SMSes.{' '}
+        tier of{' '}
+        <Skeleton isLoaded={!!freeSmsQuota}>
+          {freeSmsQuota?.quota.toLocaleString()}
+        </Skeleton>
+        SMSes.{' '}
         <Link
           href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-arrange-payment-for-verified-sms"
           isExternal
