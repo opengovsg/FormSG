@@ -9,20 +9,22 @@ import { FormColorTheme, PublicFormDto } from '~shared/types/form/form'
 import Button from '~components/Button'
 import {
   AttachmentField,
+  CheckboxField,
   EmailField,
   HomeNoField,
   ImageField,
   NricField,
   NumberField,
   ParagraphField,
+  RadioField,
   RatingField,
   SectionField,
   ShortTextField,
   TableField,
+  TableFieldSchema,
   UenField,
   YesNoField,
 } from '~templates/Field'
-import { TableFieldSchema } from '~templates/Field/Table'
 
 import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
@@ -89,6 +91,10 @@ export const FormFieldsContainer = ({
               schema={field}
             />
           )
+        case BasicField.Checkbox:
+          return <CheckboxField key={field._id} schema={field} />
+        case BasicField.Radio:
+          return <RadioField key={field._id} schema={field} />
         case BasicField.Nric:
           return <NricField key={field._id} schema={field} />
         case BasicField.Number:

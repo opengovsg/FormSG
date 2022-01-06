@@ -1,25 +1,29 @@
 import AttachmentField from './Attachment'
+import CheckboxField from './Checkbox'
 import EmailField from './Email'
 import HomeNoField from './HomeNo'
 import ImageField from './Image'
 import NricField from './Nric'
 import NumberField from './Number'
 import ParagraphField from './Paragraph'
+import RadioField from './Radio'
 import RatingField from './Rating'
 import SectionField from './Section'
 import ShortTextField from './ShortText'
-import TableField from './Table'
+import TableField, { TableFieldSchema } from './Table'
 import UenField from './Uen'
 import YesNoField from './YesNo'
 
 export {
   AttachmentField,
+  CheckboxField,
   EmailField,
   HomeNoField,
   ImageField,
   NricField,
   NumberField,
   ParagraphField,
+  RadioField,
   RatingField,
   SectionField,
   ShortTextField,
@@ -27,3 +31,5 @@ export {
   UenField,
   YesNoField,
 }
+
+export type { TableFieldSchema }
