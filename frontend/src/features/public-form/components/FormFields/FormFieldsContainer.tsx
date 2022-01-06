@@ -10,6 +10,7 @@ import Button from '~components/Button'
 import {
   AttachmentField,
   CheckboxField,
+  DecimalField,
   EmailField,
   HomeNoField,
   ImageField,
@@ -64,6 +65,7 @@ export const FormFieldsContainer = ({
 
   const formMethods = useForm({
     defaultValues: defaultFormValues,
+    mode: 'onTouched',
   })
 
   const onSubmit = (values: Record<string, string>) => {
@@ -99,6 +101,8 @@ export const FormFieldsContainer = ({
           return <NricField key={field._id} schema={field} />
         case BasicField.Number:
           return <NumberField key={field._id} schema={field} />
+        case BasicField.Decimal:
+          return <DecimalField key={field._id} schema={field} />
         case BasicField.ShortText:
           return <ShortTextField key={field._id} schema={field} />
         case BasicField.YesNo:
