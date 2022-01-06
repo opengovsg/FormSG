@@ -1,10 +1,10 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   RegisterOptions,
   useForm,
   UseFormRegisterReturn,
 } from 'react-hook-form'
-import { Box, FormControl, Stack, useDisclosure } from '@chakra-ui/react'
+import { FormControl, Skeleton, Stack, useDisclosure } from '@chakra-ui/react'
 
 import { TwilioCredentials } from '~shared/types/twilio'
 
@@ -12,6 +12,8 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input, { InputProps } from '~components/Input'
+
+import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { useMutateTwilioCreds } from '../../mutations'
 
@@ -44,12 +46,8 @@ const TWILIO_INPUT_RULES: Record<keyof TwilioCredentials, RegisterOptions> = {
   },
 }
 
-interface TwilioDetailsInputProps {
-  hasExistingTwilioCreds: boolean
-}
-export const TwilioDetailsInputs = ({
-  hasExistingTwilioCreds,
-}: TwilioDetailsInputProps): JSX.Element => {
+export const TwilioDetailsInputs = (): JSX.Element => {
+  const { data: form, isLoading } = useAdminForm()
   const {
     register,
     formState: { errors },
@@ -60,7 +58,13 @@ export const TwilioDetailsInputs = ({
 
   const { mutateFormTwilioDetails } = useMutateTwilioCreds()
 
+  const hasExistingTwilioCreds = useMemo(
+    () => !!form?.msgSrvcName,
+    [form?.msgSrvcName],
+  )
+
   const handleUpdateTwilioDetails = handleSubmit((credentials) => {
+    if (!form) return
     return mutateFormTwilioDetails.mutate(credentials)
   })
 
@@ -86,7 +90,9 @@ export const TwilioDetailsInputs = ({
           isInvalid={!!errors.accountSid}
         >
           <FormLabel isRequired>Account SID</FormLabel>
-          <Input {...registerPropsOrDisabled('accountSid')} />
+          <Skeleton isLoaded={!isLoading}>
+            <Input {...registerPropsOrDisabled('accountSid')} />
+          </Skeleton>
           <FormErrorMessage>{errors.accountSid?.message}</FormErrorMessage>
         </FormControl>
         <FormControl
@@ -94,7 +100,9 @@ export const TwilioDetailsInputs = ({
           isInvalid={!!errors.apiKey}
         >
           <FormLabel isRequired>API Key SID</FormLabel>
-          <Input {...registerPropsOrDisabled('apiKey')} />
+          <Skeleton isLoaded={!isLoading}>
+            <Input {...registerPropsOrDisabled('apiKey')} />
+          </Skeleton>
           <FormErrorMessage>{errors.apiKey?.message}</FormErrorMessage>
         </FormControl>
         <FormControl
@@ -102,7 +110,9 @@ export const TwilioDetailsInputs = ({
           isInvalid={!!errors.apiSecret}
         >
           <FormLabel isRequired>API key secret</FormLabel>
-          <Input {...registerPropsOrDisabled('apiSecret')} />
+          <Skeleton isLoaded={!isLoading}>
+            <Input {...registerPropsOrDisabled('apiSecret')} />
+          </Skeleton>
           <FormErrorMessage>{errors.apiSecret?.message}</FormErrorMessage>
         </FormControl>
         <FormControl
@@ -110,13 +120,15 @@ export const TwilioDetailsInputs = ({
           isInvalid={!!errors.messagingServiceSid}
         >
           <FormLabel isRequired>Messaging service SID</FormLabel>
-          <Input {...registerPropsOrDisabled('messagingServiceSid')} />
+          <Skeleton isLoaded={!isLoading}>
+            <Input {...registerPropsOrDisabled('messagingServiceSid')} />
+          </Skeleton>
           <FormErrorMessage>
             {errors.messagingServiceSid?.message}
           </FormErrorMessage>
         </FormControl>
       </Stack>
-      <Box mt="2.5rem">
+      <Skeleton isLoaded={!isLoading} mt="2.5rem" w="fit-content">
         {hasExistingTwilioCreds ? (
           <Button variant="link" colorScheme="danger" onClick={onOpen}>
             Remove and re-enter credentials
@@ -129,7 +141,7 @@ export const TwilioDetailsInputs = ({
             Save credentials
           </Button>
         )}
-      </Box>
+      </Skeleton>
       <DeleteTwilioModal isOpen={isOpen} onClose={onClose} />
     </>
   )

@@ -3,15 +3,11 @@ import { Skeleton, Text } from '@chakra-ui/react'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
-import {
-  useAdminForm,
-  useFreeSmsQuota,
-} from '~features/admin-form/common/queries'
+import { useFreeSmsQuota } from '~features/admin-form/common/queries'
 
 import { TwilioDetailsInputs } from './TwilioDetailsInputs'
 
 export const TwilioSettingsSection = (): JSX.Element => {
-  const { data: form } = useAdminForm()
   const { data: freeSmsQuota } = useFreeSmsQuota()
 
   return (
@@ -34,9 +30,7 @@ export const TwilioSettingsSection = (): JSX.Element => {
         To verify your credentials are correct, please test it in your form
         before activating.
       </InlineMessage>
-      <Skeleton isLoaded={!!form}>
-        <TwilioDetailsInputs hasExistingTwilioCreds={!!form?.msgSrvcName} />
-      </Skeleton>
+      <TwilioDetailsInputs />
     </>
   )
 }
