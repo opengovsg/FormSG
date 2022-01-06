@@ -103,8 +103,6 @@ export const updateTwilioCredentials = async (
   formId: string,
   credentials: TwilioCredentials,
 ) => {
-  console.log('HERE', formId, credentials)
-
   return ApiService.put<TwilioCredentials>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/twilio`,
     credentials,
@@ -112,7 +110,6 @@ export const updateTwilioCredentials = async (
 }
 
 export const deleteTwilioCredentials = async (formId: string) => {
-  console.log(formId)
   return ApiService.delete<TwilioCredentials>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/twilio`,
   ).then(({ data }) => data)
