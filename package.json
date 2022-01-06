@@ -56,7 +56,7 @@
     "@opengovsg/myinfo-gov-client": "^4.0.0",
     "@opengovsg/ng-file-upload": "^12.2.15",
     "@opengovsg/sgid-client": "0.0.12",
-    "@opengovsg/spcp-auth-client": "^1.4.13",
+    "@opengovsg/spcp-auth-client": "^1.4.14",
     "@sentry/browser": "^6.16.1",
     "@sentry/integrations": "^6.16.1",
     "@stablelib/base64": "^1.0.1",
