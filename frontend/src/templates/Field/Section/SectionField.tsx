@@ -30,8 +30,8 @@ export const SectionField = forwardRef<SectionFieldProps, 'div'>(
           </Text>
         </Box>
         <Waypoint
-          topOffset="10%"
-          bottomOffset="80%"
+          topOffset="80px"
+          bottomOffset="70%"
           onEnter={handleSectionEnter}
         />
       </Box>
