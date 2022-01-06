@@ -7,7 +7,12 @@ export const FreeSmsQuota = (): JSX.Element => {
   const { data: freeSmsQuota } = useFreeSmsQuota()
   return (
     <Text textStyle="caption-1" color="secondary.500">
-      <Skeleton isLoaded={!!freeSmsQuota} display="flex" alignItems="center">
+      <Skeleton
+        as="span"
+        isLoaded={!!freeSmsQuota}
+        display="flex"
+        alignItems="center"
+      >
         <Icon fontSize="1rem" mr="0.5rem" as={BiMessage} />
         {freeSmsQuota?.freeSmsCounts.toLocaleString()}/
         {freeSmsQuota?.quota.toLocaleString()} free SMSes used

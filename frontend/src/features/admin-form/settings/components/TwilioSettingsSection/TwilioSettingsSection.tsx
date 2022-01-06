@@ -16,13 +16,13 @@ export const TwilioSettingsSection = (): JSX.Element => {
 
   return (
     <>
-      <Text mb="1rem" display="flex" whiteSpace="pre" flexWrap="wrap">
+      <Text mb="1rem">
         Add your Twilio credentials to pay for Verified SMSes beyond the free
-        tier of{' '}
-        <Skeleton isLoaded={!!freeSmsQuota}>
-          {freeSmsQuota?.quota.toLocaleString()}
+        tier of&nbsp;
+        <Skeleton as="span" isLoaded={!!freeSmsQuota}>
+          {freeSmsQuota?.quota.toLocaleString() ?? '10,000'}
         </Skeleton>
-        SMSes.{' '}
+        &nbsp;SMSes.&nbsp;
         <Link
           href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-arrange-payment-for-verified-sms"
           isExternal
