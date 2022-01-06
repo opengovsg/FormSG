@@ -7,7 +7,6 @@ export const LOGIN_ROUTE = '/login'
 // the regex in PublicFormPage.
 export const PUBLICFORM_ROUTE = '/:formId'
 export const PUBLICFORM_REGEX = /^([a-fA-F0-9]{24})$/
-export type PublicFormParam = { [PUBLIC_FORM_PARAM]: string }
 
 export const ADMINFORM_ROUTE = '/admin/form'
 /** Build tab has no subroute, its the index admin form route. */
