@@ -188,7 +188,35 @@ export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
 export const createCheckboxValidationRules: ValidationRuleFn<
   CheckboxFieldBase
 > = (schema) => {
-  return createBaseValidationRules(schema)
+  return {
+    ...createBaseValidationRules(schema),
+    validate: (val?: string[]) => {
+      const {
+        ValidationOptions: { customMin, customMax },
+        validateByValue,
+      } = schema
+      if (!val || !validateByValue) return true
+
+      if (
+        customMin &&
+        customMax &&
+        customMin === customMax &&
+        val.length !== customMin
+      ) {
+        return simplur`Please select exactly ${customMin} option[|s] (${val.length}/${customMin})`
+      }
+
+      if (customMin && val.length < customMin) {
+        return simplur`Please select at least ${customMin} option[|s] (${val.length}/${customMin})`
+      }
+
+      if (customMax && val.length > customMax) {
+        return simplur`Please select at most ${customMax} option[|s] (${val.length}/${customMax})`
+      }
+
+      return true
+    },
+  }
 }
 
 export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
