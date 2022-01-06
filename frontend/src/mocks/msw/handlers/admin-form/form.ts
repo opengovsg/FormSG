@@ -70,7 +70,7 @@ export const createMockForm = (
 
 export const getAdminFormResponse = (
   props: Partial<AdminFormDto> = {},
-  delay = 0,
+  delay: number | 'infinite' | 'real' = 0,
 ): ReturnType<typeof rest['post']> => {
   return rest.get<AdminFormViewDto>(
     '/api/v3/admin/forms/:formId',

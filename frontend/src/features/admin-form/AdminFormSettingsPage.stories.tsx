@@ -10,6 +10,7 @@ import {
   getAdminFormSubmissions,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
+import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 
 import formsgSdk from '~utils/formSdk'
 import { viewports } from '~utils/storybook'
@@ -40,6 +41,7 @@ export default {
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
     msw: [
+      getFreeSmsQuota(),
       getAdminFormResponse(),
       getAdminFormSettings(),
       getAdminFormSubmissions(),
@@ -75,6 +77,7 @@ StorageModeSettings.parameters = {
     storyDescription: `The passing secret key is ${storageModeKeypair.secretKey}`,
   },
   msw: [
+    getFreeSmsQuota(),
     getAdminFormResponse({ responseMode: FormResponseMode.Encrypt }),
     getAdminFormSettings({
       mode: FormResponseMode.Encrypt,
