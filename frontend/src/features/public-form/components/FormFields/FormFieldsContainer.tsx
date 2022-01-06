@@ -14,6 +14,7 @@ import {
   EmailField,
   HomeNoField,
   ImageField,
+  LongTextField,
   NricField,
   NumberField,
   ParagraphField,
@@ -105,6 +106,8 @@ export const FormFieldsContainer = ({
           return <DecimalField key={field._id} schema={field} />
         case BasicField.ShortText:
           return <ShortTextField key={field._id} schema={field} />
+        case BasicField.LongText:
+          return <LongTextField key={field._id} schema={field} />
         case BasicField.YesNo:
           return <YesNoField key={field._id} schema={field} />
         case BasicField.Uen:

@@ -4,6 +4,7 @@ import DecimalField from './Decimal'
 import EmailField from './Email'
 import HomeNoField from './HomeNo'
 import ImageField from './Image'
+import LongTextField from './LongText'
 import NricField from './Nric'
 import NumberField from './Number'
 import ParagraphField from './Paragraph'
@@ -22,6 +23,7 @@ export {
   EmailField,
   HomeNoField,
   ImageField,
+  LongTextField,
   NricField,
   NumberField,
   ParagraphField,
