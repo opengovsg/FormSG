@@ -12,7 +12,7 @@ import {
 
 import { ModalCloseButton } from '~components/Modal'
 
-import { useMutateFormSettings } from '../../mutations'
+import { useMutateTwilioCreds } from '../../mutations'
 
 interface DeleteTwilioModalProps {
   isOpen: boolean
@@ -34,7 +34,7 @@ export const DeleteTwilioModal = ({
   const { formId } = useParams()
   if (!formId) throw new Error('No form ID!')
 
-  const { mutateFormTwilioDeletion } = useMutateFormSettings()
+  const { mutateFormTwilioDeletion } = useMutateTwilioCreds()
 
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>

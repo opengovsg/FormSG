@@ -246,14 +246,32 @@ export const useMutateFormSettings = () => {
     },
   })
 
+  return {
+    mutateFormStatus,
+    mutateFormLimit,
+    mutateFormInactiveMessage,
+    mutateFormCaptcha,
+    mutateFormEmails,
+    mutateFormTitle,
+    mutateFormAuthType,
+    mutateFormEsrvcId,
+  }
+}
+
+export const useMutateTwilioCreds = () => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  const queryClient = useQueryClient()
+  const toast = useToast({ status: 'success', isClosable: true })
+
   const mutateFormTwilioDetails = useMutation(
     (credentials: TwilioCredentials) =>
       updateTwilioCredentials(formId, credentials),
     {
-      onSuccess: (newData) => {
+      onSuccess: () => {
+        queryClient.invalidateQueries(adminFormKeys.id(formId))
         toast.closeAll()
-        // Update new settings data in cache.
-
         // Show toast on success.
         toast({
           description: "Your form's twilio details has been updated.",
@@ -272,7 +290,8 @@ export const useMutateFormSettings = () => {
   const mutateFormTwilioDeletion = useMutation(
     () => deleteTwilioCredentials(formId),
     {
-      onSuccess: (newData) => {
+      onSuccess: () => {
+        queryClient.invalidateQueries(adminFormKeys.id(formId))
         toast.closeAll()
         // Update new settings data in cache.
 
@@ -292,15 +311,7 @@ export const useMutateFormSettings = () => {
   )
 
   return {
-    mutateFormStatus,
-    mutateFormLimit,
-    mutateFormInactiveMessage,
-    mutateFormCaptcha,
-    mutateFormEmails,
-    mutateFormTitle,
-    mutateFormAuthType,
-    mutateFormEsrvcId,
-    mutateFormTwilioDetails,
     mutateFormTwilioDeletion,
+    mutateFormTwilioDetails,
   }
 }

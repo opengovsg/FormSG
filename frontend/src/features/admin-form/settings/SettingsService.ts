@@ -103,14 +103,14 @@ export const updateTwilioCredentials = async (
   formId: string,
   credentials: TwilioCredentials,
 ) => {
-  return ApiService.put<TwilioCredentials>(
+  return ApiService.put<void>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/twilio`,
     credentials,
   ).then(({ data }) => data)
 }
 
 export const deleteTwilioCredentials = async (formId: string) => {
-  return ApiService.delete<TwilioCredentials>(
+  return ApiService.delete<void>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/twilio`,
   ).then(({ data }) => data)
 }

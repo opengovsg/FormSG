@@ -8,7 +8,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
-import { useMutateFormSettings } from '../../mutations'
+import { useMutateTwilioCreds } from '../../mutations'
 
 import { DeleteTwilioModal } from './DeleteTwilioModal'
 
@@ -54,7 +54,7 @@ export const TwilioDetailsInput = ({
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
-  const { mutateFormTwilioDetails } = useMutateFormSettings()
+  const { mutateFormTwilioDetails } = useMutateTwilioCreds()
 
   const handleUpdateTwilioDetails = handleSubmit((credentials) => {
     return mutateFormTwilioDetails.mutate(credentials)
