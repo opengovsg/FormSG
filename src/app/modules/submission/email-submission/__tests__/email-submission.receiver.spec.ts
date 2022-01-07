@@ -112,7 +112,7 @@ describe('email-submission.receiver', () => {
       const form = new FormData()
       form.append('body', JSON.stringify(mockBody))
       form.append(VALID_FILENAME_1, fileStream, mockResponse._id)
-      const realBusboy = new RealBusboy({
+      const realBusboy = RealBusboy({
         headers: {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
@@ -159,7 +159,7 @@ describe('email-submission.receiver', () => {
       const form = new FormData()
       form.append('body', JSON.stringify(mockBody))
       form.append(VALID_FILENAME_1, fileStream, mockAttachment._id)
-      const realBusboy = new RealBusboy({
+      const realBusboy = RealBusboy({
         headers: {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
@@ -220,7 +220,7 @@ describe('email-submission.receiver', () => {
       form.append('body', JSON.stringify(mockBody))
       form.append(VALID_FILENAME_1, fileStream1, mockResponse1._id)
       form.append(VALID_FILENAME_2, fileStream2, mockResponse2._id)
-      const realBusboy = new RealBusboy({
+      const realBusboy = RealBusboy({
         headers: {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
@@ -285,7 +285,7 @@ describe('email-submission.receiver', () => {
       form.append('body', JSON.stringify(mockBody))
       form.append(VALID_FILENAME_1, fileStream1, mockResponse1._id)
       form.append(VALID_FILENAME_1, fileStream2, mockResponse2._id)
-      const realBusboy = new RealBusboy({
+      const realBusboy = RealBusboy({
         headers: {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
@@ -338,7 +338,7 @@ describe('email-submission.receiver', () => {
       const form = new FormData()
       form.append('body', JSON.stringify(mockBody))
       form.append(VALID_FILENAME_1, fileStream, mockResponse._id)
-      const realBusboy = new RealBusboy({
+      const realBusboy = RealBusboy({
         headers: {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
@@ -362,7 +362,7 @@ describe('email-submission.receiver', () => {
 
       const form = new FormData()
       form.append('body', JSON.stringify(mockBody))
-      const realBusboy = new RealBusboy({
+      const realBusboy = RealBusboy({
         headers: {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
@@ -380,7 +380,7 @@ describe('email-submission.receiver', () => {
     it('should return MultipartError when body cannot be parsed', async () => {
       const form = new FormData()
       form.append('body', 'invalid')
-      const realBusboy = new RealBusboy({
+      const realBusboy = RealBusboy({
         headers: {
           'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
