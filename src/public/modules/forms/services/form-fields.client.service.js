@@ -4,8 +4,8 @@ const get = require('lodash/get')
 
 const {
   types: basicTypes,
-  BasicField,
 } = require('../../../../../shared/constants/field/basic')
+const { BasicField } = require('../../../../../shared/types/field')
 const {
   types: myInfoTypes,
 } = require('../../../../../shared/constants/field/myinfo')
