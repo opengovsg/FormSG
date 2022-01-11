@@ -393,7 +393,10 @@ EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
 }
 
 const compileSubmissionModel = (db: Mongoose): ISubmissionModel => {
-  const Submission = db.model('Submission', SubmissionSchema)
+  const Submission = db.model<ISubmissionSchema, ISubmissionModel>(
+    'Submission',
+    SubmissionSchema,
+  )
   Submission.discriminator(SubmissionType.Email, EmailSubmissionSchema)
   Submission.discriminator(SubmissionType.Encrypt, EncryptSubmissionSchema)
   return db.model<ISubmissionSchema, ISubmissionModel>(
@@ -414,14 +417,18 @@ export const getEmailSubmissionModel = (
   db: Mongoose,
 ): IEmailSubmissionModel => {
   getSubmissionModel(db)
-  return db.model(SubmissionType.Email) as IEmailSubmissionModel
+  return db.model<IEmailSubmissionSchema, IEmailSubmissionModel>(
+    SubmissionType.Email,
+  )
 }
 
 export const getEncryptSubmissionModel = (
   db: Mongoose,
 ): IEncryptSubmissionModel => {
   getSubmissionModel(db)
-  return db.model(SubmissionType.Encrypt) as IEncryptSubmissionModel
+  return db.model<IEncryptedSubmissionSchema, IEncryptSubmissionModel>(
+    SubmissionType.Encrypt,
+  )
 }
 
 export default getSubmissionModel

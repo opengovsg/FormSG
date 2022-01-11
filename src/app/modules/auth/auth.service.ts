@@ -83,7 +83,7 @@ export const validateEmailDomain = (
       })
       return errAsync(noAgencyError)
     }
-    return okAsync(agency)
+    return okAsync(agency as AgencyDocument)
   })
 }
 

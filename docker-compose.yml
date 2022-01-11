@@ -29,6 +29,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=fakeSecret
       - SESSION_SECRET=thisisasecret
       - AWS_ENDPOINT=http://localhost:4566
+      - SECRET_ENV=development
       - SUBMISSIONS_RATE_LIMIT=200
       - SEND_AUTH_OTP_RATE_LIMIT=60
       - SES_PORT=25
@@ -112,11 +113,18 @@ services:
       - MONGO_INITDB_DATABASE=formsg
     volumes:
       - mongodata:/data/db
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    command: --bind_ip_all --replSet rs0
     ports:
       - '27017:27017'
     logging:
       driver: none
+
+  mongo-seed:
+    build: ./mongo-seed
+    depends_on:
+      - database
+    links:
+      - database
 
   localstack:
     image: localstack/localstack:0.11.5
@@ -124,7 +132,7 @@ services:
     depends_on:
       - formsg
     environment:
-      - SERVICES=s3,sqs
+      - SERVICES=s3,sqs,secretsmanager
       - DATA_DIR=/tmp/localstack/data
     volumes:
       - './.localstack:/tmp/localstack'

@@ -23,7 +23,7 @@ Infrastructure
 
 DevOps
 
-- TravisCI for running tests and builds
+- Github Actions for running tests and builds
 - AWS Elastic Container Registry to host built Docker images
 
 Network
@@ -76,32 +76,22 @@ Secondly, edit the form document belonging to that specific form adminstrator by
 
 If no `msgSrvcName` is found in the form document, SMSes associated with that form will be sent out using and charged to the default Twilio API credentials.
 
-### Travis CI/CD environment variables
+### Github Actions Secrets
 
-For more information about the various environment variables, please refer to
-[Travis documentation](https://docs.travis-ci.com/user/deployment/elasticbeanstalk/).
-
-The following env variables are set in Travis:
-| Variable | Description|
+The following repository secrets are set in Github Actions:
+| Secret | Description|
 |:---------|------------|
-|`REPO`|The repository of the AWS Elastic Container Registry|
-|`STAGING_BRANCH`|Name of staging branch, usually `master`.|
-|`STAGING_ALT_BRANCH`|Name of staging-alt (if any) branch, usually `release`. An alternate staging branch is used to host diverging feature sets, useful for A/B testing.|
-|`PROD_BRANCH`|Name of production branch, usually `release`.|
 |`AWS_ACCESS_KEY_ID`|AWS IAM access key ID used to deploy.|
 |`AWS_SECRET_ACCESS_KEY`|AWS IAM access secret used to deploy.|
-|`AWS_REGION`|AWS region to use.|
-|`PROD_APP_NAME`|The names of the deployed docker application for the production application on AWS as determined by `PROD_BRANCH`.|
-|`STAGING_APP_NAME`|The names of the deployed docker application for the staging application on AWS as determined by `STAGING_BRANCH`.|
-|`PROD_BUCKET_NAME`|Bucket name to upload the code of the production app to. Elastic Beanstalk will create and deploy an application version from the source bundle in this Amazon S3 bucket.|
-|`STAGING_BUCKET_NAME`|Bucket name to upload the code of the staging app to. Elastic Beanstalk will create and deploy an application version from the source bundle in this Amazon S3 bucket.|
-|`PROD_DEPLOY_ENV`|The name of the Elastic Beanstalk environment the production application will be deployed to.|
-|`STAGING_DEPLOY_ENV`|The name of the Elastic Beanstalk environment the staging application will be deployed to.|
-|`STAGING_ALT_DEPLOY_ENV`|The name of the Elastic Beanstalk environment the staging-alt application will be deployed to.|
-|`SENTRY_ORG`|Organisation that source-maps should be linked to on sentry dashboard.|
-|`SENTRY_AUTH_TOKEN`|Authentication token used by sentry cli to authenticate with sentry service.|
-|`SENTRY_PROJECT`|Project that source-maps should be linked to on sentry dashboard.|
-|`SENTRY_URL`|Sentry service that source-maps should be pushed to.|
+|`AWS_DEFAULT_REGION`|AWS region to use.|
+|`ECR_REPO`|ECR Repository which stores the docker images.|
+|`BUCKET_NAME`| S3 Bucket used to store zipped `Dockerrun.aws.json`.|
+
+There are also environment secrets for each environment (`staging`, `staging-alt`, `release`, `uat`):
+| Secret | Description|
+|:---------|------------|
+|`APP_NAME`|Application name for the environment.|
+|`DEPLOY_ENV`|Deployment environment on elastic beanstalk.|
 
 ## Environment Variables
 
@@ -117,9 +107,10 @@ The list of categories can be inferred by looking at the file `.ebextensions/env
 
 #### AWS Service Manager
 
-| Variable     | Description                                                                                                  |
-| :----------- | ------------------------------------------------------------------------------------------------------------ |
-| `SSM_PREFIX` | String prefix (typically the environment name) for AWS SSM parameter names to create a .env file for FormSG. |
+| Variable     | Description                                                                                                           |
+| :----------- | --------------------------------------------------------------------------------------------------------------------- |
+| `SSM_PREFIX` | String prefix (typically the environment name) for AWS SSM parameter names to create a .env file for FormSG.          |
+| `SECRET_ENV` | String (typically the environment name) to be used in building of AWS Secrets Manager keys in different environments. |
 
 #### App Config
 

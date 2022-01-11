@@ -96,6 +96,12 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       env: 'SESSION_SECRET',
       sensitive: true,
     },
+    secretEnv: {
+      doc: 'Secret Environment used to build key for AWS Secrets Manager',
+      format: String,
+      default: null,
+      env: 'SECRET_ENV',
+    },
   },
 }
 

@@ -46,7 +46,10 @@ const secretsManager = new SecretsManager({ region: config.aws.region })
 // Given that it is held in memory, when credentials are modified on
 // secretsManager, the app will need to be redeployed to retrieve new
 // credentials, or wait 10 seconds before.
-const twilioClientCache = new NodeCache({ deleteOnExpire: true, stdTTL: 10 })
+export const twilioClientCache = new NodeCache({
+  deleteOnExpire: true,
+  stdTTL: 10,
+})
 
 /**
  * Retrieves credentials from secrets manager
@@ -186,12 +189,15 @@ const sendSms = (
     smsType,
   }
 
+  const statusCallbackRoute = '/api/v3/notifications/twilio'
+
   return ResultAsync.fromPromise(
     client.messages.create({
       to: recipient,
       body: message,
       from: msgSrvcSid,
       forceDelivery: true,
+      statusCallback: config.app.appUrl + statusCallbackRoute,
     }),
     (error) => {
       logger.error({

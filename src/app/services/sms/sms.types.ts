@@ -105,6 +105,42 @@ export type TwilioCredentials = {
   messagingServiceSid: string
 }
 
+export class TwilioCredentialsData {
+  accountSid: string
+  apiKey: string
+  apiSecret: string
+  messagingServiceSid: string
+
+  constructor(twilioCredentials: TwilioCredentials) {
+    const { accountSid, apiKey, apiSecret, messagingServiceSid } =
+      twilioCredentials
+
+    this.accountSid = accountSid
+    this.apiKey = apiKey
+    this.apiSecret = apiSecret
+    this.messagingServiceSid = messagingServiceSid
+  }
+
+  static fromString(credentials: string): TwilioCredentials | unknown {
+    try {
+      const twilioCredentials: TwilioCredentials = JSON.parse(credentials)
+      return new TwilioCredentialsData(twilioCredentials)
+    } catch (err) {
+      return err
+    }
+  }
+
+  toString(): string {
+    const body: TwilioCredentials = {
+      accountSid: this.accountSid,
+      apiKey: this.apiKey,
+      apiSecret: this.apiSecret,
+      messagingServiceSid: this.messagingServiceSid,
+    }
+    return JSON.stringify(body)
+  }
+}
+
 export type TwilioConfig = {
   client: Twilio
   msgSrvcSid: string

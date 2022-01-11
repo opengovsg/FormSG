@@ -1,4 +1,5 @@
 import {
+  ClientSession,
   Document,
   LeanDocument,
   Model,
@@ -189,6 +190,22 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   getDuplicateParams(
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
+
+  /**
+   * Updates the msgSrvcName of the form with the specified msgSrvcName
+   * @param msgSrvcName msgSrvcName to update the Form docuemnt with
+   * @param session transaction session in which update operation is a part of
+   */
+  updateMsgSrvcName(
+    msgSrvcName: string,
+    session?: ClientSession,
+  ): Promise<IFormSchema>
+
+  /**
+   * Deletes the msgSrvcName of the form
+   * @param session transaction session in which delete operation is a part of
+   */
+  deleteMsgSrvcName(session?: ClientSession): Promise<IFormSchema>
 }
 
 /**

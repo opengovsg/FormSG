@@ -1,6 +1,7 @@
 import BSON, { ObjectId } from 'bson-ext'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
+  ClientSession,
   Mongoose,
   Query,
   Schema,
@@ -529,6 +530,22 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
     this.status = FormStatus.Archived
     return this.save()
+  }
+
+  FormSchema.methods.updateMsgSrvcName = async function (
+    msgSrvcName: string,
+    session?: ClientSession,
+  ) {
+    this.msgSrvcName = msgSrvcName
+
+    return this.save({ session })
+  }
+
+  FormSchema.methods.deleteMsgSrvcName = async function (
+    session?: ClientSession,
+  ) {
+    this.msgSrvcName = undefined
+    return this.save({ session })
   }
 
   const FormDocumentSchema = FormSchema as unknown as Schema<IFormDocument>
