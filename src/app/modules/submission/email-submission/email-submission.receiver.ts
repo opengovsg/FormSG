@@ -1,4 +1,4 @@
-import Busboy, { BusboyHeaders } from 'busboy'
+import Busboy from 'busboy'
 import { IncomingHttpHeaders } from 'http'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
@@ -20,9 +20,7 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
-const isBusboyHeaders = (
-  headers: IncomingHttpHeaders,
-): headers is BusboyHeaders => {
+const hasContentTypeHeaders = (headers: IncomingHttpHeaders) => {
   return !!headers['content-type']
 }
 
@@ -33,7 +31,7 @@ const isBusboyHeaders = (
 export const createMultipartReceiver = (
   headers: IncomingHttpHeaders,
 ): Result<Busboy.Busboy, InitialiseMultipartReceiverError> => {
-  if (!isBusboyHeaders(headers)) {
+  if (!hasContentTypeHeaders(headers)) {
     logger.error({
       message: "Busboy cannot be init due to missing headers['content-type']",
       meta: {
@@ -45,7 +43,7 @@ export const createMultipartReceiver = (
   }
 
   try {
-    const busboy = new Busboy({
+    const busboy = Busboy({
       headers,
       limits: {
         fieldSize: 3 * MB,
@@ -83,7 +81,7 @@ export const configureMultipartReceiver = (
       let body: ParsedMultipartForm
 
       busboy
-        .on('file', (fieldname, file, filename) => {
+        .on('file', (fieldname, file, { filename }) => {
           if (filename) {
             const buffers: Buffer[] = []
             file.on('data', (data) => {
@@ -108,7 +106,7 @@ export const configureMultipartReceiver = (
             })
           }
         })
-        .on('field', (name, val, _fieldnameTruncated, valueTruncated) => {
+        .on('field', (name, val, { valueTruncated }) => {
           // on receiving body field, convert to JSON
           if (name === 'body') {
             if (valueTruncated) {
@@ -139,7 +137,7 @@ export const configureMultipartReceiver = (
           })
           return reject(error)
         })
-        .on('finish', () => {
+        .on('close', () => {
           if (body) {
             handleDuplicatesInAttachments(attachments)
             addAttachmentToResponses(body.responses, attachments)
