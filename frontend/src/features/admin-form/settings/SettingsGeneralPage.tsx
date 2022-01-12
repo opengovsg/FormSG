@@ -1,17 +1,17 @@
 import { Divider } from '@chakra-ui/react'
 
-import { CategoryHeader } from './components/CategoryHeader'
 import { FormCaptchaToggle } from './components/FormCaptchaToggle'
 import { FormCustomisationSection } from './components/FormCustomisationSection'
 import { FormDetailsSection } from './components/FormDetailsSection'
 import { FormLimitToggle } from './components/FormLimitToggle'
 import { FormStatusToggle } from './components/FormStatusToggle'
+import { GeneralTabHeader } from './components/GeneralTabHeader'
 import { SubcategoryHeader } from './components/SubcategoryHeader'
 
 export const SettingsGeneralPage = (): JSX.Element => {
   return (
     <>
-      <CategoryHeader>Respondent access</CategoryHeader>
+      <GeneralTabHeader />
       <FormStatusToggle />
       <Divider my="2.5rem" />
       <SubcategoryHeader>Scheduling</SubcategoryHeader>
