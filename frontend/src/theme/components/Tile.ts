@@ -13,6 +13,7 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
       color: 'inherit',
       borderRadius: '0.25rem',
       padding: '1.5rem',
+      height: 'auto',
       _hover: {
         bgColor: 'primary.100',
       },

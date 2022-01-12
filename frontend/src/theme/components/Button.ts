@@ -1,6 +1,8 @@
 import { SystemStyleFunction } from '@chakra-ui/theme-tools'
 import merge from 'lodash/merge'
 
+import { textStyles } from '../textStyles'
+
 import { Link } from './Link'
 
 export type ThemeButtonVariant =
@@ -28,6 +30,7 @@ const variantSolid: SystemStyleFunction = (props) => {
     bg,
     borderColor: bg,
     color: 'white',
+    px: '15px',
     _active: {
       bg: activeBg,
       borderColor: activeBg,
@@ -62,6 +65,7 @@ const variantClear: SystemStyleFunction = (props) => {
   return {
     bg: 'transparent',
     borderColor: 'transparent',
+    px: '15px',
     color: `${c}.500`,
     _focus: {
       boxShadow: `0 0 0 4px var(--chakra-colors-${c}-300)`,
@@ -91,6 +95,7 @@ const variantOutlineReverse: SystemStyleFunction = (props) => {
 
   return {
     bg: 'white',
+    px: '15px',
     borderColor: showBorder ? `${c}.500` : 'white',
     color: `${c}.500`,
     _focus: {
@@ -134,24 +139,20 @@ const variantLink: SystemStyleFunction = (props) => {
 
 export const Button = {
   baseStyle: {
+    ...textStyles['subhead-1'],
     borderRadius: '0.25rem',
     border: '1px solid',
-    textStyle: 'subhead-1',
-    fontWeight: 'medium',
     flexShrink: 0,
-    h: 'auto',
     // -1px for border
     px: '15px',
     py: '9px',
   },
   sizes: {
     md: {
-      h: 'auto',
       minH: '2.75rem',
       minW: '2.75rem',
     },
     lg: {
-      h: 'auto',
       minH: '3rem',
       minW: '3rem',
     },
