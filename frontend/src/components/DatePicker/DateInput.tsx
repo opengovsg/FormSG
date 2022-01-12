@@ -18,9 +18,11 @@ import IconButton from '~components/IconButton'
 
 import Input, { InputProps } from '../Input'
 
-import { DatePicker } from './DatePicker'
+import { DatePicker, DatePickerProps } from './DatePicker'
 
-export interface DateInputProps extends Omit<InputProps, 'value' | 'onChange'> {
+export interface DateInputProps
+  extends Omit<InputProps, 'value' | 'onChange'>,
+    Pick<DatePickerProps, 'isDateUnavailable'> {
   name: string
   value?: string
   onChange?: (val: string) => void
@@ -31,7 +33,7 @@ type DateInputWithSubcomponents = ComponentWithAs<'input', DateInputProps> & {
 }
 
 export const DateInput = forwardRef<DateInputProps, 'input'>(
-  ({ onChange, value = '', ...props }, ref) => {
+  ({ onChange, value = '', isDateUnavailable, ...props }, ref) => {
     const initialFocusRef = useRef<HTMLInputElement>(null)
 
     const handleDatepickerSelection = useCallback(
@@ -108,6 +110,7 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                   <PopoverBody p={0}>
                     <DateInput.DatePicker
                       date={datePickerDate}
+                      isDateUnavailable={isDateUnavailable}
                       onSelectDate={handleDatepickerSelection}
                       ref={initialFocusRef}
                     />

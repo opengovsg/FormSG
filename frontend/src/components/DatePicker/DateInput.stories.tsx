@@ -81,7 +81,7 @@ const PlaygroundTemplate: Story<DateInputProps> = (args) => {
           rules={{
             required: 'Date is required',
           }}
-          render={({ field }) => <DateInput {...field} />}
+          render={({ field }) => <DateInput {...field} {...args} />}
         />
         <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>
       </FormControl>
@@ -91,3 +91,6 @@ const PlaygroundTemplate: Story<DateInputProps> = (args) => {
 }
 
 export const Playground = PlaygroundTemplate.bind({})
+Playground.args = {
+  isDateUnavailable: (d) => isWeekend(d),
+}
