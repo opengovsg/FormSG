@@ -19,7 +19,7 @@ export const CloseButton: ComponentStyleConfig = {
     },
     clear: (props) => ({
       ...Button.variants.clear(props),
-      p: 0,
+      px: 'initial',
     }),
   },
   defaultProps: {
