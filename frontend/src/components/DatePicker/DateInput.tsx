@@ -98,13 +98,27 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                 />
               </PopoverTrigger>
               <Portal>
-                <PopoverContent borderRadius="4px" w="unset" maxW="100vw">
-                  <PopoverHeader py="1rem" px="1.5rem">
-                    <Flex justifyContent="space-between" alignItems="center">
+                <PopoverContent
+                  borderRadius="4px"
+                  w="unset"
+                  maxW="100vw"
+                  bg="white"
+                >
+                  <PopoverHeader p={0}>
+                    <Flex
+                      h="3.5rem"
+                      mx={{ base: '1rem', md: '1.5rem' }}
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
                       <Text textStyle="subhead-2" color="secondary.500">
                         Select a date
                       </Text>
-                      <PopoverCloseButton position="static" />
+                      <PopoverCloseButton
+                        position="static"
+                        variant="clear"
+                        colorScheme="secondary"
+                      />
                     </Flex>
                   </PopoverHeader>
                   <PopoverBody p={0}>
