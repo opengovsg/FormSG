@@ -14,6 +14,7 @@ import { ComponentWithAs, forwardRef } from '@chakra-ui/system'
 import { format } from 'date-fns'
 
 import { BxCalendar } from '~assets/icons'
+import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 
 import Input, { InputProps } from '../Input'
@@ -35,6 +36,8 @@ type DateInputWithSubcomponents = ComponentWithAs<'input', DateInputProps> & {
 export const DateInput = forwardRef<DateInputProps, 'input'>(
   ({ onChange, value = '', isDateUnavailable, ...props }, ref) => {
     const initialFocusRef = useRef<HTMLInputElement>(null)
+
+    const isMobile = useIsMobile()
 
     const handleDatepickerSelection = useCallback(
       (d: Date) => {
@@ -79,6 +82,9 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
         <Popover
           placement="bottom-end"
           initialFocusRef={initialFocusRef}
+          // Prevent mobile taps to close popover when doing something like
+          // changing months in the selector.
+          closeOnBlur={!isMobile}
           isLazy
         >
           {({ isOpen }) => (
