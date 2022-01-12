@@ -42,7 +42,9 @@ NoLogo.parameters = {
   msw: [
     getPublicFormResponse({
       overrides: {
-        title: 'storybook test title',
+        form: {
+          title: 'storybook test title',
+        },
       },
       delay: 0,
     }),
@@ -56,11 +58,13 @@ CustomLogo.parameters = {
     getCustomLogoResponse(),
     getPublicFormResponse({
       overrides: {
-        title: 'storybook test title',
-        startPage: {
-          logo: {
-            state: FormLogoState.Custom,
-            fileId: 'mockFormLogo',
+        form: {
+          title: 'storybook test title',
+          startPage: {
+            logo: {
+              state: FormLogoState.Custom,
+              fileId: 'mockFormLogo',
+            },
           },
         },
       },
@@ -74,9 +78,11 @@ NoEstimatedTime.parameters = {
   msw: [
     getPublicFormResponse({
       overrides: {
-        title: 'storybook no estimated time',
-        startPage: {
-          estTimeTaken: 0,
+        form: {
+          title: 'storybook no estimated time',
+          startPage: {
+            estTimeTaken: 0,
+          },
         },
       },
       delay: 0,
@@ -89,9 +95,11 @@ ColorThemeBrown.parameters = {
   msw: [
     getPublicFormResponse({
       overrides: {
-        title: 'storybook test brown theme',
-        startPage: {
-          colorTheme: FormColorTheme.Brown,
+        form: {
+          title: 'storybook test brown theme',
+          startPage: {
+            colorTheme: FormColorTheme.Brown,
+          },
         },
       },
       delay: 0,
@@ -103,9 +111,11 @@ ColorThemeGreen.parameters = {
   msw: [
     getPublicFormResponse({
       overrides: {
-        title: 'storybook test green theme',
-        startPage: {
-          colorTheme: FormColorTheme.Green,
+        form: {
+          title: 'storybook test green theme',
+          startPage: {
+            colorTheme: FormColorTheme.Green,
+          },
         },
       },
       delay: 0,
@@ -118,9 +128,11 @@ ColorThemeGrey.parameters = {
   msw: [
     getPublicFormResponse({
       overrides: {
-        title: 'storybook test grey theme',
-        startPage: {
-          colorTheme: FormColorTheme.Grey,
+        form: {
+          title: 'storybook test grey theme',
+          startPage: {
+            colorTheme: FormColorTheme.Grey,
+          },
         },
       },
       delay: 0,
@@ -133,9 +145,11 @@ ColorThemeOrange.parameters = {
   msw: [
     getPublicFormResponse({
       overrides: {
-        title: 'storybook test orange theme',
-        startPage: {
-          colorTheme: FormColorTheme.Orange,
+        form: {
+          title: 'storybook test orange theme',
+          startPage: {
+            colorTheme: FormColorTheme.Orange,
+          },
         },
       },
       delay: 0,
@@ -148,9 +162,11 @@ ColorThemeRed.parameters = {
   msw: [
     getPublicFormResponse({
       overrides: {
-        title: 'storybook test red theme',
-        startPage: {
-          colorTheme: FormColorTheme.Red,
+        form: {
+          title: 'storybook test red theme',
+          startPage: {
+            colorTheme: FormColorTheme.Red,
+          },
         },
       },
       delay: 0,
@@ -168,7 +184,9 @@ MiniHeader.parameters = {
   msw: [
     getPublicFormResponse({
       overrides: {
-        title: 'storybook test title',
+        form: {
+          title: 'storybook test title',
+        },
       },
       delay: 0,
     }),
