@@ -102,6 +102,7 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
           color: 'secondary.300',
           cursor: 'not-allowed',
           bg: 'transparent',
+          textDecor: 'line-through',
         },
         w: {
           base: '2rem',
