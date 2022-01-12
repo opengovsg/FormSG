@@ -69,7 +69,7 @@ const PlaygroundTemplate: Story<DateInputProps> = (args) => {
   }, [])
 
   const val = useWatch({ name, control })
-  useEffect(() => console.log('val', val), [val])
+  useEffect(() => console.log('val', val, typeof val), [val])
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -80,6 +80,20 @@ const PlaygroundTemplate: Story<DateInputProps> = (args) => {
           name={name}
           rules={{
             required: 'Date is required',
+            validate: {
+              // GET IT?
+              validDate: (val) => {
+                if (!val) return
+                const dateVal = new Date(val)
+                if (isNaN(dateVal.getTime())) {
+                  return 'Please enter a valid date'
+                }
+                if (args.isDateUnavailable && args.isDateUnavailable(dateVal)) {
+                  return 'Please enter an available date'
+                }
+                return true
+              },
+            },
           }}
           render={({ field }) => <DateInput {...field} {...args} />}
         />
