@@ -80,7 +80,7 @@ const HowToIdentify = ({
   return (
     <Link
       tabIndex={0}
-      ariaLabel="Click to expand masthead for more information"
+      aria-label="Click to expand masthead for more information"
       onClick={onToggle}
     >
       How to identify {children}
