@@ -8,7 +8,6 @@ import {
   Icon,
   Stack,
   Text,
-  useBreakpointValue,
 } from '@chakra-ui/react'
 
 import { BxsBank } from '~assets/icons/BxsBank'
@@ -21,12 +20,13 @@ import { GovtMastheadItem } from './GovtMastheadItem'
 export interface GovtMastheadProps {
   isOpen: boolean
   onToggle: () => void
+  isMobile: boolean
 }
 
 interface GovtMastheadChildrenProps {
   isMobile: boolean
-  children: React.ReactNode
   onToggle: () => void
+  children: React.ReactNode
 }
 
 const HeaderBar = ({
@@ -85,21 +85,16 @@ const HowToIdentify = ({
 export const GovtMasthead = ({
   isOpen,
   onToggle,
+  isMobile,
 }: GovtMastheadProps): JSX.Element => {
   // Custom function for collapsing/expanding the header,
   // because in mobile you tap the whole header, on desktop only on the link
-  const isMobile =
-    useBreakpointValue({
-      base: true,
-      xs: true,
-      md: false,
-    }) ?? true
-
   const childrenProps = {
     isOpen: isOpen,
     isMobile: isMobile,
     onToggle: onToggle,
   }
+
   return (
     <Box>
       <HeaderBar {...childrenProps}>
