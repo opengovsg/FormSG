@@ -1,4 +1,4 @@
-import { ComponentStyleConfig } from '@chakra-ui/react'
+import { ComponentStyleConfig } from '~theme/types'
 
 import { textStyles } from '../textStyles'
 
@@ -14,7 +14,7 @@ export const Badge: ComponentStyleConfig = {
       const textColor = c === 'secondary' ? 'white' : 'secondary.700'
 
       return {
-        textColor: textColor,
+        color: textColor,
         bgColor: `${c}.400`,
       }
     },
@@ -25,14 +25,15 @@ export const Badge: ComponentStyleConfig = {
 
       return {
         bgColor: `${c}.100`,
-        textColor,
+        color: textColor,
       }
     },
   },
   sizes: {
     md: {
-      p: '0.25rem',
-      borderRadius: '0.25rem',
+      py: '0.25rem',
+      px: '0.5rem',
+      borderRadius: '4px',
     },
   },
   defaultProps: {

@@ -1,7 +1,7 @@
 import {
-  Box,
   Button as ChakraButton,
   ButtonProps as ChakraButtonProps,
+  forwardRef,
   IconProps,
 } from '@chakra-ui/react'
 
@@ -27,22 +27,28 @@ export interface ButtonProps extends ChakraButtonProps {
   colorScheme?: ThemeColorScheme
 }
 
-export const Button = ({
-  children,
-  spinnerFontSize,
-  isFullWidth,
-  textStyle = 'subhead-1',
-  ...props
-}: ButtonProps): JSX.Element => {
-  return (
-    <ChakraButton
-      spinner={<Spinner fontSize={spinnerFontSize ?? '1.5rem'} />}
-      isFullWidth={isFullWidth}
-      {...props}
-      // 15px due to 1px border
-      {...(isFullWidth ? { p: '15px', h: 'auto' } : {})}
-    >
-      <Box textStyle={textStyle}>{children}</Box>
-    </ChakraButton>
-  )
-}
+export const Button = forwardRef<ButtonProps, 'button'>(
+  (
+    {
+      children,
+      spinnerFontSize,
+      isFullWidth,
+      textStyle = 'subhead-1',
+      ...props
+    },
+    ref,
+  ) => {
+    return (
+      <ChakraButton
+        ref={ref}
+        spinner={<Spinner fontSize={spinnerFontSize ?? '1.5rem'} />}
+        isFullWidth={isFullWidth}
+        textStyle={textStyle}
+        {...props}
+        {...(isFullWidth ? { minH: '3.5rem' } : {})}
+      >
+        {children}
+      </ChakraButton>
+    )
+  },
+)

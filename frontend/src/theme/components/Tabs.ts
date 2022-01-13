@@ -1,24 +1,14 @@
-import {
-  ChakraTheme,
-  ComponentMultiStyleConfig,
-  SystemStyleObjectRecord,
-  ThemingPropsThunk,
-} from '@chakra-ui/react'
-import { getColor } from '@chakra-ui/theme-tools'
+import { tabsAnatomy as parts } from '@chakra-ui/anatomy'
+import { getColor, PartsStyleFunction } from '@chakra-ui/theme-tools'
 import merge from 'lodash/merge'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
 
 import { textStyles } from '../textStyles'
 
-const parts = [
-  'root', // overall container
-  'tablist', // wrapper for tabs themselves (the clickable buttons)
-  'tab', // single clickable tab
-  'tabpanels', // wrapper for all panels, which contain the CONTENT of the tabs
-  'tabpanel', // content for a single tab
-  'indicator', // used to render an active tab indicator that animates between selected tabs
-]
-
-const sizesForLineLightDarkVariant = {
+const sizesForLineLightDarkVariant: ComponentMultiStyleConfig<
+  typeof parts
+>['sizes'] = {
   md: {
     tab: {
       p: '0.25rem',
@@ -43,10 +33,7 @@ const getSizesForLineLightDarkVariant = (size?: string) => {
   return {}
 }
 
-const variantLineColor: ThemingPropsThunk<
-  SystemStyleObjectRecord,
-  ChakraTheme
-> = () => ({
+const variantLineColor: PartsStyleFunction<typeof parts> = () => ({
   tablist: {
     pt: '2px',
     mt: '-2px',
@@ -78,10 +65,7 @@ const variantLineColor: ThemingPropsThunk<
   },
 })
 
-const variantLineLight: ThemingPropsThunk<
-  SystemStyleObjectRecord,
-  ChakraTheme
-> = (props) => {
+const variantLineLight: PartsStyleFunction<typeof parts> = (props) => {
   const { size } = props
   return merge(variantLineColor(props), getSizesForLineLightDarkVariant(size), {
     tab: {
@@ -102,34 +86,29 @@ const variantLineLight: ThemingPropsThunk<
   })
 }
 
-const variantLineDark: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> =
-  (props) => {
-    const { size } = props
-    return merge(
-      variantLineColor(props),
-      getSizesForLineLightDarkVariant(size),
-      {
-        tablist: {
-          bg: 'secondary.500',
-        },
-        tab: {
-          color: 'neutral.400',
-          _hover: {
-            color: 'white',
-          },
-          _selected: {
-            _before: {
-              bg: 'white',
-            },
-            color: 'white',
-          },
-          _focusVisible: {
-            boxShadow: `0 0 0 2px white`,
-          },
-        },
+const variantLineDark: PartsStyleFunction<typeof parts> = (props) => {
+  const { size } = props
+  return merge(variantLineColor(props), getSizesForLineLightDarkVariant(size), {
+    tablist: {
+      bg: 'secondary.500',
+    },
+    tab: {
+      color: 'neutral.400',
+      _hover: {
+        color: 'white',
       },
-    )
-  }
+      _selected: {
+        _before: {
+          bg: 'white',
+        },
+        color: 'white',
+      },
+      _focusVisible: {
+        boxShadow: `0 0 0 2px white`,
+      },
+    },
+  })
+}
 
 const sizesForLineVariant = {
   md: {
@@ -145,9 +124,7 @@ const getSizesForLineVariant = (size?: string) => {
   return {}
 }
 
-const variantLine: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
-  props,
-) => {
+const variantLine: PartsStyleFunction<typeof parts> = (props) => {
   const { colorScheme: c, size } = props
   return merge(getSizesForLineVariant(size), {
     tab: {
@@ -169,8 +146,8 @@ const variantLine: ThemingPropsThunk<SystemStyleObjectRecord, ChakraTheme> = (
   })
 }
 
-export const Tabs: ComponentMultiStyleConfig = {
-  parts,
+export const Tabs: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   baseStyle: {
     tablist: {
       // Allow drag without showing scrollbar

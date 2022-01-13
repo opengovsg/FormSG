@@ -78,7 +78,12 @@ export const FormLabel = ({
         <FormLabel.OptionalIndicator isRequired={isRequired} />
         {tooltipText && (
           <Tooltip label={tooltipText} aria-label="Label tooltip">
-            <Icon ml="0.5rem" color="secondary.500" as={BxsHelpCircle} />
+            <Icon
+              ml="0.5rem"
+              color="secondary.500"
+              as={BxsHelpCircle}
+              verticalAlign="middle"
+            />
           </Tooltip>
         )}
       </Box>

@@ -1,13 +1,24 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/react'
+import { anatomy, SystemStyleFunction } from '@chakra-ui/theme-tools'
+
+import { ComponentMultiStyleConfig } from '~theme/types'
+
+const parts = anatomy('pagination').parts(
+  'button',
+  'container',
+  'separator',
+  'stepper',
+  'text',
+)
 
 export const PAGINATION_THEME_KEY = 'Pagination'
 
-const baseButtonStyling = (props: Record<string, any>) => {
+const baseButtonStyling: SystemStyleFunction = (props) => {
   const { isSelected } = props
   return {
     p: '0.25rem 0.625rem',
     minH: '2rem',
     minW: '2rem',
+    h: 'auto',
     border: 'none',
     borderRadius: '0.25rem',
     bg: isSelected ? 'secondary.500' : 'transparent',
@@ -33,8 +44,8 @@ const baseButtonStyling = (props: Record<string, any>) => {
   }
 }
 
-export const Pagination: ComponentMultiStyleConfig = {
-  parts: ['button', 'container', 'separator', 'stepper', 'text'],
+export const Pagination: ComponentMultiStyleConfig<typeof parts> = {
+  parts: parts.keys,
   variants: {
     solid: (props) => {
       const buttonStyling = baseButtonStyling(props)
@@ -43,6 +54,7 @@ export const Pagination: ComponentMultiStyleConfig = {
       return {
         container: {
           display: 'flex',
+          justifyContent: 'center',
           textStyle: 'body-2',
         },
         separator: {

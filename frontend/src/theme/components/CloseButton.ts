@@ -1,13 +1,13 @@
-import {
-  ComponentStyleConfig,
-  SystemStyleObject,
-  ThemeComponentFunction,
-} from '@chakra-ui/react'
 import { getColor } from '@chakra-ui/theme-tools'
 
-import { Button, ThemeButtonVariant } from './Button'
+import { ComponentStyleConfig } from '~theme/types'
+
+import { Button } from './Button'
 
 export const CloseButton: ComponentStyleConfig = {
+  baseStyle: {
+    p: 0,
+  },
   variants: {
     subtle: (props) => {
       const { theme, colorScheme: c } = props
@@ -17,13 +17,10 @@ export const CloseButton: ComponentStyleConfig = {
         },
       }
     },
-    clear: (props) => {
-      const buttonFn = Button.variants as Record<
-        ThemeButtonVariant,
-        ThemeComponentFunction<SystemStyleObject>
-      >
-      return buttonFn['clear'](props)
-    },
+    clear: (props) => ({
+      ...Button.variants.clear(props),
+      px: 'initial',
+    }),
   },
   defaultProps: {
     colorScheme: 'neutral',

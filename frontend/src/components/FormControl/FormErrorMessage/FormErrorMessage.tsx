@@ -1,4 +1,5 @@
 import {
+  Box,
   FormErrorIcon,
   FormErrorMessage as ChakraFormErrorMessage,
   FormErrorMessageProps as ChakraFormErrorMessageProps,
@@ -22,7 +23,12 @@ export const FormErrorMessage = ({
   return (
     <ChakraFormErrorMessage alignItems="top" {...props}>
       <FormErrorIcon h="1.5rem" as={BxsErrorCircle} />
-      {children}
+      {typeof children === 'string' ? (
+        // Align line base height with icon (if any)
+        <Box my="0.125rem">{children}</Box>
+      ) : (
+        children
+      )}
     </ChakraFormErrorMessage>
   )
 }

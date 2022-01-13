@@ -9,6 +9,7 @@ import { FormControl } from '@chakra-ui/react'
 import { get } from 'lodash'
 
 import { FormFieldWithId } from '~shared/types/field'
+import { FormColorTheme } from '~shared/types/form'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -16,6 +17,10 @@ import { FormLabelProps } from '~components/FormControl/FormLabel/FormLabel'
 
 export type BaseFieldProps = {
   schema: FormFieldWithId
+  /**
+   * Color theme of form, if available. Defaults to `FormColorTheme.Blue`
+   */
+  colorTheme?: FormColorTheme
   questionNumber?: FormLabelProps['questionNumber']
   /**
    * Optional key of error to display in form error message.

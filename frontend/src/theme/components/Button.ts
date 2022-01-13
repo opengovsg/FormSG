@@ -1,11 +1,7 @@
-import {
-  ChakraTheme,
-  ComponentStyleConfig,
-  CSSObject,
-  SystemStyleObject,
-  ThemingPropsThunk,
-} from '@chakra-ui/react'
+import { SystemStyleFunction } from '@chakra-ui/theme-tools'
 import merge from 'lodash/merge'
+
+import { textStyles } from '../textStyles'
 
 import { Link } from './Link'
 
@@ -16,7 +12,7 @@ export type ThemeButtonVariant =
   | 'clear'
   | 'link'
 
-const variantSolid: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
+const variantSolid: SystemStyleFunction = (props) => {
   const { colorScheme: c } = props
   let bg = `${c}.500`
   let activeBg = `${c}.700`
@@ -34,6 +30,7 @@ const variantSolid: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
     bg,
     borderColor: bg,
     color: 'white',
+    px: '15px',
     _active: {
       bg: activeBg,
       borderColor: activeBg,
@@ -62,12 +59,13 @@ const variantSolid: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
   }
 }
 
-const variantClear: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
+const variantClear: SystemStyleFunction = (props) => {
   const { colorScheme: c } = props
 
   return {
     bg: 'transparent',
     borderColor: 'transparent',
+    px: '15px',
     color: `${c}.500`,
     _focus: {
       boxShadow: `0 0 0 4px var(--chakra-colors-${c}-300)`,
@@ -91,14 +89,13 @@ const variantClear: ThemingPropsThunk<CSSObject, ChakraTheme> = (props) => {
   }
 }
 
-const variantOutlineReverse: ThemingPropsThunk<CSSObject, ChakraTheme> = (
-  props,
-) => {
+const variantOutlineReverse: SystemStyleFunction = (props) => {
   const { colorScheme: c, variant } = props
   const showBorder = variant === 'outline'
 
   return {
     bg: 'white',
+    px: '15px',
     borderColor: showBorder ? `${c}.500` : 'white',
     color: `${c}.500`,
     _focus: {
@@ -129,26 +126,33 @@ const variantOutlineReverse: ThemingPropsThunk<CSSObject, ChakraTheme> = (
   }
 }
 
-export const Button: ComponentStyleConfig = {
+const variantLink: SystemStyleFunction = (props) => {
+  return merge(
+    {
+      border: 'none',
+      minHeight: 'auto',
+    },
+    Link.baseStyle(props),
+    Link.variants.standalone,
+  )
+}
+
+export const Button = {
   baseStyle: {
+    ...textStyles['subhead-1'],
     borderRadius: '0.25rem',
     border: '1px solid',
-    textStyle: 'subhead-1',
-    fontWeight: 'medium',
     flexShrink: 0,
-    h: 'auto',
     // -1px for border
     px: '15px',
     py: '9px',
   },
   sizes: {
     md: {
-      h: 'auto',
       minH: '2.75rem',
       minW: '2.75rem',
     },
     lg: {
-      h: 'auto',
       minH: '3rem',
       minW: '3rem',
     },
@@ -158,17 +162,8 @@ export const Button: ComponentStyleConfig = {
     reverse: variantOutlineReverse,
     outline: variantOutlineReverse,
     clear: variantClear,
-    link: (props) => {
-      return merge(
-        {
-          border: 'none',
-          minHeight: 'auto',
-        },
-        Link.baseStyle(props),
-        Link.variants.standalone,
-      )
-    },
-  } as Record<ThemeButtonVariant, ThemingPropsThunk<SystemStyleObject>>,
+    link: variantLink,
+  },
   defaultProps: {
     variant: 'solid',
     colorScheme: 'primary',

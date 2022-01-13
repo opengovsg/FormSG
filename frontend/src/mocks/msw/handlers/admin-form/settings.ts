@@ -5,7 +5,7 @@ import {
   EMAIL_FORM_SETTINGS_FIELDS,
   STORAGE_FORM_SETTINGS_FIELDS,
 } from '~shared/constants/form'
-import { FormResponseMode, FormSettings } from '~shared/types/form/form'
+import { FormId, FormResponseMode, FormSettings } from '~shared/types/form/form'
 
 import { createMockForm } from './form'
 
@@ -27,7 +27,7 @@ export const getAdminFormSettings = ({
         ctx.json(
           pick(
             createMockForm({
-              _id: req.params.formId,
+              _id: req.params.formId as FormId,
               responseMode: mode,
               ...overrides,
             }).form,
@@ -59,7 +59,7 @@ export const patchAdminFormSettings = ({
         ctx.json(
           pick(
             createMockForm({
-              _id: req.params.formId,
+              _id: req.params.formId as FormId,
               responseMode: mode,
               ...overrides,
               ...req.body,
