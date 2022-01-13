@@ -46,7 +46,13 @@ const HeaderBar = ({
   // Mobile
   if (isMobile) {
     return (
-      <chakra.button {...styleProps} onClick={onToggle}>
+      <chakra.button
+        _focus={{
+          boxShadow: '0 0 0 2px inset var(--chakra-colors-primary-500)',
+        }}
+        {...styleProps}
+        onClick={onToggle}
+      >
         {children}
       </chakra.button>
     )
