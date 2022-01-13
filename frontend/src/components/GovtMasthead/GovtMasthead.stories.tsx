@@ -9,6 +9,9 @@ import {
 
 export default {
   title: 'Components/GovtMasthead',
+  parameters: {
+    layout: 'fullscreen',
+  },
   component: GovtMastheadComponent,
   decorators: [],
 } as Meta
