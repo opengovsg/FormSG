@@ -8,19 +8,19 @@ import {
   Icon,
   Stack,
   Text,
+  useDisclosure,
 } from '@chakra-ui/react'
 
 import { BxsBank } from '~assets/icons/BxsBank'
 import { BxsLockAlt } from '~assets/icons/BxsLockAlt'
+import { useIsMobile } from '~hooks/useIsMobile'
 import Link from '~components/Link'
 
 import { GovtMastheadIcon } from './GovtMastheadIcon'
 import { GovtMastheadItem } from './GovtMastheadItem'
 
 export interface GovtMastheadProps {
-  isOpen: boolean
-  onToggle: () => void
-  isMobile: boolean
+  defaultIsOpen?: boolean
 }
 
 interface GovtMastheadChildrenProps {
@@ -64,7 +64,13 @@ const HowToIdentify = ({
   // Mobile
   if (isMobile) {
     return (
-      <Text color="primary.500" textDecorationLine="underline">
+      <Text
+        as="span"
+        color="primary.500"
+        textDecorationLine="underline"
+        display="flex"
+        alignItems="center"
+      >
         How to identify {children}
       </Text>
     )
@@ -83,21 +89,14 @@ const HowToIdentify = ({
 }
 
 export const GovtMasthead = ({
-  isOpen,
-  onToggle,
-  isMobile,
+  defaultIsOpen,
 }: GovtMastheadProps): JSX.Element => {
-  // Custom function for collapsing/expanding the header,
-  // because in mobile you tap the whole header, on desktop only on the link
-  const childrenProps = {
-    isOpen: isOpen,
-    isMobile: isMobile,
-    onToggle: onToggle,
-  }
+  const { onToggle, isOpen } = useDisclosure({ defaultIsOpen })
+  const isMobile = useIsMobile()
 
   return (
     <Box>
-      <HeaderBar {...childrenProps}>
+      <HeaderBar onToggle={onToggle} isMobile={isMobile}>
         <GovtMastheadIcon
           fontSize="1rem"
           mr={{ base: '0.25rem', lg: '0.5rem' }}
@@ -105,7 +104,7 @@ export const GovtMasthead = ({
         />
         <Flex alignItems="center" flexWrap="wrap">
           <Text my="2px">A Singapore government agency website.&nbsp;</Text>
-          <HowToIdentify {...childrenProps}>
+          <HowToIdentify onToggle={onToggle} isMobile={isMobile}>
             <Icon
               as={isOpen ? BiChevronUp : BiChevronDown}
               fontSize={{ base: '1rem', md: '1.25rem' }}

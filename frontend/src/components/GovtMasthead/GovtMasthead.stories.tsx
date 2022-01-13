@@ -1,4 +1,3 @@
-import { useDisclosure } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { viewports } from '~utils/storybook'
@@ -14,23 +13,19 @@ export default {
   decorators: [],
 } as Meta
 
-export const Mobile: Story<GovtMastheadProps> = (args) => {
-  const props = useDisclosure({ ...args })
-  const isMobile = true
-  return <GovtMastheadComponent isMobile={isMobile} {...props} />
-}
-Mobile.parameters = {
+const Template: Story<GovtMastheadProps> = (args) => (
+  <GovtMastheadComponent {...args} />
+)
+
+export const MobileDefault = Template.bind({})
+MobileDefault.parameters = {
   viewport: {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
 }
 
-export const MobileExpanded: Story<GovtMastheadProps> = (args) => {
-  const props = useDisclosure({ defaultIsOpen: true })
-  const isMobile = true
-  return <GovtMastheadComponent isMobile={isMobile} {...props} />
-}
+export const MobileExpanded = Template.bind({})
 MobileExpanded.parameters = {
   viewport: {
     defaultViewport: 'mobile1',
@@ -38,36 +33,14 @@ MobileExpanded.parameters = {
   chromatic: { viewports: [viewports.xs] },
 }
 MobileExpanded.storyName = 'Mobile/Expanded'
-
-export const MobileCollapsed: Story<GovtMastheadProps> = (args) => {
-  const props = useDisclosure({ defaultIsOpen: false })
-  const isMobile = true
-  return <GovtMastheadComponent isMobile={isMobile} {...props} />
-}
-MobileCollapsed.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
-MobileCollapsed.storyName = 'Mobile/Collapsed'
-
-export const Desktop: Story<GovtMastheadProps> = (args) => {
-  const props = useDisclosure({ ...args })
-  const isMobile = false
-  return <GovtMastheadComponent isMobile={isMobile} {...props} />
+MobileExpanded.args = {
+  defaultIsOpen: true,
 }
 
-export const DesktopExpanded: Story<GovtMastheadProps> = (args) => {
-  const props = useDisclosure({ defaultIsOpen: true })
-  const isMobile = true
-  return <GovtMastheadComponent isMobile={isMobile} {...props} />
-}
+export const DesktopDefault = Template.bind({})
+
+export const DesktopExpanded = Template.bind({})
 DesktopExpanded.storyName = 'Desktop/Expanded'
-
-export const DesktopCollapsed: Story<GovtMastheadProps> = (args) => {
-  const props = useDisclosure({ defaultIsOpen: false })
-  const isMobile = true
-  return <GovtMastheadComponent isMobile={isMobile} {...props} />
+DesktopExpanded.args = {
+  defaultIsOpen: true,
 }
-DesktopCollapsed.storyName = 'Desktop/Collapsed'
