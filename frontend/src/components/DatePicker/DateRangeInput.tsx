@@ -11,6 +11,7 @@ import {
   Flex,
   forwardRef,
   Popover,
+  PopoverAnchor,
   PopoverBody,
   PopoverCloseButton,
   PopoverContent,
@@ -176,54 +177,56 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
 
     return (
       <Wrap shouldWrapChildren spacing="0.25rem">
-        <Wrap shouldWrapChildren spacing="0.5rem" align="center">
-          <Input
-            aria-label="Start date"
-            id={`${props.name}-start-date`}
-            onKeyDown={handlePreventOpenNativeCalendar}
-            type="date"
-            w="fit-content"
-            sx={{
-              // Chrome displays a default calendar icon, which we want to hide
-              // so all browsers display our icon consistently.
-              '::-webkit-calendar-picker-indicator': {
-                display: 'none',
-              },
-            }}
-            onChange={handleStartDateChange}
-            value={startDateRenderedValue}
-            ref={ref}
-            {...props}
-          />
-          <Text textStyle="body-1" color="secondary.400" px="0.5rem">
-            to
-          </Text>
-          <Input
-            aria-label="End date"
-            id={`${props.name}-end-date`}
-            onKeyDown={handlePreventOpenNativeCalendar}
-            type="date"
-            w="fit-content"
-            sx={{
-              // Chrome displays a default calendar icon, which we want to hide
-              // so all browsers display our icon consistently.
-              '::-webkit-calendar-picker-indicator': {
-                display: 'none',
-              },
-            }}
-            isDisabled={!startDateRenderedValue}
-            onChange={handleEndDateChange}
-            value={endDateRenderedValue}
-            {...props}
-          />
-        </Wrap>
         <Popover
-          placement="bottom-end"
+          placement="bottom-start"
           initialFocusRef={initialFocusRef}
           isLazy
         >
           {({ isOpen }) => (
             <>
+              <PopoverAnchor>
+                <Wrap shouldWrapChildren spacing="0.5rem" align="center">
+                  <Input
+                    aria-label="Start date"
+                    id={`${props.name}-start-date`}
+                    onKeyDown={handlePreventOpenNativeCalendar}
+                    type="date"
+                    w="fit-content"
+                    sx={{
+                      // Chrome displays a default calendar icon, which we want to hide
+                      // so all browsers display our icon consistently.
+                      '::-webkit-calendar-picker-indicator': {
+                        display: 'none',
+                      },
+                    }}
+                    onChange={handleStartDateChange}
+                    value={startDateRenderedValue}
+                    ref={ref}
+                    {...props}
+                  />
+                  <Text textStyle="body-1" color="secondary.400" px="0.5rem">
+                    to
+                  </Text>
+                  <Input
+                    aria-label="End date"
+                    id={`${props.name}-end-date`}
+                    onKeyDown={handlePreventOpenNativeCalendar}
+                    type="date"
+                    w="fit-content"
+                    sx={{
+                      // Chrome displays a default calendar icon, which we want to hide
+                      // so all browsers display our icon consistently.
+                      '::-webkit-calendar-picker-indicator': {
+                        display: 'none',
+                      },
+                    }}
+                    isDisabled={!startDateRenderedValue}
+                    onChange={handleEndDateChange}
+                    value={endDateRenderedValue}
+                    {...props}
+                  />
+                </Wrap>
+              </PopoverAnchor>
               <PopoverTrigger>
                 <IconButton
                   aria-label={calendarButtonAria}
