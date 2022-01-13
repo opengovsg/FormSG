@@ -9,6 +9,7 @@ import {
   Stack,
   Text,
   useDisclosure,
+  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { BxsBank } from '~assets/icons/BxsBank'
@@ -24,16 +25,26 @@ export interface GovtMastheadProps {
 }
 
 interface GovtMastheadChildrenProps {
+  isOpen: boolean
   isMobile: boolean
   onToggle: () => void
   children: React.ReactNode
+}
+
+interface HeaderBarProps extends GovtMastheadChildrenProps {
+  /**
+   * ID of the expandable section for accessibility.
+   */
+  ariaControlId: string
 }
 
 const HeaderBar = ({
   isMobile,
   children,
   onToggle,
-}: GovtMastheadChildrenProps): JSX.Element => {
+  isOpen,
+  ariaControlId,
+}: HeaderBarProps): JSX.Element => {
   const styleProps = {
     bg: 'neutral.200',
     py: { base: '0.5rem', md: '0.375rem' },
@@ -47,12 +58,20 @@ const HeaderBar = ({
   if (isMobile) {
     return (
       <chakra.button
+        aria-controls={ariaControlId}
+        aria-describedby="masthead-aria"
+        aria-expanded={isOpen}
         _focus={{
           boxShadow: '0 0 0 2px inset var(--chakra-colors-primary-500)',
         }}
         {...styleProps}
         onClick={onToggle}
       >
+        <VisuallyHidden id="masthead-aria">
+          {isOpen
+            ? 'Click to close masthead'
+            : 'Click to expand masthead for more information'}
+        </VisuallyHidden>
         {children}
       </chakra.button>
     )
@@ -63,6 +82,7 @@ const HeaderBar = ({
 }
 
 const HowToIdentify = ({
+  isOpen,
   isMobile,
   children,
   onToggle,
@@ -71,6 +91,7 @@ const HowToIdentify = ({
   if (isMobile) {
     return (
       <Text
+        aria-hidden
         as="span"
         color="primary.500"
         textDecorationLine="underline"
@@ -85,8 +106,13 @@ const HowToIdentify = ({
   // Non-mobile
   return (
     <Link
+      as="button"
       tabIndex={0}
-      aria-label="Click to expand masthead for more information"
+      aria-label={
+        isOpen
+          ? 'Click to close masthead'
+          : 'Click to expand masthead for more information'
+      }
       onClick={onToggle}
     >
       How to identify {children}
@@ -100,18 +126,31 @@ export const GovtMasthead = ({
   const { onToggle, isOpen } = useDisclosure({ defaultIsOpen })
   const isMobile = useIsMobile()
 
+  const ariaControlId = 'govt-masthead-expandable'
+
   return (
     <Box>
-      <HeaderBar onToggle={onToggle} isMobile={isMobile}>
+      <HeaderBar
+        onToggle={onToggle}
+        isMobile={isMobile}
+        isOpen={isOpen}
+        ariaControlId={ariaControlId}
+      >
         <GovtMastheadIcon
+          aria-hidden
           fontSize="1rem"
           mr={{ base: '0.25rem', lg: '0.5rem' }}
           my={{ base: '0px', md: '2px' }}
         />
         <Flex alignItems="center" flexWrap="wrap">
           <Text my="2px">A Singapore Government Agency Website&ensp;</Text>
-          <HowToIdentify onToggle={onToggle} isMobile={isMobile}>
+          <HowToIdentify
+            isOpen={isOpen}
+            onToggle={onToggle}
+            isMobile={isMobile}
+          >
             <Icon
+              aria-hidden
               as={isOpen ? BiChevronUp : BiChevronDown}
               fontSize={{ base: '1rem', md: '1.25rem' }}
             />
@@ -119,7 +158,7 @@ export const GovtMasthead = ({
         </Flex>
       </HeaderBar>
 
-      <Collapse in={isOpen} animateOpacity unmountOnExit>
+      <Collapse in={isOpen} animateOpacity>
         <Stack
           direction={{ base: 'column', md: 'row' }}
           spacing={{ base: '1rem', md: '4.5rem', lg: '9.5rem' }}
@@ -127,16 +166,23 @@ export const GovtMasthead = ({
           px="2rem"
           py={{ base: '1.5rem', md: '2.25rem', lg: '2.75rem' }}
           textStyle={{ base: 'caption-2', lg: 'body-1' }}
-          data-testid="govtMastheadExpandedContent"
+          id={ariaControlId}
+          aria-hidden={!isOpen}
         >
           <GovtMastheadItem
             icon={BxsBank}
             header="Official website links end with .gov.sg"
           >
-            <Box>
-              Government agencies communicate via <b>.gov.sg</b> websites (e.g.
-              go.gov.sg/open).{' '}
-              <Link href="https://go.gov.sg/trusted-sites" isExternal>
+            <Box textStyle={{ base: 'caption-2', md: 'body-1' }}>
+              <Text as="span">
+                Government agencies communicate via <b>.gov.sg</b> websites
+                (e.g. go.gov.sg/open).{' '}
+              </Text>
+              <Link
+                aria-label="Click to open a list of trusted sites in a new window"
+                href="https://go.gov.sg/trusted-sites"
+                isExternal
+              >
                 Trusted websites
               </Link>
             </Box>
@@ -148,6 +194,7 @@ export const GovtMasthead = ({
             <Box textStyle={{ base: 'caption-2', md: 'body-1' }}>
               <Text as="span">Look for a lock (</Text>
               <Icon
+                aria-hidden
                 as={BxsLockAlt}
                 height={{ base: '1rem', md: '1.5rem' }}
                 verticalAlign="bottom"

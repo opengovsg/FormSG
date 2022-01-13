@@ -14,6 +14,7 @@ export const GovtMastheadItem = ({
   return (
     <Flex flex={1} maxW="32rem">
       <Icon
+        aria-hidden
         as={icon}
         fontSize={{ base: '1rem', lg: '1.5rem' }}
         mr={{ base: '0.5rem', lg: '0.75rem' }}
