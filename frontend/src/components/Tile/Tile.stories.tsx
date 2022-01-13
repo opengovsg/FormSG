@@ -24,8 +24,8 @@ const List = ({
   <>
     <Tile.Text textStyle="subhead-2">{listTitle}</Tile.Text>
     <UnorderedList>
-      {listItems.map((text) => (
-        <Tile.ListItem textStyle="body-2" textAlign="left">
+      {listItems.map((text, i) => (
+        <Tile.ListItem textStyle="body-2" textAlign="left" key={i}>
           {text}
         </Tile.ListItem>
       ))}
@@ -118,7 +118,7 @@ const EmailTile = ({ onClick, isActive }: StoryTileProps) => (
     icon={BiMailSend}
     isActive={isActive}
     onClick={onClick}
-    isFullWidth
+    flex={1}
   >
     <Tile.Title>Email Mode</Tile.Title>
     <Tile.Subtitle>Receive responses in your inbox</Tile.Subtitle>
@@ -136,7 +136,7 @@ const StorageTile = ({ onClick, isActive }: StoryTileProps) => (
     badge={<Badge colorScheme="success">recommended</Badge>}
     isActive={isActive}
     onClick={onClick}
-    isFullWidth
+    flex={1}
   >
     <Tile.Title>Storage Mode</Tile.Title>
     <Tile.Subtitle>Receive responses in Form</Tile.Subtitle>

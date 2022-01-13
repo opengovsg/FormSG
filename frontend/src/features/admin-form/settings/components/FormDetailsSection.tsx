@@ -1,6 +1,6 @@
-import { KeyboardEventHandler, useCallback, useMemo } from 'react'
+import { KeyboardEventHandler, useCallback } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { FormControl, Skeleton, Stack, Text, Wrap } from '@chakra-ui/react'
+import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { get, isEmpty } from 'lodash'
 
 import { FormResponseMode } from '~shared/types/form/form'
@@ -19,15 +19,6 @@ export const FormDetailsSection = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  const readableFormResponseMode = useMemo(() => {
-    switch (settings?.responseMode) {
-      case FormResponseMode.Email:
-        return 'Email'
-      case FormResponseMode.Encrypt:
-        return 'Storage'
-    }
-  }, [settings?.responseMode])
-
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings}>
       <Stack spacing="2rem">
@@ -35,10 +26,6 @@ export const FormDetailsSection = (): JSX.Element => {
         {settings?.responseMode === FormResponseMode.Email ? (
           <EmailFormSection settings={settings} />
         ) : null}
-        <Wrap shouldWrapChildren justify="space-between" textStyle="subhead-1">
-          <Text>Mode for receiving responses</Text>
-          <Text>{readableFormResponseMode}</Text>
-        </Wrap>
       </Stack>
     </Skeleton>
   )

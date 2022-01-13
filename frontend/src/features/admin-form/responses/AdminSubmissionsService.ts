@@ -1,4 +1,8 @@
-import { SubmissionCountQueryDto } from '~shared/types/submission'
+import {
+  FormSubmissionMetadataQueryDto,
+  StorageModeSubmissionMetadataList,
+  SubmissionCountQueryDto,
+} from '~shared/types/submission'
 
 import { ApiService } from '~services/ApiService'
 
@@ -23,4 +27,23 @@ export const countFormSubmissions = async ({
     }).then(({ data }) => data)
   }
   return ApiService.get(queryUrl).then(({ data }) => data)
+}
+
+/**
+ * Get of submissions metadata for a given form
+ * @param formId fomID to retrieve metadata on
+ * @returns The metadata of the form
+ */
+export const getFormSubmissionsMetadata = async (
+  formId: string,
+  page: NonNullable<FormSubmissionMetadataQueryDto['page']> = 1,
+): Promise<StorageModeSubmissionMetadataList> => {
+  return ApiService.get(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`,
+    {
+      params: {
+        page,
+      },
+    },
+  ).then(({ data }) => data)
 }

@@ -34,9 +34,9 @@ export const Button = forwardRef<ButtonProps, 'button'>(
         ref={ref}
         spinner={<Spinner fontSize={spinnerFontSize ?? '1.5rem'} />}
         isFullWidth={isFullWidth}
+        textStyle={textStyle}
         {...props}
-        // 15px due to 1px border
-        {...(isFullWidth ? { p: '15px', h: 'auto' } : {})}
+        {...(isFullWidth ? { minH: '3.5rem' } : {})}
       >
         {children}
       </ChakraButton>

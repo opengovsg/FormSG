@@ -1,5 +1,8 @@
+import { useMemo } from 'react'
 import { Waypoint } from 'react-waypoint'
 import { Box, Divider, forwardRef, Text } from '@chakra-ui/react'
+
+import { FormColorTheme } from '~shared/types/form'
 
 import { SectionFieldContainerProps } from './SectionFieldContainer'
 
@@ -24,7 +27,16 @@ const SectionDivider = ({ color }: { color?: string }) => (
 
 // Exported for testing.
 export const SectionField = forwardRef<SectionFieldProps, 'div'>(
-  ({ schema, dividerColor = 'secondary.100', handleSectionEnter }, ref) => {
+  ({ schema, colorTheme, handleSectionEnter }, ref) => {
+    const dividerColor = useMemo(() => {
+      switch (colorTheme) {
+        case FormColorTheme.Blue:
+          return 'secondary.100'
+        default:
+          return `theme-${colorTheme}.100`
+      }
+    }, [colorTheme])
+
     return (
       <Box>
         <SectionDivider color={dividerColor} />
