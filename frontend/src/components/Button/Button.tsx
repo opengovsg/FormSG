@@ -34,7 +34,6 @@ export const Button = forwardRef<ButtonProps, 'button'>(
         ref={ref}
         spinner={<Spinner fontSize={spinnerFontSize ?? '1.5rem'} />}
         isFullWidth={isFullWidth}
-        textStyle={textStyle}
         {...props}
         {...(isFullWidth ? { minH: '3.5rem' } : {})}
       >
