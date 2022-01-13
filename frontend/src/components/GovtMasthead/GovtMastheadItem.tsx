@@ -22,7 +22,7 @@ export const GovtMastheadItem = ({
         <Text textStyle={{ base: 'caption-1', lg: 'subhead-1' }} mb="0.75rem">
           {header}
         </Text>
-        <Text>{children}</Text>
+        {children}
       </Flex>
     </Flex>
   )

@@ -103,7 +103,7 @@ export const GovtMasthead = ({
           my={{ base: '0px', md: '2px' }}
         />
         <Flex alignItems="center" flexWrap="wrap">
-          <Text my="2px">A Singapore government agency website.&nbsp;</Text>
+          <Text my="2px">A Singapore Government Agency Website&ensp;</Text>
           <HowToIdentify onToggle={onToggle} isMobile={isMobile}>
             <Icon
               as={isOpen ? BiChevronUp : BiChevronDown}
@@ -127,21 +127,31 @@ export const GovtMasthead = ({
             icon={BxsBank}
             header="Official website links end with .gov.sg"
           >
-            Government agencies communicate via <b>.gov.sg</b> websites(e.g.
-            go.gov.sg/open).{' '}
-            <Link href="https://go.gov.sg/trusted-sites" isExternal>
-              Trusted websites
-            </Link>
+            <Box>
+              Government agencies communicate via <b>.gov.sg</b> websites (e.g.
+              go.gov.sg/open).{' '}
+              <Link href="https://go.gov.sg/trusted-sites" isExternal>
+                Trusted websites
+              </Link>
+            </Box>
           </GovtMastheadItem>
           <GovtMastheadItem
             icon={BxsLockAlt}
             header="Secure websites use HTTPS"
           >
-            Look for a lock (
-            <Icon as={BxsLockAlt} fontSize={{ base: '0.75rem', lg: '1rem' }} />)
-            or https:// as an added precaution.
-            <br></br>Share sensitive information only on official, secure
-            websites.
+            <Box textStyle={{ base: 'caption-2', md: 'body-1' }}>
+              <Text as="span">Look for a lock (</Text>
+              <Icon
+                as={BxsLockAlt}
+                height={{ base: '1rem', md: '1.5rem' }}
+                verticalAlign="bottom"
+              />
+              <Text as="span">
+                ) or https:// as an added precaution.
+                <br></br>Share sensitive information only on official, secure
+                websites.
+              </Text>
+            </Box>
           </GovtMastheadItem>
         </Stack>
       </Collapse>
