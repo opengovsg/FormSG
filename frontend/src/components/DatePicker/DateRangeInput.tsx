@@ -241,7 +241,11 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
                       <Text textStyle="subhead-2" color="secondary.500">
                         Select date range
                       </Text>
-                      <PopoverCloseButton position="static" />
+                      <PopoverCloseButton
+                        variant="clear"
+                        colorScheme="secondary"
+                        position="static"
+                      />
                     </Flex>
                   </PopoverHeader>
                   <PopoverBody p={0}>
