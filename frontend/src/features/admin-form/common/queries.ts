@@ -1,4 +1,4 @@
-import { useQuery, UseQueryResult } from 'react-query'
+import { QueryObserverOptions, useQuery, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
 import { AdminFormDto } from '~shared/types/form/form'
@@ -15,9 +15,21 @@ export const adminFormKeys = {
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useAdminForm = (): UseQueryResult<AdminFormDto, ApiError> => {
+export const useAdminForm = (
+  props?: QueryObserverOptions<
+    AdminFormDto,
+    ApiError,
+    AdminFormDto,
+    AdminFormDto,
+    ReturnType<typeof adminFormKeys.id>
+  >,
+): UseQueryResult<AdminFormDto, ApiError> => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  return useQuery(adminFormKeys.id(formId), () => getAdminFormView(formId))
+  return useQuery(
+    adminFormKeys.id(formId),
+    () => getAdminFormView(formId),
+    props,
+  )
 }
