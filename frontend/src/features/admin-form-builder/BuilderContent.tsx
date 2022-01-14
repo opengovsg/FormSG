@@ -1,16 +1,15 @@
-import { memo, useEffect } from 'react'
+import { memo, useCallback, useEffect } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { Box, Flex } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
-
 import { FieldRowContainer } from './FieldRow/FieldRowContainer'
 import { BuilderContentPlaceholder } from './BuilderContentPlaceholder'
 import { FIELD_LIST_DROP_ID } from './constants'
-import { clearActiveFieldSelector, useEditFieldStore } from './editFieldStore'
+import { useEditFieldStore } from './editFieldStore'
 import { DndPlaceholderProps } from './FormBuilderPage'
+import { useBuilderFormFields } from './useBuilderFormFields'
 
 interface BuilderContentProps {
   placeholderProps: DndPlaceholderProps
@@ -19,13 +18,23 @@ interface BuilderContentProps {
 export const BuilderContent = ({
   placeholderProps,
 }: BuilderContentProps): JSX.Element => {
-  const clearActiveField = useEditFieldStore(clearActiveFieldSelector)
-  const { data } = useAdminForm()
+  const { clearActiveField, clearFieldToCreate } = useEditFieldStore(
+    useCallback((state) => {
+      return {
+        clearActiveField: state.clearActiveField,
+        clearFieldToCreate: state.clearFieldToCreate,
+      }
+    }, []),
+  )
+  const { builderFields } = useBuilderFormFields()
 
   useEffect(() => {
     // Clear field on component unmount.
-    return () => clearActiveField()
-  }, [clearActiveField])
+    return () => {
+      clearActiveField()
+      clearFieldToCreate()
+    }
+  }, [clearActiveField, clearFieldToCreate])
 
   return (
     <Flex flex={1} bg="neutral.200">
@@ -53,7 +62,7 @@ export const BuilderContent = ({
                 ref={provided.innerRef}
                 {...provided.droppableProps}
               >
-                <BuilderFields fields={data?.form_fields} />
+                <BuilderFields fields={builderFields} />
                 {provided.placeholder}
                 {snapshot.isDraggingOver ? (
                   <BuilderContentPlaceholder

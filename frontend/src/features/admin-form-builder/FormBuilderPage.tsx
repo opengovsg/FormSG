@@ -9,11 +9,18 @@ import { Flex } from '@chakra-ui/react'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
+import {
+  CREATE_FIELD_DROP_ID,
+  CREATE_FIELD_FIELDS_ORDERED,
+  CREATE_PAGE_DROP_ID,
+  CREATE_PAGE_FIELDS_ORDERED,
+} from './CreateFieldDrawer/constants'
 import { BuilderContent } from './BuilderContent'
 import { BuilderDrawer } from './BuilderDrawer'
 import { BuilderDrawerProvider } from './BuilderDrawerContext'
 import { BuilderSidebar } from './BuilderSidebar'
 import { FIELD_LIST_DROP_ID } from './constants'
+import { setFieldToCreateSelector, useEditFieldStore } from './editFieldStore'
 import { useMutateFormFields } from './mutations'
 
 const dragHandleQueryAttr = 'data-rbd-drag-handle-draggable-id'
@@ -52,6 +59,7 @@ export type DndPlaceholderProps =
 export const FormBuilderPage = (): JSX.Element => {
   const { data } = useAdminForm()
   const { mutateReorderField } = useMutateFormFields()
+  const setFieldToCreate = useEditFieldStore(setFieldToCreateSelector)
 
   const [placeholderProps, setPlaceholderProps] = useState<DndPlaceholderProps>(
     {},
@@ -160,17 +168,35 @@ export const FormBuilderPage = (): JSX.Element => {
   const onDragEnd = useCallback(
     ({ source, destination }: DropResult) => {
       setPlaceholderProps({})
-      if (source.droppableId !== FIELD_LIST_DROP_ID) return
-      if (!data || !destination || destination.index === source.index) {
-        return
+
+      if (!data || !destination) return
+
+      switch (source.droppableId) {
+        case CREATE_PAGE_DROP_ID: {
+          return setFieldToCreate(
+            CREATE_PAGE_FIELDS_ORDERED[source.index],
+            destination.index,
+          )
+        }
+        case CREATE_FIELD_DROP_ID: {
+          return setFieldToCreate(
+            CREATE_FIELD_FIELDS_ORDERED[source.index],
+            destination.index,
+          )
+        }
+        case FIELD_LIST_DROP_ID: {
+          if (destination.index === source.index) {
+            return
+          }
+          return mutateReorderField.mutate({
+            fields: data.form_fields,
+            from: source.index,
+            to: destination.index,
+          })
+        }
       }
-      return mutateReorderField.mutate({
-        fields: data.form_fields,
-        from: source.index,
-        to: destination.index,
-      })
     },
-    [data, mutateReorderField],
+    [data, mutateReorderField, setFieldToCreate],
   )
 
   return (
