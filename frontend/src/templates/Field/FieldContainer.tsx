@@ -51,7 +51,6 @@ export const FieldContainer = ({
       isDisabled={schema.disabled}
       isReadOnly={isValid && isSubmitting}
       isInvalid={!!error}
-      mb={6}
     >
       <FormLabel
         questionNumber={questionNumber}
