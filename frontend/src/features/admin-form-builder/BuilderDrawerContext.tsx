@@ -87,8 +87,14 @@ const useProvideDrawerContext = (): BuilderDrawerContextProps => {
   }, [clearActiveField, hasActiveField])
 
   const handleBuilderClick = () => setActiveTab(DrawerTabs.Builder)
-  const handleDesignClick = () => setActiveTab(DrawerTabs.Design)
-  const handleLogicClick = () => setActiveTab(DrawerTabs.Logic)
+  const handleDesignClick = () => {
+    clearActiveField()
+    setActiveTab(DrawerTabs.Design)
+  }
+  const handleLogicClick = () => {
+    clearActiveField()
+    setActiveTab(DrawerTabs.Logic)
+  }
 
   return {
     activeTab,

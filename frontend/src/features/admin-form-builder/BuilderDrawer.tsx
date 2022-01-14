@@ -1,10 +1,13 @@
+import { useMemo } from 'react'
 import { Flex } from '@chakra-ui/react'
 import { AnimatePresence } from 'framer-motion'
 
 import { MotionBox } from '~components/motion'
 
 import { EditFieldDrawer } from './EditFieldDrawer/EditFieldDrawer'
-import { useBuilderDrawer } from './BuilderDrawerContext'
+import { DrawerTabs, useBuilderDrawer } from './BuilderDrawerContext'
+import { CreateFieldDrawer } from './CreateFieldDrawer'
+import { activeFieldSelector, useEditFieldStore } from './editFieldStore'
 
 const DRAWER_MOTION_PROPS = {
   initial: { width: 0 },
@@ -26,11 +29,27 @@ const DRAWER_MOTION_PROPS = {
 }
 
 export const BuilderDrawer = (): JSX.Element => {
-  const { isShowDrawer } = useBuilderDrawer()
+  const { isShowDrawer, activeTab } = useBuilderDrawer()
+  const activeField = useEditFieldStore(activeFieldSelector)
+
+  const renderDrawerContent = useMemo(() => {
+    switch (activeTab) {
+      case DrawerTabs.Builder: {
+        if (activeField) {
+          return <EditFieldDrawer />
+        }
+        return <CreateFieldDrawer />
+      }
+      case DrawerTabs.Design:
+        return <div>TODO: Design drawer contents</div>
+      case DrawerTabs.Logic:
+        return <div>TODO: Logic drawer contents</div>
+    }
+  }, [activeField, activeTab])
 
   return (
     <AnimatePresence>
-      {isShowDrawer && (
+      {isShowDrawer ? (
         <MotionBox
           bg="white"
           key="sidebar"
@@ -40,10 +59,10 @@ export const BuilderDrawer = (): JSX.Element => {
           {...DRAWER_MOTION_PROPS}
         >
           <Flex w="100%" h="100%" minW="max-content" flexDir="column">
-            <EditFieldDrawer />
+            {renderDrawerContent}
           </Flex>
         </MotionBox>
-      )}
+      ) : null}
     </AnimatePresence>
   )
 }
