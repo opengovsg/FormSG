@@ -1,7 +1,7 @@
 import { BasicField } from '~shared/types/field'
 
 import { PENDING_CREATE_FIELD_ID } from './constants'
-import { PendingFormField } from './types'
+import { BuilderContentField, PendingFormField } from './types'
 
 /**
  * Maps BasicField enums to their human-readable field type string
@@ -30,6 +30,12 @@ export const transformBasicFieldToText = (basicField?: BasicField): string => {
     default:
       return basicField.charAt(0).toUpperCase() + basicField.slice(1)
   }
+}
+
+export const isPendingFormField = (
+  field: BuilderContentField,
+): field is PendingFormField => {
+  return field._id === PENDING_CREATE_FIELD_ID
 }
 
 /**
