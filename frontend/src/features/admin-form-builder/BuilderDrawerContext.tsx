@@ -68,12 +68,9 @@ const editFieldStoreSelector = (state: EditFieldStoreState) => {
 
 const useProvideDrawerContext = (): BuilderDrawerContextProps => {
   const [activeTab, setActiveTab] = useState<DrawerTabs | null>(null)
-  const {
-    hasActiveField,
-    hasFieldToCreate,
-    clearActiveField,
-    clearFieldToCreate,
-  } = useEditFieldStore(editFieldStoreSelector)
+  const { hasActiveField, clearActiveField } = useEditFieldStore(
+    editFieldStoreSelector,
+  )
 
   useEffect(() => {
     if (hasActiveField) {
@@ -88,9 +85,6 @@ const useProvideDrawerContext = (): BuilderDrawerContextProps => {
 
   const handleClose = useCallback(
     (clearActiveTab = true) => {
-      if (hasFieldToCreate) {
-        clearFieldToCreate()
-      }
       if (hasActiveField) {
         clearActiveField()
       }
@@ -98,7 +92,7 @@ const useProvideDrawerContext = (): BuilderDrawerContextProps => {
         setActiveTab(null)
       }
     },
-    [clearActiveField, clearFieldToCreate, hasActiveField, hasFieldToCreate],
+    [clearActiveField, hasActiveField],
   )
 
   const handleBuilderClick = () => setActiveTab(DrawerTabs.Builder)

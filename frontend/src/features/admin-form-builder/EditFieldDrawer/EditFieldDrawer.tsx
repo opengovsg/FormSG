@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
 import { Box, Flex } from '@chakra-ui/react'
 
@@ -6,8 +6,11 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
 
-import { useBuilderDrawer } from '../BuilderDrawerContext'
-import { activeFieldSelector, useEditFieldStore } from '../editFieldStore'
+import {
+  activeFieldSelector,
+  clearActiveFieldSelector,
+  useEditFieldStore,
+} from '../editFieldStore'
 import { BuilderDrawerCloseButton } from '../FieldRow/BuilderDrawerCloseButton'
 import { transformBasicFieldToText } from '../utils'
 
@@ -15,17 +18,13 @@ import { EditCheckbox } from './EditCheckbox'
 import { EditHeader } from './EditHeader'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
-  const { handleClose } = useBuilderDrawer()
+  const clearActiveField = useEditFieldStore(clearActiveFieldSelector)
   const activeField = useEditFieldStore(activeFieldSelector)
 
   const basicFieldText = useMemo(
     () => transformBasicFieldToText(activeField?.fieldType),
     [activeField?.fieldType],
   )
-
-  const handleBackClick = useCallback(() => {
-    handleClose(/* clearActiveTab= */ false)
-  }, [handleClose])
 
   if (!activeField) return null
 
@@ -46,7 +45,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
           aria-label="Back to field selection"
           variant="clear"
           colorScheme="secondary"
-          onClick={handleBackClick}
+          onClick={clearActiveField}
           icon={<BiLeftArrowAlt />}
         />
         <Box m="auto">Edit {basicFieldText} field</Box>
