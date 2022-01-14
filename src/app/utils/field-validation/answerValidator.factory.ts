@@ -11,6 +11,7 @@ import {
 } from '../../modules/submission/submission.types'
 
 import { constructAttachmentValidator } from './validators/attachmentValidator'
+import { constructBookingValidator } from './validators/bookingValidator'
 import { constructCheckboxValidator } from './validators/checkboxValidator'
 import { constructDateValidator } from './validators/dateValidator'
 import { constructDecimalValidator } from './validators/decimalValidator'
@@ -65,6 +66,8 @@ export const constructSingleAnswerValidator = (
       return constructUenValidator()
     case BasicField.YesNo:
       return constructYesNoValidator()
+    case BasicField.Booking:
+      return constructBookingValidator()
     default:
       return () => left('Unsupported field type')
   }

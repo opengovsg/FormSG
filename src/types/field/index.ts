@@ -2,6 +2,7 @@ import { Document } from 'mongoose'
 import { ConditionalExcept, Merge } from 'type-fest'
 
 import { IAttachmentFieldSchema } from './attachmentField'
+import { IBookingFieldSchema } from './bookingField'
 import { ICheckboxFieldSchema } from './checkboxField'
 import { IDateFieldSchema } from './dateField'
 import { IDecimalFieldSchema } from './decimalField'
@@ -44,6 +45,7 @@ export * from './statementField'
 export * from './tableField'
 export * from './uenField'
 export * from './yesNoField'
+export * from './bookingField'
 
 export enum SPCPFieldTitle {
   SpNric = 'SingPass Validated NRIC',
@@ -76,6 +78,7 @@ export type FormFieldSchema =
   | ITableFieldSchema
   | IUenFieldSchema
   | IYesNoFieldSchema
+  | IBookingFieldSchema
 
 /**
  * Helper type to only retain from FormFieldSchema the props required to create
@@ -116,3 +119,4 @@ export type FieldValidationSchema =
   | OmitUnusedValidatorProps<ITableFieldSchema>
   | OmitUnusedValidatorProps<IUenFieldSchema>
   | OmitUnusedValidatorProps<IYesNoFieldSchema>
+  | OmitUnusedValidatorProps<IBookingFieldSchema>

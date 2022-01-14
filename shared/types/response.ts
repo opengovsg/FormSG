@@ -125,6 +125,11 @@ export const UenResponse = SingleAnswerResponse.extend({
 })
 export type UenResponse = z.infer<typeof UenResponse>
 
+export const BookingResponse = SingleAnswerResponse.extend({
+  fieldType: z.literal(BasicField.Booking),
+})
+export type BookingResponse = z.infer<typeof BookingResponse>
+
 export type FieldResponse =
   | HeaderResponse
   | EmailResponse
@@ -144,3 +149,4 @@ export type FieldResponse =
   | NricResponse
   | TableResponse
   | UenResponse
+  | BookingResponse

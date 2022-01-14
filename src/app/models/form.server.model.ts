@@ -65,6 +65,7 @@ import getAgencyModel from './agency.server.model'
 import {
   BaseFieldSchema,
   createAttachmentFieldSchema,
+  createBookingFieldSchema,
   createCheckboxFieldSchema,
   createDateFieldSchema,
   createDecimalFieldSchema,
@@ -442,6 +443,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     createAttachmentFieldSchema(),
   )
   FormFieldPath.discriminator(BasicField.Dropdown, createDropdownFieldSchema())
+  FormFieldPath.discriminator(BasicField.Booking, createBookingFieldSchema())
   FormFieldPath.discriminator(BasicField.Radio, createRadioFieldSchema())
   FormFieldPath.discriminator(BasicField.Checkbox, createCheckboxFieldSchema())
   FormFieldPath.discriminator(

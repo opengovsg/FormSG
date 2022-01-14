@@ -19,6 +19,7 @@ export enum BasicField {
   Nric = 'nric',
   Table = 'table',
   Uen = 'uen',
+  Booking = 'booking',
 }
 
 export enum MyInfoAttribute {

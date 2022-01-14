@@ -132,6 +132,12 @@ export const types: BasicFieldBlock[] = [
     submitted: true,
     answerArray: true,
   },
+  {
+    name: BasicField.Booking,
+    value: 'Booking',
+    submitted: true,
+    answerArray: false,
+  },
 ]
 
 /**

@@ -1,4 +1,5 @@
 import { AttachmentFieldBase } from './attachmentField'
+import { BookingFieldBase } from './bookingField'
 import { CheckboxFieldBase } from './checkboxField'
 import { DateFieldBase } from './dateField'
 import { DecimalFieldBase } from './decimalField'
@@ -40,6 +41,7 @@ export * from './statementField'
 export * from './tableField'
 export * from './uenField'
 export * from './yesNoField'
+export * from './bookingField'
 
 export * from './utils'
 
@@ -64,6 +66,7 @@ export type FormField =
   | TableFieldBase
   | UenFieldBase
   | YesNoFieldBase
+  | BookingFieldBase
 
 export type FormFieldWithId<T extends FormField = FormField> = T & {
   _id: string

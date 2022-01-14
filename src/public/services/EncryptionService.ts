@@ -1,6 +1,7 @@
 import {
   AttachmentResponse,
   BasicField,
+  BookingResponse,
   CheckboxResponse,
   DateResponse,
   DecimalResponse,
@@ -93,6 +94,8 @@ const validateResponses = (responses: unknown): FieldResponse[] => {
         return NumberResponse.parse(response)
       case BasicField.YesNo:
         return YesNoResponse.parse(response)
+      case BasicField.Booking:
+        return BookingResponse.parse(response)
       default:
         throw new Error(
           `Invalid fieldType provided for encrypt submission validation: ${response.fieldType}`,

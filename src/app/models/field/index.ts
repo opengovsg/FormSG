@@ -1,5 +1,6 @@
 import createAttachmentFieldSchema from './attachmentField'
 import { BaseFieldSchema } from './baseField'
+import createBookingFieldSchema from './bookingField'
 import createCheckboxFieldSchema from './checkboxField'
 import createDateFieldSchema from './dateField'
 import createDecimalFieldSchema from './decimalField'
@@ -41,5 +42,6 @@ export {
   createTableFieldSchema,
   createUenFieldSchema,
   createYesNoFieldSchema,
+  createBookingFieldSchema,
   BaseFieldSchema,
 }
