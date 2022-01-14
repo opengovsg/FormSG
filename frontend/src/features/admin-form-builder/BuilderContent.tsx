@@ -1,13 +1,13 @@
 import { memo, useEffect } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { Box, Flex } from '@chakra-ui/react'
-import { isEmpty } from 'lodash'
 
 import { AdminFormDto } from '~shared/types/form'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { FieldRowContainer } from './FieldRow/FieldRowContainer'
+import { BuilderContentPlaceholder } from './BuilderContentPlaceholder'
 import { FIELD_LIST_DROPPABLE_ID } from './constants'
 import { clearActiveFieldSelector, useEditFieldStore } from './editFieldStore'
 import { DndPlaceholderProps } from './FormBuilderPage'
@@ -55,24 +55,11 @@ export const BuilderContent = ({
               >
                 <BuilderFields fields={data?.form_fields} />
                 {provided.placeholder}
-                {!isEmpty(placeholderProps) && snapshot.isDraggingOver && (
-                  <Box
-                    style={{
-                      top: placeholderProps.clientY,
-                      left: placeholderProps.clientX,
-                      height: placeholderProps.clientHeight,
-                      width: placeholderProps.clientWidth,
-                    }}
-                    py={
-                      placeholderProps.droppableId === FIELD_LIST_DROPPABLE_ID
-                        ? '1.25rem'
-                        : 0
-                    }
-                    pos="absolute"
-                  >
-                    <Box h="100%" bg="primary.200" border="dashed 1px blue" />
-                  </Box>
-                )}
+                {snapshot.isDraggingOver ? (
+                  <BuilderContentPlaceholder
+                    placeholderProps={placeholderProps}
+                  />
+                ) : null}
               </Box>
             )}
           </Droppable>
