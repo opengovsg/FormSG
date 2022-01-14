@@ -22,7 +22,7 @@ const ResponsesPage = (): JSX.Element => {
     console.log(formId, settings?.title)
     if (!formId || !settings?.title) return
     return downloadEncryptedResponses(formId, settings.title, secretKey)
-  }, [])
+  }, [downloadEncryptedResponses, formId, secretKey, settings?.title])
 
   return (
     <Skeleton isLoaded={!isLoading && !!data}>

@@ -127,19 +127,18 @@ const variantOutlineReverse: SystemStyleFunction = (props) => {
 }
 
 const variantLink: SystemStyleFunction = (props) => {
-  return merge(
-    {
-      border: 'none',
-      minHeight: 'auto',
-    },
-    Link.baseStyle(props),
-    Link.variants.standalone,
-  )
+  return merge(Link.baseStyle(props), Link.variants.standalone, {
+    border: 'none',
+    minHeight: 'auto',
+    fontWeight: 'normal',
+    w: 'fit-content',
+  })
 }
 
 export const Button = {
   baseStyle: {
     ...textStyles['subhead-1'],
+    whiteSpace: 'pre-wrap',
     borderRadius: '0.25rem',
     border: '1px solid',
     flexShrink: 0,
