@@ -74,8 +74,8 @@ export const CreateFieldOption = forwardRef<FieldOptionProps, 'button'>(
           _focus: { bg: 'white' },
         }}
         _hover={{ bg: 'primary.100' }}
-        _focus={{ bg: 'primary.200' }}
-        _active={{ bg: 'primary.200' }}
+        _focus={{ bg: 'primary.100' }}
+        _active={{ bg: 'primary.100' }}
         bg="white"
         {...props}
         ref={ref}

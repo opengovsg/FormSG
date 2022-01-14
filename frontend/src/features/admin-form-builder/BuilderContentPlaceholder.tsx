@@ -15,7 +15,14 @@ export const BuilderContentPlaceholder = ({
   const renderedContents = useMemo(() => {
     switch (placeholderProps.droppableId) {
       case FIELD_LIST_DROPPABLE_ID:
-        return <Box h="100%" bg="danger.200" border="dashed 1px blue" />
+        return (
+          <Box
+            h="100%"
+            bg="primary.200"
+            opacity="0.5"
+            border="dashed 1px blue"
+          />
+        )
       default:
         return (
           <Flex
