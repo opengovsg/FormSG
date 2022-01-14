@@ -13,6 +13,7 @@ import { SectionFieldSchema } from '~templates/Field/Section/SectionFieldContain
 
 import { useEditFieldStore } from '../editFieldStore'
 import { useMutateFormFields } from '../mutations'
+import { isPendingFormField } from '../utils'
 
 import { DrawerContentContainer } from './DrawerContentContainer'
 import { FormFieldDrawerActions } from './FormFieldDrawerActions'
@@ -51,6 +52,16 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
 
   const { mutateFormField } = useMutateFormFields()
 
+  const isSaveDisabled = useMemo(
+    () => isDirty || isPendingFormField(field),
+    [field, isDirty],
+  )
+
+  const saveButtonText = useMemo(
+    () => (isPendingFormField(field) ? 'Create' : 'Save'),
+    [field],
+  )
+
   const handleUpdateField = handleSubmit((inputs) => {
     const updatedFormField: SectionFieldSchema = extend({}, field, inputs)
     return mutateFormField.mutate(updatedFormField, {
@@ -86,7 +97,8 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
         </FormControl>
         <FormFieldDrawerActions
           isLoading={mutateFormField.isLoading}
-          isDirty={isDirty}
+          isDirty={isSaveDisabled}
+          buttonText={saveButtonText}
           handleClick={handleUpdateField}
           handleCancel={clearActiveField}
         />

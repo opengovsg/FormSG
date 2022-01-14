@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { BiX } from 'react-icons/bi'
 import { CloseButton } from '@chakra-ui/react'
 
@@ -5,6 +6,10 @@ import { useBuilderDrawer } from '../BuilderDrawerContext'
 
 export const BuilderDrawerCloseButton = (): JSX.Element => {
   const { handleClose } = useBuilderDrawer()
+
+  const handleCloseDrawer = useCallback(() => {
+    handleClose(/* clearActiveTab= */ true)
+  }, [handleClose])
 
   return (
     <CloseButton
@@ -15,7 +20,7 @@ export const BuilderDrawerCloseButton = (): JSX.Element => {
       variant="clear"
       colorScheme="neutral"
       children={<BiX />}
-      onClick={handleClose}
+      onClick={handleCloseDrawer}
     />
   )
 }

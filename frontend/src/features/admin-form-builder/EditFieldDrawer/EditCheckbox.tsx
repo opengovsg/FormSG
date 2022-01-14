@@ -28,6 +28,7 @@ import { CheckboxFieldSchema } from '~templates/Field/Checkbox/CheckboxField'
 
 import { useEditFieldStore } from '../editFieldStore'
 import { useMutateFormFields } from '../mutations'
+import { isPendingFormField } from '../utils'
 
 import { DrawerContentContainer } from './DrawerContentContainer'
 import { FormFieldDrawerActions } from './FormFieldDrawerActions'
@@ -144,6 +145,16 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
   )
 
   const { mutateFormField } = useMutateFormFields()
+
+  const saveButtonText = useMemo(
+    () => (isPendingFormField(field) ? 'Create' : 'Save'),
+    [field],
+  )
+
+  const isSaveDisabled = useMemo(
+    () => isDirty || isPendingFormField(field),
+    [field, isDirty],
+  )
 
   const handleUpdateField = handleSubmit((inputs) => {
     const updatedField = extend({}, field, transformToFormField(inputs))
@@ -380,7 +391,8 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
 
         <FormFieldDrawerActions
           isLoading={mutateFormField.isLoading}
-          isDirty={isDirty}
+          isDirty={isSaveDisabled}
+          buttonText={saveButtonText}
           handleClick={handleUpdateField}
           handleCancel={clearActiveField}
         />

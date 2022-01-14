@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
-import { merge } from 'lodash'
+import { merge, omit } from 'lodash'
 
-import { FormFieldDto } from '~shared/types/field'
+import { FormField, FormFieldDto } from '~shared/types/field'
 import { AdminFormDto } from '~shared/types/form'
 import { reorder } from '~shared/utils/immutable-array-fns'
 
@@ -13,10 +13,14 @@ import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
+import { useEditFieldStore } from './editFieldStore'
+import { BuilderContentField } from './types'
 import {
+  createSingleFormField,
   reorderSingleFormField,
   updateSingleFormField,
 } from './UpdateFormFieldService'
+import { isPendingFormField } from './utils'
 
 export const adminFormFieldKeys = {
   base: [...adminFormKeys.base, 'fields'] as const,
@@ -26,6 +30,9 @@ export const adminFormFieldKeys = {
 export const useMutateFormFields = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
+
+  const { clearFieldToCreate, fieldToCreate, updateActiveField } =
+    useEditFieldStore()
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
@@ -47,16 +54,35 @@ export const useMutateFormFields = () => {
         // Should not happen, should not be able to update field if there is no
         // existing data.
         if (!old) throw new Error('Query should have been set')
-        const currentFieldIndex = old.form_fields.findIndex(
-          (ff) => ff._id === newData._id,
-        )
-        old.form_fields[currentFieldIndex] = newData
+
+        if (fieldToCreate) {
+          old.form_fields.splice(fieldToCreate.insertionIndex, 0, newData)
+        } else {
+          const currentFieldIndex = old.form_fields.findIndex(
+            (ff) => ff._id === newData._id,
+          )
+
+          old.form_fields[currentFieldIndex] = newData
+        }
+
         return old
       })
-    },
-    [adminFormKey, queryClient, toast],
-  )
 
+      // If there are any fields to clear, just clear.
+      if (fieldToCreate) {
+        clearFieldToCreate()
+        updateActiveField(newData)
+      }
+    },
+    [
+      adminFormKey,
+      clearFieldToCreate,
+      fieldToCreate,
+      queryClient,
+      toast,
+      updateActiveField,
+    ],
+  )
   const handleError = useCallback(
     (error: Error) => {
       toast.closeAll()
@@ -69,8 +95,16 @@ export const useMutateFormFields = () => {
   )
 
   const mutateFormField = useMutation(
-    (updateFieldBody: FormFieldDto) =>
-      updateSingleFormField({ formId, updateFieldBody }),
+    (updateFieldBody: BuilderContentField) => {
+      if (isPendingFormField(updateFieldBody)) {
+        return createSingleFormField({
+          formId,
+          createFieldBody: omit(updateFieldBody, '_id') as FormField,
+          insertionIndex: fieldToCreate?.insertionIndex,
+        })
+      }
+      return updateSingleFormField({ formId, updateFieldBody })
+    },
     {
       onSuccess: (newData) => {
         handleSuccess({

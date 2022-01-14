@@ -1,8 +1,31 @@
-import { FormFieldDto } from '~shared/types/field'
+import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
 
 import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '~features/admin-form/common/AdminViewFormService'
+
+/**
+ * Creates a new form field in the given form
+ * @param formId the form to insert a new form field for
+ * @param createFieldBody the body of the new form field
+ * @param insertionIndex optional. The index to insert the new form field at
+ * @returns the created form field
+ */
+export const createSingleFormField = async ({
+  formId,
+  createFieldBody,
+  insertionIndex,
+}: {
+  formId: string
+  createFieldBody: FieldCreateDto
+  insertionIndex?: number
+}): Promise<FormFieldDto> => {
+  return ApiService.post<FormFieldDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/fields`,
+    createFieldBody,
+    { params: { to: insertionIndex } },
+  ).then(({ data }) => data)
+}
 
 export const updateSingleFormField = async ({
   formId,

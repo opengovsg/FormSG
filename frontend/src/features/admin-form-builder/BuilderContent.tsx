@@ -1,50 +1,40 @@
 import { memo, useCallback, useEffect } from 'react'
-import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd'
-import { Flex, Stack } from '@chakra-ui/react'
+import { Droppable } from 'react-beautiful-dnd'
+import { Box, Flex } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
-
 import { FieldRowContainer } from './FieldRow/FieldRowContainer'
-import { clearActiveFieldSelector, useEditFieldStore } from './editFieldStore'
-import { useMutateFormFields } from './mutations'
+import { BuilderContentPlaceholder } from './BuilderContentPlaceholder'
+import { FIELD_LIST_DROP_ID } from './constants'
+import { useEditFieldStore } from './editFieldStore'
+import { DndPlaceholderProps } from './FormBuilderPage'
+import { useBuilderFormFields } from './useBuilderFormFields'
 
-export const BuilderContent = (): JSX.Element => {
-  const clearActiveField = useEditFieldStore(clearActiveFieldSelector)
-  const { data } = useAdminForm()
-  const { mutateReorderField } = useMutateFormFields()
+interface BuilderContentProps {
+  placeholderProps: DndPlaceholderProps
+}
 
-  const onBeforeCapture = useCallback(() => {
-    /*...*/
-  }, [])
-  const onBeforeDragStart = useCallback(() => {
-    /*...*/
-  }, [])
-  const onDragStart = useCallback(() => {
-    /*...*/
-  }, [])
-  const onDragUpdate = useCallback(() => {
-    /*...*/
-  }, [])
-  const onDragEnd = useCallback(
-    ({ source, destination }: DropResult) => {
-      if (!data || !destination || destination.index === source.index) {
-        return
+export const BuilderContent = ({
+  placeholderProps,
+}: BuilderContentProps): JSX.Element => {
+  const { clearActiveField, clearFieldToCreate } = useEditFieldStore(
+    useCallback((state) => {
+      return {
+        clearActiveField: state.clearActiveField,
+        clearFieldToCreate: state.clearFieldToCreate,
       }
-      return mutateReorderField.mutate({
-        fields: data.form_fields,
-        from: source.index,
-        to: destination.index,
-      })
-    },
-    [data, mutateReorderField],
+    }, []),
   )
+  const { builderFields } = useBuilderFormFields()
 
   useEffect(() => {
     // Clear field on component unmount.
-    return () => clearActiveField()
-  }, [clearActiveField])
+    return () => {
+      clearActiveField()
+      clearFieldToCreate()
+    }
+  }, [clearActiveField, clearFieldToCreate])
 
   return (
     <Flex flex={1} bg="neutral.200">
@@ -65,26 +55,23 @@ export const BuilderContent = (): JSX.Element => {
           w="100%"
           flexDir="column"
         >
-          <DragDropContext
-            onBeforeCapture={onBeforeCapture}
-            onBeforeDragStart={onBeforeDragStart}
-            onDragStart={onDragStart}
-            onDragUpdate={onDragUpdate}
-            onDragEnd={onDragEnd}
-          >
-            <Droppable droppableId="formFieldList">
-              {(provided) => (
-                <Stack
-                  spacing="2.25rem"
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                >
-                  <BuilderFields fields={data?.form_fields} />
-                  {provided.placeholder}
-                </Stack>
-              )}
-            </Droppable>
-          </DragDropContext>
+          <Droppable droppableId={FIELD_LIST_DROP_ID}>
+            {(provided, snapshot) => (
+              <Box
+                pos="relative"
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+              >
+                <BuilderFields fields={builderFields} />
+                {provided.placeholder}
+                {snapshot.isDraggingOver ? (
+                  <BuilderContentPlaceholder
+                    placeholderProps={placeholderProps}
+                  />
+                ) : null}
+              </Box>
+            )}
+          </Droppable>
         </Flex>
       </Flex>
     </Flex>

@@ -51,7 +51,8 @@ export const EditFieldDrawer = (): JSX.Element | null => {
         <Box m="auto">Edit {basicFieldText} field</Box>
         <BuilderDrawerCloseButton />
       </Flex>
-      <MemoFieldDrawerContent field={activeField} />
+      {/* key required to refresh content whenever the active field changes */}
+      <MemoFieldDrawerContent key={activeField._id} field={activeField} />
     </>
   )
 }
