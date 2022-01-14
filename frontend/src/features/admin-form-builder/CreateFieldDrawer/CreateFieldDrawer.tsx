@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Droppable } from 'react-beautiful-dnd'
 import {
   Box,
   Divider,
@@ -19,7 +20,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { BuilderDrawerCloseButton } from '../FieldRow/BuilderDrawerCloseButton'
 
 import { ALL_FIELDS_ORDERED } from './constants'
-import { CreateFieldOption } from './CreateFieldOption'
+import { DraggableCreateFieldOption } from './CreateFieldOption'
 
 export const CreateFieldDrawer = (): JSX.Element => {
   const { isLoading } = useAdminForm()
@@ -56,26 +57,42 @@ const BasicFieldPanelContent = () => {
   const fieldFieldOptions = useMemo(() => ALL_FIELDS_ORDERED.slice(3), [])
 
   return (
-    <Box>
-      <FieldSection label="Page">
-        {pageFieldOptions.map((fieldType, index) => (
-          <CreateFieldOption
-            isDisabled={isLoading}
-            key={index}
-            fieldType={fieldType}
-          />
-        ))}
-      </FieldSection>
-      <FieldSection label="Fields">
-        {fieldFieldOptions.map((fieldType, index) => (
-          <CreateFieldOption
-            isDisabled={isLoading}
-            key={index}
-            fieldType={fieldType}
-          />
-        ))}
-      </FieldSection>
-    </Box>
+    <>
+      <Droppable isDropDisabled droppableId="create-fields-page">
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection label="Page">
+              {pageFieldOptions.map((fieldType, index) => (
+                <DraggableCreateFieldOption
+                  index={index}
+                  isDisabled={isLoading}
+                  key={index}
+                  fieldType={fieldType}
+                />
+              ))}
+            </FieldSection>
+            <Box display="none">{provided.placeholder}</Box>
+          </Box>
+        )}
+      </Droppable>
+      <Droppable isDropDisabled droppableId="create-fields-fields">
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection label="Fields">
+              {fieldFieldOptions.map((fieldType, index) => (
+                <DraggableCreateFieldOption
+                  index={index}
+                  isDisabled={isLoading}
+                  key={index}
+                  fieldType={fieldType}
+                />
+              ))}
+            </FieldSection>
+            <Box display="none">{provided.placeholder}</Box>
+          </Box>
+        )}
+      </Droppable>
+    </>
   )
 }
 
