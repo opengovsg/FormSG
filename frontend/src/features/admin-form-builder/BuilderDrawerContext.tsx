@@ -7,12 +7,9 @@ import {
   useMemo,
   useState,
 } from 'react'
+import { isEmpty } from 'lodash'
 
-import {
-  activeFieldSelector,
-  clearActiveFieldSelector,
-  useEditFieldStore,
-} from './editFieldStore'
+import { EditFieldStoreState, useEditFieldStore } from './editFieldStore'
 
 export enum DrawerTabs {
   Builder,
@@ -23,7 +20,7 @@ export enum DrawerTabs {
 type BuilderDrawerContextProps = {
   activeTab: DrawerTabs | null
   isShowDrawer: boolean
-  handleClose: () => void
+  handleClose: (clearActiveTab?: boolean) => void
   handleBuilderClick: () => void
   handleDesignClick: () => void
   handleLogicClick: () => void
@@ -60,31 +57,49 @@ export const useBuilderDrawer = (): BuilderDrawerContextProps => {
   return context
 }
 
+const editFieldStoreSelector = (state: EditFieldStoreState) => {
+  return {
+    hasActiveField: !!state.activeField,
+    hasFieldToCreate: !isEmpty(state.fieldToCreate),
+    clearActiveField: state.clearActiveField,
+    clearFieldToCreate: state.clearFieldToCreate,
+  }
+}
+
 const useProvideDrawerContext = (): BuilderDrawerContextProps => {
   const [activeTab, setActiveTab] = useState<DrawerTabs | null>(null)
-  const activeField = useEditFieldStore(activeFieldSelector)
-  const hasActiveField = useEditFieldStore(
-    useCallback((state) => !!state.activeField, []),
-  )
-  const clearActiveField = useEditFieldStore(clearActiveFieldSelector)
+  const {
+    hasActiveField,
+    hasFieldToCreate,
+    clearActiveField,
+    clearFieldToCreate,
+  } = useEditFieldStore(editFieldStoreSelector)
 
   useEffect(() => {
-    if (activeField) {
+    if (hasActiveField) {
       setActiveTab(DrawerTabs.Builder)
     }
-  }, [activeField])
+  }, [hasActiveField])
 
   const isShowDrawer = useMemo(
     () => activeTab !== null && activeTab !== DrawerTabs.Logic,
     [activeTab],
   )
 
-  const handleClose = useCallback(() => {
-    if (hasActiveField) {
-      clearActiveField()
-    }
-    setActiveTab(null)
-  }, [clearActiveField, hasActiveField])
+  const handleClose = useCallback(
+    (clearActiveTab = true) => {
+      if (hasFieldToCreate) {
+        clearFieldToCreate()
+      }
+      if (hasActiveField) {
+        clearActiveField()
+      }
+      if (clearActiveTab) {
+        setActiveTab(null)
+      }
+    },
+    [clearActiveField, clearFieldToCreate, hasActiveField, hasFieldToCreate],
+  )
 
   const handleBuilderClick = () => setActiveTab(DrawerTabs.Builder)
   const handleDesignClick = () => {
