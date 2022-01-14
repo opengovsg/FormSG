@@ -15,6 +15,7 @@ import {
   isSameDay,
 } from 'date-fns'
 import { Props as DayzedProps, RenderProps, useDayzed } from 'dayzed'
+import { inRange } from 'lodash'
 
 import { DatePickerProps } from '../DatePicker'
 import {
@@ -28,9 +29,46 @@ import {
 
 const ARROW_KEY_NAMES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
 
-type UseProvideCalendarProps = DatePickerProps &
-  Pick<DayzedProps, 'monthsToDisplay'>
-interface CalendarContextProps extends DatePickerProps {
+type PassthroughProps = {
+  /**
+   * Function to be passed to CalendarPanel to determine range styling.
+   * Used for multi-calendar variant.
+   */
+  isDateInRange?: (d: Date) => boolean | null
+  /**
+   * Function to be passed to CalendarPanel to determine range styling.
+   * Called when a date is selected and a mouseover is detected over a date.
+   * Used for multi-calendar variant.
+   */
+  onMouseEnterHighlight?: (date: Date) => void
+  /**
+   * Function to be passed to CalendarPanel to determine range styling.
+   * Called when mouse leaves the calendar.
+   * Used for multi-calendar variant.
+   */
+  onMouseLeaveCalendar?: () => void
+  /**
+   * The dates that are selected.
+   */
+  selectedDates?: Date | Date[]
+  /**
+   * Handler for when date is selected.
+   */
+  onSelectDate: (d: Date) => void
+  /**
+   * Function to determine whether a date should be made
+   * unavailable.
+   */
+  isDateUnavailable?: (d: Date) => boolean
+  /**
+   * Date currently being hovered, if any.
+   */
+  hoveredDate?: Date
+}
+type UseProvideCalendarProps = Pick<DayzedProps, 'monthsToDisplay'> &
+  PassthroughProps
+
+interface CalendarContextProps extends DatePickerProps, PassthroughProps {
   uuid: string
   currMonth: number
   currYear: number
@@ -41,6 +79,7 @@ interface CalendarContextProps extends DatePickerProps {
   isDateFocusable: (d: Date) => boolean
   handleTodayClick: () => void
   dateToFocus: Date
+  selectedDates?: Date | Date[]
 }
 
 const CalendarContext = createContext<CalendarContextProps | undefined>(
@@ -75,10 +114,14 @@ export const useCalendar = (): CalendarContextProps => {
 }
 
 const useProvideCalendar = ({
-  date,
+  selectedDates,
   onSelectDate,
   isDateUnavailable,
   monthsToDisplay = 1,
+  onMouseEnterHighlight,
+  onMouseLeaveCalendar,
+  isDateInRange,
+  hoveredDate,
 }: UseProvideCalendarProps) => {
   // Ensure that calculations are always made based on date of initial render,
   // so component state doesn't suddenly jump at midnight
@@ -88,7 +131,12 @@ const useProvideCalendar = ({
   const yearOptions = useMemo(() => getYearOptions(), [])
 
   // Date to focus on initial render if initialFocusRef is passed
-  const dateToFocus = useMemo(() => date ?? today, [today, date])
+  const dateToFocus = useMemo(() => {
+    if (Array.isArray(selectedDates)) {
+      return selectedDates[0] ?? today
+    }
+    return selectedDates ?? today
+  }, [today, selectedDates])
   const [currMonth, setCurrMonth] = useState<number>(dateToFocus.getMonth())
   const [currYear, setCurrYear] = useState<number>(dateToFocus.getFullYear())
 
@@ -129,6 +177,20 @@ const useProvideCalendar = ({
     })
   }, [uuid])
 
+  const updateMonthYear = useCallback(
+    (newDate: Date) => {
+      const monthDiff = differenceInCalendarMonths(
+        newDate,
+        new Date(currYear, currMonth),
+      )
+      if (monthDiff < 0 || monthDiff > monthsToDisplay - 1) {
+        setCurrMonth(newDate.getMonth())
+        setCurrYear(newDate.getFullYear())
+      }
+    },
+    [currMonth, currYear, monthsToDisplay],
+  )
+
   /**
    * Allows user to change focus across rows/columns using arrow keys. The
    * idea is to attach a unique classname to each day, from which we can derive
@@ -152,20 +214,14 @@ const useProvideCalendar = ({
       const newDate = getNewDateFromKeyPress(focusedDate, e.key)
       if (newDate === focusedDate) return
       // If newDate is outside current displayed months, scroll to that month
-      const monthDiff = differenceInCalendarMonths(
-        newDate,
-        new Date(currYear, currMonth),
-      )
-      if (monthDiff < 0 || monthDiff > monthsToDisplay - 1) {
-        setCurrMonth(newDate.getMonth())
-        setCurrYear(newDate.getFullYear())
-      }
+      updateMonthYear(newDate)
+
       const elementToFocus = document.querySelector(
         `.${generateClassNameForDate(uuid, newDate)}`,
       ) as HTMLButtonElement | null
       elementToFocus?.focus()
     },
-    [currMonth, currYear, monthsToDisplay, uuid],
+    [updateMonthYear, uuid],
   )
   useKey((e) => ARROW_KEY_NAMES.includes(e.key), handleArrowKey)
 
@@ -173,21 +229,20 @@ const useProvideCalendar = ({
     (d: Date) => {
       if (isDateUnavailable?.(d)) return
       // Set current month/year to that of selected
-      setCurrMonth(d.getMonth())
-      setCurrYear(d.getFullYear())
+      updateMonthYear(d)
       // Call parent callback
       onSelectDate?.(d)
     },
-    [isDateUnavailable, onSelectDate],
+    [isDateUnavailable, onSelectDate, updateMonthYear],
   )
 
   const renderProps = useDayzed({
     date: today,
     onDateSelected: ({ date }) => handleDateSelected(date),
-    showOutsideDays: true,
+    showOutsideDays: monthsToDisplay === 1,
     offset: getMonthOffsetFromToday(today, currMonth, currYear),
     onOffsetChanged,
-    selected: date,
+    selected: selectedDates,
     monthsToDisplay: monthsToDisplay,
   })
 
@@ -199,8 +254,11 @@ const useProvideCalendar = ({
     (d: Date) => {
       // If there is a selected date in the current month, make it
       // the only focusable date
-      if (date && date.getMonth() === currMonth) {
-        return isSameDay(d, date)
+      if (
+        dateToFocus &&
+        inRange(dateToFocus.getMonth(), currMonth, currMonth + monthsToDisplay)
+      ) {
+        return isSameDay(d, dateToFocus)
       }
       // If today is in the current month, make it the only focusable date
       // Use the latest today instead of memoised today since this doesn't affect
@@ -214,7 +272,7 @@ const useProvideCalendar = ({
       // currMonth or the spillover dates for the next month will be included.
       return d.getMonth() === currMonth && isFirstDayOfMonth(d)
     },
-    [date, currMonth],
+    [dateToFocus, currMonth, monthsToDisplay],
   )
 
   return {
@@ -226,10 +284,14 @@ const useProvideCalendar = ({
     renderProps,
     yearOptions,
     isDateUnavailable,
-    date,
+    selectedDates,
     onSelectDate,
     isDateFocusable,
     handleTodayClick,
     dateToFocus,
+    onMouseEnterHighlight,
+    onMouseLeaveCalendar,
+    isDateInRange,
+    hoveredDate,
   }
 }

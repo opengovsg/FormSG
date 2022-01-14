@@ -1,4 +1,4 @@
-import { anatomy, getColor } from '@chakra-ui/theme-tools'
+import { anatomy, getColor, SystemStyleFunction } from '@chakra-ui/theme-tools'
 
 import { ComponentMultiStyleConfig } from '~theme/types'
 
@@ -16,15 +16,59 @@ const parts = anatomy('dateinput').parts(
   'todayLinkContainer', // container for "Today" link
 )
 
+const baseDayOfMonthStyles: SystemStyleFunction = ({
+  isToday,
+  isOutsideCurrMonth,
+  isSelected,
+  colorScheme: c,
+  theme,
+}) => {
+  return {
+    display: 'inline-block',
+    textStyle: 'body-1',
+    borderRadius: '1.5rem',
+    color: isSelected
+      ? 'white'
+      : isOutsideCurrMonth
+      ? 'secondary.300'
+      : 'secondary.500',
+    p: {
+      base: 0,
+      md: 0.75,
+    },
+    outline: 'none',
+    border: '1px solid',
+    borderColor: isToday
+      ? isOutsideCurrMonth
+        ? 'secondary.300'
+        : `${c}.500`
+      : 'transparent',
+    _hover: {
+      bg: isSelected ? `${c}.500` : `${c}.200`,
+    },
+    _focus: {
+      boxShadow: `0 0 0 4px ${getColor(theme, `${c}.300`)}`,
+    },
+    _disabled: {
+      color: 'secondary.300',
+      cursor: 'not-allowed',
+      bg: 'transparent',
+      textDecor: 'line-through',
+    },
+    w: {
+      base: '2rem',
+      md: '3rem',
+    },
+    h: {
+      base: '2rem',
+      md: '3rem',
+    },
+  }
+}
+
 export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
   parts: parts.keys,
-  baseStyle: ({
-    isToday,
-    isOutsideCurrMonth,
-    isSelected,
-    colorScheme: c,
-    theme,
-  }) => {
+  baseStyle: (props) => {
     return {
       container: {
         display: 'inline-block',
@@ -51,7 +95,6 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
       },
       monthGrid: {
         rowGap: '0.5rem',
-        columnGap: '0.25rem',
         display: 'inline-grid',
         justifyItems: 'left',
       },
@@ -70,49 +113,7 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
           md: '3rem',
         },
       },
-      dayOfMonth: {
-        transitionDuration: 'normal',
-        display: 'inline-block',
-        textStyle: 'body-1',
-        borderRadius: '1.5rem',
-        color: isSelected
-          ? 'white'
-          : isOutsideCurrMonth
-          ? 'secondary.300'
-          : 'secondary.500',
-        p: {
-          base: 0,
-          md: 0.75,
-        },
-        outline: 'none',
-        border: '1px solid',
-        borderColor: isToday
-          ? isOutsideCurrMonth
-            ? 'secondary.300'
-            : `${c}.500`
-          : 'transparent',
-        bg: isSelected ? `${c}.500` : 'transparent',
-        _hover: {
-          bg: isSelected ? `${c}.500` : `${c}.200`,
-        },
-        _focus: {
-          boxShadow: `0 0 0 4px ${getColor(theme, `${c}.300`)}`,
-        },
-        _disabled: {
-          color: 'secondary.300',
-          cursor: 'not-allowed',
-          bg: 'transparent',
-          textDecor: 'line-through',
-        },
-        w: {
-          base: '2rem',
-          md: '3rem',
-        },
-        h: {
-          base: '2rem',
-          md: '3rem',
-        },
-      },
+      dayOfMonth: baseDayOfMonthStyles(props),
       todayLinkContainer: {
         textAlign: 'center',
         py: '0.75rem',
