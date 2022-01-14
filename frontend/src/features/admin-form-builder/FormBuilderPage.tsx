@@ -13,7 +13,7 @@ import { BuilderContent } from './BuilderContent'
 import { BuilderDrawer } from './BuilderDrawer'
 import { BuilderDrawerProvider } from './BuilderDrawerContext'
 import { BuilderSidebar } from './BuilderSidebar'
-import { FIELD_LIST_DROPPABLE_ID } from './constants'
+import { FIELD_LIST_DROP_ID } from './constants'
 import { useMutateFormFields } from './mutations'
 
 const dragHandleQueryAttr = 'data-rbd-drag-handle-draggable-id'
@@ -63,7 +63,7 @@ export const FormBuilderPage = (): JSX.Element => {
   // for original code.
   const onDragStart = useCallback(({ draggableId, source }: DragStart) => {
     const draggedDOM =
-      source.droppableId === FIELD_LIST_DROPPABLE_ID
+      source.droppableId === FIELD_LIST_DROP_ID
         ? getDragDom(draggableId)
         : getDragHandleDom(draggableId)
 
@@ -101,7 +101,7 @@ export const FormBuilderPage = (): JSX.Element => {
       }
 
       const draggedDOM =
-        source.droppableId === FIELD_LIST_DROPPABLE_ID
+        source.droppableId === FIELD_LIST_DROP_ID
           ? getDragDom(draggableId)
           : getDragHandleDom(draggableId)
 
@@ -160,7 +160,7 @@ export const FormBuilderPage = (): JSX.Element => {
   const onDragEnd = useCallback(
     ({ source, destination }: DropResult) => {
       setPlaceholderProps({})
-      if (source.droppableId !== FIELD_LIST_DROPPABLE_ID) return
+      if (source.droppableId !== FIELD_LIST_DROP_ID) return
       if (!data || !destination || destination.index === source.index) {
         return
       }

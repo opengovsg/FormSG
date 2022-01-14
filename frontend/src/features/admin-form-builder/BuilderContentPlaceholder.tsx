@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 
-import { FIELD_LIST_DROPPABLE_ID } from './constants'
+import { FIELD_LIST_DROP_ID } from './constants'
 import { DndPlaceholderProps } from './FormBuilderPage'
 
 export interface BuilderContentPlaceholderProps {
@@ -14,7 +14,7 @@ export const BuilderContentPlaceholder = ({
 }: BuilderContentPlaceholderProps): JSX.Element | null => {
   const renderedContents = useMemo(() => {
     switch (placeholderProps.droppableId) {
-      case FIELD_LIST_DROPPABLE_ID:
+      case FIELD_LIST_DROP_ID:
         return (
           <Box
             h="100%"
@@ -50,9 +50,7 @@ export const BuilderContentPlaceholder = ({
         height: placeholderProps.clientHeight,
         width: placeholderProps.clientWidth,
       }}
-      py={
-        placeholderProps.droppableId === FIELD_LIST_DROPPABLE_ID ? '1.25rem' : 0
-      }
+      py={placeholderProps.droppableId === FIELD_LIST_DROP_ID ? '1.25rem' : 0}
       pos="absolute"
     >
       {renderedContents}

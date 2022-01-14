@@ -8,7 +8,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { FieldRowContainer } from './FieldRow/FieldRowContainer'
 import { BuilderContentPlaceholder } from './BuilderContentPlaceholder'
-import { FIELD_LIST_DROPPABLE_ID } from './constants'
+import { FIELD_LIST_DROP_ID } from './constants'
 import { clearActiveFieldSelector, useEditFieldStore } from './editFieldStore'
 import { DndPlaceholderProps } from './FormBuilderPage'
 
@@ -46,7 +46,7 @@ export const BuilderContent = ({
           w="100%"
           flexDir="column"
         >
-          <Droppable droppableId={FIELD_LIST_DROPPABLE_ID}>
+          <Droppable droppableId={FIELD_LIST_DROP_ID}>
             {(provided, snapshot) => (
               <Box
                 pos="relative"

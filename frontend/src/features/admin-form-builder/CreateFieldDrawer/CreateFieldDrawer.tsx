@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import {
   Box,
@@ -19,7 +18,12 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { BuilderDrawerCloseButton } from '../FieldRow/BuilderDrawerCloseButton'
 
-import { ALL_FIELDS_ORDERED } from './constants'
+import {
+  CREATE_FIELD_DROP_ID,
+  CREATE_FIELD_FIELDS_ORDERED,
+  CREATE_PAGE_DROP_ID,
+  CREATE_PAGE_FIELDS_ORDERED,
+} from './constants'
 import { DraggableCreateFieldOption } from './CreateFieldOption'
 
 export const CreateFieldDrawer = (): JSX.Element => {
@@ -53,16 +57,13 @@ export const CreateFieldDrawer = (): JSX.Element => {
 const BasicFieldPanelContent = () => {
   const { isLoading } = useAdminForm()
 
-  const pageFieldOptions = useMemo(() => ALL_FIELDS_ORDERED.slice(0, 3), [])
-  const fieldFieldOptions = useMemo(() => ALL_FIELDS_ORDERED.slice(3), [])
-
   return (
     <>
-      <Droppable isDropDisabled droppableId="create-fields-page">
+      <Droppable isDropDisabled droppableId={CREATE_PAGE_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             <FieldSection label="Page">
-              {pageFieldOptions.map((fieldType, index) => (
+              {CREATE_PAGE_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableCreateFieldOption
                   index={index}
                   isDisabled={isLoading}
@@ -75,11 +76,11 @@ const BasicFieldPanelContent = () => {
           </Box>
         )}
       </Droppable>
-      <Droppable isDropDisabled droppableId="create-fields-fields">
+      <Droppable isDropDisabled droppableId={CREATE_FIELD_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             <FieldSection label="Fields">
-              {fieldFieldOptions.map((fieldType, index) => (
+              {CREATE_FIELD_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableCreateFieldOption
                   index={index}
                   isDisabled={isLoading}

@@ -24,7 +24,7 @@ import { As } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types/field'
 
-export const ALL_FIELDS_ORDERED = [
+const ALL_FIELDS_ORDERED = [
   // Page section
 
   BasicField.Section,
@@ -69,6 +69,12 @@ export const ALL_FIELDS_ORDERED = [
 
   BasicField.Uen,
 ]
+
+export const CREATE_PAGE_FIELDS_ORDERED = ALL_FIELDS_ORDERED.slice(0, 3)
+export const CREATE_FIELD_FIELDS_ORDERED = ALL_FIELDS_ORDERED.slice(3)
+
+export const CREATE_PAGE_DROP_ID = 'create-fields-page'
+export const CREATE_FIELD_DROP_ID = 'create-fields-field'
 
 export const FIELDS_TO_CREATE_META: Record<
   BasicField,
