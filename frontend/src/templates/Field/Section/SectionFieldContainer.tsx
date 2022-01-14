@@ -9,12 +9,11 @@ import { SectionField } from './SectionField'
 export type SectionFieldSchema = FormFieldWithId<SectionFieldBase>
 export interface SectionFieldContainerProps extends BaseFieldProps {
   schema: SectionFieldSchema
-  dividerColor?: string
 }
 
 export const SectionFieldContainer = ({
   schema,
-  dividerColor,
+  colorTheme,
 }: SectionFieldContainerProps): JSX.Element => {
   const { sectionRefs, setActiveSectionId } = useFormSections()
 
@@ -22,7 +21,7 @@ export const SectionFieldContainer = ({
     <SectionField
       ref={sectionRefs[schema._id]}
       schema={schema}
-      dividerColor={dividerColor}
+      colorTheme={colorTheme}
       handleSectionEnter={() => setActiveSectionId(schema._id)}
     />
   )

@@ -2,7 +2,7 @@ import { merge } from 'lodash'
 import { rest } from 'msw'
 import { PartialDeep } from 'type-fest'
 
-import { PublicFormDto, PublicFormViewDto } from '~shared/types/form/form'
+import { FormId, PublicFormViewDto } from '~shared/types/form/form'
 
 import mockFormLogo from '../assets/mockFormLogo.png'
 
@@ -312,16 +312,22 @@ export const getPublicFormResponse = ({
   overrides,
 }: {
   delay?: number | 'infinite'
-  overrides?: PartialDeep<PublicFormDto>
+  overrides?: PartialDeep<PublicFormViewDto>
 } = {}) => {
   return rest.get<PublicFormViewDto>(
     '/api/v3/forms/:formId',
     (req, res, ctx) => {
       const formId = req.params.formId ?? '61540ece3d4a6e50ac0cc6ff'
 
-      const response: PublicFormViewDto = {
-        form: merge({ _id: formId }, BASE_FORM, overrides) as PublicFormDto,
-      }
+      const response = merge(
+        {
+          form: {
+            _id: formId as FormId,
+            ...BASE_FORM,
+          },
+        },
+        overrides,
+      ) as PublicFormViewDto
       return res(ctx.delay(delay), ctx.json(response))
     },
   )

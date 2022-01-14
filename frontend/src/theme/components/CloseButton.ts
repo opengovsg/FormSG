@@ -5,6 +5,9 @@ import { ComponentStyleConfig } from '~theme/types'
 import { Button } from './Button'
 
 export const CloseButton: ComponentStyleConfig = {
+  baseStyle: {
+    p: 0,
+  },
   variants: {
     subtle: (props) => {
       const { theme, colorScheme: c } = props
@@ -14,7 +17,10 @@ export const CloseButton: ComponentStyleConfig = {
         },
       }
     },
-    clear: (props) => Button.variants.clear(props),
+    clear: (props) => ({
+      ...Button.variants.clear(props),
+      px: 'initial',
+    }),
   },
   defaultProps: {
     colorScheme: 'neutral',

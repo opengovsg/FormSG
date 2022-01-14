@@ -1,10 +1,11 @@
-import { KeyboardEventHandler, useCallback, useMemo } from 'react'
+import { KeyboardEventHandler, useCallback } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { FormControl, Skeleton, Stack, Text, Wrap } from '@chakra-ui/react'
+import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { get, isEmpty } from 'lodash'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
+import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -18,15 +19,6 @@ export const FormDetailsSection = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  const readableFormResponseMode = useMemo(() => {
-    switch (settings?.responseMode) {
-      case FormResponseMode.Email:
-        return 'Email'
-      case FormResponseMode.Encrypt:
-        return 'Storage'
-    }
-  }, [settings?.responseMode])
-
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings}>
       <Stack spacing="2rem">
@@ -34,10 +26,6 @@ export const FormDetailsSection = (): JSX.Element => {
         {settings?.responseMode === FormResponseMode.Email ? (
           <EmailFormSection settings={settings} />
         ) : null}
-        <Wrap shouldWrapChildren justify="space-between" textStyle="subhead-1">
-          <Text>Mode for receiving responses</Text>
-          <Text>{readableFormResponseMode}</Text>
-        </Wrap>
       </Stack>
     </Skeleton>
   )
@@ -58,25 +46,6 @@ const FormTitleInput = ({ initialTitle }: FormTitleInputProps): JSX.Element => {
       title: initialTitle,
     },
   })
-
-  const validationRules = useMemo(
-    () => ({
-      required: 'Form name is required',
-      minLength: {
-        value: 2,
-        message: 'Form name must be at least 4 characters',
-      },
-      maxLength: {
-        value: 200,
-        message: 'Form name must be at most 200 characters',
-      },
-      pattern: {
-        value: /^[a-zA-Z0-9_\-./() &`;'"]*$/,
-        message: 'Form name cannot contain special characters',
-      },
-    }),
-    [],
-  )
 
   const { mutateFormTitle } = useMutateFormSettings()
 
@@ -108,7 +77,7 @@ const FormTitleInput = ({ initialTitle }: FormTitleInputProps): JSX.Element => {
       <Controller
         control={control}
         name="title"
-        rules={validationRules}
+        rules={FORM_TITLE_VALIDATION_RULES}
         render={({ field }) => (
           <Input {...field} onBlur={handleBlur} onKeyDown={handleKeyDown} />
         )}
