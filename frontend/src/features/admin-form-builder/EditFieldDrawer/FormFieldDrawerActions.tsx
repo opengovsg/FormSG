@@ -17,7 +17,12 @@ export const FormFieldDrawerActions = ({
   handleCancel,
 }: FormFieldDrawerActionsProps): JSX.Element => {
   return (
-    <ButtonGroup justifyContent="end" isDisabled={isLoading}>
+    <ButtonGroup
+      justifyContent="end"
+      isDisabled={isLoading}
+      pos="sticky"
+      bottom={0}
+    >
       <Button variant="outline" onClick={handleCancel}>
         Cancel
       </Button>

@@ -14,6 +14,7 @@ import { SectionFieldSchema } from '~templates/Field/Section/SectionFieldContain
 import { useEditFieldStore } from '../editFieldStore'
 import { useMutateFormFields } from '../mutations'
 
+import { DrawerContentContainer } from './DrawerContentContainer'
 import { FormFieldDrawerActions } from './FormFieldDrawerActions'
 
 export interface EditHeaderProps {
@@ -63,31 +64,33 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
   )
 
   return (
-    <Stack spacing="2rem" divider={<Divider />}>
-      <FormControl
-        isRequired
-        isReadOnly={mutateFormField.isLoading}
-        isInvalid={!!errors.title}
-      >
-        <FormLabel>Section header title</FormLabel>
-        <Input autoFocus {...register('title', requiredValidationRule)} />
-        <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
-      </FormControl>
-      <FormControl
-        isRequired
-        isReadOnly={mutateFormField.isLoading}
-        isInvalid={!!errors.description}
-      >
-        <FormLabel>Description</FormLabel>
-        <Textarea {...register('description')} />
-        <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
-      </FormControl>
-      <FormFieldDrawerActions
-        isLoading={mutateFormField.isLoading}
-        isDirty={isDirty}
-        handleClick={handleUpdateField}
-        handleCancel={clearActiveField}
-      />
-    </Stack>
+    <DrawerContentContainer>
+      <Stack spacing="2rem" divider={<Divider />}>
+        <FormControl
+          isRequired
+          isReadOnly={mutateFormField.isLoading}
+          isInvalid={!!errors.title}
+        >
+          <FormLabel>Section header title</FormLabel>
+          <Input autoFocus {...register('title', requiredValidationRule)} />
+          <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
+        </FormControl>
+        <FormControl
+          isRequired
+          isReadOnly={mutateFormField.isLoading}
+          isInvalid={!!errors.description}
+        >
+          <FormLabel>Description</FormLabel>
+          <Textarea {...register('description')} />
+          <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
+        </FormControl>
+        <FormFieldDrawerActions
+          isLoading={mutateFormField.isLoading}
+          isDirty={isDirty}
+          handleClick={handleUpdateField}
+          handleCancel={clearActiveField}
+        />
+      </Stack>
+    </DrawerContentContainer>
   )
 }

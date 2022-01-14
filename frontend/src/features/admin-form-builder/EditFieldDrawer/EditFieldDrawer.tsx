@@ -14,6 +14,7 @@ import {
 import { BuilderDrawerCloseButton } from '../FieldRow/BuilderDrawerCloseButton'
 import { transformBasicFieldToText } from '../utils'
 
+import { EditCheckbox } from './EditCheckbox'
 import { EditHeader } from './EditHeader'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
@@ -28,7 +29,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   if (!activeField) return null
 
   return (
-    <Box>
+    <>
       <Flex
         pos="sticky"
         top={0}
@@ -50,10 +51,8 @@ export const EditFieldDrawer = (): JSX.Element | null => {
         <Box m="auto">Edit {basicFieldText} field</Box>
         <BuilderDrawerCloseButton />
       </Flex>
-      <Flex flexDir="column" py="2rem" px="1.5rem">
-        <MemoFieldDrawerContent field={activeField} />
-      </Flex>
-    </Box>
+      <MemoFieldDrawerContent field={activeField} />
+    </>
   )
 }
 
@@ -61,6 +60,8 @@ const MemoFieldDrawerContent = memo(({ field }: { field: FormFieldDto }) => {
   switch (field.fieldType) {
     case BasicField.Section:
       return <EditHeader field={field} />
+    case BasicField.Checkbox:
+      return <EditCheckbox field={field} />
     default:
       return <div>TODO: Insert field options here</div>
   }

@@ -1,5 +1,5 @@
 import produce from 'immer'
-import { merge } from 'lodash'
+import { extend } from 'lodash'
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
@@ -38,7 +38,7 @@ export const useEditFieldStore = create<EditFieldStoreState>(
     updateActiveField: (payload) =>
       set(
         produce<Pick<EditFieldStoreState, 'activeField'>>((draft) => {
-          draft.activeField = merge(draft.activeField, payload)
+          draft.activeField = extend(draft.activeField, payload)
         }),
       ),
   })),
