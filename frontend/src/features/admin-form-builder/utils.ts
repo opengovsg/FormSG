@@ -1,5 +1,8 @@
 import { BasicField } from '~shared/types/field'
 
+import { PENDING_CREATE_FIELD_ID } from './constants'
+import { PendingFormField } from './types'
+
 /**
  * Maps BasicField enums to their human-readable field type string
  */
@@ -26,5 +29,39 @@ export const transformBasicFieldToText = (basicField?: BasicField): string => {
       return 'UEN'
     default:
       return basicField.charAt(0).toUpperCase() + basicField.slice(1)
+  }
+}
+
+/**
+ * Utility methods to create bare minimum meta required for field creation.
+ * TODO: Create one for every field type.
+ */
+export const getFieldCreationMeta = (
+  fieldType: BasicField,
+): PendingFormField => {
+  const baseMeta: Pick<
+    PendingFormField,
+    'description' | 'disabled' | 'required' | 'title' | '_id'
+  > = {
+    description: '',
+    disabled: false,
+    required: true,
+    title: transformBasicFieldToText(fieldType),
+    _id: PENDING_CREATE_FIELD_ID,
+  }
+
+  switch (fieldType) {
+    case BasicField.Section: {
+      return {
+        fieldType,
+        ...baseMeta,
+      }
+    }
+    default: {
+      return {
+        fieldType: BasicField.Section,
+        ...baseMeta,
+      }
+    }
   }
 }
