@@ -1,28 +1,66 @@
+import { memo, useCallback, useMemo } from 'react'
+import { FormProvider, useForm } from 'react-hook-form'
 import { BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
 import { Box, ButtonGroup, Collapse, Flex, Icon } from '@chakra-ui/react'
 
-import { FormFieldDto } from '~shared/types/field'
+import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
+import CheckboxField from '~templates/Field/Checkbox'
+
+import {
+  activeFieldSelector,
+  updateFieldSelector,
+  useEditFieldStore,
+} from '../editFieldStore'
+
+import { SectionFieldRow } from './SectionFieldRow'
 
 export interface FieldRowContainerProps {
-  isActive: boolean
   field: FormFieldDto
 }
 
 export const FieldRowContainer = ({
-  isActive,
   field,
 }: FieldRowContainerProps): JSX.Element => {
+  const updateActiveField = useEditFieldStore(updateFieldSelector)
+  const activeField = useEditFieldStore(activeFieldSelector)
+
+  const formMethods = useForm({ mode: 'onChange' })
+
+  const isActive = useMemo(
+    () => activeField?._id === field._id,
+    [activeField, field],
+  )
+
+  const handleFieldClick = useCallback(() => {
+    if (!isActive) {
+      updateActiveField(field)
+    }
+  }, [field, isActive, updateActiveField])
+
+  const handleKeydown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        handleFieldClick()
+      }
+    },
+    [handleFieldClick],
+  )
+
   return (
     <Flex
+      // Focusable
+      tabIndex={0}
+      role="button"
       transitionDuration="normal"
       bg="white"
       _hover={{ bg: 'secondary.100' }}
       borderRadius="4px"
       {...(isActive ? { 'data-active': true } : {})}
       _focusWithin={{
-        boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
+        boxShadow: '0 0 0 2px var(--chakra-colors-primary-500) !important',
       }}
       _active={{
         bg: 'secondary.100',
@@ -30,6 +68,8 @@ export const FieldRowContainer = ({
       }}
       flexDir="column"
       align="center"
+      onClick={handleFieldClick}
+      onKeyDown={handleKeydown}
     >
       <Icon
         as={BiGridHorizontal}
@@ -42,7 +82,9 @@ export const FieldRowContainer = ({
         }}
       />
       <Box p="1.5rem" pt={0} w="100%">
-        TODO: Add field row for {field.fieldType}
+        <FormProvider {...formMethods}>
+          <MemoFieldRow field={isActive && activeField ? activeField : field} />
+        </FormProvider>
       </Box>
       <Collapse in={isActive} style={{ width: '100%' }}>
         <Flex
@@ -67,3 +109,14 @@ export const FieldRowContainer = ({
     </Flex>
   )
 }
+
+const MemoFieldRow = memo(({ field }: { field: FormFieldDto }) => {
+  switch (field.fieldType) {
+    case BasicField.Section:
+      return <SectionFieldRow field={field} />
+    case BasicField.Checkbox:
+      return <CheckboxField schema={field} />
+    default:
+      return <div>TODO: Add field row for {field.fieldType}</div>
+  }
+})

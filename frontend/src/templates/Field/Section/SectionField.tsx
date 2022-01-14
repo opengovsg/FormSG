@@ -11,7 +11,7 @@ export interface SectionFieldProps extends SectionFieldContainerProps {
   handleSectionEnter?: () => void
 }
 
-// Exported for testing.
+// Used by SectionFieldContainer
 export const SectionField = forwardRef<SectionFieldProps, 'div'>(
   ({ schema, handleSectionEnter }, ref) => {
     return (
@@ -38,3 +38,25 @@ export const SectionField = forwardRef<SectionFieldProps, 'div'>(
     )
   },
 )
+
+export const BaseSectionField = forwardRef<
+  Pick<SectionFieldProps, 'schema'>,
+  'div'
+>(({ schema }, ref) => {
+  return (
+    // id given so app can scrolled to this section.
+    <Box id={schema._id} ref={ref}>
+      <Text textStyle="h2" color="primary.600">
+        {schema.title}
+      </Text>
+      <Text
+        textStyle="body-1"
+        color="secondary.700"
+        mt="1rem"
+        whiteSpace="break-spaces"
+      >
+        {schema.description}
+      </Text>
+    </Box>
+  )
+})

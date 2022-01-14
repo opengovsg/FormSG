@@ -1,10 +1,19 @@
+import { useEffect } from 'react'
 import { Flex, Stack } from '@chakra-ui/react'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { FieldRowContainer } from './FieldRow/FieldRowContainer'
+import { clearActiveFieldSelector, useEditFieldStore } from './editFieldStore'
 
 export const BuilderContent = (): JSX.Element => {
+  const clearActiveField = useEditFieldStore(clearActiveFieldSelector)
+
+  useEffect(() => {
+    // Clear field on component unmount.
+    return () => clearActiveField()
+  }, [clearActiveField])
+
   return (
     <Flex flex={1} bg="neutral.200">
       <Flex
@@ -43,7 +52,7 @@ export const BuilderFields = () => {
   return (
     <>
       {data.form_fields.map((f) => (
-        <FieldRowContainer isActive={false} field={f} />
+        <FieldRowContainer key={f._id} field={f} />
       ))}
     </>
   )

@@ -1,8 +1,9 @@
-import { Box } from '@chakra-ui/react'
+import { Flex } from '@chakra-ui/react'
 import { AnimatePresence } from 'framer-motion'
 
 import { MotionBox } from '~components/motion'
 
+import { EditFieldDrawer } from './EditFieldDrawer/EditFieldDrawer'
 import { useBuilderDrawer } from './BuilderDrawerContext'
 
 const DRAWER_MOTION_PROPS = {
@@ -35,12 +36,12 @@ export const BuilderDrawer = (): JSX.Element => {
           key="sidebar"
           pos="relative"
           as="aside"
-          overflow="auto"
+          overflow="hidden"
           {...DRAWER_MOTION_PROPS}
         >
-          <Box w="100%" h="100%" minW="max-content">
-            Drawer stuff
-          </Box>
+          <Flex w="100%" h="100%" minW="max-content" flexDir="column">
+            <EditFieldDrawer />
+          </Flex>
         </MotionBox>
       )}
     </AnimatePresence>

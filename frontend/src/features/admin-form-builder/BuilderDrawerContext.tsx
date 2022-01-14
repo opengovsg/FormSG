@@ -3,9 +3,16 @@ import {
   FC,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
+
+import {
+  activeFieldSelector,
+  clearActiveFieldSelector,
+  useEditFieldStore,
+} from './editFieldStore'
 
 export enum DrawerTabs {
   Builder,
@@ -55,13 +62,29 @@ export const useBuilderDrawer = (): BuilderDrawerContextProps => {
 
 const useProvideDrawerContext = (): BuilderDrawerContextProps => {
   const [activeTab, setActiveTab] = useState<DrawerTabs | null>(null)
+  const activeField = useEditFieldStore(activeFieldSelector)
+  const hasActiveField = useEditFieldStore(
+    useCallback((state) => !!state.activeField, []),
+  )
+  const clearActiveField = useEditFieldStore(clearActiveFieldSelector)
+
+  useEffect(() => {
+    if (activeField) {
+      setActiveTab(DrawerTabs.Builder)
+    }
+  }, [activeField])
 
   const isShowDrawer = useMemo(
     () => activeTab !== null && activeTab !== DrawerTabs.Logic,
     [activeTab],
   )
 
-  const handleClose = useCallback(() => setActiveTab(null), [])
+  const handleClose = useCallback(() => {
+    if (hasActiveField) {
+      clearActiveField()
+    }
+    setActiveTab(null)
+  }, [clearActiveField, hasActiveField])
 
   const handleBuilderClick = () => setActiveTab(DrawerTabs.Builder)
   const handleDesignClick = () => setActiveTab(DrawerTabs.Design)

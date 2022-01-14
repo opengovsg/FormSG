@@ -7,12 +7,12 @@ import { BuilderSidebar } from './BuilderSidebar'
 
 export const FormBuilderPage = (): JSX.Element => {
   return (
-    <BuilderDrawerProvider>
-      <Flex h="100%" w="100%" overflow="auto" bg="neutral.200" direction="row">
+    <Flex h="100%" w="100%" overflow="auto" bg="neutral.200" direction="row">
+      <BuilderDrawerProvider>
         <BuilderSidebar />
         <BuilderDrawer />
-        <BuilderContent />
-      </Flex>
-    </BuilderDrawerProvider>
+      </BuilderDrawerProvider>
+      <BuilderContent />
+    </Flex>
   )
 }
