@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
-import { merge } from 'lodash'
+import { merge, omit } from 'lodash'
 
-import { FormFieldDto } from '~shared/types/field'
+import { FormField, FormFieldDto } from '~shared/types/field'
 import { AdminFormDto } from '~shared/types/form'
 import { reorder } from '~shared/utils/immutable-array-fns'
 
@@ -13,7 +13,9 @@ import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
+import { PENDING_CREATE_FIELD_ID } from './constants'
 import {
+  createSingleFormField,
   reorderSingleFormField,
   updateSingleFormField,
 } from './UpdateFormFieldService'
@@ -50,7 +52,11 @@ export const useMutateFormFields = () => {
         const currentFieldIndex = old.form_fields.findIndex(
           (ff) => ff._id === newData._id,
         )
-        old.form_fields[currentFieldIndex] = newData
+        if (currentFieldIndex === -1) {
+          old.form_fields.push(newData)
+        } else {
+          old.form_fields[currentFieldIndex] = newData
+        }
         return old
       })
     },
@@ -69,8 +75,15 @@ export const useMutateFormFields = () => {
   )
 
   const mutateFormField = useMutation(
-    (updateFieldBody: FormFieldDto) =>
-      updateSingleFormField({ formId, updateFieldBody }),
+    (updateFieldBody: FormField & { _id: string }) => {
+      if (updateFieldBody._id === PENDING_CREATE_FIELD_ID) {
+        return createSingleFormField({
+          formId,
+          createFieldBody: omit(updateFieldBody, '_id') as FormField,
+        })
+      }
+      return updateSingleFormField({ formId, updateFieldBody })
+    },
     {
       onSuccess: (newData) => {
         handleSuccess({
