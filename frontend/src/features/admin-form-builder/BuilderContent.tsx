@@ -1,15 +1,24 @@
 import { memo, useEffect } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
-import { Flex, Stack } from '@chakra-ui/react'
+import { Box, Flex } from '@chakra-ui/react'
+import { isEmpty } from 'lodash'
 
 import { AdminFormDto } from '~shared/types/form'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { FieldRowContainer } from './FieldRow/FieldRowContainer'
+import { FIELD_LIST_DROPPABLE_ID } from './constants'
 import { clearActiveFieldSelector, useEditFieldStore } from './editFieldStore'
+import { DndPlaceholderProps } from './FormBuilderPage'
 
-export const BuilderContent = (): JSX.Element => {
+interface BuilderContentProps {
+  placeholderProps: DndPlaceholderProps
+}
+
+export const BuilderContent = ({
+  placeholderProps,
+}: BuilderContentProps): JSX.Element => {
   const clearActiveField = useEditFieldStore(clearActiveFieldSelector)
   const { data } = useAdminForm()
 
@@ -37,16 +46,34 @@ export const BuilderContent = (): JSX.Element => {
           w="100%"
           flexDir="column"
         >
-          <Droppable droppableId="formFieldList">
-            {(provided) => (
-              <Stack
-                spacing="2.25rem"
+          <Droppable droppableId={FIELD_LIST_DROPPABLE_ID}>
+            {(provided, snapshot) => (
+              <Box
+                pos="relative"
                 ref={provided.innerRef}
                 {...provided.droppableProps}
               >
                 <BuilderFields fields={data?.form_fields} />
                 {provided.placeholder}
-              </Stack>
+                {!isEmpty(placeholderProps) && snapshot.isDraggingOver && (
+                  <Box
+                    style={{
+                      top: placeholderProps.clientY,
+                      left: placeholderProps.clientX,
+                      height: placeholderProps.clientHeight,
+                      width: placeholderProps.clientWidth,
+                    }}
+                    py={
+                      placeholderProps.droppableId === FIELD_LIST_DROPPABLE_ID
+                        ? '1.25rem'
+                        : 0
+                    }
+                    pos="absolute"
+                  >
+                    <Box h="100%" bg="primary.200" border="dashed 1px blue" />
+                  </Box>
+                )}
+              </Box>
             )}
           </Droppable>
         </Flex>
