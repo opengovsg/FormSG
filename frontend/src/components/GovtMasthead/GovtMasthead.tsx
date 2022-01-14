@@ -69,8 +69,8 @@ const HeaderBar = ({
       >
         <VisuallyHidden id="masthead-aria">
           {isOpen
-            ? 'Click to close masthead'
-            : 'Click to expand masthead for more information'}
+            ? 'Collapse masthead'
+            : 'Expand masthead to find out how to identify an official government website'}
         </VisuallyHidden>
         {children}
       </chakra.button>
@@ -110,8 +110,8 @@ const HowToIdentify = ({
       tabIndex={0}
       aria-label={
         isOpen
-          ? 'Click to close masthead'
-          : 'Click to expand masthead for more information'
+          ? 'Collapse masthead'
+          : 'Expand masthead to find out how to identify an official government website'
       }
       onClick={onToggle}
     >
