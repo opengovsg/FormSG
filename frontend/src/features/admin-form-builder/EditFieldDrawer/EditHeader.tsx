@@ -11,6 +11,7 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import { SectionFieldSchema } from '~templates/Field/Section/SectionFieldContainer'
 
+import { PENDING_CREATE_FIELD_ID } from '../constants'
 import { useEditFieldStore } from '../editFieldStore'
 import { useMutateFormFields } from '../mutations'
 
@@ -51,6 +52,11 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
 
   const { mutateFormField } = useMutateFormFields()
 
+  const saveButtonText = useMemo(
+    () => (field._id === PENDING_CREATE_FIELD_ID ? 'Create' : 'Save'),
+    [field._id],
+  )
+
   const handleUpdateField = handleSubmit((inputs) => {
     const updatedFormField: SectionFieldSchema = extend({}, field, inputs)
     return mutateFormField.mutate(updatedFormField, {
@@ -87,6 +93,7 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
         <FormFieldDrawerActions
           isLoading={mutateFormField.isLoading}
           isDirty={isDirty}
+          buttonText={saveButtonText}
           handleClick={handleUpdateField}
           handleCancel={clearActiveField}
         />

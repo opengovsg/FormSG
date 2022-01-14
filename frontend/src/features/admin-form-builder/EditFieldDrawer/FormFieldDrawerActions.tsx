@@ -8,6 +8,7 @@ interface FormFieldDrawerActionsProps {
   isDirty: boolean
   handleClick: ReturnType<UseFormHandleSubmit<FieldValues>>
   handleCancel: () => void
+  buttonText: string
 }
 
 export const FormFieldDrawerActions = ({
@@ -15,6 +16,7 @@ export const FormFieldDrawerActions = ({
   isDirty,
   handleClick,
   handleCancel,
+  buttonText,
 }: FormFieldDrawerActionsProps): JSX.Element => {
   return (
     <ButtonGroup
@@ -32,7 +34,7 @@ export const FormFieldDrawerActions = ({
         isLoading={isLoading}
         onClick={handleClick}
       >
-        Save
+        {buttonText}
       </Button>
     </ButtonGroup>
   )
