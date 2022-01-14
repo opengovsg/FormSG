@@ -1,5 +1,4 @@
 import {
-  Box,
   Button as ChakraButton,
   ButtonProps as ChakraButtonProps,
   forwardRef,
@@ -29,26 +28,16 @@ export interface ButtonProps extends ChakraButtonProps {
 }
 
 export const Button = forwardRef<ButtonProps, 'button'>(
-  (
-    {
-      children,
-      spinnerFontSize,
-      isFullWidth,
-      textStyle = 'subhead-1',
-      ...props
-    },
-    ref,
-  ) => {
+  ({ children, spinnerFontSize, isFullWidth, ...props }, ref) => {
     return (
       <ChakraButton
         ref={ref}
         spinner={<Spinner fontSize={spinnerFontSize ?? '1.5rem'} />}
         isFullWidth={isFullWidth}
         {...props}
-        // 15px due to 1px border
-        {...(isFullWidth ? { p: '15px', h: 'auto' } : {})}
+        {...(isFullWidth ? { minH: '3.5rem' } : {})}
       >
-        <Box textStyle={textStyle}>{children}</Box>
+        {children}
       </ChakraButton>
     )
   },

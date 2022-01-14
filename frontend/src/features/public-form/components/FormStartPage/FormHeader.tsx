@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { BiLogOutCircle } from 'react-icons/bi'
 import { Waypoint } from 'react-waypoint'
 import {
   Box,
@@ -11,41 +12,51 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
-import { FormColorTheme } from '~shared/types/form/form'
+import { FormAuthType, FormColorTheme } from '~shared/types/form/form'
 
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
+import Button from '~components/Button'
 
+import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-import { usePublicForm } from '~features/public-form/queries'
+import { usePublicFormView } from '~features/public-form/queries'
 
 const useFormHeader = () => {
-  const { data } = usePublicForm()
+  const { data } = usePublicFormView()
+  const { handleLogoutMutation } = usePublicAuthMutations()
 
   const titleColour = useMemo(() => {
-    if (data?.startPage.colorTheme === FormColorTheme.Orange) {
+    if (data?.form.startPage.colorTheme === FormColorTheme.Orange) {
       return 'secondary.700'
     }
     return 'white'
-  }, [data?.startPage.colorTheme])
+  }, [data?.form.startPage.colorTheme])
 
   const titleBg = useMemo(
     () =>
-      data?.startPage.colorTheme
-        ? `theme-${data.startPage.colorTheme}.500`
+      data?.form.startPage.colorTheme
+        ? `theme-${data.form.startPage.colorTheme}.500`
         : `neutral.200`,
-    [data?.startPage.colorTheme],
+    [data?.form.startPage.colorTheme],
   )
 
   const estTimeString = useMemo(() => {
-    if (!data || !data.startPage.estTimeTaken) return ''
-    return simplur`${data.startPage.estTimeTaken} min[|s] estimated time to complete`
+    if (!data || !data.form.startPage.estTimeTaken) return ''
+    return simplur`${data.form.startPage.estTimeTaken} min[|s] estimated time to complete`
   }, [data])
 
+  const handleLogout = useCallback(() => {
+    if (!data || data.form.authType === FormAuthType.NIL) return
+    return handleLogoutMutation.mutate(data.form.authType)
+  }, [data, handleLogoutMutation])
+
   return {
-    title: data?.title,
+    title: data?.form.title,
     estTimeString,
     titleBg,
     titleColour,
+    loggedInId: data?.spcpSession?.userName,
+    handleLogout,
   }
 }
 
@@ -80,7 +91,14 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element => {
 }
 
 export const FormHeader = (): JSX.Element => {
-  const { title, estTimeString, titleBg, titleColour } = useFormHeader()
+  const {
+    title,
+    estTimeString,
+    titleBg,
+    titleColour,
+    loggedInId,
+    handleLogout,
+  } = useFormHeader()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   const handlePositionChange = useCallback(
@@ -117,6 +135,17 @@ export const FormHeader = (): JSX.Element => {
               <Text textStyle="body-2">{estTimeString}</Text>
             </Flex>
           )}
+          {loggedInId ? (
+            <Button
+              mt="2.25rem"
+              variant="reverse"
+              aria-label="Log out"
+              rightIcon={<BiLogOutCircle fontSize="1.5rem" />}
+              onClick={handleLogout}
+            >
+              {loggedInId} - Log out
+            </Button>
+          ) : null}
         </Flex>
       </Flex>
       {/* Sentinel to know when sticky navbar is starting */}

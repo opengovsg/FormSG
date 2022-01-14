@@ -6,6 +6,8 @@ import { getAdminFormResponse } from '~/mocks/msw/handlers/admin-form'
 
 import { viewports } from '~utils/storybook'
 
+import { FormBuilderPage } from '~features/admin-form-builder/FormBuilderPage'
+
 import { AdminFormLayout } from './common/AdminFormLayout'
 
 export default {
@@ -34,7 +36,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <div>To be implemented</div>
+const Template: Story = () => <FormBuilderPage />
 export const Desktop = Template.bind({})
 
 export const Tablet = Template.bind({})

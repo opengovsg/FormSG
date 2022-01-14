@@ -4,14 +4,14 @@ import { Flex } from '@chakra-ui/react'
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { HttpError } from '~services/ApiService'
 
-import FormFields, { FormFieldsSkeleton } from './components/FormFields'
+import FormFields from './components/FormFields'
 import FormStartPage from './components/FormStartPage'
 import { PublicFormProvider } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
 export const PublicFormPage = (): JSX.Element => {
   const { formId } = useParams()
-  const { error, data } = usePublicFormView()
+  const { error } = usePublicFormView()
 
   if (
     !formId ||
@@ -25,7 +25,7 @@ export const PublicFormPage = (): JSX.Element => {
     <PublicFormProvider>
       <Flex flexDir="column" h="100%" minH="100vh">
         <FormStartPage />
-        {data ? <FormFields form={data.form} /> : <FormFieldsSkeleton />}
+        <FormFields />
       </Flex>
     </PublicFormProvider>
   )

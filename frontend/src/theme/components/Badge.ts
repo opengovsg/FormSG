@@ -14,7 +14,7 @@ export const Badge: ComponentStyleConfig = {
       const textColor = c === 'secondary' ? 'white' : 'secondary.700'
 
       return {
-        textColor: textColor,
+        color: textColor,
         bgColor: `${c}.400`,
       }
     },
@@ -25,7 +25,7 @@ export const Badge: ComponentStyleConfig = {
 
       return {
         bgColor: `${c}.100`,
-        textColor,
+        color: textColor,
       }
     },
   },
