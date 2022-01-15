@@ -7,7 +7,7 @@ exec 1>&2
 
 # Check changed files for an AWS keys
 KEY_ID=$(git diff --cached --name-only -z $against | xargs -0 cat | perl -nle'print $& if m{(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])}')
-KEY=$(git diff --cached --name-only -z $against | xargs -0 cat | perl -nle'print $& if m{(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])}')
+KEY=$(git diff --cached --name-only -z $against | xargs -0 cat | perl -nle'print $& if m{(?<![^A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![^A-Za-z0-9/+=])}')
 
 if [ "$KEY_ID" != "" -o "$KEY" != "" ]; then
     echo "Found patterns for AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY"
