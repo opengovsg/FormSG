@@ -9,8 +9,10 @@ import { FormFieldWithId, ImageFieldBase } from '~shared/types/field'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 
+import { BaseFieldProps } from '../FieldContainer'
+
 export type ImageFieldSchema = FormFieldWithId<ImageFieldBase>
-export interface ImageFieldProps {
+export interface ImageFieldProps extends BaseFieldProps {
   schema: ImageFieldSchema
 }
 

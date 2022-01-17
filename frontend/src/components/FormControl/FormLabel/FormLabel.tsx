@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import {
   Box,
-  FormHelperText,
   FormLabel as ChakraFormLabel,
   FormLabelProps as ChakraFormLabelProps,
   Icon,
@@ -115,18 +114,20 @@ const FormLabelDescription = ({
   // FormLabel's aria-describedby attribute. This is done internally by ChakraUI.
   const field = useFormControlContext()
 
-  // Render normal Text component if no form context is found.
-  const ComponentToRender = useMemo(() => {
-    if (field) return FormHelperText
-    return Text
-  }, [field])
+  const styleProps = useMemo(
+    () => ({
+      textStyle: 'body-2',
+      color: 'secondary.400',
+      mt: 0,
+      ...props,
+    }),
+    [props],
+  )
 
-  const styleProps = {
-    textStyle: 'body-2',
-    color: 'secondary.400',
-    mt: 0,
-    ...props,
-  }
+  const fieldProps = useMemo(
+    () => field?.getHelpTextProps(props),
+    [field, props],
+  )
 
   const mdComponentsStyles = {
     text: styleProps,
@@ -135,8 +136,8 @@ const FormLabelDescription = ({
   const mdComponents = useMdComponents({
     styles: mdComponentsStyles,
     overrides: {
-      p: (props) => (
-        <ComponentToRender {...props} sx={mdComponentsStyles.text} />
+      p: ({ node, ...mdProps }) => (
+        <Text {...fieldProps} {...mdProps} sx={mdComponentsStyles.text} />
       ),
     },
   })
@@ -144,7 +145,9 @@ const FormLabelDescription = ({
   return useMarkdown ? (
     <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
   ) : (
-    <ComponentToRender {...styleProps}>{children}</ComponentToRender>
+    <Text {...fieldProps} {...styleProps}>
+      {children}
+    </Text>
   )
 }
 FormLabel.Description = FormLabelDescription

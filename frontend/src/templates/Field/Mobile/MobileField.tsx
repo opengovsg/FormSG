@@ -1,25 +1,24 @@
 import { useMemo } from 'react'
 import { Controller } from 'react-hook-form'
 
-import { FormFieldWithId, HomenoFieldBase } from '~shared/types/field'
+import { FormFieldWithId, MobileFieldBase } from '~shared/types/field'
 
-import { createHomeNoValidationRules } from '~utils/fieldValidation'
+import { createMobileValidationRules } from '~utils/fieldValidation'
 import PhoneNumberInput from '~components/PhoneNumberInput'
-import landlineExamples from '~components/PhoneNumberInput/resources/examples.landline.json'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 
-export type HomeNoFieldSchema = FormFieldWithId<HomenoFieldBase>
-export interface HomeNoFieldProps extends BaseFieldProps {
-  schema: HomeNoFieldSchema
+export type MobileFieldSchema = FormFieldWithId<MobileFieldBase>
+export interface MobileFieldProps extends BaseFieldProps {
+  schema: MobileFieldSchema
 }
 
-export const HomeNoField = ({
+export const MobileField = ({
   schema,
   questionNumber,
-}: HomeNoFieldProps): JSX.Element => {
+}: MobileFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createHomeNoValidationRules(schema),
+    () => createMobileValidationRules(schema),
     [schema],
   )
 
@@ -32,7 +31,6 @@ export const HomeNoField = ({
           <PhoneNumberInput
             autoComplete="tel"
             allowInternational={schema.allowIntlNumbers}
-            examples={landlineExamples}
             {...field}
           />
         )}

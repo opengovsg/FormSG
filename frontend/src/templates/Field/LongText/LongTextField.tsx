@@ -4,24 +4,24 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { EmailFieldBase, FormFieldWithId } from '~shared/types/field'
+import { FormFieldWithId, LongTextFieldBase } from '~shared/types/field'
 
-import { createEmailValidationRules } from '~utils/fieldValidation'
-import Input from '~components/Input'
+import { createTextValidationRules } from '~utils/fieldValidation'
+import Textarea from '~components/Textarea'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 
-export type EmailFieldSchema = FormFieldWithId<EmailFieldBase>
-export interface EmailFieldProps extends BaseFieldProps {
-  schema: EmailFieldSchema
+export type LongTextFieldSchema = FormFieldWithId<LongTextFieldBase>
+export interface LongTextFieldProps extends BaseFieldProps {
+  schema: LongTextFieldSchema
 }
 
-export const EmailField = ({
+export const LongTextField = ({
   schema,
   questionNumber,
-}: EmailFieldProps): JSX.Element => {
+}: LongTextFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createEmailValidationRules(schema),
+    () => createTextValidationRules(schema),
     [schema],
   )
 
@@ -29,9 +29,8 @@ export const EmailField = ({
 
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>
-      <Input
+      <Textarea
         aria-label={schema.title}
-        autoComplete="email"
         {...register(schema._id, validationRules)}
       />
     </FieldContainer>

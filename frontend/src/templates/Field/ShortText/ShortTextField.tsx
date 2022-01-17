@@ -6,7 +6,7 @@ import { useFormContext } from 'react-hook-form'
 
 import { FormFieldWithId, ShortTextFieldBase } from '~shared/types/field'
 
-import { createShortTextValidationRules } from '~utils/fieldValidation'
+import { createTextValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -21,7 +21,7 @@ export const ShortTextField = ({
   questionNumber,
 }: ShortTextFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createShortTextValidationRules(schema),
+    () => createTextValidationRules(schema),
     [schema],
   )
 
