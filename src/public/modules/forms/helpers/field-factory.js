@@ -1,5 +1,6 @@
 const {
   AttachmentField,
+  BookingField,
   CheckboxField,
   DateField,
   DecimalField,
@@ -74,6 +75,8 @@ const getClass = (fieldType) => {
       return TextAreaField
     case 'textfield':
       return TextField
+    case 'booking':
+      return BookingField
     case 'nric':
     case 'uen':
     case 'yes_no':

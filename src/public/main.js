@@ -213,6 +213,7 @@ require('./modules/forms/base/components/feedback-form.client.component.js')
 require('./modules/forms/base/components/start-page.client.component.js')
 require('./modules/forms/base/components/verifiable-field.client.component.js')
 require('./modules/forms/base/components/field-dropdown.client.component.js')
+require('./modules/forms/base/components/field-booking.client.component.js')
 require('./modules/forms/base/components/field-attachment.client.component.js')
 require('./modules/forms/base/components/field-decimal.client.component.js')
 require('./modules/forms/base/components/field-textfield.client.component.js')
@@ -524,6 +525,10 @@ app.run([
     $templateCache.put(
       'modules/forms/base/componentViews/field-dropdown.client.view.html',
       require('./modules/forms/base/componentViews/field-dropdown.client.view.html'),
+    )
+    $templateCache.put(
+      'modules/forms/base/componentViews/field-booking.client.view.html',
+      require('./modules/forms/base/componentViews/field-booking.client.view.html'),
     )
     $templateCache.put(
       'modules/forms/base/componentViews/field-attachment.client.view.html',

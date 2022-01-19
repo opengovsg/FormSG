@@ -19,6 +19,7 @@ const iconTypeMap = {
   attachment: 'bx bx-cloud-download',
   radiobutton: 'bx bx-radio-circle-marked',
   table: 'bx bx-table',
+  booking: 'bx bx-calendar-alt',
   // MyInfo attributes
   name: 'bx bx-user-circle',
   sex: 'bx bx-male',

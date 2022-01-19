@@ -7,6 +7,7 @@ module.exports.SingleAnswerField = require('./SingleAnswerField.class')
 module.exports.ArrayAnswerField = require('./ArrayAnswerField.class')
 
 module.exports.AttachmentField = require('./AttachmentField.class')
+module.exports.BookingField = require('./BookingField.class')
 module.exports.CheckboxField = require('./CheckboxField.class')
 module.exports.DateField = require('./DateField.class')
 module.exports.DecimalField = require('./DecimalField.class')

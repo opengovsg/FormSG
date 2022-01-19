@@ -1230,6 +1230,40 @@
         </div>
         <!-- End Decimal -->
 
+        <!-- Booking -->
+        <div ng-if="vm.field.fieldType === 'booking'">
+          <div class="row">
+            <div class="row"><br /></div>
+            <div class="col-xs-8 label-custom label-medium">
+              CalSG shortcode
+            </div>
+            <div class="col-xs-12">
+              <input
+                ng-model="vm.field.eventCode"
+                ng-required="true"
+                class="input-custom input-medium"
+              />
+            </div>
+          </div>
+          <div
+            ng-if="vm.editFieldForm.$dirty && vm.editFieldForm.$error.required"
+            class="alert-custom alert-error"
+          >
+            <i class="bx bx-exclamation bx-md icon-spacing"></i>
+            <span class="alert-msg">CalSG shortcode is required</span>
+          </div>
+          <div class="alert-custom alert-info alert-margin">
+            <i class="bx bx-info-circle bx-md icon-spacing"></i>
+            <span class="alert-msg"
+              >Use
+              <a translate-attr="{href:'LINKS.CALSG'}" target="_blank">CalSG</a>
+              to create events for appointments, and enter the shortcode
+              here</span
+            >
+          </div>
+        </div>
+        <!-- End Booking -->
+
         <!-- Checkbox -->
         <div ng-if="vm.field.fieldType === 'checkbox'">
           <div class="row">

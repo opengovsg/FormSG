@@ -23,6 +23,7 @@
     "SINGPASS_ELIGIBILITY_FAQ": "https://www.ifaq.gov.sg/SINGPASS/apps/Fcd_faqmain.aspx#FAQ_2101385",
     "ESERVICE_ID_FAQ": "https://go.gov.sg/formsg-spcp",
     "TERMS_THIRD_PARTY_LIST": "https://s3-ap-southeast-1.amazonaws.com/misc.form.gov.sg/OSS-Legal.pdf",
-    "WEBHOOK_RETRIES": "https://go.gov.sg/form-webhook-retries"
+    "WEBHOOK_RETRIES": "https://go.gov.sg/form-webhook-retries",
+    "CALSG": "https://cal.hack.gov.sg"
   }
 }
