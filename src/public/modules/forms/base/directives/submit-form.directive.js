@@ -1,7 +1,7 @@
 'use strict'
 const cloneDeep = require('lodash/cloneDeep')
 const get = require('lodash/get')
-
+// const axios = require('axios')
 const FieldVerificationService = require('../../../../services/FieldVerificationService')
 const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
 const PublicFormService = require('../../../../services/PublicFormService')
@@ -10,6 +10,28 @@ const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
 } = require('../../../../../shared/util/logic')
+
+const confirmSingleAppointment = (slotId, formId, formBodyData) => {
+  // return axios.post(`https://cal.hack.gov.sg/api/v1/slot/${slotId}/book`, {
+  //   formId,
+  //   formBodyData,
+  // })
+  return Promise.reject(slotId, formId, formBodyData)
+}
+
+const confirmAppointments = async (form) => {
+  const submissionContent = await form.getSubmissionContent()
+  const slotIds = form.form_fields
+    .filter((field) => field.fieldType === 'booking' && field.fieldValue)
+    .map((field) => field.getSelectedSlotId())
+  // We currently only support one appointment
+  if (!slotIds.length) return
+  return confirmSingleAppointment(
+    slotIds[0],
+    form._id,
+    submissionContent.responses,
+  )
+}
 
 /**
  * @typedef {number} FormState
@@ -295,7 +317,16 @@ function submitFormDirective(
        * Listener for submit button. Wraps main submission flow to catch
        * and handle any errors.
        */
-      scope.submitForm = () => {
+      scope.submitForm = async () => {
+        try {
+          await confirmAppointments(scope.form)
+        } catch (error) {
+          handleSubmitFailure(
+            error,
+            'The chosen booking slot is already taken. Please refresh slots and choose an available slot.',
+          )
+          return
+        }
         try {
           submitFormMain(scope.form)
         } catch (error) {

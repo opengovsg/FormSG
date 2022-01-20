@@ -9,6 +9,13 @@ class BookingField extends SingleAnswerField {
     fieldData.eventCode = ''
     return fieldData
   }
+
+  getSelectedSlotId() {
+    if (!this.fieldOptionToSlotId || !this.fieldValue) {
+      return undefined
+    }
+    return this.fieldOptionToSlotId.get(this.fieldValue)
+  }
 }
 
 module.exports = BookingField
