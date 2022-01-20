@@ -1,4 +1,4 @@
-<div class="dropdown field-group row">
+<div class="dropdown booking field-group row">
   <!-- Question -->
   <label class="field-question col-xs-12">
     <div id="label-{{ vm.field._id || 'defaultID' }}">
@@ -15,6 +15,13 @@
       id="description-{{ vm.field._id || 'defaultID' }}"
     ></div>
   </label>
+
+  <!-- Refresh button -->
+  <div class="btn-refresh-container">
+    <button class="btn-refresh" ng-click="vm.updateFieldOptions()">
+      <i class="bx bx-revision bx-lg"></i>
+    </button>
+  </div>
 
   <!-- Input -->
   <div class="col-xs-12 field-input">
@@ -62,5 +69,9 @@
     ng-show="vm.forms.myForm[vm.field._id || 'defaultID'].$touched"
   >
     <field-error-component ng-message="required"></field-error-component>
+    <div class="alert-custom alert-error" ng-show="vm.updateOptionsError">
+      <i class="bx bx-exclamation bx-md icon-spacing"></i>
+      <span class="alert-msg">{{ vm.updateOptionsError }}</span>
+    </div>
   </div>
 </div>
