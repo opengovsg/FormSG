@@ -318,19 +318,25 @@ function submitFormDirective(
        * and handle any errors.
        */
       scope.submitForm = async () => {
+        // Disable UI and optionally open progress modal while processing
+        setFormState(FORM_STATES.SUBMITTING)
         try {
           await confirmAppointments(scope.form)
         } catch (error) {
-          handleSubmitFailure(
-            error,
-            'The chosen booking slot is already taken. Please refresh slots and choose an available slot.',
-          )
+          $timeout(() => {
+            handleSubmitFailure(
+              error,
+              'The chosen booking slot is already taken. Please refresh slots and choose an available slot.',
+            )
+          })
           return
         }
         try {
           submitFormMain(scope.form)
         } catch (error) {
-          handleSubmitFailure(error, 'Please try again later.')
+          $timeout(() => {
+            handleSubmitFailure(error, 'Please try again later.')
+          })
         }
       }
 
@@ -339,9 +345,6 @@ function submitFormDirective(
        * @param {Object} form Copy of form to submit
        */
       const submitFormMain = async (form) => {
-        // Disable UI and optionally open progress modal while processing
-        setFormState(FORM_STATES.SUBMITTING)
-
         // submissionContent is the POST body to backend when we submit the form
         let submissionContent
 
