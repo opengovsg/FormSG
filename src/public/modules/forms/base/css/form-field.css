@@ -614,13 +614,13 @@
   }
 }
 
+/* Booking */
 .field-group.booking .btn-refresh-container {
   padding-left: 15px;
   padding-right: 15px;
   margin-bottom: 16px;
 }
 
-/* Booking */
 .field-group.booking .btn-refresh {
   border: 1px solid rgb(184, 184, 184);
   color: #484848;
@@ -629,4 +629,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.field-group.booking .btn-refresh.loading {
+  border: none;
 }

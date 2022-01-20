@@ -18,7 +18,11 @@
 
   <!-- Refresh button -->
   <div class="btn-refresh-container">
-    <button class="btn-refresh" ng-click="vm.updateFieldOptions()">
+    <button
+      class="btn-refresh"
+      ng-click="vm.updateFieldOptions()"
+      ng-class="vm.isLoadingOptions ? 'loading' : ''"
+    >
       <i
         class="bx bx-lg"
         ng-class="vm.isLoadingOptions ? 'bx-loader bx-spin' : 'bx-revision'"
