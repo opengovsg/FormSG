@@ -1,5 +1,8 @@
 'use strict'
 
+// const axios = require('axios')
+const { addSeconds, isSameDay, format } = require('date-fns')
+
 angular.module('forms').component('bookingFieldComponent', {
   templateUrl:
     'modules/forms/base/componentViews/field-booking.client.view.html',
@@ -8,15 +11,95 @@ angular.module('forms').component('bookingFieldComponent', {
     forms: '<',
     onDropdownClickParent: '&onDropdownClick',
   },
-  controller: bookingFieldComponentController,
+  controller: ['$timeout', bookingFieldComponentController],
   controllerAs: 'vm',
 })
 
-function bookingFieldComponentController() {
+const getAvailableSlots = async (/*eventCode*/) => {
+  // TODO: get actual slots
+  // return axios.get(
+  //   `https://cal.hack.gov.sg/api/v1/event/${eventCode}/availableSlots`,
+  // )
+  return Promise.resolve([
+    {
+      id: 0,
+      eventId: 0,
+      maxCapacity: 5,
+      startsAt: 1642646072124,
+      lengthSeconds: 1800,
+    },
+    {
+      id: 1,
+      eventId: 0,
+      maxCapacity: 5,
+      startsAt: 1642647872124,
+      lengthSeconds: 1800,
+    },
+  ])
+}
+
+/**
+ *
+  id:
+    type: number
+  eventId:
+    type: number
+    description: Event UID for which this slot belongs
+  maxCapacity:
+    type: number
+    description: Number of concurrent bookings possible during this timeslot
+  startsAt:
+    type: number
+    description: Epoch time
+  lengthSeconds:
+    type: number} slot
+ */
+const TIME_ONLY_FORMAT = 'HH:mm'
+const DATE_TIME_FORMAT = 'dd MMM yyyy EEEE, HH:mm'
+const convertSlotToFieldOption = (slot) => {
+  const startDate = new Date(slot.startsAt)
+  const endDate = addSeconds(startDate, slot.lengthSeconds)
+  if (isSameDay(startDate, endDate)) {
+    // e.g. 17 Jan 2022 Monday, 09:00 - 10:00
+    const endTime = format(endDate, TIME_ONLY_FORMAT)
+    const dateAndStartTime = format(startDate, DATE_TIME_FORMAT)
+    return `${dateAndStartTime} - ${endTime}`
+  }
+  // e.g. 17 Jan 2022 Monday, 09:00 - 18 Jan 2022 Tuesday, 10:00
+  const startDateTime = format(startDate, DATE_TIME_FORMAT)
+  const endDateTime = format(endDate, DATE_TIME_FORMAT)
+  return `${startDateTime} - ${endDateTime}`
+}
+
+const getFieldOptionToSlotIdMap = async (eventCode) => {
+  const slots = await getAvailableSlots(eventCode)
+  const data = slots.map((slot) => [convertSlotToFieldOption(slot), slot.id])
+  return new Map(data)
+}
+
+function bookingFieldComponentController($timeout) {
   const vm = this
 
+  vm.updateOptionsError = ''
+
+  vm.updateFieldOptions = () => {
+    getFieldOptionToSlotIdMap(vm.field.eventCode)
+      .then((fieldOptionToSlotId) => {
+        $timeout(() => {
+          vm.field.fieldOptionToSlotId = fieldOptionToSlotId
+          vm.field.fieldOptions = Array.from(fieldOptionToSlotId.keys())
+          vm.updateOptionsError = ''
+        })
+      })
+      .catch((error) => {
+        console.error(error)
+        vm.updateOptionsError =
+          'There was an error while retrieving appointments. Please try again.'
+      })
+  }
+
   vm.$onInit = () => {
-    vm.filteredDropdownOptions = []
+    vm.updateFieldOptions()
     vm.infiniteScroll = {}
     // Progressively load more items
     vm.infiniteScroll.numToAdd = 3
@@ -32,7 +115,7 @@ function bookingFieldComponentController() {
   }
 
   vm.dropdownFilter = function (searchString) {
-    let dropdownOptions = []
+    let dropdownOptions = vm.field.fieldOptions || []
     vm.filteredDropdownOptions = dropdownOptions.filter((option) => {
       return option.toLowerCase().indexOf(searchString.toLowerCase()) > -1
     })
