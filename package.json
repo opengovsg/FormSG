@@ -156,7 +156,7 @@
     "@babel/core": "^7.16.10",
     "@babel/plugin-transform-runtime": "^7.16.10",
     "@babel/preset-env": "^7.16.11",
-    "@opengovsg/mockpass": "^2.7.10",
+    "@opengovsg/mockpass": "^2.7.11",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.36",
     "@types/busboy": "^1.3.0",
