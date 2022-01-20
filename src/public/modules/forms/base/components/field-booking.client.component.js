@@ -15,12 +15,14 @@ angular.module('forms').component('bookingFieldComponent', {
   controllerAs: 'vm',
 })
 
+let yo2 = 0
+
 const getAvailableSlots = async (/*eventCode*/) => {
   // TODO: get actual slots
   // return axios.get(
   //   `https://cal.hack.gov.sg/api/v1/event/${eventCode}/availableSlots`,
   // )
-  return Promise.resolve([
+  const things = [
     {
       id: 0,
       eventId: 0,
@@ -35,7 +37,10 @@ const getAvailableSlots = async (/*eventCode*/) => {
       startsAt: 1642647872124,
       lengthSeconds: 1800,
     },
-  ])
+  ]
+  yo2 += 1
+  if (yo2 % 2 === 1) return Promise.resolve(things)
+  return Promise.resolve(things.slice(0, 1))
 }
 
 /**
@@ -81,20 +86,32 @@ function bookingFieldComponentController($timeout) {
   const vm = this
 
   vm.updateOptionsError = ''
+  vm.isLoadingOptions = true
 
   vm.updateFieldOptions = () => {
+    vm.isLoadingOptions = true
+    const fieldControl = vm.forms.myForm[vm.field._id || 'defaultID']
+    if (fieldControl) {
+      fieldControl.$setUntouched()
+    }
+    vm.field.fieldValue = ''
     getFieldOptionToSlotIdMap(vm.field.eventCode)
       .then((fieldOptionToSlotId) => {
+        // Ensure that loading state is at least 0.5s
         $timeout(() => {
           vm.field.fieldOptionToSlotId = fieldOptionToSlotId
           vm.field.fieldOptions = Array.from(fieldOptionToSlotId.keys())
           vm.updateOptionsError = ''
-        })
+          vm.isLoadingOptions = false
+        }, 500)
       })
       .catch((error) => {
-        console.error(error)
-        vm.updateOptionsError =
-          'There was an error while retrieving appointments. Please try again.'
+        $timeout(() => {
+          vm.isLoadingOptions = false
+          console.error(error)
+          vm.updateOptionsError =
+            'There was an error while retrieving appointments. Please try again.'
+        })
       })
   }
 

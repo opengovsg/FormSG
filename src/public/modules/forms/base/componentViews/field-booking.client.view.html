@@ -19,12 +19,16 @@
   <!-- Refresh button -->
   <div class="btn-refresh-container">
     <button class="btn-refresh" ng-click="vm.updateFieldOptions()">
-      <i class="bx bx-revision bx-lg"></i>
+      <i
+        class="bx bx-lg"
+        ng-class="vm.isLoadingOptions ? 'bx-loader bx-spin' : 'bx-revision'"
+        ng-disabled="vm.isLoadingOptions"
+      ></i>
     </button>
   </div>
 
   <!-- Input -->
-  <div class="col-xs-12 field-input">
+  <div class="col-xs-12 field-input" ng-show="!vm.isLoadingOptions">
     <div class="input-group" id="dropdown-input">
       <ui-select
         id="{{ vm.field._id || 'defaultID' }}"
@@ -66,7 +70,7 @@
   <div
     class="col-xs-12"
     ng-messages="vm.forms.myForm[(vm.field._id || 'defaultID')].$error"
-    ng-show="vm.forms.myForm[vm.field._id || 'defaultID'].$touched"
+    ng-show="(vm.forms.myForm[vm.field._id || 'defaultID'].$touched) && !vm.isLoadingOptions"
   >
     <field-error-component ng-message="required"></field-error-component>
     <div class="alert-custom alert-error" ng-show="vm.updateOptionsError">
