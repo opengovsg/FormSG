@@ -8,7 +8,7 @@ import {
   useBreakpointValue,
   useStyles,
 } from '@chakra-ui/react'
-import { addMonths } from 'date-fns/esm'
+import { addMonths } from 'date-fns'
 
 import { BxChevronLeft, BxChevronRight } from '~assets/icons'
 import IconButton from '~components/IconButton'
