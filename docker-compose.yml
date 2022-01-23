@@ -144,7 +144,7 @@ services:
   maildev:
     image: maildev/maildev
     ports:
-      - '1080:80'
+      - '1081:80'
 
 volumes:
   mongodata:
