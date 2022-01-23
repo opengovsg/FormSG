@@ -1,6 +1,6 @@
 'use strict'
 
-// const axios = require('axios')
+const axios = require('axios')
 const { addSeconds, isSameDay, format } = require('date-fns')
 
 angular.module('forms').component('bookingFieldComponent', {
@@ -15,32 +15,10 @@ angular.module('forms').component('bookingFieldComponent', {
   controllerAs: 'vm',
 })
 
-let yo2 = 0
-
-const getAvailableSlots = async (/*eventCode*/) => {
-  // TODO: get actual slots
-  // return axios.get(
-  //   `https://cal.hack.gov.sg/api/v1/event/${eventCode}/availableSlots`,
-  // )
-  const things = [
-    {
-      id: 0,
-      eventId: 0,
-      maxCapacity: 5,
-      startsAt: 1642646072124,
-      lengthSeconds: 1800,
-    },
-    {
-      id: 1,
-      eventId: 0,
-      maxCapacity: 5,
-      startsAt: 1642647872124,
-      lengthSeconds: 1800,
-    },
-  ]
-  yo2 += 1
-  if (yo2 % 2 === 1) return Promise.resolve(things)
-  return Promise.resolve(things.slice(0, 1))
+const getAvailableSlots = async (eventCode) => {
+  return axios.get(
+    `https://cal.hack.gov.sg/api/v/1/event/${eventCode}/availableSlots`,
+  )
 }
 
 /**

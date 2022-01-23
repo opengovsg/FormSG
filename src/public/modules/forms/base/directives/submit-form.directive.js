@@ -1,7 +1,7 @@
 'use strict'
 const cloneDeep = require('lodash/cloneDeep')
 const get = require('lodash/get')
-// const axios = require('axios')
+const axios = require('axios')
 const FieldVerificationService = require('../../../../services/FieldVerificationService')
 const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
 const PublicFormService = require('../../../../services/PublicFormService')
@@ -12,11 +12,10 @@ const {
 } = require('../../../../../shared/util/logic')
 
 const confirmSingleAppointment = (slotId, formId, formBodyData) => {
-  // return axios.post(`https://cal.hack.gov.sg/api/v1/slot/${slotId}/book`, {
-  //   formId,
-  //   formBodyData,
-  // })
-  return Promise.reject(slotId, formId, formBodyData)
+  return axios.post(`https://cal.hack.gov.sg/api/v/1/slot/${slotId}/book`, {
+    formId,
+    formBodyData,
+  })
 }
 
 const confirmAppointments = async (form) => {
