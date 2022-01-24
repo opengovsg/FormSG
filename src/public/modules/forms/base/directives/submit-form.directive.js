@@ -19,17 +19,12 @@ const confirmSingleAppointment = (slotId, formId, formBodyData) => {
 }
 
 const confirmAppointments = async (form) => {
-  const submissionContent = await form.getSubmissionContent()
   const slotIds = form.form_fields
     .filter((field) => field.fieldType === 'booking' && field.fieldValue)
     .map((field) => field.getSelectedSlotId())
   // We currently only support one appointment
   if (!slotIds.length) return
-  return confirmSingleAppointment(
-    slotIds[0],
-    form._id,
-    submissionContent.responses,
-  )
+  return confirmSingleAppointment(slotIds[0], form._id, form._getResponses())
 }
 
 /**
