@@ -16,9 +16,9 @@ angular.module('forms').component('bookingFieldComponent', {
 })
 
 const getAvailableSlots = async (eventCode) => {
-  return axios.get(
-    `https://cal.hack.gov.sg/api/v/1/event/${eventCode}/availableSlots`,
-  )
+  return axios
+    .get(`${window.calSgDomain}/api/v/1/event/${eventCode}/availableSlots`)
+    .then(({ data }) => data.slots)
 }
 
 /**

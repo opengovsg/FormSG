@@ -12,7 +12,7 @@ const {
 } = require('../../../../../shared/util/logic')
 
 const confirmSingleAppointment = (slotId, formId, formBodyData) => {
-  return axios.post(`https://cal.hack.gov.sg/api/v/1/slot/${slotId}/book`, {
+  return axios.post(`${window.calSgDomain}/api/v/1/slot/${slotId}/book`, {
     formId,
     formBodyData,
   })

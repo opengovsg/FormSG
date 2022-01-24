@@ -59,6 +59,8 @@ const helmetMiddlewares = () => {
       config.aws.attachmentBucketUrl, // Attachment downloads
       config.aws.imageBucketUrl, // Image field
       config.aws.logoBucketUrl, // Form logo
+      'https://cal.hack.gov.sg',
+      'http://localhost:3000',
     ],
     frameSrc: [
       "'self'",

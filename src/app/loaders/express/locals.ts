@@ -21,6 +21,9 @@ const frontendVars = {
   myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
   GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
+  calSgDomain: config.isDev
+    ? 'http://localhost:3000'
+    : 'https://cal.hack.gov.sg',
 }
 const environment = ejs.render(
   `
@@ -44,6 +47,8 @@ const environment = ejs.render(
     var formsgSdkMode = "<%= formsgSdkMode%>"
     // SPCP Cookie
     var spcpCookieDomain = "<%= spcpCookieDomain%>"
+    // CalSG Domain
+    var calSgDomain = "<%= calSgDomain%>"
   `,
   frontendVars,
 )
