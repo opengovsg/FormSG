@@ -82,15 +82,6 @@ export const configureMultipartReceiver = (
 
       busboy
         .on('file', (fieldname, file, { filename }) => {
-          // Required to convert fieldname's encoding as busboy treats all
-          // incoming fields as `latin1` encoding,
-          // but this means some file languages gets incorrectly encoded
-          // (like Chinese, Tamil, etc), e.g.
-          // `utf8-with-endash – test.txt` -> `utf8-with-endash â�� test.txt`.
-          // See https://github.com/mscdex/busboy/issues/274.
-          const utf8Fieldname = Buffer.from(fieldname, 'latin1').toString(
-            'utf8',
-          )
           if (filename) {
             const buffers: Buffer[] = []
             file.on('data', (data) => {
@@ -100,7 +91,7 @@ export const configureMultipartReceiver = (
             file.on('end', () => {
               const buffer = Buffer.concat(buffers)
               attachments.push({
-                filename: utf8Fieldname,
+                filename: fieldname,
                 content: buffer,
                 fieldId: filename,
               })
