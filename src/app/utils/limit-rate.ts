@@ -1,8 +1,6 @@
-import {
-  AugmentedRequest,
+import RateLimit, {
   Options as RateLimitOptions,
-  rateLimit,
-  RateLimitRequestHandler,
+  RateLimit as RateLimitFn,
 } from 'express-rate-limit'
 import { StatusCodes } from 'http-status-codes'
 import { merge } from 'lodash'
@@ -19,10 +17,8 @@ const logger = createLoggerWithLabel(module)
  * @param options Custom options to be passed to RateLimit
  * @return Rate-limiting middleware
  */
-export const limitRate = (
-  options: Partial<RateLimitOptions> = {},
-): RateLimitRequestHandler => {
-  const defaultOptions: Partial<RateLimitOptions> = {
+export const limitRate = (options: RateLimitOptions = {}): RateLimitFn => {
+  const defaultOptions: RateLimitOptions = {
     windowMs: 60 * 1000, // Apply rate per-minute
     max: 1200,
     handler: (req, res) => {
@@ -32,7 +28,7 @@ export const limitRate = (
           action: 'limitRate',
           ...createReqMeta(req),
           method: req.method,
-          rateLimitInfo: (req as AugmentedRequest).rateLimit,
+          rateLimitInfo: req.rateLimit,
         },
       })
       return res.status(StatusCodes.TOO_MANY_REQUESTS).json({
@@ -41,5 +37,5 @@ export const limitRate = (
       })
     },
   }
-  return rateLimit(merge(defaultOptions, options))
+  return RateLimit(merge(defaultOptions, options))
 }
