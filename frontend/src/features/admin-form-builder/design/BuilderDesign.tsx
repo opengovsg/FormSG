@@ -39,18 +39,18 @@ export const BuilderDesign = ({
   return (
     <Flex flex={1} bg="neutral.200" overflow="auto">
       <Flex
-        m="2rem"
+        m={{ base: 0, md: '2rem' }}
         mb={0}
         flex={1}
-        bg="primary.100"
-        p="2.5rem"
+        bg={{ base: 'secondary.100', md: 'primary.100' }}
+        p={{ base: '1.5rem', md: '2.5rem' }}
         justify="center"
         overflow="auto"
       >
         <Flex
           h="fit-content"
           bg="white"
-          p="2.5rem"
+          p={{ base: 0, md: '2.5rem' }}
           maxW="57rem"
           w="100%"
           flexDir="column"
