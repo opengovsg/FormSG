@@ -3,15 +3,16 @@ import { Box, Flex, Text } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 
 import { FIELD_LIST_DROP_ID } from '../../constants'
-import { DndPlaceholderProps } from '../../FormBuilderPage'
 
-export interface BuilderContentPlaceholderProps {
+import { DndPlaceholderProps } from './types'
+
+export interface BuilderDesignPlaceholderProps {
   placeholderProps: DndPlaceholderProps
 }
 
-export const BuilderContentPlaceholder = ({
+export const BuilderDesignPlaceholder = ({
   placeholderProps,
-}: BuilderContentPlaceholderProps): JSX.Element | null => {
+}: BuilderDesignPlaceholderProps): JSX.Element | null => {
   const renderedContents = useMemo(() => {
     switch (placeholderProps.droppableId) {
       case FIELD_LIST_DROP_ID:

@@ -6,19 +6,19 @@ import { AdminFormDto } from '~shared/types/form'
 
 import { FIELD_LIST_DROP_ID } from '../../constants'
 import { useEditFieldStore } from '../../editFieldStore'
-import { DndPlaceholderProps } from '../../FormBuilderPage'
 import { useBuilderFormFields } from '../../useBuilderFormFields'
 import FieldRow from '../FieldRow'
 
-import { BuilderContentPlaceholder } from './BuilderContentPlaceholder'
+import { BuilderDesignPlaceholder } from './BuilderDesignPlaceholder'
+import { DndPlaceholderProps } from './types'
 
-interface BuilderContentProps {
+interface BuilderDesignProps {
   placeholderProps: DndPlaceholderProps
 }
 
-export const BuilderContent = ({
+export const BuilderDesign = ({
   placeholderProps,
-}: BuilderContentProps): JSX.Element => {
+}: BuilderDesignProps): JSX.Element => {
   const { clearActiveField, clearFieldToCreate } = useEditFieldStore(
     useCallback((state) => {
       return {
@@ -66,7 +66,7 @@ export const BuilderContent = ({
                 <BuilderFields fields={builderFields} />
                 {provided.placeholder}
                 {snapshot.isDraggingOver ? (
-                  <BuilderContentPlaceholder
+                  <BuilderDesignPlaceholder
                     placeholderProps={placeholderProps}
                   />
                 ) : null}
