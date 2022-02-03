@@ -6,7 +6,13 @@ import { BuilderDrawerProvider } from './BuilderDrawerContext'
 
 export const FormBuilderPage = (): JSX.Element => {
   return (
-    <Flex h="100%" w="100%" overflow="auto" bg="neutral.200" direction="row">
+    <Flex
+      h="100%"
+      w="100%"
+      overflow="auto"
+      bg="neutral.200"
+      direction={{ base: 'column-reverse', md: 'row' }}
+    >
       <BuilderDrawerProvider>
         <BuilderSidebar />
         <BuilderContent />

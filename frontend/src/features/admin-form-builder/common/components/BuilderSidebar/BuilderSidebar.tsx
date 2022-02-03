@@ -3,6 +3,7 @@ import { Stack } from '@chakra-ui/react'
 
 import { BxsColorFill } from '~assets/icons/BxsColorFill'
 import { BxsWidget } from '~assets/icons/BxsWidget'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import {
   DrawerTabs,
@@ -10,10 +11,17 @@ import {
 } from '~features/admin-form-builder/BuilderDrawerContext'
 
 import { DrawerTabIcon } from './DrawerTabIcon'
+import { MobileBuilderSidebar } from './MobileBuilderSidebar'
 
 export const BuilderSidebar = (): JSX.Element => {
   const { activeTab, handleBuilderClick, handleDesignClick, handleLogicClick } =
     useBuilderDrawer()
+
+  const isMobile = useIsMobile()
+
+  if (isMobile) {
+    return <MobileBuilderSidebar />
+  }
 
   return (
     <Stack
@@ -23,6 +31,7 @@ export const BuilderSidebar = (): JSX.Element => {
       px="0.5rem"
       borderRight="1px solid"
       borderColor="neutral.300"
+      direction={{ base: 'row', md: 'column' }}
     >
       <DrawerTabIcon
         label="Build your form"

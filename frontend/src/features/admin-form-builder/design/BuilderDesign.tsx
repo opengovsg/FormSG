@@ -37,7 +37,7 @@ export const BuilderDesign = ({
   }, [clearActiveField, clearFieldToCreate])
 
   return (
-    <Flex flex={1} bg="neutral.200">
+    <Flex flex={1} bg="neutral.200" overflow="auto">
       <Flex
         m="2rem"
         mb={0}

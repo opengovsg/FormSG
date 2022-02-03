@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Flex } from '@chakra-ui/react'
 import { AnimatePresence } from 'framer-motion'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import { MotionBox } from '~components/motion'
 
 import { DrawerTabs, useBuilderDrawer } from '../../../BuilderDrawerContext'
@@ -29,7 +30,8 @@ const DRAWER_MOTION_PROPS = {
   },
 }
 
-export const BuilderDrawer = (): JSX.Element => {
+export const BuilderDrawer = (): JSX.Element | null => {
+  const isMobile = useIsMobile()
   const { isShowDrawer, activeTab } = useBuilderDrawer()
   const activeField = useEditFieldStore(activeFieldSelector)
 
@@ -47,6 +49,9 @@ export const BuilderDrawer = (): JSX.Element => {
         return null
     }
   }, [activeField, activeTab])
+
+  // Do not display in mobile
+  if (isMobile) return null
 
   return (
     <AnimatePresence>
