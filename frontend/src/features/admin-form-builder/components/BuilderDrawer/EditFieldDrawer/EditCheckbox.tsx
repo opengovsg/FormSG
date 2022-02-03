@@ -26,9 +26,9 @@ import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 import { CheckboxFieldSchema } from '~templates/Field/Checkbox/CheckboxField'
 
-import { useEditFieldStore } from '../editFieldStore'
-import { useMutateFormFields } from '../mutations'
-import { isPendingFormField } from '../utils'
+import { useEditFieldStore } from '../../../editFieldStore'
+import { useMutateFormFields } from '../../../mutations'
+import { isPendingFormField } from '../../../utils'
 
 import { DrawerContentContainer } from './DrawerContentContainer'
 import { FormFieldDrawerActions } from './FormFieldDrawerActions'

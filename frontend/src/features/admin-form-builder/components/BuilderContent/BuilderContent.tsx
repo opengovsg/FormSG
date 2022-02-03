@@ -4,12 +4,13 @@ import { Box, Flex } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
-import { FieldRowContainer } from './FieldRow/FieldRowContainer'
+import { FIELD_LIST_DROP_ID } from '../../constants'
+import { useEditFieldStore } from '../../editFieldStore'
+import { DndPlaceholderProps } from '../../FormBuilderPage'
+import { useBuilderFormFields } from '../../useBuilderFormFields'
+import FieldRow from '../FieldRow'
+
 import { BuilderContentPlaceholder } from './BuilderContentPlaceholder'
-import { FIELD_LIST_DROP_ID } from './constants'
-import { useEditFieldStore } from './editFieldStore'
-import { DndPlaceholderProps } from './FormBuilderPage'
-import { useBuilderFormFields } from './useBuilderFormFields'
 
 interface BuilderContentProps {
   placeholderProps: DndPlaceholderProps
@@ -87,7 +88,7 @@ const BuilderFields = memo(
     return (
       <>
         {fields.map((f, i) => (
-          <FieldRowContainer index={i} key={f._id} field={f} />
+          <FieldRow index={i} key={f._id} field={f} />
         ))}
       </>
     )

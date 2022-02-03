@@ -16,7 +16,7 @@ import { Tab } from '~components/Tabs'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { BuilderDrawerCloseButton } from '../FieldRow/BuilderDrawerCloseButton'
+import { BuilderDrawerCloseButton } from '../BuilderDrawerCloseButton'
 
 import {
   CREATE_FIELD_DROP_ID,

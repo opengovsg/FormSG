@@ -9,16 +9,16 @@ import { Flex } from '@chakra-ui/react'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
+import { BuilderContent } from './components/BuilderContent'
 import {
+  BuilderDrawer,
   CREATE_FIELD_DROP_ID,
   CREATE_FIELD_FIELDS_ORDERED,
   CREATE_PAGE_DROP_ID,
   CREATE_PAGE_FIELDS_ORDERED,
-} from './CreateFieldDrawer/constants'
-import { BuilderContent } from './BuilderContent'
-import { BuilderDrawer } from './BuilderDrawer'
+} from './components/BuilderDrawer'
+import { BuilderSidebar } from './components/BuilderSidebar'
 import { BuilderDrawerProvider } from './BuilderDrawerContext'
-import { BuilderSidebar } from './BuilderSidebar'
 import { FIELD_LIST_DROP_ID } from './constants'
 import { setFieldToCreateSelector, useEditFieldStore } from './editFieldStore'
 import { useMutateFormFields } from './mutations'

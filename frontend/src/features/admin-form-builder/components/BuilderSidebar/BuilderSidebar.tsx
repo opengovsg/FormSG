@@ -4,7 +4,8 @@ import { Stack } from '@chakra-ui/react'
 import { BxsColorFill } from '~assets/icons/BxsColorFill'
 import { BxsWidget } from '~assets/icons/BxsWidget'
 
-import { DrawerTabs, useBuilderDrawer } from './BuilderDrawerContext'
+import { DrawerTabs, useBuilderDrawer } from '../../BuilderDrawerContext'
+
 import { DrawerTabIcon } from './DrawerTabIcon'
 
 export const BuilderSidebar = (): JSX.Element => {

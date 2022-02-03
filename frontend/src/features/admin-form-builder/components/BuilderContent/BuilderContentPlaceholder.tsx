@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 
-import { FIELD_LIST_DROP_ID } from './constants'
-import { DndPlaceholderProps } from './FormBuilderPage'
+import { FIELD_LIST_DROP_ID } from '../../constants'
+import { DndPlaceholderProps } from '../../FormBuilderPage'
 
 export interface BuilderContentPlaceholderProps {
   placeholderProps: DndPlaceholderProps
