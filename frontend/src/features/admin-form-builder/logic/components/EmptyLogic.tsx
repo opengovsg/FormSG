@@ -54,7 +54,7 @@ export const EmptyLogic = (): JSX.Element => {
             {ALLOWED_FIELDS_META.map(({ icon, label }) => (
               <Stack key={label} direction="row" align="center">
                 <Icon fontSize="1rem" as={icon} />
-                <Text textStyle="body-1">{label}</Text>
+                <Text textStyle="body-2">{label}</Text>
               </Stack>
             ))}
           </Grid>
