@@ -43,8 +43,8 @@ export const BuilderDrawer = (): JSX.Element => {
       }
       case DrawerTabs.Design:
         return <div>TODO: Design drawer contents</div>
-      case DrawerTabs.Logic:
-        return <div>TODO: Logic drawer contents</div>
+      default:
+        return null
     }
   }, [activeField, activeTab])
 
