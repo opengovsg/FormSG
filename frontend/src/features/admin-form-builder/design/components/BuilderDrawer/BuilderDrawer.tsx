@@ -4,7 +4,7 @@ import { AnimatePresence } from 'framer-motion'
 
 import { MotionBox } from '~components/motion'
 
-import { DrawerTabs, useBuilderDrawer } from '../../BuilderDrawerContext'
+import { DrawerTabs, useBuilderDrawer } from '../../../BuilderDrawerContext'
 import { activeFieldSelector, useEditFieldStore } from '../../editFieldStore'
 
 import { CreateFieldDrawer } from './CreateFieldDrawer'

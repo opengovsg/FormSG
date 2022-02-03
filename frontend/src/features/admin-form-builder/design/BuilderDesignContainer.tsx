@@ -7,22 +7,18 @@ import {
 } from 'react-beautiful-dnd'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { FIELD_LIST_DROP_ID } from '~features/admin-form-builder/constants'
-import {
-  setFieldToCreateSelector,
-  useEditFieldStore,
-} from '~features/admin-form-builder/editFieldStore'
-import { useMutateFormFields } from '~features/admin-form-builder/mutations'
 
+import { BuilderDrawer } from './components/BuilderDrawer'
+import { BuilderDesign } from './BuilderDesign'
 import {
-  BuilderDrawer,
   CREATE_FIELD_DROP_ID,
   CREATE_FIELD_FIELDS_ORDERED,
   CREATE_PAGE_DROP_ID,
   CREATE_PAGE_FIELDS_ORDERED,
-} from '../BuilderDrawer'
-
-import { BuilderDesign } from './BuilderDesign'
+  FIELD_LIST_DROP_ID,
+} from './constants'
+import { setFieldToCreateSelector, useEditFieldStore } from './editFieldStore'
+import { useMutateFormFields } from './mutations'
 import { DndPlaceholderProps } from './types'
 
 const dragHandleQueryAttr = 'data-rbd-drag-handle-draggable-id'

@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { BiX } from 'react-icons/bi'
 import { CloseButton } from '@chakra-ui/react'
 
-import { useBuilderDrawer } from '../../BuilderDrawerContext'
+import { useBuilderDrawer } from '~features/admin-form-builder/BuilderDrawerContext'
 
 export const BuilderDrawerCloseButton = (): JSX.Element => {
   const { handleClose } = useBuilderDrawer()

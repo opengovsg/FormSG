@@ -13,13 +13,14 @@ import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
-import { useEditFieldStore } from './editFieldStore'
-import { BuilderContentField } from './types'
 import {
   createSingleFormField,
   reorderSingleFormField,
   updateSingleFormField,
-} from './UpdateFormFieldService'
+} from '../UpdateFormFieldService'
+
+import { useEditFieldStore } from './editFieldStore'
+import { BuilderContentField } from './types'
 import { isPendingFormField } from './utils'
 
 export const adminFormFieldKeys = {

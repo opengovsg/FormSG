@@ -1,8 +1,8 @@
 import { Flex } from '@chakra-ui/react'
 
-import BuilderDesign from './components/BuilderDesign'
-import { BuilderSidebar } from './components/BuilderSidebar'
+import { BuilderSidebar } from './common/components/BuilderSidebar'
 import { BuilderDrawerProvider } from './BuilderDrawerContext'
+import BuilderDesign from './design'
 
 export const FormBuilderPage = (): JSX.Element => {
   return (

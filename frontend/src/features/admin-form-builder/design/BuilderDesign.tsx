@@ -4,13 +4,12 @@ import { Box, Flex } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
-import { FIELD_LIST_DROP_ID } from '../../constants'
-import { useEditFieldStore } from '../../editFieldStore'
-import { useBuilderFormFields } from '../../useBuilderFormFields'
-import FieldRow from '../FieldRow'
-
-import { BuilderDesignPlaceholder } from './BuilderDesignPlaceholder'
+import { BuilderDesignPlaceholder } from './components/BuilderDesignPlaceholder'
+import FieldRow from './components/FieldRow'
+import { FIELD_LIST_DROP_ID } from './constants'
+import { useEditFieldStore } from './editFieldStore'
 import { DndPlaceholderProps } from './types'
+import { useBuilderFormFields } from './useBuilderFormFields'
 
 interface BuilderDesignProps {
   placeholderProps: DndPlaceholderProps
