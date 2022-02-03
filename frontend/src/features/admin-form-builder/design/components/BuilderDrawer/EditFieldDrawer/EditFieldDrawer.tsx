@@ -6,12 +6,13 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
 
+import { BASICFIELD_TO_READABLE } from '~features/admin-form-builder/constants'
+
 import {
   activeFieldSelector,
   clearActiveFieldSelector,
   useEditFieldStore,
 } from '../../../editFieldStore'
-import { transformBasicFieldToText } from '../../../utils'
 import { BuilderDrawerCloseButton } from '../BuilderDrawerCloseButton'
 
 import { EditCheckbox } from './EditCheckbox'
@@ -22,7 +23,10 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   const activeField = useEditFieldStore(activeFieldSelector)
 
   const basicFieldText = useMemo(
-    () => transformBasicFieldToText(activeField?.fieldType),
+    () =>
+      activeField?.fieldType
+        ? BASICFIELD_TO_READABLE[activeField.fieldType]
+        : '',
     [activeField?.fieldType],
   )
 
