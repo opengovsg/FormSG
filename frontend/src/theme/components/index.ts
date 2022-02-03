@@ -7,6 +7,7 @@ import { Button } from './Button'
 import { Checkbox, CHECKBOX_THEME_KEY } from './Checkbox'
 import { CloseButton } from './CloseButton'
 import { DateInput } from './DateInput'
+import { Divider } from './Divider'
 import { Drawer } from './Drawer'
 import { Form } from './Form'
 import { FormError } from './FormError'
@@ -40,6 +41,7 @@ export const components = {
   Form,
   FormError,
   FormLabel,
+  Divider,
   Input,
   Link,
   InlineMessage,

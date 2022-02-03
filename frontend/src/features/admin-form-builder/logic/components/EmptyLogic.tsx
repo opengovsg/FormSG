@@ -40,7 +40,7 @@ export const EmptyLogic = (): JSX.Element => {
         Add logic
       </Button>
       <LogicSvgr maxW="292px" />
-      <Divider my="2.5rem" color="neutral.300" />
+      <Divider my="2.5rem" />
       <Stack spacing="1.5rem" textAlign="center" maxW="28rem">
         <Text textStyle="subhead-3">Allowed fields</Text>
         <Flex>

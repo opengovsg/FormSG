@@ -103,7 +103,7 @@ export const Footer = ({
           ))}
         </Wrap>
       </Footer.Section>
-      <Divider color={`${textColorScheme}.300`} my="1.5rem" />
+      <Divider borderColor={`${textColorScheme}.300`} my="1.5rem" />
       <Footer.Section>
         <Box>
           <Text
