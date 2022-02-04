@@ -3,6 +3,7 @@ import { Meta, Story } from '@storybook/react'
 
 import { Combobox, ComboboxProps } from './Combobox'
 import { ComboboxItem } from './types'
+import { itemToLabelString } from './utils'
 
 const INITIAL_COMBOBOX_ITEMS: ComboboxItem[] = [
   {
@@ -68,3 +69,14 @@ const Template: Story<ComboboxProps> = (args) => {
   return <Combobox {...args} value={value} onChange={onChange} />
 }
 export const Default = Template.bind({})
+
+export const NotClearable = Template.bind({})
+NotClearable.args = {
+  isClearable: false,
+}
+
+export const HasValueSelected = Template.bind({})
+HasValueSelected.args = {
+  value: itemToLabelString(INITIAL_COMBOBOX_ITEMS[0]),
+  defaultIsOpen: true,
+}
