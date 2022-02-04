@@ -32,6 +32,7 @@ export const Menu: ComponentMultiStyleConfig<typeof parts> = {
     item: {
       padding: '0.75rem 1rem',
       fontWeight: '400',
+      color: 'secondary.700',
       _hover: {
         bg: 'primary.100',
         borderWidth: '0rem',

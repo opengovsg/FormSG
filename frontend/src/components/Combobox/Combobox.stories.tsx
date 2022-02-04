@@ -21,10 +21,12 @@ Default.args = {
     {
       value: 'A',
       label: 'A',
+      description: 'Not to be confused with B',
     },
     {
       value: 'B',
       label: 'B',
+      description: 'Not to be confused with A',
     },
     {
       value: 'Bat',

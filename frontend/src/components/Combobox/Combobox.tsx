@@ -9,6 +9,7 @@ import {
   InputRightElement,
   List,
   ListItem,
+  Text,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { isString } from '@chakra-ui/utils'
@@ -28,8 +29,9 @@ export type ComboboxItem =
       label?: string
       /** Description to render below label if provided */
       description?: string
-
+      /** Whether item is disabled */
       disabled?: boolean
+
       [key: string]: any
     }
   | string
@@ -42,24 +44,27 @@ const defaultFilter = <Item extends ComboboxItem>(
   return matchSorter(items, value, { keys: ['value', 'label'] })
 }
 
-const itemToString = <Item extends ComboboxItem>(item: Item): string => {
-  if (!item) {
-    return ''
-  }
-  if (isString(item)) {
-    return item
+const itemIsObject = (
+  item: ComboboxItem,
+): item is Exclude<ComboboxItem, string | null> => {
+  return !!item && !isString(item)
+}
+
+const itemToLabelString = <Item extends ComboboxItem>(item: Item): string => {
+  if (!itemIsObject(item)) {
+    return item ?? ''
   }
   return item.label ?? item.value
 }
 
 const isItemDisabled = <Item extends ComboboxItem>(item: Item): boolean => {
-  if (!item) {
-    return false
-  }
-  if (isString(item)) {
-    return false
-  }
-  return item.disabled ?? false
+  return itemIsObject(item) && !!item.disabled
+}
+
+const itemToDescriptionString = <Item extends ComboboxItem>(
+  item: Item,
+): string | undefined => {
+  return itemIsObject(item) ? item.description : undefined
 }
 
 export interface ComboboxProps<Item = ComboboxItem, Value = string> {
@@ -139,7 +144,7 @@ export const Combobox = ({
 
   // To prepopulate selected item if value is provided.
   const defaultSelectedItem = useMemo(
-    () => items.find((item) => itemToString(item) === value),
+    () => items.find((item) => itemToLabelString(item) === value),
     [items, value],
   )
 
@@ -154,7 +159,7 @@ export const Combobox = ({
       // Set to show all items when something is already selected, or if input is empty
       if (
         !inputValue ||
-        (selectedItem && inputValue === itemToString(selectedItem))
+        (selectedItem && inputValue === itemToLabelString(selectedItem))
       ) {
         setFilteredItems(limit ? items.slice(0, limit) : items)
       } else {
@@ -181,22 +186,24 @@ export const Combobox = ({
     defaultIsOpen,
     inputValue: value,
     defaultSelectedItem,
-    itemToString,
+    itemToString: itemToLabelString,
     onInputValueChange: ({ inputValue, selectedItem }) => {
       regenFilteredItems({ inputValue, selectedItem })
       onChange(inputValue ?? '')
     },
     onSelectedItemChange: ({ selectedItem }) => {
-      onChange(itemToString(selectedItem ?? ''))
+      onChange(itemToLabelString(selectedItem ?? ''))
     },
     stateReducer: (_state, { changes, type }) => {
       switch (type) {
         case useCombobox.stateChangeTypes.InputBlur: {
           const selectedValue = changes.inputValue
-            ? items.find((item) => itemToString(item) === changes.inputValue)
+            ? items.find(
+                (item) => itemToLabelString(item) === changes.inputValue,
+              )
             : undefined
           const updatedInputValue = selectedValue
-            ? itemToString(selectedValue)
+            ? itemToLabelString(selectedValue)
             : undefined
           onChange(updatedInputValue ?? '')
           return {
@@ -279,14 +286,22 @@ export const Combobox = ({
                 // We want to not even have the tag if falsey.
                 // This adds _active styling to the item.
                 data-active={selectedItem === item || undefined}
-                key={`${itemToString(item)}${index}`}
+                key={`${itemToLabelString(item)}${index}`}
                 {...getItemProps({
                   item,
                   index,
                   disabled: isItemDisabled(item),
                 })}
               >
-                {itemToString(item)}
+                <Text>{itemToLabelString(item)}</Text>
+                <Text
+                  textStyle="body-2"
+                  color={
+                    selectedItem === item ? 'secondary.500' : 'secondary.400'
+                  }
+                >
+                  {itemToDescriptionString(item)}
+                </Text>
               </ListItem>
             ))}
           {isOpen && filteredItems.length === 0 ? (
