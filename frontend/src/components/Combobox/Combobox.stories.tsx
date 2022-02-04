@@ -1,3 +1,4 @@
+import { BiHeading, BiRadioCircleMarked } from 'react-icons/bi'
 import { useArgs } from '@storybook/client-api'
 import { Meta, Story } from '@storybook/react'
 
@@ -78,5 +79,23 @@ NotClearable.args = {
 export const HasValueSelected = Template.bind({})
 HasValueSelected.args = {
   value: itemToLabelString(INITIAL_COMBOBOX_ITEMS[0]),
+  defaultIsOpen: true,
+}
+
+export const WithIconSelected = Template.bind({})
+WithIconSelected.args = {
+  items: [
+    {
+      value: 'Radio button',
+      icon: BiRadioCircleMarked,
+      description: 'This is an option with an icon',
+    },
+    {
+      value: 'Section',
+      icon: BiHeading,
+      description: 'This is another option with an icon',
+    },
+  ],
+  value: 'Radio button',
   defaultIsOpen: true,
 }
