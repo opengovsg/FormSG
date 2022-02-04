@@ -31,6 +31,12 @@ export const Combobox: ComponentMultiStyleConfig<typeof parts> = {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       _selected: themeMenuBaseStyle.item?._focus,
+      _first: {
+        mt: '0.5rem',
+      },
+      _last: {
+        mb: '0.5rem',
+      },
     } as CSSObject)
 
     return {
@@ -38,13 +44,10 @@ export const Combobox: ComponentMultiStyleConfig<typeof parts> = {
         pos: 'relative',
       },
       list: merge(chakraMenuBaseStyle.list, themeMenuBaseStyle.list, {
-        mt: '0.5rem',
-        top: '100%',
-        pos: 'absolute',
-        width: '100%',
-        zIndex: 1,
-        maxH: '10rem',
+        my: '0.5rem',
+        w: '100%',
         overflowY: 'auto',
+        maxH: '12rem',
       } as CSSObject),
       field: theme.components.Input.baseStyle.field,
       item: itemStyle,

@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
 import { BiX } from 'react-icons/bi'
+import { usePopper } from 'react-popper'
 import {
   Box,
   Flex,
-  FormControl,
   Icon,
   InputGroup,
   InputRightElement,
@@ -12,13 +12,11 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { isString } from '@chakra-ui/utils'
-import { hover } from '@testing-library/user-event/dist/hover'
 import { useCombobox } from 'downshift'
 import { matchSorter } from 'match-sorter'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
-import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
@@ -32,7 +30,7 @@ export type ComboboxItem =
   | string
   | null
 
-export const defaultFilter = <Item extends ComboboxItem>(
+const defaultFilter = <Item extends ComboboxItem>(
   items: Item[],
   value: string,
 ) => {
@@ -111,6 +109,15 @@ export const Combobox = ({
 }: ComboboxProps): JSX.Element => {
   const [filteredItems, setFilteredItems] = useState(items)
 
+  const [referenceElement, setReferenceElement] =
+    useState<HTMLDivElement | null>(null)
+  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
+    null,
+  )
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    placement: 'bottom-start',
+  })
+
   // To prepopulate selected item if value is provided.
   const defaultSelectedItem = useMemo(
     () => items.find((item) => itemToString(item) === value),
@@ -141,7 +148,6 @@ export const Combobox = ({
 
   const {
     isOpen,
-    getLabelProps,
     getMenuProps,
     getInputProps,
     getComboboxProps,
@@ -196,46 +202,50 @@ export const Combobox = ({
   })
 
   return (
-    <FormControl>
-      <FormLabel {...getLabelProps()}>Test</FormLabel>
-      <Box {...getComboboxProps()} pos="relative">
-        <Flex>
-          <InputGroup>
-            <Input
-              isReadOnly={!isSearchable}
-              sx={style.field}
-              placeholder={placeholder}
-              {...getInputProps({
-                onFocus: () => {
-                  if (!isOpen) {
-                    openMenu()
-                  }
-                },
-                onClick: () => {
-                  if (!isOpen) {
-                    openMenu()
-                  }
-                },
-              })}
+    <Box ref={setReferenceElement} sx={style.container}>
+      <Flex {...getComboboxProps()}>
+        <InputGroup>
+          <Input
+            isReadOnly={!isSearchable}
+            sx={style.field}
+            placeholder={placeholder}
+            {...getInputProps({
+              onFocus: () => {
+                if (!isOpen) {
+                  openMenu()
+                }
+              },
+              onClick: () => {
+                if (!isOpen) {
+                  openMenu()
+                }
+              },
+            })}
+          />
+          <InputRightElement>
+            <Icon
+              as={isOpen ? BxsChevronUp : BxsChevronDown}
+              sx={style.chevron}
+              {...getToggleButtonProps()}
             />
-            <InputRightElement>
-              <Icon
-                as={isOpen ? BxsChevronUp : BxsChevronDown}
-                sx={style.chevron}
-                {...getToggleButtonProps()}
-              />
-            </InputRightElement>
-          </InputGroup>
-          {isClearable ? (
-            <IconButton
-              sx={style.clearbutton}
-              aria-label={clearButtonLabel}
-              icon={<BiX />}
-              onClick={() => selectItem(null)}
-            />
-          ) : null}
-        </Flex>
-        <List sx={style.list} {...getMenuProps()}>
+          </InputRightElement>
+        </InputGroup>
+        {isClearable ? (
+          <IconButton
+            sx={style.clearbutton}
+            aria-label={clearButtonLabel}
+            icon={<BiX />}
+            onClick={() => selectItem(null)}
+          />
+        ) : null}
+      </Flex>
+      <Box
+        ref={setPopperElement}
+        style={styles.popper}
+        {...attributes.popper}
+        w="100%"
+      >
+        <List {...getMenuProps()} sx={style.list}>
           {isOpen &&
             filteredItems.map((item, index) => (
               <ListItem
@@ -257,7 +267,6 @@ export const Combobox = ({
           ) : null}
         </List>
       </Box>
-      Test
-    </FormControl>
+    </Box>
   )
 }
