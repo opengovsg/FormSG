@@ -22,8 +22,13 @@ import Input from '~components/Input'
 
 export type ComboboxItem =
   | {
+      /** Value to be passed to onChange */
       value: string
+      /** Label to render on input when selected. `value` will be used if this is not provided */
       label?: string
+      /** Description to render below label if provided */
+      description?: string
+
       disabled?: boolean
       [key: string]: any
     }
@@ -45,6 +50,16 @@ const itemToString = <Item extends ComboboxItem>(item: Item): string => {
     return item
   }
   return item.label ?? item.value
+}
+
+const isItemDisabled = <Item extends ComboboxItem>(item: Item): boolean => {
+  if (!item) {
+    return false
+  }
+  if (isString(item)) {
+    return false
+  }
+  return item.disabled ?? false
 }
 
 export interface ComboboxProps<Item = ComboboxItem, Value = string> {
@@ -92,9 +107,13 @@ export interface ComboboxProps<Item = ComboboxItem, Value = string> {
 
   /** Placeholder to show in the input field. Defaults to "Select an option". */
   placeholder?: string
+
+  /** ID of label for tagging input and dropdown to, for a11y purposes */
+  labelId?: string
 }
 
 export const Combobox = ({
+  labelId,
   limit,
   nothingFoundLabel = 'No matching results',
   items,
@@ -157,6 +176,7 @@ export const Combobox = ({
     selectedItem,
     selectItem,
   } = useCombobox({
+    labelId,
     items: filteredItems,
     defaultIsOpen,
     inputValue: value,
@@ -245,7 +265,12 @@ export const Combobox = ({
         {...attributes.popper}
         w="100%"
       >
-        <List {...getMenuProps()} sx={style.list}>
+        <List
+          {...getMenuProps({
+            'aria-label': 'Dropdown list',
+          })}
+          sx={style.list}
+        >
           {isOpen &&
             filteredItems.map((item, index) => (
               <ListItem
@@ -255,7 +280,11 @@ export const Combobox = ({
                 // This adds _active styling to the item.
                 data-active={selectedItem === item || undefined}
                 key={`${itemToString(item)}${index}`}
-                {...getItemProps({ item, index })}
+                {...getItemProps({
+                  item,
+                  index,
+                  disabled: isItemDisabled(item),
+                })}
               >
                 {itemToString(item)}
               </ListItem>

@@ -57,6 +57,7 @@ Default.args = {
     {
       value: 'D5',
       label: 'D5',
+      disabled: true,
     },
   ],
   value: '',
