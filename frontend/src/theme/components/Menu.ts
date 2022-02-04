@@ -47,6 +47,17 @@ export const Menu: ComponentMultiStyleConfig<typeof parts> = {
         bg: 'primary.200',
         fontWeight: 500,
       },
+      _disabled: {
+        opacity: 0.6,
+        bg: 'initial',
+        _hover: {
+          bg: 'initial',
+        },
+        _active: {
+          fontWeight: 'initial',
+        },
+        cursor: 'not-allowed',
+      },
     },
     list: {
       border: 'none',
