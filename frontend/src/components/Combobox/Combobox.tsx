@@ -87,7 +87,7 @@ export const Combobox = ({
   })
 
   // To prepopulate selected item if value is provided.
-  const defaultSelectedItem = useMemo(
+  const getDefaultSelectedValue = useCallback(
     () => items.find((item) => itemToLabelString(item) === value),
     [items, value],
   )
@@ -129,7 +129,7 @@ export const Combobox = ({
     items: filteredItems,
     defaultIsOpen,
     inputValue: value,
-    defaultSelectedItem,
+    defaultSelectedItem: getDefaultSelectedValue(),
     itemToString: itemToLabelString,
     onInputValueChange: ({ inputValue, selectedItem }) => {
       regenFilteredItems({ inputValue, selectedItem })
