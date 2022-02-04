@@ -176,6 +176,12 @@ export const Combobox = ({
     [selectedItem],
   )
 
+  const handleMenuOpen = useCallback(() => {
+    if (!isOpen) {
+      openMenu()
+    }
+  }, [isOpen, openMenu])
+
   return (
     <Box ref={setReferenceElement} sx={style.container}>
       <Flex {...getComboboxProps()}>
@@ -190,16 +196,8 @@ export const Combobox = ({
             sx={style.field}
             placeholder={placeholder}
             {...getInputProps({
-              onFocus: () => {
-                if (!isOpen) {
-                  openMenu()
-                }
-              },
-              onClick: () => {
-                if (!isOpen) {
-                  openMenu()
-                }
-              },
+              onFocus: handleMenuOpen,
+              onClick: handleMenuOpen,
             })}
           />
           <InputRightElement>
