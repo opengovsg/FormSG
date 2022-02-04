@@ -49,7 +49,10 @@ export const Menu: ComponentMultiStyleConfig<typeof parts> = {
       },
     },
     list: {
+      border: 'none',
+      borderRadius: 0,
       minWidth: '0rem',
+      shadow: 'var(--chakra-shadows-sm) !important',
     },
   }),
   variants: {

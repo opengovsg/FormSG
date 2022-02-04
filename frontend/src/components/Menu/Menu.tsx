@@ -83,7 +83,7 @@ const MenuItem = ChakraMenuItem
  * Used to wrap MenuButton, MenuItem and MenuList components
  */
 export const Menu = (props: MenuProps): JSX.Element => {
-  return <ChakraMenu matchWidth={true} gutter={4} {...props} />
+  return <ChakraMenu matchWidth={true} gutter={2} {...props} />
 }
 
 Menu.Button = MenuButton
