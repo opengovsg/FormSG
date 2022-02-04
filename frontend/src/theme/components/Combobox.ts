@@ -15,7 +15,7 @@ const parts = anatomy('combobox').parts(
   'item',
   'field',
   'clearbutton',
-  'chevron',
+  'icon',
   'emptyItem',
 )
 
@@ -55,7 +55,7 @@ export const Combobox: ComponentMultiStyleConfig<typeof parts> = {
         borderLeftRadius: 0,
         ml: '-1px',
       },
-      chevron: {
+      icon: {
         fontSize: '1.25rem',
         color: 'secondary.500',
       },

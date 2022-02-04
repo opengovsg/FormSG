@@ -6,10 +6,10 @@ import {
   Flex,
   Icon,
   InputGroup,
+  InputLeftElement,
   InputRightElement,
   List,
   ListItem,
-  Text,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { useCombobox } from 'downshift'
@@ -19,11 +19,12 @@ import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
+import { DropdownItem } from './DropdownItem'
 import { ComboboxItem } from './types'
 import {
   defaultFilter,
   isItemDisabled,
-  itemToDescriptionString,
+  itemToIcon,
   itemToLabelString,
 } from './utils'
 
@@ -188,10 +189,20 @@ export const Combobox = ({
     isClearable,
   })
 
+  const selectedItemIcon = useMemo(
+    () => itemToIcon(selectedItem),
+    [selectedItem],
+  )
+
   return (
     <Box ref={setReferenceElement} sx={style.container}>
       <Flex {...getComboboxProps()}>
         <InputGroup>
+          {selectedItemIcon ? (
+            <InputLeftElement pointerEvents="none">
+              <Icon sx={style.icon} as={selectedItemIcon} />
+            </InputLeftElement>
+          ) : null}
           <Input
             isReadOnly={!isSearchable}
             sx={style.field}
@@ -212,7 +223,7 @@ export const Combobox = ({
           <InputRightElement>
             <Icon
               as={isOpen ? BxsChevronUp : BxsChevronDown}
-              sx={style.chevron}
+              sx={style.icon}
               {...getToggleButtonProps()}
             />
           </InputRightElement>
@@ -240,29 +251,15 @@ export const Combobox = ({
         >
           {isOpen &&
             filteredItems.map((item, index) => (
-              <ListItem
-                sx={style.item}
-                // Data attributes are unique, any value will be truthy.
-                // We want to not even have the tag if falsey.
-                // This adds _active styling to the item.
-                data-active={selectedItem === item || undefined}
+              <DropdownItem
                 key={`${itemToLabelString(item)}${index}`}
-                {...getItemProps({
-                  item,
-                  index,
-                  disabled: isItemDisabled(item),
-                })}
-              >
-                <Text>{itemToLabelString(item)}</Text>
-                <Text
-                  textStyle="body-2"
-                  color={
-                    selectedItem === item ? 'secondary.500' : 'secondary.400'
-                  }
-                >
-                  {itemToDescriptionString(item)}
-                </Text>
-              </ListItem>
+                item={item}
+                index={index}
+                isActive={selectedItem === item || undefined}
+                getItemProps={getItemProps}
+                iconStyles={style.icon}
+                itemStyles={style.item}
+              />
             ))}
           {isOpen && filteredItems.length === 0 ? (
             <ListItem role="option" sx={style.emptyItem}>

@@ -25,6 +25,13 @@ export const itemToLabelString = <Item extends ComboboxItem>(
   return item.label ?? item.value
 }
 
+export const itemToIcon = <Item extends ComboboxItem>(item?: Item) => {
+  if (!item || !itemIsObject(item)) {
+    return undefined
+  }
+  return item.icon
+}
+
 export const isItemDisabled = <Item extends ComboboxItem>(
   item: Item,
 ): boolean => {
