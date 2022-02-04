@@ -20,6 +20,7 @@ import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
 import { DropdownItem } from './DropdownItem'
+import { MultiDropdownItem } from './MultiDropdownItem'
 import { ComboboxItem } from './types'
 import { defaultFilter, itemToIcon, itemToLabelString } from './utils'
 
@@ -77,6 +78,7 @@ export const MultiSelect = ({
 }: MultiSelectProps): JSX.Element => {
   const [filteredItems, setFilteredItems] = useState(items)
   const [inputValue, setInputValue] = useState('')
+  const [trackedHighlightIndex, setTrackedHighlightIndex] = useState(0)
 
   const [referenceElement, setReferenceElement] =
     useState<HTMLDivElement | null>(null)
@@ -115,18 +117,7 @@ export const MultiSelect = ({
     addSelectedItem,
     removeSelectedItem,
     selectedItems,
-  } = useMultipleSelection<ComboboxItem>({
-    stateReducer: (state, { changes, type }) => {
-      // remove selected item if already selected
-      switch (type) {
-        case useMultipleSelection.stateChangeTypes.SelectedItemClick:
-          console.log('selected item click', changes.selectedItems)
-          return changes
-        default:
-          return changes
-      }
-    },
-  })
+  } = useMultipleSelection<ComboboxItem>()
 
   const {
     isOpen,
@@ -141,16 +132,23 @@ export const MultiSelect = ({
   } = useCombobox({
     labelId,
     inputValue,
-    defaultHighlightedIndex: 0, // after selection, highlight the first item.
     selectedItem: null,
     items: filteredItems,
     stateReducer: (_state, { changes, type }) => {
       switch (type) {
+        case useCombobox.stateChangeTypes.InputKeyDownArrowDown:
+        case useCombobox.stateChangeTypes.InputKeyDownArrowUp:
+        case useCombobox.stateChangeTypes.ItemMouseMove:
+          setTrackedHighlightIndex(changes.highlightedIndex ?? 0)
+          return changes
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.ItemClick:
           return {
             ...changes,
-            isOpen: true, // keep the menu open after selection.
+            // Keep highlight index same as current.
+            highlightedIndex: trackedHighlightIndex,
+            // Keep the menu open after selection.
+            isOpen: true,
           }
         case useCombobox.stateChangeTypes.InputBlur:
           if (changes.inputValue) {
@@ -262,18 +260,17 @@ export const MultiSelect = ({
           sx={style.list}
         >
           {isOpen &&
-            filteredItems.map((item, index) => {
-              return (
-                <DropdownItem
-                  key={`${itemToLabelString(item)}${index}`}
-                  item={item}
-                  index={index}
-                  getItemProps={getItemProps}
-                  iconStyles={style.icon}
-                  itemStyles={style.item}
-                />
-              )
-            })}
+            filteredItems.map((item, index) => (
+              <MultiDropdownItem
+                key={`${itemToLabelString(item)}${index}`}
+                item={item}
+                index={index}
+                getItemProps={getItemProps}
+                isSelected={selectedItems.includes(item)}
+                iconStyles={style.icon}
+                itemStyles={style.item}
+              />
+            ))}
           {isOpen && filteredItems.length === 0 ? (
             <ListItem role="option" sx={style.emptyItem}>
               {nothingFoundLabel}
