@@ -149,7 +149,6 @@ export const Combobox = ({
           const updatedInputValue = selectedValue
             ? itemToLabelString(selectedValue)
             : undefined
-          onChange(updatedInputValue ?? '')
           return {
             ...changes,
             inputValue: updatedInputValue,
