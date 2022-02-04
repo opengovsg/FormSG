@@ -21,12 +21,7 @@ import Input from '~components/Input'
 
 import { DropdownItem } from './DropdownItem'
 import { ComboboxItem } from './types'
-import {
-  defaultFilter,
-  isItemDisabled,
-  itemToIcon,
-  itemToLabelString,
-} from './utils'
+import { defaultFilter, itemToIcon, itemToLabelString } from './utils'
 
 export interface ComboboxProps<Item = ComboboxItem, Value = string> {
   /** Select data used to renderer items in dropdown */
@@ -58,18 +53,6 @@ export interface ComboboxProps<Item = ComboboxItem, Value = string> {
 
   /** aria-label for clear button. Defaults to "Clear dropdown" */
   clearButtonLabel?: string
-
-  // /** Allow creatable option  */
-  // isCreatable?: boolean
-
-  // /** Function to get create Label */
-  // getCreateLabel?: (query: string) => React.ReactNode
-
-  // /** Function to determine if create label should be displayed */
-  // shouldCreate?: (query: string, data: Item[]) => boolean
-
-  // /** Called when create option is selected */
-  // onCreate?: (query: string) => void
 
   /** Placeholder to show in the input field. Defaults to "Select an option". */
   placeholder?: string
