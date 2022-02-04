@@ -198,7 +198,7 @@ export const Combobox = ({
   return (
     <FormControl>
       <FormLabel {...getLabelProps()}>Test</FormLabel>
-      <Box {...getComboboxProps()}>
+      <Box {...getComboboxProps()} pos="relative">
         <Flex>
           <InputGroup>
             <Input
@@ -235,8 +235,6 @@ export const Combobox = ({
             />
           ) : null}
         </Flex>
-      </Box>
-      <Box pb={4} mb={4}>
         <List sx={style.list} {...getMenuProps()}>
           {isOpen &&
             filteredItems.map((item, index) => (
@@ -259,6 +257,7 @@ export const Combobox = ({
           ) : null}
         </List>
       </Box>
+      Test
     </FormControl>
   )
 }

@@ -10,6 +10,7 @@ import { Input } from './Input'
 import { Menu } from './Menu'
 
 const parts = anatomy('combobox').parts(
+  'container',
   'list',
   'item',
   'field',
@@ -33,9 +34,18 @@ export const Combobox: ComponentMultiStyleConfig<typeof parts> = {
     } as CSSObject)
 
     return {
+      container: {
+        pos: 'relative',
+      },
       list: merge(chakraMenuBaseStyle.list, themeMenuBaseStyle.list, {
         mt: '0.5rem',
-      }),
+        top: '100%',
+        pos: 'absolute',
+        width: '100%',
+        zIndex: 1,
+        maxH: '10rem',
+        overflowY: 'auto',
+      } as CSSObject),
       field: theme.components.Input.baseStyle.field,
       item: itemStyle,
       clearbutton: {

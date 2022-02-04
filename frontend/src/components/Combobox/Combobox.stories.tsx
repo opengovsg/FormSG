@@ -38,6 +38,26 @@ Default.args = {
       value: 'D',
       label: 'D',
     },
+    {
+      value: 'A1',
+      label: 'A1',
+    },
+    {
+      value: 'B2',
+      label: 'B2',
+    },
+    {
+      value: 'Bat3',
+      label: 'Bat3',
+    },
+    {
+      value: 'C4',
+      label: 'C4',
+    },
+    {
+      value: 'D5',
+      label: 'D5',
+    },
   ],
   value: '',
 }
