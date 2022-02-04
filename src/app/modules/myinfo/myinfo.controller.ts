@@ -196,9 +196,20 @@ export const loginToMyInfo: ControllerHandler<
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
   const { formId, cookieDuration, encodedQuery } = parseStateResult.value
-  const redirectDestination = encodedQuery
-    ? `/${formId}?${Buffer.from(encodedQuery, 'base64').toString('utf8')}`
-    : `/${formId}`
+
+  let redirectDestination = `/${formId}`
+
+  if (encodedQuery) {
+    try {
+      redirectDestination = `/${formId}?${Buffer.from(
+        encodedQuery,
+        'base64',
+      ).toString('utf8')}`
+    } catch {
+      // Buffer.from might throw an error if there is a badly encoded
+      // string, in which case we will fall back to the default.
+    }
+  }
 
   // Ensure form exists
   const formResult = await FormService.retrieveFullFormById(formId)
