@@ -12,60 +12,20 @@ import {
   Text,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
-import { isString } from '@chakra-ui/utils'
 import { useCombobox } from 'downshift'
-import { matchSorter } from 'match-sorter'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
-export type ComboboxItem =
-  | {
-      /** Value to be passed to onChange */
-      value: string
-      /** Label to render on input when selected. `value` will be used if this is not provided */
-      label?: string
-      /** Description to render below label if provided */
-      description?: string
-      /** Whether item is disabled */
-      disabled?: boolean
-
-      [key: string]: any
-    }
-  | string
-  | null
-
-const defaultFilter = <Item extends ComboboxItem>(
-  items: Item[],
-  value: string,
-) => {
-  return matchSorter(items, value, { keys: ['value', 'label'] })
-}
-
-const itemIsObject = (
-  item: ComboboxItem,
-): item is Exclude<ComboboxItem, string | null> => {
-  return !!item && !isString(item)
-}
-
-const itemToLabelString = <Item extends ComboboxItem>(item: Item): string => {
-  if (!itemIsObject(item)) {
-    return item ?? ''
-  }
-  return item.label ?? item.value
-}
-
-const isItemDisabled = <Item extends ComboboxItem>(item: Item): boolean => {
-  return itemIsObject(item) && !!item.disabled
-}
-
-const itemToDescriptionString = <Item extends ComboboxItem>(
-  item: Item,
-): string | undefined => {
-  return itemIsObject(item) ? item.description : undefined
-}
+import { ComboboxItem } from './types'
+import {
+  defaultFilter,
+  isItemDisabled,
+  itemToDescriptionString,
+  itemToLabelString,
+} from './utils'
 
 export interface ComboboxProps<Item = ComboboxItem, Value = string> {
   /** Select data used to renderer items in dropdown */
