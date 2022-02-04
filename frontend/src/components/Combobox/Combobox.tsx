@@ -1,7 +1,10 @@
 import { useCallback, useMemo, useState } from 'react'
+import { BiX } from 'react-icons/bi'
 import {
   Box,
+  Flex,
   FormControl,
+  Icon,
   InputGroup,
   InputRightElement,
   List,
@@ -11,8 +14,10 @@ import { isString } from '@chakra-ui/utils'
 import { useCombobox } from 'downshift'
 import { matchSorter } from 'match-sorter'
 
-import Button from '~components/Button'
+import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
+import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import FormLabel from '~components/FormControl/FormLabel'
+import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
 export type ComboboxItem =
@@ -96,6 +101,9 @@ export interface ComboboxProps<Item = ComboboxItem, Value = string> {
 
   /** Change dropdown component, can be used to add native scrollbars */
   dropdownComponent?: any
+
+  /** Placeholder to show in the input field. Defaults to "Select an option". */
+  placeholder?: string
 }
 
 export const Combobox = ({
@@ -104,6 +112,8 @@ export const Combobox = ({
   value,
   onChange,
   defaultIsOpen,
+  isClearable,
+  placeholder = 'Select an option',
 }: ComboboxProps): JSX.Element => {
   const [filteredItems, setFilteredItems] = useState(items)
 
@@ -137,7 +147,6 @@ export const Combobox = ({
 
   const {
     isOpen,
-    getToggleButtonProps,
     getLabelProps,
     getMenuProps,
     getInputProps,
@@ -146,6 +155,7 @@ export const Combobox = ({
     getItemProps,
     openMenu,
     selectedItem,
+    selectItem,
   } = useCombobox({
     items: filteredItems,
     defaultIsOpen,
@@ -191,31 +201,45 @@ export const Combobox = ({
     <FormControl>
       <FormLabel {...getLabelProps()}>Test</FormLabel>
       <Box {...getComboboxProps()}>
-        <InputGroup>
-          <Input
-            {...getInputProps({
-              onFocus: () => {
-                if (!isOpen) {
-                  openMenu()
-                }
-              },
-              onClick: () => {
-                if (!isOpen) {
-                  openMenu()
-                }
-              },
-            })}
-          />
-          <InputRightElement>
-            <Button
-              h="1.75rem"
-              size="sm"
-              {...getToggleButtonProps({ tabIndex: 0 })}
-            >
-              {isOpen ? 'Hide' : 'Show'}
-            </Button>
-          </InputRightElement>
-        </InputGroup>
+        <Flex>
+          <InputGroup>
+            <Input
+              placeholder={placeholder}
+              borderRightRadius={isClearable ? 0 : undefined}
+              {...getInputProps({
+                onFocus: () => {
+                  if (!isOpen) {
+                    openMenu()
+                  }
+                },
+                onClick: () => {
+                  if (!isOpen) {
+                    openMenu()
+                  }
+                },
+              })}
+            />
+            <InputRightElement>
+              <Icon
+                as={isOpen ? BxsChevronUp : BxsChevronDown}
+                fontSize="1.25rem"
+                color="secondary.500"
+              />
+            </InputRightElement>
+          </InputGroup>
+          {isClearable ? (
+            <IconButton
+              variant="outline"
+              colorScheme="secondary"
+              borderColor="neutral.400"
+              borderLeftRadius={0}
+              ml="-1px"
+              aria-label="Clear dropdown"
+              icon={<BiX />}
+              onClick={() => selectItem(null)}
+            />
+          ) : null}
+        </Flex>
       </Box>
       <Box pb={4} mb={4}>
         <List
