@@ -9,8 +9,10 @@ import {
   InputRightElement,
   List,
   ListItem,
+  useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { isString } from '@chakra-ui/utils'
+import { hover } from '@testing-library/user-event/dist/hover'
 import { useCombobox } from 'downshift'
 import { matchSorter } from 'match-sorter'
 
@@ -63,57 +65,49 @@ export interface ComboboxProps<Item = ComboboxItem, Value = string> {
   /** Initial dropdown opened state */
   defaultIsOpen?: boolean
 
-  /** Called when dropdown is opened */
-  onDropdownOpen?(): void
-
-  /** Called when dropdown is closed */
-  onDropdownClose?(): void
-
   /** Limit amount of items displayed at a time for searchable select */
   limit?: number
 
-  /** Nothing found label */
+  /** Nothing found label. Defaults to "No matching results" */
   nothingFoundLabel?: React.ReactNode
 
-  /** Set to true to enable search */
+  /** Set to true to enable search, defaults to `true` */
   isSearchable?: boolean
 
-  /** Allow to clear item */
+  /** Allow to clear item, defaults to `true` */
   isClearable?: boolean
 
-  /** aria-label for clear button */
+  /** aria-label for clear button. Defaults to "Clear dropdown" */
   clearButtonLabel?: string
 
-  /** Called each time search value changes */
-  onSearchChange?(query: string): void
+  // /** Allow creatable option  */
+  // isCreatable?: boolean
 
-  /** Allow creatable option  */
-  isCreatable?: boolean
+  // /** Function to get create Label */
+  // getCreateLabel?: (query: string) => React.ReactNode
 
-  /** Function to get create Label */
-  getCreateLabel?: (query: string) => React.ReactNode
+  // /** Function to determine if create label should be displayed */
+  // shouldCreate?: (query: string, data: Item[]) => boolean
 
-  /** Function to determine if create label should be displayed */
-  shouldCreate?: (query: string, data: Item[]) => boolean
-
-  /** Called when create option is selected */
-  onCreate?: (query: string) => void
-
-  /** Change dropdown component, can be used to add native scrollbars */
-  dropdownComponent?: any
+  // /** Called when create option is selected */
+  // onCreate?: (query: string) => void
 
   /** Placeholder to show in the input field. Defaults to "Select an option". */
   placeholder?: string
 }
 
 export const Combobox = ({
+  limit,
+  nothingFoundLabel = 'No matching results',
   items,
   filter = defaultFilter,
   value,
   onChange,
   defaultIsOpen,
-  isClearable,
+  isClearable = true,
+  isSearchable = true,
   placeholder = 'Select an option',
+  clearButtonLabel = 'Clear dropdown',
 }: ComboboxProps): JSX.Element => {
   const [filteredItems, setFilteredItems] = useState(items)
 
@@ -136,13 +130,13 @@ export const Combobox = ({
         !inputValue ||
         (selectedItem && inputValue === itemToString(selectedItem))
       ) {
-        setFilteredItems(items)
+        setFilteredItems(limit ? items.slice(0, limit) : items)
       } else {
         const filteredItems = filter(items, inputValue ?? '')
-        setFilteredItems(filteredItems)
+        setFilteredItems(limit ? filteredItems.slice(0, limit) : filteredItems)
       }
     },
-    [filter, items],
+    [filter, items, limit],
   )
 
   const {
@@ -151,8 +145,8 @@ export const Combobox = ({
     getMenuProps,
     getInputProps,
     getComboboxProps,
-    highlightedIndex,
     getItemProps,
+    getToggleButtonProps,
     openMenu,
     selectedItem,
     selectItem,
@@ -197,6 +191,10 @@ export const Combobox = ({
     },
   })
 
+  const style = useMultiStyleConfig('Combobox', {
+    isClearable,
+  })
+
   return (
     <FormControl>
       <FormLabel {...getLabelProps()}>Test</FormLabel>
@@ -204,8 +202,9 @@ export const Combobox = ({
         <Flex>
           <InputGroup>
             <Input
+              isReadOnly={!isSearchable}
+              sx={style.field}
               placeholder={placeholder}
-              borderRightRadius={isClearable ? 0 : undefined}
               {...getInputProps({
                 onFocus: () => {
                   if (!isOpen) {
@@ -222,19 +221,15 @@ export const Combobox = ({
             <InputRightElement>
               <Icon
                 as={isOpen ? BxsChevronUp : BxsChevronDown}
-                fontSize="1.25rem"
-                color="secondary.500"
+                sx={style.chevron}
+                {...getToggleButtonProps()}
               />
             </InputRightElement>
           </InputGroup>
           {isClearable ? (
             <IconButton
-              variant="outline"
-              colorScheme="secondary"
-              borderColor="neutral.400"
-              borderLeftRadius={0}
-              ml="-1px"
-              aria-label="Clear dropdown"
+              sx={style.clearbutton}
+              aria-label={clearButtonLabel}
               icon={<BiX />}
               onClick={() => selectItem(null)}
             />
@@ -242,29 +237,28 @@ export const Combobox = ({
         </Flex>
       </Box>
       <Box pb={4} mb={4}>
-        <List
-          bg="white"
-          borderRadius="4px"
-          border={isOpen && '1px solid rgba(0,0,0,0.1)'}
-          boxShadow="6px 5px 8px rgba(0,50,30,0.02)"
-          {...getMenuProps()}
-        >
+        <List sx={style.list} {...getMenuProps()}>
           {isOpen &&
             filteredItems.map((item, index) => (
               <ListItem
-                px={2}
-                py={1}
-                borderBottom="1px solid rgba(0,0,0,0.01)"
-                bg={highlightedIndex === index ? 'neutral.300' : 'inherit'}
+                sx={style.item}
+                // Data attributes are unique, any value will be truthy.
+                // We want to not even have the tag if falsey.
+                // This adds _active styling to the item.
+                data-active={selectedItem === item || undefined}
                 key={`${itemToString(item)}${index}`}
                 {...getItemProps({ item, index })}
               >
                 {itemToString(item)}
               </ListItem>
             ))}
+          {isOpen && filteredItems.length === 0 ? (
+            <ListItem role="option" sx={style.emptyItem}>
+              {nothingFoundLabel}
+            </ListItem>
+          ) : null}
         </List>
       </Box>
-      Selected item: {itemToString(selectedItem)}
     </FormControl>
   )
 }
