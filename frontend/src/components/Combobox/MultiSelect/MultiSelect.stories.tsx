@@ -1,8 +1,9 @@
 import { useArgs } from '@storybook/client-api'
 import { Meta, Story } from '@storybook/react'
 
+import { ComboboxItem } from '../types'
+
 import { MultiSelect, MultiSelectProps } from './MultiSelect'
-import { ComboboxItem } from './types'
 
 const INITIAL_COMBOBOX_ITEMS: ComboboxItem[] = [
   {

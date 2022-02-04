@@ -14,8 +14,12 @@ import { UseComboboxPropGetters } from 'downshift'
 import { BxCheckAnimated } from '~assets/icons'
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 
-import { ComboboxItem } from './types'
-import { itemToDescriptionString, itemToIcon, itemToLabelString } from './utils'
+import { ComboboxItem } from '../types'
+import {
+  itemToDescriptionString,
+  itemToIcon,
+  itemToLabelString,
+} from '../utils'
 
 export interface MultiDropdownItemProps {
   item: ComboboxItem

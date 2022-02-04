@@ -19,10 +19,10 @@ import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
-import { DropdownItem } from './DropdownItem'
+import { ComboboxItem } from '../types'
+import { defaultFilter, itemToIcon, itemToLabelString } from '../utils'
+
 import { MultiDropdownItem } from './MultiDropdownItem'
-import { ComboboxItem } from './types'
-import { defaultFilter, itemToIcon, itemToLabelString } from './utils'
 
 export interface MultiSelectProps<Item = ComboboxItem, Value = string> {
   /** Select data used to renderer items in dropdown */
