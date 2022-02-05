@@ -23,6 +23,7 @@ import { ComboboxItem } from '../types'
 import { defaultFilter, itemToLabelString } from '../utils'
 
 import { MultiDropdownItem } from './MultiDropdownItem'
+import { SelectedItems } from './SelectedItems'
 import { SelectedItemTag } from './SelectedItemTag'
 
 export interface MultiSelectProps<Item = ComboboxItem, Value = string> {
@@ -208,24 +209,11 @@ export const MultiSelect = ({
   return (
     <Box ref={setReferenceElement} sx={style.container}>
       <Flex {...getComboboxProps()} flexWrap="wrap" sx={style.fieldwrapper}>
-        {selectedItems.length !== 0 ? (
-          <Wrap
-            shouldWrapChildren
-            direction="row"
-            spacing="0.25rem"
-            p="0.375rem"
-            marginEnd="-0.375rem"
-          >
-            {selectedItems.map((selectedItem, index) => (
-              <SelectedItemTag
-                key={`selected-item-${index}`}
-                label={itemToLabelString(selectedItem)}
-                {...getSelectedItemProps({ selectedItem, index })}
-                onRemove={() => removeSelectedItem(selectedItem)}
-              />
-            ))}
-          </Wrap>
-        ) : null}
+        <SelectedItems
+          selectedItems={selectedItems}
+          getSelectedItemProps={getSelectedItemProps}
+          handleRemoveItem={removeSelectedItem}
+        />
         <Flex flex={1} minW="8rem">
           <InputGroup>
             <Input
