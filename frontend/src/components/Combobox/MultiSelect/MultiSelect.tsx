@@ -23,7 +23,7 @@ import { ComboboxItem } from '../types'
 import { defaultFilter, itemToLabelString } from '../utils'
 
 import { MultiDropdownItem } from './MultiDropdownItem'
-import { SelectedOption } from './SelectedOption'
+import { SelectedItemTag } from './SelectedItemTag'
 
 export interface MultiSelectProps<Item = ComboboxItem, Value = string> {
   /** Select data used to renderer items in dropdown */
@@ -217,7 +217,7 @@ export const MultiSelect = ({
             marginEnd="-0.375rem"
           >
             {selectedItems.map((selectedItem, index) => (
-              <SelectedOption
+              <SelectedItemTag
                 key={`selected-item-${index}`}
                 label={itemToLabelString(selectedItem)}
                 {...getSelectedItemProps({ selectedItem, index })}

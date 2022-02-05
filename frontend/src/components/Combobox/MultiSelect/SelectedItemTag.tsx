@@ -8,12 +8,12 @@ import {
   TagProps,
 } from '@chakra-ui/react'
 
-export interface SelectedOptionProps extends TagProps {
+export interface SelectedItemTagProps extends TagProps {
   label: string
   onRemove: () => void
 }
 
-export const SelectedOption = forwardRef<SelectedOptionProps, 'div'>(
+export const SelectedItemTag = forwardRef<SelectedItemTagProps, 'div'>(
   ({ label, onRemove, ...props }, ref): JSX.Element => {
     // TODO: Update Tag global theme instead of styling it in this component.
     return (
