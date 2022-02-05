@@ -18,13 +18,14 @@ export const SelectedItemTag = forwardRef<SelectedItemTagProps, 'div'>(
     // TODO: Update Tag global theme instead of styling it in this component.
     return (
       <Tag
+        title={label}
         colorScheme="secondary"
         px="0.5rem"
         py="0.375rem"
         color="secondary.500"
         {...props}
       >
-        <TagLabel ref={ref} textStyle="body-2">
+        <TagLabel isTruncated ref={ref} textStyle="body-2">
           {label}
         </TagLabel>
         <TagCloseButton

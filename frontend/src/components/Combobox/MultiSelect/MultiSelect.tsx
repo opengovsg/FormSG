@@ -10,7 +10,6 @@ import {
   List,
   ListItem,
   useMultiStyleConfig,
-  Wrap,
 } from '@chakra-ui/react'
 import { useCombobox, useMultipleSelection } from 'downshift'
 
@@ -24,7 +23,6 @@ import { defaultFilter, itemToLabelString } from '../utils'
 
 import { MultiDropdownItem } from './MultiDropdownItem'
 import { SelectedItems } from './SelectedItems'
-import { SelectedItemTag } from './SelectedItemTag'
 
 export interface MultiSelectProps<Item = ComboboxItem, Value = string> {
   /** Select data used to renderer items in dropdown */
@@ -214,7 +212,7 @@ export const MultiSelect = ({
           getSelectedItemProps={getSelectedItemProps}
           handleRemoveItem={removeSelectedItem}
         />
-        <Flex flex={1} minW="8rem">
+        <Flex w="100%">
           <InputGroup>
             <Input
               sx={style.field}

@@ -1,6 +1,8 @@
 import { useArgs } from '@storybook/client-api'
 import { Meta, Story } from '@storybook/react'
 
+import { viewports } from '~utils/storybook'
+
 import { ComboboxItem } from '../types'
 
 import { MultiSelect, MultiSelectProps } from './MultiSelect'
@@ -11,8 +13,8 @@ const INITIAL_COMBOBOX_ITEMS: ComboboxItem[] = [
     label: 'A',
   },
   {
-    value: 'B',
-    label: 'B',
+    value: 'What happens when the label is fairly long',
+    label: 'What happens when the label is fairly long',
   },
   {
     value: 'Bat',
@@ -66,3 +68,12 @@ const Template: Story<MultiSelectProps> = (args) => {
   return <MultiSelect {...args} values={values} onChange={onChange} />
 }
 export const Default = Template.bind({})
+
+export const MobileTruncatedOption = Template.bind({})
+MobileTruncatedOption.args = {}
+MobileTruncatedOption.parameters = {
+  viewport: {
+    defaultViewport: 'mobile1',
+  },
+  chromatic: { viewports: [viewports.xs] },
+}

@@ -1,4 +1,4 @@
-import { Wrap } from '@chakra-ui/react'
+import { Wrap, WrapItem } from '@chakra-ui/react'
 import { UseMultipleSelectionPropGetters } from 'downshift'
 
 import { ComboboxItem } from '../types'
@@ -21,19 +21,21 @@ export const SelectedItems = ({
 
   return (
     <Wrap
-      shouldWrapChildren
+      align="center"
       direction="row"
       spacing="0.25rem"
       p="0.375rem"
       marginEnd="-0.375rem"
+      maxW="100%"
     >
       {selectedItems.map((selectedItem, index) => (
-        <SelectedItemTag
-          key={`selected-item-${index}`}
-          label={itemToLabelString(selectedItem)}
-          {...getSelectedItemProps({ selectedItem, index })}
-          onRemove={() => handleRemoveItem(selectedItem)}
-        />
+        <WrapItem maxW="calc(100% - 0.25rem)" key={`selected-item-${index}`}>
+          <SelectedItemTag
+            label={itemToLabelString(selectedItem)}
+            {...getSelectedItemProps({ selectedItem, index, tabIndex: -1 })}
+            onRemove={() => handleRemoveItem(selectedItem)}
+          />
+        </WrapItem>
       ))}
     </Wrap>
   )
