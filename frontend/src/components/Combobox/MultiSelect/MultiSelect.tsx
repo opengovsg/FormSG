@@ -152,22 +152,12 @@ export const MultiSelect = ({
             isOpen: true,
           }
         case useCombobox.stateChangeTypes.InputBlur:
-          if (changes.inputValue) {
-            const selectedValue = items.find(
-              (item) => itemToLabelString(item) === changes.inputValue,
-            )
-            // Automatically add to selection if selected value is not already
-            // selected. If not, do nothing.
-            if (selectedValue && !selectedItems.includes(selectedValue)) {
-              addSelectedItem(selectedValue)
-            }
-            setInputValue('')
-            // Clear input regardless on blur.
-            return {
-              ...changes,
-              inputValue: '',
-              isOpen: false,
-            }
+          setInputValue('')
+          // Clear input regardless on blur.
+          return {
+            ...changes,
+            inputValue: '',
+            isOpen: false,
           }
       }
       return changes
