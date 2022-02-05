@@ -17,6 +17,7 @@ import { Input } from './Input'
 import { Link } from './Link'
 import { Menu } from './Menu'
 import { Modal } from './Modal'
+import { MultiSelect } from './MultiSelect'
 import { NumberInput } from './NumberInput'
 import { Pagination, PAGINATION_THEME_KEY } from './Pagination'
 import { PhoneNumberInput } from './PhoneNumberInput'
@@ -47,6 +48,7 @@ export const components = {
   InlineMessage,
   Modal,
   Menu,
+  MultiSelect,
   NumberInput,
   PhoneNumberInput,
   SingleCountryPhoneNumberInput,
