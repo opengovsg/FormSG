@@ -1,4 +1,4 @@
-import { useArgs } from '@storybook/client-api'
+import { useState } from 'react'
 import { Meta, Story } from '@storybook/react'
 
 import { viewports } from '~utils/storybook'
@@ -61,16 +61,24 @@ export default {
   },
 } as Meta<MultiSelectProps>
 
-const Template: Story<MultiSelectProps> = (args) => {
-  const [{ values }, updateArgs] = useArgs()
-  const onChange = (value: string[]) => updateArgs({ value })
+const Template: Story<MultiSelectProps> = ({ values: valuesProp, ...args }) => {
+  const [values, setValues] = useState<string[]>(valuesProp)
 
-  return <MultiSelect {...args} values={values} onChange={onChange} />
+  return <MultiSelect {...args} values={values} onChange={setValues} />
 }
 export const Default = Template.bind({})
 
+export const NotClearable = Template.bind({})
+NotClearable.args = {
+  isClearable: false,
+}
+
 export const MobileTruncatedOption = Template.bind({})
-MobileTruncatedOption.args = {}
+MobileTruncatedOption.args = {
+  values: ['What happens when the label is fairly long', 'Bat'],
+  defaultIsOpen: true,
+  isClearable: false,
+}
 MobileTruncatedOption.parameters = {
   viewport: {
     defaultViewport: 'mobile1',

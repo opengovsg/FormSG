@@ -12,6 +12,7 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { useCombobox, useMultipleSelection } from 'downshift'
+import keyBy from 'lodash/keyBy'
 import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
@@ -27,7 +28,7 @@ import { SelectedItems } from './SelectedItems'
 
 export interface MultiSelectProps<Item = ComboboxItem, Value = string> {
   /** Select data used to renderer items in dropdown */
-  items: (string | Item)[]
+  items: Item[]
 
   /** Controlled input values */
   values: Value[]
@@ -53,7 +54,7 @@ export interface MultiSelectProps<Item = ComboboxItem, Value = string> {
   /** Allow to clear item, defaults to `true` */
   isClearable?: boolean
 
-  /** aria-label for clear button. Defaults to "Clear dropdown" */
+  /** aria-label for clear button. Defaults to "Clear selected options" */
   clearButtonLabel?: string
 
   /** Placeholder to show in the input field. Defaults to "Select options". */
@@ -75,7 +76,7 @@ export const MultiSelect = ({
   isClearable = true,
   isSearchable = true,
   placeholder,
-  clearButtonLabel = 'Clear dropdown',
+  clearButtonLabel = 'Clear selected options',
 }: MultiSelectProps): JSX.Element => {
   const [filteredItems, setFilteredItems] = useState(items)
   const [inputValue, setInputValue] = useState('')
@@ -116,6 +117,22 @@ export const MultiSelect = ({
     [filter, items, limit],
   )
 
+  const labelToItemMap = useMemo(
+    () => keyBy(items, (item) => itemToLabelString(item)),
+    [items],
+  )
+
+  const getSelectedItemsFromValues = useCallback(() => {
+    const selectedItems: ComboboxItem[] = []
+    values.forEach((value) => {
+      const item = labelToItemMap[value]
+      if (item) {
+        selectedItems.push(item)
+      }
+    })
+    return selectedItems
+  }, [labelToItemMap, values])
+
   const {
     getSelectedItemProps,
     getDropdownProps,
@@ -124,8 +141,12 @@ export const MultiSelect = ({
     selectedItems,
     setSelectedItems,
   } = useMultipleSelection<ComboboxItem>({
-    // Recalculate dropdown position on item change, so dropdown and move with the container.
-    onSelectedItemsChange: () => updateDropdownPosition?.(),
+    selectedItems: getSelectedItemsFromValues(),
+    onSelectedItemsChange: ({ selectedItems }) => {
+      onChange(selectedItems?.map(itemToLabelString) ?? [])
+      // Recalculate dropdown position on item change, so dropdown and move with the container.
+      updateDropdownPosition?.()
+    },
     itemToString: itemToLabelString,
   })
 
