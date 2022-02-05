@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { BiX } from 'react-icons/bi'
 import { usePopper } from 'react-popper'
 import {
@@ -12,6 +12,7 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { useCombobox, useMultipleSelection } from 'downshift'
+import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -73,7 +74,7 @@ export const MultiSelect = ({
   defaultIsOpen,
   isClearable = true,
   isSearchable = true,
-  placeholder = 'Select options',
+  placeholder,
   clearButtonLabel = 'Clear dropdown',
 }: MultiSelectProps): JSX.Element => {
   const [filteredItems, setFilteredItems] = useState(items)
@@ -194,6 +195,16 @@ export const MultiSelect = ({
     },
   })
 
+  const dynamicPlaceholder = useMemo(() => {
+    if (placeholder) return placeholder
+
+    const numSelectedItems = selectedItems.length
+
+    return numSelectedItems > 0
+      ? simplur`${numSelectedItems} option[|s] selected`
+      : 'Select options'
+  }, [placeholder, selectedItems.length])
+
   const style = useMultiStyleConfig('MultiSelect', {
     isClearable,
   })
@@ -217,7 +228,7 @@ export const MultiSelect = ({
             <Input
               sx={style.field}
               isReadOnly={!isSearchable}
-              placeholder={placeholder}
+              placeholder={dynamicPlaceholder}
               {...getInputProps({
                 ...getDropdownProps(),
                 onFocus: handleMenuOpen,
