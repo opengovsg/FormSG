@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { BiX } from 'react-icons/bi'
 import { usePopper } from 'react-popper'
 import {
@@ -6,11 +6,11 @@ import {
   Flex,
   Icon,
   InputGroup,
-  InputLeftElement,
   InputRightElement,
   List,
   ListItem,
   useMultiStyleConfig,
+  Wrap,
 } from '@chakra-ui/react'
 import { useCombobox, useMultipleSelection } from 'downshift'
 
@@ -20,7 +20,7 @@ import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
 import { ComboboxItem } from '../types'
-import { defaultFilter, itemToIcon, itemToLabelString } from '../utils'
+import { defaultFilter, itemToLabelString } from '../utils'
 
 import { MultiDropdownItem } from './MultiDropdownItem'
 import { SelectedOption } from './SelectedOption'
@@ -56,7 +56,7 @@ export interface MultiSelectProps<Item = ComboboxItem, Value = string> {
   /** aria-label for clear button. Defaults to "Clear dropdown" */
   clearButtonLabel?: string
 
-  /** Placeholder to show in the input field. Defaults to "Select an option". */
+  /** Placeholder to show in the input field. Defaults to "Select options". */
   placeholder?: string
 
   /** ID of label for tagging input and dropdown to, for a11y purposes */
@@ -74,7 +74,7 @@ export const MultiSelect = ({
   defaultIsOpen,
   isClearable = true,
   isSearchable = true,
-  placeholder = 'Select an option',
+  placeholder = 'Select options',
   clearButtonLabel = 'Clear dropdown',
 }: MultiSelectProps): JSX.Element => {
   const [filteredItems, setFilteredItems] = useState(items)
@@ -122,9 +122,11 @@ export const MultiSelect = ({
     addSelectedItem,
     removeSelectedItem,
     selectedItems,
+    setSelectedItems,
   } = useMultipleSelection<ComboboxItem>({
     // Recalculate dropdown position on item change, so dropdown and move with the container.
     onSelectedItemsChange: () => updateDropdownPosition?.(),
+    itemToString: itemToLabelString,
   })
 
   const {
@@ -135,11 +137,10 @@ export const MultiSelect = ({
     getItemProps,
     getToggleButtonProps,
     openMenu,
-    selectedItem,
-    selectItem,
   } = useCombobox({
     labelId,
     inputValue,
+    defaultIsOpen,
     selectedItem: null,
     items: filteredItems,
     stateReducer: (_state, { changes, type }) => {
@@ -194,14 +195,9 @@ export const MultiSelect = ({
     },
   })
 
-  const style = useMultiStyleConfig('Combobox', {
+  const style = useMultiStyleConfig('MultiSelect', {
     isClearable,
   })
-
-  const selectedItemIcon = useMemo(
-    () => itemToIcon(selectedItem),
-    [selectedItem],
-  )
 
   const handleMenuOpen = useCallback(() => {
     if (!isOpen) {
@@ -211,39 +207,55 @@ export const MultiSelect = ({
 
   return (
     <Box ref={setReferenceElement} sx={style.container}>
-      <Flex {...getComboboxProps()}>
-        <InputGroup>
-          {selectedItemIcon ? (
-            <InputLeftElement pointerEvents="none">
-              <Icon sx={style.icon} as={selectedItemIcon} />
-            </InputLeftElement>
-          ) : null}
-          <Input
-            isReadOnly={!isSearchable}
-            sx={style.field}
-            placeholder={placeholder}
-            {...getInputProps({
-              ...getDropdownProps({ preventKeyAction: isOpen }),
-              onFocus: handleMenuOpen,
-              onClick: handleMenuOpen,
-            })}
-          />
-          <InputRightElement>
-            <Icon
-              as={isOpen ? BxsChevronUp : BxsChevronDown}
-              sx={style.icon}
-              {...getToggleButtonProps()}
-            />
-          </InputRightElement>
-        </InputGroup>
-        {isClearable ? (
-          <IconButton
-            sx={style.clearbutton}
-            aria-label={clearButtonLabel}
-            icon={<BiX />}
-            onClick={() => selectItem(null)}
-          />
+      <Flex {...getComboboxProps()} flexWrap="wrap" sx={style.fieldwrapper}>
+        {selectedItems.length !== 0 ? (
+          <Wrap
+            shouldWrapChildren
+            direction="row"
+            spacing="0.25rem"
+            p="0.375rem"
+            marginEnd="-0.375rem"
+          >
+            {selectedItems.map((selectedItem, index) => (
+              <SelectedOption
+                key={`selected-item-${index}`}
+                label={itemToLabelString(selectedItem)}
+                {...getSelectedItemProps({ selectedItem, index })}
+                onRemove={() => removeSelectedItem(selectedItem)}
+              />
+            ))}
+          </Wrap>
         ) : null}
+        <Flex flex={1} minW="8rem">
+          <InputGroup>
+            <Input
+              sx={style.field}
+              isReadOnly={!isSearchable}
+              placeholder={placeholder}
+              {...getInputProps({
+                ...getDropdownProps(),
+                onFocus: handleMenuOpen,
+                onClick: handleMenuOpen,
+              })}
+            />
+            <InputRightElement>
+              <Icon
+                as={isOpen ? BxsChevronUp : BxsChevronDown}
+                sx={style.icon}
+                {...getToggleButtonProps(getDropdownProps())}
+              />
+            </InputRightElement>
+          </InputGroup>
+          {isClearable ? (
+            <IconButton
+              variant="clear"
+              colorScheme="secondary"
+              aria-label={clearButtonLabel}
+              icon={<BiX />}
+              onClick={() => setSelectedItems([])}
+            />
+          ) : null}
+        </Flex>
       </Flex>
       <Box
         ref={setPopperElement}
@@ -275,17 +287,6 @@ export const MultiSelect = ({
             </ListItem>
           ) : null}
         </List>
-      </Box>
-      <Box>
-        Selected items:{' '}
-        {selectedItems.map((selectedItem, index) => (
-          <SelectedOption
-            key={`selected-item-${index}`}
-            label={itemToLabelString(selectedItem)}
-            {...getSelectedItemProps({ selectedItem, index })}
-            onRemove={() => removeSelectedItem(selectedItem)}
-          />
-        ))}
       </Box>
     </Box>
   )
