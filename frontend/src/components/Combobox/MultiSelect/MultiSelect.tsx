@@ -86,7 +86,11 @@ export const MultiSelect = ({
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
     null,
   )
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+  const {
+    styles,
+    attributes,
+    update: updateDropdownPosition,
+  } = usePopper(referenceElement, popperElement, {
     placement: 'bottom-start',
   })
 
@@ -118,7 +122,10 @@ export const MultiSelect = ({
     addSelectedItem,
     removeSelectedItem,
     selectedItems,
-  } = useMultipleSelection<ComboboxItem>()
+  } = useMultipleSelection<ComboboxItem>({
+    // Recalculate dropdown position on item change, so dropdown and move with the container.
+    onSelectedItemsChange: () => updateDropdownPosition?.(),
+  })
 
   const {
     isOpen,
