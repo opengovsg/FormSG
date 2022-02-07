@@ -4,6 +4,7 @@ import { usePopper } from 'react-popper'
 import {
   Box,
   Flex,
+  FormControlOptions,
   Icon,
   InputGroup,
   InputRightElement,
@@ -26,7 +27,8 @@ import { defaultFilter, itemToLabelString } from '../utils'
 import { MultiDropdownItem } from './MultiDropdownItem'
 import { SelectedItems } from './SelectedItems'
 
-export interface MultiSelectProps<Item = ComboboxItem, Value = string> {
+export interface MultiSelectProps<Item = ComboboxItem, Value = string>
+  extends FormControlOptions {
   /** Select data used to renderer items in dropdown */
   items: Item[]
 
@@ -70,11 +72,14 @@ export const MultiSelect = ({
   nothingFoundLabel = 'No matching results',
   items,
   filter = defaultFilter,
-  values,
+  values = [],
   onChange,
   defaultIsOpen,
   isClearable = true,
   isSearchable = true,
+  isInvalid,
+  isReadOnly,
+  isDisabled,
   placeholder,
   clearButtonLabel = 'Clear selected options',
 }: MultiSelectProps): JSX.Element => {
@@ -248,7 +253,9 @@ export const MultiSelect = ({
           <InputGroup>
             <Input
               sx={style.field}
-              isReadOnly={!isSearchable}
+              isReadOnly={!isSearchable || isReadOnly}
+              isInvalid={isInvalid}
+              isDisabled={isDisabled}
               placeholder={dynamicPlaceholder}
               {...getInputProps({
                 ...getDropdownProps(),
@@ -260,7 +267,12 @@ export const MultiSelect = ({
               <Icon
                 as={isOpen ? BxsChevronUp : BxsChevronDown}
                 sx={style.icon}
-                {...getToggleButtonProps(getDropdownProps())}
+                {...getToggleButtonProps(
+                  getDropdownProps({
+                    disabled: isDisabled,
+                    readOnly: isReadOnly,
+                  }),
+                )}
               />
             </InputRightElement>
           </InputGroup>
@@ -268,6 +280,7 @@ export const MultiSelect = ({
             <IconButton
               variant="clear"
               colorScheme="secondary"
+              isDisabled={isDisabled}
               aria-label={clearButtonLabel}
               icon={<BiX />}
               onClick={() => setSelectedItems([])}
@@ -280,9 +293,12 @@ export const MultiSelect = ({
         style={styles.popper}
         {...attributes.popper}
         w="100%"
+        zIndex="dropdown"
       >
         <List
           {...getMenuProps({
+            disabled: isDisabled,
+            readOnly: isReadOnly,
             'aria-label': 'Dropdown list',
           })}
           sx={style.list}
