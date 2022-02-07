@@ -4,6 +4,7 @@ import { usePopper } from 'react-popper'
 import {
   Box,
   Flex,
+  FormControlOptions,
   forwardRef,
   Icon,
   InputGroup,
@@ -29,7 +30,8 @@ import {
   itemToValue,
 } from './utils'
 
-export interface ComboboxProps<Item = ComboboxItem, Value = string> {
+export interface ComboboxProps<Item = ComboboxItem, Value = string>
+  extends FormControlOptions {
   /** Select data used to renderer items in dropdown */
   items: (string | Item)[]
 
@@ -65,10 +67,6 @@ export interface ComboboxProps<Item = ComboboxItem, Value = string> {
 
   /** ID of label for tagging input and dropdown to, for a11y purposes */
   labelId?: string
-
-  isInvalid?: boolean
-  isReadOnly?: boolean
-  isDisabled?: boolean
 }
 
 export const Combobox = forwardRef<ComboboxProps, 'input'>(
