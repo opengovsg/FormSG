@@ -21,7 +21,12 @@ import Input from '~components/Input'
 
 import { DropdownItem } from './DropdownItem'
 import { ComboboxItem } from './types'
-import { defaultFilter, itemToIcon, itemToLabelString } from './utils'
+import {
+  defaultFilter,
+  itemToIcon,
+  itemToLabelString,
+  itemToValue,
+} from './utils'
 
 export interface ComboboxProps<Item = ComboboxItem, Value = string> {
   /** Select data used to renderer items in dropdown */
@@ -67,7 +72,7 @@ export const Combobox = ({
   nothingFoundLabel = 'No matching results',
   items,
   filter = defaultFilter,
-  value,
+  value = '',
   onChange,
   defaultIsOpen,
   isClearable = true,
@@ -88,7 +93,7 @@ export const Combobox = ({
 
   // To prepopulate selected item if value is provided.
   const getDefaultSelectedValue = useCallback(
-    () => items.find((item) => itemToLabelString(item) === value),
+    () => items.find((item) => itemToValue(item) === value),
     [items, value],
   )
 
@@ -103,7 +108,7 @@ export const Combobox = ({
       // Set to show all items when something is already selected, or if input is empty
       if (
         !inputValue ||
-        (selectedItem && inputValue === itemToLabelString(selectedItem))
+        (selectedItem && inputValue === itemToValue(selectedItem))
       ) {
         setFilteredItems(limit ? items.slice(0, limit) : items)
       } else {
@@ -136,7 +141,7 @@ export const Combobox = ({
       onChange(inputValue ?? '')
     },
     onSelectedItemChange: ({ selectedItem }) => {
-      onChange(itemToLabelString(selectedItem ?? ''))
+      onChange(itemToValue(selectedItem ?? ''))
     },
     stateReducer: (_state, { changes, type }) => {
       switch (type) {
@@ -232,7 +237,7 @@ export const Combobox = ({
           {isOpen &&
             filteredItems.map((item, index) => (
               <DropdownItem
-                key={`${itemToLabelString(item)}${index}`}
+                key={`${itemToValue(item)}${index}`}
                 item={item}
                 index={index}
                 isActive={selectedItem === item || undefined}

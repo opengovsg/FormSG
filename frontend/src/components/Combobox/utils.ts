@@ -16,9 +16,18 @@ export const defaultFilter = <Item extends ComboboxItem>(
   return matchSorter(items, value, { keys: ['value', 'label'] })
 }
 
+export const itemToValue = <Item extends ComboboxItem>(item?: Item): string => {
+  if (!item) return ''
+  if (!itemIsObject(item)) {
+    return item ?? ''
+  }
+  return item.value
+}
+
 export const itemToLabelString = <Item extends ComboboxItem>(
-  item: Item,
+  item?: Item,
 ): string => {
+  if (!item) return ''
   if (!itemIsObject(item)) {
     return item ?? ''
   }
