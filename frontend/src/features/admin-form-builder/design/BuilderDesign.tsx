@@ -4,20 +4,20 @@ import { Box, Flex } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
-import { FieldRowContainer } from './FieldRow/FieldRowContainer'
-import { BuilderContentPlaceholder } from './BuilderContentPlaceholder'
+import { BuilderDesignPlaceholder } from './components/BuilderDesignPlaceholder'
+import FieldRow from './components/FieldRow'
 import { FIELD_LIST_DROP_ID } from './constants'
 import { useEditFieldStore } from './editFieldStore'
-import { DndPlaceholderProps } from './FormBuilderPage'
+import { DndPlaceholderProps } from './types'
 import { useBuilderFormFields } from './useBuilderFormFields'
 
-interface BuilderContentProps {
+interface BuilderDesignProps {
   placeholderProps: DndPlaceholderProps
 }
 
-export const BuilderContent = ({
+export const BuilderDesign = ({
   placeholderProps,
-}: BuilderContentProps): JSX.Element => {
+}: BuilderDesignProps): JSX.Element => {
   const { clearActiveField, clearFieldToCreate } = useEditFieldStore(
     useCallback((state) => {
       return {
@@ -65,7 +65,7 @@ export const BuilderContent = ({
                 <BuilderFields fields={builderFields} />
                 {provided.placeholder}
                 {snapshot.isDraggingOver ? (
-                  <BuilderContentPlaceholder
+                  <BuilderDesignPlaceholder
                     placeholderProps={placeholderProps}
                   />
                 ) : null}
@@ -87,7 +87,7 @@ const BuilderFields = memo(
     return (
       <>
         {fields.map((f, i) => (
-          <FieldRowContainer index={i} key={f._id} field={f} />
+          <FieldRow index={i} key={f._id} field={f} />
         ))}
       </>
     )

@@ -11,9 +11,9 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import { SectionFieldSchema } from '~templates/Field/Section/SectionFieldContainer'
 
-import { useEditFieldStore } from '../editFieldStore'
-import { useMutateFormFields } from '../mutations'
-import { isPendingFormField } from '../utils'
+import { useEditFieldStore } from '../../../editFieldStore'
+import { useMutateFormFields } from '../../../mutations'
+import { isPendingFormField } from '../../../utils'
 
 import { DrawerContentContainer } from './DrawerContentContainer'
 import { FormFieldDrawerActions } from './FormFieldDrawerActions'

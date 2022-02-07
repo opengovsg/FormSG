@@ -22,8 +22,8 @@ import {
   activeFieldSelector,
   updateFieldSelector,
   useEditFieldStore,
-} from '../editFieldStore'
-import { adminFormFieldKeys } from '../mutations'
+} from '../../editFieldStore'
+import { adminFormFieldKeys } from '../../mutations'
 
 import { SectionFieldRow } from './SectionFieldRow'
 

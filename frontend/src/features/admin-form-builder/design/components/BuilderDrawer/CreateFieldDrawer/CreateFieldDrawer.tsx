@@ -16,14 +16,14 @@ import { Tab } from '~components/Tabs'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { BuilderDrawerCloseButton } from '../FieldRow/BuilderDrawerCloseButton'
-
 import {
   CREATE_FIELD_DROP_ID,
   CREATE_FIELD_FIELDS_ORDERED,
   CREATE_PAGE_DROP_ID,
   CREATE_PAGE_FIELDS_ORDERED,
-} from './constants'
+} from '../../../constants'
+import { BuilderDrawerCloseButton } from '../BuilderDrawerCloseButton'
+
 import { DraggableCreateFieldOption } from './CreateFieldOption'
 
 export const CreateFieldDrawer = (): JSX.Element => {

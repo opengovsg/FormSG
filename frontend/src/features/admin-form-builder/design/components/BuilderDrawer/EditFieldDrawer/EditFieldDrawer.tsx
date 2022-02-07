@@ -10,9 +10,9 @@ import {
   activeFieldSelector,
   clearActiveFieldSelector,
   useEditFieldStore,
-} from '../editFieldStore'
-import { BuilderDrawerCloseButton } from '../FieldRow/BuilderDrawerCloseButton'
-import { transformBasicFieldToText } from '../utils'
+} from '../../../editFieldStore'
+import { transformBasicFieldToText } from '../../../utils'
+import { BuilderDrawerCloseButton } from '../BuilderDrawerCloseButton'
 
 import { EditCheckbox } from './EditCheckbox'
 import { EditHeader } from './EditHeader'
