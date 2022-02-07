@@ -4,6 +4,7 @@ import { usePopper } from 'react-popper'
 import {
   Box,
   Flex,
+  forwardRef,
   Icon,
   InputGroup,
   InputLeftElement,
@@ -66,189 +67,197 @@ export interface ComboboxProps<Item = ComboboxItem, Value = string> {
   labelId?: string
 }
 
-export const Combobox = ({
-  labelId,
-  limit,
-  nothingFoundLabel = 'No matching results',
-  items,
-  filter = defaultFilter,
-  value = '',
-  onChange,
-  defaultIsOpen,
-  isClearable = true,
-  isSearchable = true,
-  placeholder = 'Select an option',
-  clearButtonLabel = 'Clear dropdown',
-}: ComboboxProps): JSX.Element => {
-  const [filteredItems, setFilteredItems] = useState(items)
+export const Combobox = forwardRef<ComboboxProps, 'input'>(
+  (
+    {
+      labelId,
+      limit,
+      nothingFoundLabel = 'No matching results',
+      items,
+      filter = defaultFilter,
+      value = '',
+      onChange,
+      defaultIsOpen,
+      isClearable = true,
+      isSearchable = true,
+      placeholder = 'Select an option',
+      clearButtonLabel = 'Clear dropdown',
+    },
+    ref,
+  ): JSX.Element => {
+    const [filteredItems, setFilteredItems] = useState(items)
 
-  const [referenceElement, setReferenceElement] =
-    useState<HTMLDivElement | null>(null)
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
-    null,
-  )
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    placement: 'bottom-start',
-  })
+    const [referenceElement, setReferenceElement] =
+      useState<HTMLDivElement | null>(null)
+    const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
+      null,
+    )
+    const { styles, attributes } = usePopper(referenceElement, popperElement, {
+      placement: 'bottom-start',
+    })
 
-  // To prepopulate selected item if value is provided.
-  const getDefaultSelectedValue = useCallback(
-    () => items.find((item) => itemToValue(item) === value),
-    [items, value],
-  )
+    // To prepopulate selected item if value is provided.
+    const getDefaultSelectedValue = useCallback(
+      () => items.find((item) => itemToValue(item) === value),
+      [items, value],
+    )
 
-  const regenFilteredItems = useCallback(
-    ({
-      inputValue,
+    const regenFilteredItems = useCallback(
+      ({
+        inputValue,
+        selectedItem,
+      }: {
+        inputValue?: string
+        selectedItem?: ComboboxItem
+      }) => {
+        // Set to show all items when something is already selected, or if input is empty
+        if (
+          !inputValue ||
+          (selectedItem && inputValue === itemToValue(selectedItem))
+        ) {
+          setFilteredItems(limit ? items.slice(0, limit) : items)
+        } else {
+          const filteredItems = filter(items, inputValue ?? '')
+          setFilteredItems(
+            limit ? filteredItems.slice(0, limit) : filteredItems,
+          )
+        }
+      },
+      [filter, items, limit],
+    )
+
+    const {
+      isOpen,
+      getMenuProps,
+      getInputProps,
+      getComboboxProps,
+      getItemProps,
+      getToggleButtonProps,
+      openMenu,
       selectedItem,
-    }: {
-      inputValue?: string
-      selectedItem?: ComboboxItem
-    }) => {
-      // Set to show all items when something is already selected, or if input is empty
-      if (
-        !inputValue ||
-        (selectedItem && inputValue === itemToValue(selectedItem))
-      ) {
-        setFilteredItems(limit ? items.slice(0, limit) : items)
-      } else {
-        const filteredItems = filter(items, inputValue ?? '')
-        setFilteredItems(limit ? filteredItems.slice(0, limit) : filteredItems)
-      }
-    },
-    [filter, items, limit],
-  )
-
-  const {
-    isOpen,
-    getMenuProps,
-    getInputProps,
-    getComboboxProps,
-    getItemProps,
-    getToggleButtonProps,
-    openMenu,
-    selectedItem,
-    selectItem,
-  } = useCombobox({
-    labelId,
-    items: filteredItems,
-    defaultIsOpen,
-    inputValue: value,
-    defaultSelectedItem: getDefaultSelectedValue(),
-    itemToString: itemToLabelString,
-    onInputValueChange: ({ inputValue, selectedItem }) => {
-      regenFilteredItems({ inputValue, selectedItem })
-      onChange(inputValue ?? '')
-    },
-    onSelectedItemChange: ({ selectedItem }) => {
-      onChange(itemToValue(selectedItem ?? ''))
-    },
-    stateReducer: (_state, { changes, type }) => {
-      switch (type) {
-        case useCombobox.stateChangeTypes.InputBlur: {
-          // Clear input if nothing is selected, or set input to selected item value
-          const updatedInputValue = itemToValue(changes.selectedItem)
-          onChange(updatedInputValue)
-          return {
-            ...changes,
-            inputValue: updatedInputValue,
-            selectedItem: changes.selectedItem ?? null,
-            isOpen: false,
+      selectItem,
+    } = useCombobox({
+      labelId,
+      items: filteredItems,
+      defaultIsOpen,
+      inputValue: value,
+      defaultSelectedItem: getDefaultSelectedValue(),
+      itemToString: itemToLabelString,
+      onInputValueChange: ({ inputValue, selectedItem }) => {
+        regenFilteredItems({ inputValue, selectedItem })
+        onChange(inputValue ?? '')
+      },
+      onSelectedItemChange: ({ selectedItem }) => {
+        onChange(itemToValue(selectedItem ?? ''))
+      },
+      stateReducer: (_state, { changes, type }) => {
+        switch (type) {
+          case useCombobox.stateChangeTypes.InputBlur: {
+            // Clear input if nothing is selected, or set input to selected item value
+            const updatedInputValue = itemToValue(changes.selectedItem)
+            onChange(updatedInputValue)
+            return {
+              ...changes,
+              inputValue: updatedInputValue,
+              selectedItem: changes.selectedItem ?? null,
+              isOpen: false,
+            }
           }
+          case useCombobox.stateChangeTypes.FunctionOpenMenu: {
+            const { inputValue, selectedItem } = changes
+            regenFilteredItems({ inputValue, selectedItem })
+            return changes
+          }
+          default:
+            return changes
         }
-        case useCombobox.stateChangeTypes.FunctionOpenMenu: {
-          const { inputValue, selectedItem } = changes
-          regenFilteredItems({ inputValue, selectedItem })
-          return changes
-        }
-        default:
-          return changes
+      },
+    })
+
+    const style = useMultiStyleConfig('Combobox', {
+      isClearable,
+    })
+
+    const selectedItemIcon = useMemo(
+      () => itemToIcon(selectedItem),
+      [selectedItem],
+    )
+
+    const handleMenuOpen = useCallback(() => {
+      if (!isOpen) {
+        openMenu()
       }
-    },
-  })
+    }, [isOpen, openMenu])
 
-  const style = useMultiStyleConfig('Combobox', {
-    isClearable,
-  })
-
-  const selectedItemIcon = useMemo(
-    () => itemToIcon(selectedItem),
-    [selectedItem],
-  )
-
-  const handleMenuOpen = useCallback(() => {
-    if (!isOpen) {
-      openMenu()
-    }
-  }, [isOpen, openMenu])
-
-  return (
-    <Box ref={setReferenceElement} sx={style.container}>
-      <Flex {...getComboboxProps()}>
-        <InputGroup>
-          {selectedItemIcon ? (
-            <InputLeftElement pointerEvents="none">
-              <Icon sx={style.icon} as={selectedItemIcon} />
-            </InputLeftElement>
-          ) : null}
-          <Input
-            isReadOnly={!isSearchable}
-            sx={style.field}
-            placeholder={placeholder}
-            {...getInputProps({
-              onFocus: handleMenuOpen,
-              onClick: handleMenuOpen,
-            })}
-          />
-          <InputRightElement>
-            <Icon
-              as={isOpen ? BxsChevronUp : BxsChevronDown}
-              sx={style.icon}
-              {...getToggleButtonProps()}
+    return (
+      <Box ref={setReferenceElement} sx={style.container}>
+        <Flex {...getComboboxProps()}>
+          <InputGroup>
+            {selectedItemIcon ? (
+              <InputLeftElement pointerEvents="none">
+                <Icon sx={style.icon} as={selectedItemIcon} />
+              </InputLeftElement>
+            ) : null}
+            <Input
+              isReadOnly={!isSearchable}
+              sx={style.field}
+              placeholder={placeholder}
+              {...getInputProps({
+                onFocus: handleMenuOpen,
+                onClick: handleMenuOpen,
+                ref,
+              })}
             />
-          </InputRightElement>
-        </InputGroup>
-        {isClearable ? (
-          <IconButton
-            sx={style.clearbutton}
-            aria-label={clearButtonLabel}
-            icon={<BiX />}
-            onClick={() => selectItem(null)}
-          />
-        ) : null}
-      </Flex>
-      <Box
-        ref={setPopperElement}
-        style={styles.popper}
-        {...attributes.popper}
-        w="100%"
-        zIndex="dropdown"
-      >
-        <List
-          {...getMenuProps({
-            'aria-label': 'Dropdown list',
-          })}
-          sx={style.list}
-        >
-          {isOpen &&
-            filteredItems.map((item, index) => (
-              <DropdownItem
-                key={`${itemToValue(item)}${index}`}
-                item={item}
-                index={index}
-                isActive={selectedItem === item || undefined}
-                getItemProps={getItemProps}
-                iconStyles={style.icon}
-                itemStyles={style.item}
+            <InputRightElement>
+              <Icon
+                as={isOpen ? BxsChevronUp : BxsChevronDown}
+                sx={style.icon}
+                {...getToggleButtonProps()}
               />
-            ))}
-          {isOpen && filteredItems.length === 0 ? (
-            <ListItem role="option" sx={style.emptyItem}>
-              {nothingFoundLabel}
-            </ListItem>
+            </InputRightElement>
+          </InputGroup>
+          {isClearable ? (
+            <IconButton
+              sx={style.clearbutton}
+              aria-label={clearButtonLabel}
+              icon={<BiX />}
+              onClick={() => selectItem(null)}
+            />
           ) : null}
-        </List>
+        </Flex>
+        <Box
+          ref={setPopperElement}
+          style={styles.popper}
+          {...attributes.popper}
+          w="100%"
+          zIndex="dropdown"
+        >
+          <List
+            {...getMenuProps({
+              'aria-label': 'Dropdown list',
+            })}
+            sx={style.list}
+          >
+            {isOpen &&
+              filteredItems.map((item, index) => (
+                <DropdownItem
+                  key={`${itemToValue(item)}${index}`}
+                  item={item}
+                  index={index}
+                  isActive={selectedItem === item || undefined}
+                  getItemProps={getItemProps}
+                  iconStyles={style.icon}
+                  itemStyles={style.item}
+                />
+              ))}
+            {isOpen && filteredItems.length === 0 ? (
+              <ListItem role="option" sx={style.emptyItem}>
+                {nothingFoundLabel}
+              </ListItem>
+            ) : null}
+          </List>
+        </Box>
       </Box>
-    </Box>
-  )
-}
+    )
+  },
+)
