@@ -90,8 +90,6 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
     },
     ref,
   ): JSX.Element => {
-    const [filteredItems, setFilteredItems] = useState(items)
-
     const [referenceElement, setReferenceElement] =
       useState<HTMLDivElement | null>(null)
     const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
@@ -106,30 +104,14 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
       () => items.find((item) => itemToValue(item) === value),
       [items, value],
     )
+    const filteredItems = useMemo(() => {
+      if (!value) {
+        return limit ? items.slice(0, limit) : items
+      }
 
-    const regenFilteredItems = useCallback(
-      ({
-        inputValue,
-        selectedItem,
-      }: {
-        inputValue?: string
-        selectedItem?: ComboboxItem
-      }) => {
-        // Set to show all items when something is already selected, or if input is empty
-        if (
-          !inputValue ||
-          (selectedItem && inputValue === itemToValue(selectedItem))
-        ) {
-          setFilteredItems(limit ? items.slice(0, limit) : items)
-        } else {
-          const filteredItems = filter(items, inputValue ?? '')
-          setFilteredItems(
-            limit ? filteredItems.slice(0, limit) : filteredItems,
-          )
-        }
-      },
-      [filter, items, limit],
-    )
+      const filteredItems = filter(items, value ?? '')
+      return limit ? filteredItems.slice(0, limit) : filteredItems
+    }, [filter, items, limit, value])
 
     const {
       isOpen,
@@ -149,8 +131,7 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
       inputValue: value,
       defaultSelectedItem: getDefaultSelectedValue(),
       itemToString: itemToLabelString,
-      onInputValueChange: ({ inputValue, selectedItem }) => {
-        regenFilteredItems({ inputValue, selectedItem })
+      onInputValueChange: ({ inputValue }) => {
         onChange(inputValue ?? '')
       },
       onSelectedItemChange: ({ selectedItem }) => {
@@ -163,11 +144,6 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
               ...changes,
               isOpen: false,
             }
-          }
-          case useCombobox.stateChangeTypes.FunctionOpenMenu: {
-            const { inputValue, selectedItem } = changes
-            regenFilteredItems({ inputValue, selectedItem })
-            return changes
           }
           default:
             return changes
