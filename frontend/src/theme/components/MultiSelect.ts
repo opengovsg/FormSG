@@ -47,8 +47,14 @@ export const MultiSelect: ComponentMultiStyleConfig<typeof parts> = {
       fieldwrapper: theme.components.Input.baseStyle.field,
       item: itemStyle,
       icon: {
+        transitionProperty: 'common',
+        transitionDuration: 'normal',
         fontSize: '1.25rem',
         color: 'secondary.500',
+        _disabled: {
+          cursor: 'not-allowed',
+          color: 'neutral.500',
+        },
       },
       emptyItem: {
         ...itemStyle,
@@ -81,7 +87,13 @@ export const MultiSelect: ComponentMultiStyleConfig<typeof parts> = {
         } as CSSObject),
         fieldwrapper: {
           ...inputOutlineVariant,
-          _focusWithin: inputOutlineVariant._focus,
+          _focusWithin: {
+            ...inputOutlineVariant._focus,
+            _disabled: {
+              boxShadow: 'none',
+              borderColor: inputOutlineVariant.borderColor,
+            },
+          },
           borderRadius: '4px',
         },
         field: {
