@@ -141,6 +141,7 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
       openMenu,
       selectedItem,
       selectItem,
+      highlightedIndex,
     } = useCombobox({
       labelId,
       items: filteredItems,
@@ -258,9 +259,11 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
                   item={item}
                   index={index}
                   isActive={selectedItem === item || undefined}
+                  isSelected={highlightedIndex === index}
                   getItemProps={getItemProps}
                   iconStyles={style.icon}
                   itemStyles={style.item}
+                  inputValue={value}
                 />
               ))}
             {isOpen && filteredItems.length === 0 ? (

@@ -98,6 +98,11 @@ WithIconSelected.args = {
       description: 'This is an option with an icon',
     },
     {
+      value: 'Radio button button',
+      icon: BiRadioCircleMarked,
+      description: 'To show highlight effect between active and inactive',
+    },
+    {
       value: 'Section',
       icon: BiHeading,
       description: 'This is another option with an icon',
