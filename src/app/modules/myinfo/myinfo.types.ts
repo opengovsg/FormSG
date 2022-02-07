@@ -13,6 +13,7 @@ export interface IMyInfoRedirectURLArgs {
   formId: string
   formEsrvcId: string
   requestedAttributes: MyInfoAttribute[]
+  encodedQuery?: string
 }
 
 export type MyInfoHashPromises = Partial<
@@ -48,6 +49,7 @@ export type MyInfoCookiePayload =
 export type MyInfoRelayState = {
   uuid: string
   formId: string
+  encodedQuery?: string
 }
 
 /**
