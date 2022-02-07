@@ -65,6 +65,10 @@ export interface ComboboxProps<Item = ComboboxItem, Value = string> {
 
   /** ID of label for tagging input and dropdown to, for a11y purposes */
   labelId?: string
+
+  isInvalid?: boolean
+  isReadOnly?: boolean
+  isDisabled?: boolean
 }
 
 export const Combobox = forwardRef<ComboboxProps, 'input'>(
@@ -80,6 +84,9 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
       defaultIsOpen,
       isClearable = true,
       isSearchable = true,
+      isInvalid,
+      isReadOnly,
+      isDisabled,
       placeholder = 'Select an option',
       clearButtonLabel = 'Clear dropdown',
     },
@@ -186,7 +193,12 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
 
     return (
       <Box ref={setReferenceElement} sx={style.container}>
-        <Flex {...getComboboxProps()}>
+        <Flex
+          {...getComboboxProps({
+            disabled: isDisabled,
+            readOnly: isReadOnly,
+          })}
+        >
           <InputGroup>
             {selectedItemIcon ? (
               <InputLeftElement pointerEvents="none">
@@ -194,7 +206,9 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
               </InputLeftElement>
             ) : null}
             <Input
-              isReadOnly={!isSearchable}
+              isReadOnly={!isSearchable || isReadOnly}
+              isInvalid={isInvalid}
+              isDisabled={isDisabled}
               sx={style.field}
               placeholder={placeholder}
               {...getInputProps({
@@ -207,13 +221,17 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
               <Icon
                 as={isOpen ? BxsChevronUp : BxsChevronDown}
                 sx={style.icon}
-                {...getToggleButtonProps()}
+                {...getToggleButtonProps({
+                  disabled: isDisabled,
+                  readOnly: isReadOnly,
+                })}
               />
             </InputRightElement>
           </InputGroup>
           {isClearable ? (
             <IconButton
               sx={style.clearbutton}
+              isDisabled={isDisabled}
               aria-label={clearButtonLabel}
               icon={<BiX />}
               onClick={() => selectItem(null)}
@@ -229,6 +247,8 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
         >
           <List
             {...getMenuProps({
+              disabled: isDisabled,
+              readOnly: isReadOnly,
               'aria-label': 'Dropdown list',
             })}
             sx={style.list}

@@ -107,6 +107,16 @@ WithIconSelected.args = {
   defaultIsOpen: true,
 }
 
+export const Invalid = Template.bind({})
+Invalid.args = {
+  isInvalid: true,
+}
+
+export const Disabled = Template.bind({})
+Disabled.args = {
+  isDisabled: true,
+}
+
 export const Playground: Story<ComboboxProps> = ({ items }) => {
   const name = 'Dropdown'
   const {

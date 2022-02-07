@@ -58,6 +58,10 @@ export const Combobox: ComponentMultiStyleConfig<typeof parts> = {
       icon: {
         fontSize: '1.25rem',
         color: 'secondary.500',
+        _disabled: {
+          cursor: 'not-allowed',
+          color: 'neutral.500',
+        },
       },
       emptyItem: {
         ...itemStyle,
@@ -91,7 +95,22 @@ export const Combobox: ComponentMultiStyleConfig<typeof parts> = {
         },
         clearbutton: {
           ...Button.variants.outline({ ...props, colorScheme: 'secondary' }),
+          _hover: {
+            _disabled: {
+              bg: 'neutral.200',
+            },
+          },
+          _active: {
+            _disabled: {
+              bg: 'neutral.200',
+            },
+          },
           borderColor: 'neutral.400',
+          _disabled: {
+            cursor: 'not-allowed',
+            bg: 'neutral.200',
+            color: 'neutral.500',
+          },
         },
       }
     },
