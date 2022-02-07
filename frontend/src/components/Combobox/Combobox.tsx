@@ -235,7 +235,7 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
                   item={item}
                   index={index}
                   isActive={selectedItem === item || undefined}
-                  isSelected={highlightedIndex === index}
+                  isHighlighted={highlightedIndex === index}
                   getItemProps={getItemProps}
                   iconStyles={style.icon}
                   itemStyles={style.item}

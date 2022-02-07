@@ -15,7 +15,7 @@ export interface DropdownItemProps {
   item: ComboboxItem
   index: number
   isActive?: boolean
-  isSelected: boolean
+  isHighlighted: boolean
   getItemProps: UseComboboxPropGetters<ComboboxItem>['getItemProps']
   itemStyles?: CSSObject
   iconStyles?: CSSObject
@@ -26,7 +26,7 @@ export interface DropdownItemProps {
 export const DropdownItem = ({
   item,
   isActive,
-  isSelected,
+  isHighlighted,
   index,
   getItemProps,
   itemStyles,
@@ -63,7 +63,7 @@ export const DropdownItem = ({
           {itemMeta.icon ? <Icon as={itemMeta.icon} sx={iconStyles} /> : null}
           <DropdownItemTextHighlighter
             inputValue={inputValue}
-            showHoverBg={isSelected && !isActive}
+            showHoverBg={isHighlighted && !isActive}
             textToHighlight={itemMeta.label}
           />
         </Stack>
