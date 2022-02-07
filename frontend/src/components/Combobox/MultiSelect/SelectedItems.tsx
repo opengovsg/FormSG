@@ -7,12 +7,14 @@ import { itemToLabelString } from '../utils'
 import { SelectedItemTag } from './SelectedItemTag'
 
 export interface SelectedItemsProps {
+  isDisabled?: boolean
   selectedItems: ComboboxItem[]
   getSelectedItemProps: UseMultipleSelectionPropGetters<ComboboxItem>['getSelectedItemProps']
   handleRemoveItem: (item: ComboboxItem) => void
 }
 
 export const SelectedItems = ({
+  isDisabled,
   selectedItems,
   handleRemoveItem,
   getSelectedItemProps,
@@ -32,7 +34,13 @@ export const SelectedItems = ({
         <WrapItem maxW="calc(100% - 0.25rem)" key={`selected-item-${index}`}>
           <SelectedItemTag
             label={itemToLabelString(selectedItem)}
-            {...getSelectedItemProps({ selectedItem, index, tabIndex: -1 })}
+            {...getSelectedItemProps({
+              selectedItem,
+              index,
+              tabIndex: -1,
+              disabled: isDisabled,
+            })}
+            isDisabled={isDisabled}
             onRemove={() => handleRemoveItem(selectedItem)}
           />
         </WrapItem>

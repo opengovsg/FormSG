@@ -267,6 +267,9 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
           sx={style.fieldwrapper}
         >
           <SelectedItems
+            isDisabled={
+              formControlProps.isDisabled || formControlProps.isReadOnly
+            }
             selectedItems={selectedItems}
             getSelectedItemProps={getSelectedItemProps}
             handleRemoveItem={removeSelectedItem}

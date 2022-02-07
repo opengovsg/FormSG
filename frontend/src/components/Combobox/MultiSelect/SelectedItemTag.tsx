@@ -10,10 +10,12 @@ import {
   TagProps,
   useStyles,
 } from '@chakra-ui/react'
+import merge from 'lodash/merge'
 
 export interface SelectedItemTagProps extends TagProps {
   label: string
   onRemove: () => void
+  isDisabled?: boolean
 }
 
 export interface SelectedItemTagCloseButtonProps
@@ -29,21 +31,37 @@ const SelectedItemTagCloseButton = ({
 }: SelectedItemTagCloseButtonProps): JSX.Element => {
   const styles = useStyles()
 
-  const btnStyles: SystemStyleObject = {
+  const btnStyles: SystemStyleObject = merge(styles.closeButton, {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     outline: '0',
-    ...styles.closeButton,
-    opacity: 0.8,
+    opacity: 1,
     color: 'secondary.500',
     _focus: {
       boxShadow: '0 0 0 2px var(--chakra-colors-secondary-300)',
       bg: 'secondary.200',
     },
-    _hover: { opacity: 0.9, color: 'secondary.600' },
-    _active: { opacity: 1, color: 'secondary.700', bg: 'secondary.200' },
-  }
+    _disabled: {
+      opacity: 1,
+      cursor: 'not-allowed',
+      color: 'neutral.500',
+      bg: 'transparent',
+    },
+    _hover: {
+      color: 'secondary.600',
+      opacity: 1,
+      _disabled: { color: 'neutral.500' },
+    },
+    _active: {
+      opacity: 1,
+      color: 'secondary.700',
+      bg: 'secondary.200',
+      _disabled: {
+        bg: 'transparent',
+      },
+    },
+  })
 
   return (
     <chakra.button
@@ -59,7 +77,7 @@ const SelectedItemTagCloseButton = ({
 }
 
 export const SelectedItemTag = forwardRef<SelectedItemTagProps, 'div'>(
-  ({ label, onRemove, ...props }, ref): JSX.Element => {
+  ({ label, onRemove, isDisabled, ...props }, ref): JSX.Element => {
     // TODO: Update Tag global theme instead of styling it in this component.
     return (
       <Tag
@@ -74,6 +92,7 @@ export const SelectedItemTag = forwardRef<SelectedItemTagProps, 'div'>(
           {label}
         </TagLabel>
         <SelectedItemTagCloseButton
+          isDisabled={isDisabled}
           onClick={(e) => {
             e.stopPropagation()
             onRemove()
