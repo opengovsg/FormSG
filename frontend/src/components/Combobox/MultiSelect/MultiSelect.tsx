@@ -66,6 +66,9 @@ export interface MultiSelectProps<Item = ComboboxItem, Value = string>
 
   /** ID of label for tagging input and dropdown to, for a11y purposes */
   labelId?: string
+
+  /** Initial input value to populate input with, if available. */
+  defaultInputValue?: string
 }
 
 export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
@@ -74,6 +77,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
       labelId,
       limit,
       nothingFoundLabel = 'No matching results',
+      defaultInputValue = '',
       items,
       filter = defaultFilter,
       values = [],
@@ -89,7 +93,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
     },
     ref,
   ): JSX.Element => {
-    const [inputValue, setInputValue] = useState('')
+    const [inputValue, setInputValue] = useState(defaultInputValue)
     const [trackedHighlightIndex, setTrackedHighlightIndex] = useState(0)
 
     const formControlProps = useFormControlProps({
@@ -161,6 +165,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
       getItemProps,
       getToggleButtonProps,
       openMenu,
+      highlightedIndex,
     } = useCombobox({
       labelId,
       inputValue,
@@ -316,8 +321,10 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
                   index={index}
                   getItemProps={getItemProps}
                   isSelected={selectedItems.includes(item)}
+                  isHighlighted={index === highlightedIndex}
                   iconStyles={style.icon}
                   itemStyles={style.item}
+                  inputValue={inputValue}
                 />
               ))}
             {isOpen && filteredItems.length === 0 ? (

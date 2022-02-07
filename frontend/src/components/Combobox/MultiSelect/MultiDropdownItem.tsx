@@ -14,6 +14,7 @@ import { UseComboboxPropGetters } from 'downshift'
 import { BxCheckAnimated } from '~assets/icons'
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 
+import { DropdownItemTextHighlighter } from '../DropdownItemTextHighlighter'
 import { ComboboxItem } from '../types'
 import {
   itemToDescriptionString,
@@ -24,11 +25,14 @@ import {
 export interface MultiDropdownItemProps {
   item: ComboboxItem
   index: number
-  isSelected?: boolean
+  isSelected: boolean
+  isHighlighted: boolean
   isDisabled?: boolean
   getItemProps: UseComboboxPropGetters<ComboboxItem>['getItemProps']
   itemStyles?: CSSObject
   iconStyles?: CSSObject
+  /** Current input value in dropdown for highlighting of matched text */
+  inputValue: string
 }
 
 const CheckboxIcon = ({ isChecked }: { isChecked?: boolean }) => {
@@ -53,11 +57,13 @@ const CheckboxIcon = ({ isChecked }: { isChecked?: boolean }) => {
 export const MultiDropdownItem = ({
   item,
   isSelected,
+  isHighlighted,
   isDisabled,
   index,
   getItemProps,
   itemStyles,
   iconStyles,
+  inputValue,
 }: MultiDropdownItemProps): JSX.Element => {
   const itemMeta = useMemo(
     () => ({
@@ -83,7 +89,11 @@ export const MultiDropdownItem = ({
         <Stack direction="row" align="center" spacing="1rem">
           <CheckboxIcon isChecked={isSelected} />
           {itemMeta.icon ? <Icon as={itemMeta.icon} sx={iconStyles} /> : null}
-          <Text>{itemMeta.label}</Text>
+          <DropdownItemTextHighlighter
+            inputValue={inputValue}
+            showHoverBg={isHighlighted}
+            textToHighlight={itemMeta.label}
+          />
         </Stack>
         <Text
           textStyle="body-2"

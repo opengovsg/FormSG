@@ -80,6 +80,12 @@ NotClearable.args = {
   isClearable: false,
 }
 
+export const WithDefaultInput = Template.bind({})
+WithDefaultInput.args = {
+  defaultInputValue: 'What',
+  defaultIsOpen: true,
+}
+
 export const MobileTruncatedOption = Template.bind({})
 MobileTruncatedOption.args = {
   values: ['What happens when the label is fairly long', 'Bat'],
