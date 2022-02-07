@@ -153,13 +153,8 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
       stateReducer: (_state, { changes, type }) => {
         switch (type) {
           case useCombobox.stateChangeTypes.InputBlur: {
-            // Clear input if nothing is selected, or set input to selected item value
-            const updatedInputValue = itemToValue(changes.selectedItem)
-            onChange(updatedInputValue)
             return {
               ...changes,
-              inputValue: updatedInputValue,
-              selectedItem: changes.selectedItem ?? null,
               isOpen: false,
             }
           }
