@@ -12,6 +12,7 @@ import { getAdminFormResponse } from '~/mocks/msw/handlers/admin-form'
 import { StoryRouter } from '~utils/storybook'
 
 import { BuilderLogic } from './BuilderLogic'
+import { BuilderLogicProvider } from './BuilderLogicContext'
 
 const buildMswRoutes = (overrides?: Partial<AdminFormDto>, delay = 0) => [
   getAdminFormResponse(overrides, delay),
@@ -20,7 +21,10 @@ const buildMswRoutes = (overrides?: Partial<AdminFormDto>, delay = 0) => [
 export default {
   title: 'Pages/AdminFormPage/Logic',
   component: BuilderLogic,
-  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
+  decorators: [
+    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
+    (storyFn) => <BuilderLogicProvider>{storyFn()}</BuilderLogicProvider>,
+  ],
   parameters: {
     layout: 'fullscreen',
     // Required so skeleton "animation" does not hide content.
