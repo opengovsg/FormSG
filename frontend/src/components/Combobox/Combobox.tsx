@@ -146,18 +146,13 @@ export const Combobox = ({
     stateReducer: (_state, { changes, type }) => {
       switch (type) {
         case useCombobox.stateChangeTypes.InputBlur: {
-          const selectedValue = changes.inputValue
-            ? items.find(
-                (item) => itemToLabelString(item) === changes.inputValue,
-              )
-            : undefined
-          const updatedInputValue = selectedValue
-            ? itemToLabelString(selectedValue)
-            : undefined
+          // Clear input if nothing is selected, or set input to selected item value
+          const updatedInputValue = itemToValue(changes.selectedItem)
+          onChange(updatedInputValue)
           return {
             ...changes,
             inputValue: updatedInputValue,
-            selectedItem: selectedValue ?? null,
+            selectedItem: changes.selectedItem ?? null,
             isOpen: false,
           }
         }
@@ -227,6 +222,7 @@ export const Combobox = ({
         style={styles.popper}
         {...attributes.popper}
         w="100%"
+        zIndex="dropdown"
       >
         <List
           {...getMenuProps({
