@@ -1,9 +1,16 @@
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { FormControl } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
+import difference from 'lodash/difference'
 
 import { viewports } from '~utils/storybook'
+import Button from '~components/Button'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
 
 import { ComboboxItem } from '../types'
+import { itemToValue } from '../utils'
 
 import { MultiSelect, MultiSelectProps } from './MultiSelect'
 
@@ -84,4 +91,70 @@ MobileTruncatedOption.parameters = {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
+}
+
+export const Invalid = Template.bind({})
+Invalid.args = {
+  isInvalid: true,
+}
+
+export const Disabled = Template.bind({})
+Disabled.args = {
+  isDisabled: true,
+}
+
+export const DisabledWithSelection = Template.bind({})
+DisabledWithSelection.args = {
+  isDisabled: true,
+  values: ['What happens when the label is fairly long', 'Bat'],
+}
+
+export const Playground: Story<MultiSelectProps> = ({ items, isDisabled }) => {
+  const name = 'Multiselect'
+  const {
+    handleSubmit,
+    formState: { errors },
+    control,
+  } = useForm()
+
+  const onSubmit = useCallback((data: unknown) => {
+    alert(JSON.stringify(data))
+  }, [])
+
+  const itemValues = useMemo(() => items.map((i) => itemToValue(i)), [items])
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <FormControl isRequired isInvalid={!!errors[name]}>
+        <FormLabel>Select all fruits you love</FormLabel>
+        <Controller
+          control={control}
+          name={name}
+          rules={{
+            required: 'Please select at least one option',
+            validate: (values) => {
+              return (
+                difference(values, itemValues).length === 0 ||
+                'Some selected options do not exist in the dropdown options'
+              )
+            },
+          }}
+          render={({ field: { value, ...field } }) => (
+            <MultiSelect
+              values={value}
+              items={items}
+              {...field}
+              isDisabled={isDisabled}
+            />
+          )}
+        />
+        <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>
+      </FormControl>
+      <Button type="submit">Submit</Button>
+    </form>
+  )
+}
+
+Playground.args = {
+  isDisabled: false,
 }
