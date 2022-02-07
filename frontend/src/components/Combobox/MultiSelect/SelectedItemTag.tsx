@@ -73,7 +73,12 @@ export const SelectedItemTag = forwardRef<SelectedItemTagProps, 'div'>(
         <TagLabel isTruncated ref={ref} textStyle="body-2">
           {label}
         </TagLabel>
-        <SelectedItemTagCloseButton onClick={onRemove} />
+        <SelectedItemTagCloseButton
+          onClick={(e) => {
+            e.stopPropagation()
+            onRemove()
+          }}
+        />
       </Tag>
     )
   },
