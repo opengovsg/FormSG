@@ -24,7 +24,7 @@ import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
 import { ComboboxItem } from '../types'
-import { defaultFilter, itemToLabelString } from '../utils'
+import { defaultFilter, itemToLabelString, itemToValue } from '../utils'
 
 import { MultiDropdownItem } from './MultiDropdownItem'
 import { SelectedItems } from './SelectedItems'
@@ -123,7 +123,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
         // Set to show all items when something is already selected, or if input is empty
         if (
           !inputValue ||
-          (selectedItem && inputValue === itemToLabelString(selectedItem))
+          (selectedItem && inputValue === itemToValue(selectedItem))
         ) {
           setFilteredItems(limit ? items.slice(0, limit) : items)
         } else {
@@ -136,21 +136,21 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
       [filter, items, limit],
     )
 
-    const labelToItemMap = useMemo(
-      () => keyBy(items, (item) => itemToLabelString(item)),
+    const valueToItemMap = useMemo(
+      () => keyBy(items, (item) => itemToValue(item)),
       [items],
     )
 
     const getSelectedItemsFromValues = useCallback(() => {
       const selectedItems: ComboboxItem[] = []
       values.forEach((value) => {
-        const item = labelToItemMap[value]
+        const item = valueToItemMap[value]
         if (item) {
           selectedItems.push(item)
         }
       })
       return selectedItems
-    }, [labelToItemMap, values])
+    }, [valueToItemMap, values])
 
     const {
       getSelectedItemProps,
@@ -162,7 +162,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
     } = useMultipleSelection<ComboboxItem>({
       selectedItems: getSelectedItemsFromValues(),
       onSelectedItemsChange: ({ selectedItems }) => {
-        onChange(selectedItems?.map(itemToLabelString) ?? [])
+        onChange(selectedItems?.map(itemToValue) ?? [])
         // Recalculate dropdown position on item change, so dropdown and move with the container.
         updateDropdownPosition?.()
       },
@@ -328,7 +328,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
             {isOpen &&
               filteredItems.map((item, index) => (
                 <MultiDropdownItem
-                  key={`${itemToLabelString(item)}${index}`}
+                  key={`${itemToValue(item)}${index}`}
                   item={item}
                   index={index}
                   getItemProps={getItemProps}
