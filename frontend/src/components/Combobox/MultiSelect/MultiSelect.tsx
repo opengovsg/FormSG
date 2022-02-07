@@ -89,7 +89,6 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
     },
     ref,
   ): JSX.Element => {
-    const [filteredItems, setFilteredItems] = useState(items)
     const [inputValue, setInputValue] = useState('')
     const [trackedHighlightIndex, setTrackedHighlightIndex] = useState(0)
 
@@ -112,29 +111,14 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
       placement: 'bottom-start',
     })
 
-    const regenFilteredItems = useCallback(
-      ({
-        inputValue,
-        selectedItem,
-      }: {
-        inputValue?: string
-        selectedItem?: ComboboxItem
-      }) => {
-        // Set to show all items when something is already selected, or if input is empty
-        if (
-          !inputValue ||
-          (selectedItem && inputValue === itemToValue(selectedItem))
-        ) {
-          setFilteredItems(limit ? items.slice(0, limit) : items)
-        } else {
-          const filteredItems = filter(items, inputValue ?? '')
-          setFilteredItems(
-            limit ? filteredItems.slice(0, limit) : filteredItems,
-          )
-        }
-      },
-      [filter, items, limit],
-    )
+    const filteredItems = useMemo(() => {
+      if (!inputValue) {
+        return limit ? items.slice(0, limit) : items
+      }
+
+      const filteredItems = filter(items, inputValue ?? '')
+      return limit ? filteredItems.slice(0, limit) : filteredItems
+    }, [filter, items, limit, inputValue])
 
     const valueToItemMap = useMemo(
       () => keyBy(items, (item) => itemToValue(item)),
@@ -212,12 +196,8 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
       },
       onStateChange: ({ inputValue, type, selectedItem }) => {
         switch (type) {
-          case useCombobox.stateChangeTypes.FunctionOpenMenu:
-            regenFilteredItems({ inputValue, selectedItem })
-            break
           case useCombobox.stateChangeTypes.InputChange:
             setInputValue(inputValue ?? '')
-            regenFilteredItems({ inputValue, selectedItem })
             break
           case useCombobox.stateChangeTypes.InputKeyDownEnter:
           case useCombobox.stateChangeTypes.ItemClick:
