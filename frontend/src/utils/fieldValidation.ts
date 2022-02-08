@@ -10,6 +10,7 @@ import {
   isDate,
   parseISO,
   startOfToday,
+  startOfTomorrow,
 } from 'date-fns'
 import simplur from 'simplur'
 import validator from 'validator'
@@ -312,8 +313,8 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
           return true
         }
         return (
-          isBefore(parseISO(val), startOfToday()) ||
-          'Only dates before today are allowed'
+          isBefore(parseISO(val), startOfTomorrow()) ||
+          'Only dates today or before are allowed'
         )
       },
       noPast: (val) => {
