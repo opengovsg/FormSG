@@ -1,22 +1,19 @@
 import { useMemo } from 'react'
 import { Box, Container } from '@chakra-ui/react'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
-
 import { EmptyLogic } from './components/EmptyLogic'
 import { LogicContent } from './components/LogicContent'
 import { useBuilderLogic } from './BuilderLogicContext'
 
 export const BuilderLogic = (): JSX.Element => {
-  const { data: form } = useAdminForm()
-  const { hasPendingLogic } = useBuilderLogic()
+  const { hasPendingLogic, formLogics } = useBuilderLogic()
 
   const isEmptyLogic = useMemo(
-    () => form?.form_logics.length === 0 && !hasPendingLogic,
-    [form?.form_logics.length, hasPendingLogic],
+    () => formLogics?.length === 0 && !hasPendingLogic,
+    [formLogics?.length, hasPendingLogic],
   )
 
-  if (!form) {
+  if (!formLogics) {
     // TODO: Some loading skeleton
     return <div>Loading...</div>
   }
