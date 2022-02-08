@@ -3,10 +3,11 @@ import { Flex, Icon, Stack, Text } from '@chakra-ui/react'
 import { useBuilderLogic } from '../../BuilderLogicContext'
 import { ALLOWED_FIELDS_META } from '../../constants'
 
+import { LogicBlock } from './LogicBlock'
 import { NewLogicBlock } from './NewLogicBlock'
 
 export const LogicContent = (): JSX.Element => {
-  const { hasPendingLogic } = useBuilderLogic()
+  const { hasPendingLogic, formLogics } = useBuilderLogic()
 
   return (
     <Stack color="secondary.500" spacing="2rem">
@@ -30,6 +31,9 @@ export const LogicContent = (): JSX.Element => {
           </Flex>
         </Stack>
       </Flex>
+      {formLogics?.map((logic) => (
+        <LogicBlock key={logic._id} logic={logic} />
+      ))}
       {hasPendingLogic ? <NewLogicBlock /> : null}
     </Stack>
   )

@@ -37,7 +37,7 @@ export const NewLogicBlock = () => {
       boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
     >
       <Grid
-        gridTemplateColumns="min-content 1fr"
+        gridTemplateColumns="max-content 1fr"
         alignItems="center"
         columnGap="2rem"
         rowGap="0.75rem"
