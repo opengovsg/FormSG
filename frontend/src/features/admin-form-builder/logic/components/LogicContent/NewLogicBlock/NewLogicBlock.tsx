@@ -33,8 +33,13 @@ export const NewLogicBlock = () => {
       borderRadius="4px"
       bg="white"
       border="1px solid"
-      borderColor="primary.500"
-      boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
+      borderColor="neutral.400"
+      transitionProperty="common"
+      transitionDuration="normal"
+      _focusWithin={{
+        borderColor: 'primary.500',
+        boxShadow: '0 0 0 1px var(--chakra-colors-primary-500)',
+      }}
     >
       <Grid
         gridTemplateColumns={{
@@ -50,7 +55,7 @@ export const NewLogicBlock = () => {
         borderColor="neutral.300"
       >
         <Text textStyle="subhead-3">IF</Text>
-        <Input />
+        <Input autoFocus />
 
         <Text textStyle="subhead-3">IS</Text>
         <Stack direction="row" align="center">

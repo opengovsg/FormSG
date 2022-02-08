@@ -11,7 +11,12 @@ export const LogicContent = (): JSX.Element => {
 
   return (
     <Stack color="secondary.500" spacing="2rem">
-      <Flex px="2rem" py="2.5rem" flexDir="column" bg="white">
+      <Flex
+        px={{ base: '1.5rem', md: '2rem' }}
+        py={{ base: '1rem', md: '2rem' }}
+        flexDir="column"
+        bg="white"
+      >
         <Text as="h2" textStyle="h2" mb="0.5rem">
           Logic
         </Text>
@@ -19,9 +24,14 @@ export const LogicContent = (): JSX.Element => {
           Please test your form thoroughly to ensure the logic works as
           expected.
         </Text>
-        <Stack spacing="1.5rem" maxW="28rem">
+        <Stack spacing="0.75rem" maxW="28rem">
           <Text textStyle="subhead-3">Allowed fields</Text>
-          <Flex flexWrap="wrap" flexDir="row" columnGap="2.5rem">
+          <Flex
+            flexWrap="wrap"
+            flexDir="row"
+            columnGap="2.5rem"
+            rowGap="0.75rem"
+          >
             {ALLOWED_FIELDS_META.map(({ icon, label }) => (
               <Stack w="5rem" key={label} direction="row" align="center">
                 <Icon fontSize="1rem" as={icon} />
