@@ -431,6 +431,41 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
       })
 
+      it('should create and save successfully if encrypt mode form has webhook', async () => {
+        // Arrange + Act
+
+        const MOCK_ENCRYPTED_FORM_PARAMS_WITH_WEBHOOK = {
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          webhook: { url: 'https://www.form.gov.sg' },
+        }
+
+        const validForm = new EncryptedForm(
+          MOCK_ENCRYPTED_FORM_PARAMS_WITH_WEBHOOK,
+        )
+
+        const saved = await validForm.save()
+
+        // Assert
+        // All fields should exist
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge(
+          {},
+          ENCRYPT_FORM_DEFAULTS,
+          MOCK_ENCRYPTED_FORM_PARAMS_WITH_WEBHOOK,
+        )
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
       it('should save successfully, but not save fields that is not defined in the schema', async () => {
         // Arrange
         const formParamsWithExtra = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
@@ -817,6 +852,22 @@ describe('Form Model', () => {
         expect(updatedForm.admin).toEqual(newAdmin._id)
         // PermissionList should now be empty.
         expect(updatedForm.permissionList).toEqual([])
+      })
+
+      it('should reject when webhook url exists in email mode form', async () => {
+        // Arrange
+        const MOCK_EMAIL_FORM_PARAMS_WITH_WEBHOOK = {
+          ...MOCK_EMAIL_FORM_PARAMS,
+          webhook: { url: 'https://www.form.gov.sg' },
+        }
+
+        // Act
+        const invalidForm = new EmailForm(MOCK_EMAIL_FORM_PARAMS_WITH_WEBHOOK)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrowError(
+          mongoose.Error.ValidationError,
+        )
       })
 
       it('should reject when emails array is missing', async () => {
