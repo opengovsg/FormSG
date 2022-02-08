@@ -1,7 +1,6 @@
 import { PublicUserDto, UserDto } from '../user'
 import { FormField, FormFieldDto } from '../field'
 
-import { FormLogic } from './form_logic'
 import { FormLogo } from './form_logo'
 import { Merge, Opaque, PartialDeep } from 'type-fest'
 import {
@@ -12,6 +11,7 @@ import {
   STORAGE_PUBLIC_FORM_FIELDS,
 } from '../../constants/form'
 import { DateString } from '../generic'
+import { LogicDto } from './form_logic'
 
 export type FormId = Opaque<string, 'FormId'>
 
@@ -73,7 +73,7 @@ export interface FormBase {
   admin: UserDto['_id']
 
   form_fields: FormField[]
-  form_logics: FormLogic[]
+  form_logics: LogicDto[]
   permissionList: FormPermission[]
 
   startPage: FormStartPage

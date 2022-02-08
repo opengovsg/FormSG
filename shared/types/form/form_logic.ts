@@ -45,4 +45,4 @@ export type FormLogic = ShowFieldLogic | PreventSubmitLogic
 export type ShowFieldLogicDto = ShowFieldLogic & { _id: string }
 export type PreventSubmitLogicDto = PreventSubmitLogic & { _id: string }
 
-export type LogicDto = FormLogic & { _id: string }
+export type LogicDto = ShowFieldLogicDto | PreventSubmitLogicDto
