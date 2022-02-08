@@ -53,8 +53,8 @@ export const validateWebhookUrl = (webhookUrl: string): Promise<void> => {
       .catch(() => {
         return reject(
           new WebhookValidationError(
-            `Error encountered during DNS resolution for ${webhookUrl}.` +
-              ` Check that the URL is correct.`,
+            `Error encountered during DNS resolution for webhook URL: ${webhookUrl}.` +
+              ` Check that the URL is correct or delete the webhook before proceeding.`,
           ),
         )
       })
