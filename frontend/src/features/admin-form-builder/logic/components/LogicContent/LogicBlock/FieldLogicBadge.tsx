@@ -21,7 +21,7 @@ interface FieldLogicBadgeProps {
 export const FieldLogicBadge = ({ field }: FieldLogicBadgeProps) => {
   return (
     <LogicBadge display="inline-flex">
-      <Stack direction="row" spacing="0.25rem">
+      <Stack direction="row" spacing="0.25rem" maxW="100%">
         <Tooltip
           placement="top"
           label={`${BASICFIELD_TO_READABLE[field.fieldType]} field`}
@@ -30,7 +30,7 @@ export const FieldLogicBadge = ({ field }: FieldLogicBadgeProps) => {
           <Icon as={BASICFIELD_TO_ICON[field.fieldType]} fontSize="1rem" />
         </Tooltip>
         <Text>{field.questionNumber}.</Text>
-        <Text>{field.title}</Text>
+        <Text isTruncated>{field.title}</Text>
       </Stack>
     </LogicBadge>
   )

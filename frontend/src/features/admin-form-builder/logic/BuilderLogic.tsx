@@ -22,7 +22,7 @@ export const BuilderLogic = (): JSX.Element => {
   }
 
   return (
-    <Flex flex={1} bg="primary.100" p="3.75rem">
+    <Flex flex={1} bg="primary.100" p={{ base: '0.5rem', md: '3.75rem' }}>
       <Spacer />
       <Container maxW="42.5rem">
         {isEmptyLogic ? <EmptyLogic /> : <LogicContent />}
@@ -31,9 +31,11 @@ export const BuilderLogic = (): JSX.Element => {
         {!isEmptyLogic && (
           <IconButton
             isDisabled={hasPendingLogic}
-            pos="sticky"
-            top="1rem"
-            icon={<BiPlus fontSize="1/5rem" />}
+            pos={{ base: 'fixed', md: 'sticky' }}
+            top={{ md: '1rem' }}
+            bottom={{ base: '1rem', md: undefined }}
+            right={{ base: '1rem', md: undefined }}
+            icon={<BiPlus fontSize="1.5rem" />}
             aria-label="Add logic"
           />
         )}
