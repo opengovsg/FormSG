@@ -9,7 +9,8 @@ import { LogicContent } from './components/LogicContent'
 import { useBuilderLogic } from './BuilderLogicContext'
 
 export const BuilderLogic = (): JSX.Element => {
-  const { hasPendingLogic, formLogics } = useBuilderLogic()
+  const { hasPendingLogic, formLogics, handleSetHasPendingLogic } =
+    useBuilderLogic()
 
   const isEmptyLogic = useMemo(
     () => formLogics?.length === 0 && !hasPendingLogic,
@@ -37,6 +38,7 @@ export const BuilderLogic = (): JSX.Element => {
             right={{ base: '1rem', md: undefined }}
             icon={<BiPlus fontSize="1.5rem" />}
             aria-label="Add logic"
+            onClick={() => handleSetHasPendingLogic(true)}
           />
         )}
       </Flex>
