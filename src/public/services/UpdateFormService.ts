@@ -275,7 +275,9 @@ export const submitStorageModeFormPreview = async ({
  * @param formId formId of form to delete
  */
 export const deleteForm = async (formId: string): Promise<void> => {
-  return axios.delete(`${ADMIN_FORM_ENDPOINT}/${formId}`)
+  return axios
+    .delete(`${ADMIN_FORM_ENDPOINT}/${formId}`)
+    .then(({ data }) => data)
 }
 
 /**
