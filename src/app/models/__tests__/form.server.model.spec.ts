@@ -2098,6 +2098,56 @@ describe('Form Model', () => {
         // Assert
         expect(actual.status).toEqual(FormStatus.Archived)
       })
+
+      it('should allow archive if form has valid webhook url', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          publicKey: 'any public key',
+          responseMode: FormResponseMode.Encrypt,
+          title: 'mock encrypt form',
+          status: FormStatus.Public,
+          webhook: {
+            url: 'https://www.form.gov.sg',
+          },
+        })
+        expect(form).toBeDefined()
+
+        // Act
+        const actual = await form.archive()
+
+        // Assert
+        expect(actual.status).toEqual(FormStatus.Archived)
+      })
+
+      it('should prevent archive and return validation error if form has invalid webhook url', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          publicKey: 'any public key',
+          responseMode: FormResponseMode.Encrypt,
+          title: 'mock encrypt form',
+          status: FormStatus.Public,
+          webhook: {
+            url: 'https://www.form.gov.sg',
+          },
+        })
+
+        if (form?.webhook?.url) {
+          form.webhook.url = 'https://wwwww.form.gov.sg' // Inject invalid webhook url
+        }
+
+        expect(form).toBeDefined()
+        // Act
+
+        const actual = await form.archive().catch((err) => err)
+
+        // Assert
+        expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+        expect(actual.message).toEqual(
+          expect.stringContaining('Error encountered during DNS resolution'),
+        )
+      })
     })
 
     describe('getDashboardView', () => {
