@@ -28,7 +28,7 @@ export const BuilderLogic = (): JSX.Element => {
         {isEmptyLogic ? <EmptyLogic /> : <LogicContent />}
       </Container>
       <Flex flex={1} pos="relative">
-        {!isEmptyLogic && (
+        {!isEmptyLogic && !hasPendingLogic && (
           <IconButton
             isDisabled={hasPendingLogic}
             pos={{ base: 'fixed', md: 'sticky' }}
