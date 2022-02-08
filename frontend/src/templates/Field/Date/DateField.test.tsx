@@ -21,7 +21,8 @@ describe('required field', () => {
   it('renders error when field is empty before submitting', async () => {
     // Arrange
     await act(async () => {
-      render(<ValidationRequired />)
+      // `defaultValue=undefined` so trigger does not run in the story.
+      render(<ValidationRequired defaultValue={undefined} />)
     })
     const submitButton = screen.getByRole('button', { name: /submit/i })
 
@@ -38,7 +39,7 @@ describe('optional field', () => {
   it('renders success even when field is empty before submitting', async () => {
     // Arrange
     await act(async () => {
-      render(<ValidationOptional />)
+      render(<ValidationOptional defaultValue={undefined} />)
     })
     const submitButton = screen.getByRole('button', { name: /submit/i })
 
@@ -54,7 +55,7 @@ describe('optional field', () => {
     // Arrange
     const schema = ValidationOptional.args?.schema
     await act(async () => {
-      render(<ValidationOptional />)
+      render(<ValidationOptional defaultValue={undefined} />)
     })
     const input = screen.getByLabelText(
       new RegExp(schema!.title, 'i'),
@@ -83,7 +84,7 @@ describe('validation', () => {
       // Arrange
       const schema = ValidationNoFuture.args?.schema
       await act(async () => {
-        render(<ValidationNoFuture />)
+        render(<ValidationNoFuture defaultValue={undefined} />)
       })
       const input = screen.getByLabelText(
         new RegExp(schema!.title, 'i'),
@@ -107,7 +108,7 @@ describe('validation', () => {
       // Arrange
       const schema = ValidationNoFuture.args?.schema
       await act(async () => {
-        render(<ValidationNoFuture />)
+        render(<ValidationNoFuture defaultValue={undefined} />)
       })
       const input = screen.getByLabelText(
         new RegExp(schema!.title, 'i'),
@@ -132,7 +133,7 @@ describe('validation', () => {
       // Arrange
       const schema = ValidationNoFuture.args?.schema
       await act(async () => {
-        render(<ValidationNoFuture />)
+        render(<ValidationNoFuture defaultValue={undefined} />)
       })
       const input = screen.getByLabelText(
         new RegExp(schema!.title, 'i'),
@@ -161,7 +162,7 @@ describe('validation', () => {
       // Arrange
       const schema = ValidationNoPast.args?.schema
       await act(async () => {
-        render(<ValidationNoPast />)
+        render(<ValidationNoPast defaultValue={undefined} />)
       })
       const input = screen.getByLabelText(
         new RegExp(schema!.title, 'i'),
@@ -188,7 +189,7 @@ describe('validation', () => {
       // Arrange
       const schema = ValidationNoPast.args?.schema
       await act(async () => {
-        render(<ValidationNoPast />)
+        render(<ValidationNoPast defaultValue={undefined} />)
       })
       const input = screen.getByLabelText(
         new RegExp(schema!.title, 'i'),
@@ -213,7 +214,7 @@ describe('validation', () => {
       // Arrange
       const schema = ValidationNoPast.args?.schema
       await act(async () => {
-        render(<ValidationNoPast />)
+        render(<ValidationNoPast defaultValue={undefined} />)
       })
       const input = screen.getByLabelText(
         new RegExp(schema!.title, 'i'),
@@ -243,7 +244,7 @@ describe('validation', () => {
       const schema = ValidationCustomRange.args?.schema
       const { customMaxDate } = schema.dateValidation
       await act(async () => {
-        render(<ValidationCustomRange />)
+        render(<ValidationCustomRange defaultValue={undefined} />)
       })
       const input = screen.getByLabelText(
         new RegExp(schema!.title, 'i'),
@@ -270,7 +271,7 @@ describe('validation', () => {
       const schema = ValidationCustomRange.args?.schema
       const { customMinDate } = schema.dateValidation
       await act(async () => {
-        render(<ValidationCustomRange />)
+        render(<ValidationCustomRange defaultValue={undefined} />)
       })
       const input = screen.getByLabelText(
         new RegExp(schema!.title, 'i'),
@@ -300,7 +301,7 @@ describe('validation', () => {
       const schema = ValidationCustomRange.args?.schema
       const { customMinDate, customMaxDate } = schema.dateValidation
       await act(async () => {
-        render(<ValidationCustomRange />)
+        render(<ValidationCustomRange defaultValue={undefined} />)
       })
       const input = screen.getByLabelText(
         new RegExp(schema!.title, 'i'),

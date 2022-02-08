@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
+import { addDays, lightFormat } from 'date-fns'
 
 import { BasicField, DateSelectedValidation } from '~shared/types/field'
 
@@ -69,7 +70,7 @@ const Template: Story<StoryDateFieldProps> = ({ defaultValue, ...args }) => {
   }
 
   useEffect(() => {
-    if (defaultValue) {
+    if (defaultValue !== undefined) {
       formMethods.trigger()
     }
   }, [])
@@ -95,6 +96,7 @@ const Template: Story<StoryDateFieldProps> = ({ defaultValue, ...args }) => {
 export const ValidationRequired = Template.bind({})
 ValidationRequired.args = {
   schema: baseSchema,
+  defaultValue: '',
 }
 
 export const ValidationOptional = Template.bind({})
@@ -104,6 +106,7 @@ ValidationOptional.args = {
     required: false,
     description: 'Date field is optional',
   },
+  defaultValue: '',
 }
 
 export const ValidationNoFuture = Template.bind({})
@@ -117,6 +120,10 @@ ValidationNoFuture.args = {
       selectedDateValidation: DateSelectedValidation.NoFuture,
     },
   },
+  defaultValue: lightFormat(
+    addDays(new Date(MOCKED_TODAY_DATE), 10),
+    'yyyy-MM-dd',
+  ),
 }
 
 export const ValidationNoPast = Template.bind({})
@@ -130,6 +137,10 @@ ValidationNoPast.args = {
       selectedDateValidation: DateSelectedValidation.NoPast,
     },
   },
+  defaultValue: lightFormat(
+    addDays(new Date(MOCKED_TODAY_DATE), -10),
+    'yyyy-MM-dd',
+  ),
 }
 
 export const ValidationCustomRange = Template.bind({})
@@ -143,4 +154,5 @@ ValidationCustomRange.args = {
       selectedDateValidation: DateSelectedValidation.Custom,
     },
   },
+  defaultValue: '2021-12-26',
 }
