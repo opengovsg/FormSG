@@ -397,7 +397,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       },
 
       webhook: {
-        // TODO: URL validation, encrypt mode validation
         url: {
           type: String,
           default: '',
@@ -881,6 +880,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       const err = new Error('Form size exceeded.')
       err.name = 'FormSizeError'
       return next(err)
+    }
+
+    // Webhooks only allowed if encrypt mode
+    if (
+      this.responseMode !== FormResponseMode.Encrypt &&
+      this.webhook?.url &&
+      this.webhook.url.length > 0
+    ) {
+      const validationError = this.invalidate(
+        'webhook',
+        'Webhook only allowed on storage mode form',
+      ) as mongoose.Error.ValidationError
+      return next(validationError)
     }
 
     // Validate that admin exists before form is created.
