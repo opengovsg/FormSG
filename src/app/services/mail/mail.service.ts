@@ -156,6 +156,22 @@ export class MailService {
       ...loggerMeta,
     }
 
+    const sendMailPromise = new Promise<true>((resolve, reject) => {
+      this.#transporter.sendMail(mail, (error, info) => {
+        // Log SES message ID
+        logger.info({
+          message: 'this.#transporter.sendMail',
+          meta: {
+            ...logMeta,
+            action: 'this.#transporter.sendMail',
+            info,
+          },
+        })
+        if (error) reject(error)
+        resolve(true)
+      })
+    })
+
     return promiseRetry<true>(async (retry, attemptNum) => {
       logger.info({
         message: `Attempt ${attemptNum} to send mail`,
@@ -163,12 +179,12 @@ export class MailService {
       })
 
       try {
-        await this.#transporter.sendMail(mail)
+        const result = await sendMailPromise
         logger.info({
           message: `Mail successfully sent on attempt ${attemptNum}`,
           meta: logMeta,
         })
-        return true
+        return result
       } catch (error) {
         // Pass errors to the callback
         logger.error({
