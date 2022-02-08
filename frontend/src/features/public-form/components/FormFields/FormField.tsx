@@ -6,6 +6,7 @@ import { FormColorTheme } from '~shared/types/form'
 import {
   AttachmentField,
   CheckboxField,
+  DateField,
   DecimalField,
   EmailField,
   HomeNoField,
@@ -32,6 +33,10 @@ interface FormFieldProps {
 
 export const FormField = ({ field, colorTheme }: FormFieldProps) => {
   switch (field.fieldType) {
+    case BasicField.Date:
+      return (
+        <DateField key={field._id} schema={field} colorTheme={colorTheme} />
+      )
     case BasicField.Section:
       return (
         <SectionField key={field._id} schema={field} colorTheme={colorTheme} />
