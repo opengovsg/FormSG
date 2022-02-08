@@ -14,12 +14,18 @@ import {
   DateFieldSchema,
 } from './DateField'
 
+const MOCKED_TODAY_DATE = '2021-12-13'
+
 export default {
   title: 'Templates/Field/DateField',
   component: DateFieldComponent,
   decorators: [mockDateDecorator],
   parameters: {
-    mockdate: new Date('2021-12-13T06:22:27.219Z'),
+    // Exported for testing
+    test: {
+      MOCKED_TODAY_DATE,
+    },
+    mockdate: new Date(MOCKED_TODAY_DATE),
     docs: {
       // Required in this story due to react-hook-form conflicting with
       // Storybook somehow.
