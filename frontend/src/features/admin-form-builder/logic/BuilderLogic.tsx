@@ -1,5 +1,8 @@
 import { useMemo } from 'react'
-import { Box, Container } from '@chakra-ui/react'
+import { BiPlus } from 'react-icons/bi'
+import { Container, Flex, Spacer } from '@chakra-ui/react'
+
+import IconButton from '~components/IconButton'
 
 import { EmptyLogic } from './components/EmptyLogic'
 import { LogicContent } from './components/LogicContent'
@@ -19,10 +22,22 @@ export const BuilderLogic = (): JSX.Element => {
   }
 
   return (
-    <Box flex={1} bg="primary.100" p="3.75rem" overflowY="auto">
+    <Flex flex={1} bg="primary.100" p="3.75rem">
+      <Spacer />
       <Container maxW="42.5rem">
         {isEmptyLogic ? <EmptyLogic /> : <LogicContent />}
       </Container>
-    </Box>
+      <Flex flex={1} pos="relative">
+        {!isEmptyLogic && (
+          <IconButton
+            isDisabled={hasPendingLogic}
+            pos="sticky"
+            top="1rem"
+            icon={<BiPlus fontSize="1/5rem" />}
+            aria-label="Add logic"
+          />
+        )}
+      </Flex>
+    </Flex>
   )
 }
