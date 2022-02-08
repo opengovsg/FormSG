@@ -94,7 +94,6 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
         borderColor: 'neutral.300',
       },
       monthGrid: {
-        rowGap: '0.5rem',
         display: 'inline-grid',
         justifyItems: 'left',
       },
@@ -106,7 +105,7 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
         justifyContent: 'center',
         w: {
           base: '2rem',
-          md: '3rem',
+          md: '3.25rem',
         },
         h: {
           base: '2rem',

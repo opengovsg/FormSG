@@ -4,10 +4,11 @@ import { AnimatePresence } from 'framer-motion'
 
 import { MotionBox } from '~components/motion'
 
-import { EditFieldDrawer } from './EditFieldDrawer/EditFieldDrawer'
-import { DrawerTabs, useBuilderDrawer } from './BuilderDrawerContext'
+import { DrawerTabs, useBuilderDrawer } from '../../../BuilderDrawerContext'
+import { activeFieldSelector, useEditFieldStore } from '../../editFieldStore'
+
 import { CreateFieldDrawer } from './CreateFieldDrawer'
-import { activeFieldSelector, useEditFieldStore } from './editFieldStore'
+import { EditFieldDrawer } from './EditFieldDrawer'
 
 const DRAWER_MOTION_PROPS = {
   initial: { width: 0 },
@@ -42,8 +43,8 @@ export const BuilderDrawer = (): JSX.Element => {
       }
       case DrawerTabs.Design:
         return <div>TODO: Design drawer contents</div>
-      case DrawerTabs.Logic:
-        return <div>TODO: Logic drawer contents</div>
+      default:
+        return null
     }
   }, [activeField, activeTab])
 

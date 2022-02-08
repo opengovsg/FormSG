@@ -4,7 +4,7 @@ import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types/field'
 
-import { FIELDS_TO_CREATE_META } from './constants'
+import { FIELDS_TO_CREATE_META } from '../../../constants'
 
 interface FieldOptionProps extends BoxProps {
   isActive?: boolean

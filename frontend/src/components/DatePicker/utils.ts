@@ -33,7 +33,15 @@ export const MONTH_NAMES: { shortName: string; fullName: string }[] = [
 /**
  * Names of days to display at top of calendar columns
  */
-export const DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+export const DAY_NAMES: { shortName: string; fullName: string }[] = [
+  { shortName: 'Su', fullName: 'Sunday' },
+  { shortName: 'Mo', fullName: 'Monday' },
+  { shortName: 'Tu', fullName: 'Tuesday' },
+  { shortName: 'We', fullName: 'Wednesday' },
+  { shortName: 'Th', fullName: 'Thursday' },
+  { shortName: 'Fr', fullName: 'Friday' },
+  { shortName: 'Sa', fullName: 'Saturday' },
+]
 
 /**
  * Generates array of years which are options in the year dropdown.
