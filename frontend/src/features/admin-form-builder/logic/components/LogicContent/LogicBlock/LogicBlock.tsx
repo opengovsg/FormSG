@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { Box, Divider, Grid, Stack, Text, Wrap } from '@chakra-ui/react'
 
 import { LogicDto } from '~shared/types/form'
@@ -34,7 +35,7 @@ export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element => {
         px={{ base: '1.5rem', md: '2rem' }}
       >
         {logic.conditions.map((condition, index) => (
-          <>
+          <Fragment key={index}>
             <Text textStyle="subhead-2" lineHeight="1.5rem">
               {index === 0 ? 'If' : 'and'}
             </Text>
@@ -55,7 +56,7 @@ export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element => {
             >
               <LogicConditionValues value={condition.value} />
             </Wrap>
-          </>
+          </Fragment>
         ))}
 
         <Divider
@@ -71,8 +72,8 @@ export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element => {
         </Text>
         <Stack direction="column" spacing="0.25rem">
           {isShowFieldsLogic(logic) &&
-            logic.show.map((fieldId) => (
-              <FieldLogicBadge field={mapIdToField[fieldId]} />
+            logic.show.map((fieldId, index) => (
+              <FieldLogicBadge key={index} field={mapIdToField[fieldId]} />
             ))}
         </Stack>
       </Grid>
