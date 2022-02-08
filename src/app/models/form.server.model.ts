@@ -885,8 +885,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     // Webhooks only allowed if encrypt mode
     if (
       this.responseMode !== FormResponseMode.Encrypt &&
-      this.webhook?.url &&
-      this.webhook.url.length > 0
+      this.webhook?.url?.length > 0
     ) {
       const validationError = this.invalidate(
         'webhook',
