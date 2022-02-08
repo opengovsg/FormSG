@@ -3,12 +3,22 @@
  * to the field schema.
  */
 import { RegisterOptions } from 'react-hook-form'
+import {
+  endOfYesterday,
+  isAfter,
+  isBefore,
+  isDate,
+  parseISO,
+  startOfToday,
+} from 'date-fns'
 import simplur from 'simplur'
 import validator from 'validator'
 
 import {
   AttachmentFieldBase,
   CheckboxFieldBase,
+  DateFieldBase,
+  DateSelectedValidation,
   DecimalFieldBase,
   EmailFieldBase,
   FieldBase,
@@ -281,6 +291,62 @@ export const createCheckboxValidationRules: ValidationRuleFn<
       }
 
       return true
+    },
+  }
+}
+
+export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
+  schema,
+) => {
+  return {
+    ...createBaseValidationRules(schema),
+    validate: {
+      validDate: (val) =>
+        !val || isDate(parseISO(val)) || 'Please enter a valid date',
+      noFuture: (val) => {
+        if (
+          !val ||
+          schema.dateValidation.selectedDateValidation !==
+            DateSelectedValidation.NoFuture
+        ) {
+          return true
+        }
+        return (
+          isBefore(parseISO(val), startOfToday()) ||
+          'Only dates before today are allowed'
+        )
+      },
+      noPast: (val) => {
+        if (
+          !val ||
+          schema.dateValidation.selectedDateValidation !==
+            DateSelectedValidation.NoPast
+        ) {
+          return true
+        }
+        return (
+          isAfter(parseISO(val), endOfYesterday()) ||
+          'Only dates today or after are allowed'
+        )
+      },
+      range: (val) => {
+        if (
+          !val ||
+          schema.dateValidation.selectedDateValidation !==
+            DateSelectedValidation.Custom
+        ) {
+          return true
+        }
+
+        const { customMinDate, customMaxDate } = schema.dateValidation ?? {}
+        if (
+          (customMinDate && isBefore(parseISO(val), customMinDate)) ||
+          (customMaxDate && isAfter(parseISO(val), customMaxDate))
+        ) {
+          return 'Selected date is not within the allowed date range'
+        }
+        return true
+      },
     },
   }
 }
