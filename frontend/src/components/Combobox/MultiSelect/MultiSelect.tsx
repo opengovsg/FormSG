@@ -21,6 +21,7 @@ import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import Input from '~components/Input'
 
+import { ToggleChevron } from '../ToggleChevron'
 import { ComboboxItem } from '../types'
 import { defaultFilter, itemToLabelString, itemToValue } from '../utils'
 
@@ -265,18 +266,15 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
                   onClick: handleMenuOpen,
                 })}
               />
-              <InputRightElement>
-                <Icon
-                  as={isOpen ? BxsChevronUp : BxsChevronDown}
-                  sx={style.icon}
-                  {...getToggleButtonProps(
-                    getDropdownProps({
-                      disabled: formControlProps.isDisabled,
-                      readOnly: formControlProps.isReadOnly,
-                    }),
-                  )}
-                />
-              </InputRightElement>
+              <ToggleChevron
+                isOpen={isOpen}
+                isDisabled={isDisabled}
+                sx={styles.icon}
+                {...getToggleButtonProps({
+                  disabled: formControlProps.isDisabled,
+                  readOnly: formControlProps.isReadOnly,
+                })}
+              />
             </InputGroup>
           </Flex>
         </Flex>
