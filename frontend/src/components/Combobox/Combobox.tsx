@@ -1,27 +1,24 @@
 import { useCallback, useMemo, useState } from 'react'
-import { BiX } from 'react-icons/bi'
 import { usePopper } from 'react-popper'
 import {
   Box,
   Flex,
   FormControlOptions,
   forwardRef,
-  Icon,
   InputGroup,
-  InputLeftElement,
-  InputRightElement,
   List,
   ListItem,
+  StylesProvider,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { useCombobox } from 'downshift'
 
-import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
-import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
-import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
+import { ComboboxClearButton } from './ComboboxClearButton'
 import { DropdownItem } from './DropdownItem'
+import { LabelIcon } from './LabelIcon'
+import { ToggleChevron } from './ToggleChevron'
 import { ComboboxItem } from './types'
 import {
   defaultFilter,
@@ -95,9 +92,11 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
     const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
       null,
     )
-    const { styles, attributes } = usePopper(referenceElement, popperElement, {
-      placement: 'bottom-start',
-    })
+    const { styles: popperStyles, attributes: popperAttributes } = usePopper(
+      referenceElement,
+      popperElement,
+      { placement: 'bottom-start' },
+    )
 
     // To prepopulate selected item if value is provided.
     const getDefaultSelectedValue = useCallback(
@@ -151,7 +150,7 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
       },
     })
 
-    const style = useMultiStyleConfig('Combobox', {
+    const styles = useMultiStyleConfig('Combobox', {
       isClearable,
     })
 
@@ -167,89 +166,82 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
     }, [isOpen, openMenu])
 
     return (
-      <Box ref={setReferenceElement} sx={style.container}>
-        <Flex
-          {...getComboboxProps({
-            disabled: isDisabled,
-            readOnly: isReadOnly,
-          })}
-        >
-          <InputGroup>
-            {selectedItemIcon ? (
-              <InputLeftElement pointerEvents="none">
-                <Icon sx={style.icon} as={selectedItemIcon} />
-              </InputLeftElement>
-            ) : null}
-            <Input
-              isReadOnly={!isSearchable || isReadOnly}
-              isInvalid={isInvalid}
-              isDisabled={isDisabled}
-              sx={style.field}
-              placeholder={placeholder}
-              {...getInputProps({
-                onFocus: handleMenuOpen,
-                onClick: handleMenuOpen,
-                ref,
-              })}
-            />
-            <InputRightElement>
-              <Icon
-                as={isOpen ? BxsChevronUp : BxsChevronDown}
-                sx={style.icon}
+      <StylesProvider value={styles}>
+        <Box ref={setReferenceElement} sx={styles.container}>
+          <Flex
+            {...getComboboxProps({
+              disabled: isDisabled,
+              readOnly: isReadOnly,
+            })}
+          >
+            <InputGroup mr="-1px">
+              {selectedItemIcon ? <LabelIcon icon={selectedItemIcon} /> : null}
+              <Input
+                isReadOnly={!isSearchable || isReadOnly}
+                isInvalid={isInvalid}
+                isDisabled={isDisabled}
+                sx={styles.field}
+                placeholder={placeholder}
+                {...getInputProps({
+                  onFocus: handleMenuOpen,
+                  onClick: handleMenuOpen,
+                  ref,
+                })}
+              />
+              <ToggleChevron
+                isOpen={isOpen}
                 {...getToggleButtonProps({
                   disabled: isDisabled,
                   readOnly: isReadOnly,
                 })}
               />
-            </InputRightElement>
-          </InputGroup>
-          {isClearable ? (
-            <IconButton
-              sx={style.clearbutton}
-              isDisabled={isDisabled}
-              aria-label={clearButtonLabel}
-              icon={<BiX />}
-              onClick={() => selectItem(null)}
-            />
-          ) : null}
-        </Flex>
-        <Box
-          ref={setPopperElement}
-          style={styles.popper}
-          {...attributes.popper}
-          w="100%"
-          zIndex="dropdown"
-        >
-          <List
-            {...getMenuProps({
-              disabled: isDisabled,
-              readOnly: isReadOnly,
-              'aria-label': 'Dropdown list',
-            })}
-            sx={style.list}
-          >
-            {isOpen &&
-              filteredItems.map((item, index) => (
-                <DropdownItem
-                  key={`${itemToValue(item)}${index}`}
-                  item={item}
-                  index={index}
-                  isActive={selectedItem === item || undefined}
-                  isHighlighted={highlightedIndex === index}
-                  getItemProps={getItemProps}
-                  iconStyles={style.icon}
-                  itemStyles={style.item}
-                  inputValue={value}
-                />
-              ))}
-            {isOpen && filteredItems.length === 0 ? (
-              <ListItem role="option" sx={style.emptyItem}>
-                {nothingFoundLabel}
-              </ListItem>
+            </InputGroup>
+            {isClearable ? (
+              <ComboboxClearButton
+                isDisabled={isDisabled}
+                aria-label={clearButtonLabel}
+                onClick={() => selectItem(null)}
+              />
             ) : null}
-          </List>
+          </Flex>
+          <Box
+            ref={setPopperElement}
+            style={popperStyles.popper}
+            {...popperAttributes.popper}
+            w="100%"
+            zIndex="dropdown"
+          >
+            <List
+              {...getMenuProps({
+                disabled: isDisabled,
+                readOnly: isReadOnly,
+                'aria-label': 'Dropdown list',
+              })}
+              sx={styles.list}
+            >
+              {isOpen &&
+                filteredItems.map((item, index) => (
+                  <DropdownItem
+                    key={`${itemToValue(item)}${index}`}
+                    item={item}
+                    index={index}
+                    isActive={selectedItem === item || undefined}
+                    isHighlighted={highlightedIndex === index}
+                    getItemProps={getItemProps}
+                    iconStyles={styles.icon}
+                    itemStyles={styles.item}
+                    inputValue={value}
+                  />
+                ))}
+              {isOpen && filteredItems.length === 0 ? (
+                <ListItem role="option" sx={styles.emptyItem}>
+                  {nothingFoundLabel}
+                </ListItem>
+              ) : null}
+            </List>
+          </Box>
         </Box>
-      </Box>
+      </StylesProvider>
     )
   },
 )
