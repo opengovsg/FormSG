@@ -75,11 +75,6 @@ const Template: Story<MultiSelectProps> = ({ values: valuesProp, ...args }) => {
 }
 export const Default = Template.bind({})
 
-export const NotClearable = Template.bind({})
-NotClearable.args = {
-  isClearable: false,
-}
-
 export const WithDefaultInput = Template.bind({})
 WithDefaultInput.args = {
   defaultInputValue: 'What',
@@ -90,7 +85,6 @@ export const MobileTruncatedOption = Template.bind({})
 MobileTruncatedOption.args = {
   values: ['What happens when the label is fairly long', 'Bat'],
   defaultIsOpen: true,
-  isClearable: false,
 }
 MobileTruncatedOption.parameters = {
   viewport: {

@@ -97,7 +97,6 @@ export const MultiSelect: ComponentMultiStyleConfig<typeof parts> = {
           borderRadius: '4px',
         },
         field: {
-          borderRightRadius: props.isClearable ? 0 : undefined,
           border: 'none',
           _focus: {
             boxShadow: 'none',

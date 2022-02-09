@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react'
-import { BiX } from 'react-icons/bi'
 import { usePopper } from 'react-popper'
 import {
   Box,
@@ -20,7 +19,6 @@ import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
-import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
 import { ComboboxItem } from '../types'
@@ -55,12 +53,6 @@ export interface MultiSelectProps<Item = ComboboxItem, Value = string>
   /** Set to true to enable search, defaults to `true` */
   isSearchable?: boolean
 
-  /** Allow to clear item, defaults to `true` */
-  isClearable?: boolean
-
-  /** aria-label for clear button. Defaults to "Clear selected options" */
-  clearButtonLabel?: string
-
   /** Placeholder to show in the input field. Defaults to "Select options". */
   placeholder?: string
 
@@ -83,13 +75,11 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
       values = [],
       onChange,
       defaultIsOpen,
-      isClearable = true,
       isSearchable = true,
       isInvalid,
       isReadOnly,
       isDisabled,
       placeholder,
-      clearButtonLabel = 'Clear selected options',
     },
     ref,
   ): JSX.Element => {
@@ -146,7 +136,6 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
       addSelectedItem,
       removeSelectedItem,
       selectedItems,
-      setSelectedItems,
     } = useMultipleSelection<ComboboxItem>({
       selectedItems: getSelectedItemsFromValues(),
       onSelectedItemsChange: ({ selectedItems }) => {
@@ -230,9 +219,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
         : 'Select options'
     }, [placeholder, selectedItems.length])
 
-    const style = useMultiStyleConfig('MultiSelect', {
-      isClearable,
-    })
+    const style = useMultiStyleConfig('MultiSelect', {})
 
     const handleMenuOpen = useCallback(() => {
       if (!isOpen) {
@@ -286,16 +273,6 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
                 />
               </InputRightElement>
             </InputGroup>
-            {isClearable ? (
-              <IconButton
-                variant="clear"
-                colorScheme="secondary"
-                isDisabled={formControlProps.isDisabled}
-                aria-label={clearButtonLabel}
-                icon={<BiX />}
-                onClick={() => setSelectedItems([])}
-              />
-            ) : null}
           </Flex>
         </Flex>
         <Box
