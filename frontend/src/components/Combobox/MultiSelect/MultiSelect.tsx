@@ -260,10 +260,9 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
                 isReadOnly={!isSearchable || formControlProps.isReadOnly}
                 placeholder={dynamicPlaceholder}
                 {...getInputProps({
-                  ...getDropdownProps(),
+                  ...getDropdownProps({ ref }),
                   onFocus: handleMenuOpen,
                   onClick: handleMenuOpen,
-                  ref,
                 })}
               />
               <InputRightElement>
