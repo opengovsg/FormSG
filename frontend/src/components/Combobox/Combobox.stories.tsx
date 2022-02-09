@@ -123,7 +123,7 @@ Disabled.args = {
   isDisabled: true,
 }
 
-export const Playground: Story<ComboboxProps> = ({ items }) => {
+export const Playground: Story<ComboboxProps> = ({ items, isReadOnly }) => {
   const name = 'Dropdown'
   const {
     handleSubmit,
@@ -139,7 +139,11 @@ export const Playground: Story<ComboboxProps> = ({ items }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <FormControl isRequired isInvalid={!!errors[name]}>
+      <FormControl
+        isRequired
+        isInvalid={!!errors[name]}
+        isReadOnly={isReadOnly}
+      >
         <FormLabel>Best fruit</FormLabel>
         <Controller
           control={control}
@@ -160,4 +164,7 @@ export const Playground: Story<ComboboxProps> = ({ items }) => {
       <Button type="submit">Submit</Button>
     </form>
   )
+}
+Playground.args = {
+  isReadOnly: false,
 }

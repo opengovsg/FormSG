@@ -9,6 +9,7 @@ import {
   List,
   ListItem,
   StylesProvider,
+  useFormControlProps,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { useCombobox } from 'downshift'
@@ -79,9 +80,9 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
       defaultIsOpen,
       isClearable = true,
       isSearchable = true,
-      isInvalid,
-      isReadOnly,
-      isDisabled,
+      isInvalid: isInvalidProp,
+      isReadOnly: isReadOnlyProp,
+      isDisabled: isDisabledProp,
       placeholder = 'Select an option',
       clearButtonLabel = 'Clear dropdown',
     },
@@ -97,6 +98,12 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
       popperElement,
       { placement: 'bottom-start' },
     )
+
+    const { isDisabled, isInvalid, isReadOnly } = useFormControlProps({
+      isDisabled: isDisabledProp,
+      isInvalid: isInvalidProp,
+      isReadOnly: isReadOnlyProp,
+    })
 
     // To prepopulate selected item if value is provided.
     const getDefaultSelectedValue = useCallback(
@@ -131,13 +138,21 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
       defaultSelectedItem: getDefaultSelectedValue(),
       itemToString: itemToLabelString,
       onInputValueChange: ({ inputValue }) => {
+        if (isReadOnly || isDisabled) return
         onChange(inputValue ?? '')
       },
       onSelectedItemChange: ({ selectedItem }) => {
+        if (isReadOnly || isDisabled) return
         onChange(itemToValue(selectedItem ?? ''))
       },
       stateReducer: (_state, { changes, type }) => {
         switch (type) {
+          case useCombobox.stateChangeTypes.FunctionOpenMenu: {
+            return {
+              ...changes,
+              isOpen: isReadOnly || isDisabled ? false : changes.isOpen,
+            }
+          }
           case useCombobox.stateChangeTypes.InputBlur: {
             return {
               ...changes,
