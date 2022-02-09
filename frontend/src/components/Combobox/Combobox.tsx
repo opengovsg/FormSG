@@ -63,13 +63,17 @@ export interface ComboboxProps<Item = ComboboxItem, Value = string>
   /** Placeholder to show in the input field. Defaults to "Select an option". */
   placeholder?: string
 
-  /** ID of label for tagging input and dropdown to, for a11y purposes */
+  /** ID of input itself, for a11y purposes */
+  name?: string
+
+  /** ID of input itself, for a11y purposes */
   labelId?: string
 }
 
 export const Combobox = forwardRef<ComboboxProps, 'input'>(
   (
     {
+      name,
       labelId,
       limit,
       nothingFoundLabel = 'No matching results',
@@ -99,7 +103,7 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
       { placement: 'bottom-start' },
     )
 
-    const { isDisabled, isInvalid, isReadOnly } = useFormControlProps({
+    const { isDisabled, isInvalid, isReadOnly, id } = useFormControlProps({
       isDisabled: isDisabledProp,
       isInvalid: isInvalidProp,
       isReadOnly: isReadOnlyProp,
@@ -131,7 +135,8 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
       selectItem,
       highlightedIndex,
     } = useCombobox({
-      labelId,
+      labelId: labelId ?? `${id}-label`,
+      inputId: name,
       items: filteredItems,
       defaultIsOpen,
       inputValue: value,
@@ -189,6 +194,7 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
               {...getComboboxProps({
                 disabled: isDisabled,
                 readOnly: isReadOnly,
+                'aria-expanded': !!isOpen,
               })}
             >
               {selectedItemIcon ? (
@@ -239,6 +245,7 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
               {...getMenuProps({
                 disabled: isDisabled,
                 readOnly: isReadOnly,
+                hidden: !isOpen,
                 'aria-label': 'Dropdown list',
               })}
               sx={styles.list}
