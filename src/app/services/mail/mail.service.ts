@@ -163,11 +163,13 @@ export class MailService {
       })
 
       try {
-        await this.#transporter.sendMail(mail)
+        const info = await this.#transporter.sendMail(mail)
+
         logger.info({
           message: `Mail successfully sent on attempt ${attemptNum}`,
-          meta: logMeta,
+          meta: { ...logMeta, info },
         })
+
         return true
       } catch (error) {
         // Pass errors to the callback
