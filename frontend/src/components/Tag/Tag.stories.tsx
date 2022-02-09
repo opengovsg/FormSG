@@ -1,4 +1,5 @@
 import { BiRadioCircleMarked } from 'react-icons/bi'
+import { SimpleGrid, Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { Tag, TagCloseButton, TagLeftIcon, TagProps, TagRightIcon } from './Tag'
@@ -45,4 +46,36 @@ WithLeftRightIcon.args = {
   ),
   variant: 'solid',
   colorScheme: 'secondary',
+}
+
+const TemplateGroup: Story<TagProps> = (args) => (
+  <SimpleGrid
+    columns={2}
+    spacing={8}
+    templateColumns="max-content max-content"
+    alignItems="center"
+  >
+    <Text>primary</Text>
+    <Tag {...args} colorScheme="primary" />
+    <Text>secondary</Text>
+    <Tag {...args} colorScheme="secondary" />
+    <Text>warning</Text>
+    <Tag {...args} colorScheme="warning" />
+    <Text>success</Text>
+    <Tag {...args} colorScheme="success" />
+    <Text>neutral</Text>
+    <Tag {...args} colorScheme="neutral" />
+  </SimpleGrid>
+)
+
+export const SubtleColours = TemplateGroup.bind({})
+SubtleColours.args = {
+  children: 'Subtle',
+  variant: 'subtle',
+}
+
+export const SolidColours = TemplateGroup.bind({})
+SolidColours.args = {
+  children: 'Solid',
+  variant: 'solid',
 }
