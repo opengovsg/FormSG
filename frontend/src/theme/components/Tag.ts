@@ -1,11 +1,13 @@
 import { tagAnatomy } from '@chakra-ui/anatomy'
 import {
+  getColor,
   PartsStyleInterpolation,
   PartsStyleObject,
   SystemStyleObject,
 } from '@chakra-ui/theme-tools'
 
 import { ComponentMultiStyleConfig } from '~theme/types'
+import { meetsWcagAaRatio } from '~theme/utils/constrast'
 
 import { textStyles } from '../textStyles'
 
@@ -96,10 +98,17 @@ const variants: Record<string, PartsStyleInterpolation<typeof parts>> = {
   },
   solid: (props) => {
     const { colorScheme: c } = props
+    const bgColor = getColor(theme, `${c}.500`)
+    let textColor = getColor(theme, 'secondary.700')
+    const hasSufficientContrast = meetsWcagAaRatio(textColor, bgColor)
+    if (!hasSufficientContrast) {
+      textColor = 'white'
+    }
     return {
       container: {
         ...Badge.variants.solid(props),
-        bgColor: `${c}.500`,
+        bgColor,
+        color: textColor,
       },
       closeButton: {
         _focus: {

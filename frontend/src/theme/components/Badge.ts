@@ -1,4 +1,10 @@
-import { SystemStyleFunction, SystemStyleObject } from '@chakra-ui/theme-tools'
+import {
+  getColor,
+  SystemStyleFunction,
+  SystemStyleObject,
+} from '@chakra-ui/theme-tools'
+
+import { meetsWcagAaRatio } from '~theme/utils/constrast'
 
 import { textStyles } from '../textStyles'
 
@@ -10,22 +16,31 @@ const baseStyle: SystemStyleObject = {
 }
 
 const variantSolid: SystemStyleFunction = (props) => {
-  const { colorScheme: c } = props
-  const textColor = c === 'secondary' ? 'white' : 'secondary.700'
+  const { colorScheme: c, theme } = props
+  const bgColor = getColor(theme, `${c}.400`)
+  let textColor = getColor(theme, 'secondary.700')
+  const hasSufficientContrast = meetsWcagAaRatio(textColor, bgColor)
+  if (!hasSufficientContrast) {
+    textColor = 'white'
+  }
 
   return {
     color: textColor,
-    bgColor: `${c}.400`,
+    bgColor,
   }
 }
 const variantSubtle: SystemStyleFunction = (props) => {
-  const { colorScheme: c } = props
-  const textColor = ['primary', 'secondary'].includes(c ?? '')
-    ? `${c}.500`
-    : `${c}.800`
+  const { colorScheme: c, theme } = props
+
+  const bgColor = getColor(theme, `${c}.100`)
+  let textColor = getColor(theme, `${c}.500`)
+  const hasSufficientContrast = meetsWcagAaRatio(textColor, bgColor)
+  if (!hasSufficientContrast) {
+    textColor = `${c}.800`
+  }
 
   return {
-    bgColor: `${c}.100`,
+    bgColor,
     color: textColor,
   }
 }
