@@ -1,14 +1,21 @@
-import { As, Icon, InputLeftElement, useStyles } from '@chakra-ui/react'
+import { As, Icon, InputLeftElement, SystemStyleObject } from '@chakra-ui/react'
 
 export interface LabelIconProps {
   icon: As
+  sx: SystemStyleObject
+  isDisabled?: boolean
 }
 
-export const LabelIcon = ({ icon }: LabelIconProps): JSX.Element => {
-  const styles = useStyles()
+export const LabelIcon = ({
+  icon,
+  sx,
+  isDisabled,
+}: LabelIconProps): JSX.Element => {
+  // Cannot use useStyles as this component is nested in an InputGroup,
+  // and the styles from InputGroup will be used instead.
   return (
     <InputLeftElement pointerEvents="none">
-      <Icon __css={styles.icon} as={icon} />
+      <Icon sx={sx} as={icon} aria-disabled={isDisabled} />
     </InputLeftElement>
   )
 }

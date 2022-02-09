@@ -168,14 +168,21 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
     return (
       <StylesProvider value={styles}>
         <Box ref={setReferenceElement} sx={styles.container}>
-          <Flex
-            {...getComboboxProps({
-              disabled: isDisabled,
-              readOnly: isReadOnly,
-            })}
-          >
-            <InputGroup mr="-1px">
-              {selectedItemIcon ? <LabelIcon icon={selectedItemIcon} /> : null}
+          <Flex>
+            <InputGroup
+              pos="relative"
+              {...getComboboxProps({
+                disabled: isDisabled,
+                readOnly: isReadOnly,
+              })}
+            >
+              {selectedItemIcon ? (
+                <LabelIcon
+                  isDisabled={isDisabled}
+                  sx={styles.icon}
+                  icon={selectedItemIcon}
+                />
+              ) : null}
               <Input
                 isReadOnly={!isSearchable || isReadOnly}
                 isInvalid={isInvalid}
@@ -190,6 +197,8 @@ export const Combobox = forwardRef<ComboboxProps, 'input'>(
               />
               <ToggleChevron
                 isOpen={isOpen}
+                isDisabled={isDisabled}
+                sx={styles.icon}
                 {...getToggleButtonProps({
                   disabled: isDisabled,
                   readOnly: isReadOnly,

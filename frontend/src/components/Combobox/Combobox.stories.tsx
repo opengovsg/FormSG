@@ -110,6 +110,7 @@ WithIconSelected.args = {
   ],
   value: 'Radio button',
   defaultIsOpen: true,
+  isDisabled: false,
 }
 
 export const Invalid = Template.bind({})

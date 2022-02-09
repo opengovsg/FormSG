@@ -1,6 +1,10 @@
 import { menuAnatomy } from '@chakra-ui/anatomy'
 import { CSSObject, theme } from '@chakra-ui/react'
-import { anatomy, PartsStyleFunction } from '@chakra-ui/theme-tools'
+import {
+  anatomy,
+  PartsStyleFunction,
+  PartsStyleObject,
+} from '@chakra-ui/theme-tools'
 import merge from 'lodash/merge'
 
 import { ComponentMultiStyleConfig } from '~theme/types'
@@ -18,6 +22,18 @@ const parts = anatomy('combobox').parts(
   'icon',
   'emptyItem',
 )
+
+const sizes: Record<string, PartsStyleObject<typeof parts>> = {
+  md: {
+    clearbutton: {
+      // Remove extra 1px of border.
+      p: '11px',
+      w: 'auto',
+      minW: '2.75rem',
+      minH: '2.75rem',
+    },
+  },
+}
 
 export const Combobox: ComponentMultiStyleConfig<typeof parts> = {
   parts: parts.keys,
@@ -44,7 +60,8 @@ export const Combobox: ComponentMultiStyleConfig<typeof parts> = {
         pos: 'relative',
       },
       list: merge(chakraMenuBaseStyle.list, themeMenuBaseStyle.list, {
-        my: '0.5rem',
+        // To accomodate focus ring.
+        mt: '1px',
         w: '100%',
         overflowY: 'auto',
         maxH: '12rem',
@@ -52,10 +69,18 @@ export const Combobox: ComponentMultiStyleConfig<typeof parts> = {
       field: theme.components.Input.baseStyle.field,
       item: itemStyle,
       clearbutton: {
+        transitionProperty: 'common',
+        transitionDuration: 'normal',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'secondary.500',
+        borderRightRadius: '4px',
         borderLeftRadius: 0,
-        ml: '-1px',
       },
       icon: {
+        transitionProperty: 'common',
+        transitionDuration: 'normal',
         fontSize: '1.25rem',
         color: 'secondary.500',
         _disabled: {
@@ -81,6 +106,8 @@ export const Combobox: ComponentMultiStyleConfig<typeof parts> = {
       const menuOutlineVariant = (
         Menu.variants?.outline as PartsStyleFunction<typeof menuAnatomy>
       )?.(props)
+      const inputOutlineVariant = Input.variants.outline(props).field
+
       return {
         list: {
           ...menuOutlineVariant.list,
@@ -90,11 +117,13 @@ export const Combobox: ComponentMultiStyleConfig<typeof parts> = {
           cursor: 'pointer',
         } as CSSObject),
         field: {
-          ...Input.variants.outline(props).field,
+          ...inputOutlineVariant,
+          zIndex: 1,
           borderRightRadius: props.isClearable ? 0 : undefined,
         },
         clearbutton: {
-          ...Button.variants.outline({ ...props, colorScheme: 'secondary' }),
+          ...merge(inputOutlineVariant, { _focus: { zIndex: 1 } }),
+          ml: '-1px',
           _hover: {
             _disabled: {
               bg: 'neutral.200',
@@ -115,6 +144,7 @@ export const Combobox: ComponentMultiStyleConfig<typeof parts> = {
       }
     },
   },
+  sizes,
   defaultProps: {
     variant: 'outline',
     size: 'md',

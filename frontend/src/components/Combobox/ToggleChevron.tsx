@@ -1,24 +1,31 @@
-import { Icon, IconProps, InputRightElement, useStyles } from '@chakra-ui/react'
+import { HTMLProps } from 'react'
+import { Icon, InputRightElement, SystemStyleObject } from '@chakra-ui/react'
+import {} from 'downshift'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 
-export interface ToggleChevronProps extends Omit<IconProps, 'css'> {
+export interface ToggleChevronProps
+  extends Omit<HTMLProps<HTMLDivElement>, 'as'> {
   isOpen: boolean
+  sx: SystemStyleObject
+  isDisabled: boolean
 }
 
 export const ToggleChevron = ({
   isOpen,
+  sx,
+  isDisabled,
   ...props
 }: ToggleChevronProps): JSX.Element => {
-  const styles = useStyles()
-
+  // Cannot use useStyles as this component is nested in an InputGroup,
+  // and the styles from InputGroup will be used instead.
   return (
-    <InputRightElement>
+    <InputRightElement {...props}>
       <Icon
+        sx={sx}
         as={isOpen ? BxsChevronUp : BxsChevronDown}
-        __css={styles.icon}
-        {...props}
+        aria-disabled={isDisabled}
       />
     </InputRightElement>
   )
