@@ -12,3 +12,6 @@ export const LabelIcon = ({ icon }: LabelIconProps): JSX.Element => {
     </InputLeftElement>
   )
 }
+
+// So input group knows to add right padding to the inner input.
+LabelIcon.id = InputLeftElement.id

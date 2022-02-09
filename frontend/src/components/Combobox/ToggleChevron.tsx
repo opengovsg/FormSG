@@ -23,3 +23,6 @@ export const ToggleChevron = ({
     </InputRightElement>
   )
 }
+
+// So input group knows to add right padding to the inner input.
+ToggleChevron.id = InputRightElement.id
