@@ -56,16 +56,20 @@ export interface MultiSelectProps<Item = ComboboxItem, Value = string>
   /** Placeholder to show in the input field. Defaults to "Select options". */
   placeholder?: string
 
-  /** ID of label for tagging input and dropdown to, for a11y purposes */
-  labelId?: string
-
   /** Initial input value to populate input with, if available. */
   defaultInputValue?: string
+
+  /** ID of input itself, for a11y purposes */
+  name?: string
+
+  /** ID of input itself, for a11y purposes */
+  labelId?: string
 }
 
 export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
   (
     {
+      name,
       labelId,
       limit,
       nothingFoundLabel = 'No matching results',
@@ -156,7 +160,8 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
       openMenu,
       highlightedIndex,
     } = useCombobox({
-      labelId,
+      labelId: labelId ?? `${formControlProps.id}-label`,
+      inputId: name,
       inputValue,
       defaultIsOpen,
       selectedItem: null,
@@ -234,6 +239,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
             'aria-invalid': formControlProps.isInvalid,
             readOnly: formControlProps.isReadOnly,
             disabled: formControlProps.isDisabled,
+            'aria-expanded': !!isOpen,
           })}
           flexWrap="wrap"
           sx={style.fieldwrapper}
@@ -287,6 +293,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
               disabled: formControlProps.isDisabled,
               readOnly: formControlProps.isReadOnly,
               'aria-label': 'Dropdown list',
+              hidden: !isOpen,
             })}
             sx={style.list}
           >
