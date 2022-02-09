@@ -39,7 +39,8 @@ export const MultiSelect: ComponentMultiStyleConfig<typeof parts> = {
         pos: 'relative',
       },
       list: merge(chakraMenuBaseStyle.list, themeMenuBaseStyle.list, {
-        my: '0.5rem',
+        // To accomodate focus ring.
+        mt: '1px',
         w: '100%',
         overflowY: 'auto',
         maxH: '12rem',
