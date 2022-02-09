@@ -97,7 +97,7 @@ const variants: Record<string, PartsStyleInterpolation<typeof parts>> = {
     }
   },
   solid: (props) => {
-    const { colorScheme: c } = props
+    const { colorScheme: c, theme } = props
     const bgColor = getColor(theme, `${c}.500`)
     let textColor = getColor(theme, 'secondary.700')
     const hasSufficientContrast = meetsWcagAaRatio(textColor, bgColor)
