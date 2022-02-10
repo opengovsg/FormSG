@@ -2,37 +2,38 @@ import { useCallback, useMemo } from 'react'
 import { useCombobox } from 'downshift'
 
 import { useItems } from './hooks/useItems'
+import { defaultFilter } from './utils/defaultFilter'
 import { itemToLabelString, itemToValue } from './utils/itemUtils'
 import { SelectContext } from './SelectContext'
 import { ComboboxItem } from './types'
 
-export interface SingleSelectProviderProps<
-  Item = ComboboxItem,
-  Value = string,
-> {
+export interface SingleSelectProviderProps<Item = ComboboxItem> {
   items: Item[]
-  selectedValue: Value
-  onValueChange: (value: Value) => void
+  value: string
+  onChange: (value: string) => void
+  filter?(items: Item[], value: string): Item[]
+  /** Nothing found label. Defaults to "No matching results" */
+  nothingFoundLabel?: React.ReactNode
   children: React.ReactNode
 }
 export const SingleSelectProvider = ({
   items: rawItems,
-  selectedValue,
-  onValueChange,
+  value,
+  onChange,
+  filter = defaultFilter,
+  nothingFoundLabel = 'No matching results',
   children,
 }: SingleSelectProviderProps): JSX.Element => {
-  const { items, getItemByValue, mapDropdownItems } = useItems(rawItems)
+  const { items, getItemByValue } = useItems({ rawItems })
 
-  const selectedItem = useMemo(
-    () => getItemByValue(selectedValue)?.item,
-    [getItemByValue, selectedValue],
+  const filteredItems = useMemo(
+    () => (value ? filter(items, value) : items),
+    [filter, value, items],
   )
 
-  const isItemSelected = useCallback(
-    (item: ComboboxItem) => {
-      return itemToValue(selectedItem) === itemToValue(item)
-    },
-    [selectedItem],
+  const getDefaultSelectedValue = useCallback(
+    () => getItemByValue(value)?.item ?? null,
+    [getItemByValue, value],
   )
 
   const {
@@ -45,20 +46,30 @@ export const SingleSelectProvider = ({
     getItemProps,
     getToggleButtonProps,
     highlightedIndex,
-    inputValue,
-  } = useCombobox({
-    items,
     selectedItem,
+  } = useCombobox({
+    items: filteredItems,
+    inputValue: value,
+    onInputValueChange: ({ inputValue }) => {
+      onChange(inputValue ?? '')
+    },
+    defaultSelectedItem: getDefaultSelectedValue(),
     itemToString: itemToLabelString,
     onSelectedItemChange: ({ selectedItem }) => {
-      onValueChange(itemToValue(selectedItem))
+      onChange(itemToValue(selectedItem))
     },
   })
+
+  const isItemSelected = useCallback(
+    (item: ComboboxItem) => {
+      return itemToValue(selectedItem) === itemToValue(item)
+    },
+    [selectedItem],
+  )
 
   return (
     <SelectContext.Provider
       value={{
-        mapDropdownItems,
         isOpen,
         selectedItem,
         isItemSelected,
@@ -70,7 +81,9 @@ export const SingleSelectProvider = ({
         getMenuProps,
         getToggleButtonProps,
         highlightedIndex,
-        inputValue,
+        items: filteredItems,
+        nothingFoundLabel,
+        inputValue: value,
       }}
     >
       {children}

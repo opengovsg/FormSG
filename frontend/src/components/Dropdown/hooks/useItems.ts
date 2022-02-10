@@ -10,33 +10,25 @@ export type ItemWithIndex<Item extends ComboboxItem = ComboboxItem> = {
   index: number
 }
 
-export type UseItemsReturn<
-  Item extends ComboboxItem = ComboboxItem,
-  Value extends string = string,
-> = {
+export type UseItemsReturn<Item extends ComboboxItem = ComboboxItem> = {
   items: Item[]
-  normalized: {
-    allValues: string[]
-    byValue: Record<Value, ItemWithIndex<Item>>
-  }
+  byValue: Record<string, ItemWithIndex<Item>>
 }
 
-export const useItems = <
-  Item extends ComboboxItem = ComboboxItem,
-  Value extends string = string,
->(
-  rawItems: Item[],
-) => {
+interface UseItemProps<Item extends ComboboxItem = ComboboxItem> {
+  rawItems: Item[]
+}
+
+export const useItems = <Item extends ComboboxItem = ComboboxItem>({
+  rawItems,
+}: UseItemProps<Item>) => {
   const normalizedItems = useMemo(() => {
     const initialStore: UseItemsReturn<Item> = {
       // All selectable items
       items: [],
 
       // Normalized store for filtering and retrieval of state
-      normalized: {
-        allValues: [],
-        byValue: {},
-      },
+      byValue: {},
     }
 
     let itemIndex = 0
@@ -49,8 +41,7 @@ export const useItems = <
       }
 
       store.items.push(item)
-      store.normalized.allValues.push(value)
-      store.normalized.byValue[value] = {
+      store.byValue[value] = {
         item,
         index: itemIndex,
       }
@@ -62,25 +53,14 @@ export const useItems = <
   }, [rawItems])
 
   const getItemByValue = useCallback(
-    (value: Value): ItemWithIndex<Item> | null => {
-      return normalizedItems.normalized.byValue[value] ?? null
+    (value: string): ItemWithIndex<Item> | null => {
+      return normalizedItems.byValue[value] ?? null
     },
-    [normalizedItems.normalized.byValue],
-  )
-
-  const mapDropdownItems = useCallback(
-    (callback: (itemElement: ItemWithIndex<Item>) => JSX.Element) => {
-      return normalizedItems.normalized.allValues.map((value) => {
-        const item = normalizedItems.normalized.byValue[value]
-        return callback(item)
-      })
-    },
-    [normalizedItems.normalized.allValues, normalizedItems.normalized.byValue],
+    [normalizedItems.byValue],
   )
 
   return {
     items: normalizedItems.items,
     getItemByValue,
-    mapDropdownItems,
   }
 }
