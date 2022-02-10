@@ -1,6 +1,6 @@
-import { FC, useState } from 'react'
+import { FC, useRef, useState } from 'react'
 import { usePopper } from 'react-popper'
-import { Box } from '@chakra-ui/react'
+import { Box, useMergeRefs, useOutsideClick } from '@chakra-ui/react'
 
 import { useSelectContext } from '~components/Dropdown/SelectContext'
 
@@ -18,7 +18,15 @@ export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
     update,
   } = usePopper(referenceElement, popperElement, { placement: 'bottom-start' })
 
-  const { styles } = useSelectContext()
+  const { styles, setIsFocused } = useSelectContext()
+
+  const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const mergedPopperRefs = useMergeRefs(setReferenceElement, wrapperRef)
+
+  useOutsideClick({
+    ref: wrapperRef,
+    handler: () => setIsFocused(false),
+  })
 
   return (
     <SelectPopoverContext.Provider
@@ -29,7 +37,7 @@ export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
         update,
       }}
     >
-      <Box ref={setReferenceElement} sx={styles.container}>
+      <Box ref={mergedPopperRefs} sx={styles.container}>
         {children}
       </Box>
     </SelectPopoverContext.Provider>

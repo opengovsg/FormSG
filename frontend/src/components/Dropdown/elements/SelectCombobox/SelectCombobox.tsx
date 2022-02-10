@@ -24,13 +24,13 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       isInvalid,
       isRequired,
       placeholder,
+      setIsFocused,
     } = useSelectContext()
 
     const selectedItemIcon = useMemo(
       () => itemToIcon(selectedItem),
       [selectedItem],
     )
-
     return (
       <Flex>
         <InputGroup
@@ -39,6 +39,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             disabled: isDisabled,
             readOnly: isReadOnly,
             required: isRequired,
+            onFocus: () => setIsFocused(true),
           })}
         >
           {selectedItemIcon ? <LabelIcon icon={selectedItemIcon} /> : null}

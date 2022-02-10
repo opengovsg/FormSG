@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { FormControlOptions, useMultiStyleConfig } from '@chakra-ui/react'
 import { useCombobox } from 'downshift'
 
@@ -41,6 +41,7 @@ export const SingleSelectProvider = ({
   children,
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
+  const [isFocused, setIsFocused] = useState(false)
 
   const filteredItems = useMemo(
     () => (value ? filter(items, value) : items),
@@ -118,6 +119,8 @@ export const SingleSelectProvider = ({
         clearButtonLabel,
         placeholder,
         styles,
+        isFocused,
+        setIsFocused,
       }}
     >
       {children}

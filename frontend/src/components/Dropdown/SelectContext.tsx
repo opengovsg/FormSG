@@ -32,6 +32,8 @@ interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
   toggleMenu: () => void
   selectItem: (item: Item) => void
   styles: Record<string, CSSObject>
+  isFocused: boolean
+  setIsFocused: (isFocused: boolean) => void
 }
 
 export const SelectContext = createContext<SelectContextReturn | undefined>(
