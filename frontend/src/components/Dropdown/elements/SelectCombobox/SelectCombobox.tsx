@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { forwardRef, useMemo } from 'react'
 import { Flex, InputGroup } from '@chakra-ui/react'
 
 import Input from '~components/Input'
@@ -10,50 +10,53 @@ import { ComboboxClearButton } from './ComboboxClearButton'
 import { LabelIcon } from './LabelIcon'
 import { ToggleChevron } from './ToggleChevron'
 
-export const SelectCombobox = (): JSX.Element => {
-  const {
-    getComboboxProps,
-    toggleMenu,
-    selectedItem,
-    getInputProps,
-    styles,
-    isDisabled,
-    isSearchable,
-    isReadOnly,
-    isInvalid,
-    isRequired,
-    placeholder,
-  } = useSelectContext()
+export const SelectCombobox = forwardRef<HTMLInputElement>(
+  (_props, ref): JSX.Element => {
+    const {
+      getComboboxProps,
+      toggleMenu,
+      selectedItem,
+      getInputProps,
+      styles,
+      isDisabled,
+      isSearchable,
+      isReadOnly,
+      isInvalid,
+      isRequired,
+      placeholder,
+    } = useSelectContext()
 
-  const selectedItemIcon = useMemo(
-    () => itemToIcon(selectedItem),
-    [selectedItem],
-  )
+    const selectedItemIcon = useMemo(
+      () => itemToIcon(selectedItem),
+      [selectedItem],
+    )
 
-  return (
-    <Flex>
-      <InputGroup
-        pos="relative"
-        {...getComboboxProps({
-          disabled: isDisabled,
-          readOnly: isReadOnly,
-          required: isRequired,
-        })}
-      >
-        {selectedItemIcon ? <LabelIcon icon={selectedItemIcon} /> : null}
-        <Input
-          isReadOnly={!isSearchable || isReadOnly}
-          isInvalid={isInvalid}
-          isDisabled={isDisabled}
-          placeholder={placeholder}
-          sx={styles.field}
-          {...getInputProps({
-            onClick: toggleMenu,
+    return (
+      <Flex>
+        <InputGroup
+          pos="relative"
+          {...getComboboxProps({
+            disabled: isDisabled,
+            readOnly: isReadOnly,
+            required: isRequired,
           })}
-        />
-        <ToggleChevron />
-      </InputGroup>
-      <ComboboxClearButton />
-    </Flex>
-  )
-}
+        >
+          {selectedItemIcon ? <LabelIcon icon={selectedItemIcon} /> : null}
+          <Input
+            isReadOnly={!isSearchable || isReadOnly}
+            isInvalid={isInvalid}
+            isDisabled={isDisabled}
+            placeholder={placeholder}
+            sx={styles.field}
+            {...getInputProps({
+              onClick: toggleMenu,
+              ref,
+            })}
+          />
+          <ToggleChevron />
+        </InputGroup>
+        <ComboboxClearButton />
+      </Flex>
+    )
+  },
+)

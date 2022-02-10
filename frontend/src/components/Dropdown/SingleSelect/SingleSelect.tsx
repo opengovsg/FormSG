@@ -1,3 +1,5 @@
+import { forwardRef } from 'react'
+
 import { SelectCombobox } from '../elements/SelectCombobox'
 import { SelectMenu } from '../elements/SelectMenu'
 import {
@@ -7,11 +9,13 @@ import {
 
 export type SingleSelectProps = Omit<SingleSelectProviderProps, 'children'>
 
-export const SingleSelect = (props: SingleSelectProps): JSX.Element => {
-  return (
-    <SingleSelectProvider {...props}>
-      <SelectCombobox />
-      <SelectMenu />
-    </SingleSelectProvider>
-  )
-}
+export const SingleSelect = forwardRef<HTMLInputElement, SingleSelectProps>(
+  (props, ref): JSX.Element => {
+    return (
+      <SingleSelectProvider {...props}>
+        <SelectCombobox ref={ref} />
+        <SelectMenu />
+      </SingleSelectProvider>
+    )
+  },
+)
