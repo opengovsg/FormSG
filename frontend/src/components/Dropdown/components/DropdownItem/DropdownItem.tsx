@@ -41,8 +41,6 @@ export const DropdownItem = ({
   return (
     <ListItem
       sx={styles.item}
-      // Instantiating here as it provides a `ref` that doesn't seem to be able
-      // to be forwarded.
       // Data attributes are unique, any value will be truthy.
       // We want to not even have the tag if falsey.
       // This adds _active styling to the item.
