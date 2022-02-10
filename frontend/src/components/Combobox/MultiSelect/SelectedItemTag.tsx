@@ -96,6 +96,8 @@ export const SelectedItemTag = forwardRef<SelectedItemTagProps, 'div'>(
           {label}
         </TagLabel>
         <SelectedItemTagCloseButton
+          // Keyboard inaccessible; can be deleted with keyboard left/right arrows
+          tabIndex={-1}
           isDisabled={isDisabled}
           onClick={(e) => {
             e.stopPropagation()
