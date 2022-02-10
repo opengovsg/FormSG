@@ -25,6 +25,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       isRequired,
       placeholder,
       setIsFocused,
+      isOpen,
     } = useSelectContext()
 
     const selectedItemIcon = useMemo(
@@ -39,6 +40,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             disabled: isDisabled,
             readOnly: isReadOnly,
             required: isRequired,
+            'aria-expanded': !!isOpen,
             onFocus: () => setIsFocused(true),
           })}
         >

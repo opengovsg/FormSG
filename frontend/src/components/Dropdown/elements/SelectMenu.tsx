@@ -20,7 +20,12 @@ export const SelectMenu = (): JSX.Element => {
       w="100%"
       zIndex="dropdown"
     >
-      <List {...getMenuProps()} sx={styles.list}>
+      <List
+        {...getMenuProps({
+          hidden: !isOpen,
+        })}
+        sx={styles.list}
+      >
         {isOpen &&
           items.map((item, index) => (
             <DropdownItem
