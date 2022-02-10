@@ -1,17 +1,15 @@
-import { isString } from '@chakra-ui/utils'
-
 import { ComboboxItem } from '../types'
 
 const itemIsObject = (
   item: ComboboxItem,
 ): item is Exclude<ComboboxItem, string | null> => {
-  return !!item && !isString(item)
+  return !!item && typeof item !== 'string'
 }
 
 export const itemToValue = <Item extends ComboboxItem>(item?: Item): string => {
   if (!item) return ''
   if (!itemIsObject(item)) {
-    return item ?? ''
+    return item
   }
   return item.value
 }
@@ -21,7 +19,7 @@ export const itemToLabelString = <Item extends ComboboxItem>(
 ): string => {
   if (!item) return ''
   if (!itemIsObject(item)) {
-    return item ?? ''
+    return item
   }
   return item.label ?? item.value
 }
