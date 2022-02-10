@@ -45,7 +45,22 @@ export const MultiSelect: ComponentMultiStyleConfig<typeof parts> = {
         overflowY: 'auto',
         maxH: '12rem',
       } as CSSObject),
-      fieldwrapper: theme.components.Input.baseStyle.field,
+      field: {
+        h: '2rem',
+        flexGrow: 1,
+        minW: '3.75rem',
+        w: 0,
+        px: '2px',
+        alignSelf: 'center',
+        ':first-child': {
+          pl: '0.5rem',
+        },
+      },
+      fieldwrapper: {
+        ...theme.components.Input.baseStyle.field,
+        p: '0.375rem',
+        minH: '2.75rem',
+      },
       item: itemStyle,
       icon: {
         transitionProperty: 'common',

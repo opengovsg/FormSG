@@ -6,8 +6,6 @@ import {
   FormControlOptions,
   forwardRef,
   Icon,
-  InputGroup,
-  InputRightElement,
   List,
   ListItem,
   useFormControlProps,
@@ -15,13 +13,11 @@ import {
 } from '@chakra-ui/react'
 import { useCombobox, useMultipleSelection } from 'downshift'
 import keyBy from 'lodash/keyBy'
-import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import Input from '~components/Input'
 
-import { ToggleChevron } from '../ToggleChevron'
 import { ComboboxItem } from '../types'
 import { defaultFilter, itemToLabelString, itemToValue } from '../utils'
 
@@ -103,8 +99,8 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
       null,
     )
     const {
-      styles,
-      attributes,
+      styles: popperStyles,
+      attributes: popperAttributes,
       update: updateDropdownPosition,
     } = usePopper(referenceElement, popperElement, {
       placement: 'bottom-start',
@@ -216,16 +212,12 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
     })
 
     const dynamicPlaceholder = useMemo(() => {
-      if (placeholder) return placeholder
-
       const numSelectedItems = selectedItems.length
-
-      return numSelectedItems > 0
-        ? simplur`${numSelectedItems} option[|s] selected`
-        : 'Select options'
+      if (numSelectedItems > 0) return ''
+      if (placeholder) return placeholder ?? 'Select options'
     }, [placeholder, selectedItems.length])
 
-    const style = useMultiStyleConfig('MultiSelect', {})
+    const styles = useMultiStyleConfig('MultiSelect', {})
 
     const handleMenuOpen = useCallback(() => {
       if (!isOpen) {
@@ -234,7 +226,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
     }, [isOpen, openMenu])
 
     return (
-      <Box ref={setReferenceElement} sx={style.container}>
+      <Box ref={setReferenceElement} sx={styles.container}>
         <Flex
           {...getComboboxProps({
             'aria-invalid': formControlProps.isInvalid,
@@ -242,46 +234,56 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
             disabled: formControlProps.isDisabled,
             'aria-expanded': !!isOpen,
           })}
-          flexWrap="wrap"
-          sx={style.fieldwrapper}
+          sx={styles.fieldwrapper}
         >
-          <SelectedItems
-            isDisabled={
-              formControlProps.isDisabled || formControlProps.isReadOnly
-            }
-            selectedItems={selectedItems}
-            getSelectedItemProps={getSelectedItemProps}
-            handleRemoveItem={removeSelectedItem}
-          />
-          <Flex w="100%">
-            <InputGroup>
-              <Input
-                sx={style.field}
-                {...formControlProps}
-                isReadOnly={!isSearchable || formControlProps.isReadOnly}
-                placeholder={dynamicPlaceholder}
-                {...getInputProps({
-                  ...getDropdownProps({ ref }),
-                  onFocus: handleMenuOpen,
-                  onClick: handleMenuOpen,
-                })}
-              />
-              <ToggleChevron
-                isOpen={isOpen}
-                isDisabled={isDisabled}
-                sx={styles.icon}
-                {...getToggleButtonProps({
-                  disabled: formControlProps.isDisabled,
-                  readOnly: formControlProps.isReadOnly,
-                })}
-              />
-            </InputGroup>
-          </Flex>
+          <Box
+            display="inline-flex"
+            flexWrap="wrap"
+            flexGrow={1}
+            my="-0.25rem"
+            // Padding for dropdown toggle.
+            maxW="calc(100% - 2.5rem)"
+          >
+            <SelectedItems
+              isDisabled={
+                formControlProps.isDisabled || formControlProps.isReadOnly
+              }
+              selectedItems={selectedItems}
+              getSelectedItemProps={getSelectedItemProps}
+              handleRemoveItem={removeSelectedItem}
+            />
+            <Input
+              sx={styles.field}
+              {...formControlProps}
+              isReadOnly={!isSearchable || formControlProps.isReadOnly}
+              placeholder={dynamicPlaceholder}
+              {...getInputProps({
+                ...getDropdownProps({ ref }),
+                onFocus: handleMenuOpen,
+                onClick: handleMenuOpen,
+              })}
+            />
+          </Box>
+          <Box
+            display="inline-flex"
+            py="0.3125rem"
+            px="0.625rem"
+            __css={styles.icon}
+            {...getToggleButtonProps({
+              disabled: formControlProps.isDisabled,
+              readOnly: formControlProps.isReadOnly,
+            })}
+          >
+            <Icon
+              as={isOpen ? BxsChevronUp : BxsChevronDown}
+              aria-disabled={isDisabled}
+            />
+          </Box>
         </Flex>
         <Box
           ref={setPopperElement}
-          style={styles.popper}
-          {...attributes.popper}
+          style={popperStyles.popper}
+          {...popperAttributes.popper}
           w="100%"
           zIndex="dropdown"
         >
@@ -292,7 +294,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
               'aria-label': 'Dropdown list',
               hidden: !isOpen,
             })}
-            sx={style.list}
+            sx={styles.list}
           >
             {isOpen &&
               filteredItems.map((item, index) => (
@@ -303,13 +305,13 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
                   getItemProps={getItemProps}
                   isSelected={selectedItems.includes(item)}
                   isHighlighted={index === highlightedIndex}
-                  iconStyles={style.icon}
-                  itemStyles={style.item}
+                  iconStyles={styles.icon}
+                  itemStyles={styles.item}
                   inputValue={inputValue}
                 />
               ))}
             {isOpen && filteredItems.length === 0 ? (
-              <ListItem role="option" sx={style.emptyItem}>
+              <ListItem role="option" sx={styles.emptyItem}>
                 {nothingFoundLabel}
               </ListItem>
             ) : null}

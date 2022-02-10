@@ -86,6 +86,7 @@ export const SelectedItemTag = forwardRef<SelectedItemTagProps, 'div'>(
         px="0.5rem"
         py="0.375rem"
         color="secondary.500"
+        m="2px"
         {...props}
       >
         <TagLabel isTruncated ref={ref} textStyle="body-2">
