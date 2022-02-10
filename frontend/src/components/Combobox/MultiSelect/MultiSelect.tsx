@@ -176,6 +176,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
       inputId: name,
       inputValue,
       defaultIsOpen,
+      highlightedIndex: trackedHighlightIndex,
       selectedItem: null,
       items: filteredItems,
       stateReducer: (_state, { changes, type }) => {
