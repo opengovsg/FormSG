@@ -1,3 +1,5 @@
+import type { As } from '@chakra-ui/react'
+
 export type ComboboxItem =
   | {
       /** Value to be passed to onChange */
