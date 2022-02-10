@@ -29,7 +29,6 @@ export const SelectedItems = ({
           {...getSelectedItemProps({
             selectedItem,
             index,
-            tabIndex: -1,
             disabled: isDisabled,
           })}
           isDisabled={isDisabled}

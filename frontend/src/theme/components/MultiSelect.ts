@@ -51,6 +51,7 @@ export const MultiSelect: ComponentMultiStyleConfig<typeof parts> = {
         minW: '3.75rem',
         w: 0,
         px: '2px',
+        my: '2px',
         alignSelf: 'center',
         ':first-child': {
           pl: '0.5rem',

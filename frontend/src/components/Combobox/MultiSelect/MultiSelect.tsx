@@ -154,7 +154,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
       getComboboxProps,
       getItemProps,
       getToggleButtonProps,
-      openMenu,
+      toggleMenu,
       highlightedIndex,
     } = useCombobox({
       labelId: labelId ?? `${formControlProps.id}-label`,
@@ -219,12 +219,6 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
 
     const styles = useMultiStyleConfig('MultiSelect', {})
 
-    const handleMenuOpen = useCallback(() => {
-      if (!isOpen) {
-        openMenu()
-      }
-    }, [isOpen, openMenu])
-
     return (
       <Box ref={setReferenceElement} sx={styles.container}>
         <Flex
@@ -240,7 +234,8 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
             display="inline-flex"
             flexWrap="wrap"
             flexGrow={1}
-            my="-0.25rem"
+            // Margin difference for selected items.
+            my="-3px"
             // Padding for dropdown toggle.
             maxW="calc(100% - 2.5rem)"
           >
@@ -259,8 +254,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
               placeholder={dynamicPlaceholder}
               {...getInputProps({
                 ...getDropdownProps({ ref }),
-                onFocus: handleMenuOpen,
-                onClick: handleMenuOpen,
+                onClick: toggleMenu,
               })}
             />
           </Box>
