@@ -1,14 +1,18 @@
 import { createContext, useContext } from 'react'
-import { UseComboboxPropGetters } from 'downshift'
+import { UseComboboxPropGetters, UseComboboxState } from 'downshift'
 
+import { ItemWithIndex } from './hooks/useItems'
 import { ComboboxItem } from './types'
 
-interface SelectContextReturn<Item = ComboboxItem>
-  extends UseComboboxPropGetters<Item> {
+interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
+  extends UseComboboxPropGetters<Item>,
+    Partial<UseComboboxState<Item>> {
   isOpen: boolean
-  selectedItem?: ComboboxItem
   isItemSelected: (item: ComboboxItem) => boolean
   toggleMenu: () => void
+  mapDropdownItems: (
+    callback: (itemElement: ItemWithIndex<Item>) => JSX.Element,
+  ) => JSX.Element[]
 }
 
 export const SelectContext = createContext<SelectContextReturn | undefined>(

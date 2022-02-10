@@ -5,12 +5,12 @@ import { useCallback, useMemo } from 'react'
 import { ComboboxItem } from '../types'
 import { itemToValue } from '../utils/itemUtils'
 
-type ItemWithIndex<Item extends ComboboxItem = ComboboxItem> = {
+export type ItemWithIndex<Item extends ComboboxItem = ComboboxItem> = {
   item: Item
   index: number
 }
 
-type UseItemsReturn<
+export type UseItemsReturn<
   Item extends ComboboxItem = ComboboxItem,
   Value extends string = string,
 > = {
@@ -68,8 +68,19 @@ export const useItems = <
     [normalizedItems.normalized.byValue],
   )
 
+  const mapDropdownItems = useCallback(
+    (callback: (itemElement: ItemWithIndex<Item>) => JSX.Element) => {
+      return normalizedItems.normalized.allValues.map((value) => {
+        const item = normalizedItems.normalized.byValue[value]
+        return callback(item)
+      })
+    },
+    [normalizedItems.normalized.allValues, normalizedItems.normalized.byValue],
+  )
+
   return {
     items: normalizedItems.items,
     getItemByValue,
+    mapDropdownItems,
   }
 }

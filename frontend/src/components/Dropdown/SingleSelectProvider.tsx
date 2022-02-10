@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { useCombobox } from 'downshift'
 
 import { useItems } from './hooks/useItems'
-import { itemToValue } from './utils/itemUtils'
+import { itemToLabelString, itemToValue } from './utils/itemUtils'
 import { SelectContext } from './SelectContext'
 import { ComboboxItem } from './types'
 
@@ -21,7 +21,7 @@ export const SingleSelectProvider = ({
   onValueChange,
   children,
 }: SingleSelectProviderProps): JSX.Element => {
-  const { items, getItemByValue } = useItems(rawItems)
+  const { items, getItemByValue, mapDropdownItems } = useItems(rawItems)
 
   const selectedItem = useMemo(
     () => getItemByValue(selectedValue)?.item,
@@ -44,9 +44,12 @@ export const SingleSelectProvider = ({
     getInputProps,
     getItemProps,
     getToggleButtonProps,
+    highlightedIndex,
+    inputValue,
   } = useCombobox({
     items,
     selectedItem,
+    itemToString: itemToLabelString,
     onSelectedItemChange: ({ selectedItem }) => {
       onValueChange(itemToValue(selectedItem))
     },
@@ -55,6 +58,7 @@ export const SingleSelectProvider = ({
   return (
     <SelectContext.Provider
       value={{
+        mapDropdownItems,
         isOpen,
         selectedItem,
         isItemSelected,
@@ -65,6 +69,8 @@ export const SingleSelectProvider = ({
         getLabelProps,
         getMenuProps,
         getToggleButtonProps,
+        highlightedIndex,
+        inputValue,
       }}
     >
       {children}
