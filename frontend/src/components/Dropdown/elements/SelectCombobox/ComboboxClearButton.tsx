@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { BiX } from 'react-icons/bi'
 import { Button } from '@chakra-ui/react'
 
-import { useSelectContext } from '../SelectContext'
+import { useSelectContext } from '../../SelectContext'
 
 export const ComboboxClearButton = (): JSX.Element | null => {
   const { isClearable, isDisabled, clearButtonLabel, selectItem, styles } =

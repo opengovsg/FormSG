@@ -1,9 +1,9 @@
-import { Icon, InputRightElement, useMultiStyleConfig } from '@chakra-ui/react'
+import { Icon, InputRightElement } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 
-import { useSelectContext } from '../SelectContext'
+import { useSelectContext } from '../../SelectContext'
 
 export const ToggleChevron = (): JSX.Element => {
   const { isOpen, getToggleButtonProps, isDisabled, styles } =

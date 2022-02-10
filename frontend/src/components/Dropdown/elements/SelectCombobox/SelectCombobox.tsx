@@ -3,8 +3,8 @@ import { Flex, InputGroup } from '@chakra-ui/react'
 
 import Input from '~components/Input'
 
-import { useSelectContext } from '../SelectContext'
-import { itemToIcon } from '../utils/itemUtils'
+import { useSelectContext } from '../../SelectContext'
+import { itemToIcon } from '../../utils/itemUtils'
 
 import { ComboboxClearButton } from './ComboboxClearButton'
 import { LabelIcon } from './LabelIcon'

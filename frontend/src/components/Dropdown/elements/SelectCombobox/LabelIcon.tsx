@@ -1,6 +1,6 @@
 import { As, Icon, InputLeftElement } from '@chakra-ui/react'
 
-import { useSelectContext } from '../SelectContext'
+import { useSelectContext } from '../../SelectContext'
 
 export interface LabelIconProps {
   icon: As
