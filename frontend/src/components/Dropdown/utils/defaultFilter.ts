@@ -6,5 +6,5 @@ export const defaultFilter = <Item extends ComboboxItem>(
   items: Item[],
   value: string,
 ) => {
-  return matchSorter(items, value, { keys: ['value', 'label'] })
+  return matchSorter(items, value)
 }

@@ -90,6 +90,13 @@ HasValueSelected.args = {
   defaultIsOpen: true,
 }
 
+export const StringValues = Template.bind({})
+StringValues.args = {
+  items: ['this only has only string values', 'this is cool'],
+  value: 'this',
+  defaultIsOpen: true,
+}
+
 export const WithIconSelected = Template.bind({})
 WithIconSelected.args = {
   items: [
