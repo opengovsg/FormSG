@@ -6,6 +6,7 @@ import { Banner } from './Banner'
 import { Button } from './Button'
 import { Checkbox, CHECKBOX_THEME_KEY } from './Checkbox'
 import { CloseButton } from './CloseButton'
+import { Combobox } from './Combobox'
 import { DateInput } from './DateInput'
 import { Drawer } from './Drawer'
 import { Form } from './Form'
@@ -35,6 +36,7 @@ export const components = {
   Banner,
   Button,
   CloseButton,
+  Combobox,
   DateInput,
   Drawer,
   Form,

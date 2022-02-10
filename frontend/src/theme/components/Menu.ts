@@ -32,6 +32,7 @@ export const Menu: ComponentMultiStyleConfig<typeof parts> = {
     item: {
       padding: '0.75rem 1rem',
       fontWeight: '400',
+      color: 'secondary.700',
       _hover: {
         bg: 'primary.100',
         borderWidth: '0rem',
@@ -47,9 +48,23 @@ export const Menu: ComponentMultiStyleConfig<typeof parts> = {
         bg: 'primary.200',
         fontWeight: 500,
       },
+      _disabled: {
+        opacity: 0.6,
+        bg: 'initial',
+        _hover: {
+          bg: 'initial',
+        },
+        _active: {
+          fontWeight: 'initial',
+        },
+        cursor: 'not-allowed',
+      },
     },
     list: {
+      border: 'none',
+      borderRadius: 0,
       minWidth: '0rem',
+      shadow: 'var(--chakra-shadows-sm) !important',
     },
   }),
   variants: {
