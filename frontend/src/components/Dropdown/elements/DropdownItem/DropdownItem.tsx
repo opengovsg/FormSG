@@ -1,12 +1,5 @@
 import { useMemo } from 'react'
-import {
-  Flex,
-  Icon,
-  ListItem,
-  Stack,
-  Text,
-  useMultiStyleConfig,
-} from '@chakra-ui/react'
+import { Flex, Icon, ListItem, Stack, Text } from '@chakra-ui/react'
 
 import { useSelectContext } from '~components/Dropdown/SelectContext'
 
@@ -29,10 +22,8 @@ export const DropdownItem = ({
   item,
   index,
 }: DropdownItemProps): JSX.Element => {
-  const { getItemProps, isItemSelected, inputValue, highlightedIndex } =
+  const { getItemProps, isItemSelected, inputValue, highlightedIndex, styles } =
     useSelectContext()
-
-  const styles = useMultiStyleConfig('Combobox', {})
 
   const { icon, label, description, isDisabled, isHighlighted, isActive } =
     useMemo(

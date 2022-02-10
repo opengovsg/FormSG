@@ -1,4 +1,4 @@
-import { Box, List, ListItem, useMultiStyleConfig } from '@chakra-ui/react'
+import { Box, List, ListItem } from '@chakra-ui/react'
 
 import { useSelectContext } from '../SelectContext'
 import { itemToValue } from '../utils/itemUtils'
@@ -6,9 +6,8 @@ import { itemToValue } from '../utils/itemUtils'
 import { DropdownItem } from './DropdownItem'
 
 export const SelectMenu = (): JSX.Element => {
-  const { getMenuProps, isOpen, items, nothingFoundLabel } = useSelectContext()
-
-  const styles = useMultiStyleConfig('Combobox', {})
+  const { getMenuProps, isOpen, items, nothingFoundLabel, styles } =
+    useSelectContext()
 
   return (
     <Box w="100%" zIndex="dropdown">

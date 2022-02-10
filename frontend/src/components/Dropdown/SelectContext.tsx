@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import { FormControlOptions } from '@chakra-ui/react'
+import { CSSObject, FormControlOptions } from '@chakra-ui/react'
 import { UseComboboxPropGetters, UseComboboxState } from 'downshift'
 
 import { ComboboxItem } from './types'
@@ -31,6 +31,7 @@ interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
   isItemSelected: (item: ComboboxItem) => boolean
   toggleMenu: () => void
   selectItem: (item: Item) => void
+  styles: Record<string, CSSObject>
 }
 
 export const SelectContext = createContext<SelectContextReturn | undefined>(

@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from 'react'
-import { Flex, InputGroup, useMultiStyleConfig } from '@chakra-ui/react'
+import { useMemo } from 'react'
+import { Flex, InputGroup } from '@chakra-ui/react'
 
 import Input from '~components/Input'
 
@@ -13,15 +13,16 @@ import { ToggleChevron } from './ToggleChevron'
 export const SelectCombobox = (): JSX.Element => {
   const {
     getComboboxProps,
-    isOpen,
     toggleMenu,
     selectedItem,
     getInputProps,
-    getToggleButtonProps,
-    isClearable,
+    styles,
     isDisabled,
-    clearButtonLabel,
-    selectItem,
+    isSearchable,
+    isReadOnly,
+    isInvalid,
+    isRequired,
+    placeholder,
   } = useSelectContext()
 
   const selectedItemIcon = useMemo(
@@ -29,35 +30,30 @@ export const SelectCombobox = (): JSX.Element => {
     [selectedItem],
   )
 
-  const handleClearSelection = useCallback(() => selectItem(null), [selectItem])
-
-  const styles = useMultiStyleConfig('Combobox', { isClearable })
-
   return (
     <Flex>
-      <InputGroup pos="relative" {...getComboboxProps()}>
-        {selectedItemIcon ? (
-          <LabelIcon sx={styles.icon} icon={selectedItemIcon} />
-        ) : null}
+      <InputGroup
+        pos="relative"
+        {...getComboboxProps({
+          disabled: isDisabled,
+          readOnly: isReadOnly,
+          required: isRequired,
+        })}
+      >
+        {selectedItemIcon ? <LabelIcon icon={selectedItemIcon} /> : null}
         <Input
+          isReadOnly={!isSearchable || isReadOnly}
+          isInvalid={isInvalid}
+          isDisabled={isDisabled}
+          placeholder={placeholder}
           sx={styles.field}
           {...getInputProps({
             onClick: toggleMenu,
           })}
         />
-        <ToggleChevron
-          isOpen={isOpen}
-          sx={styles.icon}
-          {...getToggleButtonProps()}
-        />
+        <ToggleChevron />
       </InputGroup>
-      {isClearable ? (
-        <ComboboxClearButton
-          isDisabled={isDisabled}
-          aria-label={clearButtonLabel}
-          onClick={handleClearSelection}
-        />
-      ) : null}
+      <ComboboxClearButton />
     </Flex>
   )
 }

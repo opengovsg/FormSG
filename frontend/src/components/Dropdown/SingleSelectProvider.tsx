@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { FormControlOptions } from '@chakra-ui/react'
+import { FormControlOptions, useMultiStyleConfig } from '@chakra-ui/react'
 import { useCombobox } from 'downshift'
 
 import { useItems } from './hooks/useItems'
@@ -88,6 +88,8 @@ export const SingleSelectProvider = ({
     [selectedItem],
   )
 
+  const styles = useMultiStyleConfig('Combobox', { isClearable })
+
   return (
     <SelectContext.Provider
       value={{
@@ -115,6 +117,7 @@ export const SingleSelectProvider = ({
         name,
         clearButtonLabel,
         placeholder,
+        styles,
       }}
     >
       {children}
