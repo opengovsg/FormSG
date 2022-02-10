@@ -1,6 +1,6 @@
 import { ComboboxItem } from '../types'
 
-const itemIsObject = (
+export const itemIsObject = (
   item: ComboboxItem,
 ): item is Exclude<ComboboxItem, string | null> => {
   return !!item && typeof item !== 'string'
