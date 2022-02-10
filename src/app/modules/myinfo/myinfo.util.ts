@@ -272,10 +272,14 @@ export const getMyInfoFieldOptions = (
  * Creates state which MyInfo should forward back once user has logged in.
  * @param formId ID of form which user is logging into
  */
-export const createRelayState = (formId: string): string =>
+export const createRelayState = (
+  formId: string,
+  encodedQuery?: string,
+): string =>
   JSON.stringify({
     uuid: uuidv4(),
     formId,
+    encodedQuery,
   })
 
 /**
@@ -411,4 +415,6 @@ export const isMyInfoRelayState = (obj: unknown): obj is MyInfoRelayState =>
   mongoose.Types.ObjectId.isValid(obj.formId) &&
   hasProp(obj, 'uuid') &&
   typeof obj.uuid === 'string' &&
-  validateUUID(obj.uuid)
+  validateUUID(obj.uuid) &&
+  ((hasProp(obj, 'encodedQuery') && typeof obj.encodedQuery === 'string') ||
+    !hasProp(obj, 'encodedQuery'))

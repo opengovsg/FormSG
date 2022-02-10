@@ -2,7 +2,7 @@
 import axios from 'axios'
 import { ObjectId } from 'bson'
 import crypto from 'crypto'
-import dedent from 'dedent-js'
+import dedent from 'dedent'
 import { cloneDeep, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'

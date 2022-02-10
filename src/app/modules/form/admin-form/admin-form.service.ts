@@ -271,7 +271,13 @@ export const extractMyInfoFieldIds = (
  */
 export const archiveForm = (
   form: IPopulatedForm,
-): ResultAsync<true, DatabaseError> => {
+): ResultAsync<
+  true,
+  | DatabaseError
+  | DatabaseValidationError
+  | DatabaseConflictError
+  | DatabasePayloadSizeError
+> => {
   return ResultAsync.fromPromise(form.archive(), (error) => {
     logger.error({
       message: 'Database error encountered when archiving form',
@@ -282,7 +288,7 @@ export const archiveForm = (
       error,
     })
 
-    return new DatabaseError(getMongoErrorMessage(error))
+    return transformMongoError(error)
     // On success, return true
   }).map(() => true)
 }

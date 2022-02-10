@@ -145,7 +145,17 @@ npm run test-ci
 
 #### End-to-end tests
 
-Removed in [#3146](https://github.com/opengovsg/FormSG/pull/3146). Will be reimplemented when the React app is ready.
+```bash
+npm run test-e2e
+```
+
+will build both the frontend and backend then run our end-to-end tests. The tests are located at [`tests/end-to-end`](./tests/end-to-end). You will need to stop the Docker dev container to be able to run the end-to-end tests.
+
+If you do not need to rebuild the frontend and backend, you can run
+
+```bash
+npm run test-e2e-ci
+```
 
 ## Architecture
 

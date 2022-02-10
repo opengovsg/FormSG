@@ -38,7 +38,7 @@ describe('Webhook URL validation', () => {
     MockDns.resolve.mockRejectedValueOnce([])
     await expect(validateWebhookUrl(MOCK_WEBHOOK_URL)).rejects.toStrictEqual(
       new WebhookValidationError(
-        `Error encountered during DNS resolution for ${MOCK_WEBHOOK_URL}. Check that the URL is correct.`,
+        `Error encountered during DNS resolution for webhook URL: ${MOCK_WEBHOOK_URL}. Check that the URL is correct or delete the webhook before proceeding.`,
       ),
     )
   })

@@ -6,6 +6,7 @@ pull_request_rules:
       - check-success~=build
       - check-success~=test-frontend
       - check-success~=test-backend
+      - check-success~=test-e2e
       - check-success~=Analyze # CodeQL / Analyze
       - check-success~=CodeQL # CodeQL code scanning results
       - check-success~=GitGuardian
@@ -25,6 +26,7 @@ pull_request_rules:
       - check-success~=build
       - check-success~=test-frontend
       - check-success~=test-backend
+      - check-success~=test-e2e
       - check-success~=Analyze # CodeQL / Analyze
       - check-success~=CodeQL # CodeQL code scanning results
       - check-success~=GitGuardian
