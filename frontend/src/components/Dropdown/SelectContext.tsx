@@ -1,8 +1,10 @@
 import { createContext, useContext } from 'react'
+import { UseComboboxPropGetters } from 'downshift'
 
 import { ComboboxItem } from './types'
 
-interface SelectContextReturn {
+interface SelectContextReturn<Item = ComboboxItem>
+  extends UseComboboxPropGetters<Item> {
   isOpen: boolean
   selectedItem?: ComboboxItem
   isItemSelected: (item: ComboboxItem) => boolean

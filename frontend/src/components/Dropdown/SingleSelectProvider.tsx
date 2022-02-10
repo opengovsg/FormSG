@@ -35,7 +35,16 @@ export const SingleSelectProvider = ({
     [selectedItem],
   )
 
-  const { toggleMenu, isOpen } = useCombobox({
+  const {
+    toggleMenu,
+    isOpen,
+    getLabelProps,
+    getComboboxProps,
+    getMenuProps,
+    getInputProps,
+    getItemProps,
+    getToggleButtonProps,
+  } = useCombobox({
     items,
     selectedItem,
     onSelectedItemChange: ({ selectedItem }) => {
@@ -50,6 +59,12 @@ export const SingleSelectProvider = ({
         selectedItem,
         isItemSelected,
         toggleMenu,
+        getComboboxProps,
+        getInputProps,
+        getItemProps,
+        getLabelProps,
+        getMenuProps,
+        getToggleButtonProps,
       }}
     >
       {children}
