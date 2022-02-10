@@ -16,9 +16,9 @@ export interface SingleSelectProviderProps<
   value: string
   /** Controlled input onChange handler */
   onChange: (value: string) => void
-  /** Function based on which items in dropdown are filtered */
+  /** Function based on which items in dropdown are filtered. Default filter filters by fuzzy match. */
   filter?(items: Item[], value: string): Item[]
-  /** Initial dropdown opened state */
+  /** Initial dropdown opened state. Defaults to `false`. */
   defaultIsOpen?: boolean
   children: React.ReactNode
 }
