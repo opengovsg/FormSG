@@ -12,7 +12,7 @@ export interface SharedSelectContextReturnProps<
   /** Set to true to allow clearing of input, defaults to `true` */
   isClearable?: boolean
   /** Nothing found label. Defaults to "No matching results" */
-  nothingFoundLabel?: React.ReactNode
+  nothingFoundLabel?: string
   /** aria-label for clear button. Defaults to "Clear dropdown" */
   clearButtonLabel?: string
   /** Placeholder to show in the input field. Defaults to "Select an option". */
