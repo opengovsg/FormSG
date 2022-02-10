@@ -140,6 +140,7 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
     } = useMultipleSelection<ComboboxItem>({
       selectedItems: getSelectedItemsFromValues(),
       onSelectedItemsChange: ({ selectedItems }) => {
+        if (isDisabled) return
         onChange(selectedItems?.map(itemToValue) ?? [])
         // Recalculate dropdown position on item change, so dropdown and move with the container.
         updateDropdownPosition?.()
