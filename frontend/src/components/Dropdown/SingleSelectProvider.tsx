@@ -46,11 +46,15 @@ export const SingleSelectProvider = ({
     getItemProps,
     getToggleButtonProps,
     highlightedIndex,
+    selectItem,
     selectedItem,
   } = useCombobox({
     items: filteredItems,
     inputValue: value,
     onInputValueChange: ({ inputValue }) => {
+      if (!inputValue) {
+        selectItem(null)
+      }
       onChange(inputValue ?? '')
     },
     defaultSelectedItem: getDefaultSelectedValue(),
@@ -62,7 +66,7 @@ export const SingleSelectProvider = ({
 
   const isItemSelected = useCallback(
     (item: ComboboxItem) => {
-      return itemToValue(selectedItem) === itemToValue(item)
+      return !!selectedItem && itemToValue(selectedItem) === itemToValue(item)
     },
     [selectedItem],
   )
