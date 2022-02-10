@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Flex, InputGroup, useMultiStyleConfig } from '@chakra-ui/react'
 
 import Input from '~components/Input'
@@ -6,6 +6,7 @@ import Input from '~components/Input'
 import { useSelectContext } from '../SelectContext'
 import { itemToIcon } from '../utils/itemUtils'
 
+import { ComboboxClearButton } from './ComboboxClearButton'
 import { LabelIcon } from './LabelIcon'
 import { ToggleChevron } from './ToggleChevron'
 
@@ -17,6 +18,10 @@ export const SelectCombobox = (): JSX.Element => {
     selectedItem,
     getInputProps,
     getToggleButtonProps,
+    isClearable,
+    isDisabled,
+    clearButtonLabel,
+    selectItem,
   } = useSelectContext()
 
   const selectedItemIcon = useMemo(
@@ -24,7 +29,9 @@ export const SelectCombobox = (): JSX.Element => {
     [selectedItem],
   )
 
-  const styles = useMultiStyleConfig('Combobox', {})
+  const handleClearSelection = useCallback(() => selectItem(null), [selectItem])
+
+  const styles = useMultiStyleConfig('Combobox', { isClearable })
 
   return (
     <Flex>
@@ -44,6 +51,13 @@ export const SelectCombobox = (): JSX.Element => {
           {...getToggleButtonProps()}
         />
       </InputGroup>
+      {isClearable ? (
+        <ComboboxClearButton
+          isDisabled={isDisabled}
+          aria-label={clearButtonLabel}
+          onClick={handleClearSelection}
+        />
+      ) : null}
     </Flex>
   )
 }
