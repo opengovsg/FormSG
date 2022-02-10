@@ -29,7 +29,7 @@ export const DropdownItem = ({
   item,
   index,
 }: DropdownItemProps): JSX.Element => {
-  const { getItemProps, selectedItem, inputValue, highlightedIndex } =
+  const { getItemProps, isItemSelected, inputValue, highlightedIndex } =
     useSelectContext()
 
   const styles = useMultiStyleConfig('Combobox', {})
@@ -42,9 +42,9 @@ export const DropdownItem = ({
         description: itemToDescriptionString(item),
         isDisabled: isItemDisabled(item),
         isHighlighted: highlightedIndex === index,
-        isActive: selectedItem === item,
+        isActive: isItemSelected(item),
       }),
-      [highlightedIndex, index, item, selectedItem],
+      [highlightedIndex, index, isItemSelected, item],
     )
 
   return (
@@ -52,6 +52,10 @@ export const DropdownItem = ({
       sx={styles.item}
       // Instantiating here as it provides a `ref` that doesn't seem to be able
       // to be forwarded.
+      // Data attributes are unique, any value will be truthy.
+      // We want to not even have the tag if falsey.
+      // This adds _active styling to the item.
+      data-active={isActive || undefined}
       {...getItemProps({
         item,
         index,
