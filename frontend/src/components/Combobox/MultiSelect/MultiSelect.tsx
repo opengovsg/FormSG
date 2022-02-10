@@ -145,6 +145,20 @@ export const MultiSelect = forwardRef<MultiSelectProps, 'input'>(
         updateDropdownPosition?.()
       },
       itemToString: itemToLabelString,
+      stateReducer: (_state, { changes, type }) => {
+        switch (type) {
+          case useMultipleSelection.stateChangeTypes.FunctionRemoveSelectedItem:
+            return {
+              ...changes,
+              // The focus will move to the input/button
+              // This prevents a bug where the focus would move to a selected item
+              // when deselecting a selected item in the dropdown.
+              activeIndex: -1,
+            }
+          default:
+            return changes
+        }
+      },
     })
 
     const {
