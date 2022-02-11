@@ -1,16 +1,17 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { BiHeading, BiRadioCircleMarked } from 'react-icons/bi'
+import { BiRadioCircleMarked } from 'react-icons/bi'
 import { FormControl } from '@chakra-ui/react'
-import { useArgs } from '@storybook/client-api'
 import { Meta, Story } from '@storybook/react'
+import difference from 'lodash/difference'
 
+import { viewports } from '~utils/storybook'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 
 import { ComboboxItem } from '../types'
-import { itemToLabelString, itemToValue } from '../utils/itemUtils'
+import { itemToValue } from '../utils/itemUtils'
 
 import { MultiSelect, MultiSelectProps } from './MultiSelect'
 
@@ -18,17 +19,16 @@ const INITIAL_COMBOBOX_ITEMS: ComboboxItem[] = [
   {
     value: 'A',
     label: 'A',
-    description: 'Not to be confused with B',
   },
   {
-    value: 'B',
-    label: 'B',
-    description: 'Not to be confused with A',
-    disabled: true,
+    value: 'What happens when the label is fairly long',
+    label: 'What happens when the label is fairly long',
   },
   {
     value: 'Bat',
     label: 'Bat',
+    icon: BiRadioCircleMarked,
+    description: 'With description',
   },
   {
     value: 'C',
@@ -67,16 +67,15 @@ export default {
   decorators: [],
   args: {
     items: INITIAL_COMBOBOX_ITEMS,
-    value: '',
+    values: [],
   },
-} as Meta
+} as Meta<MultiSelectProps>
 
-const Template: Story<MultiSelectProps> = (args) => {
-  const [{ value = '' }, updateArgs] = useArgs()
-  const onChange = (value: string) => updateArgs({ value })
-  return <MultiSelect {...args} value={value} onChange={onChange} />
+const Template: Story<MultiSelectProps> = ({ values: valuesProp, ...args }) => {
+  const [values, setValues] = useState<string[]>(valuesProp)
+
+  return <MultiSelect {...args} values={values} onChange={setValues} />
 }
-
 export const Default = Template.bind({})
 
 export const NotClearable = Template.bind({})
@@ -84,41 +83,23 @@ NotClearable.args = {
   isClearable: false,
 }
 
-export const HasValueSelected = Template.bind({})
-HasValueSelected.args = {
-  value: itemToLabelString(INITIAL_COMBOBOX_ITEMS[0]),
+export const WithDefaultInput = Template.bind({})
+WithDefaultInput.args = {
+  defaultInputValue: 'What',
   defaultIsOpen: true,
 }
 
-export const StringValues = Template.bind({})
-StringValues.args = {
-  items: ['this only has only string values', 'this is cool'],
-  value: 'this',
+export const MobileTruncatedOption = Template.bind({})
+MobileTruncatedOption.args = {
+  values: ['What happens when the label is fairly long', 'Bat'],
   defaultIsOpen: true,
+  isClearable: false,
 }
-
-export const WithIconSelected = Template.bind({})
-WithIconSelected.args = {
-  items: [
-    {
-      value: 'Radio button',
-      icon: BiRadioCircleMarked,
-      description: 'This is an option with an icon',
-    },
-    {
-      value: 'Radio button button',
-      icon: BiRadioCircleMarked,
-      description: 'To show highlight effect between active and inactive',
-    },
-    {
-      value: 'Section',
-      icon: BiHeading,
-      description: 'This is another option with an icon',
-    },
-  ],
-  value: 'Radio button',
-  defaultIsOpen: true,
-  isDisabled: false,
+MobileTruncatedOption.parameters = {
+  viewport: {
+    defaultViewport: 'mobile1',
+  },
+  chromatic: { viewports: [viewports.xs] },
 }
 
 export const Invalid = Template.bind({})
@@ -131,45 +112,54 @@ Disabled.args = {
   isDisabled: true,
 }
 
-export const Playground: Story<MultiSelectProps> = ({ items, isReadOnly }) => {
-  const name = 'Dropdown'
+export const DisabledWithSelection = Template.bind({})
+DisabledWithSelection.args = {
+  isDisabled: true,
+  values: ['What happens when the label is fairly long', 'Bat'],
+}
+
+export const Playground: Story<MultiSelectProps> = ({ items, isDisabled }) => {
+  const name = 'Multiselect'
   const {
     handleSubmit,
     formState: { errors },
     control,
   } = useForm({
     defaultValues: {
-      [name]: '',
+      [name]: [],
     },
   })
-
-  const itemValues = useMemo(() => items.map((i) => itemToValue(i)), [items])
 
   const onSubmit = useCallback((data: unknown) => {
     alert(JSON.stringify(data))
   }, [])
 
+  const itemValues = useMemo(() => items.map((i) => itemToValue(i)), [items])
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <FormControl
-        isRequired
-        isInvalid={!!errors[name]}
-        isReadOnly={isReadOnly}
-      >
-        <FormLabel>Best fruit</FormLabel>
+      <FormControl isRequired isInvalid={!!errors[name]}>
+        <FormLabel>Select all fruits you love</FormLabel>
         <Controller
           control={control}
           name={name}
           rules={{
-            required: 'Dropdown selection is required',
-            validate: (value) => {
+            required: 'Please select at least one option',
+            validate: (values) => {
               return (
-                itemValues.includes(value) ||
-                'Entered value is not valid dropdown option'
+                difference(values, itemValues).length === 0 ||
+                'Some selected options do not exist in the dropdown options'
               )
             },
           }}
-          render={({ field }) => <MultiSelect items={items} {...field} />}
+          render={({ field: { value, ...field } }) => (
+            <MultiSelect
+              values={value}
+              items={items}
+              {...field}
+              isDisabled={isDisabled}
+            />
+          )}
         />
         <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>
       </FormControl>
@@ -177,6 +167,7 @@ export const Playground: Story<MultiSelectProps> = ({ items, isReadOnly }) => {
     </form>
   )
 }
+
 Playground.args = {
-  isReadOnly: false,
+  isDisabled: false,
 }

@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 
-import { SelectCombobox } from '../components/SelectCombobox'
-import { SelectMenu } from '../components/SelectMenu'
+import { MultiSelectCombobox } from '../components/MultiSelectCombobox'
+import { MultiSelectMenu } from '../components/MultiSelectMenu'
 import { SelectPopoverProvider } from '../components/SelectPopover'
 
 import {
@@ -16,8 +16,8 @@ export const MultiSelect = forwardRef<HTMLInputElement, MultiSelectProps>(
     return (
       <MultiSelectProvider {...props}>
         <SelectPopoverProvider>
-          <SelectCombobox ref={ref} />
-          <SelectMenu />
+          <MultiSelectCombobox ref={ref} />
+          <MultiSelectMenu />
         </SelectPopoverProvider>
       </MultiSelectProvider>
     )

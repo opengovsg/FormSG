@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { Flex, Icon, ListItem, Stack, Text } from '@chakra-ui/react'
 
-import Checkbox from '~components/Checkbox'
 import { useSelectContext } from '~components/Dropdown/SelectContext'
 import { ComboboxItem } from '~components/Dropdown/types'
 import {
