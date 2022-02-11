@@ -7,7 +7,7 @@ import {
 } from '@chakra-ui/theme-tools'
 
 import { ComponentMultiStyleConfig } from '~theme/types'
-import { meetsWcagAaRatio } from '~theme/utils/constrast'
+import { meetsWcagAaRatio } from '~theme/utils/contrast'
 
 import { textStyles } from '../textStyles'
 
