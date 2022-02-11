@@ -47,6 +47,7 @@ export const MultiSelectProvider = ({
   const { items, getItemByValue } = useItems({ rawItems })
   const [inputValue, setInputValue] = useState(defaultInputValue ?? '')
   const [isFocused, setIsFocused] = useState(false)
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1)
 
   const filteredItems = useMemo(
     () => (inputValue ? filter(items, inputValue) : items),
@@ -60,6 +61,35 @@ export const MultiSelectProvider = ({
   }, [getItemByValue, values])
 
   const {
+    getSelectedItemProps,
+    getDropdownProps,
+    addSelectedItem,
+    removeSelectedItem,
+    selectedItems,
+    reset,
+  } = useMultipleSelection<typeof items[0]>({
+    defaultSelectedItems: getDefaultSelectedItems(),
+    onSelectedItemsChange: ({ selectedItems }) => {
+      onChange(selectedItems?.map(itemToValue) ?? [])
+    },
+    itemToString: itemToLabelString,
+    stateReducer: (_state, { changes, type }) => {
+      switch (type) {
+        case useMultipleSelection.stateChangeTypes.FunctionRemoveSelectedItem:
+          return {
+            ...changes,
+            // The focus will move to the input/button
+            // This prevents a bug where the focus would move to a selected item
+            // when deselecting a selected item in the dropdown.
+            activeIndex: -1,
+          }
+        default:
+          return changes
+      }
+    },
+  })
+
+  const {
     toggleMenu,
     isOpen,
     getLabelProps,
@@ -68,7 +98,6 @@ export const MultiSelectProvider = ({
     getInputProps,
     getItemProps,
     getToggleButtonProps,
-    highlightedIndex,
     selectItem,
     selectedItem,
   } = useCombobox({
@@ -77,32 +106,59 @@ export const MultiSelectProvider = ({
     onInputValueChange: ({ inputValue }) => setInputValue(inputValue ?? ''),
     defaultIsOpen,
     selectedItem: null,
-  })
-
-  const {
-    getSelectedItemProps,
-    getDropdownProps,
-    activeIndex,
-    addSelectedItem,
-    removeSelectedItem,
-    selectedItems,
-    setSelectedItems,
-  } = useMultipleSelection<typeof items[0]>({
-    defaultSelectedItems: getDefaultSelectedItems(),
-    onSelectedItemsChange: ({ selectedItems }) => {
-      onChange(selectedItems?.map(itemToValue) ?? [])
+    highlightedIndex,
+    onStateChange: ({ type, selectedItem }) => {
+      switch (type) {
+        case useCombobox.stateChangeTypes.InputKeyDownEnter:
+        case useCombobox.stateChangeTypes.ItemClick:
+          if (selectedItem) {
+            if (selectedItems.includes(selectedItem)) {
+              removeSelectedItem(selectedItem)
+            } else {
+              addSelectedItem(selectedItem)
+            }
+          }
+          setInputValue('')
+          break
+        default:
+          break
+      }
     },
-    itemToString: itemToLabelString,
+    stateReducer: (_state, { changes, type }) => {
+      switch (type) {
+        case useCombobox.stateChangeTypes.InputKeyDownArrowDown:
+        case useCombobox.stateChangeTypes.InputKeyDownArrowUp:
+        case useCombobox.stateChangeTypes.ItemMouseMove:
+          setHighlightedIndex(changes.highlightedIndex ?? 0)
+          return changes
+        case useCombobox.stateChangeTypes.InputKeyDownEnter:
+        case useCombobox.stateChangeTypes.ItemClick:
+          return {
+            ...changes,
+            // Keep the menu open after selection.
+            isOpen: true,
+          }
+        case useCombobox.stateChangeTypes.InputBlur:
+          setInputValue('')
+          // Clear input regardless on blur.
+          return {
+            ...changes,
+            inputValue: '',
+            isOpen: false,
+          }
+      }
+      return changes
+    },
   })
 
   const isItemSelected = useCallback(
     (item: ComboboxItem) => {
-      return !!selectedItem && itemToValue(selectedItem) === itemToValue(item)
+      return selectedItems.includes(item)
     },
-    [selectedItem],
+    [selectedItems],
   )
 
-  const styles = useMultiStyleConfig('MultiSelect', { isClearable })
+  const styles = useMultiStyleConfig('MultiSelect', { isClearable, isFocused })
 
   return (
     <SelectContext.Provider
@@ -141,7 +197,9 @@ export const MultiSelectProvider = ({
           selectedItems,
           getDropdownProps,
           getSelectedItemProps,
-          activeIndex,
+          addSelectedItem,
+          removeSelectedItem,
+          reset,
         }}
       >
         {children}

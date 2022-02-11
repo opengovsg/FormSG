@@ -1,6 +1,7 @@
 // Context provides multi-select handlers. Mostly complemented by SelectContext.
 import { createContext, useContext } from 'react'
 import {
+  UseMultipleSelectionActions,
   UseMultipleSelectionPropGetters,
   UseMultipleSelectionState,
 } from 'downshift'
@@ -9,7 +10,11 @@ import { ComboboxItem } from './types'
 
 interface MultiSelectContextReturn<Item extends ComboboxItem = ComboboxItem>
   extends UseMultipleSelectionPropGetters<Item>,
-    UseMultipleSelectionState<Item> {}
+    Pick<UseMultipleSelectionState<Item>, 'selectedItems'>,
+    Pick<
+      UseMultipleSelectionActions<Item>,
+      'reset' | 'addSelectedItem' | 'removeSelectedItem'
+    > {}
 
 export const MultiSelectContext = createContext<
   MultiSelectContextReturn | undefined
