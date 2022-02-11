@@ -2,11 +2,11 @@ import { useCallback, useMemo, useState } from 'react'
 import { FormControlOptions, useMultiStyleConfig } from '@chakra-ui/react'
 import { useCombobox } from 'downshift'
 
-import { useItems } from './hooks/useItems'
-import { defaultFilter } from './utils/defaultFilter'
-import { itemToLabelString, itemToValue } from './utils/itemUtils'
-import { SelectContext, SharedSelectContextReturnProps } from './SelectContext'
-import { ComboboxItem } from './types'
+import { useItems } from '../hooks/useItems'
+import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
+import { ComboboxItem } from '../types'
+import { defaultFilter } from '../utils/defaultFilter'
+import { itemToLabelString, itemToValue } from '../utils/itemUtils'
 
 export interface SingleSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
