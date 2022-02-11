@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
 import { FormControlOptions, useMultiStyleConfig } from '@chakra-ui/react'
-import { useCombobox } from 'downshift'
+import { useCombobox, useMultipleSelection } from 'downshift'
 
 import { useItems } from '../hooks/useItems'
+import { MultiSelectContext } from '../MultiSelectContext'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
 import { ComboboxItem } from '../types'
 import { defaultFilter } from '../utils/defaultFilter'
@@ -12,10 +13,12 @@ export interface MultiSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
 > extends SharedSelectContextReturnProps<Item>,
     FormControlOptions {
-  /** Controlled input value */
-  value: string
-  /** Controlled input onChange handler */
-  onChange: (value: string) => void
+  /** Controlled selected values */
+  values: string[]
+  /** Controlled selection onChange handler */
+  onChange: (value: string[]) => void
+  /** Default value to populate input on render, if any */
+  defaultInputValue?: string
   /** Function based on which items in dropdown are filtered. Default filter filters by fuzzy match. */
   filter?(items: Item[], value: string): Item[]
   /** Initial dropdown opened state. Defaults to `false`. */
@@ -24,8 +27,9 @@ export interface MultiSelectProviderProps<
 }
 export const MultiSelectProvider = ({
   items: rawItems,
-  value,
+  values,
   onChange,
+  defaultInputValue,
   name,
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
@@ -41,17 +45,19 @@ export const MultiSelectProvider = ({
   children,
 }: MultiSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
+  const [inputValue, setInputValue] = useState(defaultInputValue ?? '')
   const [isFocused, setIsFocused] = useState(false)
 
   const filteredItems = useMemo(
-    () => (value ? filter(items, value) : items),
-    [filter, value, items],
+    () => (inputValue ? filter(items, inputValue) : items),
+    [filter, inputValue, items],
   )
 
-  const getDefaultSelectedValue = useCallback(
-    () => getItemByValue(value)?.item ?? null,
-    [getItemByValue, value],
-  )
+  const getDefaultSelectedItems = useCallback(() => {
+    return values
+      .map((value) => getItemByValue(value)?.item ?? null)
+      .filter(Boolean)
+  }, [getItemByValue, values])
 
   const {
     toggleMenu,
@@ -67,19 +73,26 @@ export const MultiSelectProvider = ({
     selectedItem,
   } = useCombobox({
     items: filteredItems,
-    inputValue: value,
+    inputValue,
+    onInputValueChange: ({ inputValue }) => setInputValue(inputValue ?? ''),
     defaultIsOpen,
-    onInputValueChange: ({ inputValue }) => {
-      if (!inputValue) {
-        selectItem(null)
-      }
-      onChange(inputValue ?? '')
+    selectedItem: null,
+  })
+
+  const {
+    getSelectedItemProps,
+    getDropdownProps,
+    activeIndex,
+    addSelectedItem,
+    removeSelectedItem,
+    selectedItems,
+    setSelectedItems,
+  } = useMultipleSelection<typeof items[0]>({
+    defaultSelectedItems: getDefaultSelectedItems(),
+    onSelectedItemsChange: ({ selectedItems }) => {
+      onChange(selectedItems?.map(itemToValue) ?? [])
     },
-    defaultSelectedItem: getDefaultSelectedValue(),
     itemToString: itemToLabelString,
-    onSelectedItemChange: ({ selectedItem }) => {
-      onChange(itemToValue(selectedItem))
-    },
   })
 
   const isItemSelected = useCallback(
@@ -108,7 +121,7 @@ export const MultiSelectProvider = ({
         highlightedIndex,
         items: filteredItems,
         nothingFoundLabel,
-        inputValue: value,
+        inputValue,
         isSearchable,
         isClearable,
         isInvalid,
@@ -123,7 +136,16 @@ export const MultiSelectProvider = ({
         setIsFocused,
       }}
     >
-      {children}
+      <MultiSelectContext.Provider
+        value={{
+          selectedItems,
+          getDropdownProps,
+          getSelectedItemProps,
+          activeIndex,
+        }}
+      >
+        {children}
+      </MultiSelectContext.Provider>
     </SelectContext.Provider>
   )
 }
