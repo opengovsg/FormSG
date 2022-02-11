@@ -4,6 +4,7 @@ import { Box, chakra, Flex, Icon, useMergeRefs } from '@chakra-ui/react'
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useMultiSelectContext } from '~components/Dropdown/MultiSelectContext'
+import { itemToValue } from '~components/Dropdown/utils/itemUtils'
 
 import { useSelectContext } from '../../SelectContext'
 import { MultiSelectItem } from '../MultiSelectItem'
@@ -47,7 +48,11 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
 
     const items = useMemo(() => {
       return selectedItems.map((item, index) => (
-        <MultiSelectItem item={item} index={index} />
+        <MultiSelectItem
+          item={item}
+          index={index}
+          key={`${itemToValue(item)}${index}`}
+        />
       ))
     }, [selectedItems])
 
