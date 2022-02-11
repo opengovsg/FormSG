@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { MouseEvent, useCallback, useMemo } from 'react'
 
 import Button from '~components/Button'
 import { useMultiSelectContext } from '~components/Dropdown/MultiSelectContext'
@@ -7,8 +7,20 @@ import { useSelectContext } from '~components/Dropdown/SelectContext'
 import { MultiSelectItem } from '../MultiSelectItem'
 
 const ShowMoreItemBlock = ({ amountToShow }: { amountToShow: number }) => {
+  const { isDisabled, isReadOnly, setIsFocused } = useSelectContext()
+
+  const handleClick = useCallback(
+    (e: MouseEvent) => {
+      // Prevent click from bubbling to parent.
+      e.stopPropagation()
+      if (isDisabled || isReadOnly) return
+      setIsFocused(true)
+    },
+    [isDisabled, isReadOnly, setIsFocused],
+  )
+
   return (
-    <Button as="span" variant="link" size="sm">
+    <Button onClick={handleClick} variant="link" size="sm">
       +{amountToShow} more
     </Button>
   )

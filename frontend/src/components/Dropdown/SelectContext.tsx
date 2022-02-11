@@ -29,6 +29,7 @@ interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
     Required<SharedSelectContextReturnProps<Item>>,
     FormControlOptions {
   isItemSelected: (item: ComboboxItem) => boolean
+  closeMenu: () => void
   toggleMenu: () => void
   selectItem: (item: Item) => void
   styles: Record<string, CSSObject>

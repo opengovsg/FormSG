@@ -18,19 +18,37 @@ export const MultiSelectItem = ({
   item,
   index,
 }: MultiSelectItemProps): JSX.Element => {
-  const { isDisabled, isReadOnly } = useSelectContext()
+  const { isDisabled, isReadOnly, setIsFocused, closeMenu, isOpen } =
+    useSelectContext()
   const { getSelectedItemProps, removeSelectedItem } = useMultiSelectContext()
 
   const itemLabel = useMemo(() => itemToLabelString(item), [item])
 
   const handleRemoveItem = useCallback(
     (e: MouseEvent) => {
+      // Required so tag can properly gain focus without the parent from
+      // stealing focus due to parent's onClick handler.
       e.stopPropagation()
       if (isDisabled || isReadOnly) return
       removeSelectedItem(item)
     },
     [isDisabled, isReadOnly, item, removeSelectedItem],
   )
+
+  const handleTagClick = useCallback(
+    (e: MouseEvent) => {
+      // Required so tag can properly gain focus without the parent from
+      // stealing focus due to parent's onClick handler.
+      e.stopPropagation()
+      if (isDisabled || isReadOnly) return
+      setIsFocused(true)
+      if (isOpen) {
+        closeMenu()
+      }
+    },
+    [closeMenu, isDisabled, isOpen, isReadOnly, setIsFocused],
+  )
+
   return (
     <Tag
       title={itemLabel}
@@ -62,9 +80,7 @@ export const MultiSelectItem = ({
             event.nativeEvent.preventDownshiftDefault = true
           }
         },
-        // Required so tag can properly gain focus without the parent from
-        // stealing focus due to parent's onClick handler.
-        onClick: (e) => e.stopPropagation(),
+        onClick: handleTagClick,
       })}
     >
       <TagLabel>{itemLabel}</TagLabel>

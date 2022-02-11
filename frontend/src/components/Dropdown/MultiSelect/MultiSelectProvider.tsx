@@ -117,6 +117,7 @@ export const MultiSelectProvider = ({
 
   const {
     toggleMenu,
+    closeMenu,
     isOpen,
     getLabelProps,
     getComboboxProps,
@@ -197,6 +198,7 @@ export const MultiSelectProvider = ({
         selectedItem,
         isItemSelected,
         toggleMenu,
+        closeMenu,
         getComboboxProps,
         getInputProps,
         getItemProps,
