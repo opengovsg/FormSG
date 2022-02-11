@@ -9,6 +9,8 @@ import { itemToValue } from '~components/Dropdown/utils/itemUtils'
 import { useSelectContext } from '../../SelectContext'
 import { MultiSelectItem } from '../MultiSelectItem'
 
+import { SelectedItems } from './SelectedItems'
+
 const MultiItemsContainer: FC = ({ children }) => {
   return (
     <Box
@@ -36,7 +38,6 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
       isRequired,
       placeholder,
       setIsFocused,
-      isFocused,
       isOpen,
       toggleMenu,
       isInvalid,
@@ -46,16 +47,6 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
 
     const inputRef = useRef<HTMLInputElement | null>(null)
     const mergedRefs = useMergeRefs(inputRef, ref)
-
-    const items = useMemo(() => {
-      return selectedItems.map((item, index) => (
-        <MultiSelectItem
-          item={item}
-          index={index}
-          key={`${itemToValue(item)}${index}`}
-        />
-      ))
-    }, [selectedItems])
 
     const handleWrapperClick = useCallback(() => {
       setIsFocused(true)
@@ -92,10 +83,9 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
         })}
       >
         <MultiItemsContainer>
-          {items}
+          <SelectedItems />
           <chakra.input
             placeholder={placeholder}
-            cursor={isFocused ? undefined : 'pointer'}
             __css={styles.field}
             {...getInputProps(
               getDropdownProps({

@@ -14,7 +14,9 @@ interface MultiSelectContextReturn<Item extends ComboboxItem = ComboboxItem>
     Pick<
       UseMultipleSelectionActions<Item>,
       'reset' | 'addSelectedItem' | 'removeSelectedItem'
-    > {}
+    > {
+  maxItems: number | null
+}
 
 export const MultiSelectContext = createContext<
   MultiSelectContextReturn | undefined

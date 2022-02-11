@@ -27,6 +27,12 @@ export interface MultiSelectProviderProps<
   filter?(items: Item[], value: string): Item[]
   /** Initial dropdown opened state. Defaults to `false`. */
   defaultIsOpen?: boolean
+  /**
+   * The maximum number of selected items to render while multiselect is unfocused.
+   * Defaults to `4`. Set to `null` to render all items.
+   */
+  maxItems?: number | null
+
   children: React.ReactNode
 }
 export const MultiSelectProvider = ({
@@ -37,7 +43,7 @@ export const MultiSelectProvider = ({
   name,
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
-  placeholder = 'Select an option',
+  placeholder = 'Select options',
   clearButtonLabel = 'Clear dropdown',
   isClearable = true,
   isSearchable = true,
@@ -46,6 +52,7 @@ export const MultiSelectProvider = ({
   isReadOnly,
   isDisabled,
   isRequired,
+  maxItems = 4,
   children,
 }: MultiSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
@@ -92,6 +99,12 @@ export const MultiSelectProvider = ({
       }
     },
   })
+
+  const dynamicPlaceholder = useMemo(() => {
+    const numSelectedItems = selectedItems.length
+    if (numSelectedItems > 0) return ''
+    return placeholder ?? 'Select options'
+  }, [placeholder, selectedItems.length])
 
   const {
     toggleMenu,
@@ -162,7 +175,11 @@ export const MultiSelectProvider = ({
     [selectedItems],
   )
 
-  const styles = useMultiStyleConfig('MultiSelect', { isClearable, isFocused })
+  const styles = useMultiStyleConfig('MultiSelect', {
+    isClearable,
+    isFocused,
+    isEmpty: selectedItems.length === 0,
+  })
 
   const formControlProps = useFormControlProps({
     isInvalid,
@@ -191,13 +208,13 @@ export const MultiSelectProvider = ({
         inputValue,
         isSearchable,
         isClearable,
-        ...formControlProps,
         name,
         clearButtonLabel,
-        placeholder,
+        placeholder: dynamicPlaceholder,
         styles,
         isFocused,
         setIsFocused,
+        ...formControlProps,
       }}
     >
       <MultiSelectContext.Provider
@@ -208,6 +225,7 @@ export const MultiSelectProvider = ({
           addSelectedItem,
           removeSelectedItem,
           reset,
+          maxItems,
         }}
       >
         {children}

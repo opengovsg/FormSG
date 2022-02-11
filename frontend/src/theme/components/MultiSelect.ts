@@ -13,6 +13,7 @@ export const parts = anatomy('multiselect').parts(
 )
 
 const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
+  const { isFocused, isEmpty } = props
   const comboboxBaseStyle = pick(
     SingleSelect.baseStyle(props),
     comboboxParts.keys,
@@ -40,6 +41,16 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       ':focus-visible': {
         outline: 'none',
       },
+      ...(!isFocused && !isEmpty
+        ? {
+            cursor: 'pointer',
+            minW: 0,
+            minH: 0,
+            h: 0,
+            w: 0,
+            opacity: 0,
+          }
+        : {}),
     },
     itemcheckbox: merge(Checkbox.baseStyle(props).control, {
       display: 'inline-flex',
