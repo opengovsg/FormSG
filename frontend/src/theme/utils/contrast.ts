@@ -69,7 +69,6 @@ export const meetsWcagAaRatio = (
   background: string,
 ): boolean => {
   const contrast = getContrast(foreground, background)
-  console.log(background, foreground, contrast)
   if (!contrast) return false
   return contrast >= MIN_WCAG_AA_CONTRAST_RATIO
 }
