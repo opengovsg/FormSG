@@ -30,15 +30,18 @@ const HEX_REGEX = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i
  */
 const hexToRgb = (hex: string): RgbColour | null => {
   // Expanding hex string to expanded form if available.
+  // E.g. `'03F'` to full form `'0033FF'`
   const normalizedHex = hex.replace(
     HEX_SHORTHAND_EXPAND_REGEX,
-    (_hexSign, r, g, b) => r + r + g + g + b + b,
+    (_m, r, g, b) => r + r + g + g + b + b,
   )
 
+  // E.g. `'0033FF'` to `[0033FF, 00, 33, FF]`
   const result = HEX_REGEX.exec(normalizedHex)
   if (!result) return null
 
-  return result.map((block) => parseInt(block, 16)) as RgbColour
+  // Slice to remove the first element which is just the full matched string.
+  return result.slice(1).map((block) => parseInt(block, 16)) as RgbColour
 }
 
 /**
