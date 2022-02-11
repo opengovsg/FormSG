@@ -1,5 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
-import { FormControlOptions, useMultiStyleConfig } from '@chakra-ui/react'
+import {
+  FormControlOptions,
+  useFormControlProps,
+  useMultiStyleConfig,
+} from '@chakra-ui/react'
 import { useCombobox, useMultipleSelection } from 'downshift'
 
 import { useItems } from '../hooks/useItems'
@@ -160,6 +164,13 @@ export const MultiSelectProvider = ({
 
   const styles = useMultiStyleConfig('MultiSelect', { isClearable, isFocused })
 
+  const formControlProps = useFormControlProps({
+    isInvalid,
+    isDisabled,
+    isReadOnly,
+    isRequired,
+  })
+
   return (
     <SelectContext.Provider
       value={{
@@ -180,10 +191,7 @@ export const MultiSelectProvider = ({
         inputValue,
         isSearchable,
         isClearable,
-        isInvalid,
-        isDisabled,
-        isReadOnly,
-        isRequired,
+        ...formControlProps,
         name,
         clearButtonLabel,
         placeholder,

@@ -25,6 +25,8 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       p: '0.375rem',
       minH: '2.75rem',
       cursor: 'pointer',
+      transitionProperty: 'common',
+      transitionDuration: 'normal',
     },
     field: {
       h: '2rem',
@@ -34,9 +36,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       px: '2px',
       my: '2px',
       alignSelf: 'center',
-      ':first-child': {
-        pl: '0.5rem',
-      },
+      pl: '0.5rem',
       ':focus-visible': {
         outline: 'none',
       },
@@ -65,6 +65,7 @@ const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
     ...comboboxVariantOutline,
     fieldwrapper: {
       borderRadius: '4px',
+      _focusWithin: inputFieldVariantOutline._focus,
       ...inputFieldVariantOutline,
       ...(isFocused ? inputFieldVariantOutline._focus : {}),
     },

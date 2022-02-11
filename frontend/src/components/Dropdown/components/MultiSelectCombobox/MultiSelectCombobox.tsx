@@ -39,6 +39,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
       isFocused,
       isOpen,
       toggleMenu,
+      isInvalid,
     } = useSelectContext()
 
     const { getDropdownProps, selectedItems } = useMultiSelectContext()
@@ -78,6 +79,9 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
 
     return (
       <Flex
+        aria-disabled={isDisabled}
+        aria-invalid={isInvalid}
+        aria-readonly={isReadOnly}
         __css={styles.fieldwrapper}
         {...getComboboxProps({
           disabled: isDisabled,
@@ -90,7 +94,6 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
         <MultiItemsContainer>
           {items}
           <chakra.input
-            disabled={isDisabled}
             placeholder={placeholder}
             cursor={isFocused ? undefined : 'pointer'}
             __css={styles.field}
@@ -99,6 +102,8 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
                 ref: mergedRefs,
                 onFocus: () => setIsFocused(true),
                 onKeyDown: handleInputTabKeydown,
+                readOnly: isReadOnly,
+                disabled: isDisabled,
               }),
             )}
           />
