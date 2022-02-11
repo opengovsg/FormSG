@@ -1,41 +1,67 @@
-import { ComponentStyleConfig } from '~theme/types'
+import {
+  getColor,
+  SystemStyleFunction,
+  SystemStyleObject,
+} from '@chakra-ui/theme-tools'
+
+import { meetsWcagAaRatio } from '~theme/utils/contrast'
 
 import { textStyles } from '../textStyles'
 
 export type BadgeVariants = 'solid' | 'subtle'
 
-export const Badge: ComponentStyleConfig = {
-  baseStyle: {
-    ...textStyles['caption-1'],
-    textTransform: 'initial',
-  },
-  variants: {
-    solid: ({ colorScheme: c }) => {
-      const textColor = c === 'secondary' ? 'white' : 'secondary.700'
+const baseStyle: SystemStyleObject = {
+  ...textStyles['caption-1'],
+  textTransform: 'initial',
+}
 
-      return {
-        color: textColor,
-        bgColor: `${c}.400`,
-      }
-    },
-    subtle: ({ colorScheme: c }) => {
-      const textColor = ['primary', 'secondary'].includes(c ?? '')
-        ? `${c}.500`
-        : `${c}.800`
+const variantSolid: SystemStyleFunction = (props) => {
+  const { colorScheme: c, theme } = props
+  const bgColor = getColor(theme, `${c}.400`)
+  let textColor = getColor(theme, 'secondary.700')
+  const hasSufficientContrast = meetsWcagAaRatio(textColor, bgColor)
+  if (!hasSufficientContrast) {
+    textColor = 'white'
+  }
 
-      return {
-        bgColor: `${c}.100`,
-        color: textColor,
-      }
-    },
+  return {
+    color: textColor,
+    bgColor,
+  }
+}
+const variantSubtle: SystemStyleFunction = (props) => {
+  const { colorScheme: c, theme } = props
+
+  const bgColor = getColor(theme, `${c}.100`)
+  let textColor = getColor(theme, `${c}.500`)
+  const hasSufficientContrast = meetsWcagAaRatio(textColor, bgColor)
+  if (!hasSufficientContrast) {
+    textColor = `${c}.800`
+  }
+
+  return {
+    bgColor,
+    color: textColor,
+  }
+}
+
+const variants = {
+  solid: variantSolid,
+  subtle: variantSubtle,
+}
+
+const sizes: Record<string, SystemStyleObject> = {
+  md: {
+    py: '0.25rem',
+    px: '0.5rem',
+    borderRadius: '4px',
   },
-  sizes: {
-    md: {
-      py: '0.25rem',
-      px: '0.5rem',
-      borderRadius: '4px',
-    },
-  },
+}
+
+export const Badge = {
+  baseStyle,
+  variants,
+  sizes,
   defaultProps: {
     variant: 'solid',
     size: 'md',

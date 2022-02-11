@@ -24,6 +24,7 @@ import { Searchbar, SEARCHBAR_THEME_KEY } from './Searchbar'
 import { SingleCountryPhoneNumberInput } from './SingleCountryPhoneNumberInput'
 import { Table } from './Table'
 import { Tabs } from './Tabs'
+import { Tag } from './Tag'
 import { Textarea } from './Textarea'
 import { Tile } from './Tile'
 import { Toast } from './Toast'
@@ -51,6 +52,7 @@ export const components = {
   Textarea,
   Table,
   Tabs,
+  Tag,
   [ATTACHMENT_THEME_KEY]: Attachment,
   [PAGINATION_THEME_KEY]: Pagination,
   [CHECKBOX_THEME_KEY]: Checkbox,
