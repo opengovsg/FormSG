@@ -1,8 +1,6 @@
 import { checkboxAnatomy } from '@chakra-ui/anatomy'
 import { getColor, PartsStyleFunction } from '@chakra-ui/theme-tools'
 
-import { ComponentMultiStyleConfig } from '~theme/types'
-
 /**
  * This must be kept in line with the key from Chakra's internal
  * Checkbox styling to ensure that the styles are merged correctly.
@@ -116,7 +114,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = ({
   },
 })
 
-export const Checkbox: ComponentMultiStyleConfig<typeof parts> = {
+export const Checkbox = {
   parts: parts.keys,
   baseStyle,
   sizes: {
