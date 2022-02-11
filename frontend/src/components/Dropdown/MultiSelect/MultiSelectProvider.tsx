@@ -48,10 +48,10 @@ export const MultiSelectProvider = ({
   isClearable = true,
   isSearchable = true,
   defaultIsOpen,
-  isInvalid,
-  isReadOnly,
-  isDisabled,
-  isRequired,
+  isInvalid: isInvalidProp,
+  isReadOnly: isReadOnlyProp,
+  isDisabled: isDisabledProp,
+  isRequired: isRequiredProp,
   maxItems = 4,
   children,
 }: MultiSelectProviderProps): JSX.Element => {
@@ -59,6 +59,15 @@ export const MultiSelectProvider = ({
   const [inputValue, setInputValue] = useState(defaultInputValue ?? '')
   const [isFocused, setIsFocused] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1)
+
+  const { isInvalid, isDisabled, isReadOnly, isRequired } = useFormControlProps(
+    {
+      isInvalid: isInvalidProp,
+      isDisabled: isDisabledProp,
+      isReadOnly: isReadOnlyProp,
+      isRequired: isRequiredProp,
+    },
+  )
 
   const filteredItems = useMemo(
     () => (inputValue ? filter(items, inputValue) : items),
@@ -79,7 +88,7 @@ export const MultiSelectProvider = ({
     selectedItems,
     reset,
   } = useMultipleSelection<typeof items[0]>({
-    defaultSelectedItems: getDefaultSelectedItems(),
+    selectedItems: getDefaultSelectedItems(),
     onSelectedItemsChange: ({ selectedItems }) => {
       onChange(selectedItems?.map(itemToValue) ?? [])
     },
@@ -181,13 +190,6 @@ export const MultiSelectProvider = ({
     isEmpty: selectedItems.length === 0,
   })
 
-  const formControlProps = useFormControlProps({
-    isInvalid,
-    isDisabled,
-    isReadOnly,
-    isRequired,
-  })
-
   return (
     <SelectContext.Provider
       value={{
@@ -214,7 +216,10 @@ export const MultiSelectProvider = ({
         styles,
         isFocused,
         setIsFocused,
-        ...formControlProps,
+        isInvalid,
+        isDisabled,
+        isReadOnly,
+        isRequired,
       }}
     >
       <MultiSelectContext.Provider

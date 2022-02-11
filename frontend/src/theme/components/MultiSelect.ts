@@ -26,6 +26,9 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       p: '0.375rem',
       minH: '2.75rem',
       cursor: 'pointer',
+      _disabled: {
+        cursor: 'not-allowed',
+      },
       transitionProperty: 'common',
       transitionDuration: 'normal',
     },
@@ -36,14 +39,18 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       w: 0,
       px: '2px',
       my: '2px',
+      _disabled: {
+        cursor: 'not-allowed',
+      },
       alignSelf: 'center',
       pl: '0.5rem',
-      ':focus-visible': {
+      _focusVisible: {
         outline: 'none',
       },
       ...(!isFocused && !isEmpty
         ? {
             cursor: 'pointer',
+            _disabled: { cursor: 'not-allowed' },
             minW: 0,
             minH: 0,
             h: 0,

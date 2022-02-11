@@ -18,7 +18,7 @@ export const MultiSelectItem = ({
   item,
   index,
 }: MultiSelectItemProps): JSX.Element => {
-  const { isDisabled } = useSelectContext()
+  const { isDisabled, isReadOnly } = useSelectContext()
   const { getSelectedItemProps, removeSelectedItem } = useMultiSelectContext()
 
   const itemLabel = useMemo(() => itemToLabelString(item), [item])
@@ -26,11 +26,11 @@ export const MultiSelectItem = ({
   const handleRemoveItem = useCallback(
     (e: MouseEvent) => {
       e.stopPropagation()
+      if (isDisabled || isReadOnly) return
       removeSelectedItem(item)
     },
-    [item, removeSelectedItem],
+    [isDisabled, isReadOnly, item, removeSelectedItem],
   )
-
   return (
     <Tag
       title={itemLabel}
@@ -51,6 +51,17 @@ export const MultiSelectItem = ({
         selectedItem: item,
         index,
         disabled: isDisabled,
+        onKeyDown: (event) => {
+          if (
+            (isDisabled || isReadOnly) &&
+            (event.key === 'Backspace' || event.key === 'Delete')
+          ) {
+            // Prevent Downshift's default behavior.
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            event.nativeEvent.preventDownshiftDefault = true
+          }
+        },
         // Required so tag can properly gain focus without the parent from
         // stealing focus due to parent's onClick handler.
         onClick: (e) => e.stopPropagation(),
