@@ -6,7 +6,6 @@ import { Banner } from './Banner'
 import { Button } from './Button'
 import { Checkbox, CHECKBOX_THEME_KEY } from './Checkbox'
 import { CloseButton } from './CloseButton'
-import { Combobox } from './Combobox'
 import { DateInput } from './DateInput'
 import { Drawer } from './Drawer'
 import { Form } from './Form'
@@ -23,6 +22,7 @@ import { PhoneNumberInput } from './PhoneNumberInput'
 import { Radio, RADIO_THEME_KEY } from './Radio'
 import { Searchbar, SEARCHBAR_THEME_KEY } from './Searchbar'
 import { SingleCountryPhoneNumberInput } from './SingleCountryPhoneNumberInput'
+import { SingleSelect } from './SingleSelect'
 import { Table } from './Table'
 import { Tabs } from './Tabs'
 import { Textarea } from './Textarea'
@@ -36,7 +36,6 @@ export const components = {
   Banner,
   Button,
   CloseButton,
-  Combobox,
   DateInput,
   Drawer,
   Form,
@@ -50,6 +49,7 @@ export const components = {
   NumberInput,
   PhoneNumberInput,
   SingleCountryPhoneNumberInput,
+  SingleSelect,
   Textarea,
   Table,
   Tabs,

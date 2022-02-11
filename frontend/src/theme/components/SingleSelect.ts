@@ -9,15 +9,18 @@ import merge from 'lodash/merge'
 import { Input } from './Input'
 import { Menu } from './Menu'
 
-export const parts = anatomy('combobox').parts(
+export const comboboxParts = anatomy('combobox').parts(
   'container',
   'list',
   'item',
-  'field',
   'clearbutton',
   'icon',
   'emptyItem',
 )
+
+export const parts = anatomy('singleselect')
+  .parts(...comboboxParts.keys)
+  .extend('field')
 
 const itemBaseStyle: SystemStyleFunction = (props) => {
   const { item: menuItemStyle = {} } = Menu.baseStyle(props)
@@ -143,7 +146,7 @@ const variants = {
   outline: variantOutline,
 }
 
-export const Combobox = {
+export const SingleSelect = {
   parts: parts.keys,
   baseStyle,
   variants,

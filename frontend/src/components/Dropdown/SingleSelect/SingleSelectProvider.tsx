@@ -89,7 +89,7 @@ export const SingleSelectProvider = ({
     [selectedItem],
   )
 
-  const styles = useMultiStyleConfig('Combobox', { isClearable })
+  const styles = useMultiStyleConfig('SingleSelect', { isClearable })
 
   return (
     <SelectContext.Provider
