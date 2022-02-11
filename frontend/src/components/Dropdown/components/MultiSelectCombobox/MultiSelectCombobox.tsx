@@ -7,7 +7,6 @@ import { useMultiSelectContext } from '~components/Dropdown/MultiSelectContext'
 import { itemToValue } from '~components/Dropdown/utils/itemUtils'
 
 import { useSelectContext } from '../../SelectContext'
-import { MultiSelectItem } from '../MultiSelectItem'
 
 import { SelectedItems } from './SelectedItems'
 
@@ -43,7 +42,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
       isInvalid,
     } = useSelectContext()
 
-    const { getDropdownProps, selectedItems } = useMultiSelectContext()
+    const { getDropdownProps } = useMultiSelectContext()
 
     const inputRef = useRef<HTMLInputElement | null>(null)
     const mergedRefs = useMergeRefs(inputRef, ref)
@@ -103,6 +102,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
           py="0.3125rem"
           px="0.625rem"
           h="fit-content"
+          aria-disabled={isDisabled}
           __css={styles.icon}
         >
           <Icon

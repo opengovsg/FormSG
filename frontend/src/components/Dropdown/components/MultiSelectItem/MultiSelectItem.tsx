@@ -22,6 +22,7 @@ export const MultiSelectItem = ({
   const { getSelectedItemProps, removeSelectedItem } = useMultiSelectContext()
 
   const itemLabel = useMemo(() => itemToLabelString(item), [item])
+
   const handleRemoveItem = useCallback(
     (e: MouseEvent) => {
       e.stopPropagation()
@@ -36,6 +37,10 @@ export const MultiSelectItem = ({
       colorScheme="secondary"
       _focus={{
         boxShadow: '0 0 0 2px var(--chakra-colors-secondary-300)',
+        // Enable boxShadow even with :focus-visible
+        ':not([data-focus-visible-added])': {
+          boxShadow: '0 0 0 2px var(--chakra-colors-secondary-300)',
+        },
         _disabled: {
           boxShadow: 'none',
         },
@@ -46,10 +51,18 @@ export const MultiSelectItem = ({
         selectedItem: item,
         index,
         disabled: isDisabled,
+        // Required so tag can properly gain focus without the parent from
+        // stealing focus due to parent's onClick handler.
+        onClick: (e) => e.stopPropagation(),
       })}
     >
       <TagLabel>{itemLabel}</TagLabel>
-      <TagCloseButton tabIndex={-1} aria-hidden onClick={handleRemoveItem} />
+      <TagCloseButton
+        tabIndex={-1}
+        aria-hidden
+        isDisabled={isDisabled}
+        onClick={handleRemoveItem}
+      />
     </Tag>
   )
 }
