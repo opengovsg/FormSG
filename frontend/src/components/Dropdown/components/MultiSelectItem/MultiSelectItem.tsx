@@ -41,6 +41,7 @@ export const MultiSelectItem = ({
         },
       }}
       m="2px"
+      h="2rem"
       {...getSelectedItemProps({
         selectedItem: item,
         index,
