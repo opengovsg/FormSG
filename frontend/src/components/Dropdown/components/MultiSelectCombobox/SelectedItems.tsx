@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import Button from '~components/Button'
 import { useMultiSelectContext } from '~components/Dropdown/MultiSelectContext'
 import { useSelectContext } from '~components/Dropdown/SelectContext'
-import { itemToValue } from '~components/Dropdown/utils/itemUtils'
 
 import { MultiSelectItem } from '../MultiSelectItem'
 
@@ -24,13 +23,9 @@ export const SelectedItems = (): JSX.Element => {
     for (let i = 0; i < selectedItems.length; i++) {
       if (isFocused || !maxItems || i < maxItems) {
         const item = selectedItems[i]
-        itemsToRender.push(
-          <MultiSelectItem
-            item={item}
-            index={i}
-            key={`${itemToValue(item)}${i}`}
-          />,
-        )
+        // Key has to be index so focus is maintained correctly when items are removed.
+        // Some downshift quirk it seems.
+        itemsToRender.push(<MultiSelectItem item={item} index={i} key={i} />)
       } else {
         itemsToRender.push(
           <ShowMoreItemBlock
