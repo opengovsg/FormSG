@@ -45,6 +45,7 @@ const listBaseStyle: SystemStyleFunction = (props) => {
     w: '100%',
     overflowY: 'auto',
     maxH: '12rem',
+    bg: 'white',
   })
 }
 
