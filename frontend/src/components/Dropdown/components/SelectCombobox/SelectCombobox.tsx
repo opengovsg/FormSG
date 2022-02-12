@@ -1,5 +1,5 @@
 import { forwardRef, useMemo } from 'react'
-import { Flex, InputGroup } from '@chakra-ui/react'
+import { Flex, InputGroup, useMergeRefs } from '@chakra-ui/react'
 
 import Input from '~components/Input'
 
@@ -26,7 +26,10 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       placeholder,
       setIsFocused,
       isOpen,
+      inputRef,
     } = useSelectContext()
+
+    const mergedRefs = useMergeRefs(inputRef, ref)
 
     const selectedItemIcon = useMemo(
       () => itemToIcon(selectedItem),
@@ -53,7 +56,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             sx={styles.field}
             {...getInputProps({
               onClick: toggleMenu,
-              ref,
+              ref: mergedRefs,
             })}
           />
           <ToggleChevron />
