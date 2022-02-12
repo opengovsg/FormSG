@@ -1,7 +1,11 @@
 {
   "root": true,
   "plugins": ["import", "simple-import-sort", "prettier", "testing-library"],
-  "extends": ["eslint:recommended", "plugin:prettier/recommended"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:prettier/recommended",
+    "plugin:storybook/recommended"
+  ],
   "overrides": [
     {
       "files": ["*.ts", "*.tsx"],
