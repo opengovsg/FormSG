@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import {
   FormControlOptions,
   useFormControlProps,
@@ -75,6 +75,9 @@ export const MultiSelectProvider = ({
   const [isFocused, setIsFocused] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1)
 
+  // Inject for components to manipulate
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
   const { isInvalid, isDisabled, isReadOnly, isRequired } = useFormControlProps(
     {
       isInvalid: isInvalidProp,
@@ -106,6 +109,8 @@ export const MultiSelectProvider = ({
     addSelectedItem,
     removeSelectedItem,
     reset,
+    activeIndex,
+    setActiveIndex,
   } = useMultipleSelection<typeof items[0]>({
     selectedItems,
     onSelectedItemsChange: ({ selectedItems }) => {
@@ -208,6 +213,7 @@ export const MultiSelectProvider = ({
   return (
     <SelectContext.Provider
       value={{
+        inputRef,
         isClearable: false,
         selectedItem: null,
         isOpen,
@@ -247,6 +253,8 @@ export const MultiSelectProvider = ({
           removeSelectedItem,
           reset,
           maxItems,
+          activeIndex,
+          setActiveIndex,
         }}
       >
         {children}

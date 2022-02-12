@@ -7,7 +7,7 @@ import { useSelectContext } from '~components/Dropdown/SelectContext'
 import { MultiSelectItem } from '../MultiSelectItem'
 
 const ShowMoreItemBlock = ({ amountToShow }: { amountToShow: number }) => {
-  const { isDisabled, isReadOnly, setIsFocused } = useSelectContext()
+  const { isDisabled, isReadOnly, setIsFocused, inputRef } = useSelectContext()
 
   const handleClick = useCallback(
     (e: MouseEvent) => {
@@ -15,8 +15,9 @@ const ShowMoreItemBlock = ({ amountToShow }: { amountToShow: number }) => {
       e.stopPropagation()
       if (isDisabled || isReadOnly) return
       setIsFocused(true)
+      inputRef.current?.focus()
     },
-    [isDisabled, isReadOnly, setIsFocused],
+    [inputRef, isDisabled, isReadOnly, setIsFocused],
   )
 
   return (

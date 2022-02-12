@@ -1,4 +1,4 @@
-import { FC, forwardRef, useCallback, useEffect, useRef } from 'react'
+import { FC, forwardRef, useCallback } from 'react'
 import { Box, chakra, Flex, Icon, useMergeRefs } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
@@ -39,12 +39,11 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
       isOpen,
       toggleMenu,
       isInvalid,
-      isFocused,
+      inputRef,
     } = useSelectContext()
 
     const { getDropdownProps } = useMultiSelectContext()
 
-    const inputRef = useRef<HTMLInputElement | null>(null)
     const mergedRefs = useMergeRefs(inputRef, ref)
 
     const handleWrapperClick = useCallback(() => {
@@ -54,14 +53,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
       if (!isOpen) {
         inputRef.current?.focus()
       }
-    }, [isDisabled, isOpen, isReadOnly, setIsFocused, toggleMenu])
-
-    // Focus input when focus state changes from false to true.
-    useEffect(() => {
-      if (isFocused) {
-        inputRef.current?.focus()
-      }
-    }, [isFocused])
+    }, [inputRef, isDisabled, isOpen, isReadOnly, setIsFocused, toggleMenu])
 
     /**
      * So faux input gets correctly blurred when navigated away.

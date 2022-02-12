@@ -10,10 +10,10 @@ import { ComboboxItem } from './types'
 
 interface MultiSelectContextReturn<Item extends ComboboxItem = ComboboxItem>
   extends UseMultipleSelectionPropGetters<Item>,
-    Pick<UseMultipleSelectionState<Item>, 'selectedItems'>,
+    UseMultipleSelectionState<Item>,
     Pick<
       UseMultipleSelectionActions<Item>,
-      'reset' | 'addSelectedItem' | 'removeSelectedItem'
+      'reset' | 'addSelectedItem' | 'removeSelectedItem' | 'setActiveIndex'
     > {
   maxItems: number | null
 }

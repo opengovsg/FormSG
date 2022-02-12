@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext, MutableRefObject, useContext } from 'react'
 import { CSSObject, FormControlOptions } from '@chakra-ui/react'
 import { UseComboboxPropGetters, UseComboboxState } from 'downshift'
 
@@ -35,6 +35,7 @@ interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
   styles: Record<string, CSSObject>
   isFocused: boolean
   setIsFocused: (isFocused: boolean) => void
+  inputRef: MutableRefObject<HTMLInputElement | null>
 }
 
 export const SelectContext = createContext<SelectContextReturn | undefined>(
