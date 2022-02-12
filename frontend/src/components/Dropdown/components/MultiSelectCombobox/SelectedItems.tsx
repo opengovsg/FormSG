@@ -20,7 +20,7 @@ const ShowMoreItemBlock = ({ amountToShow }: { amountToShow: number }) => {
   )
 
   return (
-    <Button onClick={handleClick} variant="link" size="sm">
+    <Button onClick={handleClick} variant="link" size="sm" tabIndex={-1}>
       +{amountToShow} more
     </Button>
   )

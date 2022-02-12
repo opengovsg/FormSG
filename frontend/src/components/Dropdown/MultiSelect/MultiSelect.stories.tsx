@@ -1,8 +1,10 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { BiRadioCircleMarked } from 'react-icons/bi'
 import { FormControl } from '@chakra-ui/react'
+import { useArgs } from '@storybook/client-api'
 import { Meta, Story } from '@storybook/react'
+import { get } from 'lodash'
 import difference from 'lodash/difference'
 
 import { viewports } from '~utils/storybook'
@@ -73,27 +75,52 @@ export default {
 
 const Template: Story<MultiSelectProps> = ({ values: valuesProp, ...args }) => {
   const [values, setValues] = useState<string[]>(valuesProp)
+  const [inputValue, setInputValue] = useState<string>('')
 
-  return <MultiSelect {...args} values={values} onChange={setValues} />
+  return (
+    <MultiSelect
+      {...args}
+      values={values}
+      onChange={setValues}
+      inputValue={inputValue}
+      onInputValueChange={setInputValue}
+    />
+  )
 }
 export const Default = Template.bind({})
 
-export const NotClearable = Template.bind({})
-NotClearable.args = {
-  isClearable: false,
-}
+export const WithDefaultInput: Story<MultiSelectProps> = ({
+  values: valuesProp,
+  ...args
+}) => {
+  const [values, setValues] = useState<string[]>(valuesProp)
+  const [inputValue, setInputValue] = useState<string>('')
 
-export const WithDefaultInput = Template.bind({})
-WithDefaultInput.args = {
-  defaultInputValue: 'What',
-  defaultIsOpen: true,
+  useEffect(() => {
+    // Storybook does not accurately set the input value on load
+    // and triggers MultiSelect's onChange, and thus using this
+    // hack to do so.
+    setTimeout(() => {
+      setInputValue('What')
+    }, 0)
+  }, [])
+
+  return (
+    <MultiSelect
+      {...args}
+      defaultIsOpen
+      values={values}
+      onChange={setValues}
+      inputValue={inputValue}
+      onInputValueChange={setInputValue}
+    />
+  )
 }
 
 export const MobileTruncatedOption = Template.bind({})
 MobileTruncatedOption.args = {
   values: ['What happens when the label is fairly long', 'Bat'],
   defaultIsOpen: true,
-  isClearable: false,
 }
 MobileTruncatedOption.parameters = {
   viewport: {
@@ -161,7 +188,7 @@ export const Playground: Story<MultiSelectProps> = ({ items, isDisabled }) => {
             />
           )}
         />
-        <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>
+        <FormErrorMessage>{get(errors[name], 'message')}</FormErrorMessage>
       </FormControl>
       <Button type="submit">Submit</Button>
     </form>

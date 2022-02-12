@@ -4,7 +4,12 @@ import {
   useFormControlProps,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
-import { useCombobox, useMultipleSelection } from 'downshift'
+import {
+  useCombobox,
+  UseComboboxProps,
+  useMultipleSelection,
+  UseMultipleSelectionProps,
+} from 'downshift'
 
 import { useItems } from '../hooks/useItems'
 import { MultiSelectContext } from '../MultiSelectContext'
@@ -15,14 +20,16 @@ import { itemToLabelString, itemToValue } from '../utils/itemUtils'
 
 export interface MultiSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
-> extends SharedSelectContextReturnProps<Item>,
+> extends Omit<SharedSelectContextReturnProps<Item>, 'isClearable'>,
     FormControlOptions {
   /** Controlled selected values */
   values: string[]
   /** Controlled selection onChange handler */
   onChange: (value: string[]) => void
-  /** Default value to populate input on render, if any */
-  defaultInputValue?: string
+  /** The value of the input element */
+  inputValue?: string
+  /** Controlled input onChange handler */
+  onInputValueChange?: (value: string) => void
   /** Function based on which items in dropdown are filtered. Default filter filters by fuzzy match. */
   filter?(items: Item[], value: string): Item[]
   /** Initial dropdown opened state. Defaults to `false`. */
@@ -32,20 +39,27 @@ export interface MultiSelectProviderProps<
    * Defaults to `4`. Set to `null` to render all items.
    */
   maxItems?: number | null
-
   children: React.ReactNode
+  /**
+   * Any props to override the default props of `downshift#useCombobox` set by this component.
+   */
+  downshiftComboboxProps?: Partial<UseComboboxProps<Item>>
+  /**
+   * Any props to override the default props of `downshift#useMultipleSelection` set by this component.
+   */
+  downshiftMultiSelectProps?: Partial<UseMultipleSelectionProps<Item>>
 }
 export const MultiSelectProvider = ({
   items: rawItems,
   values,
   onChange,
-  defaultInputValue,
+  inputValue = '',
+  onInputValueChange,
   name,
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
   placeholder = 'Select options',
   clearButtonLabel = 'Clear dropdown',
-  isClearable = true,
   isSearchable = true,
   defaultIsOpen,
   isInvalid: isInvalidProp,
@@ -53,10 +67,11 @@ export const MultiSelectProvider = ({
   isDisabled: isDisabledProp,
   isRequired: isRequiredProp,
   maxItems = 4,
+  downshiftComboboxProps = {},
+  downshiftMultiSelectProps = {},
   children,
 }: MultiSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
-  const [inputValue, setInputValue] = useState(defaultInputValue ?? '')
   const [isFocused, setIsFocused] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1)
 
@@ -74,10 +89,15 @@ export const MultiSelectProvider = ({
     [filter, inputValue, items],
   )
 
-  const getDefaultSelectedItems = useCallback(() => {
-    return values
-      .map((value) => getItemByValue(value)?.item ?? null)
-      .filter(Boolean)
+  const selectedItems = useMemo(() => {
+    const items = []
+    for (const value of values) {
+      const item = getItemByValue(value)
+      if (item) {
+        items.push(item.item)
+      }
+    }
+    return items
   }, [getItemByValue, values])
 
   const {
@@ -85,10 +105,9 @@ export const MultiSelectProvider = ({
     getDropdownProps,
     addSelectedItem,
     removeSelectedItem,
-    selectedItems,
     reset,
   } = useMultipleSelection<typeof items[0]>({
-    selectedItems: getDefaultSelectedItems(),
+    selectedItems,
     onSelectedItemsChange: ({ selectedItems }) => {
       onChange(selectedItems?.map(itemToValue) ?? [])
     },
@@ -107,6 +126,7 @@ export const MultiSelectProvider = ({
           return changes
       }
     },
+    ...downshiftMultiSelectProps,
   })
 
   const dynamicPlaceholder = useMemo(() => {
@@ -126,31 +146,16 @@ export const MultiSelectProvider = ({
     getItemProps,
     getToggleButtonProps,
     selectItem,
-    selectedItem,
   } = useCombobox({
     items: filteredItems,
     inputValue,
-    onInputValueChange: ({ inputValue }) => setInputValue(inputValue ?? ''),
-    defaultIsOpen,
-    selectedItem: null,
-    highlightedIndex,
-    onStateChange: ({ type, selectedItem }) => {
-      switch (type) {
-        case useCombobox.stateChangeTypes.InputKeyDownEnter:
-        case useCombobox.stateChangeTypes.ItemClick:
-          if (selectedItem) {
-            if (selectedItems.includes(selectedItem)) {
-              removeSelectedItem(selectedItem)
-            } else {
-              addSelectedItem(selectedItem)
-            }
-          }
-          setInputValue('')
-          break
-        default:
-          break
-      }
+    itemToString: itemToLabelString,
+    onInputValueChange: ({ inputValue }) => {
+      onInputValueChange?.(inputValue ?? '')
     },
+    defaultIsOpen,
+    selectedItem: null, // Not used in multiselect
+    highlightedIndex,
     stateReducer: (_state, { changes, type }) => {
       switch (type) {
         case useCombobox.stateChangeTypes.InputKeyDownArrowDown:
@@ -159,14 +164,23 @@ export const MultiSelectProvider = ({
           setHighlightedIndex(changes.highlightedIndex ?? 0)
           return changes
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
-        case useCombobox.stateChangeTypes.ItemClick:
+        case useCombobox.stateChangeTypes.ItemClick: {
+          const { selectedItem } = changes
+          if (selectedItem) {
+            if (selectedItems.includes(selectedItem)) {
+              removeSelectedItem(selectedItem)
+            } else {
+              addSelectedItem(selectedItem)
+            }
+          }
           return {
             ...changes,
+            inputValue: '',
             // Keep the menu open after selection.
             isOpen: true,
           }
+        }
         case useCombobox.stateChangeTypes.InputBlur:
-          setInputValue('')
           // Clear input regardless on blur.
           return {
             ...changes,
@@ -176,6 +190,7 @@ export const MultiSelectProvider = ({
       }
       return changes
     },
+    ...downshiftComboboxProps,
   })
 
   const isItemSelected = useCallback(
@@ -186,7 +201,6 @@ export const MultiSelectProvider = ({
   )
 
   const styles = useMultiStyleConfig('MultiSelect', {
-    isClearable,
     isFocused,
     isEmpty: selectedItems.length === 0,
   })
@@ -194,8 +208,9 @@ export const MultiSelectProvider = ({
   return (
     <SelectContext.Provider
       value={{
+        isClearable: false,
+        selectedItem: null,
         isOpen,
-        selectedItem,
         isItemSelected,
         toggleMenu,
         closeMenu,
@@ -211,7 +226,6 @@ export const MultiSelectProvider = ({
         nothingFoundLabel,
         inputValue,
         isSearchable,
-        isClearable,
         name,
         clearButtonLabel,
         placeholder: dynamicPlaceholder,
