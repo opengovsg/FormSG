@@ -53,16 +53,6 @@ export const MultiSelectItem = ({
     <Tag
       title={itemLabel}
       colorScheme="secondary"
-      _focus={{
-        boxShadow: '0 0 0 2px var(--chakra-colors-secondary-300)',
-        // Enable boxShadow even with :focus-visible
-        ':not([data-focus-visible-added])': {
-          boxShadow: '0 0 0 2px var(--chakra-colors-secondary-300)',
-        },
-        _disabled: {
-          boxShadow: 'none',
-        },
-      }}
       m="2px"
       h="2rem"
       {...getSelectedItemProps({
