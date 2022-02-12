@@ -66,7 +66,7 @@ const Template: Story<StoryLongTextFieldProps> = ({
     if (defaultValue) {
       formMethods.trigger()
     }
-  }, [])
+  }, [defaultValue, formMethods])
 
   return (
     <FormProvider {...formMethods}>

@@ -57,7 +57,7 @@ const Template: Story<StoryUenFieldProps> = ({ defaultValue, ...args }) => {
 
   useEffect(() => {
     formMethods.trigger()
-  }, [])
+  }, [formMethods])
 
   return (
     <FormProvider {...formMethods}>

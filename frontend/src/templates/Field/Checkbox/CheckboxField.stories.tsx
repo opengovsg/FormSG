@@ -72,7 +72,7 @@ const Template: Story<StoryCheckboxFieldProps> = ({
     if (defaultValue) {
       formMethods.trigger()
     }
-  }, [])
+  }, [defaultValue, formMethods])
 
   return (
     <FormProvider {...formMethods}>

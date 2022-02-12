@@ -66,7 +66,7 @@ const Template: Story<StoryShortTextFieldProps> = ({
     if (defaultValue) {
       formMethods.trigger()
     }
-  }, [])
+  }, [defaultValue, formMethods])
 
   return (
     <FormProvider {...formMethods}>

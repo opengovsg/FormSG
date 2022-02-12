@@ -64,7 +64,7 @@ const Template: Story<StoryRadioFieldProps> = ({ defaultValue, ...args }) => {
     if (defaultValue) {
       formMethods.trigger()
     }
-  }, [])
+  }, [defaultValue, formMethods])
 
   return (
     <FormProvider {...formMethods}>

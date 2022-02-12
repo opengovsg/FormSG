@@ -54,7 +54,7 @@ const Template: Story<RatingFieldProps> = (args) => {
 
   useEffect(() => {
     formMethods.trigger()
-  }, [])
+  }, [formMethods])
 
   return (
     <FormProvider {...formMethods}>

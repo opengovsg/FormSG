@@ -126,7 +126,7 @@ const Template: Story<StoryTableFieldProps> = ({ defaultValue, ...args }) => {
     if (defaultValue) {
       formMethods.trigger()
     }
-  }, [])
+  }, [defaultValue, formMethods])
 
   const onSubmit = (values: Record<string, string>) => {
     console.log(values)
