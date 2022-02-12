@@ -2,6 +2,7 @@
 module.exports = {
   features: {
     emotionAlias: false,
+    storyStoreV7: true,
   },
   stories: [
     // Introduction stories set first so stories are ordered correctly.
