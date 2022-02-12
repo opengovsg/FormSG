@@ -1,5 +1,8 @@
 /* eslint-env node */
 module.exports = {
+  features: {
+    emotionAlias: false,
+  },
   stories: [
     // Introduction stories set first so stories are ordered correctly.
     './introduction/Welcome/Welcome.stories.tsx',
@@ -13,12 +16,6 @@ module.exports = {
     '@storybook/addon-essentials',
     '@storybook/addon-a11y',
     'storybook-preset-craco',
-    {
-      name: 'storybook-addon-turbo-build',
-      options: {
-        optimizationLevel: 2,
-      },
-    },
   ],
   // webpackFinal setup retrieved from ChakraUI's own Storybook setup
   // https://github.com/chakra-ui/chakra-ui/blob/main/.storybook/main.js
@@ -35,16 +32,6 @@ module.exports = {
             include: /node_modules/,
           },
         ],
-      },
-      resolve: {
-        ...storybookConfig.resolve,
-        alias: {
-          ...storybookConfig.resolve.alias,
-          // Required so storybook knows where the npm package is to render ChakraUI components
-          // as this is not directly installed in package.json.
-          '@emotion/core': '@emotion/react',
-          'emotion-theming': '@emotion/react',
-        },
       },
     }
   },
