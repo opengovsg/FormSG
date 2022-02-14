@@ -66,9 +66,9 @@ Firstly, name the secret with a unique secret name and store the secret value in
 ```json
 {
   "accountSid": "<redacted>",
-  "apiKey": "redacted>",
-  "apiSecret": "redacted>",
-  "messagingServiceSid": "redacted>"
+  "apiKey": "<redacted>",
+  "apiSecret": "<redacted>",
+  "messagingServiceSid": "<redacted>"
 }
 ```
 
