@@ -6,7 +6,7 @@ import { HttpError } from '~services/ApiService'
 
 import FormFields from './components/FormFields'
 import FormStartPage from './components/FormStartPage'
-import { PublicFormProvider } from './PublicFormContext'
+import { PublicFormProvider } from './PublicFormProvider'
 import { usePublicFormView } from './queries'
 
 export const PublicFormPage = (): JSX.Element => {

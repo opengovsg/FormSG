@@ -11,7 +11,7 @@ import {
 
 import { StoryRouter } from '~utils/storybook'
 
-import { PublicFormProvider } from '~features/public-form/PublicFormContext'
+import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
 import {
   MiniHeader as MiniHeaderComponent,

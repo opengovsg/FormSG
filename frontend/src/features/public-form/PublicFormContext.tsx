@@ -5,23 +5,9 @@ interface PublicFormContextProps {
   miniHeaderRef: RefObject<HTMLDivElement>
 }
 
-const PublicFormContext = createContext<PublicFormContextProps | undefined>(
-  undefined,
-)
-
-export const PublicFormProvider = ({
-  children,
-}: {
-  children: React.ReactNode
-}): JSX.Element => {
-  const miniHeaderRef = useRef<HTMLDivElement>(null)
-
-  return (
-    <PublicFormContext.Provider value={{ miniHeaderRef }}>
-      {children}
-    </PublicFormContext.Provider>
-  )
-}
+export const PublicFormContext = createContext<
+  PublicFormContextProps | undefined
+>(undefined)
 
 export const usePublicFormContext = (): PublicFormContextProps => {
   const context = useContext(PublicFormContext)
