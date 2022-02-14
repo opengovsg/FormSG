@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
+import { userEvent, within } from '@storybook/testing-library'
 
 import { AttachmentSize, BasicField } from '~shared/types/field'
 
@@ -28,6 +29,19 @@ export default {
     },
   },
 } as Meta
+
+const submitPlayFn = async ({
+  canvasElement,
+}: {
+  canvasElement: HTMLElement
+}) => {
+  const canvas = within(canvasElement)
+  await userEvent.click(
+    canvas.getByRole('button', {
+      name: /submit/i,
+    }),
+  )
+}
 
 const baseSchema: AttachmentFieldSchema = {
   title: 'Attach something',
@@ -68,10 +82,6 @@ const Template: Story<StoryAttachmentFieldProps> = ({
     )
   }
 
-  useEffect(() => {
-    formMethods.trigger()
-  }, [formMethods])
-
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
@@ -94,8 +104,10 @@ export const ValidationRequired = Template.bind({})
 ValidationRequired.args = {
   schema: baseSchema,
 }
+ValidationRequired.play = submitPlayFn
 
 export const ValidationOptional = Template.bind({})
 ValidationOptional.args = {
   schema: { ...baseSchema, required: false },
 }
+ValidationOptional.play = submitPlayFn
