@@ -13,7 +13,7 @@ export const MobileSidebarTab = ({
 }: MobileSidebarTabProps): JSX.Element => {
   return (
     <Tooltip label={label} placement="top">
-      <Tab justifyContent="flex-start" p="1rem">
+      <Tab justifyContent="center" p="1rem" w="5.5rem">
         <Icon
           as={icon}
           color="currentcolor"

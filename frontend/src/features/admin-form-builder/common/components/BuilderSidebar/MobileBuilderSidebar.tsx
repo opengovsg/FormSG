@@ -4,6 +4,7 @@ import { Flex, TabList, Tabs } from '@chakra-ui/react'
 
 import { BxsColorFill } from '~assets/icons/BxsColorFill'
 import { BxsWidget } from '~assets/icons/BxsWidget'
+import { useDraggable } from '~hooks/useDraggable'
 
 import {
   DrawerTabs,
@@ -15,6 +16,7 @@ import { MobileSidebarTab } from './SidebarMobileTab'
 export const MobileBuilderSidebar = (): JSX.Element => {
   const { activeTab, handleBuilderClick, handleDesignClick, handleLogicClick } =
     useBuilderDrawer()
+  const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
   const tabIndex = useMemo(() => {
     switch (activeTab) {
@@ -50,6 +52,8 @@ export const MobileBuilderSidebar = (): JSX.Element => {
       onChange={handleTabChange}
     >
       <Flex
+        ref={ref}
+        onMouseDown={onMouseDown}
         h="max-content"
         flex={1}
         flexShrink={0}
