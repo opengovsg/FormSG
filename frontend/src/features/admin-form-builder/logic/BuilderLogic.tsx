@@ -23,7 +23,12 @@ export const BuilderLogic = (): JSX.Element => {
   }
 
   return (
-    <Flex flex={1} bg="primary.100" p={{ base: '0.5rem', md: '3.75rem' }}>
+    <Flex
+      flex={1}
+      bg="primary.100"
+      p={{ base: '0.5rem', md: '3.75rem' }}
+      overflowY="auto"
+    >
       <Spacer />
       <Container maxW="42.5rem">
         {isEmptyLogic ? <EmptyLogic /> : <LogicContent />}
