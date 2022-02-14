@@ -45,8 +45,6 @@ export const MultiDropdownItem = ({
   return (
     <ListItem
       sx={styles.item}
-      // Instantiating here as it provides a `ref` that doesn't seem to be able
-      // to be forwarded.
       {...getItemProps({
         item,
         index,
