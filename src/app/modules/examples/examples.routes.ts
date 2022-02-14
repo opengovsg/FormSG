@@ -1,4 +1,3 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import { withUserAuthentication } from '../auth/auth.middlewares'
@@ -22,20 +21,7 @@ ExamplesRouter.use(withUserAuthentication)
  * @returns 401 when user does not exist in session
  * @returns 500 when error occurs whilst querying the database
  */
-ExamplesRouter.get(
-  '/',
-  celebrate({
-    [Segments.QUERY]: Joi.object().keys({
-      pageNo: Joi.number().min(0).required(),
-      agency: Joi.string()
-        .regex(/^[0-9a-fA-F]{24}$/)
-        .allow(''),
-      searchTerm: Joi.string().allow(''),
-      shouldGetTotalNumResults: Joi.boolean().default(false),
-    }),
-  }),
-  ExamplesController.handleGetExamples,
-)
+ExamplesRouter.get('/', ExamplesController.handleGetExamples)
 
 /**
  * Returns example information for the form that is referenced by the given

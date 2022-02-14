@@ -77,7 +77,7 @@ describe('frontend.server.controller', () => {
         'window.location.hash = "#!/formId?fieldId1=abc&fieldId2=&lt;&gt;&#39;&#34;'
       // Note this is different from mockReqModified.query.redirectPath as
       // there are html-encoded characters
-      FrontendServerController.generateRedirectUrl(
+      FrontendServerController._generateRedirectUrl(
         mockReqModified,
         mockRes,
         jest.fn(),
@@ -89,7 +89,7 @@ describe('frontend.server.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
     })
     it('should return BAD_REQUEST if the request is not valid', () => {
-      FrontendServerController.generateRedirectUrl(
+      FrontendServerController._generateRedirectUrl(
         // @ts-ignore
         mockBadReq,
         mockRes,

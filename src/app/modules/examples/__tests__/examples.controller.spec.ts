@@ -42,7 +42,7 @@ describe('examples.controller', () => {
       )
 
       // Act
-      await ExamplesController.handleGetExamples(MOCK_REQ, mockRes, jest.fn())
+      await ExamplesController._handleGetExamples(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(MockExamplesService.getExampleForms).toHaveBeenCalledWith(
@@ -61,7 +61,7 @@ describe('examples.controller', () => {
       )
 
       // Act
-      await ExamplesController.handleGetExamples(MOCK_REQ, mockRes, jest.fn())
+      await ExamplesController._handleGetExamples(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(MockExamplesService.getExampleForms).toHaveBeenCalledWith(
