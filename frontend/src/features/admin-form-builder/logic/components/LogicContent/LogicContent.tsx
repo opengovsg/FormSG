@@ -10,7 +10,7 @@ export const LogicContent = (): JSX.Element => {
   const { hasPendingLogic, formLogics } = useBuilderLogic()
 
   return (
-    <Stack color="secondary.500" spacing="2rem">
+    <Stack color="secondary.500" spacing="1rem">
       <Flex
         px={{ base: '1.5rem', md: '2rem' }}
         py={{ base: '1rem', md: '2rem' }}
