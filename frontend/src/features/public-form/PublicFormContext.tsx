@@ -1,7 +1,12 @@
 // Contains all the shared props that will probably be passed down.
-import { createContext, RefObject, useContext, useRef } from 'react'
+import { createContext, RefObject, useContext } from 'react'
+import { UseQueryResult } from 'react-query'
 
-interface PublicFormContextProps {
+import { PublicFormViewDto } from '~shared/types/form'
+
+interface PublicFormContextProps
+  extends Partial<PublicFormViewDto>,
+    Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
   miniHeaderRef: RefObject<HTMLDivElement>
 }
 
