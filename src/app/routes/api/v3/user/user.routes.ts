@@ -50,18 +50,6 @@ UserRouter.post(
  * @returns 422 when OTP is invalid
  * @returns 500 when OTP is malformed or for unknown errors
  */
-UserRouter.post(
-  '/contact/otp/verify',
-  celebrate({
-    [Segments.BODY]: Joi.object().keys({
-      userId: Joi.string().required(),
-      otp: Joi.string()
-        .required()
-        .regex(/^\d{6}$/),
-      contact: Joi.string().required(),
-    }),
-  }),
-  UserController.handleContactVerifyOtp,
-)
+UserRouter.post('/contact/otp/verify', UserController.handleContactVerifyOtp)
 
 export default UserRouter
