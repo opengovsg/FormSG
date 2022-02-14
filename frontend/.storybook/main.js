@@ -17,6 +17,8 @@ module.exports = {
     '@storybook/addon-essentials',
     '@storybook/addon-a11y',
     'storybook-preset-craco',
+    // Note that @storybook/addon-interactions must be listed after @storybook/addon-actions or @storybook/addon-essentials.
+    '@storybook/addon-interactions',
   ],
   // webpackFinal setup retrieved from ChakraUI's own Storybook setup
   // https://github.com/chakra-ui/chakra-ui/blob/main/.storybook/main.js
