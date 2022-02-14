@@ -4525,7 +4525,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4564,7 +4564,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4598,7 +4598,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4636,7 +4636,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4673,7 +4673,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4711,7 +4711,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4752,7 +4752,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4786,7 +4786,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4820,7 +4820,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),

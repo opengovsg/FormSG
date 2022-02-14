@@ -88,6 +88,7 @@ import {
   PREVIEW_SINGPASS_UINFIN,
 } from './admin-form.constants'
 import { EditFieldError } from './admin-form.errors'
+import { updateSettingsValidator } from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
@@ -1247,22 +1248,7 @@ export const handleDuplicateFormField: ControllerHandler<
     })
 }
 
-/**
- * Handler for PATCH /forms/:formId/settings.
- * @security session
- *
- * @returns 200 with updated form settings
- * @returns 400 when body is malformed; can happen when email parameter is passed for encrypt-mode forms
- * @returns 403 when current user does not have permissions to update form settings
- * @returns 404 when form to update settings for cannot be found
- * @returns 409 when saving form settings incurs a conflict in the database
- * @returns 410 when updating settings for archived form
- * @returns 413 when updating settings causes form to be too large to be saved in the database
- * @returns 422 when an invalid settings update is attempted on the form
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when database error occurs
- */
-export const handleUpdateSettings: ControllerHandler<
+export const _handleUpdateSettings: ControllerHandler<
   { formId: string },
   FormSettings | ErrorDto,
   SettingsUpdateDto
@@ -1301,6 +1287,26 @@ export const handleUpdateSettings: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * Handler for PATCH /forms/:formId/settings.
+ * @security session
+ *
+ * @returns 200 with updated form settings
+ * @returns 400 when body is malformed; can happen when email parameter is passed for encrypt-mode forms
+ * @returns 403 when current user does not have permissions to update form settings
+ * @returns 404 when form to update settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 410 when updating settings for archived form
+ * @returns 413 when updating settings causes form to be too large to be saved in the database
+ * @returns 422 when an invalid settings update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateSettings = [
+  updateSettingsValidator,
+  _handleUpdateSettings,
+] as ControllerHandler[]
 
 /**
  * NOTE: Exported for testing.
