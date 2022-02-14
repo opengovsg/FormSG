@@ -48,6 +48,10 @@
     "zustand": "^3.6.5"
   },
   "scriptComments": {
+    "clean:emotion-types": [
+      "Prevents injected emotion types from conflicting with ChakraUI types, such as `css`.",
+      "See https://github.com/emotion-js/emotion/issues/1800"
+    ],
     "build": [
       "The flags are required for the app to build successfully.",
       "`CI=false` ensures that warnings in the app linter are not treated as errors (preventing a build)",
@@ -58,7 +62,8 @@
   },
   "scripts": {
     "gen:theme-typings": "chakra-cli tokens src/theme/index.ts",
-    "postinstall": "npm run gen:theme-typings && npm --prefix ../shared install",
+    "clean:emotion-types": "rimraf node_modules/@emotion/core/types",
+    "postinstall": "npm run gen:theme-typings && npm run clean:emotion-types && npm --prefix ../shared install",
     "start": "cross-env SKIP_PREFLIGHT_CHECK=true craco start",
     "build": "cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true craco build",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test",
@@ -132,6 +137,7 @@
     "prettier": "^2.5.1",
     "puppeteer": "^13.0.0",
     "react-scripts": "^4.0.3",
+    "rimraf": "^3.0.2",
     "storybook-addon-turbo-build": "^1.0.1",
     "storybook-preset-craco": "0.0.6",
     "ts-jest": "^27.1.1"

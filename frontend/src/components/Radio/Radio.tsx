@@ -141,11 +141,7 @@ export const Radio = forwardRef<RadioProps, 'input'>((props, ref) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [layoutProps, otherProps] = split(htmlProps, layoutPropNames as any)
 
-  const checkboxProps = getCheckboxProps(otherProps) as Omit<
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    HTMLChakraProps<any>,
-    'css'
-  >
+  const checkboxProps = getCheckboxProps(otherProps)
   const inputProps = getInputProps({}, ref)
 
   const handleSelect = useCallback(
@@ -177,8 +173,7 @@ export const Radio = forwardRef<RadioProps, 'input'>((props, ref) => {
     return getLabelProps({
       onClick: handleSelect,
       onKeyDown: handleSpacebar,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    }) as Omit<HTMLChakraProps<any>, 'css'>
+    })
   }, [getLabelProps, handleSelect, handleSpacebar])
 
   const rootStyles = {

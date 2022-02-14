@@ -11,8 +11,7 @@ import {
 } from '@chakra-ui/react'
 
 export type TagProps = ChakraTagProps
-// Chakra's css prop type conflict with emotion, but we don't use the css prop anyways.
-export type TagIconProps = Omit<IconProps, 'css'>
+export type TagIconProps = IconProps
 
 export const TagLeftIcon = forwardRef<TagIconProps, 'svg'>((props, ref) => {
   const styles = useStyles()
