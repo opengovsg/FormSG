@@ -7,7 +7,10 @@ import { getRequestIp } from '../../utils/request'
 import { getUserIdFromSession } from '../auth/auth.utils'
 import { ControllerHandler } from '../core/core.types'
 
-import { validateContactOtpVerificationParams } from './user.middleware'
+import {
+  validateContactOtpVerificationParams,
+  validateContactSendOtpParams,
+} from './user.middleware'
 import {
   createContactOtp,
   getPopulatedUserById,
@@ -18,16 +21,7 @@ import { mapRouteError } from './user.utils'
 
 const logger = createLoggerWithLabel(module)
 
-/**
- * Generates an OTP and sends the OTP to the given contact in request body.
- * @route POST /contact/otp/generate
- * @returns 200 if OTP was successfully sent
- * @returns 401 if user id does not match current session user or if user is not currently logged in
- * @returns 422 on OTP creation or SMS send failure
- * @returns 422 if user id does not exist in the database
- * @returns 500 if database errors occurs
- */
-export const handleContactSendOtp: ControllerHandler<
+export const _handleContactSendOtp: ControllerHandler<
   unknown,
   string,
   { contact: string; userId: string }
@@ -91,6 +85,20 @@ export const handleContactSendOtp: ControllerHandler<
   })
   return res.sendStatus(StatusCodes.OK)
 }
+
+/**
+ * Generates an OTP and sends the OTP to the given contact in request body.
+ * @route POST /contact/otp/generate
+ * @returns 200 if OTP was successfully sent
+ * @returns 401 if user id does not match current session user or if user is not currently logged in
+ * @returns 422 on OTP creation or SMS send failure
+ * @returns 422 if user id does not exist in the database
+ * @returns 500 if database errors occurs
+ */
+export const handleContactSendOtp = [
+  validateContactSendOtpParams,
+  _handleContactSendOtp,
+] as ControllerHandler[]
 
 export const _handleContactVerifyOtp: ControllerHandler<
   unknown,

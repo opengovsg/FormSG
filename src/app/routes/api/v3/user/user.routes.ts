@@ -1,4 +1,3 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as UserController from '../../../../modules/user/user.controller'
@@ -28,16 +27,7 @@ UserRouter.get('/', UserController.handleFetchUser)
  * @returns 422 on OTP creation or SMS send failure, or if the user cannot be found
  * @returns 500 on application or database errors
  */
-UserRouter.post(
-  '/contact/otp/generate',
-  celebrate({
-    [Segments.BODY]: Joi.object().keys({
-      contact: Joi.string().required(),
-      userId: Joi.string().required(),
-    }),
-  }),
-  UserController.handleContactSendOtp,
-)
+UserRouter.post('/contact/otp/generate', UserController.handleContactSendOtp)
 
 /**
  * Verify the contact verification one-time password (OTP) for the user as part
