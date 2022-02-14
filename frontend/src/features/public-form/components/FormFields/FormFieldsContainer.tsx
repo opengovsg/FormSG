@@ -3,7 +3,7 @@ import { Box, Flex, Spacer } from '@chakra-ui/react'
 
 import { FormAuthType, FormColorTheme } from '~shared/types/form/form'
 
-import { usePublicFormView } from '~features/public-form/queries'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormAuth } from '../FormAuth'
 
@@ -13,7 +13,7 @@ import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
 
 export const FormFieldsContainer = (): JSX.Element => {
-  const { data, isLoading } = usePublicFormView()
+  const { form, spcpSession, isLoading } = usePublicFormContext()
 
   const onSubmit = useCallback((values: Record<string, string>) => {
     console.log(values)
@@ -21,19 +21,19 @@ export const FormFieldsContainer = (): JSX.Element => {
 
   const bgColour = useMemo(() => {
     if (isLoading) return 'neutral.100'
-    if (!data?.form) return ''
-    const { colorTheme } = data.form.startPage
+    if (!form) return ''
+    const { colorTheme } = form.startPage
     switch (colorTheme) {
       case FormColorTheme.Blue:
         return 'secondary.100'
       default:
         return `theme-${colorTheme}.100`
     }
-  }, [data, isLoading])
+  }, [form, isLoading])
 
   const isAuthRequired = useMemo(
-    () => data && data.form.authType !== FormAuthType.NIL && !data.spcpSession,
-    [data],
+    () => form && form.authType !== FormAuthType.NIL && !spcpSession,
+    [form, spcpSession],
   )
 
   const renderFields = useMemo(() => {
@@ -42,27 +42,27 @@ export const FormFieldsContainer = (): JSX.Element => {
       return <FormFieldsSkeleton />
     }
 
-    if (!data) {
+    if (!form) {
       // TODO: Add/redirect to error page
       return <div>Something went wrong</div>
     }
 
     // Redundant conditional for type narrowing
-    if (isAuthRequired && data.form.authType !== FormAuthType.NIL) {
-      return <FormAuth authType={data.form.authType} />
+    if (isAuthRequired && form.authType !== FormAuthType.NIL) {
+      return <FormAuth authType={form.authType} />
     }
 
     return (
       <FormFields
-        formFields={data.form.form_fields}
-        colorTheme={data.form.startPage.colorTheme}
+        formFields={form.form_fields}
+        colorTheme={form.startPage.colorTheme}
         onSubmit={onSubmit}
       />
     )
-  }, [data, isAuthRequired, isLoading, onSubmit])
+  }, [form, isAuthRequired, isLoading, onSubmit])
 
   return (
-    <FormSectionsProvider>
+    <FormSectionsProvider form={form}>
       <Flex bg={bgColour} flex={1} justify="center" p="1.5rem">
         {isAuthRequired ? null : <SectionSidebar />}
         <Box

@@ -32,11 +32,3 @@ export const usePublicFormView = (): UseQueryResult<
     },
   )
 }
-
-export const usePublicForm = () => {
-  const { data, ...rest } = usePublicFormView()
-  return {
-    data: data?.form,
-    ...rest,
-  }
-}

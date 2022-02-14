@@ -5,12 +5,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 
 import { BasicField } from '~shared/types/field'
-
-import { usePublicForm } from '~features/public-form/queries'
+import { PublicFormDto } from '~shared/types/form'
 
 interface FormSectionsContextProps {
   sectionRefs: Record<string, RefObject<HTMLDivElement>>
@@ -22,32 +22,45 @@ const FormSectionsContext = createContext<FormSectionsContextProps | undefined>(
   undefined,
 )
 
-export const FormSectionsProvider = ({
-  children,
-}: {
+interface FormSectionsProviderProps {
+  form?: PublicFormDto
   children: React.ReactNode
-}): JSX.Element => {
-  const { data } = usePublicForm()
+}
+
+export const FormSectionsProvider = ({
+  form,
+  children,
+}: FormSectionsProviderProps): JSX.Element => {
   const [sectionRefs, setSectionRefs] = useState<
     Record<string, RefObject<HTMLDivElement>>
   >({})
 
   const orderedSectionFields = useMemo(
-    () => data?.form_fields.filter((f) => f.fieldType === BasicField.Section),
-    [data],
+    () => form?.form_fields.filter((f) => f.fieldType === BasicField.Section),
+    [form],
   )
-  const [activeSectionId, setActiveSectionId] = useState<string | undefined>(
-    orderedSectionFields?.[0]._id,
-  )
+  const [activeSectionId, setActiveSectionId] = useState<string>()
+
+  const isFirstLoad = useRef(false)
+
+  /**
+   * Set default active section id on first load of the form.
+   */
+  useEffect(() => {
+    if (isFirstLoad && orderedSectionFields) {
+      setActiveSectionId(orderedSectionFields[0]._id)
+      isFirstLoad.current = false
+    }
+  }, [orderedSectionFields])
 
   useEffect(() => {
-    if (!data) return
+    if (!form) return
     const nextSectionRefs: Record<string, RefObject<HTMLDivElement>> = {}
     orderedSectionFields?.forEach((f) => {
       nextSectionRefs[f._id] = createRef()
     })
     setSectionRefs(nextSectionRefs)
-  }, [activeSectionId, data, orderedSectionFields])
+  }, [activeSectionId, form, orderedSectionFields])
 
   return (
     <FormSectionsContext.Provider
