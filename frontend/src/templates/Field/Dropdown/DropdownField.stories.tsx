@@ -14,7 +14,7 @@ import {
 } from './DropdownField'
 
 const baseSchema: DropdownFieldSchema = {
-  title: 'Favourite number',
+  title: 'Favourite dropdown option',
   description: '',
   required: true,
   disabled: false,
