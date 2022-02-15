@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { FormControlOptions, useMultiStyleConfig } from '@chakra-ui/react'
-import { useCombobox } from 'downshift'
+import { useCombobox, UseComboboxProps } from 'downshift'
 
 import { useItems } from '../hooks/useItems'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
@@ -20,6 +20,8 @@ export interface SingleSelectProviderProps<
   filter?(items: Item[], value: string): Item[]
   /** Initial dropdown opened state. Defaults to `false`. */
   defaultIsOpen?: boolean
+  /** Props to override default useComboboxProps, if any. */
+  comboboxProps?: Partial<UseComboboxProps<Item>>
   children: React.ReactNode
 }
 export const SingleSelectProvider = ({
@@ -30,7 +32,7 @@ export const SingleSelectProvider = ({
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
   placeholder = 'Select an option',
-  clearButtonLabel = 'Clear dropdown',
+  clearButtonLabel = 'Clear dropdown input',
   isClearable = true,
   isSearchable = true,
   defaultIsOpen,
@@ -39,6 +41,7 @@ export const SingleSelectProvider = ({
   isDisabled,
   isRequired,
   children,
+  comboboxProps = {},
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
@@ -82,6 +85,7 @@ export const SingleSelectProvider = ({
     onSelectedItemChange: ({ selectedItem }) => {
       onChange(itemToValue(selectedItem))
     },
+    ...comboboxProps,
   })
 
   const isItemSelected = useCallback(
