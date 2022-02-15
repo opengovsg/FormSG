@@ -31,6 +31,10 @@ const INITIAL_COMBOBOX_ITEMS: ComboboxItem[] = [
     label: 'Bat',
   },
   {
+    value: 'Multiple words and strings',
+    label: 'Multiple words and strings',
+  },
+  {
     value: 'C',
     label: 'C',
   },
@@ -119,6 +123,12 @@ WithIconSelected.args = {
   value: 'Radio button',
   defaultIsOpen: true,
   isDisabled: false,
+}
+
+export const WithHalfFilledValue = Template.bind({})
+WithHalfFilledValue.args = {
+  value: 'Multiple words and',
+  defaultIsOpen: true,
 }
 
 export const Invalid = Template.bind({})

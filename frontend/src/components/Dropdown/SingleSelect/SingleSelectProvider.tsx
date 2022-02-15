@@ -6,7 +6,7 @@ import { useItems } from '../hooks/useItems'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
 import { ComboboxItem } from '../types'
 import { defaultFilter } from '../utils/defaultFilter'
-import { itemToLabelString, itemToValue } from '../utils/itemUtils'
+import { itemToValue } from '../utils/itemUtils'
 
 export interface SingleSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
@@ -76,7 +76,7 @@ export const SingleSelectProvider = ({
       onChange(inputValue ?? '')
     },
     defaultSelectedItem: getDefaultSelectedValue(),
-    itemToString: itemToLabelString,
+    itemToString: itemToValue,
     onSelectedItemChange: ({ selectedItem }) => {
       onChange(itemToValue(selectedItem))
     },
