@@ -1,1 +1,1 @@
-export { DropdownField } from './DropdownField'
+export { DropdownField as default } from './DropdownField'
