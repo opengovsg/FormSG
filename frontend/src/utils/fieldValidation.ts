@@ -10,6 +10,7 @@ import {
   AttachmentFieldBase,
   CheckboxFieldBase,
   DecimalFieldBase,
+  DropdownFieldBase,
   EmailFieldBase,
   FieldBase,
   HomenoFieldBase,
@@ -73,6 +74,24 @@ export const createBaseValidationRules = (
 ): RegisterOptions => {
   return {
     required: createRequiredValidationRules(schema),
+  }
+}
+
+export const createDropdownValidationRules: ValidationRuleFn<
+  DropdownFieldBase
+> = (schema): RegisterOptions => {
+  // TODO(#3360): Handle MyInfo dropdown validation
+  return {
+    ...createBaseValidationRules(schema),
+    validate: {
+      validOptions: (value: string) => {
+        if (!value) return
+        return (
+          schema.fieldOptions.includes(value) ||
+          'Entered value is not a valid dropdown option'
+        )
+      },
+    },
   }
 }
 
