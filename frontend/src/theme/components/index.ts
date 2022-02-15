@@ -22,6 +22,7 @@ import { PhoneNumberInput } from './PhoneNumberInput'
 import { Radio, RADIO_THEME_KEY } from './Radio'
 import { Searchbar, SEARCHBAR_THEME_KEY } from './Searchbar'
 import { SingleCountryPhoneNumberInput } from './SingleCountryPhoneNumberInput'
+import { SingleSelect } from './SingleSelect'
 import { Table } from './Table'
 import { Tabs } from './Tabs'
 import { Tag } from './Tag'
@@ -49,6 +50,7 @@ export const components = {
   NumberInput,
   PhoneNumberInput,
   SingleCountryPhoneNumberInput,
+  SingleSelect,
   Textarea,
   Table,
   Tabs,
