@@ -89,7 +89,7 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Singpass" icon={BiKey} />
             <SettingsTab label="Thank you page" icon={BiCheckDouble} />
             <SettingsTab label="Email notifications" icon={BiMailSend} />
-            <SettingsTab label="Twilio Credentials" icon={BiMessage} />
+            <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
             <SettingsTab label="Workflow" icon={BiRocket} />
           </TabList>
