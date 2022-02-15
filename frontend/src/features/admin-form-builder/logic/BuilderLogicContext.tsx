@@ -76,20 +76,12 @@ const useProvideLogicContext = (): BuilderLogicContextReturn => {
     }, {} as Record<FormFieldDto['_id'], FormFieldWithQuestionNumber>)
   }, [form])
 
-  const handleSetActiveLogicId = (id: LogicDto['_id']) => {
-    setActiveLogicId(id)
-  }
-
-  const handleSetHasPendingLogic = (hasLogic: boolean) => {
-    setHasPendingLogic(hasLogic)
-  }
-
   return {
     mapIdToField,
     formLogics: form?.form_logics,
     activeLogicId,
     hasPendingLogic,
-    handleSetActiveLogicId,
-    handleSetHasPendingLogic,
+    handleSetActiveLogicId: setActiveLogicId,
+    handleSetHasPendingLogic: setHasPendingLogic,
   }
 }
