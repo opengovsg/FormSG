@@ -6,7 +6,7 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
 
-import { BASICFIELD_TO_READABLE } from '~features/admin-form-builder/constants'
+import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form-builder/constants'
 
 import {
   activeFieldSelector,
@@ -25,7 +25,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   const basicFieldText = useMemo(
     () =>
       activeField?.fieldType
-        ? BASICFIELD_TO_READABLE[activeField.fieldType]
+        ? BASICFIELD_TO_DRAWER_META[activeField.fieldType].label
         : '',
     [activeField?.fieldType],
   )

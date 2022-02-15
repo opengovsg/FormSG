@@ -1,6 +1,6 @@
 import { BasicField } from '~shared/types/field'
 
-import { BASICFIELD_TO_READABLE } from '../constants'
+import { BASICFIELD_TO_DRAWER_META } from '../constants'
 
 import { PENDING_CREATE_FIELD_ID } from './constants'
 import { BuilderContentField, PendingFormField } from './types'
@@ -25,7 +25,7 @@ export const getFieldCreationMeta = (
     description: '',
     disabled: false,
     required: true,
-    title: BASICFIELD_TO_READABLE[fieldType],
+    title: BASICFIELD_TO_DRAWER_META[fieldType].label,
     _id: PENDING_CREATE_FIELD_ID,
   }
 

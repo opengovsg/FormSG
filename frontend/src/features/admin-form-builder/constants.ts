@@ -24,48 +24,111 @@ import { As } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types/field'
 
-export const BASICFIELD_TO_READABLE: { [key in BasicField]: string } = {
-  [BasicField.Attachment]: 'Attachment',
-  [BasicField.Checkbox]: 'Checkbox',
-  [BasicField.Date]: 'Date',
-  [BasicField.Decimal]: 'Decimal',
-  [BasicField.Dropdown]: 'Dropdown',
-  [BasicField.Email]: 'Email',
-  [BasicField.HomeNo]: 'Home number',
-  [BasicField.Image]: 'Image',
-  [BasicField.LongText]: 'Long answer',
-  [BasicField.Mobile]: 'Mobile number',
-  [BasicField.Nric]: 'NRIC',
-  [BasicField.Number]: 'Number',
-  [BasicField.Radio]: 'Radio',
-  [BasicField.Rating]: 'Rating',
-  [BasicField.Section]: 'Header',
-  [BasicField.ShortText]: 'Short answer',
-  [BasicField.Statement]: 'Paragraph',
-  [BasicField.Table]: 'Table',
-  [BasicField.Uen]: 'UEN',
-  [BasicField.YesNo]: 'Yes/No',
+type BuilderSidebarFieldMeta = {
+  label: string
+  icon: As
 }
 
-export const BASICFIELD_TO_ICON: { [key in BasicField]: As } = {
-  [BasicField.Attachment]: BiCloudUpload,
-  [BasicField.Checkbox]: BiSelectMultiple,
-  [BasicField.Date]: BiCalendarEvent,
-  [BasicField.Decimal]: BiCalculator,
-  [BasicField.Dropdown]: BiCaretDownSquare,
-  [BasicField.Email]: BiMailSend,
-  [BasicField.HomeNo]: BiPhone,
-  [BasicField.Image]: BiImage,
-  [BasicField.LongText]: BiAlignLeft,
-  [BasicField.Mobile]: BiMobile,
-  [BasicField.Nric]: BiUser,
-  [BasicField.Number]: BiHash,
-  [BasicField.Radio]: BiRadioCircleMarked,
-  [BasicField.Rating]: BiStar,
-  [BasicField.Section]: BiHeading,
-  [BasicField.ShortText]: BiRename,
-  [BasicField.Statement]: BiText,
-  [BasicField.Table]: BiTable,
-  [BasicField.Uen]: BiBuilding,
-  [BasicField.YesNo]: BiToggleLeft,
+export const BASICFIELD_TO_DRAWER_META: {
+  [key in BasicField]: BuilderSidebarFieldMeta
+} = {
+  [BasicField.Image]: {
+    label: 'Image',
+    icon: BiImage,
+  },
+
+  [BasicField.Statement]: {
+    label: 'Paragraph',
+    icon: BiText,
+  },
+
+  [BasicField.Section]: {
+    label: 'Header',
+    icon: BiHeading,
+  },
+
+  [BasicField.Attachment]: {
+    label: 'Attachment',
+    icon: BiCloudUpload,
+  },
+
+  [BasicField.Checkbox]: {
+    label: 'Checkbox',
+    icon: BiSelectMultiple,
+  },
+
+  [BasicField.Date]: {
+    label: 'Date',
+    icon: BiCalendarEvent,
+  },
+
+  [BasicField.Decimal]: {
+    label: 'Decimal',
+    icon: BiCalculator,
+  },
+
+  [BasicField.Dropdown]: {
+    label: 'Dropdown',
+    icon: BiCaretDownSquare,
+  },
+
+  [BasicField.Email]: {
+    label: 'Email',
+    icon: BiMailSend,
+  },
+
+  [BasicField.HomeNo]: {
+    label: 'Home Number',
+    icon: BiPhone,
+  },
+
+  [BasicField.LongText]: {
+    label: 'Long answer',
+    icon: BiAlignLeft,
+  },
+
+  [BasicField.Mobile]: {
+    label: 'Mobile number',
+    icon: BiMobile,
+  },
+
+  [BasicField.Nric]: {
+    label: 'NRIC',
+    icon: BiUser,
+  },
+
+  [BasicField.Number]: {
+    label: 'Number',
+    icon: BiHash,
+  },
+
+  [BasicField.Radio]: {
+    label: 'Radio',
+    icon: BiRadioCircleMarked,
+  },
+
+  [BasicField.Rating]: {
+    label: 'Rating',
+    icon: BiStar,
+  },
+
+  [BasicField.ShortText]: {
+    label: 'Short answer',
+    icon: BiRename,
+  },
+
+  [BasicField.Table]: {
+    label: 'Table',
+    icon: BiTable,
+  },
+
+  [BasicField.Uen]: {
+    label: 'UEN',
+    icon: BiBuilding,
+  },
+
+  [BasicField.YesNo]: {
+    label: 'Yes/No',
+    icon: BiToggleLeft,
+  },
 }

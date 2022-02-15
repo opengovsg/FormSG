@@ -1,6 +1,6 @@
 import { BasicField } from '~shared/types/field'
 
-import { BASICFIELD_TO_ICON, BASICFIELD_TO_READABLE } from '../constants'
+import { BASICFIELD_TO_DRAWER_META } from '../constants'
 
 export const ALLOWED_LOGIC_FIELDS = new Set([
   BasicField.YesNo,
@@ -12,8 +12,5 @@ export const ALLOWED_LOGIC_FIELDS = new Set([
 ])
 
 export const ALLOWED_FIELDS_META = Array.from(ALLOWED_LOGIC_FIELDS).map(
-  (fieldType) => ({
-    label: BASICFIELD_TO_READABLE[fieldType],
-    icon: BASICFIELD_TO_ICON[fieldType],
-  }),
+  (fieldType) => BASICFIELD_TO_DRAWER_META[fieldType],
 )

@@ -1,11 +1,9 @@
+import { useMemo } from 'react'
 import { Icon, Stack, Text } from '@chakra-ui/react'
 
 import Tooltip from '~components/Tooltip'
 
-import {
-  BASICFIELD_TO_ICON,
-  BASICFIELD_TO_READABLE,
-} from '~features/admin-form-builder/constants'
+import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form-builder/constants'
 
 import { FormFieldWithQuestionNumber } from '../../../BuilderLogicContext'
 
@@ -19,15 +17,20 @@ interface FieldLogicBadgeProps {
  * Field specific logic badge. Adds field icon and question number to the displayed badge.
  */
 export const FieldLogicBadge = ({ field }: FieldLogicBadgeProps) => {
+  const fieldMeta = useMemo(
+    () => BASICFIELD_TO_DRAWER_META[field.fieldType],
+    [field.fieldType],
+  )
+
   return (
     <LogicBadge display="inline-flex">
       <Stack direction="row" spacing="0.25rem" maxW="100%">
         <Tooltip
           placement="top"
-          label={`${BASICFIELD_TO_READABLE[field.fieldType]} field`}
+          label={`${fieldMeta.label} field`}
           wrapperStyles={{ display: 'flex' }}
         >
-          <Icon as={BASICFIELD_TO_ICON[field.fieldType]} fontSize="1rem" />
+          <Icon as={fieldMeta.icon} fontSize="1rem" />
         </Tooltip>
         <Text>{field.questionNumber}.</Text>
         <Text isTruncated>{field.title}</Text>
