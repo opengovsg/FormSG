@@ -64,7 +64,8 @@ export const MultiSelectItem = ({
             (isDisabled || isReadOnly) &&
             (event.key === 'Backspace' || event.key === 'Delete')
           ) {
-            // Prevent Downshift's default behavior.
+            // Prevent Downshift's default behavior where backspace or delete will
+            // remove the item from selection regardless of whether the input is disabled.
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             event.nativeEvent.preventDownshiftDefault = true
