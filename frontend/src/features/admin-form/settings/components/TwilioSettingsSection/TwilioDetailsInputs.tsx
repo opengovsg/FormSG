@@ -52,7 +52,9 @@ export const TwilioDetailsInputs = (): JSX.Element => {
     register,
     formState: { errors },
     handleSubmit,
-  } = useForm<TwilioCredentials>()
+  } = useForm<TwilioCredentials>({
+    mode: 'onTouched',
+  })
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
