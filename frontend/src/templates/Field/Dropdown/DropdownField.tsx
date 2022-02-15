@@ -30,6 +30,7 @@ export const DropdownField = ({
       <Controller
         rules={validationRules}
         name={schema._id}
+        defaultValue=""
         render={({ field }) => (
           <SingleSelect items={schema.fieldOptions} {...field} />
         )}

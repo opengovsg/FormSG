@@ -33,6 +33,7 @@ import {
 import { isUenValid } from '~shared/utils/uen-validation'
 
 import {
+  INVALID_DROPDOWN_OPTION_ERROR,
   INVALID_EMAIL_DOMAIN_ERROR,
   INVALID_EMAIL_ERROR,
   REQUIRED_ERROR,
@@ -87,8 +88,7 @@ export const createDropdownValidationRules: ValidationRuleFn<
       validOptions: (value: string) => {
         if (!value) return
         return (
-          schema.fieldOptions.includes(value) ||
-          'Entered value is not a valid dropdown option'
+          schema.fieldOptions.includes(value) || INVALID_DROPDOWN_OPTION_ERROR
         )
       },
     },
