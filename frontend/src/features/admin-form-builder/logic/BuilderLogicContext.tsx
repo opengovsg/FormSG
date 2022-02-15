@@ -9,18 +9,38 @@ export type FormFieldWithQuestionNumber = FormFieldDto & {
   questionNumber: number
 }
 
-type BuilderLogicContextProps = {
+type BuilderLogicContextReturn = {
+  /**
+   * Map of field _id to form field for easy retrieval of form data when
+   * rendering logic.
+   */
   mapIdToField: Record<FormFieldDto['_id'], FormFieldWithQuestionNumber>
+  /**
+   * The array of form logic in the form.
+   */
   formLogics?: LogicDto[]
+  /**
+   * ID of currently active logic. Used to highlight logic in the form, or to
+   * disable certain components.
+   */
   activeLogicId?: LogicDto['_id']
+  /**
+   * Whether a new logic block should be rendered and other actions disabled.
+   */
   hasPendingLogic?: boolean
+  /**
+   * Set the active logic ID when a logic block is about to be manipulated.
+   */
   handleSetActiveLogicId: (id: LogicDto['_id']) => void
+  /**
+   * Set whether a new logic block should be rendered and other actions disabled.
+   */
   handleSetHasPendingLogic: (hasLogic: boolean) => void
 }
 
-const BuilderLogicContext = createContext<BuilderLogicContextProps | undefined>(
-  undefined,
-)
+const BuilderLogicContext = createContext<
+  BuilderLogicContextReturn | undefined
+>(undefined)
 
 export const BuilderLogicProvider: FC = ({ children }) => {
   const context = useProvideLogicContext()
@@ -32,7 +52,7 @@ export const BuilderLogicProvider: FC = ({ children }) => {
   )
 }
 
-export const useBuilderLogic = (): BuilderLogicContextProps => {
+export const useBuilderLogic = (): BuilderLogicContextReturn => {
   const context = useContext(BuilderLogicContext)
   if (!context) {
     throw new Error(
@@ -42,7 +62,7 @@ export const useBuilderLogic = (): BuilderLogicContextProps => {
   return context
 }
 
-const useProvideLogicContext = (): BuilderLogicContextProps => {
+const useProvideLogicContext = (): BuilderLogicContextReturn => {
   const [activeLogicId, setActiveLogicId] = useState<LogicDto['_id']>()
   const [hasPendingLogic, setHasPendingLogic] = useState<boolean>()
 
