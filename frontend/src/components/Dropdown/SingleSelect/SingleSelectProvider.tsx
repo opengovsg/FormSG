@@ -66,6 +66,8 @@ export const SingleSelectProvider = ({
     selectItem,
     selectedItem,
   } = useCombobox({
+    labelId: `${name}-label`,
+    inputId: name,
     items: filteredItems,
     inputValue: value,
     defaultIsOpen,
