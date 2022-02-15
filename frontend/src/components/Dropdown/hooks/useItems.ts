@@ -11,7 +11,6 @@ export type ItemWithIndex<Item extends ComboboxItem = ComboboxItem> = {
 }
 
 export type UseItemsReturn<Item extends ComboboxItem = ComboboxItem> = {
-  items: Item[]
   byValue: Record<string, ItemWithIndex<Item>>
 }
 
@@ -24,9 +23,6 @@ export const useItems = <Item extends ComboboxItem = ComboboxItem>({
 }: UseItemProps<Item>) => {
   const normalizedItems = useMemo(() => {
     const initialStore: UseItemsReturn<Item> = {
-      // All selectable items
-      items: [],
-
       // Normalized store for filtering and retrieval of state
       byValue: {},
     }
@@ -40,7 +36,6 @@ export const useItems = <Item extends ComboboxItem = ComboboxItem>({
         return store
       }
 
-      store.items.push(item)
       store.byValue[value] = {
         item,
         index: itemIndex,
@@ -60,7 +55,7 @@ export const useItems = <Item extends ComboboxItem = ComboboxItem>({
   )
 
   return {
-    items: normalizedItems.items,
+    items: rawItems,
     getItemByValue,
   }
 }
