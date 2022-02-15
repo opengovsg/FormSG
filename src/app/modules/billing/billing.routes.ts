@@ -1,4 +1,3 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import { withUserAuthentication } from '../auth/auth.middlewares'
@@ -22,14 +21,4 @@ BillingRouter.use(withUserAuthentication)
  * @return 401 when request does not contain a user session
  * @return 500 when error occurs whilst querying database
  */
-BillingRouter.get(
-  '/',
-  celebrate({
-    [Segments.QUERY]: Joi.object({
-      esrvcId: Joi.string().required(),
-      yr: Joi.number().integer().min(2019).required(),
-      mth: Joi.number().integer().min(0).max(11).required(),
-    }),
-  }),
-  BillingController.handleGetBillInfo,
-)
+BillingRouter.get('/', BillingController.handleGetBillInfo)

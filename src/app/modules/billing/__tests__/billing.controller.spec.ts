@@ -68,7 +68,7 @@ describe('billing.controller', () => {
       )
 
       // Act
-      await BillingController.handleGetBillInfo(MOCK_REQ, mockRes, jest.fn())
+      await BillingController._handleGetBillInfo(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(MockBillingService.getSpLoginStats).toHaveBeenCalledWith(
@@ -86,7 +86,7 @@ describe('billing.controller', () => {
       )
 
       // Act
-      await BillingController.handleGetBillInfo(MOCK_REQ, mockRes, jest.fn())
+      await BillingController._handleGetBillInfo(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(MockBillingService.getSpLoginStats).toHaveBeenCalledWith(

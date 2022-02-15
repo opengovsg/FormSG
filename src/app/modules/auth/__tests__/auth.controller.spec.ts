@@ -42,7 +42,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleCheckUser(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleCheckUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.sendStatus).toBeCalledWith(200)
@@ -57,7 +57,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleCheckUser(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleCheckUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(401)
@@ -82,7 +82,7 @@ describe('auth.controller', () => {
       MockMailService.sendLoginOtp.mockReturnValueOnce(okAsync(true))
 
       // Act
-      await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
@@ -101,7 +101,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(401)
@@ -120,7 +120,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
@@ -146,7 +146,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
@@ -183,7 +183,7 @@ describe('auth.controller', () => {
       MockUserService.retrieveUser.mockReturnValueOnce(okAsync(mockUser))
 
       // Act
-      await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
@@ -199,7 +199,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(401)
@@ -219,7 +219,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
@@ -241,7 +241,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
@@ -265,7 +265,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
