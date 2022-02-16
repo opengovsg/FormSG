@@ -1,4 +1,4 @@
-import { SystemStyleFunction } from '@chakra-ui/theme-tools'
+import { getColor, SystemStyleFunction } from '@chakra-ui/theme-tools'
 import merge from 'lodash/merge'
 
 import { textStyles } from '../textStyles'
@@ -11,6 +11,7 @@ export type ThemeButtonVariant =
   | 'outline'
   | 'clear'
   | 'link'
+  | 'inputAttached'
 
 const variantSolid: SystemStyleFunction = (props) => {
   const { colorScheme: c } = props
@@ -135,6 +136,43 @@ const variantLink: SystemStyleFunction = (props) => {
   })
 }
 
+const variantInputAttached: SystemStyleFunction = (props) => {
+  const {
+    focusBorderColor: fc = `${props.colorScheme}.500`,
+    errorBorderColor: ec = `danger.500`,
+    theme,
+  } = props
+
+  return {
+    fontSize: '1.25rem',
+    color: 'secondary.500',
+    ml: '-1px',
+    borderColor: 'neutral.400',
+    borderRadius: 0,
+    _hover: {
+      bg: 'neutral.100',
+    },
+    _active: {
+      borderColor: getColor(theme, fc),
+      bg: 'white',
+      zIndex: 1,
+      _hover: {
+        bg: 'neutral.100',
+      },
+    },
+    _invalid: {
+      // Remove extra 1px of outline.
+      borderColor: getColor(theme, ec),
+      boxShadow: 'none',
+    },
+    _focus: {
+      borderColor: fc,
+      boxShadow: `0 0 0 1px ${getColor(theme, fc)}`,
+      zIndex: 1,
+    },
+  }
+}
+
 export const Button = {
   baseStyle: {
     ...textStyles['subhead-1'],
@@ -162,6 +200,7 @@ export const Button = {
     outline: variantOutlineReverse,
     clear: variantClear,
     link: variantLink,
+    inputAttached: variantInputAttached,
   },
   defaultProps: {
     variant: 'solid',
