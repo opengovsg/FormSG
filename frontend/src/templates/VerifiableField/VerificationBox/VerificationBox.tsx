@@ -77,13 +77,12 @@ export const VerificationBox = ({
 
   return (
     <Flex
-      px={{ base: '1.25rem', md: '6.625rem' }}
-      py={{ base: '1.25rem', md: '2.25rem' }}
+      p={{ base: '1.25rem', md: '2.25rem' }}
       bg="primary.100"
       align="flex-start"
-      mt="-1rem"
+      mt="0.5rem"
     >
-      <Box d={{ base: 'none', md: 'initial' }} mr="2rem">
+      <Box d={{ base: 'none', md: 'initial' }} mr="1.5rem">
         <Logo />
       </Box>
       <Box>
@@ -92,7 +91,7 @@ export const VerificationBox = ({
             isRequired
             isReadOnly={isValid && isSubmitting}
             isInvalid={!!errors.otp}
-            maxW="18rem"
+            maxW="24.75rem"
           >
             <FormLabel description={subheader}>{header}</FormLabel>
             <Flex>
@@ -123,7 +122,7 @@ export const VerificationBox = ({
             </FormErrorMessage>
           </FormControl>
         </Flex>
-        <ResendOtpButton onResendOtp={onResendOtp} />
+        <ResendOtpButton mt="0.5rem" variant="link" onResendOtp={onResendOtp} />
       </Box>
     </Flex>
   )
