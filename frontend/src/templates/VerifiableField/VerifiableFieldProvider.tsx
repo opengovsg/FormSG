@@ -32,7 +32,8 @@ export const VerifiableFieldProvider = ({
 }: VerifiableFieldProviderProps): JSX.Element => {
   const [isVfnBoxOpen, setIsVfnBoxOpen] = useState(false)
 
-  const { control, setError, getValues, setValue, setFocus } = useFormContext()
+  const { control, setError, getValues, setValue, setFocus, clearErrors } =
+    useFormContext()
   const currentSignature: VerifiableFieldInput = useWatch({
     name: `${schema._id}.signature`,
     control,
@@ -77,7 +78,12 @@ export const VerifiableFieldProvider = ({
         { message: 'Please fill in field before attempting verification' },
         { shouldFocus: true },
       )
+    } else {
+      clearErrors(schema._id)
     }
+
+    // Do nothing if box is already opened.
+    if (isVfnBoxOpen) return
 
     // Check is valid phone number
     if (isMobilePhoneNumber(currentInputValue)) {
@@ -90,7 +96,7 @@ export const VerifiableFieldProvider = ({
         { shouldFocus: true },
       )
     }
-  }, [getValues, schema._id, setError])
+  }, [clearErrors, getValues, schema._id, setError])
 
   const handleVfnSuccess = useCallback(
     (signature: string) => {
