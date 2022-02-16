@@ -99,14 +99,9 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                 <IconButton
                   aria-label={calendarButtonAria}
                   icon={<BxCalendar />}
+                  variant="inputAttached"
+                  borderRadius={0}
                   isActive={isOpen}
-                  fontSize="1.25rem"
-                  variant="outline"
-                  color="secondary.500"
-                  borderColor="neutral.400"
-                  borderRadius="0"
-                  // Avoid double border with input
-                  ml="-1px"
                 />
               </PopoverTrigger>
               <PopoverContent
