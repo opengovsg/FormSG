@@ -8,6 +8,7 @@ interface PublicFormContextProps
   extends Partial<PublicFormViewDto>,
     Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
   miniHeaderRef: RefObject<HTMLDivElement>
+  formId: string
 }
 
 export const PublicFormContext = createContext<

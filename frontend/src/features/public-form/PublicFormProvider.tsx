@@ -16,11 +16,12 @@ export const PublicFormProvider = ({
 }: PublicFormProviderProps): JSX.Element => {
   const miniHeaderRef = useRef<HTMLDivElement>(null)
   const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
   const { data, error, ...rest } = usePublicFormView()
 
   const isFormNotFound = useMemo(() => {
     return (
-      !formId ||
       !PUBLICFORM_REGEX.test(formId) ||
       (error instanceof HttpError && error.code === 404)
     )
@@ -30,6 +31,7 @@ export const PublicFormProvider = ({
     <PublicFormContext.Provider
       value={{
         miniHeaderRef,
+        formId,
         form: data?.form,
         isIntranetUser: data?.isIntranetUser,
         myInfoError: data?.myInfoError,
