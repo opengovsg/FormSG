@@ -54,6 +54,35 @@ function unlistFormArrayFromExamples(ids) {
 // const ids = ['https://some.url/5f8817b7bde9d4002a800d78', 'some.url/#!/5f9a587b119c07002b56124f']
 // unlistFormArrayFromExamples(ids)
 ```
+- **Manually archive forms**
+
+```javascript
+/**
+ * Set an array of forms to status ARCHIVED
+ * @param  {String[]} ids of the forms. These can be any string
+ * where the first sequence of 24 consecutive alphanumerics is the
+ * form ID, e.g. the form link.
+ */
+function archiveFormArray(ids) {
+  const formIdRegex = /[0-9a-fA-F]{24}/
+  // Wrap all ids in ObjectId
+  const objectIds = []
+  for (let id of ids) {
+    const parsed = formIdRegex.exec(id)
+    if (parsed) {
+      objectIds.push(ObjectId(parsed[0]))
+    } else {
+      throw new Error(`${id} does not contain a valid form ID.`)
+    }
+  }
+  const result = db
+    .getCollection('forms')
+    .updateMany({ _id: { $in: objectIds } }, { $set: { status: 'ARCHIVED' } })
+  return `${ids.length} forms given, ${result.matchedCount} matched, ${result.modifiedCount} modified`
+}
+// const ids = ['https://some.url/5ea8de1c73e4c00014059071', 'some.url/#!/5e868570a2c4d3001124dfff']
+// archiveFormArray(ids)
+```
 
 - **Create new agency**
 
