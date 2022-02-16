@@ -96,10 +96,10 @@ export const VerifiableFieldProvider = ({
         { shouldFocus: true },
       )
     }
-  }, [clearErrors, getValues, schema._id, setError])
+  }, [clearErrors, getValues, isVfnBoxOpen, schema._id, setError])
 
   const handleVfnSuccess = useCallback(
-    (signature: string) => {
+    async (signature: string) => {
       const currentValue = getValues(schema._id)?.value
       if (!currentValue) return
 
@@ -123,6 +123,11 @@ export const VerifiableFieldProvider = ({
     [getValues, schema._id, setFocus, setValue],
   )
 
+  const handleResendOtp = useCallback(() => {
+    // TODO: Add API call to resend OTP
+    return Promise.resolve(console.log('resending'))
+  }, [])
+
   return (
     <VerifiableFieldContext.Provider
       value={{
@@ -130,6 +135,7 @@ export const VerifiableFieldProvider = ({
         isVfnBoxOpen,
         handleInputChange,
         handleVfnButtonClick,
+        handleResendOtp,
         handleVfnSuccess,
         hasSignature: !!currentSignature,
       }}

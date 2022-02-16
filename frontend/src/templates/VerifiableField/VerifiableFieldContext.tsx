@@ -10,7 +10,8 @@ interface VerifiableFieldContextReturn {
     onChange: ControllerRenderProps['onChange'],
   ) => (value?: string) => void
   handleVfnButtonClick: () => void
-  handleVfnSuccess: (signature: string) => void
+  handleVfnSuccess: (signature: string) => Promise<void>
+  handleResendOtp: () => Promise<void>
   hasSignature: boolean
 }
 

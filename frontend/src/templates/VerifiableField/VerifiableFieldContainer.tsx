@@ -28,8 +28,13 @@ export const VerifiableFieldContainer = ({
   questionNumber,
   children,
 }: VerifiableFieldContainerProps): JSX.Element => {
-  const { isVfnBoxOpen, handleVfnButtonClick, hasSignature } =
-    useVerifiableField()
+  const {
+    isVfnBoxOpen,
+    handleVfnButtonClick,
+    hasSignature,
+    handleVfnSuccess,
+    handleResendOtp,
+  } = useVerifiableField()
 
   return (
     <Box>
@@ -49,7 +54,13 @@ export const VerifiableFieldContainer = ({
           </Box>
         </Stack>
       </FieldContainer>
-      {isVfnBoxOpen && <VerificationBox fieldType={schema.fieldType} />}
+      {isVfnBoxOpen && (
+        <VerificationBox
+          handleVfnSuccess={handleVfnSuccess}
+          handleResendOtp={handleResendOtp}
+          fieldType={schema.fieldType}
+        />
+      )}
     </Box>
   )
 }

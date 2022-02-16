@@ -10,7 +10,6 @@ import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
 import { VerifiableFieldType } from '../types'
-import { useVerifiableField } from '../VerifiableFieldContext'
 
 import { VFN_RENDER_DATA } from './constants'
 
@@ -20,23 +19,20 @@ type VfnFieldValues = {
 
 export interface VerificationBoxProps {
   fieldType: VerifiableFieldType
+  handleVfnSuccess: (signature: string) => Promise<void>
+  handleResendOtp: () => Promise<void>
 }
 
-const useVerificationBox = () => {
+type UseVerificationBoxProps = Pick<VerificationBoxProps, 'handleVfnSuccess'>
+
+const useVerificationBox = ({ handleVfnSuccess }: UseVerificationBoxProps) => {
   const formMethods = useForm<VfnFieldValues>()
   const { handleSubmit } = formMethods
-
-  const { handleVfnSuccess } = useVerifiableField()
 
   const onSubmitForm = handleSubmit(async (inputs) => {
     // TODO: Add API call to backend to verify OTP, then return signature.
     return handleVfnSuccess(`some signature-${inputs.otp}`)
   })
-
-  const onResendOtp = useCallback(() => {
-    // TODO: Add API call to resend OTP
-    return Promise.resolve(console.log('resending'))
-  }, [])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>): void => {
@@ -51,13 +47,14 @@ const useVerificationBox = () => {
   return {
     formMethods,
     handleKeyDown,
-    onResendOtp,
     onSubmitForm,
   }
 }
 
 export const VerificationBox = ({
   fieldType,
+  handleResendOtp,
+  handleVfnSuccess,
 }: VerificationBoxProps): JSX.Element => {
   const {
     formMethods: {
@@ -66,8 +63,9 @@ export const VerificationBox = ({
     },
     handleKeyDown,
     onSubmitForm,
-    onResendOtp,
-  } = useVerificationBox()
+  } = useVerificationBox({
+    handleVfnSuccess,
+  })
 
   const {
     logo: Logo,
@@ -122,7 +120,11 @@ export const VerificationBox = ({
             </FormErrorMessage>
           </FormControl>
         </Flex>
-        <ResendOtpButton mt="0.5rem" variant="link" onResendOtp={onResendOtp} />
+        <ResendOtpButton
+          mt="0.5rem"
+          variant="link"
+          onResendOtp={handleResendOtp}
+        />
       </Box>
     </Flex>
   )
