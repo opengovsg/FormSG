@@ -104,7 +104,7 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
         alignItems: 'center',
         justifyContent: 'center',
         w: {
-          base: '2rem',
+          base: '2.25rem',
           md: '3.25rem',
         },
         h: {
