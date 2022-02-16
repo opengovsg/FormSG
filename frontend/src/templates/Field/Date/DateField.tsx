@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react'
 import { Controller } from 'react-hook-form'
-import { isAfter, isBefore, startOfToday } from 'date-fns'
 
 import {
   DateFieldBase,
@@ -8,6 +7,11 @@ import {
   FormFieldWithId,
 } from '~shared/types/field'
 
+import {
+  isDateAfterToday,
+  isDateBeforeToday,
+  isDateOutOfRange,
+} from '~utils/date'
 import { createDateValidationRules } from '~utils/fieldValidation'
 import DateInput from '~components/DatePicker'
 
@@ -38,15 +42,12 @@ export const DateField = ({
 
       switch (selectedDateValidation) {
         case DateSelectedValidation.NoPast:
-          return isBefore(date, startOfToday())
+          return isDateBeforeToday(date)
         case DateSelectedValidation.NoFuture:
-          return isBefore(startOfToday(), date)
+          return isDateAfterToday(date)
         case DateSelectedValidation.Custom: {
           const { customMinDate, customMaxDate } = schema.dateValidation
-          return !!(
-            (customMinDate && isBefore(date, customMinDate)) ||
-            (customMaxDate && isAfter(date, customMaxDate))
-          )
+          return isDateOutOfRange(date, customMinDate, customMaxDate)
         }
         default:
           return false
