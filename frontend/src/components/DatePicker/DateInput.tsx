@@ -79,6 +79,7 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
             <>
               <PopoverAnchor>
                 <Input
+                  zIndex={1}
                   type="date"
                   onKeyDown={handlePreventOpenNativeCalendar}
                   sx={{
