@@ -85,6 +85,7 @@ export const SingleSelectProvider = ({
     labelId: `${name}-label`,
     inputId: name,
     defaultInputValue: '',
+    defaultHighlightedIndex: 0,
     items: filteredItems,
     initialIsOpen,
     initialSelectedItem: getInitialSelectedValue(),
