@@ -34,7 +34,7 @@ const menuItems = (
   <>
     <Menu.Item>Billing</Menu.Item>
     <Menu.Item>Emergency contact</Menu.Item>
-    <MenuDivider />
+    <MenuDivider aria-hidden />
     <Menu.Item>Sign out</Menu.Item>
   </>
 )

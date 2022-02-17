@@ -42,7 +42,7 @@ const AvatarMenuUsername = (props: MenuItemProps): JSX.Element => {
   const userIcon = <Icon as={BxsUser} sx={styles.usernameIcon} />
 
   return (
-    <Box sx={styles.usernameItem}>
+    <Box sx={styles.usernameItem} aria-hidden>
       {userIcon}
       {props.children}
     </Box>
@@ -86,7 +86,7 @@ export const AvatarMenu = ({
           </AvatarMenuButton>
           <Menu.List marginTop="0.375rem">
             <AvatarMenuUsername>{userName}</AvatarMenuUsername>
-            <MenuDivider />
+            <MenuDivider aria-hidden />
             {children}
           </Menu.List>
         </>
