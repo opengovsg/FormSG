@@ -64,7 +64,7 @@ export const AvatarMenu = ({
   children,
 }: AvatarMenuProps): JSX.Element => {
   return (
-    <Menu {...(isOpen ? { isOpen } : {})}>
+    <Menu {...(isOpen ? { isOpen } : {})} autoSelect={false}>
       {({ isOpen }) => (
         <>
           <AvatarMenuButton isActive={isOpen}>
