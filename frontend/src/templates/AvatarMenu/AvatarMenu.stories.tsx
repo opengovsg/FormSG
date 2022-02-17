@@ -1,10 +1,9 @@
-import { MenuDivider } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { Avatar } from '../../components/Avatar/Avatar'
 import Menu from '../../components/Menu'
 
-import { AvatarMenuProps } from './AvatarMenu'
+import { AvatarMenuDivider, AvatarMenuProps } from './AvatarMenu'
 import AvatarMenu from '.'
 
 export default {
@@ -34,7 +33,7 @@ const menuItems = (
   <>
     <Menu.Item>Billing</Menu.Item>
     <Menu.Item>Emergency contact</Menu.Item>
-    <MenuDivider aria-hidden />
+    <AvatarMenuDivider />
     <Menu.Item>Sign out</Menu.Item>
   </>
 )

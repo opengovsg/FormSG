@@ -49,6 +49,14 @@ const AvatarMenuUsername = (props: MenuItemProps): JSX.Element => {
   )
 }
 
+/**
+ * MenuDivider styled for avatar
+ * @preconditions Must be a child of Menu component,
+ */
+export const AvatarMenuDivider = (): JSX.Element => {
+  return <MenuDivider aria-hidden borderColor="neutral.300" />
+}
+
 export type AvatarMenuProps = {
   fullName?: string
   userName?: string
@@ -86,7 +94,7 @@ export const AvatarMenu = ({
           </AvatarMenuButton>
           <Menu.List marginTop="0.375rem">
             <AvatarMenuUsername>{userName}</AvatarMenuUsername>
-            <MenuDivider aria-hidden />
+            <AvatarMenuDivider />
             {children}
           </Menu.List>
         </>
