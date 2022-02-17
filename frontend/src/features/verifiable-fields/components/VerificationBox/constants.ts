@@ -2,7 +2,7 @@ import { ChakraComponent } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types/field'
 
-import { VerifiableFieldType } from '../types'
+import { VerifiableFieldType } from '~features/verifiable-fields/types'
 
 import { MobileOtpSvgr } from './MobileOtpSvgr'
 

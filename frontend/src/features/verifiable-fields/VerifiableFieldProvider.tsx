@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   ControllerRenderProps,
   useFormContext,
@@ -8,7 +8,6 @@ import {
 import { FormFieldWithId } from '~shared/types/field'
 import { isMobilePhoneNumber } from '~shared/utils/phone-num-validation'
 
-import { createBaseVfnFieldValidationRules } from '~utils/fieldValidation'
 import { BaseFieldProps } from '~templates/Field/FieldContainer'
 
 import {
@@ -38,11 +37,6 @@ export const VerifiableFieldProvider = ({
     name: `${schema._id}.signature`,
     control,
   })
-
-  const baseVfnValidationRules = useMemo(
-    () => createBaseVfnFieldValidationRules(schema),
-    [schema],
-  )
 
   /**
    * Keeps track of already completed numbers to signatures
@@ -131,7 +125,6 @@ export const VerifiableFieldProvider = ({
   return (
     <VerifiableFieldContext.Provider
       value={{
-        baseVfnValidationRules,
         isVfnBoxOpen,
         handleInputChange,
         handleVfnButtonClick,

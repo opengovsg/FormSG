@@ -4,12 +4,11 @@ import { Box, Stack } from '@chakra-ui/react'
 import { FormFieldWithId } from '~shared/types/field'
 
 import Button from '~components/Button'
+import { BaseFieldProps, FieldContainer } from '~templates/Field/FieldContainer'
 
-import { BaseFieldProps, FieldContainer } from '../Field/FieldContainer'
-
-import { VerifiableFieldBase, VerifiableFieldSchema } from './types'
-import { useVerifiableField } from './VerifiableFieldContext'
-import { VerificationBox } from './VerificationBox'
+import { VerifiableFieldBase, VerifiableFieldSchema } from '../../types'
+import { useVerifiableField } from '../../VerifiableFieldContext'
+import { VerificationBox } from '../VerificationBox'
 
 export interface BaseVerifiableFieldProps extends BaseFieldProps {
   schema: VerifiableFieldSchema<FormFieldWithId<VerifiableFieldBase>>
@@ -21,7 +20,7 @@ export interface VerifiableFieldContainerProps
 }
 
 /**
- * @precondition Must have a parent `react-hook-form#FormProvider` component.
+ * @precondition Must have a parent `react-hook-form#FormProvider` and `VerifiableFieldProvider` component.
  */
 export const VerifiableFieldContainer = ({
   schema,

@@ -9,7 +9,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
-import { VerifiableFieldType } from '../types'
+import { VerifiableFieldType } from '../../types'
 
 import { VFN_RENDER_DATA } from './constants'
 

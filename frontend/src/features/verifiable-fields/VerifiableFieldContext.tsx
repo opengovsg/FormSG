@@ -1,10 +1,7 @@
 import { createContext, useContext } from 'react'
 import { ControllerRenderProps } from 'react-hook-form'
 
-import { createBaseVfnFieldValidationRules } from '~utils/fieldValidation'
-
 interface VerifiableFieldContextReturn {
-  baseVfnValidationRules: ReturnType<typeof createBaseVfnFieldValidationRules>
   isVfnBoxOpen: boolean
   handleInputChange: (
     onChange: ControllerRenderProps['onChange'],
