@@ -34,6 +34,7 @@ interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
   styles: Record<string, CSSObject>
   isFocused: boolean
   setIsFocused: (isFocused: boolean) => void
+  resetInputValue: () => void
 }
 
 export const SelectContext = createContext<SelectContextReturn | undefined>(
