@@ -1,6 +1,5 @@
 import {
   Box,
-  ButtonProps,
   Icon,
   MenuDivider,
   MenuItemProps,
@@ -8,7 +7,7 @@ import {
 } from '@chakra-ui/react'
 
 import { BxsUser } from '~/assets/icons/BxsUser'
-import Menu from '~/components/Menu'
+import Menu, { MenuButtonProps } from '~/components/Menu'
 
 import { Avatar } from '../../components/Avatar/Avatar'
 
@@ -18,7 +17,7 @@ import { Avatar } from '../../components/Avatar/Avatar'
  * @preconditions Must be a child of Menu component,
  * and returned using a render prop.
  */
-const AvatarMenuButton = (props: ButtonProps): JSX.Element => {
+const AvatarMenuButton = (props: MenuButtonProps): JSX.Element => {
   return (
     <Menu.Button
       variant="clear"
