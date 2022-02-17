@@ -52,6 +52,10 @@ export const VerifiableFieldProvider = ({
 
   const handleInputChange = useCallback(
     (onChange: ControllerRenderProps['onChange']) => (value?: string) => {
+      // Prevent action when multiple onChange is called with the same value
+      // This can happen when input is blurred, since onChange is also called by
+      // react-hook-form when that happen.
+      if (getValues(schema._id)?.value === value) return
       if (isVfnBoxOpen) {
         setIsVfnBoxOpen(false)
       }
@@ -61,7 +65,7 @@ export const VerifiableFieldProvider = ({
       const signature = mapNumberToSignature[value ?? '']
       return onChange({ value, signature })
     },
-    [isVfnBoxOpen, mapNumberToSignature],
+    [getValues, isVfnBoxOpen, mapNumberToSignature, schema._id],
   )
 
   // TODO: Extract this based on schema type instead of hardcoding to mobile field
