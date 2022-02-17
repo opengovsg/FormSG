@@ -25,6 +25,7 @@ const AvatarMenuButton = (props: ButtonProps): JSX.Element => {
       px="0"
       iconSpacing="0.5rem"
       color="secondary.300"
+      chevronSize="24px"
       {...props}
     />
   )

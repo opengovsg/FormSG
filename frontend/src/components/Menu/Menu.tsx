@@ -21,6 +21,7 @@ export interface MenuButtonProps extends Omit<ButtonProps, 'isFullWidth'> {
   isStretch?: boolean
   isOpen?: boolean
   focusItemBorderColor?: string
+  chevronSize?: string
 }
 
 /**
@@ -33,14 +34,15 @@ const MenuButton = ({
   colorScheme = 'secondary',
   focusItemBorderColor,
   isStretch,
+  chevronSize = '1.25rem',
   ...props
 }: MenuButtonProps): JSX.Element => {
   const ChevronIcon = useMemo(
     () =>
       isOpen ? (
-        <BxsChevronUp fontSize="1.25rem" />
+        <BxsChevronUp fontSize={chevronSize} />
       ) : (
-        <BxsChevronDown fontSize="1.25rem" />
+        <BxsChevronDown fontSize={chevronSize} />
       ),
     [isOpen],
   )
