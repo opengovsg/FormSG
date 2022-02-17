@@ -68,9 +68,13 @@ export const AvatarMenu = ({
       {({ isOpen }) => (
         <>
           <AvatarMenuButton isActive={isOpen}>
-            <Avatar name={fullName} hasNotification={hasNotification}></Avatar>
+            <Avatar
+              name={fullName}
+              hasNotification={hasNotification}
+              showBorder={isOpen}
+            ></Avatar>
           </AvatarMenuButton>
-          <Menu.List>
+          <Menu.List marginTop="0.375rem">
             <AvatarMenuUsername>{userName}</AvatarMenuUsername>
             <MenuDivider />
             {children}

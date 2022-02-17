@@ -6,6 +6,7 @@ import {
 
 export interface AvatarProps extends ChakraAvatarProps {
   hasNotification?: boolean
+  showBorder?: boolean
 }
 
 /*
@@ -14,6 +15,7 @@ export interface AvatarProps extends ChakraAvatarProps {
  */
 export const Avatar = ({
   hasNotification,
+  showBorder,
   ...rest
 }: AvatarProps): JSX.Element => {
   return (
@@ -23,6 +25,11 @@ export const Avatar = ({
         // Default method extracts first two letters.
         rest.getInitials ? rest.getInitials : (fullName) => fullName[0]
       }
+      {...(showBorder
+        ? {
+            boxShadow: `0 0 0 4px var(--chakra-colors-primary-300)`,
+          }
+        : {})}
       {...rest}
     >
       {hasNotification ? <ChakraAvatarBadge /> : null}
