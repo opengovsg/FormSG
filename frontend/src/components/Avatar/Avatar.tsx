@@ -31,6 +31,9 @@ export const Avatar = ({
           }
         : {})}
       {...rest}
+      aria-label={
+        hasNotification ? 'Avatar with unread notifications' : 'Avatar '
+      }
     >
       {hasNotification ? <ChakraAvatarBadge /> : null}
     </ChakraAvatar>
