@@ -2,10 +2,7 @@ import { composeStories } from '@storybook/testing-react'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import {
-  INVALID_DROPDOWN_OPTION_ERROR,
-  REQUIRED_ERROR,
-} from '~constants/validation'
+import { REQUIRED_ERROR } from '~constants/validation'
 
 import * as stories from './DropdownField.stories'
 
@@ -35,7 +32,7 @@ describe('required field', () => {
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const input = screen.getByRole('textbox') as HTMLInputElement
     // Act
-    userEvent.type(input, optionToType)
+    userEvent.type(input, `${optionToType}{enter}`)
     // Act required due to react-hook-form usage.
     await act(async () => userEvent.click(submitButton))
 
@@ -124,13 +121,14 @@ describe('dropdown validation', () => {
 
     // Act
     userEvent.click(inputElement)
-    // Arrow down twice and select input
     userEvent.type(inputElement, inputToType)
+    userEvent.tab()
+    // Input should blur and input value should be cleared (since nothing was selected).
+    expect(inputElement.value).toEqual('')
     // Act required due to react-hook-form usage.
     await act(async () => userEvent.click(submitButton))
 
     // Assert
-    // Should show success message.
-    expect(screen.getByText(INVALID_DROPDOWN_OPTION_ERROR)).toBeInTheDocument()
+    expect(screen.getByText(REQUIRED_ERROR)).toBeInTheDocument()
   })
 })
