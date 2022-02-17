@@ -26,6 +26,11 @@ import {
   YesNoField,
 } from '~templates/Field'
 
+import {
+  VerifiableMobileField,
+  VerifiableMobileFieldSchema,
+} from '~features/verifiable-fields/Mobile'
+
 interface FieldFactoryProps {
   field: FormFieldDto
   colorTheme?: FormColorTheme
@@ -58,8 +63,16 @@ export const FieldFactory = memo(
         return <AttachmentField schema={field} colorTheme={colorTheme} />
       case BasicField.HomeNo:
         return <HomeNoField schema={field} colorTheme={colorTheme} />
-      case BasicField.Mobile:
-        return <MobileField schema={field} colorTheme={colorTheme} />
+      case BasicField.Mobile: {
+        return field.isVerifiable ? (
+          <VerifiableMobileField
+            schema={field as VerifiableMobileFieldSchema}
+            colorTheme={colorTheme}
+          />
+        ) : (
+          <MobileField schema={field} colorTheme={colorTheme} />
+        )
+      }
       case BasicField.Statement:
         return <ParagraphField schema={field} colorTheme={colorTheme} />
       case BasicField.Rating:
