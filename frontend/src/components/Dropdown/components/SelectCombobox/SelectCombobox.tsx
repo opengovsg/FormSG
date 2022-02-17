@@ -1,5 +1,12 @@
 import { forwardRef, useMemo } from 'react'
-import { Flex, Icon, InputGroup, Stack, Text } from '@chakra-ui/react'
+import {
+  Flex,
+  Icon,
+  InputGroup,
+  Stack,
+  Text,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 
 import Input from '~components/Input'
 
@@ -27,6 +34,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       setIsFocused,
       isOpen,
       resetInputValue,
+      inputAria,
     } = useSelectContext()
 
     const selectedItemMeta = useMemo(
@@ -39,6 +47,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
 
     return (
       <Flex>
+        <VisuallyHidden id={inputAria.id}>{inputAria.label}</VisuallyHidden>
         <InputGroup
           pos="relative"
           display="grid"
@@ -84,6 +93,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
               onClick: toggleMenu,
               onBlur: () => !isOpen && resetInputValue(),
               ref,
+              'aria-describedby': inputAria.id,
             })}
           />
           <ToggleChevron />

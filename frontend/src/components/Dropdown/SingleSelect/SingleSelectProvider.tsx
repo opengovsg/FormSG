@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { FormControlOptions, useMultiStyleConfig } from '@chakra-ui/react'
 import { useCombobox, UseComboboxProps } from 'downshift'
 
@@ -22,6 +22,11 @@ export interface SingleSelectProviderProps<
   initialIsOpen?: boolean
   /** Props to override default useComboboxProps, if any. */
   comboboxProps?: Partial<UseComboboxProps<Item>>
+  /** aria-describedby to be attached to the combobox input, if any. */
+  inputAria?: {
+    id: string
+    label: string
+  }
   children: React.ReactNode
 }
 export const SingleSelectProvider = ({
@@ -41,6 +46,7 @@ export const SingleSelectProvider = ({
   isDisabled,
   isRequired,
   children,
+  inputAria: inputAriaProp,
   comboboxProps = {},
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
@@ -137,6 +143,18 @@ export const SingleSelectProvider = ({
     isClearable,
   })
 
+  const inputAria = useMemo(() => {
+    if (inputAriaProp) return inputAriaProp
+    let label = 'No option selected'
+    if (selectedItem) {
+      label = `Option ${itemToValue(selectedItem)}, selected`
+    }
+    return {
+      id: `${name}-current-selection`,
+      label,
+    }
+  }, [inputAriaProp, name, selectedItem])
+
   return (
     <SelectContext.Provider
       value={{
@@ -168,6 +186,7 @@ export const SingleSelectProvider = ({
         isFocused,
         setIsFocused,
         resetInputValue,
+        inputAria,
       }}
     >
       {children}
