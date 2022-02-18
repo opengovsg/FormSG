@@ -1,3 +1,4 @@
+import { baseMobileValidationFn } from '~utils/fieldValidation'
 import {
   MobileFieldInput,
   MobileFieldProps,
@@ -49,8 +50,12 @@ export const VerifiableMobileField = ({
   schema,
   ...props
 }: VerifiableMobileFieldProps) => {
+  const validateInputForVfn = baseMobileValidationFn(schema)
   return (
-    <VerifiableFieldProvider schema={schema}>
+    <VerifiableFieldProvider
+      schema={schema}
+      validateInputForVfn={validateInputForVfn}
+    >
       <InnerVerifiableMobileField schema={schema} {...props} />
     </VerifiableFieldProvider>
   )
