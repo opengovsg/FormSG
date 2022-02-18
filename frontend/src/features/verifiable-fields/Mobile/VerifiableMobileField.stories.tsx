@@ -127,14 +127,14 @@ export const VerifiableMobileField = Template.bind({})
 export const PendingVerification = Template.bind({})
 PendingVerification.args = {
   defaultValue: {
-    value: '98888888',
+    value: '+6598888888',
   },
 }
 
 export const Verified = Template.bind({})
 Verified.args = {
   defaultValue: {
-    value: '98888888',
+    value: '+6598888888',
     signature: 'some-signature',
   },
 }
