@@ -31,7 +31,7 @@ export const VerifiableFieldContainer = ({
     isVfnBoxOpen,
     handleVfnButtonClick,
     hasSignature,
-    handleVfnSuccess,
+    handleVerifyOtp,
     handleResendOtp,
     isSendingOtp,
   } = useVerifiableField()
@@ -57,7 +57,7 @@ export const VerifiableFieldContainer = ({
       </FieldContainer>
       {isVfnBoxOpen && (
         <VerificationBox
-          handleVfnSuccess={handleVfnSuccess}
+          handleVerifyOtp={handleVerifyOtp}
           handleResendOtp={handleResendOtp}
           fieldType={schema.fieldType}
         />
