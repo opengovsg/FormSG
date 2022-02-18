@@ -11,6 +11,7 @@ export default {
   args: {
     handleResendOtp: () => Promise.resolve(console.log('resending otp')),
     handleVfnSuccess: () => Promise.resolve(console.log('vfn success')),
+    handleVerifyOtp: () => Promise.resolve('some-mock-signature'),
   },
 } as Meta<VerificationBoxProps>
 
