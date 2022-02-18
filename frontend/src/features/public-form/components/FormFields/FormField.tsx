@@ -8,6 +8,7 @@ import {
   CheckboxField,
   DateField,
   DecimalField,
+  DropdownField,
   EmailField,
   HomeNoField,
   ImageField,
@@ -114,6 +115,10 @@ export const FormField = ({ field, colorTheme }: FormFieldProps) => {
     case BasicField.Image:
       return (
         <ImageField key={field._id} schema={field} colorTheme={colorTheme} />
+      )
+    case BasicField.Dropdown:
+      return (
+        <DropdownField key={field._id} schema={field} colorTheme={colorTheme} />
       )
     case BasicField.Table:
       return <TableField key={field._id} schema={field as TableFieldSchema} />
