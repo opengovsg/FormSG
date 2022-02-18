@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Controller } from 'react-hook-form'
+import { Controller, ControllerRenderProps } from 'react-hook-form'
 
 import { FormFieldWithId, MobileFieldBase } from '~shared/types/field'
 
@@ -27,10 +27,12 @@ export const MobileField = ({
       <Controller
         rules={validationRules}
         name={schema._id}
-        render={({ field }) => (
+        render={({ field: { onChange, value, ...field } }) => (
           <PhoneNumberInput
             autoComplete="tel"
             allowInternational={schema.allowIntlNumbers}
+            value={value?.value}
+            onChange={(value) => onChange({ value })}
             {...field}
           />
         )}

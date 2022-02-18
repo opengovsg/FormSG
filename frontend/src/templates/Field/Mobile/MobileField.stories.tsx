@@ -41,7 +41,10 @@ const baseSchema: MobileFieldSchema = {
 }
 
 interface StoryMobileFieldProps extends MobileFieldProps {
-  defaultValue?: string
+  defaultValue?: {
+    value?: string
+    signature?: string
+  }
 }
 
 const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
@@ -53,8 +56,8 @@ const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, string>) => {
-    setSubmitValues(values[args.schema._id] || 'Nothing was selected')
+  const onSubmit = (values: Record<string, { value?: string }>) => {
+    setSubmitValues(values[args.schema._id].value || 'Nothing was selected')
   }
 
   useEffect(() => {
@@ -86,7 +89,9 @@ const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
 export const ValidationRequired = Template.bind({})
 ValidationRequired.args = {
   schema: baseSchema,
-  defaultValue: '',
+  defaultValue: {
+    value: '',
+  },
 }
 
 export const ValidationOptional = Template.bind({})
@@ -97,17 +102,23 @@ ValidationOptional.args = {
 export const ValidationAllowIntl = Template.bind({})
 ValidationAllowIntl.args = {
   schema: { ...baseSchema, allowIntlNumbers: true },
-  defaultValue: '+447777777777',
+  defaultValue: {
+    value: '+447777777777',
+  },
 }
 
 export const ValidationInvalidMobile = Template.bind({})
 ValidationInvalidMobile.args = {
   schema: baseSchema,
-  defaultValue: '64321098',
+  defaultValue: {
+    value: '64321098',
+  },
 }
 
 export const ValidationValidMobile = Template.bind({})
 ValidationValidMobile.args = {
   schema: baseSchema,
-  defaultValue: '98765432',
+  defaultValue: {
+    value: '98765432',
+  },
 }

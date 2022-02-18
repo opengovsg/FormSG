@@ -37,6 +37,11 @@ import {
   REQUIRED_ERROR,
 } from '~constants/validation'
 
+import {
+  VerifiableFieldBase,
+  VerifiableFieldInput,
+} from '~features/verifiable-fields/types'
+
 import { formatNumberToLocaleString } from './stringFormat'
 
 type OmitUnusedProps<T extends FieldBase> = Omit<
@@ -54,6 +59,32 @@ const createRequiredValidationRules = (
   return {
     value: schema.required,
     message: REQUIRED_ERROR,
+  }
+}
+
+/**
+ * Validation rules for verifiable fields.
+ * @param schema verifiable field schema
+ * @returns base verifiable fields' validation rules
+ */
+const createBaseVfnFieldValidationRules: ValidationRuleFn<
+  VerifiableFieldBase
+> = (schema) => {
+  return {
+    validate: {
+      required: (value?: VerifiableFieldInput) => {
+        if (!schema.required) return true
+        return !!value?.value || REQUIRED_ERROR
+      },
+      missingSignature: (val?: VerifiableFieldInput) => {
+        if (!schema.isVerifiable) return true
+        // Either signature is filled, or both fields have no input.
+        if (!!val?.signature || (!val?.value && !val?.signature)) {
+          return true
+        }
+        return 'Field verification is required'
+      },
+    },
   }
 }
 
@@ -108,10 +139,14 @@ export const createMobileValidationRules: ValidationRuleFn<MobileFieldBase> = (
   schema,
 ) => {
   return {
-    ...createBaseValidationRules(schema),
-    validate: (val?: string) => {
-      if (!val) return true
-      return isMobilePhoneNumber(val) || 'Please enter a valid mobile number'
+    validate: {
+      ...createBaseVfnFieldValidationRules(schema).validate,
+      isMobile: (val?: VerifiableFieldInput) => {
+        if (!val?.value) return true
+        return (
+          isMobilePhoneNumber(val.value) || 'Please enter a valid mobile number'
+        )
+      },
     },
   }
 }
