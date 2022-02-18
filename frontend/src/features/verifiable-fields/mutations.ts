@@ -1,6 +1,15 @@
+import { useCallback } from 'react'
 import { useMutation } from 'react-query'
 
-import { createTransactionForForm } from './VerifiableFieldService'
+import { FormFieldWithId } from '~shared/types/field'
+
+import { useToast } from '~hooks/useToast'
+
+import { VerifiableFieldBase, VerifiableFieldSchema } from './types'
+import {
+  createTransactionForForm,
+  triggerSendOtp,
+} from './VerifiableFieldService'
 
 export const useTransactionMutations = (formId: string) => {
   const createTransactionMutation = useMutation(() =>
@@ -9,5 +18,51 @@ export const useTransactionMutations = (formId: string) => {
 
   return {
     createTransactionMutation,
+  }
+}
+
+interface UseVerifiableFieldMutationsProps {
+  schema: VerifiableFieldSchema<FormFieldWithId<VerifiableFieldBase>>
+  formId: string
+  getTransactionId: () => Promise<string>
+}
+
+export const useVerifiableFieldMutations = ({
+  schema,
+  formId,
+  getTransactionId,
+}: UseVerifiableFieldMutationsProps) => {
+  const toast = useToast({ status: 'success', isClosable: true })
+
+  const handleError = useCallback(
+    (error: Error) => {
+      toast.closeAll()
+      toast({
+        description: error.message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
+  const triggerSendOtpMutation = useMutation(
+    async (answer: string) => {
+      const transactionId = await getTransactionId()
+      if (!transactionId) throw new Error('No transactionId generated')
+
+      return triggerSendOtp({
+        formId,
+        transactionId,
+        fieldId: schema._id,
+        answer,
+      })
+    },
+    {
+      onError: handleError,
+    },
+  )
+
+  return {
+    triggerSendOtpMutation,
   }
 }
