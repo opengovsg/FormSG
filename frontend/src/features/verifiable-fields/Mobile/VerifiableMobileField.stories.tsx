@@ -1,0 +1,109 @@
+import { useEffect, useState } from 'react'
+import { FormProvider, useForm } from 'react-hook-form'
+import { Text } from '@chakra-ui/react'
+import { Meta, Story } from '@storybook/react'
+
+import { BasicField } from '~shared/types/field'
+
+import Button from '~components/Button'
+
+import { VerifiableFieldInput } from '../types'
+
+import {
+  VerifiableMobileField as VerifiableMobileFieldComponent,
+  VerifiableMobileFieldProps,
+  VerifiableMobileFieldSchema,
+} from './VerifiableMobileField'
+
+const baseSchema: VerifiableMobileFieldSchema = {
+  title: 'Your mobile number',
+  description: 'No spam calls. Promise.',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.Mobile,
+  isVerifiable: true,
+  allowIntlNumbers: false,
+  _id: '611b94dfbb9e300012f702a7',
+}
+
+interface StoryMobileFieldProps extends VerifiableMobileFieldProps {
+  defaultValue?: VerifiableFieldInput
+}
+
+export default {
+  title: 'Features/VerifiableField/Mobile',
+  component: VerifiableMobileFieldComponent,
+  decorators: [],
+  parameters: {
+    docs: {
+      // Required in this story due to react-hook-form conflicting with
+      // Storybook somehow.
+      // See https://github.com/storybookjs/storybook/issues/12747.
+      source: {
+        type: 'code',
+      },
+    },
+  },
+  args: {
+    schema: baseSchema,
+  },
+} as Meta<StoryMobileFieldProps>
+
+const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
+  const formMethods = useForm({
+    defaultValues: {
+      [args.schema._id]: defaultValue,
+    },
+  })
+
+  const [submitValues, setSubmitValues] = useState<string>()
+
+  const onSubmit = (values: Record<string, string>) => {
+    setSubmitValues(
+      JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
+    )
+  }
+
+  useEffect(() => {
+    // Snapshot verified state, but only verification box can set signature.
+    if (defaultValue !== undefined && !defaultValue.signature) {
+      formMethods.trigger()
+    }
+    // Only want it to run once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return (
+    <FormProvider {...formMethods}>
+      <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
+        <VerifiableMobileFieldComponent {...args} />
+        <Button
+          mt="1rem"
+          type="submit"
+          isLoading={formMethods.formState.isSubmitting}
+          loadingText="Submitting"
+        >
+          Submit
+        </Button>
+        {submitValues && <Text>You have submitted: {submitValues}</Text>}
+      </form>
+    </FormProvider>
+  )
+}
+
+export const VerifiableMobileField = Template.bind({})
+
+export const PendingVerification = Template.bind({})
+PendingVerification.args = {
+  defaultValue: {
+    value: '98888888',
+  },
+}
+
+export const Verified = Template.bind({})
+Verified.args = {
+  defaultValue: {
+    value: '98888888',
+    signature: 'some-signature',
+  },
+}

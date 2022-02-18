@@ -5,7 +5,7 @@ import { BasicField } from '~shared/types/field'
 import { VerificationBox, VerificationBoxProps } from './VerificationBox'
 
 export default {
-  title: 'Features/VerifiableFields/VerificationBox',
+  title: 'Features/VerifiableField/VerificationBox',
   component: VerificationBox,
   decorators: [],
   args: {
