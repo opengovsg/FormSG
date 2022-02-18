@@ -19,7 +19,6 @@ import {
   PopoverTrigger,
   Portal,
   Text,
-  VisuallyHidden,
   Wrap,
 } from '@chakra-ui/react'
 import { compareAsc } from 'date-fns'

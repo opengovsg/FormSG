@@ -10,7 +10,6 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Text,
-  VisuallyHidden,
 } from '@chakra-ui/react'
 import { ComponentWithAs, forwardRef } from '@chakra-ui/system'
 import { format } from 'date-fns'
