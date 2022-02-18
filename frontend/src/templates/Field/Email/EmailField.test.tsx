@@ -16,9 +16,7 @@ const { ValidationRequired, ValidationOptional, ValidationAllowedDomain } =
 describe('validation required', () => {
   it('renders error when field is not filled before submitting', async () => {
     // Arrange
-    await act(async () => {
-      render(<ValidationRequired />)
-    })
+    render(<ValidationRequired />)
     const submitButton = screen.getByRole('button', { name: /submit/i })
 
     // Act
@@ -33,9 +31,7 @@ describe('validation required', () => {
     // Arrange
     const inputLabel = ValidationRequired.args?.schema?.title ?? ''
     expect(inputLabel).not.toEqual('')
-    await act(async () => {
-      render(<ValidationRequired />)
-    })
+    render(<ValidationRequired />)
     const input = screen.getByRole('textbox', {
       name: new RegExp(inputLabel, 'i'),
     }) as HTMLInputElement
@@ -46,7 +42,7 @@ describe('validation required', () => {
 
     // Act
     // Valid NRIC
-    await act(async () => userEvent.type(input, expectedValue))
+    userEvent.type(input, expectedValue)
     await act(async () => userEvent.click(submitButton))
 
     // Assert
@@ -61,9 +57,7 @@ describe('validation required', () => {
 describe('validation optional', () => {
   it('renders success even when field is empty before submitting', async () => {
     // Arrange
-    await act(async () => {
-      render(<ValidationOptional />)
-    })
+    render(<ValidationOptional />)
     const submitButton = screen.getByRole('button', { name: /submit/i })
 
     // Act
@@ -80,9 +74,7 @@ describe('validation optional', () => {
     // Arrange
     const inputLabel = ValidationOptional.args?.schema?.title ?? ''
     expect(inputLabel).not.toEqual('')
-    await act(async () => {
-      render(<ValidationRequired />)
-    })
+    render(<ValidationRequired />)
     const input = screen.getByRole('textbox', {
       name: new RegExp(inputLabel, 'i'),
     }) as HTMLInputElement
@@ -92,8 +84,8 @@ describe('validation optional', () => {
     const expectedValue = 'test-again@example.com'
 
     // Act
-    // Valid NRIC
-    await act(async () => userEvent.type(input, expectedValue))
+    // Valid email
+    userEvent.type(input, expectedValue)
     await act(async () => userEvent.click(submitButton))
 
     // Assert
@@ -113,13 +105,16 @@ describe('email validation', () => {
     await act(async () => {
       render(<ValidationOptional />)
     })
-    const input = screen.getByLabelText(inputLabel) as HTMLInputElement
+    const input = screen.getByRole('textbox', {
+      name: new RegExp(inputLabel, 'i'),
+    }) as HTMLInputElement
     const submitButton = screen.getByRole('button', { name: /submit/i })
 
     expect(input.value).toBe('')
 
     // Act
-    await act(async () => userEvent.type(input, 'S0000001B'))
+    // Not an email
+    userEvent.type(input, 'S0000001B')
     await act(async () => userEvent.click(submitButton))
 
     // Assert
@@ -135,7 +130,9 @@ describe('email validation', () => {
     await act(async () => {
       render(<ValidationOptional schema={schema} />)
     })
-    const input = screen.getByLabelText(inputLabel) as HTMLInputElement
+    const input = screen.getByRole('textbox', {
+      name: new RegExp(inputLabel, 'i'),
+    }) as HTMLInputElement
     const submitButton = screen.getByRole('button', { name: /submit/i })
 
     expect(input.value).toBe('')
@@ -143,7 +140,7 @@ describe('email validation', () => {
     const validEmailButInvalidDomain = 'only-govsg-emails@example.com'
 
     // Act
-    await act(async () => userEvent.type(input, validEmailButInvalidDomain))
+    userEvent.type(input, validEmailButInvalidDomain)
     await act(async () => userEvent.click(submitButton))
 
     // Assert

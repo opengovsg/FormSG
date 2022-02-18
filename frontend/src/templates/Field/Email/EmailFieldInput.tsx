@@ -35,7 +35,7 @@ export const EmailFieldInput = ({
       render={({ field: { onChange, value, ...field } }) => (
         <Input
           autoComplete="email"
-          value={value?.value}
+          value={value?.value ?? ''}
           onChange={(event) => {
             const value = event.target.value
             return handleInputChange
