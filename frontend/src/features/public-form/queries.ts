@@ -1,5 +1,4 @@
 import { useQuery, UseQueryResult } from 'react-query'
-import { useParams } from 'react-router-dom'
 
 import { PublicFormViewDto } from '~shared/types/form/form'
 

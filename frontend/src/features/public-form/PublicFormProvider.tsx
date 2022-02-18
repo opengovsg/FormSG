@@ -1,5 +1,4 @@
 import { useMemo, useRef } from 'react'
-import { useParams } from 'react-router-dom'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { HttpError } from '~services/ApiService'
