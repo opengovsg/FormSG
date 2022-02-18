@@ -1,4 +1,9 @@
-import { anatomy, getColor, SystemStyleFunction } from '@chakra-ui/theme-tools'
+import {
+  anatomy,
+  getColor,
+  PartsStyleObject,
+  SystemStyleFunction,
+} from '@chakra-ui/theme-tools'
 
 import { ComponentMultiStyleConfig } from '~theme/types'
 
@@ -32,10 +37,6 @@ const baseDayOfMonthStyles: SystemStyleFunction = ({
       : isOutsideCurrMonth
       ? 'secondary.300'
       : 'secondary.500',
-    p: {
-      base: 0,
-      md: 0.75,
-    },
     outline: 'none',
     border: '1px solid',
     borderColor: isToday
@@ -55,15 +56,48 @@ const baseDayOfMonthStyles: SystemStyleFunction = ({
       bg: 'transparent',
       textDecor: 'line-through',
     },
-    w: {
-      base: '2rem',
-      md: '3rem',
-    },
-    h: {
-      base: '2rem',
-      md: '3rem',
-    },
   }
+}
+
+const sizes: Record<string, PartsStyleObject<typeof parts>> = {
+  md: {
+    dayOfMonth: {
+      p: {
+        base: 0,
+        md: 0.75,
+      },
+      w: {
+        base: '2rem',
+        md: '3rem',
+      },
+      h: {
+        base: '2rem',
+        md: '3rem',
+      },
+    },
+    monthYearSelectorContainer: {
+      pt: '0.75rem',
+      h: '3.5rem',
+    },
+    calendarContainer: {
+      pb: '1rem',
+      px: '0.625rem',
+      mb: '-1px',
+    },
+    dayNamesContainer: {
+      w: {
+        base: '2.25rem',
+        md: '3.25rem',
+      },
+      h: {
+        base: '2rem',
+        md: '3rem',
+      },
+    },
+    todayLinkContainer: {
+      py: '0.75rem',
+    },
+  },
 }
 
 export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
@@ -76,7 +110,6 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
       monthYearSelectorContainer: {
         display: 'flex',
         justifyContent: 'space-between',
-        py: '0.375rem',
       },
       monthYearDropdownContainer: {
         display: 'flex',
@@ -87,9 +120,6 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
         justifyContent: 'flex-end',
       },
       calendarContainer: {
-        pb: '1rem',
-        px: '0.625rem',
-        mb: '-1px',
         borderBottom: '1px solid',
         borderColor: 'neutral.300',
       },
@@ -103,23 +133,16 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        w: {
-          base: '2.25rem',
-          md: '3.25rem',
-        },
-        h: {
-          base: '2rem',
-          md: '3rem',
-        },
       },
       dayOfMonth: baseDayOfMonthStyles(props),
       todayLinkContainer: {
         textAlign: 'center',
-        py: '0.75rem',
       },
     }
   },
+  sizes,
   defaultProps: {
     colorScheme: 'primary',
+    size: 'md',
   },
 }

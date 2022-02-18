@@ -120,6 +120,7 @@ const MonthYear = memo(({ monthOffset }: CalendarHeaderProps) => {
   const { currMonth, currYear } = useCalendar()
   const shouldUseMonthFullName = useBreakpointValue({
     base: false,
+    xs: false,
     md: true,
   })
 
@@ -139,7 +140,7 @@ const MonthYear = memo(({ monthOffset }: CalendarHeaderProps) => {
 
   return (
     <HStack
-      ml="1.25rem"
+      ml={{ base: '0.5rem', md: '1rem' }}
       textStyle="subhead-1"
       color="secondary.500"
       spacing="1.5rem"
