@@ -45,7 +45,7 @@ export const useVerifiableFieldMutations = ({
     [toast],
   )
 
-  const triggerSendOtpMutation = useMutation(
+  const handleSendOtp = useCallback(
     async (answer: string) => {
       const transactionId = await getTransactionId()
       if (!transactionId) throw new Error('No transactionId generated')
@@ -57,12 +57,20 @@ export const useVerifiableFieldMutations = ({
         answer,
       })
     },
-    {
-      onError: handleError,
-    },
+    [formId, getTransactionId, schema._id],
   )
+
+  const triggerSendOtpMutation = useMutation(handleSendOtp, {
+    onError: handleError,
+  })
+
+  // Exactly the same as sendOtp, but different mutation for different loading indicators
+  const triggerResendOtpMutation = useMutation(handleSendOtp, {
+    onError: handleError,
+  })
 
   return {
     triggerSendOtpMutation,
+    triggerResendOtpMutation,
   }
 }

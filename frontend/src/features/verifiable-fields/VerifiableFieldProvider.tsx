@@ -34,8 +34,7 @@ export const VerifiableFieldProvider = ({
 }: VerifiableFieldProviderProps): JSX.Element => {
   const [isVfnBoxOpen, setIsVfnBoxOpen] = useState(false)
 
-  const { control, setError, getValues, setValue, setFocus, clearErrors } =
-    useFormContext()
+  const { control, setError, getValues, setValue, setFocus } = useFormContext()
   const currentSignature: VerifiableFieldInput = useWatch({
     name: `${schema._id}.signature`,
     control,
@@ -43,11 +42,12 @@ export const VerifiableFieldProvider = ({
 
   const { formId, getTransactionId } = usePublicFormContext()
 
-  const { triggerSendOtpMutation } = useVerifiableFieldMutations({
-    schema,
-    formId,
-    getTransactionId,
-  })
+  const { triggerSendOtpMutation, triggerResendOtpMutation } =
+    useVerifiableFieldMutations({
+      schema,
+      formId,
+      getTransactionId,
+    })
 
   /**
    * Keeps track of already completed numbers to signatures
@@ -74,6 +74,14 @@ export const VerifiableFieldProvider = ({
     [getValues, isVfnBoxOpen, mapNumberToSignature, schema._id],
   )
 
+  const handleResendOtp = useCallback(async () => {
+    const currentInputValue = getValues(schema._id)?.value
+    // Should not happen, but guarding against this just in case.
+    if (!currentInputValue) return
+
+    return triggerResendOtpMutation.mutateAsync(currentInputValue)
+  }, [getValues, schema._id, triggerResendOtpMutation])
+
   // TODO: Extract this based on schema type instead of hardcoding to mobile field
   const handleVfnButtonClick = useCallback(() => {
     const currentInputValue = getValues(schema._id)?.value
@@ -83,8 +91,6 @@ export const VerifiableFieldProvider = ({
         { message: 'Please fill in field before attempting verification' },
         { shouldFocus: true },
       )
-    } else {
-      clearErrors(schema._id)
     }
 
     // Do nothing if box is already opened.
@@ -103,14 +109,7 @@ export const VerifiableFieldProvider = ({
       { message: 'Please enter a valid mobile number' },
       { shouldFocus: true },
     )
-  }, [
-    clearErrors,
-    getValues,
-    isVfnBoxOpen,
-    schema._id,
-    setError,
-    triggerSendOtpMutation,
-  ])
+  }, [getValues, isVfnBoxOpen, schema._id, setError, triggerSendOtpMutation])
 
   const handleVfnSuccess = useCallback(
     async (signature: string) => {
@@ -136,11 +135,6 @@ export const VerifiableFieldProvider = ({
     },
     [getValues, schema._id, setFocus, setValue],
   )
-
-  const handleResendOtp = useCallback(() => {
-    // TODO: Add API call to resend OTP
-    return Promise.resolve(console.log('resending'))
-  }, [])
 
   return (
     <VerifiableFieldContext.Provider
