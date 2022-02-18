@@ -148,9 +148,9 @@ async function getStats(db) {
   )
 
   await printFormTSVReport(
-    'Getting agency and number of submissions for forms non-english form',
+    'Getting agency and number of submissions for non-english forms',
     (id) =>
-      formsById[id].langs.size == 1 &&
+      formsById[id].langs.size === 1 &&
       !formsById[id].langs.has('en') &&
       !formsById[id].langs.has('un'),
   )
