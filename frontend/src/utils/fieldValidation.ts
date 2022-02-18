@@ -140,13 +140,10 @@ export const createMobileValidationRules: ValidationRuleFn<MobileFieldBase> = (
 ) => {
   return {
     validate: {
-      ...createBaseVfnFieldValidationRules(schema).validate,
-      isMobile: (val?: VerifiableFieldInput) => {
-        if (!val?.value) return true
-        return (
-          isMobilePhoneNumber(val.value) || 'Please enter a valid mobile number'
-        )
+      baseValidations: (val?: VerifiableFieldInput) => {
+        return baseMobileValidationFn(schema)(val?.value)
       },
+      ...createBaseVfnFieldValidationRules(schema).validate,
     },
   }
 }
@@ -329,28 +326,56 @@ export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
 export const createEmailValidationRules: ValidationRuleFn<EmailFieldBase> = (
   schema,
 ) => {
-  const allowedDomains = schema.isVerifiable
-    ? new Set(schema.allowedEmailDomains)
-    : new Set()
-
   return {
     validate: {
-      validEmail: (val?: VerifiableFieldInput) => {
-        if (!val?.value) return true
-        return validator.isEmail(val.value) || INVALID_EMAIL_ERROR
-      },
-      validDomain: (val?: VerifiableFieldInput) => {
-        // Return if no value, or has no whitelisted domains at all.
-        if (!val?.value || allowedDomains.size === 0) return true
-
-        const domainInValue = val.value.split('@')[1]
-
-        return (
-          (domainInValue && allowedDomains.has(`@${domainInValue}`)) ||
-          INVALID_EMAIL_DOMAIN_ERROR
-        )
+      baseValidations: (val?: VerifiableFieldInput) => {
+        return baseEmailValidationFn(schema)(val?.value)
       },
       ...createBaseVfnFieldValidationRules(schema).validate,
     },
   }
 }
+
+/**
+ * To be shared between the verifiable and non-verifiable variant.
+ * @returns error string if field is invalid, true otherwise.
+ */
+export const baseEmailValidationFn =
+  (schema: OmitUnusedProps<EmailFieldBase>) => (inputValue?: string) => {
+    if (!inputValue) {
+      return true
+    }
+
+    // Valid email check
+    if (!validator.isEmail(inputValue)) {
+      return INVALID_EMAIL_ERROR
+    }
+
+    const allowedDomains = schema.isVerifiable
+      ? new Set(schema.allowedEmailDomains)
+      : new Set()
+
+    // Valid domain check
+    if (allowedDomains.size !== 0) {
+      const domainInValue = inputValue.split('@')[1]
+      if (domainInValue && !allowedDomains.has(`@${domainInValue}`)) {
+        return INVALID_EMAIL_DOMAIN_ERROR
+      }
+    }
+    // Passed all error validation.
+    return true
+  }
+
+export const baseMobileValidationFn =
+  (_schema: OmitUnusedProps<MobileFieldBase>) => (inputValue?: string) => {
+    if (!inputValue) {
+      return true
+    }
+
+    // Valid mobile check
+    if (!isMobilePhoneNumber(inputValue)) {
+      return 'Please enter a valid mobile number'
+    }
+
+    return true
+  }
