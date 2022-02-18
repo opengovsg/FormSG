@@ -10,8 +10,8 @@ import Button from '~components/Button'
 import {
   MobileField as MobileFieldComponent,
   MobileFieldProps,
-  MobileFieldSchema,
 } from './MobileField'
+import { MobileFieldSchema } from './types'
 
 export default {
   title: 'Templates/Field/MobileField',
