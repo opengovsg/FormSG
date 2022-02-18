@@ -4,7 +4,7 @@ import { UseQueryResult } from 'react-query'
 
 import { PublicFormViewDto } from '~shared/types/form'
 
-interface PublicFormContextProps
+export interface PublicFormContextProps
   extends Partial<PublicFormViewDto>,
     Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
   miniHeaderRef: RefObject<HTMLDivElement>

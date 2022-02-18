@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { DecoratorFn, Meta, Story } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
+
+import {
+  PublicFormContext,
+  PublicFormContextProps,
+} from '~features/public-form/PublicFormContext'
 
 import { VerifiableFieldInput } from '../types'
 
@@ -14,6 +19,21 @@ import {
   VerifiableMobileFieldProps,
   VerifiableMobileFieldSchema,
 } from './VerifiableMobileField'
+
+const MockProviders: DecoratorFn = (storyFn) => {
+  return (
+    <PublicFormContext.Provider
+      value={
+        {
+          formId: 'mock-form-id',
+          getTransactionId: () => Promise.resolve('mock-transaction-id'),
+        } as PublicFormContextProps
+      }
+    >
+      {storyFn()}
+    </PublicFormContext.Provider>
+  )
+}
 
 const baseSchema: VerifiableMobileFieldSchema = {
   title: 'Your mobile number',
@@ -33,7 +53,7 @@ interface StoryMobileFieldProps extends VerifiableMobileFieldProps {
 export default {
   title: 'Features/VerifiableField/Mobile',
   component: VerifiableMobileFieldComponent,
-  decorators: [],
+  decorators: [MockProviders],
   parameters: {
     docs: {
       // Required in this story due to react-hook-form conflicting with
