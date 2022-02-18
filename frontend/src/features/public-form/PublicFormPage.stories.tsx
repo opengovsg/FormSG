@@ -2,7 +2,12 @@ import { Meta, Story } from '@storybook/react'
 
 import { FormAuthType } from '~shared/types/form'
 
-import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
+import {
+  getPublicFormResponse,
+  postGenerateVfnOtpResponse,
+  postVerifyVfnOtpResponse,
+  postVfnTransactionResponse,
+} from '~/mocks/msw/handlers/public-form'
 
 import { StoryRouter } from '~utils/storybook'
 
@@ -21,7 +26,12 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [getPublicFormResponse({ delay: 0 })],
+    msw: [
+      getPublicFormResponse({ delay: 0 }),
+      postVfnTransactionResponse({ delay: 0 }),
+      postGenerateVfnOtpResponse({ delay: 0 }),
+      postVerifyVfnOtpResponse({ delay: 0 }),
+    ],
   },
 } as Meta
 

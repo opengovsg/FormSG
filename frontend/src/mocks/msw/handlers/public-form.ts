@@ -1,8 +1,14 @@
+import { addDays } from 'date-fns'
 import { merge } from 'lodash'
 import { rest } from 'msw'
 import { PartialDeep } from 'type-fest'
 
 import { FormId, PublicFormViewDto } from '~shared/types/form/form'
+
+import {
+  FetchNewTransactionResponse,
+  JsonDate,
+} from '~features/verifiable-fields'
 
 import mockFormLogo from '../assets/mockFormLogo.png'
 
@@ -79,6 +85,17 @@ const BASE_FORM = {
       fieldType: 'mobile',
       _id: '5da04ea3e397fc0013f63c78',
       globalId: 'IsZAjzS1J2AJqsUnAnCSQStxoknyIdUEXam6cPlNYuJ',
+    },
+    {
+      allowIntlNumbers: true,
+      isVerifiable: true,
+      title: 'Verifiable Mobile Number',
+      description: '',
+      required: true,
+      disabled: false,
+      fieldType: 'mobile',
+      _id: '5da04ea3e397fc0013f63c11',
+      globalId: 'IsZAjzS1J2AJqsUnAnCSQStxoknyIdUEXam6cPlNYuY',
     },
     {
       ValidationOptions: {
@@ -347,7 +364,62 @@ export const getCustomLogoResponse = () => {
   )
 }
 
+export const postVfnTransactionResponse = ({
+  delay,
+  overrides,
+}: {
+  delay?: number | 'infinite'
+  overrides?: PartialDeep<FetchNewTransactionResponse>
+} = {}) => {
+  return rest.post<FetchNewTransactionResponse>(
+    `/api/v3/forms/:formId/fieldverifications`,
+    (_req, res, ctx) => {
+      return res(
+        ctx.delay(delay),
+        ctx.json<FetchNewTransactionResponse>(
+          merge(
+            {
+              transactionId: 'mock-transaction-id',
+              expireAt: addDays(new Date(), 100).toISOString() as JsonDate,
+            },
+            overrides,
+          ),
+        ),
+      )
+    },
+  )
+}
+
+export const postGenerateVfnOtpResponse = ({
+  delay,
+}: {
+  delay?: number | 'infinite'
+} = {}) => {
+  return rest.post(
+    `/api/v3/forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/generate`,
+    (_req, res, ctx) => {
+      return res(ctx.delay(delay), ctx.status(200))
+    },
+  )
+}
+
+export const postVerifyVfnOtpResponse = ({
+  delay,
+}: {
+  delay?: number | 'infinite'
+} = {}) => {
+  return rest.post(
+    `/api/v3/forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/verify`,
+    (_req, res, ctx) => {
+      return res(ctx.delay(delay), ctx.json('mock-signature-hehe'))
+    },
+  )
+}
+
 export const publicFormHandlers = [
   getPublicFormResponse(),
   getCustomLogoResponse(),
+  postVfnTransactionResponse(),
+  postGenerateVfnOtpResponse(),
+  postVerifyVfnOtpResponse(),
 ]
