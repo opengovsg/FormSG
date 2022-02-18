@@ -27,6 +27,10 @@ import {
 } from '~templates/Field'
 
 import {
+  VerifiableEmailField,
+  VerifiableEmailFieldSchema,
+} from '~features/verifiable-fields/Email'
+import {
   VerifiableMobileField,
   VerifiableMobileFieldSchema,
 } from '~features/verifiable-fields/Mobile'
@@ -77,8 +81,16 @@ export const FieldFactory = memo(
         return <ParagraphField schema={field} colorTheme={colorTheme} />
       case BasicField.Rating:
         return <RatingField schema={field} colorTheme={colorTheme} />
-      case BasicField.Email:
-        return <EmailField schema={field} colorTheme={colorTheme} />
+      case BasicField.Email: {
+        return field.isVerifiable ? (
+          <VerifiableEmailField
+            schema={field as VerifiableEmailFieldSchema}
+            colorTheme={colorTheme}
+          />
+        ) : (
+          <EmailField schema={field} colorTheme={colorTheme} />
+        )
+      }
       case BasicField.Image:
         return <ImageField schema={field} colorTheme={colorTheme} />
       case BasicField.Table:
