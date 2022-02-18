@@ -5,6 +5,12 @@ import { DecoratorFn, Meta, Story } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
+import {
+  postGenerateVfnOtpResponse,
+  postVerifyVfnOtpResponse,
+  postVfnTransactionResponse,
+} from '~/mocks/msw/handlers/public-form'
+
 import Button from '~components/Button'
 
 import {
@@ -55,6 +61,11 @@ export default {
   component: VerifiableMobileFieldComponent,
   decorators: [MockProviders],
   parameters: {
+    msw: [
+      postVfnTransactionResponse({ delay: 0 }),
+      postGenerateVfnOtpResponse({ delay: 0 }),
+      postVerifyVfnOtpResponse({ delay: 0 }),
+    ],
     docs: {
       // Required in this story due to react-hook-form conflicting with
       // Storybook somehow.
