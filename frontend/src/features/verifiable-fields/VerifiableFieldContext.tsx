@@ -10,6 +10,7 @@ interface VerifiableFieldContextReturn {
   handleVfnSuccess: (signature: string) => Promise<void>
   handleResendOtp: () => Promise<void>
   hasSignature: boolean
+  isSendingOtp: boolean
 }
 
 export const VerifiableFieldContext = createContext<

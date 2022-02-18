@@ -10,6 +10,9 @@ import { isMobilePhoneNumber } from '~shared/utils/phone-num-validation'
 
 import { BaseFieldProps } from '~templates/Field/FieldContainer'
 
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+import { useVerifiableFieldMutations } from './mutations'
 import {
   VerifiableFieldBase,
   VerifiableFieldInput,
@@ -36,6 +39,14 @@ export const VerifiableFieldProvider = ({
   const currentSignature: VerifiableFieldInput = useWatch({
     name: `${schema._id}.signature`,
     control,
+  })
+
+  const { formId, getTransactionId } = usePublicFormContext()
+
+  const { triggerSendOtpMutation } = useVerifiableFieldMutations({
+    schema,
+    formId,
+    getTransactionId,
   })
 
   /**
@@ -81,16 +92,25 @@ export const VerifiableFieldProvider = ({
 
     // Check is valid phone number
     if (isMobilePhoneNumber(currentInputValue)) {
-      // TODO: Call mutation to send SMS.
-      setIsVfnBoxOpen(true)
-    } else {
-      return setError(
-        schema._id,
-        { message: 'Please enter a valid mobile number' },
-        { shouldFocus: true },
-      )
+      return triggerSendOtpMutation.mutate(currentInputValue, {
+        onSuccess: () => setIsVfnBoxOpen(true),
+      })
     }
-  }, [clearErrors, getValues, isVfnBoxOpen, schema._id, setError])
+
+    // Else invalid input.
+    return setError(
+      schema._id,
+      { message: 'Please enter a valid mobile number' },
+      { shouldFocus: true },
+    )
+  }, [
+    clearErrors,
+    getValues,
+    isVfnBoxOpen,
+    schema._id,
+    setError,
+    triggerSendOtpMutation,
+  ])
 
   const handleVfnSuccess = useCallback(
     async (signature: string) => {
@@ -131,6 +151,7 @@ export const VerifiableFieldProvider = ({
         handleResendOtp,
         handleVfnSuccess,
         hasSignature: !!currentSignature,
+        isSendingOtp: triggerSendOtpMutation.isLoading,
       }}
     >
       {children}

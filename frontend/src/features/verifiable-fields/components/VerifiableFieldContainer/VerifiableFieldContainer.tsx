@@ -33,6 +33,7 @@ export const VerifiableFieldContainer = ({
     hasSignature,
     handleVfnSuccess,
     handleResendOtp,
+    isSendingOtp,
   } = useVerifiableField()
 
   return (
@@ -43,6 +44,7 @@ export const VerifiableFieldContainer = ({
           <Box>
             <Button
               isDisabled={isVfnBoxOpen || hasSignature}
+              isLoading={isSendingOtp}
               onClick={handleVfnButtonClick}
               leftIcon={
                 hasSignature ? <BiCheck fontSize="1.5rem" /> : undefined
