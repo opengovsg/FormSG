@@ -8,11 +8,13 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { VerifiableFieldInput } from '~features/verifiable-fields/types'
+
 import {
   EmailField as EmailFieldComponent,
   EmailFieldProps,
-  EmailFieldSchema,
 } from './EmailField'
+import { EmailFieldSchema } from './types'
 
 export default {
   title: 'Templates/Field/EmailField',
@@ -50,7 +52,7 @@ const baseSchema: EmailFieldSchema = {
 }
 
 interface StoryEmailFieldProps extends EmailFieldProps {
-  defaultValue?: string
+  defaultValue?: VerifiableFieldInput
 }
 
 const Template: Story<StoryEmailFieldProps> = ({ defaultValue, ...args }) => {
@@ -62,8 +64,8 @@ const Template: Story<StoryEmailFieldProps> = ({ defaultValue, ...args }) => {
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, string>) => {
-    setSubmitValues(values[args.schema._id] || 'Nothing was selected')
+  const onSubmit = (values: Record<string, VerifiableFieldInput>) => {
+    setSubmitValues(values[args.schema._id]?.value || 'Nothing was selected')
   }
 
   useEffect(() => {
@@ -107,11 +109,11 @@ ValidationAllowedDomain.args = {
     allowedEmailDomains: ['@gov.sg'],
     isVerifiable: true,
   }),
-  defaultValue: 'test@example.com',
+  defaultValue: { value: 'test@example.com' },
 }
 
 export const ValidationInvalidEmail = Template.bind({})
 ValidationInvalidEmail.args = {
   schema: baseSchema,
-  defaultValue: 'not an email',
+  defaultValue: { value: 'not an email' },
 }

@@ -334,23 +334,23 @@ export const createEmailValidationRules: ValidationRuleFn<EmailFieldBase> = (
     : new Set()
 
   return {
-    ...createBaseValidationRules(schema),
     validate: {
-      validEmail: (val?: string) => {
-        if (!val) return true
-        return validator.isEmail(val) || INVALID_EMAIL_ERROR
+      validEmail: (val?: VerifiableFieldInput) => {
+        if (!val?.value) return true
+        return validator.isEmail(val.value) || INVALID_EMAIL_ERROR
       },
-      validDomain: (val?: string) => {
+      validDomain: (val?: VerifiableFieldInput) => {
         // Return if no value, or has no whitelisted domains at all.
-        if (!val || allowedDomains.size === 0) return true
+        if (!val?.value || allowedDomains.size === 0) return true
 
-        const domainInValue = val.split('@')[1]
+        const domainInValue = val.value.split('@')[1]
 
         return (
           (domainInValue && allowedDomains.has(`@${domainInValue}`)) ||
           INVALID_EMAIL_DOMAIN_ERROR
         )
       },
+      ...createBaseVfnFieldValidationRules(schema).validate,
     },
   }
 }
