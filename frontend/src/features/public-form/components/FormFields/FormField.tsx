@@ -1,5 +1,3 @@
-import { Text } from '@chakra-ui/react'
-
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme } from '~shared/types/form'
 
@@ -122,11 +120,5 @@ export const FormField = ({ field, colorTheme }: FormFieldProps) => {
       )
     case BasicField.Table:
       return <TableField key={field._id} schema={field as TableFieldSchema} />
-    default:
-      return (
-        <Text w="100%" key={field._id}>
-          {JSON.stringify(field)}
-        </Text>
-      )
   }
 }
