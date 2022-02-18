@@ -8,17 +8,17 @@ import { PublicFormContext } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
 interface PublicFormProviderProps {
+  formId: string
   children: React.ReactNode
 }
 
 export const PublicFormProvider = ({
+  formId,
   children,
 }: PublicFormProviderProps): JSX.Element => {
   const miniHeaderRef = useRef<HTMLDivElement>(null)
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
 
-  const { data, error, ...rest } = usePublicFormView()
+  const { data, error, ...rest } = usePublicFormView(formId)
 
   const isFormNotFound = useMemo(() => {
     return (

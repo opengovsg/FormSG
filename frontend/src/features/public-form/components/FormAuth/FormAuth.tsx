@@ -7,6 +7,7 @@ import { FormAuthType } from '~shared/types/form'
 import Button from '~components/Button'
 
 import { usePublicAuthMutations } from '~features/public-form/mutations'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { AuthImageSvgr } from './AuthImageSvgr'
 
@@ -15,6 +16,7 @@ export interface FormAuthProps {
 }
 
 export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
+  const { formId } = usePublicFormContext()
   const displayedInfo = useMemo(() => {
     switch (authType) {
       case FormAuthType.SP:
@@ -39,7 +41,7 @@ export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
     }
   }, [authType])
 
-  const { handleLoginMutation } = usePublicAuthMutations()
+  const { handleLoginMutation } = usePublicAuthMutations(formId)
 
   return (
     <Stack spacing="1.5rem" align="center">

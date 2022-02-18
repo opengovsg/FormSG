@@ -21,8 +21,8 @@ import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 const useFormHeader = () => {
-  const { form, spcpSession } = usePublicFormContext()
-  const { handleLogoutMutation } = usePublicAuthMutations()
+  const { form, spcpSession, formId } = usePublicFormContext()
+  const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
   const titleColour = useMemo(() => {
     if (form?.startPage.colorTheme === FormColorTheme.Orange) {

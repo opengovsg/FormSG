@@ -16,13 +16,9 @@ export const publicFormKeys = {
   id: (formId: string) => [...publicFormKeys.base, formId] as const,
 }
 
-export const usePublicFormView = (): UseQueryResult<
-  PublicFormViewDto,
-  ApiError
-> => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
-
+export const usePublicFormView = (
+  formId: string,
+): UseQueryResult<PublicFormViewDto, ApiError> => {
   return useQuery<PublicFormViewDto, ApiError>(
     publicFormKeys.id(formId),
     () => getPublicFormView(formId),

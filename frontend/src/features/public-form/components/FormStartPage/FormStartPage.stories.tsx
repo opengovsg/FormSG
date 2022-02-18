@@ -9,8 +9,6 @@ import {
   getPublicFormResponse,
 } from '~/mocks/msw/handlers/public-form'
 
-import { StoryRouter } from '~utils/storybook'
-
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
 import {
@@ -23,11 +21,11 @@ export default {
   title: 'Pages/PublicFormPage/FormStartPage',
   component: FormStartPage,
   decorators: [
-    StoryRouter({
-      initialEntries: ['/61540ece3d4a6e50ac0cc6ff'],
-      path: '/:formId',
-    }),
-    (storyFn) => <PublicFormProvider>{storyFn()}</PublicFormProvider>,
+    (storyFn) => (
+      <PublicFormProvider formId="61540ece3d4a6e50ac0cc6ff">
+        {storyFn()}
+      </PublicFormProvider>
+    ),
   ],
   parameters: {
     // Required so skeleton "animation" does not hide content.
