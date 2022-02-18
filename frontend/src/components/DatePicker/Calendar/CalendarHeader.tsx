@@ -37,7 +37,6 @@ const MonthYearSelect = ({
       flexBasis="fit-content"
       borderColor="transparent"
       cursor="pointer"
-      tabIndex={1}
       _hover={{
         borderColor: 'transparent',
       }}
@@ -168,7 +167,6 @@ export const CalendarHeader = memo(
         {calendars.length - 1 === monthOffset ? (
           <Flex sx={styles.monthArrowContainer}>
             <IconButton
-              tabIndex={1}
               variant="clear"
               colorScheme="secondary"
               icon={<BxChevronLeft />}
@@ -177,7 +175,6 @@ export const CalendarHeader = memo(
               {...getBackProps({ calendars })}
             />
             <IconButton
-              tabIndex={1}
               variant="clear"
               colorScheme="secondary"
               icon={<BxChevronRight />}
