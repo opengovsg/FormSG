@@ -9,6 +9,11 @@ interface PublicFormContextProps
     Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
   miniHeaderRef: RefObject<HTMLDivElement>
   formId: string
+  /**
+   * @note async function due to possibility of calling API to generate transactionId.
+   * Get current verification transaction ID for the form.
+   */
+  getTransactionId: () => Promise<string>
 }
 
 export const PublicFormContext = createContext<
