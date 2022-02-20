@@ -104,7 +104,7 @@
     "dedent-js": "~1.0.1",
     "dotenv": "^10.0.0",
     "ejs": "^3.1.6",
-    "express": "^4.17.2",
+    "express": "^4.17.3",
     "express-rate-limit": "^5.5.1",
     "express-request-id": "^1.4.1",
     "express-session": "^1.17.2",
