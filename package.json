@@ -197,7 +197,7 @@
     "@types/validator": "^13.7.1",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
-    "auto-changelog": "^2.3.0",
+    "auto-changelog": "^2.4.0",
     "axios-mock-adapter": "^1.20.0",
     "babel-loader": "^8.2.3",
     "concurrently": "^7.0.0",
