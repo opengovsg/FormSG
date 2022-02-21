@@ -53,7 +53,7 @@
     ]
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.0",
+    "@babel/runtime": "^7.17.2",
     "@joi/date": "^2.1.0",
     "@opengovsg/angular-daterangepicker-webpack": "^1.1.5",
     "@opengovsg/angular-legacy-sortablejs-maintained": "^1.0.0",
@@ -120,7 +120,7 @@
     "json-stringify-safe": "^5.0.1",
     "jszip": "^3.7.1",
     "jwt-decode": "^3.1.2",
-    "libphonenumber-js": "^1.9.44",
+    "libphonenumber-js": "^1.9.49",
     "lodash": "^4.17.21",
     "moment-timezone": "0.5.34",
     "mongodb-uri": "^0.9.7",
