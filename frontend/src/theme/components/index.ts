@@ -1,6 +1,8 @@
 import { Attachment, ATTACHMENT_THEME_KEY } from './Field/Attachment'
 import { RATING_THEME_KEY, RatingField } from './Field/Rating'
 import { YESNO_THEME_KEY, YesNoField } from './Field/YesNo'
+import { Avatar } from './Avatar'
+import { AvatarMenu } from './AvatarMenu'
 import { Badge } from './Badge'
 import { Banner } from './Banner'
 import { Button } from './Button'
@@ -33,6 +35,8 @@ import { Toggle, TOGGLE_THEME_KEY } from './Toggle'
 import { Tooltip } from './Tooltip'
 
 export const components = {
+  Avatar,
+  AvatarMenu,
   Badge,
   Banner,
   Button,
