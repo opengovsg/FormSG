@@ -8,7 +8,7 @@ import {
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { BuilderAndDesignDrawer } from './components/BuilderDrawer'
+import { BuilderAndDesignDrawer } from './components/BuilderAndDesignDrawer'
 import { BuilderAndDesignContent } from './BuilderAndDesignContent'
 import {
   CREATE_FIELD_DROP_ID,
