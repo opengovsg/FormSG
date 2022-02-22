@@ -11,7 +11,7 @@ import {
 } from '~constants/routes'
 
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
-import ResponsesPage from '~features/admin-form/responses/ResponsesPage'
+import ResultsPage from '~features/admin-form/responses/ResultsPage'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
 import { CreatePage } from '~features/admin-form-builder/CreatePage'
 
@@ -55,7 +55,7 @@ export const AppRouter = (): JSX.Element => {
           />
           <Route
             path={ADMINFORM_RESPONSES_SUBROUTE}
-            element={<ResponsesPage />}
+            element={<ResultsPage />}
           />
         </Route>
         <Route path="*" element={<div>404!!!</div>} />

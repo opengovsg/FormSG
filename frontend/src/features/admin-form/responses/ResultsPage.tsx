@@ -11,7 +11,7 @@ import { useAdminFormSettings } from '../settings/queries'
 import { useFormResponses } from './queries'
 import useDecryptionWorkers from './useDecryptionWorkers'
 
-const ResponsesPage = (): JSX.Element => {
+const ResultsPage = (): JSX.Element => {
   const { data: settings } = useAdminFormSettings()
   const { data, isLoading } = useFormResponses()
   const { formId } = useParams()
@@ -47,4 +47,4 @@ const ResponsesPage = (): JSX.Element => {
     </Skeleton>
   )
 }
-export default ResponsesPage
+export default ResultsPage
