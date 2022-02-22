@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { BiX } from 'react-icons/bi'
 import { CloseButton } from '@chakra-ui/react'
 
-import { useCreatePageDrawer } from '~features/admin-form-builder/CreatePageDrawerContext'
+import { useCreatePageDrawer } from '~features/admin-form/create/CreatePageDrawerContext'
 
 export const CreatePageDrawerCloseButton = (): JSX.Element => {
   const { handleClose } = useCreatePageDrawer()

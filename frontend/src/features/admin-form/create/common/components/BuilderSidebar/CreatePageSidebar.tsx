@@ -7,7 +7,7 @@ import { BxsWidget } from '~assets/icons/BxsWidget'
 import {
   DrawerTabs,
   useCreatePageDrawer,
-} from '~features/admin-form-builder/CreatePageDrawerContext'
+} from '~features/admin-form/create/CreatePageDrawerContext'
 
 import { DrawerTabIcon } from './DrawerTabIcon'
 

@@ -6,7 +6,7 @@ import { getAdminFormResponse } from '~/mocks/msw/handlers/admin-form'
 
 import { viewports } from '~utils/storybook'
 
-import { CreatePage } from '~features/admin-form-builder/CreatePage'
+import { CreatePage } from '~features/admin-form/create/CreatePage'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 

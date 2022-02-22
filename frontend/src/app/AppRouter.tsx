@@ -11,9 +11,9 @@ import {
 } from '~constants/routes'
 
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
+import { CreatePage } from '~features/admin-form/create/CreatePage'
 import ResultsPage from '~features/admin-form/responses/ResultsPage'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
-import { CreatePage } from '~features/admin-form-builder/CreatePage'
 
 import { PrivateElement } from './PrivateElement'
 import { PublicElement } from './PublicElement'
