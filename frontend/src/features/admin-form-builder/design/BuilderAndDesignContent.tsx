@@ -11,13 +11,13 @@ import { useEditFieldStore } from './editFieldStore'
 import { DndPlaceholderProps } from './types'
 import { useBuilderFormFields } from './useBuilderFormFields'
 
-interface BuilderDesignProps {
+interface BuilderAndDesignContentProps {
   placeholderProps: DndPlaceholderProps
 }
 
-export const BuilderDesign = ({
+export const BuilderAndDesignContent = ({
   placeholderProps,
-}: BuilderDesignProps): JSX.Element => {
+}: BuilderAndDesignContentProps): JSX.Element => {
   const { clearActiveField, clearFieldToCreate } = useEditFieldStore(
     useCallback((state) => {
       return {

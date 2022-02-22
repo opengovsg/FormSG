@@ -1,1 +1,1 @@
-export { BuilderDesignContainer as default } from './BuilderDesignContainer'
+export { BuilderAndDesignContainer as default } from './BuilderAndDesignContainer'

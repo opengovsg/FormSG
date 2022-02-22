@@ -2,10 +2,10 @@ import { useCallback } from 'react'
 import { BiX } from 'react-icons/bi'
 import { CloseButton } from '@chakra-ui/react'
 
-import { useBuilderDrawer } from '~features/admin-form-builder/BuilderDrawerContext'
+import { useCreatePageDrawer } from '~features/admin-form-builder/CreatePageDrawerContext'
 
-export const BuilderDrawerCloseButton = (): JSX.Element => {
-  const { handleClose } = useBuilderDrawer()
+export const CreatePageDrawerCloseButton = (): JSX.Element => {
+  const { handleClose } = useCreatePageDrawer()
 
   const handleCloseDrawer = useCallback(() => {
     handleClose(/* clearActiveTab= */ true)

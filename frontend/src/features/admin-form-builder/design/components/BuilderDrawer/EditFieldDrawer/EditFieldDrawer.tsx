@@ -12,7 +12,7 @@ import {
   useEditFieldStore,
 } from '../../../editFieldStore'
 import { transformBasicFieldToText } from '../../../utils'
-import { BuilderDrawerCloseButton } from '../BuilderDrawerCloseButton'
+import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
 import { EditCheckbox } from './EditCheckbox'
 import { EditHeader } from './EditHeader'
@@ -49,7 +49,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
           icon={<BiLeftArrowAlt />}
         />
         <Box m="auto">Edit {basicFieldText} field</Box>
-        <BuilderDrawerCloseButton />
+        <CreatePageDrawerCloseButton />
       </Flex>
       {/* key required to refresh content whenever the active field changes */}
       <MemoFieldDrawerContent key={activeField._id} field={activeField} />

@@ -22,7 +22,7 @@ import {
   CREATE_PAGE_DROP_ID,
   CREATE_PAGE_FIELDS_ORDERED,
 } from '../../../constants'
-import { BuilderDrawerCloseButton } from '../BuilderDrawerCloseButton'
+import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
 import { DraggableCreateFieldOption } from './CreateFieldOption'
 
@@ -36,7 +36,7 @@ export const CreateFieldDrawer = (): JSX.Element => {
           <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
             Builder
           </Text>
-          <BuilderDrawerCloseButton />
+          <CreatePageDrawerCloseButton />
         </Flex>
         <TabList mx="-1rem" w="100%">
           <Tab isDisabled={isLoading}>Basic</Tab>

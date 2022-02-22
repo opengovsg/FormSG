@@ -6,12 +6,12 @@ import { getAdminFormResponse } from '~/mocks/msw/handlers/admin-form'
 
 import { viewports } from '~utils/storybook'
 
-import { FormBuilderPage } from '~features/admin-form-builder/FormBuilderPage'
+import { CreatePage } from '~features/admin-form-builder/CreatePage'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 
 export default {
-  title: 'Pages/AdminFormPage/Builder',
+  title: 'Pages/AdminFormPage/Create',
   // component: To be implemented,
   decorators: [
     (storyFn) => {
@@ -36,7 +36,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <FormBuilderPage />
+const Template: Story = () => <CreatePage />
 export const Desktop = Template.bind({})
 
 export const Tablet = Template.bind({})

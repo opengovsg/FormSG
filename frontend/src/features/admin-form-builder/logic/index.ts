@@ -1,1 +1,1 @@
-export { BuilderLogic as default } from './BuilderLogic'
+export { CreatePageLogicTab as default } from './CreatePageLogicTab'
