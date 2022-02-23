@@ -4500,7 +4500,7 @@ describe('admin-form.controller', () => {
 
     it('should return 200 with updated settings successfully', async () => {
       // Arrange
-      const mockUpdatedSettings: FormSettings = {
+      const mockUpdatedSettings = {
         authType: FormAuthType.NIL,
         hasCaptcha: false,
         inactiveMessage: 'some inactive message',
@@ -4511,7 +4511,7 @@ describe('admin-form.controller', () => {
           isRetryEnabled: true,
           url: '',
         },
-      }
+      } as FormSettings
       const mockRes = expressHandler.mockResponse()
       // Mock various services to return expected results.
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
@@ -4846,7 +4846,7 @@ describe('admin-form.controller', () => {
   })
 
   describe('handleGetSettings', () => {
-    const MOCK_FORM_SETTINGS: FormSettings = {
+    const MOCK_FORM_SETTINGS = {
       authType: FormAuthType.NIL,
       hasCaptcha: false,
       inactiveMessage: 'some inactive message',
@@ -4857,7 +4857,7 @@ describe('admin-form.controller', () => {
         isRetryEnabled: true,
         url: '',
       },
-    }
+    } as FormSettings
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -7124,6 +7124,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.createFormField).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
+        undefined,
       )
     })
 
@@ -7242,6 +7243,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.createFormField).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
+        undefined,
       )
     })
 
@@ -7268,6 +7270,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.createFormField).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
+        undefined,
       )
     })
 
@@ -7373,6 +7376,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.createFormField).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
+        undefined,
       )
     })
   })
