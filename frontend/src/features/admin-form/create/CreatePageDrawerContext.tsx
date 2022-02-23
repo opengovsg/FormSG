@@ -35,7 +35,7 @@ const CreatePageDrawerContext = createContext<
 
 /**
  * Provider component that makes drawer context object available to any
- * child component that calls `useBuilderDrawer()`.
+ * child component that calls `useCreatePageDrawer()`.
  */
 export const CreatePageDrawerProvider: FC = ({ children }) => {
   const context = useProvideDrawerContext()
@@ -54,7 +54,7 @@ export const useCreatePageDrawer = (): CreatePageDrawerContextProps => {
   const context = useContext(CreatePageDrawerContext)
   if (!context) {
     throw new Error(
-      `useBuilderDrawer must be used within a BuilderDrawerProvider component`,
+      `useCreatePageDrawer must be used within a CreatePageDrawerProvider component`,
     )
   }
   return context
