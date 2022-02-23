@@ -9,17 +9,17 @@ import { viewports } from '~utils/storybook'
 import { AdminFormLayout } from './common/AdminFormLayout'
 
 export default {
-  title: 'Pages/AdminFormPage/Responses',
+  title: 'Pages/AdminFormPage/Results',
   // component: To be implemented,
   decorators: [
     (storyFn) => {
       // MemoryRouter is used so react-router-dom#Link components can work
-      // (and also to force the initial tab the page renders to be the settings tab).
+      // (and also to force the initial tab the page renders to be the results tab).
       return (
-        <MemoryRouter initialEntries={['/12345/responses']}>
+        <MemoryRouter initialEntries={['/12345/results']}>
           <Routes>
             <Route path={'/:formId'} element={<AdminFormLayout />}>
-              <Route path="responses" element={storyFn()} />
+              <Route path="results" element={storyFn()} />
             </Route>
           </Routes>
         </MemoryRouter>

@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 
 import {
-  ADMINFORM_RESPONSES_SUBROUTE,
+  ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
   LOGIN_ROUTE,
@@ -53,10 +53,7 @@ export const AppRouter = (): JSX.Element => {
             path={ADMINFORM_SETTINGS_SUBROUTE}
             element={<SettingsPage />}
           />
-          <Route
-            path={ADMINFORM_RESPONSES_SUBROUTE}
-            element={<ResultsPage />}
-          />
+          <Route path={ADMINFORM_RESULTS_SUBROUTE} element={<ResultsPage />} />
         </Route>
         <Route path="*" element={<div>404!!!</div>} />
       </Routes>
