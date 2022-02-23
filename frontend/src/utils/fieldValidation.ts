@@ -10,6 +10,7 @@ import {
   AttachmentFieldBase,
   CheckboxFieldBase,
   DecimalFieldBase,
+  DropdownFieldBase,
   EmailFieldBase,
   FieldBase,
   HomenoFieldBase,
@@ -32,6 +33,7 @@ import {
 import { isUenValid } from '~shared/utils/uen-validation'
 
 import {
+  INVALID_DROPDOWN_OPTION_ERROR,
   INVALID_EMAIL_DOMAIN_ERROR,
   INVALID_EMAIL_ERROR,
   REQUIRED_ERROR,
@@ -73,6 +75,23 @@ export const createBaseValidationRules = (
 ): RegisterOptions => {
   return {
     required: createRequiredValidationRules(schema),
+  }
+}
+
+export const createDropdownValidationRules: ValidationRuleFn<
+  DropdownFieldBase
+> = (schema): RegisterOptions => {
+  // TODO(#3360): Handle MyInfo dropdown validation
+  return {
+    ...createBaseValidationRules(schema),
+    validate: {
+      validOptions: (value: string) => {
+        if (!value) return
+        return (
+          schema.fieldOptions.includes(value) || INVALID_DROPDOWN_OPTION_ERROR
+        )
+      },
+    },
   }
 }
 
