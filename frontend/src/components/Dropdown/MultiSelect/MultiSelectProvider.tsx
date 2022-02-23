@@ -26,10 +26,6 @@ export interface MultiSelectProviderProps<
   values: string[]
   /** Controlled selection onChange handler */
   onChange: (value: string[]) => void
-  /** The value of the input element */
-  inputValue?: string
-  /** Controlled input onChange handler */
-  onInputValueChange?: (value: string) => void
   /** Function based on which items in dropdown are filtered. Default filter filters by fuzzy match. */
   filter?(items: Item[], value: string): Item[]
   /** Initial dropdown opened state. Defaults to `false`. */
@@ -39,6 +35,11 @@ export interface MultiSelectProviderProps<
    * Defaults to `4`. Set to `null` to render all items.
    */
   maxItems?: number | null
+  /** aria-describedby to be attached to the combobox input, if any. */
+  inputAria?: {
+    id: string
+    label: string
+  }
   children: React.ReactNode
   /**
    * Any props to override the default props of `downshift#useCombobox` set by this component.
@@ -53,8 +54,6 @@ export const MultiSelectProvider = ({
   items: rawItems,
   values,
   onChange,
-  inputValue = '',
-  onInputValueChange,
   name,
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
@@ -69,11 +68,11 @@ export const MultiSelectProvider = ({
   maxItems = 4,
   downshiftComboboxProps = {},
   downshiftMultiSelectProps = {},
+  inputAria: inputAriaProp,
   children,
 }: MultiSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
-  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1)
 
   // Inject for components to manipulate
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -87,9 +86,21 @@ export const MultiSelectProvider = ({
     },
   )
 
-  const filteredItems = useMemo(
-    () => (inputValue ? filter(items, inputValue) : items),
-    [filter, inputValue, items],
+  const getFilteredItems = useCallback(
+    (filterValue?: string) =>
+      filterValue ? filter(items, filterValue) : items,
+    [filter, items],
+  )
+  const [filteredItems, setFilteredItems] = useState(
+    getFilteredItems(
+      downshiftComboboxProps.initialInputValue ??
+        downshiftComboboxProps.inputValue,
+    ),
+  )
+
+  const resetItems = useCallback(
+    () => setFilteredItems(getFilteredItems()),
+    [getFilteredItems],
   )
 
   const selectedItems = useMemo(() => {
@@ -151,23 +162,29 @@ export const MultiSelectProvider = ({
     getItemProps,
     getToggleButtonProps,
     selectItem,
-  } = useCombobox({
-    items: filteredItems,
     inputValue,
-    itemToString: itemToLabelString,
-    onInputValueChange: ({ inputValue }) => {
-      onInputValueChange?.(inputValue ?? '')
-    },
-    defaultIsOpen,
-    selectedItem: null, // Not used in multiselect
     highlightedIndex,
-    stateReducer: (_state, { changes, type }) => {
+    setInputValue,
+  } = useCombobox({
+    labelId: `${name}-label`,
+    inputId: name,
+    items: filteredItems,
+    itemToString: itemToLabelString,
+    defaultIsOpen,
+    defaultInputValue: '',
+    defaultHighlightedIndex: 0,
+    onStateChange: ({ inputValue, type }) => {
       switch (type) {
-        case useCombobox.stateChangeTypes.InputKeyDownArrowDown:
-        case useCombobox.stateChangeTypes.InputKeyDownArrowUp:
-        case useCombobox.stateChangeTypes.ItemMouseMove:
-          setHighlightedIndex(changes.highlightedIndex ?? 0)
-          return changes
+        case useCombobox.stateChangeTypes.FunctionSetInputValue:
+        case useCombobox.stateChangeTypes.InputChange:
+          setFilteredItems(getFilteredItems(inputValue))
+          break
+        default:
+          return
+      }
+    },
+    stateReducer: (state, { changes, type }) => {
+      switch (type) {
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.ItemClick: {
           const { selectedItem } = changes
@@ -178,14 +195,19 @@ export const MultiSelectProvider = ({
               addSelectedItem(selectedItem)
             }
           }
+          resetItems()
           return {
             ...changes,
             inputValue: '',
+            // Keep highlighted index the same.
+            highlightedIndex: state.highlightedIndex,
+            selectedItem: null,
             // Keep the menu open after selection.
             isOpen: true,
           }
         }
         case useCombobox.stateChangeTypes.InputBlur:
+          resetItems()
           // Clear input regardless on blur.
           return {
             ...changes,
@@ -198,12 +220,28 @@ export const MultiSelectProvider = ({
     ...downshiftComboboxProps,
   })
 
+  const resetInputValue = useCallback(() => setInputValue(''), [setInputValue])
+
   const isItemSelected = useCallback(
     (item: ComboboxItem) => {
       return selectedItems.includes(item)
     },
     [selectedItems],
   )
+
+  const inputAria = useMemo(() => {
+    if (inputAriaProp) return inputAriaProp
+    let label = 'No options selected'
+    if (selectedItems.length > 0) {
+      label = `Options ${selectedItems
+        .map((i) => itemToValue(i))
+        .join(',')}, selected`
+    }
+    return {
+      id: `${name}-current-selection`,
+      label,
+    }
+  }, [inputAriaProp, name, selectedItems])
 
   const styles = useMultiStyleConfig('MultiSelect', {
     isFocused,
@@ -242,6 +280,8 @@ export const MultiSelectProvider = ({
         isDisabled,
         isReadOnly,
         isRequired,
+        resetInputValue,
+        inputAria,
       }}
     >
       <MultiSelectContext.Provider

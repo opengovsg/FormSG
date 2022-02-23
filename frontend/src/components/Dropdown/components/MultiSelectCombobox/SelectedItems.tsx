@@ -15,7 +15,7 @@ const ShowMoreItemBlock = ({ amountToShow }: { amountToShow: number }) => {
       e.stopPropagation()
       if (isDisabled || isReadOnly) return
       setIsFocused(true)
-      inputRef.current?.focus()
+      inputRef?.current?.focus()
     },
     [inputRef, isDisabled, isReadOnly, setIsFocused],
   )

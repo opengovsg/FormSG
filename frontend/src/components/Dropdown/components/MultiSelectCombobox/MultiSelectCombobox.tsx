@@ -51,7 +51,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
       setIsFocused(true)
       toggleMenu()
       if (!isOpen) {
-        inputRef.current?.focus()
+        inputRef?.current?.focus()
       }
     }, [inputRef, isDisabled, isOpen, isReadOnly, setIsFocused, toggleMenu])
 
