@@ -9,7 +9,10 @@ import {
 } from 'react'
 import { isEmpty } from 'lodash'
 
-import { EditFieldStoreState, useEditFieldStore } from './design/editFieldStore'
+import {
+  EditFieldStoreState,
+  useEditFieldStore,
+} from './builder-and-design/editFieldStore'
 
 export enum DrawerTabs {
   Builder,
