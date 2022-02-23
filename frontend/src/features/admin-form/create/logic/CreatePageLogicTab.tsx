@@ -23,8 +23,8 @@ export const CreatePageLogicTab = (): JSX.Element => {
   }
 
   return (
-    <Box flex={1} overflowY="auto" bg="primary.100">
-      <Flex p={{ base: '0.5rem', md: '3.75rem' }} h="100%">
+    <Box flex={1} h="fit-content" bg="primary.100">
+      <Flex p={{ base: '0.5rem', md: '3.75rem' }}>
         <Spacer />
         <Container maxW="42.5rem">
           {isEmptyLogic ? <EmptyLogic /> : <LogicContent />}
@@ -32,6 +32,7 @@ export const CreatePageLogicTab = (): JSX.Element => {
         <Flex flex={1} pos="relative">
           {!isEmptyLogic && !hasPendingLogic && (
             <IconButton
+              zIndex="docked"
               isDisabled={hasPendingLogic}
               pos={{ base: 'fixed', md: 'sticky' }}
               top={{ md: '1rem' }}
