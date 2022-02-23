@@ -12,16 +12,16 @@ import { getAdminFormResponse } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter, viewports } from '~utils/storybook'
 
-import { BuilderLogic } from './BuilderLogic'
 import { BuilderLogicProvider } from './BuilderLogicContext'
+import { CreatePageLogicTab } from './CreatePageLogicTab'
 
 const buildMswRoutes = (overrides?: Partial<AdminFormDto>, delay = 0) => [
   getAdminFormResponse(overrides, delay),
 ]
 
 export default {
-  title: 'Pages/AdminFormPage/Logic',
-  component: BuilderLogic,
+  title: 'Pages/AdminFormPage/Create/LogicTab',
+  component: CreatePageLogicTab,
   decorators: [
     (storyFn) => <BuilderLogicProvider>{storyFn()}</BuilderLogicProvider>,
     StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
@@ -116,7 +116,7 @@ const FORM_WITH_LOGIC: Partial<AdminFormDto> = {
   ],
 }
 
-const Template: Story = () => <BuilderLogic />
+const Template: Story = () => <CreatePageLogicTab />
 export const NoLogic = Template.bind({})
 NoLogic.parameters = {
   msw: buildMswRoutes({ form_logics: [] }),

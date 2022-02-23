@@ -6,7 +6,7 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
 
-import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form-builder/constants'
+import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 import {
   activeFieldSelector,

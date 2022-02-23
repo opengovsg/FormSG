@@ -3,9 +3,8 @@ import { Box, Divider, Grid, Stack, Text, Wrap } from '@chakra-ui/react'
 
 import { LogicDto } from '~shared/types/form'
 
-import { isShowFieldsLogic } from '~features/admin-form-builder/logic/utils'
-
 import { useBuilderLogic } from '../../../BuilderLogicContext'
+import { isShowFieldsLogic } from '../../../utils'
 
 import { FieldLogicBadge } from './FieldLogicBadge'
 import { LogicConditionValues } from './LogicConditionValues'

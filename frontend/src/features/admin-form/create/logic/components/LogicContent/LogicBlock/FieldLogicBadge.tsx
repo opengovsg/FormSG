@@ -3,7 +3,7 @@ import { Icon, Stack, Text } from '@chakra-ui/react'
 
 import Tooltip from '~components/Tooltip'
 
-import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form-builder/constants'
+import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 import { FormFieldWithQuestionNumber } from '../../../BuilderLogicContext'
 

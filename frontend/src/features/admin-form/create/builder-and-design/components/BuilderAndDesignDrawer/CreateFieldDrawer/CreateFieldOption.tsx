@@ -4,7 +4,7 @@ import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types/field'
 
-import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form-builder/constants'
+import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 interface FieldOptionProps extends BoxProps {
   isActive?: boolean
