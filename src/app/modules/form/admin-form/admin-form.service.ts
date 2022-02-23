@@ -588,8 +588,9 @@ export const createFormField = (
     }
     let indexToRetrieve = updatedForm.form_fields.length - 1
     // Must use undefined check since number can be 0; i.e. falsey.
-    if (to !== undefined && to < indexToRetrieve) {
-      indexToRetrieve = to
+    if (to !== undefined) {
+      // Bound indexToRetrieve to 0 and length - 1.
+      indexToRetrieve = Math.min(Math.max(to, 0), indexToRetrieve)
     }
     const updatedField = updatedForm.form_fields[indexToRetrieve]
     return updatedField
