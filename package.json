@@ -82,7 +82,7 @@
     "angular-ui-bootstrap": "~2.5.6",
     "angular-ui-router": "~1.0.30",
     "aws-info": "^1.2.0",
-    "aws-sdk": "^2.1079.0",
+    "aws-sdk": "^2.1080.0",
     "axios": "^0.26.0",
     "bcrypt": "^5.0.1",
     "bluebird": "^3.5.2",
@@ -156,7 +156,7 @@
     "whatwg-fetch": "^3.6.2",
     "winston": "^3.6.0",
     "winston-cloudwatch": "^3.1.1",
-    "zod": "^3.11.6"
+    "zod": "^3.12.0"
   },
   "devDependencies": {
     "@babel/core": "^7.17.5",
@@ -225,7 +225,7 @@
     "jest-extended": "^1.2.1",
     "jest-localstorage-mock": "^2.4.19",
     "jest-mock-axios": "^4.5.0",
-    "lint-staged": "^12.1.7",
+    "lint-staged": "^12.3.4",
     "maildev": "^1.1.0",
     "mini-css-extract-plugin": "^0.5.0",
     "mockdate": "^3.0.5",
