@@ -4,7 +4,7 @@ import { Box, Flex } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
-import { BuilderDesignPlaceholder } from './components/BuilderDesignPlaceholder'
+import { BuilderAndDesignPlaceholder } from './components/BuilderAndDesignPlaceholder'
 import FieldRow from './components/FieldRow'
 import { FIELD_LIST_DROP_ID } from './constants'
 import { useEditFieldStore } from './editFieldStore'
@@ -65,7 +65,7 @@ export const BuilderAndDesignContent = ({
                 <BuilderFields fields={builderFields} />
                 {provided.placeholder}
                 {snapshot.isDraggingOver ? (
-                  <BuilderDesignPlaceholder
+                  <BuilderAndDesignPlaceholder
                     placeholderProps={placeholderProps}
                   />
                 ) : null}
