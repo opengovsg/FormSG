@@ -1,5 +1,12 @@
 import { FC, forwardRef, useCallback } from 'react'
-import { Box, chakra, Flex, Icon, useMergeRefs } from '@chakra-ui/react'
+import {
+  Box,
+  chakra,
+  Flex,
+  Icon,
+  useMergeRefs,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -40,6 +47,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
       toggleMenu,
       isInvalid,
       inputRef,
+      inputAria,
     } = useSelectContext()
 
     const { getDropdownProps } = useMultiSelectContext()
@@ -81,6 +89,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
           onClick: handleWrapperClick,
         })}
       >
+        <VisuallyHidden id={inputAria.id}>{inputAria.label}</VisuallyHidden>
         <MultiItemsContainer>
           <SelectedItems />
           <chakra.input
@@ -93,6 +102,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
                 onKeyDown: handleInputTabKeydown,
                 readOnly: isReadOnly,
                 disabled: isDisabled,
+                'aria-describedby': inputAria.id,
               }),
             )}
           />
