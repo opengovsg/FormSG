@@ -627,9 +627,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
-  FormDocumentSchema.methods.insertFormField = function (newField: FormField) {
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
-    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(newField)
+  FormDocumentSchema.methods.insertFormField = function (
+    newField: FormField,
+    to?: number,
+  ) {
+    const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
+    if (to) {
+      formFields.splice(to, 0, newField as any) // Typings are not complete for splice.
+    } else {
+      formFields.push(newField)
+    }
     return this.save()
   }
 
