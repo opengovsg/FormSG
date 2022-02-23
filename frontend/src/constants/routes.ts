@@ -12,4 +12,4 @@ export const ADMINFORM_ROUTE = '/admin/form'
 /** Build tab has no subroute, its the index admin form route. */
 export const ADMINFORM_BUILD_SUBROUTE = ''
 export const ADMINFORM_SETTINGS_SUBROUTE = 'settings'
-export const ADMINFORM_RESPONSES_SUBROUTE = 'responses'
+export const ADMINFORM_RESULTS_SUBROUTE = 'results'
