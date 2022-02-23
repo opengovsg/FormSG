@@ -91,14 +91,16 @@ NotClearable.args = {
 export const HasValueSelected = Template.bind({})
 HasValueSelected.args = {
   value: itemToLabelString(INITIAL_COMBOBOX_ITEMS[0]),
-  defaultIsOpen: true,
+  initialIsOpen: true,
 }
 
 export const StringValues = Template.bind({})
 StringValues.args = {
   items: ['this only has only string values', 'this is cool'],
-  value: 'this',
-  defaultIsOpen: true,
+  comboboxProps: {
+    initialInputValue: 'this',
+  },
+  initialIsOpen: true,
 }
 
 export const WithIconSelected = Template.bind({})
@@ -121,14 +123,16 @@ WithIconSelected.args = {
     },
   ],
   value: 'Radio button',
-  defaultIsOpen: true,
+  initialIsOpen: true,
   isDisabled: false,
 }
 
 export const WithHalfFilledValue = Template.bind({})
 WithHalfFilledValue.args = {
-  value: 'Multiple words and',
-  defaultIsOpen: true,
+  comboboxProps: {
+    initialInputValue: 'Multiple words and',
+  },
+  initialIsOpen: true,
 }
 
 export const Invalid = Template.bind({})
@@ -162,6 +166,7 @@ export const Playground: Story<SingleSelectProps> = ({ items, isReadOnly }) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <FormControl
+        id={name}
         isRequired
         isInvalid={!!errors[name]}
         isReadOnly={isReadOnly}

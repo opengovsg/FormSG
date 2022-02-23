@@ -21,6 +21,11 @@ export interface SharedSelectContextReturnProps<
   name: string
   /** Item data used to render items in dropdown */
   items: Item[]
+  /** aria-describedby to be attached to the combobox input, if any. */
+  inputAria?: {
+    id: string
+    label: string
+  }
 }
 
 interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
@@ -35,7 +40,8 @@ interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
   styles: Record<string, CSSObject>
   isFocused: boolean
   setIsFocused: (isFocused: boolean) => void
-  inputRef: MutableRefObject<HTMLInputElement | null>
+  inputRef?: MutableRefObject<HTMLInputElement | null>
+  resetInputValue: () => void
 }
 
 export const SelectContext = createContext<SelectContextReturn | undefined>(

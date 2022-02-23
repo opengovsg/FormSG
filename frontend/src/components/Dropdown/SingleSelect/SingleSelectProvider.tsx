@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { FormControlOptions, useMultiStyleConfig } from '@chakra-ui/react'
-import { useCombobox } from 'downshift'
+import { useCombobox, UseComboboxProps } from 'downshift'
 
 import { useItems } from '../hooks/useItems'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
@@ -12,14 +12,21 @@ export interface SingleSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
 > extends SharedSelectContextReturnProps<Item>,
     FormControlOptions {
-  /** Controlled input value */
+  /** Controlled selected value */
   value: string
-  /** Controlled input onChange handler */
+  /** Controlled selected item onChange handler */
   onChange: (value: string) => void
   /** Function based on which items in dropdown are filtered. Default filter filters by fuzzy match. */
   filter?(items: Item[], value: string): Item[]
-  /** Initial dropdown opened state. Defaults to `false`. */
-  defaultIsOpen?: boolean
+  /** Initial dropdown opened state. */
+  initialIsOpen?: boolean
+  /** Props to override default useComboboxProps, if any. */
+  comboboxProps?: Partial<UseComboboxProps<Item>>
+  /** aria-describedby to be attached to the combobox input, if any. */
+  inputAria?: {
+    id: string
+    label: string
+  }
   children: React.ReactNode
 }
 export const SingleSelectProvider = ({
@@ -30,30 +37,40 @@ export const SingleSelectProvider = ({
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
   placeholder = 'Select an option',
-  clearButtonLabel = 'Clear dropdown',
+  clearButtonLabel = 'Clear dropdown input',
   isClearable = true,
   isSearchable = true,
-  defaultIsOpen,
+  initialIsOpen,
   isInvalid,
   isReadOnly,
   isDisabled,
   isRequired,
   children,
+  inputAria: inputAriaProp,
+  comboboxProps = {},
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
 
-  // Inject for components to manipulate
-  const inputRef = useRef<HTMLInputElement | null>(null)
-
-  const filteredItems = useMemo(
-    () => (value ? filter(items, value) : items),
-    [filter, value, items],
+  const getFilteredItems = useCallback(
+    (filterValue?: string) =>
+      filterValue ? filter(items, filterValue) : items,
+    [filter, items],
+  )
+  const [filteredItems, setFilteredItems] = useState(
+    getFilteredItems(
+      comboboxProps.initialInputValue ?? comboboxProps.inputValue,
+    ),
   )
 
-  const getDefaultSelectedValue = useCallback(
+  const getInitialSelectedValue = useCallback(
     () => getItemByValue(value)?.item ?? null,
     [getItemByValue, value],
+  )
+
+  const resetItems = useCallback(
+    () => setFilteredItems(getFilteredItems()),
+    [getFilteredItems],
   )
 
   const {
@@ -69,21 +86,49 @@ export const SingleSelectProvider = ({
     highlightedIndex,
     selectItem,
     selectedItem,
+    inputValue,
+    setInputValue,
   } = useCombobox({
+    labelId: `${name}-label`,
+    inputId: name,
+    defaultInputValue: '',
+    defaultHighlightedIndex: 0,
     items: filteredItems,
-    inputValue: value,
-    defaultIsOpen,
-    onInputValueChange: ({ inputValue }) => {
-      if (!inputValue) {
-        selectItem(null)
-      }
-      onChange(inputValue ?? '')
-    },
-    defaultSelectedItem: getDefaultSelectedValue(),
+    initialIsOpen,
+    initialSelectedItem: getInitialSelectedValue(),
     itemToString: itemToValue,
     onSelectedItemChange: ({ selectedItem }) => {
       onChange(itemToValue(selectedItem))
     },
+    onStateChange: ({ inputValue, type }) => {
+      switch (type) {
+        case useCombobox.stateChangeTypes.FunctionSetInputValue:
+        case useCombobox.stateChangeTypes.InputChange:
+          setFilteredItems(getFilteredItems(inputValue))
+          break
+        default:
+          return
+      }
+    },
+    stateReducer: (_state, { changes, type }) => {
+      switch (type) {
+        case useCombobox.stateChangeTypes.FunctionSelectItem:
+        case useCombobox.stateChangeTypes.InputKeyDownEnter:
+        case useCombobox.stateChangeTypes.InputBlur:
+        case useCombobox.stateChangeTypes.ItemClick: {
+          resetItems()
+          return {
+            ...changes,
+            // Clear inputValue on item selection
+            inputValue: '',
+            isOpen: false,
+          }
+        }
+        default:
+          return changes
+      }
+    },
+    ...comboboxProps,
   })
 
   const isItemSelected = useCallback(
@@ -93,12 +138,27 @@ export const SingleSelectProvider = ({
     [selectedItem],
   )
 
-  const styles = useMultiStyleConfig('SingleSelect', { isClearable })
+  const resetInputValue = useCallback(() => setInputValue(''), [setInputValue])
+
+  const styles = useMultiStyleConfig('SingleSelect', {
+    isClearable,
+  })
+
+  const inputAria = useMemo(() => {
+    if (inputAriaProp) return inputAriaProp
+    let label = 'No option selected'
+    if (selectedItem) {
+      label = `Option ${itemToValue(selectedItem)}, selected`
+    }
+    return {
+      id: `${name}-current-selection`,
+      label,
+    }
+  }, [inputAriaProp, name, selectedItem])
 
   return (
     <SelectContext.Provider
       value={{
-        inputRef,
         isOpen,
         selectedItem,
         isItemSelected,
@@ -114,7 +174,7 @@ export const SingleSelectProvider = ({
         highlightedIndex,
         items: filteredItems,
         nothingFoundLabel,
-        inputValue: value,
+        inputValue,
         isSearchable,
         isClearable,
         isInvalid,
@@ -127,6 +187,8 @@ export const SingleSelectProvider = ({
         styles,
         isFocused,
         setIsFocused,
+        resetInputValue,
+        inputAria,
       }}
     >
       {children}
