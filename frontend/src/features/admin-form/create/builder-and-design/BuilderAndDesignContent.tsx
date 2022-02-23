@@ -4,20 +4,20 @@ import { Box, Flex } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
-import { BuilderDesignPlaceholder } from './components/BuilderDesignPlaceholder'
+import { BuilderAndDesignPlaceholder } from './components/BuilderAndDesignPlaceholder'
 import FieldRow from './components/FieldRow'
 import { FIELD_LIST_DROP_ID } from './constants'
 import { useEditFieldStore } from './editFieldStore'
 import { DndPlaceholderProps } from './types'
 import { useBuilderFormFields } from './useBuilderFormFields'
 
-interface BuilderDesignProps {
+interface BuilderAndDesignContentProps {
   placeholderProps: DndPlaceholderProps
 }
 
-export const BuilderDesign = ({
+export const BuilderAndDesignContent = ({
   placeholderProps,
-}: BuilderDesignProps): JSX.Element => {
+}: BuilderAndDesignContentProps): JSX.Element => {
   const { clearActiveField, clearFieldToCreate } = useEditFieldStore(
     useCallback((state) => {
       return {
@@ -65,7 +65,7 @@ export const BuilderDesign = ({
                 <BuilderFields fields={builderFields} />
                 {provided.placeholder}
                 {snapshot.isDraggingOver ? (
-                  <BuilderDesignPlaceholder
+                  <BuilderAndDesignPlaceholder
                     placeholderProps={placeholderProps}
                   />
                 ) : null}

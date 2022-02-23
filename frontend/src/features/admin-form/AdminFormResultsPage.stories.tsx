@@ -6,22 +6,20 @@ import { getAdminFormResponse } from '~/mocks/msw/handlers/admin-form'
 
 import { viewports } from '~utils/storybook'
 
-import { FormBuilderPage } from '~features/admin-form-builder/FormBuilderPage'
-
 import { AdminFormLayout } from './common/AdminFormLayout'
 
 export default {
-  title: 'Pages/AdminFormPage/Builder',
+  title: 'Pages/AdminFormPage/Results',
   // component: To be implemented,
   decorators: [
     (storyFn) => {
       // MemoryRouter is used so react-router-dom#Link components can work
-      // (and also to force the initial tab the page renders to be the settings tab).
+      // (and also to force the initial tab the page renders to be the results tab).
       return (
-        <MemoryRouter initialEntries={['/12345']}>
+        <MemoryRouter initialEntries={['/12345/results']}>
           <Routes>
             <Route path={'/:formId'} element={<AdminFormLayout />}>
-              <Route index element={storyFn()} />
+              <Route path="results" element={storyFn()} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -36,7 +34,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <FormBuilderPage />
+const Template: Story = () => <div>To be implemented</div>
 export const Desktop = Template.bind({})
 
 export const Tablet = Template.bind({})

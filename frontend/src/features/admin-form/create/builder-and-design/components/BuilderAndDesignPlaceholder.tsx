@@ -9,7 +9,7 @@ export interface BuilderDesignPlaceholderProps {
   placeholderProps: DndPlaceholderProps
 }
 
-export const BuilderDesignPlaceholder = ({
+export const BuilderAndDesignPlaceholder = ({
   placeholderProps,
 }: BuilderDesignPlaceholderProps): JSX.Element | null => {
   const renderedContents = useMemo(() => {

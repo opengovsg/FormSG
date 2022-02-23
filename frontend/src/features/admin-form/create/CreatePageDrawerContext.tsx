@@ -9,7 +9,10 @@ import {
 } from 'react'
 import { isEmpty } from 'lodash'
 
-import { EditFieldStoreState, useEditFieldStore } from './design/editFieldStore'
+import {
+  EditFieldStoreState,
+  useEditFieldStore,
+} from './builder-and-design/editFieldStore'
 
 export enum DrawerTabs {
   Builder,
@@ -17,7 +20,7 @@ export enum DrawerTabs {
   Logic,
 }
 
-type BuilderDrawerContextProps = {
+type CreatePageDrawerContextProps = {
   activeTab: DrawerTabs | null
   isShowDrawer: boolean
   handleClose: (clearActiveTab?: boolean) => void
@@ -26,32 +29,32 @@ type BuilderDrawerContextProps = {
   handleLogicClick: () => void
 }
 
-const BuilderDrawerContext = createContext<
-  BuilderDrawerContextProps | undefined
+const CreatePageDrawerContext = createContext<
+  CreatePageDrawerContextProps | undefined
 >(undefined)
 
 /**
  * Provider component that makes drawer context object available to any
- * child component that calls `useBuilderDrawer()`.
+ * child component that calls `useCreatePageDrawer()`.
  */
-export const BuilderDrawerProvider: FC = ({ children }) => {
+export const CreatePageDrawerProvider: FC = ({ children }) => {
   const context = useProvideDrawerContext()
 
   return (
-    <BuilderDrawerContext.Provider value={context}>
+    <CreatePageDrawerContext.Provider value={context}>
       {children}
-    </BuilderDrawerContext.Provider>
+    </CreatePageDrawerContext.Provider>
   )
 }
 
 /**
  * Hook for components nested in ProvideAuth component to get the current auth object.
  */
-export const useBuilderDrawer = (): BuilderDrawerContextProps => {
-  const context = useContext(BuilderDrawerContext)
+export const useCreatePageDrawer = (): CreatePageDrawerContextProps => {
+  const context = useContext(CreatePageDrawerContext)
   if (!context) {
     throw new Error(
-      `useBuilderDrawer must be used within a BuilderDrawerProvider component`,
+      `useCreatePageDrawer must be used within a CreatePageDrawerProvider component`,
     )
   }
   return context
@@ -66,7 +69,7 @@ const editFieldStoreSelector = (state: EditFieldStoreState) => {
   }
 }
 
-const useProvideDrawerContext = (): BuilderDrawerContextProps => {
+const useProvideDrawerContext = (): CreatePageDrawerContextProps => {
   const [activeTab, setActiveTab] = useState<DrawerTabs | null>(null)
   const { hasActiveField, clearActiveField } = useEditFieldStore(
     editFieldStoreSelector,

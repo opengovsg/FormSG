@@ -8,8 +8,8 @@ import {
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { BuilderDrawer } from './components/BuilderDrawer'
-import { BuilderDesign } from './BuilderDesign'
+import { BuilderAndDesignDrawer } from './components/BuilderAndDesignDrawer'
+import { BuilderAndDesignContent } from './BuilderAndDesignContent'
 import {
   CREATE_FIELD_DROP_ID,
   CREATE_FIELD_FIELDS_ORDERED,
@@ -44,7 +44,7 @@ const getDestinationDom = (dropabbleId: unknown) => {
   return destinationDOM
 }
 
-export const BuilderDesignContainer = (): JSX.Element => {
+export const BuilderAndDesignContainer = (): JSX.Element => {
   const { data } = useAdminForm()
   const { mutateReorderField } = useMutateFormFields()
   const setFieldToCreate = useEditFieldStore(setFieldToCreateSelector)
@@ -193,8 +193,8 @@ export const BuilderDesignContainer = (): JSX.Element => {
       onDragUpdate={onDragUpdate}
       onDragEnd={onDragEnd}
     >
-      <BuilderDrawer />
-      <BuilderDesign placeholderProps={placeholderProps} />
+      <BuilderAndDesignDrawer />
+      <BuilderAndDesignContent placeholderProps={placeholderProps} />
     </DragDropContext>
   )
 }

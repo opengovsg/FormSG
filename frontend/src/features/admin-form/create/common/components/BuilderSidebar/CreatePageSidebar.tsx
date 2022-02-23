@@ -6,14 +6,14 @@ import { BxsWidget } from '~assets/icons/BxsWidget'
 
 import {
   DrawerTabs,
-  useBuilderDrawer,
-} from '~features/admin-form-builder/BuilderDrawerContext'
+  useCreatePageDrawer,
+} from '~features/admin-form/create/CreatePageDrawerContext'
 
 import { DrawerTabIcon } from './DrawerTabIcon'
 
-export const BuilderSidebar = (): JSX.Element => {
+export const CreatePageSidebar = (): JSX.Element => {
   const { activeTab, handleBuilderClick, handleDesignClick, handleLogicClick } =
-    useBuilderDrawer()
+    useCreatePageDrawer()
 
   return (
     <Stack

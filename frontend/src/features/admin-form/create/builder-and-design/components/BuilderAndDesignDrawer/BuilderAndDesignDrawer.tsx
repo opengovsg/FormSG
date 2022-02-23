@@ -4,7 +4,10 @@ import { AnimatePresence } from 'framer-motion'
 
 import { MotionBox } from '~components/motion'
 
-import { DrawerTabs, useBuilderDrawer } from '../../../BuilderDrawerContext'
+import {
+  DrawerTabs,
+  useCreatePageDrawer,
+} from '../../../CreatePageDrawerContext'
 import { activeFieldSelector, useEditFieldStore } from '../../editFieldStore'
 
 import { CreateFieldDrawer } from './CreateFieldDrawer'
@@ -29,8 +32,8 @@ const DRAWER_MOTION_PROPS = {
   },
 }
 
-export const BuilderDrawer = (): JSX.Element => {
-  const { isShowDrawer, activeTab } = useBuilderDrawer()
+export const BuilderAndDesignDrawer = (): JSX.Element => {
+  const { isShowDrawer, activeTab } = useCreatePageDrawer()
   const activeField = useEditFieldStore(activeFieldSelector)
 
   const renderDrawerContent = useMemo(() => {

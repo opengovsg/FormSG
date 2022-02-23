@@ -4,7 +4,7 @@ import { Tabs, useBreakpointValue } from '@chakra-ui/react'
 
 import {
   ADMINFORM_BUILD_SUBROUTE,
-  ADMINFORM_RESPONSES_SUBROUTE,
+  ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
   ROOT_ROUTE,
 } from '~constants/routes'
@@ -16,7 +16,7 @@ import { AdminFormNavbar } from './AdminFormNavbar'
 const ADMINFORM_ROUTES = [
   ADMINFORM_BUILD_SUBROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
-  ADMINFORM_RESPONSES_SUBROUTE,
+  ADMINFORM_RESULTS_SUBROUTE,
 ]
 
 const useAdminFormNavbar = () => {
