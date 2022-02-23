@@ -632,7 +632,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     to?: number,
   ) {
     const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
-    if (to) {
+    // Must use undefined check since number can be 0; i.e. falsey.
+    if (to !== undefined) {
       formFields.splice(to, 0, newField as any) // Typings are not complete for splice.
     } else {
       formFields.push(newField)

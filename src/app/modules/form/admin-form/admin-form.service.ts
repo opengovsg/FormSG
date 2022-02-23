@@ -587,7 +587,8 @@ export const createFormField = (
       return errAsync(new FormNotFoundError())
     }
     let indexToRetrieve = updatedForm.form_fields.length - 1
-    if (to && to < indexToRetrieve) {
+    // Must use undefined check since number can be 0; i.e. falsey.
+    if (to !== undefined && to < indexToRetrieve) {
       indexToRetrieve = to
     }
     const updatedField = updatedForm.form_fields[indexToRetrieve]
