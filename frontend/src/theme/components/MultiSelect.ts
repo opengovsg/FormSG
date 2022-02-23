@@ -51,6 +51,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
         ? {
             cursor: 'pointer',
             _disabled: { cursor: 'not-allowed' },
+            m: 0,
             minW: 0,
             minH: 0,
             h: 0,
