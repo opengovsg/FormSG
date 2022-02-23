@@ -5,6 +5,7 @@ import { Flex, TabList, Tabs } from '@chakra-ui/react'
 import { BxsColorFill } from '~assets/icons/BxsColorFill'
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { useDraggable } from '~hooks/useDraggable'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import {
   DrawerTabs,
@@ -13,9 +14,10 @@ import {
 
 import { MobileSidebarTab } from './SidebarMobileTab'
 
-export const MobileBuilderSidebar = (): JSX.Element => {
+export const MobileCreatePageBottomBar = (): JSX.Element | null => {
   const { activeTab, handleBuilderClick, handleDesignClick, handleLogicClick } =
     useCreatePageDrawer()
+  const isMobile = useIsMobile()
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
   const tabIndex = useMemo(() => {
@@ -41,6 +43,8 @@ export const MobileBuilderSidebar = (): JSX.Element => {
     }
   }
 
+  if (!isMobile) return null
+
   return (
     <Tabs
       isLazy
@@ -48,6 +52,9 @@ export const MobileBuilderSidebar = (): JSX.Element => {
       orientation="horizontal"
       variant="line"
       display="flex"
+      pos="sticky"
+      zIndex="sticky"
+      bottom={0}
       index={tabIndex}
       onChange={handleTabChange}
     >

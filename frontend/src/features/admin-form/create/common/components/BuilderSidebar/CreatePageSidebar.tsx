@@ -11,16 +11,15 @@ import {
 } from '~features/admin-form/create/CreatePageDrawerContext'
 
 import { DrawerTabIcon } from './DrawerTabIcon'
-import { MobileBuilderSidebar } from './MobileBuilderSidebar'
 
-export const CreatePageSidebar = (): JSX.Element => {
+export const CreatePageSidebar = (): JSX.Element | null => {
   const { activeTab, handleBuilderClick, handleDesignClick, handleLogicClick } =
     useCreatePageDrawer()
 
   const isMobile = useIsMobile()
 
   if (isMobile) {
-    return <MobileBuilderSidebar />
+    return null
   }
 
   return (
@@ -29,6 +28,8 @@ export const CreatePageSidebar = (): JSX.Element => {
       spacing="0.5rem"
       py="1rem"
       px="0.5rem"
+      pos="sticky"
+      top={0}
       borderRight="1px solid"
       borderColor="neutral.300"
       direction={{ base: 'row', md: 'column' }}
