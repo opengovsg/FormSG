@@ -7128,6 +7128,43 @@ describe('admin-form.controller', () => {
       )
     })
 
+    it('should return 200 with created form field when passing in positional argument', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const expectedPosition = 100
+      const mockReqWithPosQuery = expressHandler.mockRequest({
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+        params: {
+          formId: String(MOCK_FORM_ID),
+        },
+        body: MOCK_CREATE_FIELD_BODY,
+        query: {
+          to: expectedPosition,
+        },
+      })
+
+      // Act
+      await AdminFormController._handleCreateFormField(
+        mockReqWithPosQuery,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(MOCK_RETURNED_FIELD)
+      expect(MockAdminFormService.createFormField).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_CREATE_FIELD_BODY,
+        // Should pass in position query
+        expectedPosition,
+      )
+    })
+
     it('should return 403 when current user does not have permissions to create a form field', async () => {
       // Arrange
       const expectedErrorString = 'no permissions pls'
