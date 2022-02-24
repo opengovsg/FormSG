@@ -25,6 +25,13 @@ ClientRouter.get(
 ClientRouter.get('/environment', FrontendServerController.addEnvVarData)
 
 /**
+ * Retrieve the environment variables for the frontend.
+ * @route GET /api/v3/client/env
+ * @return 200 with environment variables needed for the client
+ */
+ClientRouter.get('/env', FrontendServerController.handleGetEnvironment)
+
+/**
  * Generate a json of current activated features
  * @route GET /api/v3/client/features
  * @return json with featureManager.states
