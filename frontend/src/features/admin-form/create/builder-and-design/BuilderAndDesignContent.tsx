@@ -4,7 +4,7 @@ import { Box, Flex } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
-import { BuilderAndDesignPlaceholder } from './components/BuilderAndDesignPlaceholder'
+import BuilderAndDesignPlaceholder from './components/BuilderAndDesignPlaceholder'
 import FieldRow from './components/FieldRow'
 import { FIELD_LIST_DROP_ID } from './constants'
 import { useEditFieldStore } from './editFieldStore'
@@ -64,11 +64,10 @@ export const BuilderAndDesignContent = ({
               >
                 <BuilderFields fields={builderFields} />
                 {provided.placeholder}
-                {snapshot.isDraggingOver ? (
-                  <BuilderAndDesignPlaceholder
-                    placeholderProps={placeholderProps}
-                  />
-                ) : null}
+                <BuilderAndDesignPlaceholder
+                  placeholderProps={placeholderProps}
+                  isDraggingOver={snapshot.isDraggingOver}
+                />
               </Box>
             )}
           </Droppable>
