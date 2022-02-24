@@ -5,6 +5,7 @@ import { Box, Flex } from '@chakra-ui/react'
 import { AdminFormDto } from '~shared/types/form'
 
 import BuilderAndDesignPlaceholder from './components/BuilderAndDesignPlaceholder'
+import { EmptyFormPlaceholder } from './components/BuilderAndDesignPlaceholder/EmptyFormPlaceholder'
 import FieldRow from './components/FieldRow'
 import { FIELD_LIST_DROP_ID } from './constants'
 import { useEditFieldStore } from './editFieldStore'
@@ -56,20 +57,28 @@ export const BuilderAndDesignContent = ({
           flexDir="column"
         >
           <Droppable droppableId={FIELD_LIST_DROP_ID}>
-            {(provided, snapshot) => (
-              <Box
-                pos="relative"
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-              >
-                <BuilderFields fields={builderFields} />
-                {provided.placeholder}
-                <BuilderAndDesignPlaceholder
-                  placeholderProps={placeholderProps}
+            {(provided, snapshot) =>
+              builderFields?.length ? (
+                <Box
+                  pos="relative"
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  <BuilderFields fields={builderFields} />
+                  {provided.placeholder}
+                  <BuilderAndDesignPlaceholder
+                    placeholderProps={placeholderProps}
+                    isDraggingOver={snapshot.isDraggingOver}
+                  />
+                </Box>
+              ) : (
+                <EmptyFormPlaceholder
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
                   isDraggingOver={snapshot.isDraggingOver}
                 />
-              </Box>
-            )}
+              )
+            }
           </Droppable>
         </Flex>
       </Flex>
