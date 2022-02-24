@@ -64,7 +64,10 @@ export const BuilderAndDesignContent = ({
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                 >
-                  <BuilderFields fields={builderFields} />
+                  <BuilderFields
+                    fields={builderFields}
+                    isDraggingOver={snapshot.isDraggingOver}
+                  />
                   {provided.placeholder}
                   <BuilderAndDesignPlaceholder
                     placeholderProps={placeholderProps}
@@ -86,8 +89,13 @@ export const BuilderAndDesignContent = ({
   )
 }
 
+interface BuilderFieldsProps {
+  fields: AdminFormDto['form_fields']
+  isDraggingOver: boolean
+}
+
 const BuilderFields = memo(
-  ({ fields }: { fields: AdminFormDto['form_fields'] | undefined }) => {
+  ({ fields, isDraggingOver }: BuilderFieldsProps) => {
     if (!fields) {
       return <div>Loading...</div>
     }
@@ -95,10 +103,16 @@ const BuilderFields = memo(
     return (
       <>
         {fields.map((f, i) => (
-          <FieldRow index={i} key={f._id} field={f} />
+          <FieldRow
+            index={i}
+            key={f._id}
+            field={f}
+            isDraggingOver={isDraggingOver}
+          />
         ))}
       </>
     )
   },
-  (prev, next) => prev.fields === next.fields,
+  (prev, next) =>
+    prev.fields === next.fields && prev.isDraggingOver === next.isDraggingOver,
 )
