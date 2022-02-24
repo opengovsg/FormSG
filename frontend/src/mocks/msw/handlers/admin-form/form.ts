@@ -2,6 +2,7 @@ import { merge } from 'lodash'
 import { rest } from 'msw'
 
 import { AgencyId } from '~shared/types/agency'
+import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
 import {
   AdminFormDto,
   AdminFormViewDto,
@@ -14,6 +15,9 @@ import {
 import { FormLogoState } from '~shared/types/form/form_logo'
 import { DateString } from '~shared/types/generic'
 import { UserDto } from '~shared/types/user'
+import { insertAt } from '~shared/utils/immutable-array-fns'
+
+let formFields: FormFieldDto[] = []
 
 export const createMockForm = (
   props: Partial<AdminFormDto> = {},
@@ -40,7 +44,7 @@ export const createMockForm = (
         inactiveMessage:
           'If you think this is a mistake, please contact the agency that gave you the form link!',
         submissionLimit: null,
-        form_fields: [],
+        form_fields: formFields,
         form_logics: [],
         permissionList: [],
         title: 'Test form title',
@@ -82,6 +86,25 @@ export const getAdminFormResponse = (
           createMockForm({ _id: req.params.formId as FormId, ...props }),
         ),
       )
+    },
+  )
+}
+
+export const createSingleField = (
+  delay = 0,
+): ReturnType<typeof rest['post']> => {
+  return rest.post<FieldCreateDto, { to: string }, FormFieldDto>(
+    '/api/v3/admin/forms/:formId/fields',
+    (req, res, ctx) => {
+      const newField = {
+        ...req.body,
+        _id: `random-id-${formFields.length}`,
+      }
+      const newIndex = parseInt(
+        req.url.searchParams.get('to') ?? `${formFields.length}`,
+      )
+      formFields = insertAt(formFields, newIndex, newField)
+      return res(ctx.delay(delay), ctx.status(200), ctx.json(newField))
     },
   )
 }
