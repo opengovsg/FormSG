@@ -1,6 +1,6 @@
 import { BasicField } from '~shared/types/field'
 
-import { PENDING_CREATE_FIELD_ID } from './constants'
+import { FIELDS_TO_CREATE_META, PENDING_CREATE_FIELD_ID } from './constants'
 import { BuilderContentField, PendingFormField } from './types'
 
 /**
@@ -8,28 +8,7 @@ import { BuilderContentField, PendingFormField } from './types'
  */
 export const transformBasicFieldToText = (basicField?: BasicField): string => {
   if (!basicField) return ''
-  switch (basicField) {
-    case BasicField.Section:
-      return 'Header'
-    case BasicField.Statement:
-      return 'Paragraph'
-    case BasicField.Mobile:
-      return 'Mobile Number'
-    case BasicField.HomeNo:
-      return 'Home Number'
-    case BasicField.ShortText:
-      return 'Short Answer'
-    case BasicField.LongText:
-      return 'Long Answer'
-    case BasicField.YesNo:
-      return 'Yes/No'
-    case BasicField.Nric:
-      return 'NRIC'
-    case BasicField.Uen:
-      return 'UEN'
-    default:
-      return basicField.charAt(0).toUpperCase() + basicField.slice(1)
-  }
+  return FIELDS_TO_CREATE_META[basicField].label
 }
 
 export const isPendingFormField = (
