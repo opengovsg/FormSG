@@ -13,6 +13,7 @@ import {
 } from '~shared/types/form/form'
 import { FormLogoState } from '~shared/types/form/form_logo'
 import { DateString } from '~shared/types/generic'
+import { StorageModeSubmissionMetadataList } from '~shared/types/submission'
 import { UserDto } from '~shared/types/user'
 
 export const createMockForm = (
@@ -80,6 +81,30 @@ export const getAdminFormResponse = (
         ctx.status(200),
         ctx.json(
           createMockForm({ _id: req.params.formId as FormId, ...props }),
+        ),
+      )
+    },
+  )
+}
+
+export const getStorageSubmissionMetadataResponse = (
+  props: Partial<StorageModeSubmissionMetadataList> = {},
+  delay = 0,
+) => {
+  return rest.get<StorageModeSubmissionMetadataList>(
+    '/api/v3/admin/forms/:formId/submissions/metadata',
+    (req, res, ctx) => {
+      return res(
+        ctx.delay(delay),
+        ctx.status(200),
+        ctx.json<StorageModeSubmissionMetadataList>(
+          merge(
+            {
+              count: 30,
+              metadata: [],
+            },
+            props,
+          ),
         ),
       )
     },
