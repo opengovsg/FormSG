@@ -16,6 +16,7 @@ import { ModalCloseButton } from '~components/Modal'
 import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
 import {
   CreateFormFlowStates,
+  CreateFormWizardProvider,
   useCreateFormWizard,
 } from './CreateFormWizardContext'
 import { SaveSecretKeyScreen } from './SaveSecretKeyScreen'
@@ -41,36 +42,32 @@ const SCREEN_ANIMATION_VARIANT = {
   },
 }
 
-/**
- * @preconditions Requires CreateFormWizardProvider parent
- */
 export const CreateFormModal = ({
   isOpen,
   onClose,
 }: CreateFormModalProps): JSX.Element => {
-  const { resetModal } = useCreateFormWizard()
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
     md: 'full',
   })
 
-  const handleCloseModal = () => {
-    resetModal()
-    onClose()
-  }
-
   return (
-    <Modal isOpen={isOpen} onClose={handleCloseModal} size={modalSize}>
+    <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
         <ModalCloseButton />
-        <ScreenContent />
+        {isOpen && (
+          <CreateFormWizardProvider>
+            <ScreenContent />
+          </CreateFormWizardProvider>
+        )}
       </ModalContent>
     </Modal>
   )
 }
 
 /**
+ * @preconditions Requires CreateFormWizardProvider parent
  * Display screen content depending on the current step (with animation).
  */
 const ScreenContent = () => {
