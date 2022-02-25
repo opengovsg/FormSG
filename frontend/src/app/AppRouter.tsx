@@ -7,12 +7,14 @@ import {
   ADMINFORM_SETTINGS_SUBROUTE,
   LOGIN_ROUTE,
   PUBLICFORM_ROUTE,
+  RESULTS_FEEDBACK_SUBROUTE,
   ROOT_ROUTE,
 } from '~constants/routes'
 
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
 import { CreatePage } from '~features/admin-form/create/CreatePage'
 import {
+  FeedbackPage,
   FormResultsLayout,
   ResponsesPage,
 } from '~features/admin-form/responses'
@@ -61,6 +63,10 @@ export const AppRouter = (): JSX.Element => {
             element={<FormResultsLayout />}
           >
             <Route index element={<ResponsesPage />} />
+            <Route
+              path={RESULTS_FEEDBACK_SUBROUTE}
+              element={<FeedbackPage />}
+            />
           </Route>
         </Route>
         <Route path="*" element={<div>404!!!</div>} />
