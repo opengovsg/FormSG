@@ -12,6 +12,15 @@ export enum CreateFormFlowStates {
   Details = 'details',
 }
 
+type CreateFormWizardInputProps = {
+  title: string
+  responseMode: FormResponseMode
+  // Email form props
+  emails: string[]
+  // Storage form props
+  storageAck?: boolean
+}
+
 type CreateFormWizardContextReturn = {
   currentStep: CreateFormFlowStates
   direction: number
@@ -30,13 +39,6 @@ type CreateFormWizardContextReturn = {
 const CreateFormWizardContext = createContext<
   CreateFormWizardContextReturn | undefined
 >(undefined)
-
-type CreateFormWizardInputProps = {
-  title: string
-  responseMode: FormResponseMode
-  // Email form
-  emails: string[]
-}
 
 const INITIAL_STEP_STATE: [CreateFormFlowStates, number] = [
   CreateFormFlowStates.Details,

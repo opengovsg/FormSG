@@ -5,9 +5,11 @@ import {
   useMemo,
   useState,
 } from 'react'
+import { useWatch } from 'react-hook-form'
 import { BiCopy, BiDownload, BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
 import {
+  Box,
   Container,
   Icon,
   ModalBody,
@@ -21,12 +23,13 @@ import dedent from 'dedent'
 import FileSaver from 'file-saver'
 
 import Button from '~components/Button'
+import Checkbox from '~components/Checkbox'
 
 import { useCreateFormWizard } from './CreateFormWizardContext'
 
 export const SaveSecretKeyScreen = (): JSX.Element => {
   const {
-    formMethods: { watch },
+    formMethods: { control, register },
     handleCreateStorageModeForm,
     isLoading,
     keypair: { secretKey },
@@ -36,7 +39,7 @@ export const SaveSecretKeyScreen = (): JSX.Element => {
 
   const { hasCopied, onCopy } = useClipboard(secretKey)
 
-  const titleInputValue = watch('title')
+  const titleInputValue = useWatch({ control, name: 'title' })
 
   const mailToHref = useMemo(() => {
     const subject = `Shared Secret Key for ${titleInputValue}`
@@ -103,7 +106,7 @@ export const SaveSecretKeyScreen = (): JSX.Element => {
           <Stack
             spacing="-1px"
             direction={{ base: 'column', md: 'row' }}
-            mb="2.5rem"
+            mb="1rem"
           >
             <SecretKeyChoice
               icon={BiDownload}
@@ -125,6 +128,17 @@ export const SaveSecretKeyScreen = (): JSX.Element => {
               onActionClick={handleCopyKey}
             />
           </Stack>
+          <Box mb="2.5rem">
+            <Checkbox
+              aria-label="Storage mode form acknowledgement"
+              {...register('storageAck', {
+                required: true,
+              })}
+            >
+              If I lose my Secret Key, I cannot activate my form and all my
+              responses will be lost
+            </Checkbox>
+          </Box>
           <Button
             isDisabled={!hasActioned}
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
@@ -157,7 +171,7 @@ const SecretKeyChoice = ({
   return (
     <Stack
       bg="white"
-      justify="flex-start"
+      justify="space-between"
       py="2rem"
       px="1.5rem"
       border="1px solid"
