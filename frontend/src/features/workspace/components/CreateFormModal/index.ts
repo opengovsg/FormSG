@@ -1,1 +1,1 @@
-export { CreateFormModal as default } from './CreateFormModal'
+export { CreateFormModalContainer as default } from './CreateFormModalContainer'
