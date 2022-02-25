@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express'
 import helmet from 'helmet'
-import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/content-security-policy'
+import { ContentSecurityPolicyOptions } from 'helmet/dist/middlewares/content-security-policy'
 
 import config from '../../config/config'
 import { sentryConfig } from '../../config/features/sentry.config'
