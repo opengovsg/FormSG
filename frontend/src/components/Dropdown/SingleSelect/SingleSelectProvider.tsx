@@ -75,6 +75,7 @@ export const SingleSelectProvider = ({
 
   const {
     toggleMenu,
+    closeMenu,
     isOpen,
     getLabelProps,
     getComboboxProps,
@@ -162,6 +163,7 @@ export const SingleSelectProvider = ({
         selectedItem,
         isItemSelected,
         toggleMenu,
+        closeMenu,
         getComboboxProps,
         getInputProps,
         getItemProps,
