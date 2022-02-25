@@ -136,6 +136,7 @@
     "prettier": "^2.5.1",
     "puppeteer": "^13.0.0",
     "react-scripts": "^4.0.3",
+    "storybook-addon-designs": "^6.2.1",
     "storybook-addon-turbo-build": "^1.0.1",
     "storybook-preset-craco": "0.0.6",
     "ts-jest": "^27.1.1"
