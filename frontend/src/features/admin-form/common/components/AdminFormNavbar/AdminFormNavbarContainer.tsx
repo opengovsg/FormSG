@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import {
+  matchPath,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router-dom'
 import { Tabs, useBreakpointValue } from '@chakra-ui/react'
 
 import {
@@ -25,7 +30,7 @@ const useAdminFormNavbar = () => {
   const navigate = useNavigate()
 
   const calcCurrentIndex = useCallback(() => {
-    const index = ADMINFORM_ROUTES.findIndex((r) => r && pathname.endsWith(r))
+    const index = ADMINFORM_ROUTES.findIndex((r) => r && pathname.includes(r))
     return index === -1 ? 0 : index
   }, [pathname])
 
