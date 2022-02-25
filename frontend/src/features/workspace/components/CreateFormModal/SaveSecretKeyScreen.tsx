@@ -1,8 +1,13 @@
-import { useCallback, useMemo, useState } from 'react'
+import {
+  MouseEvent,
+  MouseEventHandler,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react'
 import { BiCopy, BiDownload, BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
 import {
-  Box,
   Container,
   Icon,
   ModalBody,
@@ -16,7 +21,6 @@ import dedent from 'dedent'
 import FileSaver from 'file-saver'
 
 import Button from '~components/Button'
-import { MailToLink } from '~components/MailToLink'
 
 import { useCreateFormWizard } from './CreateFormWizardContext'
 
@@ -34,8 +38,9 @@ export const SaveSecretKeyScreen = (): JSX.Element => {
 
   const titleInputValue = watch('title')
 
-  const mailToBody = useMemo(() => {
-    return dedent`
+  const mailToHref = useMemo(() => {
+    const subject = `Shared Secret Key for ${titleInputValue}`
+    const body = dedent`
         Dear collaborator,
 
         I am sharing my form's secret key with you for safekeeping and backup. This is an important key that is needed to access all form responses.
@@ -47,6 +52,11 @@ export const SaveSecretKeyScreen = (): JSX.Element => {
         All you need to do is keep this email as a record, and please do not share this key with anyone else.
 
         Thank you for helping to safekeep my form!`
+
+    const href = `mailto:?subject=${encodeURIComponent(
+      subject,
+    )}&body=${encodeURIComponent(body)}`
+    return href
   }, [secretKey, titleInputValue])
 
   const handleDownloadKey = useCallback(() => {
@@ -56,6 +66,16 @@ export const SaveSecretKeyScreen = (): JSX.Element => {
     )
     setHasActioned(true)
   }, [secretKey, titleInputValue])
+
+  const handleEmailKey = useCallback(
+    (e: MouseEvent) => {
+      window.location.href = mailToHref
+
+      setHasActioned(true)
+      e.preventDefault()
+    },
+    [mailToHref],
+  )
 
   const handleCopyKey = useCallback(() => {
     onCopy()
@@ -72,28 +92,19 @@ export const SaveSecretKeyScreen = (): JSX.Element => {
       <ModalBody whiteSpace="pre-line">
         <Container maxW="42.5rem" p={0}>
           <Text textStyle="body-2" color="secondary.500" mb="2.5rem">
-            You will need your Secret Key to activate your form and view
-            responses.
+            You need this Secret Key to activate your form and view
+            responses.&nbsp;
             <Text color="danger.500" textStyle="subhead-2" as="span">
               If you lose it, all responses will be permanently lost and Form
-              will not be able to retrieve it.
+              will not be able to retrieve it.&nbsp;
             </Text>
-          </Text>
-          <Text textStyle="h4" as="h4" color="secondary.500" mb="1.5rem">
-            Use a combination of these methods to store your key safely
+            You need to at least download the key.
           </Text>
           <Stack
             spacing="-1px"
             direction={{ base: 'column', md: 'row' }}
             mb="2.5rem"
           >
-            <SecretKeyChoice
-              wordBreak="break-all"
-              icon={BiCopy}
-              actionTitle={hasCopied ? 'Copied!' : 'Copy key'}
-              description={secretKey}
-              onActionClick={handleCopyKey}
-            />
             <SecretKeyChoice
               icon={BiDownload}
               actionTitle="Download key"
@@ -102,15 +113,16 @@ export const SaveSecretKeyScreen = (): JSX.Element => {
             />
             <SecretKeyChoice
               icon={BiMailSend}
-              actionTitle={
-                <MailToLink
-                  subject={`Shared Secret Key for ${titleInputValue}`}
-                  body={mailToBody}
-                  children="Email key"
-                />
-              }
-              onActionClick={() => setHasActioned(true)}
+              actionTitle="Email key"
+              onActionClick={handleEmailKey}
               description="Email to yourself and collaborators for safekeeping."
+            />
+            <SecretKeyChoice
+              wordBreak="break-all"
+              icon={BiCopy}
+              actionTitle={hasCopied ? 'Copied!' : 'Copy key'}
+              description={secretKey}
+              onActionClick={handleCopyKey}
             />
           </Stack>
           <Button
@@ -133,7 +145,7 @@ interface SecretKeyChoiceProps extends StackProps {
   icon: IconType
   actionTitle: React.ReactNode
   description: string
-  onActionClick?: () => void
+  onActionClick?: MouseEventHandler<HTMLButtonElement>
 }
 const SecretKeyChoice = ({
   icon,
@@ -175,19 +187,12 @@ const SecretKeyChoice = ({
       {...props}
     >
       <Icon aria-hidden as={icon} color="secondary.500" fontSize="1.5rem" />
-      <Box>
-        <Button
-          m="-0.25rem"
-          variant="link"
-          textDecorationLine="underline"
-          onClick={onActionClick}
-        >
-          <Text>{actionTitle}</Text>
-        </Button>
-      </Box>
       <Text textStyle="body-2" color="secondary.400">
         {description}
       </Text>
+      <Button variant="outline" onClick={onActionClick} alignSelf="flex-start">
+        <Text>{actionTitle}</Text>
+      </Button>
     </Stack>
   )
 }
