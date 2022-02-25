@@ -8,7 +8,7 @@ import FormResultsNavbar from './components/FormResultsNavbar'
  */
 export const FormResultsLayout = (): JSX.Element => {
   return (
-    <Flex flexDir="column" height="100vh" overflow="hidden" pos="relative">
+    <Flex flexDir="column" flex={1} overflow="hidden" pos="relative">
       <FormResultsNavbar />
       <Outlet />
     </Flex>
