@@ -2,26 +2,31 @@ import { useCallback, useState } from 'react'
 import { useParams } from 'react-router'
 import { Skeleton } from '@chakra-ui/react'
 
+import { AdminStorageFormDto } from '~shared/types/form'
 import { StorageModeSubmissionMetadata } from '~shared/types/submission'
 
 import Button from '~components/Button'
 
-import { useAdminFormSettings } from '../../settings/queries'
 import { useFormResponses } from '../queries'
 import useDecryptionWorkers from '../useDecryptionWorkers'
 
-export const StorageResponsesTab = (): JSX.Element => {
-  const { data: settings } = useAdminFormSettings()
+interface StorageResponsesTabProps {
+  form: AdminStorageFormDto
+}
+
+export const StorageResponsesTab = ({
+  form,
+}: StorageResponsesTabProps): JSX.Element => {
   const { data, isLoading } = useFormResponses()
   const { formId } = useParams()
   const [secretKey, setSecretKey] = useState<string>('')
   const { downloadEncryptedResponses } = useDecryptionWorkers()
 
   const handleExportCsv = useCallback(() => {
-    console.log(formId, settings?.title)
-    if (!formId || !settings?.title) return
-    return downloadEncryptedResponses(formId, settings.title, secretKey)
-  }, [downloadEncryptedResponses, formId, secretKey, settings?.title])
+    console.log(formId, form.title)
+    if (!formId || !form.title) return
+    return downloadEncryptedResponses(formId, form.title, secretKey)
+  }, [downloadEncryptedResponses, formId, secretKey, form.title])
 
   return (
     <Skeleton isLoaded={!isLoading && !!data}>
