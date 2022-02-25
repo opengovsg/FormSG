@@ -55,7 +55,7 @@ export const CreateFieldDrawer = (): JSX.Element => {
 }
 
 const BasicFieldPanelContent = () => {
-  const { isLoading } = useAdminForm()
+  const { isSuccess } = useAdminForm()
 
   return (
     <>
@@ -66,7 +66,7 @@ const BasicFieldPanelContent = () => {
               {CREATE_PAGE_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableCreateFieldOption
                   index={index}
-                  isDisabled={isLoading}
+                  isDisabled={!isSuccess}
                   key={index}
                   fieldType={fieldType}
                 />
@@ -83,7 +83,7 @@ const BasicFieldPanelContent = () => {
               {CREATE_FIELD_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableCreateFieldOption
                   index={index}
-                  isDisabled={isLoading}
+                  isDisabled={!isSuccess}
                   key={index}
                   fieldType={fieldType}
                 />
