@@ -83,6 +83,7 @@ export const AdminFormNavbar = ({
         lg: `'left tabs right'`,
       }}
       boxShadow={{ lg: '0 1px 1px var(--chakra-colors-neutral-300)' }}
+      mb="1px"
       bg="white"
       zIndex="docked"
       flex={1}
@@ -111,7 +112,8 @@ export const AdminFormNavbar = ({
       <TabList
         ref={ref}
         onMouseDown={onMouseDown}
-        px={{ base: '0.5rem', md: '0.75rem', lg: '1rem' }}
+        pt={{ base: '0.625rem', lg: 0 }}
+        px={{ base: '1.5rem', lg: '1rem' }}
         w={{ base: '100vw', lg: 'initial' }}
         gridArea="tabs"
         borderBottom="none"

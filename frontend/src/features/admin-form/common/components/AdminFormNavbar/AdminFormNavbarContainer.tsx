@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import {
-  matchPath,
-  useLocation,
-  useNavigate,
-  useParams,
-} from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Tabs, useBreakpointValue } from '@chakra-ui/react'
 
 import {
