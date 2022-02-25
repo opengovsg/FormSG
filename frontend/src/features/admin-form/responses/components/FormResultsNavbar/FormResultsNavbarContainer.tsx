@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Tabs, useBreakpointValue } from '@chakra-ui/react'
+import { Tabs } from '@chakra-ui/react'
 
 import {
   RESULTS_FEEDBACK_SUBROUTE,
@@ -44,15 +44,9 @@ const useFormResultsNavbar = () => {
 export const FormResultsNavbarContainer = (): JSX.Element => {
   const { tabIndex, handleTabsChange } = useFormResultsNavbar()
 
-  const responsiveVariant = useBreakpointValue({
-    base: 'line-dark',
-    xs: 'line-dark',
-    lg: 'line-light',
-  })
-
   return (
     <Tabs
-      variant={responsiveVariant}
+      variant="line-light"
       isLazy
       defaultIndex={tabIndex}
       index={tabIndex}
