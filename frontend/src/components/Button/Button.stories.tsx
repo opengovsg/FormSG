@@ -7,7 +7,13 @@ import { Button, ButtonProps } from './Button'
 export default {
   title: 'Components/Button',
   component: Button,
-  parameters: { backgrounds: { default: 'light' } },
+  parameters: {
+    backgrounds: { default: 'light' },
+    design: {
+      type: 'figma',
+      url: 'https://www.figma.com/file/u00dlQLsaQfvqv6ot5ZrJZ/Form-Design-System?node-id=708%3A4061',
+    },
+  },
 } as Meta
 
 const ButtonTemplate: Story<ButtonProps> = (args) => <Button {...args} />
