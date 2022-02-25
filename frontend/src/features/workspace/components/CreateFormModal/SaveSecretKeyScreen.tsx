@@ -1,21 +1,12 @@
-import {
-  MouseEvent,
-  MouseEventHandler,
-  useCallback,
-  useMemo,
-  useState,
-} from 'react'
+import { MouseEvent, useCallback, useMemo, useState } from 'react'
 import { useWatch } from 'react-hook-form'
 import { BiCopy, BiDownload, BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
-import { IconType } from 'react-icons/lib'
 import {
   Box,
   Container,
-  Icon,
   ModalBody,
   ModalHeader,
   Stack,
-  StackProps,
   Text,
   useClipboard,
 } from '@chakra-ui/react'
@@ -26,8 +17,10 @@ import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 
 import { useCreateFormWizard } from './CreateFormWizardContext'
+import { SecretKeyChoice } from './SecretKeyChoice'
 
-export const SaveSecretKeyScreen = (): JSX.Element => {
+/** Default hook to be used in SaveSecretKeyScreen */
+const useSaveSecretKeyDefault = () => {
   const {
     formMethods: { control, register },
     handleCreateStorageModeForm,
@@ -85,6 +78,38 @@ export const SaveSecretKeyScreen = (): JSX.Element => {
     setHasActioned(true)
   }, [onCopy])
 
+  return {
+    isLoading,
+    hasActioned,
+    hasCopiedKey: hasCopied,
+    handleCopyKey,
+    handleDownloadKey,
+    handleEmailKey,
+    handleCreateStorageModeForm,
+    secretKey,
+    register,
+  }
+}
+
+interface SaveSecretKeyScreenProps {
+  useSaveSecretKey?: typeof useSaveSecretKeyDefault
+}
+
+export const SaveSecretKeyScreen = ({
+  useSaveSecretKey = useSaveSecretKeyDefault,
+}: SaveSecretKeyScreenProps): JSX.Element => {
+  const {
+    isLoading,
+    handleCopyKey,
+    handleCreateStorageModeForm,
+    handleDownloadKey,
+    handleEmailKey,
+    hasActioned,
+    hasCopiedKey,
+    secretKey,
+    register,
+  } = useSaveSecretKey()
+
   return (
     <>
       <ModalHeader color="secondary.700">
@@ -123,7 +148,7 @@ export const SaveSecretKeyScreen = (): JSX.Element => {
             <SecretKeyChoice
               wordBreak="break-all"
               icon={BiCopy}
-              actionTitle={hasCopied ? 'Copied!' : 'Copy key'}
+              actionTitle={hasCopiedKey ? 'Copied!' : 'Copy key'}
               description={secretKey}
               onActionClick={handleCopyKey}
             />
@@ -152,61 +177,5 @@ export const SaveSecretKeyScreen = (): JSX.Element => {
         </Container>
       </ModalBody>
     </>
-  )
-}
-
-interface SecretKeyChoiceProps extends StackProps {
-  icon: IconType
-  actionTitle: React.ReactNode
-  description: string
-  onActionClick?: MouseEventHandler<HTMLButtonElement>
-}
-const SecretKeyChoice = ({
-  icon,
-  actionTitle,
-  description,
-  onActionClick,
-  ...props
-}: SecretKeyChoiceProps) => {
-  return (
-    <Stack
-      bg="white"
-      justify="space-between"
-      py="2rem"
-      px="1.5rem"
-      border="1px solid"
-      borderColor="primary.300"
-      spacing="0.75rem"
-      _first={{
-        borderStartRadius: {
-          base: 'initial',
-          md: '4px',
-        },
-        borderTopRadius: {
-          base: '4px',
-          md: 'initial',
-        },
-      }}
-      _last={{
-        borderEndRadius: {
-          base: 'initial',
-          md: '4px',
-        },
-        borderBottomRadius: {
-          base: '4px',
-          md: 'initial',
-        },
-      }}
-      flex={1}
-      {...props}
-    >
-      <Icon aria-hidden as={icon} color="secondary.500" fontSize="1.5rem" />
-      <Text textStyle="body-2" color="secondary.400">
-        {description}
-      </Text>
-      <Button variant="outline" onClick={onActionClick} alignSelf="flex-start">
-        <Text>{actionTitle}</Text>
-      </Button>
-    </Stack>
   )
 }

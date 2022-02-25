@@ -1,24 +1,27 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { useCallback } from 'react'
+import { useForm } from 'react-hook-form'
 import { MemoryRouter } from 'react-router-dom'
-import { useDisclosure } from '@chakra-ui/react'
+import { Modal, ModalContent, useDisclosure } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
 import { fullScreenDecorator, LoggedInDecorator } from '~utils/storybook'
+import { ModalCloseButton } from '~components/Modal'
 
 import { CreateFormModal, CreateFormModalProps } from './CreateFormModal'
-import { CreateFormWizardProvider } from './CreateFormWizardContext'
+import {
+  CreateFormWizardInputProps,
+  CreateFormWizardProvider,
+} from './CreateFormWizardContext'
+import { SaveSecretKeyScreen } from './SaveSecretKeyScreen'
 
 export default {
   title: 'Pages/WorkspacePage/CreateFormModal',
   component: CreateFormModal,
   decorators: [
-    (storyFn) => (
-      <MemoryRouter>
-        <CreateFormWizardProvider>{storyFn()}</CreateFormWizardProvider>
-      </MemoryRouter>
-    ),
+    (storyFn) => <MemoryRouter>{storyFn()}</MemoryRouter>,
     fullScreenDecorator,
     LoggedInDecorator,
   ],
@@ -42,5 +45,32 @@ const Template: Story<CreateFormModalProps> = (args) => {
   )
 }
 export const Default = Template.bind({})
-Default.args = {}
-Default.storyName = 'CreateFormModal'
+
+export const StorageModeAckScreen = () => {
+  const { register } = useForm<CreateFormWizardInputProps>()
+  const mockHook = useCallback(() => {
+    return {
+      isLoading: false,
+      hasActioned: false,
+      hasCopiedKey: false,
+      handleCopyKey: () => console.log('copy key'),
+      handleDownloadKey: () => console.log('download key'),
+      handleEmailKey: () => console.log('email key'),
+      handleCreateStorageModeForm: () =>
+        Promise.resolve(console.log('create storage mode form')),
+      secretKey: 'mock-secret-key',
+      register,
+    }
+  }, [register])
+
+  return (
+    <Modal isOpen onClose={() => console.log('close modal')} size="full">
+      <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
+        <ModalCloseButton />
+        <CreateFormWizardProvider>
+          <SaveSecretKeyScreen useSaveSecretKey={mockHook} />
+        </CreateFormWizardProvider>
+      </ModalContent>
+    </Modal>
+  )
+}

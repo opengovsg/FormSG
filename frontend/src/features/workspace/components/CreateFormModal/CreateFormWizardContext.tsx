@@ -12,7 +12,7 @@ export enum CreateFormFlowStates {
   Details = 'details',
 }
 
-type CreateFormWizardInputProps = {
+export type CreateFormWizardInputProps = {
   title: string
   responseMode: FormResponseMode
   // Email form props
@@ -57,7 +57,6 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
 
   const formMethods = useForm<CreateFormWizardInputProps>({
     defaultValues: {
-      title: '',
       responseMode: FormResponseMode.Encrypt,
     },
   })
