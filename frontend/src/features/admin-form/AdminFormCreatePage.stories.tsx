@@ -5,6 +5,7 @@ import { Meta, Story } from '@storybook/react'
 import {
   createSingleField,
   getAdminFormResponse,
+  updateSingleField,
 } from '~/mocks/msw/handlers/admin-form'
 
 import { viewports } from '~utils/storybook'
@@ -35,7 +36,7 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [getAdminFormResponse(), createSingleField()],
+    msw: [getAdminFormResponse(), createSingleField(), updateSingleField()],
   },
 } as Meta
 

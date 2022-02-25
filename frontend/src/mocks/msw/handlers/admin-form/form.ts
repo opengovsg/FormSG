@@ -90,9 +90,7 @@ export const getAdminFormResponse = (
   )
 }
 
-export const createSingleField = (
-  delay = 0,
-): ReturnType<typeof rest['post']> => {
+export const createSingleField = (delay = 500) => {
   return rest.post<FieldCreateDto, { to: string }, FormFieldDto>(
     '/api/v3/admin/forms/:formId/fields',
     (req, res, ctx) => {
@@ -105,6 +103,19 @@ export const createSingleField = (
       )
       formFields = insertAt(formFields, newIndex, newField)
       return res(ctx.delay(delay), ctx.status(200), ctx.json(newField))
+    },
+  )
+}
+
+export const updateSingleField = (delay = 500) => {
+  return rest.put<FormFieldDto, Record<string, never>, FormFieldDto>(
+    '/api/v3/admin/forms/:formId/fields/:fieldId',
+    (req, res, ctx) => {
+      const index = formFields.findIndex(
+        (field) => field._id === req.params.fieldId,
+      )
+      formFields.splice(index, 1, req.body)
+      return res(ctx.delay(delay), ctx.status(200), ctx.json(req.body))
     },
   )
 }
