@@ -3,11 +3,12 @@ import { Box, BoxProps } from '@chakra-ui/react'
 import { HTMLMotionProps, motion } from 'framer-motion'
 import { Merge } from 'type-fest'
 
-import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
 import {
   CreateFormFlowStates,
   useCreateFormWizard,
-} from './CreateFormWizardContext'
+} from '../CreateFormWizardContext'
+
+import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
 import { SaveSecretKeyScreen } from './SaveSecretKeyScreen'
 
 const SCREEN_ANIMATION_VARIANT = {
@@ -30,7 +31,7 @@ const MotionBox: FC<MotionBoxProps> = motion(Box)
  * @preconditions Requires CreateFormWizardProvider parent
  * Display screen content depending on the current step (with animation).
  */
-export const CreateModalContent = () => {
+export const CreateFormModalContent = () => {
   const { direction, currentStep } = useCreateFormWizard()
   const [isFirstLoad, setIsFirstLoad] = useState(true)
 

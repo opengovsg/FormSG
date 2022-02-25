@@ -10,12 +10,12 @@ import { userHandlers } from '~/mocks/msw/handlers/user'
 import { fullScreenDecorator, LoggedInDecorator } from '~utils/storybook'
 import { ModalCloseButton } from '~components/Modal'
 
+import { SaveSecretKeyScreen } from './CreateFormModalContent/SaveSecretKeyScreen'
 import { CreateFormModal, CreateFormModalProps } from './CreateFormModal'
 import {
   CreateFormWizardInputProps,
   CreateFormWizardProvider,
 } from './CreateFormWizardContext'
-import { SaveSecretKeyScreen } from './SaveSecretKeyScreen'
 
 export default {
   title: 'Pages/WorkspacePage/CreateFormModal',

@@ -16,7 +16,8 @@ import FileSaver from 'file-saver'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 
-import { useCreateFormWizard } from './CreateFormWizardContext'
+import { useCreateFormWizard } from '../CreateFormWizardContext'
+
 import { SecretKeyChoice } from './SecretKeyChoice'
 
 /** Default hook to be used in SaveSecretKeyScreen */

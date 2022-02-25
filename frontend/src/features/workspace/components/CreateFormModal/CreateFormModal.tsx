@@ -7,7 +7,7 @@ import {
 
 import { ModalCloseButton } from '~components/Modal'
 
-import { CreateModalContent } from './CreateFormModalContent'
+import { CreateFormModalContent } from './CreateFormModalContent'
 import { CreateFormWizardProvider } from './CreateFormWizardContext'
 
 export type CreateFormModalProps = Pick<
@@ -31,7 +31,7 @@ export const CreateFormModal = ({
         <ModalCloseButton />
         {isOpen && (
           <CreateFormWizardProvider>
-            <CreateModalContent />
+            <CreateFormModalContent />
           </CreateFormWizardProvider>
         )}
       </ModalContent>
