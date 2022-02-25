@@ -87,3 +87,16 @@ jobs:
           aws elasticbeanstalk update-environment --application-name $APP_NAME \
             --environment-name $DEPLOY_ENV \
             --version-label $IMAGE_TAG
+
+  merge_release_to_develop:
+    if: github.ref_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Merge release -> develop
+        uses: devmasx/merge-branch@v1.4.0
+        with:
+          type: now
+          from_branch: release
+          target_branch: develop
+          github_token: ${{ github.token }}
