@@ -21,7 +21,7 @@ export const SecretKeyChoice = ({
   return (
     <Stack
       bg="white"
-      justify="space-between"
+      justify="flex-start"
       py="2rem"
       px="1.5rem"
       border="1px solid"
@@ -51,7 +51,7 @@ export const SecretKeyChoice = ({
       {...props}
     >
       <Icon aria-hidden as={icon} color="secondary.500" fontSize="1.5rem" />
-      <Text textStyle="body-2" color="secondary.400">
+      <Text textStyle="body-2" color="secondary.400" flex={1}>
         {description}
       </Text>
       <Button variant="outline" onClick={onActionClick} alignSelf="flex-start">
