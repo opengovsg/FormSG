@@ -30,6 +30,8 @@ const useWorkspaceForms = () => {
   const [sortedForms, setSortedForms] = useState(dashboardForms)
   const [isManipulating, setIsManipulating] = useState(false)
 
+  const topRef = useRef<HTMLDivElement>(null)
+
   const currentPage = Number(
     searchParams.get('page') ?? PAGE_DEFAULTS.pageNumber,
   )
@@ -64,6 +66,11 @@ const useWorkspaceForms = () => {
     [pageSize, sortedForms],
   )
 
+  useLayoutEffect(() => {
+    // Scroll to top on workspace list page on change
+    topRef.current?.scrollIntoView()
+  }, [currentPage])
+
   const paginatedData = useMemo(() => {
     if (currentPage < 1 || currentPage > chunkedData.length) {
       return []
@@ -78,6 +85,7 @@ const useWorkspaceForms = () => {
     paginatedData,
     setPageNumber,
     setSortOrder,
+    topRef,
   }
 }
 
@@ -88,14 +96,8 @@ export const WorkspacePage = (): JSX.Element => {
     paginatedData,
     currentPage,
     setPageNumber,
+    topRef,
   } = useWorkspaceForms()
-
-  useLayoutEffect(() => {
-    // Scroll to top on workspace list page on change
-    topRef.current?.scrollIntoView()
-  }, [currentPage])
-
-  const topRef = useRef<HTMLDivElement>(null)
 
   return (
     <Grid
