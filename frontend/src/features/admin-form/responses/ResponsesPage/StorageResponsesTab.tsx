@@ -6,10 +6,9 @@ import { StorageModeSubmissionMetadata } from '~shared/types/submission'
 
 import Button from '~components/Button'
 
-import { useAdminFormSettings } from '../settings/queries'
-
-import { useFormResponses } from './queries'
-import useDecryptionWorkers from './useDecryptionWorkers'
+import { useAdminFormSettings } from '../../settings/queries'
+import { useFormResponses } from '../queries'
+import useDecryptionWorkers from '../useDecryptionWorkers'
 
 export const StorageResponsesTab = (): JSX.Element => {
   const { data: settings } = useAdminFormSettings()

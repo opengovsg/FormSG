@@ -12,7 +12,10 @@ import {
 
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
 import { CreatePage } from '~features/admin-form/create/CreatePage'
-import ResultsPage from '~features/admin-form/responses/ResultsPage'
+import {
+  FormResultsLayout,
+  ResponsesPage,
+} from '~features/admin-form/responses'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
 
 import { PrivateElement } from './PrivateElement'
@@ -53,7 +56,12 @@ export const AppRouter = (): JSX.Element => {
             path={ADMINFORM_SETTINGS_SUBROUTE}
             element={<SettingsPage />}
           />
-          <Route path={ADMINFORM_RESULTS_SUBROUTE} element={<ResultsPage />} />
+          <Route
+            path={ADMINFORM_RESULTS_SUBROUTE}
+            element={<FormResultsLayout />}
+          >
+            <Route index element={<ResponsesPage />} />
+          </Route>
         </Route>
         <Route path="*" element={<div>404!!!</div>} />
       </Routes>
