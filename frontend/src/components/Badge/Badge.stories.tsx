@@ -17,11 +17,23 @@ Solid.args = {
   children: 'Badge name',
   variant: 'solid',
 }
+Solid.parameters = {
+  design: {
+    type: 'figma',
+    url: 'https://www.figma.com/file/u00dlQLsaQfvqv6ot5ZrJZ/Form-Design-System?node-id=802%3A26752',
+  },
+}
 
 export const Subtle = Template.bind({})
 Subtle.args = {
   children: 'Badge name',
   variant: 'subtle',
+}
+Subtle.parameters = {
+  design: {
+    type: 'figma',
+    url: 'https://www.figma.com/file/u00dlQLsaQfvqv6ot5ZrJZ/Form-Design-System?node-id=802%3A26750',
+  },
 }
 
 const TemplateGroup: Story<BadgeProps> = (args) => (

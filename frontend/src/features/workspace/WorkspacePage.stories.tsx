@@ -72,6 +72,13 @@ export default {
 
 const Template: Story = () => <WorkspacePage />
 export const Desktop = Template.bind({})
+Desktop.parameters = {
+  design: {
+    type: 'figma',
+    url: 'https://www.figma.com/file/9oE4ECjdeZQ1RBpwZVtnB3/Form-Design-Master?node-id=4002%3A70791',
+  },
+}
+
 export const Mobile = Template.bind({})
 Mobile.parameters = {
   ...getMobileViewParameters(),
