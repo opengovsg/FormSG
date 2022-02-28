@@ -1606,6 +1606,167 @@ describe('admin-form.form.routes', () => {
     })
   })
 
+  describe('POST /:formId/fields', () => {
+    it('should return 200 with created form field with positional argument', async () => {
+      // Arrange
+      const fieldToInsert = omit(generateDefaultField(BasicField.Date), [
+        '_id',
+        'globalId',
+        'getQuestion',
+      ])
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [
+          generateDefaultField(BasicField.HomeNo),
+          generateDefaultField(BasicField.Rating),
+        ],
+      })) as IPopulatedForm
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${formToUpdate._id}/fields`)
+        .send(fieldToInsert)
+        .query({ to: 0 })
+
+      // Assert
+      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      expect(formToCheck?.form_fields).toMatchObject([
+        // Inserted field should be first in field array.
+        fieldToInsert,
+        ...formToUpdate.toObject().form_fields,
+      ])
+      expect(response.status).toEqual(200)
+      expect(response.body).toMatchObject(fieldToInsert)
+    })
+
+    it('should return 200 with created form field with positive out of bounds positional argument', async () => {
+      // Arrange
+      const fieldToInsert = omit(generateDefaultField(BasicField.Date), [
+        '_id',
+        'globalId',
+        'getQuestion',
+      ])
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [
+          generateDefaultField(BasicField.HomeNo),
+          generateDefaultField(BasicField.Rating),
+        ],
+      })) as IPopulatedForm
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${formToUpdate._id}/fields`)
+        .send(fieldToInsert)
+        // Out of bounds, should insert at last index.
+        .query({ to: 1000 })
+
+      // Assert
+      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      expect(formToCheck?.form_fields).toMatchObject([
+        ...formToUpdate.toObject().form_fields,
+        // Inserted field should be last in field array due to out of bounds positional argument.
+        fieldToInsert,
+      ])
+      expect(response.status).toEqual(200)
+      expect(response.body).toMatchObject(fieldToInsert)
+    })
+
+    it('should return 200 with created form field (without pos arg)', async () => {
+      // Arrange
+      const fieldToInsert = omit(generateDefaultField(BasicField.ShortText), [
+        '_id',
+        'globalId',
+        'getQuestion',
+      ])
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [
+          generateDefaultField(BasicField.HomeNo),
+          generateDefaultField(BasicField.Rating),
+        ],
+      })) as IPopulatedForm
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${formToUpdate._id}/fields`)
+        // No positional argument
+        .send(fieldToInsert)
+
+      // Assert
+      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      expect(formToCheck?.form_fields).toMatchObject([
+        ...formToUpdate.toObject().form_fields,
+        // Inserted field should be last in field array.
+        fieldToInsert,
+      ])
+      expect(response.status).toEqual(200)
+      expect(response.body).toMatchObject(fieldToInsert)
+    })
+
+    it('should return 400 with negative positional argument', async () => {
+      // Arrange
+      const fieldToNotInsert = omit(generateDefaultField(BasicField.Date), [
+        '_id',
+        'globalId',
+        'getQuestion',
+      ])
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [
+          generateDefaultField(BasicField.HomeNo),
+          generateDefaultField(BasicField.Rating),
+        ],
+      })) as IPopulatedForm
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${formToUpdate._id}/fields`)
+        .send(fieldToNotInsert)
+        // Negative out of bounds, should insert at first index
+        .query({ to: -1 })
+
+      // Assert
+      // Should have validation error
+      expect(response.status).toEqual(400)
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Date)],
+      })) as IPopulatedForm
+
+      const fieldToNotInsert = omit(generateDefaultField(BasicField.Date), [
+        '_id',
+        'globalId',
+        'getQuestion',
+      ])
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${formToUpdate._id}/fields`)
+        .send(fieldToNotInsert)
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+  })
+
   describe('POST /:formId/fields/:fieldId/duplicate', () => {
     it('should return 200 with updated form with duplicated field', async () => {
       // Arrange

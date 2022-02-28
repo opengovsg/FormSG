@@ -1714,9 +1714,11 @@ export const handleUpdateFormField = [
 export const _handleCreateFormField: ControllerHandler<
   { formId: string },
   FormFieldDto | ErrorDto,
-  FieldCreateDto
+  FieldCreateDto,
+  { to?: number }
 > = (req, res) => {
   const { formId } = req.params
+  const { to } = req.query
   const formFieldToCreate = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
@@ -1737,7 +1739,7 @@ export const _handleCreateFormField: ControllerHandler<
       )
       // Step 4: User has permissions, proceed to create form field with provided body.
       .andThen((form) =>
-        AdminFormService.createFormField(form, formFieldToCreate),
+        AdminFormService.createFormField(form, formFieldToCreate, to),
       )
       .map((createdFormField) =>
         res.status(StatusCodes.OK).json(createdFormField as FormFieldDto),
@@ -1936,6 +1938,10 @@ export const handleCreateFormField = [
       // Allow other field related key-values to be provided and let the model
       // layer handle the validation.
     }).unknown(true),
+    [Segments.QUERY]: {
+      // Optional index to insert the field at.
+      to: Joi.number().min(0),
+    },
   }),
   _handleCreateFormField,
 ]
