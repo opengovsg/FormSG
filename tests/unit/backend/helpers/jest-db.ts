@@ -27,7 +27,8 @@ import MemoryDatabaseServer from 'tests/database'
  * Connect to the in-memory database
  */
 const connect = async (): Promise<typeof mongoose> => {
-  const dbUrl = await MemoryDatabaseServer.getConnectionString()
+  await MemoryDatabaseServer.start()
+  const dbUrl = MemoryDatabaseServer.getConnectionString()
 
   const conn = await mongoose.connect(dbUrl, {
     useNewUrlParser: true,
