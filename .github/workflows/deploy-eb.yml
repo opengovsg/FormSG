@@ -72,7 +72,7 @@ jobs:
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
           APP_NAME: ${{ secrets.APP_NAME }}
         run: |
-          TRUNCATED_DESC=$(echo "${{github.event.head_commit.message}}" | cut -b1-180)
+          TRUNCATED_DESC=$(echo "${{github.event.head_commit.message}}" | head -c 180)
           aws elasticbeanstalk create-application-version --application-name $APP_NAME \
           --version-label $IMAGE_TAG \
           --source-bundle S3Bucket=$BUCKET_NAME,S3Key=$IMAGE_TAG.zip \
