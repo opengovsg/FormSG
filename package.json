@@ -102,7 +102,7 @@
     "csv-string": "^4.1.0",
     "date-fns": "^2.28.0",
     "dedent-js": "~1.0.1",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.0.0",
     "ejs": "^3.1.6",
     "express": "^4.17.3",
     "express-rate-limit": "^5.5.1",
