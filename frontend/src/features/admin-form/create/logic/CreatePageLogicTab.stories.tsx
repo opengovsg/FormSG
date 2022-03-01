@@ -12,7 +12,6 @@ import { getAdminFormResponse } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter, viewports } from '~utils/storybook'
 
-import { BuilderLogicProvider } from './BuilderLogicContext'
 import { CreatePageLogicTab } from './CreatePageLogicTab'
 
 const buildMswRoutes = (overrides?: Partial<AdminFormDto>, delay = 0) => [
@@ -22,10 +21,7 @@ const buildMswRoutes = (overrides?: Partial<AdminFormDto>, delay = 0) => [
 export default {
   title: 'Pages/AdminFormPage/Create/LogicTab',
   component: CreatePageLogicTab,
-  decorators: [
-    (storyFn) => <BuilderLogicProvider>{storyFn()}</BuilderLogicProvider>,
-    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
-  ],
+  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
   parameters: {
     layout: 'fullscreen',
     // Required so skeleton "animation" does not hide content.

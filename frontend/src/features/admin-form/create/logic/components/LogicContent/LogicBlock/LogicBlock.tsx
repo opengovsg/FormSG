@@ -3,7 +3,7 @@ import { Box, Divider, Grid, Stack, Text, Wrap } from '@chakra-ui/react'
 
 import { LogicDto } from '~shared/types/form'
 
-import { useBuilderLogic } from '../../../BuilderLogicContext'
+import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
 import { isShowFieldsLogic } from '../../../utils'
 
 import { FieldLogicBadge } from './FieldLogicBadge'
@@ -13,8 +13,10 @@ interface LogicBlockProps {
   logic: LogicDto
 }
 
-export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element => {
-  const { mapIdToField } = useBuilderLogic()
+export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element | null => {
+  const { mapIdToField } = useAdminFormLogic()
+
+  if (!mapIdToField) return null
 
   return (
     <Box

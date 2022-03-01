@@ -1,13 +1,27 @@
+import { useCallback } from 'react'
 import { Flex, Icon, Stack, Text } from '@chakra-ui/react'
 
-import { useBuilderLogic } from '../../BuilderLogicContext'
+import { useAdminLogicStore } from '../../adminLogicStore'
 import { ALLOWED_FIELDS_META } from '../../constants'
+import { useAdminFormLogic } from '../../hooks/useAdminFormLogic'
+import { AdminEditLogicState } from '../../types'
 
 import { LogicBlock } from './LogicBlock'
 import { NewLogicBlock } from './NewLogicBlock'
 
 export const LogicContent = (): JSX.Element => {
-  const { hasPendingLogic, formLogics } = useBuilderLogic()
+  const isCreatingState = useAdminLogicStore(
+    useCallback(
+      (state) =>
+        state.createOrEditData?.state === AdminEditLogicState.CreatingLogic,
+      [],
+    ),
+  )
+  const { formLogics, isLoading } = useAdminFormLogic()
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
   return (
     <Stack color="secondary.500" spacing="1rem">
@@ -44,7 +58,7 @@ export const LogicContent = (): JSX.Element => {
       {formLogics?.map((logic) => (
         <LogicBlock key={logic._id} logic={logic} />
       ))}
-      {hasPendingLogic ? <NewLogicBlock /> : null}
+      {isCreatingState ? <NewLogicBlock /> : null}
     </Stack>
   )
 }

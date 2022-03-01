@@ -1,16 +1,19 @@
+import { useCallback } from 'react'
 import { BiPlus } from 'react-icons/bi'
 import { Divider, Flex, Grid, Icon, Stack, Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 import Link from '~components/Link'
 
-import { useBuilderLogic } from '../BuilderLogicContext'
+import { useAdminLogicStore } from '../adminLogicStore'
 import { ALLOWED_FIELDS_META } from '../constants'
 
 import { LogicSvgr } from './LogicSvgr'
 
 export const EmptyLogic = (): JSX.Element => {
-  const { handleSetHasPendingLogic } = useBuilderLogic()
+  const setToCreating = useAdminLogicStore(
+    useCallback((state) => state.setToCreating, []),
+  )
 
   return (
     <Flex
@@ -35,7 +38,7 @@ export const EmptyLogic = (): JSX.Element => {
       <Button
         my="2.5rem"
         leftIcon={<BiPlus fontSize="1.5rem" />}
-        onClick={() => handleSetHasPendingLogic(true)}
+        onClick={setToCreating}
       >
         Add logic
       </Button>

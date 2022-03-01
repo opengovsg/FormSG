@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useCallback, useLayoutEffect, useRef } from 'react'
 import { BiPlus, BiTrash } from 'react-icons/bi'
 import {
   Box,
@@ -14,10 +14,12 @@ import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
-import { useBuilderLogic } from '../../../BuilderLogicContext'
+import { useAdminLogicStore } from '../../../adminLogicStore'
 
 export const NewLogicBlock = () => {
-  const { handleSetHasPendingLogic } = useBuilderLogic()
+  const setToInactive = useAdminLogicStore(
+    useCallback((state) => state.setToInactive, []),
+  )
 
   const ref = useRef<HTMLDivElement | null>(null)
 
@@ -102,7 +104,7 @@ export const NewLogicBlock = () => {
             colorScheme="danger"
             aria-label="Delete logic"
             icon={<BiTrash />}
-            onClick={() => handleSetHasPendingLogic(false)}
+            onClick={setToInactive}
           />
           <Button>Save changes</Button>
         </ButtonGroup>

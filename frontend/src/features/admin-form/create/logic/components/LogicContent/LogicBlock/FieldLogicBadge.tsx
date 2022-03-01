@@ -5,7 +5,7 @@ import Tooltip from '~components/Tooltip'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
-import { FormFieldWithQuestionNumber } from '../../../BuilderLogicContext'
+import { FormFieldWithQuestionNumber } from '../../../types'
 
 import { LogicBadge } from './LogicBadge'
 
