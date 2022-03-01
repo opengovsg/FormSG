@@ -1,7 +1,10 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
+import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
+
+import { PublicFormViewDto } from '~shared/types/form'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
@@ -29,9 +32,28 @@ export const PublicFormProvider = ({
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
   const { data, error, ...rest } = usePublicFormView(formId)
+
+  const [form, setForm] = useState<PublicFormViewDto>()
+
   const { createTransactionMutation } = useTransactionMutations(formId)
   const toast = useToast()
-  const toastIdRef = useRef<string | number>()
+  const vfnToastIdRef = useRef<string | number>()
+  const desyncToastIdRef = useRef<string | number>()
+
+  useEffect(() => {
+    if (data) {
+      if (!form) {
+        setForm(data)
+      } else if (!desyncToastIdRef.current && !isEqual(data, form)) {
+        desyncToastIdRef.current = toast({
+          status: 'warning',
+          description:
+            'Form may have been changed and submission may fail. Refresh for the latest version of the form.',
+          duration: null,
+        })
+      }
+    }
+  }, [data, form, toast])
 
   const getTransactionId = useCallback(async () => {
     if (!vfnTransaction || isPast(new Date(vfnTransaction.expireAt))) {
@@ -58,15 +80,15 @@ export const PublicFormProvider = ({
   }, [vfnTransaction])
 
   const generateVfnExpiryToast = useCallback(() => {
-    if (toastIdRef.current) {
-      toast.close(toastIdRef.current)
+    if (vfnToastIdRef.current) {
+      toast.close(vfnToastIdRef.current)
     }
-    const numVerifiable = data?.form.form_fields.filter((ff) =>
+    const numVerifiable = form?.form.form_fields.filter((ff) =>
       get(ff, 'isVerifiable'),
     ).length
 
     if (numVerifiable) {
-      toastIdRef.current = toast({
+      vfnToastIdRef.current = toast({
         duration: null,
         status: 'warning',
         isClosable: true,
@@ -77,7 +99,7 @@ export const PublicFormProvider = ({
         ]} field[|s] again.`,
       })
     }
-  }, [data?.form.form_fields, toast])
+  }, [form?.form.form_fields, toast])
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
@@ -86,13 +108,10 @@ export const PublicFormProvider = ({
       value={{
         miniHeaderRef,
         formId,
-        form: data?.form,
-        isIntranetUser: data?.isIntranetUser,
-        myInfoError: data?.myInfoError,
-        spcpSession: data?.spcpSession,
         error,
         getTransactionId,
         expiryInMs,
+        ...form,
         ...rest,
       }}
     >
