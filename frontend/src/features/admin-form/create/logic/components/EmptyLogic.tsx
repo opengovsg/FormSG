@@ -49,6 +49,7 @@ export const EmptyLogic = (): JSX.Element => {
         <Flex>
           <Grid
             columnGap={{ base: '1rem', md: '3.5rem' }}
+            rowGap="1rem"
             templateColumns={{
               base: 'repeat(2, minmax(20%, min-content))',
               md: 'repeat(3, minmax(0, min-content))',
