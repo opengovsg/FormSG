@@ -61,6 +61,8 @@ Run the following shell command to install relevant npm packages.
 npm install
 ```
 
+If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
+
 ### Running Locally
 
 Run the following shell command to build the Docker image from scratch. This will usually take 10 or so minutes.
