@@ -23,17 +23,6 @@ export const handleSns: ControllerHandler<
   never,
   ISnsNotification
 > = async (req, res) => {
-  if (req.get('x-amz-sns-message-type') === 'SubscriptionConfirmation') {
-    logger.info({
-      meta: {
-        action: 'handleSns',
-        body: req.body,
-      },
-      message: 'Handling SNS topic confirmation notification',
-    })
-    return res.sendStatus(StatusCodes.OK)
-  }
-
   const notificationResult = await BounceService.validateSnsRequest(
     req.body,
   ).andThen(() => BounceService.safeParseNotification(req.body.Message))
