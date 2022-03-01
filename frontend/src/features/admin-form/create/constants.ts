@@ -78,7 +78,7 @@ export const BASICFIELD_TO_DRAWER_META: {
   },
 
   [BasicField.HomeNo]: {
-    label: 'Home Number',
+    label: 'Home number',
     icon: BiPhone,
   },
 
