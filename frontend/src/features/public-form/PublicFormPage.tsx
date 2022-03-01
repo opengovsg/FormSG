@@ -30,3 +30,5 @@ export const PublicFormPage = (): JSX.Element => {
     </PublicFormProvider>
   )
 }
+
+export default PublicFormPage

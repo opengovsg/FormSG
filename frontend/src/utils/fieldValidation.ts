@@ -3,15 +3,22 @@
  * to the field schema.
  */
 import { RegisterOptions } from 'react-hook-form'
+import { isDate, parseISO } from 'date-fns'
 import simplur from 'simplur'
 import validator from 'validator'
 
 import {
   AttachmentFieldBase,
   CheckboxFieldBase,
+  DateFieldBase,
+  DateSelectedValidation,
+  DecimalFieldBase,
+  DropdownFieldBase,
   EmailFieldBase,
   FieldBase,
   HomenoFieldBase,
+  LongTextFieldBase,
+  MobileFieldBase,
   NricFieldBase,
   NumberFieldBase,
   NumberSelectedValidation,
@@ -22,14 +29,21 @@ import {
   UenFieldBase,
 } from '~shared/types/field'
 import { isNricValid } from '~shared/utils/nric-validation'
-import { isHomePhoneNumber } from '~shared/utils/phone-num-validation'
+import {
+  isHomePhoneNumber,
+  isMobilePhoneNumber,
+} from '~shared/utils/phone-num-validation'
 import { isUenValid } from '~shared/utils/uen-validation'
 
 import {
+  INVALID_DROPDOWN_OPTION_ERROR,
   INVALID_EMAIL_DOMAIN_ERROR,
   INVALID_EMAIL_ERROR,
   REQUIRED_ERROR,
 } from '~constants/validation'
+
+import { isDateAfterToday, isDateBeforeToday, isDateOutOfRange } from './date'
+import { formatNumberToLocaleString } from './stringFormat'
 
 type OmitUnusedProps<T extends FieldBase> = Omit<
   T,
@@ -68,6 +82,23 @@ export const createBaseValidationRules = (
   }
 }
 
+export const createDropdownValidationRules: ValidationRuleFn<
+  DropdownFieldBase
+> = (schema): RegisterOptions => {
+  // TODO(#3360): Handle MyInfo dropdown validation
+  return {
+    ...createBaseValidationRules(schema),
+    validate: {
+      validOptions: (value: string) => {
+        if (!value) return
+        return (
+          schema.fieldOptions.includes(value) || INVALID_DROPDOWN_OPTION_ERROR
+        )
+      },
+    },
+  }
+}
+
 export const createRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (
   schema,
 ): RegisterOptions => {
@@ -92,6 +123,18 @@ export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
     validate: (val?: string) => {
       if (!val) return true
       return isHomePhoneNumber(val) || 'Please enter a valid landline number'
+    },
+  }
+}
+
+export const createMobileValidationRules: ValidationRuleFn<MobileFieldBase> = (
+  schema,
+) => {
+  return {
+    ...createBaseValidationRules(schema),
+    validate: (val?: string) => {
+      if (!val) return true
+      return isMobilePhoneNumber(val) || 'Please enter a valid mobile number'
     },
   }
 }
@@ -129,8 +172,54 @@ export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
   }
 }
 
-export const createShortTextValidationRules: ValidationRuleFn<
-  ShortTextFieldBase
+export const createDecimalValidationRules: ValidationRuleFn<
+  DecimalFieldBase
+> = (schema) => {
+  return {
+    ...createBaseValidationRules(schema),
+    validate: (val: string) => {
+      const {
+        ValidationOptions: { customMax, customMin },
+        validateByValue,
+      } = schema
+      if (!val) return true
+
+      const numVal = Number(val)
+      if (isNaN(numVal)) {
+        return 'Please enter a valid decimal'
+      }
+
+      if (!validateByValue) return true
+
+      if (
+        customMin &&
+        customMax &&
+        (numVal < customMin || numVal > customMax)
+      ) {
+        return `Please enter a decimal between ${formatNumberToLocaleString(
+          customMin,
+        )} and ${formatNumberToLocaleString(customMax)} (inclusive)`
+      }
+
+      if (customMin && numVal < customMin) {
+        return `Please enter a decimal greater than or equal to ${formatNumberToLocaleString(
+          customMin,
+        )}`
+      }
+
+      if (customMax && numVal > customMax) {
+        return `Please enter a decimal less than or equal to ${formatNumberToLocaleString(
+          customMax,
+        )}`
+      }
+
+      return true
+    },
+  }
+}
+
+export const createTextValidationRules: ValidationRuleFn<
+  ShortTextFieldBase | LongTextFieldBase
 > = (schema) => {
   const { selectedValidation, customVal } = schema.ValidationOptions
   return {
@@ -188,7 +277,88 @@ export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
 export const createCheckboxValidationRules: ValidationRuleFn<
   CheckboxFieldBase
 > = (schema) => {
-  return createBaseValidationRules(schema)
+  return {
+    ...createBaseValidationRules(schema),
+    validate: (val?: string[]) => {
+      const {
+        ValidationOptions: { customMin, customMax },
+        validateByValue,
+      } = schema
+      if (!val || !validateByValue) return true
+
+      if (
+        customMin &&
+        customMax &&
+        customMin === customMax &&
+        val.length !== customMin
+      ) {
+        return simplur`Please select exactly ${customMin} option[|s] (${val.length}/${customMin})`
+      }
+
+      if (customMin && val.length < customMin) {
+        return simplur`Please select at least ${customMin} option[|s] (${val.length}/${customMin})`
+      }
+
+      if (customMax && val.length > customMax) {
+        return simplur`Please select at most ${customMax} option[|s] (${val.length}/${customMax})`
+      }
+
+      return true
+    },
+  }
+}
+
+export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
+  schema,
+) => {
+  return {
+    ...createBaseValidationRules(schema),
+    validate: {
+      validDate: (val) =>
+        !val || isDate(parseISO(val)) || 'Please enter a valid date',
+      noFuture: (val) => {
+        if (
+          !val ||
+          schema.dateValidation.selectedDateValidation !==
+            DateSelectedValidation.NoFuture
+        ) {
+          return true
+        }
+        return (
+          !isDateAfterToday(parseISO(val)) ||
+          'Only dates today or before are allowed'
+        )
+      },
+      noPast: (val) => {
+        if (
+          !val ||
+          schema.dateValidation.selectedDateValidation !==
+            DateSelectedValidation.NoPast
+        ) {
+          return true
+        }
+        return (
+          !isDateBeforeToday(parseISO(val)) ||
+          'Only dates today or after are allowed'
+        )
+      },
+      range: (val) => {
+        if (
+          !val ||
+          schema.dateValidation.selectedDateValidation !==
+            DateSelectedValidation.Custom
+        ) {
+          return true
+        }
+
+        const { customMinDate, customMaxDate } = schema.dateValidation ?? {}
+        return (
+          !isDateOutOfRange(parseISO(val), customMinDate, customMaxDate) ||
+          'Selected date is not within the allowed date range'
+        )
+      },
+    },
+  }
 }
 
 export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (

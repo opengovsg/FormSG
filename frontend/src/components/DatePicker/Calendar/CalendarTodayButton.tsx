@@ -10,10 +10,10 @@ export const CalendarTodayButton = (): JSX.Element => {
   return (
     <Box sx={styles.todayLinkContainer}>
       <Button
+        aria-label="Focus on today's date"
         variant="link"
         type="button"
         onClick={handleTodayClick}
-        tabIndex={0}
       >
         Today
       </Button>

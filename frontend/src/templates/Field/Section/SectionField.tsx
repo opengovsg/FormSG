@@ -1,8 +1,5 @@
-import { useMemo } from 'react'
 import { Waypoint } from 'react-waypoint'
-import { Box, Divider, forwardRef, Text } from '@chakra-ui/react'
-
-import { FormColorTheme } from '~shared/types/form'
+import { Box, forwardRef, Text } from '@chakra-ui/react'
 
 import { SectionFieldContainerProps } from './SectionFieldContainer'
 
@@ -14,36 +11,27 @@ export interface SectionFieldProps extends SectionFieldContainerProps {
   handleSectionEnter?: () => void
 }
 
-const SectionDivider = ({ color }: { color?: string }) => (
-  <Divider
-    borderBottomWidth="1.5rem"
-    borderColor={color}
-    mx="-2.5rem"
-    my="2.5rem"
-    w="initial"
-    opacity={1}
-  />
-)
-
-// Exported for testing.
+// Used by SectionFieldContainer
 export const SectionField = forwardRef<SectionFieldProps, 'div'>(
-  ({ schema, colorTheme, handleSectionEnter }, ref) => {
-    const dividerColor = useMemo(() => {
-      switch (colorTheme) {
-        case FormColorTheme.Blue:
-          return 'secondary.100'
-        default:
-          return `theme-${colorTheme}.100`
-      }
-    }, [colorTheme])
-
+  ({ schema, handleSectionEnter }, ref) => {
     return (
-      <Box>
-        <SectionDivider color={dividerColor} />
-        <BaseSectionField schema={schema} ref={ref} />
+      <Box
+        _notFirst={{
+          mt: '3.75rem',
+        }}
+      >
+        {/* id given so app can scrolled to this section */}
+        <Box id={schema._id} ref={ref}>
+          <Text textStyle="h2" color="primary.500">
+            {schema.title}
+          </Text>
+          <Text textStyle="body-1" color="secondary.700" mt="1rem">
+            {schema.description}
+          </Text>
+        </Box>
         <Waypoint
-          topOffset="0"
-          bottomOffset="20%"
+          topOffset="80px"
+          bottomOffset="70%"
           onEnter={handleSectionEnter}
         />
       </Box>

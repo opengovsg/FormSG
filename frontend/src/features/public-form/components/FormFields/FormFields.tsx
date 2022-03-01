@@ -1,10 +1,13 @@
+import { useMemo } from 'react'
 import { FieldValues, FormProvider, useForm } from 'react-hook-form'
 import { Stack } from '@chakra-ui/react'
+import { times } from 'lodash'
 
-import { FormFieldDto } from '~shared/types/field'
+import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme } from '~shared/types/form'
 
 import Button from '~components/Button'
+import { TableFieldSchema } from '~templates/Field'
 
 import { FormField } from './FormField'
 
@@ -19,8 +22,33 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
+  // TODO: Cleanup messy code
   // TODO: Inject default values if field is MyInfo, or prefilled.
-  const formMethods = useForm()
+  const defaultFormValues = useMemo(() => {
+    return formFields.reduce<FieldValues>((acc, field) => {
+      switch (field.fieldType) {
+        // Required so table column fields will render due to useFieldArray usage.
+        // See https://react-hook-form.com/api/usefieldarray
+        case BasicField.Table:
+          acc[field._id] = times(field.minimumRows, () =>
+            (field as TableFieldSchema).columns.reduce<FieldValues>(
+              (acc, c) => {
+                acc[c._id] = ''
+                return acc
+              },
+              {},
+            ),
+          )
+      }
+
+      return acc
+    }, {})
+  }, [formFields])
+
+  const formMethods = useForm({
+    defaultValues: defaultFormValues,
+    mode: 'onTouched',
+  })
 
   return (
     <FormProvider {...formMethods}>

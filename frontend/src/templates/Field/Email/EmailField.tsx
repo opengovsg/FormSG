@@ -31,6 +31,7 @@ export const EmailField = ({
     <FieldContainer schema={schema} questionNumber={questionNumber}>
       <Input
         aria-label={schema.title}
+        autoComplete="email"
         {...register(schema._id, validationRules)}
       />
     </FieldContainer>

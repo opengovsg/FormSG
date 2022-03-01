@@ -6,10 +6,12 @@ import {
   useRef,
   useState,
 } from 'react'
+import FocusLock from 'react-focus-lock'
 import {
   Flex,
   forwardRef,
   Popover,
+  PopoverAnchor,
   PopoverBody,
   PopoverCloseButton,
   PopoverContent,
@@ -160,59 +162,73 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
       return value[1] ?? ''
     }, [value])
 
+    const calendarButtonAria = useMemo(() => {
+      let ariaLabel = 'Choose date. '
+      if (value.length === 1) {
+        ariaLabel += `Selected date is ${new Date(value[0]).toDateString()}.`
+      } else if (value.length === 2) {
+        ariaLabel += `Selected date range is ${new Date(
+          value[0],
+        ).toDateString()} to ${new Date(value[1]).toDateString()}.`
+      }
+      return ariaLabel
+    }, [value])
+
     return (
       <Wrap shouldWrapChildren spacing="0.25rem">
-        <Wrap shouldWrapChildren spacing="0.5rem" align="center">
-          <Input
-            aria-label="Start date"
-            id={`${props.name}-start-date`}
-            onKeyDown={handlePreventOpenNativeCalendar}
-            type="date"
-            w="fit-content"
-            sx={{
-              // Chrome displays a default calendar icon, which we want to hide
-              // so all browsers display our icon consistently.
-              '::-webkit-calendar-picker-indicator': {
-                display: 'none',
-              },
-            }}
-            onChange={handleStartDateChange}
-            value={startDateRenderedValue}
-            ref={ref}
-            {...props}
-          />
-          <Text textStyle="body-1" color="secondary.400" px="0.5rem">
-            to
-          </Text>
-          <Input
-            aria-label="End date"
-            id={`${props.name}-end-date`}
-            onKeyDown={handlePreventOpenNativeCalendar}
-            type="date"
-            w="fit-content"
-            sx={{
-              // Chrome displays a default calendar icon, which we want to hide
-              // so all browsers display our icon consistently.
-              '::-webkit-calendar-picker-indicator': {
-                display: 'none',
-              },
-            }}
-            isDisabled={!startDateRenderedValue}
-            onChange={handleEndDateChange}
-            value={endDateRenderedValue}
-            {...props}
-          />
-        </Wrap>
         <Popover
-          placement="bottom-end"
+          placement="bottom-start"
           initialFocusRef={initialFocusRef}
           isLazy
         >
           {({ isOpen }) => (
             <>
+              <PopoverAnchor>
+                <Wrap shouldWrapChildren spacing="0.5rem" align="center">
+                  <Input
+                    aria-label="Start date"
+                    id={`${props.name}-start-date`}
+                    onKeyDown={handlePreventOpenNativeCalendar}
+                    type="date"
+                    w="fit-content"
+                    sx={{
+                      // Chrome displays a default calendar icon, which we want to hide
+                      // so all browsers display our icon consistently.
+                      '::-webkit-calendar-picker-indicator': {
+                        display: 'none',
+                      },
+                    }}
+                    onChange={handleStartDateChange}
+                    value={startDateRenderedValue}
+                    ref={ref}
+                    {...props}
+                  />
+                  <Text textStyle="body-1" color="secondary.400" px="0.5rem">
+                    to
+                  </Text>
+                  <Input
+                    aria-label="End date"
+                    id={`${props.name}-end-date`}
+                    onKeyDown={handlePreventOpenNativeCalendar}
+                    type="date"
+                    w="fit-content"
+                    sx={{
+                      // Chrome displays a default calendar icon, which we want to hide
+                      // so all browsers display our icon consistently.
+                      '::-webkit-calendar-picker-indicator': {
+                        display: 'none',
+                      },
+                    }}
+                    isDisabled={!startDateRenderedValue}
+                    onChange={handleEndDateChange}
+                    value={endDateRenderedValue}
+                    {...props}
+                  />
+                </Wrap>
+              </PopoverAnchor>
               <PopoverTrigger>
                 <IconButton
-                  aria-label="Open calendar"
+                  aria-label={calendarButtonAria}
                   icon={<BxCalendar />}
                   isActive={isOpen}
                   fontSize="1.25rem"
@@ -231,34 +247,36 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
                   maxW="100vw"
                   bg="white"
                 >
-                  <PopoverHeader>
-                    <Flex
-                      h="3.5rem"
-                      mx={{ base: '1rem', md: '1.5rem' }}
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Text textStyle="subhead-2" color="secondary.500">
-                        Select date range
-                      </Text>
-                      <PopoverCloseButton
-                        variant="clear"
-                        colorScheme="secondary"
-                        position="static"
+                  <FocusLock returnFocus>
+                    <PopoverHeader p={0}>
+                      <Flex
+                        h="3.5rem"
+                        mx={{ base: '1rem', md: '1.5rem' }}
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
+                        <Text textStyle="subhead-2" color="secondary.500">
+                          Select date range
+                        </Text>
+                        <PopoverCloseButton
+                          variant="clear"
+                          colorScheme="secondary"
+                          position="static"
+                        />
+                      </Flex>
+                    </PopoverHeader>
+                    <PopoverBody p={0}>
+                      <DateRangePicker
+                        selectedDates={datePickerDates}
+                        hoveredDate={hoveredDate}
+                        isDateInRange={isDateInRange}
+                        onMouseEnterHighlight={onMouseEnterHighlight}
+                        onMouseLeaveCalendar={onMouseLeaveCalendar}
+                        onSelectDate={handleOnDateSelected}
+                        ref={initialFocusRef}
                       />
-                    </Flex>
-                  </PopoverHeader>
-                  <PopoverBody p={0}>
-                    <DateRangePicker
-                      selectedDates={datePickerDates}
-                      hoveredDate={hoveredDate}
-                      isDateInRange={isDateInRange}
-                      onMouseEnterHighlight={onMouseEnterHighlight}
-                      onMouseLeaveCalendar={onMouseLeaveCalendar}
-                      onSelectDate={handleOnDateSelected}
-                      ref={initialFocusRef}
-                    />
-                  </PopoverBody>
+                    </PopoverBody>
+                  </FocusLock>
                 </PopoverContent>
               </Portal>
             </>

@@ -30,6 +30,7 @@ export const HomeNoField = ({
         name={schema._id}
         render={({ field }) => (
           <PhoneNumberInput
+            autoComplete="tel"
             allowInternational={schema.allowIntlNumbers}
             examples={landlineExamples}
             {...field}

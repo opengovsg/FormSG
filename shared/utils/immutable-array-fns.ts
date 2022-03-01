@@ -78,3 +78,11 @@ export const replaceAt = <T>(
   ret[index] = newValue
   return ret
 }
+
+export const insertAt = <T>(
+  array: ExtractTypeFromArray<T>[],
+  index: number,
+  valueToInsert: ExtractTypeFromArray<T>,
+): ExtractTypeFromArray<T>[] => {
+  return [...array.slice(0, index), valueToInsert, ...array.slice(index)]
+}

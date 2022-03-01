@@ -6,7 +6,7 @@ import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
 
 import { StoryRouter } from '~utils/storybook'
 
-import { PublicFormPage } from './PublicFormPage'
+import PublicFormPage from './PublicFormPage'
 
 export default {
   title: 'Pages/PublicFormPage',

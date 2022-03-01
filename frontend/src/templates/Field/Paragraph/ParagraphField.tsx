@@ -4,8 +4,10 @@ import { FormFieldWithId, StatementFieldBase } from '~shared/types/field'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 
+import { BaseFieldProps } from '../FieldContainer'
+
 export type ParagraphFieldSchema = FormFieldWithId<StatementFieldBase>
-export interface ParagraphFieldProps {
+export interface ParagraphFieldProps extends BaseFieldProps {
   schema: ParagraphFieldSchema
 }
 

@@ -1,20 +1,20 @@
 import { KeyboardEventHandler, useCallback, useMemo, useRef } from 'react'
+import FocusLock from 'react-focus-lock'
 import {
   Flex,
   Popover,
+  PopoverAnchor,
   PopoverBody,
   PopoverCloseButton,
   PopoverContent,
   PopoverHeader,
   PopoverTrigger,
-  Portal,
   Text,
 } from '@chakra-ui/react'
 import { ComponentWithAs, forwardRef } from '@chakra-ui/system'
 import { format } from 'date-fns'
 
 import { BxCalendar } from '~assets/icons'
-import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 
 import Input, { InputProps } from '../Input'
@@ -37,8 +37,6 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
   ({ onChange, value = '', isDateUnavailable, ...props }, ref) => {
     const initialFocusRef = useRef<HTMLInputElement>(null)
 
-    const isMobile = useIsMobile()
-
     const handleDatepickerSelection = useCallback(
       (d: Date) => {
         onChange?.(format(d, 'yyyy-MM-dd'))
@@ -49,6 +47,14 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
     const datePickerDate = useMemo(() => {
       const dateFromValue = new Date(value)
       return isNaN(dateFromValue.getTime()) ? undefined : dateFromValue
+    }, [value])
+
+    const calendarButtonAria = useMemo(() => {
+      let ariaLabel = 'Choose date. '
+      if (value.length === 1) {
+        ariaLabel += `Selected date is ${new Date(value[0]).toDateString()}.`
+      }
+      return ariaLabel
     }, [value])
 
     /**
@@ -63,53 +69,48 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
 
     return (
       <Flex>
-        <Input
-          type="date"
-          onKeyDown={handlePreventOpenNativeCalendar}
-          sx={{
-            borderRadius: '4px 0 0 4px',
-            // Chrome displays a default calendar icon, which we want to hide
-            // so all browsers display our icon consistently.
-            '::-webkit-calendar-picker-indicator': {
-              display: 'none',
-            },
-          }}
-          onChange={(e) => onChange?.(e.target.value)}
-          ref={ref}
-          value={value}
-          {...props}
-        />
         <Popover
-          placement="bottom-end"
+          placement="bottom-start"
           initialFocusRef={initialFocusRef}
-          // Prevent mobile taps to close popover when doing something like
-          // changing months in the selector.
-          closeOnBlur={!isMobile}
           isLazy
         >
           {({ isOpen }) => (
             <>
+              <PopoverAnchor>
+                <Input
+                  zIndex={1}
+                  type="date"
+                  onKeyDown={handlePreventOpenNativeCalendar}
+                  sx={{
+                    borderRadius: '4px 0 0 4px',
+                    // Chrome displays a default calendar icon, which we want to hide
+                    // so all browsers display our icon consistently.
+                    '::-webkit-calendar-picker-indicator': {
+                      display: 'none',
+                    },
+                  }}
+                  onChange={(e) => onChange?.(e.target.value)}
+                  ref={ref}
+                  value={value}
+                  {...props}
+                />
+              </PopoverAnchor>
               <PopoverTrigger>
                 <IconButton
-                  aria-label="Open calendar"
+                  aria-label={calendarButtonAria}
                   icon={<BxCalendar />}
+                  variant="inputAttached"
+                  borderRadius={0}
                   isActive={isOpen}
-                  fontSize="1.25rem"
-                  variant="outline"
-                  color="secondary.500"
-                  borderColor="neutral.400"
-                  borderRadius="0"
-                  // Avoid double border with input
-                  ml="-1px"
                 />
               </PopoverTrigger>
-              <Portal>
-                <PopoverContent
-                  borderRadius="4px"
-                  w="unset"
-                  maxW="100vw"
-                  bg="white"
-                >
+              <PopoverContent
+                borderRadius="4px"
+                w="unset"
+                maxW="100vw"
+                bg="white"
+              >
+                <FocusLock returnFocus>
                   <PopoverHeader p={0}>
                     <Flex
                       h="3.5rem"
@@ -135,8 +136,8 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                       ref={initialFocusRef}
                     />
                   </PopoverBody>
-                </PopoverContent>
-              </Portal>
+                </FocusLock>
+              </PopoverContent>
             </>
           )}
         </Popover>
