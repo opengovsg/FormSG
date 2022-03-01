@@ -30,6 +30,9 @@ export const LogicContent = (): JSX.Element => {
         py={{ base: '1rem', md: '2rem' }}
         flexDir="column"
         bg="white"
+        border="1px solid"
+        borderColor="neutral.200"
+        borderRadius="4px"
       >
         <Text as="h2" textStyle="h2" mb="0.5rem">
           Logic

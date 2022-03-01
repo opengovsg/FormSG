@@ -21,6 +21,7 @@ export const EmptyLogic = (): JSX.Element => {
       flexDir="column"
       align="center"
       color="secondary.500"
+      pt="0.5rem"
     >
       <Text textStyle="h2" as="h2">
         Start creating logic for your form

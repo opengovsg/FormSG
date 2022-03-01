@@ -42,10 +42,13 @@ export const CreatePageLogicTab = (): JSX.Element => {
   }
 
   return (
-    <Box flex={1} h="fit-content" bg="primary.100">
-      <Flex p={{ base: '0.5rem', md: '3.75rem' }}>
+    <Box flex={1} overflow="auto" bg="primary.100">
+      <Flex
+        py={{ base: '2rem', md: '3.75rem' }}
+        px={{ base: '1.5rem', md: '3.75rem' }}
+      >
         <Spacer />
-        <Container maxW="42.5rem">
+        <Container p={0} maxW="42.5rem">
           {isEmptyLogic ? <EmptyLogic /> : <LogicContent />}
         </Container>
         <Flex flex={1} pos="relative">
@@ -54,6 +57,7 @@ export const CreatePageLogicTab = (): JSX.Element => {
               zIndex="docked"
               pos={{ base: 'fixed', md: 'sticky' }}
               top={{ md: '1rem' }}
+              ml="1rem"
               bottom={{ base: '5rem', md: undefined }}
               right={{ base: '1rem', md: undefined }}
               icon={<BiPlus fontSize="1.5rem" />}
