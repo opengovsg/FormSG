@@ -1,4 +1,16 @@
-import { createContext, FC, useContext, useMemo, useState } from 'react'
+import {
+  createContext,
+  FC,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react'
+
+import {
+  setToInactiveSelector,
+  useBuilderAndDesignStore,
+} from '../../builder-and-design/useBuilderAndDesignStore'
 
 export enum DrawerTabs {
   Builder,
@@ -12,6 +24,7 @@ type CreatePageSidebarContextProps = {
   handleBuilderClick: () => void
   handleDesignClick: () => void
   handleLogicClick: () => void
+  handleClose: () => void
 }
 
 const CreatePageSidebarContext = createContext<
@@ -22,7 +35,7 @@ export const useCreatePageSidebar = (): CreatePageSidebarContextProps => {
   const context = useContext(CreatePageSidebarContext)
   if (!context) {
     throw new Error(
-      `useCreatePageDrawer must be used within a CreatePageDrawerProvider component`,
+      `useCreatePageSidebar must be used within a CreatePageSidebarProvider component`,
     )
   }
   return context
@@ -35,9 +48,27 @@ export const useCreatePageSidebarContext =
       () => activeTab !== null && activeTab !== DrawerTabs.Logic,
       [activeTab],
     )
-    const handleBuilderClick = () => setActiveTab(DrawerTabs.Builder)
-    const handleDesignClick = () => setActiveTab(DrawerTabs.Design)
-    const handleLogicClick = () => setActiveTab(DrawerTabs.Logic)
+    const setFieldsToInactive = useBuilderAndDesignStore(setToInactiveSelector)
+
+    const handleBuilderClick = useCallback(
+      () => setActiveTab(DrawerTabs.Builder),
+      [setActiveTab],
+    )
+
+    const handleDesignClick = useCallback(() => {
+      setActiveTab(DrawerTabs.Design)
+      setFieldsToInactive()
+    }, [setActiveTab, setFieldsToInactive])
+
+    const handleLogicClick = useCallback(() => {
+      setActiveTab(DrawerTabs.Logic)
+      setFieldsToInactive()
+    }, [setActiveTab, setFieldsToInactive])
+
+    const handleClose = useCallback(() => {
+      setActiveTab(null)
+      setFieldsToInactive()
+    }, [setActiveTab, setFieldsToInactive])
 
     return {
       activeTab,
@@ -45,6 +76,7 @@ export const useCreatePageSidebarContext =
       handleBuilderClick,
       handleDesignClick,
       handleLogicClick,
+      handleClose,
     }
   }
 

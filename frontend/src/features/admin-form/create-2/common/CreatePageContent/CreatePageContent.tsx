@@ -3,6 +3,7 @@ import {
   useCreatePageSidebar,
 } from '~features/admin-form/create-2/common/CreatePageSidebarContext'
 
+import { BuilderAndDesignTab } from '../../builder-and-design/BuilderAndDesignTab'
 import { LogicTab } from '../../logic'
 
 export const CreatePageContent = (): JSX.Element => {
@@ -11,5 +12,5 @@ export const CreatePageContent = (): JSX.Element => {
     return <LogicTab />
   }
 
-  return <div>Builder and design</div>
+  return <BuilderAndDesignTab />
 }
