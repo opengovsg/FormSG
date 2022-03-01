@@ -42,6 +42,19 @@ export const getFieldCreationMeta = (
         ...baseMeta,
       }
     }
+    case BasicField.Checkbox: {
+      return {
+        fieldType,
+        ...baseMeta,
+        ValidationOptions: {
+          customMax: null,
+          customMin: null,
+        },
+        validateByValue: false,
+        fieldOptions: ['Option 1'],
+        othersRadioButton: false,
+      }
+    }
     default: {
       return {
         fieldType: BasicField.Section,
