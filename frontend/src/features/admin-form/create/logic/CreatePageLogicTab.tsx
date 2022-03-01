@@ -6,9 +6,17 @@ import IconButton from '~components/IconButton'
 
 import { EmptyLogic } from './components/EmptyLogic'
 import { LogicContent } from './components/LogicContent'
-import { useBuilderLogic } from './BuilderLogicContext'
+import { BuilderLogicProvider, useBuilderLogic } from './BuilderLogicContext'
 
-export const CreatePageLogicTab = (): JSX.Element => {
+export const CreatePageLogicTab = () => {
+  return (
+    <BuilderLogicProvider>
+      <ProvidedCreatePageLogicTab />
+    </BuilderLogicProvider>
+  )
+}
+
+const ProvidedCreatePageLogicTab = (): JSX.Element => {
   const { hasPendingLogic, formLogics, handleSetHasPendingLogic } =
     useBuilderLogic()
 
