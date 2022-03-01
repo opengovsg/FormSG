@@ -6,9 +6,8 @@ import {
 
 import { ApiService } from '~services/ApiService'
 
+import { TwilioCredentials } from '../../../../../shared/types/twilio'
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
-
-import { TwilioCredentials } from './../../../../../shared/types/twilio'
 
 type UpdateEmailFormFn<T extends keyof EmailFormSettings> = (
   formId: string,
