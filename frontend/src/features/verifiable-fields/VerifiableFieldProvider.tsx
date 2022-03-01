@@ -51,12 +51,18 @@ export const VerifiableFieldProvider = ({
       // This can happen when input is blurred, since onChange is also called by
       // react-hook-form when that happens.
       if (getValues(schema._id)?.value === value) return
+
+      // If the input changes then the user needs to request re-verification,
+      // and the vfn box should be hidden.
       if (isVfnBoxOpen) {
         setIsVfnBoxOpen(false)
       }
       if (!value) {
         return onChange({ value })
       }
+
+      // If the current input corresponds to a signature, update the signature
+      // value of this field.
       const signature = mapNumberToSignature[value ?? '']
       return onChange({ value, signature })
     },
@@ -73,6 +79,9 @@ export const VerifiableFieldProvider = ({
         { shouldFocus: true },
       )
     } else {
+      // Clear errors if any errors were set, especially to clear the empty
+      // input error that user sees when the vfn button is clicked when the input
+      // is empty.
       clearErrors(schema._id)
     }
 
