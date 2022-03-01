@@ -49,7 +49,7 @@ export const VerifiableFieldProvider = ({
     (onChange: ControllerRenderProps['onChange']) => (value?: string) => {
       // Prevent action when multiple onChange is called with the same value
       // This can happen when input is blurred, since onChange is also called by
-      // react-hook-form when that happen.
+      // react-hook-form when that happens.
       if (getValues(schema._id)?.value === value) return
       if (isVfnBoxOpen) {
         setIsVfnBoxOpen(false)
