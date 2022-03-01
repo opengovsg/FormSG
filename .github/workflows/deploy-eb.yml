@@ -1,9 +1,14 @@
 name: Deploy to AWS Elastic Beanstalk
 on:
   push:
-    branches: # There should be 4 environments in github actions secrets: release, staging, staging-alt, uat. This is different from the DEPLOY_ENV secret which corresponds to elastic beanstalk environment name
+    # There should be 6 environments in github actions secrets:
+    # release, release-al2, staging, staging-al2, staging-alt, uat.
+    # This is different from the DEPLOY_ENV secret which corresponds to elastic beanstalk environment name.
+    branches:
       - release
+      - release-al2
       - staging
+      - staging-al2
       - staging-alt
       - uat
 
