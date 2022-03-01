@@ -30,6 +30,8 @@ const MonthYearSelect = ({
     <Select
       // Prevents any parent form control from applying error styles to this select.
       isInvalid={false}
+      variant="flushed"
+      borderRadius="4px"
       color="secondary.500"
       textStyle="subhead-1"
       flexBasis="fit-content"
@@ -54,6 +56,7 @@ const SelectableMonthYear = memo(() => {
 
   const shouldUseMonthFullName = useBreakpointValue({
     base: false,
+    xs: false,
     md: true,
   })
 
@@ -87,29 +90,29 @@ const SelectableMonthYear = memo(() => {
   )
 
   return (
-    <HStack>
+    <>
       <VisuallyHidden aria-live="polite" aria-atomic>
         Currently displaying {MONTH_NAMES[currMonth].fullName} {currYear}
       </VisuallyHidden>
-      <MonthYearSelect
-        tabIndex={1}
-        value={currMonth}
-        onChange={handleMonthChange}
-        aria-label="Change displayed month"
-        // Align with dates
-        pl={{ base: '0', md: '2px' }}
-      >
-        {memoizedMonthOptions}
-      </MonthYearSelect>
-      <MonthYearSelect
-        tabIndex={1}
-        value={currYear}
-        onChange={handleYearChange}
-        aria-label="Change displayed year"
-      >
-        {memoizedYearOptions}
-      </MonthYearSelect>
-    </HStack>
+      <HStack>
+        <MonthYearSelect
+          // Align with dates in the calendar
+          pl={{ base: '0.5rem', md: '1rem' }}
+          value={currMonth}
+          onChange={handleMonthChange}
+          aria-label="Change displayed month"
+        >
+          {memoizedMonthOptions}
+        </MonthYearSelect>
+        <MonthYearSelect
+          value={currYear}
+          onChange={handleYearChange}
+          aria-label="Change displayed year"
+        >
+          {memoizedYearOptions}
+        </MonthYearSelect>
+      </HStack>
+    </>
   )
 })
 
@@ -117,6 +120,7 @@ const MonthYear = memo(({ monthOffset }: CalendarHeaderProps) => {
   const { currMonth, currYear } = useCalendar()
   const shouldUseMonthFullName = useBreakpointValue({
     base: false,
+    xs: false,
     md: true,
   })
 
@@ -136,7 +140,7 @@ const MonthYear = memo(({ monthOffset }: CalendarHeaderProps) => {
 
   return (
     <HStack
-      ml="1.25rem"
+      ml={{ base: '0.5rem', md: '1rem' }}
       textStyle="subhead-1"
       color="secondary.500"
       spacing="1.5rem"
@@ -164,21 +168,19 @@ export const CalendarHeader = memo(
         {calendars.length - 1 === monthOffset ? (
           <Flex sx={styles.monthArrowContainer}>
             <IconButton
-              tabIndex={1}
               variant="clear"
               colorScheme="secondary"
               icon={<BxChevronLeft />}
               aria-label="Back one month"
-              minW={{ base: '1.75rem', xs: '2.75rem', sm: '2.75rem' }}
+              // minW={{ base: '1.75rem', xs: '2.75rem', sm: '2.75rem' }}
               {...getBackProps({ calendars })}
             />
             <IconButton
-              tabIndex={1}
               variant="clear"
               colorScheme="secondary"
               icon={<BxChevronRight />}
               aria-label="Forward one month"
-              minW={{ base: '1.75rem', xs: '2.75rem', sm: '2.75rem' }}
+              // minW={{ base: '1.75rem', xs: '2.75rem', sm: '2.75rem' }}
               {...getForwardProps({ calendars })}
             />
           </Flex>

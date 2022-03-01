@@ -20,6 +20,8 @@ export const ComboboxClearButton = (): JSX.Element | null => {
 
   return (
     <chakra.button
+      // Prevent form submission from triggering this button.
+      type="button"
       disabled={isDisabled}
       aria-label={clearButtonLabel}
       onClick={handleClearSelection}

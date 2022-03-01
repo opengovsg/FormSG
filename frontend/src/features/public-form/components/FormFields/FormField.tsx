@@ -1,12 +1,12 @@
-import { Text } from '@chakra-ui/react'
-
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme } from '~shared/types/form'
 
 import {
   AttachmentField,
   CheckboxField,
+  DateField,
   DecimalField,
+  DropdownField,
   EmailField,
   HomeNoField,
   ImageField,
@@ -32,6 +32,10 @@ interface FormFieldProps {
 
 export const FormField = ({ field, colorTheme }: FormFieldProps) => {
   switch (field.fieldType) {
+    case BasicField.Date:
+      return (
+        <DateField key={field._id} schema={field} colorTheme={colorTheme} />
+      )
     case BasicField.Section:
       return (
         <SectionField key={field._id} schema={field} colorTheme={colorTheme} />
@@ -110,13 +114,11 @@ export const FormField = ({ field, colorTheme }: FormFieldProps) => {
       return (
         <ImageField key={field._id} schema={field} colorTheme={colorTheme} />
       )
+    case BasicField.Dropdown:
+      return (
+        <DropdownField key={field._id} schema={field} colorTheme={colorTheme} />
+      )
     case BasicField.Table:
       return <TableField key={field._id} schema={field as TableFieldSchema} />
-    default:
-      return (
-        <Text w="100%" key={field._id}>
-          {JSON.stringify(field)}
-        </Text>
-      )
   }
 }

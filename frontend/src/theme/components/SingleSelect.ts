@@ -13,14 +13,13 @@ export const comboboxParts = anatomy('combobox').parts(
   'container',
   'list',
   'item',
-  'clearbutton',
   'icon',
   'emptyItem',
 )
 
 export const parts = anatomy('singleselect')
   .parts(...comboboxParts.keys)
-  .extend('field')
+  .extend('field', 'clearbutton')
 
 const itemBaseStyle: SystemStyleFunction = (props) => {
   const { item: menuItemStyle = {} } = Menu.baseStyle(props)
@@ -116,6 +115,8 @@ const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
     field: merge(inputVariantOutline.field, {
       zIndex: 1,
       borderRightRadius: isClearable ? 0 : undefined,
+      bg: 'white',
+      gridArea: '1 / 1 / 2 / 3',
     }),
     clearbutton: {
       ml: '-1px',
