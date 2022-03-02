@@ -1,7 +1,7 @@
 // A bunch of utility functions to help with calculating the contrast ratio of two colours.
 // Following WCAG AA guidelines: https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html
 // Note that this is not a strict implementation of the WCAG guidelines, but rather a
-// simplified version always checks for contrast of >= 4.5 instead of differentiating by font size.
+// simplified version which always checks for contrast of >= 4.5 instead of differentiating by font size.
 
 // Contrast magic numbers can be found here: https://www.w3.org/TR/WCAG20-TECHS/G17.html
 // Discussion on why the above numbers can be found here: https://github.com/w3c/wcag/issues/695

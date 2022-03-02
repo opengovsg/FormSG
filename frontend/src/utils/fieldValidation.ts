@@ -3,13 +3,17 @@
  * to the field schema.
  */
 import { RegisterOptions } from 'react-hook-form'
+import { isDate, parseISO } from 'date-fns'
 import simplur from 'simplur'
 import validator from 'validator'
 
 import {
   AttachmentFieldBase,
   CheckboxFieldBase,
+  DateFieldBase,
+  DateSelectedValidation,
   DecimalFieldBase,
+  DropdownFieldBase,
   EmailFieldBase,
   FieldBase,
   HomenoFieldBase,
@@ -32,6 +36,7 @@ import {
 import { isUenValid } from '~shared/utils/uen-validation'
 
 import {
+  INVALID_DROPDOWN_OPTION_ERROR,
   INVALID_EMAIL_DOMAIN_ERROR,
   INVALID_EMAIL_ERROR,
   REQUIRED_ERROR,
@@ -42,6 +47,7 @@ import {
   VerifiableFieldInput,
 } from '~features/verifiable-fields/types'
 
+import { isDateAfterToday, isDateBeforeToday, isDateOutOfRange } from './date'
 import { formatNumberToLocaleString } from './stringFormat'
 
 type OmitUnusedProps<T extends FieldBase> = Omit<
@@ -76,7 +82,7 @@ const createBaseVfnFieldValidationRules: ValidationRuleFn<
         if (!schema.required) return true
         return !!value?.value || REQUIRED_ERROR
       },
-      missingSignature: (val?: VerifiableFieldInput) => {
+      hasSignature: (val?: VerifiableFieldInput) => {
         if (!schema.isVerifiable) return true
         // Either signature is filled, or both fields have no input.
         if (!!val?.signature || (!val?.value && !val?.signature)) {
@@ -104,6 +110,23 @@ export const createBaseValidationRules = (
 ): RegisterOptions => {
   return {
     required: createRequiredValidationRules(schema),
+  }
+}
+
+export const createDropdownValidationRules: ValidationRuleFn<
+  DropdownFieldBase
+> = (schema): RegisterOptions => {
+  // TODO(#3360): Handle MyInfo dropdown validation
+  return {
+    ...createBaseValidationRules(schema),
+    validate: {
+      validOptions: (value: string) => {
+        if (!value) return
+        return (
+          schema.fieldOptions.includes(value) || INVALID_DROPDOWN_OPTION_ERROR
+        )
+      },
+    },
   }
 }
 
@@ -316,6 +339,59 @@ export const createCheckboxValidationRules: ValidationRuleFn<
       }
 
       return true
+    },
+  }
+}
+
+export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
+  schema,
+) => {
+  return {
+    ...createBaseValidationRules(schema),
+    validate: {
+      validDate: (val) =>
+        !val || isDate(parseISO(val)) || 'Please enter a valid date',
+      noFuture: (val) => {
+        if (
+          !val ||
+          schema.dateValidation.selectedDateValidation !==
+            DateSelectedValidation.NoFuture
+        ) {
+          return true
+        }
+        return (
+          !isDateAfterToday(parseISO(val)) ||
+          'Only dates today or before are allowed'
+        )
+      },
+      noPast: (val) => {
+        if (
+          !val ||
+          schema.dateValidation.selectedDateValidation !==
+            DateSelectedValidation.NoPast
+        ) {
+          return true
+        }
+        return (
+          !isDateBeforeToday(parseISO(val)) ||
+          'Only dates today or after are allowed'
+        )
+      },
+      range: (val) => {
+        if (
+          !val ||
+          schema.dateValidation.selectedDateValidation !==
+            DateSelectedValidation.Custom
+        ) {
+          return true
+        }
+
+        const { customMinDate, customMaxDate } = schema.dateValidation ?? {}
+        return (
+          !isDateOutOfRange(parseISO(val), customMinDate, customMaxDate) ||
+          'Selected date is not within the allowed date range'
+        )
+      },
     },
   }
 }

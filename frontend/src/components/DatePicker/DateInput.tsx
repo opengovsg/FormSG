@@ -10,13 +10,11 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Text,
-  VisuallyHidden,
 } from '@chakra-ui/react'
 import { ComponentWithAs, forwardRef } from '@chakra-ui/system'
 import { format } from 'date-fns'
 
 import { BxCalendar } from '~assets/icons'
-import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 
 import Input, { InputProps } from '../Input'
@@ -38,8 +36,6 @@ type DateInputWithSubcomponents = ComponentWithAs<'input', DateInputProps> & {
 export const DateInput = forwardRef<DateInputProps, 'input'>(
   ({ onChange, value = '', isDateUnavailable, ...props }, ref) => {
     const initialFocusRef = useRef<HTMLInputElement>(null)
-
-    const isMobile = useIsMobile()
 
     const handleDatepickerSelection = useCallback(
       (d: Date) => {
@@ -76,15 +72,13 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
         <Popover
           placement="bottom-start"
           initialFocusRef={initialFocusRef}
-          // Prevent mobile taps to close popover when doing something like
-          // changing months in the selector.
-          closeOnBlur={!isMobile}
           isLazy
         >
           {({ isOpen }) => (
             <>
               <PopoverAnchor>
                 <Input
+                  zIndex={1}
                   type="date"
                   onKeyDown={handlePreventOpenNativeCalendar}
                   sx={{
@@ -105,14 +99,9 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                 <IconButton
                   aria-label={calendarButtonAria}
                   icon={<BxCalendar />}
+                  variant="inputAttached"
+                  borderRadius={0}
                   isActive={isOpen}
-                  fontSize="1.25rem"
-                  variant="outline"
-                  color="secondary.500"
-                  borderColor="neutral.400"
-                  borderRadius="0"
-                  // Avoid double border with input
-                  ml="-1px"
                 />
               </PopoverTrigger>
               <PopoverContent
@@ -122,11 +111,6 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                 bg="white"
               >
                 <FocusLock returnFocus>
-                  {/* Having this extra guard here allows for tab rotation instead of closing the 
-                    calendar on certain tab key presses.
-                    data-focus-guard is required to work with FocusLock
-                    NFI why this is necessary, just that it works. Such is the life of a software engineer. */}
-                  <VisuallyHidden data-focus-guard tabIndex={2} />
                   <PopoverHeader p={0}>
                     <Flex
                       h="3.5rem"

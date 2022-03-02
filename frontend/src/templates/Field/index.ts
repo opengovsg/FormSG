@@ -1,6 +1,8 @@
 import AttachmentField from './Attachment'
 import CheckboxField from './Checkbox'
+import DateField from './Date'
 import DecimalField from './Decimal'
+import DropdownField from './Dropdown'
 import EmailField from './Email'
 import HomeNoField from './HomeNo'
 import ImageField from './Image'
@@ -20,7 +22,9 @@ import YesNoField from './YesNo'
 export {
   AttachmentField,
   CheckboxField,
+  DateField,
   DecimalField,
+  DropdownField,
   EmailField,
   HomeNoField,
   ImageField,
