@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { isPast } from 'date-fns'
+import { differenceInMilliseconds, isPast } from 'date-fns'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { HttpError } from '~services/ApiService'
@@ -43,6 +43,14 @@ export const PublicFormProvider = ({
     )
   }, [error, formId])
 
+  const expiryInMs = useMemo(() => {
+    if (!vfnTransaction?.expireAt) return null
+    return differenceInMilliseconds(
+      new Date(vfnTransaction.expireAt),
+      Date.now(),
+    )
+  }, [vfnTransaction])
+
   return (
     <PublicFormContext.Provider
       value={{
@@ -54,6 +62,7 @@ export const PublicFormProvider = ({
         spcpSession: data?.spcpSession,
         error,
         getTransactionId,
+        expiryInMs,
         ...rest,
       }}
     >

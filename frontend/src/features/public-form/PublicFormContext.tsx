@@ -14,6 +14,10 @@ export interface PublicFormContextProps
    * Get current verification transaction ID for the form.
    */
   getTransactionId: () => Promise<string>
+  /**
+   * The expiry time of current transaction, if it exists.
+   * Is `null` if no transaction has been generated yet. */
+  expiryInMs: number | null
 }
 
 export const PublicFormContext = createContext<
