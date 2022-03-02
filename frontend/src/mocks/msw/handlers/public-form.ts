@@ -1,4 +1,4 @@
-import { addDays } from 'date-fns'
+import { addMilliseconds } from 'date-fns'
 import { merge } from 'lodash'
 import { rest } from 'msw'
 import { PartialDeep } from 'type-fest'
@@ -366,25 +366,23 @@ export const getCustomLogoResponse = () => {
 
 export const postVfnTransactionResponse = ({
   delay = 0,
-  overrides,
+  expiryMsOverride = 14400000, // 4 hours,
 }: {
   delay?: number | 'infinite'
-  overrides?: PartialDeep<FetchNewTransactionResponse>
+  expiryMsOverride?: number
 } = {}) => {
   return rest.post<FetchNewTransactionResponse>(
     `/api/v3/forms/:formId/fieldverifications`,
     (_req, res, ctx) => {
       return res(
         ctx.delay(delay),
-        ctx.json<FetchNewTransactionResponse>(
-          merge(
-            {
-              transactionId: 'mock-transaction-id',
-              expireAt: addDays(new Date(), 100).toISOString() as JsonDate,
-            },
-            overrides,
-          ),
-        ),
+        ctx.json<FetchNewTransactionResponse>({
+          transactionId: `mock-transaction-id-${Math.random()}`,
+          expireAt: addMilliseconds(
+            new Date(),
+            expiryMsOverride,
+          ).toISOString() as JsonDate,
+        }),
       )
     },
   )
