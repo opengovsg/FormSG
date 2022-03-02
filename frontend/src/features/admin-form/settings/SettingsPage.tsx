@@ -4,6 +4,7 @@ import {
   BiCog,
   BiKey,
   BiMailSend,
+  BiMessage,
   BiRocket,
 } from 'react-icons/bi'
 import {
@@ -23,6 +24,7 @@ import { useDraggable } from '~hooks/useDraggable'
 import { SettingsTab } from './components/SettingsTab'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
+import { SettingsTwilioPage } from './SettingsTwilioPage'
 
 export const SettingsPage = (): JSX.Element => {
   const tabOrientation: UseTabsProps['orientation'] = useBreakpointValue({
@@ -87,6 +89,7 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Singpass" icon={BiKey} />
             <SettingsTab label="Thank you page" icon={BiCheckDouble} />
             <SettingsTab label="Email notifications" icon={BiMailSend} />
+            <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
             <SettingsTab label="Workflow" icon={BiRocket} />
           </TabList>
@@ -105,10 +108,13 @@ export const SettingsPage = (): JSX.Element => {
             <p>4!</p>
           </TabPanel>
           <TabPanel>
-            <p>5!</p>
+            <SettingsTwilioPage />
           </TabPanel>
           <TabPanel>
             <p>6!</p>
+          </TabPanel>
+          <TabPanel>
+            <p>7!</p>
           </TabPanel>
         </TabPanels>
         <Spacer />
