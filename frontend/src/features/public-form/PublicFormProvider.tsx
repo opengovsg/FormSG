@@ -2,6 +2,8 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
+import { useTimeout } from '~hooks/useTimeout'
+import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 
 import {
@@ -26,6 +28,8 @@ export const PublicFormProvider = ({
   const miniHeaderRef = useRef<HTMLDivElement>(null)
   const { data, error, ...rest } = usePublicFormView(formId)
   const { createTransactionMutation } = useTransactionMutations(formId)
+  const toast = useToast()
+  const toastIdRef = useRef<string | number>()
 
   const getTransactionId = useCallback(async () => {
     if (!vfnTransaction || isPast(new Date(vfnTransaction.expireAt))) {
@@ -50,6 +54,19 @@ export const PublicFormProvider = ({
       Date.now(),
     )
   }, [vfnTransaction])
+
+  useTimeout(() => {
+    if (toastIdRef.current) {
+      toast.close(toastIdRef.current)
+    }
+    toastIdRef.current = toast({
+      duration: null,
+      status: 'warning',
+      isClosable: true,
+      description:
+        'Your verified fields has expired. Please verify those fields again.',
+    })
+  }, expiryInMs)
 
   return (
     <PublicFormContext.Provider

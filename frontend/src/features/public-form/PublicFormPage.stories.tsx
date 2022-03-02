@@ -1,5 +1,6 @@
 import { Meta, Story } from '@storybook/react'
 
+import { BasicField } from '~shared/types/field'
 import { FormAuthType } from '~shared/types/form'
 
 import {
@@ -12,6 +13,13 @@ import {
 import { StoryRouter } from '~utils/storybook'
 
 import PublicFormPage from './PublicFormPage'
+
+const DEFAULT_MSW_HANDLERS = [
+  getPublicFormResponse(),
+  postVfnTransactionResponse(),
+  postGenerateVfnOtpResponse(),
+  postVerifyVfnOtpResponse(),
+]
 
 export default {
   title: 'Pages/PublicFormPage',
@@ -26,12 +34,7 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [
-      getPublicFormResponse(),
-      postVfnTransactionResponse(),
-      postGenerateVfnOtpResponse(),
-      postVerifyVfnOtpResponse(),
-    ],
+    msw: DEFAULT_MSW_HANDLERS,
   },
 } as Meta
 
@@ -145,5 +148,35 @@ SgidAuthorized.parameters = {
         },
       },
     }),
+  ],
+}
+
+export const VerifiedFieldsExpiry = Template.bind({})
+VerifiedFieldsExpiry.parameters = {
+  msw: [
+    postVfnTransactionResponse({
+      expiryMsOverride: 10 * 1000,
+    }),
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          form_fields: [
+            {
+              allowIntlNumbers: true,
+              isVerifiable: true,
+              title: 'Verifiable Mobile Number',
+              description:
+                'Verify with random number and OTP. The field should reset after 10 seconds.',
+              required: true,
+              disabled: false,
+              fieldType: BasicField.Mobile,
+              _id: 'some-random-id',
+              globalId: 'not-used',
+            },
+          ],
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
   ],
 }
