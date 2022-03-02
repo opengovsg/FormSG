@@ -8,6 +8,7 @@ import {
 import { FormFieldWithId } from '~shared/types/field'
 import { isMobilePhoneNumber } from '~shared/utils/phone-num-validation'
 
+import { useTimeout } from '~hooks/useTimeout'
 import { BaseFieldProps } from '~templates/Field/FieldContainer'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
@@ -40,7 +41,7 @@ export const VerifiableFieldProvider = ({
     control,
   })
 
-  const { formId, getTransactionId } = usePublicFormContext()
+  const { formId, getTransactionId, expiryInMs } = usePublicFormContext()
 
   const {
     triggerSendOtpMutation,
@@ -58,6 +59,17 @@ export const VerifiableFieldProvider = ({
   const [mapNumberToSignature, setMapNumberToSignature] = useState<
     Record<string, string>
   >({})
+
+  useTimeout(() => {
+    // Reset signatures and map values.
+    setValue(
+      schema._id,
+      { value: getValues(schema._id)?.value },
+      { shouldValidate: true },
+    )
+    setIsVfnBoxOpen(false)
+    setMapNumberToSignature({})
+  }, expiryInMs)
 
   const handleInputChange = useCallback(
     (onChange: ControllerRenderProps['onChange']) => (value?: string) => {
