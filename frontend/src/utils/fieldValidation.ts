@@ -82,7 +82,7 @@ const createBaseVfnFieldValidationRules: ValidationRuleFn<
         if (!schema.required) return true
         return !!value?.value || REQUIRED_ERROR
       },
-      missingSignature: (val?: VerifiableFieldInput) => {
+      hasSignature: (val?: VerifiableFieldInput) => {
         if (!schema.isVerifiable) return true
         // Either signature is filled, or both fields have no input.
         if (!!val?.signature || (!val?.value && !val?.signature)) {
