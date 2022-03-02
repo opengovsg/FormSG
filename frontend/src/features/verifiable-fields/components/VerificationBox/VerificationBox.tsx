@@ -102,7 +102,7 @@ export const VerificationBox = ({
                 {...register('otp', {
                   required: 'OTP is required.',
                   pattern: {
-                    value: /^[0-9\b]+$/,
+                    value: /^\d+$/,
                     message: 'Only numbers are allowed.',
                   },
                   validate: (value) =>
