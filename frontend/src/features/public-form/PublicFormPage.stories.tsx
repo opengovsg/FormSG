@@ -27,10 +27,10 @@ export default {
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
     msw: [
-      getPublicFormResponse({ delay: 0 }),
-      postVfnTransactionResponse({ delay: 0 }),
-      postGenerateVfnOtpResponse({ delay: 0 }),
-      postVerifyVfnOtpResponse({ delay: 0 }),
+      getPublicFormResponse(),
+      postVfnTransactionResponse(),
+      postGenerateVfnOtpResponse(),
+      postVerifyVfnOtpResponse(),
     ],
   },
 } as Meta

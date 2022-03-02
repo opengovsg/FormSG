@@ -325,7 +325,7 @@ const BASE_FORM = {
 }
 
 export const getPublicFormResponse = ({
-  delay,
+  delay = 0,
   overrides,
 }: {
   delay?: number | 'infinite'
@@ -365,7 +365,7 @@ export const getCustomLogoResponse = () => {
 }
 
 export const postVfnTransactionResponse = ({
-  delay,
+  delay = 0,
   overrides,
 }: {
   delay?: number | 'infinite'
@@ -391,7 +391,7 @@ export const postVfnTransactionResponse = ({
 }
 
 export const postGenerateVfnOtpResponse = ({
-  delay,
+  delay = 0,
 }: {
   delay?: number | 'infinite'
 } = {}) => {
@@ -404,7 +404,7 @@ export const postGenerateVfnOtpResponse = ({
 }
 
 export const postVerifyVfnOtpResponse = ({
-  delay,
+  delay = 0,
 }: {
   delay?: number | 'infinite'
 } = {}) => {
