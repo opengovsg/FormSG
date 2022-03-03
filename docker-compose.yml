@@ -107,7 +107,7 @@ services:
     network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:5156 to mockpass:5156
 
   database:
-    image: 'mongo:4.0'
+    image: 'mongo:4.2'
     container_name: 'formsg-db'
     environment:
       - MONGO_INITDB_DATABASE=formsg
