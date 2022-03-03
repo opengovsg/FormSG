@@ -59,7 +59,7 @@ module.exports = [
       }),
     ],
     output: {
-      path: path.resolve(__dirname, 'dist/frontend/'),
+      path: path.resolve(__dirname, 'dist/angularjs/'),
       filename: 'bundle.js',
     },
   },
@@ -88,7 +88,7 @@ module.exports = [
       ],
     },
     output: {
-      path: path.resolve(__dirname, 'dist/frontend/'),
+      path: path.resolve(__dirname, 'dist/angularjs/'),
       filename: 'bundle.css.js', // Throwaway file used by the CSS plugin
     },
     plugins: [
