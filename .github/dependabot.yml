@@ -17,17 +17,19 @@ updates:
       include: 'scope'
   - package-ecosystem: 'npm' # See documentation for possible values
     directory: '/shared' # Location of package manifests
-    prefix: 'fix'
-      prefix-development: 'chore'
-      include: 'scope'
     schedule:
       interval: 'daily'
       time: '03:00'
+      timezone: 'Asia/Singapore'
+    commit-message:
+      prefix: 'fix'
+      prefix-development: 'chore'
+      include: 'scope'
   - package-ecosystem: 'npm' # See documentation for possible values
     directory: '/frontend' # Location of package manifests
     schedule:
       interval: 'daily'
-      time: '01:00'
+      time: '05:00'
       timezone: 'Asia/Singapore'
     commit-message:
       prefix: 'fix'
