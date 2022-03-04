@@ -53,16 +53,9 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   const handleSave = useCallback(
     (field: FieldCreateDto) => {
       if (stateData.state === BuildFieldState.CreatingField) {
-        createFieldMutation.mutate(field, {
-          onSuccess: () => {
-            console.log('onSuccess fired')
-          },
-        })
+        createFieldMutation.mutate(field)
       } else if (stateData.state === BuildFieldState.EditingField) {
-        editFieldMutation.mutate(
-          { ...field, _id: stateData.field._id },
-          { onSuccess: () => console.log('onSuccess fired from edit') },
-        )
+        editFieldMutation.mutate({ ...field, _id: stateData.field._id })
       }
     },
     [createFieldMutation, editFieldMutation, stateData],
