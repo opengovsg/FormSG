@@ -19,6 +19,7 @@ import IconButton from '~components/IconButton'
 import CheckboxField from '~templates/Field/Checkbox'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
+import { useCreatePageSidebar } from '~features/admin-form/create-2/common/CreatePageSidebarContext'
 
 import { PENDING_CREATE_FIELD_ID } from '../../constants'
 import {
@@ -44,6 +45,7 @@ export const FieldRowContainer = ({
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
   const stateData = useBuilderAndDesignStore(stateDataSelector)
   const updateEditState = useBuilderAndDesignStore(updateEditStateSelector)
+  const { handleBuilderClick } = useCreatePageSidebar()
 
   const formMethods = useForm({ mode: 'onChange' })
 
@@ -59,8 +61,9 @@ export const FieldRowContainer = ({
   const handleFieldClick = useCallback(() => {
     if (!isActive) {
       updateEditState(field)
+      handleBuilderClick()
     }
-  }, [isActive, updateEditState, field])
+  }, [isActive, updateEditState, field, handleBuilderClick])
 
   const handleKeydown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
