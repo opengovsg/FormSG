@@ -33,20 +33,23 @@ export const useBuilderAndDesignStore = create<BuilderAndDesignStore>(
     fields: null,
     setFields: (fields) => set(() => ({ fields })),
     stateData: { state: BuildFieldState.Inactive },
-    updateCreateState: (field, insertionIndex) =>
+    updateCreateState: (field, insertionIndex) => {
       set({
         stateData: {
           state: BuildFieldState.CreatingField,
           field,
           insertionIndex,
         },
-      }),
-    updateEditState: (field) =>
+      })
+    },
+    updateEditState: (field) => {
       set({
         stateData: { state: BuildFieldState.EditingField, field },
-      }),
-    setToInactive: () =>
-      set({ stateData: { state: BuildFieldState.Inactive } }),
+      })
+    },
+    setToInactive: () => {
+      set({ stateData: { state: BuildFieldState.Inactive } })
+    },
   })),
 )
 
