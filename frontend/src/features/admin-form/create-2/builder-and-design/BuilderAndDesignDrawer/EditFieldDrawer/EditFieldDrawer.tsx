@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
+import { MutateOptions } from 'react-query'
 import { Box, Flex } from '@chakra-ui/react'
 
 import { BasicField, FieldCreateDto, FormFieldDto } from '~shared/types/field'
@@ -19,6 +20,7 @@ import {
 } from '../../useBuilderAndDesignStore'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
+import { FieldMutateOptions } from './edit-fieldtype/common/types'
 import { EditHeader } from './edit-fieldtype/EditHeader'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
@@ -45,11 +47,14 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   }, [fieldToEdit?.fieldType])
 
   const handleSave = useCallback(
-    (field: FieldCreateDto) => {
+    (field: FieldCreateDto, options?: FieldMutateOptions) => {
       if (stateData.state === BuildFieldState.CreatingField) {
-        createFieldMutation.mutate(field)
+        createFieldMutation.mutate(field, options)
       } else if (stateData.state === BuildFieldState.EditingField) {
-        editFieldMutation.mutate({ ...field, _id: stateData.field._id })
+        editFieldMutation.mutate(
+          { ...field, _id: stateData.field._id },
+          options,
+        )
       }
     },
     [createFieldMutation, editFieldMutation, stateData],
@@ -108,7 +113,7 @@ interface MemoFieldDrawerContentProps {
   isLoading: boolean
   isPendingField: boolean
   handleChange: (field: FieldCreateDto) => void
-  handleSave: (field: FieldCreateDto) => void
+  handleSave: (field: FieldCreateDto, options?: FieldMutateOptions) => void
   handleCancel: () => void
 }
 

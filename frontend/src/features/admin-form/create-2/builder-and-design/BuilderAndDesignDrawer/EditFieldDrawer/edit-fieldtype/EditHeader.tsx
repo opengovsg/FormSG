@@ -14,13 +14,14 @@ import Textarea from '~components/Textarea'
 
 import { DrawerContentContainer } from './common/DrawerContentContainer'
 import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
+import { FieldMutateOptions } from './common/types'
 
 export interface EditHeaderProps {
   field: SectionFieldBase
   isLoading: boolean
   isPendingField: boolean
   handleChange: (field: SectionFieldBase) => void
-  handleSave: (field: SectionFieldBase) => void
+  handleSave: (field: SectionFieldBase, options?: FieldMutateOptions) => void
   handleCancel: () => void
 }
 
@@ -42,8 +43,14 @@ export const EditHeader = ({
     watch,
     register,
     formState: { errors, isDirty },
+    reset,
     setValue,
-  } = useForm<EditHeaderInputs>()
+  } = useForm<EditHeaderInputs>({
+    defaultValues: {
+      title: field.title,
+      description: field.description,
+    },
+  })
 
   // Update form when field loads or changes due to external action,
   // e.g. if user clicks on another field in the builder
@@ -71,7 +78,14 @@ export const EditHeader = ({
 
   const handleUpdateField = handleSubmit((inputs) => {
     const updatedFormField: SectionFieldBase = extend({}, field, inputs)
-    return handleSave(updatedFormField)
+    return handleSave(updatedFormField, {
+      onSuccess: (newField) => {
+        reset({
+          title: newField.title,
+          description: newField.description,
+        })
+      },
+    })
   })
 
   const requiredValidationRule = useMemo(
