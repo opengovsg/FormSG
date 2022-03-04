@@ -6,10 +6,16 @@ export interface CategoryHeaderProps extends TextProps {
 
 export const CategoryHeader = ({
   children,
-  ...props
+  ...textProps
 }: CategoryHeaderProps): JSX.Element => {
   return (
-    <Text as="h2" textStyle="h2" color="secondary.500" mb="2.5rem" {...props}>
+    <Text
+      as="h2"
+      textStyle="h2"
+      color="secondary.500"
+      mb="2.5rem"
+      {...textProps}
+    >
       {children}
     </Text>
   )

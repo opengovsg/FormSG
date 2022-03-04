@@ -17,7 +17,8 @@ import FormFieldMessage from '~components/FormControl/FormFieldMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
-import { useCreateFormWizard } from './CreateFormWizardContext'
+import { useCreateFormWizard } from '../CreateFormWizardContext'
+
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
 import { FormResponseOptions } from './FormResponseOptions'
 

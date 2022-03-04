@@ -9,6 +9,7 @@ import {
   FormSettings,
   FormStatus,
 } from '~shared/types/form/form'
+import { TwilioCredentials } from '~shared/types/twilio'
 
 import { ApiError } from '~typings/core'
 
@@ -19,6 +20,7 @@ import { adminFormKeys } from '../common/queries'
 
 import { adminFormSettingsKeys } from './queries'
 import {
+  deleteTwilioCredentials,
   updateFormAuthType,
   updateFormCaptcha,
   updateFormEmails,
@@ -27,6 +29,7 @@ import {
   updateFormLimit,
   updateFormStatus,
   updateFormTitle,
+  updateTwilioCredentials,
 } from './SettingsService'
 
 export const useMutateFormSettings = () => {
@@ -252,5 +255,61 @@ export const useMutateFormSettings = () => {
     mutateFormTitle,
     mutateFormAuthType,
     mutateFormEsrvcId,
+  }
+}
+
+export const useMutateTwilioCreds = () => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  const queryClient = useQueryClient()
+  const toast = useToast({ status: 'success', isClosable: true })
+
+  const mutateFormTwilioDetails = useMutation(
+    (credentials: TwilioCredentials) =>
+      updateTwilioCredentials(formId, credentials),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(adminFormKeys.id(formId))
+        toast.closeAll()
+        // Show toast on success.
+        toast({
+          description: "Your form's twilio details has been updated.",
+        })
+      },
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message,
+          status: 'danger',
+        })
+      },
+    },
+  )
+
+  const mutateFormTwilioDeletion = useMutation(
+    () => deleteTwilioCredentials(formId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(adminFormKeys.id(formId))
+        toast.closeAll()
+        // Show toast on success.
+        toast({
+          description: 'Your form twilio credentials have been deleted',
+        })
+      },
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message,
+          status: 'danger',
+        })
+      },
+    },
+  )
+
+  return {
+    mutateFormTwilioDeletion,
+    mutateFormTwilioDetails,
   }
 }

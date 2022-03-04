@@ -1,19 +1,11 @@
 import { useState } from 'react'
 import { BiPlus } from 'react-icons/bi'
-import {
-  Skeleton,
-  Stack,
-  Text,
-  useBreakpointValue,
-  useDisclosure,
-} from '@chakra-ui/react'
+import { Skeleton, Stack, Text } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
 import { SortOption } from '~features/workspace/types'
-
-import CreateFormModal from '../CreateFormModal'
-import { CreateFormWizardProvider } from '../CreateFormModal/CreateFormWizardContext'
 
 import { WorkspaceSortDropdown } from './WorkspaceSortDropdown'
 
@@ -24,6 +16,7 @@ export interface WorkspaceHeaderProps {
    */
   totalFormCount?: number | '---'
   isLoading: boolean
+  handleOpenCreateFormModal: () => void
 }
 
 /**
@@ -32,58 +25,47 @@ export interface WorkspaceHeaderProps {
 export const WorkspaceHeader = ({
   totalFormCount = '---',
   isLoading,
+  handleOpenCreateFormModal,
 }: WorkspaceHeaderProps): JSX.Element => {
   const [sortOption, setSortOption] = useState(SortOption.LastUpdated)
-
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const isMobile = useBreakpointValue({
-    base: true,
-    xs: true,
-    md: false,
-  })
+  const isMobile = useIsMobile()
 
   return (
-    <>
-      <CreateFormWizardProvider>
-        <CreateFormModal isOpen={isOpen} onClose={onClose} />
-      </CreateFormWizardProvider>
-      <Stack
-        justify="space-between"
-        direction={{ base: 'column', md: 'row' }}
-        align={{ base: 'flex-start', md: 'center' }}
-        spacing="1rem"
+    <Stack
+      justify="space-between"
+      direction={{ base: 'column', md: 'row' }}
+      align={{ base: 'flex-start', md: 'center' }}
+      spacing="1rem"
+    >
+      <Text
+        flex={1}
+        as="h2"
+        textStyle="h2"
+        display="flex"
+        color="secondary.500"
       >
-        <Text
-          flex={1}
-          as="h2"
-          textStyle="h2"
-          display="flex"
-          color="secondary.500"
+        All forms (<Skeleton isLoaded={!isLoading}>{totalFormCount}</Skeleton>)
+      </Text>
+      <Stack
+        w={{ base: '100%', md: 'auto' }}
+        spacing="1rem"
+        direction={{ base: 'column', md: 'row' }}
+        h="fit-content"
+      >
+        <WorkspaceSortDropdown
+          value={sortOption}
+          onChange={setSortOption}
+          isDisabled={isLoading}
+        />
+        <Button
+          isFullWidth={isMobile}
+          isDisabled={isLoading}
+          onClick={handleOpenCreateFormModal}
+          leftIcon={<BiPlus fontSize="1.5rem" />}
         >
-          All forms (<Skeleton isLoaded={!isLoading}>{totalFormCount}</Skeleton>
-          )
-        </Text>
-        <Stack
-          w={{ base: '100%', md: 'auto' }}
-          spacing="1rem"
-          direction={{ base: 'column', md: 'row' }}
-          h="fit-content"
-        >
-          <WorkspaceSortDropdown
-            value={sortOption}
-            onChange={setSortOption}
-            isDisabled={isLoading}
-          />
-          <Button
-            isFullWidth={isMobile}
-            isDisabled={isLoading}
-            onClick={onOpen}
-            leftIcon={<BiPlus fontSize="1.5rem" />}
-          >
-            Create form
-          </Button>
-        </Stack>
+          Create form
+        </Button>
       </Stack>
-    </>
+    </Stack>
   )
 }

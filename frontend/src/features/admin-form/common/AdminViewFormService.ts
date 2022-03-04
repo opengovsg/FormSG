@@ -4,6 +4,7 @@ import {
   AdminFormDto,
   AdminFormViewDto,
   PreviewFormViewDto,
+  SmsCountsDto,
 } from '~shared/types/form/form'
 
 import { ApiService } from '~services/ApiService'
@@ -36,4 +37,10 @@ export const previewForm = async (
   return axios
     .get<PreviewFormViewDto>(`${ADMIN_FORM_ENDPOINT}/${formId}/preview`)
     .then(({ data }) => data)
+}
+
+export const getFreeSmsQuota = async (formId: string) => {
+  return ApiService.get<SmsCountsDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/verified-sms/count/free`,
+  ).then(({ data }) => data)
 }

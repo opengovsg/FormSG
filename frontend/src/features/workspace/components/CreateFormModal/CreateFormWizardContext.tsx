@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm, UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 
 import { FormResponseMode } from '~shared/types/form/form'
@@ -12,6 +12,15 @@ export enum CreateFormFlowStates {
   Details = 'details',
 }
 
+export type CreateFormWizardInputProps = {
+  title: string
+  responseMode: FormResponseMode
+  // Email form props
+  emails: string[]
+  // Storage form props
+  storageAck?: boolean
+}
+
 type CreateFormWizardContextReturn = {
   currentStep: CreateFormFlowStates
   direction: number
@@ -23,7 +32,6 @@ type CreateFormWizardContextReturn = {
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
   handleBackToDetails: () => void
-  resetModal: () => void
   keypair: ReturnType<typeof formsgSdk.crypto.generate>
   isLoading: boolean
 }
@@ -31,13 +39,6 @@ type CreateFormWizardContextReturn = {
 const CreateFormWizardContext = createContext<
   CreateFormWizardContextReturn | undefined
 >(undefined)
-
-type CreateFormWizardInputProps = {
-  title: string
-  responseMode: FormResponseMode
-  // Email form
-  emails: string[]
-}
 
 const INITIAL_STEP_STATE: [CreateFormFlowStates, number] = [
   CreateFormFlowStates.Details,
@@ -52,16 +53,15 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
    * Only used for storage mode forms, but generated first so that the key is
    * immutable per open of the modal.
    */
-  const [keypair, setKeypair] = useState(formsgSdk.crypto.generate())
+  const keypair = useMemo(() => formsgSdk.crypto.generate(), [])
 
   const formMethods = useForm<CreateFormWizardInputProps>({
     defaultValues: {
-      title: '',
       responseMode: FormResponseMode.Encrypt,
     },
   })
 
-  const { handleSubmit, reset } = formMethods
+  const { handleSubmit } = formMethods
 
   const { createEmailModeFormMutation, createStorageModeFormMutation } =
     useCreateFormMutations()
@@ -93,13 +93,6 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
 
-  const resetModal = () => {
-    reset()
-    // Regenerate keypair for next open of modal.
-    setKeypair(formsgSdk.crypto.generate())
-    setCurrentStep(INITIAL_STEP_STATE)
-  }
-
   return {
     isLoading:
       createEmailModeFormMutation.isLoading ||
@@ -111,7 +104,6 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     handleDetailsSubmit,
     handleCreateStorageModeForm,
     handleBackToDetails,
-    resetModal,
   }
 }
 
