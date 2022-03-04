@@ -44,12 +44,6 @@ export const EditFieldDrawer = (): JSX.Element | null => {
     return FIELDS_TO_CREATE_META[fieldToEdit?.fieldType].label
   }, [fieldToEdit?.fieldType])
 
-  const buttonText = useMemo(
-    () =>
-      stateData.state === BuildFieldState.CreatingField ? 'Create' : 'Save',
-    [stateData.state],
-  )
-
   const handleSave = useCallback(
     (field: FieldCreateDto) => {
       if (stateData.state === BuildFieldState.CreatingField) {
@@ -100,7 +94,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
       <MemoFieldDrawerContent
         field={fieldToEdit}
         isLoading={createFieldMutation.isLoading || editFieldMutation.isLoading}
-        buttonText={buttonText}
+        isPendingField={stateData.state === BuildFieldState.CreatingField}
         handleChange={handleChange}
         handleSave={handleSave}
         handleCancel={setToInactive}
@@ -112,7 +106,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 interface MemoFieldDrawerContentProps {
   field: FieldCreateDto
   isLoading: boolean
-  buttonText: string
+  isPendingField: boolean
   handleChange: (field: FieldCreateDto) => void
   handleSave: (field: FieldCreateDto) => void
   handleCancel: () => void

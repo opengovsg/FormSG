@@ -5,7 +5,7 @@ import Button from '~components/Button'
 
 interface FormFieldDrawerActionsProps {
   isLoading: boolean
-  isDirty: boolean
+  isSaveDisabled: boolean
   handleClick: ReturnType<UseFormHandleSubmit<FieldValues>>
   handleCancel: () => void
   buttonText: string
@@ -13,7 +13,7 @@ interface FormFieldDrawerActionsProps {
 
 export const FormFieldDrawerActions = ({
   isLoading,
-  isDirty,
+  isSaveDisabled,
   handleClick,
   handleCancel,
   buttonText,
@@ -30,7 +30,7 @@ export const FormFieldDrawerActions = ({
       </Button>
       <Button
         minW="8rem"
-        isDisabled={!isDirty}
+        isDisabled={isSaveDisabled}
         isLoading={isLoading}
         onClick={handleClick}
       >

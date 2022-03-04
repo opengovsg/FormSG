@@ -18,7 +18,7 @@ import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
 export interface EditHeaderProps {
   field: SectionFieldBase
   isLoading: boolean
-  buttonText: string
+  isPendingField: boolean
   handleChange: (field: SectionFieldBase) => void
   handleSave: (field: SectionFieldBase) => void
   handleCancel: () => void
@@ -32,7 +32,7 @@ interface EditHeaderInputs {
 export const EditHeader = ({
   field,
   isLoading,
-  buttonText,
+  isPendingField,
   handleChange,
   handleSave,
   handleCancel,
@@ -42,22 +42,25 @@ export const EditHeader = ({
     watch,
     register,
     formState: { errors, isDirty },
-    reset,
-  } = useForm<EditHeaderInputs>({
-    defaultValues: {
-      title: field.title,
-      description: field.description,
-    },
-  })
+    setValue,
+  } = useForm<EditHeaderInputs>()
 
-  // Update form when field changes due to external action,
+  // Update form when field loads or changes due to external action,
   // e.g. if user clicks on another field in the builder
   useEffect(() => {
-    reset({
-      title: field.title,
-      description: field.description,
-    })
-  }, [field.title, field.description, reset])
+    setValue('title', field.title, { shouldDirty: false })
+    setValue('description', field.description, { shouldDirty: false })
+  }, [field.title, field.description, setValue])
+
+  const buttonText = useMemo(
+    () => (isPendingField ? 'Create' : 'Save'),
+    [isPendingField],
+  )
+
+  const isSaveDisabled = useMemo(
+    () => !isDirty && !isPendingField,
+    [isDirty, isPendingField],
+  )
 
   const watchedInputs = watch()
 
@@ -99,7 +102,7 @@ export const EditHeader = ({
         </FormControl>
         <FormFieldDrawerActions
           isLoading={isLoading}
-          isDirty={isDirty}
+          isSaveDisabled={isSaveDisabled}
           buttonText={buttonText}
           handleClick={handleUpdateField}
           handleCancel={handleCancel}
