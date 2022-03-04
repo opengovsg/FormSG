@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { useDebounce } from 'react-use'
 import { Divider, FormControl, Stack } from '@chakra-ui/react'
@@ -42,12 +42,22 @@ export const EditHeader = ({
     watch,
     register,
     formState: { errors, isDirty },
+    reset,
   } = useForm<EditHeaderInputs>({
     defaultValues: {
       title: field.title,
       description: field.description,
     },
   })
+
+  // Update form when field changes due to external action,
+  // e.g. if user clicks on another field in the builder
+  useEffect(() => {
+    reset({
+      title: field.title,
+      description: field.description,
+    })
+  }, [field.title, field.description, reset])
 
   const watchedInputs = watch()
 
