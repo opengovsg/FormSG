@@ -14,7 +14,6 @@ import {
 
 import { Tab } from '~components/Tabs'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
 import {
   CREATE_FIELD_DROP_ID,
   CREATE_FIELD_FIELDS_ORDERED,
@@ -22,12 +21,13 @@ import {
   CREATE_PAGE_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
 
+import { useCreateTabForm } from '../../useCreateTabForm'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
 import { DraggableFieldListOption } from './FieldListOption'
 
 export const FieldListDrawer = (): JSX.Element => {
-  const { isLoading } = useAdminForm()
+  const { isLoading } = useCreateTabForm()
 
   return (
     <Tabs pos="relative" h="100%" display="flex" flexDir="column">
@@ -55,7 +55,7 @@ export const FieldListDrawer = (): JSX.Element => {
 }
 
 const BasicFieldPanelContent = () => {
-  const { isLoading } = useAdminForm()
+  const { isLoading } = useCreateTabForm()
 
   return (
     <>
