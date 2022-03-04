@@ -1,3 +1,4 @@
+import { isEqual } from 'lodash'
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
@@ -29,11 +30,20 @@ export type BuilderAndDesignStore = {
 }
 
 export const useBuilderAndDesignStore = create<BuilderAndDesignStore>(
-  devtools((set) => ({
+  devtools((set, get) => ({
     fields: null,
     setFields: (fields) => set(() => ({ fields })),
     stateData: { state: BuildFieldState.Inactive },
     updateCreateState: (field, insertionIndex) => {
+      // perf: prevent store update if field is the same
+      const current = get()
+      if (
+        current.stateData.state === BuildFieldState.CreatingField &&
+        current.stateData.insertionIndex === insertionIndex &&
+        isEqual(current.stateData.field, field)
+      ) {
+        return
+      }
       set({
         stateData: {
           state: BuildFieldState.CreatingField,
@@ -43,6 +53,14 @@ export const useBuilderAndDesignStore = create<BuilderAndDesignStore>(
       })
     },
     updateEditState: (field) => {
+      // perf: prevent store update if field is the same
+      const current = get()
+      if (
+        current.stateData.state === BuildFieldState.EditingField &&
+        isEqual(current.stateData.field, field)
+      ) {
+        return
+      }
       set({
         stateData: { state: BuildFieldState.EditingField, field },
       })
