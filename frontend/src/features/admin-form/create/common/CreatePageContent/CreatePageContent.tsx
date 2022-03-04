@@ -1,10 +1,10 @@
 import {
   DrawerTabs,
   useCreatePageSidebar,
-} from '~features/admin-form/create-2/common/CreatePageSidebarContext'
+} from '~features/admin-form/create/common/CreatePageSidebarContext'
 
 import { BuilderAndDesignTab } from '../../builder-and-design/BuilderAndDesignTab'
-import { LogicTab } from '../../logic'
+import { LogicTab } from '../../logic/LogicTab'
 
 export const CreatePageContent = (): JSX.Element => {
   const { activeTab } = useCreatePageSidebar()

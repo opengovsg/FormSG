@@ -1,7 +1,6 @@
-import { BasicField } from '~shared/types/field'
+import { BasicField, FieldCreateDto } from '~shared/types/field'
 
 import { FIELDS_TO_CREATE_META, PENDING_CREATE_FIELD_ID } from './constants'
-import { BuilderContentField, PendingFormField } from './types'
 
 /**
  * Maps BasicField enums to their human-readable field type string
@@ -11,28 +10,19 @@ export const transformBasicFieldToText = (basicField?: BasicField): string => {
   return FIELDS_TO_CREATE_META[basicField].label
 }
 
-export const isPendingFormField = (
-  field: BuilderContentField,
-): field is PendingFormField => {
-  return field._id === PENDING_CREATE_FIELD_ID
-}
-
 /**
  * Utility methods to create bare minimum meta required for field creation.
  * TODO: Create one for every field type.
  */
-export const getFieldCreationMeta = (
-  fieldType: BasicField,
-): PendingFormField => {
+export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
   const baseMeta: Pick<
-    PendingFormField,
-    'description' | 'disabled' | 'required' | 'title' | '_id'
+    FieldCreateDto,
+    'description' | 'disabled' | 'required' | 'title'
   > = {
     description: '',
     disabled: false,
     required: true,
     title: transformBasicFieldToText(fieldType),
-    _id: PENDING_CREATE_FIELD_ID,
   }
 
   switch (fieldType) {

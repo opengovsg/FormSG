@@ -18,12 +18,16 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 import IconButton from '~components/IconButton'
 import CheckboxField from '~templates/Field/Checkbox'
 
+import { adminFormKeys } from '~features/admin-form/common/queries'
+import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
+
+import { PENDING_CREATE_FIELD_ID } from '../../constants'
 import {
-  activeFieldSelector,
-  updateFieldSelector,
-  useEditFieldStore,
-} from '../../editFieldStore'
-import { adminFormFieldKeys } from '../../mutations'
+  BuildFieldState,
+  stateDataSelector,
+  updateEditStateSelector,
+  useBuilderAndDesignStore,
+} from '../../useBuilderAndDesignStore'
 
 import { SectionFieldRow } from './SectionFieldRow'
 
@@ -38,22 +42,28 @@ export const FieldRowContainer = ({
   index,
   isDraggingOver,
 }: FieldRowContainerProps): JSX.Element => {
-  const updateActiveField = useEditFieldStore(updateFieldSelector)
-  const activeField = useEditFieldStore(activeFieldSelector)
-  const numFormFieldMutations = useIsMutating(adminFormFieldKeys.base)
+  const numFormFieldMutations = useIsMutating(adminFormKeys.base)
+  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const updateEditState = useBuilderAndDesignStore(updateEditStateSelector)
+  const { handleBuilderClick } = useCreatePageSidebar()
 
   const formMethods = useForm({ mode: 'onChange' })
 
-  const isActive = useMemo(
-    () => activeField?._id === field._id,
-    [activeField, field],
-  )
+  const isActive = useMemo(() => {
+    if (stateData.state === BuildFieldState.EditingField) {
+      return field._id === stateData.field._id
+    } else if (stateData.state === BuildFieldState.CreatingField) {
+      return field._id === PENDING_CREATE_FIELD_ID
+    }
+    return false
+  }, [stateData, field])
 
   const handleFieldClick = useCallback(() => {
     if (!isActive) {
-      updateActiveField(field)
+      updateEditState(field)
+      handleBuilderClick()
     }
-  }, [field, isActive, updateActiveField])
+  }, [isActive, updateEditState, field, handleBuilderClick])
 
   const handleKeydown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -140,9 +150,7 @@ export const FieldRowContainer = ({
               pointerEvents={isActive ? undefined : 'none'}
             >
               <FormProvider {...formMethods}>
-                <MemoFieldRow
-                  field={isActive && activeField ? activeField : field}
-                />
+                <MemoFieldRow field={field} />
               </FormProvider>
             </Box>
             <Collapse in={isActive} style={{ width: '100%' }}>

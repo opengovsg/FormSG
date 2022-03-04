@@ -1,16 +1,16 @@
 import { Flex } from '@chakra-ui/react'
 
-import { CreatePageSidebar } from './common/components/BuilderSidebar'
-import { CreatePageContent } from './common/components/CreatePageContent'
-import { CreatePageDrawerProvider } from './CreatePageDrawerContext'
+import { CreatePageContent } from './common/CreatePageContent'
+import { CreatePageSidebar } from './common/CreatePageSidebar'
+import { CreatePageSidebarProvider } from './common/CreatePageSidebarContext'
 
 export const CreatePage = (): JSX.Element => {
   return (
     <Flex h="100%" w="100%" overflow="auto" bg="neutral.200" direction="row">
-      <CreatePageDrawerProvider>
+      <CreatePageSidebarProvider>
         <CreatePageSidebar />
         <CreatePageContent />
-      </CreatePageDrawerProvider>
+      </CreatePageSidebarProvider>
     </Flex>
   )
 }

@@ -1,1 +1,1 @@
-export { CreatePageLogicTab as default } from './CreatePageLogicTab'
+export * from './LogicTab'
