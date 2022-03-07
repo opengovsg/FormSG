@@ -14,16 +14,9 @@ import Textarea from '~components/Textarea'
 
 import { DrawerContentContainer } from './common/DrawerContentContainer'
 import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
-import { FieldMutateOptions } from './common/types'
+import { EditFieldProps } from './common/types'
 
-export interface EditHeaderProps {
-  field: SectionFieldBase
-  isLoading: boolean
-  isPendingField: boolean
-  handleChange: (field: SectionFieldBase) => void
-  handleSave: (field: SectionFieldBase, options?: FieldMutateOptions) => void
-  handleCancel: () => void
-}
+type EditHeaderProps = EditFieldProps<SectionFieldBase>
 
 interface EditHeaderInputs {
   title: string
