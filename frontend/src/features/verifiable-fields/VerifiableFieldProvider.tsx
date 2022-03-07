@@ -20,7 +20,14 @@ import {
 import { VerifiableFieldContext } from './VerifiableFieldContext'
 
 export interface VerifiableFieldProps extends BaseFieldProps {
+  /** Verifiable schema this field is wrapping over */
   schema: VerifiableFieldSchema<FormFieldWithId<VerifiableFieldBase>>
+  /**
+   * Callback function to check whether current input is a valid input.
+   * Will be triggered when the "Verify" button is clicked.
+   * If the callback returns true, verification API will be triggered,
+   * else the returned string will be displayed as an error.
+   */
   validateInputForVfn: (input?: string) => string | true
 }
 
