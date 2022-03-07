@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
-import { Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import { Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import { get, range } from 'lodash'
 
 import { LOGIC_MAP } from '~shared/modules/logic'
@@ -12,6 +12,8 @@ import { SingleSelect } from '~components/Dropdown/SingleSelect'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
+
+import { BlockLabelText } from './BlockLabelText'
 
 export interface EditConditionBlockProps {
   index: number
@@ -87,92 +89,75 @@ export const EditConditionBlock = ({
   }, [ifFieldIdValue, mapIdToField])
 
   return (
-    <>
-      <Text as="label" htmlFor={`${name}.ifFieldId`} textStyle="subhead-3">
-        IF
-      </Text>
-      <FormControl
-        id={`${name}.ifFieldId`}
-        isRequired
-        isInvalid={!!get(errors, `${name}.ifFieldId`)}
-      >
-        <Controller
-          name={`${name}.ifFieldId`}
-          rules={{
-            required: true,
-            validate: (value) =>
-              !logicableFields || Object.keys(logicableFields).includes(value),
-          }}
-          render={({ field }) => (
-            <SingleSelect isSearchable={false} items={items} {...field} />
-          )}
-        />
-      </FormControl>
-
-      <Text textStyle="subhead-3">IS</Text>
-      <Stack direction="row" align="center">
-        <FormControl
-          id={`${name}.logicCondition`}
-          isRequired
-          isInvalid={!!get(errors, `${name}.logicCondition`)}
-        >
-          <Controller
-            name={`${name}.logicCondition`}
-            rules={{
-              required: true,
-            }}
-            render={({ field }) => (
-              <SingleSelect
-                isDisabled={!ifFieldIdValue}
-                isSearchable={false}
-                items={conditionItems}
-                {...field}
+    <Flex flexDir="column">
+      <Stack direction="column" spacing="0.75rem">
+        <Flex>
+          <BlockLabelText htmlFor={`${name}.ifFieldId`}>IF</BlockLabelText>
+          <FormControl
+            id={`${name}.ifFieldId`}
+            isRequired
+            isInvalid={!!get(errors, `${name}.ifFieldId`)}
+          >
+            <Controller
+              name={`${name}.ifFieldId`}
+              rules={{
+                required: true,
+                validate: (value) =>
+                  !logicableFields ||
+                  Object.keys(logicableFields).includes(value),
+              }}
+              render={({ field }) => (
+                <SingleSelect isSearchable={false} items={items} {...field} />
+              )}
+            />
+          </FormControl>
+        </Flex>
+        <Flex>
+          <BlockLabelText htmlFor={`${name}.logicCondition`}>IS</BlockLabelText>
+          <Stack direction="row" align="center">
+            <FormControl
+              id={`${name}.logicCondition`}
+              isRequired
+              isInvalid={!!get(errors, `${name}.logicCondition`)}
+            >
+              <Controller
+                name={`${name}.logicCondition`}
+                rules={{
+                  required: true,
+                }}
+                render={({ field }) => (
+                  <SingleSelect
+                    isDisabled={!ifFieldIdValue}
+                    isSearchable={false}
+                    items={conditionItems}
+                    {...field}
+                  />
+                )}
               />
-            )}
-          />
-        </FormControl>
-        <FormControl
-          id={`${name}.logicValue`}
-          isRequired
-          isInvalid={!!get(errors, `${name}.logicValue`)}
-        >
-          <Controller
-            name={`${name}.logicValue`}
-            rules={{
-              required: true,
-            }}
-            render={({ field }) => (
-              <SingleSelect
-                isDisabled={!ifFieldIdValue}
-                isSearchable={false}
-                items={conditionValueItems}
-                {...field}
+            </FormControl>
+            <FormControl
+              id={`${name}.logicValue`}
+              isRequired
+              isInvalid={!!get(errors, `${name}.logicValue`)}
+            >
+              <Controller
+                name={`${name}.logicValue`}
+                rules={{
+                  required: true,
+                }}
+                render={({ field }) => (
+                  <SingleSelect
+                    isDisabled={!ifFieldIdValue}
+                    isSearchable={false}
+                    items={conditionValueItems}
+                    {...field}
+                  />
+                )}
               />
-            )}
-          />
-        </FormControl>
+            </FormControl>
+          </Stack>
+        </Flex>
       </Stack>
-      <Divider
-        alignSelf="center"
-        display={{ base: 'none', md: 'block' }}
-        my="1.25rem"
-        // Padding and margin to extend beyond grid gap
-        mx="-2rem"
-        px="2rem"
-      />
-      <Flex flexDir="row" align="center" spacing={0} my="1.25rem">
-        <Divider
-          ml="-1.5rem"
-          pl="1.5rem"
-          w={0}
-          display={{ base: 'block', md: 'none' }}
-        />
-        <Text>AND</Text>
-        <Divider
-          mr={{ base: '-1.5rem', md: '-2rem' }}
-          pr={{ base: '1.5rem', md: '2rem' }}
-        />
-      </Flex>
-    </>
+    </Flex>
   )
 }
