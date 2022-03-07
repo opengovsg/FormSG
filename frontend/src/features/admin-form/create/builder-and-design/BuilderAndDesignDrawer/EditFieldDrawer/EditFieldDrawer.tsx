@@ -24,10 +24,18 @@ import { FieldMutateOptions } from './edit-fieldtype/common/types'
 import { EditHeader } from './edit-fieldtype/EditHeader'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
-  const setToInactive = useBuilderAndDesignStore(setToInactiveSelector)
-  const updateEditState = useBuilderAndDesignStore(updateEditStateSelector)
-  const updateCreateState = useBuilderAndDesignStore(updateCreateStateSelector)
+  const { stateData, setToInactive, updateEditState, updateCreateState } =
+    useBuilderAndDesignStore(
+      useCallback(
+        (state) => ({
+          stateData: stateDataSelector(state),
+          setToInactive: setToInactiveSelector(state),
+          updateEditState: updateEditStateSelector(state),
+          updateCreateState: updateCreateStateSelector(state),
+        }),
+        [],
+      ),
+    )
 
   const { editFieldMutation } = useEditFormField()
   const { createFieldMutation } = useCreateFormField()
