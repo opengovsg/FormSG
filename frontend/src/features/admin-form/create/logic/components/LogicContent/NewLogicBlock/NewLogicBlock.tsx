@@ -25,7 +25,7 @@ export const NewLogicBlock = () => {
     },
   })
 
-  const { fields, append } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: formMethods.control,
     name: LOGIC_FIELD_ARRAY_NAME,
   })
@@ -52,7 +52,14 @@ export const NewLogicBlock = () => {
           px={{ base: '1.5rem', md: '2rem' }}
         >
           {fields.map((field, index) => {
-            return <EditConditionBlock key={field.id} index={index} />
+            return (
+              <EditConditionBlock
+                key={field.id}
+                index={index}
+                // Only allow logic removal if there is more than one logic block.
+                handleRemoveLogic={fields.length > 1 ? remove : undefined}
+              />
+            )
           })}
         </Stack>
         <AddConditionDivider handleAddCondition={() => append({})} />

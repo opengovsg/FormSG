@@ -5,7 +5,8 @@ import {
   FieldValues,
   useFormContext,
 } from 'react-hook-form'
-import { Flex, FormControl, Stack } from '@chakra-ui/react'
+import { BiTrash } from 'react-icons/bi'
+import { Box, Flex, FormControl, Stack } from '@chakra-ui/react'
 import { get, range } from 'lodash'
 
 import { LOGIC_MAP } from '~shared/modules/logic'
@@ -14,6 +15,7 @@ import { LogicConditionState } from '~shared/types/form'
 
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import IconButton from '~components/IconButton'
 import NumberInput from '~components/NumberInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
@@ -24,6 +26,7 @@ import { BlockLabelText } from './BlockLabelText'
 
 export interface EditConditionBlockProps {
   index: number
+  handleRemoveLogic?: (index?: number | number[] | undefined) => void
 }
 
 export type EditLogicBlockInputs = {
@@ -39,6 +42,7 @@ export type EditLogicInputs = {
 
 export const EditConditionBlock = ({
   index,
+  handleRemoveLogic,
 }: EditConditionBlockProps): JSX.Element => {
   const { logicableFields, mapIdToField } = useAdminFormLogic()
   const name = useMemo(
@@ -159,7 +163,7 @@ export const EditConditionBlock = ({
   return (
     <Flex flexDir="column">
       <Stack direction="column" spacing="0.75rem">
-        <Flex>
+        <Stack direction="row" spacing="0.5rem">
           <BlockLabelText htmlFor={`${name}.ifFieldId`}>IF</BlockLabelText>
           <FormControl
             id={`${name}.ifFieldId`}
@@ -189,8 +193,17 @@ export const EditConditionBlock = ({
               {get(errors, `${name}.ifFieldId.message`)}
             </FormErrorMessage>
           </FormControl>
-        </Flex>
-        <Flex>
+          {handleRemoveLogic ? (
+            <IconButton
+              variant="clear"
+              colorScheme="danger"
+              icon={<BiTrash />}
+              onClick={() => handleRemoveLogic(index)}
+              aria-label="Remove logic block"
+            />
+          ) : null}
+        </Stack>
+        <Stack direction="row" spacing="0.5rem">
           <BlockLabelText htmlFor={`${name}.logicCondition`}>IS</BlockLabelText>
           <Flex flexDir="column" flex={1}>
             <Stack direction="row" align="flex-start" flex={1}>
@@ -245,7 +258,8 @@ export const EditConditionBlock = ({
               </FormErrorMessage>
             </FormControl>
           </Flex>
-        </Flex>
+          {handleRemoveLogic ? <Box aria-hidden w="2.75rem" /> : null}
+        </Stack>
       </Stack>
     </Flex>
   )

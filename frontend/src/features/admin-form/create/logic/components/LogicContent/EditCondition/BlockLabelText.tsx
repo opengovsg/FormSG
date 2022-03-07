@@ -16,7 +16,7 @@ export const BlockLabelText = ({
       as="label"
       htmlFor={htmlFor}
       textStyle="subhead-3"
-      w="5rem"
+      w="4.5rem"
     >
       {children}
     </Text>
