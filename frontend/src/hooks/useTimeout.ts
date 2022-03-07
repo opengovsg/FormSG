@@ -6,6 +6,11 @@ export const useTimeout = (
 ) => {
   const savedCallback = useRef(callback)
 
+  // Remember the latest callback if it changes.
+  useEffect(() => {
+    savedCallback.current = callback
+  }, [callback])
+
   useEffect(() => {
     if (delay == null) return
 
