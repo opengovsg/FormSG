@@ -63,10 +63,9 @@ export const SingleSelectProvider = ({
     ),
   )
 
-  const getInitialSelectedValue = useCallback(
-    () => getItemByValue(value)?.item ?? null,
-    [getItemByValue, value],
-  )
+  const memoizedSelectedItem = useMemo(() => {
+    return getItemByValue(value)?.item ?? null
+  }, [getItemByValue, value])
 
   const resetItems = useCallback(
     () => setFilteredItems(getFilteredItems()),
@@ -95,7 +94,7 @@ export const SingleSelectProvider = ({
     defaultHighlightedIndex: 0,
     items: filteredItems,
     initialIsOpen,
-    initialSelectedItem: getInitialSelectedValue(),
+    selectedItem: memoizedSelectedItem,
     itemToString: itemToValue,
     onSelectedItemChange: ({ selectedItem }) => {
       onChange(itemToValue(selectedItem))
@@ -112,6 +111,20 @@ export const SingleSelectProvider = ({
     },
     stateReducer: (_state, { changes, type }) => {
       switch (type) {
+        // Handle controlled `value` prop changes.
+        case useCombobox.stateChangeTypes.ControlledPropUpdatedSelectedItem:
+          // Do nothing if selectedItem is null but yet previous state has inputValue.
+          // This suggests that there is some initial input state that we want to keep.
+          // This can only happen on first mount, since inputValue will be empty string
+          // on future actions.
+          if (_state.inputValue && !changes.selectedItem) {
+            return { ...changes, inputValue: _state.inputValue }
+          }
+          return {
+            ...changes,
+            // Clear inputValue on item selection
+            inputValue: '',
+          }
         case useCombobox.stateChangeTypes.FunctionSelectItem:
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.InputBlur:
