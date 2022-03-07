@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { FormControlOptions, useMultiStyleConfig } from '@chakra-ui/react'
 import { useCombobox, UseComboboxProps } from 'downshift'
 
@@ -143,6 +143,11 @@ export const SingleSelectProvider = ({
     },
     ...comboboxProps,
   })
+
+  /** Effect to update filtered items whenever items prop changes. */
+  useEffect(() => {
+    setFilteredItems(getFilteredItems(inputValue))
+  }, [getFilteredItems, inputValue, items])
 
   const isItemSelected = useCallback(
     (item: ComboboxItem) => {
