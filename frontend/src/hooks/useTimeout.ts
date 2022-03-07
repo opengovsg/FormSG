@@ -9,16 +9,12 @@ export const useTimeout = (
   useEffect(() => {
     if (delay == null) return
 
-    let timeoutId: number | null = null
-
-    timeoutId = window.setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       savedCallback.current()
     }, delay)
 
     return () => {
-      if (timeoutId) {
-        window.clearTimeout(timeoutId)
-      }
+      window.clearTimeout(timeoutId)
     }
   }, [delay])
 }
