@@ -7,7 +7,6 @@ import { AdminFormDto } from '~shared/types/form'
 import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
 import {
-  BuilderAndDesignStore,
   setToInactiveSelector,
   stateDataSelector,
   useBuilderAndDesignStore,
@@ -61,7 +60,6 @@ export const BuilderAndDesignContent = ({
                   <BuilderFields
                     fields={builderFields}
                     isDraggingOver={snapshot.isDraggingOver}
-                    stateData={stateData}
                   />
                   {provided.placeholder}
                   <BuilderAndDesignPlaceholder
@@ -87,7 +85,6 @@ export const BuilderAndDesignContent = ({
 interface BuilderFieldsProps {
   fields: AdminFormDto['form_fields']
   isDraggingOver: boolean
-  stateData: BuilderAndDesignStore['stateData']
 }
 
 const BuilderFields = memo(
