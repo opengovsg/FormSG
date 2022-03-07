@@ -21,7 +21,7 @@ import {
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
 import { FieldMutateOptions } from './edit-fieldtype/common/types'
-import { EditHeader } from './edit-fieldtype/EditHeader'
+import { EditHeader } from './edit-fieldtype'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
   const { stateData, setToInactive, updateEditState, updateCreateState } =
