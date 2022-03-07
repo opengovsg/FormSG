@@ -1,13 +1,20 @@
-import { useEffect, useMemo } from 'react'
-import { Controller, useFormContext } from 'react-hook-form'
-import { Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import { useCallback, useEffect, useMemo } from 'react'
+import {
+  Controller,
+  ControllerRenderProps,
+  FieldValues,
+  useFormContext,
+} from 'react-hook-form'
+import { Flex, FormControl, Stack } from '@chakra-ui/react'
 import { get, range } from 'lodash'
 
 import { LOGIC_MAP } from '~shared/modules/logic'
 import { BasicField } from '~shared/types/field'
 import { LogicConditionState } from '~shared/types/form'
 
-import { SingleSelect } from '~components/Dropdown/SingleSelect'
+import { MultiSelect, SingleSelect } from '~components/Dropdown'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import NumberInput from '~components/NumberInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
@@ -22,7 +29,7 @@ export interface EditConditionBlockProps {
 export type EditLogicBlockInputs = {
   ifFieldId: string
   logicCondition: LogicConditionState
-  logicValue: string
+  logicValue: string | string[]
 }
 export const LOGIC_FIELD_ARRAY_NAME = 'logicConditions'
 
@@ -45,6 +52,12 @@ export const EditConditionBlock = ({
     resetField,
   } = useFormContext<EditLogicInputs>()
   const ifFieldIdValue = watch(`${name}.ifFieldId`)
+  const logicConditionValue = watch(`${name}.logicCondition`)
+
+  const currentSelectedField = useMemo(() => {
+    if (!ifFieldIdValue || !mapIdToField) return
+    return mapIdToField[ifFieldIdValue]
+  }, [ifFieldIdValue, mapIdToField])
 
   /**
    * Effect to reset the field if the field to apply a condition on is changed.
@@ -66,10 +79,15 @@ export const EditConditionBlock = ({
   }, [logicableFields])
 
   const conditionItems = useMemo(() => {
-    if (!ifFieldIdValue || !mapIdToField) return []
-    const mappedField = mapIdToField[ifFieldIdValue]
-    return LOGIC_MAP.get(mappedField.fieldType)?.map(String) ?? []
-  }, [ifFieldIdValue, mapIdToField])
+    if (!currentSelectedField) return []
+    return (
+      LOGIC_MAP.get(currentSelectedField.fieldType)?.map((v) => ({
+        // Remove leading 'is' from the condition name for rendering.
+        label: v.replace(/^is\s/i, ''),
+        value: v,
+      })) ?? []
+    )
+  }, [currentSelectedField])
 
   const conditionValueItems = useMemo(() => {
     if (!ifFieldIdValue || !mapIdToField) return []
@@ -88,6 +106,56 @@ export const EditConditionBlock = ({
     }
   }, [ifFieldIdValue, mapIdToField])
 
+  const logicTypeWrapperWidth = useMemo(() => {
+    if (!currentSelectedField) return '9rem'
+    switch (currentSelectedField.fieldType) {
+      case BasicField.Dropdown:
+      case BasicField.Radio:
+      case BasicField.Rating:
+      case BasicField.YesNo:
+        return '9rem'
+      default:
+        return '14rem'
+    }
+  }, [currentSelectedField])
+
+  const renderValueInputComponent = useCallback(
+    (
+      field: ControllerRenderProps<FieldValues, `${typeof name}.logicValue`>,
+    ) => {
+      const selectProps = {
+        isDisabled: !logicConditionValue,
+        isSearchable: false,
+        placeholder: null,
+        isClearable: false,
+        items: conditionValueItems,
+      }
+
+      if (!currentSelectedField)
+        return <SingleSelect {...selectProps} {...field} isDisabled />
+
+      switch (currentSelectedField.fieldType) {
+        case BasicField.Dropdown:
+        case BasicField.Radio: {
+          if (
+            !logicConditionValue ||
+            logicConditionValue === LogicConditionState.Equal
+          ) {
+            return <SingleSelect {...selectProps} {...field} />
+          }
+          const { value, ...rest } = field
+          return <MultiSelect {...selectProps} values={value ?? []} {...rest} />
+        }
+        case BasicField.Rating:
+        case BasicField.YesNo:
+          return <SingleSelect {...selectProps} {...field} />
+        default:
+          return <NumberInput isDisabled={!logicConditionValue} {...field} />
+      }
+    },
+    [conditionValueItems, currentSelectedField, logicConditionValue],
+  )
+
   return (
     <Flex flexDir="column">
       <Stack direction="column" spacing="0.75rem">
@@ -101,61 +169,82 @@ export const EditConditionBlock = ({
             <Controller
               name={`${name}.ifFieldId`}
               rules={{
-                required: true,
+                required: 'Please select a question.',
                 validate: (value) =>
                   !logicableFields ||
-                  Object.keys(logicableFields).includes(value),
+                  Object.keys(logicableFields).includes(value) ||
+                  'Field is invalid or unable to accept logic.',
               }}
               render={({ field }) => (
-                <SingleSelect isSearchable={false} items={items} {...field} />
+                <SingleSelect
+                  isSearchable={false}
+                  isClearable={false}
+                  placeholder="Select a question"
+                  items={items}
+                  {...field}
+                />
               )}
             />
+            <FormErrorMessage>
+              {get(errors, `${name}.ifFieldId.message`)}
+            </FormErrorMessage>
           </FormControl>
         </Flex>
         <Flex>
           <BlockLabelText htmlFor={`${name}.logicCondition`}>IS</BlockLabelText>
-          <Stack direction="row" align="center">
+          <Flex flexDir="column" flex={1}>
+            <Stack direction="row" align="flex-start" flex={1}>
+              <FormControl
+                id={`${name}.logicCondition`}
+                isRequired
+                isInvalid={!!get(errors, `${name}.logicCondition`)}
+                maxW={logicTypeWrapperWidth}
+              >
+                <Controller
+                  name={`${name}.logicCondition`}
+                  rules={{
+                    required: 'Please select a condition',
+                  }}
+                  render={({ field }) => (
+                    <SingleSelect
+                      placeholder={null}
+                      isDisabled={!ifFieldIdValue}
+                      isSearchable={false}
+                      isClearable={false}
+                      items={conditionItems}
+                      {...field}
+                    />
+                  )}
+                />
+              </FormControl>
+              <FormControl
+                id={`${name}.logicValue`}
+                isRequired
+                isInvalid={!!get(errors, `${name}.logicValue`)}
+              >
+                <Controller
+                  name={`${name}.logicValue`}
+                  rules={{
+                    required: 'Please enter logic criteria.',
+                  }}
+                  render={({ field }) => renderValueInputComponent(field)}
+                />
+              </FormControl>
+            </Stack>
             <FormControl
-              id={`${name}.logicCondition`}
-              isRequired
-              isInvalid={!!get(errors, `${name}.logicCondition`)}
+              isInvalid={
+                !!(
+                  get(errors, `${name}.logicCondition`) ??
+                  get(errors, `${name}.logicValue`)
+                )
+              }
             >
-              <Controller
-                name={`${name}.logicCondition`}
-                rules={{
-                  required: true,
-                }}
-                render={({ field }) => (
-                  <SingleSelect
-                    isDisabled={!ifFieldIdValue}
-                    isSearchable={false}
-                    items={conditionItems}
-                    {...field}
-                  />
-                )}
-              />
+              <FormErrorMessage>
+                {get(errors, `${name}.logicCondition.message`) ??
+                  get(errors, `${name}.logicValue.message`)}
+              </FormErrorMessage>
             </FormControl>
-            <FormControl
-              id={`${name}.logicValue`}
-              isRequired
-              isInvalid={!!get(errors, `${name}.logicValue`)}
-            >
-              <Controller
-                name={`${name}.logicValue`}
-                rules={{
-                  required: true,
-                }}
-                render={({ field }) => (
-                  <SingleSelect
-                    isDisabled={!ifFieldIdValue}
-                    isSearchable={false}
-                    items={conditionValueItems}
-                    {...field}
-                  />
-                )}
-              />
-            </FormControl>
-          </Stack>
+          </Flex>
         </Flex>
       </Stack>
     </Flex>
