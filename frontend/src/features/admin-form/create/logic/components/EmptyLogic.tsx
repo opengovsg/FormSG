@@ -49,7 +49,7 @@ export const EmptyLogic = (): JSX.Element => {
         <Text textStyle="subhead-3">Allowed fields</Text>
         <Flex>
           <Grid
-            columnGap={{ base: '1rem', md: '3.5rem' }}
+            columnGap="3.5rem"
             rowGap="1rem"
             templateColumns={{
               base: 'repeat(2, minmax(20%, min-content))',
