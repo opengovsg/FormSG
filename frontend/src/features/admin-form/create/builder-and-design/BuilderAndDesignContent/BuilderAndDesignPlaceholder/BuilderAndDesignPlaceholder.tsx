@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 
