@@ -15,6 +15,7 @@ import Textarea from '~components/Textarea'
 import { DrawerContentContainer } from './common/DrawerContentContainer'
 import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
 import { EditFieldProps } from './common/types'
+import { getButtonText } from './common/utils'
 
 type EditHeaderProps = EditFieldProps<SectionFieldBase>
 
@@ -58,7 +59,7 @@ export const EditHeader = ({
   }, [field.title, field.description, setValue, getValues])
 
   const buttonText = useMemo(
-    () => (isPendingField ? 'Create' : 'Save'),
+    () => getButtonText(isPendingField),
     [isPendingField],
   )
 
