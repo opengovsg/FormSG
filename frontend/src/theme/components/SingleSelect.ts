@@ -13,14 +13,13 @@ export const comboboxParts = anatomy('combobox').parts(
   'container',
   'list',
   'item',
-  'clearbutton',
   'icon',
   'emptyItem',
 )
 
 export const parts = anatomy('singleselect')
   .parts(...comboboxParts.keys)
-  .extend('field')
+  .extend('field', 'clearbutton')
 
 const itemBaseStyle: SystemStyleFunction = (props) => {
   const { item: menuItemStyle = {} } = Menu.baseStyle(props)

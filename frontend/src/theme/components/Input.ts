@@ -53,6 +53,21 @@ const outlineVariant = (props: StyleFunctionProps) => {
         boxShadow: 'none',
       },
       _focus: {
+        _hover: {
+          borderColor: getColor(theme, fc),
+        },
+        _invalid: {
+          borderColor: getColor(theme, fc),
+          boxShadow: `0 0 0 1px ${getColor(theme, fc)}`,
+        },
+        _disabled: {
+          _hover: {
+            borderColor: 'neutral.400',
+          },
+          bg: 'neutral.200',
+          borderColor: 'neutral.400',
+          boxShadow: 'none',
+        },
         borderColor: getColor(theme, fc),
         boxShadow: `0 0 0 1px ${getColor(theme, fc)}`,
       },

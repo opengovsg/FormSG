@@ -2,15 +2,17 @@ import { useMemo } from 'react'
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 
-import { FIELD_LIST_DROP_ID } from '../constants'
-import { DndPlaceholderProps } from '../types'
+import { FIELD_LIST_DROP_ID } from '../../constants'
+import { DndPlaceholderProps } from '../../types'
 
 export interface BuilderDesignPlaceholderProps {
   placeholderProps: DndPlaceholderProps
+  isDraggingOver: boolean
 }
 
 export const BuilderAndDesignPlaceholder = ({
   placeholderProps,
+  isDraggingOver,
 }: BuilderDesignPlaceholderProps): JSX.Element | null => {
   const renderedContents = useMemo(() => {
     switch (placeholderProps.droppableId) {
@@ -40,7 +42,7 @@ export const BuilderAndDesignPlaceholder = ({
     }
   }, [placeholderProps.droppableId])
 
-  if (isEmpty(placeholderProps)) return null
+  if (isEmpty(placeholderProps) || !isDraggingOver) return null
 
   return (
     <Box

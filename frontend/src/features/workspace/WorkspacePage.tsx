@@ -13,7 +13,6 @@ import { chunk } from 'lodash'
 import Pagination from '~components/Pagination'
 
 import CreateFormModal from './components/CreateFormModal'
-import { CreateFormWizardProvider } from './components/CreateFormModal/CreateFormWizardContext'
 import { EmptyWorkspace } from './components/EmptyWorkspace'
 import { WorkspaceFormRows } from './components/WorkspaceFormRow'
 import { WorkspaceHeader } from './components/WorkspaceHeader'
@@ -111,12 +110,10 @@ export const WorkspacePage = (): JSX.Element => {
 
   return (
     <>
-      <CreateFormWizardProvider>
-        <CreateFormModal
-          isOpen={isCreateFormModalOpen}
-          onClose={handleCloseCreateFormModal}
-        />
-      </CreateFormWizardProvider>
+      <CreateFormModal
+        isOpen={isCreateFormModalOpen}
+        onClose={handleCloseCreateFormModal}
+      />
       {totalFormCount === 0 ? (
         <EmptyWorkspace
           handleOpenCreateFormModal={handleOpenCreateFormModal}
