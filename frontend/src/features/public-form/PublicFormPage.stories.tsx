@@ -155,7 +155,7 @@ export const VerifiedFieldsExpiry = Template.bind({})
 VerifiedFieldsExpiry.parameters = {
   msw: [
     postVfnTransactionResponse({
-      expiryMsOverride: 10 * 1000,
+      expiryMsOverride: 3 * 1000,
     }),
     getPublicFormResponse({
       overrides: {
@@ -166,7 +166,7 @@ VerifiedFieldsExpiry.parameters = {
               isVerifiable: true,
               title: 'Verifiable Mobile Number',
               description:
-                'Verify with random number and OTP. The field should reset after 10 seconds.',
+                'Verify with random number and OTP. The field should reset after 3 seconds.',
               required: true,
               disabled: false,
               fieldType: BasicField.Mobile,

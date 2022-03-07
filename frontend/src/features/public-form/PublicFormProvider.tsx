@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
+import get from 'lodash/get'
+import simplur from 'simplur'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
@@ -55,18 +57,29 @@ export const PublicFormProvider = ({
     )
   }, [vfnTransaction])
 
-  useTimeout(() => {
+  const generateVfnExpiryToast = useCallback(() => {
     if (toastIdRef.current) {
       toast.close(toastIdRef.current)
     }
-    toastIdRef.current = toast({
-      duration: null,
-      status: 'warning',
-      isClosable: true,
-      description:
-        'Your verified fields has expired. Please verify those fields again.',
-    })
-  }, expiryInMs)
+    const numVerifiable = data?.form.form_fields.filter((ff) =>
+      get(ff, 'isVerifiable'),
+    ).length
+
+    if (numVerifiable) {
+      toastIdRef.current = toast({
+        duration: null,
+        status: 'warning',
+        isClosable: true,
+        description: simplur`Your verified field[|s] ${[
+          numVerifiable,
+        ]} [has|have] expired. Please verify [the|those] ${[
+          numVerifiable,
+        ]} field[|s] again.`,
+      })
+    }
+  }, [data?.form.form_fields, toast])
+
+  useTimeout(generateVfnExpiryToast, expiryInMs)
 
   return (
     <PublicFormContext.Provider
