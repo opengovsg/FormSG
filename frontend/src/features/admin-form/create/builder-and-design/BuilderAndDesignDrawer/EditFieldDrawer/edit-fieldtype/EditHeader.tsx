@@ -18,10 +18,7 @@ import { EditFieldProps } from './common/types'
 
 type EditHeaderProps = EditFieldProps<SectionFieldBase>
 
-interface EditHeaderInputs {
-  title: string
-  description: string
-}
+type EditHeaderInputs = Pick<SectionFieldBase, 'title' | 'description'>
 
 export const EditHeader = ({
   field,
