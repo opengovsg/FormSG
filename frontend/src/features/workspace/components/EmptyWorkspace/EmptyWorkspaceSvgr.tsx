@@ -4,7 +4,6 @@ import { chakra } from '@chakra-ui/react'
 export const EmptyWorkspaceSvgr = chakra((props: SVGProps<SVGSVGElement>) => (
   <svg
     viewBox="0 0 354 343"
-    height={343}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     {...props}

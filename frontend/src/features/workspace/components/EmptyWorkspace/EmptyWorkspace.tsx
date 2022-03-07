@@ -29,7 +29,11 @@ export const EmptyWorkspace = ({
       <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
         You don't have any forms yet
       </Text>
-      <Text textStyle="body-1" color="secondary.500" mb="2rem">
+      <Text
+        textStyle="body-1"
+        color="secondary.500"
+        mb={{ base: '2.5rem', md: '2rem' }}
+      >
         Get started by creating a new form.
       </Text>
       <Button
@@ -40,7 +44,11 @@ export const EmptyWorkspace = ({
       >
         Create form
       </Button>
-      <EmptyWorkspaceSvgr mt="3.5rem" maxW="100%" />
+      <EmptyWorkspaceSvgr
+        mt={{ base: '2.5rem', md: '3.5rem' }}
+        w={{ base: '184px', md: '354px' }}
+        maxW="100%"
+      />
     </Flex>
   )
 }
