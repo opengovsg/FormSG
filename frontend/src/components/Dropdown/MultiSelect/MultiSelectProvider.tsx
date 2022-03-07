@@ -57,7 +57,7 @@ export const MultiSelectProvider = ({
   name,
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
-  placeholder = 'Select options',
+  placeholder: placeholderProp,
   clearButtonLabel = 'Clear dropdown',
   isSearchable = true,
   defaultIsOpen,
@@ -146,10 +146,9 @@ export const MultiSelectProvider = ({
   })
 
   const dynamicPlaceholder = useMemo(() => {
-    const numSelectedItems = selectedItems.length
-    if (numSelectedItems > 0) return ''
-    return placeholder ?? 'Select options'
-  }, [placeholder, selectedItems.length])
+    if (placeholderProp === null || selectedItems.length > 0) return ''
+    return placeholderProp ?? 'Select options'
+  }, [placeholderProp, selectedItems.length])
 
   const {
     toggleMenu,

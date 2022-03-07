@@ -36,7 +36,7 @@ export const SingleSelectProvider = ({
   name,
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
-  placeholder = 'Select an option',
+  placeholder: placeholderProp,
   clearButtonLabel = 'Clear dropdown input',
   isClearable = true,
   isSearchable = true,
@@ -51,6 +51,11 @@ export const SingleSelectProvider = ({
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
+
+  const placeholder = useMemo(() => {
+    if (placeholderProp === null) return ''
+    return placeholderProp ?? 'Select an option'
+  }, [placeholderProp])
 
   const getFilteredItems = useCallback(
     (filterValue?: string) =>
