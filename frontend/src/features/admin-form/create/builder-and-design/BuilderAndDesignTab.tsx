@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   DragDropContext,
   DragStart,
@@ -24,7 +24,6 @@ import {
 } from './dndHelpers'
 import { DndPlaceholderProps } from './types'
 import {
-  setFieldsSelector,
   updateCreateStateSelector,
   useBuilderAndDesignStore,
 } from './useBuilderAndDesignStore'
@@ -32,13 +31,8 @@ import { useCreateTabForm } from './useCreateTabForm'
 
 export const BuilderAndDesignTab = (): JSX.Element => {
   const setToCreating = useBuilderAndDesignStore(updateCreateStateSelector)
-  const setFields = useBuilderAndDesignStore(setFieldsSelector)
   const { data } = useCreateTabForm()
-  useEffect(() => {
-    if (data?.form_fields) {
-      setFields(data.form_fields)
-    }
-  }, [data?.form_fields, setFields])
+
   const { reorderFieldMutation } = useReorderFormField()
 
   const [placeholderProps, setPlaceholderProps] = useState<DndPlaceholderProps>(

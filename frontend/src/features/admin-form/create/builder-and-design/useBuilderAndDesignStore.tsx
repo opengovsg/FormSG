@@ -11,8 +11,6 @@ export enum BuildFieldState {
 }
 
 export type BuilderAndDesignStore = {
-  fields: FormFieldDto[] | null
-  setFields: (fields: FormFieldDto[]) => void
   updateCreateState: (field: FieldCreateDto, insertionIndex: number) => void
   updateEditState: (field: FormFieldDto) => void
   setToInactive: () => void
@@ -31,8 +29,6 @@ export type BuilderAndDesignStore = {
 
 export const useBuilderAndDesignStore = create<BuilderAndDesignStore>(
   devtools((set, get) => ({
-    fields: null,
-    setFields: (fields) => set(() => ({ fields })),
     stateData: { state: BuildFieldState.Inactive },
     updateCreateState: (field, insertionIndex) => {
       // perf: prevent store update if field is the same
@@ -70,14 +66,6 @@ export const useBuilderAndDesignStore = create<BuilderAndDesignStore>(
     },
   })),
 )
-
-export const fieldsSelector = (
-  state: BuilderAndDesignStore,
-): BuilderAndDesignStore['fields'] => state.fields
-
-export const setFieldsSelector = (
-  state: BuilderAndDesignStore,
-): BuilderAndDesignStore['setFields'] => state.setFields
 
 export const stateDataSelector = (
   state: BuilderAndDesignStore,

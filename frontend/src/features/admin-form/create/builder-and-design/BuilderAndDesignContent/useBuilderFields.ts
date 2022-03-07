@@ -6,10 +6,10 @@ import { insertAt, replaceAt } from '~shared/utils/immutable-array-fns'
 import { PENDING_CREATE_FIELD_ID } from '../constants'
 import {
   BuildFieldState,
-  fieldsSelector,
   stateDataSelector,
   useBuilderAndDesignStore,
 } from '../useBuilderAndDesignStore'
+import { useCreateTabForm } from '../useCreateTabForm'
 
 const getFormFieldsWhileCreating = (
   formFields: FormFieldDto[],
@@ -37,9 +37,10 @@ const getFormFieldsWhileEditing = (
 }
 
 export const useBuilderFields = () => {
-  const existingFields = useBuilderAndDesignStore(fieldsSelector)
+  const { data: formData } = useCreateTabForm()
   const stateData = useBuilderAndDesignStore(stateDataSelector)
   const builderFields = useMemo(() => {
+    const existingFields = formData?.form_fields
     if (!existingFields) return null
     if (stateData.state === BuildFieldState.EditingField) {
       return getFormFieldsWhileEditing(existingFields, stateData.field)
@@ -48,7 +49,7 @@ export const useBuilderFields = () => {
       return getFormFieldsWhileCreating(existingFields, stateData)
     }
     return existingFields
-  }, [existingFields, stateData])
+  }, [formData, stateData])
 
   return { builderFields }
 }
