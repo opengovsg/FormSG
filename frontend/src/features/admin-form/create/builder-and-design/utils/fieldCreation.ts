@@ -1,6 +1,6 @@
 import { BasicField, FieldCreateDto } from '~shared/types/field'
 
-import { FIELDS_TO_CREATE_META } from './constants'
+import { FIELDS_TO_CREATE_META } from '../constants'
 
 /**
  * Utility methods to create bare minimum meta required for field creation.

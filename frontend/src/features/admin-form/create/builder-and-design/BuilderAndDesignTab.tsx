@@ -6,9 +6,13 @@ import {
   DropResult,
 } from 'react-beautiful-dnd'
 
-import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils'
+import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 
 import { useReorderFormField } from './mutations/useReorderFormField'
+import {
+  getPlaceholderStartProps,
+  getPlaceholderUpdateProps,
+} from './utils/dnd'
 import { BuilderAndDesignContent } from './BuilderAndDesignContent'
 import { BuilderAndDesignDrawer } from './BuilderAndDesignDrawer'
 import {
@@ -18,10 +22,6 @@ import {
   CREATE_PAGE_FIELDS_ORDERED,
   FIELD_LIST_DROP_ID,
 } from './constants'
-import {
-  getPlaceholderStartProps,
-  getPlaceholderUpdateProps,
-} from './dndHelpers'
 import { DndPlaceholderProps } from './types'
 import {
   updateCreateStateSelector,
