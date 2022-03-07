@@ -3,6 +3,7 @@ import {
   FC,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -50,25 +51,27 @@ export const useCreatePageSidebarContext =
     )
     const setFieldsToInactive = useBuilderAndDesignStore(setToInactiveSelector)
 
+    // Set state to inactive whenever active tab changes
+    useEffect(() => {
+      setFieldsToInactive()
+    }, [activeTab, setFieldsToInactive])
+
     const handleBuilderClick = useCallback(
       () => setActiveTab(DrawerTabs.Builder),
       [setActiveTab],
     )
 
-    const handleDesignClick = useCallback(() => {
-      setActiveTab(DrawerTabs.Design)
-      setFieldsToInactive()
-    }, [setActiveTab, setFieldsToInactive])
+    const handleDesignClick = useCallback(
+      () => setActiveTab(DrawerTabs.Design),
+      [setActiveTab],
+    )
 
-    const handleLogicClick = useCallback(() => {
-      setActiveTab(DrawerTabs.Logic)
-      setFieldsToInactive()
-    }, [setActiveTab, setFieldsToInactive])
+    const handleLogicClick = useCallback(
+      () => setActiveTab(DrawerTabs.Logic),
+      [setActiveTab],
+    )
 
-    const handleClose = useCallback(() => {
-      setActiveTab(null)
-      setFieldsToInactive()
-    }, [setActiveTab, setFieldsToInactive])
+    const handleClose = useCallback(() => setActiveTab(null), [setActiveTab])
 
     return {
       activeTab,
