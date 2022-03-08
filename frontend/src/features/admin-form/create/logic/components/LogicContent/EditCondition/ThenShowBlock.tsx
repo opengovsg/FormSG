@@ -114,7 +114,9 @@ export const ThenShowBlock = (): JSX.Element => {
   return (
     <Stack direction="column" spacing="0.75rem" py="1.5rem" px="2rem">
       <Stack direction="row" spacing="0.5rem">
-        <BlockLabelText>Then</BlockLabelText>
+        <BlockLabelText id="thenType-label" htmlFor="thenType">
+          Then
+        </BlockLabelText>
         <FormControl id="thenType" isRequired isInvalid={!!errors.thenType}>
           <Controller
             name="thenType"
@@ -136,7 +138,9 @@ export const ThenShowBlock = (): JSX.Element => {
       </Stack>
 
       <Stack direction="row" spacing="0.5rem">
-        <BlockLabelText>Show</BlockLabelText>
+        <BlockLabelText id="thenValue-label" htmlFor="thenValue">
+          Show
+        </BlockLabelText>
         <FormControl id="thenValue" isRequired isInvalid={!!errors.thenValue}>
           <Controller
             name="thenValue"

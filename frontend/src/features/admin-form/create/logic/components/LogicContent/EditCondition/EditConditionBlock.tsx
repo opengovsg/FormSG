@@ -6,7 +6,7 @@ import {
   useFormContext,
 } from 'react-hook-form'
 import { BiTrash } from 'react-icons/bi'
-import { Box, Flex, FormControl, Stack } from '@chakra-ui/react'
+import { Box, Flex, FormControl, Stack, VisuallyHidden } from '@chakra-ui/react'
 import { get, pickBy, range } from 'lodash'
 
 import { LOGIC_MAP } from '~shared/modules/logic'
@@ -181,7 +181,12 @@ export const EditConditionBlock = ({
     <Flex flexDir="column">
       <Stack direction="column" spacing="0.75rem">
         <Stack direction="row" spacing="0.5rem">
-          <BlockLabelText htmlFor={`${name}.ifFieldId`}>IF</BlockLabelText>
+          <BlockLabelText
+            id={`${name}.ifFieldId-label`}
+            htmlFor={`${name}.ifFieldId`}
+          >
+            IF
+          </BlockLabelText>
           <FormControl
             id={`${name}.ifFieldId`}
             isRequired
@@ -221,8 +226,14 @@ export const EditConditionBlock = ({
           ) : null}
         </Stack>
         <Stack direction="row" spacing="0.5rem">
-          <BlockLabelText htmlFor={`${name}.logicCondition`}>IS</BlockLabelText>
-          <Flex flexDir="column" flex={1}>
+          <BlockLabelText
+            id={`${name}.logicCondition-label`}
+            htmlFor={`${name}.logicCondition`}
+          >
+            IS
+          </BlockLabelText>
+          <Flex flexDir="column" flex={1} as="fieldset">
+            <VisuallyHidden as="legend">Logic criteria</VisuallyHidden>
             <Stack direction="row" align="flex-start" flex={1}>
               <FormControl
                 id={`${name}.logicCondition`}
@@ -252,6 +263,13 @@ export const EditConditionBlock = ({
                 isRequired
                 isInvalid={!!get(errors, `${name}.logicValue`)}
               >
+                <VisuallyHidden
+                  as="label"
+                  id={`${name}.logicValue-label`}
+                  htmlFor={`${name}.logicValue`}
+                >
+                  Logic condition
+                </VisuallyHidden>
                 <Controller
                   name={`${name}.logicValue`}
                   rules={{
