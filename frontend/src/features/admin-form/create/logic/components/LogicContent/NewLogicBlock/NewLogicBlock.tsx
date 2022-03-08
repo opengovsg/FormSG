@@ -34,7 +34,13 @@ export const NewLogicBlock = () => {
 
   useLayoutEffect(() => {
     if (ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth' })
+      ref.current.scrollIntoView({
+        behavior: 'smooth',
+        // Block required so parent (with overflow:hidden) will not be scrolled
+        // and causing unscrollable white space.
+        // See https://stackoverflow.com/questions/48634459/scrollintoview-block-vs-inline/48635751#48635751
+        block: 'nearest',
+      })
     }
   }, [])
 
