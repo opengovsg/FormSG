@@ -6,7 +6,7 @@ import { useItems } from '../hooks/useItems'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
 import { ComboboxItem } from '../types'
 import { defaultFilter } from '../utils/defaultFilter'
-import { itemToValue } from '../utils/itemUtils'
+import { itemToLabelString, itemToValue } from '../utils/itemUtils'
 
 export interface SingleSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
@@ -171,7 +171,7 @@ export const SingleSelectProvider = ({
     if (inputAriaProp) return inputAriaProp
     let label = 'No option selected'
     if (selectedItem) {
-      label = `Option ${itemToValue(selectedItem)}, selected`
+      label = `Option ${itemToLabelString(selectedItem)}, selected`
     }
     return {
       id: `${name}-current-selection`,
