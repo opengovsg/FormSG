@@ -19,43 +19,42 @@ import Button from '~components/Button'
 
 import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-import { usePublicFormView } from '~features/public-form/queries'
 
 const useFormHeader = () => {
-  const { data } = usePublicFormView()
-  const { handleLogoutMutation } = usePublicAuthMutations()
+  const { form, spcpSession, formId } = usePublicFormContext()
+  const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
   const titleColour = useMemo(() => {
-    if (data?.form.startPage.colorTheme === FormColorTheme.Orange) {
+    if (form?.startPage.colorTheme === FormColorTheme.Orange) {
       return 'secondary.700'
     }
     return 'white'
-  }, [data?.form.startPage.colorTheme])
+  }, [form?.startPage.colorTheme])
 
   const titleBg = useMemo(
     () =>
-      data?.form.startPage.colorTheme
-        ? `theme-${data.form.startPage.colorTheme}.500`
+      form?.startPage.colorTheme
+        ? `theme-${form.startPage.colorTheme}.500`
         : `neutral.200`,
-    [data?.form.startPage.colorTheme],
+    [form?.startPage.colorTheme],
   )
 
   const estTimeString = useMemo(() => {
-    if (!data || !data.form.startPage.estTimeTaken) return ''
-    return simplur`${data.form.startPage.estTimeTaken} min[|s] estimated time to complete`
-  }, [data])
+    if (!form?.startPage.estTimeTaken) return ''
+    return simplur`${form?.startPage.estTimeTaken} min[|s] estimated time to complete`
+  }, [form])
 
   const handleLogout = useCallback(() => {
-    if (!data || data.form.authType === FormAuthType.NIL) return
-    return handleLogoutMutation.mutate(data.form.authType)
-  }, [data, handleLogoutMutation])
+    if (!form || form?.authType === FormAuthType.NIL) return
+    return handleLogoutMutation.mutate(form.authType)
+  }, [form, handleLogoutMutation])
 
   return {
-    title: data?.form.title,
+    title: form?.title,
     estTimeString,
     titleBg,
     titleColour,
-    loggedInId: data?.spcpSession?.userName,
+    loggedInId: spcpSession?.userName,
     handleLogout,
   }
 }
