@@ -21,6 +21,8 @@ export const limitRate = (
   options: Partial<RateLimitOptions> = {},
 ): RateLimitRequestHandler => {
   const defaultOptions: Partial<RateLimitOptions> = {
+    // Change key name in `src/types/vendor/express.d.ts` if this property name is changed.
+    requestPropertyName: 'rateLimit',
     windowMs: 60 * 1000, // Apply rate per-minute
     max: 1200,
     handler: (req, res) => {
