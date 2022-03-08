@@ -17,7 +17,6 @@ import { useWatchDependency } from '~hooks/useWatchDependency'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
-import Input from '~components/Input'
 import NumberInput from '~components/NumberInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
@@ -289,9 +288,7 @@ export const EditConditionBlock = ({
           {handleRemoveLogic ? <Box aria-hidden w="2.75rem" /> : null}
         </Stack>
         {/* Virtual input for ifLogicType field */}
-        <VisuallyHidden aria-hidden>
-          <Input {...register(`${name}.ifValueType`)} />
-        </VisuallyHidden>
+        <input type="hidden" {...register(`${name}.ifValueType`)} aria-hidden />
       </Stack>
     </Flex>
   )
