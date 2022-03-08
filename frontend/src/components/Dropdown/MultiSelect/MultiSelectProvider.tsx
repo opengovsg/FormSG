@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   FormControlOptions,
   useFormControlProps,
@@ -218,6 +218,11 @@ export const MultiSelectProvider = ({
     },
     ...downshiftComboboxProps,
   })
+
+  /** Effect to update filtered items whenever items prop changes. */
+  useEffect(() => {
+    setFilteredItems(getFilteredItems(inputValue))
+  }, [getFilteredItems, inputValue, items])
 
   const resetInputValue = useCallback(() => setInputValue(''), [setInputValue])
 
