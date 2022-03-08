@@ -30,11 +30,13 @@ import { BlockLabelText } from './BlockLabelText'
 
 export interface EditConditionBlockProps {
   index: number
+  isLoading: boolean
   handleRemoveLogic?: (index?: number | number[] | undefined) => void
 }
 
 export const EditConditionBlock = ({
   index,
+  isLoading,
   handleRemoveLogic,
 }: EditConditionBlockProps): JSX.Element => {
   const { logicableFields, mapIdToField } = useAdminFormLogic()
@@ -147,7 +149,7 @@ export const EditConditionBlock = ({
   const renderValueInputComponent = useCallback(
     (field: ControllerRenderProps<FieldValues, `${typeof name}.value`>) => {
       const selectProps = {
-        isDisabled: !conditionStateValue,
+        isDisabled: !conditionStateValue || isLoading,
         isSearchable: false,
         placeholder: null,
         isClearable: false,
@@ -169,7 +171,7 @@ export const EditConditionBlock = ({
           return <NumberInput isDisabled={!conditionStateValue} {...field} />
       }
     },
-    [conditionStateValue, conditionValueItems, ifValueTypeValue],
+    [conditionStateValue, conditionValueItems, ifValueTypeValue, isLoading],
   )
 
   return (
@@ -182,6 +184,7 @@ export const EditConditionBlock = ({
           <FormControl
             id={`${name}.field`}
             isRequired
+            isReadOnly={isLoading}
             isInvalid={!!get(errors, `${name}.field`)}
           >
             <Controller
@@ -195,6 +198,7 @@ export const EditConditionBlock = ({
               }}
               render={({ field }) => (
                 <SingleSelect
+                  isDisabled={isLoading}
                   isSearchable={false}
                   isClearable={false}
                   placeholder="Select a question"
@@ -209,6 +213,7 @@ export const EditConditionBlock = ({
           </FormControl>
           {handleRemoveLogic ? (
             <IconButton
+              isDisabled={isLoading}
               variant="clear"
               colorScheme="danger"
               icon={<BiTrash />}
@@ -226,6 +231,7 @@ export const EditConditionBlock = ({
             <Stack direction="row" align="flex-start" flex={1}>
               <FormControl
                 id={`${name}.state`}
+                isReadOnly={isLoading}
                 isRequired
                 isInvalid={!!get(errors, `${name}.state`)}
                 maxW={logicTypeWrapperWidth}
@@ -238,7 +244,7 @@ export const EditConditionBlock = ({
                   render={({ field }) => (
                     <SingleSelect
                       placeholder={null}
-                      isDisabled={!ifFieldIdValue}
+                      isDisabled={!ifFieldIdValue || isLoading}
                       isSearchable={false}
                       isClearable={false}
                       items={conditionItems}
@@ -250,6 +256,7 @@ export const EditConditionBlock = ({
               <FormControl
                 id={`${name}.value`}
                 isRequired
+                isReadOnly={isLoading}
                 isInvalid={!!get(errors, `${name}.value`)}
               >
                 <VisuallyHidden

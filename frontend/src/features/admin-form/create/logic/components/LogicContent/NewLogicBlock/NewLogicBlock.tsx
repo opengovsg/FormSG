@@ -3,6 +3,7 @@ import { FormProvider, useFieldArray, useForm } from 'react-hook-form'
 import { Stack } from '@chakra-ui/react'
 
 import { useAdminLogicStore } from '../../../adminLogicStore'
+import { useLogicMutations } from '../../../mutations'
 import { EditLogicInputs } from '../../../types'
 import {
   AddConditionDivider,
@@ -17,13 +18,13 @@ export const NewLogicBlock = () => {
   const setToInactive = useAdminLogicStore(
     useCallback((state) => state.setToInactive, []),
   )
+  const { createLogicMutation } = useLogicMutations()
 
   const formMethods = useForm<EditLogicInputs>({
     defaultValues: {
       conditions: [{}],
     },
   })
-
   const { fields, append, remove } = useFieldArray({
     control: formMethods.control,
     name: 'conditions',
@@ -38,7 +39,9 @@ export const NewLogicBlock = () => {
   }, [])
 
   const handleCreateLogic = formMethods.handleSubmit((inputs) => {
-    console.log(inputs)
+    return createLogicMutation.mutate(inputs, {
+      onSuccess: () => setToInactive(),
+    })
   })
 
   return (
@@ -53,6 +56,7 @@ export const NewLogicBlock = () => {
           {fields.map((field, index) => {
             return (
               <EditConditionBlock
+                isLoading={createLogicMutation.isLoading}
                 key={field.id}
                 index={index}
                 // Only allow logic removal if there is more than one logic block.
@@ -61,9 +65,13 @@ export const NewLogicBlock = () => {
             )
           })}
         </Stack>
-        <AddConditionDivider handleAddCondition={() => append({})} />
-        <ThenShowBlock />
+        <AddConditionDivider
+          isDisabled={createLogicMutation.isLoading}
+          handleAddCondition={() => append({})}
+        />
+        <ThenShowBlock isLoading={createLogicMutation.isLoading} />
         <SaveActionGroup
+          isLoading={createLogicMutation.isLoading}
           handleDelete={setToInactive}
           handleSubmit={handleCreateLogic}
           handleCancel={setToInactive}

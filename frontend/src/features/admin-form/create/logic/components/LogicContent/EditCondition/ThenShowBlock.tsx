@@ -18,7 +18,13 @@ import { EditLogicInputs } from '../../../types'
 
 import { BlockLabelText } from './BlockLabelText'
 
-export const ThenShowBlock = (): JSX.Element => {
+interface ThenShowBlockProps {
+  isLoading: boolean
+}
+
+export const ThenShowBlock = ({
+  isLoading,
+}: ThenShowBlockProps): JSX.Element => {
   const {
     watch,
     formState: { errors },
@@ -64,7 +70,12 @@ export const ThenShowBlock = (): JSX.Element => {
         <BlockLabelText id="logicType-label" htmlFor="logicType">
           Then
         </BlockLabelText>
-        <FormControl id="logicType" isRequired isInvalid={!!errors.logicType}>
+        <FormControl
+          isReadOnly={isLoading}
+          id="logicType"
+          isRequired
+          isInvalid={!!errors.logicType}
+        >
           <Controller
             name="logicType"
             control={control}
@@ -73,6 +84,7 @@ export const ThenShowBlock = (): JSX.Element => {
             }}
             render={({ field }) => (
               <SingleSelect
+                isDisabled={isLoading}
                 isSearchable={false}
                 isClearable={false}
                 placeholder="Select a type of result"
@@ -92,13 +104,13 @@ export const ThenShowBlock = (): JSX.Element => {
         >
           Show
         </BlockLabelText>
-        <ThenLogicInput />
+        <ThenLogicInput isLoading={isLoading} />
       </Stack>
     </Stack>
   )
 }
 
-const ThenLogicInput = () => {
+const ThenLogicInput = ({ isLoading }: ThenShowBlockProps) => {
   const {
     watch,
     control,
@@ -139,6 +151,7 @@ const ThenLogicInput = () => {
     return (
       <FormControl
         id="preventSubmitMessage"
+        isReadOnly={isLoading}
         isRequired
         isInvalid={!!errors.preventSubmitMessage}
       >
@@ -160,7 +173,12 @@ const ThenLogicInput = () => {
   }
 
   return (
-    <FormControl id="show" isRequired isInvalid={!!errors.show}>
+    <FormControl
+      id="show"
+      isReadOnly={isLoading}
+      isRequired
+      isInvalid={!!errors.show}
+    >
       <Controller
         name="show"
         control={control}
@@ -172,7 +190,7 @@ const ThenLogicInput = () => {
         }}
         render={({ field: { value, ...rest } }) => (
           <MultiSelect
-            isDisabled={!logicTypeValue}
+            isDisabled={!logicTypeValue || isLoading}
             placeholder={null}
             items={thenValueItems}
             values={value ?? []}

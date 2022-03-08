@@ -9,6 +9,7 @@ export interface SaveActionGroupProps {
   handleDelete: () => void
   handleSubmit: () => void
   submitButtonLabel?: string
+  isLoading: boolean
 }
 
 export const SaveActionGroup = ({
@@ -16,6 +17,7 @@ export const SaveActionGroup = ({
   handleCancel,
   handleDelete,
   handleSubmit,
+  isLoading,
 }: SaveActionGroupProps): JSX.Element => {
   return (
     <Flex
@@ -33,8 +35,11 @@ export const SaveActionGroup = ({
           aria-label="Delete logic"
           icon={<BiTrash />}
           onClick={handleDelete}
+          isDisabled={isLoading}
         />
-        <Button onClick={handleSubmit}>{submitButtonLabel}</Button>
+        <Button isLoading={isLoading} onClick={handleSubmit}>
+          {submitButtonLabel}
+        </Button>
       </ButtonGroup>
     </Flex>
   )
