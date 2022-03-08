@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useMutation } from 'react-query'
 
 import { useInterval } from '~hooks/useInterval'
+import { ButtonProps } from '~components/Button'
 
 import { ResendOtpButton } from './ResendOtpButton'
 
-export interface ResendOtpButtonContainerProps {
+export interface ResendOtpButtonContainerProps extends ButtonProps {
   onResendOtp: () => Promise<void>
   /**
    * The timer to reset to once the otp has been resent.
@@ -17,6 +18,7 @@ export interface ResendOtpButtonContainerProps {
 export const ResendOtpButtonContainer = ({
   onResendOtp,
   timer: propTimer = 60,
+  ...buttonProps
 }: ResendOtpButtonContainerProps): JSX.Element => {
   // The counter
   const [timer, setTimer] = useState(0)
@@ -38,6 +40,7 @@ export const ResendOtpButtonContainer = ({
       isDisabled={timer > 0}
       isLoading={isLoading}
       onButtonClick={mutate}
+      {...buttonProps}
     />
   )
 }

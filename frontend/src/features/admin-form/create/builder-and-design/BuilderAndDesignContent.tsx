@@ -4,7 +4,8 @@ import { Box, Flex } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
-import { BuilderAndDesignPlaceholder } from './components/BuilderAndDesignPlaceholder'
+import BuilderAndDesignPlaceholder from './components/BuilderAndDesignPlaceholder'
+import { EmptyFormPlaceholder } from './components/BuilderAndDesignPlaceholder/EmptyFormPlaceholder'
 import FieldRow from './components/FieldRow'
 import { FIELD_LIST_DROP_ID } from './constants'
 import { useEditFieldStore } from './editFieldStore'
@@ -56,21 +57,31 @@ export const BuilderAndDesignContent = ({
           flexDir="column"
         >
           <Droppable droppableId={FIELD_LIST_DROP_ID}>
-            {(provided, snapshot) => (
-              <Box
-                pos="relative"
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-              >
-                <BuilderFields fields={builderFields} />
-                {provided.placeholder}
-                {snapshot.isDraggingOver ? (
+            {(provided, snapshot) =>
+              builderFields?.length ? (
+                <Box
+                  pos="relative"
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  <BuilderFields
+                    fields={builderFields}
+                    isDraggingOver={snapshot.isDraggingOver}
+                  />
+                  {provided.placeholder}
                   <BuilderAndDesignPlaceholder
                     placeholderProps={placeholderProps}
+                    isDraggingOver={snapshot.isDraggingOver}
                   />
-                ) : null}
-              </Box>
-            )}
+                </Box>
+              ) : (
+                <EmptyFormPlaceholder
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  isDraggingOver={snapshot.isDraggingOver}
+                />
+              )
+            }
           </Droppable>
         </Flex>
       </Flex>
@@ -78,8 +89,13 @@ export const BuilderAndDesignContent = ({
   )
 }
 
+interface BuilderFieldsProps {
+  fields: AdminFormDto['form_fields']
+  isDraggingOver: boolean
+}
+
 const BuilderFields = memo(
-  ({ fields }: { fields: AdminFormDto['form_fields'] | undefined }) => {
+  ({ fields, isDraggingOver }: BuilderFieldsProps) => {
     if (!fields) {
       return <div>Loading...</div>
     }
@@ -87,10 +103,16 @@ const BuilderFields = memo(
     return (
       <>
         {fields.map((f, i) => (
-          <FieldRow index={i} key={f._id} field={f} />
+          <FieldRow
+            index={i}
+            key={f._id}
+            field={f}
+            isDraggingOver={isDraggingOver}
+          />
         ))}
       </>
     )
   },
-  (prev, next) => prev.fields === next.fields,
+  (prev, next) =>
+    prev.fields === next.fields && prev.isDraggingOver === next.isDraggingOver,
 )

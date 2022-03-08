@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext, MutableRefObject, useContext } from 'react'
 import { CSSObject, FormControlOptions } from '@chakra-ui/react'
 import { UseComboboxPropGetters, UseComboboxState } from 'downshift'
 
@@ -34,11 +34,13 @@ interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
     Required<SharedSelectContextReturnProps<Item>>,
     FormControlOptions {
   isItemSelected: (item: ComboboxItem) => boolean
+  closeMenu: () => void
   toggleMenu: () => void
   selectItem: (item: Item) => void
   styles: Record<string, CSSObject>
   isFocused: boolean
   setIsFocused: (isFocused: boolean) => void
+  inputRef?: MutableRefObject<HTMLInputElement | null>
   resetInputValue: () => void
 }
 

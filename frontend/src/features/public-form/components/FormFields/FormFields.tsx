@@ -9,7 +9,7 @@ import { FormColorTheme } from '~shared/types/form'
 import Button from '~components/Button'
 import { TableFieldSchema } from '~templates/Field'
 
-import { FormField } from './FormField'
+import { FieldFactory } from './FieldFactory'
 
 export interface FormFieldsProps {
   formFields: FormFieldDto[]
@@ -55,7 +55,11 @@ export const FormFields = ({
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
         <Stack spacing="2.25rem">
           {formFields.map((field) => (
-            <FormField key={field._id} field={field} colorTheme={colorTheme} />
+            <FieldFactory
+              field={field}
+              colorTheme={colorTheme}
+              key={field._id}
+            />
           ))}
           <Button
             mt="1rem"

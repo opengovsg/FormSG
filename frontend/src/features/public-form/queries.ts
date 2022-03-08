@@ -1,5 +1,4 @@
 import { useQuery, UseQueryResult } from 'react-query'
-import { useParams } from 'react-router-dom'
 
 import { PublicFormViewDto } from '~shared/types/form/form'
 
@@ -16,13 +15,9 @@ export const publicFormKeys = {
   id: (formId: string) => [...publicFormKeys.base, formId] as const,
 }
 
-export const usePublicFormView = (): UseQueryResult<
-  PublicFormViewDto,
-  ApiError
-> => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
-
+export const usePublicFormView = (
+  formId: string,
+): UseQueryResult<PublicFormViewDto, ApiError> => {
   return useQuery<PublicFormViewDto, ApiError>(
     publicFormKeys.id(formId),
     () => getPublicFormView(formId),
@@ -31,12 +26,4 @@ export const usePublicFormView = (): UseQueryResult<
       refetchOnWindowFocus: false,
     },
   )
-}
-
-export const usePublicForm = () => {
-  const { data, ...rest } = usePublicFormView()
-  return {
-    data: data?.form,
-    ...rest,
-  }
 }

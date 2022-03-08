@@ -31,11 +31,13 @@ import { SectionFieldRow } from './SectionFieldRow'
 export interface FieldRowContainerProps {
   field: FormFieldDto
   index: number
+  isDraggingOver: boolean
 }
 
 export const FieldRowContainer = ({
   field,
   index,
+  isDraggingOver,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
 
@@ -91,7 +93,7 @@ export const FieldRowContainer = ({
             cursor={isActive ? 'initial' : 'pointer'}
             bg="white"
             transition="background 0.2s ease"
-            _hover={{ bg: 'secondary.100' }}
+            _hover={{ bg: isDraggingOver ? 'white' : 'secondary.100' }}
             borderRadius="4px"
             outline="none"
             {...(isActive ? { 'data-active': true } : {})}

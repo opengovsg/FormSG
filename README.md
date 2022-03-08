@@ -53,6 +53,16 @@ The current product roadmap includes:
 
 Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 
+### First Setup
+
+Run the following shell command to install relevant npm packages.
+
+```bash
+npm install
+```
+
+If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
+
 ### Running Locally
 
 Run the following shell command to build the Docker image from scratch. This will usually take 10 or so minutes.
@@ -61,7 +71,7 @@ Run the following shell command to build the Docker image from scratch. This wil
 npm run dev
 ```
 
-After the Docker image has finished building, the application can be accessed at [localhost:5000](localhost:5000).
+After the Docker image has finished building, the React application can be accessed at [localhost:3000](localhost:3000). The backend API server can be accessed at [localhost:5000](localhost:5000).
 
 If there have been no dependency changes in `package.json` or changes in the
 `src/app/server.ts` file, you can run

@@ -8,11 +8,13 @@ import {
   useState,
 } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Box, Container, Grid, Stack, StackDivider } from '@chakra-ui/react'
+import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
 import { chunk } from 'lodash'
 
 import Pagination from '~components/Pagination'
 
+import CreateFormModal from './components/CreateFormModal'
+import { CreateFormWizardProvider } from './components/CreateFormModal/CreateFormWizardContext'
 import { WorkspaceFormRows } from './components/WorkspaceFormRow'
 import { WorkspaceHeader } from './components/WorkspaceHeader'
 import { useWorkspace } from './queries'
@@ -29,6 +31,10 @@ const useWorkspaceForms = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [sortedForms, setSortedForms] = useState(dashboardForms)
   const [isManipulating, setIsManipulating] = useState(false)
+
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const topRef = useRef<HTMLDivElement>(null)
 
   const currentPage = Number(
     searchParams.get('page') ?? PAGE_DEFAULTS.pageNumber,
@@ -64,6 +70,11 @@ const useWorkspaceForms = () => {
     [pageSize, sortedForms],
   )
 
+  useLayoutEffect(() => {
+    // Scroll to top on workspace list page on change
+    topRef.current?.scrollIntoView()
+  }, [currentPage])
+
   const paginatedData = useMemo(() => {
     if (currentPage < 1 || currentPage > chunkedData.length) {
       return []
@@ -78,6 +89,10 @@ const useWorkspaceForms = () => {
     paginatedData,
     setPageNumber,
     setSortOrder,
+    topRef,
+    handleOpenCreateFormModal: onOpen,
+    handleCloseCreateFormModal: onClose,
+    isCreateFormModalOpen: isOpen,
   }
 }
 
@@ -88,54 +103,58 @@ export const WorkspacePage = (): JSX.Element => {
     paginatedData,
     currentPage,
     setPageNumber,
+    topRef,
+    isCreateFormModalOpen,
+    handleCloseCreateFormModal,
+    handleOpenCreateFormModal,
   } = useWorkspaceForms()
 
-  useLayoutEffect(() => {
-    // Scroll to top on workspace list page on change
-    topRef.current?.scrollIntoView()
-  }, [currentPage])
-
-  const topRef = useRef<HTMLDivElement>(null)
-
   return (
-    <Grid
-      bg="neutral.100"
-      templateColumns="1fr"
-      templateRows="auto 1fr auto"
-      minH="100vh"
-      templateAreas="'header' 'main' 'footer'"
-    >
-      <Container
-        gridArea="header"
-        maxW={CONTAINER_MAXW}
-        borderBottom="1px solid var(--chakra-colors-neutral-300)"
-        px="2rem"
-        py="1rem"
+    <>
+      <CreateFormModal
+        isOpen={isCreateFormModalOpen}
+        onClose={handleCloseCreateFormModal}
+      />
+      <Grid
+        bg="neutral.100"
+        templateColumns="1fr"
+        templateRows="auto 1fr auto"
+        minH="100vh"
+        templateAreas="'header' 'main' 'footer'"
       >
-        <WorkspaceHeader
-          isLoading={isLoading}
-          totalFormCount={totalFormCount}
-        />
-      </Container>
-      <Box gridArea="main">
-        <Box ref={topRef} />
-        <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
-      </Box>
-      <Container
-        gridArea="footer"
-        py={{ base: '1rem', md: '3rem' }}
-        px="2rem"
-        maxW={CONTAINER_MAXW}
-        borderTop="1px solid var(--chakra-colors-neutral-300)"
-      >
-        <Pagination
-          isDisabled={isLoading}
-          currentPage={currentPage}
-          totalCount={totalFormCount ?? 0}
-          onPageChange={setPageNumber}
-          pageSize={PAGE_DEFAULTS.size}
-        />
-      </Container>
-    </Grid>
+        <Container
+          gridArea="header"
+          maxW={CONTAINER_MAXW}
+          borderBottom="1px solid var(--chakra-colors-neutral-300)"
+          px="2rem"
+          py="1rem"
+        >
+          <WorkspaceHeader
+            isLoading={isLoading}
+            totalFormCount={totalFormCount}
+            handleOpenCreateFormModal={handleOpenCreateFormModal}
+          />
+        </Container>
+        <Box gridArea="main">
+          <Box ref={topRef} />
+          <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
+        </Box>
+        <Container
+          gridArea="footer"
+          py={{ base: '1rem', md: '3rem' }}
+          px="2rem"
+          maxW={CONTAINER_MAXW}
+          borderTop="1px solid var(--chakra-colors-neutral-300)"
+        >
+          <Pagination
+            isDisabled={isLoading}
+            currentPage={currentPage}
+            totalCount={totalFormCount ?? 0}
+            onPageChange={setPageNumber}
+            pageSize={PAGE_DEFAULTS.size}
+          />
+        </Container>
+      </Grid>
+    </>
   )
 }

@@ -9,7 +9,7 @@ import Input from '~components/Input'
 
 import { useUser } from '~features/user/queries'
 
-import { useCreateFormWizard } from './CreateFormWizardContext'
+import { useCreateFormWizard } from '../CreateFormWizardContext'
 
 export const EmailFormRecipientsInput = (): JSX.Element => {
   const { user, isLoading } = useUser()

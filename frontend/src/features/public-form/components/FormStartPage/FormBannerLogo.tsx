@@ -4,12 +4,12 @@ import { Flex, Image, Skeleton } from '@chakra-ui/react'
 import { FormLogoState } from '~shared/types/form/form_logo'
 
 import { useEnv } from '~features/env/queries'
-import { usePublicForm } from '~features/public-form/queries'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 const useFormBannerLogo = () => {
   const [hasImageLoaded, setHasImageLoaded] = useState(false)
+  const { form } = usePublicFormContext()
 
-  const { data: form } = usePublicForm()
   const { data: { logoBucketUrl } = {} } = useEnv(
     form?.startPage.logo.state === FormLogoState.Custom,
   )

@@ -1,8 +1,14 @@
+import { addMilliseconds } from 'date-fns'
 import { merge } from 'lodash'
 import { rest } from 'msw'
 import { PartialDeep } from 'type-fest'
 
 import { FormId, PublicFormViewDto } from '~shared/types/form/form'
+
+import {
+  FetchNewTransactionResponse,
+  JsonDate,
+} from '~features/verifiable-fields'
 
 import mockFormLogo from '../assets/mockFormLogo.png'
 
@@ -70,6 +76,25 @@ const BASE_FORM = {
       globalId: 'nhTtR59j90TGAxKCIdSQ7FFFjF5z0d6ifKDIxr2IfgO',
     },
     {
+      autoReplyOptions: {
+        hasAutoReply: true,
+        autoReplySubject: 'my subject',
+        autoReplySender: 'my name',
+        autoReplyMessage: 'my email',
+        includeFormSummary: true,
+      },
+      isVerifiable: true,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@open.gov.sg'],
+      title: 'Verifiable Email',
+      description: 'Only allows @open.gov.sg email domains',
+      required: true,
+      disabled: false,
+      fieldType: 'email',
+      _id: '5da0290b4073c800128388z4',
+      globalId: 'nhTtR59j90TGAxKCIdSQ7FFFjF5z0d6ifKDIxr2Ifg1',
+    },
+    {
       allowIntlNumbers: false,
       isVerifiable: false,
       title: 'Mobile Number',
@@ -79,6 +104,17 @@ const BASE_FORM = {
       fieldType: 'mobile',
       _id: '5da04ea3e397fc0013f63c78',
       globalId: 'IsZAjzS1J2AJqsUnAnCSQStxoknyIdUEXam6cPlNYuJ',
+    },
+    {
+      allowIntlNumbers: true,
+      isVerifiable: true,
+      title: 'Verifiable Mobile Number',
+      description: '',
+      required: true,
+      disabled: false,
+      fieldType: 'mobile',
+      _id: '5da04ea3e397fc0013f63c11',
+      globalId: 'IsZAjzS1J2AJqsUnAnCSQStxoknyIdUEXam6cPlNYuY',
     },
     {
       ValidationOptions: {
@@ -308,7 +344,7 @@ const BASE_FORM = {
 }
 
 export const getPublicFormResponse = ({
-  delay,
+  delay = 0,
   overrides,
 }: {
   delay?: number | 'infinite'
@@ -347,7 +383,60 @@ export const getCustomLogoResponse = () => {
   )
 }
 
+export const postVfnTransactionResponse = ({
+  delay = 0,
+  expiryMsOverride = 14400000, // 4 hours,
+}: {
+  delay?: number | 'infinite'
+  expiryMsOverride?: number
+} = {}) => {
+  return rest.post<FetchNewTransactionResponse>(
+    `/api/v3/forms/:formId/fieldverifications`,
+    (_req, res, ctx) => {
+      return res(
+        ctx.delay(delay),
+        ctx.json<FetchNewTransactionResponse>({
+          transactionId: `mock-transaction-id-${Math.random()}`,
+          expireAt: addMilliseconds(
+            new Date(),
+            expiryMsOverride,
+          ).toISOString() as JsonDate,
+        }),
+      )
+    },
+  )
+}
+
+export const postGenerateVfnOtpResponse = ({
+  delay = 0,
+}: {
+  delay?: number | 'infinite'
+} = {}) => {
+  return rest.post(
+    `/api/v3/forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/generate`,
+    (_req, res, ctx) => {
+      return res(ctx.delay(delay), ctx.status(200))
+    },
+  )
+}
+
+export const postVerifyVfnOtpResponse = ({
+  delay = 0,
+}: {
+  delay?: number | 'infinite'
+} = {}) => {
+  return rest.post(
+    `/api/v3/forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/verify`,
+    (_req, res, ctx) => {
+      return res(ctx.delay(delay), ctx.json('mock-signature-hehe'))
+    },
+  )
+}
+
 export const publicFormHandlers = [
   getPublicFormResponse(),
   getCustomLogoResponse(),
+  postVfnTransactionResponse(),
+  postGenerateVfnOtpResponse(),
+  postVerifyVfnOtpResponse(),
 ]

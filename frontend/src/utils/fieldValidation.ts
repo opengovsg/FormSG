@@ -3,12 +3,15 @@
  * to the field schema.
  */
 import { RegisterOptions } from 'react-hook-form'
+import { isDate, parseISO } from 'date-fns'
 import simplur from 'simplur'
 import validator from 'validator'
 
 import {
   AttachmentFieldBase,
   CheckboxFieldBase,
+  DateFieldBase,
+  DateSelectedValidation,
   DecimalFieldBase,
   DropdownFieldBase,
   EmailFieldBase,
@@ -39,6 +42,12 @@ import {
   REQUIRED_ERROR,
 } from '~constants/validation'
 
+import {
+  VerifiableFieldBase,
+  VerifiableFieldInput,
+} from '~features/verifiable-fields/types'
+
+import { isDateAfterToday, isDateBeforeToday, isDateOutOfRange } from './date'
 import { formatNumberToLocaleString } from './stringFormat'
 
 type OmitUnusedProps<T extends FieldBase> = Omit<
@@ -56,6 +65,32 @@ const createRequiredValidationRules = (
   return {
     value: schema.required,
     message: REQUIRED_ERROR,
+  }
+}
+
+/**
+ * Validation rules for verifiable fields.
+ * @param schema verifiable field schema
+ * @returns base verifiable fields' validation rules
+ */
+const createBaseVfnFieldValidationRules: ValidationRuleFn<
+  VerifiableFieldBase
+> = (schema) => {
+  return {
+    validate: {
+      required: (value?: VerifiableFieldInput) => {
+        if (!schema.required) return true
+        return !!value?.value || REQUIRED_ERROR
+      },
+      hasSignature: (val?: VerifiableFieldInput) => {
+        if (!schema.isVerifiable) return true
+        // Either signature is filled, or both fields have no input.
+        if (!!val?.signature || (!val?.value && !val?.signature)) {
+          return true
+        }
+        return 'Field verification is required'
+      },
+    },
   }
 }
 
@@ -127,10 +162,11 @@ export const createMobileValidationRules: ValidationRuleFn<MobileFieldBase> = (
   schema,
 ) => {
   return {
-    ...createBaseValidationRules(schema),
-    validate: (val?: string) => {
-      if (!val) return true
-      return isMobilePhoneNumber(val) || 'Please enter a valid mobile number'
+    validate: {
+      baseValidations: (val?: VerifiableFieldInput) => {
+        return baseMobileValidationFn(schema)(val?.value)
+      },
+      ...createBaseVfnFieldValidationRules(schema).validate,
     },
   }
 }
@@ -304,6 +340,59 @@ export const createCheckboxValidationRules: ValidationRuleFn<
   }
 }
 
+export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
+  schema,
+) => {
+  return {
+    ...createBaseValidationRules(schema),
+    validate: {
+      validDate: (val) =>
+        !val || isDate(parseISO(val)) || 'Please enter a valid date',
+      noFuture: (val) => {
+        if (
+          !val ||
+          schema.dateValidation.selectedDateValidation !==
+            DateSelectedValidation.NoFuture
+        ) {
+          return true
+        }
+        return (
+          !isDateAfterToday(parseISO(val)) ||
+          'Only dates today or before are allowed'
+        )
+      },
+      noPast: (val) => {
+        if (
+          !val ||
+          schema.dateValidation.selectedDateValidation !==
+            DateSelectedValidation.NoPast
+        ) {
+          return true
+        }
+        return (
+          !isDateBeforeToday(parseISO(val)) ||
+          'Only dates today or after are allowed'
+        )
+      },
+      range: (val) => {
+        if (
+          !val ||
+          schema.dateValidation.selectedDateValidation !==
+            DateSelectedValidation.Custom
+        ) {
+          return true
+        }
+
+        const { customMinDate, customMaxDate } = schema.dateValidation ?? {}
+        return (
+          !isDateOutOfRange(parseISO(val), customMinDate, customMaxDate) ||
+          'Selected date is not within the allowed date range'
+        )
+      },
+    },
+  }
+}
+
 export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
   schema,
 ) => {
@@ -313,28 +402,56 @@ export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
 export const createEmailValidationRules: ValidationRuleFn<EmailFieldBase> = (
   schema,
 ) => {
-  const allowedDomains = schema.isVerifiable
-    ? new Set(schema.allowedEmailDomains)
-    : new Set()
-
   return {
-    ...createBaseValidationRules(schema),
     validate: {
-      validEmail: (val?: string) => {
-        if (!val) return true
-        return validator.isEmail(val) || INVALID_EMAIL_ERROR
+      baseValidations: (val?: VerifiableFieldInput) => {
+        return baseEmailValidationFn(schema)(val?.value)
       },
-      validDomain: (val?: string) => {
-        // Return if no value, or has no whitelisted domains at all.
-        if (!val || allowedDomains.size === 0) return true
-
-        const domainInValue = val.split('@')[1]
-
-        return (
-          (domainInValue && allowedDomains.has(`@${domainInValue}`)) ||
-          INVALID_EMAIL_DOMAIN_ERROR
-        )
-      },
+      ...createBaseVfnFieldValidationRules(schema).validate,
     },
   }
 }
+
+/**
+ * To be shared between the verifiable and non-verifiable variant.
+ * @returns error string if field is invalid, true otherwise.
+ */
+export const baseEmailValidationFn =
+  (schema: OmitUnusedProps<EmailFieldBase>) => (inputValue?: string) => {
+    if (!inputValue) {
+      return true
+    }
+
+    // Valid email check
+    if (!validator.isEmail(inputValue)) {
+      return INVALID_EMAIL_ERROR
+    }
+
+    const allowedDomains = schema.isVerifiable
+      ? new Set(schema.allowedEmailDomains)
+      : new Set()
+
+    // Valid domain check
+    if (allowedDomains.size !== 0) {
+      const domainInValue = inputValue.split('@')[1]
+      if (domainInValue && !allowedDomains.has(`@${domainInValue}`)) {
+        return INVALID_EMAIL_DOMAIN_ERROR
+      }
+    }
+    // Passed all error validation.
+    return true
+  }
+
+export const baseMobileValidationFn =
+  (_schema: OmitUnusedProps<MobileFieldBase>) => (inputValue?: string) => {
+    if (!inputValue) {
+      return true
+    }
+
+    // Valid mobile check
+    if (!isMobilePhoneNumber(inputValue)) {
+      return 'Please enter a valid mobile number'
+    }
+
+    return true
+  }

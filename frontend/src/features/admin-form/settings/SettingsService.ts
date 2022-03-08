@@ -6,6 +6,7 @@ import {
 
 import { ApiService } from '~services/ApiService'
 
+import { TwilioCredentials } from '../../../../../shared/types/twilio'
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
 
 type UpdateEmailFormFn<T extends keyof EmailFormSettings> = (
@@ -94,5 +95,21 @@ const updateFormSettings = async (
   return ApiService.patch<FormSettings>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/settings`,
     settingsToUpdate,
+  ).then(({ data }) => data)
+}
+
+export const updateTwilioCredentials = async (
+  formId: string,
+  credentials: TwilioCredentials,
+) => {
+  return ApiService.put<void>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/twilio`,
+    credentials,
+  ).then(({ data }) => data)
+}
+
+export const deleteTwilioCredentials = async (formId: string) => {
+  return ApiService.delete<void>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/twilio`,
   ).then(({ data }) => data)
 }

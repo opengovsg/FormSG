@@ -224,3 +224,8 @@ export type CreateFormBodyDto =
 export type EndPageUpdateDto = FormEndPage
 export type StartPageUpdateDto = FormStartPage
 export type PermissionsUpdateDto = FormPermission[]
+
+export interface SmsCountsDto {
+  quota: number
+  freeSmsCounts: number
+}
