@@ -2513,6 +2513,46 @@ describe('Form Model', () => {
         expect(actual?.form_fields.toObject()).toEqual([expectedField])
       })
 
+      it('should return updated document with inserted form field with positional argument', async () => {
+        // Arrange
+        const shouldBeSecondField = generateDefaultField(BasicField.Checkbox)
+        const shouldBeFirstField = generateDefaultField(BasicField.Statement)
+        const expectedSecondField = {
+          ...omit(shouldBeSecondField, 'getQuestion'),
+          _id: new ObjectId(shouldBeSecondField._id),
+        }
+        const expectedFirstField = {
+          ...omit(shouldBeFirstField, 'getQuestion'),
+          _id: new ObjectId(shouldBeFirstField._id),
+        }
+        const formWithField = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields: [shouldBeSecondField],
+        })
+        // @ts-ignore
+        expect(formWithField.form_fields.toObject()).toEqual([
+          expectedSecondField,
+        ])
+
+        // Act
+        // Inserting new field but at the beginning.
+        const actual = await formWithField.insertFormField(
+          shouldBeFirstField,
+          0,
+        )
+
+        // Assert
+        // @ts-ignore
+        expect(actual?.form_fields.toObject()).toEqual([
+          // Should be expected order even though first field was inserted later.
+          expectedFirstField,
+          expectedSecondField,
+        ])
+      })
+
       it('should return validation error if model validation fails whilst creating field', async () => {
         // Arrange
         const newField = {

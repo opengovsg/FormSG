@@ -1102,7 +1102,7 @@ describe('admin-form.service', () => {
   })
 
   describe('updateFormSettings', () => {
-    const MOCK_UPDATED_SETTINGS: FormSettings = {
+    const MOCK_UPDATED_SETTINGS = {
       authType: FormAuthType.NIL,
       hasCaptcha: false,
       inactiveMessage: 'some inactive message',
@@ -1113,7 +1113,7 @@ describe('admin-form.service', () => {
         url: '',
         isRetryEnabled: false,
       },
-    }
+    } as FormSettings
 
     const MOCK_UPDATED_FORM = {
       ...MOCK_UPDATED_SETTINGS,
@@ -1351,6 +1351,43 @@ describe('admin-form.service', () => {
 
       // Assert
       // Should return last element in form_field
+      expect(actual._unsafeUnwrap()).toEqual(expectedCreatedField)
+    })
+
+    it('should return created form field when passing in positional argument', async () => {
+      // Arrange
+      const initialFields = [
+        generateDefaultField(BasicField.Mobile),
+        generateDefaultField(BasicField.Image),
+      ]
+      const expectedCreatedField = generateDefaultField(BasicField.Nric, {
+        title: 'some nric title',
+      })
+      const mockUpdatedForm = {
+        title: 'some mock form',
+        // Prefix created field to start of form_fields.
+        form_fields: [expectedCreatedField, ...initialFields],
+      }
+      const mockForm = {
+        title: 'some mock form',
+        form_fields: initialFields,
+        insertFormField: jest.fn().mockResolvedValue(mockUpdatedForm),
+      } as unknown as IPopulatedForm
+      const formCreateParams = pick(expectedCreatedField, [
+        'title',
+        'fieldType',
+      ]) as FieldCreateDto
+
+      // Act
+      const actual = await AdminFormService.createFormField(
+        mockForm,
+        formCreateParams,
+        // Insert at beginning.
+        0,
+      )
+
+      // Assert
+      // Should return first element in form_field
       expect(actual._unsafeUnwrap()).toEqual(expectedCreatedField)
     })
 

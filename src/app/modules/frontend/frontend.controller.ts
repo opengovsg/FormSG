@@ -1,11 +1,13 @@
 import ejs from 'ejs'
 import { StatusCodes } from 'http-status-codes'
 
+import { ClientEnvVars } from '../../../../shared/types/core'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 
 import { validateGenerateRedirectParams } from './frontend.middlewares'
+import { getClientEnvVars } from './frontend.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -75,6 +77,17 @@ export const addEnvVarData: ControllerHandler<unknown, { message: string }> = (
       message: 'There was an unexpected error. Please refresh and try again.',
     })
   }
+}
+
+/**
+ * Handler for GET /frontend/env endpoint.
+ * @returns the environment variables needed to hydrate the frontend.
+ */
+export const handleGetEnvironment: ControllerHandler<never, ClientEnvVars> = (
+  _req,
+  res,
+) => {
+  return res.json(getClientEnvVars())
 }
 
 /**

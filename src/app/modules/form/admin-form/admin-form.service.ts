@@ -555,33 +555,44 @@ export const duplicateFormField = (
  * Inserts a new form field into given form's fields with the field provided
  * @param form the form to insert the new field into
  * @param newField the new field to insert
+ * @param to optional index to insert the new field at
  * @returns ok(created form field)
  * @returns err(PossibleDatabaseError) when database errors arise
  */
 export const createFormField = (
   form: IPopulatedForm,
   newField: FieldCreateDto,
+  to?: number,
 ): ResultAsync<
   FormFieldSchema,
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
 > => {
-  return ResultAsync.fromPromise(form.insertFormField(newField), (error) => {
-    logger.error({
-      message: 'Error encountered while inserting new form field',
-      meta: {
-        action: 'createFormField',
-        formId: form._id,
-        newField,
-      },
-      error,
-    })
+  return ResultAsync.fromPromise(
+    form.insertFormField(newField, to),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while inserting new form field',
+        meta: {
+          action: 'createFormField',
+          formId: form._id,
+          newField,
+        },
+        error,
+      })
 
-    return transformMongoError(error)
-  }).andThen((updatedForm) => {
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
     if (!updatedForm) {
       return errAsync(new FormNotFoundError())
     }
-    const updatedField = last(updatedForm.form_fields)
+    let indexToRetrieve = updatedForm.form_fields.length - 1
+    // Must use undefined check since number can be 0; i.e. falsey.
+    if (to !== undefined) {
+      // Bound indexToRetrieve to 0 and length - 1.
+      indexToRetrieve = Math.min(Math.max(to, 0), indexToRetrieve)
+    }
+    const updatedField = updatedForm.form_fields[indexToRetrieve]
     return updatedField
       ? okAsync(updatedField)
       : errAsync(new FieldNotFoundError())
