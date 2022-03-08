@@ -21,10 +21,10 @@ import {
 import { VerifiableFieldInput } from '../types'
 
 import {
-  VerifiableMobileField as VerifiableMobileFieldComponent,
-  VerifiableMobileFieldProps,
-  VerifiableMobileFieldSchema,
-} from './VerifiableMobileField'
+  VerifiableEmailField as VerifiableEmailFieldComponent,
+  VerifiableEmailFieldProps,
+  VerifiableEmailFieldSchema,
+} from './VerifiableEmailField'
 
 const MockProviders: DecoratorFn = (storyFn) => {
   return (
@@ -41,30 +41,38 @@ const MockProviders: DecoratorFn = (storyFn) => {
   )
 }
 
-const baseSchema: VerifiableMobileFieldSchema = {
-  title: 'Your mobile number',
-  description: 'No spam calls. Promise.',
+const baseSchema: VerifiableEmailFieldSchema = {
+  title: 'Your email address',
+  description: 'No spam emails. Promise.',
   required: true,
   disabled: false,
-  fieldType: BasicField.Mobile,
+  fieldType: BasicField.Email,
   isVerifiable: true,
-  allowIntlNumbers: false,
   _id: '611b94dfbb9e300012f702a7',
+  allowedEmailDomains: [],
+  hasAllowedEmailDomains: false,
+  autoReplyOptions: {
+    hasAutoReply: false,
+    autoReplySubject: '',
+    autoReplySender: '',
+    autoReplyMessage: '',
+    includeFormSummary: false,
+  },
 }
 
-interface StoryMobileFieldProps extends VerifiableMobileFieldProps {
+interface StoryEmailFieldProps extends VerifiableEmailFieldProps {
   defaultValue?: VerifiableFieldInput
 }
 
 export default {
-  title: 'Features/VerifiableField/Mobile',
-  component: VerifiableMobileFieldComponent,
+  title: 'Features/VerifiableField/Email',
+  component: VerifiableEmailFieldComponent,
   decorators: [MockProviders],
   parameters: {
     msw: [
-      postVfnTransactionResponse(),
-      postGenerateVfnOtpResponse(),
-      postVerifyVfnOtpResponse(),
+      postVfnTransactionResponse({ delay: 0 }),
+      postGenerateVfnOtpResponse({ delay: 0 }),
+      postVerifyVfnOtpResponse({ delay: 0 }),
     ],
     docs: {
       // Required in this story due to react-hook-form conflicting with
@@ -78,9 +86,9 @@ export default {
   args: {
     schema: baseSchema,
   },
-} as Meta<StoryMobileFieldProps>
+} as Meta<StoryEmailFieldProps>
 
-const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
+const Template: Story<StoryEmailFieldProps> = ({ defaultValue, ...args }) => {
   const formMethods = useForm({
     defaultValues: {
       [args.schema._id]: defaultValue,
@@ -107,7 +115,7 @@ const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
-        <VerifiableMobileFieldComponent {...args} />
+        <VerifiableEmailFieldComponent {...args} />
         <Button
           mt="1rem"
           type="submit"
@@ -122,19 +130,19 @@ const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
   )
 }
 
-export const VerifiableMobileField = Template.bind({})
+export const VerifiableEmailField = Template.bind({})
 
 export const PendingVerification = Template.bind({})
 PendingVerification.args = {
   defaultValue: {
-    value: '+6598888888',
+    value: 'test@example.com',
   },
 }
 
 export const Verified = Template.bind({})
 Verified.args = {
   defaultValue: {
-    value: '+6598888888',
+    value: 'test@example.com',
     signature: 'some-signature',
   },
 }

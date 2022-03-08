@@ -6,7 +6,6 @@ import {
 } from 'react-hook-form'
 
 import { FormFieldWithId } from '~shared/types/field'
-import { isMobilePhoneNumber } from '~shared/utils/phone-num-validation'
 
 import { useTimeout } from '~hooks/useTimeout'
 import { BaseFieldProps } from '~templates/Field/FieldContainer'
@@ -22,7 +21,15 @@ import {
 import { VerifiableFieldContext } from './VerifiableFieldContext'
 
 export interface VerifiableFieldProps extends BaseFieldProps {
+  /** Verifiable schema this field is wrapping over */
   schema: VerifiableFieldSchema<FormFieldWithId<VerifiableFieldBase>>
+  /**
+   * Callback function to check whether current input is a valid input.
+   * Will be triggered when the "Verify" button is clicked.
+   * If the callback returns true, verification API will be triggered,
+   * else the returned string will be displayed as an error.
+   */
+  validateInputForVfn: (input?: string) => string | true
 }
 
 export interface VerifiableFieldProviderProps extends VerifiableFieldProps {
@@ -32,6 +39,7 @@ export interface VerifiableFieldProviderProps extends VerifiableFieldProps {
 export const VerifiableFieldProvider = ({
   schema,
   children,
+  validateInputForVfn,
 }: VerifiableFieldProviderProps): JSX.Element => {
   const [isVfnBoxOpen, setIsVfnBoxOpen] = useState(false)
 
@@ -103,13 +111,12 @@ export const VerifiableFieldProvider = ({
     return triggerResendOtpMutation.mutateAsync(currentInputValue)
   }, [getValues, schema._id, triggerResendOtpMutation])
 
-  // TODO: Extract this based on schema type instead of hardcoding to mobile field
   const handleVfnButtonClick = useCallback(() => {
     const currentInputValue = getValues(schema._id)?.value
     if (!currentInputValue) {
       return setError(
         schema._id,
-        { message: 'Please fill in field before attempting verification' },
+        { message: 'Please fill in the field before attempting verification' },
         { shouldFocus: true },
       )
     }
@@ -117,8 +124,9 @@ export const VerifiableFieldProvider = ({
     // Do nothing if box is already opened, or there is already a signature linked to the input.
     if (isVfnBoxOpen || mapNumberToSignature[currentInputValue]) return
 
-    // Check is valid phone number
-    if (isMobilePhoneNumber(currentInputValue)) {
+    // Only trigger send otp if the input is a valid input.
+    const validateResult = validateInputForVfn(currentInputValue)
+    if (validateResult === true) {
       return triggerSendOtpMutation.mutate(currentInputValue, {
         onSuccess: () => setIsVfnBoxOpen(true),
       })
@@ -127,7 +135,7 @@ export const VerifiableFieldProvider = ({
     // Else invalid input.
     return setError(
       schema._id,
-      { message: 'Please enter a valid mobile number' },
+      { message: validateResult },
       { shouldFocus: true },
     )
   }, [
@@ -137,6 +145,7 @@ export const VerifiableFieldProvider = ({
     schema._id,
     setError,
     triggerSendOtpMutation,
+    validateInputForVfn,
   ])
 
   const handleVerifyOtp = useCallback(
