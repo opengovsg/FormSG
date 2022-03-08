@@ -11,7 +11,7 @@ import { get, range } from 'lodash'
 
 import { LOGIC_MAP } from '~shared/modules/logic'
 import { BasicField } from '~shared/types/field'
-import { LogicConditionState } from '~shared/types/form'
+import { LogicConditionState, LogicType } from '~shared/types/form'
 
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -38,6 +38,8 @@ export const LOGIC_FIELD_ARRAY_NAME = 'logicConditions'
 
 export type EditLogicInputs = {
   [LOGIC_FIELD_ARRAY_NAME]: EditLogicBlockInputs[]
+  thenType: LogicType
+  thenValue: string | string[]
 }
 
 export const EditConditionBlock = ({

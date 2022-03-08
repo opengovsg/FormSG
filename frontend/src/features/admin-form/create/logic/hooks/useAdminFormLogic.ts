@@ -28,6 +28,7 @@ export const useAdminFormLogic = () => {
   return {
     isLoading,
     formLogics: form?.form_logics,
+    formFields: form?.form_fields,
     logicableFields,
     mapIdToField,
   }
