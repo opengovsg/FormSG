@@ -4,6 +4,7 @@ import { Box, Flex, FormControl } from '@chakra-ui/react'
 
 import ResendOtpButton from '~/templates/ResendOtpButton'
 
+import { HttpError } from '~services/ApiService'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -19,19 +20,22 @@ type VfnFieldValues = {
 
 export interface VerificationBoxProps {
   fieldType: VerifiableFieldType
-  handleVfnSuccess: (signature: string) => Promise<void>
+  handleVerifyOtp: (otp: string) => Promise<string>
   handleResendOtp: () => Promise<void>
 }
 
-type UseVerificationBoxProps = Pick<VerificationBoxProps, 'handleVfnSuccess'>
+type UseVerificationBoxProps = Pick<VerificationBoxProps, 'handleVerifyOtp'>
 
-const useVerificationBox = ({ handleVfnSuccess }: UseVerificationBoxProps) => {
+const useVerificationBox = ({ handleVerifyOtp }: UseVerificationBoxProps) => {
   const formMethods = useForm<VfnFieldValues>()
   const { handleSubmit } = formMethods
 
   const onSubmitForm = handleSubmit(async (inputs) => {
-    // TODO: Add API call to backend to verify OTP, then return signature.
-    return handleVfnSuccess(`some signature-${inputs.otp}`)
+    return handleVerifyOtp(inputs.otp).catch((err: HttpError) => {
+      formMethods.setError('otp', {
+        message: err.message,
+      })
+    })
   })
 
   const handleKeyDown = useCallback(
@@ -54,7 +58,7 @@ const useVerificationBox = ({ handleVfnSuccess }: UseVerificationBoxProps) => {
 export const VerificationBox = ({
   fieldType,
   handleResendOtp,
-  handleVfnSuccess,
+  handleVerifyOtp,
 }: VerificationBoxProps): JSX.Element => {
   const {
     formMethods: {
@@ -64,7 +68,7 @@ export const VerificationBox = ({
     handleKeyDown,
     onSubmitForm,
   } = useVerificationBox({
-    handleVfnSuccess,
+    handleVerifyOtp,
   })
 
   const {

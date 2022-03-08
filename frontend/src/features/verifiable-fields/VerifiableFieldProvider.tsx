@@ -6,10 +6,13 @@ import {
 } from 'react-hook-form'
 
 import { FormFieldWithId } from '~shared/types/field'
-import { isMobilePhoneNumber } from '~shared/utils/phone-num-validation'
 
+import { useTimeout } from '~hooks/useTimeout'
 import { BaseFieldProps } from '~templates/Field/FieldContainer'
 
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+import { useVerifiableFieldMutations } from './mutations'
 import {
   VerifiableFieldBase,
   VerifiableFieldInput,
@@ -18,7 +21,15 @@ import {
 import { VerifiableFieldContext } from './VerifiableFieldContext'
 
 export interface VerifiableFieldProps extends BaseFieldProps {
+  /** Verifiable schema this field is wrapping over */
   schema: VerifiableFieldSchema<FormFieldWithId<VerifiableFieldBase>>
+  /**
+   * Callback function to check whether current input is a valid input.
+   * Will be triggered when the "Verify" button is clicked.
+   * If the callback returns true, verification API will be triggered,
+   * else the returned string will be displayed as an error.
+   */
+  validateInputForVfn: (input?: string) => string | true
 }
 
 export interface VerifiableFieldProviderProps extends VerifiableFieldProps {
@@ -28,14 +39,26 @@ export interface VerifiableFieldProviderProps extends VerifiableFieldProps {
 export const VerifiableFieldProvider = ({
   schema,
   children,
+  validateInputForVfn,
 }: VerifiableFieldProviderProps): JSX.Element => {
   const [isVfnBoxOpen, setIsVfnBoxOpen] = useState(false)
 
-  const { control, setError, getValues, setValue, setFocus, clearErrors } =
-    useFormContext()
+  const { control, setError, getValues, setValue, setFocus } = useFormContext()
   const currentSignature: VerifiableFieldInput = useWatch({
     name: `${schema._id}.signature`,
     control,
+  })
+
+  const { formId, getTransactionId, expiryInMs } = usePublicFormContext()
+
+  const {
+    triggerSendOtpMutation,
+    triggerResendOtpMutation,
+    verifyOtpMutation,
+  } = useVerifiableFieldMutations({
+    schema,
+    formId,
+    getTransactionId,
   })
 
   /**
@@ -44,6 +67,17 @@ export const VerifiableFieldProvider = ({
   const [mapNumberToSignature, setMapNumberToSignature] = useState<
     Record<string, string>
   >({})
+
+  useTimeout(() => {
+    // Reset signatures and map values.
+    setValue(
+      schema._id,
+      { value: getValues(schema._id)?.value },
+      { shouldValidate: true },
+    )
+    setIsVfnBoxOpen(false)
+    setMapNumberToSignature({})
+  }, expiryInMs)
 
   const handleInputChange = useCallback(
     (onChange: ControllerRenderProps['onChange']) => (value?: string) => {
@@ -69,67 +103,79 @@ export const VerifiableFieldProvider = ({
     [getValues, isVfnBoxOpen, mapNumberToSignature, schema._id],
   )
 
-  // TODO: Extract this based on schema type instead of hardcoding to mobile field
+  const handleResendOtp = useCallback(async () => {
+    const currentInputValue = getValues(schema._id)?.value
+    // Should not happen, but guarding against this just in case.
+    if (!currentInputValue) return
+
+    return triggerResendOtpMutation.mutateAsync(currentInputValue)
+  }, [getValues, schema._id, triggerResendOtpMutation])
+
   const handleVfnButtonClick = useCallback(() => {
     const currentInputValue = getValues(schema._id)?.value
     if (!currentInputValue) {
       return setError(
         schema._id,
-        { message: 'Please fill in field before attempting verification' },
-        { shouldFocus: true },
-      )
-    } else {
-      // Clear errors if any errors were set, especially to clear the empty
-      // input error that user sees when the vfn button is clicked when the input
-      // is empty.
-      clearErrors(schema._id)
-    }
-
-    // Do nothing if box is already opened.
-    if (isVfnBoxOpen) return
-
-    // Check is valid phone number
-    if (isMobilePhoneNumber(currentInputValue)) {
-      // TODO: Call mutation to send SMS.
-      setIsVfnBoxOpen(true)
-    } else {
-      return setError(
-        schema._id,
-        { message: 'Please enter a valid mobile number' },
+        { message: 'Please fill in the field before attempting verification' },
         { shouldFocus: true },
       )
     }
-  }, [clearErrors, getValues, isVfnBoxOpen, schema._id, setError])
 
-  const handleVfnSuccess = useCallback(
-    async (signature: string) => {
-      const currentValue = getValues(schema._id)?.value
-      if (!currentValue) return
+    // Do nothing if box is already opened, or there is already a signature linked to the input.
+    if (isVfnBoxOpen || mapNumberToSignature[currentInputValue]) return
 
-      setValue(
-        schema._id,
-        {
-          value: currentValue,
-          signature,
+    // Only trigger send otp if the input is a valid input.
+    const validateResult = validateInputForVfn(currentInputValue)
+    if (validateResult === true) {
+      return triggerSendOtpMutation.mutate(currentInputValue, {
+        onSuccess: () => setIsVfnBoxOpen(true),
+      })
+    }
+
+    // Else invalid input.
+    return setError(
+      schema._id,
+      { message: validateResult },
+      { shouldFocus: true },
+    )
+  }, [
+    getValues,
+    isVfnBoxOpen,
+    mapNumberToSignature,
+    schema._id,
+    setError,
+    triggerSendOtpMutation,
+    validateInputForVfn,
+  ])
+
+  const handleVerifyOtp = useCallback(
+    (otp: string) => {
+      // async so verification box can show error message
+      return verifyOtpMutation.mutateAsync(otp, {
+        onSuccess: (signature) => {
+          const currentValue = getValues(schema._id)?.value
+          if (!currentValue) return
+          setValue(
+            schema._id,
+            {
+              value: currentValue,
+              signature,
+            },
+            { shouldValidate: true },
+          )
+          // Add signature to map.
+          setMapNumberToSignature((prev) => ({
+            ...prev,
+            [currentValue]: signature,
+          }))
+          // Refocus back to initial field on success.
+          setFocus(schema._id)
+          setIsVfnBoxOpen(false)
         },
-        { shouldValidate: true },
-      )
-      // Add signature to map.
-      setMapNumberToSignature((prev) => ({
-        ...prev,
-        [currentValue]: signature,
-      }))
-      // Refocus back to initial field on success.
-      setFocus(schema._id)
-      setIsVfnBoxOpen(false)
+      })
     },
-    [getValues, schema._id, setFocus, setValue],
+    [getValues, schema._id, setFocus, setValue, verifyOtpMutation],
   )
-
-  const handleResendOtp = useCallback(() => {
-    // TODO: Add API call to resend OTP
-    return Promise.resolve(console.log('resending'))
-  }, [])
 
   return (
     <VerifiableFieldContext.Provider
@@ -138,8 +184,9 @@ export const VerifiableFieldProvider = ({
         handleInputChange,
         handleVfnButtonClick,
         handleResendOtp,
-        handleVfnSuccess,
+        handleVerifyOtp,
         hasSignature: !!currentSignature,
+        isSendingOtp: triggerSendOtpMutation.isLoading,
       }}
     >
       {children}

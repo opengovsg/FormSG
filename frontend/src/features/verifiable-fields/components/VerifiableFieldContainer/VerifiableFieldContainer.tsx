@@ -31,8 +31,9 @@ export const VerifiableFieldContainer = ({
     isVfnBoxOpen,
     handleVfnButtonClick,
     hasSignature,
-    handleVfnSuccess,
+    handleVerifyOtp,
     handleResendOtp,
+    isSendingOtp,
   } = useVerifiableField()
 
   return (
@@ -46,6 +47,7 @@ export const VerifiableFieldContainer = ({
               // are removed from DOM if the button is disabled.
               // Instead, we allow users to click the button to trigger verification
               isDisabled={isVfnBoxOpen || hasSignature}
+              isLoading={isSendingOtp}
               onClick={handleVfnButtonClick}
               leftIcon={
                 hasSignature ? <BiCheck fontSize="1.5rem" /> : undefined
@@ -58,7 +60,7 @@ export const VerifiableFieldContainer = ({
       </FieldContainer>
       {isVfnBoxOpen && (
         <VerificationBox
-          handleVfnSuccess={handleVfnSuccess}
+          handleVerifyOtp={handleVerifyOtp}
           handleResendOtp={handleResendOtp}
           fieldType={schema.fieldType}
         />
