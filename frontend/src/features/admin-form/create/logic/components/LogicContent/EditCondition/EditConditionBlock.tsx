@@ -11,17 +11,20 @@ import { get, pickBy, range } from 'lodash'
 
 import { LOGIC_MAP } from '~shared/modules/logic'
 import { BasicField } from '~shared/types/field'
-import { LogicConditionState, LogicType } from '~shared/types/form'
+import { LogicIfValue, LogicType } from '~shared/types/form'
 
 import { useWatchDependency } from '~hooks/useWatchDependency'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
+import Input from '~components/Input'
 import NumberInput from '~components/NumberInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+import { getIfLogicType } from '~features/logic/utils'
 
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
+import { EditLogicInputs } from '../../../types'
 
 import { BlockLabelText } from './BlockLabelText'
 
@@ -30,38 +33,25 @@ export interface EditConditionBlockProps {
   handleRemoveLogic?: (index?: number | number[] | undefined) => void
 }
 
-export type EditLogicBlockInputs = {
-  ifFieldId: string
-  logicCondition: LogicConditionState
-  logicValue: string | string[]
-}
-export const LOGIC_FIELD_ARRAY_NAME = 'logicConditions'
-
-export type EditLogicInputs = {
-  [LOGIC_FIELD_ARRAY_NAME]: EditLogicBlockInputs[]
-  thenType: LogicType
-  thenValue: string | string[]
-}
-
 export const EditConditionBlock = ({
   index,
   handleRemoveLogic,
 }: EditConditionBlockProps): JSX.Element => {
   const { logicableFields, mapIdToField } = useAdminFormLogic()
-  const name = useMemo(
-    () => `${LOGIC_FIELD_ARRAY_NAME}.${index}` as const,
-    [index],
-  )
+  const name = useMemo(() => `conditions.${index}` as const, [index])
 
   const {
     watch,
     formState: { errors },
     resetField,
+    register,
+    setValue,
   } = useFormContext<EditLogicInputs>()
-  const ifFieldIdValue = watch(`${name}.ifFieldId`)
-  const logicConditionValue = watch(`${name}.logicCondition`)
-  const thenTypeValue = watch('thenType')
-  const thenValueWatch = useWatchDependency(watch, 'thenValue')
+  const ifFieldIdValue = watch(`${name}.field`)
+  const conditionStateValue = watch(`${name}.state`)
+  const ifValueTypeValue = watch(`${name}.ifValueType`)
+  const logicTypeValue = watch('logicType')
+  const showValueWatch = useWatchDependency(watch, 'show')
 
   const currentSelectedField = useMemo(() => {
     if (!ifFieldIdValue || !mapIdToField) return
@@ -73,10 +63,24 @@ export const EditConditionBlock = ({
    */
   useEffect(() => {
     if (ifFieldIdValue) {
-      resetField(`${name}.logicValue`, { defaultValue: '' })
-      resetField(`${name}.logicCondition`)
+      resetField(`${name}.value`, { defaultValue: '' })
+      resetField(`${name}.state`)
     }
   }, [ifFieldIdValue, name, resetField])
+
+  useEffect(() => {
+    if (!currentSelectedField) {
+      resetField(`${name}.ifValueType`)
+      return
+    }
+    setValue(
+      `${name}.ifValueType`,
+      getIfLogicType({
+        fieldType: currentSelectedField.fieldType,
+        conditionState: conditionStateValue,
+      }),
+    )
+  }, [conditionStateValue, currentSelectedField, name, resetField, setValue])
 
   const items = useMemo(() => {
     if (!logicableFields) return []
@@ -84,8 +88,8 @@ export const EditConditionBlock = ({
     // Get subset of logicableFields that have not already been set to show on
     // other logic conditions.
     let subsetLogicableFields = logicableFields
-    if (thenTypeValue === LogicType.ShowFields) {
-      const thenValuesSet = new Set(thenValueWatch.value)
+    if (logicTypeValue === LogicType.ShowFields) {
+      const thenValuesSet = new Set(showValueWatch.value)
       subsetLogicableFields = pickBy(
         subsetLogicableFields,
         (f) => !thenValuesSet.has(f._id),
@@ -97,7 +101,7 @@ export const EditConditionBlock = ({
       value: key,
       icon: BASICFIELD_TO_DRAWER_META[value.fieldType].icon,
     }))
-  }, [logicableFields, thenTypeValue, thenValueWatch])
+  }, [logicableFields, logicTypeValue, showValueWatch])
 
   const conditionItems = useMemo(() => {
     if (!currentSelectedField) return []
@@ -141,59 +145,47 @@ export const EditConditionBlock = ({
   }, [currentSelectedField])
 
   const renderValueInputComponent = useCallback(
-    (
-      field: ControllerRenderProps<FieldValues, `${typeof name}.logicValue`>,
-    ) => {
+    (field: ControllerRenderProps<FieldValues, `${typeof name}.value`>) => {
       const selectProps = {
-        isDisabled: !logicConditionValue,
+        isDisabled: !conditionStateValue,
         isSearchable: false,
         placeholder: null,
         isClearable: false,
         items: conditionValueItems,
       }
 
-      if (!currentSelectedField)
+      if (!ifValueTypeValue) {
         return <SingleSelect {...selectProps} {...field} isDisabled />
+      }
 
-      switch (currentSelectedField.fieldType) {
-        case BasicField.Dropdown:
-        case BasicField.Radio: {
-          if (
-            !logicConditionValue ||
-            logicConditionValue === LogicConditionState.Equal
-          ) {
-            return <SingleSelect {...selectProps} {...field} />
-          }
+      switch (ifValueTypeValue) {
+        case LogicIfValue.SingleSelect:
+          return <SingleSelect {...selectProps} {...field} />
+        case LogicIfValue.MultiSelect: {
           const { value, ...rest } = field
           return <MultiSelect {...selectProps} values={value ?? []} {...rest} />
         }
-        case BasicField.Rating:
-        case BasicField.YesNo:
-          return <SingleSelect {...selectProps} {...field} />
-        default:
-          return <NumberInput isDisabled={!logicConditionValue} {...field} />
+        case LogicIfValue.Number:
+          return <NumberInput isDisabled={!conditionStateValue} {...field} />
       }
     },
-    [conditionValueItems, currentSelectedField, logicConditionValue],
+    [conditionStateValue, conditionValueItems, ifValueTypeValue],
   )
 
   return (
     <Flex flexDir="column">
       <Stack direction="column" spacing="0.75rem">
         <Stack direction="row" spacing="0.5rem">
-          <BlockLabelText
-            id={`${name}.ifFieldId-label`}
-            htmlFor={`${name}.ifFieldId`}
-          >
+          <BlockLabelText id={`${name}.field-label`} htmlFor={`${name}.field`}>
             IF
           </BlockLabelText>
           <FormControl
-            id={`${name}.ifFieldId`}
+            id={`${name}.field`}
             isRequired
-            isInvalid={!!get(errors, `${name}.ifFieldId`)}
+            isInvalid={!!get(errors, `${name}.field`)}
           >
             <Controller
-              name={`${name}.ifFieldId`}
+              name={`${name}.field`}
               rules={{
                 required: 'Please select a question.',
                 validate: (value) =>
@@ -212,7 +204,7 @@ export const EditConditionBlock = ({
               )}
             />
             <FormErrorMessage>
-              {get(errors, `${name}.ifFieldId.message`)}
+              {get(errors, `${name}.field.message`)}
             </FormErrorMessage>
           </FormControl>
           {handleRemoveLogic ? (
@@ -226,23 +218,20 @@ export const EditConditionBlock = ({
           ) : null}
         </Stack>
         <Stack direction="row" spacing="0.5rem">
-          <BlockLabelText
-            id={`${name}.logicCondition-label`}
-            htmlFor={`${name}.logicCondition`}
-          >
+          <BlockLabelText id={`${name}.state-label`} htmlFor={`${name}.state`}>
             IS
           </BlockLabelText>
           <Flex flexDir="column" flex={1} as="fieldset">
             <VisuallyHidden as="legend">Logic criteria</VisuallyHidden>
             <Stack direction="row" align="flex-start" flex={1}>
               <FormControl
-                id={`${name}.logicCondition`}
+                id={`${name}.state`}
                 isRequired
-                isInvalid={!!get(errors, `${name}.logicCondition`)}
+                isInvalid={!!get(errors, `${name}.state`)}
                 maxW={logicTypeWrapperWidth}
               >
                 <Controller
-                  name={`${name}.logicCondition`}
+                  name={`${name}.state`}
                   rules={{
                     required: 'Please select a condition',
                   }}
@@ -259,19 +248,19 @@ export const EditConditionBlock = ({
                 />
               </FormControl>
               <FormControl
-                id={`${name}.logicValue`}
+                id={`${name}.value`}
                 isRequired
-                isInvalid={!!get(errors, `${name}.logicValue`)}
+                isInvalid={!!get(errors, `${name}.value`)}
               >
                 <VisuallyHidden
                   as="label"
-                  id={`${name}.logicValue-label`}
-                  htmlFor={`${name}.logicValue`}
+                  id={`${name}.value-label`}
+                  htmlFor={`${name}.value`}
                 >
                   Logic condition
                 </VisuallyHidden>
                 <Controller
-                  name={`${name}.logicValue`}
+                  name={`${name}.value`}
                   rules={{
                     required: 'Please enter logic criteria.',
                   }}
@@ -281,20 +270,21 @@ export const EditConditionBlock = ({
             </Stack>
             <FormControl
               isInvalid={
-                !!(
-                  get(errors, `${name}.logicCondition`) ??
-                  get(errors, `${name}.logicValue`)
-                )
+                !!(get(errors, `${name}.state`) ?? get(errors, `${name}.value`))
               }
             >
               <FormErrorMessage>
-                {get(errors, `${name}.logicCondition.message`) ??
-                  get(errors, `${name}.logicValue.message`)}
+                {get(errors, `${name}.state.message`) ??
+                  get(errors, `${name}.value.message`)}
               </FormErrorMessage>
             </FormControl>
           </Flex>
           {handleRemoveLogic ? <Box aria-hidden w="2.75rem" /> : null}
         </Stack>
+        {/* Virtual input for ifLogicType field */}
+        <VisuallyHidden aria-hidden>
+          <Input {...register(`${name}.ifValueType`)} />
+        </VisuallyHidden>
       </Stack>
     </Flex>
   )

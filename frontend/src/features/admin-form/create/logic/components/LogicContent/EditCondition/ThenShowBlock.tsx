@@ -1,13 +1,8 @@
-import { useCallback, useEffect, useMemo } from 'react'
-import {
-  Controller,
-  ControllerRenderProps,
-  FieldValues,
-  useFormContext,
-} from 'react-hook-form'
+import { useEffect, useMemo } from 'react'
+import { Controller, useFormContext } from 'react-hook-form'
 import { BiShow, BiX } from 'react-icons/bi'
 import { FormControl, Stack } from '@chakra-ui/react'
-import { get } from 'lodash'
+import get from 'lodash/get'
 
 import { LogicType } from '~shared/types/form'
 
@@ -19,24 +14,20 @@ import Textarea from '~components/Textarea'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
+import { EditLogicInputs } from '../../../types'
 
 import { BlockLabelText } from './BlockLabelText'
-import { EditLogicInputs, LOGIC_FIELD_ARRAY_NAME } from './EditConditionBlock'
 
 export const ThenShowBlock = (): JSX.Element => {
   const {
     watch,
     formState: { errors },
     resetField,
-    getValues,
+    control,
   } = useFormContext<EditLogicInputs>()
 
-  const { formFields, mapIdToField } = useAdminFormLogic()
-
-  const thenTypeValue = watch('thenType')
-  const logicConditionsWatch = useWatchDependency(watch, LOGIC_FIELD_ARRAY_NAME)
-
-  const thenTypeItems = useMemo(() => {
+  const logicTypeValue = watch('logicType')
+  const logicTypeItems = useMemo(() => {
     return [
       {
         label: 'Show field(s)',
@@ -51,11 +42,81 @@ export const ThenShowBlock = (): JSX.Element => {
     ]
   }, [])
 
+  /**
+   * Effect to reset the logic values if the logic type is changed.
+   */
+  useEffect(() => {
+    resetField('show')
+    resetField('preventSubmitMessage')
+  }, [resetField, logicTypeValue])
+
+  // Label changes depending on logic type.
+  const currentShowLabel = useMemo(() => {
+    // Default to `show`
+    return logicTypeValue === LogicType.PreventSubmit
+      ? 'preventSubmitMessage'
+      : 'show'
+  }, [logicTypeValue])
+
+  return (
+    <Stack direction="column" spacing="0.75rem" py="1.5rem" px="2rem">
+      <Stack direction="row" spacing="0.5rem">
+        <BlockLabelText id="logicType-label" htmlFor="logicType">
+          Then
+        </BlockLabelText>
+        <FormControl id="logicType" isRequired isInvalid={!!errors.logicType}>
+          <Controller
+            name="logicType"
+            control={control}
+            rules={{
+              required: 'Please select logic type.',
+            }}
+            render={({ field }) => (
+              <SingleSelect
+                isSearchable={false}
+                isClearable={false}
+                placeholder="Select a type of result"
+                items={logicTypeItems}
+                {...field}
+              />
+            )}
+          />
+          <FormErrorMessage>{errors.logicType?.message}</FormErrorMessage>
+        </FormControl>
+      </Stack>
+
+      <Stack direction="row" spacing="0.5rem">
+        <BlockLabelText
+          id={`${currentShowLabel}-label`}
+          htmlFor={currentShowLabel}
+        >
+          Show
+        </BlockLabelText>
+        <ThenLogicInput />
+      </Stack>
+    </Stack>
+  )
+}
+
+const ThenLogicInput = () => {
+  const {
+    watch,
+    control,
+    register,
+    getValues,
+    formState: { errors },
+  } = useFormContext<EditLogicInputs>()
+
+  const { formFields, mapIdToField } = useAdminFormLogic()
+
+  const logicTypeValue = watch('logicType')
+  const logicConditionsWatch = useWatchDependency(watch, 'conditions')
+
   const thenValueItems = useMemo(() => {
     // Return every field except fields that are already used in the logic.
-    if (thenTypeValue === LogicType.ShowFields) {
+    if (logicTypeValue === LogicType.ShowFields) {
       const usedFieldIds = new Set(
-        logicConditionsWatch.value.map((condition) => condition.ifFieldId),
+        logicConditionsWatch.value.map((condition) => condition.field),
       )
       if (!formFields || !mapIdToField) return []
       return formFields
@@ -72,91 +133,54 @@ export const ThenShowBlock = (): JSX.Element => {
     return []
     // Watch entire <***>Watch variables since <***>Watch.value is a proxy
     // and will not update if <***>Watch.value is mutated.
-  }, [formFields, logicConditionsWatch, mapIdToField, thenTypeValue])
+  }, [formFields, logicConditionsWatch, mapIdToField, logicTypeValue])
 
-  const renderValueInputComponent = useCallback(
-    (field: ControllerRenderProps<FieldValues, 'thenValue'>) => {
-      switch (thenTypeValue) {
-        case LogicType.PreventSubmit: {
-          return (
-            <Textarea
-              {...field}
-              placeholder="Custom message to be displayed when submission is prevented"
-            />
-          )
-        }
-        default: {
-          const { value, ...rest } = field
-          return (
-            <MultiSelect
-              isDisabled={!thenTypeValue}
-              placeholder={null}
-              items={thenValueItems}
-              values={value ?? []}
-              {...rest}
-            />
-          )
-        }
-      }
-    },
-    [thenTypeValue, thenValueItems],
-  )
-
-  /**
-   * Effect to reset the logic values if the logic type is changed.
-   */
-  useEffect(() => {
-    if (thenTypeValue) {
-      resetField('thenValue', { defaultValue: '' })
-    }
-  }, [resetField, thenTypeValue])
+  if (logicTypeValue === LogicType.PreventSubmit) {
+    return (
+      <FormControl
+        id="preventSubmitMessage"
+        isRequired
+        isInvalid={!!errors.preventSubmitMessage}
+      >
+        <Textarea
+          {...register('preventSubmitMessage', {
+            required: {
+              value: !!getValues('logicType'),
+              message:
+                'Please enter a message to display when submission is prevented',
+            },
+          })}
+          placeholder="Custom message to be displayed when submission is prevented"
+        />
+        <FormErrorMessage>
+          {errors.preventSubmitMessage?.message}
+        </FormErrorMessage>
+      </FormControl>
+    )
+  }
 
   return (
-    <Stack direction="column" spacing="0.75rem" py="1.5rem" px="2rem">
-      <Stack direction="row" spacing="0.5rem">
-        <BlockLabelText id="thenType-label" htmlFor="thenType">
-          Then
-        </BlockLabelText>
-        <FormControl id="thenType" isRequired isInvalid={!!errors.thenType}>
-          <Controller
-            name="thenType"
-            rules={{
-              required: 'Please select logic type.',
-            }}
-            render={({ field }) => (
-              <SingleSelect
-                isSearchable={false}
-                isClearable={false}
-                placeholder="Select a type of result"
-                items={thenTypeItems}
-                {...field}
-              />
-            )}
+    <FormControl id="show" isRequired isInvalid={!!errors.show}>
+      <Controller
+        name="show"
+        control={control}
+        rules={{
+          required: {
+            value: !!getValues('logicType'),
+            message: 'Please select fields to show if logic criteria is met.',
+          },
+        }}
+        render={({ field: { value, ...rest } }) => (
+          <MultiSelect
+            isDisabled={!logicTypeValue}
+            placeholder={null}
+            items={thenValueItems}
+            values={value ?? []}
+            {...rest}
           />
-          <FormErrorMessage>{errors.thenType?.message}</FormErrorMessage>
-        </FormControl>
-      </Stack>
-
-      <Stack direction="row" spacing="0.5rem">
-        <BlockLabelText id="thenValue-label" htmlFor="thenValue">
-          Show
-        </BlockLabelText>
-        <FormControl id="thenValue" isRequired isInvalid={!!errors.thenValue}>
-          <Controller
-            name="thenValue"
-            rules={{
-              required:
-                getValues('thenType') === LogicType.PreventSubmit
-                  ? 'Please enter submission prevention message.'
-                  : 'Please select fields to show if logic criteria is met.',
-            }}
-            render={({ field }) => renderValueInputComponent(field)}
-          />
-          <FormErrorMessage>
-            {get(errors, 'thenValue.message')}
-          </FormErrorMessage>
-        </FormControl>
-      </Stack>
-    </Stack>
+        )}
+      />
+      <FormErrorMessage>{get(errors, 'show.message')}</FormErrorMessage>
+    </FormControl>
   )
 }

@@ -3,13 +3,12 @@ import { FormProvider, useFieldArray, useForm } from 'react-hook-form'
 import { Stack } from '@chakra-ui/react'
 
 import { useAdminLogicStore } from '../../../adminLogicStore'
+import { EditLogicInputs } from '../../../types'
 import {
   AddConditionDivider,
   EditConditionBlock,
   EditConditionBlockDivider,
   EditConditionWrapper,
-  EditLogicInputs,
-  LOGIC_FIELD_ARRAY_NAME,
   SaveActionGroup,
   ThenShowBlock,
 } from '../EditCondition'
@@ -21,13 +20,13 @@ export const NewLogicBlock = () => {
 
   const formMethods = useForm<EditLogicInputs>({
     defaultValues: {
-      [LOGIC_FIELD_ARRAY_NAME]: [{}],
+      conditions: [{}],
     },
   })
 
   const { fields, append, remove } = useFieldArray({
     control: formMethods.control,
-    name: LOGIC_FIELD_ARRAY_NAME,
+    name: 'conditions',
   })
 
   const ref = useRef<HTMLDivElement | null>(null)

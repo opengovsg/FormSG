@@ -1,4 +1,4 @@
-import { LogicDto } from '~shared/types/form'
+import { FormLogic, LogicDto } from '~shared/types/form'
 
 import { ApiService } from '~services/ApiService'
 
@@ -6,7 +6,7 @@ import { ADMIN_FORM_ENDPOINT } from '~features/admin-form/common/AdminViewFormSe
 
 export const createFormLogic = async (
   formId: string,
-  createLogicBody: LogicDto,
+  createLogicBody: FormLogic,
 ): Promise<LogicDto> => {
   return ApiService.post<LogicDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/logic`,
