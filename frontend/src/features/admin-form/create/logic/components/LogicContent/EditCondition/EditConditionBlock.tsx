@@ -7,12 +7,13 @@ import {
 } from 'react-hook-form'
 import { BiTrash } from 'react-icons/bi'
 import { Box, Flex, FormControl, Stack } from '@chakra-ui/react'
-import { get, range } from 'lodash'
+import { get, pickBy, range } from 'lodash'
 
 import { LOGIC_MAP } from '~shared/modules/logic'
 import { BasicField } from '~shared/types/field'
 import { LogicConditionState, LogicType } from '~shared/types/form'
 
+import { useWatchDependency } from '~hooks/useWatchDependency'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
@@ -59,6 +60,8 @@ export const EditConditionBlock = ({
   } = useFormContext<EditLogicInputs>()
   const ifFieldIdValue = watch(`${name}.ifFieldId`)
   const logicConditionValue = watch(`${name}.logicCondition`)
+  const thenTypeValue = watch('thenType')
+  const thenValueWatch = useWatchDependency(watch, 'thenValue')
 
   const currentSelectedField = useMemo(() => {
     if (!ifFieldIdValue || !mapIdToField) return
@@ -77,12 +80,24 @@ export const EditConditionBlock = ({
 
   const items = useMemo(() => {
     if (!logicableFields) return []
-    return Object.entries(logicableFields).map(([key, value]) => ({
+
+    // Get subset of logicableFields that have not already been set to show on
+    // other logic conditions.
+    let subsetLogicableFields = logicableFields
+    if (thenTypeValue === LogicType.ShowFields) {
+      const thenValuesSet = new Set(thenValueWatch.value)
+      subsetLogicableFields = pickBy(
+        subsetLogicableFields,
+        (f) => !thenValuesSet.has(f._id),
+      )
+    }
+
+    return Object.entries(subsetLogicableFields).map(([key, value]) => ({
       label: `${value.questionNumber}. ${value.title}`,
       value: key,
       icon: BASICFIELD_TO_DRAWER_META[value.fieldType].icon,
     }))
-  }, [logicableFields])
+  }, [logicableFields, thenTypeValue, thenValueWatch])
 
   const conditionItems = useMemo(() => {
     if (!currentSelectedField) return []
