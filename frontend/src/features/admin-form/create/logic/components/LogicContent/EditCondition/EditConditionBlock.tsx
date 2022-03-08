@@ -73,7 +73,7 @@ export const EditConditionBlock = ({
    */
   useEffect(() => {
     if (ifFieldIdValue) {
-      resetField(`${name}.logicValue`)
+      resetField(`${name}.logicValue`, { defaultValue: '' })
       resetField(`${name}.logicCondition`)
     }
   }, [ifFieldIdValue, name, resetField])

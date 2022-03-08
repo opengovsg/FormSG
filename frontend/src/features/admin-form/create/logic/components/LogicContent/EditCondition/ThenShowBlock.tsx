@@ -1,13 +1,20 @@
-import { useEffect, useMemo } from 'react'
-import { Controller, useFormContext } from 'react-hook-form'
+import { useCallback, useEffect, useMemo } from 'react'
+import {
+  Controller,
+  ControllerRenderProps,
+  FieldValues,
+  useFormContext,
+} from 'react-hook-form'
 import { BiShow, BiX } from 'react-icons/bi'
 import { FormControl, Stack } from '@chakra-ui/react'
+import { get } from 'lodash'
 
 import { LogicType } from '~shared/types/form'
 
 import { useWatchDependency } from '~hooks/useWatchDependency'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import Textarea from '~components/Textarea'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
@@ -21,6 +28,7 @@ export const ThenShowBlock = (): JSX.Element => {
     watch,
     formState: { errors },
     resetField,
+    getValues,
   } = useFormContext<EditLogicInputs>()
 
   const { formFields, mapIdToField } = useAdminFormLogic()
@@ -66,12 +74,40 @@ export const ThenShowBlock = (): JSX.Element => {
     // and will not update if <***>Watch.value is mutated.
   }, [formFields, logicConditionsWatch, mapIdToField, thenTypeValue])
 
+  const renderValueInputComponent = useCallback(
+    (field: ControllerRenderProps<FieldValues, 'thenValue'>) => {
+      switch (thenTypeValue) {
+        case LogicType.PreventSubmit: {
+          return (
+            <Textarea
+              {...field}
+              placeholder="Custom message to be displayed when submission is prevented"
+            />
+          )
+        }
+        default: {
+          const { value, ...rest } = field
+          return (
+            <MultiSelect
+              isDisabled={!thenTypeValue}
+              placeholder={null}
+              items={thenValueItems}
+              values={value ?? []}
+              {...rest}
+            />
+          )
+        }
+      }
+    },
+    [thenTypeValue, thenValueItems],
+  )
+
   /**
    * Effect to reset the logic values if the logic type is changed.
    */
   useEffect(() => {
     if (thenTypeValue) {
-      resetField('thenValue')
+      resetField('thenValue', { defaultValue: '' })
     }
   }, [resetField, thenTypeValue])
 
@@ -106,18 +142,15 @@ export const ThenShowBlock = (): JSX.Element => {
             name="thenValue"
             rules={{
               required:
-                'Please select fields to show if logic criteria is met.',
+                getValues('thenType') === LogicType.PreventSubmit
+                  ? 'Please enter submission prevention message.'
+                  : 'Please select fields to show if logic criteria is met.',
             }}
-            render={({ field: { value, ...field } }) => (
-              <MultiSelect
-                placeholder={null}
-                items={thenValueItems}
-                values={value ?? []}
-                {...field}
-              />
-            )}
+            render={({ field }) => renderValueInputComponent(field)}
           />
-          <FormErrorMessage>{errors.thenType?.message}</FormErrorMessage>
+          <FormErrorMessage>
+            {get(errors, 'thenValue.message')}
+          </FormErrorMessage>
         </FormControl>
       </Stack>
     </Stack>
