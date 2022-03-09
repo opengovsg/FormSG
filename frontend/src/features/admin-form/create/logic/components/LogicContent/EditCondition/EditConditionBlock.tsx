@@ -213,10 +213,13 @@ export const EditConditionBlock = ({
       <Stack direction="column" spacing="0.75rem">
         <Grid
           columnGap="0.5rem"
-          gridTemplateColumns={{ base: '1fr auto', md: 'auto 1fr auto' }}
+          gridTemplateColumns={{
+            base: '1fr auto',
+            md: handleRemoveLogic ? 'auto 1fr auto' : 'auto 1fr',
+          }}
           gridTemplateAreas={{
             base: "'label delete' 'input input'",
-            md: "'label input delete'",
+            md: handleRemoveLogic ? "'label input delete'" : "'label input'",
           }}
         >
           <BlockLabelText id={`${name}.field-label`} htmlFor={`${name}.field`}>

@@ -55,7 +55,7 @@ const useNewLogicBlockDefault = () => {
 
   // Only allow logic removal if there is more than one logic block.
   const handleRemoveLogic = useMemo(
-    () => (logicConditionBlocks.length > 0 ? remove : undefined),
+    () => (logicConditionBlocks.length > 1 ? remove : undefined),
     [logicConditionBlocks.length, remove],
   )
 
@@ -80,7 +80,7 @@ const useNewLogicBlockDefault = () => {
   }
 }
 
-interface NewLogicBlockProps {
+export interface NewLogicBlockProps {
   useNewLogicBlock?: typeof useNewLogicBlockDefault
 }
 
