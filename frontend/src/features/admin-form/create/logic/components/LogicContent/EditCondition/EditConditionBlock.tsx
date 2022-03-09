@@ -155,7 +155,6 @@ export const EditConditionBlock = ({
     switch (currentSelectedField.fieldType) {
       case BasicField.Dropdown:
       case BasicField.Radio:
-      case BasicField.Rating:
       case BasicField.YesNo:
         return '9rem'
       default:
