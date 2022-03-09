@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Text } from '@chakra-ui/react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import { isEqual } from 'lodash'
 import get from 'lodash/get'
@@ -10,6 +11,7 @@ import { PUBLICFORM_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
+import Link from '~components/Link'
 
 import {
   FetchNewTransactionResponse,
@@ -47,8 +49,16 @@ export const PublicFormProvider = ({
       } else if (!desyncToastIdRef.current && !isEqual(data, form)) {
         desyncToastIdRef.current = toast({
           status: 'warning',
-          description:
-            'Form may have been changed and submission may fail. Refresh for the latest version of the form.',
+          title: (
+            <Text textStyle="subhead-1">
+              The form has been modified and your submission may fail.
+            </Text>
+          ),
+          description: (
+            <Text as="span">
+              <Link href="">Refresh</Link> for the latest version of the form.
+            </Text>
+          ),
           duration: null,
         })
       }
