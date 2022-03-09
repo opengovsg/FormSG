@@ -1,9 +1,10 @@
 import { useEffect, useMemo } from 'react'
-import { Controller, useFormContext } from 'react-hook-form'
+import { Controller, UseFormReturn } from 'react-hook-form'
 import { BiShow, BiX } from 'react-icons/bi'
 import { FormControl, Stack } from '@chakra-ui/react'
 import get from 'lodash/get'
 
+import { FormFieldDto } from '~shared/types/field'
 import { LogicType } from '~shared/types/form'
 
 import { useWatchDependency } from '~hooks/useWatchDependency'
@@ -13,24 +14,29 @@ import Textarea from '~components/Textarea'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
-import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
-import { EditLogicInputs } from '../../../types'
+import { EditLogicInputs, FormFieldWithQuestionNumber } from '../../../types'
 
 import { BlockLabelText } from './BlockLabelText'
 
 interface ThenShowBlockProps {
   isLoading: boolean
+  formMethods: UseFormReturn<EditLogicInputs>
+  formFields?: FormFieldDto[]
+  mapIdToField: Record<string, FormFieldWithQuestionNumber> | null
 }
 
 export const ThenShowBlock = ({
   isLoading,
+  formMethods,
+  formFields,
+  mapIdToField,
 }: ThenShowBlockProps): JSX.Element => {
   const {
     watch,
     formState: { errors },
     resetField,
     control,
-  } = useFormContext<EditLogicInputs>()
+  } = formMethods
 
   const logicTypeValue = watch('logicType')
   const logicTypeItems = useMemo(() => {
@@ -115,22 +121,30 @@ export const ThenShowBlock = ({
         >
           Show
         </BlockLabelText>
-        <ThenLogicInput isLoading={isLoading} />
+        <ThenLogicInput
+          formFields={formFields}
+          mapIdToField={mapIdToField}
+          formMethods={formMethods}
+          isLoading={isLoading}
+        />
       </Stack>
     </Stack>
   )
 }
 
-const ThenLogicInput = ({ isLoading }: ThenShowBlockProps) => {
+const ThenLogicInput = ({
+  isLoading,
+  formMethods,
+  formFields,
+  mapIdToField,
+}: ThenShowBlockProps) => {
   const {
     watch,
     control,
     register,
     getValues,
     formState: { errors },
-  } = useFormContext<EditLogicInputs>()
-
-  const { formFields, mapIdToField } = useAdminFormLogic()
+  } = formMethods
 
   const logicTypeValue = watch('logicType')
   const logicConditionsWatch = useWatchDependency(watch, 'conditions')

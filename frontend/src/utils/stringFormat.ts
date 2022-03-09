@@ -26,3 +26,13 @@ export const formatNumberToLocaleString = (num: number): string => {
     maximumFractionDigits: 20,
   })
 }
+
+export const convertToStringArray = (
+  value: string | number | string[] | number[],
+) => {
+  if (!value) return []
+  if (Array.isArray(value)) {
+    return value.map((v) => String(v))
+  }
+  return [String(value)]
+}

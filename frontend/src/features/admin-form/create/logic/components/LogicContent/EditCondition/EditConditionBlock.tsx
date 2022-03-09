@@ -2,8 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import {
   Controller,
   ControllerRenderProps,
-  FieldValues,
-  useFormContext,
+  UseFormReturn,
 } from 'react-hook-form'
 import { BiTrash } from 'react-icons/bi'
 import {
@@ -14,13 +13,14 @@ import {
   Stack,
   VisuallyHidden,
 } from '@chakra-ui/react'
-import { get, pickBy, range } from 'lodash'
+import { Dictionary, get, pickBy, range } from 'lodash'
 
 import { LOGIC_MAP } from '~shared/modules/logic'
 import { BasicField } from '~shared/types/field'
-import { LogicIfValue, LogicType } from '~shared/types/form'
+import { FormCondition, LogicIfValue, LogicType } from '~shared/types/form'
 
 import { useWatchDependency } from '~hooks/useWatchDependency'
+import { convertToStringArray } from '~utils/stringFormat'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
@@ -29,8 +29,7 @@ import NumberInput from '~components/NumberInput'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { getIfLogicType } from '~features/logic/utils'
 
-import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
-import { EditLogicInputs } from '../../../types'
+import { EditLogicInputs, FormFieldWithQuestionNumber } from '../../../types'
 
 import { BlockLabelText } from './BlockLabelText'
 
@@ -38,14 +37,19 @@ export interface EditConditionBlockProps {
   index: number
   isLoading: boolean
   handleRemoveLogic?: (index?: number | number[] | undefined) => void
+  formMethods: UseFormReturn<EditLogicInputs>
+  logicableFields: Dictionary<FormFieldWithQuestionNumber> | null
+  mapIdToField: Record<string, FormFieldWithQuestionNumber> | null
 }
 
 export const EditConditionBlock = ({
   index,
   isLoading,
   handleRemoveLogic,
+  formMethods,
+  logicableFields,
+  mapIdToField,
 }: EditConditionBlockProps): JSX.Element => {
-  const { logicableFields, mapIdToField } = useAdminFormLogic()
   const name = useMemo(() => `conditions.${index}` as const, [index])
 
   const {
@@ -54,10 +58,13 @@ export const EditConditionBlock = ({
     resetField,
     register,
     setValue,
-  } = useFormContext<EditLogicInputs>()
-  const ifFieldIdValue = watch(`${name}.field`)
-  const conditionStateValue = watch(`${name}.state`)
-  const ifValueTypeValue = watch(`${name}.ifValueType`)
+    control,
+  } = formMethods
+  const ifFieldIdValue = watch(`${name}.field`) as FormCondition['field']
+  const conditionStateValue = watch(`${name}.state`) as FormCondition['state']
+  const ifValueTypeValue = watch(
+    `${name}.ifValueType`,
+  ) as FormCondition['ifValueType']
   const logicTypeValue = watch('logicType')
   const showValueWatch = useWatchDependency(watch, 'show')
 
@@ -153,7 +160,7 @@ export const EditConditionBlock = ({
   }, [currentSelectedField])
 
   const renderValueInputComponent = useCallback(
-    (field: ControllerRenderProps<FieldValues, `${typeof name}.value`>) => {
+    (field: ControllerRenderProps<EditLogicInputs, `${typeof name}.value`>) => {
       const selectProps = {
         isDisabled: !conditionStateValue || isLoading,
         isSearchable: false,
@@ -161,20 +168,41 @@ export const EditConditionBlock = ({
         isClearable: false,
         items: conditionValueItems,
       }
+      const { value, ...rest } = field
 
       if (!ifValueTypeValue) {
-        return <SingleSelect {...selectProps} {...field} isDisabled />
+        return (
+          <SingleSelect
+            {...selectProps}
+            value={String(value)}
+            {...rest}
+            isDisabled
+          />
+        )
       }
 
       switch (ifValueTypeValue) {
         case LogicIfValue.SingleSelect:
-          return <SingleSelect {...selectProps} {...field} />
+          return (
+            <SingleSelect {...selectProps} value={String(value)} {...rest} />
+          )
         case LogicIfValue.MultiSelect: {
-          const { value, ...rest } = field
-          return <MultiSelect {...selectProps} values={value ?? []} {...rest} />
+          return (
+            <MultiSelect
+              {...selectProps}
+              values={convertToStringArray(value)}
+              {...rest}
+            />
+          )
         }
         case LogicIfValue.Number:
-          return <NumberInput isDisabled={!conditionStateValue} {...field} />
+          return (
+            <NumberInput
+              isDisabled={!conditionStateValue}
+              value={String(value)}
+              {...rest}
+            />
+          )
       }
     },
     [conditionStateValue, conditionValueItems, ifValueTypeValue, isLoading],
@@ -213,6 +241,7 @@ export const EditConditionBlock = ({
             isInvalid={!!get(errors, `${name}.field`)}
           >
             <Controller
+              control={control}
               name={`${name}.field`}
               rules={{
                 required: 'Please select a question.',
@@ -259,6 +288,7 @@ export const EditConditionBlock = ({
                 maxW={{ md: logicTypeWrapperWidth }}
               >
                 <Controller
+                  control={control}
                   name={`${name}.state`}
                   rules={{
                     required: 'Please select a condition',
@@ -289,6 +319,7 @@ export const EditConditionBlock = ({
                   Logic condition
                 </VisuallyHidden>
                 <Controller
+                  control={control}
                   name={`${name}.value`}
                   rules={{
                     required: 'Please enter logic criteria.',
