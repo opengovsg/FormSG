@@ -15,7 +15,8 @@ import {
   ThenShowBlock,
 } from '../EditCondition'
 
-const useNewLogicBlock = () => {
+// Allow injection of custom hook for testing.
+const useNewLogicBlockDefault = () => {
   const setToInactive = useAdminLogicStore(
     useCallback((state) => state.setToInactive, []),
   )
@@ -79,7 +80,13 @@ const useNewLogicBlock = () => {
   }
 }
 
-export const NewLogicBlock = () => {
+interface NewLogicBlockProps {
+  useNewLogicBlock?: typeof useNewLogicBlockDefault
+}
+
+export const NewLogicBlock = ({
+  useNewLogicBlock = useNewLogicBlockDefault,
+}: NewLogicBlockProps) => {
   const {
     formMethods,
     logicConditionBlocks,
