@@ -3,7 +3,8 @@ import {
   DrawerTabs,
   useCreatePageDrawer,
 } from '~features/admin-form/create/CreatePageDrawerContext'
-import CreatePageLogicTab from '~features/admin-form/create/logic'
+
+import CreatePageLogicTab from '../../logic'
 
 export const CreatePageContent = (): JSX.Element => {
   const { activeTab } = useCreatePageDrawer()

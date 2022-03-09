@@ -1,15 +1,9 @@
 import { BasicField } from '~shared/types/field'
 
-import { FIELDS_TO_CREATE_META, PENDING_CREATE_FIELD_ID } from './constants'
-import { BuilderContentField, PendingFormField } from './types'
+import { BASICFIELD_TO_DRAWER_META } from '../constants'
 
-/**
- * Maps BasicField enums to their human-readable field type string
- */
-export const transformBasicFieldToText = (basicField?: BasicField): string => {
-  if (!basicField) return ''
-  return FIELDS_TO_CREATE_META[basicField].label
-}
+import { PENDING_CREATE_FIELD_ID } from './constants'
+import { BuilderContentField, PendingFormField } from './types'
 
 export const isPendingFormField = (
   field: BuilderContentField,
@@ -31,7 +25,7 @@ export const getFieldCreationMeta = (
     description: '',
     disabled: false,
     required: true,
-    title: transformBasicFieldToText(fieldType),
+    title: BASICFIELD_TO_DRAWER_META[fieldType].label,
     _id: PENDING_CREATE_FIELD_ID,
   }
 
