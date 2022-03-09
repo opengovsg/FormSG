@@ -65,8 +65,16 @@ export const ThenShowBlock = ({
   }, [logicTypeValue])
 
   return (
-    <Stack direction="column" spacing="0.75rem" py="1.5rem" px="2rem">
-      <Stack direction="row" spacing="0.5rem">
+    <Stack
+      direction="column"
+      spacing="0.75rem"
+      py="1.5rem"
+      px={{ base: '1.5rem', md: '2rem' }}
+    >
+      <Stack
+        direction={{ base: 'column', md: 'row' }}
+        spacing={{ base: 0, md: '0.5rem' }}
+      >
         <BlockLabelText id="logicType-label" htmlFor="logicType">
           Then
         </BlockLabelText>
@@ -97,7 +105,10 @@ export const ThenShowBlock = ({
         </FormControl>
       </Stack>
 
-      <Stack direction="row" spacing="0.5rem">
+      <Stack
+        direction={{ base: 'column', md: 'row' }}
+        spacing={{ base: 0, md: '0.5rem' }}
+      >
         <BlockLabelText
           id={`${currentShowLabel}-label`}
           htmlFor={currentShowLabel}

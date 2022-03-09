@@ -6,7 +6,14 @@ import {
   useFormContext,
 } from 'react-hook-form'
 import { BiTrash } from 'react-icons/bi'
-import { Box, Flex, FormControl, Stack, VisuallyHidden } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  FormControl,
+  Grid,
+  Stack,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 import { get, pickBy, range } from 'lodash'
 
 import { LOGIC_MAP } from '~shared/modules/logic'
@@ -176,11 +183,30 @@ export const EditConditionBlock = ({
   return (
     <Flex flexDir="column">
       <Stack direction="column" spacing="0.75rem">
-        <Stack direction="row" spacing="0.5rem">
+        <Grid
+          columnGap="0.5rem"
+          gridTemplateColumns={{ base: '1fr auto', md: 'auto 1fr auto' }}
+          gridTemplateAreas={{
+            base: "'label delete' 'input input'",
+            md: "'label input delete'",
+          }}
+        >
           <BlockLabelText id={`${name}.field-label`} htmlFor={`${name}.field`}>
             IF
           </BlockLabelText>
+          {handleRemoveLogic ? (
+            <IconButton
+              gridArea="delete"
+              isDisabled={isLoading}
+              variant="clear"
+              colorScheme="danger"
+              icon={<BiTrash />}
+              onClick={() => handleRemoveLogic(index)}
+              aria-label="Remove logic block"
+            />
+          ) : null}
           <FormControl
+            gridArea="input"
             id={`${name}.field`}
             isRequired
             isReadOnly={isLoading}
@@ -210,30 +236,27 @@ export const EditConditionBlock = ({
               {get(errors, `${name}.field.message`)}
             </FormErrorMessage>
           </FormControl>
-          {handleRemoveLogic ? (
-            <IconButton
-              isDisabled={isLoading}
-              variant="clear"
-              colorScheme="danger"
-              icon={<BiTrash />}
-              onClick={() => handleRemoveLogic(index)}
-              aria-label="Remove logic block"
-            />
-          ) : null}
-        </Stack>
-        <Stack direction="row" spacing="0.5rem">
+        </Grid>
+        <Stack
+          direction={{ base: 'column', md: 'row' }}
+          spacing={{ base: 0, md: '0.5rem' }}
+        >
           <BlockLabelText id={`${name}.state-label`} htmlFor={`${name}.state`}>
             IS
           </BlockLabelText>
           <Flex flexDir="column" flex={1} as="fieldset">
             <VisuallyHidden as="legend">Logic criteria</VisuallyHidden>
-            <Stack direction="row" align="flex-start" flex={1}>
+            <Stack
+              direction={{ base: 'column', md: 'row' }}
+              align="flex-start"
+              flex={1}
+            >
               <FormControl
                 id={`${name}.state`}
                 isReadOnly={isLoading}
                 isRequired
                 isInvalid={!!get(errors, `${name}.state`)}
-                maxW={logicTypeWrapperWidth}
+                maxW={{ md: logicTypeWrapperWidth }}
               >
                 <Controller
                   name={`${name}.state`}

@@ -13,8 +13,13 @@ export const AddConditionDivider = ({
   isDisabled,
 }: AddConditionDividerProps): JSX.Element => {
   return (
-    <Flex flexDir="row" align="center" my="0.5rem">
-      <Divider display={{ base: 'none', md: 'block' }} w="2rem" />
+    <Flex
+      flexDir="row"
+      align="center"
+      mt="0.5rem"
+      mb={{ base: '-0.5rem', md: '0.5rem' }}
+    >
+      <Divider w={{ base: '1.5rem', md: '2rem' }} />
       <Button
         isDisabled={isDisabled}
         leftIcon={<BiPlus fontSize="1.5rem" />}
