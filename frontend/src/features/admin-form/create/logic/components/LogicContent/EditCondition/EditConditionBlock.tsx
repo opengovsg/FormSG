@@ -19,6 +19,7 @@ import { LOGIC_MAP } from '~shared/modules/logic'
 import { BasicField } from '~shared/types/field'
 import { FormCondition, LogicIfValue, LogicType } from '~shared/types/form'
 
+import { useHasChanged } from '~hooks/useHasChanged'
 import { useWatchDependency } from '~hooks/useWatchDependency'
 import { convertToStringArray } from '~utils/stringFormat'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
@@ -61,13 +62,16 @@ export const EditConditionBlock = ({
     control,
   } = formMethods
   const ifFieldIdValue = watch(`${name}.field`) as FormCondition['field']
+  const hasFieldIdChanged = useHasChanged(
+    ifFieldIdValue,
+    /* isIgnoreUndefined= */ true,
+  )
   const conditionStateValue = watch(`${name}.state`) as FormCondition['state']
   const ifValueTypeValue = watch(
     `${name}.ifValueType`,
   ) as FormCondition['ifValueType']
   const logicTypeValue = watch('logicType')
   const showValueWatch = useWatchDependency(watch, 'show')
-
   const currentSelectedField = useMemo(() => {
     if (!ifFieldIdValue || !mapIdToField) return
     return mapIdToField[ifFieldIdValue]
@@ -77,11 +81,11 @@ export const EditConditionBlock = ({
    * Effect to reset the field if the field to apply a condition on is changed.
    */
   useEffect(() => {
-    if (ifFieldIdValue) {
+    if (hasFieldIdChanged) {
       resetField(`${name}.value`, { defaultValue: '' })
       resetField(`${name}.state`)
     }
-  }, [ifFieldIdValue, name, resetField])
+  }, [hasFieldIdChanged, name, resetField])
 
   useEffect(() => {
     if (!currentSelectedField) {
