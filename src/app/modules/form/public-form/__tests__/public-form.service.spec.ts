@@ -1,13 +1,14 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
-import mockingoose from 'mockingoose'
 import mongoose from 'mongoose'
 import { PartialDeep } from 'type-fest'
 
 import getFormModel from 'src/app/models/form.server.model'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { AuthType, IFormSchema } from 'src/types'
+import { IFormSchema } from 'src/types'
 
+import { FormAuthType } from '../../../../../../shared/types'
 import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
 import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
 import { JwtName } from '../../../spcp/spcp.types'
@@ -22,31 +23,31 @@ describe('public-form.service', () => {
   beforeEach(() => jest.clearAllMocks())
 
   describe('getCookieNameByAuthType', () => {
-    it('should return JwtName[AuthType.SP] when authType is SP', () => {
+    it('should return JwtName[FormAuthType.SP] when authType is SP', () => {
       // Arrange
-      const authType = AuthType.SP
+      const authType = FormAuthType.SP
 
       // Act
       const result = PublicFormService.getCookieNameByAuthType(authType)
 
       // Assert
-      expect(result).toEqual(JwtName[AuthType.SP])
+      expect(result).toEqual(JwtName[FormAuthType.SP])
     })
 
-    it('should return JwtName[AuthType.CP] when authType is CP', () => {
+    it('should return JwtName[FormAuthType.CP] when authType is CP', () => {
       // Arrange
-      const authType = AuthType.CP
+      const authType = FormAuthType.CP
 
       // Act
       const result = PublicFormService.getCookieNameByAuthType(authType)
 
       // Assert
-      expect(result).toEqual(JwtName[AuthType.CP])
+      expect(result).toEqual(JwtName[FormAuthType.CP])
     })
 
     it('should return MYINFO_COOKIE_NAME when authType is MyInfo', () => {
       // Arrange
-      const authType = AuthType.MyInfo
+      const authType = FormAuthType.MyInfo
 
       // Act
       const result = PublicFormService.getCookieNameByAuthType(authType)
@@ -57,7 +58,7 @@ describe('public-form.service', () => {
 
     it('should return SGID_COOKIE_NAME when authType is SGID', () => {
       // Arrange
-      const authType = AuthType.SGID
+      const authType = FormAuthType.SGID
 
       // Act
       const result = PublicFormService.getCookieNameByAuthType(authType)
@@ -77,8 +78,10 @@ describe('public-form.service', () => {
     it('should return DatabaseError when error occurs whilst inserting feedback', async () => {
       // Arrange
       // Mock failure
-      mockingoose(FormFeedbackModel).toReturn(new Error('some error'), 'save')
-      const insertSpy = jest.spyOn(FormFeedbackModel, 'create')
+      const insertSpy = jest
+        .spyOn(FormFeedbackModel, 'create')
+        // @ts-ignore
+        .mockRejectedValueOnce(new Error('some error'))
 
       // Act
       const actualResult = await PublicFormService.insertFormFeedback(
@@ -113,6 +116,7 @@ describe('public-form.service', () => {
       // Mock success.
       const insertSpy = jest
         .spyOn(FormFeedbackModel, 'create')
+        // @ts-ignore
         .mockResolvedValueOnce(MOCK_FORM_FEEDBACK)
 
       // Act
@@ -148,8 +152,12 @@ describe('public-form.service', () => {
       }
 
       // Mock form return.
-      mockingoose(FormModel).toReturn(mockForm, 'findOne')
-      const findByIdSpy = jest.spyOn(FormModel, 'findById')
+      const findByIdSpy = jest
+        .spyOn(FormModel, 'findById')
+        // @ts-ignore
+        .mockReturnValueOnce({
+          exec: jest.fn().mockResolvedValue(mockForm),
+        })
 
       // Act
       const createResult = await PublicFormService.createMetatags(
@@ -177,8 +185,12 @@ describe('public-form.service', () => {
     it('should return FormNotFoundError when form cannot be retrieved with given formId', async () => {
       // Arrange
       // Mock null form return.
-      mockingoose(FormModel).toReturn(null, 'findOne')
-      const findByIdSpy = jest.spyOn(FormModel, 'findById')
+      const findByIdSpy = jest
+        .spyOn(FormModel, 'findById')
+        // @ts-ignore
+        .mockReturnValueOnce({
+          exec: jest.fn().mockResolvedValue(null),
+        })
 
       // Act
       const createResult = await PublicFormService.createMetatags(
@@ -196,8 +208,12 @@ describe('public-form.service', () => {
     it('should return DatabaseError when error occurs whilst querying database', async () => {
       // Arrange
       // Mock failure
-      mockingoose(FormModel).toReturn(new Error('some error'), 'findOne')
-      const findByIdSpy = jest.spyOn(FormModel, 'findById')
+      const findByIdSpy = jest
+        .spyOn(FormModel, 'findById')
+        // @ts-ignore
+        .mockReturnValueOnce({
+          exec: jest.fn().mockRejectedValue(new Error('some error')),
+        })
 
       // Act
       const createResult = await PublicFormService.createMetatags(

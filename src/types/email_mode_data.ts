@@ -1,4 +1,4 @@
-import { BasicField } from './field'
+import { BasicField } from '../../shared/types'
 
 export type EmailRespondentConfirmationField = {
   question: string

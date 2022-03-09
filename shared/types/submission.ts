@@ -104,7 +104,7 @@ type SubmissionContentBase = {
  */
 export type EmailModeSubmissionContentDto = SubmissionContentBase
 
-type StorageModeAttachment = {
+export type StorageModeAttachment = {
   encryptedFile?: {
     binary: string
     nonce: string

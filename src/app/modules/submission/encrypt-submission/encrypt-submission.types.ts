@@ -1,5 +1,5 @@
+import { StorageModeAttachmentsMap } from '../../../../../shared/types'
 import { IPopulatedEncryptedForm } from '../../../../types'
-import { StorageModeAttachmentsMap } from '../../../../types/api'
 import { ProcessedFieldResponse } from '../submission.types'
 
 export type EncryptSubmissionBodyAfterProcess = {

@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import MockAxios from 'jest-mock-axios'
 
-import { BasicField } from 'src/types'
-
 import {
+  BasicField,
   EmailModeSubmissionContentDto,
   StorageModeSubmissionContentDto,
   SubmissionResponseDto,
-} from '../../../../shared/types/submission'
+} from '../../../../shared/types'
 import * as SubmissionUtil from '../../utils/submission'
 import {
   getPublicFormView,

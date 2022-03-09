@@ -1,6 +1,9 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { SendUserContactOtpDto } from '../../../../shared/types/user'
+import {
+  SendUserContactOtpDto,
+  VerifyUserContactOtpDto,
+} from '../../../../shared/types'
 import { IPopulatedUser } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { SmsFactory } from '../../services/sms/sms.factory'
@@ -8,6 +11,10 @@ import { getRequestIp } from '../../utils/request'
 import { getUserIdFromSession } from '../auth/auth.utils'
 import { ControllerHandler } from '../core/core.types'
 
+import {
+  validateContactOtpVerificationParams,
+  validateContactSendOtpParams,
+} from './user.middleware'
 import {
   createContactOtp,
   getPopulatedUserById,
@@ -18,16 +25,7 @@ import { mapRouteError } from './user.utils'
 
 const logger = createLoggerWithLabel(module)
 
-/**
- * Generates an OTP and sends the OTP to the given contact in request body.
- * @route POST /contact/otp/generate
- * @returns 200 if OTP was successfully sent
- * @returns 401 if user id does not match current session user or if user is not currently logged in
- * @returns 422 on OTP creation or SMS send failure
- * @returns 422 if user id does not exist in the database
- * @returns 500 if database errors occurs
- */
-export const handleContactSendOtp: ControllerHandler<
+export const _handleContactSendOtp: ControllerHandler<
   unknown,
   string,
   SendUserContactOtpDto
@@ -93,22 +91,23 @@ export const handleContactSendOtp: ControllerHandler<
 }
 
 /**
- * Verifies given OTP with the hashed OTP data, and updates the user's contact
- * number if the hash matches.
- * @route POST /contact/otp/verify
- * @returns 200 when user contact update success
+ * Generates an OTP and sends the OTP to the given contact in request body.
+ * @route POST /contact/otp/generate
+ * @returns 200 if OTP was successfully sent
  * @returns 401 if user id does not match current session user or if user is not currently logged in
- * @returns 422 when OTP is invalid
- * @returns 500 when OTP is malformed or for unknown errors
+ * @returns 422 on OTP creation or SMS send failure
+ * @returns 422 if user id does not exist in the database
+ * @returns 500 if database errors occurs
  */
-export const handleContactVerifyOtp: ControllerHandler<
+export const handleContactSendOtp = [
+  validateContactSendOtpParams,
+  _handleContactSendOtp,
+] as ControllerHandler[]
+
+export const _handleContactVerifyOtp: ControllerHandler<
   unknown,
   string | IPopulatedUser,
-  {
-    userId: string
-    otp: string
-    contact: string
-  }
+  VerifyUserContactOtpDto
 > = async (req, res) => {
   // Joi validation ensures existence.
   const { userId, otp, contact } = req.body
@@ -158,6 +157,20 @@ export const handleContactVerifyOtp: ControllerHandler<
   // No errors, return updated user to client.
   return res.status(StatusCodes.OK).json(updateResult.value)
 }
+
+/**
+ * Verifies given OTP with the hashed OTP data, and updates the user's contact
+ * number if the hash matches.
+ * @route POST /contact/otp/verify
+ * @returns 200 when user contact update success
+ * @returns 401 if user id does not match current session user or if user is not currently logged in
+ * @returns 422 when OTP is invalid
+ * @returns 500 when OTP is malformed or for unknown errors
+ */
+export const handleContactVerifyOtp = [
+  validateContactOtpVerificationParams,
+  _handleContactVerifyOtp,
+] as ControllerHandler[]
 
 /**
  * Retrieves and returns the session user from the database.

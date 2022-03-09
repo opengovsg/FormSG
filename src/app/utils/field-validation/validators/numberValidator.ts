@@ -1,9 +1,9 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
+import { NumberSelectedValidation } from '../../../../../shared/types'
 import {
   INumberFieldSchema,
-  NumberSelectedValidation,
   OmitUnusedValidatorProps,
 } from '../../../../types/field'
 import { ResponseValidator } from '../../../../types/field/utils/validation'

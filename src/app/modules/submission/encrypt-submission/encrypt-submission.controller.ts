@@ -7,17 +7,15 @@ import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
 import {
-  AuthType,
-  EncryptedSubmissionDto,
-  SubmissionMetadataList,
-} from '../../../../types'
-import {
-  EncryptSubmissionDto,
   ErrorDto,
+  FormAuthType,
   FormSubmissionMetadataQueryDto,
+  StorageModeSubmissionDto,
+  StorageModeSubmissionMetadataList,
   SubmissionErrorDto,
   SubmissionResponseDto,
-} from '../../../../types/api'
+} from '../../../../../shared/types'
+import { EncryptSubmissionDto } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
@@ -119,12 +117,12 @@ const submitEncryptModeForm: ControllerHandler<
       meta: logMeta,
       error: formPublicResult.error,
     })
-    const { statusCode } = mapRouteError(formPublicResult.error)
+    const { statusCode, errorMessage } = mapRouteError(formPublicResult.error)
     if (statusCode === StatusCodes.GONE) {
       return res.sendStatus(statusCode)
     } else {
       return res.status(statusCode).json({
-        message: form.inactiveMessage,
+        message: errorMessage,
       })
     }
   }
@@ -186,7 +184,7 @@ const submitEncryptModeForm: ControllerHandler<
   let userInfo
   const { authType } = form
   switch (authType) {
-    case AuthType.MyInfo: {
+    case FormAuthType.MyInfo: {
       logger.error({
         message:
           'Storage mode form is not allowed to have MyInfo authorisation',
@@ -199,7 +197,7 @@ const submitEncryptModeForm: ControllerHandler<
       )
       return res.status(statusCode).json({ message: errorMessage })
     }
-    case AuthType.SP: {
+    case FormAuthType.SP: {
       const jwtPayloadResult = await SpcpService.extractJwt(
         req.cookies,
         authType,
@@ -221,7 +219,7 @@ const submitEncryptModeForm: ControllerHandler<
       uinFin = jwtPayloadResult.value.userName
       break
     }
-    case AuthType.CP: {
+    case FormAuthType.CP: {
       const jwtPayloadResult = await SpcpService.extractJwt(
         req.cookies,
         authType,
@@ -248,7 +246,7 @@ const submitEncryptModeForm: ControllerHandler<
 
   // Encrypt Verified SPCP Fields
   let verified
-  if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
+  if (form.authType === FormAuthType.SP || form.authType === FormAuthType.CP) {
     const encryptVerifiedContentResult =
       VerifiedContentService.getVerifiedContent({
         type: form.authType,
@@ -411,6 +409,18 @@ export const streamEncryptedResponses: ControllerHandler<
   const { formId } = req.params
   const { startDate, endDate } = req.query
 
+  const logMeta = {
+    action: 'handleStreamEncryptedResponses',
+    ...createReqMeta(req),
+    formId,
+    sessionUserId,
+  }
+
+  logger.info({
+    message: 'Stream encrypted responses start',
+    meta: logMeta,
+  })
+
   // Step 1: Retrieve currently logged in user.
   const cursorResult = await getPopulatedUserById(sessionUserId)
     .andThen((user) =>
@@ -430,12 +440,6 @@ export const streamEncryptedResponses: ControllerHandler<
         endDate,
       }),
     )
-
-  const logMeta = {
-    action: 'handleStreamEncryptedResponses',
-    ...createReqMeta(req),
-    formId,
-  }
 
   if (cursorResult.isErr()) {
     logger.error({
@@ -543,13 +547,26 @@ const validateSubmissionId = celebrate({
  */
 export const getEncryptedResponseUsingQueryParams: ControllerHandler<
   { formId: string },
-  EncryptedSubmissionDto | ErrorDto,
+  StorageModeSubmissionDto | ErrorDto,
   unknown,
   { submissionId: string }
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { submissionId } = req.query
   const { formId } = req.params
+
+  const logMeta = {
+    action: 'getEncryptedResponseUsingQueryParams',
+    submissionId,
+    sessionUserId,
+    formId,
+    ...createReqMeta(req),
+  }
+
+  logger.info({
+    message: 'Get encrypted response using submissionId start',
+    meta: logMeta,
+  })
 
   return (
     // Step 1: Retrieve logged in user.
@@ -577,16 +594,17 @@ export const getEncryptedResponseUsingQueryParams: ControllerHandler<
           createEncryptedSubmissionDto(submissionData, presignedUrls),
         )
       })
-      .map((responseData) => res.json(responseData))
+      .map((responseData) => {
+        logger.info({
+          message: 'Get encrypted response using submissionId success',
+          meta: logMeta,
+        })
+        return res.json(responseData)
+      })
       .mapErr((error) => {
         logger.error({
           message: 'Failure retrieving encrypted submission response',
-          meta: {
-            action: 'handleGetEncryptedResponse',
-            submissionId,
-            formId,
-            ...createReqMeta(req),
-          },
+          meta: logMeta,
           error,
         })
 
@@ -623,10 +641,23 @@ export const handleGetEncryptedResponseUsingQueryParams = [
  */
 export const handleGetEncryptedResponse: ControllerHandler<
   { formId: string; submissionId: string },
-  EncryptedSubmissionDto | ErrorDto
+  StorageModeSubmissionDto | ErrorDto
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { formId, submissionId } = req.params
+
+  const logMeta = {
+    action: 'handleGetEncryptedResponse',
+    submissionId,
+    formId,
+    sessionUserId,
+    ...createReqMeta(req),
+  }
+
+  logger.info({
+    message: 'Get encrypted response using submissionId start',
+    meta: logMeta,
+  })
 
   return (
     // Step 1: Retrieve logged in user.
@@ -654,16 +685,17 @@ export const handleGetEncryptedResponse: ControllerHandler<
           createEncryptedSubmissionDto(submissionData, presignedUrls),
         )
       })
-      .map((responseData) => res.json(responseData))
+      .map((responseData) => {
+        logger.info({
+          message: 'Get encrypted response using submissionId success',
+          meta: logMeta,
+        })
+        return res.json(responseData)
+      })
       .mapErr((error) => {
         logger.error({
           message: 'Failure retrieving encrypted submission response',
-          meta: {
-            action: 'handleGetEncryptedResponse',
-            submissionId,
-            formId,
-            ...createReqMeta(req),
-          },
+          meta: logMeta,
           error,
         })
 
@@ -690,7 +722,7 @@ export const handleGetEncryptedResponse: ControllerHandler<
  */
 export const getMetadata: ControllerHandler<
   { formId: string },
-  SubmissionMetadataList | ErrorDto,
+  StorageModeSubmissionMetadataList | ErrorDto,
   unknown,
   FormSubmissionMetadataQueryDto
 > = async (req, res) => {
@@ -703,6 +735,7 @@ export const getMetadata: ControllerHandler<
     formId,
     submissionId,
     page,
+    sessionUserId,
     ...createReqMeta(req),
   }
 
@@ -724,7 +757,7 @@ export const getMetadata: ControllerHandler<
         // Step 4a: Retrieve specific submission id.
         if (submissionId) {
           return getSubmissionMetadata(formId, submissionId).map((metadata) => {
-            const metadataList: SubmissionMetadataList = metadata
+            const metadataList: StorageModeSubmissionMetadataList = metadata
               ? { metadata: [metadata], count: 1 }
               : { metadata: [], count: 0 }
             return metadataList
@@ -733,7 +766,13 @@ export const getMetadata: ControllerHandler<
         // Step 4b: Retrieve all submissions of given form id.
         return getSubmissionMetadataList(formId, page)
       })
-      .map((metadataList) => res.json(metadataList))
+      .map((metadataList) => {
+        logger.info({
+          message: 'Successfully retrieved metadata from database',
+          meta: logMeta,
+        })
+        return res.json(metadataList)
+      })
       .mapErr((error) => {
         logger.error({
           message: 'Failure retrieving metadata from database',

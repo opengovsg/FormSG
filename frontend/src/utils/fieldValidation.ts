@@ -28,7 +28,7 @@ import {
   TextSelectedValidation,
   UenFieldBase,
 } from '~shared/types/field'
-import { isNricValid } from '~shared/utils/nric-validation'
+import { isMFinSeriesValid, isNricValid } from '~shared/utils/nric-validation'
 import {
   isHomePhoneNumber,
   isMobilePhoneNumber,
@@ -301,7 +301,11 @@ export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
     ...createBaseValidationRules(schema),
     validate: (val?: string) => {
       if (!val) return true
-      return isNricValid(val) || 'Please enter a valid NRIC'
+      return (
+        isNricValid(val) ||
+        isMFinSeriesValid(val) ||
+        'Please enter a valid NRIC'
+      )
     },
   }
 }

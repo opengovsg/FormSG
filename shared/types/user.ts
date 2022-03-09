@@ -40,7 +40,10 @@ export type PublicUserDto = {
   agency: PublicAgencyDto
 }
 
-export type SendUserContactOtpDto = { contact: string; userId: string }
+export type SendUserContactOtpDto = {
+  contact: string
+  userId: string
+}
 
 export type VerifyUserContactOtpDto = {
   userId: string

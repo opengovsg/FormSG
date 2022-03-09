@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose'
 
-import { IRatingFieldSchema, RatingShape } from '../../../types'
+import { RatingShape } from '../../../../shared/types'
+import { IRatingFieldSchema } from '../../../types'
 
 const createRatingFieldSchema = () => {
   return new Schema<IRatingFieldSchema>({

@@ -1,6 +1,10 @@
 import { Document, Model } from 'mongoose'
+import { Merge } from 'type-fest'
 
-import { FormBillingStatistic, LoginBase } from '../../shared/types/billing'
+import {
+  FormBillingStatistic as SharedFormBillingStatistic,
+  LoginBase,
+} from '../../shared/types'
 
 import { IAgencySchema } from './agency'
 import { IFormSchema, IPopulatedForm } from './form'
@@ -12,17 +16,20 @@ interface ILogin extends LoginBase {
   agency: IAgencySchema['_id']
 }
 
+export type FormBillingStatistic = Merge<
+  SharedFormBillingStatistic,
+  { formId: ILogin['form'] }
+>
+
 export interface ILoginSchema extends ILogin, Document {
   created?: Date
 }
-
-export type LoginStatistic = FormBillingStatistic
 
 export interface ILoginModel extends Model<ILoginSchema> {
   aggregateLoginStats: (
     esrvcId: string,
     gte: Date,
     lte: Date,
-  ) => Promise<LoginStatistic[]>
+  ) => Promise<FormBillingStatistic[]>
   addLoginFromForm: (form: IPopulatedForm) => Promise<ILoginSchema>
 }

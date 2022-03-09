@@ -3,7 +3,7 @@
 const { StatusCodes } = require('http-status-codes')
 const get = require('lodash/get')
 const moment = require('moment-timezone')
-const { LogicType } = require('../../../../../types')
+const { LogicType } = require('../../../../../../shared/types')
 const UpdateFormService = require('../../../../services/UpdateFormService')
 const UserService = require('../../../../services/UserService')
 const FieldFactory = require('../../helpers/field-factory')

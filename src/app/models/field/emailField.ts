@@ -1,7 +1,8 @@
 import { Schema } from 'mongoose'
 
+import { FormResponseMode } from '../../../../shared/types'
 import { validateEmailDomains } from '../../../../shared/utils/email-domain-validation'
-import { IEmailFieldSchema, ResponseMode } from '../../../types'
+import { IEmailFieldSchema } from '../../../types'
 
 const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
   const EmailFieldSchema = new Schema<IEmailFieldSchema>({
@@ -31,7 +32,9 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
         default: false,
         set: function (this: IEmailFieldSchema, v: boolean) {
           // Set to false if encrypt mode regardless of initial value.
-          return this.parent().responseMode === ResponseMode.Encrypt ? false : v
+          return this.parent().responseMode === FormResponseMode.Encrypt
+            ? false
+            : v
         },
       },
     },
@@ -49,6 +52,7 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
         {
           type: String,
           trim: true,
+          lowercase: true,
         },
       ],
       // If allowedEmailDomains is empty, then all email domains should be allowed.

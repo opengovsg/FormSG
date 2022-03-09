@@ -7,10 +7,11 @@ import {
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
-import { FormOtpData, IFormSchema, IUserSchema, ResponseMode } from 'src/types'
+import { FormOtpData, IFormSchema, IUserSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormResponseMode } from '../../../../../shared/types'
 import { VfnErrors } from '../../../../../shared/utils/verification'
 import { InvalidNumberError } from '../sms.errors'
 import * as SmsService from '../sms.service'
@@ -33,6 +34,8 @@ const MOCK_ADMIN_EMAIL = 'adminEmail@email.com'
 const MOCK_ADMIN_ID = new ObjectId().toHexString()
 const MOCK_FORM_ID = new ObjectId().toHexString()
 const MOCK_FORM_TITLE = 'formTitle'
+
+const MOCK_TWILIO_WEBHOOK_ROUTE = '/api/v3/notifications/twilio'
 
 const twilioSuccessSpy = jest.fn().mockResolvedValue({
   status: 'testStatus',
@@ -98,6 +101,7 @@ describe('sms.service', () => {
         body: expectedMessage,
         from: MOCK_VALID_CONFIG.msgSrvcSid,
         forceDelivery: true,
+        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
@@ -139,6 +143,7 @@ describe('sms.service', () => {
         body: expectedMessage,
         from: MOCK_INVALID_CONFIG.msgSrvcSid,
         forceDelivery: true,
+        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
@@ -178,6 +183,7 @@ describe('sms.service', () => {
         body: expectedMessage,
         from: MOCK_VALID_CONFIG.msgSrvcSid,
         forceDelivery: true,
+        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
@@ -219,6 +225,7 @@ describe('sms.service', () => {
         body: expectedMessage,
         from: MOCK_INVALID_CONFIG.msgSrvcSid,
         forceDelivery: true,
+        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
@@ -246,7 +253,7 @@ describe('sms.service', () => {
         title: 'Test Form',
         emails: [testUser.email],
         admin: testUser._id,
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
       })
 
       mockOtpData = {

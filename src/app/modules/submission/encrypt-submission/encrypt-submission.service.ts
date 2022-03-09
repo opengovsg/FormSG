@@ -6,14 +6,16 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
 
 import {
+  FormResponseMode,
+  StorageModeSubmissionMetadata,
+  StorageModeSubmissionMetadataList,
+} from '../../../../../shared/types'
+import {
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
-  ResponseMode,
   SubmissionCursorData,
   SubmissionData,
-  SubmissionMetadata,
-  SubmissionMetadataList,
 } from '../../../../types'
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -301,7 +303,7 @@ export const transformAttachmentMetasToSignedUrls = (
 export const getSubmissionMetadata = (
   formId: string,
   submissionId: string,
-): ResultAsync<SubmissionMetadata | null, DatabaseError> => {
+): ResultAsync<StorageModeSubmissionMetadata | null, DatabaseError> => {
   // Early return, do not even retrieve from database.
   if (!mongoose.Types.ObjectId.isValid(submissionId)) {
     return okAsync(null)
@@ -327,7 +329,7 @@ export const getSubmissionMetadata = (
 export const getSubmissionMetadataList = (
   formId: string,
   page?: number,
-): ResultAsync<SubmissionMetadataList, DatabaseError> => {
+): ResultAsync<StorageModeSubmissionMetadataList, DatabaseError> => {
   return ResultAsync.fromPromise(
     EncryptSubmissionModel.findAllMetadataByFormId(formId, { page }),
     (error) => {
@@ -350,7 +352,7 @@ export const checkFormIsEncryptMode = (
 ): Result<IPopulatedEncryptedForm, ResponseModeError> => {
   return isFormEncryptMode(form)
     ? ok(form)
-    : err(new ResponseModeError(ResponseMode.Encrypt, form.responseMode))
+    : err(new ResponseModeError(FormResponseMode.Encrypt, form.responseMode))
 }
 
 /**

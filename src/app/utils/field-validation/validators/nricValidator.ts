@@ -1,7 +1,10 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { isNricValid } from '../../../../../shared/utils/nric-validation'
+import {
+  isMFinSeriesValid,
+  isNricValid,
+} from '../../../../../shared/utils/nric-validation'
 import { ResponseValidator } from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
@@ -15,7 +18,7 @@ type NricValidatorConstructor = () => NricValidator
  * format is correct.
  */
 const nricValidator: NricValidator = (response) => {
-  return isNricValid(response.answer)
+  return isNricValid(response.answer) || isMFinSeriesValid(response.answer)
     ? right(response)
     : left(`NricValidator:\tanswer is not a valid NRIC`)
 }

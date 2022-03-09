@@ -23,6 +23,10 @@ export const mapRouteError = (
 ): ErrorResponseData => {
   switch (error.constructor) {
     case UserErrors.InvalidOtpError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
     case UserErrors.MissingUserError:
     case SmsErrors.SmsSendError:
     case SmsErrors.InvalidNumberError:

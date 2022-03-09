@@ -8,11 +8,12 @@ import { mocked } from 'ts-jest/utils'
 import { MYINFO_COOKIE_NAME } from 'src/app/modules/myinfo/myinfo.constants'
 import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
 import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
-import { AuthType, IFieldSchema, Status } from 'src/types'
+import { FormFieldSchema } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 import {
@@ -91,7 +92,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
             form_fields: [MOCK_TEXT_FIELD],
           },
         })
@@ -121,9 +122,9 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
             form_fields: [
-              { ...MOCK_TEXT_FIELD, required: false } as IFieldSchema,
+              { ...MOCK_TEXT_FIELD, required: false } as FormFieldSchema,
             ],
           },
         })
@@ -152,7 +153,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
             form_fields: [MOCK_ATTACHMENT_FIELD],
           },
         })
@@ -186,7 +187,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
             form_fields: [MOCK_SECTION_FIELD],
           },
         })
@@ -215,7 +216,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
             form_fields: [MOCK_OPTIONAL_VERIFIED_FIELD],
           },
         })
@@ -246,7 +247,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
             form_fields: [MOCK_CHECKBOX_FIELD],
           },
         })
@@ -275,7 +276,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -296,7 +297,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -321,7 +322,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -346,7 +347,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -373,7 +374,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -398,7 +399,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -423,7 +424,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -448,7 +449,7 @@ describe('public-form.submissions.routes', () => {
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             hasCaptcha: false,
-            status: Status.Public,
+            status: FormStatus.Public,
           },
         })
 
@@ -481,9 +482,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.SP,
+              authType: FormAuthType.SP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -507,9 +508,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.SP,
+              authType: FormAuthType.SP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -534,9 +535,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.SP,
+              authType: FormAuthType.SP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -566,9 +567,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.SP,
+              authType: FormAuthType.SP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -599,9 +600,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.SP,
+              authType: FormAuthType.SP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -629,9 +630,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.MyInfo,
+              authType: FormAuthType.MyInfo,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
           const cookie = JSON.stringify({
@@ -669,9 +670,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.MyInfo,
+              authType: FormAuthType.MyInfo,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -696,9 +697,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.MyInfo,
+              authType: FormAuthType.MyInfo,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -728,9 +729,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.MyInfo,
+              authType: FormAuthType.MyInfo,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
           const cookie = JSON.stringify({
@@ -763,9 +764,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.SP,
+              authType: FormAuthType.SP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
           const cookie = JSON.stringify({
@@ -807,9 +808,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.CP,
+              authType: FormAuthType.CP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -833,9 +834,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.CP,
+              authType: FormAuthType.CP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -860,9 +861,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.CP,
+              authType: FormAuthType.CP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -892,9 +893,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.CP,
+              authType: FormAuthType.CP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -925,9 +926,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.CP,
+              authType: FormAuthType.CP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -971,9 +972,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.SP,
+              authType: FormAuthType.SP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -994,9 +995,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.SP,
+              authType: FormAuthType.SP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -1018,9 +1019,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.SP,
+              authType: FormAuthType.SP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -1047,9 +1048,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.SP,
+              authType: FormAuthType.SP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -1077,9 +1078,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.SP,
+              authType: FormAuthType.SP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -1109,9 +1110,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.CP,
+              authType: FormAuthType.CP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -1132,9 +1133,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.CP,
+              authType: FormAuthType.CP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -1156,9 +1157,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.CP,
+              authType: FormAuthType.CP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -1185,9 +1186,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.CP,
+              authType: FormAuthType.CP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 
@@ -1215,9 +1216,9 @@ describe('public-form.submissions.routes', () => {
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: AuthType.CP,
+              authType: FormAuthType.CP,
               hasCaptcha: false,
-              status: Status.Public,
+              status: FormStatus.Public,
             },
           })
 

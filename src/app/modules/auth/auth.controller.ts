@@ -8,19 +8,18 @@ import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as UserService from '../user/user.service'
 
+import {
+  validateCheckUserParams,
+  validateLoginSendOtpParams,
+  validateVerifyOtpParams,
+} from './auth.middlewares'
 import * as AuthService from './auth.service'
 import { SessionUser } from './auth.types'
 import { mapRouteError } from './auth.utils'
 
 const logger = createLoggerWithLabel(module)
 
-/**
- * Handler for GET /auth/checkuser endpoint.
- * @returns 500 when there was an error validating body.email
- * @returns 401 when domain of body.email is invalid
- * @returns 200 if domain of body.email is valid
- */
-export const handleCheckUser: ControllerHandler<
+export const _handleCheckUser: ControllerHandler<
   unknown,
   string,
   { email: string }
@@ -46,12 +45,17 @@ export const handleCheckUser: ControllerHandler<
 }
 
 /**
- * Handler for POST /auth/sendotp endpoint.
- * @return 200 when OTP has been been successfully sent
- * @return 401 when email domain is invalid
- * @return 500 when unknown errors occurs during generate OTP, or create/send the email that delivers the OTP to the user's email address
+ * Handler for GET /auth/checkuser endpoint.
+ * @returns 500 when there was an error validating body.email
+ * @returns 401 when domain of body.email is invalid
+ * @returns 200 if domain of body.email is valid
  */
-export const handleLoginSendOtp: ControllerHandler<
+export const handleCheckUser = [
+  validateCheckUserParams,
+  _handleCheckUser,
+] as ControllerHandler[]
+
+export const _handleLoginSendOtp: ControllerHandler<
   unknown,
   { message: string } | string,
   { email: string }
@@ -104,13 +108,24 @@ export const handleLoginSendOtp: ControllerHandler<
 }
 
 /**
+ * Handler for POST /auth/sendotp endpoint.
+ * @return 200 when OTP has been been successfully sent
+ * @return 401 when email domain is invalid
+ * @return 500 when unknown errors occurs during generate OTP, or create/send the email that delivers the OTP to the user's email address
+ */
+export const handleLoginSendOtp = [
+  validateLoginSendOtpParams,
+  _handleLoginSendOtp,
+] as ControllerHandler[]
+
+/**
  * Handler for POST /auth/verifyotp endpoint.
  * @returns 200 when user has successfully logged in, with session cookie set
  * @returns 401 when the email domain is invalid
  * @returns 422 when the OTP is invalid
  * @returns 500 when error occurred whilst verifying the OTP
  */
-export const handleLoginVerifyOtp: ControllerHandler<
+export const _handleLoginVerifyOtp: ControllerHandler<
   unknown,
   string | SessionUser,
   { email: string; otp: string }
@@ -184,6 +199,11 @@ export const handleLoginVerifyOtp: ControllerHandler<
       })
   )
 }
+
+export const handleLoginVerifyOtp = [
+  validateVerifyOtpParams,
+  _handleLoginVerifyOtp,
+] as ControllerHandler[]
 
 export const handleSignout: ControllerHandler = async (req, res) => {
   if (!req.session || isEmpty(req.session)) {

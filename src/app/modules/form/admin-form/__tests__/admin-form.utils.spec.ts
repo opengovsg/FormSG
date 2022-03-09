@@ -3,19 +3,22 @@ import { cloneDeep, omit, tail } from 'lodash'
 
 import { EditFieldActions } from 'src/shared/constants'
 import {
-  BasicField,
   FormFieldSchema,
   IEmailFieldSchema,
   IPopulatedForm,
   IPopulatedUser,
-  Permission,
-  ResponseMode,
-  Status,
 } from 'src/types'
-import { DuplicateFormBodyDto, EditFormFieldParams } from 'src/types/api'
+import { EditFormFieldParams } from 'src/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
+import {
+  BasicField,
+  DuplicateFormBodyDto,
+  FormPermission,
+  FormResponseMode,
+  FormStatus,
+} from '../../../../../../shared/types'
 import { ForbiddenFormError } from '../../form.errors'
 import { EditFieldError } from '../admin-form.errors'
 import { OverrideProps } from '../admin-form.types'
@@ -40,7 +43,7 @@ describe('admin-form.utils', () => {
       // Arrange
       const mockForm = {
         title: 'mockForm',
-        status: Status.Private,
+        status: FormStatus.Private,
         _id: new ObjectId(),
         // User is form admin.
         admin: MOCK_USER,
@@ -59,7 +62,7 @@ describe('admin-form.utils', () => {
       // Form is owned by another admin, but MOCK_USER has permissions.
       const mockForm = {
         title: 'mockForm',
-        status: Status.Public,
+        status: FormStatus.Public,
         _id: new ObjectId(),
         // New admin.
         admin: {
@@ -83,13 +86,13 @@ describe('admin-form.utils', () => {
       // permissions.
       const mockForm = {
         title: 'mockForm',
-        status: Status.Public,
+        status: FormStatus.Public,
         _id: new ObjectId(),
         // New admin, no permissionsList.
         admin: {
           _id: new ObjectId(),
         } as IPopulatedUser,
-        permissionList: [] as Permission[],
+        permissionList: [] as FormPermission[],
       } as IPopulatedForm
 
       // Act
@@ -110,7 +113,7 @@ describe('admin-form.utils', () => {
       // Arrange
       const mockForm = {
         title: 'mockForm',
-        status: Status.Private,
+        status: FormStatus.Private,
         _id: new ObjectId(),
         // User is form admin.
         admin: MOCK_USER,
@@ -129,7 +132,7 @@ describe('admin-form.utils', () => {
       // Form is owned by another admin, but MOCK_USER has permissions.
       const mockForm = {
         title: 'mockForm',
-        status: Status.Public,
+        status: FormStatus.Public,
         _id: new ObjectId(),
         // New admin.
         admin: {
@@ -153,7 +156,7 @@ describe('admin-form.utils', () => {
       // permissions.
       const mockForm = {
         title: 'mockForm',
-        status: Status.Public,
+        status: FormStatus.Public,
         _id: new ObjectId(),
         // New admin, no permissionsList.
         admin: {
@@ -181,13 +184,13 @@ describe('admin-form.utils', () => {
       // permissions.
       const mockForm = {
         title: 'mockForm',
-        status: Status.Public,
+        status: FormStatus.Public,
         _id: new ObjectId(),
         // New admin, no permissionsList.
         admin: {
           _id: new ObjectId(),
         } as IPopulatedUser,
-        permissionList: [] as Permission[],
+        permissionList: [] as FormPermission[],
       } as IPopulatedForm
 
       // Act
@@ -208,7 +211,7 @@ describe('admin-form.utils', () => {
       // Arrange
       const mockForm = {
         title: 'mockForm',
-        status: Status.Private,
+        status: FormStatus.Private,
         _id: new ObjectId(),
         // User is form admin.
         admin: MOCK_USER,
@@ -227,7 +230,7 @@ describe('admin-form.utils', () => {
       // Form is owned by another admin, but MOCK_USER has permissions.
       const mockForm = {
         title: 'mockForm',
-        status: Status.Public,
+        status: FormStatus.Public,
         _id: new ObjectId(),
         // New admin.
         admin: {
@@ -254,7 +257,7 @@ describe('admin-form.utils', () => {
       // Form is owned by another admin, but MOCK_USER has permissions.
       const mockForm = {
         title: 'mockForm',
-        status: Status.Public,
+        status: FormStatus.Public,
         _id: new ObjectId(),
         // New admin.
         admin: {
@@ -282,7 +285,7 @@ describe('admin-form.utils', () => {
       // Arrange
       const newAdminId = new ObjectId().toHexString()
       const params: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'some title',
       }
@@ -304,7 +307,7 @@ describe('admin-form.utils', () => {
       // Arrange
       const newAdminId = new ObjectId().toHexString()
       const params: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: ['some@example.com', 'another@example.com'],
         title: 'some title',
       }

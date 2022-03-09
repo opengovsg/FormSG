@@ -1,20 +1,21 @@
 import merge from 'lodash/merge'
 import { Model, Schema } from 'mongoose'
 
-import { IEmailField, IEmailFieldSchema, ResponseMode } from 'src/types'
+import { IEmailFieldSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { EmailFieldBase, FormResponseMode } from '../../../../../shared/types'
 import createEmailFieldSchema from '../emailField'
 
 describe('models.fields.emailField', () => {
   // Required as the field validator has a this.parent() check for response mode.
   let MockParent: Model<{
-    responseMode: ResponseMode
+    responseMode: FormResponseMode
     field: IEmailFieldSchema
   }>
 
-  const EMAIL_FIELD_DEFAULTS: Partial<IEmailField> = {
+  const EMAIL_FIELD_DEFAULTS: Partial<EmailFieldBase> = {
     autoReplyOptions: {
       hasAutoReply: true,
       autoReplySubject: '',
@@ -35,7 +36,7 @@ describe('models.fields.emailField', () => {
       new Schema({
         responseMode: {
           type: String,
-          enum: Object.values(ResponseMode),
+          enum: Object.values(FormResponseMode),
         },
         field: emailFieldSchema,
       }),
@@ -58,7 +59,7 @@ describe('models.fields.emailField', () => {
     }
     // Act
     const actual = await MockParent.create({
-      responseMode: ResponseMode.Encrypt,
+      responseMode: FormResponseMode.Encrypt,
       field: mockEmailField,
     })
 
@@ -87,7 +88,7 @@ describe('models.fields.emailField', () => {
     }
     // Act
     const actual = await MockParent.create({
-      responseMode: ResponseMode.Email,
+      responseMode: FormResponseMode.Email,
       field: mockEmailField,
     })
 

@@ -1,25 +1,21 @@
 import axios from 'axios'
 
 import {
+  AdminFormDto,
+  AdminFormViewDto,
+  EmailModeSubmissionContentDto,
+  EndPageUpdateDto,
   FieldCreateDto,
   FormFieldDto,
   FormFieldWithId,
-} from '../../../shared/types/field'
-import {
-  AdminFormDto,
-  AdminFormViewDto,
-  EndPageUpdateDto,
   FormSettings,
   LogicDto,
   PermissionsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
-} from '../../../shared/types/form'
-import {
-  EmailModeSubmissionContentDto,
   StorageModeSubmissionContentDto,
   SubmissionResponseDto,
-} from '../../../shared/types/submission'
+} from '../../../shared/types'
 import { FormUpdateParams } from '../../types/api'
 import { createEmailSubmissionFormData } from '../utils/submission'
 
@@ -278,9 +274,7 @@ export const submitStorageModeFormPreview = async ({
  * Deletes the form with the corresponding formId
  * @param formId formId of form to delete
  */
-export const deleteForm = async (
-  formId: string,
-): Promise<{ message: string }> => {
+export const deleteForm = async (formId: string): Promise<void> => {
   return axios
     .delete(`${ADMIN_FORM_ENDPOINT}/${formId}`)
     .then(({ data }) => data)

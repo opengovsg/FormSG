@@ -1,15 +1,18 @@
 import { Opaque } from 'type-fest'
 
 import {
+  BasicField,
+  CheckboxResponse,
+  TableResponse,
+} from '../../../../shared/types'
+import {
   EncryptAttachmentResponse,
   ParsedEmailAttachmentResponse,
 } from '../../../types/api'
-import { BasicField, FormFieldSchema } from '../../../types/field'
+import { FormFieldSchema } from '../../../types/field'
 import {
   FieldResponse,
-  ICheckboxResponse,
-  ISingleAnswerResponse,
-  ITableResponse,
+  SingleAnswerFieldResponse,
 } from '../../../types/response'
 
 export type ProcessedResponse = {
@@ -48,11 +51,11 @@ export type ColumnResponse = {
 }
 
 export type ProcessedSingleAnswerResponse<
-  T extends ISingleAnswerResponse = ISingleAnswerResponse,
+  T extends SingleAnswerFieldResponse = SingleAnswerFieldResponse,
 > = T & ProcessedResponse
 
-export type ProcessedCheckboxResponse = ICheckboxResponse & ProcessedResponse
-export type ProcessedTableResponse = ITableResponse & ProcessedResponse
+export type ProcessedCheckboxResponse = CheckboxResponse & ProcessedResponse
+export type ProcessedTableResponse = TableResponse & ProcessedResponse
 /**
  * Can be either email or storage mode attachment response.
  * Email mode attachment response in the server will have extra metadata injected

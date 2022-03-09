@@ -1,11 +1,10 @@
 import { err, ok, Result } from 'neverthrow'
 
+import { FormAuthType, FormResponseMode } from '../../../../../shared/types'
 import {
-  AuthType,
   FieldResponse,
   FormFieldSchema,
   IFormDocument,
-  ResponseMode,
 } from '../../../../types'
 import { validateField } from '../../../utils/field-validation'
 import {
@@ -26,8 +25,11 @@ import { ProcessedFieldResponse } from '../submission.types'
 import { getFilteredResponses } from '../submission.utils'
 
 type NdiUserInfo =
-  | { authType: AuthType.SP | AuthType.MyInfo | AuthType.SGID; uinFin: string }
-  | { authType: AuthType.CP; uinFin: string; userInfo: string }
+  | {
+      authType: FormAuthType.SP | FormAuthType.MyInfo | FormAuthType.SGID
+      uinFin: string
+    }
+  | { authType: FormAuthType.CP; uinFin: string; userInfo: string }
 
 export default class ParsedResponsesObject {
   public ndiResponses: ProcessedFieldResponse[] = []
@@ -40,17 +42,17 @@ export default class ParsedResponsesObject {
      * destructured variable switch cases.
      */
     switch (info.authType) {
-      case AuthType.SP:
-      case AuthType.MyInfo:
+      case FormAuthType.SP:
+      case FormAuthType.MyInfo:
         this.ndiResponses = createSingpassParsedResponses(info.uinFin)
         break
-      case AuthType.CP:
+      case FormAuthType.CP:
         this.ndiResponses = createCorppassParsedResponses(
           info.uinFin,
           info.userInfo,
         )
         break
-      case AuthType.SGID:
+      case FormAuthType.SGID:
         this.ndiResponses = createSgidParsedResponses(info.uinFin)
         break
     }
@@ -137,7 +139,7 @@ export default class ParsedResponsesObject {
           // encrypt mode submissions with responses on unhidden fields
           // TODO(#780): Remove this once submission service is separated into
           // Email and Encrypted services
-          form.responseMode === ResponseMode.Encrypt
+          form.responseMode === FormResponseMode.Encrypt
             ? 'answer' in response &&
               typeof response.answer === 'string' &&
               response.answer.trim() !== ''

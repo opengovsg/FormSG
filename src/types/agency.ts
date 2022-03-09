@@ -1,12 +1,10 @@
 import { EnforceDocument, Model } from 'mongoose'
 
-import { AgencyBase, PublicAgencyDto } from '../../shared/types/agency'
+import { AgencyBase, PublicAgencyDto } from '../../shared/types'
 
 import { PublicView } from './database'
 
-export type PublicAgency = PublicAgencyDto
-
-export type AgencyInstanceMethods = PublicView<PublicAgency>
+export type AgencyInstanceMethods = PublicView<PublicAgencyDto>
 
 export interface IAgencySchema extends AgencyBase {
   _id: any
@@ -26,4 +24,4 @@ export type AgencyDocument = EnforceDocument<
 >
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type IAgencyModel = Model<IAgencyDocument, {}, AgencyInstanceMethods>
+export type IAgencyModel = Model<IAgencySchema, {}, AgencyInstanceMethods>

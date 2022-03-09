@@ -2,11 +2,12 @@ import { ObjectId } from 'bson'
 import { merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 
-import { BasicField, UpdateFieldData } from 'src/types'
+import { UpdateFieldData } from 'src/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { BasicField } from '../../../../../shared/types'
 import getVerificationModel from '../verification.model'
 
 import {

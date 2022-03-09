@@ -1,6 +1,7 @@
 import { Document, Model } from 'mongoose'
 
-import { MyInfoAttribute } from './field'
+import { MyInfoAttribute } from '../../shared/types'
+
 import { IFormSchema } from './form'
 
 export type IHashes = Partial<{ [key in MyInfoAttribute]: string }>

@@ -1,7 +1,8 @@
 import { get } from 'lodash'
 
 import { types as basicTypes } from '../../../../shared/constants/field/basic'
-import { BasicField, IEmailFieldSchema, ITableRow } from '../../../types'
+import { BasicField, FormField, TableRow } from '../../../../shared/types'
+import { IEmailFieldSchema, IVerifiableMobileField } from '../../../types'
 import {
   ColumnResponse,
   ProcessedAttachmentResponse,
@@ -39,7 +40,7 @@ const isStringArray = (arr: unknown): arr is string[] =>
   Array.isArray(arr) && arr.every((item) => typeof item === 'string')
 
 // Check that the row contains a single array of only string (including empty string)
-export const isTableRow = (row: unknown): row is ITableRow =>
+export const isTableRow = (row: unknown): row is TableRow =>
   isStringArray(row) && row.length > 0
 
 export const isProcessedTableResponse = (
@@ -87,4 +88,10 @@ export const isPossibleEmailFieldSchema = (
   field: unknown,
 ): field is Partial<IEmailFieldSchema> => {
   return get(field, 'fieldType') === BasicField.Email
+}
+
+export const isVerifiableMobileField = (
+  formField: FormField,
+): formField is IVerifiableMobileField => {
+  return formField.fieldType === BasicField.Mobile && formField.isVerifiable
 }

@@ -43,6 +43,7 @@ export type MailConfig = {
   mailer: {
     from: string
   }
+  official: string
   transporter: Mail
 }
 
@@ -74,6 +75,7 @@ export type Config = {
   siteBannerContent: string
   adminBannerContent: string
   rateLimitConfig: RateLimitConfig
+  secretEnv: string
 
   // Functions
   configureAws: () => Promise<void>
@@ -91,6 +93,7 @@ export interface IProdOnlyVarsSchema {
 export interface ICompulsoryVarsSchema {
   core: {
     sessionSecret: string
+    secretEnv: string
   }
   awsConfig: {
     imageS3Bucket: string
@@ -132,6 +135,7 @@ export interface IOptionalVarsSchema {
   }
   mail: {
     from: string
+    official: string
     logger: boolean
     debug: boolean
     bounceLifeSpan: number

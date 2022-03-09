@@ -1,7 +1,7 @@
 'use strict'
 
 const { range } = require('lodash')
-const { LogicType } = require('../../../../../types')
+const { LogicType } = require('../../../../../../shared/types')
 const FormLogic = require('../../../../../shared/util/logic')
 const UpdateFormService = require('../../../../services/UpdateFormService')
 

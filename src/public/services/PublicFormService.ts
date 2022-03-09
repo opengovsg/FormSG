@@ -1,11 +1,11 @@
 import axios from 'axios'
 
-import { PublicFormViewDto } from '../../../shared/types/form/form'
 import {
   EmailModeSubmissionContentDto,
+  PublicFormViewDto,
   StorageModeSubmissionContentDto,
   SubmissionResponseDto,
-} from '../../../shared/types/submission'
+} from '../../../shared/types'
 import { createEmailSubmissionFormData } from '../utils/submission'
 
 const PUBLIC_FORMS_ENDPOINT = '/api/v3/forms'

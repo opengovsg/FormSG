@@ -1,6 +1,6 @@
 import { celebrate, Joi } from 'celebrate'
 
-import { BasicField, FieldResponse } from '../../../../types'
+import { BasicField, FieldResponse } from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'

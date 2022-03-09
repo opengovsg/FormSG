@@ -59,13 +59,15 @@ const computeChecksumMd5 = (file: File): Promise<string> => {
   })
 }
 
+type PresignedData = { fields: Record<string, string>; url: string }
+
 const fetchPresignedData = async (
   url: string,
   params: { fileId: string; fileMd5Hash: string; fileType: string },
   cancelToken?: CancelToken,
-): Promise<{ fields: Record<string, string>; url: string }> => {
+): Promise<PresignedData> => {
   return axios
-    .post(url, params, {
+    .post<PresignedData>(url, params, {
       cancelToken,
     })
     .then(({ data }) => data)
@@ -77,7 +79,7 @@ const postToPresignedUrl = async (
   cancelToken?: CancelToken,
 ): Promise<AxiosResponse<never>> => {
   return axios.post(presignedUrl, formData, {
-    headers: { 'Content-Type': undefined },
+    headers: { 'Content-Type': '' },
     withCredentials: false,
     cancelToken,
   })

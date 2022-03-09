@@ -4,7 +4,7 @@ import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getTokenModel from 'src/app/models/token.server.model'
-import { IAgencySchema, IPopulatedForm, IPopulatedUser } from 'src/types'
+import { AgencyDocument, IPopulatedForm, IPopulatedUser } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -34,7 +34,7 @@ const VALID_EMAIL = `valid@${VALID_EMAIL_DOMAIN}`
 const MOCK_OTP = '123456'
 
 describe('auth.service', () => {
-  let defaultAgency: IAgencySchema
+  let defaultAgency: AgencyDocument
 
   beforeAll(async () => {
     await dbHandler.connect()

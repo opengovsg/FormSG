@@ -1,12 +1,15 @@
 import MockAxios from 'jest-mock-axios'
 
-import { IPopulatedForm, PublicForm, ResponseMode } from 'src/types/form'
-
 import {
   AdminDashboardFormMetaDto,
+  AdminFormViewDto,
+  DateString,
+  FormId,
+  FormResponseMode,
   FormStatus,
-} from '../../../../shared/types/form/form'
-import { UserDto } from '../../../../shared/types/user'
+  PreviewFormViewDto,
+  UserDto,
+} from '../../../../shared/types'
 import {
   ADMIN_FORM_ENDPOINT,
   getAdminFormView,
@@ -28,9 +31,9 @@ describe('AdminViewFormService', () => {
       const expected: AdminDashboardFormMetaDto[] = [
         {
           title: 'title',
-          lastModified: new Date(),
-          _id: 'mock-form-id',
-          responseMode: ResponseMode.Email,
+          lastModified: new Date().toISOString() as DateString,
+          _id: 'mock-form-id' as FormId,
+          responseMode: FormResponseMode.Email,
           admin: MOCK_USER,
           status: FormStatus.Private,
         },
@@ -46,27 +49,27 @@ describe('AdminViewFormService', () => {
 
     it('should successfully return empty array if GET request succeeds and there are no forms', async () => {
       // Arrange
-      const expected: AdminDashboardFormMetaDto[] = []
-      MockAxios.get.mockResolvedValueOnce({ data: expected })
+      const mockResponse: AdminDashboardFormMetaDto[] = []
+      MockAxios.get.mockResolvedValueOnce({ data: mockResponse })
 
       // Act
       const actual = await getDashboardView()
 
       // Assert
-      expect(actual).toEqual(expected)
+      expect(actual).toEqual(mockResponse)
       expect(MockAxios.get).toHaveBeenCalledWith(`${ADMIN_FORM_ENDPOINT}`)
     })
 
     it('should reject with error message if GET request fails', async () => {
       // Arrange
-      const expected = new Error('error')
-      MockAxios.get.mockRejectedValueOnce(expected)
+      const mockError = new Error('error')
+      MockAxios.get.mockRejectedValueOnce(mockError)
 
       // Act
       const actualPromise = getDashboardView()
 
       //Assert
-      await expect(actualPromise).rejects.toEqual(expected)
+      await expect(actualPromise).rejects.toEqual(mockError)
       expect(MockAxios.get).toHaveBeenCalledWith(`${ADMIN_FORM_ENDPOINT}`)
     })
   })
@@ -74,45 +77,46 @@ describe('AdminViewFormService', () => {
   describe('getAdminFormView', () => {
     it('should return admin form if GET request succeeds', async () => {
       // Arrange
-      const expected = _generateMockFullForm()
-      MockAxios.get.mockResolvedValueOnce({ data: expected })
+      const mockResponse = _generateMockFullForm()
+      MockAxios.get.mockResolvedValueOnce({ data: mockResponse })
 
       // Act
-      const actual = await getAdminFormView(expected._id)
+      const actual = await getAdminFormView(mockResponse.form._id)
 
       // Assert
-      expect(actual).toEqual(expected)
+      expect(actual).toEqual(mockResponse)
       expect(MockAxios.get).toHaveBeenCalledWith(
-        `${ADMIN_FORM_ENDPOINT}/${expected._id}`,
+        `${ADMIN_FORM_ENDPOINT}/${mockResponse.form._id}`,
       )
     })
 
     it('should reject with error message when GET request fails', async () => {
       // Arrange
       const expected = new Error('error')
-      const MOCK_FORM = _generateMockFullForm()
+      const mockForm = _generateMockFullForm().form
       MockAxios.get.mockRejectedValueOnce(expected)
 
       // Act
-      const actualPromise = getAdminFormView(MOCK_FORM._id)
+      const actualPromise = getAdminFormView(mockForm._id)
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
       expect(MockAxios.get).toHaveBeenCalledWith(
-        `${ADMIN_FORM_ENDPOINT}/${MOCK_FORM._id}`,
+        `${ADMIN_FORM_ENDPOINT}/${mockForm._id}`,
       )
     })
   })
 
   describe('previewForm', () => {
-    it('should return public form if GET request succeeds', async () => {
+    const MOCK_FORM_ID = 'mock-form-id'
+
+    it('should return form preview if GET request succeeds', async () => {
       // Arrange
-      const MOCK_FORM_ID = 'mock-form-id'
       const expected = {
         _id: MOCK_FORM_ID,
         title: 'mock preview title',
         admin: MOCK_USER,
-      } as unknown as PublicForm
+      } as unknown as PreviewFormViewDto
       MockAxios.get.mockResolvedValueOnce({ data: expected })
 
       // Act
@@ -128,7 +132,6 @@ describe('AdminViewFormService', () => {
     it('should reject with error message if GET request fails', async () => {
       // Arrange
       const expected = new Error('error')
-      const MOCK_FORM_ID = 'mock-form-id'
       MockAxios.get.mockRejectedValueOnce(expected)
 
       // Act
@@ -144,8 +147,10 @@ describe('AdminViewFormService', () => {
 })
 
 // Utils
-const _generateMockFullForm = (): IPopulatedForm => {
+const _generateMockFullForm = (): AdminFormViewDto => {
   return {
-    _id: 'mock-form-id',
-  } as IPopulatedForm
+    form: {
+      _id: 'mock-form-id',
+    },
+  } as AdminFormViewDto
 }

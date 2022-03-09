@@ -328,7 +328,10 @@ function settingsFormDirective(
 
         $scope.validateThenSave = () => {
           const checkPassword = $scope.isFormEncrypt()
-          const checkESrvcId = $scope.tempForm.authType !== 'NIL'
+          const checkESrvcId = !['NIL', 'SGID'].includes(
+            // No need to validate eSrvcId for SGID
+            $scope.tempForm.authType,
+          )
           // Not possible for both to be true simultaneously as we have disabled spcp for encrypt forms
           // But the validation will handle both cases
           if ($scope.isFormPrivate() && (checkPassword || checkESrvcId)) {

@@ -25,5 +25,5 @@ module.exports = {
       isolatedModules: true,
     },
   },
-  setupFilesAfterEnv: ['jest-extended'],
+  setupFilesAfterEnv: ['<rootDir>/tests/jest-setupAfterEnv.js'],
 }

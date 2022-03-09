@@ -1,6 +1,6 @@
 'use strict'
 
-const { LogicType } = require('../../../../../types')
+const { LogicType } = require('../../../../../../shared/types')
 const UpdateFormService = require('../../../../services/UpdateFormService')
 
 angular.module('forms').component('editLogicComponent', {

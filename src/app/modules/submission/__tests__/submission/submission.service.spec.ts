@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson'
 import { times } from 'lodash'
 import mongoose from 'mongoose'
+import { ok } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getSubmissionModel from 'src/app/models/submission.server.model'
@@ -12,14 +13,10 @@ import * as SubmissionService from 'src/app/modules/submission/submission.servic
 import MailService from 'src/app/services/mail/mail.service'
 import { createQueryWithDateParam } from 'src/app/utils/date'
 import {
-  AutoReplyOptions,
-  BasicField,
   IAttachmentInfo,
-  IEmailSubmissionSchema,
-  IEncryptedSubmissionSchema,
-  IFormSchema,
+  IFormDocument,
+  IPopulatedForm,
   ISubmissionSchema,
-  SubmissionType,
 } from 'src/types'
 
 import {
@@ -28,6 +25,11 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import {
+  AutoReplyOptions,
+  BasicField,
+  SubmissionType,
+} from '../../../../../../shared/types'
 import { SendEmailConfirmationError } from '../../submission.errors'
 import { extractEmailConfirmationData } from '../../submission.utils'
 
@@ -135,7 +137,7 @@ describe('submission.service', () => {
       const expectedSubmissionCount = 4
       // Insert submissions created now.
       const subPromisesNow = times(2, () =>
-        Submission.create<IEncryptedSubmissionSchema>({
+        Submission.create({
           submissionType: SubmissionType.Encrypt,
           form: MOCK_FORM_ID,
           version: 1,
@@ -144,7 +146,7 @@ describe('submission.service', () => {
       )
       // Insert submissions created in 1 Jan 2019.
       const subPromises2019 = times(expectedSubmissionCount, () =>
-        Submission.create<IEmailSubmissionSchema>({
+        Submission.create({
           form: MOCK_FORM_ID,
           submissionType: SubmissionType.Email,
           responseHash: 'hash',
@@ -155,7 +157,7 @@ describe('submission.service', () => {
       )
 
       // Insert one more submission for defaultEmailForm in 2 January 2019.
-      const subPromiseDayAfter = Submission.create<IEmailSubmissionSchema>({
+      const subPromiseDayAfter = Submission.create({
         form: MOCK_FORM_ID,
         submissionType: SubmissionType.Email,
         responseHash: 'hash',
@@ -187,7 +189,7 @@ describe('submission.service', () => {
       // Arrange
       // Insert submissions created 2019-12-12
       const subPromises = times(2, () =>
-        Submission.create<IEncryptedSubmissionSchema>({
+        Submission.create({
           submissionType: SubmissionType.Encrypt,
           form: MOCK_FORM_ID,
           version: 1,
@@ -239,7 +241,7 @@ describe('submission.service', () => {
         () =>
           ({
             exec: () => Promise.reject(new Error('boom')),
-          } as unknown as mongoose.Query<any>),
+          } as unknown as mongoose.Query<any, any>),
       )
 
       // Act
@@ -270,15 +272,15 @@ describe('submission.service', () => {
             autoReplyOptions: AUTOREPLY_OPTIONS_2,
           },
         ],
-      } as unknown as IFormSchema
+      } as unknown as IFormDocument
       MockMailService.sendAutoReplyEmails.mockResolvedValueOnce([
         {
           status: 'fulfilled',
-          value: true,
+          value: ok(true),
         },
         {
           status: 'fulfilled',
-          value: true,
+          value: ok(true),
         },
       ])
 
@@ -327,7 +329,7 @@ describe('submission.service', () => {
       const mockForm = {
         _id: MOCK_FORM_ID,
         form_fields: [generateDefaultField(BasicField.Number)],
-      } as unknown as IFormSchema
+      } as unknown as IPopulatedForm
 
       const responses = [
         {
@@ -366,7 +368,7 @@ describe('submission.service', () => {
             autoReplyOptions: { hasAutoReply: false },
           },
         ],
-      } as unknown as IFormSchema
+      } as unknown as IPopulatedForm
 
       const responses = [
         {
@@ -411,11 +413,11 @@ describe('submission.service', () => {
             autoReplyOptions: { hasAutoReply: false },
           },
         ],
-      } as unknown as IFormSchema
+      } as unknown as IPopulatedForm
       MockMailService.sendAutoReplyEmails.mockResolvedValueOnce([
         {
           status: 'fulfilled',
-          value: true,
+          value: ok(true),
         },
       ])
 
@@ -470,15 +472,15 @@ describe('submission.service', () => {
             autoReplyOptions: AUTOREPLY_OPTIONS_2,
           },
         ],
-      } as unknown as IFormSchema
+      } as unknown as IPopulatedForm
       MockMailService.sendAutoReplyEmails.mockResolvedValueOnce([
         {
           status: 'fulfilled',
-          value: true,
+          value: ok(true),
         },
         {
           status: 'fulfilled',
-          value: true,
+          value: ok(true),
         },
       ])
 
@@ -536,15 +538,15 @@ describe('submission.service', () => {
             autoReplyOptions: AUTOREPLY_OPTIONS_2,
           },
         ],
-      } as unknown as IFormSchema
+      } as unknown as IPopulatedForm
       MockMailService.sendAutoReplyEmails.mockResolvedValueOnce([
         {
           status: 'fulfilled',
-          value: true,
+          value: ok(true),
         },
         {
           status: 'fulfilled',
-          value: true,
+          value: ok(true),
         },
       ])
 
@@ -602,7 +604,7 @@ describe('submission.service', () => {
             autoReplyOptions: AUTOREPLY_OPTIONS_2,
           },
         ],
-      } as unknown as IFormSchema
+      } as unknown as IPopulatedForm
       MockMailService.sendAutoReplyEmails.mockImplementationOnce(() =>
         Promise.reject('rejected'),
       )
@@ -663,12 +665,12 @@ describe('submission.service', () => {
             autoReplyOptions: AUTOREPLY_OPTIONS_2,
           },
         ],
-      } as unknown as IFormSchema
+      } as unknown as IPopulatedForm
       const mockReason = 'reason'
       MockMailService.sendAutoReplyEmails.mockResolvedValueOnce([
         {
           status: 'fulfilled',
-          value: true,
+          value: ok(true),
         },
         {
           status: 'rejected',

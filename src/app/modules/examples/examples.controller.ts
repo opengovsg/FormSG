@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 
+import { ErrorDto } from '../../../../shared/types'
 import {
-  ErrorDto,
   ExampleFormsQueryDto,
   ExampleFormsResult,
   ExampleSingleFormResult,
@@ -10,6 +10,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 
+import { validateGetExamplesParams } from './examples.middlewares'
 import * as ExamplesService from './examples.service'
 import { mapRouteError } from './examples.utils'
 
@@ -23,7 +24,7 @@ const logger = createLoggerWithLabel(module)
  * @returns 401 when user does not exist in session
  * @returns 500 when error occurs whilst querying the database
  */
-export const handleGetExamples: ControllerHandler<
+export const _handleGetExamples: ControllerHandler<
   unknown,
   ErrorDto | ExampleFormsResult,
   unknown,
@@ -45,6 +46,11 @@ export const handleGetExamples: ControllerHandler<
         .json({ message: 'Error retrieving example forms' })
     })
 }
+
+export const handleGetExamples = [
+  validateGetExamplesParams,
+  _handleGetExamples,
+] as ControllerHandler[]
 
 /**
  * Handler for GET /examples/:formId endpoint.

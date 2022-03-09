@@ -1,13 +1,15 @@
 import { Schema } from 'mongoose'
 
 import {
+  LogicConditionState,
+  LogicIfValue,
+  LogicType,
+} from '../../../shared/types'
+import {
   IConditionSchema,
   ILogicSchema,
   IPreventSubmitLogicSchema,
   IShowFieldsLogicSchema,
-  LogicConditionState,
-  LogicIfValue,
-  LogicType,
 } from '../../types'
 
 const LogicConditionSchema = new Schema<IConditionSchema>({

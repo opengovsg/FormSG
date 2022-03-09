@@ -4,7 +4,7 @@ import {
   AdminDashboardFormMetaDto,
   DuplicateFormBodyDto,
   PreviewFormViewDto,
-} from '../../../shared/types/form/form'
+} from '../../../shared/types/form'
 import {
   ExampleFormsQueryDto,
   ExampleFormsResult,

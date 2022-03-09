@@ -4,10 +4,10 @@ import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
+import { WebhookResponse } from '../../../../shared/types'
 import {
   IEncryptedSubmissionSchema,
   ISubmissionSchema,
-  IWebhookResponse,
   WebhookView,
 } from '../../../types'
 import { aws as AwsConfig } from '../../config/config'
@@ -45,7 +45,7 @@ const EncryptSubmission = getEncryptSubmissionModel(mongoose)
  */
 export const saveWebhookRecord = (
   submissionId: ISubmissionSchema['_id'],
-  record: IWebhookResponse,
+  record: WebhookResponse,
 ): ResultAsync<
   IEncryptedSubmissionSchema,
   PossibleDatabaseError | SubmissionNotFoundError
@@ -98,7 +98,7 @@ export const sendWebhook = (
   webhookView: WebhookView,
   webhookUrl: string,
 ): ResultAsync<
-  IWebhookResponse,
+  WebhookResponse,
   | WebhookValidationError
   | WebhookFailedWithAxiosError
   | WebhookFailedWithPresignedUrlGenerationError
@@ -251,8 +251,9 @@ export const createInitialWebhookSender =
             isSuccessfulResponse(webhookResponse) ||
             !producer ||
             !isRetryEnabled
-          )
-            return okAsync(true)
+          ) {
+            return okAsync(true as const)
+          }
           // Webhook failed and retries enabled, so create initial message and enqueue
           return WebhookQueueMessage.fromSubmissionId(
             String(submission._id),

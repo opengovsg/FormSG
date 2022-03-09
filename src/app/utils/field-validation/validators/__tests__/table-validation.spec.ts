@@ -2,7 +2,6 @@ import { ObjectId } from 'bson'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField } from 'src/app/utils/field-validation'
-import { BasicField } from 'src/types'
 
 import {
   generateDefaultField,
@@ -11,6 +10,8 @@ import {
   generateTableShortTextColumn,
 } from 'tests/unit/backend/helpers/generate-form-data'
 
+import { BasicField, TableRow } from '../../../../../../shared/types'
+
 describe('Table validation', () => {
   const formId = new ObjectId().toHexString()
   describe('Dropdown column', () => {
@@ -18,7 +19,9 @@ describe('Table validation', () => {
       const formField = generateDefaultField(BasicField.Table, {
         columns: [generateTableDropdownColumn()],
       })
-      const response = generateNewTableResponse({ answerArray: [['']] })
+      const response = generateNewTableResponse({
+        answerArray: [[''] as TableRow],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -30,7 +33,9 @@ describe('Table validation', () => {
       const formField = generateDefaultField(BasicField.Table, {
         columns: [generateTableDropdownColumn({ required: false })],
       })
-      const response = generateNewTableResponse({ answerArray: [['']] })
+      const response = generateNewTableResponse({
+        answerArray: [[''] as TableRow],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -40,7 +45,9 @@ describe('Table validation', () => {
       const formField = generateDefaultField(BasicField.Table, {
         columns: [generateTableDropdownColumn()],
       })
-      const response = generateNewTableResponse({ answerArray: [['a']] })
+      const response = generateNewTableResponse({
+        answerArray: [['a'] as TableRow],
+      })
 
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isOk()).toBe(true)
@@ -51,7 +58,9 @@ describe('Table validation', () => {
       const formField = generateDefaultField(BasicField.Table, {
         columns: [generateTableDropdownColumn()],
       })
-      const response = generateNewTableResponse({ answerArray: [['x']] })
+      const response = generateNewTableResponse({
+        answerArray: [['x'] as TableRow],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -64,7 +73,9 @@ describe('Table validation', () => {
       const formField = generateDefaultField(BasicField.Table, {
         columns: [generateTableShortTextColumn()],
       })
-      const response = generateNewTableResponse({ answerArray: [['']] })
+      const response = generateNewTableResponse({
+        answerArray: [[''] as TableRow],
+      })
 
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
@@ -78,7 +89,7 @@ describe('Table validation', () => {
         columns: [generateTableShortTextColumn({ required: false })],
       })
       const response = generateNewTableResponse({
-        answerArray: [['']],
+        answerArray: [[''] as TableRow],
       })
 
       const validateResult = validateField(formId, formField, response)
@@ -91,7 +102,7 @@ describe('Table validation', () => {
         columns: [generateTableShortTextColumn()],
       })
       const response = generateNewTableResponse({
-        answerArray: [['Hello!']],
+        answerArray: [['Hello!'] as TableRow],
       })
 
       const validateResult = validateField(formId, formField, response)
@@ -108,7 +119,7 @@ describe('Table validation', () => {
         ],
       })
       const response = generateNewTableResponse({
-        answerArray: [['a', 'hello']],
+        answerArray: [['a', 'hello'] as TableRow],
       })
 
       const validateResult = validateField(formId, formField, response)
@@ -126,7 +137,7 @@ describe('Table validation', () => {
         ],
       })
       const response = generateNewTableResponse({
-        answerArray: [['a', 'text1', 'text2', 'text3']],
+        answerArray: [['a', 'text1', 'text2', 'text3'] as TableRow],
       })
 
       const validateResult = validateField(formId, formField, response)
@@ -148,7 +159,7 @@ describe('Table validation', () => {
         answerArray: [
           ['a', 'text1'],
           ['b', 'text2'],
-        ],
+        ] as TableRow[],
       })
 
       const validateResult = validateField(formId, formField, response)
@@ -168,7 +179,7 @@ describe('Table validation', () => {
         answerArray: [
           ['a', 'hello'],
           ['x', 'world'], // Invalid dropdown value for second row
-        ],
+        ] as TableRow[],
       })
 
       const validateResult = validateField(formId, formField, response)
@@ -188,7 +199,7 @@ describe('Table validation', () => {
         minimumRows: 2,
       })
       const response = generateNewTableResponse({
-        answerArray: [['a', 'hello']],
+        answerArray: [['a', 'hello'] as TableRow],
       })
 
       const validateResult = validateField(formId, formField, response)
@@ -211,7 +222,7 @@ describe('Table validation', () => {
           ['a', 'hello'],
           ['b', 'helloagain'],
           ['c', 'helloyetagain'],
-        ],
+        ] as TableRow[],
       })
 
       const validateResult = validateField(formId, formField, response)
@@ -237,7 +248,7 @@ describe('Table validation', () => {
           ['b', 'helloagain'],
           ['c', 'helloyetagain'],
           ['d', 'helloyetagainagain'],
-        ],
+        ] as TableRow[],
       })
 
       const validateResult = validateField(formId, formField, response)
@@ -268,7 +279,7 @@ describe('Table validation', () => {
         columns: [generateTableShortTextColumn()],
       })
       const response = generateNewTableResponse({
-        answerArray: [[null as unknown as string]],
+        answerArray: [[null as unknown as string] as TableRow],
       })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
@@ -284,7 +295,7 @@ describe('Table validation', () => {
     })
     const response = generateNewTableResponse({
       isVisible: false,
-      answerArray: [['hello']],
+      answerArray: [['hello'] as TableRow],
     })
 
     const validateResult = validateField(formId, formField, response)

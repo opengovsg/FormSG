@@ -1,4 +1,5 @@
 import {
+  ClientSession,
   Document,
   LeanDocument,
   Model,
@@ -10,50 +11,23 @@ import { Merge, SetOptional } from 'type-fest'
 
 import {
   AdminDashboardFormMetaDto,
-  EmailFormSettings,
-  FormAuthType,
   FormBase,
-  FormColorTheme,
   FormEndPage,
+  FormField,
+  FormFieldDto,
   FormPermission,
-  FormResponseMode,
   FormSettings,
   FormStartPage,
-  FormStatus,
-  FormWebhook,
-  PublicEmailFormDto,
+  LogicDto,
+  MyInfoAttribute,
   PublicFormDto,
-  PublicStorageFormDto,
-  StorageFormSettings,
-} from '../../shared/types/form/form'
+} from '../../shared/types'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
 import { PublicView } from './database'
-import {
-  FormField,
-  FormFieldSchema,
-  FormFieldWithId,
-  MyInfoAttribute,
-} from './field'
-import { FormLogicSchema, LogicDto } from './form_logic'
+import { FormFieldSchema } from './field'
+import { FormLogicSchema } from './form_logic'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
-
-export {
-  FormAuthType as AuthType,
-  FormColorTheme as ColorTheme,
-  FormEndPage as EndPage,
-  FormStartPage as StartPage,
-  FormStatus as Status,
-  FormColorTheme as Colors,
-  FormResponseMode as ResponseMode,
-  FormWebhook as Webhook,
-  FormSettings,
-  StorageFormSettings,
-  EmailFormSettings,
-  PublicFormDto,
-  PublicStorageFormDto,
-  PublicEmailFormDto,
-}
 
 // Typings
 export type PublicForm = Merge<
@@ -72,8 +46,6 @@ export type FormOtpData = {
   // Used for sending with the correct twilio
   msgSrvcName?: string
 }
-
-export type Permission = FormPermission
 
 /**
  * Keys with defaults in schema.
@@ -97,7 +69,7 @@ export type IForm = Merge<
   {
     // Loosen types here to allow for IPopulatedForm extension
     admin: any
-    permission?: Permission[]
+    permission?: FormPermission[]
     form_fields?: FormFieldSchema[]
     form_logics?: FormLogicSchema[]
 
@@ -145,12 +117,12 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   updateFormFieldById<T>(
     this: T,
     fieldId: string,
-    newField: FormFieldWithId,
+    newField: FormFieldDto,
   ): Promise<T | null>
 
   updateFormCollaborators<T>(
     this: T,
-    updateFormCollaborators: Permission[],
+    updateFormCollaborators: FormPermission[],
   ): Promise<T>
 
   /**
@@ -223,6 +195,22 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   getDuplicateParams(
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
+
+  /**
+   * Updates the msgSrvcName of the form with the specified msgSrvcName
+   * @param msgSrvcName msgSrvcName to update the Form docuemnt with
+   * @param session transaction session in which update operation is a part of
+   */
+  updateMsgSrvcName(
+    msgSrvcName: string,
+    session?: ClientSession,
+  ): Promise<IFormSchema>
+
+  /**
+   * Deletes the msgSrvcName of the form
+   * @param session transaction session in which delete operation is a part of
+   */
+  deleteMsgSrvcName(session?: ClientSession): Promise<IFormSchema>
 }
 
 /**
@@ -311,6 +299,15 @@ export interface IFormModel extends Model<IFormSchema> {
   ): Promise<UpdateWriteOpResult>
 
   /**
+   * Retrieves all the public forms for a user which has sms verifications enabled
+   * @param userId The userId to retrieve the forms for
+   * @returns All public forms that have sms verifications enabled
+   */
+  retrievePublicFormsWithSmsVerification(
+    userId: IUserSchema['_id'],
+  ): Promise<IFormDocument[]>
+
+  /**
    * Update the end page of form with given endpage object.
    * @param formId the id of the form to update
    * @param newEndPage the new EndPage object to replace with
@@ -341,3 +338,12 @@ export interface IFormModel extends Model<IFormSchema> {
 
 export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>
 export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
+
+export type IOnboardedForm<T extends IForm> = T & {
+  msgSrvcName: string
+}
+
+export type FormLinkView<T extends IFormDocument> = {
+  title: T['title']
+  link: string
+}

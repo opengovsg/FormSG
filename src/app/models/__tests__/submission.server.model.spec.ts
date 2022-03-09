@@ -12,11 +12,11 @@ import getSubmissionModel, {
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import {
-  AuthType,
-  ISubmissionSchema,
-  IWebhookResponse,
+  FormAuthType,
   SubmissionType,
-} from '../../../../src/types'
+  WebhookResponse,
+} from '../../../../shared/types'
+import { ISubmissionSchema } from '../../../../src/types'
 
 jest.mock('dns', () => ({
   promises: {
@@ -255,7 +255,7 @@ describe('Submission Model', () => {
           form: formId,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           myInfoFields: [],
           webhookResponses: [],
         })
@@ -287,7 +287,7 @@ describe('Submission Model', () => {
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           verifiedContent: MOCK_VERIFIED_CONTENT,
           version: 1,
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           myInfoFields: [],
           webhookResponses: [],
         })
@@ -326,7 +326,7 @@ describe('Submission Model', () => {
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           verifiedContent: MOCK_VERIFIED_CONTENT,
           version: 1,
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           myInfoFields: [],
           webhookResponses: [],
         })
@@ -360,7 +360,7 @@ describe('Submission Model', () => {
           form: formId,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           myInfoFields: [],
           recipientEmails: [],
           responseHash: 'hash',
@@ -385,7 +385,7 @@ describe('Submission Model', () => {
           form: formId,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           myInfoFields: [],
           recipientEmails: [],
           responseHash: 'hash',
@@ -403,7 +403,7 @@ describe('Submission Model', () => {
             status: 200,
             headers: '{}',
           },
-        }) as IWebhookResponse
+        }) as WebhookResponse
 
         // Act
         const actualSubmission = await EncryptedSubmission.addWebhookResponse(
@@ -428,7 +428,7 @@ describe('Submission Model', () => {
           form: formId,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
-          authType: AuthType.NIL,
+          authType: FormAuthType.NIL,
           myInfoFields: [],
           recipientEmails: [],
           responseHash: 'hash',
@@ -446,7 +446,7 @@ describe('Submission Model', () => {
             headers: '',
             data: '',
           },
-        } as IWebhookResponse
+        } as WebhookResponse
 
         const invalidSubmissionId = new ObjectId().toHexString()
 

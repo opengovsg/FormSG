@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-import { Status } from '../../../types'
+import { FormStatus } from '../../../../shared/types'
 
 /**
  * Precondition: Must be called as the **first** step in the aggregation
@@ -53,7 +53,7 @@ export const searchFormsById = (formId: string): Record<string, unknown>[] => [
 export const filterInactiveAndUnlistedForms: Record<string, unknown>[] = [
   {
     $match: {
-      'formInfo.status': Status.Public,
+      'formInfo.status': FormStatus.Public,
       'formInfo.isListed': true,
     },
   },

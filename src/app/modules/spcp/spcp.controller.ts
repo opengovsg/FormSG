@@ -1,7 +1,9 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { AuthType } from '../../../types'
-import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
+import {
+  FormAuthType,
+  PublicFormAuthValidateEsrvcIdDto,
+} from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
@@ -25,7 +27,7 @@ export const handleRedirect: ControllerHandler<
   { redirectURL: string } | { message: string },
   unknown,
   {
-    authType: AuthType.SP | AuthType.CP
+    authType: FormAuthType.SP | FormAuthType.CP
     target: string
     esrvcId: string
   }
@@ -63,7 +65,7 @@ export const handleValidate: ControllerHandler<
   PublicFormAuthValidateEsrvcIdDto | { message: string },
   unknown,
   {
-    authType: AuthType.SP | AuthType.CP
+    authType: FormAuthType.SP | FormAuthType.CP
     target: string
     esrvcId: string
   }
@@ -96,7 +98,7 @@ export const handleValidate: ControllerHandler<
  * @param authType 'SP' or 'CP'
  */
 export const handleLogin: (
-  authType: AuthType.SP | AuthType.CP,
+  authType: FormAuthType.SP | FormAuthType.CP,
 ) => ControllerHandler<
   unknown,
   unknown,

@@ -52,6 +52,6 @@ export const verifyCaptchaResponse = (
       })
       return errAsync(new VerifyCaptchaError())
     }
-    return okAsync(true)
+    return okAsync(true as const)
   })
 }

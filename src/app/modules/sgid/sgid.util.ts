@@ -1,13 +1,12 @@
 import { err, ok, Result } from 'neverthrow'
 
-import { NricResponse } from '../../../../shared/types/response'
-import { hasProp } from '../../../../shared/utils/has-prop'
 import {
-  AuthType,
   BasicField,
-  IFormSchema,
-  SgidFieldTitle,
-} from '../../../types'
+  FormAuthType,
+  NricResponse,
+} from '../../../../shared/types'
+import { hasProp } from '../../../../shared/utils/has-prop'
+import { IFormSchema, SgidFieldTitle } from '../../../types'
 import { AuthTypeMismatchError } from '../form/form.errors'
 import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
 
@@ -22,12 +21,12 @@ export const validateSgidForm = <T extends IFormSchema>(
 ): Result<SgidForm<T>, AuthTypeMismatchError> => {
   return isSgidForm(form)
     ? ok(form)
-    : err(new AuthTypeMismatchError(AuthType.SGID, form.authType))
+    : err(new AuthTypeMismatchError(FormAuthType.SGID, form.authType))
 }
 
 // Typeguard to ensure that form has the correct authType
 const isSgidForm = <F extends IFormSchema>(form: F): form is SgidForm<F> => {
-  return form.authType === AuthType.SGID
+  return form.authType === FormAuthType.SGID
 }
 
 /**
