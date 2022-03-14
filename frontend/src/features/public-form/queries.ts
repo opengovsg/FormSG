@@ -23,7 +23,6 @@ export const usePublicFormView = (
     () => getPublicFormView(formId),
     {
       enabled: PUBLICFORM_REGEX.test(formId),
-      refetchOnWindowFocus: false,
     },
   )
 }
