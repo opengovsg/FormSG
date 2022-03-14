@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useFormContext, useWatch } from 'react-hook-form'
+import { useFormContext, useFormState, useWatch } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -43,11 +43,9 @@ export const CheckboxField = ({
     }
   }, [othersInputName, schema])
 
-  const {
-    register,
-    control,
-    formState: { isValid, isSubmitting, errors },
-  } = useFormContext()
+  const { register, control } = useFormContext()
+  const { isValid, isSubmitting, errors } = useFormState({ name: schema._id })
+
   const checkboxValues = useWatch({
     name: checkboxInputName,
     defaultValue: [],

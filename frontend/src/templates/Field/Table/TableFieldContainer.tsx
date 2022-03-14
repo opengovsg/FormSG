@@ -24,7 +24,7 @@ export const TableFieldContainer = ({
   questionNumber,
   children,
 }: TableFieldContainerProps): JSX.Element => {
-  const { isSubmitting, isValid, errors } = useFormState()
+  const { isSubmitting, isValid, errors } = useFormState({ name: schema._id })
 
   return (
     <FormControl

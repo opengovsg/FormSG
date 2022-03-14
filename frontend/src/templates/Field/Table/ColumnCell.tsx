@@ -48,7 +48,7 @@ export const ColumnCell = ({
   column,
   columnSchema,
 }: ColumnCellProps): JSX.Element => {
-  const { errors } = useFormState()
+  const { errors } = useFormState({ name: schemaId })
 
   const inputName = useMemo(
     () => `${schemaId}.${row.index}.${column.id}`,

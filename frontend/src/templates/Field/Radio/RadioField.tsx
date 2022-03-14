@@ -1,5 +1,10 @@
 import { useMemo } from 'react'
-import { Controller, useFormContext, useWatch } from 'react-hook-form'
+import {
+  Controller,
+  useFormContext,
+  useFormState,
+  useWatch,
+} from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -42,11 +47,8 @@ export const RadioField = ({
     }
   }, [othersInputName, schema])
 
-  const {
-    register,
-    control,
-    formState: { isValid, isSubmitting, errors },
-  } = useFormContext()
+  const { register, control } = useFormContext()
+  const { isValid, isSubmitting, errors } = useFormState({ name: schema._id })
   const radioValue = useWatch({ name: radioInputName, control })
 
   const isOthersSelected = useMemo(
