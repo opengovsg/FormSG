@@ -45,6 +45,7 @@ export const EditHeader = ({
     formState: { errors, isDirty },
     reset,
     setValue,
+    getValues,
   } = useForm<EditHeaderInputs>({
     defaultValues: {
       title: field.title,
@@ -55,9 +56,16 @@ export const EditHeader = ({
   // Update form when field loads or changes due to external action,
   // e.g. if user clicks on another field in the builder
   useEffect(() => {
-    setValue('title', field.title, { shouldDirty: false })
-    setValue('description', field.description, { shouldDirty: false })
-  }, [field.title, field.description, setValue])
+    // perf: setValue causes an additional render, so call it only if
+    // the values change
+    const currentValues = getValues()
+    if (currentValues.title !== field.title) {
+      setValue('title', field.title, { shouldDirty: false })
+    }
+    if (currentValues.description !== field.description) {
+      setValue('description', field.description, { shouldDirty: false })
+    }
+  }, [field.title, field.description, setValue, getValues])
 
   const buttonText = useMemo(
     () => (isPendingField ? 'Create' : 'Save'),
