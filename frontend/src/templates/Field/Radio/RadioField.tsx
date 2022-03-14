@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Controller, FieldError, useFormContext } from 'react-hook-form'
+import { Controller, useFormContext, useWatch } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -43,11 +43,11 @@ export const RadioField = ({
   }, [othersInputName, schema])
 
   const {
-    watch,
     register,
+    control,
     formState: { isValid, isSubmitting, errors },
   } = useFormContext()
-  const radioValue = watch(radioInputName)
+  const radioValue = useWatch({ name: radioInputName, control })
 
   const isOthersSelected = useMemo(
     () => schema.othersRadioButton && radioValue === RADIO_OTHERS_INPUT_VALUE,
@@ -66,8 +66,6 @@ export const RadioField = ({
     }),
     [isOthersSelected],
   )
-
-  const othersInputError: FieldError | undefined = get(errors, othersInputName)
 
   return (
     <FieldContainer
@@ -93,7 +91,7 @@ export const RadioField = ({
                   isRequired={schema.required}
                   isDisabled={schema.disabled}
                   isReadOnly={isValid && isSubmitting}
-                  isInvalid={!!othersInputError}
+                  isInvalid={!!get(errors, othersInputName)}
                 >
                   <OthersInput
                     aria-label='Enter value for "Others" option'
@@ -103,7 +101,7 @@ export const RadioField = ({
                     ml={styles.othersInput?.ml as string}
                     mb={0}
                   >
-                    {othersInputError?.message}
+                    {get(errors, `${othersInputName}.message`)}
                   </FormErrorMessage>
                 </FormControl>
               </Radio.OthersWrapper>

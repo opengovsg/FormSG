@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { FieldError, useFormContext } from 'react-hook-form'
+import { useFormContext, useWatch } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -44,11 +44,15 @@ export const CheckboxField = ({
   }, [othersInputName, schema])
 
   const {
-    watch,
     register,
+    control,
     formState: { isValid, isSubmitting, errors },
   } = useFormContext()
-  const checkboxValues = watch(checkboxInputName, [])
+  const checkboxValues = useWatch({
+    name: checkboxInputName,
+    defaultValue: [],
+    control,
+  })
   const isOthersSelected = useMemo(
     () =>
       Array.isArray(checkboxValues) &&
@@ -68,8 +72,6 @@ export const CheckboxField = ({
     }),
     [isOthersSelected],
   )
-
-  const othersInputError: FieldError | undefined = get(errors, othersInputName)
 
   return (
     <FieldContainer
@@ -92,7 +94,7 @@ export const CheckboxField = ({
             isRequired={schema.required}
             isDisabled={schema.disabled}
             isReadOnly={isValid && isSubmitting}
-            isInvalid={!!othersInputError}
+            isInvalid={!!get(errors, othersInputName)}
           >
             <Checkbox.OthersCheckbox
               value={CHECKBOX_OTHERS_INPUT_VALUE}
@@ -103,7 +105,7 @@ export const CheckboxField = ({
               {...register(othersInputName, othersValidationRules)}
             />
             <FormErrorMessage ml={styles.othersInput?.ml as string} mb={0}>
-              {othersInputError?.message}
+              {get(errors, `${othersInputName}.message`)}
             </FormErrorMessage>
           </FormControl>
         </Checkbox.OthersWrapper>

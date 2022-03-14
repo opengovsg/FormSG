@@ -1,4 +1,4 @@
-import { get, useFormContext } from 'react-hook-form'
+import { useFormState } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 
 import FormLabel from '~components/FormControl/FormLabel'
@@ -24,16 +24,14 @@ export const TableFieldContainer = ({
   questionNumber,
   children,
 }: TableFieldContainerProps): JSX.Element => {
-  const {
-    formState: { isSubmitting, isValid, errors },
-  } = useFormContext()
+  const { isSubmitting, isValid, errors } = useFormState()
 
   return (
     <FormControl
       isRequired={schema.required}
       isDisabled={schema.disabled}
       isReadOnly={isValid && isSubmitting}
-      isInvalid={!!get(errors, schema._id)}
+      isInvalid={!!errors[schema._id]}
     >
       <FormLabel
         questionNumber={questionNumber}
