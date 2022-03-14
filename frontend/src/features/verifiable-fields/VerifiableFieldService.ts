@@ -1,7 +1,5 @@
 import { Opaque } from 'type-fest'
 
-import { JsonDate } from '~typings/core'
-
 import { ApiService } from '~services/ApiService'
 
 /**
@@ -9,7 +7,7 @@ import { ApiService } from '~services/ApiService'
  * current form does not have any verifiable fields.
  */
 export type FetchNewTransactionResponse =
-  | { expireAt: JsonDate; transactionId: string }
+  | { expireAt: Date; transactionId: string }
   | Record<string, never>
 
 type VerifiedFieldSignature = Opaque<string, 'VerifiedFieldSignature'>
