@@ -89,7 +89,9 @@ const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, string>) => {
+  const onSubmit = (
+    values: Record<string, VerifiableFieldInput | undefined>,
+  ) => {
     setSubmitValues(
       JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
     )

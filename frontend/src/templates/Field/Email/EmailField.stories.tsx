@@ -64,7 +64,9 @@ const Template: Story<StoryEmailFieldProps> = ({ defaultValue, ...args }) => {
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, VerifiableFieldInput>) => {
+  const onSubmit = (
+    values: Record<string, VerifiableFieldInput | undefined>,
+  ) => {
     setSubmitValues(values[args.schema._id]?.value || 'Nothing was selected')
   }
 

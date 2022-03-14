@@ -56,7 +56,7 @@ const Template: Story<StoryDecimalFieldProps> = ({ defaultValue, ...args }) => {
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, string>) => {
+  const onSubmit = (values: Record<string, string | undefined>) => {
     setSubmitValues(values[args.schema._id] || 'Nothing was selected')
   }
 

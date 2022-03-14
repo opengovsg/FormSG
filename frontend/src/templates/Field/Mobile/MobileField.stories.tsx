@@ -56,7 +56,9 @@ const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, { value?: string }>) => {
+  const onSubmit = (
+    values: Record<string, { value?: string | undefined } | undefined>,
+  ) => {
     setSubmitValues(values[args.schema._id]?.value || 'Nothing was selected')
   }
 
