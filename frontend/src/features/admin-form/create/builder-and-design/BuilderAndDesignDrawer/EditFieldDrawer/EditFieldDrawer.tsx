@@ -1,13 +1,13 @@
 import { memo, useCallback, useMemo } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
-import { MutateOptions } from 'react-query'
 import { Box, Flex } from '@chakra-ui/react'
 
-import { BasicField, FieldCreateDto, FormFieldDto } from '~shared/types/field'
+import { BasicField, FieldCreateDto } from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
 
-import { FIELDS_TO_CREATE_META } from '../../constants'
+import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+
 import { useCreateFormField } from '../../mutations/useCreateFormField'
 import { useEditFormField } from '../../mutations/useEditFormField'
 import {
@@ -51,7 +51,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 
   const basicFieldText = useMemo(() => {
     if (!fieldToEdit?.fieldType) return ''
-    return FIELDS_TO_CREATE_META[fieldToEdit?.fieldType].label
+    return BASICFIELD_TO_DRAWER_META[fieldToEdit?.fieldType].label
   }, [fieldToEdit?.fieldType])
 
   const handleSave = useCallback(

@@ -1,6 +1,6 @@
 import { BasicField, FieldCreateDto } from '~shared/types/field'
 
-import { FIELDS_TO_CREATE_META } from '../constants'
+import { BASICFIELD_TO_DRAWER_META } from '../../constants'
 
 /**
  * Utility methods to create bare minimum meta required for field creation.
@@ -14,7 +14,7 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
     description: '',
     disabled: false,
     required: true,
-    title: FIELDS_TO_CREATE_META[fieldType].label,
+    title: BASICFIELD_TO_DRAWER_META[fieldType].label,
   }
 
   switch (fieldType) {
