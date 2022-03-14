@@ -1,4 +1,13 @@
-import { addDays, endOfToday, isAfter, isBefore, startOfToday } from 'date-fns'
+import {
+  addDays,
+  endOfToday,
+  isAfter,
+  isBefore,
+  parseISO,
+  startOfToday,
+} from 'date-fns'
+
+import { JsonDate } from '~typings/core'
 
 /**
  * Checks whether the current date is before today
@@ -61,4 +70,27 @@ export const isDateOutOfRange = (
   }
 
   return false
+}
+
+export const ISO_DATE_FORMAT =
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*))(?:Z|(\+|-)([\d|:]*))?$/
+
+export const isIsoDateString = (value: unknown): value is JsonDate => {
+  return !!value && typeof value === 'string' && ISO_DATE_FORMAT.test(value)
+}
+
+export const transformAllIsoStringsToDate = (body: unknown) => {
+  if (body === null || body === undefined || typeof body !== 'object') {
+    return body
+  }
+
+  for (const key of Object.keys(body)) {
+    const value = (body as Record<string, unknown>)[key]
+    if (isIsoDateString(value)) {
+      // eslint-disable-next-line @typescript-eslint/no-extra-semi
+      ;(body as Record<string, unknown>)[key] = parseISO(value)
+    } else if (typeof value === 'object') {
+      transformAllIsoStringsToDate(value)
+    }
+  }
 }

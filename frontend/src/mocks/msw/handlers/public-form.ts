@@ -5,10 +5,9 @@ import { PartialDeep } from 'type-fest'
 
 import { FormId, PublicFormViewDto } from '~shared/types/form/form'
 
-import {
-  FetchNewTransactionResponse,
-  JsonDate,
-} from '~features/verifiable-fields'
+import { JsonDate } from '~typings/core'
+
+import { FetchNewTransactionResponse } from '~features/verifiable-fields'
 
 import mockFormLogo from '../assets/mockFormLogo.png'
 

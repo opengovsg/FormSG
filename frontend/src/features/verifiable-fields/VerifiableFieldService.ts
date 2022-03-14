@@ -1,8 +1,8 @@
 import { Opaque } from 'type-fest'
 
-import { ApiService } from '~services/ApiService'
+import { JsonDate } from '~typings/core'
 
-export type JsonDate = Opaque<string, 'JsonDate'>
+import { ApiService } from '~services/ApiService'
 
 /**
  * Response when retrieving new transaction. Can be an empty object if the

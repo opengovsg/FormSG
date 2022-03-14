@@ -3,6 +3,7 @@ import axios, { AxiosError } from 'axios'
 import { ApiError } from '~typings/core'
 
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
+import { transformAllIsoStringsToDate } from '~utils/date'
 
 const API_BASE_URL = process.env.REACT_APP_BASE_URL ?? '/api/v3'
 export class HttpError extends Error {
@@ -46,7 +47,10 @@ export const ApiService = axios.create({
 })
 
 ApiService.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    transformAllIsoStringsToDate(response.data)
+    return response
+  },
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       // Remove logged in state from localStorage
