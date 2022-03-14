@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   FormControlOptions,
   useFormControlProps,
@@ -57,7 +57,7 @@ export const MultiSelectProvider = ({
   name,
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
-  placeholder = 'Select options',
+  placeholder: placeholderProp,
   clearButtonLabel = 'Clear dropdown',
   isSearchable = true,
   defaultIsOpen,
@@ -146,10 +146,9 @@ export const MultiSelectProvider = ({
   })
 
   const dynamicPlaceholder = useMemo(() => {
-    const numSelectedItems = selectedItems.length
-    if (numSelectedItems > 0) return ''
-    return placeholder ?? 'Select options'
-  }, [placeholder, selectedItems.length])
+    if (placeholderProp === null || selectedItems.length > 0) return ''
+    return placeholderProp ?? 'Select options'
+  }, [placeholderProp, selectedItems.length])
 
   const {
     toggleMenu,
@@ -219,6 +218,11 @@ export const MultiSelectProvider = ({
     },
     ...downshiftComboboxProps,
   })
+
+  /** Effect to update filtered items whenever items prop changes. */
+  useEffect(() => {
+    setFilteredItems(getFilteredItems(inputValue))
+  }, [getFilteredItems, inputValue, items])
 
   const resetInputValue = useCallback(() => setInputValue(''), [setInputValue])
 

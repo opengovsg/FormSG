@@ -1,10 +1,13 @@
 import { MouseEvent, useCallback, useMemo } from 'react'
-import { TagLabel } from '@chakra-ui/react'
+import { Icon, TagLabel } from '@chakra-ui/react'
 
 import { useMultiSelectContext } from '~components/Dropdown/MultiSelectContext'
 import { useSelectContext } from '~components/Dropdown/SelectContext'
 import { ComboboxItem } from '~components/Dropdown/types'
-import { itemToLabelString } from '~components/Dropdown/utils/itemUtils'
+import {
+  itemToIcon,
+  itemToLabelString,
+} from '~components/Dropdown/utils/itemUtils'
 import { Tag, TagCloseButton } from '~components/Tag'
 
 export interface MultiSelectItemProps<
@@ -18,11 +21,16 @@ export const MultiSelectItem = ({
   item,
   index,
 }: MultiSelectItemProps): JSX.Element => {
-  const { isDisabled, isReadOnly, setIsFocused, closeMenu, isOpen } =
+  const { isDisabled, isReadOnly, setIsFocused, closeMenu, isOpen, styles } =
     useSelectContext()
   const { getSelectedItemProps, removeSelectedItem } = useMultiSelectContext()
 
-  const itemLabel = useMemo(() => itemToLabelString(item), [item])
+  const itemMeta = useMemo(() => {
+    return {
+      label: itemToLabelString(item),
+      icon: itemToIcon(item),
+    }
+  }, [item])
 
   const handleRemoveItem = useCallback(
     (e: MouseEvent) => {
@@ -51,7 +59,7 @@ export const MultiSelectItem = ({
 
   return (
     <Tag
-      title={itemLabel}
+      title={itemMeta.label}
       colorScheme="secondary"
       m="2px"
       h="2rem"
@@ -74,7 +82,17 @@ export const MultiSelectItem = ({
         onClick: handleTagClick,
       })}
     >
-      <TagLabel>{itemLabel}</TagLabel>
+      {itemMeta.icon ? (
+        <Icon
+          aria-hidden
+          sx={styles.icon}
+          ml="-0.25rem"
+          mr="0.25rem"
+          as={itemMeta.icon}
+          aria-disabled={isDisabled}
+        />
+      ) : null}
+      <TagLabel>{itemMeta.label}</TagLabel>
       <TagCloseButton
         tabIndex={-1}
         aria-hidden

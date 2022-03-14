@@ -15,8 +15,12 @@ export interface SharedSelectContextReturnProps<
   nothingFoundLabel?: string
   /** aria-label for clear button. Defaults to "Clear dropdown" */
   clearButtonLabel?: string
-  /** Placeholder to show in the input field. Defaults to "Select an option". */
-  placeholder?: string
+  /**
+   * Placeholder to show in the input field.
+   * Defaults to "Select an option".
+   * Set to `null` to hide the placeholder.
+   */
+  placeholder?: string | null
   /** ID of input itself, for a11y purposes */
   name: string
   /** Item data used to render items in dropdown */

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { FormControlOptions, useMultiStyleConfig } from '@chakra-ui/react'
 import { useCombobox, UseComboboxProps } from 'downshift'
 
@@ -6,7 +6,7 @@ import { useItems } from '../hooks/useItems'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
 import { ComboboxItem } from '../types'
 import { defaultFilter } from '../utils/defaultFilter'
-import { itemToValue } from '../utils/itemUtils'
+import { itemToLabelString, itemToValue } from '../utils/itemUtils'
 
 export interface SingleSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
@@ -36,7 +36,7 @@ export const SingleSelectProvider = ({
   name,
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
-  placeholder = 'Select an option',
+  placeholder: placeholderProp,
   clearButtonLabel = 'Clear dropdown input',
   isClearable = true,
   isSearchable = true,
@@ -52,6 +52,11 @@ export const SingleSelectProvider = ({
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
 
+  const placeholder = useMemo(() => {
+    if (placeholderProp === null) return ''
+    return placeholderProp ?? 'Select an option'
+  }, [placeholderProp])
+
   const getFilteredItems = useCallback(
     (filterValue?: string) =>
       filterValue ? filter(items, filterValue) : items,
@@ -63,10 +68,9 @@ export const SingleSelectProvider = ({
     ),
   )
 
-  const getInitialSelectedValue = useCallback(
-    () => getItemByValue(value)?.item ?? null,
-    [getItemByValue, value],
-  )
+  const memoizedSelectedItem = useMemo(() => {
+    return getItemByValue(value)?.item ?? null
+  }, [getItemByValue, value])
 
   const resetItems = useCallback(
     () => setFilteredItems(getFilteredItems()),
@@ -95,7 +99,7 @@ export const SingleSelectProvider = ({
     defaultHighlightedIndex: 0,
     items: filteredItems,
     initialIsOpen,
-    initialSelectedItem: getInitialSelectedValue(),
+    selectedItem: memoizedSelectedItem,
     itemToString: itemToValue,
     onSelectedItemChange: ({ selectedItem }) => {
       onChange(itemToValue(selectedItem))
@@ -112,6 +116,20 @@ export const SingleSelectProvider = ({
     },
     stateReducer: (_state, { changes, type }) => {
       switch (type) {
+        // Handle controlled `value` prop changes.
+        case useCombobox.stateChangeTypes.ControlledPropUpdatedSelectedItem:
+          // Do nothing if selectedItem is null but yet previous state has inputValue.
+          // This suggests that there is some initial input state that we want to keep.
+          // This can only happen on first mount, since inputValue will be empty string
+          // on future actions.
+          if (_state.inputValue && !changes.selectedItem) {
+            return { ...changes, inputValue: _state.inputValue }
+          }
+          return {
+            ...changes,
+            // Clear inputValue on item selection
+            inputValue: '',
+          }
         case useCombobox.stateChangeTypes.FunctionSelectItem:
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.InputBlur:
@@ -131,6 +149,11 @@ export const SingleSelectProvider = ({
     ...comboboxProps,
   })
 
+  /** Effect to update filtered items whenever items prop changes. */
+  useEffect(() => {
+    setFilteredItems(getFilteredItems(inputValue))
+  }, [getFilteredItems, inputValue, items])
+
   const isItemSelected = useCallback(
     (item: ComboboxItem) => {
       return !!selectedItem && itemToValue(selectedItem) === itemToValue(item)
@@ -148,7 +171,7 @@ export const SingleSelectProvider = ({
     if (inputAriaProp) return inputAriaProp
     let label = 'No option selected'
     if (selectedItem) {
-      label = `Option ${itemToValue(selectedItem)}, selected`
+      label = `Option ${itemToLabelString(selectedItem)}, selected`
     }
     return {
       id: `${name}-current-selection`,

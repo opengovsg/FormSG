@@ -39,6 +39,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       w: 0,
       px: '2px',
       my: '2px',
+      bg: 'transparent',
       _disabled: {
         cursor: 'not-allowed',
       },

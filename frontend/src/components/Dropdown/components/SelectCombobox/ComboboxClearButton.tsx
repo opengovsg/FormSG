@@ -12,6 +12,7 @@ export const ComboboxClearButton = (): JSX.Element | null => {
     selectItem,
     styles,
     inputValue,
+    selectedItem,
   } = useSelectContext()
 
   const handleClearSelection = useCallback(() => selectItem(null), [selectItem])
@@ -26,7 +27,7 @@ export const ComboboxClearButton = (): JSX.Element | null => {
       aria-label={clearButtonLabel}
       onClick={handleClearSelection}
       __css={styles.clearbutton}
-      color={inputValue ? 'secondary.500' : undefined}
+      color={inputValue || selectedItem ? 'secondary.500' : undefined}
     >
       <BiX fontSize="1.25rem" />
     </chakra.button>

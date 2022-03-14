@@ -10,7 +10,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 
 import { ComboboxItem } from '../types'
-import { itemToLabelString, itemToValue } from '../utils/itemUtils'
+import { itemToValue } from '../utils/itemUtils'
 
 import { SingleSelect, SingleSelectProps } from './SingleSelect'
 
@@ -90,7 +90,7 @@ NotClearable.args = {
 
 export const HasValueSelected = Template.bind({})
 HasValueSelected.args = {
-  value: itemToLabelString(INITIAL_COMBOBOX_ITEMS[0]),
+  value: itemToValue(INITIAL_COMBOBOX_ITEMS[0]),
   initialIsOpen: true,
 }
 
