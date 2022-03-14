@@ -1,19 +1,16 @@
 import { Document } from 'mongoose'
 
 import {
+  BasicField,
   FormCondition,
   FormLogicBase,
   LogicConditionState,
-  LogicDto,
-  LogicIfValue,
   LogicType,
   PreventSubmitLogic,
   ShowFieldLogic,
-} from '../../shared/types/form/form_logic'
+} from '../../shared/types'
 
-import { BasicField, IFieldSchema } from './field'
-
-export { LogicConditionState, LogicIfValue, LogicType, LogicDto }
+import { IFieldSchema } from './field'
 
 export interface ICondition extends FormCondition {
   field: IFieldSchema['_id']
@@ -23,25 +20,19 @@ export interface ICondition extends FormCondition {
 // String form.
 export interface IConditionSchema extends ICondition, Document<string> {}
 
-export type ILogic = FormLogicBase
-
-export interface ILogicSchema extends ILogic, Document {
+export interface ILogicSchema extends FormLogicBase, Document {
   conditions: IConditionSchema[]
 }
-
-export type IShowFieldsLogic = ShowFieldLogic
 export interface IShowFieldsLogicSchema
   extends ILogicSchema,
-    IShowFieldsLogic,
+    ShowFieldLogic,
     Document {
   logicType: LogicType.ShowFields
   conditions: IConditionSchema[]
 }
-
-export type IPreventSubmitLogic = PreventSubmitLogic
 export interface IPreventSubmitLogicSchema
   extends ILogicSchema,
-    IPreventSubmitLogic,
+    PreventSubmitLogic,
     Document {
   logicType: LogicType.PreventSubmit
   conditions: IConditionSchema[]

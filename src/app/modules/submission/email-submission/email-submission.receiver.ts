@@ -20,15 +20,30 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
+const hasContentTypeHeaders = (headers: IncomingHttpHeaders) => {
+  return !!headers['content-type']
+}
+
 /**
  * Initialises a Busboy object to receive the submission stream
  * @param headers HTTP request headers
  */
 export const createMultipartReceiver = (
   headers: IncomingHttpHeaders,
-): Result<busboy.Busboy, InitialiseMultipartReceiverError> => {
+): Result<Busboy.Busboy, InitialiseMultipartReceiverError> => {
+  if (!hasContentTypeHeaders(headers)) {
+    logger.error({
+      message: "Busboy cannot be init due to missing headers['content-type']",
+      meta: {
+        action: 'createMultipartReceiver',
+        headers,
+      },
+    })
+    return err(new InitialiseMultipartReceiverError())
+  }
+
   try {
-    const busboy = new Busboy({
+    const busboy = Busboy({
       headers,
       limits: {
         fieldSize: 3 * MB,
@@ -55,7 +70,7 @@ export const createMultipartReceiver = (
  * @param busboy Busboy receiver object
  */
 export const configureMultipartReceiver = (
-  busboy: busboy.Busboy,
+  busboy: Busboy.Busboy,
 ): ResultAsync<ParsedMultipartForm, MultipartError> => {
   const logMeta = {
     action: 'configureMultipartReceiver',
@@ -66,7 +81,16 @@ export const configureMultipartReceiver = (
       let body: ParsedMultipartForm
 
       busboy
-        .on('file', (fieldname, file, filename) => {
+        .on('file', (fieldname, file, { filename }) => {
+          // Required to convert fieldname's encoding as busboy treats all
+          // incoming fields as `latin1` encoding,
+          // but this means some file languages gets incorrectly encoded
+          // (like Chinese, Tamil, etc), e.g.
+          // `utf8-with-endash – test.txt` -> `utf8-with-endash â�� test.txt`.
+          // See https://github.com/mscdex/busboy/issues/274.
+          const utf8Fieldname = Buffer.from(fieldname, 'latin1').toString(
+            'utf8',
+          )
           if (filename) {
             const buffers: Buffer[] = []
             file.on('data', (data) => {
@@ -76,7 +100,7 @@ export const configureMultipartReceiver = (
             file.on('end', () => {
               const buffer = Buffer.concat(buffers)
               attachments.push({
-                filename: fieldname,
+                filename: utf8Fieldname,
                 content: buffer,
                 fieldId: filename,
               })
@@ -91,7 +115,7 @@ export const configureMultipartReceiver = (
             })
           }
         })
-        .on('field', (name, val, _fieldnameTruncated, valueTruncated) => {
+        .on('field', (name, val, { valueTruncated }) => {
           // on receiving body field, convert to JSON
           if (name === 'body') {
             if (valueTruncated) {
@@ -122,7 +146,7 @@ export const configureMultipartReceiver = (
           })
           return reject(error)
         })
-        .on('finish', () => {
+        .on('close', () => {
           if (body) {
             handleDuplicatesInAttachments(attachments)
             addAttachmentToResponses(body.responses, attachments)

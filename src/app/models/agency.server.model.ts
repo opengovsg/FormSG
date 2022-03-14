@@ -1,13 +1,8 @@
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
-import { PublicAgencyDto } from '../../../shared/types/agency'
-import {
-  AgencyInstanceMethods,
-  IAgencyDocument,
-  IAgencyModel,
-  PublicAgency,
-} from '../../types'
+import { PublicAgencyDto } from '../../../shared/types'
+import { AgencyInstanceMethods, IAgencyModel, IAgencySchema } from '../../types'
 
 export const AGENCY_SCHEMA_ID = 'Agency'
 
@@ -20,7 +15,7 @@ export const AGENCY_PUBLIC_FIELDS = [
 ]
 
 const AgencySchema = new Schema<
-  IAgencyDocument,
+  IAgencySchema,
   IAgencyModel,
   undefined,
   AgencyInstanceMethods
@@ -61,12 +56,12 @@ const AgencySchema = new Schema<
 )
 
 // Methods
-AgencySchema.methods.getPublicView = function (): PublicAgency {
-  return pick(this, Object.keys(PublicAgencyDto.shape)) as PublicAgency
+AgencySchema.methods.getPublicView = function (): PublicAgencyDto {
+  return pick(this, Object.keys(PublicAgencyDto.shape)) as PublicAgencyDto
 }
 
 const compileAgencyModel = (db: Mongoose): IAgencyModel => {
-  return db.model(AGENCY_SCHEMA_ID, AgencySchema)
+  return db.model<IAgencySchema, IAgencyModel>(AGENCY_SCHEMA_ID, AgencySchema)
 }
 
 /**
@@ -77,7 +72,7 @@ const compileAgencyModel = (db: Mongoose): IAgencyModel => {
  */
 const getAgencyModel = (db: Mongoose): IAgencyModel => {
   try {
-    return db.model(AGENCY_SCHEMA_ID) as IAgencyModel
+    return db.model<IAgencySchema, IAgencyModel>(AGENCY_SCHEMA_ID)
   } catch {
     return compileAgencyModel(db)
   }

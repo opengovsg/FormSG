@@ -1,16 +1,18 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import bcrypt from 'bcrypt'
 import subMinutes from 'date-fns/subMinutes'
 import { getReasonPhrase, StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
 
-import { BasicField, IVerificationSchema } from 'src/types'
+import { IVerificationSchema } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { BasicField } from '../../../../../shared/types'
 import getVerificationModel from '../verification.model'
 import { VfnRouter } from '../verification.routes'
 
@@ -266,6 +268,7 @@ describe('verification.routes', () => {
 
   describe('POST /:transactionId/otp/verify', () => {
     beforeEach(() => {
+      // @ts-ignore
       jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(true)
     })
 

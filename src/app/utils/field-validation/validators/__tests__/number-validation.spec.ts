@@ -1,11 +1,15 @@
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField } from 'src/app/utils/field-validation'
-import { BasicField, NumberSelectedValidation } from 'src/types'
 
 import {
   generateDefaultField,
   generateNewSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
+
+import {
+  BasicField,
+  NumberSelectedValidation,
+} from '../../../../../../shared/types'
 
 describe('Number field validation', () => {
   it('should allow number with valid maximum', () => {

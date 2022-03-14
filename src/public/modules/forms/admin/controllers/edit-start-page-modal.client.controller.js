@@ -1,5 +1,5 @@
 'use strict'
-const { Colors } = require('../../../../../types/form.ts')
+const { FormColorTheme } = require('../../../../../../shared/types')
 const axios = require('axios').default
 const {
   MAX_UPLOAD_FILE_SIZE,
@@ -42,7 +42,7 @@ function EditStartPageController(
 
   // Make a copy so nothing is changed in the original.
   vm.myform = angular.copy(myform)
-  vm.colorThemes = Object.values(Colors)
+  vm.colorThemes = Object.values(FormColorTheme)
   vm.hasClickedSave = false
 
   vm.saveStartPage = function (isValid) {

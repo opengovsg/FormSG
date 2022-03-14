@@ -1,6 +1,6 @@
 import { Document } from 'mongoose'
 
-import { AllowMyInfoBase, FieldBase } from '../../../shared/types/field'
+import { AllowMyInfoBase, FieldBase } from '../../../shared/types'
 import { IFormSchema } from '../form'
 
 export type IMyInfo = NonNullable<AllowMyInfoBase['myInfo']>
@@ -10,8 +10,6 @@ export interface IMyInfoSchema extends IMyInfo, Document {
   /** Returns this sub-documents parent document. */
   parent(): IFieldSchema
 }
-
-export type IField = FieldBase
 
 // Manual override since mongoose types don't have generics yet.
 export interface IFieldSchema extends AllowMyInfoBase, FieldBase, Document {

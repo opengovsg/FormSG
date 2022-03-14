@@ -3,6 +3,7 @@ import { Stack } from '@chakra-ui/react'
 
 import { BxsColorFill } from '~assets/icons/BxsColorFill'
 import { BxsWidget } from '~assets/icons/BxsWidget'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import {
   DrawerTabs,
@@ -11,9 +12,15 @@ import {
 
 import { DrawerTabIcon } from './DrawerTabIcon'
 
-export const CreatePageSidebar = (): JSX.Element => {
+export const CreatePageSidebar = (): JSX.Element | null => {
   const { activeTab, handleBuilderClick, handleDesignClick, handleLogicClick } =
     useCreatePageSidebar()
+
+  const isMobile = useIsMobile()
+
+  if (isMobile) {
+    return null
+  }
 
   return (
     <Stack
@@ -21,8 +28,11 @@ export const CreatePageSidebar = (): JSX.Element => {
       spacing="0.5rem"
       py="1rem"
       px="0.5rem"
+      pos="sticky"
+      top={0}
       borderRight="1px solid"
       borderColor="neutral.300"
+      direction={{ base: 'row', md: 'column' }}
     >
       <DrawerTabIcon
         label="Build your form"

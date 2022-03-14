@@ -96,6 +96,12 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       env: 'SESSION_SECRET',
       sensitive: true,
     },
+    secretEnv: {
+      doc: 'Secret Environment used to build key for AWS Secrets Manager',
+      format: String,
+      default: null,
+      env: 'SECRET_ENV',
+    },
   },
 }
 
@@ -180,6 +186,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       format: 'email',
       default: 'donotreply@mail.form.gov.sg',
       env: 'MAIL_FROM',
+    },
+    official: {
+      doc: 'Official email address to reply to',
+      format: 'email',
+      default: 'form@open.gov.sg',
+      env: 'MAIL_OFFICIAL',
     },
     logger: {
       doc: 'If set to true then logs to console',

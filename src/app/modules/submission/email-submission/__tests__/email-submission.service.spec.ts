@@ -7,12 +7,9 @@ import mongoose from 'mongoose'
 import { getEmailSubmissionModel } from 'src/app/models/submission.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import {
-  AuthType,
-  BasicField,
   IEmailFormSchema,
   IEmailSubmissionSchema,
   IPopulatedEmailForm,
-  SubmissionType,
 } from 'src/types'
 
 import { generateSingleAnswerFormData } from 'tests/unit/backend/helpers/generate-email-data'
@@ -22,6 +19,11 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import {
+  BasicField,
+  FormAuthType,
+  SubmissionType,
+} from '../../../../../../shared/types'
 import { ProcessedSingleAnswerResponse } from '../../submission.types'
 import {
   DIGEST_TYPE,
@@ -323,7 +325,7 @@ describe('email-submission.service', () => {
     const MOCK_EMAIL_FORM = {
       _id: new ObjectId(),
       title: 'title',
-      authType: AuthType.SP,
+      authType: FormAuthType.SP,
       getUniqueMyInfoAttrs: () => MYINFO_ATTRS,
       emails: ['a@abc.com', 'b@cde.com'],
     } as IEmailFormSchema

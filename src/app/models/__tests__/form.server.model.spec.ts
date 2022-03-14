@@ -1,32 +1,38 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
-import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
+import { cloneDeep, map, merge, omit, orderBy, pick, range } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 import {
   EMAIL_PUBLIC_FORM_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
 } from 'shared/constants/form'
+import {
+  BasicField,
+  FormAuthType,
+  FormColorTheme,
+  FormEndPage,
+  FormField,
+  FormFieldDto,
+  FormLogoState,
+  FormPermission,
+  FormResponseMode,
+  FormStartPage,
+  FormStatus,
+  LogicDto,
+  LogicType,
+} from 'shared/types'
 
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import {
-  AuthType,
-  BasicField,
-  EndPage,
-  FormFieldWithId,
-  FormLogoState,
   IEncryptedForm,
   IFieldSchema,
+  IFormDocument,
   IFormSchema,
   ILogicSchema,
   IPopulatedUser,
-  LogicType,
-  Permission,
-  ResponseMode,
-  StartPage,
-  Status,
 } from 'src/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
@@ -47,12 +53,12 @@ const MOCK_FORM_PARAMS = {
 const MOCK_ENCRYPTED_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
   publicKey: 'mockPublicKey',
-  responseMode: ResponseMode.Encrypt,
+  responseMode: FormResponseMode.Encrypt,
 }
 const MOCK_EMAIL_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
   emails: [MOCK_ADMIN_EMAIL],
-  responseMode: ResponseMode.Email,
+  responseMode: FormResponseMode.Email,
 }
 
 const FORM_DEFAULTS = {
@@ -92,7 +98,9 @@ describe('Form Model', () => {
       mailDomain: MOCK_ADMIN_DOMAIN,
     })
 
-    populatedAdmin = merge(preloaded.user, { agency: preloaded.agency })
+    populatedAdmin = merge(preloaded.user, {
+      agency: preloaded.agency,
+    }) as IPopulatedUser
   })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
@@ -217,6 +225,7 @@ describe('Form Model', () => {
           'lastModified',
           '__v',
         ])
+        // @ts-ignore
         actualSavedObject.form_logics = actualSavedObject.form_logics?.map(
           (logic) => omit(logic, '_id'),
         )
@@ -266,7 +275,7 @@ describe('Form Model', () => {
         // Remove indeterministic id from actual permission list
         const actualPermissionList = saved
           .toObject()
-          .permissionList?.map((permission: Permission) =>
+          .permissionList?.map((permission: FormPermission) =>
             omit(permission, '_id'),
           )
         expect(actualPermissionList).toEqual(permissionList)
@@ -418,6 +427,41 @@ describe('Form Model', () => {
           {},
           ENCRYPT_FORM_DEFAULTS,
           MOCK_ENCRYPTED_FORM_PARAMS,
+        )
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('should create and save successfully if encrypt mode form has webhook', async () => {
+        // Arrange + Act
+
+        const MOCK_ENCRYPTED_FORM_PARAMS_WITH_WEBHOOK = {
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          webhook: { url: 'https://www.form.gov.sg' },
+        }
+
+        const validForm = new EncryptedForm(
+          MOCK_ENCRYPTED_FORM_PARAMS_WITH_WEBHOOK,
+        )
+
+        const saved = await validForm.save()
+
+        // Assert
+        // All fields should exist
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge(
+          {},
+          ENCRYPT_FORM_DEFAULTS,
+          MOCK_ENCRYPTED_FORM_PARAMS_WITH_WEBHOOK,
         )
         expect(actualSavedObject).toEqual(expectedObject)
       })
@@ -617,27 +661,27 @@ describe('Form Model', () => {
       it('should set authType to NIL when given authType is MyInfo', async () => {
         // Arrange
         const malformedParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          authType: AuthType.MyInfo,
+          authType: FormAuthType.MyInfo,
         })
 
         // Act
         const invalidForm = await EncryptedForm.create(malformedParams)
 
         // Assert
-        await expect(invalidForm.authType).toBe(AuthType.NIL)
+        await expect(invalidForm.authType).toBe(FormAuthType.NIL)
       })
 
       it('should set authType to NIL when given authType is SGID', async () => {
         // Arrange
         const malformedParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          authType: AuthType.SGID,
+          authType: FormAuthType.SGID,
         })
 
         // Act
         const invalidForm = await EncryptedForm.create(malformedParams)
 
         // Assert
-        await expect(invalidForm.authType).toBe(AuthType.NIL)
+        await expect(invalidForm.authType).toBe(FormAuthType.NIL)
       })
     })
 
@@ -781,7 +825,7 @@ describe('Form Model', () => {
         // Remove indeterministic id from actual permission list
         const actualPermissionList = saved
           .toObject()
-          .permissionList?.map((permission: Permission) =>
+          .permissionList?.map((permission: FormPermission) =>
             omit(permission, '_id'),
           )
         expect(actualPermissionList).toEqual(permissionList)
@@ -808,6 +852,22 @@ describe('Form Model', () => {
         expect(updatedForm.admin).toEqual(newAdmin._id)
         // PermissionList should now be empty.
         expect(updatedForm.permissionList).toEqual([])
+      })
+
+      it('should reject when webhook url exists in email mode form', async () => {
+        // Arrange
+        const MOCK_EMAIL_FORM_PARAMS_WITH_WEBHOOK = {
+          ...MOCK_EMAIL_FORM_PARAMS,
+          webhook: { url: 'https://www.form.gov.sg' },
+        }
+
+        // Act
+        const invalidForm = new EmailForm(MOCK_EMAIL_FORM_PARAMS_WITH_WEBHOOK)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrowError(
+          mongoose.Error.ValidationError,
+        )
       })
 
       it('should reject when emails array is missing', async () => {
@@ -924,7 +984,7 @@ describe('Form Model', () => {
       it('should correctly deactivate form for valid ID', async () => {
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: populatedAdmin,
-          status: Status.Public,
+          status: FormStatus.Public,
         })
         const form = await Form.create(formParams)
         await Form.deactivateById(form._id)
@@ -935,7 +995,7 @@ describe('Form Model', () => {
       it('should not deactivate archived form', async () => {
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: populatedAdmin,
-          status: Status.Archived,
+          status: FormStatus.Archived,
         })
         const form = await Form.create(formParams)
         await Form.deactivateById(form._id)
@@ -1136,7 +1196,7 @@ describe('Form Model', () => {
         // Should not be fetched since form is archived.
         await Form.create({
           ...MOCK_ENCRYPTED_FORM_PARAMS,
-          status: Status.Archived,
+          status: FormStatus.Archived,
         })
         // Should not be fetched (not collab or admin).
         await Form.create({
@@ -1201,14 +1261,14 @@ describe('Form Model', () => {
 
       const mockNewFormLogic = {
         logicType: LogicType.PreventSubmit,
-      } as unknown as ILogicSchema
+      } as LogicDto
 
       it('should return form upon successful create logic if form_logic is currently empty', async () => {
         // arrange
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: populatedAdmin,
-          status: Status.Public,
-          responseMode: ResponseMode.Email,
+          status: FormStatus.Public,
+          responseMode: FormResponseMode.Email,
           form_logics: [],
         })
         const form = await Form.create(formParams)
@@ -1225,9 +1285,9 @@ describe('Form Model', () => {
 
         // Form should have correct status, responsemode
         expect(modifiedForm?.responseMode).not.toBeNull()
-        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.responseMode).toEqual(FormResponseMode.Email)
         expect(modifiedForm?.status).not.toBeNull()
-        expect(modifiedForm?.status).toEqual(Status.Public)
+        expect(modifiedForm?.status).toEqual(FormStatus.Public)
 
         // Check that form logic has been added
         expect(modifiedForm?.form_logics).toBeDefined()
@@ -1241,8 +1301,8 @@ describe('Form Model', () => {
         // arrange
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: populatedAdmin,
-          status: Status.Public,
-          responseMode: ResponseMode.Email,
+          status: FormStatus.Public,
+          responseMode: FormResponseMode.Email,
           form_logics: [],
         })
         const form = await Form.create(formParams)
@@ -1261,9 +1321,9 @@ describe('Form Model', () => {
 
         // Form should have correct status, responsemode
         expect(modifiedFormRepeat?.responseMode).not.toBeNull()
-        expect(modifiedFormRepeat?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedFormRepeat?.responseMode).toEqual(FormResponseMode.Email)
         expect(modifiedFormRepeat?.status).not.toBeNull()
-        expect(modifiedFormRepeat?.status).toEqual(Status.Public)
+        expect(modifiedFormRepeat?.status).toEqual(FormStatus.Public)
 
         // Check that form logic has been added
         expect(modifiedFormRepeat?.form_logics).toBeDefined()
@@ -1280,8 +1340,8 @@ describe('Form Model', () => {
         // arrange
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: populatedAdmin,
-          status: Status.Public,
-          responseMode: ResponseMode.Email,
+          status: FormStatus.Public,
+          responseMode: FormResponseMode.Email,
           ...mockExistingFormLogic,
         })
         const form = await Form.create(formParams)
@@ -1298,9 +1358,9 @@ describe('Form Model', () => {
 
         // Form should have correct status, responsemode
         expect(modifiedForm?.responseMode).not.toBeNull()
-        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.responseMode).toEqual(FormResponseMode.Email)
         expect(modifiedForm?.status).not.toBeNull()
-        expect(modifiedForm?.status).toEqual(Status.Public)
+        expect(modifiedForm?.status).toEqual(FormStatus.Public)
 
         // Check that form logic has been added
         expect(modifiedForm?.form_logics).toBeDefined()
@@ -1345,8 +1405,8 @@ describe('Form Model', () => {
         // arrange
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: populatedAdmin,
-          status: Status.Public,
-          responseMode: ResponseMode.Email,
+          status: FormStatus.Public,
+          responseMode: FormResponseMode.Email,
           ...mockFormLogic,
         })
         const form = await Form.create(formParams)
@@ -1360,9 +1420,9 @@ describe('Form Model', () => {
 
         // Form should have correct status, responsemode
         expect(modifiedForm?.responseMode).not.toBeNull()
-        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.responseMode).toEqual(FormResponseMode.Email)
         expect(modifiedForm?.status).not.toBeNull()
-        expect(modifiedForm?.status).toEqual(Status.Public)
+        expect(modifiedForm?.status).toEqual(FormStatus.Public)
 
         // Check that form logic has been deleted
         expect(modifiedForm?.form_logics).toBeEmpty()
@@ -1387,8 +1447,8 @@ describe('Form Model', () => {
 
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: populatedAdmin,
-          status: Status.Public,
-          responseMode: ResponseMode.Email,
+          status: FormStatus.Public,
+          responseMode: FormResponseMode.Email,
           ...mockFormLogicMultiple,
         })
         const form = await Form.create(formParams)
@@ -1402,9 +1462,9 @@ describe('Form Model', () => {
 
         // Form should have correct status, responsemode
         expect(modifiedForm?.responseMode).not.toBeNull()
-        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.responseMode).toEqual(FormResponseMode.Email)
         expect(modifiedForm?.status).not.toBeNull()
-        expect(modifiedForm?.status).toEqual(Status.Public)
+        expect(modifiedForm?.status).toEqual(FormStatus.Public)
 
         // Check that correct form logic has been deleted
         expect(modifiedForm?.form_logics).toBeDefined()
@@ -1488,7 +1548,7 @@ describe('Form Model', () => {
           },
         })
         const form = (await Form.create(formParams)).toObject()
-        const updatedEndPage: EndPage = {
+        const updatedEndPage: FormEndPage = {
           title: 'some new title',
           paragraph: 'some description paragraph',
           buttonText: 'custom button text',
@@ -1512,11 +1572,12 @@ describe('Form Model', () => {
           admin: MOCK_ADMIN_OBJ_ID,
         })
         const form = (await Form.create(formParams)).toObject()
-        const updatedEndPage: EndPage = {
+        const updatedEndPage: Partial<FormEndPage> = {
           paragraph: 'some description paragraph',
         }
 
         // Act
+        // @ts-ignore
         const actual = await Form.updateEndPageById(form._id, updatedEndPage)
 
         // Assert
@@ -1536,7 +1597,8 @@ describe('Form Model', () => {
       it('should return null when formId given is not in the database', async () => {
         // Arrange
         await expect(Form.countDocuments()).resolves.toEqual(0)
-        const updatedEndPage: EndPage = {
+        const updatedEndPage: FormEndPage = {
+          buttonText: 'custom button text',
           title: 'some new title',
           paragraph: 'does not really matter',
         }
@@ -1573,7 +1635,7 @@ describe('Form Model', () => {
       const mockUpdatedFormLogic = {
         _id: logicId1,
         logicType: LogicType.PreventSubmit,
-      } as ILogicSchema
+      } as LogicDto
 
       it('should return form upon successful update of logic when there is one logic', async () => {
         // arrange
@@ -1588,8 +1650,8 @@ describe('Form Model', () => {
 
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: populatedAdmin,
-          status: Status.Public,
-          responseMode: ResponseMode.Email,
+          status: FormStatus.Public,
+          responseMode: FormResponseMode.Email,
           ...mockExistingFormLogicSingle,
         })
         const form = await Form.create(formParams)
@@ -1607,9 +1669,9 @@ describe('Form Model', () => {
 
         // Form should have correct status, responsemode
         expect(modifiedForm?.responseMode).not.toBeNull()
-        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.responseMode).toEqual(FormResponseMode.Email)
         expect(modifiedForm?.status).not.toBeNull()
-        expect(modifiedForm?.status).toEqual(Status.Public)
+        expect(modifiedForm?.status).toEqual(FormStatus.Public)
 
         // Check that form logic has been updated
         expect(modifiedForm?.form_logics).toBeDefined()
@@ -1623,8 +1685,8 @@ describe('Form Model', () => {
         // arrange
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: populatedAdmin,
-          status: Status.Public,
-          responseMode: ResponseMode.Email,
+          status: FormStatus.Public,
+          responseMode: FormResponseMode.Email,
           ...mockExistingFormLogic,
         })
         const form = await Form.create(formParams)
@@ -1642,9 +1704,9 @@ describe('Form Model', () => {
 
         // Form should have correct status, responsemode
         expect(modifiedForm?.responseMode).not.toBeNull()
-        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.responseMode).toEqual(FormResponseMode.Email)
         expect(modifiedForm?.status).not.toBeNull()
-        expect(modifiedForm?.status).toEqual(Status.Public)
+        expect(modifiedForm?.status).toEqual(FormStatus.Public)
 
         // Check that first form logic has been updated but second is unchanges
         expect(modifiedForm?.form_logics).toBeDefined()
@@ -1687,8 +1749,8 @@ describe('Form Model', () => {
 
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: populatedAdmin,
-          status: Status.Public,
-          responseMode: ResponseMode.Email,
+          status: FormStatus.Public,
+          responseMode: FormResponseMode.Email,
           ...mockExistingFormLogicSingle,
         })
         const form = await Form.create(formParams)
@@ -1706,9 +1768,9 @@ describe('Form Model', () => {
 
         // Form should have correct status, responsemode
         expect(modifiedForm?.responseMode).not.toBeNull()
-        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.responseMode).toEqual(FormResponseMode.Email)
         expect(modifiedForm?.status).not.toBeNull()
-        expect(modifiedForm?.status).toEqual(Status.Public)
+        expect(modifiedForm?.status).toEqual(FormStatus.Public)
 
         // Check that form logic has not been updated and there are no new form logics introduced
         expect(modifiedForm?.form_logics).toBeDefined()
@@ -1730,8 +1792,12 @@ describe('Form Model', () => {
         })
         const form = (await Form.create(formParams)).toObject()
         const prevModifiedDate = form.lastModified
-        const updatedStartPage: StartPage = {
+        const updatedStartPage: FormStartPage = {
           paragraph: 'some description paragraph',
+          colorTheme: FormColorTheme.Blue,
+          logo: {
+            state: FormLogoState.Default,
+          },
           // This is a huge form.
           estTimeTaken: 10000000,
         }
@@ -1758,8 +1824,12 @@ describe('Form Model', () => {
           admin: MOCK_ADMIN_OBJ_ID,
         })
         const form = (await Form.create(formParams)).toObject()
-        const updatedStartPage: StartPage = {
+        const updatedStartPage: FormStartPage = {
           paragraph: 'some description paragraph',
+          colorTheme: FormColorTheme.Blue,
+          logo: {
+            state: FormLogoState.Default,
+          },
         }
 
         // Act
@@ -1787,8 +1857,12 @@ describe('Form Model', () => {
       it('should return null when formId given is not in the database', async () => {
         // Arrange
         await expect(Form.countDocuments()).resolves.toEqual(0)
-        const updatedStartPage: StartPage = {
+        const updatedStartPage: FormStartPage = {
           paragraph: 'does not really matter',
+          colorTheme: FormColorTheme.Blue,
+          logo: {
+            state: FormLogoState.Default,
+          },
         }
 
         // Act
@@ -1802,6 +1876,210 @@ describe('Form Model', () => {
         await expect(Form.countDocuments()).resolves.toEqual(0)
       })
     })
+
+    describe('disableSmsVerificationsForUser', () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioId'
+      it('should disable sms verifications for all forms belonging to a user that are not onboarded successfully', async () => {
+        // Arrange
+        const mockFormPromises = range(3).map((_, idx) => {
+          const isOnboarded = !!(idx % 2)
+          return Form.create({
+            admin: populatedAdmin._id,
+            responseMode: FormResponseMode.Email,
+            title: 'mock mobile form',
+            emails: [populatedAdmin.email],
+            ...(isOnboarded && { msgSrvcName: MOCK_MSG_SRVC_NAME }),
+            form_fields: [
+              generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+            ],
+          })
+        })
+        await Promise.all(mockFormPromises)
+
+        // Act
+        await Form.disableSmsVerificationsForUser(populatedAdmin._id)
+
+        // Assert
+        // Find all forms that match admin id
+        // All forms with msgSrvcName have been using their own credentials
+        // They should not have verifications disabled.
+        const onboardedForms = await Form.find({
+          admin: populatedAdmin._id,
+          msgSrvcName: {
+            $exists: true,
+          },
+        })
+        onboardedForms.map(({ form_fields }) =>
+          form_fields!.map((field) => {
+            expect(field.isVerifiable).toBe(true)
+          }),
+        )
+
+        // Conversely, forms without msgSrvcName are using our credentials
+        // And should have their verifications disabled.
+        const notOnboardedForms = await Form.find({
+          admin: populatedAdmin._id,
+          msgSrvcName: {
+            $exists: false,
+          },
+        })
+
+        notOnboardedForms.map(({ form_fields }) =>
+          form_fields!.map((field) => {
+            expect(field.isVerifiable).toBe(false)
+          }),
+        )
+      })
+
+      it('should not disable non mobile fields for a user', async () => {
+        // Arrange
+        const mockFormPromises = range(3).map(() => {
+          return Form.create({
+            admin: populatedAdmin._id,
+            responseMode: FormResponseMode.Email,
+            title: 'mock email form',
+            emails: [populatedAdmin.email],
+            form_fields: [
+              generateDefaultField(BasicField.Email, { isVerifiable: true }),
+            ],
+          })
+        })
+        await Promise.all(mockFormPromises)
+
+        // Act
+        await Form.disableSmsVerificationsForUser(populatedAdmin._id)
+
+        // Assert
+        // Find all forms that match admin id
+        const updatedForms = await Form.find({ admin: populatedAdmin._id })
+        updatedForms.map(({ form_fields }) =>
+          form_fields!.map((field) => {
+            expect(field.isVerifiable).toBe(true)
+          }),
+        )
+      })
+
+      it('should only disable sms verifications for a particular user', async () => {
+        // Arrange
+        const MOCK_USER_ID = new ObjectId()
+        await dbHandler.insertFormCollectionReqs({
+          userId: MOCK_USER_ID,
+          mailDomain: 'something.com',
+        })
+        await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields: [
+            generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+          ],
+        })
+        await Form.create({
+          admin: MOCK_USER_ID,
+          responseMode: FormResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields: [
+            generateDefaultField(BasicField.Email, { isVerifiable: true }),
+          ],
+        })
+
+        // Act
+        await Form.disableSmsVerificationsForUser(populatedAdmin._id)
+
+        // Assert
+        // Find all forms that match admin id
+        const updatedMobileForms = (await Form.find({
+          admin: populatedAdmin._id,
+        })) as IFormDocument[]
+        expect(updatedMobileForms[0].form_fields[0].isVerifiable).toBe(false)
+        const updatedEmailForm = (await Form.find({
+          admin: MOCK_USER_ID,
+        })) as IFormDocument[]
+        expect(updatedEmailForm[0].form_fields[0].isVerifiable).toBe(true)
+      })
+
+      it('should not update when a db error occurs', async () => {
+        // Arrange
+        const disableSpy = jest.spyOn(Form, 'disableSmsVerificationsForUser')
+        // @ts-ignore
+        disableSpy.mockResolvedValueOnce(new Error('tee hee db crashed'))
+        const mockFormPromises = range(3).map(() => {
+          return Form.create({
+            admin: populatedAdmin._id,
+            responseMode: FormResponseMode.Email,
+            title: 'mock mobile form',
+            emails: [populatedAdmin.email],
+            form_fields: [
+              generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+            ],
+          })
+        })
+        await Promise.all(mockFormPromises)
+
+        // Act
+        await Form.disableSmsVerificationsForUser(populatedAdmin._id)
+
+        // Assert
+        // Find all forms that match admin id
+        const updatedForms = await Form.find({ admin: populatedAdmin._id })
+        updatedForms.map(({ form_fields }) =>
+          form_fields!.map((field) => {
+            expect(field.isVerifiable).toBe(true)
+          }),
+        )
+      })
+    })
+
+    describe('retrievePublicFormsWithSmsVerification', () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
+      it('should retrieve only public forms with verifiable mobile fields that are not onboarded', async () => {
+        // Arrange
+        const mockFormPromises = range(8).map((_, idx) => {
+          // Extract bits and use them to represent state
+          const isPublic = !!(idx % 2)
+          const isVerifiable = !!((idx >> 1) % 2)
+          const isOnboarded = !!((idx >> 2) % 2)
+          return Form.create({
+            admin: populatedAdmin._id,
+            responseMode: FormResponseMode.Email,
+            title: 'mock mobile form',
+            emails: [populatedAdmin.email],
+            status: isPublic ? FormStatus.Public : FormStatus.Private,
+            ...(isOnboarded && { msgSrvcName: MOCK_MSG_SRVC_NAME }),
+            form_fields: [
+              generateDefaultField(BasicField.Mobile, { isVerifiable }),
+            ],
+          })
+        })
+        await Promise.all(mockFormPromises)
+
+        // Act
+        const forms = await Form.retrievePublicFormsWithSmsVerification(
+          populatedAdmin._id,
+        )
+
+        // Assert
+        expect(forms.length).toBe(1)
+        expect(forms[0].form_fields[0].isVerifiable).toBe(true)
+        expect(forms[0].status).toBe(FormStatus.Public)
+        expect(forms[0].msgSrvcName).toBeUndefined()
+      })
+
+      it('should return an empty array when there are no forms', async () => {
+        // NOTE: This is an edge case and should never happen in prod as this method is called when
+        // a public form has a certain amount of verifications
+
+        // Act
+        const forms = await Form.retrievePublicFormsWithSmsVerification(
+          populatedAdmin._id,
+        )
+
+        // Assert
+        expect(forms.length).toBe(0)
+      })
+    })
   })
 
   describe('Methods', () => {
@@ -1811,7 +2089,7 @@ describe('Form Model', () => {
     beforeEach(async () => {
       validForm = await Form.create({
         admin: populatedAdmin._id,
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         title: 'mock email form',
         emails: [populatedAdmin.email],
       })
@@ -1823,9 +2101,9 @@ describe('Form Model', () => {
         const form = await Form.create({
           admin: populatedAdmin._id,
           emails: [populatedAdmin.email],
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           title: 'mock email form',
-          status: Status.Private,
+          status: FormStatus.Private,
         })
         expect(form).toBeDefined()
 
@@ -1833,7 +2111,7 @@ describe('Form Model', () => {
         const actual = await form.archive()
 
         // Assert
-        expect(actual.status).toEqual(Status.Archived)
+        expect(actual.status).toEqual(FormStatus.Archived)
       })
 
       it('should successfully set encrypt form status to archived', async () => {
@@ -1841,9 +2119,9 @@ describe('Form Model', () => {
         const form = await Form.create({
           admin: populatedAdmin._id,
           publicKey: 'any public key',
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
           title: 'mock encrypt form',
-          status: Status.Public,
+          status: FormStatus.Public,
         })
         expect(form).toBeDefined()
 
@@ -1851,7 +2129,7 @@ describe('Form Model', () => {
         const actual = await form.archive()
 
         // Assert
-        expect(actual.status).toEqual(Status.Archived)
+        expect(actual.status).toEqual(FormStatus.Archived)
       })
 
       it('should stay archived if original form is already archived', async () => {
@@ -1859,9 +2137,9 @@ describe('Form Model', () => {
         const form = await Form.create({
           admin: populatedAdmin._id,
           publicKey: 'any public key',
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
           title: 'mock encrypt form',
-          status: Status.Archived,
+          status: FormStatus.Archived,
         })
         expect(form).toBeDefined()
 
@@ -1869,7 +2147,57 @@ describe('Form Model', () => {
         const actual = await form.archive()
 
         // Assert
-        expect(actual.status).toEqual(Status.Archived)
+        expect(actual.status).toEqual(FormStatus.Archived)
+      })
+
+      it('should allow archive if form has valid webhook url', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          publicKey: 'any public key',
+          responseMode: FormResponseMode.Encrypt,
+          title: 'mock encrypt form',
+          status: FormStatus.Public,
+          webhook: {
+            url: 'https://www.form.gov.sg',
+          },
+        })
+        expect(form).toBeDefined()
+
+        // Act
+        const actual = await form.archive()
+
+        // Assert
+        expect(actual.status).toEqual(FormStatus.Archived)
+      })
+
+      it('should prevent archive and return validation error if form has invalid webhook url', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          publicKey: 'any public key',
+          responseMode: FormResponseMode.Encrypt,
+          title: 'mock encrypt form',
+          status: FormStatus.Public,
+          webhook: {
+            url: 'https://www.form.gov.sg',
+          },
+        })
+
+        if (form?.webhook?.url) {
+          form.webhook.url = 'https://wwwww.form.gov.sg' // Inject invalid webhook url
+        }
+
+        expect(form).toBeDefined()
+        // Act
+
+        const actual = await form.archive().catch((err) => err)
+
+        // Assert
+        expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+        expect(actual.message).toEqual(
+          expect.stringContaining('Error encountered during DNS resolution'),
+        )
       })
     })
 
@@ -1879,9 +2207,9 @@ describe('Form Model', () => {
         const form = await Form.create({
           admin: populatedAdmin._id,
           emails: [populatedAdmin.email],
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           title: 'mock email form',
-          status: Status.Private,
+          status: FormStatus.Private,
         })
         expect(form).toBeDefined()
         // Add additional user.
@@ -1892,7 +2220,7 @@ describe('Form Model', () => {
         })
         const diffPopulatedAdmin = merge(diffPreload.user, {
           agency: diffPreload.agency,
-        })
+        }) as IPopulatedUser
 
         // Act
         const actual = form.getDashboardView(diffPopulatedAdmin)
@@ -1912,10 +2240,10 @@ describe('Form Model', () => {
         // Arrange
         const form = await Form.create({
           admin: populatedAdmin._id,
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
           publicKey: 'some public key',
           title: 'mock email form',
-          status: Status.Private,
+          status: FormStatus.Private,
         })
         expect(form).toBeDefined()
         // Add additional user.
@@ -1926,7 +2254,7 @@ describe('Form Model', () => {
         })
         const diffPopulatedAdmin = merge(diffPreload.user, {
           agency: diffPreload.agency,
-        })
+        }) as IPopulatedUser
 
         // Act
         const actual = form.getDashboardView(diffPopulatedAdmin)
@@ -1972,7 +2300,7 @@ describe('Form Model', () => {
         // Arrange
         const emailForm = await Form.create({
           admin: populatedAdmin._id,
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           title: 'mock email form',
           emails: [populatedAdmin.email],
         })
@@ -1990,7 +2318,7 @@ describe('Form Model', () => {
         // Arrange
         const emailForm = await Form.create({
           admin: populatedAdmin._id,
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           title: 'mock email form',
           emails: [populatedAdmin.email],
         })
@@ -2018,7 +2346,7 @@ describe('Form Model', () => {
         // Arrange
         const encryptForm = await Form.create({
           admin: populatedAdmin._id,
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
           title: 'mock encrypt form',
           publicKey: 'mock public key',
         })
@@ -2036,7 +2364,7 @@ describe('Form Model', () => {
         // Arrange
         const encryptForm = await Form.create({
           admin: populatedAdmin._id,
-          responseMode: ResponseMode.Encrypt,
+          responseMode: FormResponseMode.Encrypt,
           title: 'mock encrypt form electric boogaloo',
           publicKey: 'some public key again',
         })
@@ -2067,7 +2395,7 @@ describe('Form Model', () => {
       beforeEach(async () => {
         form = await Form.create({
           admin: populatedAdmin._id,
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           title: 'mock email form',
           emails: [populatedAdmin.email],
           form_fields: [
@@ -2107,7 +2435,7 @@ describe('Form Model', () => {
         const invalidFieldId = new ObjectId().toHexString()
         const someNewField = {
           description: 'this does not matter',
-        } as FormFieldWithId
+        } as FormFieldDto
 
         // Act
         const actual = await form.updateFormFieldById(
@@ -2125,7 +2453,7 @@ describe('Form Model', () => {
           form.form_fields as Types.DocumentArray<IFieldSchema>
         ).toObject()
 
-        const newField: FormFieldWithId = {
+        const newField: FormFieldDto = {
           ...originalFormFields[1],
           // Updating field type from HomeNo to Mobile.
           fieldType: BasicField.Mobile,
@@ -2150,7 +2478,7 @@ describe('Form Model', () => {
           form.form_fields as Types.DocumentArray<IFieldSchema>
         ).toObject()
 
-        const newField: FormFieldWithId = {
+        const newField: FormFieldDto = {
           ...originalFormFields[2],
           title: 'another mock title',
           // Invalid value for email field.
@@ -2185,13 +2513,54 @@ describe('Form Model', () => {
         expect(actual?.form_fields.toObject()).toEqual([expectedField])
       })
 
+      it('should return updated document with inserted form field with positional argument', async () => {
+        // Arrange
+        const shouldBeSecondField = generateDefaultField(BasicField.Checkbox)
+        const shouldBeFirstField = generateDefaultField(BasicField.Statement)
+        const expectedSecondField = {
+          ...omit(shouldBeSecondField, 'getQuestion'),
+          _id: new ObjectId(shouldBeSecondField._id),
+        }
+        const expectedFirstField = {
+          ...omit(shouldBeFirstField, 'getQuestion'),
+          _id: new ObjectId(shouldBeFirstField._id),
+        }
+        const formWithField = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields: [shouldBeSecondField],
+        })
+        // @ts-ignore
+        expect(formWithField.form_fields.toObject()).toEqual([
+          expectedSecondField,
+        ])
+
+        // Act
+        // Inserting new field but at the beginning.
+        const actual = await formWithField.insertFormField(
+          shouldBeFirstField,
+          0,
+        )
+
+        // Assert
+        // @ts-ignore
+        expect(actual?.form_fields.toObject()).toEqual([
+          // Should be expected order even though first field was inserted later.
+          expectedFirstField,
+          expectedSecondField,
+        ])
+      })
+
       it('should return validation error if model validation fails whilst creating field', async () => {
         // Arrange
         const newField = {
           ...generateDefaultField(BasicField.Email),
           // Invalid value for email field.
+          // @ts-ignore
           isVerifiable: 'some string, but this should be boolean',
-        }
+        } as FormField
 
         // Act
         const actual = await validForm
@@ -2252,7 +2621,7 @@ describe('Form Model', () => {
       beforeEach(async () => {
         form = await Form.create({
           admin: populatedAdmin._id,
-          responseMode: ResponseMode.Email,
+          responseMode: FormResponseMode.Email,
           title: 'mock email form',
           emails: [populatedAdmin.email],
           form_fields: [
@@ -2366,6 +2735,40 @@ describe('Form Model', () => {
         await expect(actual).rejects.toBeInstanceOf(
           mongoose.Error.ValidationError,
         )
+      })
+    })
+
+    describe('updateMsgSrvcName', () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
+      it('should update msgSrvcName of form to new msgSrvcName', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          title: 'mock mobile form',
+        })
+
+        // Act
+        const updatedForm = await form.updateMsgSrvcName(MOCK_MSG_SRVC_NAME)
+        // Assert
+        expect(updatedForm!.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
+      })
+    })
+
+    describe('deleteMsgSrvcName', () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
+      it('should delete msgSrvcName of form', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          title: 'mock mobile form',
+          msgSrvcName: MOCK_MSG_SRVC_NAME,
+        })
+
+        // Act
+        const updatedForm = await form.deleteMsgSrvcName()
+
+        // Assert
+        expect(updatedForm!.msgSrvcName).toBeUndefined()
       })
     })
   })

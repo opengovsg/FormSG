@@ -1,42 +1,52 @@
+import { AWSError, SecretsManager } from 'aws-sdk'
 import { PresignedPost } from 'aws-sdk/clients/s3'
+import {
+  CreateSecretRequest,
+  DeleteSecretRequest,
+  PutSecretValueRequest,
+} from 'aws-sdk/clients/secretsmanager'
 import { assignIn, last, omit } from 'lodash'
-import mongoose from 'mongoose'
+import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
-} from '../../../../../shared/constants/file'
+} from '../../../../../shared/constants'
+import {
+  AdminDashboardFormMetaDto,
+  BasicField,
+  DuplicateFormBodyDto,
+  EndPageUpdateDto,
+  FieldCreateDto,
+  FieldUpdateDto,
+  FormField,
+  FormLogoState,
+  FormPermission,
+  FormSettings,
+  LogicDto,
+  MobileFieldBase,
+  SettingsUpdateDto,
+  StartPageUpdateDto,
+} from '../../../../../shared/types'
 import { EditFieldActions } from '../../../../shared/constants'
 import {
   FormFieldSchema,
   FormLogicSchema,
-  FormLogoState,
-  FormSettings,
   IForm,
   IFormDocument,
   IFormSchema,
   IPopulatedForm,
-  IUserSchema,
-  LogicDto,
-  Permission,
 } from '../../../../types'
-import {
-  AdminDashboardFormMetaDto,
-  DuplicateFormBodyDto,
-  EditFormFieldParams,
-  EndPageUpdateDto,
-  FieldCreateDto,
-  FieldUpdateDto,
-  FormUpdateParams,
-  SettingsUpdateDto,
-  StartPageUpdateDto,
-} from '../../../../types/api'
-import { aws as AwsConfig } from '../../../config/config'
+import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
+import config, { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
+import * as SmsService from '../../../services/sms/sms.service'
+import { twilioClientCache } from '../../../services/sms/sms.service'
 import { dotifyObject } from '../../../utils/dotify-object'
+import { isVerifiableMobileField } from '../../../utils/field-validation/field-validation.guards'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -47,17 +57,26 @@ import {
   DatabasePayloadSizeError,
   DatabaseValidationError,
   PossibleDatabaseError,
+  SecretsManagerError,
+  SecretsManagerNotFoundError,
+  TwilioCacheError,
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
+import { SmsLimitExceededError } from '../../verification/verification.errors'
+import { hasAdminExceededFreeSmsLimit } from '../../verification/verification.util'
 import {
   FormNotFoundError,
   LogicNotFoundError,
   TransferOwnershipError,
 } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
-import { getFormFieldById, getLogicById } from '../form.utils'
+import { getFormFieldById, getLogicById, isFormOnboarded } from '../form.utils'
 
+import {
+  TwilioCredentials,
+  TwilioCredentialsData,
+} from './../../../services/sms/sms.types'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   CreatePresignedUrlError,
@@ -66,12 +85,19 @@ import {
   InvalidFileTypeError,
 } from './admin-form.errors'
 import {
+  checkIsApiSecretKeyName,
+  generateTwilioCredSecretKeyName,
   getUpdatedFormFields,
   processDuplicateOverrideProps,
 } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
+
+export const secretsManager = new SecretsManager({
+  region: config.aws.region,
+  endpoint: process.env.AWS_ENDPOINT,
+})
 
 type PresignedPostUrlParams = {
   fileId: string
@@ -245,7 +271,13 @@ export const extractMyInfoFieldIds = (
  */
 export const archiveForm = (
   form: IPopulatedForm,
-): ResultAsync<true, DatabaseError> => {
+): ResultAsync<
+  true,
+  | DatabaseError
+  | DatabaseValidationError
+  | DatabaseConflictError
+  | DatabasePayloadSizeError
+> => {
   return ResultAsync.fromPromise(form.archive(), (error) => {
     logger.error({
       message: 'Database error encountered when archiving form',
@@ -256,7 +288,7 @@ export const archiveForm = (
       error,
     })
 
-    return new DatabaseError(getMongoErrorMessage(error))
+    return transformMongoError(error)
     // On success, return true
   }).map(() => true)
 }
@@ -283,7 +315,7 @@ export const transferFormOwnership = (
   return (
     // Step 1: Retrieve current owner of form to transfer.
     UserService.findUserById(String(currentForm.admin._id))
-      .andThen<IUserSchema, TransferOwnershipError>((currentOwner) => {
+      .andThen((currentOwner) => {
         // No need to transfer form ownership if new and current owners are
         // the same.
         if (newOwnerEmail === currentOwner.email) {
@@ -462,7 +494,7 @@ export const updateFormField = (
 
       return transformMongoError(error)
     },
-  ).andThen<FormFieldSchema, FieldNotFoundError>((updatedForm) => {
+  ).andThen((updatedForm) => {
     if (!updatedForm) {
       return errAsync(new FieldNotFoundError())
     }
@@ -544,7 +576,6 @@ export const createFormField = (
           action: 'createFormField',
           formId: form._id,
           newField,
-          to,
         },
         error,
       })
@@ -556,8 +587,10 @@ export const createFormField = (
       return errAsync(new FormNotFoundError())
     }
     let indexToRetrieve = updatedForm.form_fields.length - 1
-    if (to && to < indexToRetrieve) {
-      indexToRetrieve = to
+    // Must use undefined check since number can be 0; i.e. falsey.
+    if (to !== undefined) {
+      // Bound indexToRetrieve to 0 and length - 1.
+      indexToRetrieve = Math.min(Math.max(to, 0), indexToRetrieve)
     }
     const updatedField = updatedForm.form_fields[indexToRetrieve]
     return updatedField
@@ -714,8 +747,8 @@ export const updateForm = (
  */
 export const updateFormCollaborators = (
   form: IPopulatedForm,
-  updatedCollaborators: Permission[],
-): ResultAsync<Permission[], PossibleDatabaseError> => {
+  updatedCollaborators: FormPermission[],
+): ResultAsync<FormPermission[], PossibleDatabaseError> => {
   return ResultAsync.fromPromise(
     form.updateFormCollaborators(updatedCollaborators),
     (error) => {
@@ -1067,4 +1100,401 @@ export const updateStartPage = (
     }
     return okAsync(updatedForm.startPage)
   })
+}
+
+/**
+ * Disables sms verifications for all forms belonging to the specified user
+ * @param userId the id of the user whose sms verifications should be disabled
+ * @returns ok(true) when the forms have been successfully disabled
+ * @returns err(PossibleDatabaseError) when an error occurred while attempting to disable sms verifications
+ */
+export const disableSmsVerificationsForUser = (
+  userId: string,
+): ResultAsync<true, PossibleDatabaseError> =>
+  ResultAsync.fromPromise(
+    FormModel.disableSmsVerificationsForUser(userId),
+    (error) => {
+      logger.error({
+        message:
+          'Error occurred when attempting to disable sms verifications for user',
+        meta: {
+          action: 'disableSmsVerificationsForUser',
+          userId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).map(() => true)
+
+/**
+ * Checks if the given form field should be updated.
+ * This currently checks if the admin has exceeded their free sms limit.
+ * @param form The form which the specified field belongs to
+ * @param formField The field which we should perform the update for
+ * @returns ok(form) If the field can be updated
+ * @return err(PossibleDatabaseError) if an error occurred while performing the required checks
+ * @return err(SmsLimitExceededError) if the form admin went over the free sms limit
+ * while attempting to toggle verification on for a mobile form field
+ */
+export const shouldUpdateFormField = (
+  form: IPopulatedForm,
+  formField: FormField,
+): ResultAsync<
+  IPopulatedForm,
+  PossibleDatabaseError | SmsLimitExceededError
+> => {
+  switch (formField.fieldType) {
+    case BasicField.Mobile: {
+      return isMobileFieldUpdateAllowed(formField, form)
+    }
+    default:
+      return okAsync(form)
+  }
+}
+
+/**
+ * Checks whether the mobile update should be allowed based on whether the mobile field is verified
+ * and (if verified), the admin's free sms counts
+ * @param mobileField The mobile field to check
+ * @param form The form that the field belongs to
+ * @returns ok(form) if the update is valid
+ * @returns err(PossibleDatabaseError) if an error occurred while retrieving counts from database
+ * @returns err(SmsLimitExceededError) if the admin of the form has exceeded their free sms quota
+ */
+const isMobileFieldUpdateAllowed = (
+  mobileField: MobileFieldBase,
+  form: IPopulatedForm,
+): ResultAsync<
+  IPopulatedForm,
+  PossibleDatabaseError | SmsLimitExceededError
+> => {
+  // Field can always update if it's not a verifiable field or if the form has been onboarded
+  if (!isVerifiableMobileField(mobileField) || isFormOnboarded(form)) {
+    return okAsync(form)
+  }
+
+  const formAdminId = String(form.admin._id)
+
+  // If the form admin has exceeded the sms limit
+  // And the form is not onboarded, refuse to update the field
+  return SmsService.retrieveFreeSmsCounts(formAdminId).andThen(
+    (freeSmsSent) => {
+      return hasAdminExceededFreeSmsLimit(freeSmsSent)
+        ? errAsync(new SmsLimitExceededError())
+        : okAsync(form)
+    },
+  )
+}
+
+/**
+ * Creates msgSrvcName and updates the form in MongoDB as part of a transaction, uses the created
+ * msgSrvcName as the key to store the Twilio Credentials in AWS Secrets Manager
+ * @param twilioCredentials The twilio credentials to add
+ * @param form The form to add Twilio Credentials
+ * @returns ok(undefined) if the creation is successful
+ * @returns err(SecretsManagerError) if an error occurs while creating credentials in secrets manager
+ */
+export const createTwilioCredentials = (
+  twilioCredentials: TwilioCredentials,
+  form: IPopulatedForm,
+): ResultAsync<
+  unknown,
+  ReturnType<typeof transformMongoError> | SecretsManagerError
+> => {
+  const twilioCredentialsData: TwilioCredentialsData =
+    new TwilioCredentialsData(twilioCredentials)
+  const formId = form._id
+
+  const msgSrvcName = generateTwilioCredSecretKeyName(formId)
+
+  const body: CreateSecretRequest = {
+    Name: msgSrvcName,
+    SecretString: twilioCredentialsData.toString(),
+    Description: `autogenerated via API on ${new Date().toISOString()} by ${
+      form.admin._id
+    }`,
+  }
+
+  const logMeta = {
+    action: 'createTwilioCredentials',
+    formId: formId,
+    msgSrvcName,
+    body,
+  }
+
+  logger.info({
+    message: `No msgSrvcName, creating Twilio credentials for form ${formId}`,
+    meta: logMeta,
+  })
+
+  return ResultAsync.fromPromise(
+    FormModel.startSession().then((session: ClientSession) =>
+      session
+        .withTransaction(() =>
+          createTwilioTransaction(form, msgSrvcName, body, session),
+        )
+        .then(() => session.endSession()),
+    ),
+    (error) => {
+      logger.error({
+        message: 'Error encountered when creating Twilio Secret',
+        meta: logMeta,
+        error,
+      })
+
+      return error as
+        | ReturnType<typeof transformMongoError>
+        | SecretsManagerError
+    },
+  )
+}
+
+/**
+ * Updates msgSrvcName of the form in the database, uses the msgSrvcName as the
+ * key to store the Twilio Credentials in AWS Secrets Manager
+ * @param form The form to add Twilio Credentials
+ * @param msgSrvcName The key under which the credentials is stored in AWS Secrets Manager
+ * @param body the request body used to create the secret in secrets manager
+ * @param session session of the transaction
+ * @returns Promise.ok(void) if the creation is successful
+ */
+// Exported to use in tests
+export const createTwilioTransaction = async (
+  form: IPopulatedForm,
+  msgSrvcName: string,
+  body: CreateSecretRequest,
+  session: ClientSession,
+): Promise<void> => {
+  const meta = {
+    action: 'createTwilioTransaction',
+    formId: form._id,
+    msgSrvcName,
+    body,
+  }
+
+  try {
+    await form.updateMsgSrvcName(msgSrvcName, session)
+  } catch (err) {
+    logger.error({
+      message:
+        'Error occured when updating msgSrvcName, rolling back transaction!',
+      meta,
+      error: err,
+    })
+    throw transformMongoError(err)
+  }
+
+  try {
+    await secretsManager.createSecret(body).promise()
+  } catch (err) {
+    const awsError = err as AWSError
+
+    logger.error({
+      message:
+        'Error occured when creating secret AWS Secrets Manager, rolling back transaction!',
+      meta,
+      error: awsError,
+    })
+    throw new SecretsManagerError(awsError.message)
+  }
+}
+
+/**
+ * Uses the msgSrvcName to update the Twilio Credentials in AWS Secrets Manager
+ * Clears the cache entry in which the Twilio Credentials are stored under
+ * @param twilioCredentials The twilio credentials to add
+ * @param msgSrvcName The key under which the credentials are stored in Secrets Manager
+ * @returns ok(number) if the update is successful
+ * @returns err(SecretsManagerNotFoundError) if there is no secret stored under msgSrvcName in secrets manager
+ * @returns err(SecretsManagerError) if an error occurs while updating credentials in secrets manager
+ */
+export const updateTwilioCredentials = (
+  msgSrvcName: string,
+  twilioCredentials: TwilioCredentials,
+): ResultAsync<
+  number,
+  SecretsManagerError | SecretsManagerNotFoundError | TwilioCacheError
+> => {
+  const twilioCredentialsData: TwilioCredentialsData =
+    new TwilioCredentialsData(twilioCredentials)
+
+  const body: PutSecretValueRequest = {
+    SecretId: msgSrvcName,
+    SecretString: twilioCredentialsData.toString(),
+  }
+
+  const logMeta = {
+    action: 'updateTwilioCredentials',
+    msgSrvcName,
+    body,
+  }
+
+  return (
+    ResultAsync.fromPromise(
+      secretsManager.getSecretValue({ SecretId: msgSrvcName }).promise(),
+      (error) => {
+        const awsError = error as AWSError
+
+        if (awsError.code === 'ResourceNotFoundException') {
+          logger.error({
+            message: 'Twilio Credentials do not exist in Secrets Manager',
+            meta: logMeta,
+            error,
+          })
+
+          return new SecretsManagerNotFoundError(awsError.message)
+        }
+
+        logger.error({
+          message: 'Error occurred when retrieving Twilio in Secret Manager!',
+          meta: {
+            ...logMeta,
+            body,
+          },
+          error,
+        })
+
+        return new SecretsManagerError(awsError.message)
+      },
+    )
+      .andThen(() => {
+        logger.info({
+          message: 'Twilio Credentials has been found in Secrets Manager',
+          meta: logMeta,
+        })
+
+        return ResultAsync.fromPromise(
+          secretsManager.putSecretValue(body).promise(),
+          (error) => {
+            logger.error({
+              message: 'Error occurred when updating Twilio in Secret Manager!',
+              meta: {
+                ...logMeta,
+                body,
+              },
+              error,
+            })
+
+            return new SecretsManagerError(
+              'Error occurred when updating Twilio in Secret Manager!',
+            )
+          },
+        )
+      })
+      // Currently, a call to get twilio credentials will cache the credentials in the twilioCache for ~10s
+      // If a call to retrieve twilio credentials occurs before 10s passes, it will be a cache hit, retrieving
+      // the wrong credentials. Hence we need to clear the cache entry
+      .map(() => twilioClientCache.del(msgSrvcName))
+  )
+}
+
+/**
+ * Uses the msgSrvcName to schedule the Twilio Credentials for deletion in AWS Secrets Manager and removes
+ * msgSrvcName from the form in MongoDB as part of a transaction
+ *
+ * Clears the cache entry in which the Twilio Credentials are stored under
+ * @param form The form to delete Twilio Credentials
+ * @param msgSrvcName The key under which the credentials are stored in Secrets Manager
+ * @returns ok(number) if the deletion is successful
+ * @returns err(SecretsManagerNotFoundError) if there is no secret stored under msgSrvcName in secrets manager
+ * @returns err(SecretsManagerError) if an error occurs while deleting credentials in secrets manager
+ */
+export const deleteTwilioCredentials = (
+  form: IPopulatedForm,
+): ResultAsync<
+  unknown,
+  | ReturnType<typeof transformMongoError>
+  | SecretsManagerError
+  | TwilioCacheError
+> => {
+  if (!form.msgSrvcName) return okAsync(null)
+
+  const msgSrvcName = form.msgSrvcName
+  const body: DeleteSecretRequest = {
+    SecretId: msgSrvcName,
+  }
+  /**
+   *
+   * The key-value pair will remain in SecretsManager for another 30 days before
+   * being deleted: https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_delete-secret.html
+   *
+   */
+
+  const formId = form._id
+
+  const logMeta = {
+    action: 'deleteTwilioCredentials',
+    formId,
+    msgSrvcName,
+    body,
+  }
+
+  return ResultAsync.fromPromise(
+    FormModel.startSession().then((session: ClientSession) =>
+      session
+        .withTransaction(() => deleteTwilioTransaction(form, body, session))
+        .then(() => session.endSession()),
+    ),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when deleting Twilio in Secret Manager!',
+        meta: logMeta,
+        error,
+      })
+
+      return error as
+        | ReturnType<typeof transformMongoError>
+        | SecretsManagerError
+    },
+  ).map(() => twilioClientCache.del(msgSrvcName))
+}
+
+/**
+ * Deletes the msgSrvcName of the specified form in the database and uses the msgSrvcName as the
+ * key to delete the Twilio Credentials in AWS Secrets Manager
+ * @param form The form to delete Twilio Credentials
+ * @param msgSrvcName The key under which the credentials is stored in AWS Secrets Manager
+ * @param body the request body used to delete the secret in secrets manager
+ * @param session session of the transaction
+ * @returns Promise.ok(void) if the creation is successful
+ */
+const deleteTwilioTransaction = async (
+  form: IPopulatedForm,
+  body: DeleteSecretRequest,
+  session: ClientSession,
+): Promise<void> => {
+  const msgSrvcName = body.SecretId
+  const meta = {
+    action: 'deleteTwilioTransaction',
+    formId: form._id,
+    msgSrvcName,
+    body,
+  }
+
+  try {
+    await form.deleteMsgSrvcName(session)
+  } catch (err) {
+    logger.error({
+      message:
+        'Error occured when deleting msgSrvcName in MongoDB, rolling back transaction!',
+      meta,
+      error: err,
+    })
+    throw transformMongoError(err)
+  }
+
+  try {
+    if (checkIsApiSecretKeyName(msgSrvcName))
+      await secretsManager.deleteSecret(body).promise()
+  } catch (err) {
+    const awsError = err as AWSError
+    logger.error({
+      message:
+        'Error occured when deleting secret key in AWS Secrets Manager, rolling back transaction!',
+      meta,
+      error: awsError,
+    })
+    throw new SecretsManagerError(awsError.message)
+  }
 }

@@ -2,13 +2,16 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
-  AuthType,
+  FormAuthType,
+  FormResponseMode,
+  FormStatus,
+} from '../../../../shared/types'
+import {
   IEmailFormModel,
   IEncryptedFormModel,
+  IFormDocument,
   IFormSchema,
   IPopulatedForm,
-  ResponseMode,
-  Status,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel, {
@@ -196,11 +199,11 @@ export const isFormPublic = (
     return err(new ApplicationError())
   }
   switch (form.status) {
-    case Status.Public:
+    case FormStatus.Public:
       return ok(true)
-    case Status.Archived:
+    case FormStatus.Archived:
       return err(new FormDeletedError())
-    case Status.Private:
+    case FormStatus.Private:
       return err(new PrivateFormError(form.inactiveMessage, form.title))
   }
 }
@@ -264,12 +267,12 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
 }
 
 export const getFormModelByResponseMode = (
-  responseMode: ResponseMode,
+  responseMode: FormResponseMode,
 ): IEmailFormModel | IEncryptedFormModel => {
   switch (responseMode) {
-    case ResponseMode.Email:
+    case FormResponseMode.Email:
       return EmailFormModel
-    case ResponseMode.Encrypt:
+    case FormResponseMode.Encrypt:
       return EncryptedFormModel
   }
 }
@@ -290,7 +293,9 @@ export const checkIsIntranetFormAccess = (
   // and the form has authentication set
   if (
     isIntranetUser &&
-    [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(form.authType)
+    [FormAuthType.SP, FormAuthType.CP, FormAuthType.MyInfo].includes(
+      form.authType,
+    )
   ) {
     logger.warn({
       message:
@@ -302,4 +307,39 @@ export const checkIsIntranetFormAccess = (
     })
   }
   return isIntranetUser
+}
+
+export const retrievePublicFormsWithSmsVerification = (
+  userId: string,
+): ResultAsync<IFormDocument[], PossibleDatabaseError> => {
+  return ResultAsync.fromPromise(
+    FormModel.retrievePublicFormsWithSmsVerification(userId),
+    (error) => {
+      logger.error({
+        message: 'Error retrieving public forms with sms verifications',
+        meta: {
+          action: 'retrievePublicFormsWithSmsVerification',
+          userId: userId,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen((forms) => {
+    if (!forms.length) {
+      // NOTE: Warn here because this is supposed to be called to generate a list of form titles
+      // When the admin has used up their sms verification limit.
+      // It is not an error because there are potential cases where the admins privatize their form after.
+      logger.warn({
+        message:
+          'Attempted to retrieve public forms with sms verifications but none was found',
+        meta: {
+          action: 'retrievePublicFormsWithSmsVerification',
+          userId: userId,
+        },
+      })
+    }
+    return okAsync(forms)
+  })
 }

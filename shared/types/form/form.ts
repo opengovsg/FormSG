@@ -1,7 +1,6 @@
 import { PublicUserDto, UserDto } from '../user'
 import { FormField, FormFieldDto } from '../field'
 
-import { FormLogic } from './form_logic'
 import { FormLogo } from './form_logo'
 import { Merge, Opaque, PartialDeep } from 'type-fest'
 import {
@@ -12,6 +11,7 @@ import {
   STORAGE_PUBLIC_FORM_FIELDS,
 } from '../../constants/form'
 import { DateString } from '../generic'
+import { FormLogic, LogicDto } from './form_logic'
 
 export type FormId = Opaque<string, 'FormId'>
 
@@ -113,6 +113,7 @@ export interface StorageFormBase extends FormBase {
 type FormDtoBase = {
   _id: FormId
   form_fields: FormFieldDto[]
+  form_logics: LogicDto[]
   created: DateString
   lastModified: DateString
 }
@@ -185,6 +186,11 @@ export type PublicFormViewDto = {
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form'>
 
+export type SmsCountsDto = {
+  quota: number
+  freeSmsCounts: number
+}
+
 export type AdminFormViewDto = {
   form: AdminFormDto
 }
@@ -223,8 +229,3 @@ export type CreateFormBodyDto =
 export type EndPageUpdateDto = FormEndPage
 export type StartPageUpdateDto = FormStartPage
 export type PermissionsUpdateDto = FormPermission[]
-
-export interface SmsCountsDto {
-  quota: number
-  freeSmsCounts: number
-}

@@ -3,7 +3,7 @@ import { mocked } from 'ts-jest/utils'
 
 import MailService from 'src/app/services/mail/mail.service'
 import { HashingError } from 'src/app/utils/hash'
-import { IAgencySchema, IUserSchema } from 'src/types'
+import { AgencyDocument, IPopulatedUser } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -38,11 +38,11 @@ describe('auth.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
-        okAsync(<IAgencySchema>{}),
+        okAsync(<AgencyDocument>{}),
       )
 
       // Act
-      await AuthController.handleCheckUser(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleCheckUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.sendStatus).toBeCalledWith(200)
@@ -57,7 +57,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleCheckUser(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleCheckUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(401)
@@ -76,13 +76,13 @@ describe('auth.controller', () => {
       const mockRes = expressHandler.mockResponse()
       // Mock AuthService and MailService to return without errors
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
-        okAsync(<IAgencySchema>{}),
+        okAsync(<AgencyDocument>{}),
       )
       MockAuthService.createLoginOtp.mockReturnValueOnce(okAsync(MOCK_OTP))
       MockMailService.sendLoginOtp.mockReturnValueOnce(okAsync(true))
 
       // Act
-      await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
@@ -101,7 +101,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(401)
@@ -112,7 +112,7 @@ describe('auth.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
-        okAsync(<IAgencySchema>{}),
+        okAsync(<AgencyDocument>{}),
       )
       // Mock createLoginOtp failure
       MockAuthService.createLoginOtp.mockReturnValueOnce(
@@ -120,7 +120,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
@@ -137,7 +137,7 @@ describe('auth.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
-        okAsync(<IAgencySchema>{}),
+        okAsync(<AgencyDocument>{}),
       )
       // Mock createLoginOtp success but sendLoginOtp failure.
       MockAuthService.createLoginOtp.mockReturnValueOnce(okAsync(MOCK_OTP))
@@ -146,7 +146,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
@@ -165,14 +165,14 @@ describe('auth.controller', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       body: { email: VALID_EMAIL, otp: MOCK_OTP },
     })
-    const MOCK_AGENCY = { id: 'mock agency id' } as IAgencySchema
+    const MOCK_AGENCY = { id: 'mock agency id' } as AgencyDocument
 
     it('should return 200 with the user when verification succeeds', async () => {
       // Arrange
       // Mock bare minimum mongo documents.
       const mockUser = {
         toObject: () => ({ id: 'imagine this is a user document from the db' }),
-      } as IUserSchema
+      } as IPopulatedUser
       const mockRes = expressHandler.mockResponse()
 
       // Mock all service success.
@@ -183,7 +183,7 @@ describe('auth.controller', () => {
       MockUserService.retrieveUser.mockReturnValueOnce(okAsync(mockUser))
 
       // Act
-      await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
@@ -199,7 +199,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(401)
@@ -219,7 +219,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
@@ -241,7 +241,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
@@ -265,7 +265,7 @@ describe('auth.controller', () => {
       )
 
       // Act
-      await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)

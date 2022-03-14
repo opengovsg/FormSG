@@ -688,6 +688,10 @@ i.glyphicon-question-sign {
   margin-right: 0;
 }
 
+.no-bottom-margin {
+  margin-bottom: 0;
+}
+
 .no-margin {
   margin: 0;
 }

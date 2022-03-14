@@ -1,5 +1,5 @@
 'use strict'
-const { groupLogicUnitsByField } = require('shared/util/logic')
+const { groupLogicUnitsByField } = require('../../../../../shared/util/logic')
 const {
   reorder,
 } = require('../../../../../../shared/utils/immutable-array-fns')

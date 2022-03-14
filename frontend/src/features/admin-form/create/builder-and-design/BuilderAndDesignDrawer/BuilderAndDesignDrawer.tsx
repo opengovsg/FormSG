@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Flex } from '@chakra-ui/react'
 import { AnimatePresence } from 'framer-motion'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import { MotionBox } from '~components/motion'
 
 import {
@@ -36,7 +37,8 @@ const DRAWER_MOTION_PROPS = {
   },
 }
 
-export const BuilderAndDesignDrawer = (): JSX.Element => {
+export const BuilderAndDesignDrawer = (): JSX.Element | null => {
+  const isMobile = useIsMobile()
   const { activeTab, isDrawerOpen } = useCreatePageSidebar()
   const createOrEditData = useBuilderAndDesignStore(stateDataSelector)
 
@@ -57,6 +59,9 @@ export const BuilderAndDesignDrawer = (): JSX.Element => {
         return null
     }
   }, [createOrEditData, activeTab])
+
+  // Do not display in mobile
+  if (isMobile) return null
 
   return (
     <AnimatePresence>

@@ -9,50 +9,35 @@ import {
   ProcessedTableResponse,
 } from 'src/app/modules/submission/submission.types'
 import {
-  AttachmentSize,
-  BasicField,
   FormFieldSchema,
-  IAttachmentField,
   IAttachmentFieldSchema,
   IAttachmentResponse,
-  ICheckboxField,
   ICheckboxFieldSchema,
-  ICheckboxResponse,
-  IColumn,
-  IDateField,
   IDecimalFieldSchema,
-  IDropdownField,
   IDropdownFieldSchema,
-  IField,
   IHomenoFieldSchema,
   IImageFieldSchema,
-  ILongTextField,
-  IMobileField,
   IMobileFieldSchema,
-  INumberField,
-  IRatingField,
   IRatingFieldSchema,
-  IShortTextField,
   IShortTextFieldSchema,
-  ISingleAnswerResponse,
-  ITableField,
   ITableFieldSchema,
+  SingleAnswerFieldResponse,
 } from 'src/types'
+
+import {
+  AttachmentSize,
+  BasicField,
+  CheckboxResponse,
+  Column,
+  DropdownFieldBase,
+  FormField,
+  ShortTextFieldBase,
+  TableRow,
+} from '../../../../shared/types'
 
 export const generateDefaultField = (
   fieldType: BasicField,
-  customParams?: Partial<
-    | IField
-    | IAttachmentField
-    | ICheckboxField
-    | IMobileField
-    | ITableField
-    | IDateField
-    | INumberField
-    | IRatingField
-    | IShortTextField
-    | ILongTextField
-  > & { _id?: string },
+  customParams?: Partial<FormField> & { _id?: string },
 ): FormFieldSchema => {
   const defaultParams = {
     title: `test ${fieldType} field title`,
@@ -189,18 +174,15 @@ export const generateProcessedSingleAnswerResponse = (
     _id: field._id,
     question: field.title,
     answer,
-    fieldType: field.fieldType as Exclude<
-      BasicField,
-      BasicField.Table | BasicField.Checkbox | BasicField.Attachment
-    >,
+    fieldType: field.fieldType,
     isVisible: true,
-  }
+  } as ProcessedSingleAnswerResponse
 }
 
 export const generateSingleAnswerResponse = (
   field: FormFieldSchema,
   answer = field.fieldType === BasicField.Section ? '' : 'answer',
-): ISingleAnswerResponse => {
+): SingleAnswerFieldResponse => {
   if (
     [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
       field.fieldType,
@@ -213,11 +195,8 @@ export const generateSingleAnswerResponse = (
   return {
     _id: field._id,
     answer,
-    fieldType: field.fieldType as Exclude<
-      BasicField,
-      BasicField.Table | BasicField.Checkbox | BasicField.Attachment
-    >,
-  }
+    fieldType: field.fieldType,
+  } as SingleAnswerFieldResponse
 }
 
 export const generateNewSingleAnswerResponse = (
@@ -237,25 +216,22 @@ export const generateNewSingleAnswerResponse = (
     _id: new ObjectId().toHexString(),
     question: `${fieldType} question`,
     answer: `${fieldType} answer`,
-    fieldType: fieldType as Exclude<
-      BasicField,
-      BasicField.Table | BasicField.Checkbox | BasicField.Attachment
-    >,
+    fieldType: fieldType,
     isVisible: true,
     ...customParams,
-  }
+  } as ProcessedSingleAnswerResponse
 }
 
 export const generateUnprocessedSingleAnswerResponse = (
   fieldType: BasicField,
-  customParams?: Partial<ISingleAnswerResponse>,
-): ISingleAnswerResponse => {
+  customParams?: Partial<SingleAnswerFieldResponse>,
+): SingleAnswerFieldResponse => {
   return pick(generateNewSingleAnswerResponse(fieldType, customParams), [
     '_id',
     'question',
     'fieldType',
     'answer',
-  ])
+  ]) as SingleAnswerFieldResponse
 }
 
 export const generateAttachmentResponse = (
@@ -263,6 +239,7 @@ export const generateAttachmentResponse = (
   filename = 'filename',
   content = Buffer.from('content'),
 ): IAttachmentResponse => ({
+  question: 'question',
   _id: field._id,
   answer: 'answer',
   fieldType: BasicField.Attachment,
@@ -286,7 +263,8 @@ export const generateNewAttachmentResponse = (
 export const generateCheckboxResponse = (
   field: ICheckboxFieldSchema,
   answerArray?: string[],
-): ICheckboxResponse => ({
+): CheckboxResponse => ({
+  question: 'question',
   _id: field._id,
   answerArray: answerArray ?? [field.fieldOptions[0]],
   fieldType: BasicField.Checkbox,
@@ -305,7 +283,7 @@ export const generateNewCheckboxResponse = (
 
 export const generateTableResponse = (
   field: ITableFieldSchema,
-  answerArray?: string[][],
+  answerArray?: TableRow[],
 ): ProcessedTableResponse => {
   if (!answerArray) {
     const rowAnswer: string[] = []
@@ -315,7 +293,7 @@ export const generateTableResponse = (
           rowAnswer.push('answer')
           break
         case BasicField.Dropdown:
-          rowAnswer.push((col as unknown as IDropdownField).fieldOptions[0])
+          rowAnswer.push(col.fieldOptions[0])
       }
     })
     answerArray = Array(field.minimumRows).fill(rowAnswer)
@@ -337,15 +315,15 @@ export const generateNewTableResponse = (
   answerArray: [
     ['Table 1', 'Table 2'],
     ['Table 3', 'Table 4'],
-  ],
+  ] as TableRow[],
   fieldType: BasicField.Table,
   isVisible: true,
   ...customParams,
 })
 
 export const generateTableDropdownColumn = (
-  customParams?: Partial<IDropdownField>,
-): IColumn => {
+  customParams?: Partial<DropdownFieldBase>,
+): Column => {
   return {
     title: 'some title',
     columnType: BasicField.Dropdown,
@@ -364,12 +342,12 @@ export const generateTableDropdownColumn = (
         ...customParams,
       }
     },
-  } as IColumn
+  } as Column
 }
 
 export const generateTableShortTextColumn = (
-  customParams?: Partial<IShortTextField>,
-): IColumn => {
+  customParams?: Partial<ShortTextFieldBase>,
+): Column => {
   return {
     title: 'some title',
     columnType: BasicField.ShortText,
@@ -394,5 +372,5 @@ export const generateTableShortTextColumn = (
         ...customParams,
       }
     },
-  } as IColumn
+  } as Column
 }

@@ -1,11 +1,11 @@
 import axios from 'axios'
 
-import { SuccessMessageDto } from '../../../shared/types/core'
 import {
   FormFeedbackDto,
   FormFeedbackMetaDto,
   SubmitFormFeedbackBodyDto,
-} from '../../../shared/types/form/form_feedback'
+  SuccessMessageDto,
+} from '../../../shared/types'
 import { FeedbackCsvGenerator } from '../modules/forms/helpers/FeedbackCsvGenerator'
 
 // Exported for testing

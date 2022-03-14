@@ -14,12 +14,7 @@ export interface WorkspaceFormRowsProps {
 
 const WorkspaceFormRowsSkeleton = () => {
   return (
-    <Stack
-      maxW={CONTAINER_MAXW}
-      m="auto"
-      spacing={0}
-      divider={<Divider borderColor="neutral.300" />}
-    >
+    <Stack maxW={CONTAINER_MAXW} m="auto" spacing={0} divider={<Divider />}>
       <WorkspaceFormRowSkeleton />
       <WorkspaceFormRowSkeleton />
       <WorkspaceFormRowSkeleton />
@@ -36,12 +31,7 @@ export const WorkspaceFormRows = ({
     return <WorkspaceFormRowsSkeleton />
   }
   return (
-    <Stack
-      maxW={CONTAINER_MAXW}
-      m="auto"
-      spacing={0}
-      divider={<Divider borderColor="neutral.300" />}
-    >
+    <Stack maxW={CONTAINER_MAXW} m="auto" spacing={0} divider={<Divider />}>
       {rows.map((meta) => (
         <WorkspaceFormRow px="2rem" key={meta._id} formMeta={meta} />
       ))}

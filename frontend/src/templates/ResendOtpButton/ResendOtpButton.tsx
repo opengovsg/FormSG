@@ -1,6 +1,6 @@
-import Button from '~components/Button'
+import Button, { ButtonProps } from '~components/Button'
 
-export interface ResendOtpButtonProps {
+export interface ResendOtpButtonProps extends ButtonProps {
   timer: number
   isDisabled: boolean
   isLoading: boolean
@@ -13,6 +13,7 @@ export const ResendOtpButton = ({
   isLoading,
   onButtonClick,
   timer,
+  ...buttonProps
 }: ResendOtpButtonProps): JSX.Element => {
   return (
     <Button
@@ -22,6 +23,7 @@ export const ResendOtpButton = ({
       type="button"
       variant="reverse"
       colorScheme="primary"
+      {...buttonProps}
     >
       Resend OTP
       {timer > 0 && ` in ${timer}s`}

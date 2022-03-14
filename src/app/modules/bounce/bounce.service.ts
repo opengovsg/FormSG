@@ -132,9 +132,8 @@ const isValidSnsSignature = (
   ).andThen(({ data: cert }) => {
     const verifier = crypto.createVerify('RSA-SHA1')
     verifier.update(getSnsBasestring(body), 'utf8')
-    return verifier.verify(cert, body.Signature, 'base64')
-      ? okAsync(true)
-      : errAsync(new InvalidNotificationError())
+    const isValid = verifier.verify(cert, body.Signature, 'base64')
+    return isValid ? okAsync(isValid) : errAsync(new InvalidNotificationError())
   })
 }
 
@@ -457,7 +456,7 @@ export const notifyAdminsOfDeactivation = (
           errors,
         },
       })
-      return okAsync(true)
+      return okAsync(true as const)
     })
 }
 

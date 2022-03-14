@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo } from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
-import { BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
+import { BiDuplicate, BiEdit, BiGridHorizontal, BiTrash } from 'react-icons/bi'
 import { useIsMutating } from 'react-query'
 import {
   Box,
@@ -15,6 +15,7 @@ import {
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import CheckboxField from '~templates/Field/Checkbox'
 
@@ -42,6 +43,7 @@ export const FieldRowContainer = ({
   index,
   isDraggingOver,
 }: FieldRowContainerProps): JSX.Element => {
+  const isMobile = useIsMobile()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
   const stateData = useBuilderAndDesignStore(stateDataSelector)
   const updateEditState = useBuilderAndDesignStore(updateEditStateSelector)
@@ -86,6 +88,7 @@ export const FieldRowContainer = ({
         <Box
           _first={{ pt: 0 }}
           _last={{ pb: 0 }}
+          m="0.75rem"
           py="1.25rem"
           {...provided.draggableProps}
           ref={provided.innerRef}
@@ -144,7 +147,7 @@ export const FieldRowContainer = ({
               </chakra.button>
             </Fade>
             <Box
-              p="1.5rem"
+              p={{ base: '0.75rem', md: '1.5rem' }}
               pt={0}
               w="100%"
               pointerEvents={isActive ? undefined : 'none'}
@@ -155,11 +158,19 @@ export const FieldRowContainer = ({
             </Box>
             <Collapse in={isActive} style={{ width: '100%' }}>
               <Flex
-                px="1.5rem"
+                px={{ base: '0.75rem', md: '1.5rem' }}
                 flex={1}
                 borderTop="1px solid var(--chakra-colors-neutral-300)"
-                justify="end"
+                justify={{ base: 'space-between', md: 'end' }}
               >
+                {isMobile ? (
+                  <IconButton
+                    variant="clear"
+                    colorScheme="secondary"
+                    aria-label="Edit field"
+                    icon={<BiEdit fontSize="1.25rem" />}
+                  />
+                ) : null}
                 <ButtonGroup
                   variant="clear"
                   colorScheme="secondary"

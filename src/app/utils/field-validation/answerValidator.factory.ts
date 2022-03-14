@@ -1,6 +1,7 @@
 import { left } from 'fp-ts/lib/Either'
 
-import { BasicField, FieldValidationSchema } from '../../../types'
+import { BasicField } from '../../../../shared/types'
+import { FieldValidationSchema } from '../../../types'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import {
   ProcessedAttachmentResponse,

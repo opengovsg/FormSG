@@ -8,7 +8,7 @@ import getUserModel from 'src/app/models/user.server.model'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import * as SmsService from 'src/app/services/sms/sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
-import { IAgencySchema, IUserSchema } from 'src/types'
+import { AgencyDocument, IUserSchema } from 'src/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -35,7 +35,7 @@ describe('user.routes', () => {
   const VALID_CONTACT = '+15005550006'
 
   let request: Session
-  let defaultAgency: IAgencySchema
+  let defaultAgency: AgencyDocument
   let defaultUser: IUserSchema
 
   beforeAll(async () => await dbHandler.connect())
@@ -349,7 +349,7 @@ describe('user.routes', () => {
       expect(response.body).toEqual('User is unauthorized.')
     })
 
-    it('should return 401 when hashes does not exist for current contact', async () => {
+    it('should return 404 when hashes does not exist for current contact', async () => {
       // Arrange
       const session = await createAuthedSession(defaultUser.email, request)
 
@@ -361,13 +361,13 @@ describe('user.routes', () => {
       })
 
       // Assert
-      expect(response.status).toEqual(401)
+      expect(response.status).toEqual(404)
       expect(response.body).toEqual(
         'OTP has expired. Please request for a new OTP.',
       )
     })
 
-    it('should return 401 when given otp does not match hashed otp', async () => {
+    it('should return 404 when given otp does not match hashed otp', async () => {
       // Arrange
       const session = await createAuthedSession(defaultUser.email, request)
       await requestForContactOtp(defaultUser, VALID_CONTACT, session)
@@ -380,11 +380,11 @@ describe('user.routes', () => {
       })
 
       // Assert
-      expect(response.status).toEqual(401)
+      expect(response.status).toEqual(404)
       expect(response.body).toEqual('OTP is invalid. Please try again.')
     })
 
-    it('should return 401 when given contact does not match hashed contact', async () => {
+    it('should return 404 when given contact does not match hashed contact', async () => {
       // Arrange
       const session = await createAuthedSession(defaultUser.email, request)
       await requestForContactOtp(defaultUser, VALID_CONTACT, session)
@@ -398,13 +398,13 @@ describe('user.routes', () => {
       })
 
       // Assert
-      expect(response.status).toEqual(401)
+      expect(response.status).toEqual(404)
       expect(response.body).toEqual(
         'Contact number given does not match the number the OTP is sent to. Please try again with the correct contact number.',
       )
     })
 
-    it('should return 401 when otp has been attempted too many times', async () => {
+    it('should return 404 when otp has been attempted too many times', async () => {
       // Arrange
       const session = await createAuthedSession(defaultUser.email, request)
       await requestForContactOtp(defaultUser, VALID_CONTACT, session)
@@ -428,7 +428,7 @@ describe('user.routes', () => {
       // Should be all invalid OTP responses.
       expect(results).toEqual(
         Array(UserService.MAX_OTP_ATTEMPTS).fill({
-          status: 401,
+          status: 404,
           body: 'OTP is invalid. Please try again.',
         }),
       )
@@ -442,7 +442,7 @@ describe('user.routes', () => {
 
       // Assert
       // Should still reject with max OTP attempts error.
-      expect(response.status).toEqual(401)
+      expect(response.status).toEqual(404)
       expect(response.body).toEqual(
         'You have hit the max number of attempts. Please request for a new OTP.',
       )

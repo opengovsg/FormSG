@@ -4,12 +4,12 @@ import {
 } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
 import { BuilderAndDesignTab } from '../../builder-and-design/BuilderAndDesignTab'
-import { LogicTab } from '../../logic/LogicTab'
+import { CreatePageLogicTab } from '../../logic/CreatePageLogicTab'
 
 export const CreatePageContent = (): JSX.Element => {
   const { activeTab } = useCreatePageSidebar()
   if (activeTab === DrawerTabs.Logic) {
-    return <LogicTab />
+    return <CreatePageLogicTab />
   }
 
   return <BuilderAndDesignTab />

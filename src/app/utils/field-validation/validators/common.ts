@@ -12,14 +12,15 @@ import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submi
 /**
  * A function which returns a validator to check if single answer has a non-empty response
  */
-export const notEmptySingleAnswerResponse: ResponseValidator<ProcessedSingleAnswerResponse> =
-  (response) => {
-    if (response.answer.trim().length === 0)
-      return left(
-        'CommonValidator.notEmptySingleAnswerResponse:\tanswer is an empty string',
-      )
-    return right(response)
-  }
+export const notEmptySingleAnswerResponse: ResponseValidator<
+  ProcessedSingleAnswerResponse
+> = (response) => {
+  if (response.answer.trim().length === 0)
+    return left(
+      'CommonValidator.notEmptySingleAnswerResponse:\tanswer is an empty string',
+    )
+  return right(response)
+}
 
 /**
  * A function which returns a signature validator constructor for mobile and email verified field.

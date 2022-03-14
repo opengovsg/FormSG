@@ -145,7 +145,9 @@ const compileSmsCountModel = (db: Mongoose) => {
       'formAdmin.userId': userId,
       smsType: SmsType.Verification,
       isOnboardedAccount: false,
-    }).exec()
+    })
+      .read('secondary')
+      .exec()
   }
 
   const SmsCountModel = db.model<ISmsCountSchema, ISmsCountModel>(

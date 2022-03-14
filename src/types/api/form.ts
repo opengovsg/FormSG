@@ -2,25 +2,6 @@ import { IForm } from '../form'
 
 import { EditFormFieldParams } from './field'
 
-export {
-  FieldCreateDto,
-  FieldUpdateDto,
-  FormFieldDto,
-} from '../../../shared/types/field'
-export {
-  AdminDashboardFormMetaDto,
-  AdminFormViewDto,
-  CreateFormBodyDto,
-  DuplicateFormBodyDto,
-  EndPageUpdateDto,
-  FormDto,
-  PermissionsUpdateDto,
-  PublicFormViewDto,
-  SettingsUpdateDto,
-  StartPageUpdateDto,
-  PreviewFormViewDto,
-} from '../../../shared/types/form/form'
-
 /**
  * @deprecated not used anymore, this is for the old
  * PUT /:formId/adminform endpoint.
@@ -37,9 +18,4 @@ export type FormUpdateParams = {
   status?: IForm['status']
   title?: IForm['title']
   webhook?: IForm['webhook']
-}
-
-export interface SmsCountsDto {
-  quota: number
-  freeSmsCounts: number
 }

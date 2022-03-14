@@ -40,6 +40,7 @@ describe('sms.factory', () => {
     twilioApiKey: 'SKrandomTwilioAPIKEY',
     twilioApiSecret: 'this is a super secret',
     twilioMsgSrvcSid: 'formsg-is-great-pleasehelpme',
+    smsVerificationLimit: 10000,
   }
   const expectedTwilioConfig: TwilioConfig = {
     msgSrvcSid: MOCK_SMS_FEATURE.twilioMsgSrvcSid,

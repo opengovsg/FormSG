@@ -1,11 +1,14 @@
 'use strict'
 
+const get = require('lodash/get')
+
 angular
   .module('forms')
   .controller('DeleteFormModalController', [
     '$uibModalInstance',
     'externalScope',
     'FormApi',
+    'Toastr',
     '$q',
     DeleteFormModalController,
   ])
@@ -14,6 +17,7 @@ function DeleteFormModalController(
   $uibModalInstance,
   externalScope,
   FormApi,
+  Toastr,
   $q,
 ) {
   const vm = this
@@ -40,7 +44,8 @@ function DeleteFormModalController(
         vm.cancel()
       },
       function (error) {
-        console.error(error)
+        const errorMessage = get(error, 'response.data.message')
+        Toastr.error(errorMessage)
       },
     )
   }

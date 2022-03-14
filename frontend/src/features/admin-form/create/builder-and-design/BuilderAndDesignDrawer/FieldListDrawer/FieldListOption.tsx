@@ -4,7 +4,7 @@ import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types/field'
 
-import { FIELDS_TO_CREATE_META } from '../../constants'
+import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 interface FieldOptionProps extends BoxProps {
   isActive?: boolean
@@ -58,7 +58,10 @@ export const DraggableFieldListOption = ({
 
 export const FieldListOption = forwardRef<FieldOptionProps, 'button'>(
   ({ fieldType, isDisabled, isActive, ...props }, ref) => {
-    const meta = useMemo(() => FIELDS_TO_CREATE_META[fieldType], [fieldType])
+    const meta = useMemo(
+      () => BASICFIELD_TO_DRAWER_META[fieldType],
+      [fieldType],
+    )
 
     return (
       <Box

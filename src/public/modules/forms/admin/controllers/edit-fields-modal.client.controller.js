@@ -20,7 +20,7 @@ const {
 } = require('../../../../../../shared/types/field')
 const CancelToken = axios.CancelToken
 
-const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '7']
+const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '4', '7']
 
 angular
   .module('forms')
@@ -170,6 +170,10 @@ function EditFieldsModalController(
       myDict[field.fieldOptions[i]] = true
     }
     return Object.keys(myDict).length !== field.fieldOptions.length
+  }
+
+  vm.showFieldDataTooLongError = function (field) {
+    return JSON.stringify(field).length > 10 * MB
   }
 
   vm.showEmptyOptionsError = function (field) {
@@ -322,8 +326,8 @@ function EditFieldsModalController(
   // Modify tooltip to match email or encrypt mode options
   vm.attachmentTooltipText =
     vm.myform.responseMode === responseModeEnum.EMAIL
-      ? 'Guideline: Images & PDFs - 1-3 MB, Slides & Videos - 7 MB. Include up to 7 MB of attachments in a submission (Email mode).'
-      : 'Guideline: Images & PDFs - 1-3 MB, Slides - 7 MB, Videos - 10-20 MB. Include up to 20 MB of attachments in a submission (Storage mode).'
+      ? 'Guideline: Images & PDFs - 1-4 MB, Slides & Videos - 7 MB. Include up to 7 MB of attachments in a submission (Email mode).'
+      : 'Guideline: Images & PDFs - 1-4 MB, Slides - 7 MB, Videos - 10-20 MB. Include up to 20 MB of attachments in a submission (Storage mode).'
 
   let previousAttachmentSize = 0
 
@@ -384,6 +388,9 @@ function EditFieldsModalController(
   }
 
   vm.disableSave = function () {
+    if (vm.showFieldDataTooLongError(vm.field)) {
+      return true
+    }
     if (
       vm.field.fieldType === 'attachment' ||
       vm.field.fieldType === 'dropdown' ||

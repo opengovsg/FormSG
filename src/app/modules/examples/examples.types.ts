@@ -1,10 +1,10 @@
+import { FormStartPage } from '../../../../shared/types'
 import {
   IAgencyDocument,
   IForm,
   IFormFeedbackSchema,
   IFormStatisticsTotalModel,
-  StartPage,
-} from 'src/types'
+} from '../../../types'
 
 export type QueryDataMap = {
   generalQueryModel: IFormStatisticsTotalModel
@@ -21,7 +21,7 @@ export type QueryExecResult = {
   form_fields: IForm['form_fields']
   logo: IAgencyDocument['logo']
   agency: IAgencyDocument['shortName']
-  colorTheme: StartPage['colorTheme']
+  colorTheme: FormStartPage['colorTheme']
   avgFeedback: number | null
 }
 

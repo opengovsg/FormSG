@@ -20,10 +20,7 @@ import {
   IFormDocument,
   IPopulatedEmailForm,
   IUserSchema,
-  ResponseMode,
-  Status,
   SubmissionCursorData,
-  SubmissionType,
 } from 'src/types'
 
 import {
@@ -35,6 +32,11 @@ import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
+import {
+  FormResponseMode,
+  FormStatus,
+  SubmissionType,
+} from '../../../../../../../../shared/types'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
 // Prevent rate limiting.
@@ -79,7 +81,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const newForm = await EmailFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -98,7 +100,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const newForm = await EncryptFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         admin: defaultUser._id,
       })
@@ -118,7 +120,7 @@ describe('admin-form.submissions.routes', () => {
       const expectedSubmissionCount = 5
       const newForm = (await EmailFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })) as IPopulatedEmailForm
@@ -148,7 +150,7 @@ describe('admin-form.submissions.routes', () => {
       const expectedSubmissionCount = 3
       const newForm = await EncryptFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         admin: defaultUser._id,
       })
@@ -182,7 +184,7 @@ describe('admin-form.submissions.routes', () => {
       const expectedSubmissionCount = 3
       const newForm = (await EmailFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })) as IPopulatedEmailForm
@@ -219,7 +221,7 @@ describe('admin-form.submissions.routes', () => {
       const expectedSubmissionCount = 3
       const newForm = (await EmailFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })) as IPopulatedEmailForm
@@ -255,7 +257,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const newForm = await EncryptFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         admin: defaultUser._id,
       })
@@ -284,7 +286,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const newForm = await EncryptFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         admin: defaultUser._id,
       })
@@ -313,7 +315,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const newForm = await EncryptFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         admin: defaultUser._id,
       })
@@ -342,7 +344,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const newForm = await EncryptFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         admin: defaultUser._id,
       })
@@ -372,7 +374,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const newForm = await EncryptFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         admin: defaultUser._id,
       })
@@ -461,8 +463,8 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const archivedForm = await EncryptFormModel.create({
         title: 'archived form',
-        status: Status.Archived,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Archived,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'does not matter',
         admin: defaultUser._id,
       })
@@ -496,8 +498,8 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const form = await EmailFormModel.create({
         title: 'normal form',
-        status: Status.Private,
-        responseMode: ResponseMode.Email,
+        status: FormStatus.Private,
+        responseMode: FormResponseMode.Email,
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -525,7 +527,7 @@ describe('admin-form.submissions.routes', () => {
     beforeEach(async () => {
       defaultForm = (await EncryptFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'any public key',
         admin: defaultUser._id,
       })) as IFormDocument
@@ -802,7 +804,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const emailForm = await EmailFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -882,8 +884,8 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const archivedForm = await EncryptFormModel.create({
         title: 'archived form',
-        status: Status.Archived,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Archived,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'does not matter',
         admin: defaultUser._id,
       })
@@ -920,7 +922,7 @@ describe('admin-form.submissions.routes', () => {
     beforeEach(async () => {
       defaultForm = (await EncryptFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'any public key',
         admin: defaultUser._id,
       })) as IFormDocument
@@ -1001,7 +1003,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const emailForm = await EmailFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: [defaultUser.email],
         admin: defaultUser._id,
       })
@@ -1105,8 +1107,8 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const archivedForm = await EncryptFormModel.create({
         title: 'archived form',
-        status: Status.Archived,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Archived,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'does not matter',
         admin: defaultUser._id,
       })
@@ -1205,7 +1207,7 @@ describe('admin-form.submissions.routes', () => {
     beforeEach(async () => {
       defaultForm = (await EncryptFormModel.create({
         title: 'new form',
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'any public key',
         admin: defaultUser._id,
       })) as IFormDocument
@@ -1391,8 +1393,8 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const archivedForm = await EncryptFormModel.create({
         title: 'archived form',
-        status: Status.Archived,
-        responseMode: ResponseMode.Encrypt,
+        status: FormStatus.Archived,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'does not matter',
         admin: defaultUser._id,
       })

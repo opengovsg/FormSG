@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
 import { StatusCodes } from 'http-status-codes'
@@ -34,19 +35,19 @@ import {
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import * as SubmissionUtils from 'src/app/modules/submission/submission.utils'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
+import { SmsLimitExceededError } from 'src/app/modules/verification/verification.errors'
 import {
   MailGenerationError,
   MailSendError,
 } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
+import { TwilioCredentials } from 'src/app/services/sms/sms.types'
 import { EditFieldActions } from 'src/shared/constants'
 import {
-  AuthType,
-  BasicField,
-  FormSettings,
+  FormFieldSchema,
+  FormLogicSchema,
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
-  IFieldSchema,
   IFormDocument,
   IFormSchema,
   ILogicSchema,
@@ -55,21 +56,9 @@ import {
   IPopulatedForm,
   IPopulatedUser,
   IUserSchema,
-  LogicDto,
   PublicForm,
-  ResponseMode,
-  Status,
 } from 'src/types'
-import {
-  AdminDashboardFormMetaDto,
-  CreateFormBodyDto,
-  DuplicateFormBodyDto,
-  EditFormFieldParams,
-  EncryptSubmissionDto,
-  FieldCreateDto,
-  FieldUpdateDto,
-} from 'src/types/api'
-import { FormFeedbackMetaDto } from 'src/types/api/form_feedback'
+import { EditFormFieldParams, EncryptSubmissionDto } from 'src/types/api'
 
 import {
   generateDefaultField,
@@ -78,6 +67,20 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import {
+  AdminDashboardFormMetaDto,
+  BasicField,
+  CreateFormBodyDto,
+  DuplicateFormBodyDto,
+  FieldCreateDto,
+  FieldUpdateDto,
+  FormAuthType,
+  FormFeedbackMetaDto,
+  FormResponseMode,
+  FormSettings,
+  FormStatus,
+  LogicDto,
+} from '../../../../../../shared/types'
 import { smsConfig } from '../../../../config/features/sms.config'
 import * as SmsService from '../../../../services/sms/sms.service'
 import ParsedResponsesObject from '../../../submission/email-submission/ParsedResponsesObject.class'
@@ -220,9 +223,9 @@ describe('admin-form.controller', () => {
       admin: MOCK_USER_ID,
       _id: new ObjectId(),
       title: 'mock title',
-    } as IFormSchema
+    } as IFormDocument
     const MOCK_FORM_PARAMS: CreateFormBodyDto = {
-      responseMode: ResponseMode.Encrypt,
+      responseMode: FormResponseMode.Encrypt,
       publicKey: 'some public key',
       title: 'some form title',
     }
@@ -3022,7 +3025,7 @@ describe('admin-form.controller', () => {
     it('should return duplicated form view on duplicate success', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
       }
@@ -3095,7 +3098,7 @@ describe('admin-form.controller', () => {
     it('should return 404 when form to duplicate cannot be found', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
       }
@@ -3229,7 +3232,7 @@ describe('admin-form.controller', () => {
     it('should return 500 when database error occurs whilst duplicating form', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
       }
@@ -3455,7 +3458,7 @@ describe('admin-form.controller', () => {
     it('should return copied template form view on duplicate success', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: ['some-email@example.com'],
         title: 'mock new template title',
       }
@@ -3530,7 +3533,7 @@ describe('admin-form.controller', () => {
     it('should return 404 when form to duplicate cannot be found', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
       }
@@ -3678,7 +3681,7 @@ describe('admin-form.controller', () => {
     it('should return 500 when database error occurs whilst duplicating form', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
       }
@@ -4084,8 +4087,8 @@ describe('admin-form.controller', () => {
   })
 
   describe('handleUpdateForm', () => {
-    const editFormFieldSpy = jest.spyOn(AdminFormService, 'editFormFields')
-    const updateFormSpy = jest.spyOn(AdminFormService, 'updateForm')
+    const editFormFieldSpy = jest.spyOn(MockAdminFormService, 'editFormFields')
+    const updateFormSpy = jest.spyOn(MockAdminFormService, 'updateForm')
 
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
@@ -4486,7 +4489,7 @@ describe('admin-form.controller', () => {
         formId: MOCK_FORM_ID,
       },
       body: {
-        status: Status.Private,
+        status: FormStatus.Private,
       },
       session: {
         user: {
@@ -4497,17 +4500,18 @@ describe('admin-form.controller', () => {
 
     it('should return 200 with updated settings successfully', async () => {
       // Arrange
-      const mockUpdatedSettings: FormSettings = {
-        authType: AuthType.NIL,
+      const mockUpdatedSettings = {
+        authType: FormAuthType.NIL,
         hasCaptcha: false,
         inactiveMessage: 'some inactive message',
-        status: Status.Private,
+        status: FormStatus.Private,
         submissionLimit: 42069,
         title: 'new title',
         webhook: {
+          isRetryEnabled: true,
           url: '',
         },
-      }
+      } as FormSettings
       const mockRes = expressHandler.mockResponse()
       // Mock various services to return expected results.
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
@@ -4521,7 +4525,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4560,7 +4564,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4594,7 +4598,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4632,7 +4636,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4669,7 +4673,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4707,7 +4711,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4748,7 +4752,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4782,7 +4786,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4816,7 +4820,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateSettings(
+      await AdminFormController._handleUpdateSettings(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4842,17 +4846,18 @@ describe('admin-form.controller', () => {
   })
 
   describe('handleGetSettings', () => {
-    const MOCK_FORM_SETTINGS: FormSettings = {
-      authType: AuthType.NIL,
+    const MOCK_FORM_SETTINGS = {
+      authType: FormAuthType.NIL,
       hasCaptcha: false,
       inactiveMessage: 'some inactive message',
-      status: Status.Private,
+      status: FormStatus.Private,
       submissionLimit: 42069,
       title: 'mock title',
       webhook: {
+        isRetryEnabled: true,
         url: '',
       },
-    }
+    } as FormSettings
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -5140,10 +5145,13 @@ describe('admin-form.controller', () => {
       MockEmailSubmissionService.validateAttachments.mockReturnValue(
         okAsync(true),
       )
+      // @ts-ignore
       MockParsedResponsesObject.mockClear()
       MockParsedResponsesObject.parseResponses.mockReturnValue(
+        // @ts-ignore
         ok(new ParsedResponsesObject(MOCK_PARSED_RESPONSES)),
       )
+      // @ts-ignore
       MockParsedResponsesObject.mock.instances[0].getAllResponses.mockReturnValue(
         MOCK_PARSED_RESPONSES,
       )
@@ -5548,7 +5556,12 @@ describe('admin-form.controller', () => {
 
     it('should return 400 when form is not email mode', async () => {
       MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
-        err(new ResponseModeError(ResponseMode.Encrypt, ResponseMode.Email)),
+        err(
+          new ResponseModeError(
+            FormResponseMode.Encrypt,
+            FormResponseMode.Email,
+          ),
+        ),
       )
       const mockReq = expressHandler.mockRequest({
         params: {
@@ -6078,8 +6091,8 @@ describe('admin-form.controller', () => {
   describe('submitEncryptPreview', () => {
     const MOCK_RESPONSES = [
       {
-        question: 'testQuestion',
         ...generateUnprocessedSingleAnswerResponse(BasicField.Email),
+        question: 'testQuestion',
       },
     ]
     const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
@@ -6487,7 +6500,12 @@ describe('admin-form.controller', () => {
 
     it('should return 400 when form is not encrypt mode', async () => {
       MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValueOnce(
-        err(new ResponseModeError(ResponseMode.Email, ResponseMode.Encrypt)),
+        err(
+          new ResponseModeError(
+            FormResponseMode.Email,
+            FormResponseMode.Encrypt,
+          ),
+        ),
       )
       const mockReq = expressHandler.mockRequest({
         params: {
@@ -6754,10 +6772,10 @@ describe('admin-form.controller', () => {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
     } as IPopulatedUser
-    const MOCK_FIELD = generateDefaultField(BasicField.Rating)
+    const MOCK_FIELD = generateDefaultField(BasicField.Mobile)
     const MOCK_UPDATED_FIELD = {
       ...MOCK_FIELD,
-      title: 'some new title',
+      isVerifiable: true,
     } as FieldUpdateDto
 
     const MOCK_FORM = {
@@ -6785,9 +6803,11 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
         okAsync(MOCK_FORM),
       )
-
+      MockAdminFormService.shouldUpdateFormField.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
       MockAdminFormService.updateFormField.mockReturnValue(
-        okAsync(MOCK_UPDATED_FIELD as IFieldSchema),
+        okAsync(MOCK_UPDATED_FIELD as FormFieldSchema),
       )
     })
     it('should return 200 with updated form field', async () => {
@@ -6882,6 +6902,29 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(MockAdminFormService.updateFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 409 when the field could not be updated due to a sms limit exceeded error', async () => {
+      // Arrange
+      MockAdminFormService.shouldUpdateFormField.mockReturnValueOnce(
+        errAsync(new SmsLimitExceededError()),
+      )
+      const expected = {
+        message:
+          'You have exceeded the free sms limit. Please refresh and try again.',
+      }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleUpdateFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(409)
+      expect(mockRes.json).toBeCalledWith(expected)
     })
 
     it('should return 410 when form to update form field for is already archived', async () => {
@@ -7033,10 +7076,12 @@ describe('admin-form.controller', () => {
       title: 'mock title',
     } as IPopulatedForm
 
-    const MOCK_RETURNED_FIELD = generateDefaultField(BasicField.Nric)
+    const MOCK_RETURNED_FIELD = generateDefaultField(BasicField.Mobile, {
+      isVerifiable: true,
+    })
     const MOCK_CREATE_FIELD_BODY = pick(MOCK_RETURNED_FIELD, [
       'fieldType',
-      'title',
+      'isVerifiable',
     ]) as FieldCreateDto
     const MOCK_REQ = expressHandler.mockRequest({
       session: {
@@ -7052,6 +7097,9 @@ describe('admin-form.controller', () => {
     beforeEach(() => {
       MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
       MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.shouldUpdateFormField.mockReturnValue(
         okAsync(MOCK_FORM),
       )
       MockAdminFormService.createFormField.mockReturnValue(
@@ -7076,6 +7124,44 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.createFormField).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
+        undefined,
+      )
+    })
+
+    it('should return 200 with created form field when passing in positional argument', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const expectedPosition = 100
+      const mockReqWithPosQuery = expressHandler.mockRequest({
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+        params: {
+          formId: String(MOCK_FORM_ID),
+        },
+        body: MOCK_CREATE_FIELD_BODY,
+        query: {
+          to: expectedPosition,
+        },
+      })
+
+      // Act
+      await AdminFormController._handleCreateFormField(
+        mockReqWithPosQuery,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(MOCK_RETURNED_FIELD)
+      expect(MockAdminFormService.createFormField).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_CREATE_FIELD_BODY,
+        // Should pass in position query
+        expectedPosition,
       )
     })
 
@@ -7125,6 +7211,29 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.createFormField).not.toHaveBeenCalled()
     })
 
+    it('should return 409 when the field could not be created due to a sms limit exceeded error', async () => {
+      // Arrange
+      MockAdminFormService.shouldUpdateFormField.mockReturnValueOnce(
+        errAsync(new SmsLimitExceededError()),
+      )
+      const expected = {
+        message:
+          'You have exceeded the free sms limit. Please refresh and try again.',
+      }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleCreateFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(409)
+      expect(mockRes.json).toBeCalledWith(expected)
+    })
+
     it('should return 410 when attempting to create a form field for an archived form', async () => {
       // Arrange
       const expectedErrorString = 'form gone pls'
@@ -7171,6 +7280,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.createFormField).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
+        undefined,
       )
     })
 
@@ -7197,6 +7307,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.createFormField).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
+        undefined,
       )
     })
 
@@ -7302,6 +7413,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.createFormField).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
+        undefined,
       )
     })
   })
@@ -7314,11 +7426,14 @@ describe('admin-form.controller', () => {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
     } as IPopulatedUser
-    const MOCK_FIELDS = [generateDefaultField(BasicField.Rating)]
+    const MOCK_FIELDS = [
+      generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
+    ]
     const MOCK_FIELD_ID = String(MOCK_FIELDS[0]._id)
 
-    const MOCK_DUPLICATED_FIELD = generateDefaultField(BasicField.Rating)
-
+    const MOCK_DUPLICATED_FIELD = generateDefaultField(BasicField.Mobile, {
+      isVerifiable: true,
+    })
     const MOCK_FORM = {
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
@@ -7342,6 +7457,10 @@ describe('admin-form.controller', () => {
       // Mock various services to return expected results.
       MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
       MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.getFormField.mockReturnValue(ok(MOCK_FIELDS[0]))
+      MockAdminFormService.shouldUpdateFormField.mockReturnValue(
         okAsync(MOCK_FORM),
       )
       MockAdminFormService.duplicateFormField.mockReturnValue(
@@ -7481,6 +7600,28 @@ describe('admin-form.controller', () => {
       )
     })
 
+    it('should return 409 when the field could not be duplicated due to a sms limit exceeded error', async () => {
+      // Arrange
+      MockAdminFormService.shouldUpdateFormField.mockReturnValueOnce(
+        errAsync(new SmsLimitExceededError()),
+      )
+      const expected = {
+        message:
+          'You have exceeded the free sms limit. Please refresh and try again.',
+      }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleDuplicateFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(409)
+      expect(mockRes.json).toBeCalledWith(expected)
+    })
     it('should return 410 when form to duplicate form field for is already archived', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
@@ -7491,7 +7632,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleDeleteFormField(
+      await AdminFormController.handleDuplicateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -8117,18 +8258,18 @@ describe('admin-form.controller', () => {
     } as IPopulatedUser
 
     const logicId = new ObjectId().toHexString()
+
+    const mockLogic = {
+      _id: logicId,
+    } as FormLogicSchema
+
     const mockFormLogic = {
-      form_logics: [
-        {
-          _id: logicId,
-          id: logicId,
-        } as ILogicSchema,
-      ],
+      form_logics: [mockLogic],
     }
 
     const mockCreateLogicBody = {
       _id: logicId,
-    } as ILogicSchema
+    } as LogicDto
 
     const MOCK_FORM = {
       admin: MOCK_USER,
@@ -8140,7 +8281,6 @@ describe('admin-form.controller', () => {
     const mockReq = expressHandler.mockRequest({
       params: {
         formId: MOCK_FORM_ID,
-        logicId,
       },
       session: {
         user: {
@@ -8156,9 +8296,7 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
         okAsync(MOCK_FORM),
       )
-      MockAdminFormService.createFormLogic.mockReturnValue(
-        okAsync(mockCreateLogicBody),
-      )
+      MockAdminFormService.createFormLogic.mockReturnValue(okAsync(mockLogic))
     })
 
     it('should call all services correctly when request is valid', async () => {
@@ -9102,18 +9240,16 @@ describe('admin-form.controller', () => {
       email: 'somerandom@example.com',
     } as IPopulatedUser
     const logicId = new ObjectId().toHexString()
-    const mockFormLogic = {
-      form_logics: [
-        {
-          _id: logicId,
-          id: logicId,
-        } as ILogicSchema,
-      ],
-    }
+
+    const mockUpdateLogicBody = { _id: logicId } as LogicDto
 
     const mockUpdatedLogic = {
       _id: logicId,
-    } as LogicDto
+    } as FormLogicSchema
+
+    const mockFormLogic = {
+      form_logics: [mockUpdatedLogic],
+    }
 
     const MOCK_FORM = {
       admin: MOCK_USER,
@@ -9132,7 +9268,7 @@ describe('admin-form.controller', () => {
           _id: MOCK_USER_ID,
         },
       },
-      body: mockUpdatedLogic,
+      body: mockUpdateLogicBody,
     })
     const mockRes = expressHandler.mockResponse()
 
@@ -9489,19 +9625,19 @@ describe('admin-form.controller', () => {
     const MOCK_WRITER = {
       _id: MOCK_WRITER_ID,
       email: 'mockwriter@example.com',
-    }
+    } as IPopulatedUser
 
     const MOCK_READER_ID = new ObjectId().toHexString()
     const MOCK_READER = {
       _id: MOCK_READER_ID,
       email: 'mockreader@example.com',
-    }
+    } as IPopulatedUser
 
     const MOCK_RANDOM_USER_ID = new ObjectId().toHexString()
     const MOCK_RANDOM_USER = {
       _id: MOCK_RANDOM_USER_ID,
       email: 'mockrandomuser@example.com',
-    }
+    } as IPopulatedUser
 
     const MOCK_COLLABORATORS = [
       {
@@ -10209,6 +10345,514 @@ describe('admin-form.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.json).toBeCalledWith(expected)
+    })
+  })
+
+  describe('updateTwilioCredentials', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_FORM_WITH_MSG_SRVC_NAME = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      msgSrvcName: '123',
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_ACCOUNT_SID = 'AC12345678'
+    const MOCK_API_KEY_SID = 'SK12345678'
+    const MOCK_API_KEY_SECRET = 'AZ12345678'
+    const MOCK_MESSAGING_SERVICE_SID = 'MG12345678'
+
+    const MOCK_TWILIO_CREDENTIALS: TwilioCredentials = {
+      accountSid: MOCK_ACCOUNT_SID,
+      apiKey: MOCK_API_KEY_SID,
+      apiSecret: MOCK_API_KEY_SECRET,
+      messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
+    }
+
+    const createTwilioSpy = jest.spyOn(
+      MockAdminFormService,
+      'createTwilioCredentials',
+    )
+    const updateTwilioSpy = jest.spyOn(
+      MockAdminFormService,
+      'updateTwilioCredentials',
+    )
+
+    it('should return 200 after the twilio credentials are successfully created', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_TWILIO_CREDENTIALS,
+      })
+
+      // Returns empty response because mongo transaction returns Promise<any>
+      createTwilioSpy.mockReturnValueOnce(okAsync(null))
+
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.updateTwilioCredentials(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Successfully updated Twilio credentials',
+      })
+      expect(createTwilioSpy).toHaveBeenCalledTimes(1)
+      expect(updateTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 200 after the twilio credentials are successfully updated', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM_WITH_MSG_SRVC_NAME),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_TWILIO_CREDENTIALS,
+      })
+
+      updateTwilioSpy.mockReturnValueOnce(okAsync(1))
+
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.updateTwilioCredentials(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Successfully updated Twilio credentials',
+      })
+      expect(updateTwilioSpy).toHaveBeenCalledTimes(1)
+      expect(createTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 403 when current user does not have permissions to update form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'no write permissions'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(expectedErrorString)),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_TWILIO_CREDENTIALS,
+      })
+
+      // Act
+      await AdminFormController.updateTwilioCredentials(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(updateTwilioSpy).not.toHaveBeenCalled()
+      expect(createTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when form to update cannot be found', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'Form not found'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(expectedErrorString)),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_TWILIO_CREDENTIALS,
+      })
+
+      // Act
+      await AdminFormController.updateTwilioCredentials(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(updateTwilioSpy).not.toHaveBeenCalled()
+      expect(createTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 on MissingUserError', async () => {
+      // Arrange
+      const errorMessage = 'User not found'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(errorMessage)),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_TWILIO_CREDENTIALS,
+      })
+
+      const expectedResponse = { message: errorMessage }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.updateTwilioCredentials(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(422)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(updateTwilioSpy).not.toHaveBeenCalled()
+      expect(createTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when generic database error occurs during form field retrieval', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedErrorString = 'A Database error occured!'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+        body: MOCK_TWILIO_CREDENTIALS,
+      })
+
+      // Act
+      await AdminFormController.updateTwilioCredentials(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(updateTwilioSpy).not.toHaveBeenCalled()
+      expect(createTwilioSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleDeleteTwilio', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_FORM_WITH_CREDENTIALS = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      msgSrvcName: '123',
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const deleteTwilioSpy = jest.spyOn(
+      MockAdminFormService,
+      'deleteTwilioCredentials',
+    )
+
+    it('should return 200 if twilio credentials are successfully deleted', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM_WITH_CREDENTIALS),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_WITH_CREDENTIALS._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+
+      // Returns empty response because mongo transaction returns Promise<any>
+      deleteTwilioSpy.mockReturnValueOnce(okAsync(1))
+
+      const mockRes = expressHandler.mockResponse()
+      const expected = {
+        message: 'Successfully deleted Twilio credentials',
+      }
+
+      // Act
+      await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.json).toBeCalledWith(expected)
+      expect(deleteTwilioSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return 200 if no twilio credentials need to be deleted', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+
+      // Returns empty response because mongo transaction returns Promise<any>
+      deleteTwilioSpy.mockReturnValueOnce(okAsync(null))
+
+      const mockRes = expressHandler.mockResponse()
+      const expected = {
+        message: 'Successfully deleted Twilio credentials',
+      }
+
+      // Act
+      await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.json).toBeCalledWith(expected)
+      expect(deleteTwilioSpy).toHaveBeenCalled()
+    })
+
+    it('should return 403 when current user does not have permissions to update form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'no write permissions'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(expectedErrorString)),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_WITH_CREDENTIALS._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+
+      // Act
+      await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(deleteTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when form to update cannot be found', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'Form not found'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(expectedErrorString)),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_WITH_CREDENTIALS._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+
+      // Act
+      await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(deleteTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 on MissingUserError', async () => {
+      // Arrange
+      const errorMessage = 'User not found'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(errorMessage)),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_WITH_CREDENTIALS._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(422)
+      expect(mockRes.json).toBeCalledWith({ message: 'User not found' })
+      expect(deleteTwilioSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when generic database error occurs during form field retrieval', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedErrorString = 'A Database error occured!'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+
+      const MOCK_REQ = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_WITH_CREDENTIALS._id,
+        },
+        session: {
+          user: {
+            _id: 'exists',
+          },
+        },
+      })
+
+      // Act
+      await AdminFormController.handleDeleteTwilio(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(deleteTwilioSpy).not.toHaveBeenCalled()
     })
   })
 })

@@ -9,45 +9,42 @@ import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../../shared/constants/file'
-import { DeserializeTransform } from '../../../../../shared/types/utils'
-import {
-  AuthType,
-  BasicField,
-  Colors,
-  FormFieldWithId,
-  FormLogoState,
-  FormSettings,
-  IForm,
-  IFormDocument,
-  IPopulatedForm,
-  LogicConditionState,
-  LogicDto,
-  LogicIfValue,
-  LogicType,
-  PublicFormDto,
-  ResponseMode,
-} from '../../../../types'
 import {
   AdminDashboardFormMetaDto,
+  BasicField,
   CreateFormBodyDto,
+  DeserializeTransform,
   DuplicateFormBodyDto,
-  EncryptSubmissionDto,
   EndPageUpdateDto,
   ErrorDto,
   FieldCreateDto,
   FieldUpdateDto,
+  FormAuthType,
+  FormColorTheme,
   FormDto,
   FormFeedbackMetaDto,
   FormFieldDto,
-  FormUpdateParams,
-  ParsedEmailModeSubmissionBody,
+  FormLogoState,
+  FormResponseMode,
+  FormSettings,
+  LogicConditionState,
+  LogicDto,
+  LogicIfValue,
+  LogicType,
   PermissionsUpdateDto,
   PreviewFormViewDto,
   PrivateFormErrorDto,
+  PublicFormDto,
   SettingsUpdateDto,
   SmsCountsDto,
   StartPageUpdateDto,
   SubmissionCountQueryDto,
+} from '../../../../../shared/types'
+import { IForm, IFormDocument, IPopulatedForm } from '../../../../types'
+import {
+  EncryptSubmissionDto,
+  FormUpdateParams,
+  ParsedEmailModeSubmissionBody,
 } from '../../../../types/api'
 import { smsConfig } from '../../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -84,12 +81,14 @@ import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
+import { TwilioCredentials } from './../../../services/sms/sms.types'
 import {
   PREVIEW_CORPPASS_UID,
   PREVIEW_CORPPASS_UINFIN,
   PREVIEW_SINGPASS_UINFIN,
 } from './admin-form.constants'
 import { EditFieldError } from './admin-form.errors'
+import { updateSettingsValidator } from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
@@ -106,14 +105,14 @@ const createFormValidator = celebrate({
       .keys({
         // Require valid responsesMode field.
         responseMode: Joi.string()
-          .valid(...Object.values(ResponseMode))
+          .valid(...Object.values(FormResponseMode))
           .required(),
         // Require title field.
         title: Joi.string().min(4).max(200).required(),
         // Require emails string (for backwards compatibility) or string
         // array if form to be created in Email mode.
         emails: Joi.when('responseMode', {
-          is: ResponseMode.Email,
+          is: FormResponseMode.Email,
           then: Joi.alternatives()
             .try(Joi.array().items(Joi.string()).min(1), Joi.string())
             .required(),
@@ -129,7 +128,7 @@ const createFormValidator = celebrate({
         publicKey: Joi.string()
           .allow('')
           .when('responseMode', {
-            is: ResponseMode.Encrypt,
+            is: FormResponseMode.Encrypt,
             then: Joi.string().required().disallow(''),
           }),
       })
@@ -143,14 +142,14 @@ const duplicateFormValidator = celebrate({
   [Segments.BODY]: BaseJoi.object<DuplicateFormBodyDto>({
     // Require valid responsesMode field.
     responseMode: Joi.string()
-      .valid(...Object.values(ResponseMode))
+      .valid(...Object.values(FormResponseMode))
       .required(),
     // Require title field.
     title: Joi.string().min(4).max(200).required(),
     // Require emails string (for backwards compatibility) or string array
     // if form to be duplicated in Email mode.
     emails: Joi.when('responseMode', {
-      is: ResponseMode.Email,
+      is: FormResponseMode.Email,
       then: Joi.alternatives()
         .try(Joi.array().items(Joi.string()).min(1), Joi.string())
         .required(),
@@ -163,7 +162,7 @@ const duplicateFormValidator = celebrate({
     publicKey: Joi.string()
       .allow('')
       .when('responseMode', {
-        is: ResponseMode.Encrypt,
+        is: FormResponseMode.Encrypt,
         then: Joi.string().required().disallow(''),
       }),
   }),
@@ -1198,6 +1197,7 @@ export const handleUpdateForm: ControllerHandler<
  * @returns 400 when form field has invalid updates to be performed
  * @returns 403 when current user does not have permissions to update form
  * @returns 404 when form or field to duplicate cannot be found
+ * @returns 409 when saving updated form field causes sms limit to be exceeded
  * @returns 409 when saving updated form incurs a conflict in the database
  * @returns 410 when form to update is archived
  * @returns 413 when updated form is too large to be saved in the database
@@ -1221,6 +1221,12 @@ export const handleDuplicateFormField: ControllerHandler<
         level: PermissionLevel.Write,
       }),
     )
+    .andThen((form) => {
+      return AdminFormService.getFormField(form, fieldId).asyncAndThen(
+        (formFieldToDuplicate) =>
+          AdminFormService.shouldUpdateFormField(form, formFieldToDuplicate),
+      )
+    })
     .andThen((form) => AdminFormService.duplicateFormField(form, fieldId))
     .map((duplicatedField) =>
       res.status(StatusCodes.OK).json(duplicatedField as FormFieldDto),
@@ -1242,22 +1248,7 @@ export const handleDuplicateFormField: ControllerHandler<
     })
 }
 
-/**
- * Handler for PATCH /forms/:formId/settings.
- * @security session
- *
- * @returns 200 with updated form settings
- * @returns 400 when body is malformed; can happen when email parameter is passed for encrypt-mode forms
- * @returns 403 when current user does not have permissions to update form settings
- * @returns 404 when form to update settings for cannot be found
- * @returns 409 when saving form settings incurs a conflict in the database
- * @returns 410 when updating settings for archived form
- * @returns 413 when updating settings causes form to be too large to be saved in the database
- * @returns 422 when an invalid settings update is attempted on the form
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when database error occurs
- */
-export const handleUpdateSettings: ControllerHandler<
+export const _handleUpdateSettings: ControllerHandler<
   { formId: string },
   FormSettings | ErrorDto,
   SettingsUpdateDto
@@ -1298,6 +1289,26 @@ export const handleUpdateSettings: ControllerHandler<
 }
 
 /**
+ * Handler for PATCH /forms/:formId/settings.
+ * @security session
+ *
+ * @returns 200 with updated form settings
+ * @returns 400 when body is malformed; can happen when email parameter is passed for encrypt-mode forms
+ * @returns 403 when current user does not have permissions to update form settings
+ * @returns 404 when form to update settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 410 when updating settings for archived form
+ * @returns 413 when updating settings causes form to be too large to be saved in the database
+ * @returns 422 when an invalid settings update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateSettings = [
+  updateSettingsValidator,
+  _handleUpdateSettings,
+] as ControllerHandler[]
+
+/**
  * NOTE: Exported for testing.
  * Private handler for PUT /forms/:formId/fields/:fieldId
  * @precondition Must be preceded by request validation
@@ -1311,6 +1322,7 @@ export const _handleUpdateFormField: ControllerHandler<
   FieldUpdateDto
 > = (req, res) => {
   const { formId, fieldId } = req.params
+  const updatedFormField = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
@@ -1324,9 +1336,13 @@ export const _handleUpdateFormField: ControllerHandler<
           level: PermissionLevel.Write,
         }),
       )
-      // Step 3: User has permissions, update form field of retrieved form.
+      // Step 3: Check if the user has exceeded the allowable limit for sms if the fieldType is mobile
       .andThen((form) =>
-        AdminFormService.updateFormField(form, fieldId, req.body),
+        AdminFormService.shouldUpdateFormField(form, updatedFormField),
+      )
+      // Step 4: User has permissions, update form field of retrieved form.
+      .andThen((form) =>
+        AdminFormService.updateFormField(form, fieldId, updatedFormField),
       )
       .map((updatedFormField) =>
         res.status(StatusCodes.OK).json(updatedFormField as FormFieldDto),
@@ -1340,7 +1356,7 @@ export const _handleUpdateFormField: ControllerHandler<
             userId: sessionUserId,
             formId,
             fieldId,
-            updateFieldBody: req.body,
+            updateFieldBody: updatedFormField,
           },
           error,
         })
@@ -1558,12 +1574,12 @@ export const submitEmailPreview: ControllerHandler<
 
   // Handle SingPass, CorpPass and MyInfo authentication and validation
   const { authType } = form
-  if (authType === AuthType.SP || authType === AuthType.MyInfo) {
+  if (authType === FormAuthType.SP || authType === FormAuthType.MyInfo) {
     parsedResponses.addNdiResponses({
       authType,
       uinFin: PREVIEW_SINGPASS_UINFIN,
     })
-  } else if (authType === AuthType.CP) {
+  } else if (authType === FormAuthType.CP) {
     parsedResponses.addNdiResponses({
       authType,
       uinFin: PREVIEW_CORPPASS_UINFIN,
@@ -1647,6 +1663,7 @@ export const handleEmailPreviewSubmission = [
  * @returns 403 when current user does not have permissions to update form field
  * @returns 404 when form cannot be found
  * @returns 404 when form field cannot be found
+ * @returns 409 when form field update conflicts with database state
  * @returns 410 when updating form field of an archived form
  * @returns 413 when updating form field causes form to be too large to be saved in the database
  * @returns 422 when an invalid form field update is attempted on the form
@@ -1687,6 +1704,7 @@ export const handleUpdateFormField = [
  * @returns 200 with created form field
  * @returns 403 when current user does not have permissions to create a form field
  * @returns 404 when form cannot be found
+ * @returns 409 when form field update conflicts with database state
  * @returns 410 when creating form field for an archived form
  * @returns 413 when creating form field causes form to be too large to be saved in the database
  * @returns 422 when an invalid form field creation is attempted on the form
@@ -1695,12 +1713,13 @@ export const handleUpdateFormField = [
  */
 export const _handleCreateFormField: ControllerHandler<
   { formId: string },
-  FormFieldWithId | ErrorDto,
+  FormFieldDto | ErrorDto,
   FieldCreateDto,
   { to?: number }
 > = (req, res) => {
   const { formId } = req.params
   const { to } = req.query
+  const formFieldToCreate = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
@@ -1714,10 +1733,16 @@ export const _handleCreateFormField: ControllerHandler<
           level: PermissionLevel.Write,
         }),
       )
-      // Step 3: User has permissions, proceed to create form field with provided body.
-      .andThen((form) => AdminFormService.createFormField(form, req.body, to))
+      // Step 3: Check if the user has exceeded the allowable limit for sms if the fieldType is mobile
+      .andThen((form) =>
+        AdminFormService.shouldUpdateFormField(form, formFieldToCreate),
+      )
+      // Step 4: User has permissions, proceed to create form field with provided body.
+      .andThen((form) =>
+        AdminFormService.createFormField(form, formFieldToCreate, to),
+      )
       .map((createdFormField) =>
-        res.status(StatusCodes.OK).json(createdFormField as FormFieldWithId),
+        res.status(StatusCodes.OK).json(createdFormField as FormFieldDto),
       )
       .mapErr((error) => {
         logger.error({
@@ -1727,7 +1752,7 @@ export const _handleCreateFormField: ControllerHandler<
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,
-            createFieldBody: req.body,
+            createFieldBody: formFieldToCreate,
           },
           error,
         })
@@ -2446,7 +2471,7 @@ export const handleUpdateStartPage = [
       paragraph: Joi.string().allow('').optional(),
       estTimeTaken: Joi.number().min(1).max(1000).required(),
       colorTheme: Joi.string()
-        .valid(...Object.values(Colors))
+        .valid(...Object.values(FormColorTheme))
         .required(),
       logo: Joi.object({
         state: Joi.string().valid(...Object.values(FormLogoState)),
@@ -2521,3 +2546,133 @@ export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
       })
   )
 }
+
+// Validates Twilio Credentials
+const validateTwilioCredentials = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    accountSid: Joi.string().required().pattern(new RegExp('^AC')),
+    apiKey: Joi.string().required().pattern(new RegExp('^SK')),
+    apiSecret: Joi.string().required(),
+    messagingServiceSid: Joi.string().required().pattern(new RegExp('^MG')),
+  }),
+})
+/**
+ * Handler for PUT /:formId/twilio.
+ * @security session
+ *
+ * @returns 200 with twilio credentials succesfully updated
+ * @returns 400 with twilio credentials are invalid
+ * @returns 401 when user is not logged in
+ * @returns 403 when user does not have permissions to update the form
+ * @returns 404 when form to update cannot be found
+ * @returns 422 when id of user who is updating the form cannot be found
+ * @returns 500 when database error occurs
+ */
+export const updateTwilioCredentials: ControllerHandler<
+  { formId: string },
+  unknown,
+  TwilioCredentials
+> = (req, res) => {
+  const { formId } = req.params
+  const twilioCredentials = req.body
+
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) => {
+      const { msgSrvcName } = retrievedForm
+
+      return msgSrvcName
+        ? AdminFormService.updateTwilioCredentials(
+            msgSrvcName,
+            twilioCredentials,
+          )
+        : AdminFormService.createTwilioCredentials(
+            twilioCredentials,
+            retrievedForm,
+          )
+    })
+    .map(() =>
+      res
+        .status(StatusCodes.OK)
+        .json({ message: 'Successfully updated Twilio credentials' }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating twilio credentials',
+        meta: {
+          action: 'handleUpdateTwilio',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          twilioCredentials,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for DELETE /:formId/twilio.
+ * @security session
+ *
+ * @returns 200 with twilio credentials succesfully updated
+ * @returns 401 when user is not logged in
+ * @returns 403 when user does not have permissions to update the form
+ * @returns 404 when form to delete credentials cannot be found
+ * @returns 422 when id of user who is updating the form cannot be found
+ * @returns 500 when database error occurs
+ */
+export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Delete,
+      }),
+    )
+    .andThen((retrievedForm) => {
+      return AdminFormService.deleteTwilioCredentials(retrievedForm)
+    })
+    .map(() =>
+      res
+        .status(StatusCodes.OK)
+        .json({ message: 'Successfully deleted Twilio credentials' }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when deleting twilio credentials',
+        meta: {
+          action: 'handleDeleteTwilio',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+// Handler for PUT /admin/forms/:formId/twilio
+export const handleUpdateTwilio = [
+  validateTwilioCredentials,
+  updateTwilioCredentials,
+] as ControllerHandler[]

@@ -6,7 +6,12 @@ import mongoose from 'mongoose'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { smsConfig } from '../../../config/features/sms.config'
-import { IVerificationSmsCount, LogType, SmsType } from '../sms.types'
+import {
+  IVerificationSmsCount,
+  IVerificationSmsCountSchema,
+  LogType,
+  SmsType,
+} from '../sms.types'
 import getSmsCountModel from '../sms_count.server.model'
 
 const SmsCount = getSmsCountModel(mongoose)
@@ -322,7 +327,7 @@ describe('SmsCount', () => {
         '_id',
         'createdAt',
         '__v',
-      ])
+      ]) as IVerificationSmsCountSchema
       expect(omit(actualSavedObject, 'isOnboardedAccount')).toEqual(
         verificationParams,
       )

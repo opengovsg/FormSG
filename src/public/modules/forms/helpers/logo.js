@@ -1,6 +1,6 @@
 const get = require('lodash/get')
 
-const { FormLogoState } = require('../../../../types')
+const { FormLogoState } = require('../../../../../shared/types')
 
 /**
  * Function used to decide how to obtain the form logo.

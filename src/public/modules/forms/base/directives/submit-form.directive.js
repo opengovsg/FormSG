@@ -39,6 +39,7 @@ angular
     'Submissions',
     '$uibModal',
     '$timeout',
+    '$location',
     submitFormDirective,
   ])
 
@@ -54,6 +55,7 @@ function submitFormDirective(
   Submissions,
   $uibModal,
   $timeout,
+  $location,
 ) {
   return {
     restrict: 'E',
@@ -79,6 +81,7 @@ function submitFormDirective(
         formSubmitted: false,
         progressModal: null,
         submitPrevented: false,
+        submitPreventedMessage: '',
       }
 
       // Also used to store a backup of the form state during submission, the state
@@ -97,11 +100,15 @@ function submitFormDirective(
         // Fire GA tracking event
         if (isPersistentLogin) GTag.persistentLoginUse(scope.form)
 
+        const query = $location.url().split('?')
+        const encodedQuery = query.length > 1 ? btoa(query[1]) : undefined
+
         return $q
           .when(
             PublicFormAuthService.createRedirectURL(
               scope.form._id,
               isPersistentLogin,
+              encodedQuery,
             ),
           )
           .then((response) => {
@@ -219,8 +226,8 @@ function submitFormDirective(
             scope.uiState.submitButtonClicked = false
             // This check is necessary to prevent clearing of submission error Toast
             if (scope.uiState.submitPrevented) {
-              Toastr.remove()
               scope.uiState.submitPrevented = false
+              scope.uiState.submitPreventedMessage = ''
             }
             break
           case FORM_STATES.SUBMITTING:
@@ -252,7 +259,7 @@ function submitFormDirective(
               preventSubmitMessage =
                 'The form admin has disabled submission for forms with these answers.'
             }
-            Toastr.permanentError(preventSubmitMessage)
+            scope.uiState.submitPreventedMessage = preventSubmitMessage
             scope.uiState.submitPrevented = true
             break
           default:

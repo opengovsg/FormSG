@@ -4,7 +4,7 @@ import {
   AdminDashboardFormMetaDto,
   AdminFormViewDto,
   PreviewFormViewDto,
-} from '../../../shared/types/form/form'
+} from '../../../shared/types'
 
 // endpoint exported for testing
 export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'

@@ -1,6 +1,6 @@
 # FormSG
 
-[![Build Status](https://travis-ci.com/opengovsg/formsg.svg?branch=release)](https://travis-ci.com/opengovsg/formsg)
+[![Build Status](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)
 [![Coverage Status](https://coveralls.io/repos/github/opengovsg/FormSG/badge.svg?branch=develop)](https://coveralls.io/github/opengovsg/FormSG?branch=develop)
 
 ## Table of Contents
@@ -37,7 +37,7 @@ Notable features include:
 - (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus)
 - (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus)
 - (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo/common/aboutus)
-- (beta) Webhooks functionality via the [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk).
+- Webhooks functionality via the official [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk) and contributor-supported [FormSG Ruby SDK] (https://github.com/opengovsg/formsg-ruby-sdk)
 
 The current product roadmap includes:
 
@@ -73,7 +73,7 @@ npm run dev
 
 After the Docker image has finished building, the React application can be accessed at [localhost:3000](localhost:3000). The backend API server can be accessed at [localhost:5000](localhost:5000).
 
-If there have been no dependency changes in `package.json` or changes in the
+If there are no dependency changes in `package.json` or changes in the
 `src/app/server.ts` file, you can run
 
 ```bash
@@ -85,7 +85,7 @@ only takes ~15 seconds to finish starting up the image.
 
 ### Accessing email locally
 
-We use [MailDev](https://github.com/maildev/maildev) to access emails in the development environment. The MailDev UI can be accessed at [localhost:1080](localhost:1080) when the Docker container is running.
+We use [MailDev](https://github.com/maildev/maildev) to access emails in the development environment. The MailDev UI can be accessed at [localhost:1080](localhost:1080) when the Docker container runs.
 
 ### Environment variables
 
@@ -97,8 +97,8 @@ The following is the order of priority:
 - Environment file
 - Dockerfile
 
-FormSG requires some environment variables in order to function.
-More information about the required environment variables can be seen in
+FormSG requires some environment variables to function.
+More information about the required environment variables are in
 [DEPLOYMENT_SETUP.md](/docs/DEPLOYMENT_SETUP.md).
 
 We provide a [`.template-env`](./.template-env) file with the secrets blanked out. You can copy and
@@ -169,7 +169,7 @@ npm run test-e2e-ci
 
 ## Architecture
 
-An overview of the architecture can be found [here](docs/ARCHITECTURE.md).
+The architecture overview is [here](docs/ARCHITECTURE.md).
 
 ## MongoDB Scripts
 
@@ -177,7 +177,7 @@ Scripts for common tasks in MongoDB can be found [here](docs/MONGODB.md).
 
 ## Contributing
 
-We welcome all contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas to code open sourced by the Government Technology Agency of Singapore. Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md) and will also be asked to sign a Contributor License Agreement (CLA) in order to ensure that everybody is free to use their contributions.
+We welcome all contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas to code open sourced by the Government Technology Agency of Singapore. Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md) and will also be asked to sign a Contributor License Agreement (CLA) to ensure that everybody is free to use their contributions.
 
 ## Support
 

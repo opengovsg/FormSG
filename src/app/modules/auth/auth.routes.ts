@@ -1,4 +1,3 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import { rateLimitConfig } from '../../config/config'
@@ -16,19 +15,7 @@ export const AuthRouter = Router()
  * @return 200 when email domain is valid
  * @return 401 when email domain is invalid
  */
-AuthRouter.post(
-  '/checkuser',
-  celebrate({
-    [Segments.BODY]: Joi.object().keys({
-      email: Joi.string()
-        .required()
-        .email()
-        .message('Please enter a valid email')
-        .lowercase(),
-    }),
-  }),
-  AuthController.handleCheckUser,
-)
+AuthRouter.post('/checkuser', AuthController.handleCheckUser)
 
 /**
  * Send a one-time password (OTP) to the specified email address
@@ -45,15 +32,6 @@ AuthRouter.post(
 AuthRouter.post(
   '/sendotp',
   limitRate({ max: rateLimitConfig.sendAuthOtp }),
-  celebrate({
-    [Segments.BODY]: Joi.object().keys({
-      email: Joi.string()
-        .required()
-        .email()
-        .message('Please enter a valid email')
-        .lowercase(),
-    }),
-  }),
   AuthController.handleLoginSendOtp,
 )
 
@@ -70,23 +48,7 @@ AuthRouter.post(
  * @returns 422 when the OTP is invalid
  * @returns 500 when error occurred whilst verifying the OTP
  */
-AuthRouter.post(
-  '/verifyotp',
-  celebrate({
-    [Segments.BODY]: Joi.object().keys({
-      email: Joi.string()
-        .required()
-        .email()
-        .message('Please enter a valid email')
-        .lowercase(),
-      otp: Joi.string()
-        .required()
-        .regex(/^\d{6}$/)
-        .message('Please enter a valid OTP'),
-    }),
-  }),
-  AuthController.handleLoginVerifyOtp,
-)
+AuthRouter.post('/verifyotp', AuthController.handleLoginVerifyOtp)
 
 /**
  * Sign the user out of the session by clearing the relevant session cookie

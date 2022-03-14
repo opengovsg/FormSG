@@ -9,7 +9,11 @@ function validateEmailDomain() {
     link: (scope, elem, attr, ngModel) => {
       const allowedEmailDomains =
         scope.vm.field.isVerifiable && scope.vm.field.hasAllowedEmailDomains
-          ? new Set(scope.vm.field.allowedEmailDomains)
+          ? new Set(
+              scope.vm.field.allowedEmailDomains.map((domain) =>
+                domain.toLowerCase(),
+              ),
+            )
           : new Set()
       ngModel.$validators.emailDomainValidator = (emailAddress) => {
         // Early return, do not even check domains if string is empty.
@@ -17,8 +21,10 @@ function validateEmailDomain() {
           return true
         }
         if (allowedEmailDomains.size) {
-          const emailDomain = emailAddress.split('@').pop()
-          return allowedEmailDomains.has('@' + emailDomain)
+          const emailDomain = (
+            '@' + emailAddress.split('@').pop()
+          ).toLowerCase()
+          return allowedEmailDomains.has(emailDomain)
         }
         return true
       }

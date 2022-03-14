@@ -1,11 +1,9 @@
 import { Document } from 'mongoose'
 
-import { BasicField, Column, TableFieldBase } from '../../../shared/types/field'
+import { BasicField, Column, TableFieldBase } from '../../../shared/types'
 import { IFormSchema } from '../form'
 
 import { IFieldSchema } from './baseField'
-
-export type IColumn = Column
 
 export type IColumnSchema = Column &
   Document & {

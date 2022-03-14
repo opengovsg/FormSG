@@ -1,10 +1,7 @@
 import { Schema } from 'mongoose'
 
-import {
-  FormLogoState,
-  ICustomFormLogoSchema,
-  IFormLogoSchema,
-} from '../../types'
+import { FormLogoState } from '../../../shared/types'
+import { ICustomFormLogoSchema, IFormLogoSchema } from '../../types'
 
 export const FormLogoSchema = new Schema<IFormLogoSchema>(
   {

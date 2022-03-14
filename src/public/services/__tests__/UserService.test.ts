@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { mocked } from 'ts-jest/utils'
 
-import { User } from '../../../types/api/user'
+import { DateString, UserDto } from '../../../../shared/types'
 import * as UserService from '../UserService'
 
 const { STORAGE_USER_KEY, USER_ENDPOINT } = UserService
@@ -11,19 +11,21 @@ jest.mock('axios')
 const MockAxios = mocked(axios, true)
 
 describe('UserService', () => {
-  const MOCK_USER: User = {
-    _id: 'some id' as User['_id'],
+  const MOCK_USER: UserDto = {
+    _id: 'some id' as UserDto['_id'],
     email: 'mock@example.com',
     agency: {
-      _id: 'some agency id' as User['agency']['_id'],
+      _id: 'some agency id' as UserDto['agency']['_id'],
       emailDomain: ['example.com'],
       fullName: 'Example Agency',
       logo: 'path/to/agency/logo',
       shortName: 'e',
+      created: 'some created date' as DateString,
+      lastModified: 'some last modified date' as DateString,
     },
-    created: 'some created date',
-    lastAccessed: 'some last accessed date',
-    updatedAt: 'some last updated at date',
+    created: 'some created date' as DateString,
+    lastAccessed: 'some last accessed date' as DateString,
+    updatedAt: 'some last updated at date' as DateString,
   }
 
   beforeEach(() => {

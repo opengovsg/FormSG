@@ -1,27 +1,28 @@
 // Contains all the shared props that will probably be passed down.
-import { createContext, RefObject, useContext, useRef } from 'react'
+import { createContext, RefObject, useContext } from 'react'
+import { UseQueryResult } from 'react-query'
 
-interface PublicFormContextProps {
+import { PublicFormViewDto } from '~shared/types/form'
+
+export interface PublicFormContextProps
+  extends Partial<PublicFormViewDto>,
+    Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
   miniHeaderRef: RefObject<HTMLDivElement>
+  formId: string
+  /**
+   * @note async function due to possibility of calling API to generate transactionId.
+   * Get current verification transaction ID for the form.
+   */
+  getTransactionId: () => Promise<string>
+  /**
+   * The expiry time of current transaction, if it exists.
+   * Is `null` if no transaction has been generated yet. */
+  expiryInMs: number | null
 }
 
-const PublicFormContext = createContext<PublicFormContextProps | undefined>(
-  undefined,
-)
-
-export const PublicFormProvider = ({
-  children,
-}: {
-  children: React.ReactNode
-}): JSX.Element => {
-  const miniHeaderRef = useRef<HTMLDivElement>(null)
-
-  return (
-    <PublicFormContext.Provider value={{ miniHeaderRef }}>
-      {children}
-    </PublicFormContext.Provider>
-  )
-}
+export const PublicFormContext = createContext<
+  PublicFormContextProps | undefined
+>(undefined)
 
 export const usePublicFormContext = (): PublicFormContextProps => {
   const context = useContext(PublicFormContext)

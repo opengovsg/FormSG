@@ -4,11 +4,13 @@ import { StatusCodes } from 'http-status-codes'
 import MockAxios from 'jest-mock-axios'
 
 import {
+  BasicField,
   EmailModeSubmissionContentDto,
+  FormDto,
+  FormField,
   StorageModeSubmissionContentDto,
   SubmissionResponseDto,
-} from '../../../../shared/types/submission'
-import { BasicField, IPopulatedForm, IYesNoFieldSchema } from '../../../types'
+} from '../../../../shared/types'
 import { FormUpdateParams } from '../../../types/api'
 import * as SubmissionUtil from '../../utils/submission'
 import {
@@ -200,7 +202,7 @@ describe('UpdateFormService', () => {
   describe('updateForm', () => {
     it('should return updated form if PUT request succeeds', async () => {
       // Arrange
-      const expected = [{} as IYesNoFieldSchema]
+      const expected = [{} as FormField]
       const MOCK_FORM_ID = new ObjectId().toHexString()
       const update = {
         editFormField: {
@@ -227,7 +229,7 @@ describe('UpdateFormService', () => {
       const update = {
         editFormField: {
           action: { name: 'REORDER' },
-          field: {} as IYesNoFieldSchema,
+          field: {} as FormField,
         },
       } as FormUpdateParams
       MockAxios.put.mockRejectedValueOnce(expected)
@@ -249,7 +251,7 @@ describe('UpdateFormService', () => {
       const MOCK_FORM_ID = 'mock-form-id'
       const expected = {
         _id: MOCK_FORM_ID,
-      } as IPopulatedForm
+      } as FormDto
       const MOCK_NEW_OWNER = 'test@open.gov.sg'
       MockAxios.post.mockResolvedValueOnce({ data: expected })
 

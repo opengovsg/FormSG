@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
 import { subMinutes, subYears } from 'date-fns'
@@ -22,13 +23,14 @@ import MailService from 'src/app/services/mail/mail.service'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import * as SmsService from 'src/app/services/sms/sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
-import { BasicField, IVerificationSchema } from 'src/types'
+import { IVerificationSchema } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import MockTwilio from 'tests/integration/helpers/twilio'
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { BasicField } from '../../../../../../../shared/types'
 import {
   NUM_OTP_RETRIES,
   WAIT_FOR_OTP_SECONDS,
@@ -253,6 +255,7 @@ describe('public-forms.verification.routes', () => {
 
   describe('POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/generate', () => {
     beforeEach(() => {
+      // @ts-ignore
       MockTwilio.messages.create.mockResolvedValue({
         sid: 'mockSid',
       })
@@ -512,6 +515,7 @@ describe('public-forms.verification.routes', () => {
 
     it('should return 500 when the otp could not be hashed', async () => {
       // Arrange
+      // @ts-ignore
       jest.spyOn(bcrypt, 'hash').mockRejectedValueOnce('hashbrowns')
       const expectedResponse = {
         message: 'Sorry, something went wrong. Please refresh and try again.',
@@ -533,6 +537,7 @@ describe('public-forms.verification.routes', () => {
 
     it('should return 500 when there is a database error', async () => {
       // Arrange
+      // @ts-ignore
       jest.spyOn(VerificationModel, 'findById').mockReturnValueOnce({
         exec: () => Promise.reject('no.'),
       })
@@ -752,6 +757,7 @@ describe('public-forms.verification.routes', () => {
 
     it('should return 422 when the otp is wrong', async () => {
       // Arrange
+      // @ts-ignore
       jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(false)
       const expectedResponse = {
         message: 'Wrong OTP.',
@@ -771,6 +777,7 @@ describe('public-forms.verification.routes', () => {
 
     it('should return 500 when hashing error occurs', async () => {
       // Arrange
+      // @ts-ignore
       jest.spyOn(bcrypt, 'compare').mockRejectedValueOnce(false)
       const expectedResponse = {
         message: 'Sorry, something went wrong. Please refresh and try again.',
@@ -792,6 +799,7 @@ describe('public-forms.verification.routes', () => {
       // Arrange
       jest
         .spyOn(VerificationModel, 'findById')
+        // @ts-ignore
         .mockReturnValue({ exec: jest.fn().mockRejectedValue('no') })
       const expectedResponse = {
         message: 'Sorry, something went wrong. Please refresh and try again.',

@@ -5,9 +5,9 @@ import {
   CreateEmailFormBodyDto,
   CreateStorageFormBodyDto,
   DuplicateFormBodyDto,
-} from '../../../../shared/types/form/form'
-import { IPopulatedUser, IYesNoFieldSchema } from '../../../types'
-import { ResponseMode } from '../../../types/form'
+  FormResponseMode,
+  UserDto,
+} from '../../../../shared/types'
 import {
   ADMIN_FORM_ENDPOINT,
   createForm,
@@ -17,8 +17,8 @@ import {
 jest.mock('axios', () => MockAxios)
 
 const MOCK_USER = {
-  _id: new ObjectId(),
-} as IPopulatedUser
+  _id: 'mock-user-id',
+} as UserDto
 
 describe('CreateFormService', () => {
   afterEach(() => MockAxios.reset())
@@ -29,7 +29,7 @@ describe('CreateFormService', () => {
         title: 'title',
         lastModified: new Date(),
         _id: new ObjectId().toHexString(),
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         admin: MOCK_USER,
       }
       const MOCK_FORM_ID = expected._id
@@ -72,10 +72,10 @@ describe('CreateFormService', () => {
   describe('createForm', () => {
     it('should return created form if POST request succeeds', async () => {
       // Arrange
-      const expected = { form_fields: [{} as IYesNoFieldSchema] }
+      const expected = { form_fields: [] }
       const mockFormParams: CreateStorageFormBodyDto = {
         title: 'title',
-        responseMode: ResponseMode.Encrypt,
+        responseMode: FormResponseMode.Encrypt,
         publicKey: 'test',
       }
       MockAxios.post.mockResolvedValueOnce({ data: expected })
@@ -95,7 +95,7 @@ describe('CreateFormService', () => {
       const expected = new Error('error')
       const mockFormParams: CreateEmailFormBodyDto = {
         title: 'title',
-        responseMode: ResponseMode.Email,
+        responseMode: FormResponseMode.Email,
         emails: ['mock'],
       }
       MockAxios.post.mockRejectedValueOnce(expected)
@@ -114,7 +114,7 @@ describe('CreateFormService', () => {
 const _generateDuplicateFormBody = (): DuplicateFormBodyDto => {
   return {
     title: 'title',
-    responseMode: ResponseMode.Email,
+    responseMode: FormResponseMode.Email,
     emails: 'test@example.com',
   } as DuplicateFormBodyDto
 }

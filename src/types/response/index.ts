@@ -1,8 +1,4 @@
-import {
-  CheckboxResponse,
-  TableResponse,
-  TableRow,
-} from '../../../shared/types/response'
+import { CheckboxResponse, TableResponse } from '../../../shared/types'
 import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
@@ -14,7 +10,7 @@ export type IAttachmentResponse =
   | ParsedEmailAttachmentResponse
   | EncryptAttachmentResponse
 
-export type ISingleAnswerResponse =
+export type SingleAnswerFieldResponse =
   | Exclude<
       EncryptFormFieldResponse,
       TableResponse | CheckboxResponse | IAttachmentResponse
@@ -23,10 +19,6 @@ export type ISingleAnswerResponse =
       ParsedEmailFormFieldResponse,
       TableResponse | CheckboxResponse | IAttachmentResponse
     >
-
-export type ICheckboxResponse = CheckboxResponse
-export type ITableResponse = TableResponse
-export type ITableRow = TableRow
 
 export type FieldResponse =
   | EncryptFormFieldResponse

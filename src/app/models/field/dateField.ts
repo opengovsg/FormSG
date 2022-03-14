@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose'
 
-import { DateSelectedValidation, IDateFieldSchema } from '../../../types'
+import { DateSelectedValidation } from '../../../../shared/types'
+import { IDateFieldSchema } from '../../../types'
 
 import { MyInfoSchema } from './baseField'
 

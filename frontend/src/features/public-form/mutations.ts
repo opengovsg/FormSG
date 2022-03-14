@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from 'react-query'
-import { useParams } from 'react-router-dom'
 
 import { FormAuthType } from '~shared/types/form'
 
@@ -11,9 +10,7 @@ import {
 } from './PublicFormService'
 import { publicFormKeys } from './queries'
 
-export const usePublicAuthMutations = () => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
+export const usePublicAuthMutations = (formId: string) => {
   const queryClient = useQueryClient()
 
   const toast = useToast({ status: 'success', isClosable: true })

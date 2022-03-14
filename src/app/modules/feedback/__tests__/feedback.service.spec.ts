@@ -8,7 +8,7 @@ import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { FormFeedbackMetaDto } from '../../../../types/api/form_feedback'
+import { FormFeedbackMetaDto } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import * as FeedbackService from '../feedback.service'
 
@@ -72,7 +72,7 @@ describe('feedback.service', () => {
         () =>
           ({
             exec: () => Promise.reject(new Error('boom')),
-          } as unknown as mongoose.Query<any>),
+          } as unknown as mongoose.Query<any, any>),
       )
 
       // Act
@@ -233,7 +233,7 @@ describe('feedback.service', () => {
           ({
             sort: sortSpy,
             exec: () => Promise.reject(new Error('boom')),
-          } as unknown as mongoose.Query<any>),
+          } as unknown as mongoose.Query<any, any>),
       )
 
       // Act

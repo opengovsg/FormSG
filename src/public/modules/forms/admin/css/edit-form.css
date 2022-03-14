@@ -1426,3 +1426,18 @@ a.modal-cancel-btn:hover {
 .pull-right {
   cursor: pointer;
 }
+
+.inline-padding {
+  /* margin is set so that the error message appears to be in the same block as the toggle options */
+  margin: 0 15px;
+}
+
+/* Spinner */
+.loading-spinner {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sms-counts {
+  color: #484848;
+}

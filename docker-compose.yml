@@ -29,6 +29,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=fakeSecret
       - SESSION_SECRET=thisisasecret
       - AWS_ENDPOINT=http://localhost:4566
+      - SECRET_ENV=development
       - SUBMISSIONS_RATE_LIMIT=200
       - SEND_AUTH_OTP_RATE_LIMIT=60
       - SES_PORT=25
@@ -105,7 +106,7 @@ services:
     network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:5156 to mockpass:5156
 
   database:
-    image: 'mongo:4.0'
+    image: 'mongo:4.2'
     container_name: 'formsg-db'
     environment:
       - MONGO_INITDB_DATABASE=formsg
@@ -123,7 +124,7 @@ services:
     depends_on:
       - backend
     environment:
-      - SERVICES=s3,sqs
+      - SERVICES=s3,sqs,secretsmanager
       - DATA_DIR=/tmp/localstack/data
     volumes:
       - './.localstack:/tmp/localstack'

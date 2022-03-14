@@ -4,16 +4,17 @@ import { err } from 'neverthrow'
 import querystring from 'querystring'
 import { UnreachableCaseError } from 'ts-essentials'
 
-import { FormFieldDto } from '../../../../../shared/types/field'
-import { AuthType, PublicFormDto } from '../../../../types'
 import {
   ErrorDto,
+  FormAuthType,
+  FormFieldDto,
   PrivateFormErrorDto,
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
   PublicFormAuthValidateEsrvcIdDto,
+  PublicFormDto,
   PublicFormViewDto,
-} from '../../../../types/api'
+} from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -270,10 +271,10 @@ export const handleGetPublicForm: ControllerHandler<
   )
 
   switch (authType) {
-    case AuthType.NIL:
+    case FormAuthType.NIL:
       return res.json({ form: publicForm, isIntranetUser })
-    case AuthType.SP:
-    case AuthType.CP:
+    case FormAuthType.SP:
+    case FormAuthType.CP:
       return SpcpService.extractJwtPayloadFromRequest(authType, req.cookies)
         .map((spcpSession) => {
           return res.json({
@@ -296,7 +297,7 @@ export const handleGetPublicForm: ControllerHandler<
           }
           return res.json({ form: publicForm, isIntranetUser })
         })
-    case AuthType.MyInfo: {
+    case FormAuthType.MyInfo: {
       // Step 1. Fetch required data and fill the form based off data retrieved
       return (
         MyInfoService.getMyInfoDataForForm(form, req.cookies)
@@ -362,7 +363,7 @@ export const handleGetPublicForm: ControllerHandler<
           })
       )
     }
-    case AuthType.SGID:
+    case FormAuthType.SGID:
       return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
         .map((spcpSession) => {
           return res.json({
@@ -394,6 +395,7 @@ export const handleGetPublicForm: ControllerHandler<
  * NOTE: This is exported only for testing
  * Generates redirect URL to Official SingPass/CorpPass log in page
  * @param isPersistentLogin whether the client wants to have their login information stored
+ * @param encodedQuery base64 encoded querystring (usually contains prefilled form information)
  * @returns 200 with the redirect url when the user authenticates successfully
  * @returns 400 when there is an error on the authType of the form
  * @returns 400 when the eServiceId of the form does not exist
@@ -406,10 +408,10 @@ export const _handleFormAuthRedirect: ControllerHandler<
   { formId: string },
   PublicFormAuthRedirectDto | ErrorDto,
   unknown,
-  { isPersistentLogin?: boolean }
+  { isPersistentLogin?: boolean; encodedQuery?: string }
 > = (req, res) => {
   const { formId } = req.params
-  const { isPersistentLogin } = req.query
+  const { isPersistentLogin, encodedQuery } = req.query
   const logMeta = {
     action: 'handleFormAuthRedirect',
     ...createReqMeta(req),
@@ -419,16 +421,17 @@ export const _handleFormAuthRedirect: ControllerHandler<
   return FormService.retrieveFullFormById(formId)
     .andThen((form) => {
       switch (form.authType) {
-        case AuthType.MyInfo:
+        case FormAuthType.MyInfo:
           return validateMyInfoForm(form).andThen((form) =>
             MyInfoService.createRedirectURL({
               formEsrvcId: form.esrvcId,
               formId,
               requestedAttributes: form.getUniqueMyInfoAttrs(),
+              encodedQuery,
             }),
           )
-        case AuthType.SP:
-        case AuthType.CP: {
+        case FormAuthType.SP:
+        case FormAuthType.CP: {
           // NOTE: Persistent login is only set (and relevant) when the authType is SP.
           // If authType is not SP, assume that it was set erroneously and default it to false
           return validateSpcpForm(form).andThen((form) => {
@@ -436,6 +439,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
               formId,
               form.authType,
               isPersistentLogin,
+              encodedQuery,
             )
             return SpcpService.createRedirectUrl(
               form.authType,
@@ -444,7 +448,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
             )
           })
         }
-        case AuthType.SGID:
+        case FormAuthType.SGID:
           return validateSgidForm(form).andThen(() => {
             return SgidService.createRedirectUrl(
               formId,
@@ -481,6 +485,7 @@ export const handleFormAuthRedirect = [
     }),
     [Segments.QUERY]: Joi.object({
       isPersistentLogin: Joi.boolean().optional(),
+      encodedQuery: Joi.string().allow('').optional(),
     }),
   }),
   _handleFormAuthRedirect,
@@ -495,7 +500,13 @@ export const handleFormAuthRedirect = [
  * @returns 400 if authType is invalid
  */
 export const _handlePublicAuthLogout: ControllerHandler<
-  { authType: AuthType.SP | AuthType.CP | AuthType.MyInfo | AuthType.SGID },
+  {
+    authType:
+      | FormAuthType.SP
+      | FormAuthType.CP
+      | FormAuthType.MyInfo
+      | FormAuthType.SGID
+  },
   PublicFormAuthLogoutDto
 > = (req, res) => {
   const { authType } = req.params
@@ -516,7 +527,12 @@ export const handlePublicAuthLogout = [
   celebrate({
     [Segments.PARAMS]: Joi.object({
       authType: Joi.string()
-        .valid(AuthType.SP, AuthType.CP, AuthType.MyInfo, AuthType.SGID)
+        .valid(
+          FormAuthType.SP,
+          FormAuthType.CP,
+          FormAuthType.MyInfo,
+          FormAuthType.SGID,
+        )
         .required(),
     }),
   }),
@@ -546,17 +562,21 @@ export const handleValidateFormEsrvcId: ControllerHandler<
       // And because MyInfo login is beyond our control, we coerce MyInfo to SP.
       // This is valid because a valid MyInfo eserviceId is also a valid SP eserviceId
       switch (form.authType) {
-        case AuthType.MyInfo:
+        case FormAuthType.MyInfo:
           return validateMyInfoForm(form).andThen((form) =>
-            SpcpService.createRedirectUrl(AuthType.SP, formId, form.esrvcId),
+            SpcpService.createRedirectUrl(
+              FormAuthType.SP,
+              formId,
+              form.esrvcId,
+            ),
           )
-        case AuthType.SP:
+        case FormAuthType.SP:
           return validateSpcpForm(form).andThen((form) =>
             SpcpService.createRedirectUrl(form.authType, formId, form.esrvcId),
           )
         default:
           return err<never, AuthTypeMismatchError>(
-            new AuthTypeMismatchError(AuthType.SP, form.authType),
+            new AuthTypeMismatchError(FormAuthType.SP, form.authType),
           )
       }
     })

@@ -1,7 +1,10 @@
 import { Flex } from '@chakra-ui/react'
 
 import { CreatePageContent } from './common/CreatePageContent'
-import { CreatePageSidebar } from './common/CreatePageSidebar'
+import {
+  CreatePageSidebar,
+  MobileCreatePageBottomBar,
+} from './common/CreatePageSidebar'
 import { CreatePageSidebarProvider } from './common/CreatePageSidebarContext'
 
 export const CreatePage = (): JSX.Element => {
@@ -10,6 +13,7 @@ export const CreatePage = (): JSX.Element => {
       <CreatePageSidebarProvider>
         <CreatePageSidebar />
         <CreatePageContent />
+        <MobileCreatePageBottomBar />
       </CreatePageSidebarProvider>
     </Flex>
   )

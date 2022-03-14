@@ -3,10 +3,8 @@ import { Merge } from 'type-fest'
 import {
   AttachmentResponse,
   FieldResponse,
-} from '../../../shared/types/response'
-import { StorageModeSubmissionContentDto } from '../../../shared/types/submission'
-
-export { StorageModeAttachmentsMap } from '../../../shared/types/submission'
+  StorageModeSubmissionContentDto,
+} from '../../../shared/types'
 
 export type EncryptSubmissionDto = Merge<
   StorageModeSubmissionContentDto,

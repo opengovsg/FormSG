@@ -26,6 +26,10 @@ dist/
 *passphrase*
 *.key
 
+# VSCode
+# ==============
+.dccache
+
 # Sublime editor
 # ==============
 *.sublime-project

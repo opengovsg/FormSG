@@ -1,4 +1,3 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as FrontendServerController from './frontend.controller'
@@ -44,14 +43,4 @@ FrontendRouter.get('/features', FrontendServerController.showFeaturesStates)
  * @return 200 when redirect code is  successful
  * @return 400 when redirect code fails
  */
-FrontendRouter.get(
-  '/redirect',
-  celebrate({
-    [Segments.QUERY]: {
-      redirectPath: Joi.string()
-        .regex(/^[a-fA-F0-9]{24}(\/(preview|template|use-template))?/)
-        .required(),
-    },
-  }),
-  FrontendServerController.generateRedirectUrl,
-)
+FrontendRouter.get('/redirect', FrontendServerController.generateRedirectUrl)

@@ -16,11 +16,14 @@ import {
   IPopulatedEncryptedForm,
   SubmissionCursorData,
   SubmissionData,
-  SubmissionMetadata,
 } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import {
+  StorageModeSubmissionMetadata,
+  SubmissionId,
+} from '../../../../../../shared/types'
 import { SubmissionNotFoundError } from '../../submission.errors'
 import {
   createEncryptSubmissionWithoutSave,
@@ -588,9 +591,9 @@ describe('encrypt-submission.service', () => {
     it('should return metadata successfully', async () => {
       // Arrange
       const mockSubmissionId = new ObjectId().toHexString()
-      const expectedMetadata: SubmissionMetadata = {
+      const expectedMetadata: StorageModeSubmissionMetadata = {
         number: 200,
-        refNo: mockSubmissionId,
+        refNo: mockSubmissionId as SubmissionId,
         submissionTime: 'some submission time',
       }
       const getMetaSpy = jest
@@ -678,7 +681,7 @@ describe('encrypt-submission.service', () => {
             refNo: new ObjectId().toHexString(),
             submissionTime: 'some submission time',
           },
-        ],
+        ] as StorageModeSubmissionMetadata[],
         count: 1,
       }
       const getMetaSpy = jest
@@ -704,7 +707,7 @@ describe('encrypt-submission.service', () => {
             refNo: new ObjectId().toHexString(),
             submissionTime: 'another submission time',
           },
-        ],
+        ] as StorageModeSubmissionMetadata[],
         count: 1,
       }
       const getMetaSpy = jest
