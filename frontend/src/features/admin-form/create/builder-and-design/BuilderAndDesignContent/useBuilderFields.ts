@@ -15,14 +15,10 @@ const getFormFieldsWhileCreating = (
   formFields: FormFieldDto[],
   fieldToCreate: { field: FieldCreateDto; insertionIndex: number },
 ): FormFieldDto[] => {
-  if (fieldToCreate) {
-    return insertAt(formFields, fieldToCreate.insertionIndex, {
-      ...fieldToCreate.field,
-      _id: PENDING_CREATE_FIELD_ID,
-    })
-  } else {
-    return formFields
-  }
+  return insertAt(formFields, fieldToCreate.insertionIndex, {
+    ...fieldToCreate.field,
+    _id: PENDING_CREATE_FIELD_ID,
+  })
 }
 
 const getFormFieldsWhileEditing = (
