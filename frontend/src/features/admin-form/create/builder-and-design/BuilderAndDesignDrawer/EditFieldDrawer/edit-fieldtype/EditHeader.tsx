@@ -64,8 +64,8 @@ export const EditHeader = ({
     [isPendingField],
   )
 
-  const isSaveDisabled = useMemo(
-    () => !isDirty && !isPendingField,
+  const isSaveEnabled = useMemo(
+    () => isDirty || isPendingField,
     [isDirty, isPendingField],
   )
 
@@ -116,7 +116,7 @@ export const EditHeader = ({
         </FormControl>
         <FormFieldDrawerActions
           isLoading={isLoading}
-          isSaveDisabled={isSaveDisabled}
+          isSaveEnabled={isSaveEnabled}
           buttonText={buttonText}
           handleClick={handleUpdateField}
           handleCancel={handleCancel}
