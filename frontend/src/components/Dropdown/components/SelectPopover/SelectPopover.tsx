@@ -1,7 +1,6 @@
 import { FC, useMemo, useRef, useState } from 'react'
 import { Modifier, usePopper } from 'react-popper'
 import { Box, useMergeRefs, useOutsideClick } from '@chakra-ui/react'
-import get from 'lodash/get'
 
 import { useSelectContext } from '~components/Dropdown/SelectContext'
 

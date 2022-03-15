@@ -4,9 +4,18 @@ import { UseTableCellProps } from 'react-table'
 import { FormControl } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { BasicField, Column, ShortTextColumnBase } from '~shared/types/field'
+import {
+  BasicField,
+  Column,
+  DropdownColumnBase,
+  ShortTextColumnBase,
+} from '~shared/types/field'
 
-import { createTextValidationRules } from '~utils/fieldValidation'
+import {
+  createDropdownValidationRules,
+  createTextValidationRules,
+} from '~utils/fieldValidation'
+import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -39,6 +48,24 @@ const ShortTextColumnCell = ({
   )
 }
 
+const DropdownColumnCell = ({
+  schema,
+  inputName,
+}: FieldColumnCellProps<DropdownColumnBase>) => {
+  const rules = useMemo(() => createDropdownValidationRules(schema), [schema])
+
+  return (
+    <Controller
+      name={inputName}
+      rules={rules}
+      defaultValue=""
+      render={({ field }) => (
+        <SingleSelect items={schema.fieldOptions} {...field} />
+      )}
+    />
+  )
+}
+
 /**
  * Renderer for each column cell in the table schema.
  */
@@ -64,6 +91,10 @@ export const ColumnCell = ({
       case BasicField.ShortText:
         return (
           <ShortTextColumnCell schema={columnSchema} inputName={inputName} />
+        )
+      case BasicField.Dropdown:
+        return (
+          <DropdownColumnCell schema={columnSchema} inputName={inputName} />
         )
       default:
         return null

@@ -36,6 +36,7 @@ const variantColumnStripe: PartsStyleFunction<typeof parts> = ({
       '&:nth-of-type(odd)': {
         bg: { md: `${c}.100` },
       },
+      verticalAlign: 'top',
     },
   }
 }
