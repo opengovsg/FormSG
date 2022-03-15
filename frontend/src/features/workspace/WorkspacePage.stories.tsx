@@ -101,3 +101,21 @@ LoadingMobile.parameters = {
   ...Mobile.parameters,
   ...LoadingDesktop.parameters,
 }
+
+export const Empty = Template.bind({})
+Empty.parameters = {
+  msw: [
+    rest.get<AdminDashboardFormMetaDto[]>(
+      '/api/v3/admin/forms',
+      (req, res, ctx) => {
+        return res(ctx.json([]))
+      },
+    ),
+  ],
+}
+
+export const EmptyMobile = Template.bind({})
+EmptyMobile.parameters = {
+  ...Empty.parameters,
+  ...Mobile.parameters,
+}

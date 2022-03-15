@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   useCallback,
   useEffect,
@@ -14,7 +13,7 @@ import { chunk } from 'lodash'
 import Pagination from '~components/Pagination'
 
 import CreateFormModal from './components/CreateFormModal'
-import { CreateFormWizardProvider } from './components/CreateFormModal/CreateFormWizardContext'
+import { EmptyWorkspace } from './components/EmptyWorkspace'
 import { WorkspaceFormRows } from './components/WorkspaceFormRow'
 import { WorkspaceHeader } from './components/WorkspaceHeader'
 import { useWorkspace } from './queries'
@@ -115,46 +114,53 @@ export const WorkspacePage = (): JSX.Element => {
         isOpen={isCreateFormModalOpen}
         onClose={handleCloseCreateFormModal}
       />
-      <Grid
-        bg="neutral.100"
-        templateColumns="1fr"
-        templateRows="auto 1fr auto"
-        minH="100vh"
-        templateAreas="'header' 'main' 'footer'"
-      >
-        <Container
-          gridArea="header"
-          maxW={CONTAINER_MAXW}
-          borderBottom="1px solid var(--chakra-colors-neutral-300)"
-          px="2rem"
-          py="1rem"
+      {totalFormCount === 0 ? (
+        <EmptyWorkspace
+          handleOpenCreateFormModal={handleOpenCreateFormModal}
+          isLoading={isLoading}
+        />
+      ) : (
+        <Grid
+          bg="neutral.100"
+          templateColumns="1fr"
+          templateRows="auto 1fr auto"
+          minH="100vh"
+          templateAreas="'header' 'main' 'footer'"
         >
-          <WorkspaceHeader
-            isLoading={isLoading}
-            totalFormCount={totalFormCount}
-            handleOpenCreateFormModal={handleOpenCreateFormModal}
-          />
-        </Container>
-        <Box gridArea="main">
-          <Box ref={topRef} />
-          <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
-        </Box>
-        <Container
-          gridArea="footer"
-          py={{ base: '1rem', md: '3rem' }}
-          px="2rem"
-          maxW={CONTAINER_MAXW}
-          borderTop="1px solid var(--chakra-colors-neutral-300)"
-        >
-          <Pagination
-            isDisabled={isLoading}
-            currentPage={currentPage}
-            totalCount={totalFormCount ?? 0}
-            onPageChange={setPageNumber}
-            pageSize={PAGE_DEFAULTS.size}
-          />
-        </Container>
-      </Grid>
+          <Container
+            gridArea="header"
+            maxW={CONTAINER_MAXW}
+            borderBottom="1px solid var(--chakra-colors-neutral-300)"
+            px="2rem"
+            py="1rem"
+          >
+            <WorkspaceHeader
+              isLoading={isLoading}
+              totalFormCount={totalFormCount}
+              handleOpenCreateFormModal={handleOpenCreateFormModal}
+            />
+          </Container>
+          <Box gridArea="main">
+            <Box ref={topRef} />
+            <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
+          </Box>
+          <Container
+            gridArea="footer"
+            py={{ base: '1rem', md: '3rem' }}
+            px="2rem"
+            maxW={CONTAINER_MAXW}
+            borderTop="1px solid var(--chakra-colors-neutral-300)"
+          >
+            <Pagination
+              isDisabled={isLoading}
+              currentPage={currentPage}
+              totalCount={totalFormCount ?? 0}
+              onPageChange={setPageNumber}
+              pageSize={PAGE_DEFAULTS.size}
+            />
+          </Container>
+        </Grid>
+      )}
     </>
   )
 }
