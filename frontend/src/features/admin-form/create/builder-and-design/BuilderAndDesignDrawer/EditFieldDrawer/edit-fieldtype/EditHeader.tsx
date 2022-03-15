@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { FormControl } from '@chakra-ui/react'
+import { extend, pick } from 'lodash'
 
 import { SectionFieldBase } from '~shared/types/field'
 
@@ -27,7 +28,10 @@ export const EditHeader = (props: EditHeaderProps): JSX.Element => {
     handleUpdateField,
   } = useEditFieldForm<EditHeaderInputs, SectionFieldBase>({
     ...props,
-    fieldKeys: ['title', 'description'],
+    transform: {
+      input: (inputField) => pick(inputField, ['title', 'description']),
+      output: (formOutput) => extend({}, props.field, formOutput),
+    },
   })
 
   const requiredValidationRule = useMemo(
