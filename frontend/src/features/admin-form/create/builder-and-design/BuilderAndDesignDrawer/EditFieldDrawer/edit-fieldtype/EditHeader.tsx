@@ -43,7 +43,7 @@ export const EditHeader = (props: EditHeaderProps): JSX.Element => {
           isReadOnly={props.isLoading}
           isInvalid={!!errors.title}
         >
-          <FormLabel>Section header title</FormLabel>
+          <FormLabel>Section header</FormLabel>
           <Input autoFocus {...register('title', requiredValidationRule)} />
           <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
         </FormControl>
