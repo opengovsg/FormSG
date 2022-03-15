@@ -72,11 +72,11 @@ export const isDateOutOfRange = (
   return false
 }
 
-export const ISO_DATE_FORMAT =
-  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*))(?:Z|(\+|-)([\d|:]*))?$/
+export const ISO_DATE_FORMAT_REGEX =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-](\d+(:\d+)?))?$/
 
 export const isIsoDateString = (value: unknown): value is JsonDate => {
-  return !!value && typeof value === 'string' && ISO_DATE_FORMAT.test(value)
+  return typeof value === 'string' && ISO_DATE_FORMAT_REGEX.test(value)
 }
 
 export const transformAllIsoStringsToDate = (body: unknown) => {
