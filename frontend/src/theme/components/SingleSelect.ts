@@ -40,7 +40,7 @@ const listBaseStyle: SystemStyleFunction = (props) => {
   const { list: menuListStyle = {} } = Menu.baseStyle(props)
   return merge(menuListStyle, {
     // To accomodate focus ring.
-    mt: '1px',
+    my: '1px',
     w: '100%',
     overflowY: 'auto',
     maxH: '12rem',
