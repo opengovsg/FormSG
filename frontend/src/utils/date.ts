@@ -105,12 +105,12 @@ export const mutableTransformAllIsoStringsToDate = (body: unknown) => {
 }
 
 /**
- * Non-mutable version of `mutableTransformAllIsoStringsToDate`
+ * Helper method that calls `mutableTransformAllIsoStringsToDate` internally to
+ * return the mutated @param body.
  * @param body object to transform
- * @returns transformed object with all ISO date strings transformed to Date objects.
+ * @returns mutated object with all ISO date strings transformed to Date objects.
  */
 export const transformAllIsoStringsToDate = <T>(body: T): T => {
-  const result = { ...body }
-  mutableTransformAllIsoStringsToDate(result)
-  return result
+  mutableTransformAllIsoStringsToDate(body)
+  return body
 }
