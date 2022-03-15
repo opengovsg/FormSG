@@ -83,9 +83,14 @@ export const isIsoDateString = (value: unknown): value is JsonDate => {
   )
 }
 
-export const transformAllIsoStringsToDate = (body: unknown) => {
+/**
+ * This function mutates given @param body, and transforms all ISO date strings
+ * in the body object to Date objects.
+ * @param body object to transform
+ */
+export const mutableTransformAllIsoStringsToDate = (body: unknown) => {
   if (body === null || body === undefined || typeof body !== 'object') {
-    return body
+    return
   }
 
   for (const key of Object.keys(body)) {
@@ -94,7 +99,18 @@ export const transformAllIsoStringsToDate = (body: unknown) => {
       // eslint-disable-next-line @typescript-eslint/no-extra-semi
       ;(body as Record<string, unknown>)[key] = parseISO(value)
     } else if (typeof value === 'object') {
-      transformAllIsoStringsToDate(value)
+      mutableTransformAllIsoStringsToDate(value)
     }
   }
+}
+
+/**
+ * Non-mutable version of `mutableTransformAllIsoStringsToDate`
+ * @param body object to transform
+ * @returns transformed object with all ISO date strings transformed to Date objects.
+ */
+export const transformAllIsoStringsToDate = <T>(body: T): T => {
+  const result = { ...body }
+  mutableTransformAllIsoStringsToDate(result)
+  return result
 }

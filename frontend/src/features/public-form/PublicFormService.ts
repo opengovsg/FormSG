@@ -4,6 +4,7 @@ import {
 } from '~shared/types/form'
 import { FormAuthType, PublicFormViewDto } from '~shared/types/form/form'
 
+import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
 const PUBLIC_FORMS_ENDPOINT = '/forms'
@@ -17,9 +18,9 @@ const PUBLIC_FORMS_ENDPOINT = '/forms'
 export const getPublicFormView = async (
   formId: string,
 ): Promise<PublicFormViewDto> => {
-  return ApiService.get<PublicFormViewDto>(
-    `${PUBLIC_FORMS_ENDPOINT}/${formId}`,
-  ).then(({ data }) => data)
+  return ApiService.get<PublicFormViewDto>(`${PUBLIC_FORMS_ENDPOINT}/${formId}`)
+    .then(transformAllIsoStringsToDate)
+    .then(({ data }) => data)
 }
 
 /**
@@ -34,9 +35,7 @@ export const getPublicFormAuthRedirectUrl = async (
 ): Promise<PublicFormAuthRedirectDto['redirectURL']> => {
   return ApiService.get<PublicFormAuthRedirectDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/auth/redirect`,
-    {
-      params: { isPersistentLogin },
-    },
+    { params: { isPersistentLogin } },
   ).then(({ data }) => data.redirectURL)
 }
 
