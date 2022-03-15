@@ -22,8 +22,8 @@ export const getAdminFormView = async (
   formId: string,
 ): Promise<AdminFormDto> => {
   return ApiService.get<AdminFormViewDto>(`${ADMIN_FORM_ENDPOINT}/${formId}`)
-    .then(transformAllIsoStringsToDate)
     .then(({ data }) => data.form)
+    .then(transformAllIsoStringsToDate)
 }
 
 /**
@@ -37,8 +37,8 @@ export const previewForm = async (
 ): Promise<PreviewFormViewDto> => {
   return axios
     .get<PreviewFormViewDto>(`${ADMIN_FORM_ENDPOINT}/${formId}/preview`)
-    .then(transformAllIsoStringsToDate)
     .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
 }
 
 export const getFreeSmsQuota = async (formId: string) => {

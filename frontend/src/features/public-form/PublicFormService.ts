@@ -19,8 +19,8 @@ export const getPublicFormView = async (
   formId: string,
 ): Promise<PublicFormViewDto> => {
   return ApiService.get<PublicFormViewDto>(`${PUBLIC_FORMS_ENDPOINT}/${formId}`)
-    .then(transformAllIsoStringsToDate)
     .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
 }
 
 /**

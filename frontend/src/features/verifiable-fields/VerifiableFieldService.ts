@@ -27,8 +27,8 @@ export const createTransactionForForm = async (
   return ApiService.post<FetchNewTransactionResponse>(
     `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}`,
   )
-    .then(transformAllIsoStringsToDate)
     .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
 }
 
 /**
