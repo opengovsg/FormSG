@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Divider, FormControl, Stack } from '@chakra-ui/react'
+import { FormControl } from '@chakra-ui/react'
 
 import { SectionFieldBase } from '~shared/types/field'
 
@@ -37,33 +37,31 @@ export const EditHeader = (props: EditHeaderProps): JSX.Element => {
 
   return (
     <DrawerContentContainer>
-      <Stack spacing="2rem" divider={<Divider />}>
-        <FormControl
-          isRequired
-          isReadOnly={props.isLoading}
-          isInvalid={!!errors.title}
-        >
-          <FormLabel>Section header</FormLabel>
-          <Input autoFocus {...register('title', requiredValidationRule)} />
-          <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
-        </FormControl>
-        <FormControl
-          isRequired
-          isReadOnly={props.isLoading}
-          isInvalid={!!errors.description}
-        >
-          <FormLabel>Description</FormLabel>
-          <Textarea {...register('description')} />
-          <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
-        </FormControl>
-        <FormFieldDrawerActions
-          isLoading={props.isLoading}
-          isSaveEnabled={isSaveEnabled}
-          buttonText={buttonText}
-          handleClick={handleUpdateField}
-          handleCancel={props.handleCancel}
-        />
-      </Stack>
+      <FormControl
+        isRequired
+        isReadOnly={props.isLoading}
+        isInvalid={!!errors.title}
+      >
+        <FormLabel>Section header</FormLabel>
+        <Input autoFocus {...register('title', requiredValidationRule)} />
+        <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
+      </FormControl>
+      <FormControl
+        isRequired
+        isReadOnly={props.isLoading}
+        isInvalid={!!errors.description}
+      >
+        <FormLabel>Description</FormLabel>
+        <Textarea {...register('description')} />
+        <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
+      </FormControl>
+      <FormFieldDrawerActions
+        isLoading={props.isLoading}
+        isSaveEnabled={isSaveEnabled}
+        buttonText={buttonText}
+        handleClick={handleUpdateField}
+        handleCancel={props.handleCancel}
+      />
     </DrawerContentContainer>
   )
 }
