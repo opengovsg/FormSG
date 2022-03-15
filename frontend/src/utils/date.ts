@@ -76,7 +76,11 @@ export const ISO_DATE_FORMAT_REGEX =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-](\d+(:\d+)?))?$/
 
 export const isIsoDateString = (value: unknown): value is JsonDate => {
-  return typeof value === 'string' && ISO_DATE_FORMAT_REGEX.test(value)
+  return (
+    typeof value === 'string' &&
+    ISO_DATE_FORMAT_REGEX.test(value) &&
+    !isNaN(new Date(value).getTime())
+  )
 }
 
 export const transformAllIsoStringsToDate = (body: unknown) => {
