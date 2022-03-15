@@ -1,10 +1,5 @@
 import { useMemo } from 'react'
-import {
-  Controller,
-  useFormContext,
-  useFormState,
-  useWatch,
-} from 'react-hook-form'
+import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
