@@ -65,6 +65,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FieldBase>({
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           transform.input(newField),
+          { keepValues: true },
         )
       },
     })
