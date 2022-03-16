@@ -1,7 +1,13 @@
 import { memo, useCallback, useMemo } from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
-import { BiDuplicate, BiEdit, BiGridHorizontal, BiTrash } from 'react-icons/bi'
+import {
+  BiCog,
+  BiDuplicate,
+  BiEdit,
+  BiGridHorizontal,
+  BiTrash,
+} from 'react-icons/bi'
 import { useIsMutating } from 'react-query'
 import {
   Box,
@@ -25,6 +31,7 @@ import { useCreatePageSidebar } from '~features/admin-form/create/common/CreateP
 import { PENDING_CREATE_FIELD_ID } from '../../constants'
 import {
   BuildFieldState,
+  setToInactiveSelector,
   stateDataSelector,
   updateEditStateSelector,
   useBuilderAndDesignStore,
@@ -45,8 +52,17 @@ export const FieldRowContainer = ({
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
-  const updateEditState = useBuilderAndDesignStore(updateEditStateSelector)
+  const { stateData, setToInactive, updateEditState } =
+    useBuilderAndDesignStore(
+      useCallback(
+        (state) => ({
+          stateData: stateDataSelector(state),
+          setToInactive: setToInactiveSelector(state),
+          updateEditState: updateEditStateSelector(state),
+        }),
+        [],
+      ),
+    )
   const { handleBuilderClick } = useCreatePageSidebar()
 
   const formMethods = useForm({ mode: 'onChange' })
@@ -176,6 +192,11 @@ export const FieldRowContainer = ({
                   colorScheme="secondary"
                   spacing={0}
                 >
+                  <IconButton
+                    aria-label="Close field settings"
+                    icon={<BiCog fontSize="1.25rem" />}
+                    onClick={setToInactive}
+                  />
                   <IconButton
                     aria-label="Duplicate field"
                     icon={<BiDuplicate fontSize="1.25rem" />}
