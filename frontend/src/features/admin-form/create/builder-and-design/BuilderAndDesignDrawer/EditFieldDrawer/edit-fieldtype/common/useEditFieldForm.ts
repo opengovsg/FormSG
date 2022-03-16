@@ -65,6 +65,9 @@ export const useEditFieldForm = <FormShape, FieldShape extends FieldBase>({
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           transform.input(newField),
+          // react-hook-form has strange behaviour where setting a field
+          // to undefined results in the form displaying the field in
+          // a previous state. Hence don't reset the form values.
           { keepValues: true },
         )
       },
