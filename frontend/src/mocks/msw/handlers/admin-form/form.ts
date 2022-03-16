@@ -159,3 +159,17 @@ export const duplicateField = (delay = 500) => {
     },
   )
 }
+
+export const deleteField = (delay = 500) => {
+  return rest.delete<
+    Record<string, never>,
+    { formId: string; fieldId: string },
+    FormFieldDto
+  >('/api/v3/admin/forms/:formId/fields/:fieldId', (req, res, ctx) => {
+    const fieldToDeleteIndex = formFields.findIndex(
+      (field) => field._id === req.params.fieldId,
+    )
+    formFields.splice(fieldToDeleteIndex, 1)
+    return res(ctx.delay(delay), ctx.status(200))
+  })
+}

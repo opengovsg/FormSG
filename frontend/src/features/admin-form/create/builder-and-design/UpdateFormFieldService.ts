@@ -81,3 +81,19 @@ export const duplicateSingleFormField = async ({
     `${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}/duplicate`,
   ).then(({ data }) => data)
 }
+
+/**
+ * Delete a single form field by its id in given form
+ * @param formId the id of the form to delete the field from
+ * @param fieldId the id of the field to delete
+ * @returns void on success
+ */
+export const deleteSingleFormField = async ({
+  formId,
+  fieldId,
+}: {
+  formId: string
+  fieldId: string
+}): Promise<void> => {
+  return ApiService.delete(`${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}`)
+}

@@ -29,6 +29,7 @@ import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
 import { PENDING_CREATE_FIELD_ID } from '../../constants'
+import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
 import {
   BuildFieldState,
@@ -67,6 +68,7 @@ export const FieldRowContainer = ({
   const { handleBuilderClick } = useCreatePageSidebar()
 
   const { duplicateFieldMutation } = useDuplicateFormField()
+  const { deleteFieldMutation } = useDeleteFormField()
 
   const formMethods = useForm({ mode: 'onChange' })
 
@@ -99,6 +101,19 @@ export const FieldRowContainer = ({
   const handleDuplicateClick = useCallback(() => {
     duplicateFieldMutation.mutate(field._id)
   }, [field._id, duplicateFieldMutation])
+
+  const handleDeleteClick = useCallback(() => {
+    if (stateData.state === BuildFieldState.CreatingField) {
+      setToInactive()
+    } else if (stateData.state === BuildFieldState.EditingField) {
+      deleteFieldMutation.mutate(field._id)
+    }
+  }, [field._id, deleteFieldMutation, setToInactive, stateData.state])
+
+  const isAnyMutationLoading = useMemo(
+    () => duplicateFieldMutation.isLoading || deleteFieldMutation.isLoading,
+    [duplicateFieldMutation, deleteFieldMutation],
+  )
 
   return (
     <Draggable
@@ -208,7 +223,8 @@ export const FieldRowContainer = ({
                     aria-label="Duplicate field"
                     // Fields which are not yet created cannot be duplicated
                     isDisabled={
-                      stateData.state === BuildFieldState.CreatingField
+                      stateData.state === BuildFieldState.CreatingField ||
+                      isAnyMutationLoading
                     }
                     onClick={handleDuplicateClick}
                     isLoading={duplicateFieldMutation.isLoading}
@@ -218,6 +234,9 @@ export const FieldRowContainer = ({
                     colorScheme="danger"
                     aria-label="Delete field"
                     icon={<BiTrash fontSize="1.25rem" />}
+                    onClick={handleDeleteClick}
+                    isLoading={deleteFieldMutation.isLoading}
+                    isDisabled={isAnyMutationLoading}
                   />
                 </ButtonGroup>
               </Flex>
