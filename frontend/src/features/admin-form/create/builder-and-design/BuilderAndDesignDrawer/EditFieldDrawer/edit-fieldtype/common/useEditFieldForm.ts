@@ -18,7 +18,7 @@ type UseEditFieldFormProps<
 > = EditFieldProps<FieldShape> & {
   transform: {
     input: (field: FieldShape) => FormShape
-    output: (form: FormShape) => FieldShape
+    output: (form: FormShape, originalField: FieldShape) => FieldShape
   }
 }
 
@@ -49,13 +49,16 @@ export const useEditFieldForm = <FormShape, FieldShape extends FieldBase>({
   const watchedInputs = editForm.watch()
 
   useDebounce(
-    () => handleChange(transform.output(watchedInputs as FormShape)),
+    () => handleChange(transform.output(watchedInputs as FormShape, field)),
     300,
     Object.values(watchedInputs),
   )
 
   const handleUpdateField = editForm.handleSubmit((inputs) => {
-    const updatedFormField: FieldShape = transform.output(inputs as FormShape)
+    const updatedFormField: FieldShape = transform.output(
+      inputs as FormShape,
+      field,
+    )
     return handleSave(updatedFormField, {
       onSuccess: (newField) => {
         editForm.reset(

@@ -30,7 +30,8 @@ export const EditHeader = (props: EditHeaderProps): JSX.Element => {
     ...props,
     transform: {
       input: (inputField) => pick(inputField, ['title', 'description']),
-      output: (formOutput) => extend({}, props.field, formOutput),
+      output: (formOutput, originalField) =>
+        extend({}, originalField, formOutput),
     },
   })
 
