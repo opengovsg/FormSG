@@ -6,8 +6,7 @@ import get from 'lodash/get'
 import simplur from 'simplur'
 
 import { FormFieldDto } from '~shared/types/field'
-import { PublicFormViewDto } from '~shared/types/form'
-import { FieldResponse } from '~shared/types/response'
+import { FormResponseMode, PublicFormViewDto } from '~shared/types/form'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
@@ -20,7 +19,7 @@ import {
   useTransactionMutations,
 } from '~features/verifiable-fields'
 
-import { transformInputsToOutputs } from './utils/inputTransformation'
+import { usePublicFormMutations } from './mutations'
 import { PublicFormContext } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
@@ -41,6 +40,7 @@ export const PublicFormProvider = ({
   const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
 
   const { createTransactionMutation } = useTransactionMutations(formId)
+  const { submitEmailModeFormMutation } = usePublicFormMutations(formId)
   const toast = useToast()
   const vfnToastIdRef = useRef<string | number>()
   const desyncToastIdRef = useRef<string | number>()
@@ -115,13 +115,19 @@ export const PublicFormProvider = ({
 
   const handleSubmitForm = useCallback(
     (formInputs: Record<FormFieldDto['_id'], unknown>) => {
-      if (!cachedDto?.form) return
+      const { form } = cachedDto ?? {}
+      if (!form) return
       try {
-        const responses = cachedDto.form.form_fields
-          .map((ff) => transformInputsToOutputs(ff, formInputs[ff._id]))
-          .filter((output): output is FieldResponse => output !== undefined)
-
-        return console.log(responses)
+        switch (form.responseMode) {
+          case FormResponseMode.Email:
+            // Using mutateAsync so react-hook-form goes into loading state.
+            return submitEmailModeFormMutation.mutateAsync({
+              formFields: form.form_fields,
+              formInputs,
+            })
+          case FormResponseMode.Encrypt:
+            return console.log('encrypt mode TODO')
+        }
       } catch (error) {
         toast({
           status: 'danger',
@@ -130,7 +136,7 @@ export const PublicFormProvider = ({
         })
       }
     },
-    [cachedDto?.form, toast],
+    [cachedDto, submitEmailModeFormMutation, toast],
   )
 
   return (
