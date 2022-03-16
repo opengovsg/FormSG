@@ -31,7 +31,7 @@ export const useCreateFormField = () => {
   const handleSuccess = useCallback(
     (newField: FormFieldDto) => {
       toast.closeAll()
-      if (!stateData || stateData.state !== BuildFieldState.CreatingField) {
+      if (stateData.state !== BuildFieldState.CreatingField) {
         toast({
           status: 'warning',
           description:
