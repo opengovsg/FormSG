@@ -37,7 +37,11 @@ export const PublicFormProvider = ({
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
-  const { data, error, ...rest } = usePublicFormView(formId)
+  const { data, error, ...rest } = usePublicFormView(
+    formId,
+    // Stop querying once submissionId is present.
+    /* enabled= */ !submissionId,
+  )
 
   const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
 
