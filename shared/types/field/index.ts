@@ -15,12 +15,12 @@ import { RatingFieldBase } from './ratingField'
 import { SectionFieldBase } from './sectionField'
 import { ShortTextFieldBase } from './shortTextField'
 import { StatementFieldBase } from './statementField'
-import { TableFieldBase } from './tableField'
+import { TableFieldBase, TableFieldDto } from './tableField'
 import { UenFieldBase } from './uenField'
 import { YesNoFieldBase } from './yesNoField'
 
-export * from './base'
 export * from './attachmentField'
+export * from './base'
 export * from './checkboxField'
 export * from './dateField'
 export * from './decimalField'
@@ -39,9 +39,8 @@ export * from './shortTextField'
 export * from './statementField'
 export * from './tableField'
 export * from './uenField'
-export * from './yesNoField'
-
 export * from './utils'
+export * from './yesNoField'
 
 export type FormField =
   | AttachmentFieldBase
@@ -65,9 +64,12 @@ export type FormField =
   | UenFieldBase
   | YesNoFieldBase
 
-export type FormFieldWithId<T extends FormField = FormField> = T & {
-  _id: string
-}
+export type FormFieldWithId<T extends FormField = FormField> =
+  T extends TableFieldBase
+    ? TableFieldDto
+    : T & {
+        _id: string
+      }
 
 export type PossiblyPrefilledFormField = FormFieldWithId & {
   fieldValue?: string
