@@ -22,7 +22,7 @@ import {
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
 import { FieldMutateOptions } from './edit-fieldtype/common/types'
-import { EditCheckbox, EditHeader, EditYesNo } from './edit-fieldtype'
+import { EditCheckbox, EditHeader, EditNric, EditYesNo } from './edit-fieldtype'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
   const { stateData, setToInactive, updateEditState, updateCreateState } =
@@ -151,10 +151,12 @@ const MemoFieldDrawerContent = memo((props: MemoFieldDrawerContentProps) => {
   // Extract field variable just to get field.fieldType types to cooperate
   const field = useMemo(() => props.field, [props.field])
   switch (field.fieldType) {
-    case BasicField.Section:
-      return <EditHeader {...props} field={field} />
     case BasicField.Checkbox:
       return <EditCheckbox {...props} field={field} />
+    case BasicField.Nric:
+      return <EditNric {...props} field={field} />
+    case BasicField.Section:
+      return <EditHeader {...props} field={field} />
     case BasicField.YesNo:
       return <EditYesNo {...props} field={field} />
     default:
