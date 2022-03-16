@@ -23,7 +23,12 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
-import { CheckboxField, NricField, YesNoField } from '~templates/Field'
+import {
+  CheckboxField,
+  NricField,
+  UenField,
+  YesNoField,
+} from '~templates/Field'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
@@ -256,14 +261,16 @@ export const FieldRowContainer = ({
 
 const MemoFieldRow = memo(({ field }: { field: FormFieldDto }) => {
   switch (field.fieldType) {
-    case BasicField.Section:
-      return <SectionFieldRow field={field} />
     case BasicField.Checkbox:
       return <CheckboxField schema={field} />
-    case BasicField.YesNo:
-      return <YesNoField schema={field} />
     case BasicField.Nric:
       return <NricField schema={field} />
+    case BasicField.Section:
+      return <SectionFieldRow field={field} />
+    case BasicField.Uen:
+      return <UenField schema={field} />
+    case BasicField.YesNo:
+      return <YesNoField schema={field} />
     default:
       return <div>TODO: Add field row for {field.fieldType}</div>
   }
