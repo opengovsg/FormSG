@@ -199,6 +199,10 @@ export const FieldRowContainer = ({
                   />
                   <IconButton
                     aria-label="Duplicate field"
+                    // Fields which are not yet created cannot be duplicated
+                    isDisabled={
+                      stateData.state === BuildFieldState.CreatingField
+                    }
                     icon={<BiDuplicate fontSize="1.25rem" />}
                   />
                   <IconButton
