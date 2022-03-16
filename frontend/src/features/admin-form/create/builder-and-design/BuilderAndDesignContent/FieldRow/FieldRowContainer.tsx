@@ -29,6 +29,7 @@ import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
 import { PENDING_CREATE_FIELD_ID } from '../../constants'
+import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
 import {
   BuildFieldState,
   setToInactiveSelector,
@@ -65,6 +66,8 @@ export const FieldRowContainer = ({
     )
   const { handleBuilderClick } = useCreatePageSidebar()
 
+  const { duplicateFieldMutation } = useDuplicateFormField()
+
   const formMethods = useForm({ mode: 'onChange' })
 
   const isActive = useMemo(() => {
@@ -92,6 +95,10 @@ export const FieldRowContainer = ({
     },
     [handleFieldClick],
   )
+
+  const handleDuplicateClick = useCallback(() => {
+    duplicateFieldMutation.mutate(field._id)
+  }, [field._id, duplicateFieldMutation])
 
   return (
     <Draggable
@@ -203,6 +210,8 @@ export const FieldRowContainer = ({
                     isDisabled={
                       stateData.state === BuildFieldState.CreatingField
                     }
+                    onClick={handleDuplicateClick}
+                    isLoading={duplicateFieldMutation.isLoading}
                     icon={<BiDuplicate fontSize="1.25rem" />}
                   />
                   <IconButton

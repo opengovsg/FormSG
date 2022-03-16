@@ -62,3 +62,22 @@ export const reorderSingleFormField = async ({
     { params: { to: newPosition } },
   ).then(({ data }) => data)
 }
+
+/**
+ * Duplicates a field, adding the new field as the last field in
+ * the form.
+ * @param formId the id of the form
+ * @param fieldId the id of the field to duplicate
+ * @returns the newly created field
+ */
+export const duplicateSingleFormField = async ({
+  formId,
+  fieldId,
+}: {
+  formId: string
+  fieldId: string
+}): Promise<FormFieldDto> => {
+  return ApiService.post<FormFieldDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}/duplicate`,
+  ).then(({ data }) => data)
+}

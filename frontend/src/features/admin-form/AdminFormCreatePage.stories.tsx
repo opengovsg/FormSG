@@ -4,6 +4,7 @@ import { Meta, Story } from '@storybook/react'
 
 import {
   createSingleField,
+  duplicateField,
   getAdminFormResponse,
   reorderField,
   updateSingleField,
@@ -42,6 +43,7 @@ export default {
       createSingleField(),
       updateSingleField(),
       reorderField(),
+      duplicateField(),
     ],
   },
 } as Meta
