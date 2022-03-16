@@ -119,36 +119,37 @@ export const PublicFormProvider = ({
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
+  const showErrorToast = useCallback(() => {
+    toast({
+      status: 'danger',
+      description:
+        'An error occurred whilst processing your submission. Please refresh and try again.',
+    })
+  }, [toast])
+
   const handleSubmitForm = useCallback(
     async (formInputs: Record<FormFieldDto['_id'], unknown>) => {
       const { form } = cachedDto ?? {}
       if (!form) return
+
       switch (form.responseMode) {
         case FormResponseMode.Email:
           // Using mutateAsync so react-hook-form goes into loading state.
-          return submitEmailModeFormMutation
-            .mutateAsync(
-              {
-                formFields: form.form_fields,
-                formInputs,
-              },
-              {
-                onSuccess: ({ submissionId }) => setSubmissionId(submissionId),
-              },
-            )
-            .catch(() => {
+          return (
+            submitEmailModeFormMutation
+              .mutateAsync(
+                { formFields: form.form_fields, formInputs },
+                {
+                  onSuccess: ({ submissionId }) =>
+                    setSubmissionId(submissionId),
+                },
+              )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              toast({
-                status: 'danger',
-                description:
-                  'An error occurred whilst processing your submission. Please refresh and try again.',
-              })
-            })
-        case FormResponseMode.Encrypt:
-          return console.log('encrypt mode TODO')
+              .catch(showErrorToast)
+          )
       }
     },
-    [cachedDto, submitEmailModeFormMutation, toast],
+    [cachedDto, showErrorToast, submitEmailModeFormMutation],
   )
 
   return (
