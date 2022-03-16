@@ -18,6 +18,7 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
   }
 
   switch (fieldType) {
+    case BasicField.YesNo:
     case BasicField.Section: {
       return {
         fieldType,
