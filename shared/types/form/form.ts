@@ -144,7 +144,7 @@ export type PublicStorageFormDto = Merge<
 
 export type PublicEmailFormDto = Merge<
   Pick<
-    StorageFormDto,
+    EmailFormDto,
     // Arrays like typeof list have numeric index signatures, so their number key
     // yields the union of all numerically-indexed properties.
     typeof EMAIL_PUBLIC_FORM_FIELDS[number]
