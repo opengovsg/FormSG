@@ -13,7 +13,7 @@ import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
 
 export const FormFieldsContainer = (): JSX.Element => {
-  const { form, spcpSession, isLoading, handleSubmitForm } =
+  const { form, spcpSession, isLoading, handleSubmitForm, submissionId } =
     usePublicFormContext()
 
   const bgColour = useMemo(() => {
@@ -49,6 +49,10 @@ export const FormFieldsContainer = (): JSX.Element => {
       return <FormAuth authType={form.authType} />
     }
 
+    if (submissionId) {
+      return <div>Form has been submitted: {submissionId}</div>
+    }
+
     return (
       <FormFields
         formFields={form.form_fields}
@@ -56,7 +60,7 @@ export const FormFieldsContainer = (): JSX.Element => {
         onSubmit={handleSubmitForm}
       />
     )
-  }, [form, handleSubmitForm, isAuthRequired, isLoading])
+  }, [form, handleSubmitForm, isAuthRequired, isLoading, submissionId])
 
   return (
     <FormSectionsProvider form={form}>

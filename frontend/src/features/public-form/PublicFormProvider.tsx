@@ -32,6 +32,8 @@ export const PublicFormProvider = ({
   formId,
   children,
 }: PublicFormProviderProps): JSX.Element => {
+  // Once form has been submitted, submission ID will be set here.
+  const [submissionId, setSubmissionId] = useState<string>()
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
@@ -121,10 +123,15 @@ export const PublicFormProvider = ({
         switch (form.responseMode) {
           case FormResponseMode.Email:
             // Using mutateAsync so react-hook-form goes into loading state.
-            return submitEmailModeFormMutation.mutateAsync({
-              formFields: form.form_fields,
-              formInputs,
-            })
+            return submitEmailModeFormMutation.mutateAsync(
+              {
+                formFields: form.form_fields,
+                formInputs,
+              },
+              {
+                onSuccess: ({ submissionId }) => setSubmissionId(submissionId),
+              },
+            )
           case FormResponseMode.Encrypt:
             return console.log('encrypt mode TODO')
         }
@@ -148,6 +155,7 @@ export const PublicFormProvider = ({
         error,
         getTransactionId,
         expiryInMs,
+        submissionId,
         ...cachedDto,
         ...rest,
       }}
