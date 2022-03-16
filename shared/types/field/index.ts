@@ -81,4 +81,4 @@ export type PossiblyPrefilledFormField = FormFieldWithId & {
 export type FormFieldDto = PossiblyPrefilledFormField | FormFieldWithId
 
 export type FieldCreateDto = FormField
-export type FieldUpdateDto = FormField & { _id: string }
+export type FieldUpdateDto = FormFieldWithId

@@ -1,6 +1,12 @@
 import { useMemo } from 'react'
+import cuid from 'cuid'
 
-import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
+import {
+  BasicField,
+  FieldCreateDto,
+  FormFieldDto,
+  TableFieldDto,
+} from '~shared/types/field'
 import { insertAt, replaceAt } from '~shared/utils/immutable-array-fns'
 
 import { PENDING_CREATE_FIELD_ID } from '../constants'
@@ -15,6 +21,17 @@ const getFormFieldsWhileCreating = (
   formFields: FormFieldDto[],
   fieldToCreate: { field: FieldCreateDto; insertionIndex: number },
 ): FormFieldDto[] => {
+  if (fieldToCreate.field.fieldType === BasicField.Table) {
+    const newField: TableFieldDto = {
+      ...fieldToCreate.field,
+      _id: PENDING_CREATE_FIELD_ID,
+      columns: fieldToCreate.field.columns.map((column) => ({
+        ...column,
+        _id: cuid(),
+      })),
+    }
+    return insertAt(formFields, fieldToCreate.insertionIndex, newField)
+  }
   return insertAt(formFields, fieldToCreate.insertionIndex, {
     ...fieldToCreate.field,
     _id: PENDING_CREATE_FIELD_ID,
