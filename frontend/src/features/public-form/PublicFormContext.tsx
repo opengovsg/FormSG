@@ -18,6 +18,8 @@ export interface PublicFormContextProps
    * The expiry time of current transaction, if it exists.
    * Is `null` if no transaction has been generated yet. */
   expiryInMs: number | null
+  /** Callback to be invoked when user submits public form. */
+  handleSubmitForm: (formInputs: any) => void
 }
 
 export const PublicFormContext = createContext<

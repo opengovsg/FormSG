@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Box, Flex, Spacer } from '@chakra-ui/react'
 
 import { FormAuthType, FormColorTheme } from '~shared/types/form/form'
@@ -13,11 +13,8 @@ import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
 
 export const FormFieldsContainer = (): JSX.Element => {
-  const { form, spcpSession, isLoading } = usePublicFormContext()
-
-  const onSubmit = useCallback((values: Record<string, string>) => {
-    console.log(values)
-  }, [])
+  const { form, spcpSession, isLoading, handleSubmitForm } =
+    usePublicFormContext()
 
   const bgColour = useMemo(() => {
     if (isLoading) return 'neutral.100'
@@ -56,10 +53,10 @@ export const FormFieldsContainer = (): JSX.Element => {
       <FormFields
         formFields={form.form_fields}
         colorTheme={form.startPage.colorTheme}
-        onSubmit={onSubmit}
+        onSubmit={handleSubmitForm}
       />
     )
-  }, [form, isAuthRequired, isLoading, onSubmit])
+  }, [form, handleSubmitForm, isAuthRequired, isLoading])
 
   return (
     <FormSectionsProvider form={form}>

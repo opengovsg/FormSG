@@ -5,7 +5,9 @@ import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
+import { FormFieldDto } from '~shared/types/field'
 import { PublicFormViewDto } from '~shared/types/form'
+import { FieldResponse } from '~shared/types/response'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
@@ -18,6 +20,7 @@ import {
   useTransactionMutations,
 } from '~features/verifiable-fields'
 
+import { transformInputsToOutputs } from './utils/inputTransformation'
 import { PublicFormContext } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
@@ -35,7 +38,7 @@ export const PublicFormProvider = ({
   const miniHeaderRef = useRef<HTMLDivElement>(null)
   const { data, error, ...rest } = usePublicFormView(formId)
 
-  const [form, setForm] = useState<PublicFormViewDto>()
+  const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
 
   const { createTransactionMutation } = useTransactionMutations(formId)
   const toast = useToast()
@@ -44,9 +47,9 @@ export const PublicFormProvider = ({
 
   useEffect(() => {
     if (data) {
-      if (!form) {
-        setForm(data)
-      } else if (!desyncToastIdRef.current && !isEqual(data, form)) {
+      if (!cachedDto) {
+        setCachedDto(data)
+      } else if (!desyncToastIdRef.current && !isEqual(data, cachedDto)) {
         desyncToastIdRef.current = toast({
           status: 'warning',
           title: (
@@ -63,7 +66,7 @@ export const PublicFormProvider = ({
         })
       }
     }
-  }, [data, form, toast])
+  }, [data, cachedDto, toast])
 
   const getTransactionId = useCallback(async () => {
     if (!vfnTransaction || isPast(vfnTransaction.expireAt)) {
@@ -90,7 +93,7 @@ export const PublicFormProvider = ({
     if (vfnToastIdRef.current) {
       toast.close(vfnToastIdRef.current)
     }
-    const numVerifiable = form?.form.form_fields.filter((ff) =>
+    const numVerifiable = cachedDto?.form.form_fields.filter((ff) =>
       get(ff, 'isVerifiable'),
     ).length
 
@@ -106,19 +109,40 @@ export const PublicFormProvider = ({
         ]} field[|s] again.`,
       })
     }
-  }, [form?.form.form_fields, toast])
+  }, [cachedDto?.form.form_fields, toast])
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
+
+  const handleSubmitForm = useCallback(
+    (formInputs: Record<FormFieldDto['_id'], unknown>) => {
+      if (!cachedDto?.form) return
+      try {
+        const responses = cachedDto.form.form_fields
+          .map((ff) => transformInputsToOutputs(ff, formInputs[ff._id]))
+          .filter((output): output is FieldResponse => output !== undefined)
+
+        return console.log(responses)
+      } catch (error) {
+        toast({
+          status: 'danger',
+          description:
+            'An error occurred whilst processing your submission. Please refresh and try again.',
+        })
+      }
+    },
+    [cachedDto?.form, toast],
+  )
 
   return (
     <PublicFormContext.Provider
       value={{
         miniHeaderRef,
+        handleSubmitForm,
         formId,
         error,
         getTransactionId,
         expiryInMs,
-        ...form,
+        ...cachedDto,
         ...rest,
       }}
     >
