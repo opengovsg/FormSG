@@ -46,7 +46,8 @@ export const PublicFormProvider = ({
   const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
 
   const { createTransactionMutation } = useTransactionMutations(formId)
-  const { submitEmailModeFormMutation } = usePublicFormMutations(formId)
+  const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
+    usePublicFormMutations(formId)
   const toast = useToast()
   const vfnToastIdRef = useRef<string | number>()
   const desyncToastIdRef = useRef<string | number>()
@@ -147,9 +148,32 @@ export const PublicFormProvider = ({
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch(showErrorToast)
           )
+        case FormResponseMode.Encrypt:
+          // Using mutateAsync so react-hook-form goes into loading state.
+          return (
+            submitStorageModeFormMutation
+              .mutateAsync(
+                {
+                  formFields: form.form_fields,
+                  formInputs,
+                  publicKey: form.publicKey,
+                },
+                {
+                  onSuccess: ({ submissionId }) =>
+                    setSubmissionId(submissionId),
+                },
+              )
+              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
+              .catch(showErrorToast)
+          )
       }
     },
-    [cachedDto, showErrorToast, submitEmailModeFormMutation],
+    [
+      cachedDto,
+      showErrorToast,
+      submitEmailModeFormMutation,
+      submitStorageModeFormMutation,
+    ],
   )
 
   return (

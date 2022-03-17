@@ -9,6 +9,8 @@ import {
   logoutPublicForm,
   SubmitEmailFormArgs,
   submitEmailModeForm,
+  SubmitStorageFormArgs,
+  submitStorageModeForm,
 } from './PublicFormService'
 import { publicFormKeys } from './queries'
 
@@ -58,5 +60,11 @@ export const usePublicFormMutations = (formId: string) => {
     },
   )
 
-  return { submitEmailModeFormMutation }
+  const submitStorageModeFormMutation = useMutation(
+    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+      return submitStorageModeForm({ ...args, formId })
+    },
+  )
+
+  return { submitEmailModeFormMutation, submitStorageModeFormMutation }
 }
