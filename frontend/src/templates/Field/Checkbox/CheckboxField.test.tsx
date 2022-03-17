@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
+import { CHECKBOX_OTHERS_INPUT_KEY } from './CheckboxField'
 import * as stories from './CheckboxField.stories'
 
 const { ValidationOptional, ValidationRequired, WithoutOthersOption } =
@@ -71,9 +72,12 @@ describe('required field', () => {
     // Assert
     // Should show success message.
     expect(
-      screen.getByText(`{"value":["${checkboxOption}"],"others-input":""}`, {
-        exact: false,
-      }),
+      screen.getByText(
+        `{"value":["${checkboxOption}"],"${CHECKBOX_OTHERS_INPUT_KEY}":""}`,
+        {
+          exact: false,
+        },
+      ),
     ).toBeInTheDocument()
     expect(screen.queryByText(REQUIRED_ERROR)).not.toBeInTheDocument()
   })
@@ -112,9 +116,12 @@ describe('optional field', () => {
     // Assert
     // Should show success message.
     expect(
-      screen.getByText(`{"value":["${checkboxOption}"],"others-input":""}`, {
-        exact: false,
-      }),
+      screen.getByText(
+        `{"value":["${checkboxOption}"],"${CHECKBOX_OTHERS_INPUT_KEY}":""}`,
+        {
+          exact: false,
+        },
+      ),
     ).toBeInTheDocument()
     expect(screen.queryByText(REQUIRED_ERROR)).not.toBeInTheDocument()
   })
@@ -163,7 +170,7 @@ describe('radio validation', () => {
     // Should show success message with only 1 checkbox option.
     expect(
       screen.getByText(
-        `{"value":["${checkboxOptionLabel}"],"others-input":""}`,
+        `{"value":["${checkboxOptionLabel}"],"${CHECKBOX_OTHERS_INPUT_KEY}":""}`,
         { exact: false },
       ),
     ).toBeInTheDocument()

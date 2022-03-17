@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 
 import { FormFieldWithId, NumberFieldBase } from '~shared/types/field'
 
@@ -7,6 +7,7 @@ import { createNumberValidationRules } from '~utils/fieldValidation'
 import NumberInput from '~components/NumberInput'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { SingleAnswerFieldInput } from '../types'
 
 export type NumberFieldSchema = FormFieldWithId<NumberFieldBase>
 export interface NumberFieldProps extends BaseFieldProps {
@@ -22,9 +23,12 @@ export const NumberField = ({
     [schema],
   )
 
+  const { control } = useFormContext<SingleAnswerFieldInput>()
+
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>
       <Controller
+        control={control}
         rules={validationRules}
         name={schema._id}
         render={({ field: { value, onChange, ...rest } }) => (

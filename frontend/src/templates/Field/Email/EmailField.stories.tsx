@@ -8,7 +8,7 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
-import { VerifiableFieldInput } from '~features/verifiable-fields/types'
+import { VerifiableFieldInput, VerifiableFieldValues } from '../types'
 
 import {
   EmailField as EmailFieldComponent,
@@ -52,11 +52,11 @@ const baseSchema: EmailFieldSchema = {
 }
 
 interface StoryEmailFieldProps extends EmailFieldProps {
-  defaultValue?: VerifiableFieldInput
+  defaultValue?: Partial<VerifiableFieldValues>
 }
 
 const Template: Story<StoryEmailFieldProps> = ({ defaultValue, ...args }) => {
-  const formMethods = useForm({
+  const formMethods = useForm<VerifiableFieldInput>({
     defaultValues: {
       [args.schema._id]: defaultValue,
     },
@@ -64,9 +64,7 @@ const Template: Story<StoryEmailFieldProps> = ({ defaultValue, ...args }) => {
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (
-    values: Record<string, VerifiableFieldInput | undefined>,
-  ) => {
+  const onSubmit = (values: VerifiableFieldInput) => {
     setSubmitValues(values[args.schema._id]?.value || 'Nothing was selected')
   }
 

@@ -7,6 +7,8 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { VerifiableFieldInput, VerifiableFieldValues } from '../types'
+
 import {
   MobileField as MobileFieldComponent,
   MobileFieldProps,
@@ -41,14 +43,11 @@ const baseSchema: MobileFieldSchema = {
 }
 
 interface StoryMobileFieldProps extends MobileFieldProps {
-  defaultValue?: {
-    value?: string
-    signature?: string
-  }
+  defaultValue?: Partial<VerifiableFieldValues>
 }
 
 const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
-  const formMethods = useForm({
+  const formMethods = useForm<VerifiableFieldInput>({
     defaultValues: {
       [args.schema._id]: defaultValue,
     },
@@ -56,9 +55,7 @@ const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (
-    values: Record<string, { value?: string | undefined } | undefined>,
-  ) => {
+  const onSubmit = (values: VerifiableFieldInput) => {
     setSubmitValues(values[args.schema._id]?.value || 'Nothing was selected')
   }
 

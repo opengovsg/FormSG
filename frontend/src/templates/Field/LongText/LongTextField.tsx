@@ -10,6 +10,7 @@ import { createTextValidationRules } from '~utils/fieldValidation'
 import Textarea from '~components/Textarea'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { SingleAnswerFieldInput } from '../types'
 
 export type LongTextFieldSchema = FormFieldWithId<LongTextFieldBase>
 export interface LongTextFieldProps extends BaseFieldProps {
@@ -25,7 +26,7 @@ export const LongTextField = ({
     [schema],
   )
 
-  const { register } = useFormContext()
+  const { register } = useFormContext<SingleAnswerFieldInput>()
 
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>

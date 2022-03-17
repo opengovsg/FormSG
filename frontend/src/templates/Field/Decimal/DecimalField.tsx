@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 
 import { DecimalFieldBase, FormFieldWithId } from '~shared/types/field'
 
@@ -7,6 +7,7 @@ import { createDecimalValidationRules } from '~utils/fieldValidation'
 import NumberInput from '~components/NumberInput'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { SingleAnswerFieldInput } from '../types'
 
 export type DecimalFieldSchema = FormFieldWithId<DecimalFieldBase>
 export interface DecimalFieldProps extends BaseFieldProps {
@@ -25,9 +26,12 @@ export const DecimalField = ({
     [schema],
   )
 
+  const { control } = useFormContext<SingleAnswerFieldInput>()
+
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>
       <Controller
+        control={control}
         rules={validationRules}
         name={schema._id}
         render={({ field }) => (

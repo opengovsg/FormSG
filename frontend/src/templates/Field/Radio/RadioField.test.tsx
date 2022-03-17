@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
+import { RADIO_OTHERS_INPUT_KEY } from './RadioField'
 import * as stories from './RadioField.stories'
 
 const { ValidationOptional, ValidationRequired, WithoutOthersOption } =
@@ -64,7 +65,10 @@ describe('required field', () => {
     // Should show success message.
     expect(
       screen.getByText(
-        new RegExp(`{"value":"${radioOption}","others-input":""}`, 'i'),
+        new RegExp(
+          `{"value":"${radioOption}","${RADIO_OTHERS_INPUT_KEY}":""}`,
+          'i',
+        ),
       ),
     ).toBeInTheDocument()
     expect(screen.queryByText(REQUIRED_ERROR)).not.toBeInTheDocument()
@@ -104,7 +108,10 @@ describe('optional field', () => {
     // Should show success message.
     expect(
       screen.getByText(
-        new RegExp(`{"value":"${radioOption}","others-input":""}`, 'i'),
+        new RegExp(
+          `{"value":"${radioOption}","${RADIO_OTHERS_INPUT_KEY}":""}`,
+          'i',
+        ),
       ),
     ).toBeInTheDocument()
     expect(screen.queryByText(REQUIRED_ERROR)).not.toBeInTheDocument()
@@ -152,7 +159,10 @@ describe('radio validation', () => {
     // Should show success message.
     expect(
       screen.getByText(
-        new RegExp(`{"value":"${radioOption}","others-input":""}`, 'i'),
+        new RegExp(
+          `{"value":"${radioOption}","${RADIO_OTHERS_INPUT_KEY}":""}`,
+          'i',
+        ),
       ),
     ).toBeInTheDocument()
     // Other required error message should not be shown.
