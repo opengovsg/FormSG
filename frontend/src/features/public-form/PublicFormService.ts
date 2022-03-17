@@ -59,19 +59,21 @@ export const logoutPublicForm = async (
   ).then(({ data }) => data)
 }
 
-export type SubmitPublicFormArgs = {
+export type SubmitEmailFormArgs = {
   formId: string
   captchaResponse?: string | null
   formFields: FormFieldDto[]
   formInputs: Record<string, unknown>
 }
 
+export type SubmitStorageFormArgs = SubmitEmailFormArgs & { publicKey: string }
+
 export const submitEmailModeForm = async ({
   formFields,
   formInputs,
   formId,
   captchaResponse = null,
-}: SubmitPublicFormArgs): Promise<SubmissionResponseDto> => {
+}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
   const formData = createEmailSubmissionFormData(formFields, formInputs)
 
   return ApiService.post<SubmissionResponseDto>(
@@ -91,7 +93,7 @@ export const submitEncryptModeForm = async ({
   captchaResponse,
   formId,
   publicKey,
-}: SubmitPublicFormArgs & { publicKey: string }) => {
+}: SubmitStorageFormArgs) => {
   const submissionContent = createEncryptedSubmissionData(
     formFields,
     formInputs,

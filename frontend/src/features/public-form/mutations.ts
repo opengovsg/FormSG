@@ -7,8 +7,8 @@ import { useToast } from '~hooks/useToast'
 import {
   getPublicFormAuthRedirectUrl,
   logoutPublicForm,
+  SubmitEmailFormArgs,
   submitEmailModeForm,
-  SubmitPublicFormArgs,
 } from './PublicFormService'
 import { publicFormKeys } from './queries'
 
@@ -53,7 +53,7 @@ export const usePublicAuthMutations = (formId: string) => {
 
 export const usePublicFormMutations = (formId: string) => {
   const submitEmailModeFormMutation = useMutation(
-    (args: Omit<SubmitPublicFormArgs, 'formId'>) => {
+    (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
       return submitEmailModeForm({ ...args, formId })
     },
   )
