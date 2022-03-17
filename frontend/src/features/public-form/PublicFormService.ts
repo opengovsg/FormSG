@@ -87,18 +87,19 @@ export const submitEmailModeForm = async ({
   ).then(({ data }) => data)
 }
 
-export const submitEncryptModeForm = async ({
+export const submitStorageModeForm = async ({
   formFields,
   formInputs,
   captchaResponse,
   formId,
   publicKey,
 }: SubmitStorageFormArgs) => {
-  const submissionContent = createEncryptedSubmissionData(
+  const submissionContent = await createEncryptedSubmissionData(
     formFields,
     formInputs,
     publicKey,
   )
+
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt`,
     submissionContent,
