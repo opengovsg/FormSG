@@ -9,7 +9,10 @@ import { SubmissionResponseDto } from '~shared/types/submission'
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
-import { createEmailSubmissionFormData } from './utils/createSubmission'
+import {
+  createEmailSubmissionFormData,
+  createEncryptedSubmissionData,
+} from './utils/createSubmission'
 
 const PUBLIC_FORMS_ENDPOINT = '/forms'
 
@@ -74,6 +77,29 @@ export const submitEmailModeForm = async ({
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email`,
     formData,
+    {
+      params: {
+        captchaResponse: String(captchaResponse),
+      },
+    },
+  ).then(({ data }) => data)
+}
+
+export const submitEncryptModeForm = async ({
+  formFields,
+  formInputs,
+  captchaResponse,
+  formId,
+  publicKey,
+}: SubmitPublicFormArgs & { publicKey: string }) => {
+  const submissionContent = createEncryptedSubmissionData(
+    formFields,
+    formInputs,
+    publicKey,
+  )
+  return ApiService.post<SubmissionResponseDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt`,
+    submissionContent,
     {
       params: {
         captchaResponse: String(captchaResponse),
