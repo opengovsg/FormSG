@@ -16,7 +16,10 @@ import FormLabel from '~components/FormControl/FormLabel'
 import { FormLabelProps } from '~components/FormControl/FormLabel/FormLabel'
 
 export type BaseFieldProps = {
-  schema: FormFieldWithId
+  schema: Pick<
+    FormFieldWithId,
+    '_id' | 'required' | 'description' | 'title' | 'disabled'
+  >
   /**
    * Color theme of form, if available. Defaults to `FormColorTheme.Blue`
    */

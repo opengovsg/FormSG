@@ -5,10 +5,7 @@ import { PartialDeep } from 'type-fest'
 
 import { FormId, PublicFormViewDto } from '~shared/types/form/form'
 
-import {
-  FetchNewTransactionResponse,
-  JsonDate,
-} from '~features/verifiable-fields'
+import { FetchNewTransactionResponse } from '~features/verifiable-fields'
 
 import mockFormLogo from '../assets/mockFormLogo.png'
 
@@ -397,10 +394,7 @@ export const postVfnTransactionResponse = ({
         ctx.delay(delay),
         ctx.json<FetchNewTransactionResponse>({
           transactionId: `mock-transaction-id-${Math.random()}`,
-          expireAt: addMilliseconds(
-            new Date(),
-            expiryMsOverride,
-          ).toISOString() as JsonDate,
+          expireAt: addMilliseconds(new Date(), expiryMsOverride),
         }),
       )
     },

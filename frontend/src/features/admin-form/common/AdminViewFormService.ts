@@ -7,6 +7,7 @@ import {
   SmsCountsDto,
 } from '~shared/types/form/form'
 
+import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
 // endpoint exported for testing
@@ -20,9 +21,9 @@ export const ADMIN_FORM_ENDPOINT = 'admin/forms'
 export const getAdminFormView = async (
   formId: string,
 ): Promise<AdminFormDto> => {
-  return ApiService.get<AdminFormViewDto>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}`,
-  ).then(({ data }) => data.form)
+  return ApiService.get<AdminFormViewDto>(`${ADMIN_FORM_ENDPOINT}/${formId}`)
+    .then(({ data }) => data.form)
+    .then(transformAllIsoStringsToDate)
 }
 
 /**
@@ -37,6 +38,7 @@ export const previewForm = async (
   return axios
     .get<PreviewFormViewDto>(`${ADMIN_FORM_ENDPOINT}/${formId}/preview`)
     .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
 }
 
 export const getFreeSmsQuota = async (formId: string) => {

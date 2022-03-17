@@ -1,15 +1,14 @@
 import { Opaque } from 'type-fest'
 
+import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
-
-export type JsonDate = Opaque<string, 'JsonDate'>
 
 /**
  * Response when retrieving new transaction. Can be an empty object if the
  * current form does not have any verifiable fields.
  */
 export type FetchNewTransactionResponse =
-  | { expireAt: JsonDate; transactionId: string }
+  | { expireAt: Date; transactionId: string }
   | Record<string, never>
 
 type VerifiedFieldSignature = Opaque<string, 'VerifiedFieldSignature'>
@@ -27,16 +26,18 @@ export const createTransactionForForm = async (
 ): Promise<FetchNewTransactionResponse> => {
   return ApiService.post<FetchNewTransactionResponse>(
     `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}`,
-  ).then(({ data }) => data)
+  )
+    .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
 }
 
 /**
  * Sends an OTP to given answer.
- * @param formId The id of the form to generate the otp for
- * @param transactionId The generated transaction id for the form
- * @param fieldId The id of the verification field
- * @param answer The value of the verification field to verify. Usually an email or phone number
- * @param fieldType The kind of field to generate the otp for
+ * @param args
+ * @param args.formId The id of the form to generate the otp for
+ * @param args.transactionId The generated transaction id for the form
+ * @param args.fieldId The id of the verification field
+ * @param args.answer The value of the verification field to verify. Usually an email or phone number
  * @returns 201 Created status if successfully sent
  */
 export const triggerSendOtp = async ({
@@ -45,9 +46,13 @@ export const triggerSendOtp = async ({
   fieldId,
   answer,
 }: {
+  /** The id of the form to generate the otp for */
   formId: string
+  /** The generated transaction id for the form */
   transactionId: string
+  /** The id of the verification field */
   fieldId: string
+  /** The value of the verification field to verify. Usually an email or phone number */
   answer: string
 }): Promise<void> => {
   return ApiService.post(

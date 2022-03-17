@@ -66,7 +66,7 @@ export const PublicFormProvider = ({
   }, [data, form, toast])
 
   const getTransactionId = useCallback(async () => {
-    if (!vfnTransaction || isPast(new Date(vfnTransaction.expireAt))) {
+    if (!vfnTransaction || isPast(vfnTransaction.expireAt)) {
       const result = await createTransactionMutation.mutateAsync()
       setVfnTransaction(result)
       return result.transactionId
@@ -83,10 +83,7 @@ export const PublicFormProvider = ({
 
   const expiryInMs = useMemo(() => {
     if (!vfnTransaction?.expireAt) return null
-    return differenceInMilliseconds(
-      new Date(vfnTransaction.expireAt),
-      Date.now(),
-    )
+    return differenceInMilliseconds(vfnTransaction.expireAt, Date.now())
   }, [vfnTransaction])
 
   const generateVfnExpiryToast = useCallback(() => {
