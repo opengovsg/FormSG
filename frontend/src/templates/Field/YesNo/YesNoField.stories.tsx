@@ -7,10 +7,11 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { YesNoFieldSchema } from '../types'
+
 import {
   YesNoField as YesNoFieldComponent,
   YesNoFieldProps,
-  YesNoFieldSchema,
 } from './YesNoField'
 
 export default {
