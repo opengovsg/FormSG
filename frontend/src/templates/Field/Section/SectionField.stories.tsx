@@ -2,11 +2,12 @@ import { Meta, Story } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
+import { SectionFieldSchema } from '../types'
+
 import {
   SectionField as SectionFieldComponent,
   SectionFieldProps,
 } from './SectionField'
-import { SectionFieldSchema } from './SectionFieldContainer'
 
 export default {
   title: 'Templates/Field/SectionField',

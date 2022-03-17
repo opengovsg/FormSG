@@ -8,10 +8,11 @@ import { BasicField, RatingShape } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { RatingFieldSchema } from '../types'
+
 import {
   RatingField as RatingFieldComponent,
   RatingFieldProps,
-  RatingFieldSchema,
 } from './RatingField'
 
 export default {

@@ -9,11 +9,9 @@ import { BasicField, DateSelectedValidation } from '~shared/types/field'
 import { mockDateDecorator } from '~utils/storybook'
 import Button from '~components/Button'
 
-import {
-  DateField as DateFieldComponent,
-  DateFieldProps,
-  DateFieldSchema,
-} from './DateField'
+import { DateFieldSchema } from '../types'
+
+import { DateField as DateFieldComponent, DateFieldProps } from './DateField'
 
 const MOCKED_TODAY_DATE = '2021-12-13'
 

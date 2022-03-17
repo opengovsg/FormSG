@@ -1,11 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-import {
-  DateFieldBase,
-  DateSelectedValidation,
-  FormFieldWithId,
-} from '~shared/types/field'
+import { DateSelectedValidation } from '~shared/types/field'
 
 import {
   isDateAfterToday,
@@ -16,9 +12,8 @@ import { createDateValidationRules } from '~utils/fieldValidation'
 import DateInput from '~components/DatePicker'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import { SingleAnswerFieldInput } from '../types'
+import { DateFieldSchema, SingleAnswerFieldInput } from '../types'
 
-export type DateFieldSchema = FormFieldWithId<DateFieldBase>
 export interface DateFieldProps extends BaseFieldProps {
   schema: DateFieldSchema
 }

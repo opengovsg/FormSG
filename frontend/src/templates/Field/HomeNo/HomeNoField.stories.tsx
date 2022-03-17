@@ -7,10 +7,11 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { HomeNoFieldSchema } from '../types'
+
 import {
   HomeNoField as HomeNoFieldComponent,
   HomeNoFieldProps,
-  HomeNoFieldSchema,
 } from './HomeNoField'
 
 export default {

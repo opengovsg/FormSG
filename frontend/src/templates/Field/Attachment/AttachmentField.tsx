@@ -2,16 +2,14 @@ import { useCallback, useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { MB } from '~shared/constants/file'
-import { AttachmentFieldBase, FormFieldWithId } from '~shared/types/field'
 import { VALID_EXTENSIONS } from '~shared/utils/file-validation'
 
 import { createAttachmentValidationRules } from '~utils/fieldValidation'
 import Attachment from '~components/Field/Attachment'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import { AttachmentFieldInput } from '../types'
+import { AttachmentFieldInput, AttachmentFieldSchema } from '../types'
 
-export type AttachmentFieldSchema = FormFieldWithId<AttachmentFieldBase>
 export interface AttachmentFieldProps extends BaseFieldProps {
   schema: AttachmentFieldSchema
 }

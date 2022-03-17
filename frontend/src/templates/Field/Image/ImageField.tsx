@@ -5,13 +5,11 @@ import ReactMarkdown from 'react-markdown'
 import { Box, Image, Skeleton, useBreakpointValue } from '@chakra-ui/react'
 import gfm from 'remark-gfm'
 
-import { FormFieldWithId, ImageFieldBase } from '~shared/types/field'
-
 import { useMdComponents } from '~hooks/useMdComponents'
 
 import { BaseFieldProps } from '../FieldContainer'
+import { ImageFieldSchema } from '../types'
 
-export type ImageFieldSchema = FormFieldWithId<ImageFieldBase>
 export interface ImageFieldProps extends BaseFieldProps {
   schema: ImageFieldSchema
 }

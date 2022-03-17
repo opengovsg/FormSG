@@ -8,10 +8,11 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { CheckboxFieldSchema } from '../types'
+
 import {
   CheckboxField as CheckboxFieldComponent,
   CheckboxFieldProps,
-  CheckboxFieldSchema,
 } from './CheckboxField'
 
 export default {

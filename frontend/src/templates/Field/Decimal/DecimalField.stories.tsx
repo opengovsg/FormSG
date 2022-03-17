@@ -7,10 +7,11 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { DecimalFieldSchema } from '../types'
+
 import {
   DecimalField as DecimalFieldComponent,
   DecimalFieldProps,
-  DecimalFieldSchema,
 } from './DecimalField'
 
 export default {

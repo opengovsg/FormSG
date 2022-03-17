@@ -1,9 +1,6 @@
 import { baseEmailValidationFn } from '~utils/fieldValidation'
-import {
-  EmailFieldInput,
-  EmailFieldProps,
-  EmailFieldSchema,
-} from '~templates/Field/Email'
+import { EmailFieldInput, EmailFieldProps } from '~templates/Field/Email'
+import { EmailFieldSchema } from '~templates/Field/types'
 
 import { VerifiableFieldContainer } from '../components/VerifiableFieldContainer'
 import { VerifiableFieldSchema } from '../types'

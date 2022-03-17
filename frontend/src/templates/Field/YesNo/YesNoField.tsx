@@ -4,16 +4,13 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-import { FormFieldWithId, YesNoFieldBase } from '~shared/types/field'
-
 import { createBaseValidationRules } from '~/utils/fieldValidation'
 
 import YesNo from '~components/Field/YesNo'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import { YesNoFieldInput } from '../types'
+import { YesNoFieldInput, YesNoFieldSchema } from '../types'
 
-export type YesNoFieldSchema = FormFieldWithId<YesNoFieldBase>
 export interface YesNoFieldProps extends BaseFieldProps {
   schema: YesNoFieldSchema
 }

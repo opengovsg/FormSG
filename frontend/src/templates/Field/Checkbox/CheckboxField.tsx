@@ -7,21 +7,18 @@ import {
 } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 
-import { CheckboxFieldBase, FormFieldWithId } from '~shared/types/field'
-
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 import { createCheckboxValidationRules } from '~utils/fieldValidation'
 import Checkbox from '~components/Checkbox'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import { CheckboxFieldInputs } from '../types'
+import { CheckboxFieldInputs, CheckboxFieldSchema } from '../types'
 
 export const CHECKBOX_OTHERS_INPUT_KEY = 'othersInput'
 export const CHECKBOX_OTHERS_INPUT_VALUE =
   '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
 
-export type CheckboxFieldSchema = FormFieldWithId<CheckboxFieldBase>
 export interface CheckboxFieldProps extends BaseFieldProps {
   schema: CheckboxFieldSchema
 }

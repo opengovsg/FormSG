@@ -7,10 +7,11 @@ import { AttachmentSize, BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { AttachmentFieldSchema } from '../types'
+
 import {
   AttachmentField as AttachmentFieldComponent,
   AttachmentFieldProps,
-  AttachmentFieldSchema,
 } from './AttachmentField'
 
 export default {

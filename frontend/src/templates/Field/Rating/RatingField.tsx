@@ -4,20 +4,15 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-import {
-  FormFieldWithId,
-  RatingFieldBase,
-  RatingShape,
-} from '~shared/types/field'
+import { RatingShape } from '~shared/types/field'
 
 import { createRatingValidationRules } from '~utils/fieldValidation'
 import Rating from '~components/Field/Rating'
 import { RatingProps } from '~components/Field/Rating/Rating'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import { SingleAnswerFieldInput } from '../types'
+import { RatingFieldSchema, SingleAnswerFieldInput } from '../types'
 
-export type RatingFieldSchema = FormFieldWithId<RatingFieldBase>
 export interface RatingFieldProps extends BaseFieldProps {
   schema: RatingFieldSchema
 }
