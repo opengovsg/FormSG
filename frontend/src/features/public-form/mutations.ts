@@ -8,7 +8,7 @@ import {
   getPublicFormAuthRedirectUrl,
   logoutPublicForm,
   submitEmailModeForm,
-  SubmitEmailModeFormArgs,
+  SubmitPublicFormArgs,
 } from './PublicFormService'
 import { publicFormKeys } from './queries'
 
@@ -53,7 +53,7 @@ export const usePublicAuthMutations = (formId: string) => {
 
 export const usePublicFormMutations = (formId: string) => {
   const submitEmailModeFormMutation = useMutation(
-    (args: Omit<SubmitEmailModeFormArgs, 'formId'>) => {
+    (args: Omit<SubmitPublicFormArgs, 'formId'>) => {
       return submitEmailModeForm({ ...args, formId })
     },
   )

@@ -56,7 +56,7 @@ export const logoutPublicForm = async (
   ).then(({ data }) => data)
 }
 
-export type SubmitEmailModeFormArgs = {
+export type SubmitPublicFormArgs = {
   formId: string
   captchaResponse?: string | null
   formFields: FormFieldDto[]
@@ -68,7 +68,7 @@ export const submitEmailModeForm = async ({
   formInputs,
   formId,
   captchaResponse = null,
-}: SubmitEmailModeFormArgs): Promise<SubmissionResponseDto> => {
+}: SubmitPublicFormArgs): Promise<SubmissionResponseDto> => {
   const formData = createEmailSubmissionFormData(formFields, formInputs)
 
   return ApiService.post<SubmissionResponseDto>(
