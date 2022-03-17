@@ -78,7 +78,7 @@ export const ColumnCell = ({
   return (
     <FormControl
       isRequired={columnSchema.required}
-      isInvalid={!!errors[inputName]}
+      isInvalid={!!get(errors, inputName)}
     >
       <FormLabel display={{ base: 'flex', md: 'none' }} color="secondary.700">
         {columnSchema.title}
