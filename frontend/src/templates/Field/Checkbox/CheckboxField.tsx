@@ -1,7 +1,11 @@
-import { useMemo } from 'react'
-import { FieldError, useFormContext } from 'react-hook-form'
+import { forwardRef, useMemo } from 'react'
+import {
+  get,
+  useFormContext,
+  UseFormRegisterReturn,
+  useFormState,
+} from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
-import { get } from 'lodash'
 
 import { CheckboxFieldBase, FormFieldWithId } from '~shared/types/field'
 
@@ -34,42 +38,34 @@ export const CheckboxField = ({
     () => `${schema._id}.${CHECKBOX_OTHERS_INPUT_KEY}`,
     [schema._id],
   )
-  const checkboxInputName = `${schema._id}.value`
+  const checkboxInputName = useMemo(() => `${schema._id}.value`, [schema._id])
 
-  const validationRules = useMemo(() => {
-    return {
-      ...createCheckboxValidationRules(schema),
-      deps: [othersInputName],
-    }
-  }, [othersInputName, schema])
-
-  const {
-    watch,
-    register,
-    formState: { isValid, isSubmitting, errors },
-  } = useFormContext()
-  const checkboxValues = watch(checkboxInputName, [])
-  const isOthersSelected = useMemo(
-    () =>
-      Array.isArray(checkboxValues) &&
-      checkboxValues.includes(CHECKBOX_OTHERS_INPUT_VALUE),
-    [checkboxValues],
+  const validationRules = useMemo(
+    () => createCheckboxValidationRules(schema),
+    [schema],
   )
+
+  const { register, getValues, trigger } = useFormContext()
+  const { isValid, isSubmitting, errors } = useFormState({
+    name: schema._id,
+  })
 
   const othersValidationRules = useMemo(
     () => ({
       validate: (value: string) => {
+        const currCheckedVals = getValues(checkboxInputName)
         return (
-          !isOthersSelected ||
+          !(
+            Array.isArray(currCheckedVals) &&
+            currCheckedVals.includes(CHECKBOX_OTHERS_INPUT_VALUE)
+          ) ||
           !!value ||
           'Please specify a value for the "others" option'
         )
       },
     }),
-    [isOthersSelected],
+    [checkboxInputName, getValues],
   )
-
-  const othersInputError: FieldError | undefined = get(errors, othersInputName)
 
   return (
     <FieldContainer
@@ -92,10 +88,11 @@ export const CheckboxField = ({
             isRequired={schema.required}
             isDisabled={schema.disabled}
             isReadOnly={isValid && isSubmitting}
-            isInvalid={!!othersInputError}
+            isInvalid={!!get(errors, othersInputName)}
           >
-            <Checkbox.OthersCheckbox
+            <OtherCheckboxField
               value={CHECKBOX_OTHERS_INPUT_VALUE}
+              triggerOthersInputValidation={() => trigger(othersInputName)}
               {...register(checkboxInputName, validationRules)}
             />
             <Checkbox.OthersInput
@@ -103,7 +100,7 @@ export const CheckboxField = ({
               {...register(othersInputName, othersValidationRules)}
             />
             <FormErrorMessage ml={styles.othersInput?.ml as string} mb={0}>
-              {othersInputError?.message}
+              {get(errors, `${othersInputName}.message`)}
             </FormErrorMessage>
           </FormControl>
         </Checkbox.OthersWrapper>
@@ -111,3 +108,19 @@ export const CheckboxField = ({
     </FieldContainer>
   )
 }
+
+interface OtherCheckboxFieldProps extends UseFormRegisterReturn {
+  value: string
+  triggerOthersInputValidation: () => void
+}
+const OtherCheckboxField = forwardRef<
+  HTMLInputElement,
+  OtherCheckboxFieldProps
+>(({ onChange, triggerOthersInputValidation, ...rest }, ref) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(event)
+    triggerOthersInputValidation()
+  }
+
+  return <Checkbox.OthersCheckbox onChange={handleChange} {...rest} ref={ref} />
+})

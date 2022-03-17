@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
@@ -41,16 +41,8 @@ const baseSchema: RadioFieldSchema = {
   _id: '611b94dfbb9e300012f702a7',
 }
 
-interface StoryRadioFieldProps extends RadioFieldProps {
-  defaultValue?: string
-}
-
-const Template: Story<StoryRadioFieldProps> = ({ defaultValue, ...args }) => {
-  const formMethods = useForm({
-    defaultValues: {
-      [args.schema._id]: {},
-    },
-  })
+const Template: Story<RadioFieldProps> = (args) => {
+  const formMethods = useForm()
 
   const [submitValues, setSubmitValues] = useState<string>()
 
@@ -59,12 +51,6 @@ const Template: Story<StoryRadioFieldProps> = ({ defaultValue, ...args }) => {
       JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
     )
   }
-
-  useEffect(() => {
-    if (defaultValue) {
-      formMethods.trigger()
-    }
-  }, [])
 
   return (
     <FormProvider {...formMethods}>

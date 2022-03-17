@@ -68,7 +68,7 @@ export const EmailFormSection = ({
 }
 
 interface AdminEmailRecipientsInputProps {
-  onSubmit: (params: { emails: [] }) => void
+  onSubmit: (params: { emails: string[] }) => void
 }
 
 const AdminEmailRecipientsInput = ({

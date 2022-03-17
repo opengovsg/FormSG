@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Controller, FieldError, useFormContext } from 'react-hook-form'
+import { Controller, useFormState } from 'react-hook-form'
 import { UseTableCellProps } from 'react-table'
 import { FormControl } from '@chakra-ui/react'
 import { get } from 'lodash'
@@ -48,16 +48,12 @@ export const ColumnCell = ({
   column,
   columnSchema,
 }: ColumnCellProps): JSX.Element => {
-  const {
-    formState: { errors },
-  } = useFormContext()
+  const { errors } = useFormState({ name: schemaId })
 
   const inputName = useMemo(
     () => `${schemaId}.${row.index}.${column.id}`,
     [column.id, row.index, schemaId],
   )
-
-  const cellError: FieldError | undefined = get(errors, inputName)
 
   const renderedColumnCell = useMemo(() => {
     switch (columnSchema.columnType) {
@@ -71,12 +67,15 @@ export const ColumnCell = ({
   }, [columnSchema, inputName])
 
   return (
-    <FormControl isRequired={columnSchema.required} isInvalid={!!cellError}>
+    <FormControl
+      isRequired={columnSchema.required}
+      isInvalid={!!get(errors, inputName)}
+    >
       <FormLabel display={{ base: 'flex', md: 'none' }} color="secondary.700">
         {columnSchema.title}
       </FormLabel>
       {renderedColumnCell}
-      <FormErrorMessage>{cellError?.message}</FormErrorMessage>
+      <FormErrorMessage>{get(errors, `${inputName}.message`)}</FormErrorMessage>
     </FormControl>
   )
 }
