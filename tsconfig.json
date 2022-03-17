@@ -69,4 +69,5 @@
     "forceConsistentCasingInFileNames": true  /* Disallow inconsistently-cased references to the same file. */
   },
   "include": ["src", "tests", "shared"],
+  "exclude": ["src/frontend"]
 }
