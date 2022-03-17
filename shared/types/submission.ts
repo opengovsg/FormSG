@@ -3,7 +3,7 @@ import { ErrorDto } from './core'
 import { FormFieldDto, MyInfoAttribute } from './field'
 import { FormAuthType, FormDto } from './form/form'
 import { DateString } from './generic'
-import { FieldResponse } from './response'
+import { EmailResponse, FieldResponse } from './response'
 
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 
@@ -95,14 +95,12 @@ export type FormSubmissionMetadataQueryDto = RequireAtLeastOne<
   'page' | 'submissionId'
 >
 
-type SubmissionContentBase = {
-  responses: FieldResponse[]
-}
-
 /**
  * Shape of email form submissions
  */
-export type EmailModeSubmissionContentDto = SubmissionContentBase
+export type EmailModeSubmissionContentDto = {
+  responses: FieldResponse[]
+}
 
 export type StorageModeAttachment = {
   encryptedFile?: {
@@ -117,7 +115,9 @@ export type StorageModeAttachmentsMap = Record<
   StorageModeAttachment
 >
 
-export type StorageModeSubmissionContentDto = SubmissionContentBase & {
+export type StorageModeSubmissionContentDto = {
+  // Storage mode only allows email responses in order to support email replies.
+  responses: Pick<EmailResponse, 'fieldType' | '_id' | 'answer' | 'signature'>[]
   encryptedContent: string
   attachments?: StorageModeAttachmentsMap
   version: number
