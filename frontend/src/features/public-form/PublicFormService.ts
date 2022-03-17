@@ -90,9 +90,9 @@ export const submitEmailModeForm = async ({
 export const submitStorageModeForm = async ({
   formFields,
   formInputs,
-  captchaResponse,
   formId,
   publicKey,
+  captchaResponse = null,
 }: SubmitStorageFormArgs) => {
   const submissionContent = await createEncryptedSubmissionData(
     formFields,
