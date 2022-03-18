@@ -200,7 +200,7 @@ export const EditConditionBlock = ({
           return (
             <NumberInput
               isDisabled={!conditionStateValue}
-              value={String(value)}
+              value={String(value ?? '')}
               {...rest}
             />
           )
