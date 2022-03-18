@@ -53,7 +53,7 @@ export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element | null => {
       <Stack
         spacing="1.5rem"
         divider={<StackDivider borderColor="secondary.100" />}
-        p="2rem"
+        p={{ base: '1.5rem', md: '2rem' }}
       >
         {logic.conditions.map((condition, index) => (
           <Stack
@@ -77,7 +77,11 @@ export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element | null => {
       </Stack>
 
       <Divider borderBottomWidth="2px" borderColor="secondary.200" />
-      <Stack textStyle="subhead-3" color="secondary.500" p="2rem">
+      <Stack
+        textStyle="subhead-3"
+        color="secondary.500"
+        p={{ base: '1.5rem', md: '2rem' }}
+      >
         {renderThenContent}
       </Stack>
     </Box>
