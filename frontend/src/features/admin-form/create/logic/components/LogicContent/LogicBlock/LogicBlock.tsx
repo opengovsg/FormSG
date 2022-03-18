@@ -97,8 +97,8 @@ export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element | null => {
         {renderThenContent}
       </Stack>
       <IconButton
-        top={{ base: '1.5rem', md: '2rem' }}
-        right={{ base: '1.5rem', md: '2rem' }}
+        top={{ base: '0.5rem', md: '2rem' }}
+        right={{ base: '0.5rem', md: '2rem' }}
         pos="absolute"
         aria-label="Delete logic"
         variant="clear"
