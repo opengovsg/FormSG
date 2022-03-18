@@ -91,9 +91,10 @@ const FORM_WITH_LOGIC: Partial<AdminFormDto> = {
       ],
     },
     {
-      show: ['6200e1534ad4f00012848d65', '61e6857c9c794b0012f1c6f7'],
+      preventSubmitMessage:
+        'Some message to tell the user why they can not submit. This should be rendered in the storybook mock.',
       _id: '620115f74ad4f00012900a8d',
-      logicType: LogicType.ShowFields,
+      logicType: LogicType.PreventSubmit,
       conditions: [
         {
           ifValueType: LogicIfValue.SingleSelect,
