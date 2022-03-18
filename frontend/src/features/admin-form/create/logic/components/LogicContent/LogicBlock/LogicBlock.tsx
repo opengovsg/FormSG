@@ -3,8 +3,6 @@ import { Box, Divider, Stack, StackDivider, Text, Wrap } from '@chakra-ui/react'
 
 import { LogicDto, LogicType } from '~shared/types/form'
 
-import Badge from '~components/Badge'
-
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
 
 import { FieldLogicBadge } from './FieldLogicBadge'
