@@ -17,7 +17,7 @@ import { Dictionary, get, pickBy, range } from 'lodash'
 
 import { LOGIC_MAP } from '~shared/modules/logic'
 import { BasicField } from '~shared/types/field'
-import { FormCondition, LogicIfValue, LogicType } from '~shared/types/form'
+import { LogicIfValue, LogicType } from '~shared/types/form'
 
 import { useHasChanged } from '~hooks/useHasChanged'
 import { useWatchDependency } from '~hooks/useWatchDependency'
@@ -61,15 +61,13 @@ export const EditConditionBlock = ({
     setValue,
     control,
   } = formMethods
-  const ifFieldIdValue = watch(`${name}.field`) as FormCondition['field']
+  const ifFieldIdValue = watch(`${name}.field`)
   const hasFieldIdChanged = useHasChanged(
     ifFieldIdValue,
     /* isIgnoreUndefined= */ true,
   )
-  const conditionStateValue = watch(`${name}.state`) as FormCondition['state']
-  const ifValueTypeValue = watch(
-    `${name}.ifValueType`,
-  ) as FormCondition['ifValueType']
+  const conditionStateValue = watch(`${name}.state`)
+  const ifValueTypeValue = watch(`${name}.ifValueType`)
   const logicTypeValue = watch('logicType')
   const showValueWatch = useWatchDependency(watch, 'show')
   const currentSelectedField = useMemo(() => {
