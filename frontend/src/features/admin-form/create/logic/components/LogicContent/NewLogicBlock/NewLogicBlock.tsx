@@ -135,7 +135,6 @@ export const NewLogicBlock = ({
       />
       <SaveActionGroup
         isLoading={isLoading}
-        handleDelete={setToInactive}
         handleSubmit={handleCreateLogic}
         handleCancel={setToInactive}
         submitButtonLabel="Add logic"

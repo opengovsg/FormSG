@@ -1,12 +1,12 @@
 import { BiTrash } from 'react-icons/bi'
-import { ButtonGroup, Flex } from '@chakra-ui/react'
+import { Box, ButtonGroup, Flex } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 
 export interface SaveActionGroupProps {
   handleCancel: () => void
-  handleDelete: () => void
+  handleDelete?: () => void
   handleSubmit: () => void
   submitButtonLabel?: string
   isLoading: boolean
@@ -21,14 +21,14 @@ export const SaveActionGroup = ({
 }: SaveActionGroupProps): JSX.Element => {
   return (
     <Flex
-      justify="flex-end"
+      justify="space-between"
       align="center"
       py="0.375rem"
       px={{ base: '1rem', md: '2rem' }}
       borderTop="1px solid"
       borderColor="neutral.300"
     >
-      <ButtonGroup spacing="1rem">
+      {handleDelete ? (
         <IconButton
           variant="clear"
           colorScheme="danger"
@@ -37,6 +37,13 @@ export const SaveActionGroup = ({
           onClick={handleDelete}
           isDisabled={isLoading}
         />
+      ) : (
+        <Box />
+      )}
+      <ButtonGroup spacing="1rem">
+        <Button variant="clear" colorScheme="secondary" onClick={handleCancel}>
+          Cancel
+        </Button>
         <Button isLoading={isLoading} onClick={handleSubmit}>
           {submitButtonLabel}
         </Button>
