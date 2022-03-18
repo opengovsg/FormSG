@@ -1,9 +1,20 @@
 import { useMemo } from 'react'
-import { Box, Divider, Stack, StackDivider, Text } from '@chakra-ui/react'
+import { BiTrash } from 'react-icons/bi'
+import {
+  Box,
+  Divider,
+  Stack,
+  StackDivider,
+  Text,
+  useDisclosure,
+} from '@chakra-ui/react'
 
 import { LogicDto, LogicType } from '~shared/types/form'
 
+import IconButton from '~components/IconButton'
+
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
+import { DeleteLogicModal } from '../../DeleteLogicModal'
 
 import { FieldLogicBadge } from './FieldLogicBadge'
 import { LogicBadge } from './LogicBadge'
@@ -15,6 +26,7 @@ interface LogicBlockProps {
 
 export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element | null => {
   const { mapIdToField } = useAdminFormLogic()
+  const { isOpen, onClose, onOpen } = useDisclosure()
 
   const renderThenContent = useMemo(() => {
     if (!mapIdToField) return null
@@ -49,7 +61,9 @@ export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element | null => {
       bg="white"
       border="1px solid"
       borderColor="neutral.300"
+      pos="relative"
     >
+      <DeleteLogicModal isOpen={isOpen} onClose={onClose} logic={logic} />
       <Stack
         spacing="1.5rem"
         divider={<StackDivider borderColor="secondary.100" />}
@@ -82,6 +96,16 @@ export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element | null => {
       >
         {renderThenContent}
       </Stack>
+      <IconButton
+        top={{ base: '1.5rem', md: '2rem' }}
+        right={{ base: '1.5rem', md: '2rem' }}
+        pos="absolute"
+        aria-label="Delete logic"
+        variant="clear"
+        colorScheme="danger"
+        onClick={onOpen}
+        icon={<BiTrash fontSize="1.5rem" />}
+      />
     </Box>
   )
 }
