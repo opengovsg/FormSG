@@ -1,5 +1,5 @@
+import { useCallback } from 'react'
 import {
-  ButtonGroup,
   Modal,
   ModalBody,
   ModalContent,
@@ -16,6 +16,8 @@ import { LogicDto } from '~shared/types/form'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
+import { useLogicMutations } from '../../mutations'
+
 interface DeleteLogicModalProps {
   onClose: () => void
   isOpen: boolean
@@ -27,22 +29,27 @@ export const DeleteLogicModal = ({
   isOpen,
   logic,
 }: DeleteLogicModalProps): JSX.Element => {
+  const { deleteLogicMutation } = useLogicMutations()
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
     md: 'md',
   })
 
+  const handleDelete = useCallback(() => {
+    return deleteLogicMutation.mutate(logic._id)
+  }, [deleteLogicMutation, logic._id])
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       size={modalSize}
-      closeOnOverlayClick={false}
+      closeOnOverlayClick={!deleteLogicMutation.isLoading}
     >
       <ModalOverlay />
       <ModalContent>
-        <ModalCloseButton />
+        <ModalCloseButton isDisabled={deleteLogicMutation.isLoading} />
         <ModalHeader color="secondary.700">Delete logic</ModalHeader>
         <ModalBody whiteSpace="pre-line">
           <Text textStyle="body-2" color="secondary.500">
@@ -56,10 +63,21 @@ export const DeleteLogicModal = ({
             w="100%"
             justify="flex-end"
           >
-            <Button variant="clear" colorScheme="secondary" onClick={onClose}>
+            <Button
+              variant="clear"
+              isDisabled={deleteLogicMutation.isLoading}
+              colorScheme="secondary"
+              onClick={onClose}
+            >
               No, don't delete
             </Button>
-            <Button colorScheme="danger">Yes, delete logic</Button>
+            <Button
+              colorScheme="danger"
+              onClick={handleDelete}
+              isLoading={deleteLogicMutation.isLoading}
+            >
+              Yes, delete logic
+            </Button>
           </Stack>
         </ModalFooter>
       </ModalContent>
