@@ -63,7 +63,7 @@ export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element | null => {
       borderColor="neutral.300"
       pos="relative"
     >
-      <DeleteLogicModal isOpen={isOpen} onClose={onClose} logic={logic} />
+      <DeleteLogicModal isOpen={isOpen} onClose={onClose} logicId={logic._id} />
       <Stack
         spacing="1.5rem"
         divider={<StackDivider borderColor="secondary.100" />}

@@ -21,13 +21,13 @@ import { useLogicMutations } from '../../mutations'
 interface DeleteLogicModalProps {
   onClose: () => void
   isOpen: boolean
-  logic: LogicDto
+  logicId: LogicDto['_id']
 }
 
 export const DeleteLogicModal = ({
   onClose,
   isOpen,
-  logic,
+  logicId,
 }: DeleteLogicModalProps): JSX.Element => {
   const { deleteLogicMutation } = useLogicMutations()
   const modalSize = useBreakpointValue({
@@ -37,8 +37,8 @@ export const DeleteLogicModal = ({
   })
 
   const handleDelete = useCallback(() => {
-    return deleteLogicMutation.mutate(logic._id)
-  }, [deleteLogicMutation, logic._id])
+    return deleteLogicMutation.mutate(logicId)
+  }, [deleteLogicMutation, logicId])
 
   return (
     <Modal
