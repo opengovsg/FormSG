@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Box, Divider, Stack, StackDivider, Text, Wrap } from '@chakra-ui/react'
+import { Box, Divider, Stack, StackDivider, Text } from '@chakra-ui/react'
 
 import { LogicDto, LogicType } from '~shared/types/form'
 
@@ -68,9 +68,7 @@ export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element | null => {
             </Stack>
             <Stack>
               <Text>{condition.state}</Text>
-              <Wrap shouldWrapChildren spacing="0.25rem">
-                <LogicConditionValues value={condition.value} />
-              </Wrap>
+              <LogicConditionValues value={condition.value} />
             </Stack>
           </Stack>
         ))}
