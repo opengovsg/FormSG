@@ -53,7 +53,7 @@
     ]
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.7",
+    "@babel/runtime": "^7.17.8",
     "@joi/date": "^2.1.0",
     "@opengovsg/angular-daterangepicker-webpack": "^1.1.5",
     "@opengovsg/angular-legacy-sortablejs-maintained": "^1.0.0",
@@ -82,7 +82,7 @@
     "angular-ui-bootstrap": "~2.5.6",
     "angular-ui-router": "~1.0.30",
     "aws-info": "^1.2.0",
-    "aws-sdk": "^2.1095.0",
+    "aws-sdk": "^2.1096.0",
     "axios": "^0.26.1",
     "bcrypt": "^5.0.1",
     "bluebird": "^3.5.2",
@@ -156,7 +156,7 @@
     "whatwg-fetch": "^3.6.2",
     "winston": "^3.6.0",
     "winston-cloudwatch": "^3.1.1",
-    "zod": "^3.13.4"
+    "zod": "^3.14.2"
   },
   "devDependencies": {
     "@babel/core": "^7.17.8",
@@ -248,7 +248,7 @@
     "ts-loader": "^7.0.5",
     "ts-node": "^10.7.0",
     "ts-node-dev": "^1.1.8",
-    "type-fest": "^2.12.0",
+    "type-fest": "^2.12.1",
     "typescript": "^4.6.2",
     "url-loader": "^1.1.2",
     "webpack": "^4.46.0",
