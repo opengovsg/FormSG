@@ -3,7 +3,7 @@ import { Box, Divider, Grid, Stack, Text, Wrap } from '@chakra-ui/react'
 
 import { LogicDto } from '~shared/types/form'
 
-import { isShowFieldsLogic } from '~features/public-form/logic/utils'
+import { isShowFieldsLogic } from '~features/logic/utils'
 
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
 

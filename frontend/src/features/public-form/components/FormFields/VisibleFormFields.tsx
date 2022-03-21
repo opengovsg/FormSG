@@ -4,7 +4,7 @@ import { Control, FieldValues, useWatch } from 'react-hook-form'
 import { FormFieldDto } from '~shared/types/field'
 import { FormColorTheme, LogicDto } from '~shared/types/form'
 
-import { getVisibleFieldIds } from '~features/public-form/logic/utils'
+import { getVisibleFieldIds } from '~features/logic/utils'
 
 import { FieldFactory } from './FieldFactory'
 

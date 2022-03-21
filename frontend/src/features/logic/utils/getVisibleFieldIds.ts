@@ -51,10 +51,6 @@ const getCurrentFieldValue = (input: unknown, fieldType: BasicField) => {
   }
 }
 
-const toArray = <T>(value: T | T[]): T[] => {
-  return Array.isArray(value) ? value : [value]
-}
-
 const isConditionFulfilled = (
   input: unknown,
   condition: FormCondition,
@@ -70,7 +66,9 @@ const isConditionFulfilled = (
       return Number(currentValue) >= Number(condition.value)
     case LogicConditionState.Either: {
       // currentValue must be in a value in condition.value
-      const condValuesArray = toArray(condition.value)
+      const condValuesArray = Array.isArray(condition.value)
+        ? condition.value
+        : [condition.value]
       if (validateCheckboxInput(currentValue)) {
         // Empty value, automatically does not fulfil condition.
         if (!currentValue.value) {
