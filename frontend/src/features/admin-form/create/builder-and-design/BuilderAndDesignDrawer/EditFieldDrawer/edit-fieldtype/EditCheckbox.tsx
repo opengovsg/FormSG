@@ -37,8 +37,8 @@ type EditCheckboxKeys = typeof EDIT_CHECKBOX_FIELD_KEYS[number]
 type EditCheckboxInputs = Pick<CheckboxFieldBase, EditCheckboxKeys> & {
   fieldOptions: string
   ValidationOptions: {
-    customMin?: number
-    customMax?: number
+    customMin?: number | string
+    customMax?: number | string
   }
 }
 
@@ -47,10 +47,10 @@ const transformCheckboxFieldToEditForm = (
 ): EditCheckboxInputs => {
   const nextValidationOptions = field.validateByValue
     ? {
-        customMin: field.ValidationOptions.customMin || undefined,
-        customMax: field.ValidationOptions.customMax || undefined,
+        customMin: field.ValidationOptions.customMin || '',
+        customMax: field.ValidationOptions.customMax || '',
       }
-    : { customMin: undefined, customMax: undefined }
+    : { customMin: '', customMax: '' }
   return {
     ...pick(field, EDIT_CHECKBOX_FIELD_KEYS),
     fieldOptions: SPLIT_TEXTAREA_TRANSFORM.input(field.fieldOptions),
