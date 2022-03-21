@@ -219,17 +219,18 @@ export const FieldRowContainer = ({
                     icon={<BiCog fontSize="1.25rem" />}
                     onClick={setToInactive}
                   />
-                  <IconButton
-                    aria-label="Duplicate field"
+                  {
                     // Fields which are not yet created cannot be duplicated
-                    isDisabled={
-                      stateData.state === BuildFieldState.CreatingField ||
-                      isAnyMutationLoading
-                    }
-                    onClick={handleDuplicateClick}
-                    isLoading={duplicateFieldMutation.isLoading}
-                    icon={<BiDuplicate fontSize="1.25rem" />}
-                  />
+                    stateData.state !== BuildFieldState.CreatingField && (
+                      <IconButton
+                        aria-label="Duplicate field"
+                        isDisabled={isAnyMutationLoading}
+                        onClick={handleDuplicateClick}
+                        isLoading={duplicateFieldMutation.isLoading}
+                        icon={<BiDuplicate fontSize="1.25rem" />}
+                      />
+                    )
+                  }
                   <IconButton
                     colorScheme="danger"
                     aria-label="Delete field"
