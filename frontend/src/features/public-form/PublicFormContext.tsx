@@ -24,6 +24,8 @@ export interface PublicFormContextProps
   submissionId: string | undefined
   /** Color of background based on form's colorTheme */
   formBgColor: string
+  /** id of container to render captcha in  */
+  captchaContainerId: string
 }
 
 export const PublicFormContext = createContext<

@@ -18,6 +18,8 @@ import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
 
+import { useEnv } from '~features/env/queries'
+import { useRecaptcha } from '~features/recaptcha/useRecaptcha'
 import {
   FetchNewTransactionResponse,
   useTransactionMutations,
@@ -46,6 +48,10 @@ export const PublicFormProvider = ({
     // Stop querying once submissionId is present.
     /* enabled= */ !submissionId,
   )
+  const { data: { captchaPublicKey } = {} } = useEnv(!!data?.form.hasCaptcha)
+  const { hasLoaded, getCaptchaResponse, containerId } = useRecaptcha({
+    sitekey: captchaPublicKey,
+  })
 
   const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
 
@@ -203,7 +209,8 @@ export const PublicFormProvider = ({
         expiryInMs,
         submissionId,
         formBgColor,
-        isLoading,
+        captchaContainerId: containerId,
+        isLoading: isLoading || (!!cachedDto?.form.hasCaptcha && !hasLoaded),
         ...cachedDto,
         ...rest,
       }}
