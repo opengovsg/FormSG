@@ -1,4 +1,4 @@
-import { chakra, Divider, Flex, Link, Stack, Text } from '@chakra-ui/react'
+import { Box, chakra, Divider, Flex, Link, Stack, Text } from '@chakra-ui/react'
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 
@@ -15,7 +15,7 @@ const BrandLogo = chakra(BrandLogoSvg, {
  * @precondition Must be nested inside `PublicFormProvider`
  */
 export const FormFooter = (): JSX.Element => {
-  const { formBgColor } = usePublicFormContext()
+  const { formBgColor, captchaContainerId } = usePublicFormContext()
 
   return (
     <Stack
@@ -36,6 +36,7 @@ export const FormFooter = (): JSX.Element => {
         <Link textStyle="body-2">Terms of Use</Link>
         <Link textStyle="body-2">Privacy Policy</Link>
       </Stack>
+      <Box id={captchaContainerId} />
     </Stack>
   )
 }
