@@ -222,6 +222,7 @@ export const FieldRowContainer = ({
                     aria-label="Close field settings"
                     icon={<BiCog fontSize="1.25rem" />}
                     onClick={setToInactive}
+                    isDisabled={isAnyMutationLoading}
                   />
                   {
                     // Fields which are not yet created cannot be duplicated
