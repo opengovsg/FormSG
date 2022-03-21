@@ -2,7 +2,7 @@ import { merge } from 'lodash'
 import { rest } from 'msw'
 
 import { AgencyId } from '~shared/types/agency'
-import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
+import { BasicField, FieldCreateDto, FormFieldDto } from '~shared/types/field'
 import {
   AdminFormDto,
   AdminFormViewDto,
@@ -17,7 +17,55 @@ import { DateString } from '~shared/types/generic'
 import { UserDto } from '~shared/types/user'
 import { insertAt, reorder } from '~shared/utils/immutable-array-fns'
 
-let formFields: FormFieldDto[] = []
+let formFields: FormFieldDto[] = [
+  {
+    _id: 'field-id-0',
+    fieldType: BasicField.Section,
+    title: 'Example Header',
+    description: 'Example Header Description',
+    required: true,
+    disabled: false,
+  },
+  {
+    _id: 'field-id-1',
+    fieldType: BasicField.Checkbox,
+    title: 'Example Checkbox',
+    description: 'Example Checkbox Description',
+    required: true,
+    disabled: false,
+    fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+    othersRadioButton: true,
+    validateByValue: true,
+    ValidationOptions: {
+      customMin: 1,
+      customMax: 2,
+    },
+  },
+  {
+    _id: 'field-id-2',
+    fieldType: BasicField.YesNo,
+    title: 'Example Yes/No',
+    description: 'Example Yes/No Description',
+    required: true,
+    disabled: false,
+  },
+  {
+    _id: 'field-id-3',
+    fieldType: BasicField.Nric,
+    title: 'Example NRIC',
+    description: 'Example NRIC Description',
+    required: true,
+    disabled: false,
+  },
+  {
+    _id: 'field-id-4',
+    fieldType: BasicField.Uen,
+    title: 'Example UEN',
+    description: 'Example UEN Description',
+    required: true,
+    disabled: false,
+  },
+]
 
 export const createMockForm = (
   props: Partial<AdminFormDto> = {},
