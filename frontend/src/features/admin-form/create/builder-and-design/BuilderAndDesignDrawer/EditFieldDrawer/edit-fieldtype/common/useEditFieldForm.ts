@@ -17,8 +17,11 @@ type UseEditFieldFormProps<
   FieldShape extends FieldBase,
 > = EditFieldProps<FieldShape> & {
   transform: {
-    input: (field: FieldShape) => FormShape
-    output: (form: FormShape, originalField: FieldShape) => FieldShape
+    input: (field: FieldShape) => UnpackNestedValue<DeepPartial<FormShape>>
+    output: (
+      form: UnpackNestedValue<FormShape>,
+      originalField: FieldShape,
+    ) => FieldShape
   }
 }
 
@@ -39,7 +42,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FieldBase>({
   FieldShape
 >): UseEditFieldFormReturn<FormShape> => {
   const defaultValues = useMemo(
-    () => transform.input(field) as UnpackNestedValue<DeepPartial<FormShape>>,
+    () => transform.input(field),
     [field, transform],
   )
   const editForm = useForm<FormShape>({
@@ -49,16 +52,13 @@ export const useEditFieldForm = <FormShape, FieldShape extends FieldBase>({
   const watchedInputs = editForm.watch()
 
   useDebounce(
-    () => handleChange(transform.output(watchedInputs as FormShape, field)),
+    () => handleChange(transform.output(watchedInputs, field)),
     300,
     Object.values(watchedInputs),
   )
 
   const handleUpdateField = editForm.handleSubmit((inputs) => {
-    const updatedFormField: FieldShape = transform.output(
-      inputs as FormShape,
-      field,
-    )
+    const updatedFormField: FieldShape = transform.output(inputs, field)
     return handleSave(updatedFormField, {
       onSuccess: (newField) => {
         editForm.reset(
