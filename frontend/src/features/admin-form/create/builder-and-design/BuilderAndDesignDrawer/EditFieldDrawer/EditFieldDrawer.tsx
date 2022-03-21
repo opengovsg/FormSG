@@ -8,6 +8,7 @@ import IconButton from '~components/IconButton'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
+import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
 import { useCreateFormField } from '../../mutations/useCreateFormField'
 import { useEditFormField } from '../../mutations/useEditFormField'
 import {
@@ -21,7 +22,7 @@ import {
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
 import { FieldMutateOptions } from './edit-fieldtype/common/types'
-import { EditHeader } from './edit-fieldtype/EditHeader'
+import { EditCheckbox, EditHeader } from './edit-fieldtype'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
   const { stateData, setToInactive, updateEditState, updateCreateState } =
@@ -79,6 +80,26 @@ export const EditFieldDrawer = (): JSX.Element | null => {
     [stateData, updateCreateState, updateEditState],
   )
 
+  // Hacky method of determining when to rerender the drawer,
+  // i.e. when the user clicks into a different field.
+  // We pass `${fieldIndex}-${numFields}` as the key. If the
+  // user was creating a new field but clicked into an existing
+  // field, causing the new field to be discarded, then numFields
+  // changes. If the user was editing an existing field then clicked
+  // into another existing field, causing the edits to be discarded,
+  // then fieldIndex changes.
+  const { builderFields } = useBuilderFields()
+  const fieldIndex = useMemo(() => {
+    if (stateData.state === BuildFieldState.CreatingField) {
+      return stateData.insertionIndex
+    } else if (stateData.state === BuildFieldState.EditingField) {
+      return builderFields?.findIndex(
+        (field) => field._id === stateData.field._id,
+      )
+    }
+  }, [builderFields, stateData])
+  const numFields = useMemo(() => builderFields?.length, [builderFields])
+
   if (!fieldToEdit) return null
 
   return (
@@ -111,6 +132,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
         handleChange={handleChange}
         handleSave={handleSave}
         handleCancel={setToInactive}
+        key={`${fieldIndex}-${numFields}`}
       />
     </>
   )
@@ -131,6 +153,8 @@ const MemoFieldDrawerContent = memo((props: MemoFieldDrawerContentProps) => {
   switch (field.fieldType) {
     case BasicField.Section:
       return <EditHeader {...props} field={field} />
+    case BasicField.Checkbox:
+      return <EditCheckbox {...props} field={field} />
     default:
       return <div>TODO: Insert field options here</div>
   }
