@@ -7,7 +7,6 @@ import {
   useFormControlProps,
   useMultiStyleConfig,
   useRadioGroup,
-  UseRadioGroupProps,
 } from '@chakra-ui/react'
 import pick from 'lodash/pick'
 
@@ -15,6 +14,8 @@ import { YESNO_THEME_KEY } from '~theme/components/Field/YesNo'
 import { FieldColorScheme } from '~theme/foundations/colours'
 
 import { YesNoOption } from './YesNoOption'
+
+export type YesNoOptionValue = 'yes' | 'no'
 
 export interface YesNoProps {
   /**
@@ -25,17 +26,17 @@ export interface YesNoProps {
    * Function called once a radio is checked
    * @param nextValue the value of the checked radio
    */
-  onChange?: UseRadioGroupProps['onChange']
+  onChange?: (nextValue: YesNoOptionValue) => void
   /**
    * The value of the radio to be `checked`
    * (in controlled mode)
    */
-  value?: 'yes' | 'no'
+  value?: YesNoOptionValue
   /**
    * The value of the radio to be `checked`
    * initially (in uncontrolled mode)
    */
-  defaultValue?: 'yes' | 'no'
+  defaultValue?: YesNoOptionValue
   /**
    * The `name` attribute forwarded to each `radio` element
    */
