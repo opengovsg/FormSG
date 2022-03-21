@@ -155,13 +155,20 @@ export const PublicFormProvider = ({
       const { form } = cachedDto ?? {}
       if (!form) return
 
+      let captchaResponse: string | null
+      try {
+        captchaResponse = await getCaptchaResponse()
+      } catch {
+        return showErrorToast()
+      }
+
       switch (form.responseMode) {
         case FormResponseMode.Email:
           // Using mutateAsync so react-hook-form goes into loading state.
           return (
             submitEmailModeFormMutation
               .mutateAsync(
-                { formFields: form.form_fields, formInputs },
+                { formFields: form.form_fields, formInputs, captchaResponse },
                 {
                   onSuccess: ({ submissionId }) =>
                     setSubmissionId(submissionId),
@@ -179,6 +186,7 @@ export const PublicFormProvider = ({
                   formFields: form.form_fields,
                   formInputs,
                   publicKey: form.publicKey,
+                  captchaResponse,
                 },
                 {
                   onSuccess: ({ submissionId }) =>
@@ -192,6 +200,7 @@ export const PublicFormProvider = ({
     },
     [
       cachedDto,
+      getCaptchaResponse,
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
