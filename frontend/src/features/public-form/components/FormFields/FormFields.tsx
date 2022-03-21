@@ -7,6 +7,7 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme } from '~shared/types/form'
 
 import Button from '~components/Button'
+import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import { FieldFactory } from './FieldFactory'
 
@@ -29,12 +30,8 @@ export const FormFields = ({
         // Required so table column fields will render due to useFieldArray usage.
         // See https://react-hook-form.com/api/usefieldarray
         case BasicField.Table:
-          acc[field._id] = times(field.minimumRows, () =>
-            field.columns.reduce<FieldValues>((acc, c) => {
-              acc[c._id] = ''
-              return acc
-            }, {}),
-          )
+          acc[field._id] = times(field.minimumRows, () => createTableRow(field))
+          break
       }
 
       return acc

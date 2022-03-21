@@ -65,9 +65,10 @@ export type RadioFieldValues = {
   value: string
   othersInput?: string
 }
-export type TableFieldValues = {
+export type TableRowValues = {
   [columnId: string]: string
-}[]
+}
+export type TableFieldValues = TableRowValues[]
 
 export type SingleAnswerOutput<F extends FormFieldDto> =
   SingleAnswerResponse & {
