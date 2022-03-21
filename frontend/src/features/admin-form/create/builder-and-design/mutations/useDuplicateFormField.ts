@@ -1,15 +1,15 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
+import { FormFieldDto } from '~shared/types/field'
 import { AdminFormDto } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
-import { createSingleFormField } from '../UpdateFormFieldService'
+import { duplicateSingleFormField } from '../UpdateFormFieldService'
 import {
   BuildFieldState,
   stateDataSelector,
@@ -17,7 +17,7 @@ import {
   useBuilderAndDesignStore,
 } from '../useBuilderAndDesignStore'
 
-export const useCreateFormField = () => {
+export const useDuplicateFormField = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
@@ -31,7 +31,7 @@ export const useCreateFormField = () => {
   const handleSuccess = useCallback(
     (newField: FormFieldDto) => {
       toast.closeAll()
-      if (stateData.state !== BuildFieldState.CreatingField) {
+      if (stateData.state !== BuildFieldState.EditingField) {
         toast({
           status: 'warning',
           description:
@@ -46,10 +46,10 @@ export const useCreateFormField = () => {
         // Should not happen, should not be able to update field if there is no
         // existing data.
         if (!oldForm) throw new Error('Query should have been set')
-        oldForm.form_fields.splice(stateData.insertionIndex, 0, newField)
+        oldForm.form_fields.push(newField)
         return oldForm
       })
-      // Switch from creation to editing
+      // Switch to editing new field
       updateEditState(newField)
     },
     [adminFormKey, stateData, queryClient, updateEditState, toast],
@@ -66,19 +66,12 @@ export const useCreateFormField = () => {
     [toast],
   )
 
-  const insertionIndex = useMemo(() => {
-    if (stateData.state === BuildFieldState.CreatingField) {
-      return stateData.insertionIndex
-    }
-  }, [stateData])
-
   return {
-    createFieldMutation: useMutation(
-      (createFieldBody: FieldCreateDto) =>
-        createSingleFormField({
+    duplicateFieldMutation: useMutation(
+      (fieldId: string) =>
+        duplicateSingleFormField({
           formId,
-          createFieldBody,
-          insertionIndex,
+          fieldId,
         }),
       {
         onSuccess: handleSuccess,
