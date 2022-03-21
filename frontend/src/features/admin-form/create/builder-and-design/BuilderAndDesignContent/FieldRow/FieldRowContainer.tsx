@@ -99,8 +99,12 @@ export const FieldRowContainer = ({
   )
 
   const handleDuplicateClick = useCallback(() => {
-    duplicateFieldMutation.mutate(field._id)
-  }, [field._id, duplicateFieldMutation])
+    // Duplicate button should be hidden if field
+    // is not yet created, but guard here just in case
+    if (stateData.state !== BuildFieldState.CreatingField) {
+      duplicateFieldMutation.mutate(field._id)
+    }
+  }, [stateData.state, duplicateFieldMutation, field._id])
 
   const handleDeleteClick = useCallback(() => {
     if (stateData.state === BuildFieldState.CreatingField) {
