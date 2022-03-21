@@ -56,6 +56,7 @@ export const FormFieldsContainer = (): JSX.Element => {
     return (
       <FormFields
         formFields={form.form_fields}
+        formLogics={form.form_logics}
         colorTheme={form.startPage.colorTheme}
         onSubmit={handleSubmitForm}
       />
