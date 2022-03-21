@@ -6,7 +6,11 @@ import get from 'lodash/get'
 import simplur from 'simplur'
 
 import { FormFieldDto } from '~shared/types/field'
-import { FormResponseMode, PublicFormViewDto } from '~shared/types/form'
+import {
+  FormColorTheme,
+  FormResponseMode,
+  PublicFormViewDto,
+} from '~shared/types/form'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
@@ -37,7 +41,7 @@ export const PublicFormProvider = ({
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
-  const { data, error, ...rest } = usePublicFormView(
+  const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
     // Stop querying once submissionId is present.
     /* enabled= */ !submissionId,
@@ -51,6 +55,18 @@ export const PublicFormProvider = ({
   const toast = useToast()
   const vfnToastIdRef = useRef<string | number>()
   const desyncToastIdRef = useRef<string | number>()
+
+  const formBgColor = useMemo(() => {
+    if (isLoading) return 'neutral.100'
+    if (!cachedDto) return ''
+    const { colorTheme } = cachedDto.form.startPage
+    switch (colorTheme) {
+      case FormColorTheme.Blue:
+        return 'secondary.100'
+      default:
+        return `theme-${colorTheme}.100`
+    }
+  }, [cachedDto, isLoading])
 
   useEffect(() => {
     if (data) {
@@ -186,6 +202,8 @@ export const PublicFormProvider = ({
         getTransactionId,
         expiryInMs,
         submissionId,
+        formBgColor,
+        isLoading,
         ...cachedDto,
         ...rest,
       }}

@@ -25,7 +25,7 @@ export const SectionSidebar = (): JSX.Element => {
   }, [miniHeaderRef?.current?.clientHeight])
 
   const scrollData = useMemo(() => {
-    if (!form) return
+    if (!form) return []
     const sections: SidebarSectionMeta[] = []
     form.form_fields.forEach((f) => {
       if (f.fieldType !== BasicField.Section) return
@@ -39,7 +39,11 @@ export const SectionSidebar = (): JSX.Element => {
   }, [form])
 
   return (
-    <Box flex={1} d={{ base: 'none', md: 'initial' }} minW="20%">
+    <Box
+      flex={1}
+      d={{ base: 'none', md: 'initial' }}
+      minW={scrollData.length > 0 ? '20%' : undefined}
+    >
       <VStack
         pos="sticky"
         top={sectionTopOffset}

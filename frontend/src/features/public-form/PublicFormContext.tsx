@@ -22,6 +22,8 @@ export interface PublicFormContextProps
   handleSubmitForm: (formInputs: any) => void
   /** If form is submitted, submissionId will be defined. */
   submissionId: string | undefined
+  /** Color of background based on form's colorTheme */
+  formBgColor: string
 }
 
 export const PublicFormContext = createContext<
