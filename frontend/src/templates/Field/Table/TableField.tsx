@@ -24,10 +24,7 @@ export interface TableFieldProps extends BaseFieldProps {
  * @precondition This component uses `react-hook-form#useFieldArray`, and will require defaultValues to be populated in the parent `useForm` hook.
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const TableField = ({
-  schema,
-  questionNumber,
-}: TableFieldProps): JSX.Element => {
+export const TableField = ({ schema }: TableFieldProps): JSX.Element => {
   const columnsData = useMemo(() => {
     return schema.columns.map((c) => ({
       Header: (
@@ -64,7 +61,7 @@ export const TableField = ({
   )
 
   return (
-    <TableFieldContainer schema={schema} questionNumber={questionNumber}>
+    <TableFieldContainer schema={schema}>
       <Box d="block" w="100%" overflowX="auto">
         <Table
           {...getTableProps()}

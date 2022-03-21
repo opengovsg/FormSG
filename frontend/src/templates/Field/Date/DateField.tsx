@@ -21,10 +21,7 @@ export interface DateFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const DateField = ({
-  schema,
-  questionNumber,
-}: DateFieldProps): JSX.Element => {
+export const DateField = ({ schema }: DateFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createDateValidationRules(schema),
     [schema],
@@ -55,7 +52,7 @@ export const DateField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Controller
         control={control}
         name={schema._id}

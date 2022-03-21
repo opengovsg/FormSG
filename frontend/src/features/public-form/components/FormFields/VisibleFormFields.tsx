@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Control, FieldValues, useWatch } from 'react-hook-form'
 
-import { FormFieldDto } from '~shared/types/field'
 import { FormColorTheme, LogicDto } from '~shared/types/form'
 
+import { FormFieldWithQuestionNo } from '~features/form/types'
+import { augmentWithQuestionNo } from '~features/form/utils'
 import { getVisibleFieldIds } from '~features/logic/utils'
 
 import { FieldFactory } from './FieldFactory'
 
 interface VisibleFormFieldsProps {
   control: Control<FieldValues>
-  formFields: FormFieldDto[]
+  formFields: FormFieldWithQuestionNo[]
   formLogics: LogicDto[]
   colorTheme: FormColorTheme
 }
@@ -36,7 +37,8 @@ export const VisibleFormFields = ({
     const visibleFields = formFields.filter((field) =>
       visibleFieldIds.has(field._id),
     )
-    setVisibleFormFields(visibleFields)
+    const visibleFieldsWithQuestionNo = augmentWithQuestionNo(visibleFields)
+    setVisibleFormFields(visibleFieldsWithQuestionNo)
   }, [formFields, formLogics, watchedValues])
 
   return (

@@ -24,7 +24,6 @@ export interface VerifiableFieldContainerProps
  */
 export const VerifiableFieldContainer = ({
   schema,
-  questionNumber,
   children,
 }: VerifiableFieldContainerProps): JSX.Element => {
   const {
@@ -38,7 +37,7 @@ export const VerifiableFieldContainer = ({
 
   return (
     <Box>
-      <FieldContainer schema={schema} questionNumber={questionNumber}>
+      <FieldContainer schema={schema}>
         <Stack spacing="0.5rem" direction={{ base: 'column', md: 'row' }}>
           {children}
           <Box>

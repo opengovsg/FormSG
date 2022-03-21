@@ -26,10 +26,7 @@ export interface CheckboxFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const CheckboxField = ({
-  schema,
-  questionNumber,
-}: CheckboxFieldProps): JSX.Element => {
+export const CheckboxField = ({ schema }: CheckboxFieldProps): JSX.Element => {
   const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, {})
 
   const othersInputName = useMemo(
@@ -69,11 +66,7 @@ export const CheckboxField = ({
   )
 
   return (
-    <FieldContainer
-      schema={schema}
-      questionNumber={questionNumber}
-      errorKey={checkboxInputName}
-    >
+    <FieldContainer schema={schema} errorKey={checkboxInputName}>
       {schema.fieldOptions.map((o, idx) => (
         <Checkbox
           key={idx}

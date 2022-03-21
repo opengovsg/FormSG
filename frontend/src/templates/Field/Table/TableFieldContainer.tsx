@@ -2,13 +2,11 @@ import { useFormState } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 
 import FormLabel from '~components/FormControl/FormLabel'
-import { FormLabelProps } from '~components/FormControl/FormLabel/FormLabel'
 
 import { TableFieldSchema } from '../types'
 
 export type BaseTableFieldProps = {
   schema: TableFieldSchema
-  questionNumber?: FormLabelProps['questionNumber']
 }
 
 export interface TableFieldContainerProps extends BaseTableFieldProps {
@@ -21,7 +19,6 @@ export interface TableFieldContainerProps extends BaseTableFieldProps {
  */
 export const TableFieldContainer = ({
   schema,
-  questionNumber,
   children,
 }: TableFieldContainerProps): JSX.Element => {
   const { isSubmitting, isValid, errors } = useFormState({ name: schema._id })
@@ -34,7 +31,9 @@ export const TableFieldContainer = ({
       isInvalid={!!errors[schema._id]}
     >
       <FormLabel
-        questionNumber={questionNumber}
+        questionNumber={
+          schema.questionNumber ? String(schema.questionNumber) : undefined
+        }
         description={schema.description}
       >
         {schema.title}

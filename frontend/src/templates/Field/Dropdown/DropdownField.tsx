@@ -14,10 +14,7 @@ export interface DropdownFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const DropdownField = ({
-  schema,
-  questionNumber,
-}: DropdownFieldProps): JSX.Element => {
+export const DropdownField = ({ schema }: DropdownFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createDropdownValidationRules(schema),
     [schema],
@@ -26,7 +23,7 @@ export const DropdownField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Controller
         control={control}
         rules={validationRules}
