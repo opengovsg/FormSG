@@ -54,7 +54,7 @@ export const FieldContainer = ({
     >
       <FormLabel
         questionNumber={
-          schema.questionNumber ? String(schema.questionNumber) : undefined
+          schema.questionNumber ? `${schema.questionNumber}.` : undefined
         }
         description={schema.description}
       >
