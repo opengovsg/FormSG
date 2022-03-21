@@ -1,4 +1,5 @@
 import { format } from 'date-fns'
+import { times } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import {
@@ -14,6 +15,7 @@ import { removeAt } from '~shared/utils/immutable-array-fns'
 
 import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/CheckboxField'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/RadioField'
+import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import {
   AttachmentFieldSchema,
   BaseFieldOutput,
@@ -64,15 +66,16 @@ const transformToVerifiableOutput = <
   input: unknown,
 ): VerifiableAnswerOutput<F> => {
   if (
-    !validateVerifiableInput(input) ||
-    (schema.isVerifiable && !input.signature)
+    input !== undefined &&
+    (!validateVerifiableInput(input) ||
+      (schema.isVerifiable && !input.signature))
   ) {
     throw new InputValidationError(schema._id, input)
   }
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer: input.value,
-    signature: input.signature,
+    answer: input?.value ?? '',
+    signature: input?.signature,
   }
 }
 
@@ -80,12 +83,12 @@ const transformToSingleAnswerOutput = <F extends FormFieldDto>(
   schema: F,
   input: unknown,
 ): SingleAnswerOutput<F> => {
-  if (!validateSingleAnswerInput(input)) {
+  if (input !== undefined && !validateSingleAnswerInput(input)) {
     throw new InputValidationError(schema._id, input)
   }
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer: input,
+    answer: input ?? '',
   }
 }
 
@@ -106,12 +109,12 @@ const transformToDateOutput = (
   schema: DateFieldSchema,
   input: unknown,
 ): SingleAnswerOutput<DateFieldSchema> => {
-  if (!validateDateInput(input)) {
+  if (input !== undefined && !validateDateInput(input)) {
     throw new InputValidationError(schema._id, input)
   }
   // Convert ISO8601 "yyyy-mm-dd" format to "DD MMM YYYY" format.
   // Above date validation ensures original format is valid, and `new Date()` will be a valid date.
-  const formattedDate = format(new Date(input), 'dd MMM yyyy')
+  const formattedDate = input ? format(new Date(input), 'dd MMM yyyy') : ''
 
   return {
     ...pickBaseOutputFromSchema(schema),
@@ -123,6 +126,8 @@ const transformToTableOutput = (
   schema: TableFieldSchema,
   input: unknown,
 ): TableResponse => {
+  // Set default input if undefined.
+  input = input ?? times(schema.minimumRows, () => createTableRow(schema))
   if (!validateTableInput(input)) {
     throw new InputValidationError(schema._id, input)
   }
@@ -142,12 +147,12 @@ const transformToAttachmentOutput = (
   schema: AttachmentFieldSchema,
   input: unknown,
 ): AttachmentResponse => {
-  if (!validateAttachmentInput(input)) {
+  if (input !== undefined && !validateAttachmentInput(input)) {
     throw new InputValidationError(schema._id, input)
   }
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer: input.name,
+    answer: input?.name ?? '',
   }
 }
 
@@ -155,20 +160,22 @@ const transformToCheckboxOutput = (
   schema: CheckboxFieldSchema,
   input: unknown,
 ): CheckboxResponse => {
-  if (!validateCheckboxInput(input)) {
+  if (input !== undefined && !validateCheckboxInput(input)) {
     throw new InputValidationError(schema._id, input)
   }
 
-  const othersIndex = input.value.findIndex(
-    (v) => v === CHECKBOX_OTHERS_INPUT_VALUE,
-  )
-  let answerArray = []
-  // Others is checked, so we need to add the input at othersInput to the answer array
-  if (othersIndex !== -1) {
-    answerArray = removeAt(input.value, othersIndex)
-    answerArray.push(`Others: ${input.othersInput}`)
-  } else {
-    answerArray = input.value
+  let answerArray: string[] = []
+  if (input !== undefined && input.value) {
+    const othersIndex = input.value.findIndex(
+      (v) => v === CHECKBOX_OTHERS_INPUT_VALUE,
+    )
+    // Others is checked, so we need to add the input at othersInput to the answer array
+    if (othersIndex !== -1) {
+      answerArray = removeAt(input.value, othersIndex)
+      answerArray.push(`Others: ${input.othersInput}`)
+    } else {
+      answerArray = input.value
+    }
   }
   return {
     ...pickBaseOutputFromSchema(schema),
@@ -180,15 +187,18 @@ const transformToRadioOutput = (
   schema: RadioFieldSchema,
   input: unknown,
 ): RadioResponse => {
-  if (!validateRadioInput(input)) {
+  if (input !== undefined && !validateRadioInput(input)) {
     throw new InputValidationError(schema._id, input)
   }
 
-  let answer = input.value
-  const isOthersInput = answer === RADIO_OTHERS_INPUT_VALUE
-  // Others is selected, so we need to use the input at othersInput for the answer instead.
-  if (isOthersInput) {
-    answer = `Others: ${input.othersInput}`
+  let answer = ''
+  if (input !== undefined) {
+    answer = input.value
+    const isOthersInput = answer === RADIO_OTHERS_INPUT_VALUE
+    // Others is selected, so we need to use the input at othersInput for the answer instead.
+    if (isOthersInput) {
+      answer = `Others: ${input.othersInput}`
+    }
   }
   return {
     ...pickBaseOutputFromSchema(schema),

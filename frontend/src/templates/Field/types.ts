@@ -58,7 +58,10 @@ export type VerifiableFieldValues = {
   value: string
 }
 export type CheckboxFieldValues = {
-  value: string[]
+  // Can be `false` if no changes were triggered on checkbox field.
+  // Artifact of react-hook-form not knowing whether checkbox is an array or not.
+  // Unable to use `{schema}.value.{index}` since value is a nested field value.
+  value: string[] | false
   othersInput?: string
 }
 export type RadioFieldValues = {

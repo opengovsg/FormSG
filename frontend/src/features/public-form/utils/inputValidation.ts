@@ -47,7 +47,7 @@ export const validateCheckboxInput = (
   }
   const { value, othersInput } = input as CheckboxFieldValues
   return (
-    validateMultiAnswerInput(value) &&
+    validateMultiAnswerInput(value || []) &&
     (othersInput === undefined || typeof othersInput === 'string')
   )
 }
