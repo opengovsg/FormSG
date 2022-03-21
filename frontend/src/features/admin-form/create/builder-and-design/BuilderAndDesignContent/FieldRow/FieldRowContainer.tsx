@@ -29,6 +29,7 @@ import {
   UenField,
   YesNoField,
 } from '~templates/Field'
+import { BaseSectionField } from '~templates/Field/Section/SectionField'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
@@ -43,8 +44,6 @@ import {
   updateEditStateSelector,
   useBuilderAndDesignStore,
 } from '../../useBuilderAndDesignStore'
-
-import { SectionFieldRow } from './SectionFieldRow'
 
 export interface FieldRowContainerProps {
   field: FormFieldDto
@@ -273,7 +272,7 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
     case BasicField.Nric:
       return <NricField schema={field} {...rest} />
     case BasicField.Section:
-      return <SectionFieldRow field={field} {...rest} />
+      return <BaseSectionField schema={field} {...rest} />
     case BasicField.Uen:
       return <UenField schema={field} {...rest} />
     case BasicField.YesNo:
