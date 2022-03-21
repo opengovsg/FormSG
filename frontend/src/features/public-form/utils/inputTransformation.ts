@@ -26,6 +26,7 @@ import {
   SingleAnswerOutput,
   TableFieldSchema,
   VerifiableAnswerOutput,
+  YesNoFieldSchema,
 } from '~templates/Field/types'
 
 import {
@@ -36,6 +37,7 @@ import {
   validateSingleAnswerInput,
   validateTableInput,
   validateVerifiableInput,
+  validateYesNoInput,
 } from './inputValidation'
 
 export class InputValidationError extends Error {
@@ -84,6 +86,19 @@ const transformToSingleAnswerOutput = <F extends FormFieldDto>(
   return {
     ...pickBaseOutputFromSchema(schema),
     answer: input,
+  }
+}
+
+const transformToYesNoOutput = (
+  schema: YesNoFieldSchema,
+  input: unknown,
+): SingleAnswerOutput<YesNoFieldSchema> => {
+  if (input !== undefined && !validateYesNoInput(input)) {
+    throw new InputValidationError(schema._id, input)
+  }
+  return {
+    ...pickBaseOutputFromSchema(schema),
+    answer: input ?? '',
   }
 }
 
@@ -218,6 +233,8 @@ export const transformInputsToOutputs = (
       return transformToAttachmentOutput(field, input)
     case BasicField.Date:
       return transformToDateOutput(field, input)
+    case BasicField.YesNo:
+      return transformToYesNoOutput(field, input)
     case BasicField.Number:
     case BasicField.Decimal:
     case BasicField.ShortText:
@@ -227,7 +244,6 @@ export const transformInputsToOutputs = (
     case BasicField.Rating:
     case BasicField.Nric:
     case BasicField.Uen:
-    case BasicField.YesNo:
       return transformToSingleAnswerOutput(field, input)
     case BasicField.Statement:
     case BasicField.Image:

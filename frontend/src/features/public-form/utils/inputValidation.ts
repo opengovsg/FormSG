@@ -5,6 +5,7 @@ import {
   SingleAnswerValue,
   TableFieldValues,
   VerifiableFieldValues,
+  YesNoFieldValue,
 } from '~templates/Field/types'
 
 /**
@@ -91,4 +92,10 @@ export const validateDateInput = (
     ISO_8601_DATE_ONLY_REGEX.test(input) &&
     !isNaN(new Date(input).getTime())
   )
+}
+
+export const validateYesNoInput = (
+  input: unknown,
+): input is YesNoFieldValue => {
+  return typeof input === 'string' && ['Yes', 'No'].includes(input)
 }

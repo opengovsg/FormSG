@@ -52,7 +52,7 @@ export type VerifiableFieldInput = FieldInput<VerifiableFieldValues>
 // Input values, what each field contains
 export type SingleAnswerValue = string
 export type MultiAnswerValue = string[]
-export type YesNoFieldValue = 'yes' | 'no'
+export type YesNoFieldValue = 'Yes' | 'No'
 export type VerifiableFieldValues = {
   signature?: string
   value: string
