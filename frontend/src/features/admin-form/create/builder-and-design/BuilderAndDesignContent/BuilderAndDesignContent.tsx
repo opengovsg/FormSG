@@ -1,8 +1,6 @@
-import { memo, useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { Box, Flex } from '@chakra-ui/react'
-
-import { AdminFormDto } from '~shared/types/form'
 
 import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
@@ -10,11 +8,10 @@ import {
   setToInactiveSelector,
   useBuilderAndDesignStore,
 } from '../useBuilderAndDesignStore'
-import { getBuilderQuestionNumbers } from '../utils/questionNumbers'
 
 import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPlaceholder'
 import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
-import FieldRow from './FieldRow'
+import { BuilderFields } from './BuilderFields'
 import { useBuilderFields } from './useBuilderFields'
 
 interface BuilderAndDesignContentProps {
@@ -80,37 +77,3 @@ export const BuilderAndDesignContent = ({
     </Flex>
   )
 }
-
-interface BuilderFieldsProps {
-  fields: AdminFormDto['form_fields']
-  isDraggingOver: boolean
-}
-
-const BuilderFields = memo(
-  ({ fields, isDraggingOver }: BuilderFieldsProps) => {
-    const questionNumbers = useMemo(
-      () => getBuilderQuestionNumbers(fields),
-      [fields],
-    )
-
-    if (!fields) {
-      return <div>Loading...</div>
-    }
-
-    return (
-      <>
-        {fields.map((f, i) => (
-          <FieldRow
-            index={i}
-            questionNumber={questionNumbers[i]}
-            key={f._id}
-            field={f}
-            isDraggingOver={isDraggingOver}
-          />
-        ))}
-      </>
-    )
-  },
-  (prev, next) =>
-    prev.fields === next.fields && prev.isDraggingOver === next.isDraggingOver,
-)
