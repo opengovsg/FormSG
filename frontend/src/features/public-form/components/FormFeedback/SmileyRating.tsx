@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import {
   chakra,
   Flex,
@@ -16,6 +17,7 @@ export interface SmileyRatingProps {
   name?: string
   value: number
   onChange: (newRating?: string) => void
+  isReadOnly?: boolean
 }
 
 const SMILEY_ICONS = [
@@ -74,10 +76,18 @@ const Smiley = forwardRef<SmileyProps, 'input'>(
 )
 
 export const SmileyRating = forwardRef<SmileyRatingProps, 'input'>(
-  ({ name, value, onChange }, ref): JSX.Element => {
+  ({ name, value, onChange, isReadOnly }, ref): JSX.Element => {
+    const handleChange = useCallback(
+      (newRating?: string) => {
+        if (isReadOnly) return
+        return onChange(newRating)
+      },
+      [isReadOnly, onChange],
+    )
+
     const { getRadioProps, getRootProps } = useRadioGroup({
       isNative: true,
-      onChange,
+      onChange: handleChange,
       value,
       name,
     })
