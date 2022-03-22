@@ -9,6 +9,8 @@ import { FormColorTheme, LogicDto } from '~shared/types/form'
 import Button from '~components/Button'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
+import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
+
 import { VisibleFormFields } from './VisibleFormFields'
 
 export interface FormFieldsProps {
@@ -24,10 +26,18 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
-  // TODO: Cleanup messy code
-  // TODO: Inject default values if field is MyInfo, or prefilled.
+  // TODO: Inject default values is field is also prefilled.
+  const augmentedFormFields = useMemo(
+    () => formFields.map(augmentWithMyInfo),
+    [formFields],
+  )
+
   const defaultFormValues = useMemo(() => {
-    return formFields.reduce<FieldValues>((acc, field) => {
+    return augmentedFormFields.reduce<FieldValues>((acc, field) => {
+      if (field.fieldValue !== undefined) {
+        acc[field._id] = field.fieldValue
+        return acc
+      }
       switch (field.fieldType) {
         // Required so table column fields will render due to useFieldArray usage.
         // See https://react-hook-form.com/api/usefieldarray
@@ -38,7 +48,7 @@ export const FormFields = ({
 
       return acc
     }, {})
-  }, [formFields])
+  }, [augmentedFormFields])
 
   const formMethods = useForm({
     defaultValues: defaultFormValues,
@@ -53,7 +63,7 @@ export const FormFields = ({
           <VisibleFormFields
             colorTheme={colorTheme}
             control={formMethods.control}
-            formFields={formFields}
+            formFields={augmentedFormFields}
             formLogics={formLogics}
           />
           <Button
