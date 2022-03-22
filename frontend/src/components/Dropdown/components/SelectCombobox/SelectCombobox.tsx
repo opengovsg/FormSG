@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from 'react'
+import { forwardRef, useCallback, useMemo } from 'react'
 import {
   Flex,
   Icon,
@@ -44,6 +44,11 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       }),
       [selectedItem],
     )
+
+    const handleToggleMenu = useCallback(() => {
+      if (isReadOnly || isDisabled) return
+      return toggleMenu()
+    }, [isDisabled, isReadOnly, toggleMenu])
 
     return (
       <Flex>
@@ -94,7 +99,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             placeholder={selectedItem ? undefined : placeholder}
             sx={styles.field}
             {...getInputProps({
-              onClick: toggleMenu,
+              onClick: handleToggleMenu,
               onBlur: () => !isOpen && resetInputValue(),
               ref,
               'aria-describedby': inputAria.id,

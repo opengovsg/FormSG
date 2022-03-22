@@ -41,11 +41,19 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
       value = '',
       isDateUnavailable,
       isDisabled: isDisabledProp,
+      isReadOnly: isReadOnlyProp,
+      isRequired: isRequiredProp,
+      isInvalid: isInvalidProp,
       ...props
     },
     ref,
   ) => {
-    const { isDisabled } = useFormControlProps({ isDisabled: isDisabledProp })
+    const fcProps = useFormControlProps({
+      isInvalid: isInvalidProp,
+      isDisabled: isDisabledProp,
+      isReadOnly: isReadOnlyProp,
+      isRequired: isRequiredProp,
+    })
 
     const initialFocusRef = useRef<HTMLInputElement>(null)
 
@@ -104,8 +112,8 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                   onChange={(e) => onChange?.(e.target.value)}
                   ref={ref}
                   value={value}
-                  isDisabled={isDisabled}
                   {...props}
+                  {...fcProps}
                 />
               </PopoverAnchor>
               <PopoverTrigger>
@@ -115,7 +123,7 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                   variant="inputAttached"
                   borderRadius={0}
                   isActive={isOpen}
-                  isDisabled={isDisabled}
+                  isDisabled={fcProps.isDisabled || fcProps.isReadOnly}
                 />
               </PopoverTrigger>
               <PopoverContent
