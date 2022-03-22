@@ -63,10 +63,10 @@ const Template: Story<StoryLongTextFieldProps> = ({
   }
 
   useEffect(() => {
-    if (defaultValue) {
+    if (defaultValue !== undefined) {
       formMethods.trigger()
     }
-  }, [])
+  }, [defaultValue, formMethods])
 
   return (
     <FormProvider {...formMethods}>

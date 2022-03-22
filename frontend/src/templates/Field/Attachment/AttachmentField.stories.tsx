@@ -70,7 +70,7 @@ const Template: Story<StoryAttachmentFieldProps> = ({
 
   useEffect(() => {
     formMethods.trigger()
-  }, [])
+  }, [formMethods])
 
   return (
     <FormProvider {...formMethods}>

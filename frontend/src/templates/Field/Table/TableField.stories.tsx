@@ -98,15 +98,20 @@ const baseSchema: TableFieldSchema = {
 
 interface StoryTableFieldProps extends TableFieldProps {
   defaultValue?: Record<string, string>
+  triggerValidation?: boolean
 }
 
-const Template: Story<StoryTableFieldProps> = ({ defaultValue, ...args }) => {
+const Template: Story<StoryTableFieldProps> = ({
+  defaultValue,
+  triggerValidation,
+  ...args
+}) => {
   const baseRowData = useMemo(
     () =>
-      args.schema.columns.reduce((acc, c) => {
+      args.schema.columns.reduce<Record<string, string>>((acc, c) => {
         acc[c._id] = ''
         return acc
-      }, {} as Record<string, string>),
+      }, {}),
     [args.schema.columns],
   )
 
@@ -123,12 +128,12 @@ const Template: Story<StoryTableFieldProps> = ({ defaultValue, ...args }) => {
   const [submitValues, setSubmitValues] = useState<string>()
 
   useEffect(() => {
-    if (defaultValue) {
+    if (triggerValidation) {
       formMethods.trigger()
     }
-  }, [])
+  }, [defaultValue, formMethods, triggerValidation])
 
-  const onSubmit = (values: Record<string, any>) => {
+  const onSubmit = (values: Record<string, string>) => {
     console.log(values)
     setSubmitValues(
       JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
@@ -182,17 +187,15 @@ ThreeColumnTable.args = {
 export const ValidationEmpty = Template.bind({})
 ValidationEmpty.args = {
   schema: baseSchema,
-  defaultValue: baseSchema.columns.reduce((acc, c) => {
-    acc[c._id] = ''
-    return acc
-  }, {} as Record<string, string>),
+  triggerValidation: true,
 }
 
 export const ValidationValid = Template.bind({})
 ValidationValid.args = {
   schema: baseSchema,
-  defaultValue: baseSchema.columns.reduce((acc, c) => {
+  triggerValidation: true,
+  defaultValue: baseSchema.columns.reduce<Record<string, string>>((acc, c) => {
     acc[c._id] = 'This is a valid value'
     return acc
-  }, {} as Record<string, string>),
+  }, {}),
 }
