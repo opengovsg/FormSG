@@ -11,6 +11,7 @@ import {
   FormResponseMode,
   PublicFormViewDto,
 } from '~shared/types/form'
+import { SubmissionResponseDto } from '~shared/types/submission'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
@@ -26,8 +27,10 @@ import {
 } from '~features/verifiable-fields'
 
 import { usePublicFormMutations } from './mutations'
-import { PublicFormContext } from './PublicFormContext'
+import { PublicFormContext, SubmissionData } from './PublicFormContext'
+import { SubmitEmailFormArgs } from './PublicFormService'
 import { usePublicFormView } from './queries'
+import { createResponsesArray } from './utils'
 
 interface PublicFormProviderProps {
   formId: string
@@ -39,14 +42,14 @@ export const PublicFormProvider = ({
   children,
 }: PublicFormProviderProps): JSX.Element => {
   // Once form has been submitted, submission ID will be set here.
-  const [submissionId, setSubmissionId] = useState<string>()
+  const [submissionData, setSubmissionData] = useState<SubmissionData>()
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
   const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
     // Stop querying once submissionId is present.
-    /* enabled= */ !submissionId,
+    /* enabled= */ !submissionData?.id,
   )
   const { data: { captchaPublicKey } = {} } = useEnv(!!data?.form.hasCaptcha)
   const { hasLoaded, getCaptchaResponse, containerId } = useRecaptcha({
@@ -78,7 +81,11 @@ export const PublicFormProvider = ({
     if (data) {
       if (!cachedDto) {
         setCachedDto(data)
-      } else if (!desyncToastIdRef.current && !isEqual(data, cachedDto)) {
+      } else if (
+        !submissionData &&
+        !desyncToastIdRef.current &&
+        !isEqual(data, cachedDto)
+      ) {
         desyncToastIdRef.current = toast({
           status: 'warning',
           title: (
@@ -95,7 +102,7 @@ export const PublicFormProvider = ({
         })
       }
     }
-  }, [data, cachedDto, toast])
+  }, [data, cachedDto, toast, submissionData])
 
   const getTransactionId = useCallback(async () => {
     if (!vfnTransaction || isPast(vfnTransaction.expireAt)) {
@@ -150,6 +157,21 @@ export const PublicFormProvider = ({
     })
   }, [toast])
 
+  const handleSubmitSuccess = useCallback(
+    (
+      { submissionId }: SubmissionResponseDto,
+      { formFields, formInputs }: Omit<SubmitEmailFormArgs, 'formId'>,
+    ) => {
+      const submission = createResponsesArray(formFields, formInputs)
+      setSubmissionData({
+        id: submissionId,
+        submission,
+        timeInEpochMs: Date.now(),
+      })
+    },
+    [],
+  )
+
   const handleSubmitForm = useCallback(
     async (formInputs: Record<FormFieldDto['_id'], unknown>) => {
       const { form } = cachedDto ?? {}
@@ -169,10 +191,7 @@ export const PublicFormProvider = ({
             submitEmailModeFormMutation
               .mutateAsync(
                 { formFields: form.form_fields, formInputs, captchaResponse },
-                {
-                  onSuccess: ({ submissionId }) =>
-                    setSubmissionId(submissionId),
-                },
+                { onSuccess: handleSubmitSuccess },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch(showErrorToast)
@@ -188,10 +207,7 @@ export const PublicFormProvider = ({
                   publicKey: form.publicKey,
                   captchaResponse,
                 },
-                {
-                  onSuccess: ({ submissionId }) =>
-                    setSubmissionId(submissionId),
-                },
+                { onSuccess: handleSubmitSuccess },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch(showErrorToast)
@@ -201,6 +217,7 @@ export const PublicFormProvider = ({
     [
       cachedDto,
       getCaptchaResponse,
+      handleSubmitSuccess,
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
@@ -216,7 +233,7 @@ export const PublicFormProvider = ({
         error,
         getTransactionId,
         expiryInMs,
-        submissionId,
+        submissionData,
         formBgColor,
         captchaContainerId: containerId,
         isLoading: isLoading || (!!cachedDto?.form.hasCaptcha && !hasLoaded),

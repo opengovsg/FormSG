@@ -3,6 +3,13 @@ import { createContext, RefObject, useContext } from 'react'
 import { UseQueryResult } from 'react-query'
 
 import { PublicFormViewDto } from '~shared/types/form'
+import { FieldResponse } from '~shared/types/response'
+
+export type SubmissionData = {
+  id: string | undefined
+  submission: FieldResponse[]
+  timeInEpochMs: number
+}
 
 export interface PublicFormContextProps
   extends Partial<PublicFormViewDto>,
@@ -20,8 +27,8 @@ export interface PublicFormContextProps
   expiryInMs: number | null
   /** Callback to be invoked when user submits public form. */
   handleSubmitForm: (formInputs: any) => void
-  /** If form is submitted, submissionId will be defined. */
-  submissionId: string | undefined
+  /** If form is submitted, submissionData will be defined. */
+  submissionData?: SubmissionData
   /** Color of background based on form's colorTheme */
   formBgColor: string
   /** id of container to render captcha in  */

@@ -69,7 +69,7 @@ export const createEmailSubmissionFormData = (
   return formData
 }
 
-const createResponsesArray = (
+export const createResponsesArray = (
   formFields: FormFieldDto[],
   formInputs: Record<string, unknown>,
 ): FieldResponse[] => {

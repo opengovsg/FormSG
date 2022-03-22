@@ -15,11 +15,12 @@ const BrandLogo = chakra(BrandLogoSvg, {
  * @precondition Must be nested inside `PublicFormProvider`
  */
 export const FormFooter = (): JSX.Element => {
-  const { formBgColor, captchaContainerId } = usePublicFormContext()
+  const { formBgColor, captchaContainerId, submissionData } =
+    usePublicFormContext()
 
   return (
     <Stack
-      bg={formBgColor}
+      bg={submissionData ? 'white' : formBgColor}
       direction="column"
       spacing="1.5rem"
       align="center"

@@ -12,13 +12,13 @@ import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
 
-export const FormFieldsContainer = (): JSX.Element => {
+export const FormFieldsContainer = (): JSX.Element | null => {
   const {
     form,
     spcpSession,
     isLoading,
     handleSubmitForm,
-    submissionId,
+    submissionData,
     formBgColor,
   } = usePublicFormContext()
 
@@ -43,10 +43,6 @@ export const FormFieldsContainer = (): JSX.Element => {
       return <FormAuth authType={form.authType} />
     }
 
-    if (submissionId) {
-      return <div>Form has been submitted: {submissionId}</div>
-    }
-
     return (
       <FormFields
         formFields={form.form_fields}
@@ -55,7 +51,11 @@ export const FormFieldsContainer = (): JSX.Element => {
         onSubmit={handleSubmitForm}
       />
     )
-  }, [form, handleSubmitForm, isAuthRequired, isLoading, submissionId])
+  }, [form, handleSubmitForm, isAuthRequired, isLoading])
+
+  if (submissionData) {
+    return null
+  }
 
   return (
     <FormSectionsProvider form={form}>
