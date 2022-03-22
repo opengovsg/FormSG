@@ -79,7 +79,11 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
                 aria-disabled={isDisabled}
               />
             ) : null}
-            <Text textStyle="body-1" isTruncated>
+            <Text
+              textStyle="body-1"
+              isTruncated
+              color={isDisabled ? 'neutral.500' : undefined}
+            >
               {selectedItemMeta.label}
             </Text>
           </Stack>
