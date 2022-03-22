@@ -1,6 +1,7 @@
 import { BoxProps, Center, forwardRef, Icon, Text } from '@chakra-ui/react'
 
 import { BxsWidget } from '~assets/icons/BxsWidget'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 interface EmptyFormPlaceholderProps extends BoxProps {
   isDraggingOver: boolean
@@ -10,6 +11,8 @@ export const EmptyFormPlaceholder = forwardRef<
   EmptyFormPlaceholderProps,
   'div'
 >(({ isDraggingOver, ...props }, ref): JSX.Element => {
+  const isMobile = useIsMobile()
+
   return (
     <Center
       h="13.75rem"
@@ -25,8 +28,15 @@ export const EmptyFormPlaceholder = forwardRef<
           as={BxsWidget}
           __css={{ color: 'secondary.500', fontSize: '1.5rem' }}
         />
-        <Text textStyle="subhead-2" color="secondary.500">
-          Drag a field from the Builder on the left to start
+        <Text
+          textStyle="subhead-2"
+          color="secondary.500"
+          px="1.5rem"
+          textAlign={'center'}
+        >
+          {isMobile
+            ? 'Tap here to add a field'
+            : 'Drag a field from the Builder on the left to start'}
         </Text>
       </Center>
     </Center>
