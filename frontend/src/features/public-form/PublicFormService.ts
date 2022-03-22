@@ -1,7 +1,9 @@
+import { SuccessMessageDto } from '~shared/types/core'
 import { FormFieldDto } from '~shared/types/field'
 import {
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
+  SubmitFormFeedbackBodyDto,
 } from '~shared/types/form'
 import { FormAuthType, PublicFormViewDto } from '~shared/types/form/form'
 import { SubmissionResponseDto } from '~shared/types/submission'
@@ -108,5 +110,21 @@ export const submitStorageModeForm = async ({
         captchaResponse: String(captchaResponse),
       },
     },
+  ).then(({ data }) => data)
+}
+
+/**
+ * Post feedback for a given form.
+ * @param formId the id of the form to post feedback for
+ * @param feedbackToPost object containing the feedback
+ * @returns success message
+ */
+export const submitFormFeedback = async (
+  formId: string,
+  feedbackToPost: SubmitFormFeedbackBodyDto,
+): Promise<SuccessMessageDto> => {
+  return ApiService.post<SuccessMessageDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/feedback`,
+    feedbackToPost,
   ).then(({ data }) => data)
 }
