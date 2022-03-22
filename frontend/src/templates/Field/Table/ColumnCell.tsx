@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Controller, useFormContext } from 'react-hook-form'
+import { Controller, FieldError, useFormContext } from 'react-hook-form'
 import { UseTableCellProps } from 'react-table'
 import { FormControl } from '@chakra-ui/react'
 import { get } from 'lodash'
@@ -11,11 +11,13 @@ import {
   ShortTextColumnBase,
 } from '~shared/types/field'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import {
   createDropdownValidationRules,
   createTextValidationRules,
 } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
@@ -74,6 +76,7 @@ export const ColumnCell = ({
   column,
   columnSchema,
 }: ColumnCellProps): JSX.Element => {
+  const isMobile = useIsMobile()
   const {
     formState: { errors },
   } = useFormContext()
@@ -82,6 +85,8 @@ export const ColumnCell = ({
     () => `${schemaId}.${row.index}.${column.id}`,
     [column.id, row.index, schemaId],
   )
+
+  const cellError: FieldError | undefined = get(errors, inputName)
 
   const renderedColumnCell = useMemo(() => {
     switch (columnSchema.columnType) {
@@ -99,14 +104,14 @@ export const ColumnCell = ({
   }, [columnSchema, inputName])
 
   return (
-    <FormControl
-      isRequired={columnSchema.required}
-      isInvalid={!!get(errors, inputName)}
-    >
+    <FormControl isRequired={columnSchema.required} isInvalid={!!cellError}>
       <FormLabel display={{ base: 'flex', md: 'none' }} color="secondary.700">
         {columnSchema.title}
       </FormLabel>
       {renderedColumnCell}
+      {isMobile ? (
+        <FormErrorMessage>{cellError?.message}</FormErrorMessage>
+      ) : null}
     </FormControl>
   )
 }

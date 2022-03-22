@@ -7,6 +7,7 @@ import { Merge, RequireAllOrNone } from 'type-fest'
 
 import { Column, FormFieldWithId, TableFieldBase } from '~shared/types/field'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 
@@ -35,6 +36,7 @@ export const TableField = ({
   schema,
   questionNumber,
 }: TableFieldProps): JSX.Element => {
+  const isMobile = useIsMobile()
   const columnsData = useMemo(() => {
     return schema.columns.map((c) => ({
       Header: (
@@ -145,13 +147,13 @@ export const TableField = ({
           </Tbody>
         </Table>
       </Box>
-      {/*
-       * Error will only render if table field has errors. Since the only possible errors are
-       * for required fields (for now), just render a hardcoded error message.
-       */}
-      <FormErrorMessage my="0.75rem">
-        Please fill in the required fields.
-      </FormErrorMessage>
+      {isMobile ? null : (
+        // Error will only render if table field has errors. Since the only possible errors are
+        // for required fields (for now), just render a hardcoded error message.
+        <FormErrorMessage my="0.75rem">
+          Please fill in the required fields.
+        </FormErrorMessage>
+      )}
       {schema.addMoreRows ? (
         <AddRowFooter
           currentRows={fields.length}
