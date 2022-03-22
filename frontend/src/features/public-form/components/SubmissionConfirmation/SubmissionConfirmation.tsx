@@ -1,11 +1,16 @@
 import { useMemo } from 'react'
 import { BiUpload } from 'react-icons/bi'
-import { Box, Button, ButtonGroup, Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Stack, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
+
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
+import { FormFeedback } from '../FormFeedback'
+
 export const SubmissionConfirmation = (): JSX.Element | null => {
+  const isMobile = useIsMobile()
   const { submissionData, form: { endPage } = {} } = usePublicFormContext()
 
   const prettifiedDateString = useMemo(() => {
@@ -19,7 +24,7 @@ export const SubmissionConfirmation = (): JSX.Element | null => {
 
   return (
     <Box flex={1}>
-      <Flex justify="center" bg="primary.100" p="4rem">
+      <Flex justify="center" bg="primary.100" py="4rem" px="1rem">
         <Box w="42.5rem" maxW="100%">
           <Stack spacing="0.5rem" mb="1.5rem">
             <Text textStyle="caption-2" color="secondary.400">
@@ -32,11 +37,15 @@ export const SubmissionConfirmation = (): JSX.Element | null => {
               {endPage.paragraph}
             </Text>
           </Stack>
-          <ButtonGroup spacing="1rem">
-            <Button leftIcon={<BiUpload fontSize="1.5rem" />}>
+          <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
+            <Button
+              isFullWidth={isMobile}
+              leftIcon={<BiUpload fontSize="1.5rem" />}
+            >
               Save my response
             </Button>
             <Button
+              isFullWidth={isMobile}
               as="a"
               href={endPage.buttonLink}
               variant="clear"
@@ -44,9 +53,10 @@ export const SubmissionConfirmation = (): JSX.Element | null => {
             >
               {endPage.buttonText}
             </Button>
-          </ButtonGroup>
+          </Stack>
         </Box>
       </Flex>
+      <FormFeedback />
     </Box>
   )
 }
