@@ -144,7 +144,6 @@ export const Rating = forwardRef<RatingProps, 'input'>(
                       variant={variant}
                       colorScheme={colorScheme}
                       value={value}
-                      numberOfRatings={numberOfRatings}
                       onChange={handleRatingChange}
                       selectedValue={currentValue}
                       {...(i === 0 ? { ref } : {})}

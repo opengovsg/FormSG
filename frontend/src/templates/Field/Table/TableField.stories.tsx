@@ -133,7 +133,7 @@ const Template: Story<StoryTableFieldProps> = ({
     }
   }, [defaultValue, formMethods, triggerValidation])
 
-  const onSubmit = (values: Record<string, string>) => {
+  const onSubmit = (values: Record<string, Record<string, string>[]>) => {
     console.log(values)
     setSubmitValues(
       JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
