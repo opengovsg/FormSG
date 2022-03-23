@@ -25,6 +25,8 @@ const useAdminFormNavbar = () => {
   const navigate = useNavigate()
 
   const calcCurrentIndex = useCallback(() => {
+    // Truthy check for `r` is necessary as the index route is an empty string
+    // which will always return true for includes.
     const index = ADMINFORM_ROUTES.findIndex((r) => r && pathname.includes(r))
     return index === -1 ? 0 : index
   }, [pathname])
