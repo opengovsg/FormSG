@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Controller, FieldError, useFormContext } from 'react-hook-form'
+import { Controller, useFormState } from 'react-hook-form'
 import { UseTableCellProps } from 'react-table'
 import { FormControl } from '@chakra-ui/react'
 import { get } from 'lodash'
@@ -77,16 +77,12 @@ export const ColumnCell = ({
   columnSchema,
 }: ColumnCellProps): JSX.Element => {
   const isMobile = useIsMobile()
-  const {
-    formState: { errors },
-  } = useFormContext()
+  const { errors } = useFormState({ name: schemaId })
 
   const inputName = useMemo(
     () => `${schemaId}.${row.index}.${column.id}`,
     [column.id, row.index, schemaId],
   )
-
-  const cellError: FieldError | undefined = get(errors, inputName)
 
   const renderedColumnCell = useMemo(() => {
     switch (columnSchema.columnType) {
@@ -102,6 +98,8 @@ export const ColumnCell = ({
         return null
     }
   }, [columnSchema, inputName])
+
+  const cellError = get(errors, inputName)
 
   return (
     <FormControl isRequired={columnSchema.required} isInvalid={!!cellError}>

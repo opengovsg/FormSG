@@ -320,7 +320,7 @@ export const createCheckboxValidationRules: ValidationRuleFn<
         ValidationOptions: { customMin, customMax },
         validateByValue,
       } = schema
-      if (!val || !validateByValue) return true
+      if (!val || val.length === 0 || !validateByValue) return true
 
       if (
         customMin &&

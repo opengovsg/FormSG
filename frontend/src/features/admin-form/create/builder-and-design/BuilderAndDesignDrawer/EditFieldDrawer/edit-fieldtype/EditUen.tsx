@@ -2,34 +2,36 @@ import { useMemo } from 'react'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
-import { SectionFieldBase } from '~shared/types/field'
+import { UenFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
+import Toggle from '~components/Toggle'
 
 import { DrawerContentContainer } from './common/DrawerContentContainer'
 import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
 import { EditFieldProps } from './common/types'
 import { useEditFieldForm } from './common/useEditFieldForm'
 
-type EditHeaderProps = EditFieldProps<SectionFieldBase>
+type EditUenProps = EditFieldProps<UenFieldBase>
 
-type EditHeaderInputs = Pick<SectionFieldBase, 'title' | 'description'>
+type EditUenInputs = Pick<UenFieldBase, 'title' | 'description' | 'required'>
 
-export const EditHeader = (props: EditHeaderProps): JSX.Element => {
+export const EditUen = (props: EditUenProps): JSX.Element => {
   const {
     register,
     formState: { errors },
     isSaveEnabled,
     buttonText,
     handleUpdateField,
-  } = useEditFieldForm<EditHeaderInputs, SectionFieldBase>({
+  } = useEditFieldForm<EditUenInputs, UenFieldBase>({
     ...props,
     transform: {
-      input: (inputField) => pick(inputField, ['title', 'description']),
+      input: (inputField) =>
+        pick(inputField, ['title', 'description', 'required']),
       output: (formOutput, originalField) =>
         extend({}, originalField, formOutput),
     },
@@ -47,7 +49,7 @@ export const EditHeader = (props: EditHeaderProps): JSX.Element => {
         isReadOnly={props.isLoading}
         isInvalid={!!errors.title}
       >
-        <FormLabel>Section header</FormLabel>
+        <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
@@ -59,6 +61,9 @@ export const EditHeader = (props: EditHeaderProps): JSX.Element => {
         <FormLabel>Description</FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
+      </FormControl>
+      <FormControl isReadOnly={props.isLoading}>
+        <Toggle {...register('required')} label="Required" />
       </FormControl>
       <FormFieldDrawerActions
         isLoading={props.isLoading}

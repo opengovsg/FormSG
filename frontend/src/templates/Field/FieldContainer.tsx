@@ -4,7 +4,7 @@
  * component as this component relies on methods the FormProvider component
  * provides.
  */
-import { FieldError, useFormContext } from 'react-hook-form'
+import { FieldError, useFormState } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -16,7 +16,10 @@ import FormLabel from '~components/FormControl/FormLabel'
 import { FormLabelProps } from '~components/FormControl/FormLabel/FormLabel'
 
 export type BaseFieldProps = {
-  schema: FormFieldWithId
+  schema: Pick<
+    FormFieldWithId,
+    '_id' | 'required' | 'description' | 'title' | 'disabled'
+  >
   /**
    * Color theme of form, if available. Defaults to `FormColorTheme.Blue`
    */
@@ -39,9 +42,7 @@ export const FieldContainer = ({
   children,
   errorKey,
 }: FieldContainerProps): JSX.Element => {
-  const {
-    formState: { errors, isSubmitting, isValid },
-  } = useFormContext()
+  const { errors, isSubmitting, isValid } = useFormState({ name: schema._id })
 
   const error: FieldError | undefined = get(errors, errorKey ?? schema._id)
 

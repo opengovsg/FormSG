@@ -51,9 +51,11 @@ export const useCreatePageSidebarContext =
     )
     const setFieldsToInactive = useBuilderAndDesignStore(setToInactiveSelector)
 
-    // Set state to inactive whenever active tab changes
+    // Set state to inactive whenever active tab is not builder
     useEffect(() => {
-      setFieldsToInactive()
+      if (activeTab !== DrawerTabs.Builder) {
+        setFieldsToInactive()
+      }
     }, [activeTab, setFieldsToInactive])
 
     const handleBuilderClick = useCallback(

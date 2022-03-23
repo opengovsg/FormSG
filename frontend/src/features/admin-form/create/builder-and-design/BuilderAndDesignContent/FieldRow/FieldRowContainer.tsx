@@ -1,7 +1,13 @@
 import { memo, useCallback, useMemo } from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
-import { BiDuplicate, BiEdit, BiGridHorizontal, BiTrash } from 'react-icons/bi'
+import {
+  BiCog,
+  BiDuplicate,
+  BiEdit,
+  BiGridHorizontal,
+  BiTrash,
+} from 'react-icons/bi'
 import { useIsMutating } from 'react-query'
 import {
   Box,
@@ -17,14 +23,22 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
-import CheckboxField from '~templates/Field/Checkbox'
+import {
+  CheckboxField,
+  NricField,
+  UenField,
+  YesNoField,
+} from '~templates/Field'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
 import { PENDING_CREATE_FIELD_ID } from '../../constants'
+import { useDeleteFormField } from '../../mutations/useDeleteFormField'
+import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
 import {
   BuildFieldState,
+  setToInactiveSelector,
   stateDataSelector,
   updateEditStateSelector,
   useBuilderAndDesignStore,
@@ -45,9 +59,21 @@ export const FieldRowContainer = ({
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
-  const updateEditState = useBuilderAndDesignStore(updateEditStateSelector)
+  const { stateData, setToInactive, updateEditState } =
+    useBuilderAndDesignStore(
+      useCallback(
+        (state) => ({
+          stateData: stateDataSelector(state),
+          setToInactive: setToInactiveSelector(state),
+          updateEditState: updateEditStateSelector(state),
+        }),
+        [],
+      ),
+    )
   const { handleBuilderClick } = useCreatePageSidebar()
+
+  const { duplicateFieldMutation } = useDuplicateFormField()
+  const { deleteFieldMutation } = useDeleteFormField()
 
   const formMethods = useForm({ mode: 'onChange' })
 
@@ -75,6 +101,27 @@ export const FieldRowContainer = ({
       }
     },
     [handleFieldClick],
+  )
+
+  const handleDuplicateClick = useCallback(() => {
+    // Duplicate button should be hidden if field
+    // is not yet created, but guard here just in case
+    if (stateData.state !== BuildFieldState.CreatingField) {
+      duplicateFieldMutation.mutate(field._id)
+    }
+  }, [stateData.state, duplicateFieldMutation, field._id])
+
+  const handleDeleteClick = useCallback(() => {
+    if (stateData.state === BuildFieldState.CreatingField) {
+      setToInactive()
+    } else if (stateData.state === BuildFieldState.EditingField) {
+      deleteFieldMutation.mutate(field._id)
+    }
+  }, [field._id, deleteFieldMutation, setToInactive, stateData.state])
+
+  const isAnyMutationLoading = useMemo(
+    () => duplicateFieldMutation.isLoading || deleteFieldMutation.isLoading,
+    [duplicateFieldMutation, deleteFieldMutation],
   )
 
   return (
@@ -177,13 +224,30 @@ export const FieldRowContainer = ({
                   spacing={0}
                 >
                   <IconButton
-                    aria-label="Duplicate field"
-                    icon={<BiDuplicate fontSize="1.25rem" />}
+                    aria-label="Close field settings"
+                    icon={<BiCog fontSize="1.25rem" />}
+                    onClick={setToInactive}
+                    isDisabled={isAnyMutationLoading}
                   />
+                  {
+                    // Fields which are not yet created cannot be duplicated
+                    stateData.state !== BuildFieldState.CreatingField && (
+                      <IconButton
+                        aria-label="Duplicate field"
+                        isDisabled={isAnyMutationLoading}
+                        onClick={handleDuplicateClick}
+                        isLoading={duplicateFieldMutation.isLoading}
+                        icon={<BiDuplicate fontSize="1.25rem" />}
+                      />
+                    )
+                  }
                   <IconButton
                     colorScheme="danger"
                     aria-label="Delete field"
                     icon={<BiTrash fontSize="1.25rem" />}
+                    onClick={handleDeleteClick}
+                    isLoading={deleteFieldMutation.isLoading}
+                    isDisabled={isAnyMutationLoading}
                   />
                 </ButtonGroup>
               </Flex>
@@ -197,10 +261,16 @@ export const FieldRowContainer = ({
 
 const MemoFieldRow = memo(({ field }: { field: FormFieldDto }) => {
   switch (field.fieldType) {
-    case BasicField.Section:
-      return <SectionFieldRow field={field} />
     case BasicField.Checkbox:
       return <CheckboxField schema={field} />
+    case BasicField.Nric:
+      return <NricField schema={field} />
+    case BasicField.Section:
+      return <SectionFieldRow field={field} />
+    case BasicField.Uen:
+      return <UenField schema={field} />
+    case BasicField.YesNo:
+      return <YesNoField schema={field} />
     default:
       return <div>TODO: Add field row for {field.fieldType}</div>
   }

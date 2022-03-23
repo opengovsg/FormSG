@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Controller, FieldError, useFormContext } from 'react-hook-form'
+import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -33,41 +33,29 @@ export const RadioField = ({
     () => `${schema._id}.${RADIO_OTHERS_INPUT_KEY}`,
     [schema._id],
   )
-  const radioInputName = `${schema._id}.value`
+  const radioInputName = useMemo(() => `${schema._id}.value`, [schema._id])
 
-  const validationRules = useMemo(() => {
-    return {
-      ...createRadioValidationRules(schema),
-      deps: [othersInputName],
-    }
-  }, [othersInputName, schema])
-
-  const {
-    watch,
-    register,
-    formState: { isValid, isSubmitting, errors },
-  } = useFormContext()
-  const radioValue = watch(radioInputName)
-
-  const isOthersSelected = useMemo(
-    () => schema.othersRadioButton && radioValue === RADIO_OTHERS_INPUT_VALUE,
-    [radioValue, schema.othersRadioButton],
+  const validationRules = useMemo(
+    () => createRadioValidationRules(schema),
+    [schema],
   )
+
+  const { register, getValues, trigger } = useFormContext()
+  const { isValid, isSubmitting, errors } = useFormState({ name: schema._id })
 
   const othersValidationRules = useMemo(
     () => ({
       validate: (value: string) => {
         return (
-          !isOthersSelected ||
+          !schema.othersRadioButton ||
+          !(getValues(radioInputName) === RADIO_OTHERS_INPUT_VALUE) ||
           !!value ||
           'Please specify a value for the "others" option'
         )
       },
     }),
-    [isOthersSelected],
+    [getValues, radioInputName, schema.othersRadioButton],
   )
-
-  const othersInputError: FieldError | undefined = get(errors, othersInputName)
 
   return (
     <FieldContainer
@@ -80,8 +68,22 @@ export const RadioField = ({
         rules={validationRules}
         // `ref` omitted so the radiogroup will not have a ref and only the
         // radio themselves get the ref.
-        render={({ field: { ref, ...rest } }) => (
-          <Radio.RadioGroup {...rest}>
+        render={({ field: { ref, onChange, value, ...rest } }) => (
+          <Radio.RadioGroup
+            {...rest}
+            value={value}
+            onChange={(nextValue) => {
+              onChange(nextValue)
+              // Trigger validation of others input if value is becoming or
+              // not-becoming the special radio input value.
+              if (
+                nextValue === RADIO_OTHERS_INPUT_VALUE ||
+                value === RADIO_OTHERS_INPUT_VALUE
+              ) {
+                trigger(othersInputName)
+              }
+            }}
+          >
             {schema.fieldOptions.map((option, idx) => (
               <Radio key={idx} value={option} {...(idx === 0 ? { ref } : {})}>
                 {option}
@@ -93,7 +95,7 @@ export const RadioField = ({
                   isRequired={schema.required}
                   isDisabled={schema.disabled}
                   isReadOnly={isValid && isSubmitting}
-                  isInvalid={!!othersInputError}
+                  isInvalid={!!get(errors, othersInputName)}
                 >
                   <OthersInput
                     aria-label='Enter value for "Others" option'
@@ -103,7 +105,7 @@ export const RadioField = ({
                     ml={styles.othersInput?.ml as string}
                     mb={0}
                   >
-                    {othersInputError?.message}
+                    {get(errors, `${othersInputName}.message`)}
                   </FormErrorMessage>
                 </FormControl>
               </Radio.OthersWrapper>

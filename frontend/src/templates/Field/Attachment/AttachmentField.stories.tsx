@@ -55,8 +55,8 @@ const Template: Story<StoryAttachmentFieldProps> = ({
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, File>) => {
-    const stringifyFile = (obj: File) => {
+  const onSubmit = (values: Record<string, File | undefined>) => {
+    const stringifyFile = (obj?: File) => {
       const replacer = []
       for (const key in obj) {
         replacer.push(key)

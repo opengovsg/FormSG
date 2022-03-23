@@ -62,7 +62,7 @@ const Template: Story<StoryCheckboxFieldProps> = ({
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, string>) => {
+  const onSubmit = (values: Record<string, string | undefined>) => {
     setSubmitValues(
       JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
     )

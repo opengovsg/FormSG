@@ -8,7 +8,6 @@ import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
 import {
   setToInactiveSelector,
-  stateDataSelector,
   useBuilderAndDesignStore,
 } from '../useBuilderAndDesignStore'
 
@@ -25,7 +24,6 @@ export const BuilderAndDesignContent = ({
   placeholderProps,
 }: BuilderAndDesignContentProps): JSX.Element => {
   const setFieldsToInactive = useBuilderAndDesignStore(setToInactiveSelector)
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
   const { builderFields } = useBuilderFields()
 
   useEffect(() => setFieldsToInactive, [setFieldsToInactive])

@@ -29,7 +29,7 @@ export const useEditFormField = () => {
   const handleSuccess = useCallback(
     (newField: FormFieldDto) => {
       toast.closeAll()
-      if (!stateData || stateData.state !== BuildFieldState.EditingField) {
+      if (stateData.state !== BuildFieldState.EditingField) {
         toast({
           status: 'warning',
           description:

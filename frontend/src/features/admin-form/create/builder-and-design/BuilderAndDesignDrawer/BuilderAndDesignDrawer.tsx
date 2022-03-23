@@ -74,7 +74,7 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
           overflow="hidden"
           {...DRAWER_MOTION_PROPS}
         >
-          <Flex w="100%" h="100%" minW="max-content" flexDir="column">
+          <Flex w="100%" h="100%" flexDir="column">
             {renderDrawerContent}
           </Flex>
         </MotionBox>
