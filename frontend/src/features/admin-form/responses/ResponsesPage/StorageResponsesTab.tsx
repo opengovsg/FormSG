@@ -23,7 +23,6 @@ export const StorageResponsesTab = ({
   const { downloadEncryptedResponses } = useDecryptionWorkers()
 
   const handleExportCsv = useCallback(() => {
-    console.log(formId, form.title)
     if (!formId || !form.title) return
     return downloadEncryptedResponses(formId, form.title, secretKey)
   }, [downloadEncryptedResponses, formId, secretKey, form.title])
