@@ -26,6 +26,7 @@ import {
   EditCheckbox,
   EditHeader,
   EditNric,
+  EditRadio,
   EditUen,
   EditYesNo,
 } from './edit-fieldtype'
@@ -167,6 +168,8 @@ const MemoFieldDrawerContent = memo((props: MemoFieldDrawerContentProps) => {
       return <EditUen {...props} field={field} />
     case BasicField.YesNo:
       return <EditYesNo {...props} field={field} />
+    case BasicField.Radio:
+      return <EditRadio {...props} field={field} />
     default:
       return <div>TODO: Insert field options here</div>
   }

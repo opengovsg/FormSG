@@ -26,6 +26,7 @@ import IconButton from '~components/IconButton'
 import {
   CheckboxField,
   NricField,
+  RadioField,
   UenField,
   YesNoField,
 } from '~templates/Field'
@@ -271,6 +272,8 @@ const MemoFieldRow = memo(({ field }: { field: FormFieldDto }) => {
       return <UenField schema={field} />
     case BasicField.YesNo:
       return <YesNoField schema={field} />
+    case BasicField.Radio:
+      return <RadioField schema={field} />
     default:
       return <div>TODO: Add field row for {field.fieldType}</div>
   }
