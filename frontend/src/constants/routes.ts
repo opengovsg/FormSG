@@ -13,3 +13,7 @@ export const ADMINFORM_ROUTE = '/admin/form'
 export const ADMINFORM_BUILD_SUBROUTE = ''
 export const ADMINFORM_SETTINGS_SUBROUTE = 'settings'
 export const ADMINFORM_RESULTS_SUBROUTE = 'results'
+
+/** Responses tab has no subroute, its the index results route. */
+export const RESULTS_RESPONSES_SUBROUTE = ''
+export const RESULTS_FEEDBACK_SUBROUTE = 'feedback'
