@@ -9,6 +9,7 @@ export const FormError: ComponentMultiStyleConfig<typeof parts> = {
       color: 'danger.500',
       my: '0.5rem',
       textStyle: 'body-2',
+      lineHeight: '1.25rem',
     },
     icon: {
       marginEnd: '0.5em',
