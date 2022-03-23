@@ -51,6 +51,11 @@ export interface RatingProps {
    * Helper text to be displayed to quantify the ratings, if any.
    */
   helperText?: string
+
+  /**
+   * Whether the rating field is disabled.
+   */
+  isDisabled?: boolean
 }
 
 export const Rating = forwardRef<RatingProps, 'input'>(
@@ -64,6 +69,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
       variant,
       wrapComponentsPerRow = 5,
       helperText,
+      isDisabled,
     },
     ref,
   ) => {
@@ -146,6 +152,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
                       value={value}
                       onChange={handleRatingChange}
                       selectedValue={currentValue}
+                      isDisabled={isDisabled}
                       {...(i === 0 ? { ref } : {})}
                     >
                       {value}
