@@ -4,7 +4,7 @@
   "homepage": ".",
   "private": true,
   "dependencies": {
-    "@builder.io/partytown": "^0.5.0",
+    "@builder.io/partytown": "^0.5.1",
     "@chakra-ui/react": "^1.7.3",
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
@@ -53,6 +53,11 @@
     "zustand": "^3.6.5"
   },
   "scriptComments": {
+    "partytown": [
+      "Package that allows running of third-party scripts in a web-worker for better app performance.",
+      "Since Partytown is using a service worker, these files must be served from the same app.",
+      "Thus, the package library needs to be bundled in the final build."
+    ],
     "build": [
       "The flags are required for the app to build successfully.",
       "`CI=false` ensures that warnings in the app linter are not treated as errors (preventing a build)",
@@ -63,7 +68,8 @@
   },
   "scripts": {
     "gen:theme-typings": "chakra-cli tokens src/theme/index.ts",
-    "postinstall": "npm run gen:theme-typings && npm --prefix ../shared install",
+    "partytown": "partytown copylib public/~partytown",
+    "postinstall": "npm run gen:theme-typings && npm run partytown && npm --prefix ../shared install",
     "start": "cross-env SKIP_PREFLIGHT_CHECK=true craco start",
     "build": "cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true craco build",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test",

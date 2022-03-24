@@ -24,3 +24,9 @@ yarn-error.log*
 
 storybook-static
 build-storybook.log
+
+# Lint cache
+.eslintcache
+
+# Dynamic package for loading third party scripts in app.
+~partytown
