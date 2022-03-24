@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Helmet } from 'react-helmet'
 import { Text } from '@chakra-ui/react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import { isEqual } from 'lodash'
@@ -122,6 +123,7 @@ export const PublicFormProvider = ({
         ...rest,
       }}
     >
+      <Helmet title={form?.form.title} />
       {isFormNotFound ? <div>404</div> : children}
     </PublicFormContext.Provider>
   )

@@ -9,7 +9,7 @@ export const AppHelmet = (): JSX.Element => {
   return (
     <>
       <Partytown forward={['dataLayer.push']} />
-      <Helmet defer={false}>
+      <Helmet titleTemplate="%s | FormSG" defer={false}>
         {GATrackingID ? (
           <script
             type="text/partytown"
