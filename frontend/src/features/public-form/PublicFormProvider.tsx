@@ -14,6 +14,7 @@ import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
 
+import { trackVisitPublicForm } from '~features/analytics/AnalyticsService'
 import {
   FetchNewTransactionResponse,
   useTransactionMutations,
@@ -46,6 +47,7 @@ export const PublicFormProvider = ({
   useEffect(() => {
     if (data) {
       if (!form) {
+        trackVisitPublicForm(data.form)
         setForm(data)
       } else if (!desyncToastIdRef.current && !isEqual(data, form)) {
         desyncToastIdRef.current = toast({
