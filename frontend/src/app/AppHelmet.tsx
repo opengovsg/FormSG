@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet'
+import { Helmet } from 'react-helmet-async'
 import { Partytown } from '@builder.io/partytown/react'
 
 import { useEnv } from '~features/env/queries'
