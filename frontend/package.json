@@ -114,6 +114,7 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/dedent": "^0.7.0",
     "@types/file-saver": "^2.0.3",
+    "@types/gtag.js": "0.0.10",
     "@types/jest": "^27.0.3",
     "@types/node": "^16.11.12",
     "@types/react": "^17.0.37",
