@@ -21,6 +21,11 @@ import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
 import Footer from '~components/Footer'
 import Link from '~components/Link'
 
+import {
+  trackAdminLogin,
+  trackAdminLoginFailure,
+} from '~features/analytics/AnalyticsService'
+
 import { LoginForm, LoginFormInputs } from './components/LoginForm'
 import { OtpForm, OtpFormInputs } from './components/OtpForm'
 
@@ -159,8 +164,16 @@ export const LoginPage = (): JSX.Element => {
     if (!email) {
       throw new Error('Something went wrong')
     }
-    await verifyLoginOtp({ otp, email })
-    return setIsAuthenticated(true)
+    try {
+      await verifyLoginOtp({ otp, email })
+      trackAdminLogin()
+      return setIsAuthenticated(true)
+    } catch (error) {
+      if (error instanceof Error) {
+        trackAdminLoginFailure(error.message)
+      }
+      throw error
+    }
   }
 
   const handleResendOtp = async () => {
