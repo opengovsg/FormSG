@@ -1,5 +1,6 @@
 import { useMemo, useRef } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
+import { Box } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 import { merge, pickBy } from 'lodash'
 import { PartialDeep } from 'type-fest'
@@ -32,7 +33,8 @@ import { NewLogicBlock, NewLogicBlockProps } from './NewLogicBlock'
 export default {
   title: 'Templates/Logic/NewLogicBlock',
   component: NewLogicBlock,
-  decorators: [],
+  // Padding decorator so boxShadow gets snapshotted too.
+  decorators: [(storyFn) => <Box p="0.5rem">{storyFn()}</Box>],
 } as Meta
 
 interface TemplateStoryProps {
