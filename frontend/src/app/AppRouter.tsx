@@ -27,7 +27,7 @@ const PublicFormPage = lazy(
   () => import('~features/public-form/PublicFormPage'),
 )
 const WorkspacePage = lazy(() => import('~features/workspace'))
-const LoginPage = lazy(() => import('~pages/login'))
+const LoginPage = lazy(() => import('~features/login'))
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
