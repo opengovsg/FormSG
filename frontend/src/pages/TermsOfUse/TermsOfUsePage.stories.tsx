@@ -6,6 +6,9 @@ export default {
   title: 'Pages/TermsOfUsePage',
   component: TermsOfUsePage,
   decorators: [],
+  parameters: {
+    layout: 'fullscreen',
+  },
 } as Meta
 
 const Template: Story = () => <TermsOfUsePage />
