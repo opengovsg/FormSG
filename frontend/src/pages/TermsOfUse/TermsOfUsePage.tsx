@@ -63,7 +63,7 @@ const SectionTitle: FC = ({ children }) => <Text mb="1.5rem">{children}</Text>
 export const TermsOfUsePage = (): JSX.Element => {
   return (
     <Flex flexDir="column">
-      <Container color="secondary.700" maxW="85ch" px="1rem" pb="5rem" flex={1}>
+      <Container color="secondary.700" maxW="85ch" px="2rem" pb="5rem" flex={1}>
         <Stack spacing="5rem">
           <Box as="section">
             <Text textStyle="h1" as="h1" mb="2.5rem">
