@@ -54,7 +54,7 @@ const SubSectionListItem: FC<ListItemProps> = ({
   listStyleType = 'lower-alpha',
   ...props
 }) => (
-  <ListItem listStyle={listStyleType} textStyle="body-1" {...props}>
+  <ListItem listStyleType={listStyleType} textStyle="body-1" {...props}>
     {children}
   </ListItem>
 )
