@@ -10,3 +10,4 @@ export default {
 
 const Template: Story = () => <TermsOfUsePage />
 export const Default = Template.bind({})
+Default.storyName = 'TermsOfUsePage'
