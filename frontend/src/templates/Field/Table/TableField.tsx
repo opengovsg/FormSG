@@ -3,9 +3,8 @@ import { useFieldArray, useFormContext } from 'react-hook-form'
 import { BiTrash } from 'react-icons/bi'
 import { useTable } from 'react-table'
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
-import { Merge, RequireAllOrNone } from 'type-fest'
 
-import { Column, FormFieldWithId, TableFieldBase } from '~shared/types/field'
+import { FormFieldWithId, TableFieldBase } from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
 
@@ -16,11 +15,7 @@ import { ColumnCell } from './ColumnCell'
 import { ColumnHeader } from './ColumnHeader'
 import { TableFieldContainer } from './TableFieldContainer'
 
-export type ColumnWithId<T = Column> = T & { _id: string }
-export type TableFieldSchema = RequireAllOrNone<
-  Merge<FormFieldWithId<TableFieldBase>, { columns: ColumnWithId[] }>,
-  'addMoreRows' | 'maximumRows'
->
+export type TableFieldSchema = FormFieldWithId<TableFieldBase>
 export interface TableFieldProps extends BaseFieldProps {
   schema: TableFieldSchema
 }
@@ -144,7 +139,7 @@ export const TableField = ({
           </Tbody>
         </Table>
       </Box>
-      {schema.addMoreRows ? (
+      {schema.addMoreRows && schema.maximumRows !== undefined ? (
         <AddRowFooter
           currentRows={fields.length}
           maxRows={schema.maximumRows}
