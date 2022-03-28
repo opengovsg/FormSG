@@ -3,6 +3,9 @@ export const LANDING_ROUTE = '/'
 export const ROOT_ROUTE = '/'
 export const LOGIN_ROUTE = '/login'
 
+export const TOU_ROUTE = '/terms'
+export const PRIVACY_ROUTE = '/privacy'
+
 // Cannot use regex match in react-router@6, which means we need to validate
 // the regex in PublicFormPage.
 export const PUBLICFORM_ROUTE = '/:formId'
