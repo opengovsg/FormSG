@@ -22,4 +22,5 @@ Default.args = {
     submissionId: 'mockSubmissionId',
     timeInEpochMs: 1648545566989,
   },
+  handleSubmitFeedback: (inputs) => console.log(inputs),
 }
