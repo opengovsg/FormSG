@@ -23,21 +23,35 @@ export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
   const popperModifiers = useMemo(
     () => [
       {
-        name: 'sameWidth',
+        name: 'matchReferenceSize',
         enabled: true,
         phase: 'beforeWrite',
         requires: ['computeStyles'],
-        fn: ({ state }) => {
-          state.styles.popper.width = `${state.rects.reference.width}px`
+        fn: ({ state, instance }) => {
+          const widthOrHeight =
+            state.placement.startsWith('left') ||
+            state.placement.startsWith('right')
+              ? 'height'
+              : 'width'
+
+          if (!popperElement) return
+
+          const popperSize =
+            popperElement[
+              `offset${
+                widthOrHeight[0].toUpperCase() + widthOrHeight.slice(1)
+              }` as 'offsetWidth'
+            ]
+          const referenceSize = state.rects.reference[widthOrHeight]
+
+          if (Math.round(popperSize) === Math.round(referenceSize)) return
+
+          popperElement.style[widthOrHeight] = `${referenceSize}px`
+          instance.update()
         },
-        effect({ state }) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          state.elements.popper.style.minWidth = `${state.elements.reference.offsetWidth}px`
-        },
-      } as Modifier<'sameWidth'>,
+      } as Modifier<'matchReferenceSize'>,
     ],
-    [],
+    [popperElement],
   )
 
   const {
