@@ -49,12 +49,8 @@ const SubSubSectionOrderedList: FC<ListProps> = ({
   </SubSectionOrderedList>
 )
 
-const SubSectionListItem: FC<ListItemProps> = ({
-  children,
-  listStyleType = 'lower-alpha',
-  ...props
-}) => (
-  <ListItem listStyleType={listStyleType} textStyle="body-1" {...props}>
+const SubSectionListItem: FC<ListItemProps> = ({ children, ...props }) => (
+  <ListItem textStyle="body-1" {...props}>
     {children}
   </ListItem>
 )
