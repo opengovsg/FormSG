@@ -29,7 +29,7 @@ export default {
 } as Meta
 
 type StoryModalProps = ModalProps & {
-  bodyContent?: any
+  bodyContent?: string
 }
 
 // Helper method to generate lorem text.

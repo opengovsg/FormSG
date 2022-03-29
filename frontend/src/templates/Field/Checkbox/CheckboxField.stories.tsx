@@ -47,11 +47,13 @@ const baseSchema: CheckboxFieldSchema = {
 }
 
 interface StoryCheckboxFieldProps extends CheckboxFieldProps {
+  triggerValidation?: boolean
   defaultValue?: string
 }
 
 const Template: Story<StoryCheckboxFieldProps> = ({
   defaultValue,
+  triggerValidation,
   ...args
 }) => {
   const formMethods = useForm({
@@ -69,10 +71,10 @@ const Template: Story<StoryCheckboxFieldProps> = ({
   }
 
   useEffect(() => {
-    if (defaultValue) {
+    if (triggerValidation) {
       formMethods.trigger()
     }
-  }, [])
+  }, [formMethods, triggerValidation])
 
   return (
     <FormProvider {...formMethods}>
@@ -95,6 +97,7 @@ const Template: Story<StoryCheckboxFieldProps> = ({
 export const ValidationRequired = Template.bind({})
 ValidationRequired.args = {
   schema: baseSchema,
+  triggerValidation: true,
 }
 
 export const ValidationOptional = Template.bind({})

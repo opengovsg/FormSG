@@ -2,13 +2,13 @@ import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { AdminFormDto, FormLogic } from '~shared/types/form'
+import { AdminFormDto, FormLogic, LogicDto } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
-import { createFormLogic } from './FormLogicService'
+import { createFormLogic, deleteFormLogic } from './FormLogicService'
 
 export const useLogicMutations = () => {
   const { formId } = useParams()
@@ -49,5 +49,26 @@ export const useLogicMutations = () => {
     },
   )
 
-  return { createLogicMutation }
+  const deleteLogicMutation = useMutation(
+    (logicId: LogicDto['_id']) => deleteFormLogic(formId, logicId),
+    {
+      onSuccess: (_data, logicId) => {
+        toast.closeAll()
+        queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
+          // Should not happen, should not be able to update field if there is no
+          // existing data.
+          if (!prev) throw new Error('Query should have been set')
+          // Remove deleted logic.
+          prev.form_logics = prev.form_logics.filter((l) => l._id !== logicId)
+          return prev
+        })
+        toast({
+          description: 'Logic successfully deleted.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  return { createLogicMutation, deleteLogicMutation }
 }

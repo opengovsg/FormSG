@@ -73,7 +73,7 @@ const Template: Story<StoryDateFieldProps> = ({ defaultValue, ...args }) => {
     if (defaultValue !== undefined) {
       formMethods.trigger()
     }
-  }, [])
+  }, [defaultValue, formMethods])
 
   return (
     <FormProvider {...formMethods}>

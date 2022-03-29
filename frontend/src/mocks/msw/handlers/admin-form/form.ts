@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import cuid from 'cuid'
 import { merge } from 'lodash'
 import { rest } from 'msw'
 
@@ -9,6 +9,7 @@ import {
   FieldCreateDto,
   FormFieldDto,
   RatingShape,
+  TableFieldDto,
 } from '~shared/types/field'
 import {
   AdminFormDto,
@@ -228,12 +229,14 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
         columnType: BasicField.ShortText,
         title: 'Text Field',
         required: true,
+        _id: cuid(),
       },
       {
         fieldOptions: ['Option 1', 'Option 2'],
         columnType: BasicField.Dropdown,
         title: 'Db',
         required: true,
+        _id: cuid(),
       },
     ],
     minimumRows: 2,
@@ -380,6 +383,13 @@ export const createSingleField = (delay = 500) => {
       const newField = {
         ...req.body,
         _id: `random-id-${mutableFormFields.length}`,
+      } as FormFieldDto
+      if (req.body.fieldType === BasicField.Table) {
+        // eslint-disable-next-line @typescript-eslint/no-extra-semi
+        ;(newField as TableFieldDto).columns = req.body.columns.map((col) => ({
+          ...col,
+          _id: cuid(),
+        }))
       }
       const newIndex = parseInt(
         req.url.searchParams.get('to') ?? `${mutableFormFields.length}`,
@@ -416,6 +426,7 @@ export const reorderField = (delay = 500) => {
     mutableFormFields = reorder(
       mutableFormFields,
       fromIndex,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       parseInt(req.url.searchParams.get('to')!),
     )
     return res(ctx.delay(delay), ctx.status(200), ctx.json(mutableFormFields))
@@ -455,4 +466,13 @@ export const deleteField = (delay = 500) => {
     mutableFormFields.splice(fieldToDeleteIndex, 1)
     return res(ctx.delay(delay), ctx.status(200))
   })
+}
+
+export const deleteLogic = (delay?: number) => {
+  return rest.delete(
+    '/api/v3/admin/forms/:formId/logic/:logicId',
+    (_req, res, ctx) => {
+      return res(ctx.delay(delay), ctx.status(200))
+    },
+  )
 }

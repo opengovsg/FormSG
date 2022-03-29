@@ -23,7 +23,6 @@ import {
   SectionField,
   ShortTextField,
   TableField,
-  TableFieldSchema,
   UenField,
   YesNoField,
 } from '~templates/Field'
@@ -100,7 +99,7 @@ export const FieldFactory = memo(
       case BasicField.Image:
         return <ImageField schema={field} colorTheme={colorTheme} />
       case BasicField.Table:
-        return <TableField schema={field as TableFieldSchema} />
+        return <TableField schema={field} />
       default:
         return <Text w="100%">{JSON.stringify(field)}</Text>
     }
