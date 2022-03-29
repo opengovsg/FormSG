@@ -124,9 +124,9 @@ export type EmailFormDto = Merge<EmailFormBase, FormDtoBase>
 
 export type FormDto = StorageFormDto | EmailFormDto
 
-export type AdminFormDto =
-  | Merge<StorageFormDto, { admin: UserDto }>
-  | Merge<EmailFormDto, { admin: UserDto }>
+export type AdminStorageFormDto = Merge<StorageFormDto, { admin: UserDto }>
+export type AdminEmailFormDto = Merge<EmailFormDto, { admin: UserDto }>
+export type AdminFormDto = AdminStorageFormDto | AdminEmailFormDto
 
 type PublicFormBase = {
   admin: PublicUserDto

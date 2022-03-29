@@ -40,7 +40,7 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
   ({ onChange, value = [], ...props }, ref) => {
     const initialFocusRef = useRef<HTMLInputElement>(null)
 
-    const [hoveredDate, setHoveredDate] = useState<Date | null>(null)
+    const [hoveredDate, setHoveredDate] = useState<Date>()
 
     const datePickerDates = useMemo(
       () => value.map((v) => new Date(v)).filter((d) => !isNaN(d.getTime())),
@@ -112,7 +112,7 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
     )
 
     const onMouseLeaveCalendar = useCallback(() => {
-      setHoveredDate(null)
+      setHoveredDate(undefined)
     }, [])
 
     const handleStartDateChange: ChangeEventHandler<HTMLInputElement> = (e) => {

@@ -138,6 +138,7 @@ export const Radio = forwardRef<RadioProps, 'input'>((props, ref) => {
       name,
     })
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [layoutProps, otherProps] = split(htmlProps, layoutPropNames as any)
 
   const checkboxProps = getCheckboxProps(otherProps)

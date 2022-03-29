@@ -26,7 +26,8 @@ const sizesForLineLightDarkVariant: ComponentMultiStyleConfig<
     },
     tablist: {
       // Allow bottom border to show through
-      py: '2px',
+      pb: '2px',
+      pt: '2px',
     },
   },
 }

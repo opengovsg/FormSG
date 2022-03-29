@@ -26,7 +26,7 @@ const PickerOnlyTemplate: Story<DateRangePickerProps> = (args) => {
   const [selectedDates, setSelectedDates] = useState<Date[]>(
     args.selectedDates ?? [],
   )
-  const [hoveredDate, setHoveredDate] = useState<Date | null>(null)
+  const [hoveredDate, setHoveredDate] = useState<Date>()
 
   const handleOnDateSelected = (date: Date) => {
     const newDates = [...selectedDates]
@@ -59,7 +59,7 @@ const PickerOnlyTemplate: Story<DateRangePickerProps> = (args) => {
         return firstSelected < date && secondSelected > date
       } else {
         return (
-          hoveredDate &&
+          !!hoveredDate &&
           ((firstSelected < date && hoveredDate >= date) ||
             (date < firstSelected && date >= hoveredDate))
         )
@@ -79,7 +79,7 @@ const PickerOnlyTemplate: Story<DateRangePickerProps> = (args) => {
   )
 
   const onMouseLeaveCalendar = useCallback(() => {
-    setHoveredDate(null)
+    setHoveredDate(undefined)
   }, [])
 
   return (

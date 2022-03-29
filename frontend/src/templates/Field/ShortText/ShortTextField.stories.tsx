@@ -63,10 +63,10 @@ const Template: Story<StoryShortTextFieldProps> = ({
   }
 
   useEffect(() => {
-    if (defaultValue) {
+    if (defaultValue !== undefined) {
       formMethods.trigger()
     }
-  }, [])
+  }, [defaultValue, formMethods])
 
   return (
     <FormProvider {...formMethods}>
@@ -89,6 +89,7 @@ const Template: Story<StoryShortTextFieldProps> = ({
 export const ValidationRequired = Template.bind({})
 ValidationRequired.args = {
   schema: baseSchema,
+  defaultValue: '',
 }
 
 export const ValidationOptional = Template.bind({})

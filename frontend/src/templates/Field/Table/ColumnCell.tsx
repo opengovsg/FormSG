@@ -7,6 +7,7 @@ import { get } from 'lodash'
 import {
   BasicField,
   Column,
+  ColumnDto,
   DropdownColumnBase,
   ShortTextColumnBase,
 } from '~shared/types/field'
@@ -21,16 +22,14 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
-import { ColumnWithId } from './TableField'
-
 export interface ColumnCellProps
   extends UseTableCellProps<Record<string, unknown>, string> {
   schemaId: string
-  columnSchema: ColumnWithId
+  columnSchema: ColumnDto
 }
 
-export interface FieldColumnCellProps<T = Column> {
-  schema: ColumnWithId<T>
+export interface FieldColumnCellProps<T extends Column = Column> {
+  schema: ColumnDto<T>
   inputName: string
 }
 

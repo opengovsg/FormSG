@@ -7,6 +7,12 @@ import Badge, { BadgeProps } from '~components/Badge'
  */
 export const LogicBadge = (props: BadgeProps) => (
   <Flex>
-    <Badge maxW="100%" variant="subtle" colorScheme="secondary" {...props} />
+    <Badge
+      maxW="100%"
+      variant="subtle"
+      colorScheme="secondary"
+      whiteSpace="pre-wrap"
+      {...props}
+    />
   </Flex>
 )

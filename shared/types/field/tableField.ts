@@ -1,3 +1,4 @@
+import { Merge } from 'type-fest'
 import { FieldBase, BasicField } from './base'
 import { DropdownFieldBase } from './dropdownField'
 import { ShortTextFieldBase } from './shortTextField'
@@ -16,10 +17,16 @@ export interface DropdownColumnBase extends ColumnBase<DropdownFieldBase> {
 
 export type Column = ShortTextColumnBase | DropdownColumnBase
 
+export type ColumnDto<C extends Column = Column> = C & { _id: string }
+
 export interface TableFieldBase extends FieldBase {
   fieldType: BasicField.Table
   minimumRows: number
   addMoreRows?: boolean
   maximumRows?: number
   columns: Column[]
+}
+
+export type TableFieldDto = Merge<TableFieldBase, { columns: ColumnDto[] }> & {
+  _id: string
 }

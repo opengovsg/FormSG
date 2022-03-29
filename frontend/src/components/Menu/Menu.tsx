@@ -44,7 +44,7 @@ const MenuButton = ({
       ) : (
         <BxsChevronDown fontSize={chevronSize} />
       ),
-    [isOpen],
+    [chevronSize, isOpen],
   )
   const style = useMultiStyleConfig('Menu', {
     ...props,
