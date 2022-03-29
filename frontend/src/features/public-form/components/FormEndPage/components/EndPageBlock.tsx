@@ -5,6 +5,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  Box,
   Flex,
   Stack,
   Text,
@@ -67,11 +68,7 @@ export const EndPageBlock = ({
           </AccordionPanel>
         </AccordionItem>
       </Accordion>
-      <Stack
-        mt="2.25rem"
-        direction={{ base: 'column', md: 'row' }}
-        spacing="1rem"
-      >
+      <Box mt="2.25rem">
         <Button
           as="a"
           href={endPage.buttonLink ?? ''}
@@ -80,7 +77,7 @@ export const EndPageBlock = ({
         >
           {endPage.buttonText}
         </Button>
-      </Stack>
+      </Box>
     </Flex>
   )
 }
