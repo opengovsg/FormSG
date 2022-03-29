@@ -11,6 +11,7 @@ import {
   RatingShape,
   TableFieldDto,
 } from '~shared/types/field'
+import { FormLogic } from '~shared/types/form'
 import {
   AdminFormDto,
   AdminFormViewDto,
@@ -466,6 +467,19 @@ export const deleteField = (delay = 500) => {
     mutableFormFields.splice(fieldToDeleteIndex, 1)
     return res(ctx.delay(delay), ctx.status(200))
   })
+}
+
+export const createLogic = (delay?: number) => {
+  return rest.post<FormLogic>(
+    '/api/v3/admin/forms/:formId/logic',
+    (req, res, ctx) => {
+      const newLogic = {
+        ...req.body,
+        _id: cuid(),
+      }
+      return res(ctx.delay(delay), ctx.status(200), ctx.json(newLogic))
+    },
+  )
 }
 
 export const deleteLogic = (delay?: number) => {
