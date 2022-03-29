@@ -23,13 +23,13 @@ export const FormEndPage = ({
   ...endPageProps
 }: FormEndPageProps): JSX.Element => {
   return (
-    <Container w="42.5rem" maxW="100%">
+    <Container w="42.5rem" maxW="100%" px={{ base: '1.5rem', md: 0 }} py={0}>
       <Flex flexDir="column" align="center">
-        <ThankYouSvgr pt="2.5rem" />
+        <ThankYouSvgr pt={{ base: '1.5rem', md: '2.5rem' }} maxW="100%" />
         <Stack
-          spacing="3rem"
-          py="3rem"
-          px="4rem"
+          spacing={{ base: '1.5rem', md: '3rem' }}
+          py={{ base: '1.5rem', md: '3rem' }}
+          px={{ base: '1.5rem', md: '4rem' }}
           bg="white"
           w="100%"
           divider={<StackDivider />}

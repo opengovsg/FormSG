@@ -1,12 +1,17 @@
 import { Meta, Story } from '@storybook/react'
 
+import { getMobileViewParameters } from '~utils/storybook'
+
 import { FormEndPage, FormEndPageProps } from './FormEndPage'
 
 export default {
   title: 'Pages/PublicFormPage/FormEndPage',
   component: FormEndPage,
   decorators: [],
-} as Meta
+  parameters: {
+    layout: 'fullscreen',
+  },
+} as Meta<FormEndPageProps>
 
 const Template: Story<FormEndPageProps> = (args) => <FormEndPage {...args} />
 export const Default = Template.bind({})
@@ -30,3 +35,9 @@ FeedbackSubmitted.args = {
   ...Default.args,
   isFeedbackSubmitted: true,
 }
+
+export const Mobile = Template.bind({})
+Mobile.args = {
+  ...Default.args,
+}
+Mobile.parameters = getMobileViewParameters()
