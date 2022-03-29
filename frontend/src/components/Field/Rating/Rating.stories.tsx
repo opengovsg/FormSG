@@ -129,6 +129,12 @@ Default.args = {
   name: 'Test rating input',
 }
 
+export const Disabled = Template.bind({})
+Disabled.args = {
+  ...Default.args,
+  isDisabled: true,
+}
+
 export const WithHelperText = Template.bind({})
 WithHelperText.args = {
   numberOfRatings: 10,

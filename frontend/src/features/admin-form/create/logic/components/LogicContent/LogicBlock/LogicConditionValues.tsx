@@ -1,3 +1,5 @@
+import { Wrap } from '@chakra-ui/react'
+
 import { FormCondition } from '~shared/types/form'
 
 import { LogicBadge } from './LogicBadge'
@@ -14,10 +16,10 @@ export const LogicConditionValues = ({
   }
 
   return (
-    <>
-      {value.map((v) => (
-        <LogicBadge>{v}</LogicBadge>
+    <Wrap shouldWrapChildren spacing="0.25rem">
+      {value.map((v, index) => (
+        <LogicBadge key={index}>{v}</LogicBadge>
       ))}
-    </>
+    </Wrap>
   )
 }

@@ -20,6 +20,7 @@ import {
 } from '~shared/types/form/form'
 import { FormLogoState } from '~shared/types/form/form_logo'
 import { DateString } from '~shared/types/generic'
+import { StorageModeSubmissionMetadataList } from '~shared/types/submission'
 import { UserDto } from '~shared/types/user'
 import { insertAt, reorder } from '~shared/utils/immutable-array-fns'
 
@@ -96,6 +97,30 @@ export const getAdminFormResponse = (
   )
 }
 
+export const getStorageSubmissionMetadataResponse = (
+  props: Partial<StorageModeSubmissionMetadataList> = {},
+  delay = 0,
+) => {
+  return rest.get<StorageModeSubmissionMetadataList>(
+    '/api/v3/admin/forms/:formId/submissions/metadata',
+    (req, res, ctx) => {
+      return res(
+        ctx.delay(delay),
+        ctx.status(200),
+        ctx.json<StorageModeSubmissionMetadataList>(
+          merge(
+            {
+              count: 30,
+              metadata: [],
+            },
+            props,
+          ),
+        ),
+      )
+    },
+  )
+}
+
 export const createSingleField = (delay = 500) => {
   return rest.post<FieldCreateDto, { formId: string }, FormFieldDto>(
     '/api/v3/admin/forms/:formId/fields',
@@ -146,8 +171,53 @@ export const reorderField = (delay = 500) => {
     formFields = reorder(
       formFields,
       fromIndex,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       parseInt(req.url.searchParams.get('to')!),
     )
     return res(ctx.delay(delay), ctx.status(200), ctx.json(formFields))
   })
+}
+
+export const duplicateField = (delay = 500) => {
+  return rest.post<
+    Record<string, never>,
+    { formId: string; fieldId: string },
+    FormFieldDto
+  >(
+    '/api/v3/admin/forms/:formId/fields/:fieldId/duplicate',
+    (req, res, ctx) => {
+      const fieldToCopyIndex = formFields.findIndex(
+        (field) => field._id === req.params.fieldId,
+      )
+      const newField = {
+        ...formFields[fieldToCopyIndex],
+        _id: `random-id-${formFields.length}`,
+      }
+      formFields.push(newField)
+      return res(ctx.delay(delay), ctx.status(200), ctx.json(newField))
+    },
+  )
+}
+
+export const deleteField = (delay = 500) => {
+  return rest.delete<
+    Record<string, never>,
+    { formId: string; fieldId: string },
+    FormFieldDto
+  >('/api/v3/admin/forms/:formId/fields/:fieldId', (req, res, ctx) => {
+    const fieldToDeleteIndex = formFields.findIndex(
+      (field) => field._id === req.params.fieldId,
+    )
+    formFields.splice(fieldToDeleteIndex, 1)
+    return res(ctx.delay(delay), ctx.status(200))
+  })
+}
+
+export const deleteLogic = (delay?: number) => {
+  return rest.delete(
+    '/api/v3/admin/forms/:formId/logic/:logicId',
+    (_req, res, ctx) => {
+      return res(ctx.delay(delay), ctx.status(200))
+    },
+  )
 }

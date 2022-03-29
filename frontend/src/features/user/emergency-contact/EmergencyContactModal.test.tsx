@@ -77,9 +77,7 @@ describe('User has no verified contact number', () => {
       timeout: 2000,
     })
     // Toast should appear.
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      /emergency contact added\./i,
-    )
+    expect(screen.getByText(/emergency contact added\./i)).toBeInTheDocument()
     // Should now show updated phone number in input, with verified button
     expect(contactNumInput).toHaveDisplayValue(expectedFormattedPhoneNumber)
     expect(vfnButton).toBeDisabled()

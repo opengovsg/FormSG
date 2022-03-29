@@ -1,6 +1,6 @@
 import { MutateOptions } from 'react-query'
 
-import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
+import { FieldBase, FieldCreateDto, FormFieldDto } from '~shared/types/field'
 
 export type FieldMutateOptions = MutateOptions<
   FormFieldDto,
@@ -8,3 +8,12 @@ export type FieldMutateOptions = MutateOptions<
   FieldCreateDto,
   unknown
 >
+
+export type EditFieldProps<T extends FieldBase> = {
+  field: T
+  isLoading: boolean
+  isPendingField: boolean
+  handleChange: (field: T) => void
+  handleSave: (field: T, options?: FieldMutateOptions) => void
+  handleCancel: () => void
+}

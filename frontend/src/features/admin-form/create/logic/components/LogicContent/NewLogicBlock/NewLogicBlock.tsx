@@ -72,7 +72,7 @@ export const NewLogicBlock = () => {
           mx="-2rem"
           px="2rem"
         />
-        <Flex flexDir="row" align="center" spacing={0} my="1.25rem">
+        <Flex flexDir="row" align="center" my="1.25rem">
           <Divider
             ml="-1.5rem"
             pl="1.5rem"

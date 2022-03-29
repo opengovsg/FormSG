@@ -43,7 +43,14 @@ const requiredSchema: RatingFieldSchema = {
   _id: '611b94dfbb9e300012f702a7',
 }
 
-const Template: Story<RatingFieldProps> = (args) => {
+interface StoryRatingFieldProps extends RatingFieldProps {
+  triggerValidation?: boolean
+}
+
+const Template: Story<StoryRatingFieldProps> = ({
+  triggerValidation,
+  ...args
+}) => {
   const formMethods = useForm()
 
   const [submitValues, setSubmitValues] = useState<string>()
@@ -53,8 +60,8 @@ const Template: Story<RatingFieldProps> = (args) => {
   }
 
   useEffect(() => {
-    formMethods.trigger()
-  }, [])
+    if (triggerValidation) formMethods.trigger()
+  }, [formMethods, triggerValidation])
 
   return (
     <FormProvider {...formMethods}>
@@ -77,6 +84,7 @@ const Template: Story<RatingFieldProps> = (args) => {
 export const ValidationRequired = Template.bind({})
 ValidationRequired.args = {
   schema: requiredSchema,
+  triggerValidation: true,
 }
 
 export const ValidationOptional = Template.bind({})

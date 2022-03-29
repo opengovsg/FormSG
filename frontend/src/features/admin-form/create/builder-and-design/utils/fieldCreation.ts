@@ -18,6 +18,9 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
   }
 
   switch (fieldType) {
+    case BasicField.YesNo:
+    case BasicField.Nric:
+    case BasicField.Uen:
     case BasicField.Section: {
       return {
         fieldType,
@@ -33,6 +36,14 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
           customMin: null,
         },
         validateByValue: false,
+        fieldOptions: ['Option 1'],
+        othersRadioButton: false,
+      }
+    }
+    case BasicField.Radio: {
+      return {
+        fieldType,
+        ...baseMeta,
         fieldOptions: ['Option 1'],
         othersRadioButton: false,
       }
