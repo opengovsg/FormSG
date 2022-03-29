@@ -171,6 +171,7 @@ export const reorderField = (delay = 500) => {
     formFields = reorder(
       formFields,
       fromIndex,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       parseInt(req.url.searchParams.get('to')!),
     )
     return res(ctx.delay(delay), ctx.status(200), ctx.json(formFields))

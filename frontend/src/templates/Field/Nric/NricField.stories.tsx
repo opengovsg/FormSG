@@ -56,8 +56,8 @@ const Template: Story<StoryNricFieldProps> = ({ defaultValue, ...args }) => {
   }
 
   useEffect(() => {
-    formMethods.trigger()
-  }, [])
+    if (defaultValue !== undefined) formMethods.trigger()
+  }, [defaultValue, formMethods])
 
   return (
     <FormProvider {...formMethods}>
@@ -80,6 +80,7 @@ const Template: Story<StoryNricFieldProps> = ({ defaultValue, ...args }) => {
 export const ValidationRequired = Template.bind({})
 ValidationRequired.args = {
   schema: baseSchema,
+  defaultValue: '',
 }
 
 export const ValidationOptional = Template.bind({})

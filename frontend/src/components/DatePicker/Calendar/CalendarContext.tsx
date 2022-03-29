@@ -34,7 +34,7 @@ type PassthroughProps = {
    * Function to be passed to CalendarPanel to determine range styling.
    * Used for multi-calendar variant.
    */
-  isDateInRange?: (d: Date) => boolean | null
+  isDateInRange?: (d: Date) => boolean
   /**
    * Function to be passed to CalendarPanel to determine range styling.
    * Called when a date is selected and a mouseover is detected over a date.
@@ -65,7 +65,7 @@ type PassthroughProps = {
    */
   hoveredDate?: Date
 }
-type UseProvideCalendarProps = Pick<DayzedProps, 'monthsToDisplay'> &
+export type UseProvideCalendarProps = Pick<DayzedProps, 'monthsToDisplay'> &
   PassthroughProps
 
 interface CalendarContextProps extends DatePickerProps, PassthroughProps {

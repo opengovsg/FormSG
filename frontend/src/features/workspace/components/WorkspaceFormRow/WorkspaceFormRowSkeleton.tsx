@@ -43,7 +43,6 @@ export const WorkspaceFormRowSkeleton = (): JSX.Element => {
     <Grid
       py="1.5rem"
       px="2rem"
-      justify="space-between"
       templateColumns={{
         base: '1fr min-content',
         md: '1fr min-content min-content',
@@ -57,7 +56,6 @@ export const WorkspaceFormRowSkeleton = (): JSX.Element => {
     >
       <Flex flexDir="column" gridArea="title">
         <Box
-          variant="inline"
           textDecorationLine="unset"
           display="inline-flex"
           alignItems="flex-start"
