@@ -24,3 +24,9 @@ Default.args = {
   },
   handleSubmitFeedback: (inputs) => console.log(inputs),
 }
+
+export const FeedbackSubmitted = Template.bind({})
+FeedbackSubmitted.args = {
+  ...Default.args,
+  isFeedbackSubmitted: true,
+}

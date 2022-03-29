@@ -14,10 +14,12 @@ export interface FormEndPageProps {
     timeInEpochMs: number
   }
   handleSubmitFeedback: (inputs: FeedbackFormInput) => void
+  isFeedbackSubmitted: boolean
 }
 
 export const FormEndPage = ({
   handleSubmitFeedback,
+  isFeedbackSubmitted,
   ...endPageProps
 }: FormEndPageProps): JSX.Element => {
   return (
@@ -33,7 +35,9 @@ export const FormEndPage = ({
           divider={<StackDivider />}
         >
           <EndPageBlock {...endPageProps} />
-          <FeedbackBlock onSubmit={handleSubmitFeedback} />
+          {isFeedbackSubmitted ? null : (
+            <FeedbackBlock onSubmit={handleSubmitFeedback} />
+          )}
         </Stack>
       </Flex>
     </Container>
