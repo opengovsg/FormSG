@@ -9,6 +9,9 @@ export default {
   component: FormEndPage,
   decorators: [],
   parameters: {
+    backgrounds: {
+      default: 'light',
+    },
     layout: 'fullscreen',
   },
 } as Meta<FormEndPageProps>
