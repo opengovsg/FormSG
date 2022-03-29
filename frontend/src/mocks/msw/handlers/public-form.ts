@@ -329,7 +329,7 @@ const BASE_FORM = {
       ],
     },
   ],
-  hasCaptcha: true,
+  hasCaptcha: false,
   startPage: {
     colorTheme: 'blue',
     logo: { state: 'NONE' },

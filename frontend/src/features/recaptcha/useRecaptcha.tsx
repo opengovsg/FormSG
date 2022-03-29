@@ -131,7 +131,7 @@ export const useRecaptcha = ({
   }, [grecaptcha, handleChange, onExpiry, widgetId])
 
   useEffect(() => {
-    if (hasLoaded && widgetId === undefined) {
+    if (sitekey && hasLoaded && widgetId === undefined) {
       const renderProps = {
         sitekey,
         size,
