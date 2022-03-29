@@ -72,8 +72,7 @@ const helmetMiddlewares = () => {
       'https://www.recaptcha.net/recaptcha/',
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
-      // For inline styles in angular-sanitize.js
-      "'sha256-b3IrgBVvuKx/Q3tmAi79fnf6AFClibrz/0S5x1ghdGU='",
+      "'unsafe-inline'",
     ],
     formAction: ["'self'"],
   }
