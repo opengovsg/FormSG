@@ -54,7 +54,7 @@ export const FeedbackBlock = ({
           isReadOnly={isSubmitting}
           mt="1rem"
           {...register('comment')}
-          aria-describedby="Enter detailed feedback here"
+          aria-label="Enter detailed feedback here"
           placeholder="Enter detailed feedback here"
         />
         <Button
