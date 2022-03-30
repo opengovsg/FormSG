@@ -30,7 +30,7 @@ export const formatNumberToLocaleString = (num: number): string => {
 export const convertToStringArray = (
   value: string | number | string[] | number[],
 ) => {
-  if (!value) return []
+  if (value === '') return []
   if (Array.isArray(value)) {
     return value.map((v) => String(v))
   }
