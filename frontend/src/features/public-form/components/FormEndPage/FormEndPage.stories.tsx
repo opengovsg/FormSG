@@ -26,10 +26,10 @@ Default.args = {
     paragraph: 'We will get back to you shortly.',
   },
   submissionData: {
-    formTitle: 'Test Form',
     id: 'mockSubmissionId',
     timeInEpochMs: 1648545566989,
   },
+  formTitle: 'Test Form',
   handleSubmitFeedback: (inputs) => console.log(inputs),
 }
 

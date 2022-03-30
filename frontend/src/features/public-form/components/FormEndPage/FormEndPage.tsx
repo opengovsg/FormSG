@@ -9,6 +9,8 @@ import { FeedbackBlock, FeedbackFormInput } from './components/FeedbackBlock'
 import { ThankYouSvgr } from './components/ThankYouSvgr'
 
 export interface FormEndPageProps {
+  /** Form title of submission for display */
+  formTitle: string
   endPage: FormDto['endPage']
   submissionData: SubmissionData
   handleSubmitFeedback: (inputs: FeedbackFormInput) => void

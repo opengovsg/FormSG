@@ -19,11 +19,14 @@ import Button from '~components/Button'
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
 export interface EndPageBlockProps {
+  /** Form title of submission for display */
+  formTitle: string
   endPage: FormDto['endPage']
   submissionData: SubmissionData
 }
 
 export const EndPageBlock = ({
+  formTitle,
   endPage,
   submissionData,
 }: EndPageBlockProps): JSX.Element => {
@@ -59,7 +62,7 @@ export const EndPageBlock = ({
           </AccordionButton>
           <AccordionPanel textStyle="body-1" color="secondary.400">
             <Text textStyle="subhead-1" color="secondary.500">
-              {submissionData.formTitle}
+              {formTitle}
             </Text>
             <Text>{submissionData.id}</Text>
             <Text>{prettifiedDateString}</Text>

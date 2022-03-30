@@ -5,8 +5,6 @@ import { UseQueryResult } from 'react-query'
 import { PublicFormViewDto } from '~shared/types/form'
 
 export type SubmissionData = {
-  /** Form title of submission for display */
-  formTitle: string
   /** Submission id */
   id: string | undefined
   /** Submission time (on browser)  */
