@@ -29,7 +29,7 @@ export const FormEndPageContainer = (): JSX.Element | null => {
   if (!form || !submissionData) return null
 
   return (
-    <Box py={{ base: '1.5rem', md: '2.5rem' }}>
+    <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
       <FormEndPage
         submissionData={submissionData}
         formTitle={form.title}

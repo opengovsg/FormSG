@@ -31,7 +31,7 @@ export const PublicFormWrapper = ({
   }, [form, isLoading])
 
   return (
-    <Flex bg={bgColour} flexDir="column" h="100%" minH="100vh" p="1.5rem">
+    <Flex bg={bgColour} p="1.5rem" flex={1} justify="center">
       {children}
     </Flex>
   )
