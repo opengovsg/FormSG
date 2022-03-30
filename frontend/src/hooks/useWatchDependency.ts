@@ -31,7 +31,8 @@ export function useWatchDependency<
 
   useEffect(() => {
     const subscription = watch((formData, { name }) => {
-      if (name != null && (name === fieldName || name.startsWith(fieldName))) {
+      //  `fieldName` may be a nested field and thus `startsWith` is used.
+      if (name !== undefined && name.startsWith(fieldName)) {
         setState({ value: get(formData, fieldName) })
       }
     })
