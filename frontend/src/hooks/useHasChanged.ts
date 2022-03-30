@@ -10,6 +10,6 @@ export const useHasChanged = <T>(
   const prevVal = usePrevious(value)
   // If the previous value is undefined and ignoring undefined,
   // then do not consider the value changed.
-  if (!prevVal && isIgnoreUndefined) return false
+  if (prevVal === undefined && isIgnoreUndefined) return false
   return prevVal !== value
 }
