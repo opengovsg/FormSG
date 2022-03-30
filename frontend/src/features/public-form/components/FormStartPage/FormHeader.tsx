@@ -21,7 +21,8 @@ import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 const useFormHeader = () => {
-  const { form, spcpSession, formId } = usePublicFormContext()
+  const { form, spcpSession, formId, submissionData, miniHeaderRef } =
+    usePublicFormContext()
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
   const titleColour = useMemo(() => {
@@ -55,6 +56,8 @@ const useFormHeader = () => {
     titleBg,
     titleColour,
     loggedInId: spcpSession?.userName,
+    showHeader: !submissionData,
+    miniHeaderRef,
     handleLogout,
   }
 }
@@ -64,10 +67,11 @@ export interface MiniHeaderProps {
 }
 
 // Exported for testing.
-export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element => {
-  const { title, titleBg, titleColour } = useFormHeader()
+export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
+  const { title, titleBg, titleColour, showHeader, miniHeaderRef } =
+    useFormHeader()
 
-  const { miniHeaderRef } = usePublicFormContext()
+  if (!showHeader) return null
 
   return (
     <Slide
@@ -89,7 +93,7 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element => {
   )
 }
 
-export const FormHeader = (): JSX.Element => {
+export const FormHeader = (): JSX.Element | null => {
   const {
     title,
     estTimeString,
@@ -97,6 +101,7 @@ export const FormHeader = (): JSX.Element => {
     titleColour,
     loggedInId,
     handleLogout,
+    showHeader,
   } = useFormHeader()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -112,6 +117,8 @@ export const FormHeader = (): JSX.Element => {
     },
     [onClose, onOpen],
   )
+
+  if (!showHeader) return null
 
   return (
     <>

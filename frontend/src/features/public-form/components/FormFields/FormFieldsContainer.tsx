@@ -12,8 +12,9 @@ import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
 
-export const FormFieldsContainer = (): JSX.Element => {
-  const { form, spcpSession, isLoading, formBgColor } = usePublicFormContext()
+export const FormFieldsContainer = (): JSX.Element | null => {
+  const { form, spcpSession, isLoading, submissionData } =
+    usePublicFormContext()
 
   const onSubmit = useCallback((values: Record<string, string>) => {
     console.log(values)
@@ -48,6 +49,8 @@ export const FormFieldsContainer = (): JSX.Element => {
       />
     )
   }, [form, isAuthRequired, isLoading, onSubmit])
+
+  if (submissionData) return null
 
   return (
     <FormSectionsProvider form={form}>
