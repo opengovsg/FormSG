@@ -2,17 +2,15 @@ import { Container, Flex, Stack, StackDivider } from '@chakra-ui/react'
 
 import { FormDto } from '~shared/types/form'
 
+import { SubmissionData } from '~features/public-form/PublicFormContext'
+
 import { EndPageBlock } from './components/EndPageBlock'
 import { FeedbackBlock, FeedbackFormInput } from './components/FeedbackBlock'
 import { ThankYouSvgr } from './components/ThankYouSvgr'
 
 export interface FormEndPageProps {
   endPage: FormDto['endPage']
-  submissionMeta: {
-    formTitle: string
-    submissionId: string
-    timeInEpochMs: number
-  }
+  submissionData: SubmissionData
   handleSubmitFeedback: (inputs: FeedbackFormInput) => void
   isFeedbackSubmitted: boolean
 }

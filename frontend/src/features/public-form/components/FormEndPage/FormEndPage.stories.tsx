@@ -25,9 +25,9 @@ Default.args = {
       'Thank you for your submission with some super long backstory about how important the submission is to them',
     paragraph: 'We will get back to you shortly.',
   },
-  submissionMeta: {
+  submissionData: {
     formTitle: 'Test Form',
-    submissionId: 'mockSubmissionId',
+    id: 'mockSubmissionId',
     timeInEpochMs: 1648545566989,
   },
   handleSubmitFeedback: (inputs) => console.log(inputs),

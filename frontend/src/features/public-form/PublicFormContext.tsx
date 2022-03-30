@@ -4,6 +4,14 @@ import { UseQueryResult } from 'react-query'
 
 import { PublicFormViewDto } from '~shared/types/form'
 
+export type SubmissionData = {
+  /** Form title of submission for display */
+  formTitle: string
+  /** Submission id */
+  id: string | undefined
+  /** Submission time (on browser)  */
+  timeInEpochMs: number
+}
 export interface PublicFormContextProps
   extends Partial<PublicFormViewDto>,
     Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
@@ -20,6 +28,8 @@ export interface PublicFormContextProps
   expiryInMs: number | null
   /** Color of background based on form's colorTheme */
   formBgColor: string
+  /** If form is submitted, submissionData will be defined. */
+  submissionData?: SubmissionData
 }
 
 export const PublicFormContext = createContext<

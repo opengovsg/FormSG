@@ -16,22 +16,20 @@ import { FormDto } from '~shared/types/form'
 
 import Button from '~components/Button'
 
+import { SubmissionData } from '~features/public-form/PublicFormContext'
+
 export interface EndPageBlockProps {
   endPage: FormDto['endPage']
-  submissionMeta: {
-    formTitle: string
-    submissionId: string
-    timeInEpochMs: number
-  }
+  submissionData: SubmissionData
 }
 
 export const EndPageBlock = ({
   endPage,
-  submissionMeta,
+  submissionData,
 }: EndPageBlockProps): JSX.Element => {
   const prettifiedDateString = useMemo(() => {
-    return format(new Date(submissionMeta.timeInEpochMs), 'dd MMM yyyy, h:mm a')
-  }, [submissionMeta])
+    return format(new Date(submissionData.timeInEpochMs), 'dd MMM yyyy, h:mm a')
+  }, [submissionData])
 
   return (
     <Flex flexDir="column">
@@ -61,9 +59,9 @@ export const EndPageBlock = ({
           </AccordionButton>
           <AccordionPanel textStyle="body-1" color="secondary.400">
             <Text textStyle="subhead-1" color="secondary.500">
-              {submissionMeta.formTitle}
+              {submissionData.formTitle}
             </Text>
-            <Text>{submissionMeta.submissionId}</Text>
+            <Text>{submissionData.id}</Text>
             <Text>{prettifiedDateString}</Text>
           </AccordionPanel>
         </AccordionItem>
