@@ -1,8 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 import { chakra, Flex, FlexProps, HStack } from '@chakra-ui/react'
 
-import { ThemeColorScheme } from '~/theme/foundations/colours'
-
 import { ReactComponent as BrandHortSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
 import Button from '~components/Button'
