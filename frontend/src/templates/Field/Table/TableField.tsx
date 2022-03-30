@@ -1,8 +1,9 @@
 import { useCallback, useMemo } from 'react'
-import { useFieldArray, useFormContext } from 'react-hook-form'
+import { useFieldArray, useFormContext, useFormState } from 'react-hook-form'
 import { BiTrash } from 'react-icons/bi'
 import { useTable } from 'react-table'
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
+import { get, head, uniq } from 'lodash'
 
 import { FormFieldWithId, TableFieldBase } from '~shared/types/field'
 
@@ -53,6 +54,19 @@ export const TableField = ({
 
   const formMethods =
     useFormContext<Record<string, Record<string, unknown>[]>>()
+  const { errors } = useFormState({
+    control: formMethods.control,
+    name: schema._id,
+  })
+
+  const tableErrors = get(errors, schema._id)
+  const uniqTableError = useMemo(() => {
+    // On mobile, errors are shown directly in the individual table cells and
+    // would not need to be shown in the table field itself.
+    if (isMobile) return
+    // Get first available error amongst all column cell errors.
+    return head(uniq(tableErrors?.flatMap(Object.values)))
+  }, [isMobile, tableErrors])
 
   const { fields, append, remove } = useFieldArray({
     control: formMethods.control,
@@ -142,13 +156,11 @@ export const TableField = ({
           </Tbody>
         </Table>
       </Box>
-      {isMobile ? null : (
-        // Error will only render if table field has errors. Since the only possible errors are
-        // for required fields (for now), just render a hardcoded error message.
+      {uniqTableError ? (
         <FormErrorMessage my="0.75rem">
-          Please fill in the required fields.
+          {uniqTableError.message}
         </FormErrorMessage>
-      )}
+      ) : null}
       {schema.addMoreRows && schema.maximumRows !== undefined ? (
         <AddRowFooter
           currentRows={fields.length}
