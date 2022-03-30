@@ -171,23 +171,12 @@ export const EditConditionBlock = ({
       }
       const { value, ...rest } = field
 
-      if (!ifValueTypeValue) {
-        return (
-          <SingleSelect
-            {...selectProps}
-            value={String(value)}
-            {...rest}
-            isDisabled
-          />
-        )
-      }
-
       switch (ifValueTypeValue) {
         case LogicIfValue.SingleSelect:
           return (
             <SingleSelect {...selectProps} value={String(value)} {...rest} />
           )
-        case LogicIfValue.MultiSelect: {
+        case LogicIfValue.MultiSelect:
           return (
             <MultiSelect
               {...selectProps}
@@ -195,13 +184,21 @@ export const EditConditionBlock = ({
               {...rest}
             />
           )
-        }
         case LogicIfValue.Number:
           return (
             <NumberInput
               isDisabled={!conditionStateValue}
               value={String(value ?? '')}
               {...rest}
+            />
+          )
+        case undefined:
+          return (
+            <SingleSelect
+              {...selectProps}
+              value={String(value)}
+              {...rest}
+              isDisabled
             />
           )
       }
