@@ -18,6 +18,8 @@ export interface PublicFormContextProps
    * The expiry time of current transaction, if it exists.
    * Is `null` if no transaction has been generated yet. */
   expiryInMs: number | null
+  /** Color of background based on form's colorTheme */
+  formBgColor: string
 }
 
 export const PublicFormContext = createContext<
