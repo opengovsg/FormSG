@@ -99,7 +99,7 @@ export const EditConditionBlock = ({
     )
   }, [conditionStateValue, currentSelectedField, name, resetField, setValue])
 
-  const items = useMemo(() => {
+  const allowedIfConditionFieldsOptions = useMemo(() => {
     if (!logicableFields) return []
 
     // Get subset of logicableFields that have not already been set to show on
@@ -257,7 +257,7 @@ export const EditConditionBlock = ({
                   isSearchable={false}
                   isClearable={false}
                   placeholder="Select a question"
-                  items={items}
+                  items={allowedIfConditionFieldsOptions}
                   {...field}
                 />
               )}
