@@ -168,7 +168,7 @@ const ThenLogicInput = ({
         })
     }
     return []
-    // Watch entire <***>Watch variables since <***>Watch.value is a proxy
+    // Watch entire <***>Watch variables since <***>Watch.value is a Proxy object
     // and will not update if <***>Watch.value is mutated.
   }, [formFields, logicConditionsWatch, mapIdToField, logicTypeValue])
 
