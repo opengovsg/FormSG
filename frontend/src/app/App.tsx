@@ -32,7 +32,7 @@ export const App = (): JSX.Element => (
     <BrowserRouter>
       <ChakraProvider theme={theme} resetCSS>
         <AuthProvider>
-          <Box height="2rem" width="100vw" position="fixed" top="0" zIndex="1">
+          <Box height="2rem" width="100vw" position="fixed" top="0" zIndex="11">
             <GovtMasthead />
           </Box>
           <Box height="2rem" width="100vw" />
