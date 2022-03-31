@@ -5,7 +5,7 @@ import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormColorTheme, PublicFormViewDto } from '~shared/types/form'
+import { PublicFormViewDto } from '~shared/types/form'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
@@ -41,18 +41,6 @@ export const PublicFormProvider = ({
   const toast = useToast()
   const vfnToastIdRef = useRef<string | number>()
   const desyncToastIdRef = useRef<string | number>()
-
-  const formBgColor = useMemo(() => {
-    if (isLoading) return 'neutral.100'
-    if (!formView) return ''
-    const { colorTheme } = formView.form.startPage
-    switch (colorTheme) {
-      case FormColorTheme.Blue:
-        return 'secondary.100'
-      default:
-        return `theme-${colorTheme}.100`
-    }
-  }, [formView, isLoading])
 
   useEffect(() => {
     if (data) {
@@ -131,7 +119,6 @@ export const PublicFormProvider = ({
         getTransactionId,
         expiryInMs,
         isLoading,
-        formBgColor,
         ...formView,
         ...rest,
       }}
