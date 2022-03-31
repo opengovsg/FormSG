@@ -32,7 +32,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => ({
 const getSize = (value: string): PartsStyleObject<typeof parts> => {
   const fullDialogStyle: SystemStyleObject = {
     maxW: '100vw',
-    minH: '100vh',
+    minH: 'calc(100vh - 2rem)',
     my: 0,
     borderRadius: 0,
     bg: 'neutral.100',

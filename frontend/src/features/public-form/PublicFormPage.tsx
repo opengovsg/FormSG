@@ -12,7 +12,7 @@ export const PublicFormPage = (): JSX.Element => {
 
   return (
     <PublicFormProvider formId={formId}>
-      <Flex flexDir="column" h="100%" minH="100vh">
+      <Flex flexDir="column" h="100%" minH="calc(100vh - 2rem)">
         <FormStartPage />
         <FormFields />
         <FormFooter />
