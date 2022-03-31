@@ -1,8 +1,6 @@
 import { useMemo } from 'react'
 import { Flex } from '@chakra-ui/react'
 
-import { FormColorTheme } from '~shared/types/form'
-
 import { usePublicFormContext } from '../PublicFormContext'
 
 export interface PublicFormWrapperProps {
@@ -19,15 +17,8 @@ export const PublicFormWrapper = ({
   const { form, isLoading } = usePublicFormContext()
 
   const bgColour = useMemo(() => {
-    if (isLoading) return 'neutral.100'
-    if (!form) return ''
-    const { colorTheme } = form.startPage
-    switch (colorTheme) {
-      case FormColorTheme.Blue:
-        return 'secondary.100'
-      default:
-        return `theme-${colorTheme}.100`
-    }
+    if (isLoading || !form) return 'neutral.100'
+    return `theme-${form.startPage.colorTheme}.100`
   }, [form, isLoading])
 
   return (
