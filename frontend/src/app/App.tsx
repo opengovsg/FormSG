@@ -6,8 +6,7 @@ import { ChakraProvider } from '@chakra-ui/react'
 import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
 import { HttpError } from '~services/ApiService'
-
-import GovtMasthead from '../components/GovtMasthead'
+import GovtMasthead from '~components/GovtMasthead'
 
 import { AppRouter } from './AppRouter'
 
