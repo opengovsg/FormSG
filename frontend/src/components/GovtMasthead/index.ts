@@ -1,1 +1,1 @@
-export { GovtMasthead as default } from './GovtMasthead'
+export { AppMasthead, GovtMasthead as default } from './GovtMasthead'

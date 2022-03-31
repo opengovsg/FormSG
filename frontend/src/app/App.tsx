@@ -1,12 +1,12 @@
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { BrowserRouter } from 'react-router-dom'
-import { Box, ChakraProvider } from '@chakra-ui/react'
+import { ChakraProvider } from '@chakra-ui/react'
 
 import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
 import { HttpError } from '~services/ApiService'
-import GovtMasthead from '~components/GovtMasthead'
+import { AppMasthead } from '~components/GovtMasthead/'
 
 import { AppRouter } from './AppRouter'
 
@@ -32,10 +32,7 @@ export const App = (): JSX.Element => (
     <BrowserRouter>
       <ChakraProvider theme={theme} resetCSS>
         <AuthProvider>
-          <Box height="2rem" width="100vw" position="fixed" top="0" zIndex="11">
-            <GovtMasthead />
-          </Box>
-          <Box height="2rem" width="100vw" />
+          <AppMasthead />
           <AppRouter />
         </AuthProvider>
       </ChakraProvider>
