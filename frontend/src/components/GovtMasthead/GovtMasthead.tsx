@@ -215,11 +215,16 @@ export const GovtMasthead = ({
 // Used for rendering in app with fixed position
 export const AppMasthead = () => {
   return (
-    <>
-      <Box height="2rem" width="100vw" position="fixed" top="0" zIndex="11">
+    <Box height="2rem" width="100vw" position="relative">
+      <Box
+        height="2rem"
+        width="100vw"
+        position="absolute"
+        top="0"
+        zIndex="banner"
+      >
         <GovtMasthead />
       </Box>
-      <Box height="2rem" width="100vw" />
-    </>
+    </Box>
   )
 }
