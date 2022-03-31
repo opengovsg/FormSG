@@ -52,6 +52,7 @@ const HeaderBar = ({
     textStyle: { base: 'legal', md: 'caption-2' },
     display: 'flex',
     width: '100%',
+    alignItems: 'center',
   }
 
   // Mobile
