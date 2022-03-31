@@ -14,12 +14,17 @@ import { AttachmentFieldSchema } from '~templates/Field'
 
 import { transformInputsToOutputs } from './inputTransformation'
 import { validateAttachmentInput } from './inputValidation'
+import { validateResponses } from './validateResponses'
 
 // The current encrypt version to assign to the encrypted submission.
 // This is needed if we ever break backwards compatibility with
 // end-to-end encryption
 const ENCRYPT_VERSION = 1
 
+/**
+ * @returns StorageModeSubmissionContentDto
+ * @throw Error if form inputs are invalid.
+ */
 export const createEncryptedSubmissionData = async (
   formFields: FormFieldDto[],
   formInputs: Record<string, unknown>,
@@ -47,6 +52,10 @@ export const createEncryptedSubmissionData = async (
   }
 }
 
+/**
+ * @returns formData containing form responses and attachments.
+ * @throws Error if form inputs are invalid.
+ */
 export const createEmailSubmissionFormData = (
   formFields: FormFieldDto[],
   formInputs: Record<string, unknown>,
@@ -73,9 +82,11 @@ const createResponsesArray = (
   formFields: FormFieldDto[],
   formInputs: Record<string, unknown>,
 ): FieldResponse[] => {
-  return formFields
+  const transformedResponses = formFields
     .map((ff) => transformInputsToOutputs(ff, formInputs[ff._id]))
     .filter((output): output is FieldResponse => output !== undefined)
+
+  return validateResponses(transformedResponses)
 }
 
 const getEncryptedAttachmentsMap = async (
