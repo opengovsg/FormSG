@@ -7,6 +7,8 @@ import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
 import { HttpError } from '~services/ApiService'
 
+import GovtMasthead from '../components/GovtMasthead'
+
 import { AppRouter } from './AppRouter'
 
 // Create a client
@@ -31,6 +33,7 @@ export const App = (): JSX.Element => (
     <BrowserRouter>
       <ChakraProvider theme={theme} resetCSS>
         <AuthProvider>
+          <GovtMasthead />
           <AppRouter />
         </AuthProvider>
       </ChakraProvider>
