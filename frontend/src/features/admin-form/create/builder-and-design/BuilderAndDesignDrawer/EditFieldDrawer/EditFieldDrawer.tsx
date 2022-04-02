@@ -108,23 +108,25 @@ interface MemoFieldDrawerContentProps {
   field: FieldCreateDto
 }
 
-const MemoFieldDrawerContent = memo((props: MemoFieldDrawerContentProps) => {
-  // Extract field variable just to get field.fieldType types to cooperate
-  const field = useMemo(() => props.field, [props.field])
-  switch (field.fieldType) {
-    case BasicField.Checkbox:
-      return <EditCheckbox {...props} field={field} />
-    case BasicField.Nric:
-      return <EditNric {...props} field={field} />
-    case BasicField.Section:
-      return <EditHeader {...props} field={field} />
-    case BasicField.Uen:
-      return <EditUen {...props} field={field} />
-    case BasicField.YesNo:
-      return <EditYesNo {...props} field={field} />
-    case BasicField.Radio:
-      return <EditRadio {...props} field={field} />
-    default:
-      return <div>TODO: Insert field options here</div>
-  }
-})
+export const MemoFieldDrawerContent = memo(
+  (props: MemoFieldDrawerContentProps) => {
+    // Extract field variable just to get field.fieldType types to cooperate
+    const field = useMemo(() => props.field, [props.field])
+    switch (field.fieldType) {
+      case BasicField.Checkbox:
+        return <EditCheckbox {...props} field={field} />
+      case BasicField.Nric:
+        return <EditNric {...props} field={field} />
+      case BasicField.Section:
+        return <EditHeader {...props} field={field} />
+      case BasicField.Uen:
+        return <EditUen {...props} field={field} />
+      case BasicField.YesNo:
+        return <EditYesNo {...props} field={field} />
+      case BasicField.Radio:
+        return <EditRadio {...props} field={field} />
+      default:
+        return <div>TODO: Insert field options here</div>
+    }
+  },
+)

@@ -14,6 +14,9 @@ import {
   FormFieldDto,
 } from '~shared/types/field'
 
+import { useIsMobile } from '~hooks/useIsMobile'
+
+import { useBuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
 import { useCreateFormField } from '~features/admin-form/create/builder-and-design/mutations/useCreateFormField'
 import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
 import {
@@ -72,6 +75,11 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   const { editFieldMutation } = useEditFormField()
   const { createFieldMutation } = useCreateFormField()
 
+  const isMobile = useIsMobile()
+  const {
+    mobileCreateEditModal: { onClose: onMobileModalClose },
+  } = useBuilderAndDesignContext()
+
   const isPendingField = useMemo(
     () => stateData.state === BuildFieldState.CreatingField,
     [stateData.state],
@@ -94,8 +102,12 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
         // @ts-ignore
         transform.input(newField),
       )
+      if (isMobile) {
+        setToInactive()
+        onMobileModalClose()
+      }
     },
-    [editForm, transform],
+    [editForm, isMobile, onMobileModalClose, setToInactive, transform],
   )
 
   const handleUpdateField = editForm.handleSubmit((inputs) => {
@@ -128,6 +140,13 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     [stateData, updateCreateState, updateEditState],
   )
 
+  const handleCancel = useCallback(() => {
+    setToInactive()
+    if (isMobile) {
+      onMobileModalClose()
+    }
+  }, [isMobile, onMobileModalClose, setToInactive])
+
   useDebounce(
     () => handleChange(transform.output(watchedInputs, field)),
     300,
@@ -149,7 +168,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     buttonText,
     isSaveEnabled,
     handleUpdateField,
-    handleCancel: setToInactive,
+    handleCancel,
     isLoading: createFieldMutation.isLoading || editFieldMutation.isLoading,
   }
 }
