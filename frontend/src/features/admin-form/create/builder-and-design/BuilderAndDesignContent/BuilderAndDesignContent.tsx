@@ -1,11 +1,12 @@
 import { useCallback, useEffect } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { BiPlus } from 'react-icons/bi'
-import { Box, Flex, Modal, ModalOverlay, useDisclosure } from '@chakra-ui/react'
+import { Box, Flex, Modal, ModalOverlay } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 
+import { useBuilderAndDesignContext } from '../BuilderAndDesignContext'
 import { FIELD_LIST_DROP_ID } from '../constants'
 import { MobileCreateEditModal } from '../MobileCreateEditModal'
 import { DndPlaceholderProps } from '../types'
@@ -33,10 +34,12 @@ export const BuilderAndDesignContent = ({
 
   const isMobile = useIsMobile()
   const {
-    isOpen: isMobileModalOpen,
-    onOpen: onMobileModalOpen,
-    onClose: onMobileModalClose,
-  } = useDisclosure()
+    mobileCreateEditModal: {
+      isOpen: isMobileModalOpen,
+      onOpen: onMobileModalOpen,
+      onClose: onMobileModalClose,
+    },
+  } = useBuilderAndDesignContext()
 
   const handleMobileModalClose = useCallback(() => {
     onMobileModalClose()
