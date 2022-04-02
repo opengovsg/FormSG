@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { BiPlus } from 'react-icons/bi'
 import { Box, Flex, Modal, ModalOverlay, useDisclosure } from '@chakra-ui/react'
@@ -37,6 +37,11 @@ export const BuilderAndDesignContent = ({
     onOpen: onMobileModalOpen,
     onClose: onMobileModalClose,
   } = useDisclosure()
+
+  const handleMobileModalClose = useCallback(() => {
+    onMobileModalClose()
+    setFieldsToInactive()
+  }, [onMobileModalClose, setFieldsToInactive])
 
   return (
     <>
@@ -92,7 +97,7 @@ export const BuilderAndDesignContent = ({
       {isMobile && (
         <Modal
           isOpen={isMobileModalOpen}
-          onClose={onMobileModalClose}
+          onClose={handleMobileModalClose}
           size="full"
         >
           <ModalOverlay />
