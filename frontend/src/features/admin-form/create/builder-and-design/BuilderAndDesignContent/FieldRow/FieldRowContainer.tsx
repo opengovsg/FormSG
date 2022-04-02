@@ -99,17 +99,7 @@ export const FieldRowContainer = ({
       updateEditState(field)
       handleBuilderClick()
     }
-    if (isMobile) {
-      onMobileModalOpen()
-    }
-  }, [
-    isActive,
-    isMobile,
-    updateEditState,
-    field,
-    handleBuilderClick,
-    onMobileModalOpen,
-  ])
+  }, [isActive, updateEditState, field, handleBuilderClick])
 
   const handleKeydown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -120,6 +110,12 @@ export const FieldRowContainer = ({
     },
     [handleFieldClick],
   )
+
+  const handleEditFieldClick = useCallback(() => {
+    if (isMobile) {
+      onMobileModalOpen()
+    }
+  }, [isMobile, onMobileModalOpen])
 
   const handleDuplicateClick = useCallback(() => {
     // Duplicate button should be hidden if field
@@ -234,6 +230,7 @@ export const FieldRowContainer = ({
                     colorScheme="secondary"
                     aria-label="Edit field"
                     icon={<BiEdit fontSize="1.25rem" />}
+                    onClick={handleEditFieldClick}
                   />
                 ) : null}
                 <ButtonGroup

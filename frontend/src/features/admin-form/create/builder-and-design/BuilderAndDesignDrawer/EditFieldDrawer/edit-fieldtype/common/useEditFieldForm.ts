@@ -103,11 +103,10 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
         transform.input(newField),
       )
       if (isMobile) {
-        setToInactive()
         onMobileModalClose()
       }
     },
-    [editForm, isMobile, onMobileModalClose, setToInactive, transform],
+    [editForm, isMobile, onMobileModalClose, transform],
   )
 
   const handleUpdateField = editForm.handleSubmit((inputs) => {
