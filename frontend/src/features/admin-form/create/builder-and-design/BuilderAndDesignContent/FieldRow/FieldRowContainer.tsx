@@ -92,6 +92,7 @@ export const FieldRowContainer = ({
 
   const {
     mobileCreateEditModal: { onOpen: onMobileModalOpen },
+    deleteFieldModal: { onOpen: onDeleteModalOpen },
   } = useBuilderAndDesignContext()
 
   const handleFieldClick = useCallback(() => {
@@ -129,9 +130,9 @@ export const FieldRowContainer = ({
     if (stateData.state === BuildFieldState.CreatingField) {
       setToInactive()
     } else if (stateData.state === BuildFieldState.EditingField) {
-      deleteFieldMutation.mutate(field._id)
+      onDeleteModalOpen()
     }
-  }, [field._id, deleteFieldMutation, setToInactive, stateData.state])
+  }, [setToInactive, stateData.state, onDeleteModalOpen])
 
   const isAnyMutationLoading = useMemo(
     () => duplicateFieldMutation.isLoading || deleteFieldMutation.isLoading,
