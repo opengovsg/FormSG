@@ -9,8 +9,8 @@ import {
 } from '~shared/types/form'
 
 import {
+  createFormBuilderMocks,
   deleteLogic,
-  getAdminFormResponse,
 } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter, viewports } from '~utils/storybook'
@@ -18,7 +18,7 @@ import { StoryRouter, viewports } from '~utils/storybook'
 import { CreatePageLogicTab } from './CreatePageLogicTab'
 
 const buildMswRoutes = (overrides?: Partial<AdminFormDto>, delay = 0) => [
-  getAdminFormResponse(overrides, delay),
+  ...createFormBuilderMocks(overrides, delay),
   deleteLogic(delay),
 ]
 

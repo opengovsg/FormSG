@@ -3,7 +3,7 @@ import { Routes } from 'react-router-dom'
 import { Meta, Story } from '@storybook/react'
 
 import {
-  getAdminFormResponse,
+  createFormBuilderMocks,
   getStorageSubmissionMetadataResponse,
 } from '~/mocks/msw/handlers/admin-form'
 
@@ -22,7 +22,7 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [getAdminFormResponse(), getStorageSubmissionMetadataResponse()],
+    msw: [...createFormBuilderMocks(), getStorageSubmissionMetadataResponse()],
   },
 } as Meta
 

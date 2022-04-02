@@ -3,12 +3,8 @@ import { Routes } from 'react-router-dom'
 import { Meta, Story } from '@storybook/react'
 
 import {
-  createSingleField,
-  deleteField,
-  duplicateField,
-  getAdminFormResponse,
-  reorderField,
-  updateSingleField,
+  createFormBuilderMocks,
+  MOCK_FORM_FIELDS,
 } from '~/mocks/msw/handlers/admin-form'
 
 import { viewports } from '~utils/storybook'
@@ -39,32 +35,45 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [
-      getAdminFormResponse(),
-      createSingleField(),
-      updateSingleField(),
-      reorderField(),
-      duplicateField(),
-      deleteField(),
-    ],
+    msw: createFormBuilderMocks(),
   },
 } as Meta
 
 const Template: Story = () => <CreatePage />
-export const Desktop = Template.bind({})
+export const DesktopEmpty = Template.bind({})
+export const DesktopAllFields = Template.bind({})
+DesktopAllFields.parameters = {
+  msw: createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS }),
+}
 
-export const Tablet = Template.bind({})
-Tablet.parameters = {
+export const TabletEmpty = Template.bind({})
+TabletEmpty.parameters = {
   viewport: {
     defaultViewport: 'tablet',
   },
   chromatic: { viewports: [viewports.md] },
 }
+export const TabletAllFields = Template.bind({})
+TabletAllFields.parameters = {
+  viewport: {
+    defaultViewport: 'tablet',
+  },
+  chromatic: { viewports: [viewports.md] },
+  msw: createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS }),
+}
 
-export const Mobile = Template.bind({})
-Mobile.parameters = {
+export const MobileEmpty = Template.bind({})
+MobileEmpty.parameters = {
   viewport: {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
+}
+export const MobileAllFields = Template.bind({})
+MobileAllFields.parameters = {
+  viewport: {
+    defaultViewport: 'mobile1',
+  },
+  chromatic: { viewports: [viewports.xs] },
+  msw: createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS }),
 }

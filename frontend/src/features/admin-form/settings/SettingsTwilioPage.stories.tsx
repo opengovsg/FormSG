@@ -2,7 +2,7 @@ import { Meta, Story } from '@storybook/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
-import { getAdminFormResponse } from '~/mocks/msw/handlers/admin-form'
+import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 
 import { StoryRouter, viewports } from '~utils/storybook'
@@ -13,7 +13,7 @@ const buildMswRoutes = ({
   delay = 0,
   overrides = {},
 }: { overrides?: Partial<AdminFormDto>; delay?: number | 'infinite' } = {}) => [
-  getAdminFormResponse(overrides, delay),
+  ...createFormBuilderMocks(overrides, delay),
   getFreeSmsQuota({ delay }),
 ]
 

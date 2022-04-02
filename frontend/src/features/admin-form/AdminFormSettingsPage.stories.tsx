@@ -5,7 +5,7 @@ import { Meta, Story } from '@storybook/react'
 import { FormResponseMode, FormStatus } from '~shared/types/form/form'
 
 import {
-  getAdminFormResponse,
+  createFormBuilderMocks,
   getAdminFormSettings,
   getAdminFormSubmissions,
   patchAdminFormSettings,
@@ -42,7 +42,7 @@ export default {
     layout: 'fullscreen',
     msw: [
       getFreeSmsQuota(),
-      getAdminFormResponse(),
+      ...createFormBuilderMocks(),
       getAdminFormSettings(),
       getAdminFormSubmissions(),
       patchAdminFormSettings(),
@@ -78,7 +78,7 @@ StorageModeSettings.parameters = {
   },
   msw: [
     getFreeSmsQuota(),
-    getAdminFormResponse({ responseMode: FormResponseMode.Encrypt }),
+    ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }),
     getAdminFormSettings({
       mode: FormResponseMode.Encrypt,
       overrides: {
