@@ -34,6 +34,7 @@ import {
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
+import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
 import { PENDING_CREATE_FIELD_ID } from '../../constants'
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
@@ -89,12 +90,26 @@ export const FieldRowContainer = ({
     return false
   }, [stateData, field])
 
+  const {
+    mobileCreateEditModal: { onOpen: onMobileModalOpen },
+  } = useBuilderAndDesignContext()
+
   const handleFieldClick = useCallback(() => {
     if (!isActive) {
       updateEditState(field)
       handleBuilderClick()
     }
-  }, [isActive, updateEditState, field, handleBuilderClick])
+    if (isMobile) {
+      onMobileModalOpen()
+    }
+  }, [
+    isActive,
+    isMobile,
+    updateEditState,
+    field,
+    handleBuilderClick,
+    onMobileModalOpen,
+  ])
 
   const handleKeydown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
