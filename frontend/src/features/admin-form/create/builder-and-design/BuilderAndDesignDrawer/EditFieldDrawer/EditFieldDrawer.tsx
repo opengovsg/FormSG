@@ -2,26 +2,21 @@ import { memo, useCallback, useMemo } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
 import { Box, Flex } from '@chakra-ui/react'
 
-import { BasicField, FieldCreateDto, FormFieldDto } from '~shared/types/field'
+import { BasicField, FieldCreateDto } from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
-import { useCreateFormField } from '../../mutations/useCreateFormField'
-import { useEditFormField } from '../../mutations/useEditFormField'
 import {
   BuildFieldState,
   setToInactiveSelector,
   stateDataSelector,
-  updateCreateStateSelector,
-  updateEditStateSelector,
   useBuilderAndDesignStore,
 } from '../../useBuilderAndDesignStore'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
-import { FieldMutateOptions } from './edit-fieldtype/common/types'
 import {
   EditCheckbox,
   EditHeader,
@@ -32,21 +27,15 @@ import {
 } from './edit-fieldtype'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
-  const { stateData, setToInactive, updateEditState, updateCreateState } =
-    useBuilderAndDesignStore(
-      useCallback(
-        (state) => ({
-          stateData: stateDataSelector(state),
-          setToInactive: setToInactiveSelector(state),
-          updateEditState: updateEditStateSelector(state),
-          updateCreateState: updateCreateStateSelector(state),
-        }),
-        [],
-      ),
-    )
-
-  const { editFieldMutation } = useEditFormField()
-  const { createFieldMutation } = useCreateFormField()
+  const { stateData, setToInactive } = useBuilderAndDesignStore(
+    useCallback(
+      (state) => ({
+        stateData: stateDataSelector(state),
+        setToInactive: setToInactiveSelector(state),
+      }),
+      [],
+    ),
+  )
 
   const fieldToEdit: FieldCreateDto | undefined = useMemo(() => {
     if (
@@ -61,34 +50,6 @@ export const EditFieldDrawer = (): JSX.Element | null => {
     if (!fieldToEdit?.fieldType) return ''
     return BASICFIELD_TO_DRAWER_META[fieldToEdit?.fieldType].label
   }, [fieldToEdit?.fieldType])
-
-  const handleSave = useCallback(
-    (field: FieldCreateDto | FormFieldDto, options?: FieldMutateOptions) => {
-      if (stateData.state === BuildFieldState.CreatingField) {
-        createFieldMutation.mutate(field, options)
-      } else if (stateData.state === BuildFieldState.EditingField) {
-        editFieldMutation.mutate(
-          { ...(field as FormFieldDto), _id: stateData.field._id },
-          options,
-        )
-      }
-    },
-    [createFieldMutation, editFieldMutation, stateData],
-  )
-
-  const handleChange = useCallback(
-    (field: FieldCreateDto | FormFieldDto) => {
-      if (stateData.state === BuildFieldState.CreatingField) {
-        updateCreateState(field, stateData.insertionIndex)
-      } else if (stateData.state === BuildFieldState.EditingField) {
-        updateEditState({
-          ...(field as FormFieldDto),
-          _id: stateData.field._id,
-        })
-      }
-    },
-    [stateData, updateCreateState, updateEditState],
-  )
 
   // Hacky method of determining when to rerender the drawer,
   // i.e. when the user clicks into a different field.
@@ -137,11 +98,6 @@ export const EditFieldDrawer = (): JSX.Element | null => {
       </Flex>
       <MemoFieldDrawerContent
         field={fieldToEdit}
-        isLoading={createFieldMutation.isLoading || editFieldMutation.isLoading}
-        isPendingField={stateData.state === BuildFieldState.CreatingField}
-        handleChange={handleChange}
-        handleSave={handleSave}
-        handleCancel={setToInactive}
         key={`${fieldIndex}-${numFields}`}
       />
     </>
@@ -150,11 +106,6 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 
 interface MemoFieldDrawerContentProps {
   field: FieldCreateDto
-  isLoading: boolean
-  isPendingField: boolean
-  handleChange: (field: FieldCreateDto) => void
-  handleSave: (field: FieldCreateDto, options?: FieldMutateOptions) => void
-  handleCancel: () => void
 }
 
 const MemoFieldDrawerContent = memo((props: MemoFieldDrawerContentProps) => {

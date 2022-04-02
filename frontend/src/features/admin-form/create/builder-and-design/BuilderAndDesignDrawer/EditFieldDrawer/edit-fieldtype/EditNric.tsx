@@ -20,15 +20,17 @@ type EditNricProps = EditFieldProps<NricFieldBase>
 
 type EditNricInputs = Pick<NricFieldBase, 'title' | 'description' | 'required'>
 
-export const EditNric = (props: EditNricProps): JSX.Element => {
+export const EditNric = ({ field }: EditNricProps): JSX.Element => {
   const {
     register,
     formState: { errors },
     isSaveEnabled,
     buttonText,
     handleUpdateField,
+    isLoading,
+    handleCancel,
   } = useEditFieldForm<EditNricInputs, NricFieldBase>({
-    ...props,
+    field,
     transform: {
       input: (inputField) =>
         pick(inputField, ['title', 'description', 'required']),
@@ -44,33 +46,29 @@ export const EditNric = (props: EditNricProps): JSX.Element => {
 
   return (
     <DrawerContentContainer>
-      <FormControl
-        isRequired
-        isReadOnly={props.isLoading}
-        isInvalid={!!errors.title}
-      >
+      <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl
         isRequired
-        isReadOnly={props.isLoading}
+        isReadOnly={isLoading}
         isInvalid={!!errors.description}
       >
         <FormLabel>Description</FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl isReadOnly={props.isLoading}>
+      <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
       <FormFieldDrawerActions
-        isLoading={props.isLoading}
+        isLoading={isLoading}
         isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
-        handleCancel={props.handleCancel}
+        handleCancel={handleCancel}
       />
     </DrawerContentContainer>
   )

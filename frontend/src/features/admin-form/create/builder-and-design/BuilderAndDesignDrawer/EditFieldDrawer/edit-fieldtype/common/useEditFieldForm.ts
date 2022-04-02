@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   DeepPartial,
   UnpackNestedValue,
@@ -7,7 +7,23 @@ import {
 } from 'react-hook-form'
 import { useDebounce } from 'react-use'
 
-import { FieldBase } from '~shared/types/field'
+import {
+  FieldBase,
+  FieldCreateDto,
+  FormField,
+  FormFieldDto,
+} from '~shared/types/field'
+
+import { useCreateFormField } from '~features/admin-form/create/builder-and-design/mutations/useCreateFormField'
+import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
+import {
+  BuildFieldState,
+  setToInactiveSelector,
+  stateDataSelector,
+  updateCreateStateSelector,
+  updateEditStateSelector,
+  useBuilderAndDesignStore,
+} from '~features/admin-form/create/builder-and-design/useBuilderAndDesignStore'
 
 import { EditFieldProps } from './types'
 import { getButtonText } from './utils'
@@ -27,20 +43,40 @@ type UseEditFieldFormProps<
 
 type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
   handleUpdateField: () => Promise<void>
+  handleCancel: () => void
   buttonText: string
   isSaveEnabled: boolean
+  isLoading: boolean
 }
 
-export const useEditFieldForm = <FormShape, FieldShape extends FieldBase>({
+export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   field,
-  isPendingField,
-  handleChange,
-  handleSave,
   transform,
 }: UseEditFieldFormProps<
   FormShape,
   FieldShape
 >): UseEditFieldFormReturn<FormShape> => {
+  const { stateData, setToInactive, updateEditState, updateCreateState } =
+    useBuilderAndDesignStore(
+      useCallback(
+        (state) => ({
+          stateData: stateDataSelector(state),
+          setToInactive: setToInactiveSelector(state),
+          updateEditState: updateEditStateSelector(state),
+          updateCreateState: updateCreateStateSelector(state),
+        }),
+        [],
+      ),
+    )
+
+  const { editFieldMutation } = useEditFormField()
+  const { createFieldMutation } = useCreateFormField()
+
+  const isPendingField = useMemo(
+    () => stateData.state === BuildFieldState.CreatingField,
+    [stateData.state],
+  )
+
   const defaultValues = useMemo(
     () => transform.input(field),
     [field, transform],
@@ -51,24 +87,52 @@ export const useEditFieldForm = <FormShape, FieldShape extends FieldBase>({
 
   const watchedInputs = editForm.watch()
 
+  const onSaveSuccess = useCallback(
+    (newField) => {
+      editForm.reset(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        transform.input(newField),
+      )
+    },
+    [editForm, transform],
+  )
+
+  const handleUpdateField = editForm.handleSubmit((inputs) => {
+    const updatedFormField = transform.output(inputs, field)
+    if (stateData.state === BuildFieldState.CreatingField) {
+      return createFieldMutation.mutate(updatedFormField, {
+        onSuccess: onSaveSuccess,
+      })
+    } else if (stateData.state === BuildFieldState.EditingField) {
+      return editFieldMutation.mutate(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        { ...updatedFormField, _id: stateData.field._id },
+        { onSuccess: onSaveSuccess },
+      )
+    }
+  })
+
+  const handleChange = useCallback(
+    (field: FieldCreateDto | FormFieldDto) => {
+      if (stateData.state === BuildFieldState.CreatingField) {
+        updateCreateState(field, stateData.insertionIndex)
+      } else if (stateData.state === BuildFieldState.EditingField) {
+        updateEditState({
+          ...(field as FormFieldDto),
+          _id: stateData.field._id,
+        })
+      }
+    },
+    [stateData, updateCreateState, updateEditState],
+  )
+
   useDebounce(
     () => handleChange(transform.output(watchedInputs, field)),
     300,
     Object.values(watchedInputs),
   )
-
-  const handleUpdateField = editForm.handleSubmit((inputs) => {
-    const updatedFormField: FieldShape = transform.output(inputs, field)
-    return handleSave(updatedFormField, {
-      onSuccess: (newField) => {
-        editForm.reset(
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          transform.input(newField),
-        )
-      },
-    })
-  })
 
   const buttonText = useMemo(
     () => getButtonText(isPendingField),
@@ -85,5 +149,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FieldBase>({
     buttonText,
     isSaveEnabled,
     handleUpdateField,
+    handleCancel: setToInactive,
+    isLoading: createFieldMutation.isLoading || editFieldMutation.isLoading,
   }
 }
