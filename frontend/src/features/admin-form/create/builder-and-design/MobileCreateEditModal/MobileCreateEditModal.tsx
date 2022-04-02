@@ -31,7 +31,7 @@ export const MobileCreateEditModal = (): JSX.Element => {
     <ModalContent>
       <ModalCloseButton />
       <ModalHeader>{modalHeader}</ModalHeader>
-      <ModalBody whiteSpace="pre-line">
+      <ModalBody pt="0">
         {stateData.state === BuildFieldState.Inactive ? (
           <MobileCreateModalBody />
         ) : (
