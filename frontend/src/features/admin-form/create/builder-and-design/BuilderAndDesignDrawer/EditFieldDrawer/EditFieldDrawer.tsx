@@ -22,6 +22,7 @@ import {
   EditHeader,
   EditMobile,
   EditNric,
+  EditNumber,
   EditRadio,
   EditUen,
   EditYesNo,
@@ -130,6 +131,8 @@ export const MemoFieldDrawerContent = memo(
         return <EditMobile {...props} field={field} />
       case BasicField.Nric:
         return <EditNric {...props} field={field} />
+      case BasicField.Number:
+        return <EditNumber {...props} field={field} />
       case BasicField.Section:
         return <EditHeader {...props} field={field} />
       case BasicField.Uen:
