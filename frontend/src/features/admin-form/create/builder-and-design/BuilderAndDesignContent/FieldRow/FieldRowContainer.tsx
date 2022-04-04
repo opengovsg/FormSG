@@ -19,6 +19,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import {
   CheckboxField,
+  MobileField,
   NricField,
   RadioField,
   UenField,
@@ -287,6 +288,8 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
   switch (field.fieldType) {
     case BasicField.Checkbox:
       return <CheckboxField schema={field} {...rest} />
+    case BasicField.Mobile:
+      return <MobileField schema={field} {...rest} />
     case BasicField.Nric:
       return <NricField schema={field} {...rest} />
     case BasicField.Radio:

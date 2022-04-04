@@ -2,16 +2,29 @@ import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
 import { Meta, Story } from '@storybook/react'
 
+import { AdminFormDto } from '~shared/types/form'
+
 import {
   createFormBuilderMocks,
   MOCK_FORM_FIELDS,
 } from '~/mocks/msw/handlers/admin-form'
+import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 
 import { viewports } from '~utils/storybook'
 
 import { CreatePage } from '~features/admin-form/create/CreatePage'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
+
+const buildMswRoutes = (
+  overrides?: Partial<AdminFormDto>,
+  delay?: number | 'infinite' | 'real',
+) => {
+  return [
+    ...createFormBuilderMocks(overrides, delay),
+    getFreeSmsQuota({ delay }),
+  ]
+}
 
 export default {
   title: 'Pages/AdminFormPage/Create',
@@ -35,7 +48,7 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: createFormBuilderMocks(),
+    msw: buildMswRoutes(),
   },
 } as Meta
 
@@ -43,7 +56,7 @@ const Template: Story = () => <CreatePage />
 export const DesktopEmpty = Template.bind({})
 export const DesktopAllFields = Template.bind({})
 DesktopAllFields.parameters = {
-  msw: createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS }),
+  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS }),
 }
 
 export const TabletEmpty = Template.bind({})
@@ -59,7 +72,7 @@ TabletAllFields.parameters = {
     defaultViewport: 'tablet',
   },
   chromatic: { viewports: [viewports.md] },
-  msw: createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS }),
+  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS }),
 }
 
 export const MobileEmpty = Template.bind({})
@@ -75,5 +88,5 @@ MobileAllFields.parameters = {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
-  msw: createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS }),
+  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS }),
 }
