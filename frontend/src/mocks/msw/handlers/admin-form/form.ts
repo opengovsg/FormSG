@@ -85,6 +85,16 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
     globalId: 'IsZAjzS1J2AJqsUnAnCSQStxoknyIdUEXam6cPlNYuJ',
   },
   {
+    allowIntlNumbers: false,
+    title: 'Home Number',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.HomeNo,
+    _id: '624a7bb87da1c9ace14fa4ee',
+    globalId: 'egs1hAtjIKibqc10hjz1s3qZ9PGunwL8vOXsNwIghuD',
+  },
+  {
     ValidationOptions: {
       customVal: null,
       selectedValidation: null,
@@ -210,6 +220,15 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
     fieldType: BasicField.Nric,
     _id: '5da04ec43738d1001260773b',
     globalId: '0KHU4aNnFVS5y8CLqkXWf9A0RknGIqzNoVfOUlqNRDl',
+  },
+  {
+    title: 'UEN',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Uen,
+    _id: '624a7c487da1c9ace14fa4ef',
+    globalId: 'TKhuZk5X4rFgSbrbnjpJ205J6uhsdu18YwFdMVB7y70',
   },
   {
     addMoreRows: false,
