@@ -238,11 +238,17 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
               name="ValidationOptions.customMin"
               control={control}
               rules={customMinValidationOptions}
-              render={({ field }) => (
+              render={({ field: { onChange, ...rest } }) => (
                 <NumberInput
+                  inputMode="numeric"
+                  precision={0}
                   flex={1}
                   showSteppers={false}
-                  {...field}
+                  onChange={(val) => {
+                    // Only allow numeric inputs
+                    onChange(val.replace(/\D/g, ''))
+                  }}
+                  {...rest}
                   placeholder="Minimum"
                 />
               )}
@@ -251,11 +257,17 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
               name="ValidationOptions.customMax"
               control={control}
               rules={customMaxValidationOptions}
-              render={({ field }) => (
+              render={({ field: { onChange, ...rest } }) => (
                 <NumberInput
+                  inputMode="numeric"
+                  precision={0}
                   flex={1}
                   showSteppers={false}
-                  {...field}
+                  onChange={(val) => {
+                    // Only allow numeric inputs
+                    onChange(val.replace(/\D/g, ''))
+                  }}
+                  {...rest}
                   placeholder="Maximum"
                 />
               )}
