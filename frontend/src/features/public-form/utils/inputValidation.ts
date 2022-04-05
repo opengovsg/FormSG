@@ -26,7 +26,7 @@ export const validateTableInput = (
   return (
     Array.isArray(input) &&
     input.every((rowData) => {
-      if (typeof rowData !== 'object') return false
+      if (typeof rowData !== 'object' || Array.isArray(rowData)) return false
       return Object.keys(rowData).every(
         (colId) => typeof rowData[colId] === 'string',
       )
