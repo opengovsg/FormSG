@@ -5,7 +5,6 @@ import {
   BiCalendarEvent,
   BiCaretDownSquare,
   BiCloudUpload,
-  BiGlobe,
   BiHash,
   BiHeading,
   BiImage,
