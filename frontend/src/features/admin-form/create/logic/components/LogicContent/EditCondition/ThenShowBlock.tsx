@@ -99,7 +99,6 @@ export const ThenShowBlock = ({
             render={({ field }) => (
               <SingleSelect
                 isDisabled={isLoading}
-                isSearchable={false}
                 isClearable={false}
                 placeholder="Select a type of result"
                 items={logicTypeItems}

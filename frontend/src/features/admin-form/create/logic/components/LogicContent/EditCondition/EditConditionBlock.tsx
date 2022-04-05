@@ -164,7 +164,6 @@ export const EditConditionBlock = ({
     (field: ControllerRenderProps<EditLogicInputs, `${typeof name}.value`>) => {
       const selectProps = {
         isDisabled: !conditionStateValue || isLoading,
-        isSearchable: false,
         placeholder: null,
         isClearable: false,
         items: conditionValueItems,
@@ -254,7 +253,6 @@ export const EditConditionBlock = ({
               render={({ field }) => (
                 <SingleSelect
                   isDisabled={isLoading}
-                  isSearchable={false}
                   isClearable={false}
                   placeholder="Select a question"
                   items={allowedIfConditionFieldsOptions}
@@ -298,7 +296,6 @@ export const EditConditionBlock = ({
                     <SingleSelect
                       placeholder={null}
                       isDisabled={!ifFieldIdValue || isLoading}
-                      isSearchable={false}
                       isClearable={false}
                       items={conditionItems}
                       {...field}
