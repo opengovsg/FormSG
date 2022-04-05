@@ -15,7 +15,7 @@ import { FieldColorScheme } from '~theme/foundations/colours'
 
 import { YesNoOption } from './YesNoOption'
 
-export type YesNoOptionValue = 'yes' | 'no'
+export type YesNoOptionValue = 'Yes' | 'No'
 
 export interface YesNoProps {
   /**
@@ -70,11 +70,11 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
 
       return [
         getRadioProps({
-          value: 'no',
+          value: 'No',
           ...baseProps,
         }),
         getRadioProps({
-          value: 'yes',
+          value: 'Yes',
           ...baseProps,
         }),
       ]

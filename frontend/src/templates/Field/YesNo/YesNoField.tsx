@@ -9,18 +9,10 @@ import { createBaseValidationRules } from '~/utils/fieldValidation'
 import YesNo from '~components/Field/YesNo'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import { YesNoFieldInput, YesNoFieldSchema, YesNoFieldValue } from '../types'
+import { YesNoFieldInput, YesNoFieldSchema } from '../types'
 
 export interface YesNoFieldProps extends BaseFieldProps {
   schema: YesNoFieldSchema
-}
-
-const transform = {
-  fieldToInput: (value?: YesNoFieldValue) => {
-    if (value === undefined) return
-    return value === 'Yes' ? 'yes' : 'no'
-  },
-  inputToField: (value: 'yes' | 'no') => (value === 'yes' ? 'Yes' : 'No'),
 }
 
 export const YesNoField = ({
@@ -40,13 +32,7 @@ export const YesNoField = ({
         control={control}
         rules={validationRules}
         name={schema._id}
-        render={({ field: { value, onChange, ...field } }) => (
-          <YesNo
-            value={transform.fieldToInput(value)}
-            onChange={(input) => onChange(transform.inputToField(input))}
-            {...field}
-          />
-        )}
+        render={({ field }) => <YesNo {...field} />}
       />
     </FieldContainer>
   )
