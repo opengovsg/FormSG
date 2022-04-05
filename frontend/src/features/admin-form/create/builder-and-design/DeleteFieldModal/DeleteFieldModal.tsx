@@ -24,7 +24,7 @@ import {
 export const DeleteFieldModal = (): JSX.Element => {
   const stateData = useBuilderAndDesignStore(stateDataSelector)
   const {
-    deleteFieldModal: { isOpen, onClose },
+    deleteFieldModalDisclosure: { isOpen, onClose },
   } = useBuilderAndDesignContext()
 
   const fieldTypeLabel = useMemo(() => {

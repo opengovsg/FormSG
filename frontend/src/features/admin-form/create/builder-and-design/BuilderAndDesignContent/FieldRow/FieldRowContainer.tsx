@@ -91,8 +91,8 @@ export const FieldRowContainer = ({
   }, [stateData, field])
 
   const {
-    mobileCreateEditModal: { onOpen: onMobileModalOpen },
-    deleteFieldModal: { onOpen: onDeleteModalOpen },
+    mobileCreateEditModalDisclosure: { onOpen: onMobileModalOpen },
+    deleteFieldModalDisclosure: { onOpen: onDeleteModalOpen },
   } = useBuilderAndDesignContext()
 
   const handleFieldClick = useCallback(() => {

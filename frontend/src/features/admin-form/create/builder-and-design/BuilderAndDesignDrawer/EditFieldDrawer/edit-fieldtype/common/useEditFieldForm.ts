@@ -77,7 +77,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
 
   const isMobile = useIsMobile()
   const {
-    mobileCreateEditModal: { onClose: onMobileModalClose },
+    mobileCreateEditModalDisclosure: { onClose: onMobileModalClose },
   } = useBuilderAndDesignContext()
 
   const isPendingField = useMemo(

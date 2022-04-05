@@ -2,8 +2,8 @@ import { createContext, useContext } from 'react'
 import { UseDisclosureReturn } from '@chakra-ui/react'
 
 type BuilderAndDesignContextProps = {
-  mobileCreateEditModal: UseDisclosureReturn
-  deleteFieldModal: UseDisclosureReturn
+  mobileCreateEditModalDisclosure: UseDisclosureReturn
+  deleteFieldModalDisclosure: UseDisclosureReturn
 }
 
 export const BuilderAndDesignContext = createContext<
