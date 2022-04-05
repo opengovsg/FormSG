@@ -5,6 +5,7 @@ import {
   DragUpdate,
   DropResult,
 } from 'react-beautiful-dnd'
+import { useDisclosure } from '@chakra-ui/react'
 
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 
@@ -14,6 +15,7 @@ import {
   getPlaceholderUpdateProps,
 } from './utils/dnd'
 import { BuilderAndDesignContent } from './BuilderAndDesignContent'
+import { BuilderAndDesignContext } from './BuilderAndDesignContext'
 import { BuilderAndDesignDrawer } from './BuilderAndDesignDrawer'
 import {
   CREATE_FIELD_DROP_ID,
@@ -22,6 +24,7 @@ import {
   CREATE_PAGE_FIELDS_ORDERED,
   FIELD_LIST_DROP_ID,
 } from './constants'
+import { DeleteFieldModal } from './DeleteFieldModal'
 import { DndPlaceholderProps } from './types'
 import {
   updateCreateStateSelector,
@@ -93,14 +96,25 @@ export const BuilderAndDesignTab = (): JSX.Element => {
     [data, reorderFieldMutation, setToCreating, setPlaceholderProps],
   )
 
+  const mobileCreateEditModalDisclosure = useDisclosure()
+  const deleteFieldModalDisclosure = useDisclosure()
+
   return (
     <DragDropContext
       onDragStart={onDragStart}
       onDragUpdate={onDragUpdate}
       onDragEnd={onDragEnd}
     >
-      <BuilderAndDesignDrawer />
-      <BuilderAndDesignContent placeholderProps={placeholderProps} />
+      <BuilderAndDesignContext.Provider
+        value={{
+          mobileCreateEditModalDisclosure,
+          deleteFieldModalDisclosure,
+        }}
+      >
+        <BuilderAndDesignDrawer />
+        <BuilderAndDesignContent placeholderProps={placeholderProps} />
+        <DeleteFieldModal />
+      </BuilderAndDesignContext.Provider>
     </DragDropContext>
   )
 }

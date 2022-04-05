@@ -75,7 +75,7 @@ const transformCheckboxEditFormToField = (
   })
 }
 
-export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
+export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
   const {
     register,
     formState: { errors },
@@ -85,8 +85,10 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
     watch,
     control,
     clearErrors,
+    isLoading,
+    handleCancel,
   } = useEditFieldForm<EditCheckboxInputs, CheckboxFieldBase>({
-    ...props,
+    field,
     transform: {
       input: transformCheckboxFieldToEditForm,
       output: transformCheckboxEditFormToField,
@@ -186,33 +188,29 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
 
   return (
     <DrawerContentContainer>
-      <FormControl
-        isRequired
-        isReadOnly={props.isLoading}
-        isInvalid={!!errors.title}
-      >
+      <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl
         isRequired
-        isReadOnly={props.isLoading}
+        isReadOnly={isLoading}
         isInvalid={!!errors.description}
       >
         <FormLabel>Description</FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl isReadOnly={props.isLoading}>
+      <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
-      <FormControl isReadOnly={props.isLoading}>
+      <FormControl isReadOnly={isLoading}>
         <Toggle {...register('othersRadioButton')} label="Others" />
       </FormControl>
       <FormControl
         isRequired
-        isReadOnly={props.isLoading}
+        isReadOnly={isLoading}
         isInvalid={!!errors.fieldOptions}
       >
         <FormLabel>Options</FormLabel>
@@ -231,7 +229,7 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
         />
         <FormControl
           isDisabled={!watchedInputs.validateByValue}
-          isReadOnly={props.isLoading}
+          isReadOnly={isLoading}
           isInvalid={!isEmpty(errors.ValidationOptions)}
         >
           <Stack mt="0.5rem" direction="row" spacing="0.5rem">
@@ -281,11 +279,11 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
         </FormControl>
       </Box>
       <FormFieldDrawerActions
-        isLoading={props.isLoading}
+        isLoading={isLoading}
         isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
-        handleCancel={props.handleCancel}
+        handleCancel={handleCancel}
       />
     </DrawerContentContainer>
   )
