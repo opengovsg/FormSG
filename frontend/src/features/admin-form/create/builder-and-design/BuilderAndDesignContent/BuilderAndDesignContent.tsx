@@ -34,7 +34,7 @@ export const BuilderAndDesignContent = ({
 
   const isMobile = useIsMobile()
   const {
-    mobileCreateEditModal: {
+    mobileCreateEditModalDisclosure: {
       isOpen: isMobileModalOpen,
       onOpen: onMobileModalOpen,
       onClose: onMobileModalClose,

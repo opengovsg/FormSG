@@ -24,6 +24,7 @@ import {
   CREATE_PAGE_FIELDS_ORDERED,
   FIELD_LIST_DROP_ID,
 } from './constants'
+import { DeleteFieldModal } from './DeleteFieldModal'
 import { DndPlaceholderProps } from './types'
 import {
   updateCreateStateSelector,
@@ -95,7 +96,8 @@ export const BuilderAndDesignTab = (): JSX.Element => {
     [data, reorderFieldMutation, setToCreating, setPlaceholderProps],
   )
 
-  const mobileCreateEditModal = useDisclosure()
+  const mobileCreateEditModalDisclosure = useDisclosure()
+  const deleteFieldModalDisclosure = useDisclosure()
 
   return (
     <DragDropContext
@@ -103,9 +105,15 @@ export const BuilderAndDesignTab = (): JSX.Element => {
       onDragUpdate={onDragUpdate}
       onDragEnd={onDragEnd}
     >
-      <BuilderAndDesignContext.Provider value={{ mobileCreateEditModal }}>
+      <BuilderAndDesignContext.Provider
+        value={{
+          mobileCreateEditModalDisclosure,
+          deleteFieldModalDisclosure,
+        }}
+      >
         <BuilderAndDesignDrawer />
         <BuilderAndDesignContent placeholderProps={placeholderProps} />
+        <DeleteFieldModal />
       </BuilderAndDesignContext.Provider>
     </DragDropContext>
   )

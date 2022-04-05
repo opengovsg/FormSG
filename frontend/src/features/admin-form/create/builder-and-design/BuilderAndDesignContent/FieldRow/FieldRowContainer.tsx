@@ -92,7 +92,8 @@ export const FieldRowContainer = ({
   }, [stateData, field])
 
   const {
-    mobileCreateEditModal: { onOpen: onMobileModalOpen },
+    mobileCreateEditModalDisclosure: { onOpen: onMobileModalOpen },
+    deleteFieldModalDisclosure: { onOpen: onDeleteModalOpen },
   } = useBuilderAndDesignContext()
 
   const ref = useRef<HTMLDivElement | null>(null)
@@ -142,9 +143,9 @@ export const FieldRowContainer = ({
     if (stateData.state === BuildFieldState.CreatingField) {
       setToInactive()
     } else if (stateData.state === BuildFieldState.EditingField) {
-      deleteFieldMutation.mutate(field._id)
+      onDeleteModalOpen()
     }
-  }, [field._id, deleteFieldMutation, setToInactive, stateData.state])
+  }, [setToInactive, stateData.state, onDeleteModalOpen])
 
   const isAnyMutationLoading = useMemo(
     () => duplicateFieldMutation.isLoading || deleteFieldMutation.isLoading,
