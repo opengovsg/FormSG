@@ -88,10 +88,10 @@ export const FieldRowContainer = ({
     return false
   }, [stateData, field])
 
-  const activeFieldRef = useRef<HTMLDivElement | null>(null)
+  const ref = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     if (isActive) {
-      activeFieldRef.current?.scrollIntoView({
+      ref.current?.scrollIntoView({
         // Avoid sudden jump when field is clicked
         block: 'nearest',
         // Also avoid behavior: 'smooth' as scrolling may take very long
@@ -182,7 +182,7 @@ export const FieldRowContainer = ({
             align="center"
             onClick={handleFieldClick}
             onKeyDown={handleKeydown}
-            ref={isActive ? activeFieldRef : undefined}
+            ref={ref}
           >
             <Fade in={isActive}>
               <chakra.button
