@@ -1,4 +1,4 @@
-import { TOU_ROUTE } from './routes'
+import { PRIVACY_POLICY_ROUTE, TOU_ROUTE } from './routes'
 
 export const FORM_GUIDE = 'https://go.gov.sg/form-guide'
 export const REPORT_VULNERABILITY = 'https://go.gov.sg/report-vulnerability'
@@ -8,7 +8,7 @@ export const OSS_README =
 export const APP_FOOTER_LINKS = [
   { label: 'Contact Us', href: '/contact-us' },
   { label: 'Guide', href: FORM_GUIDE },
-  { label: 'Privacy', href: '/privacy' },
+  { label: 'Privacy', href: PRIVACY_POLICY_ROUTE },
   { label: 'Terms of Use', href: TOU_ROUTE },
   {
     label: 'Report Vulnerability',

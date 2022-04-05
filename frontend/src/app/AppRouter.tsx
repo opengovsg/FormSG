@@ -6,6 +6,7 @@ import {
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
   LOGIN_ROUTE,
+  PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
   ROOT_ROUTE,
@@ -29,6 +30,7 @@ const PublicFormPage = lazy(
 )
 const WorkspacePage = lazy(() => import('~features/workspace'))
 const LoginPage = lazy(() => import('~features/login'))
+const PrivacyPolicyPage = lazy(() => import('~pages/PrivacyPolicy'))
 const TermsOfUsePage = lazy(() => import('~pages/TermsOfUse'))
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
@@ -46,6 +48,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={LOGIN_ROUTE}
           element={<PublicElement strict element={<LoginPage />} />}
+        />
+        <Route
+          path={PRIVACY_POLICY_ROUTE}
+          element={<PublicElement strict element={<PrivacyPolicyPage />} />}
         />
         <Route
           path={TOU_ROUTE}
