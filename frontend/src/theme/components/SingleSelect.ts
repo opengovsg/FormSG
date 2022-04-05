@@ -120,6 +120,7 @@ const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
     }),
     clearbutton: {
       ml: '-1px',
+      bg: 'white',
       border: '1px solid',
       borderColor: 'neutral.400',
       color: 'neutral.400',
