@@ -1,4 +1,4 @@
-import { memo, useEffect } from 'react'
+import { memo, useEffect, useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { Box, Flex } from '@chakra-ui/react'
 
@@ -10,6 +10,7 @@ import {
   setToInactiveSelector,
   useBuilderAndDesignStore,
 } from '../useBuilderAndDesignStore'
+import { getBuilderQuestionNumbers } from '../utils/questionNumbers'
 
 import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPlaceholder'
 import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
@@ -87,6 +88,11 @@ interface BuilderFieldsProps {
 
 const BuilderFields = memo(
   ({ fields, isDraggingOver }: BuilderFieldsProps) => {
+    const questionNumbers = useMemo(
+      () => getBuilderQuestionNumbers(fields),
+      [fields],
+    )
+
     if (!fields) {
       return <div>Loading...</div>
     }
@@ -96,6 +102,7 @@ const BuilderFields = memo(
         {fields.map((f, i) => (
           <FieldRow
             index={i}
+            questionNumber={questionNumbers[i]}
             key={f._id}
             field={f}
             isDraggingOver={isDraggingOver}

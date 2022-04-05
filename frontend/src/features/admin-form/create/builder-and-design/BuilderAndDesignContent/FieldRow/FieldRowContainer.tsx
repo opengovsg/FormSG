@@ -50,12 +50,14 @@ import { SectionFieldRow } from './SectionFieldRow'
 export interface FieldRowContainerProps {
   field: FormFieldDto
   index: number
+  questionNumber?: string
   isDraggingOver: boolean
 }
 
 export const FieldRowContainer = ({
   field,
   index,
+  questionNumber,
   isDraggingOver,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
@@ -150,7 +152,7 @@ export const FieldRowContainer = ({
           _first={{ pt: 0 }}
           _last={{ pb: 0 }}
           m="0.75rem"
-          py="1.25rem"
+          py="0.375rem"
           {...provided.draggableProps}
           ref={provided.innerRef}
         >
@@ -215,7 +217,7 @@ export const FieldRowContainer = ({
               pointerEvents={isActive ? undefined : 'none'}
             >
               <FormProvider {...formMethods}>
-                <MemoFieldRow field={field} />
+                <MemoFieldRow field={field} questionNumber={questionNumber} />
               </FormProvider>
             </Box>
             <Collapse in={isActive} style={{ width: '100%' }}>
@@ -274,20 +276,25 @@ export const FieldRowContainer = ({
   )
 }
 
-const MemoFieldRow = memo(({ field }: { field: FormFieldDto }) => {
+type MemoFieldRowProps = {
+  field: FormFieldDto
+  questionNumber?: string
+}
+
+const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
   switch (field.fieldType) {
     case BasicField.Checkbox:
-      return <CheckboxField schema={field} />
+      return <CheckboxField schema={field} {...rest} />
     case BasicField.Nric:
-      return <NricField schema={field} />
-    case BasicField.Section:
-      return <SectionFieldRow field={field} />
-    case BasicField.Uen:
-      return <UenField schema={field} />
-    case BasicField.YesNo:
-      return <YesNoField schema={field} />
+      return <NricField schema={field} {...rest} />
     case BasicField.Radio:
-      return <RadioField schema={field} />
+      return <RadioField schema={field} {...rest} />
+    case BasicField.Section:
+      return <SectionFieldRow field={field} {...rest} />
+    case BasicField.Uen:
+      return <UenField schema={field} {...rest} />
+    case BasicField.YesNo:
+      return <YesNoField schema={field} {...rest} />
     default:
       return <div>TODO: Add field row for {field.fieldType}</div>
   }
