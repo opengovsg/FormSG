@@ -24,7 +24,7 @@ import {
 export const DeleteFieldModal = (): JSX.Element => {
   const stateData = useBuilderAndDesignStore(stateDataSelector)
   const {
-    deleteFieldModal: { isOpen, onClose },
+    deleteFieldModalDisclosure: { isOpen, onClose },
   } = useBuilderAndDesignContext()
 
   const fieldTypeLabel = useMemo(() => {
@@ -49,7 +49,7 @@ export const DeleteFieldModal = (): JSX.Element => {
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>{`Delete ${fieldTypeLabel} field`}</ModalHeader>
+        <ModalHeader>Delete {fieldTypeLabel} field</ModalHeader>
         <ModalBody>
           This field will be deleted permanently. Are you sure you want to
           proceed?

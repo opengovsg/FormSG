@@ -96,8 +96,8 @@ export const BuilderAndDesignTab = (): JSX.Element => {
     [data, reorderFieldMutation, setToCreating, setPlaceholderProps],
   )
 
-  const mobileCreateEditModal = useDisclosure()
-  const deleteFieldModal = useDisclosure()
+  const mobileCreateEditModalDisclosure = useDisclosure()
+  const deleteFieldModalDisclosure = useDisclosure()
 
   return (
     <DragDropContext
@@ -106,7 +106,10 @@ export const BuilderAndDesignTab = (): JSX.Element => {
       onDragEnd={onDragEnd}
     >
       <BuilderAndDesignContext.Provider
-        value={{ mobileCreateEditModal, deleteFieldModal }}
+        value={{
+          mobileCreateEditModalDisclosure,
+          deleteFieldModalDisclosure,
+        }}
       >
         <BuilderAndDesignDrawer />
         <BuilderAndDesignContent placeholderProps={placeholderProps} />

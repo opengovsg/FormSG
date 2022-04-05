@@ -6,9 +6,11 @@ import {
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
   LOGIN_ROUTE,
+  PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
   ROOT_ROUTE,
+  TOU_ROUTE,
 } from '~constants/routes'
 
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
@@ -27,7 +29,9 @@ const PublicFormPage = lazy(
   () => import('~features/public-form/PublicFormPage'),
 )
 const WorkspacePage = lazy(() => import('~features/workspace'))
-const LoginPage = lazy(() => import('~pages/login'))
+const LoginPage = lazy(() => import('~features/login'))
+const PrivacyPolicyPage = lazy(() => import('~pages/PrivacyPolicy'))
+const TermsOfUsePage = lazy(() => import('~pages/TermsOfUse'))
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
@@ -44,6 +48,14 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={LOGIN_ROUTE}
           element={<PublicElement strict element={<LoginPage />} />}
+        />
+        <Route
+          path={PRIVACY_POLICY_ROUTE}
+          element={<PublicElement strict element={<PrivacyPolicyPage />} />}
+        />
+        <Route
+          path={TOU_ROUTE}
+          element={<PublicElement strict element={<TermsOfUsePage />} />}
         />
         <Route
           path={PUBLICFORM_ROUTE}

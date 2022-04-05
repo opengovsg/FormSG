@@ -8,8 +8,7 @@ export const getBuilderQuestionNumbers = (
   let questionCounter = 0
   return fields.map((field) => {
     if (BASICFIELD_TO_DRAWER_META[field.fieldType].isSubmitted) {
-      questionCounter += 1
-      return `${questionCounter}.`
+      return `${++questionCounter}.`
     }
     return undefined
   })

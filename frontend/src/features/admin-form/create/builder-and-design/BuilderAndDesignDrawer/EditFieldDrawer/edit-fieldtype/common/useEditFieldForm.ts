@@ -77,7 +77,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
 
   const isMobile = useIsMobile()
   const {
-    mobileCreateEditModal: { onClose: onMobileModalClose },
+    mobileCreateEditModalDisclosure: { onClose: onMobileModalClose },
   } = useBuilderAndDesignContext()
 
   const isPendingField = useMemo(
@@ -117,9 +117,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
       })
     } else if (stateData.state === BuildFieldState.EditingField) {
       return editFieldMutation.mutate(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        { ...updatedFormField, _id: stateData.field._id },
+        { ...updatedFormField, _id: stateData.field._id } as FormFieldDto,
         { onSuccess: onSaveSuccess },
       )
     }
