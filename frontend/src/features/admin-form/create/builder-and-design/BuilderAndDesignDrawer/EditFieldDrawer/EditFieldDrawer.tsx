@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
 import { Box, Flex } from '@chakra-ui/react'
 
-import { BasicField, FieldCreateDto } from '~shared/types/field'
+import { BasicField, FieldCreateDto, FormFieldDto } from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
 
@@ -63,12 +63,12 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   }, [fieldToEdit?.fieldType])
 
   const handleSave = useCallback(
-    (field: FieldCreateDto, options?: FieldMutateOptions) => {
+    (field: FieldCreateDto | FormFieldDto, options?: FieldMutateOptions) => {
       if (stateData.state === BuildFieldState.CreatingField) {
         createFieldMutation.mutate(field, options)
       } else if (stateData.state === BuildFieldState.EditingField) {
         editFieldMutation.mutate(
-          { ...field, _id: stateData.field._id },
+          { ...(field as FormFieldDto), _id: stateData.field._id },
           options,
         )
       }
@@ -77,11 +77,14 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   )
 
   const handleChange = useCallback(
-    (field: FieldCreateDto) => {
+    (field: FieldCreateDto | FormFieldDto) => {
       if (stateData.state === BuildFieldState.CreatingField) {
         updateCreateState(field, stateData.insertionIndex)
       } else if (stateData.state === BuildFieldState.EditingField) {
-        updateEditState({ ...field, _id: stateData.field._id })
+        updateEditState({
+          ...(field as FormFieldDto),
+          _id: stateData.field._id,
+        })
       }
     },
     [stateData, updateCreateState, updateEditState],

@@ -6,7 +6,7 @@ import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { PublicFormViewDto } from '~shared/types/form'
+import { FormColorTheme, PublicFormViewDto } from '~shared/types/form'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
@@ -35,21 +35,33 @@ export const PublicFormProvider = ({
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
-  const { data, error, ...rest } = usePublicFormView(formId)
+  const { data, error, isLoading, ...rest } = usePublicFormView(formId)
 
-  const [form, setForm] = useState<PublicFormViewDto>()
+  const [formView, setFormView] = useState<PublicFormViewDto>()
 
   const { createTransactionMutation } = useTransactionMutations(formId)
   const toast = useToast()
   const vfnToastIdRef = useRef<string | number>()
   const desyncToastIdRef = useRef<string | number>()
 
+  const formBgColor = useMemo(() => {
+    if (isLoading) return 'neutral.100'
+    if (!formView) return ''
+    const { colorTheme } = formView.form.startPage
+    switch (colorTheme) {
+      case FormColorTheme.Blue:
+        return 'secondary.100'
+      default:
+        return `theme-${colorTheme}.100`
+    }
+  }, [formView, isLoading])
+
   useEffect(() => {
     if (data) {
-      if (!form) {
+      if (!formView) {
         trackVisitPublicForm(data.form)
-        setForm(data)
-      } else if (!desyncToastIdRef.current && !isEqual(data, form)) {
+        setFormView(data)
+      } else if (!desyncToastIdRef.current && !isEqual(data, formView)) {
         desyncToastIdRef.current = toast({
           status: 'warning',
           title: (
@@ -66,7 +78,7 @@ export const PublicFormProvider = ({
         })
       }
     }
-  }, [data, form, toast])
+  }, [data, formView, toast])
 
   const getTransactionId = useCallback(async () => {
     if (!vfnTransaction || isPast(vfnTransaction.expireAt)) {
@@ -93,7 +105,7 @@ export const PublicFormProvider = ({
     if (vfnToastIdRef.current) {
       toast.close(vfnToastIdRef.current)
     }
-    const numVerifiable = form?.form.form_fields.filter((ff) =>
+    const numVerifiable = formView?.form.form_fields.filter((ff) =>
       get(ff, 'isVerifiable'),
     ).length
 
@@ -109,7 +121,7 @@ export const PublicFormProvider = ({
         ]} field[|s] again.`,
       })
     }
-  }, [form?.form.form_fields, toast])
+  }, [formView?.form.form_fields, toast])
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
@@ -121,7 +133,9 @@ export const PublicFormProvider = ({
         error,
         getTransactionId,
         expiryInMs,
-        ...form,
+        isLoading,
+        formBgColor,
+        ...formView,
         ...rest,
       }}
     >

@@ -12,6 +12,7 @@ import { CheckboxFieldBase, FormFieldWithId } from '~shared/types/field'
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 import { createCheckboxValidationRules } from '~utils/fieldValidation'
 import Checkbox from '~components/Checkbox'
+import { CheckboxProps } from '~components/Checkbox/Checkbox'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -92,6 +93,7 @@ export const CheckboxField = ({
           >
             <OtherCheckboxField
               value={CHECKBOX_OTHERS_INPUT_VALUE}
+              isInvalid={!!get(errors, checkboxInputName)}
               triggerOthersInputValidation={() => trigger(othersInputName)}
               {...register(checkboxInputName, validationRules)}
             />
@@ -109,7 +111,9 @@ export const CheckboxField = ({
   )
 }
 
-interface OtherCheckboxFieldProps extends UseFormRegisterReturn {
+interface OtherCheckboxFieldProps
+  extends UseFormRegisterReturn,
+    Omit<CheckboxProps, keyof UseFormRegisterReturn> {
   value: string
   triggerOthersInputValidation: () => void
 }

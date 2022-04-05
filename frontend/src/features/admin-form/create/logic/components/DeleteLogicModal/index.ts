@@ -1,0 +1,1 @@
+export { DeleteLogicModal } from './DeleteLogicModal'

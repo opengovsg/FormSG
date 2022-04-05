@@ -1,8 +1,14 @@
+import cuid from 'cuid'
 import { merge } from 'lodash'
 import { rest } from 'msw'
 
 import { AgencyId } from '~shared/types/agency'
-import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
+import {
+  BasicField,
+  FieldCreateDto,
+  FormFieldDto,
+  TableFieldDto,
+} from '~shared/types/field'
 import {
   AdminFormDto,
   AdminFormViewDto,
@@ -122,6 +128,13 @@ export const createSingleField = (delay = 500) => {
       const newField = {
         ...req.body,
         _id: `random-id-${formFields.length}`,
+      } as FormFieldDto
+      if (req.body.fieldType === BasicField.Table) {
+        // eslint-disable-next-line @typescript-eslint/no-extra-semi
+        ;(newField as TableFieldDto).columns = req.body.columns.map((col) => ({
+          ...col,
+          _id: cuid(),
+        }))
       }
       const newIndex = parseInt(
         req.url.searchParams.get('to') ?? `${formFields.length}`,
@@ -158,6 +171,7 @@ export const reorderField = (delay = 500) => {
     formFields = reorder(
       formFields,
       fromIndex,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       parseInt(req.url.searchParams.get('to')!),
     )
     return res(ctx.delay(delay), ctx.status(200), ctx.json(formFields))
@@ -197,4 +211,13 @@ export const deleteField = (delay = 500) => {
     formFields.splice(fieldToDeleteIndex, 1)
     return res(ctx.delay(delay), ctx.status(200))
   })
+}
+
+export const deleteLogic = (delay?: number) => {
+  return rest.delete(
+    '/api/v3/admin/forms/:formId/logic/:logicId',
+    (_req, res, ctx) => {
+      return res(ctx.delay(delay), ctx.status(200))
+    },
+  )
 }

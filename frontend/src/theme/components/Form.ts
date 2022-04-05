@@ -9,6 +9,7 @@ export const Form: ComponentMultiStyleConfig<typeof parts> = {
       color: 'secondary.400',
       mt: 2,
       textStyle: 'body-2',
+      lineHeight: '1.25rem',
     },
   },
 }

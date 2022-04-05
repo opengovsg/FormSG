@@ -11,41 +11,14 @@ import {
   CalendarPanel,
   CalendarProvider,
   CalendarTodayButton,
+  UseProvideCalendarProps,
 } from './Calendar'
 
-export interface DateRangePickerProps {
+export interface DateRangePickerProps extends UseProvideCalendarProps {
   /**
    * Selected date range pair. Undefined if no date is selected.
    */
   selectedDates?: Date[]
-
-  /**
-   * Handler for when date is selected.
-   */
-  onSelectDate: (d: Date) => void
-
-  /**
-   * Function to determine whether a date should be made
-   * unavailable.
-   */
-  isDateUnavailable?: (d: Date) => boolean
-
-  /**
-   * Function to be passed to CalendarPanel to determine range styling.
-   */
-  isDateInRange: (d: Date) => boolean | null
-
-  /**
-   * Function to be passed to CalendarPanel to determine range styling.
-   * Called when a date is selected and a mouseover is detected over a date.
-   */
-  onMouseEnterHighlight: (date: Date) => void
-
-  /**
-   * Function to be passed to CalendarPanel to determine range styling.
-   * Called when mouse leaves the calendar.
-   */
-  onMouseLeaveCalendar: () => void
 }
 
 export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
