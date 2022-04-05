@@ -151,7 +151,7 @@ const loadExpressApp = async (connection: Connection) => {
   // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
 
-  app.user(ReactMigrationRouter)
+  app.use(ReactMigrationRouter)
 
   app.use(AdminFormsRouter)
   app.use(PublicFormRouter)
