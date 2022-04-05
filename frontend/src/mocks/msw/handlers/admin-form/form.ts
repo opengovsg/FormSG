@@ -212,3 +212,12 @@ export const deleteField = (delay = 500) => {
     return res(ctx.delay(delay), ctx.status(200))
   })
 }
+
+export const deleteLogic = (delay?: number) => {
+  return rest.delete(
+    '/api/v3/admin/forms/:formId/logic/:logicId',
+    (_req, res, ctx) => {
+      return res(ctx.delay(delay), ctx.status(200))
+    },
+  )
+}
