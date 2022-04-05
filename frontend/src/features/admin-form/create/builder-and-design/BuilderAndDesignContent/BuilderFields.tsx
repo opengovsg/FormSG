@@ -18,10 +18,6 @@ export const BuilderFields = memo(
       [fields],
     )
 
-    if (!fields) {
-      return <div>Loading...</div>
-    }
-
     return (
       <>
         {fields.map((f, i) => (

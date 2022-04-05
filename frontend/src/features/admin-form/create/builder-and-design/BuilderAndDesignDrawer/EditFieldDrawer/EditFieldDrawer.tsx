@@ -111,7 +111,7 @@ interface MemoFieldDrawerContentProps {
 export const MemoFieldDrawerContent = memo(
   (props: MemoFieldDrawerContentProps) => {
     // Extract field variable just to get field.fieldType types to cooperate
-    const field = useMemo(() => props.field, [props.field])
+    const field = props.field
     switch (field.fieldType) {
       case BasicField.Checkbox:
         return <EditCheckbox {...props} field={field} />

@@ -1,10 +1,17 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types/field'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+
+import {
+  updateCreateStateSelector,
+  useBuilderAndDesignStore,
+} from '../../useBuilderAndDesignStore'
+import { useCreateTabForm } from '../../useCreateTabForm'
+import { getFieldCreationMeta } from '../../utils/fieldCreation'
 
 interface FieldOptionProps extends BoxProps {
   isActive?: boolean
@@ -62,6 +69,21 @@ export const FieldListOption = forwardRef<FieldOptionProps, 'button'>(
       () => BASICFIELD_TO_DRAWER_META[fieldType],
       [fieldType],
     )
+    const { data: form } = useCreateTabForm()
+    const numFields = useMemo(() => form?.form_fields?.length ?? 0, [form])
+
+    const newFieldMeta = useMemo(
+      () => getFieldCreationMeta(fieldType),
+      [fieldType],
+    )
+
+    const updateCreateState = useBuilderAndDesignStore(
+      updateCreateStateSelector,
+    )
+
+    const handleClick = useCallback(() => {
+      updateCreateState(newFieldMeta, numFields)
+    }, [newFieldMeta, numFields, updateCreateState])
 
     return (
       <Box
@@ -82,6 +104,7 @@ export const FieldListOption = forwardRef<FieldOptionProps, 'button'>(
         bg="white"
         {...props}
         ref={ref}
+        onClick={handleClick}
       >
         <Stack
           py="1rem"
