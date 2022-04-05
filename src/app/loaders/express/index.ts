@@ -21,6 +21,7 @@ import { FrontendRouter } from '../../modules/frontend/frontend.routes'
 import * as HomeController from '../../modules/home/home.controller'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
+import { ReactMigrationRouter } from '../../modules/react-migration/react-migration.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
 import {
   CorppassLoginRouter,
@@ -149,6 +150,9 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/sgid', SgidRouter)
   // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
+
+  app.user(ReactMigrationRouter)
+
   app.use(AdminFormsRouter)
   app.use(PublicFormRouter)
 
