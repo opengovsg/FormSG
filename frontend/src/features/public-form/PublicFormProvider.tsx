@@ -139,7 +139,7 @@ export const PublicFormProvider = ({
         ...rest,
       }}
     >
-      <Helmet title={form?.form.title} />
+      <Helmet title={formView?.form.title} />
       {isFormNotFound ? <div>404</div> : children}
     </PublicFormContext.Provider>
   )
