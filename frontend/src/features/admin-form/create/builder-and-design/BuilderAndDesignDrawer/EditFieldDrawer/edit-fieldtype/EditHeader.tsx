@@ -19,15 +19,17 @@ type EditHeaderProps = EditFieldProps<SectionFieldBase>
 
 type EditHeaderInputs = Pick<SectionFieldBase, 'title' | 'description'>
 
-export const EditHeader = (props: EditHeaderProps): JSX.Element => {
+export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
   const {
     register,
     formState: { errors },
     isSaveEnabled,
     buttonText,
     handleUpdateField,
+    isLoading,
+    handleCancel,
   } = useEditFieldForm<EditHeaderInputs, SectionFieldBase>({
-    ...props,
+    field,
     transform: {
       input: (inputField) => pick(inputField, ['title', 'description']),
       output: (formOutput, originalField) =>
@@ -42,18 +44,14 @@ export const EditHeader = (props: EditHeaderProps): JSX.Element => {
 
   return (
     <DrawerContentContainer>
-      <FormControl
-        isRequired
-        isReadOnly={props.isLoading}
-        isInvalid={!!errors.title}
-      >
+      <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Section header</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl
         isRequired
-        isReadOnly={props.isLoading}
+        isReadOnly={isLoading}
         isInvalid={!!errors.description}
       >
         <FormLabel>Description</FormLabel>
@@ -61,11 +59,11 @@ export const EditHeader = (props: EditHeaderProps): JSX.Element => {
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormFieldDrawerActions
-        isLoading={props.isLoading}
+        isLoading={isLoading}
         isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
-        handleCancel={props.handleCancel}
+        handleCancel={handleCancel}
       />
     </DrawerContentContainer>
   )

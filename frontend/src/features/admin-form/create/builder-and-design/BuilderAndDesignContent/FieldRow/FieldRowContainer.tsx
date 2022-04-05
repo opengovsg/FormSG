@@ -34,6 +34,7 @@ import {
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
+import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
 import { PENDING_CREATE_FIELD_ID } from '../../constants'
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
@@ -90,6 +91,10 @@ export const FieldRowContainer = ({
     return false
   }, [stateData, field])
 
+  const {
+    mobileCreateEditModal: { onOpen: onMobileModalOpen },
+  } = useBuilderAndDesignContext()
+
   const ref = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     if (isActive) {
@@ -118,6 +123,12 @@ export const FieldRowContainer = ({
     },
     [handleFieldClick],
   )
+
+  const handleEditFieldClick = useCallback(() => {
+    if (isMobile) {
+      onMobileModalOpen()
+    }
+  }, [isMobile, onMobileModalOpen])
 
   const handleDuplicateClick = useCallback(() => {
     // Duplicate button should be hidden if field
@@ -233,6 +244,7 @@ export const FieldRowContainer = ({
                     colorScheme="secondary"
                     aria-label="Edit field"
                     icon={<BiEdit fontSize="1.25rem" />}
+                    onClick={handleEditFieldClick}
                   />
                 ) : null}
                 <ButtonGroup
