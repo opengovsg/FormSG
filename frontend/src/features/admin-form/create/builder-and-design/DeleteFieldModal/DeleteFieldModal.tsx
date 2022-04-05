@@ -49,7 +49,7 @@ export const DeleteFieldModal = (): JSX.Element => {
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>{`Delete ${fieldTypeLabel} field`}</ModalHeader>
+        <ModalHeader>Delete {fieldTypeLabel} field</ModalHeader>
         <ModalBody>
           This field will be deleted permanently. Are you sure you want to
           proceed?
