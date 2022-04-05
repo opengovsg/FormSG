@@ -1,4 +1,4 @@
-import Country from '~shared/constants/countries'
+import { Country } from '~shared/constants/countries'
 import {
   BasicField,
   CountryFieldBase,
