@@ -6,7 +6,7 @@ import {
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
   LOGIN_ROUTE,
-  PRIVACY_ROUTE,
+  PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
   ROOT_ROUTE,
@@ -48,7 +48,7 @@ export const AppRouter = (): JSX.Element => {
           element={<PublicElement strict element={<LoginPage />} />}
         />
         <Route
-          path={PRIVACY_ROUTE}
+          path={PRIVACY_POLICY_ROUTE}
           element={<PublicElement strict element={<PrivacyPolicyPage />} />}
         />
         <Route
