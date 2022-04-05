@@ -19,6 +19,7 @@ const baseSchema: CountryFieldSchema = {
   required: true,
   disabled: false,
   fieldType: BasicField.Dropdown,
+  fieldOptions: [],
   _id: 'random-id',
 }
 
