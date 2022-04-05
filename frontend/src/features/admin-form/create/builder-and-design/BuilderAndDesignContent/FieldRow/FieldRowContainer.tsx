@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
 import {
@@ -74,6 +74,7 @@ export const FieldRowContainer = ({
         [],
       ),
     )
+
   const { handleBuilderClick } = useCreatePageSidebar()
 
   const { duplicateFieldMutation } = useDuplicateFormField()
@@ -93,6 +94,18 @@ export const FieldRowContainer = ({
   const {
     mobileCreateEditModal: { onOpen: onMobileModalOpen },
   } = useBuilderAndDesignContext()
+
+  const ref = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    if (isActive) {
+      ref.current?.scrollIntoView({
+        // Avoid sudden jump when field is clicked
+        block: 'nearest',
+        // Also avoid behavior: 'smooth' as scrolling may take very long
+        // on long forms
+      })
+    }
+  }, [isActive])
 
   const handleFieldClick = useCallback(() => {
     if (!isActive) {
@@ -182,6 +195,7 @@ export const FieldRowContainer = ({
             align="center"
             onClick={handleFieldClick}
             onKeyDown={handleKeydown}
+            ref={ref}
           >
             <Fade in={isActive}>
               <chakra.button
