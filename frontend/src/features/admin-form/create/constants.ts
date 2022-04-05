@@ -73,11 +73,6 @@ export const BASICFIELD_TO_DRAWER_META: {
     icon: BiCaretDownSquare,
   },
 
-  [BasicField.Country]: {
-    label: 'Country',
-    icon: BiGlobe,
-  },
-
   [BasicField.Email]: {
     label: 'Email',
     icon: BiMailSend,
