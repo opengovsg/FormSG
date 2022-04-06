@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Text } from '@chakra-ui/react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import { isEqual } from 'lodash'
@@ -13,6 +14,7 @@ import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
 
+import { trackVisitPublicForm } from '~features/analytics/AnalyticsService'
 import {
   FetchNewTransactionResponse,
   useTransactionMutations,
@@ -57,6 +59,7 @@ export const PublicFormProvider = ({
   useEffect(() => {
     if (data) {
       if (!formView) {
+        trackVisitPublicForm(data.form)
         setFormView(data)
       } else if (!desyncToastIdRef.current && !isEqual(data, formView)) {
         desyncToastIdRef.current = toast({
@@ -136,6 +139,7 @@ export const PublicFormProvider = ({
         ...rest,
       }}
     >
+      <Helmet title={formView?.form.title} />
       {isFormNotFound ? <div>404</div> : children}
     </PublicFormContext.Provider>
   )
