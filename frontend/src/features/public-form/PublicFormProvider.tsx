@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { SubmitHandler } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormFieldDto } from '~shared/types/field'
 import { PublicFormViewDto } from '~shared/types/form'
 import { FieldResponse } from '~shared/types/response'
 
@@ -14,6 +14,7 @@ import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
+import { FormFieldValues } from '~templates/Field'
 
 import {
   FetchNewTransactionResponse,
@@ -113,8 +114,8 @@ export const PublicFormProvider = ({
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
-  const handleSubmitForm = useCallback(
-    (formInputs: Record<FormFieldDto['_id'], unknown>) => {
+  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
+    (formInputs) => {
       if (!cachedDto?.form) return
       try {
         const responses = cachedDto.form.form_fields
