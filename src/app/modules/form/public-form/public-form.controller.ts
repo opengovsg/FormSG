@@ -171,9 +171,10 @@ export const handleRedirect: ControllerHandler<
   unknown,
   Record<string, string>
 > = async (req, res) => {
-  const { state, Id } = req.params
+  console.log('handleRedirect')
+  const { state, formId } = req.params
 
-  let redirectPath = state ? `${Id}/${state}` : Id
+  let redirectPath = state ? `${formId}/${state}` : formId
   const queryString = querystring.stringify(req.query)
   if (queryString.length > 0) {
     redirectPath = redirectPath + '?' + encodeURIComponent(queryString)
@@ -183,7 +184,7 @@ export const handleRedirect: ControllerHandler<
   const appUrl = baseUrl + req.originalUrl
 
   const createMetatagsResult = await PublicFormService.createMetatags({
-    formId: Id,
+    formId,
     appUrl,
     imageBaseUrl: baseUrl,
   })
