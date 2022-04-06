@@ -151,34 +151,18 @@ const loadExpressApp = async (connection: Connection) => {
   // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
 
-  app.use(ReactMigrationRouter)
-
   app.use(AdminFormsRouter)
   app.use(PublicFormRouter)
 
   // New routes in preparation for API refactor.
   app.use('/api', ApiRouter)
 
-  // Serve static client files only in prod
-  // This block must be after all our routes, since the React application is
-  // served in a catchall route.
-  if (config.nodeEnv === Environment.Prod) {
-    const frontendPath = path.resolve('dist/frontend')
-    app.use(express.static(frontendPath))
+  app.use(express.static(path.resolve('dist/frontend')))
+  app.use('/public', express.static(path.resolve('dist/angularjs')))
+  app.get('/old/', HomeController.home)
 
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(frontendPath, 'index.html'))
-    })
-  }
-
-  if (config.nodeEnv === Environment.Dev) {
-    app.use(
-      '/public/fonts',
-      express.static(path.resolve('./dist/angularjs/fonts')),
-    )
-    app.use('/public', express.static(path.resolve('./dist/angularjs')))
-    app.get('/old/', HomeController.home)
-  }
+  console.log('setting up migration router')
+  app.use(ReactMigrationRouter)
 
   app.use(sentryMiddlewares())
 
