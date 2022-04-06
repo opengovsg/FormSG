@@ -37,10 +37,8 @@ type EditCheckboxKeys = typeof EDIT_CHECKBOX_FIELD_KEYS[number]
 type EditCheckboxInputs = Pick<CheckboxFieldBase, EditCheckboxKeys> & {
   fieldOptions: string
   ValidationOptions: {
-    // We don't use null here as the NumberInput props don't accept
-    // null as a value
-    customMin?: number
-    customMax?: number
+    customMin: string
+    customMax: string
   }
 }
 
@@ -49,11 +47,10 @@ const transformCheckboxFieldToEditForm = (
 ): EditCheckboxInputs => {
   const nextValidationOptions = field.validateByValue
     ? {
-        // Convert null to undefined
-        customMin: field.ValidationOptions.customMin ?? undefined,
-        customMax: field.ValidationOptions.customMax ?? undefined,
+        customMin: field.ValidationOptions.customMin?.toString() || '',
+        customMax: field.ValidationOptions.customMax?.toString() || '',
       }
-    : { customMin: undefined, customMax: undefined }
+    : { customMin: '', customMax: '' }
   return {
     ...pick(field, EDIT_CHECKBOX_FIELD_KEYS),
     fieldOptions: SPLIT_TEXTAREA_TRANSFORM.input(field.fieldOptions),
@@ -67,9 +64,9 @@ const transformCheckboxEditFormToField = (
 ): CheckboxFieldBase => {
   const nextValidationOptions = form.validateByValue
     ? {
-        // Use || in case of NaN
-        customMin: form.ValidationOptions.customMin || null,
-        customMax: form.ValidationOptions.customMax || null,
+        // 0 is not allowed
+        customMin: parseInt(form.ValidationOptions.customMin) || null,
+        customMax: parseInt(form.ValidationOptions.customMax) || null,
       }
     : { customMin: null, customMax: null }
   return extend({}, originalField, form, {
@@ -248,7 +245,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
                   showSteppers={false}
                   onChange={(val) => {
                     // Only allow numeric inputs
-                    onChange(parseInt(val.replace(/\D/g, '')))
+                    onChange(val.replace(/\D/g, ''))
                   }}
                   {...rest}
                   placeholder="Minimum"
@@ -267,7 +264,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
                   showSteppers={false}
                   onChange={(val) => {
                     // Only allow numeric inputs
-                    onChange(parseInt(val.replace(/\D/g, '')))
+                    onChange(val.replace(/\D/g, ''))
                   }}
                   {...rest}
                   placeholder="Maximum"
