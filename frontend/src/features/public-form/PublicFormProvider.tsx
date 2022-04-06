@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { SubmitHandler } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormFieldDto } from '~shared/types/field'
 import { FormResponseMode, PublicFormViewDto } from '~shared/types/form'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
@@ -13,6 +13,7 @@ import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
+import { FormFieldValues } from '~templates/Field'
 
 import {
   FetchNewTransactionResponse,
@@ -128,8 +129,8 @@ export const PublicFormProvider = ({
     })
   }, [toast])
 
-  const handleSubmitForm = useCallback(
-    async (formInputs: Record<FormFieldDto['_id'], unknown>) => {
+  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
+    async (formInputs) => {
       const { form } = cachedDto ?? {}
       if (!form) return
 

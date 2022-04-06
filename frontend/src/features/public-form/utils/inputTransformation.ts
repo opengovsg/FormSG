@@ -20,34 +20,22 @@ import {
   AttachmentFieldSchema,
   BaseFieldOutput,
   CheckboxFieldSchema,
+  CheckboxFieldValues,
   DateFieldSchema,
   EmailFieldSchema,
+  FormFieldValue,
   MobileFieldSchema,
   RadioFieldSchema,
+  RadioFieldValues,
   SectionFieldSchema,
   SingleAnswerOutput,
   TableFieldSchema,
+  TableFieldValues,
   VerifiableAnswerOutput,
+  VerifiableFieldValues,
   YesNoFieldSchema,
+  YesNoFieldValue,
 } from '~templates/Field/types'
-
-import {
-  validateAttachmentInput,
-  validateCheckboxInput,
-  validateDateInput,
-  validateRadioInput,
-  validateSingleAnswerInput,
-  validateTableInput,
-  validateVerifiableInput,
-  validateYesNoInput,
-} from './inputValidation'
-
-export class InputValidationError extends Error {
-  constructor(schemaId: string, input: unknown) {
-    super(`${schemaId}: 'Invalid input: ${JSON.stringify(input)}'`)
-    this.name = 'InputValidationError'
-  }
-}
 
 const pickBaseOutputFromSchema = <F extends FormFieldDto>(
   schema: F,
@@ -63,15 +51,8 @@ const transformToVerifiableOutput = <
   F extends EmailFieldSchema | MobileFieldSchema,
 >(
   schema: F,
-  input: unknown,
+  input?: VerifiableFieldValues,
 ): VerifiableAnswerOutput<F> => {
-  if (
-    input !== undefined &&
-    (!validateVerifiableInput(input) ||
-      (schema.isVerifiable && !input.signature))
-  ) {
-    throw new InputValidationError(schema._id, input)
-  }
   return {
     ...pickBaseOutputFromSchema(schema),
     answer: input?.value ?? '',
@@ -81,24 +62,8 @@ const transformToVerifiableOutput = <
 
 const transformToSingleAnswerOutput = <F extends FormFieldDto>(
   schema: F,
-  input: unknown,
+  input?: string,
 ): SingleAnswerOutput<F> => {
-  if (input !== undefined && !validateSingleAnswerInput(input)) {
-    throw new InputValidationError(schema._id, input)
-  }
-  return {
-    ...pickBaseOutputFromSchema(schema),
-    answer: input ?? '',
-  }
-}
-
-const transformToYesNoOutput = (
-  schema: YesNoFieldSchema,
-  input: unknown,
-): SingleAnswerOutput<YesNoFieldSchema> => {
-  if (input !== undefined && !validateYesNoInput(input)) {
-    throw new InputValidationError(schema._id, input)
-  }
   return {
     ...pickBaseOutputFromSchema(schema),
     answer: input ?? '',
@@ -107,33 +72,35 @@ const transformToYesNoOutput = (
 
 const transformToDateOutput = (
   schema: DateFieldSchema,
-  input: unknown,
+  input?: string,
 ): SingleAnswerOutput<DateFieldSchema> => {
-  if (input !== undefined && !validateDateInput(input)) {
-    throw new InputValidationError(schema._id, input)
-  }
-  // Convert ISO8601 "yyyy-mm-dd" format to "DD MMM YYYY" format.
-  // Above date validation ensures original format is valid, and `new Date()` will be a valid date.
-  const formattedDate = input ? format(new Date(input), 'dd MMM yyyy') : ''
-
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer: formattedDate,
+    // Convert ISO8601 "yyyy-mm-dd" format to "DD MMM YYYY" format (if input exists).
+    answer: input ? format(new Date(input), 'dd MMM yyyy') : '',
+  }
+}
+
+const transformToYesNoOutput = (
+  schema: YesNoFieldSchema,
+  input?: YesNoFieldValue,
+): SingleAnswerOutput<YesNoFieldSchema> => {
+  return {
+    ...pickBaseOutputFromSchema(schema),
+    answer: input ?? '',
   }
 }
 
 const transformToTableOutput = (
   schema: TableFieldSchema,
-  input: unknown,
+  input?: TableFieldValues,
 ): TableResponse => {
-  // Set default input if undefined.
-  input = input ?? times(schema.minimumRows, () => createTableRow(schema))
-  if (!validateTableInput(input)) {
-    throw new InputValidationError(schema._id, input)
-  }
   // Build table shape
+  // Set default input if undefined.
+  const populatedInput =
+    input ?? times(schema.minimumRows, () => createTableRow(schema))
   const orderedColumnIds = schema.columns.map((col) => col._id)
-  const answerArray = input.map(
+  const answerArray = populatedInput.map(
     (rowResponse) =>
       orderedColumnIds.map((colId) => rowResponse[colId] ?? '') as TableRow,
   )
@@ -145,11 +112,8 @@ const transformToTableOutput = (
 
 const transformToAttachmentOutput = (
   schema: AttachmentFieldSchema,
-  input: unknown,
+  input?: File,
 ): AttachmentResponse => {
-  if (input !== undefined && !validateAttachmentInput(input)) {
-    throw new InputValidationError(schema._id, input)
-  }
   return {
     ...pickBaseOutputFromSchema(schema),
     answer: input?.name ?? '',
@@ -158,12 +122,8 @@ const transformToAttachmentOutput = (
 
 const transformToCheckboxOutput = (
   schema: CheckboxFieldSchema,
-  input: unknown,
+  input: CheckboxFieldValues,
 ): CheckboxResponse => {
-  if (input !== undefined && !validateCheckboxInput(input)) {
-    throw new InputValidationError(schema._id, input)
-  }
-
   let answerArray: string[] = []
   if (input !== undefined && input.value) {
     const othersIndex = input.value.findIndex(
@@ -177,6 +137,7 @@ const transformToCheckboxOutput = (
       answerArray = input.value
     }
   }
+
   return {
     ...pickBaseOutputFromSchema(schema),
     answerArray,
@@ -185,12 +146,8 @@ const transformToCheckboxOutput = (
 
 const transformToRadioOutput = (
   schema: RadioFieldSchema,
-  input: unknown,
+  input: RadioFieldValues,
 ): RadioResponse => {
-  if (input !== undefined && !validateRadioInput(input)) {
-    throw new InputValidationError(schema._id, input)
-  }
-
   let answer = ''
   if (input !== undefined) {
     answer = input.value
@@ -221,30 +178,50 @@ const transformToSectionOutput = (
  * @param field schema to retrieve base field info
  * @param input the input corresponding to the field in the form
  * @returns If field type does not need an output, `undefined` is returned. Otherwise returns the transformed output.
- * @throws `InputValidationError` if the input is invalid
  */
 export const transformInputsToOutputs = (
   field: FormFieldDto,
-  input: unknown,
+  input: FormFieldValue,
 ): FieldResponse | undefined => {
   switch (field.fieldType) {
     case BasicField.Section:
       return transformToSectionOutput(field)
     case BasicField.Checkbox:
-      return transformToCheckboxOutput(field, input)
+      return transformToCheckboxOutput(
+        field,
+        input as FormFieldValue<typeof field.fieldType>,
+      )
     case BasicField.Radio:
-      return transformToRadioOutput(field, input)
+      return transformToRadioOutput(
+        field,
+        input as FormFieldValue<typeof field.fieldType>,
+      )
     case BasicField.Table:
-      return transformToTableOutput(field, input)
+      return transformToTableOutput(
+        field,
+        input as FormFieldValue<typeof field.fieldType>,
+      )
     case BasicField.Email:
     case BasicField.Mobile:
-      return transformToVerifiableOutput(field, input)
+      return transformToVerifiableOutput(
+        field,
+        input as FormFieldValue<typeof field.fieldType>,
+      )
     case BasicField.Attachment:
-      return transformToAttachmentOutput(field, input)
+      return transformToAttachmentOutput(
+        field,
+        input as FormFieldValue<typeof field.fieldType>,
+      )
     case BasicField.Date:
-      return transformToDateOutput(field, input)
+      return transformToDateOutput(
+        field,
+        input as FormFieldValue<typeof field.fieldType>,
+      )
     case BasicField.YesNo:
-      return transformToYesNoOutput(field, input)
+      return transformToYesNoOutput(
+        field,
+        input as FormFieldValue<typeof field.fieldType>,
+      )
     case BasicField.Number:
     case BasicField.Decimal:
     case BasicField.ShortText:
@@ -254,7 +231,10 @@ export const transformInputsToOutputs = (
     case BasicField.Rating:
     case BasicField.Nric:
     case BasicField.Uen:
-      return transformToSingleAnswerOutput(field, input)
+      return transformToSingleAnswerOutput(
+        field,
+        input as FormFieldValue<typeof field.fieldType>,
+      )
     case BasicField.Statement:
     case BasicField.Image:
       // No output needed.

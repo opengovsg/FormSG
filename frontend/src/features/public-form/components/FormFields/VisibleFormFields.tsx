@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
-import { Control, FieldValues, useWatch } from 'react-hook-form'
+import { Control, useWatch } from 'react-hook-form'
 
 import { FormFieldDto } from '~shared/types/field'
 import { FormColorTheme, LogicDto } from '~shared/types/form'
+
+import { FormFieldValues } from '~templates/Field'
 
 import { getVisibleFieldIds } from '~features/logic/utils'
 
 import { FieldFactory } from './FieldFactory'
 
 interface VisibleFormFieldsProps {
-  control: Control<FieldValues>
+  control: Control<FormFieldValues>
   formFields: FormFieldDto[]
   formLogics: LogicDto[]
   colorTheme: FormColorTheme

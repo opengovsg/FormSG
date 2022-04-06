@@ -2,6 +2,7 @@ import { Merge } from 'type-fest'
 
 import {
   AttachmentFieldBase,
+  BasicField,
   CheckboxFieldBase,
   DateFieldBase,
   DecimalFieldBase,
@@ -40,6 +41,11 @@ export type BaseFieldOutput<FF extends FormFieldDto> = {
 export type FieldInput<Input> = {
   [schemaId: string]: Input
 }
+// Type for react-hook-form's FieldValues generic.
+export type FormFieldValues = Record<
+  FormFieldDto['_id'],
+  FormFieldValue<FormFieldDto['fieldType']>
+>
 
 export type AttachmentFieldInput = FieldInput<File>
 export type CheckboxFieldInputs = FieldInput<CheckboxFieldValues>
@@ -48,6 +54,32 @@ export type TableFieldInputs = FieldInput<TableFieldValues>
 export type YesNoFieldInput = FieldInput<YesNoFieldValue>
 export type SingleAnswerFieldInput = FieldInput<SingleAnswerValue>
 export type VerifiableFieldInput = FieldInput<VerifiableFieldValues>
+
+export type FormFieldValue<F extends BasicField = BasicField> = F extends
+  | BasicField.Number
+  | BasicField.Decimal
+  | BasicField.ShortText
+  | BasicField.LongText
+  | BasicField.HomeNo
+  | BasicField.Dropdown
+  | BasicField.Rating
+  | BasicField.Nric
+  | BasicField.Uen
+  | BasicField.Date
+  ? SingleAnswerValue
+  : F extends BasicField.YesNo
+  ? YesNoFieldValue
+  : F extends BasicField.Attachment
+  ? File
+  : F extends BasicField.Email | BasicField.Mobile
+  ? VerifiableFieldValues
+  : F extends BasicField.Table
+  ? TableFieldValues
+  : F extends BasicField.Radio
+  ? RadioFieldValues
+  : F extends BasicField.Checkbox
+  ? CheckboxFieldValues
+  : never
 
 // Input values, what each field contains
 export type SingleAnswerValue = string
@@ -68,10 +100,10 @@ export type RadioFieldValues = {
   value: string
   othersInput?: string
 }
-export type TableRowValues = {
+export type TableRowFieldValue = {
   [columnId: string]: string
 }
-export type TableFieldValues = TableRowValues[]
+export type TableFieldValues = TableRowFieldValue[]
 
 export type SingleAnswerOutput<F extends FormFieldDto> =
   SingleAnswerResponse & {

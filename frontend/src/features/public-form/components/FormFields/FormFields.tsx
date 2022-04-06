@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { FieldValues, FormProvider, useForm } from 'react-hook-form'
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { Stack } from '@chakra-ui/react'
 import { times } from 'lodash'
 
@@ -7,6 +7,7 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme, LogicDto } from '~shared/types/form'
 
 import Button from '~components/Button'
+import { FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import { VisibleFormFields } from './VisibleFormFields'
@@ -15,7 +16,7 @@ export interface FormFieldsProps {
   formFields: FormFieldDto[]
   formLogics: LogicDto[]
   colorTheme: FormColorTheme
-  onSubmit: (values: FieldValues) => void
+  onSubmit: SubmitHandler<FormFieldValues>
 }
 
 export const FormFields = ({
@@ -27,7 +28,7 @@ export const FormFields = ({
   // TODO: Cleanup messy code
   // TODO: Inject default values if field is MyInfo, or prefilled.
   const defaultFormValues = useMemo(() => {
-    return formFields.reduce<FieldValues>((acc, field) => {
+    return formFields.reduce<FormFieldValues>((acc, field) => {
       switch (field.fieldType) {
         // Required so table column fields will render due to useFieldArray usage.
         // See https://react-hook-form.com/api/usefieldarray
@@ -35,7 +36,6 @@ export const FormFields = ({
           acc[field._id] = times(field.minimumRows, () => createTableRow(field))
           break
       }
-
       return acc
     }, {})
   }, [formFields])
