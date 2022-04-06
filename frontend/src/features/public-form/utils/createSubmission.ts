@@ -10,10 +10,13 @@ import {
 } from '~shared/types/submission'
 
 import formsgSdk from '~utils/formSdk'
-import { AttachmentFieldSchema } from '~templates/Field'
+import {
+  AttachmentFieldSchema,
+  FormFieldValue,
+  FormFieldValues,
+} from '~templates/Field'
 
 import { transformInputsToOutputs } from './inputTransformation'
-import { validateAttachmentInput } from './inputValidation'
 
 // The current encrypt version to assign to the encrypted submission.
 // This is needed if we ever break backwards compatibility with
@@ -22,7 +25,7 @@ const ENCRYPT_VERSION = 1
 
 export const createEncryptedSubmissionData = async (
   formFields: FormFieldDto[],
-  formInputs: Record<string, unknown>,
+  formInputs: FormFieldValues,
   publicKey: string,
 ): Promise<StorageModeSubmissionContentDto> => {
   const responses = createResponsesArray(formFields, formInputs)
@@ -49,7 +52,7 @@ export const createEncryptedSubmissionData = async (
 
 export const createEmailSubmissionFormData = (
   formFields: FormFieldDto[],
-  formInputs: Record<string, unknown>,
+  formInputs: FormFieldValues,
 ) => {
   const responses = createResponsesArray(formFields, formInputs)
   const attachments = getAttachmentsMap(formFields, formInputs)
@@ -71,7 +74,7 @@ export const createEmailSubmissionFormData = (
 
 const createResponsesArray = (
   formFields: FormFieldDto[],
-  formInputs: Record<string, unknown>,
+  formInputs: FormFieldValues,
 ): FieldResponse[] => {
   return formFields
     .map((ff) => transformInputsToOutputs(ff, formInputs[ff._id]))
@@ -80,7 +83,7 @@ const createResponsesArray = (
 
 const getEncryptedAttachmentsMap = async (
   formFields: FormFieldDto[],
-  formInputs: Record<string, unknown>,
+  formInputs: FormFieldValues,
   publicKey: string,
 ): Promise<StorageModeAttachmentsMap> => {
   const attachmentsMap = getAttachmentsMap(formFields, formInputs)
@@ -102,15 +105,16 @@ const getEncryptedAttachmentsMap = async (
 
 const getAttachmentsMap = (
   formFields: FormFieldDto[],
-  formInputs: Record<string, unknown>,
+  formInputs: FormFieldValues,
 ): Record<string, File> => {
   const attachmentsMap: Record<string, File> = {}
   const attachmentFields = formFields.filter(
     (ff): ff is AttachmentFieldSchema => ff.fieldType === BasicField.Attachment,
   )
   attachmentFields.forEach((af) => {
-    const attachmentValue = formInputs[af._id]
-    if (!validateAttachmentInput(attachmentValue)) return
+    const attachmentValue = formInputs[af._id] as FormFieldValue<
+      typeof af.fieldType
+    >
     attachmentsMap[af._id] = attachmentValue
   })
 

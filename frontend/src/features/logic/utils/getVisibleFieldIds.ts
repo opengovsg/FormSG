@@ -1,63 +1,47 @@
-import { intersection } from 'lodash'
+import {
+  DeepPartial,
+  DeepPartialSkipArrayKey,
+  UnpackNestedValue,
+} from 'react-hook-form'
 import { CamelCasedProperties } from 'type-fest'
 
-import { BasicField, FormFieldDto } from '~shared/types/field'
+import { BasicField } from '~shared/types/field'
 import { FormCondition, FormDto, LogicConditionState } from '~shared/types/form'
 
-import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/CheckboxField'
+import { FormFieldValue, FormFieldValues } from '~templates/Field'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/RadioField'
 
-import {
-  validateCheckboxInput,
-  validateDateInput,
-  validateRadioInput,
-  validateSingleAnswerInput,
-  validateVerifiableInput,
-} from '~features/public-form/utils'
-
-import { FieldIdSet, FieldIdToType } from '../types'
+import { FieldIdSet, FieldIdToType, LogicableField } from '../types'
 
 import { groupLogicUnitsByField } from './groupLogicUnitsByField'
+import { isLogicableField, isRadioFormFieldValue } from './typeguards'
 
-const getCurrentFieldValue = (input: unknown, fieldType: BasicField) => {
+const getCurrentFieldValue = (
+  input: DeepPartial<FormFieldValue<LogicableField>>,
+  fieldType: LogicableField,
+) => {
   switch (fieldType) {
-    case BasicField.Checkbox:
-      return validateCheckboxInput(input) ? input : null
     case BasicField.Radio:
-      return validateRadioInput(input) ? input : null
-    case BasicField.Email:
-    case BasicField.Mobile:
-      return validateVerifiableInput(input) ? input.value : null
-    case BasicField.Date:
-      return validateDateInput(input) ? input : null
     case BasicField.Number:
     case BasicField.Decimal:
-    case BasicField.ShortText:
-    case BasicField.LongText:
-    case BasicField.HomeNo:
     case BasicField.Dropdown:
     case BasicField.Rating:
-    case BasicField.Nric:
-    case BasicField.Uen:
     case BasicField.YesNo:
-      return validateSingleAnswerInput(input) ? input : null
-    case BasicField.Attachment:
-    case BasicField.Statement:
-    case BasicField.Section:
-    case BasicField.Image:
-    case BasicField.Table:
-      // Field types not used for logic.
-      return null
+      return input
   }
 }
 
 const isConditionFulfilled = (
-  input: unknown,
+  input: DeepPartial<FormFieldValue>,
   condition: FormCondition,
   fieldType: BasicField,
 ): boolean => {
-  const currentValue = getCurrentFieldValue(input, fieldType)
-  if (currentValue === null) return false
+  // Not logic field, early return.
+  const args = { fieldType, input }
+  if (!isLogicableField(args)) return false
+
+  const currentValue = getCurrentFieldValue(args.input, args.fieldType)
+  if (currentValue === undefined) return false
 
   switch (condition.state) {
     case LogicConditionState.Lte:
@@ -69,24 +53,7 @@ const isConditionFulfilled = (
       const condValuesArray = Array.isArray(condition.value)
         ? condition.value
         : [condition.value]
-      if (validateCheckboxInput(currentValue)) {
-        // Empty value, automatically does not fulfil condition.
-        if (!currentValue.value) {
-          return false
-        }
-        if (condValuesArray.includes('Others')) {
-          // If the condition value is 'Others',
-          // then the condition must be satisfied if the current value is the special input value AND
-          // if the othersInput subfield has a value.
-          const satisfiesOthers =
-            currentValue.value.includes(CHECKBOX_OTHERS_INPUT_VALUE) &&
-            !!currentValue.othersInput
-          if (satisfiesOthers) return true
-        }
-        // Some condition value has been met by the checked values.
-        return intersection(condValuesArray, currentValue.value).length > 0
-      }
-      if (validateRadioInput(currentValue)) {
+      if (isRadioFormFieldValue(currentValue, args.fieldType)) {
         if (condValuesArray.includes('Others')) {
           // If the condition value is 'Others',
           // then the condition must be satisfied if the current value is the special input value AND
@@ -98,18 +65,10 @@ const isConditionFulfilled = (
         }
         return condValuesArray.includes(currentValue.value)
       }
-      return condValuesArray.includes(currentValue)
+      return condValuesArray.includes(currentValue as string)
     }
     case LogicConditionState.Equal: {
-      // Checkbox cannot have equal logic.
-      // Condition values cannot be an array for equality logic.
-      if (
-        Array.isArray(condition.value) ||
-        validateCheckboxInput(currentValue)
-      ) {
-        return false
-      }
-      if (validateRadioInput(currentValue)) {
+      if (isRadioFormFieldValue(currentValue, args.fieldType)) {
         if (condition.value === 'Others') {
           // If the condition value is 'Others',
           // then the condition must be satisfied if the current value is the special input value AND
@@ -134,7 +93,7 @@ const isConditionFulfilled = (
  * @returns true if all the conditions are satisfied, false otherwise
  */
 const isLogicUnitSatisfied = (
-  formInputs: Record<FormFieldDto['_id'], unknown>,
+  formInputs: DeepPartial<FormFieldValues>,
   logicUnit: FormCondition[],
   visibleFieldMap: FieldIdToType,
 ): boolean => {
@@ -160,7 +119,7 @@ const isLogicUnitSatisfied = (
  * @returns a set of IDs of visible fields in the submission
  */
 export const getVisibleFieldIds = (
-  formInputs: Record<FormFieldDto['_id'], unknown>,
+  formInputs: UnpackNestedValue<DeepPartialSkipArrayKey<FormFieldValues>>,
   {
     formFields,
     formLogics,

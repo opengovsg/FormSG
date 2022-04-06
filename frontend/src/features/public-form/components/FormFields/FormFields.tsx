@@ -40,7 +40,7 @@ export const FormFields = ({
     }, {})
   }, [formFields])
 
-  const formMethods = useForm({
+  const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
     mode: 'onTouched',
     shouldUnregister: true,
