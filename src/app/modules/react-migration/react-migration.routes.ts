@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import path from 'path'
 
 import config from '../../config/config'
 import * as HomeController from '../home/home.controller'
@@ -16,33 +17,49 @@ export const RESPONDENT_COOKIE_OPTIONS = {
   secure: !config.isDev,
 }
 
+function serveReact(req, res, next) {
+  const reactFrontendPath = path.resolve('dist/frontend')
+  res.sendFile(path.join(reactFrontendPath, 'index.html'))
+}
+
+function serveAngular(req, res, next) {}
+
 ReactMigrationRouter.get('/:formId([a-fA-F0-9]{24})', (req, res, next) => {
-  console.log('conditional routing')
+  console.log('conditional routing 2')
 
   // check cookies
-  let serveReact
+  let showReact
 
   if (req.cookies) {
     if (ADMIN_COOKIE_NAME in req.cookies) {
-      serveReact = req.cookies[ADMIN_COOKIE_NAME] === 'react'
+      showReact = req.cookies[ADMIN_COOKIE_NAME] === 'react'
     } else if (RESPONDENT_COOKIE_NAME in req.cookies) {
-      serveReact = req.cookies[RESPONDENT_COOKIE_NAME] === 'react'
+      showReact = req.cookies[RESPONDENT_COOKIE_NAME] === 'react'
     }
   }
 
-  if (serveReact === undefined) {
-    serveReact = Math.random() < REACT_ROLLOUT_THRESHOLD
+  if (showReact === undefined) {
+    showReact = Math.random() < REACT_ROLLOUT_THRESHOLD
 
     res.cookie(
       RESPONDENT_COOKIE_NAME,
-      serveReact ? 'react' : 'angular',
+      showReact ? 'react' : 'angular',
       RESPONDENT_COOKIE_OPTIONS,
     )
   }
 
-  if (serveReact) {
-    // serve react
+  if (showReact) {
+    serveReact(req, res, next)
   } else {
-    // return HomeController.home(req, res, next)
+    serveAngular(req, res, next)
+  }
+})
+
+ReactMigrationRouter.get('*', (req, res, next) => {
+  // only admin who chose react should see react, everybody else is plain angular
+  if (req.cookies?.[ADMIN_COOKIE_NAME] === 'react') {
+    serveReact(req, res, next)
+  } else {
+    serveAngular(req, res, next)
   }
 })
