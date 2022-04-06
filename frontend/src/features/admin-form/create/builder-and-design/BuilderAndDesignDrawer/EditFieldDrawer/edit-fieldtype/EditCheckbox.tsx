@@ -114,6 +114,10 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
         value: 1,
         message: 'Cannot be less than 1',
       },
+      max: {
+        value: 10000,
+        message: 'Cannot be more than 10,000',
+      },
       validate: {
         minLargerThanMax: (val) => {
           return (
@@ -151,6 +155,10 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
       min: {
         value: 1,
         message: 'Cannot be less than 1',
+      },
+      max: {
+        value: 10000,
+        message: 'Cannot be more than 10,000',
       },
       validate: {
         maxLargerThanMin: (val) => {
