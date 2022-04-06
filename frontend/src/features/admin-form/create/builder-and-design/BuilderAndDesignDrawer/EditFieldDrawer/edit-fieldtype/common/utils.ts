@@ -19,17 +19,3 @@ export const SPLIT_TEXTAREA_VALIDATION = {
     )
   },
 }
-
-/**
- * NumberInput value is a string by default, and normally we
- * want to convert it to a number. However, when it is empty,
- * react-hook-form doesn't behave correctly if we pass null
- * or undefined, so we need to pass an empty string.
- * @param val Raw value from NumberInput
- * @returns Empty string to clear input, or a valid number
- */
-export const toNumberInput = (val: string): number | '' => {
-  const cleanValue = val.replace(/\D/g, '')
-  if (!cleanValue) return ''
-  return parseInt(cleanValue)
-}
