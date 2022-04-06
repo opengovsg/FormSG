@@ -43,7 +43,7 @@ PublicFormRouter.get(
  * through the main index, with the form ID specified as a hashbang path
  */
 PublicFormRouter.get(
-  '/:formId([a-fA-F0-9]{24})/:state(preview|template|use-template)?',
+  '/:formId([a-fA-F0-9]{24})/:state(preview|template|use-template)',
   PublicFormController.handleRedirect,
 )
 
