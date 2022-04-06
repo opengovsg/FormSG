@@ -135,7 +135,7 @@ services:
       driver: none
 
   maildev:
-    image: maildev/maildev
+    image: maildev/maildev:1.1.0
     ports:
       - '1080:80'
 
