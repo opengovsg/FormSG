@@ -4,7 +4,7 @@ import { ClientEnvVars } from '~shared/types/core'
 
 export const MOCK_ENVS: Partial<ClientEnvVars> = {
   logoBucketUrl: 'local-logo-bucket',
-  captchaPublicKey: 'mock-ga-tracking-id',
+  captchaPublicKey: 'mock-captcha-public-key',
 }
 
 export const envHandlers = [
