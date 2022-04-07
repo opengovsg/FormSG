@@ -52,6 +52,11 @@ export type RateLimitConfig = {
   sendAuthOtp: number
 }
 
+export type ReactMigrationConfig = {
+  respondentRollout: number
+  adminRollout: number
+}
+
 export type Config = {
   app: AppConfig
   db: DbConfig
@@ -75,6 +80,7 @@ export type Config = {
   siteBannerContent: string
   adminBannerContent: string
   rateLimitConfig: RateLimitConfig
+  reactMigrationConfig: ReactMigrationConfig
   secretEnv: string
 
   // Functions
@@ -147,6 +153,10 @@ export interface IOptionalVarsSchema {
   rateLimit: {
     submissions: number
     sendAuthOtp: number
+  }
+  reactMigration: {
+    respondentRollout: number
+    adminRollout: number
   }
 }
 

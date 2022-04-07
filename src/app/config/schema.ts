@@ -290,6 +290,20 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'SEND_AUTH_OTP_RATE_LIMIT',
     },
   },
+  reactMigration: {
+    respondentRollout: {
+      doc: 'Percentage threshold to to serve React for respondents',
+      format: 'int',
+      default: 0,
+      env: 'REACT_MIGRATION_RESPONDENT_ROLLOUT',
+    },
+    adminRollout: {
+      doc: 'Percentage threshold to to serve React for respondents',
+      format: 'int',
+      default: 0,
+      env: 'REACT_MIGRATION_ADMIN_ROLLOUT',
+    },
+  },
 }
 
 export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
@@ -330,10 +344,10 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
           database: 'formsg',
           hosts: [ { host: 'database', port: 27017 } ]
         }
-        e.g. https://form.gov.sg will be parsed into: 
-        { 
-          scheme: 'https', 
-          hosts: [ { host: 'form.gov.sg' } ] 
+        e.g. https://form.gov.sg will be parsed into:
+        {
+          scheme: 'https',
+          hosts: [ { host: 'form.gov.sg' } ]
         }
       */
       if (uriObject.scheme !== 'mongodb') {
