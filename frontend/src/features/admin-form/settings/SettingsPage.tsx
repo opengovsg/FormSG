@@ -1,12 +1,4 @@
-import {
-  BiCheckDouble,
-  BiCodeBlock,
-  BiCog,
-  BiKey,
-  BiMailSend,
-  BiMessage,
-  BiRocket,
-} from 'react-icons/bi'
+import { BiCodeBlock, BiCog, BiKey, BiMessage } from 'react-icons/bi'
 import {
   Box,
   Flex,
@@ -87,11 +79,8 @@ export const SettingsPage = (): JSX.Element => {
           >
             <SettingsTab label="General" icon={BiCog} />
             <SettingsTab label="Singpass" icon={BiKey} />
-            <SettingsTab label="Thank you page" icon={BiCheckDouble} />
-            <SettingsTab label="Email notifications" icon={BiMailSend} />
             <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
-            <SettingsTab label="Workflow" icon={BiRocket} />
           </TabList>
         </Flex>
         <TabPanels maxW="42.5rem">
@@ -102,19 +91,10 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsAuthPage />
           </TabPanel>
           <TabPanel>
-            <p>3!</p>
-          </TabPanel>
-          <TabPanel>
-            <p>4!</p>
-          </TabPanel>
-          <TabPanel>
             <SettingsTwilioPage />
           </TabPanel>
           <TabPanel>
-            <p>6!</p>
-          </TabPanel>
-          <TabPanel>
-            <p>7!</p>
+            <p>Webhooks</p>
           </TabPanel>
         </TabPanels>
         <Spacer />
