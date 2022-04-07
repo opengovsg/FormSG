@@ -292,13 +292,13 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
   },
   reactMigration: {
     respondentRollout: {
-      doc: 'Percentage threshold to to serve React for respondents',
+      doc: 'Percentage threshold to serve React for respondents',
       format: 'int',
       default: 0,
       env: 'REACT_MIGRATION_RESPONDENT_ROLLOUT',
     },
     adminRollout: {
-      doc: 'Percentage threshold to to serve React for respondents',
+      doc: 'Percentage threshold to serve React for admins',
       format: 'int',
       default: 0,
       env: 'REACT_MIGRATION_ADMIN_ROLLOUT',
