@@ -90,6 +90,7 @@ export const WebhooksSection = (): JSX.Element => {
             </InputRightElement>
           ) : null}
           <Input
+            placeholder="https://your-webhook.com/url"
             onKeyDown={handleWebhookUrlEnterKeyDown}
             {...register('url', {
               onBlur: handleWebhookInputBlur,
