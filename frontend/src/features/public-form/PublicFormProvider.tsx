@@ -48,7 +48,9 @@ export const PublicFormProvider = ({
     // Stop querying once submissionId is present.
     /* enabled= */ !submissionId,
   )
-  const { data: { captchaPublicKey } = {} } = useEnv(!!data?.form.hasCaptcha)
+  const { data: { captchaPublicKey } = {} } = useEnv(
+    /* enabled= */ !!data?.form.hasCaptcha,
+  )
   const { hasLoaded, getCaptchaResponse, containerId } = useRecaptcha({
     sitekey: captchaPublicKey,
   })
