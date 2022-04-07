@@ -40,7 +40,7 @@ const listBaseStyle: SystemStyleFunction = (props) => {
   const { list: menuListStyle = {} } = Menu.baseStyle(props)
   return merge(menuListStyle, {
     // To accomodate focus ring.
-    mt: '1px',
+    my: '1px',
     w: '100%',
     overflowY: 'auto',
     maxH: '12rem',
@@ -120,6 +120,7 @@ const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
     }),
     clearbutton: {
       ml: '-1px',
+      bg: 'white',
       border: '1px solid',
       borderColor: 'neutral.400',
       color: 'neutral.400',

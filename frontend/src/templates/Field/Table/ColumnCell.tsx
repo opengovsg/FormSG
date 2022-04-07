@@ -8,10 +8,16 @@ import {
   BasicField,
   Column,
   ColumnDto,
+  DropdownColumnBase,
   ShortTextColumnBase,
 } from '~shared/types/field'
 
-import { createTextValidationRules } from '~utils/fieldValidation'
+import { useIsMobile } from '~hooks/useIsMobile'
+import {
+  createDropdownValidationRules,
+  createTextValidationRules,
+} from '~utils/fieldValidation'
+import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -42,6 +48,24 @@ const ShortTextColumnCell = ({
   )
 }
 
+const DropdownColumnCell = ({
+  schema,
+  inputName,
+}: FieldColumnCellProps<DropdownColumnBase>) => {
+  const rules = useMemo(() => createDropdownValidationRules(schema), [schema])
+
+  return (
+    <Controller
+      name={inputName}
+      rules={rules}
+      defaultValue=""
+      render={({ field }) => (
+        <SingleSelect items={schema.fieldOptions} {...field} />
+      )}
+    />
+  )
+}
+
 /**
  * Renderer for each column cell in the table schema.
  */
@@ -51,6 +75,7 @@ export const ColumnCell = ({
   column,
   columnSchema,
 }: ColumnCellProps): JSX.Element => {
+  const isMobile = useIsMobile()
   const { errors } = useFormState({ name: schemaId })
 
   const inputName = useMemo(
@@ -64,21 +89,30 @@ export const ColumnCell = ({
         return (
           <ShortTextColumnCell schema={columnSchema} inputName={inputName} />
         )
+      case BasicField.Dropdown:
+        return (
+          <DropdownColumnCell schema={columnSchema} inputName={inputName} />
+        )
       default:
         return null
     }
   }, [columnSchema, inputName])
 
+  const cellError = get(errors, inputName)
+
   return (
-    <FormControl
-      isRequired={columnSchema.required}
-      isInvalid={!!get(errors, inputName)}
-    >
+    <FormControl isRequired={columnSchema.required} isInvalid={!!cellError}>
       <FormLabel display={{ base: 'flex', md: 'none' }} color="secondary.700">
         {columnSchema.title}
       </FormLabel>
       {renderedColumnCell}
-      <FormErrorMessage>{get(errors, `${inputName}.message`)}</FormErrorMessage>
+      {
+        // On desktop, errors are shown directly under the table field and should not
+        // be shown in the individual column cells.
+        isMobile ? (
+          <FormErrorMessage>{cellError?.message}</FormErrorMessage>
+        ) : null
+      }
     </FormControl>
   )
 }

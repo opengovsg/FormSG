@@ -42,7 +42,7 @@ export const DropdownItemTextHighlighter = ({
   )
 
   return (
-    <Text>
+    <Text textStyle="body-1">
       <Highlighter
         searchWords={regexSearchWords}
         highlightTag={({ children }) => (

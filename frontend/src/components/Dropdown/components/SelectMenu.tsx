@@ -17,7 +17,6 @@ export const SelectMenu = (): JSX.Element => {
       ref={popperRef}
       style={popperStyles.popper}
       {...popperAttributes.popper}
-      w="100%"
       zIndex="dropdown"
     >
       <List
