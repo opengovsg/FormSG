@@ -41,7 +41,11 @@ export const serveForm: ControllerHandler<
   // check cookies
   let showReact: boolean | undefined = undefined
 
-  if (req.cookies) {
+  if (config.reactMigrationConfig.respondentRollout <= 0) {
+    // Check the rollout value first, if it's 0, react is DISABLED
+    // And we ignore cookies entirely!
+    showReact = false
+  } else if (req.cookies) {
     if (ADMIN_COOKIE_NAME in req.cookies) {
       showReact = req.cookies[ADMIN_COOKIE_NAME] === 'react'
     } else if (RESPONDENT_COOKIE_NAME in req.cookies) {
@@ -52,8 +56,6 @@ export const serveForm: ControllerHandler<
   if (showReact === undefined) {
     const rand = Math.random() * 100
     showReact = rand <= config.reactMigrationConfig.respondentRollout
-
-    console.log('random assignment', rand, showReact)
 
     res.cookie(
       RESPONDENT_COOKIE_NAME,
