@@ -17,6 +17,7 @@ import { SettingsTab } from './components/SettingsTab'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
+import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
 export const SettingsPage = (): JSX.Element => {
   const tabOrientation: UseTabsProps['orientation'] = useBreakpointValue({
@@ -94,7 +95,7 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTwilioPage />
           </TabPanel>
           <TabPanel>
-            <p>Webhooks</p>
+            <SettingsWebhooksPage />
           </TabPanel>
         </TabPanels>
         <Spacer />
