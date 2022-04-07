@@ -8,18 +8,15 @@ import {
 } from '@chakra-ui/react'
 import validator from 'validator'
 
-import { FormResponseMode } from '~shared/types/form'
-
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Spinner from '~components/Spinner'
 
-import { useMutateFormSettings } from '../mutations'
-import { useAdminFormSettings } from '../queries'
+import { useMutateFormSettings } from '../../mutations'
+import { useAdminFormSettings } from '../../queries'
 
-export const WebhooksSection = (): JSX.Element => {
+export const WebhookUrlInput = (): JSX.Element => {
   const { data: settings, isLoading } = useAdminFormSettings()
   const { mutateFormWebhookUrl } = useMutateFormSettings()
   const {
@@ -65,14 +62,6 @@ export const WebhooksSection = (): JSX.Element => {
     },
     [handleUpdateWebhook, isValid],
   )
-
-  if (!isLoading && settings?.responseMode !== FormResponseMode.Encrypt) {
-    return (
-      <InlineMessage>
-        Webhooks are only available in storage mode forms.
-      </InlineMessage>
-    )
-  }
 
   return (
     <FormControl
