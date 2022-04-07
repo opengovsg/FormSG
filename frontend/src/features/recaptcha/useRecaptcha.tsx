@@ -23,9 +23,6 @@ interface UseRecaptchaProps extends RecaptchaBaseConfig {
   id?: string
   useRecaptchaNet?: boolean
   useEnterprise?: boolean
-  onChange?: (response: string | null) => void
-  onExpiry?: () => void
-  onError?: () => void
 }
 
 type RecaptchaConfig = RecaptchaBaseConfig & {
@@ -73,9 +70,6 @@ export const useRecaptcha = ({
   id: containerId = DEFAULT_CONTAINER_ID,
   sitekey,
   theme,
-  onChange,
-  onExpiry,
-  onError,
   useEnterprise = true,
   badge = 'inline',
   size = 'invisible',
@@ -102,33 +96,24 @@ export const useRecaptcha = ({
     !sitekey || hasLoaded ? null : 500,
   )
 
-  const handleChange = useCallback(
-    (response: string | null) => {
-      onChange?.(response)
-      if (executionPromise.current.resolve) {
-        executionPromise.current.resolve(response)
-        executionPromise.current = {}
-      }
-    },
-    [onChange],
-  )
+  const handleChange = useCallback((response: string | null) => {
+    if (executionPromise.current.resolve) {
+      executionPromise.current.resolve(response)
+      executionPromise.current = {}
+    }
+  }, [])
 
   const handleError = useCallback(() => {
-    onError?.()
     if (executionPromise.current?.reject) {
       executionPromise.current.reject()
       executionPromise.current = {}
     }
-  }, [onError])
+  }, [])
 
   const handleExpiry = useCallback(() => {
     grecaptcha?.reset(widgetId)
-    if (onExpiry) {
-      onExpiry()
-    } else {
-      handleChange(null)
-    }
-  }, [grecaptcha, handleChange, onExpiry, widgetId])
+    handleChange(null)
+  }, [grecaptcha, handleChange, widgetId])
 
   useEffect(() => {
     if (sitekey && hasLoaded && widgetId === undefined) {
