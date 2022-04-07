@@ -9,8 +9,19 @@ import * as HomeController from '../home/home.controller'
 const RESPONDENT_COOKIE_NAME = 'v2-respondent-ui'
 const ADMIN_COOKIE_NAME = 'v2-admin-ui'
 
+export type SetEnvironmentParams = {
+  ui: 'react' | 'angular'
+}
+
 export const RESPONDENT_COOKIE_OPTIONS = {
   httpOnly: true,
+  sameSite: 'strict' as const,
+  secure: !config.isDev,
+}
+
+export const ADMIN_COOKIE_OPTIONS = {
+  httpOnly: true,
+  maxAge: 365 * 24 * 60 * 60, // 1 year
   sameSite: 'strict' as const,
   secure: !config.isDev,
 }
@@ -76,4 +87,16 @@ export const serveDefault: ControllerHandler = (req, res, next) => {
     // angular
     HomeController.home(req, res, next)
   }
+}
+
+// Note: frontend is expected to refresh after executing this
+export const adminChooseEnvironment: ControllerHandler<
+  SetEnvironmentParams,
+  unknown,
+  unknown,
+  Record<string, string>
+> = (req, res) => {
+  const ui = req.params.ui === 'react' ? 'react' : 'angular'
+  res.cookie(ADMIN_COOKIE_NAME, ui, ADMIN_COOKIE_OPTIONS)
+  res.json({ ui })
 }
