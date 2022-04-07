@@ -156,7 +156,7 @@ const loadExpressApp = async (connection: Connection) => {
   // New routes in preparation for API refactor.
   app.use('/api', ApiRouter)
 
-  app.use(express.static(path.resolve('dist/frontend')))
+  app.use(express.static(path.resolve('dist/frontend'), { index: false }))
   app.use('/public', express.static(path.resolve('dist/angularjs')))
   app.get('/old/', HomeController.home)
 
