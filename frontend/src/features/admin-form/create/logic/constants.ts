@@ -1,15 +1,8 @@
-import { BasicField } from '~shared/types/field'
+import { LOGIC_MAP } from '~shared/modules/logic'
 
 import { BASICFIELD_TO_DRAWER_META } from '../constants'
 
-const ALLOWED_LOGIC_FIELDS_ARRAY = [
-  BasicField.YesNo,
-  BasicField.Radio,
-  BasicField.Rating,
-  BasicField.Number,
-  BasicField.Decimal,
-  BasicField.Dropdown,
-]
+const ALLOWED_LOGIC_FIELDS_ARRAY = [...LOGIC_MAP.keys()]
 
 export const ALLOWED_LOGIC_FIELDS = new Set(ALLOWED_LOGIC_FIELDS_ARRAY)
 
