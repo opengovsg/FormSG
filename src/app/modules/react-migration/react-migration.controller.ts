@@ -39,7 +39,7 @@ export const serveForm: ControllerHandler<
   console.log('conditional routing 2')
 
   // check cookies
-  let showReact
+  let showReact: boolean | undefined = undefined
 
   if (req.cookies) {
     if (ADMIN_COOKIE_NAME in req.cookies) {
