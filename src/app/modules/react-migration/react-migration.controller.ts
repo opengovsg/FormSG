@@ -16,7 +16,6 @@ export const RESPONDENT_COOKIE_OPTIONS = {
 }
 
 const serveFormReact: ControllerHandler = (_req, res) => {
-  console.log('serveFormReact 2')
   const reactFrontendPath = path.resolve('dist/frontend')
   res.sendFile(path.join(reactFrontendPath, 'index.html'))
 }
@@ -36,9 +35,6 @@ export const serveForm: ControllerHandler<
   unknown,
   Record<string, string>
 > = (req, res, next) => {
-  console.log('conditional routing 2')
-
-  // check cookies
   let showReact: boolean | undefined = undefined
 
   if (config.reactMigrationConfig.respondentRollout <= 0) {
@@ -72,7 +68,6 @@ export const serveForm: ControllerHandler<
 }
 
 export const serveDefault: ControllerHandler = (req, res, next) => {
-  console.log('serveDefault')
   // only admin who chose react should see react, everybody else is plain angular
   if (req.cookies?.[ADMIN_COOKIE_NAME] === 'react') {
     // react
