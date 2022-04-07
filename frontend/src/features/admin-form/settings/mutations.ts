@@ -29,6 +29,7 @@ import {
   updateFormLimit,
   updateFormStatus,
   updateFormTitle,
+  updateFormWebhookUrl,
   updateTwilioCredentials,
 } from './SettingsService'
 
@@ -246,7 +247,23 @@ export const useMutateFormSettings = () => {
     },
   })
 
+  const mutateFormWebhookUrl = useMutation(
+    (nextUrl?: string) => updateFormWebhookUrl(formId, nextUrl),
+    {
+      onSuccess: (newData, nextUrl) => {
+        handleSuccess({
+          newData,
+          toastDescription: `Webhook URL successfully ${
+            nextUrl ? 'updated' : 'removed'
+          }.`,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   return {
+    mutateFormWebhookUrl,
     mutateFormStatus,
     mutateFormLimit,
     mutateFormInactiveMessage,

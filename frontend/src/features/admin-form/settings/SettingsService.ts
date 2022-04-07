@@ -82,6 +82,17 @@ export const updateFormEsrvcId: UpdateFormFn<'esrvcId'> = async (
   return updateFormSettings(formId, { esrvcId: newEsrvcId })
 }
 
+export const updateFormWebhookUrl = async (
+  formId: string,
+  nextUrl?: FormSettings['webhook']['url'],
+) => {
+  return updateFormSettings(formId, {
+    webhook: {
+      url: nextUrl,
+    },
+  })
+}
+
 /**
  * Internal function that calls the PATCH API.
  * @param formId the id of the form to update

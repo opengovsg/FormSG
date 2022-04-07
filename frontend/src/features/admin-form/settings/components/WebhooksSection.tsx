@@ -1,4 +1,4 @@
-import { KeyboardEventHandler, useCallback } from 'react'
+import { KeyboardEventHandler, useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import {
   FormControl,
@@ -16,28 +16,40 @@ import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Spinner from '~components/Spinner'
 
+import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
 export const WebhooksSection = (): JSX.Element => {
   const { data: settings, isLoading } = useAdminFormSettings()
+  const { mutateFormWebhookUrl } = useMutateFormSettings()
   const {
     register,
     formState: { errors, isValid },
     resetField,
     getValues,
   } = useForm<{ url: string }>({
-    defaultValues: {
-      url: settings?.webhook.url ?? '',
-    },
     mode: 'onChange',
   })
+
+  useEffect(() => {
+    if (isLoading || !settings) return
+    resetField('url', { defaultValue: settings.webhook.url })
+  }, [isLoading, resetField, settings])
 
   const handleUpdateWebhook = useCallback(() => {
     if (isLoading) return
     const nextWebhookUrl = getValues('url')
     if (settings?.webhook.url === nextWebhookUrl) return
-    return console.log(nextWebhookUrl)
-  }, [getValues, isLoading, settings?.webhook.url])
+    return mutateFormWebhookUrl.mutate(nextWebhookUrl, {
+      onError: () => resetField('url'),
+    })
+  }, [
+    getValues,
+    isLoading,
+    mutateFormWebhookUrl,
+    resetField,
+    settings?.webhook.url,
+  ])
 
   const handleWebhookInputBlur = useCallback(() => {
     if (!isValid) {
@@ -64,7 +76,7 @@ export const WebhooksSection = (): JSX.Element => {
 
   return (
     <FormControl
-      // isReadOnly={mutateFormTwilioDetails.isLoading}
+      isReadOnly={mutateFormWebhookUrl.isLoading}
       isInvalid={!!errors.url}
     >
       <FormLabel description="For developers and IT officers usage. We will POST encrypted form responses in real-time to the HTTPS endpoint specified here.">
@@ -72,19 +84,23 @@ export const WebhooksSection = (): JSX.Element => {
       </FormLabel>
       <Skeleton isLoaded={!isLoading}>
         <InputGroup>
-          <InputRightElement pointerEvents="none">
-            <Spinner />
-          </InputRightElement>
+          {mutateFormWebhookUrl.isLoading ? (
+            <InputRightElement pointerEvents="none">
+              <Spinner />
+            </InputRightElement>
+          ) : null}
           <Input
             onKeyDown={handleWebhookUrlEnterKeyDown}
             {...register('url', {
               onBlur: handleWebhookInputBlur,
               validate: (url) => {
                 return (
+                  !url ||
                   validator.isURL(url, {
                     protocols: ['https'],
                     require_protocol: true,
-                  }) || 'Please enter a valid URL (starting with https://)'
+                  }) ||
+                  'Please enter a valid URL (starting with https://)'
                 )
               },
             })}
