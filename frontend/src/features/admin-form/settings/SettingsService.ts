@@ -93,6 +93,17 @@ export const updateFormWebhookUrl = async (
   })
 }
 
+export const updateFormWebhookRetries = async (
+  formId: string,
+  nextEnabled?: FormSettings['webhook']['isRetryEnabled'],
+) => {
+  return updateFormSettings(formId, {
+    webhook: {
+      isRetryEnabled: nextEnabled,
+    },
+  })
+}
+
 /**
  * Internal function that calls the PATCH API.
  * @param formId the id of the form to update

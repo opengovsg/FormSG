@@ -29,6 +29,7 @@ import {
   updateFormLimit,
   updateFormStatus,
   updateFormTitle,
+  updateFormWebhookRetries,
   updateFormWebhookUrl,
   updateTwilioCredentials,
 } from './SettingsService'
@@ -262,7 +263,23 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateWebhookRetries = useMutation(
+    (nextEnabled: boolean) => updateFormWebhookRetries(formId, nextEnabled),
+    {
+      onSuccess: (newData, nextEnabled) => {
+        handleSuccess({
+          newData,
+          toastDescription: `Webhook retries toggled ${
+            nextEnabled ? 'on' : 'off'
+          }.`,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   return {
+    mutateWebhookRetries,
     mutateFormWebhookUrl,
     mutateFormStatus,
     mutateFormLimit,
