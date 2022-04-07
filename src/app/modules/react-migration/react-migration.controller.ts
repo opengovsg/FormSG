@@ -4,12 +4,10 @@ import config from '../../config/config'
 import { ControllerHandler } from '../core/core.types'
 import * as PublicFormController from '../form/public-form/public-form.controller'
 import { RedirectParams } from '../form/public-form/public-form.types'
-// import * as HomeController from '../home/home.controller'
+import * as HomeController from '../home/home.controller'
 
 const RESPONDENT_COOKIE_NAME = 'v2-respondent-ui'
 const ADMIN_COOKIE_NAME = 'v2-admin-ui'
-
-const REACT_ROLLOUT_THRESHOLD = 20 / 100
 
 export const RESPONDENT_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -52,8 +50,8 @@ export const serveForm: ControllerHandler<
   }
 
   if (showReact === undefined) {
-    const rand = Math.random()
-    showReact = rand < REACT_ROLLOUT_THRESHOLD
+    const rand = Math.random() * 100
+    showReact = rand <= config.reactMigrationConfig.respondentRollout
 
     console.log('random assignment', rand, showReact)
 
@@ -72,10 +70,13 @@ export const serveForm: ControllerHandler<
 }
 
 export const serveDefault: ControllerHandler = (req, res, next) => {
+  console.log('serveDefault')
   // only admin who chose react should see react, everybody else is plain angular
   if (req.cookies?.[ADMIN_COOKIE_NAME] === 'react') {
     // react
+    serveFormReact(req, res, next)
   } else {
     // angular
+    HomeController.home(req, res, next)
   }
 }

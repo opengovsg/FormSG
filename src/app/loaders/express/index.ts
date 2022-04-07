@@ -8,7 +8,6 @@ import { Connection } from 'mongoose'
 import path from 'path'
 import url from 'url'
 
-import { Environment } from '../../../types'
 import config from '../../config/config'
 import { AnalyticsRouter } from '../../modules/analytics/analytics.routes'
 import { AuthRouter } from '../../modules/auth/auth.routes'
@@ -161,11 +160,9 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/public', express.static(path.resolve('dist/angularjs')))
   app.get('/old/', HomeController.home)
 
-  console.log('setting up migration router')
-  app.use(ReactMigrationRouter)
+  app.use('/', ReactMigrationRouter)
 
   app.use(sentryMiddlewares())
-
   app.use(errorHandlerMiddlewares())
 
   const server = http.createServer(app)
