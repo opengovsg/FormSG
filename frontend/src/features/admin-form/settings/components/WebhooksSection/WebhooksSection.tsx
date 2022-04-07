@@ -6,6 +6,7 @@ import InlineMessage from '~components/InlineMessage'
 
 import { useAdminFormSettings } from '../../queries'
 
+import { RetryToggle } from './RetryToggle'
 import { WebhookUrlInput } from './WebhookUrlInput'
 
 export const WebhooksSection = (): JSX.Element => {
@@ -20,8 +21,9 @@ export const WebhooksSection = (): JSX.Element => {
   }
 
   return (
-    <Stack>
+    <Stack spacing="2.5rem">
       <WebhookUrlInput />
+      <RetryToggle />
     </Stack>
   )
 }
