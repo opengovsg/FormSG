@@ -171,7 +171,6 @@ export const handleRedirect: ControllerHandler<
   unknown,
   Record<string, string>
 > = async (req, res) => {
-  console.log('handleRedirect')
   const { state, formId } = req.params
 
   let redirectPath = state ? `${formId}/${state}` : formId
