@@ -2,8 +2,6 @@ import { chakra, Divider, Flex, Link, Stack, Text } from '@chakra-ui/react'
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 
-import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-
 const BrandLogo = chakra(BrandLogoSvg, {
   baseStyle: {
     h: '1.5rem',
@@ -11,18 +9,13 @@ const BrandLogo = chakra(BrandLogoSvg, {
   },
 })
 
-/**
- * @precondition Must be nested inside `PublicFormProvider`
- */
 export const FormFooter = (): JSX.Element => {
-  const { formBgColor } = usePublicFormContext()
-
   return (
     <Stack
-      bg={formBgColor}
       direction="column"
       spacing="1.5rem"
       align="center"
+      pt="4rem"
       pb="1.5rem"
     >
       <Divider w="15rem" />
