@@ -1,10 +1,11 @@
-import { KeyboardEventHandler, useCallback, useEffect } from 'react'
+import { KeyboardEventHandler, useCallback, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import {
   FormControl,
   InputGroup,
   InputRightElement,
   Skeleton,
+  useMergeRefs,
 } from '@chakra-ui/react'
 import validator from 'validator'
 
@@ -28,11 +29,6 @@ export const WebhookUrlInput = (): JSX.Element => {
     mode: 'onChange',
   })
 
-  useEffect(() => {
-    if (isLoading || !settings) return
-    resetField('url', { defaultValue: settings.webhook.url })
-  }, [isLoading, resetField, settings])
-
   const handleUpdateWebhook = useCallback(() => {
     if (isLoading) return
     const nextWebhookUrl = getValues('url')
@@ -55,12 +51,34 @@ export const WebhookUrlInput = (): JSX.Element => {
     return handleUpdateWebhook()
   }, [handleUpdateWebhook, isValid, resetField])
 
+  const urlRegister = register('url', {
+    onBlur: handleWebhookInputBlur,
+    validate: (url) => {
+      return (
+        !url ||
+        validator.isURL(url, {
+          protocols: ['https'],
+          require_protocol: true,
+        }) ||
+        'Please enter a valid URL (starting with https://)'
+      )
+    },
+  })
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    if (isLoading || !settings) return
+    resetField('url', { defaultValue: settings.webhook.url })
+  }, [isLoading, resetField, settings])
+
+  const mergedRefs = useMergeRefs(urlRegister.ref, inputRef)
+
   const handleWebhookUrlEnterKeyDown: KeyboardEventHandler = useCallback(
     (e) => {
       if (!isValid || e.key !== 'Enter') return
-      return handleUpdateWebhook()
+      return inputRef.current?.blur()
     },
-    [handleUpdateWebhook, isValid],
+    [isValid],
   )
 
   return (
@@ -81,19 +99,8 @@ export const WebhookUrlInput = (): JSX.Element => {
           <Input
             placeholder="https://your-webhook.com/url"
             onKeyDown={handleWebhookUrlEnterKeyDown}
-            {...register('url', {
-              onBlur: handleWebhookInputBlur,
-              validate: (url) => {
-                return (
-                  !url ||
-                  validator.isURL(url, {
-                    protocols: ['https'],
-                    require_protocol: true,
-                  }) ||
-                  'Please enter a valid URL (starting with https://)'
-                )
-              },
-            })}
+            {...urlRegister}
+            ref={mergedRefs}
           />
         </InputGroup>
       </Skeleton>
