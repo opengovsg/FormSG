@@ -124,7 +124,7 @@ export const WorkspacePage = (): JSX.Element => {
           bg="neutral.100"
           templateColumns="1fr"
           templateRows="auto 1fr auto"
-          minH="calc(100vh - 2rem)"
+          minH="100vh"
           templateAreas="'header' 'main' 'footer'"
         >
           <Container

@@ -8,12 +8,7 @@ import AdminFormNavbar from './components/AdminFormNavbar'
  */
 export const AdminFormLayout = (): JSX.Element => {
   return (
-    <Flex
-      flexDir="column"
-      height="calc(100vh - 2rem)"
-      overflow="hidden"
-      pos="relative"
-    >
+    <Flex flexDir="column" height="100vh" overflow="hidden" pos="relative">
       <AdminFormNavbar />
       <Outlet />
     </Flex>
