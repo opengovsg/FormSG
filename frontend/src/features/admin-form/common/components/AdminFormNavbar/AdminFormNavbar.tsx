@@ -26,6 +26,7 @@ import { useDraggable } from '~hooks/useDraggable'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
 import { Tab } from '~components/Tabs'
+import Tooltip from '~components/Tooltip'
 
 import { AdminFormNavbarDetails } from './AdminFormNavbarDetails'
 
@@ -141,19 +142,25 @@ export const AdminFormNavbar = ({
         />
         <Box display={{ base: 'none', md: 'flex' }}>
           <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
-            <IconButton
-              aria-label="Add collaborators to form"
-              variant="outline"
-              onClick={handleAddCollabButtonClick}
-              icon={<BiUserPlus />}
-            />
-            <IconButton
-              aria-label="Preview form"
-              variant="outline"
-              onClick={handlePreviewFormButtonClick}
-              icon={<BiShow />}
-            />
-            <Button onClick={handleShareButtonClick}>Share</Button>
+            <Tooltip label="Manage collaborators">
+              <IconButton
+                aria-label="Manage collaborators"
+                variant="outline"
+                onClick={handleAddCollabButtonClick}
+                icon={<BiUserPlus />}
+              />
+            </Tooltip>
+            <Tooltip label="Preview form">
+              <IconButton
+                aria-label="Preview form"
+                variant="outline"
+                onClick={handlePreviewFormButtonClick}
+                icon={<BiShow />}
+              />
+            </Tooltip>
+            <Tooltip label="Share your form link">
+              <Button onClick={handleShareButtonClick}>Share</Button>
+            </Tooltip>
           </ButtonGroup>
         </Box>
       </Flex>
