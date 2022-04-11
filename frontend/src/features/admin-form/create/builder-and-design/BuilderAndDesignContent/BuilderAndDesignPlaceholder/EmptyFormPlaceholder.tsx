@@ -5,13 +5,13 @@ import { useIsMobile } from '~hooks/useIsMobile'
 
 interface EmptyFormPlaceholderProps extends BoxProps {
   isDraggingOver: boolean
-  onMobileModalOpen: () => void
+  onClick: () => void
 }
 
 export const EmptyFormPlaceholder = forwardRef<
   EmptyFormPlaceholderProps,
   'div'
->(({ isDraggingOver, onMobileModalOpen, ...props }, ref): JSX.Element => {
+>(({ isDraggingOver, onClick, ...props }, ref): JSX.Element => {
   const isMobile = useIsMobile()
 
   return (
@@ -21,7 +21,7 @@ export const EmptyFormPlaceholder = forwardRef<
       borderColor={isDraggingOver ? 'primary.700' : 'secondary.300'}
       borderRadius="4px"
       bgColor={isDraggingOver ? 'primary.200' : 'neutral.100'}
-      onClick={isMobile ? onMobileModalOpen : undefined}
+      onClick={onClick}
       {...props}
       ref={ref}
     >
