@@ -1,5 +1,5 @@
 export const getButtonText = (isPendingField: boolean) =>
-  isPendingField ? 'Create' : 'Save'
+  isPendingField ? 'Create field' : 'Save field'
 
 export const SPLIT_TEXTAREA_TRANSFORM = {
   input: (optsArr: string[]) => optsArr.filter(Boolean).join('\n'),

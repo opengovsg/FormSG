@@ -21,11 +21,11 @@ export const FormFieldDrawerActions = ({
   return (
     <ButtonGroup
       justifyContent="end"
+      w="100%"
       isDisabled={isLoading}
-      pos="sticky"
-      bottom={0}
+      spacing="1rem"
     >
-      <Button variant="outline" onClick={handleCancel}>
+      <Button variant="clear" colorScheme="secondary" onClick={handleCancel}>
         Cancel
       </Button>
       <Button
