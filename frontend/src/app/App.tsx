@@ -32,7 +32,6 @@ export const App = (): JSX.Element => (
     <BrowserRouter>
       <ChakraProvider theme={theme} resetCSS>
         <AuthProvider>
-          <AppMasthead />
           <AppRouter />
         </AuthProvider>
       </ChakraProvider>
