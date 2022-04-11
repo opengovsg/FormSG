@@ -1,3 +1,4 @@
+import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { BrowserRouter } from 'react-router-dom'
@@ -8,6 +9,7 @@ import { AuthProvider } from '~contexts/AuthContext'
 import { HttpError } from '~services/ApiService'
 import { AppMasthead } from '~components/GovtMasthead/'
 
+import { AppHelmet } from './AppHelmet'
 import { AppRouter } from './AppRouter'
 
 // Create a client
@@ -27,14 +29,17 @@ const queryClient = new QueryClient({
 })
 
 export const App = (): JSX.Element => (
-  <QueryClientProvider client={queryClient}>
-    <ReactQueryDevtools initialIsOpen={false} />
-    <BrowserRouter>
-      <ChakraProvider theme={theme} resetCSS>
-        <AuthProvider>
-          <AppRouter />
-        </AuthProvider>
-      </ChakraProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <ReactQueryDevtools initialIsOpen={false} />
+      <AppHelmet />
+      <BrowserRouter>
+        <ChakraProvider theme={theme} resetCSS>
+          <AuthProvider>
+            <AppRouter />
+          </AuthProvider>
+        </ChakraProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  </HelmetProvider>
 )

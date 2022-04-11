@@ -44,7 +44,7 @@ export const CreatePageLogicTab = (): JSX.Element => {
   return (
     <Box flex={1} overflow="auto" bg="primary.100">
       <Flex
-        py={{ base: '2rem', md: '3.75rem' }}
+        py={{ base: '2rem', md: '1rem' }}
         px={{ base: '1.5rem', md: '3.75rem' }}
       >
         <Spacer />

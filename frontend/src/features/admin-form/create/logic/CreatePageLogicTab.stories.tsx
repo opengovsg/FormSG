@@ -9,6 +9,7 @@ import {
 } from '~shared/types/form'
 
 import {
+  createLogic,
   deleteLogic,
   getAdminFormResponse,
 } from '~/mocks/msw/handlers/admin-form'
@@ -19,6 +20,7 @@ import { CreatePageLogicTab } from './CreatePageLogicTab'
 
 const buildMswRoutes = (overrides?: Partial<AdminFormDto>, delay = 0) => [
   getAdminFormResponse(overrides, delay),
+  createLogic(delay),
   deleteLogic(delay),
 ]
 

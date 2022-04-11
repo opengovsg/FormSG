@@ -21,6 +21,7 @@ export const AddRowFooter = ({
       direction={{ base: 'column', md: 'row' }}
       justify="space-between"
       align={{ base: 'start', md: 'center' }}
+      spacing="0.75rem"
     >
       <Button
         isDisabled={currentRows >= maxRows}

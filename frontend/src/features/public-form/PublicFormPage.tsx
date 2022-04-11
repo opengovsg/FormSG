@@ -3,9 +3,11 @@ import { Flex } from '@chakra-ui/react'
 
 import { AppMasthead } from '~components/GovtMasthead'
 
+import FormEndPage from './components/FormEndPage'
 import FormFields from './components/FormFields'
 import { FormFooter } from './components/FormFooter'
 import FormStartPage from './components/FormStartPage'
+import { PublicFormWrapper } from './components/PublicFormWrapper'
 import { PublicFormProvider } from './PublicFormProvider'
 
 export const PublicFormPage = (): JSX.Element => {
@@ -13,14 +15,17 @@ export const PublicFormPage = (): JSX.Element => {
   if (!formId) throw new Error('No formId provided')
 
   return (
-    <PublicFormProvider formId={formId}>
+    <Flex minH="100vh" flexDir="column" h="100%" pt="2rem">
       <AppMasthead />
-      <Flex flexDir="column" h="100%" minH="calc(100vh - 2rem)">
+      <PublicFormProvider formId={formId}>
         <FormStartPage />
-        <FormFields />
-        <FormFooter />
-      </Flex>
-    </PublicFormProvider>
+        <PublicFormWrapper>
+          <FormFields />
+          <FormEndPage />
+          <FormFooter />
+        </PublicFormWrapper>
+      </PublicFormProvider>
+    </Flex>
   )
 }
 

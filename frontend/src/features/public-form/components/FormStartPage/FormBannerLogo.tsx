@@ -50,7 +50,7 @@ export const FormBannerLogo = (): JSX.Element | null => {
   if (!hasLogo) return null
 
   return (
-    <Flex justify="center" m="1rem">
+    <Flex justify="center" p="1rem" bg="white">
       <Skeleton isLoaded={hasImageLoaded}>
         <Image
           onLoad={onImageLoad}
