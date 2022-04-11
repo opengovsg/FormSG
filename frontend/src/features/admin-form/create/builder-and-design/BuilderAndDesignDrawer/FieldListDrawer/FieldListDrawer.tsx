@@ -38,7 +38,7 @@ export const FieldListDrawer = (): JSX.Element => {
           </Text>
           <CreatePageDrawerCloseButton />
         </Flex>
-        <TabList mx="-1rem" w="100%">
+        <TabList mx="-0.25rem" w="100%">
           <Tab isDisabled={isLoading}>Basic</Tab>
           <Tab isDisabled={isLoading}>MyInfo</Tab>
         </TabList>
