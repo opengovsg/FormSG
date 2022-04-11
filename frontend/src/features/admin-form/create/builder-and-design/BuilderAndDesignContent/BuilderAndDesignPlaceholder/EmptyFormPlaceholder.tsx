@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { BoxProps, Center, forwardRef, Icon, Text } from '@chakra-ui/react'
 
 import { BxsWidget } from '~assets/icons/BxsWidget'
@@ -13,6 +14,15 @@ export const EmptyFormPlaceholder = forwardRef<
   'div'
 >(({ isDraggingOver, onClick, ...props }, ref): JSX.Element => {
   const isMobile = useIsMobile()
+
+  const placeholderText = useMemo(() => {
+    if (isDraggingOver) {
+      return 'Drop your field here'
+    }
+    return isMobile
+      ? 'Tap here to add a field'
+      : 'Drag a field from the Builder on the left to start'
+  }, [isDraggingOver, isMobile])
 
   return (
     <Center
@@ -36,9 +46,7 @@ export const EmptyFormPlaceholder = forwardRef<
           px="1.5rem"
           textAlign={'center'}
         >
-          {isMobile
-            ? 'Tap here to add a field'
-            : 'Drag a field from the Builder on the left to start'}
+          {placeholderText}
         </Text>
       </Center>
     </Center>
