@@ -1,17 +1,24 @@
 import { useMemo } from 'react'
-import { BoxProps, Center, forwardRef, Icon, Text } from '@chakra-ui/react'
+import {
+  ButtonProps,
+  Center,
+  chakra,
+  forwardRef,
+  Icon,
+  Text,
+} from '@chakra-ui/react'
 
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { useIsMobile } from '~hooks/useIsMobile'
 
-interface EmptyFormPlaceholderProps extends BoxProps {
+interface EmptyFormPlaceholderProps extends ButtonProps {
   isDraggingOver: boolean
   onClick: () => void
 }
 
 export const EmptyFormPlaceholder = forwardRef<
   EmptyFormPlaceholderProps,
-  'div'
+  'button'
 >(({ isDraggingOver, onClick, ...props }, ref): JSX.Element => {
   const isMobile = useIsMobile()
 
@@ -25,12 +32,20 @@ export const EmptyFormPlaceholder = forwardRef<
   }, [isDraggingOver, isMobile])
 
   return (
-    <Center
+    <chakra.button
+      _hover={{
+        bg: 'primary.200',
+      }}
+      _focus={{
+        boxShadow: '0 0 0 2px var(--chakra-colors-neutral-500)',
+      }}
       h="13.75rem"
       border="1px dashed"
       borderColor={isDraggingOver ? 'primary.700' : 'secondary.300'}
       borderRadius="4px"
-      bgColor={isDraggingOver ? 'primary.200' : 'neutral.100'}
+      bg="neutral.100"
+      transitionProperty="common"
+      transitionDuration="normal"
       onClick={onClick}
       {...props}
       ref={ref}
@@ -49,6 +64,6 @@ export const EmptyFormPlaceholder = forwardRef<
           {placeholderText}
         </Text>
       </Center>
-    </Center>
+    </chakra.button>
   )
 })
