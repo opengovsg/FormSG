@@ -14,7 +14,7 @@ export interface IconButtonProps extends ChakraIconButtonProps {
   /**
    * Size of the icon button.
    */
-  size?: 'md' | 'lg'
+  size?: ChakraIconButtonProps['size']
   /**
    * The variant of the button.
    */
