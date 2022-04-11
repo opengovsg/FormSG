@@ -200,6 +200,7 @@ export const FieldRowContainer = ({
           >
             <Fade in={isActive}>
               <chakra.button
+                display="flex"
                 tabIndex={isActive ? 0 : -1}
                 {...provided.dragHandleProps}
                 borderRadius="4px"
@@ -223,8 +224,8 @@ export const FieldRowContainer = ({
               </chakra.button>
             </Fade>
             <Box
-              p={{ base: '0.75rem', md: '1.5rem' }}
-              pt={0}
+              px={{ base: '0.75rem', md: '1.5rem' }}
+              pb={{ base: '0.75rem', md: '1.5rem' }}
               w="100%"
               pointerEvents={isActive ? undefined : 'none'}
             >
