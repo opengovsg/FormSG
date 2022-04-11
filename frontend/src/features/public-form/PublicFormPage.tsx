@@ -15,7 +15,7 @@ export const PublicFormPage = (): JSX.Element => {
   if (!formId) throw new Error('No formId provided')
 
   return (
-    <Flex minH="100vh" flexDir="column" h="100%" pt="2rem">
+    <Flex minH="100vh" flexDir="column" h="100%">
       <AppMasthead />
       <PublicFormProvider formId={formId}>
         <FormStartPage />
