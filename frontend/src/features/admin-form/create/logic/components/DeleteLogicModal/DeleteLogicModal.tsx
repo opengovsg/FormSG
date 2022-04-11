@@ -59,7 +59,7 @@ export const DeleteLogicModal = ({
         </ModalBody>
         <ModalFooter>
           <Stack
-            direction={{ base: 'column', md: 'row' }}
+            direction={{ base: 'column-reverse', md: 'row' }}
             w="100%"
             justify="flex-end"
           >

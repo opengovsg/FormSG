@@ -36,6 +36,7 @@ const variantColumnStripe: PartsStyleFunction<typeof parts> = ({
       '&:nth-of-type(odd)': {
         bg: { md: `${c}.100` },
       },
+      verticalAlign: 'top',
     },
   }
 }
@@ -44,7 +45,7 @@ const sizes: ComponentMultiStyleConfig<typeof parts>['sizes'] = {
   sm: {
     th: {
       fontSize: textStyles['subhead-2']['fontSize'],
-      py: '0.625rem',
+      py: '0.5rem',
       px: '0.5rem',
     },
     td: {

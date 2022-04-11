@@ -1,10 +1,26 @@
 import { FC, useRef, useState } from 'react'
-import { usePopper } from 'react-popper'
+import { Modifier, usePopper } from 'react-popper'
 import { Box, useMergeRefs, useOutsideClick } from '@chakra-ui/react'
 
 import { useSelectContext } from '~components/Dropdown/SelectContext'
 
 import { SelectPopoverContext } from './SelectPopoverContext'
+
+export const matchWidth: Modifier<'matchWidth'> = {
+  name: 'matchWidth',
+  enabled: true,
+  phase: 'beforeWrite',
+  requires: ['computeStyles'],
+  fn: ({ state }) => {
+    state.styles.popper.width = `${state.rects.reference.width}px`
+  },
+  effect:
+    ({ state }) =>
+    () => {
+      const reference = state.elements.reference as HTMLElement
+      state.elements.popper.style.width = `${reference.offsetWidth}px`
+    },
+}
 
 export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
   const [referenceElement, setReferenceElement] =
@@ -12,11 +28,16 @@ export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
     null,
   )
+
   const {
     styles: popperStyles,
     attributes: popperAttributes,
     update,
-  } = usePopper(referenceElement, popperElement, { placement: 'bottom-start' })
+  } = usePopper(referenceElement, popperElement, {
+    placement: 'bottom-start',
+    strategy: 'fixed',
+    modifiers: [matchWidth],
+  })
 
   const { styles, setIsFocused } = useSelectContext()
 

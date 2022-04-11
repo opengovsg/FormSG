@@ -11,6 +11,7 @@ import {
   RatingShape,
   TableFieldDto,
 } from '~shared/types/field'
+import { FormLogic } from '~shared/types/form'
 import {
   AdminFormDto,
   AdminFormViewDto,
@@ -502,6 +503,19 @@ export const getStorageSubmissionMetadataResponse = (
           ),
         ),
       )
+    },
+  )
+}
+
+export const createLogic = (delay?: number) => {
+  return rest.post<FormLogic>(
+    '/api/v3/admin/forms/:formId/logic',
+    (req, res, ctx) => {
+      const newLogic = {
+        ...req.body,
+        _id: cuid(),
+      }
+      return res(ctx.delay(delay), ctx.status(200), ctx.json(newLogic))
     },
   )
 }

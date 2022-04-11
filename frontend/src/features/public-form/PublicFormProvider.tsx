@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Text } from '@chakra-ui/react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormColorTheme, PublicFormViewDto } from '~shared/types/form'
+import { PublicFormViewDto } from '~shared/types/form'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
@@ -13,6 +14,7 @@ import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
 
+import { trackVisitPublicForm } from '~features/analytics/AnalyticsService'
 import {
   FetchNewTransactionResponse,
   useTransactionMutations,
@@ -42,21 +44,10 @@ export const PublicFormProvider = ({
   const vfnToastIdRef = useRef<string | number>()
   const desyncToastIdRef = useRef<string | number>()
 
-  const formBgColor = useMemo(() => {
-    if (isLoading) return 'neutral.100'
-    if (!formView) return ''
-    const { colorTheme } = formView.form.startPage
-    switch (colorTheme) {
-      case FormColorTheme.Blue:
-        return 'secondary.100'
-      default:
-        return `theme-${colorTheme}.100`
-    }
-  }, [formView, isLoading])
-
   useEffect(() => {
     if (data) {
       if (!formView) {
+        trackVisitPublicForm(data.form)
         setFormView(data)
       } else if (!desyncToastIdRef.current && !isEqual(data, formView)) {
         desyncToastIdRef.current = toast({
@@ -131,11 +122,11 @@ export const PublicFormProvider = ({
         getTransactionId,
         expiryInMs,
         isLoading,
-        formBgColor,
         ...formView,
         ...rest,
       }}
     >
+      <Helmet title={formView?.form.title} />
       {isFormNotFound ? <div>404</div> : children}
     </PublicFormContext.Provider>
   )

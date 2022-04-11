@@ -4,6 +4,12 @@ import { UseQueryResult } from 'react-query'
 
 import { PublicFormViewDto } from '~shared/types/form'
 
+export type SubmissionData = {
+  /** Submission id */
+  id: string | undefined
+  /** Submission time (on browser)  */
+  timeInEpochMs: number
+}
 export interface PublicFormContextProps
   extends Partial<PublicFormViewDto>,
     Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
@@ -18,8 +24,8 @@ export interface PublicFormContextProps
    * The expiry time of current transaction, if it exists.
    * Is `null` if no transaction has been generated yet. */
   expiryInMs: number | null
-  /** Color of background based on form's colorTheme */
-  formBgColor: string
+  /** If form is submitted, submissionData will be defined. */
+  submissionData?: SubmissionData
 }
 
 export const PublicFormContext = createContext<

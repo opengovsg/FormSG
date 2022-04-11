@@ -1,6 +1,7 @@
 import 'focus-visible/dist/focus-visible.min.js'
 import '../src/assets/fonts/inter.css'
 
+import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ChakraProvider } from '@chakra-ui/react'
 import { DecoratorFn } from '@storybook/react'
@@ -33,7 +34,11 @@ const withChakra: DecoratorFn = (storyFn) => (
   </ChakraProvider>
 )
 
-export const decorators = [withReactQuery, withChakra, mswDecorator]
+const withHelmet: DecoratorFn = (storyFn) => (
+  <HelmetProvider>{storyFn()}</HelmetProvider>
+)
+
+export const decorators = [withReactQuery, withChakra, withHelmet, mswDecorator]
 
 export const parameters = {
   docs: {
