@@ -12,6 +12,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 
 import { BaseFieldProps } from '../FieldContainer'
+import { TableFieldInputs } from '../types'
 
 import { AddRowFooter } from './AddRowFooter'
 import { ColumnCell } from './ColumnCell'
@@ -48,12 +49,11 @@ export const TableField = ({
       schema.columns.reduce((acc, c) => {
         acc[c._id] = ''
         return acc
-      }, {} as Record<string, unknown>),
+      }, {} as Record<string, string>),
     [schema.columns],
   )
 
-  const formMethods =
-    useFormContext<Record<string, Record<string, unknown>[]>>()
+  const formMethods = useFormContext<TableFieldInputs>()
   const { errors } = useFormState({
     control: formMethods.control,
     name: schema._id,
@@ -68,7 +68,7 @@ export const TableField = ({
     return head(uniq(tableErrors?.flatMap(Object.values)))
   }, [isMobile, tableErrors])
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove } = useFieldArray<TableFieldInputs>({
     control: formMethods.control,
     name: schema._id,
   })

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 
 import { DropdownFieldBase, FormFieldWithId } from '~shared/types/field'
 
@@ -7,6 +7,7 @@ import { createDropdownValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { SingleAnswerFieldInput } from '../types'
 
 export type DropdownFieldSchema = FormFieldWithId<DropdownFieldBase>
 export interface DropdownFieldProps extends BaseFieldProps {
@@ -25,9 +26,12 @@ export const DropdownField = ({
     [schema],
   )
 
+  const { control } = useFormContext<SingleAnswerFieldInput>()
+
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>
       <Controller
+        control={control}
         rules={validationRules}
         name={schema._id}
         defaultValue=""

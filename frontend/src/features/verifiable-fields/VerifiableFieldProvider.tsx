@@ -9,15 +9,12 @@ import { FormFieldWithId } from '~shared/types/field'
 
 import { useTimeout } from '~hooks/useTimeout'
 import { BaseFieldProps } from '~templates/Field/FieldContainer'
+import { VerifiableFieldInput } from '~templates/Field/types'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useVerifiableFieldMutations } from './mutations'
-import {
-  VerifiableFieldBase,
-  VerifiableFieldInput,
-  VerifiableFieldSchema,
-} from './types'
+import { VerifiableFieldBase, VerifiableFieldSchema } from './types'
 import { VerifiableFieldContext } from './VerifiableFieldContext'
 
 export interface VerifiableFieldProps extends BaseFieldProps {
@@ -43,8 +40,9 @@ export const VerifiableFieldProvider = ({
 }: VerifiableFieldProviderProps): JSX.Element => {
   const [isVfnBoxOpen, setIsVfnBoxOpen] = useState(false)
 
-  const { control, setError, getValues, setValue, setFocus } = useFormContext()
-  const currentSignature: VerifiableFieldInput = useWatch({
+  const { control, setError, getValues, setValue, setFocus } =
+    useFormContext<VerifiableFieldInput>()
+  const currentSignature = useWatch({
     name: `${schema._id}.signature`,
     control,
   })

@@ -10,6 +10,7 @@ import { createNricValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { SingleAnswerFieldInput } from '../types'
 
 export type NricFieldSchema = FormFieldWithId<NricFieldBase>
 export interface NricFieldProps extends BaseFieldProps {
@@ -25,7 +26,7 @@ export const NricField = ({
     [schema],
   )
 
-  const { register } = useFormContext()
+  const { register } = useFormContext<SingleAnswerFieldInput>()
 
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>

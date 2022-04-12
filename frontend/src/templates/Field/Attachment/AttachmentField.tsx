@@ -9,6 +9,7 @@ import { createAttachmentValidationRules } from '~utils/fieldValidation'
 import Attachment from '~components/Field/Attachment'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { AttachmentFieldInput } from '../types'
 
 export type AttachmentFieldSchema = FormFieldWithId<AttachmentFieldBase>
 export interface AttachmentFieldProps extends BaseFieldProps {
@@ -28,7 +29,8 @@ export const AttachmentField = ({
     [schema],
   )
 
-  const { clearErrors, setError } = useFormContext()
+  const { clearErrors, setError, control } =
+    useFormContext<AttachmentFieldInput>()
 
   const maxSizeInBytes = useMemo(() => {
     return parseInt(schema.attachmentSize) * MB
@@ -44,6 +46,7 @@ export const AttachmentField = ({
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>
       <Controller
+        control={control}
         render={({ field: { onChange, ...rest } }) => (
           <Attachment
             {...rest}

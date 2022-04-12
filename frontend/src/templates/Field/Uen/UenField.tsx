@@ -10,6 +10,7 @@ import { createUenValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { SingleAnswerFieldInput } from '../types'
 
 export type UenFieldSchema = FormFieldWithId<UenFieldBase>
 export interface UenFieldProps extends BaseFieldProps {
@@ -25,7 +26,7 @@ export const UenField = ({
     [schema],
   )
 
-  const { register } = useFormContext()
+  const { register } = useFormContext<SingleAnswerFieldInput>()
 
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>

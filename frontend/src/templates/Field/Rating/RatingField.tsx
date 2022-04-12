@@ -2,7 +2,7 @@
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
 import { useMemo } from 'react'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 
 import {
   FormFieldWithId,
@@ -15,10 +15,19 @@ import Rating from '~components/Field/Rating'
 import { RatingProps } from '~components/Field/Rating/Rating'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { SingleAnswerFieldInput } from '../types'
 
 export type RatingFieldSchema = FormFieldWithId<RatingFieldBase>
 export interface RatingFieldProps extends BaseFieldProps {
   schema: RatingFieldSchema
+}
+
+const transform = {
+  toString: (value?: number) => {
+    if (value === undefined) return
+    return String(value)
+  },
+  toNumber: (value: string) => Number(value),
 }
 
 export const RatingField = ({
@@ -39,16 +48,21 @@ export const RatingField = ({
     }
   }, [schema.ratingOptions.shape])
 
+  const { control } = useFormContext<SingleAnswerFieldInput>()
+
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>
       <Controller
         rules={validationRules}
+        control={control}
         name={schema._id}
-        render={({ field }) => (
+        render={({ field: { value, onChange, ...rest } }) => (
           <Rating
             numberOfRatings={schema.ratingOptions.steps}
             variant={ratingVariant}
-            {...field}
+            value={transform.toNumber(value)}
+            onChange={(val) => onChange(transform.toString(val))}
+            {...rest}
           />
         )}
       />

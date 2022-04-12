@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 
 import {
   DateFieldBase,
@@ -16,6 +16,7 @@ import { createDateValidationRules } from '~utils/fieldValidation'
 import DateInput from '~components/DatePicker'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { SingleAnswerFieldInput } from '../types'
 
 export type DateFieldSchema = FormFieldWithId<DateFieldBase>
 export interface DateFieldProps extends BaseFieldProps {
@@ -56,9 +57,12 @@ export const DateField = ({
     [schema.dateValidation],
   )
 
+  const { control } = useFormContext<SingleAnswerFieldInput>()
+
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>
       <Controller
+        control={control}
         name={schema._id}
         rules={validationRules}
         render={({ field }) => (

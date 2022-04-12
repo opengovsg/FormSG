@@ -10,6 +10,7 @@ import { createTextValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { SingleAnswerFieldInput } from '../types'
 
 export type ShortTextFieldSchema = FormFieldWithId<ShortTextFieldBase>
 export interface ShortTextFieldProps extends BaseFieldProps {
@@ -25,7 +26,7 @@ export const ShortTextField = ({
     [schema],
   )
 
-  const { register } = useFormContext()
+  const { register } = useFormContext<SingleAnswerFieldInput>()
 
   return (
     <FieldContainer schema={schema} questionNumber={questionNumber}>
