@@ -17,6 +17,8 @@ import Link from '~components/Link'
 import { FormFieldValues } from '~templates/Field'
 
 import { trackVisitPublicForm } from '~features/analytics/AnalyticsService'
+import { useEnv } from '~features/env/queries'
+import { useRecaptcha } from '~features/recaptcha/useRecaptcha'
 import {
   FetchNewTransactionResponse,
   useTransactionMutations,
@@ -40,11 +42,17 @@ export const PublicFormProvider = ({
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
-  const { data, error, ...rest } = usePublicFormView(
+  const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
     // Stop querying once submissionId is present.
     /* enabled= */ !submissionId,
   )
+  const { data: { captchaPublicKey } = {} } = useEnv(
+    /* enabled= */ !!data?.form.hasCaptcha,
+  )
+  const { hasLoaded, getCaptchaResponse, containerId } = useRecaptcha({
+    sitekey: captchaPublicKey,
+  })
 
   const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
 
@@ -137,13 +145,20 @@ export const PublicFormProvider = ({
       const { form } = cachedDto ?? {}
       if (!form) return
 
+      let captchaResponse: string | null
+      try {
+        captchaResponse = await getCaptchaResponse()
+      } catch {
+        return showErrorToast()
+      }
+
       switch (form.responseMode) {
         case FormResponseMode.Email:
           // Using mutateAsync so react-hook-form goes into loading state.
           return (
             submitEmailModeFormMutation
               .mutateAsync(
-                { formFields: form.form_fields, formInputs },
+                { formFields: form.form_fields, formInputs, captchaResponse },
                 {
                   onSuccess: ({ submissionId }) =>
                     setSubmissionId(submissionId),
@@ -161,6 +176,7 @@ export const PublicFormProvider = ({
                   formFields: form.form_fields,
                   formInputs,
                   publicKey: form.publicKey,
+                  captchaResponse,
                 },
                 {
                   onSuccess: ({ submissionId }) =>
@@ -174,6 +190,7 @@ export const PublicFormProvider = ({
     },
     [
       cachedDto,
+      getCaptchaResponse,
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
@@ -189,6 +206,8 @@ export const PublicFormProvider = ({
         error,
         getTransactionId,
         expiryInMs,
+        captchaContainerId: containerId,
+        isLoading: isLoading || (!!cachedDto?.form.hasCaptcha && !hasLoaded),
         ...cachedDto,
         ...rest,
       }}

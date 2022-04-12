@@ -28,6 +28,8 @@ export interface PublicFormContextProps
   submissionData?: SubmissionData
   /** Callback to be invoked when user submits public form. */
   handleSubmitForm: (formInputs: any) => void
+  /** id of container to render captcha in  */
+  captchaContainerId: string
 }
 
 export const PublicFormContext = createContext<

@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { FormControlOptions, useMultiStyleConfig } from '@chakra-ui/react'
+import {
+  FormControlOptions,
+  useFormControlProps,
+  useMultiStyleConfig,
+} from '@chakra-ui/react'
 import { useCombobox, UseComboboxProps } from 'downshift'
 
 import { useItems } from '../hooks/useItems'
@@ -41,16 +45,25 @@ export const SingleSelectProvider = ({
   isClearable = true,
   isSearchable = true,
   initialIsOpen,
-  isInvalid,
-  isReadOnly,
-  isDisabled,
-  isRequired,
+  isInvalid: isInvalidProp,
+  isReadOnly: isReadOnlyProp,
+  isDisabled: isDisabledProp,
+  isRequired: isRequiredProp,
   children,
   inputAria: inputAriaProp,
   comboboxProps = {},
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
+
+  const { isInvalid, isDisabled, isReadOnly, isRequired } = useFormControlProps(
+    {
+      isInvalid: isInvalidProp,
+      isDisabled: isDisabledProp,
+      isReadOnly: isReadOnlyProp,
+      isRequired: isRequiredProp,
+    },
+  )
 
   const placeholder = useMemo(() => {
     if (placeholderProp === null) return ''

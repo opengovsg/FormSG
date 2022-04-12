@@ -10,6 +10,7 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Text,
+  useFormControlProps,
 } from '@chakra-ui/react'
 import { ComponentWithAs, forwardRef } from '@chakra-ui/system'
 import { format } from 'date-fns'
@@ -34,7 +35,26 @@ type DateInputWithSubcomponents = ComponentWithAs<'input', DateInputProps> & {
 }
 
 export const DateInput = forwardRef<DateInputProps, 'input'>(
-  ({ onChange, value = '', isDateUnavailable, ...props }, ref) => {
+  (
+    {
+      onChange,
+      value = '',
+      isDateUnavailable,
+      isDisabled: isDisabledProp,
+      isReadOnly: isReadOnlyProp,
+      isRequired: isRequiredProp,
+      isInvalid: isInvalidProp,
+      ...props
+    },
+    ref,
+  ) => {
+    const fcProps = useFormControlProps({
+      isInvalid: isInvalidProp,
+      isDisabled: isDisabledProp,
+      isReadOnly: isReadOnlyProp,
+      isRequired: isRequiredProp,
+    })
+
     const initialFocusRef = useRef<HTMLInputElement>(null)
 
     const handleDatepickerSelection = useCallback(
@@ -93,6 +113,7 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                   ref={ref}
                   value={value}
                   {...props}
+                  {...fcProps}
                 />
               </PopoverAnchor>
               <PopoverTrigger>
@@ -102,6 +123,7 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                   variant="inputAttached"
                   borderRadius={0}
                   isActive={isOpen}
+                  isDisabled={fcProps.isDisabled || fcProps.isReadOnly}
                 />
               </PopoverTrigger>
               <PopoverContent

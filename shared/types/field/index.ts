@@ -71,7 +71,7 @@ export type FormFieldWithId<T extends FormField = FormField> =
         _id: string
       }
 
-export type PossiblyPrefilledFormField<T extends FormField = FormField> =
+export type MyInfoFormField<T extends FormField = FormField> =
   FormFieldWithId<T> & {
     fieldValue?: string
   }
@@ -80,7 +80,7 @@ export type PossiblyPrefilledFormField<T extends FormField = FormField> =
  * Form field POJO with id
  */
 export type FormFieldDto<T extends FormField = FormField> =
-  | PossiblyPrefilledFormField<T>
+  | MyInfoFormField<T>
   | FormFieldWithId<T>
 
 export type FieldCreateDto = FormField
