@@ -4,21 +4,24 @@ import { Stack } from '@chakra-ui/react'
 import { times } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
-import { FormColorTheme } from '~shared/types/form'
+import { FormColorTheme, LogicDto } from '~shared/types/form'
 
 import Button from '~components/Button'
-import { FormFieldValues, TableRowFieldValue } from '~templates/Field'
+import { FormFieldValues } from '~templates/Field'
+import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
-import { FieldFactory } from './FieldFactory'
+import { VisibleFormFields } from './VisibleFormFields'
 
 export interface FormFieldsProps {
   formFields: FormFieldDto[]
+  formLogics: LogicDto[]
   colorTheme: FormColorTheme
   onSubmit: SubmitHandler<FormFieldValues>
 }
 
 export const FormFields = ({
   formFields,
+  formLogics,
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
@@ -30,33 +33,29 @@ export const FormFields = ({
         // Required so table column fields will render due to useFieldArray usage.
         // See https://react-hook-form.com/api/usefieldarray
         case BasicField.Table:
-          acc[field._id] = times(field.minimumRows, () =>
-            field.columns.reduce<TableRowFieldValue>((acc, c) => {
-              acc[c._id] = ''
-              return acc
-            }, {}),
-          )
+          acc[field._id] = times(field.minimumRows, () => createTableRow(field))
+          break
       }
       return acc
     }, {})
   }, [formFields])
 
-  const formMethods = useForm({
+  const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
     mode: 'onTouched',
+    shouldUnregister: true,
   })
 
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
         <Stack spacing="2.25rem">
-          {formFields.map((field) => (
-            <FieldFactory
-              field={field}
-              colorTheme={colorTheme}
-              key={field._id}
-            />
-          ))}
+          <VisibleFormFields
+            colorTheme={colorTheme}
+            control={formMethods.control}
+            formFields={formFields}
+            formLogics={formLogics}
+          />
           <Button
             mt="1rem"
             type="submit"

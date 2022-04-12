@@ -4,8 +4,8 @@ import pickBy from 'lodash/pickBy'
 import { FormFieldDto } from '~shared/types/field'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { ALLOWED_LOGIC_FIELDS } from '~features/logic/constants'
 
-import { ALLOWED_LOGIC_FIELDS } from '../constants'
 import { FormFieldWithQuestionNumber } from '../types'
 
 export const useAdminFormLogic = () => {

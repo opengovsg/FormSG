@@ -25,7 +25,8 @@ import { MOCK_FORM_FIELDS } from '~/mocks/msw/handlers/admin-form'
 
 import { getMobileViewParameters } from '~utils/storybook'
 
-import { ALLOWED_LOGIC_FIELDS } from '../../../constants'
+import { ALLOWED_LOGIC_FIELDS } from '~features/logic/constants'
+
 import { EditLogicInputs, FormFieldWithQuestionNumber } from '../../../types'
 
 import { NewLogicBlock, NewLogicBlockProps } from './NewLogicBlock'

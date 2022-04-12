@@ -55,7 +55,7 @@ const TemplateGroup: Story<YesNoProps> = (args) => (
 export const Selected = TemplateGroup.bind({})
 Selected.args = {
   name: 'testInput',
-  defaultValue: 'yes',
+  defaultValue: 'Yes',
 }
 Selected.parameters = {
   controls: {
@@ -66,7 +66,7 @@ Selected.parameters = {
 export const Disabled = TemplateGroup.bind({})
 Disabled.args = {
   name: 'testInput',
-  defaultValue: 'no',
+  defaultValue: 'No',
   isDisabled: true,
 }
 Disabled.parameters = {
