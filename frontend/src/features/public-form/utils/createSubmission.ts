@@ -1,5 +1,5 @@
 import { encode as encodeBase64 } from '@stablelib/base64'
-import { chain, forOwn, isEmpty, keyBy, omit } from 'lodash'
+import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import {
@@ -161,9 +161,7 @@ const filterSendableStorageModeResponses = (
           return false
       }
     })
-    .map((r) =>
-      chain(r).pick(['fieldType', '_id', 'answer', 'signature']).value(),
-    )
+    .map((r) => pick(r, ['fieldType', '_id', 'answer', 'signature']))
 }
 const encryptAttachment = async (
   attachment: File,
