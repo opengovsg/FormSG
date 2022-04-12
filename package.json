@@ -76,7 +76,7 @@
     "angular-messages": "^1.8.3",
     "angular-permission": "~1.1.1",
     "angular-resource": "^1.8.3",
-    "angular-sanitize": "^1.8.2",
+    "angular-sanitize": "^1.8.3",
     "angular-translate": "^2.19.0",
     "angular-translate-loader-partial": "^2.19.0",
     "angular-ui-bootstrap": "~2.5.6",
