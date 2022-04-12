@@ -1,21 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { SubmitHandler } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { PublicFormViewDto } from '~shared/types/form'
-import { FieldResponse } from '~shared/types/response'
+import { FormFieldDto } from '~shared/types/field'
+import { FormResponseMode, PublicFormViewDto } from '~shared/types/form'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
-import { FormFieldValues } from '~templates/Field'
 
 import { trackVisitPublicForm } from '~features/analytics/AnalyticsService'
 import {
@@ -23,7 +21,7 @@ import {
   useTransactionMutations,
 } from '~features/verifiable-fields'
 
-import { transformInputsToOutputs } from './utils/inputTransformation'
+import { usePublicFormMutations } from './mutations'
 import { PublicFormContext } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
@@ -36,14 +34,21 @@ export const PublicFormProvider = ({
   formId,
   children,
 }: PublicFormProviderProps): JSX.Element => {
+  // Once form has been submitted, submission ID will be set here.
+  const [submissionId, setSubmissionId] = useState<string>()
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
-  const { data, error, isLoading, ...rest } = usePublicFormView(formId)
+  const { data, error, ...rest } = usePublicFormView(
+    formId,
+    // Stop querying once submissionId is present.
+    /* enabled= */ !submissionId,
+  )
 
   const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
 
   const { createTransactionMutation } = useTransactionMutations(formId)
+  const { submitEmailModeFormMutation } = usePublicFormMutations(formId)
   const toast = useToast()
   const vfnToastIdRef = useRef<string | number>()
   const desyncToastIdRef = useRef<string | number>()
@@ -117,24 +122,36 @@ export const PublicFormProvider = ({
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
-  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
-    (formInputs) => {
-      if (!cachedDto?.form) return
-      try {
-        const responses = cachedDto.form.form_fields
-          .map((ff) => transformInputsToOutputs(ff, formInputs[ff._id]))
-          .filter((output): output is FieldResponse => output !== undefined)
-
-        return console.log(responses)
-      } catch (error) {
-        toast({
-          status: 'danger',
-          description:
-            'An error occurred whilst processing your submission. Please refresh and try again.',
-        })
+  const handleSubmitForm = useCallback(
+    async (formInputs: Record<FormFieldDto['_id'], unknown>) => {
+      const { form } = cachedDto ?? {}
+      if (!form) return
+      switch (form.responseMode) {
+        case FormResponseMode.Email:
+          // Using mutateAsync so react-hook-form goes into loading state.
+          return submitEmailModeFormMutation
+            .mutateAsync(
+              {
+                formFields: form.form_fields,
+                formInputs,
+              },
+              {
+                onSuccess: ({ submissionId }) => setSubmissionId(submissionId),
+              },
+            )
+            .catch(() => {
+              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
+              toast({
+                status: 'danger',
+                description:
+                  'An error occurred whilst processing your submission. Please refresh and try again.',
+              })
+            })
+        case FormResponseMode.Encrypt:
+          return console.log('encrypt mode TODO')
       }
     },
-    [cachedDto?.form, toast],
+    [cachedDto, submitEmailModeFormMutation, toast],
   )
 
   return (
@@ -146,7 +163,6 @@ export const PublicFormProvider = ({
         error,
         getTransactionId,
         expiryInMs,
-        isLoading,
         ...cachedDto,
         ...rest,
       }}

@@ -13,7 +13,7 @@ import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
 
 export const FormFieldsContainer = (): JSX.Element | null => {
-  const { submissionData, form, spcpSession, isLoading, handleSubmitForm } =
+  const { form, spcpSession, isLoading, handleSubmitForm, submissionData } =
     usePublicFormContext()
 
   const isAuthRequired = useMemo(

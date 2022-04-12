@@ -1,11 +1,15 @@
+import { FormFieldDto } from '~shared/types/field'
 import {
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
 } from '~shared/types/form'
 import { FormAuthType, PublicFormViewDto } from '~shared/types/form/form'
+import { SubmissionResponseDto } from '~shared/types/submission'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
+
+import { createEmailSubmissionFormData } from './utils/createSubmission'
 
 const PUBLIC_FORMS_ENDPOINT = '/forms'
 
@@ -49,5 +53,31 @@ export const logoutPublicForm = async (
 ): Promise<PublicFormAuthLogoutDto> => {
   return ApiService.get<PublicFormAuthLogoutDto>(
     `${PUBLIC_FORMS_ENDPOINT}/auth/${authType}/logout`,
+  ).then(({ data }) => data)
+}
+
+export type SubmitEmailModeFormArgs = {
+  formId: string
+  captchaResponse?: string | null
+  formFields: FormFieldDto[]
+  formInputs: Record<string, unknown>
+}
+
+export const submitEmailModeForm = async ({
+  formFields,
+  formInputs,
+  formId,
+  captchaResponse = null,
+}: SubmitEmailModeFormArgs): Promise<SubmissionResponseDto> => {
+  const formData = createEmailSubmissionFormData(formFields, formInputs)
+
+  return ApiService.post<SubmissionResponseDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email`,
+    formData,
+    {
+      params: {
+        captchaResponse: String(captchaResponse),
+      },
+    },
   ).then(({ data }) => data)
 }

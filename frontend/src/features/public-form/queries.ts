@@ -17,12 +17,14 @@ export const publicFormKeys = {
 
 export const usePublicFormView = (
   formId: string,
+  /** Extra override to determine whether query is enabled */
+  enabled = true,
 ): UseQueryResult<PublicFormViewDto, ApiError> => {
   return useQuery<PublicFormViewDto, ApiError>(
     publicFormKeys.id(formId),
     () => getPublicFormView(formId),
     {
-      enabled: PUBLICFORM_REGEX.test(formId),
+      enabled: PUBLICFORM_REGEX.test(formId) && enabled,
     },
   )
 }
