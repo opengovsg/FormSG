@@ -13,8 +13,9 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Textarea from '~components/Textarea'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+import { FormFieldWithQuestionNo } from '~features/form/types'
 
-import { EditLogicInputs, FormFieldWithQuestionNumber } from '../../../types'
+import { EditLogicInputs } from '../../../types'
 
 import { BlockLabelText } from './BlockLabelText'
 
@@ -22,7 +23,7 @@ interface ThenShowBlockProps {
   isLoading: boolean
   formMethods: UseFormReturn<EditLogicInputs>
   formFields?: FormFieldDto[]
-  mapIdToField: Record<string, FormFieldWithQuestionNumber> | null
+  mapIdToField: Record<string, FormFieldWithQuestionNo> | null
 }
 
 export const ThenShowBlock = ({

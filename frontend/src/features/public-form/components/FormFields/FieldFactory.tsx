@@ -1,7 +1,6 @@
 import { memo } from 'react'
-import { Text } from '@chakra-ui/react'
 
-import { BasicField, FormFieldDto } from '~shared/types/field'
+import { BasicField } from '~shared/types/field'
 import { FormColorTheme } from '~shared/types/form'
 
 import {
@@ -27,6 +26,7 @@ import {
   YesNoField,
 } from '~templates/Field'
 
+import { FormFieldWithQuestionNo } from '~features/form/types'
 import {
   VerifiableEmailField,
   VerifiableEmailFieldSchema,
@@ -37,7 +37,7 @@ import {
 } from '~features/verifiable-fields/Mobile'
 
 interface FieldFactoryProps {
-  field: FormFieldDto
+  field: FormFieldWithQuestionNo
   colorTheme?: FormColorTheme
 }
 
@@ -99,10 +99,10 @@ export const FieldFactory = memo(
       case BasicField.Image:
         return <ImageField schema={field} colorTheme={colorTheme} />
       case BasicField.Table:
-        return <TableField schema={field} />
-      default:
-        return <Text w="100%">{JSON.stringify(field)}</Text>
+        return <TableField schema={field} colorTheme={colorTheme} />
     }
   },
-  (prevProps, nextProps) => prevProps.field._id === nextProps.field._id,
+  (prevProps, nextProps) =>
+    prevProps.field._id === nextProps.field._id &&
+    prevProps.field.questionNumber === nextProps.field.questionNumber,
 )

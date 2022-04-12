@@ -12,10 +12,7 @@ export interface HomeNoFieldProps extends BaseFieldProps {
   schema: HomeNoFieldSchema
 }
 
-export const HomeNoField = ({
-  schema,
-  questionNumber,
-}: HomeNoFieldProps): JSX.Element => {
+export const HomeNoField = ({ schema }: HomeNoFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createHomeNoValidationRules(schema),
     [schema],
@@ -24,7 +21,7 @@ export const HomeNoField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Controller
         control={control}
         rules={validationRules}

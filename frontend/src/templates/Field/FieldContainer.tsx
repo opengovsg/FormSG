@@ -8,23 +8,22 @@ import { FieldError, useFormState } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormFieldWithId } from '~shared/types/field'
 import { FormColorTheme } from '~shared/types/form'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import { FormLabelProps } from '~components/FormControl/FormLabel/FormLabel'
+
+import { FormFieldWithQuestionNo } from '~features/form/types'
 
 export type BaseFieldProps = {
   schema: Pick<
-    FormFieldWithId,
-    '_id' | 'required' | 'description' | 'title' | 'disabled'
+    FormFieldWithQuestionNo,
+    '_id' | 'required' | 'description' | 'title' | 'disabled' | 'questionNumber'
   >
   /**
    * Color theme of form, if available. Defaults to `FormColorTheme.Blue`
    */
   colorTheme?: FormColorTheme
-  questionNumber?: FormLabelProps['questionNumber']
   /**
    * Optional key of error to display in form error message.
    * If not provided, will default to given `schema._id`.
@@ -38,7 +37,6 @@ export interface FieldContainerProps extends BaseFieldProps {
 
 export const FieldContainer = ({
   schema,
-  questionNumber,
   children,
   errorKey,
 }: FieldContainerProps): JSX.Element => {
@@ -55,7 +53,9 @@ export const FieldContainer = ({
       id={schema._id}
     >
       <FormLabel
-        questionNumber={questionNumber}
+        questionNumber={
+          schema.questionNumber ? `${schema.questionNumber}.` : undefined
+        }
         description={schema.description}
       >
         {schema.title}

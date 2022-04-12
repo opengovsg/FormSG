@@ -15,10 +15,7 @@ export interface YesNoFieldProps extends BaseFieldProps {
   schema: YesNoFieldSchema
 }
 
-export const YesNoField = ({
-  schema,
-  questionNumber,
-}: YesNoFieldProps): JSX.Element => {
+export const YesNoField = ({ schema }: YesNoFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createBaseValidationRules(schema),
     [schema],
@@ -27,7 +24,7 @@ export const YesNoField = ({
   const { control } = useFormContext<YesNoFieldInput>()
 
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Controller
         control={control}
         rules={validationRules}
