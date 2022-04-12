@@ -70,7 +70,7 @@
     "abortcontroller-polyfill": "^1.7.3",
     "angular": "~1.8.3",
     "angular-animate": "^1.8.2",
-    "angular-aria": "^1.8.2",
+    "angular-aria": "^1.8.3",
     "angular-cookies": "~1.8.2",
     "angular-drag-scroll": "^0.2.1",
     "angular-messages": "^1.8.3",
