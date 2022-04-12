@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Box, Flex, Spacer } from '@chakra-ui/react'
 
 import { FormAuthType } from '~shared/types/form/form'
@@ -13,12 +13,8 @@ import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
 
 export const FormFieldsContainer = (): JSX.Element | null => {
-  const { form, spcpSession, isLoading, submissionData } =
+  const { submissionData, form, spcpSession, isLoading, handleSubmitForm } =
     usePublicFormContext()
-
-  const onSubmit = useCallback((values: Record<string, string>) => {
-    console.log(values)
-  }, [])
 
   const isAuthRequired = useMemo(
     () => form && form.authType !== FormAuthType.NIL && !spcpSession,
@@ -45,10 +41,10 @@ export const FormFieldsContainer = (): JSX.Element | null => {
       <FormFields
         formFields={form.form_fields}
         colorTheme={form.startPage.colorTheme}
-        onSubmit={onSubmit}
+        onSubmit={handleSubmitForm}
       />
     )
-  }, [form, isAuthRequired, isLoading, onSubmit])
+  }, [form, handleSubmitForm, isAuthRequired, isLoading])
 
   if (submissionData) return null
 

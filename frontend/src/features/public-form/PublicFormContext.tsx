@@ -26,6 +26,8 @@ export interface PublicFormContextProps
   expiryInMs: number | null
   /** If form is submitted, submissionData will be defined. */
   submissionData?: SubmissionData
+  /** Callback to be invoked when user submits public form. */
+  handleSubmitForm: (formInputs: any) => void
 }
 
 export const PublicFormContext = createContext<

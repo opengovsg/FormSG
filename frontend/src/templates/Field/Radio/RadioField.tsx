@@ -3,20 +3,17 @@ import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormFieldWithId, RadioFieldBase } from '~shared/types/field'
-
 import { RADIO_THEME_KEY } from '~theme/components/Radio'
 import { createRadioValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio, { OthersInput } from '~components/Radio'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import { RadioFieldInputs } from '../types'
+import { RadioFieldInputs, RadioFieldSchema } from '../types'
 
 export const RADIO_OTHERS_INPUT_KEY = 'othersInput'
 export const RADIO_OTHERS_INPUT_VALUE = '!!FORMSG_INTERNAL_RADIO_OTHERS_VALUE!!'
 
-export type RadioFieldSchema = FormFieldWithId<RadioFieldBase>
 export interface RadioFieldProps extends BaseFieldProps {
   schema: RadioFieldSchema
 }

@@ -7,13 +7,16 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
-import { VerifiableFieldInput, VerifiableFieldValues } from '../types'
+import {
+  MobileFieldSchema,
+  VerifiableFieldInput,
+  VerifiableFieldValues,
+} from '../types'
 
 import {
   MobileField as MobileFieldComponent,
   MobileFieldProps,
 } from './MobileField'
-import { MobileFieldSchema } from './types'
 
 export default {
   title: 'Templates/Field/MobileField',

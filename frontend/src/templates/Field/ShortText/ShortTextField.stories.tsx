@@ -7,10 +7,11 @@ import { BasicField, TextSelectedValidation } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { ShortTextFieldSchema } from '../types'
+
 import {
   ShortTextField as ShortTextFieldComponent,
   ShortTextFieldProps,
-  ShortTextFieldSchema,
 } from './ShortTextField'
 
 export default {

@@ -8,10 +8,11 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { RadioFieldSchema } from '../types'
+
 import {
   RadioField as RadioFieldComponent,
   RadioFieldProps,
-  RadioFieldSchema,
 } from './RadioField'
 
 export default {

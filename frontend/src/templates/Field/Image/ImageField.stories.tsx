@@ -5,11 +5,12 @@ import { BasicField } from '~shared/types/field'
 
 import { viewports } from '~utils/storybook'
 
+import { ImageFieldSchema } from '../types'
+
 import MockImage from './mocks/img-login.svg'
 import {
   ImageField as ImageFieldComponent,
   ImageFieldProps,
-  ImageFieldSchema,
 } from './ImageField'
 
 export default {

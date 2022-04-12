@@ -1,15 +1,12 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-import { FormFieldWithId, NumberFieldBase } from '~shared/types/field'
-
 import { createNumberValidationRules } from '~utils/fieldValidation'
 import NumberInput from '~components/NumberInput'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import { SingleAnswerFieldInput } from '../types'
+import { NumberFieldSchema, SingleAnswerFieldInput } from '../types'
 
-export type NumberFieldSchema = FormFieldWithId<NumberFieldBase>
 export interface NumberFieldProps extends BaseFieldProps {
   schema: NumberFieldSchema
 }

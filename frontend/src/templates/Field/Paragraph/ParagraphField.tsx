@@ -1,12 +1,10 @@
 import ReactMarkdown from 'react-markdown'
 
-import { FormFieldWithId, StatementFieldBase } from '~shared/types/field'
-
 import { useMdComponents } from '~hooks/useMdComponents'
 
 import { BaseFieldProps } from '../FieldContainer'
+import { ParagraphFieldSchema } from '../types'
 
-export type ParagraphFieldSchema = FormFieldWithId<StatementFieldBase>
 export interface ParagraphFieldProps extends BaseFieldProps {
   schema: ParagraphFieldSchema
 }

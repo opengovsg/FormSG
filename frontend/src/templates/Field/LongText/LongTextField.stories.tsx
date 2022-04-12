@@ -7,10 +7,11 @@ import { BasicField, TextSelectedValidation } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { LongTextFieldSchema } from '../types'
+
 import {
   LongTextField as LongTextFieldComponent,
   LongTextFieldProps,
-  LongTextFieldSchema,
 } from './LongTextField'
 
 export default {

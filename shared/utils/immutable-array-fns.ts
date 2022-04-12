@@ -86,3 +86,10 @@ export const insertAt = <T>(
 ): ExtractTypeFromArray<T>[] => {
   return [...array.slice(0, index), valueToInsert, ...array.slice(index)]
 }
+
+export const removeAt = <T>(
+  array: ExtractTypeFromArray<T>[],
+  index: number,
+): ExtractTypeFromArray<T>[] => {
+  return [...array.slice(0, index), ...array.slice(index + 1)]
+}

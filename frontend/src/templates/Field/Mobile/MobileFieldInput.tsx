@@ -10,9 +10,7 @@ import PhoneNumberInput, {
   PhoneNumberInputProps,
 } from '~components/PhoneNumberInput'
 
-import { VerifiableFieldInput } from '../types'
-
-import { MobileFieldSchema } from './types'
+import { MobileFieldSchema, VerifiableFieldInput } from '../types'
 
 export interface MobileFieldInputProps {
   schema: MobileFieldSchema

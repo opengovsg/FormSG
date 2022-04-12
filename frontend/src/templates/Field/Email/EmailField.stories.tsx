@@ -8,13 +8,16 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
-import { VerifiableFieldInput, VerifiableFieldValues } from '../types'
+import {
+  EmailFieldSchema,
+  VerifiableFieldInput,
+  VerifiableFieldValues,
+} from '../types'
 
 import {
   EmailField as EmailFieldComponent,
   EmailFieldProps,
 } from './EmailField'
-import { EmailFieldSchema } from './types'
 
 export default {
   title: 'Templates/Field/EmailField',
