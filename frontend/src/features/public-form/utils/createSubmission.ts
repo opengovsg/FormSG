@@ -3,14 +3,13 @@ import { forOwn, isEmpty } from 'lodash'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FieldResponse } from '~shared/types/response'
 
-import { AttachmentFieldSchema } from '~templates/Field'
+import { AttachmentFieldSchema, FormFieldValues } from '~templates/Field'
 
 import { transformInputsToOutputs } from './inputTransformation'
-import { validateAttachmentInput } from './inputValidation'
 
 export const createEmailSubmissionFormData = (
   formFields: FormFieldDto[],
-  formInputs: Record<string, unknown>,
+  formInputs: FormFieldValues,
 ) => {
   const responses = createResponsesArray(formFields, formInputs)
   const attachments = getAttachmentsMap(formFields, formInputs)
@@ -32,7 +31,7 @@ export const createEmailSubmissionFormData = (
 
 const createResponsesArray = (
   formFields: FormFieldDto[],
-  formInputs: Record<string, unknown>,
+  formInputs: FormFieldValues,
 ): FieldResponse[] => {
   return formFields
     .map((ff) => transformInputsToOutputs(ff, formInputs[ff._id]))
@@ -41,7 +40,7 @@ const createResponsesArray = (
 
 const getAttachmentsMap = (
   formFields: FormFieldDto[],
-  formInputs: Record<string, unknown>,
+  formInputs: FormFieldValues,
 ): Record<string, File> => {
   const attachmentsMap: Record<string, File> = {}
   const attachmentFields = formFields.filter(
@@ -49,7 +48,7 @@ const getAttachmentsMap = (
   )
   attachmentFields.forEach((af) => {
     const attachmentValue = formInputs[af._id]
-    if (!validateAttachmentInput(attachmentValue)) return
+    if (!(attachmentValue instanceof File)) return
     attachmentsMap[af._id] = attachmentValue
   })
 
