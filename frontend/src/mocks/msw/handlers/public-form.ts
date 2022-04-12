@@ -11,6 +11,36 @@ import mockFormLogo from '../assets/mockFormLogo.png'
 
 import { MOCK_ENVS } from './env'
 
+export const SHOW_FIELDS_ON_YES_LOGIC = {
+  show: [
+    '5da0290b4073c800128388b4',
+    '5da04ea3e397fc0013f63c78',
+    '5da04ea9e397fc0013f63c7b',
+    '5da04eab3738d10012607734',
+    '5da04eafe397fc0013f63c7c',
+    '5da04eb1e397fc0013f63c7d',
+    '5da04eb23738d10012607737',
+    '5da04eb7e397fc0013f63c80',
+    '5da04eb93738d10012607738',
+    '5da04ebfe397fc0013f63c83',
+    '5da04ec13738d1001260773a',
+    '5da04ec43738d1001260773b',
+    '5da04f833738d1001260777f',
+    '5da04f873738d10012607783',
+  ],
+  logicType: 'showFields',
+  _id: '5fe1bab172689300133ce336',
+  conditions: [
+    {
+      ifValueType: 'single-select',
+      _id: '56870',
+      field: '5da04eb5e397fc0013f63c7e',
+      state: 'is equals to',
+      value: 'Yes',
+    },
+  ],
+}
+
 const BASE_FORM = {
   admin: {
     agency: {
@@ -298,37 +328,7 @@ const BASE_FORM = {
       globalId: 'gE8XOqZA6MA3Rl7bQbrSOKpxjfeVSeYSfMZhRSitEn1',
     },
   ],
-  form_logics: [
-    {
-      show: [
-        '5da0290b4073c800128388b4',
-        '5da04ea3e397fc0013f63c78',
-        '5da04ea9e397fc0013f63c7b',
-        '5da04eab3738d10012607734',
-        '5da04eafe397fc0013f63c7c',
-        '5da04eb1e397fc0013f63c7d',
-        '5da04eb23738d10012607737',
-        '5da04eb7e397fc0013f63c80',
-        '5da04eb93738d10012607738',
-        '5da04ebfe397fc0013f63c83',
-        '5da04ec13738d1001260773a',
-        '5da04ec43738d1001260773b',
-        '5da04f833738d1001260777f',
-        '5da04f873738d10012607783',
-      ],
-      logicType: 'showFields',
-      _id: '5fe1bab172689300133ce336',
-      conditions: [
-        {
-          ifValueType: 'single-select',
-          _id: '56870',
-          field: '5da04eb5e397fc0013f63c7e',
-          state: 'is equals to',
-          value: 'Yes',
-        },
-      ],
-    },
-  ],
+  form_logics: [],
   hasCaptcha: false,
   startPage: {
     colorTheme: 'blue',
