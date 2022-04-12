@@ -11,10 +11,7 @@ export interface NumberFieldProps extends BaseFieldProps {
   schema: NumberFieldSchema
 }
 
-export const NumberField = ({
-  schema,
-  questionNumber,
-}: NumberFieldProps): JSX.Element => {
+export const NumberField = ({ schema }: NumberFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createNumberValidationRules(schema),
     [schema],
@@ -23,7 +20,7 @@ export const NumberField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Controller
         control={control}
         rules={validationRules}

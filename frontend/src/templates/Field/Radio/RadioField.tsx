@@ -21,10 +21,7 @@ export interface RadioFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const RadioField = ({
-  schema,
-  questionNumber,
-}: RadioFieldProps): JSX.Element => {
+export const RadioField = ({ schema }: RadioFieldProps): JSX.Element => {
   const styles = useMultiStyleConfig(RADIO_THEME_KEY, {})
 
   const othersInputName = useMemo(
@@ -61,11 +58,7 @@ export const RadioField = ({
   )
 
   return (
-    <FieldContainer
-      schema={schema}
-      questionNumber={questionNumber}
-      errorKey={radioInputName}
-    >
+    <FieldContainer schema={schema} errorKey={radioInputName}>
       <Controller
         name={radioInputName}
         rules={validationRules}

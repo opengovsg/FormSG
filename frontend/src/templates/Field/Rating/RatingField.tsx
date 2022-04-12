@@ -25,10 +25,7 @@ const transform = {
   toNumber: (value: string) => Number(value),
 }
 
-export const RatingField = ({
-  schema,
-  questionNumber,
-}: RatingFieldProps): JSX.Element => {
+export const RatingField = ({ schema }: RatingFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createRatingValidationRules(schema),
     [schema],
@@ -46,7 +43,7 @@ export const RatingField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Controller
         rules={validationRules}
         control={control}

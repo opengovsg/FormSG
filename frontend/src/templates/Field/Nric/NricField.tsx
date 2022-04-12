@@ -14,10 +14,7 @@ export interface NricFieldProps extends BaseFieldProps {
   schema: NricFieldSchema
 }
 
-export const NricField = ({
-  schema,
-  questionNumber,
-}: NricFieldProps): JSX.Element => {
+export const NricField = ({ schema }: NricFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createNricValidationRules(schema),
     [schema],
@@ -26,7 +23,7 @@ export const NricField = ({
   const { register } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Input
         aria-label={schema.title}
         {...register(schema._id, validationRules)}

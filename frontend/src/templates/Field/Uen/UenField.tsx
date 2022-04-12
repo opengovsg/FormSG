@@ -17,10 +17,7 @@ export interface UenFieldProps extends BaseFieldProps {
   schema: UenFieldSchema
 }
 
-export const UenField = ({
-  schema,
-  questionNumber,
-}: UenFieldProps): JSX.Element => {
+export const UenField = ({ schema }: UenFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createUenValidationRules(schema),
     [schema],
@@ -29,7 +26,7 @@ export const UenField = ({
   const { register } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Input
         aria-label={schema.title}
         {...register(schema._id, validationRules)}

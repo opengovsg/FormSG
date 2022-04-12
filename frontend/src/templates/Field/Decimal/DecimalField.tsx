@@ -14,10 +14,7 @@ export interface DecimalFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const DecimalField = ({
-  schema,
-  questionNumber,
-}: DecimalFieldProps): JSX.Element => {
+export const DecimalField = ({ schema }: DecimalFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createDecimalValidationRules(schema),
     [schema],
@@ -26,7 +23,7 @@ export const DecimalField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Controller
         control={control}
         rules={validationRules}
