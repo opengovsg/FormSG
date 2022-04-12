@@ -1,5 +1,5 @@
 import { addMilliseconds } from 'date-fns'
-import { merge, mergeWith } from 'lodash'
+import { mergeWith } from 'lodash'
 import { rest } from 'msw'
 import { PartialDeep } from 'type-fest'
 
