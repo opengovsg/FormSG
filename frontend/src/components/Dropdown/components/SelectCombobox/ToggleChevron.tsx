@@ -6,15 +6,17 @@ import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useSelectContext } from '../../SelectContext'
 
 export const ToggleChevron = (): JSX.Element => {
-  const { isOpen, getToggleButtonProps, isDisabled, styles } =
+  const { isOpen, getToggleButtonProps, isDisabled, isReadOnly, styles } =
     useSelectContext()
 
   return (
-    <InputRightElement {...getToggleButtonProps({ disabled: isDisabled })}>
+    <InputRightElement
+      {...getToggleButtonProps({ disabled: isDisabled || isReadOnly })}
+    >
       <Icon
         sx={styles.icon}
         as={isOpen ? BxsChevronUp : BxsChevronDown}
-        aria-disabled={isDisabled}
+        aria-disabled={isDisabled || isReadOnly}
       />
     </InputRightElement>
   )
