@@ -1,8 +1,14 @@
 import { addMilliseconds } from 'date-fns'
-import { merge } from 'lodash'
+import { merge, mergeWith } from 'lodash'
 import { rest } from 'msw'
 import { PartialDeep } from 'type-fest'
 
+import {
+  LogicConditionState,
+  LogicIfValue,
+  LogicType,
+  ShowFieldLogicDto,
+} from '~shared/types'
 import { FormId, PublicFormViewDto } from '~shared/types/form/form'
 
 import { FetchNewTransactionResponse } from '~features/verifiable-fields'
@@ -11,7 +17,7 @@ import mockFormLogo from '../assets/mockFormLogo.png'
 
 import { MOCK_ENVS } from './env'
 
-export const SHOW_FIELDS_ON_YES_LOGIC = {
+export const SHOW_FIELDS_ON_YES_LOGIC: ShowFieldLogicDto = {
   show: [
     '5da0290b4073c800128388b4',
     '5da04ea3e397fc0013f63c78',
@@ -28,14 +34,13 @@ export const SHOW_FIELDS_ON_YES_LOGIC = {
     '5da04f833738d1001260777f',
     '5da04f873738d10012607783',
   ],
-  logicType: 'showFields',
+  logicType: LogicType.ShowFields,
   _id: '5fe1bab172689300133ce336',
   conditions: [
     {
-      ifValueType: 'single-select',
-      _id: '56870',
+      ifValueType: LogicIfValue.SingleSelect,
       field: '5da04eb5e397fc0013f63c7e',
-      state: 'is equals to',
+      state: LogicConditionState.Equal,
       value: 'Yes',
     },
   ],
@@ -352,7 +357,8 @@ export const getPublicFormResponse = ({
     (req, res, ctx) => {
       const formId = req.params.formId ?? '61540ece3d4a6e50ac0cc6ff'
 
-      const response = merge(
+      const response = mergeWith(
+        {},
         {
           form: {
             _id: formId as FormId,
@@ -360,6 +366,11 @@ export const getPublicFormResponse = ({
           },
         },
         overrides,
+        (objValue, srcValue) => {
+          if (Array.isArray(objValue)) {
+            return [...srcValue, ...objValue]
+          }
+        },
       ) as PublicFormViewDto
       return res(ctx.delay(delay), ctx.json(response))
     },
