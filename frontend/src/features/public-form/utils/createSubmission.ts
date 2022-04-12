@@ -1,8 +1,12 @@
 import { encode as encodeBase64 } from '@stablelib/base64'
-import { chain, forOwn, isEmpty, omit } from 'lodash'
+import { chain, forOwn, isEmpty, keyBy, omit } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
-import { EmailResponse, FieldResponse } from '~shared/types/response'
+import {
+  EmailResponse,
+  FieldResponse,
+  MobileResponse,
+} from '~shared/types/response'
 import {
   StorageModeAttachment,
   StorageModeAttachmentsMap,
@@ -32,9 +36,10 @@ export const createEncryptedSubmissionData = async (
 ): Promise<StorageModeSubmissionContentDto> => {
   const responses = createResponsesArray(formFields, formInputs)
   const encryptedContent = formsgSdk.crypto.encrypt(responses, publicKey)
-  // Edge case: We still send email fields to the server in plaintext
-  // even with end-to-end encryption in order to support email autoreplies
-  const filteredResponses = filterEmailResponsesWithAutoreply(
+  // Edge case: We still send email/verifiable fields to the server in plaintext
+  // even with end-to-end encryption in order to support email autoreplies and
+  // signature verification (for when signature has expired).
+  const filteredResponses = filterSendableStorageModeResponses(
     formFields,
     responses,
   )
@@ -127,18 +132,34 @@ const getAttachmentsMap = (
 
   return attachmentsMap
 }
-const filterEmailResponsesWithAutoreply = (
+
+/**
+ * Utility to filter out responses that should be sent to the server. This includes:
+ * 1. Email fields that have an autoreply enabled.
+ * 2. Verifiable fields to verify its signature on the backend.
+ */
+const filterSendableStorageModeResponses = (
   formFields: FormFieldDto[],
   responses: FieldResponse[],
 ) => {
+  const mapFieldIdToField = keyBy(formFields, '_id')
   return responses
-    .filter((r): r is EmailResponse => {
-      const isEmailResponse = r.fieldType === BasicField.Email
-      if (!isEmailResponse) return false
-      const field = formFields.find((ff) => ff._id === r._id)
-      if (field?.fieldType !== BasicField.Email) return false
-      // Only filter out fields with auto reply set to true
-      return field.autoReplyOptions.hasAutoReply
+    .filter((r): r is EmailResponse | MobileResponse => {
+      switch (r.fieldType) {
+        case BasicField.Email: {
+          const field = mapFieldIdToField[r._id]
+          if (!field || field.fieldType !== r.fieldType) return false
+          // Only filter out fields with auto reply set to true, or if field is verifiable.
+          return field.autoReplyOptions.hasAutoReply || field.isVerifiable
+        }
+        case BasicField.Mobile: {
+          const field = mapFieldIdToField[r._id]
+          if (!field || field.fieldType !== r.fieldType) return false
+          return field.isVerifiable
+        }
+        default:
+          return false
+      }
     })
     .map((r) =>
       chain(r).pick(['fieldType', '_id', 'answer', 'signature']).value(),

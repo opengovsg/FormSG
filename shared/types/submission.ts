@@ -3,7 +3,7 @@ import { ErrorDto } from './core'
 import { FormFieldDto, MyInfoAttribute } from './field'
 import { FormAuthType, FormDto } from './form/form'
 import { DateString } from './generic'
-import { EmailResponse, FieldResponse } from './response'
+import { EmailResponse, FieldResponse, MobileResponse } from './response'
 
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 
@@ -116,8 +116,13 @@ export type StorageModeAttachmentsMap = Record<
 >
 
 export type StorageModeSubmissionContentDto = {
-  // Storage mode only allows email responses in order to support email replies.
-  responses: Pick<EmailResponse, 'fieldType' | '_id' | 'answer' | 'signature'>[]
+  // Storage mode only allows
+  // 1. verifiable responses in order to validate signatures.
+  // 2. email fields with autoreply to send form fillers their response.
+  responses: Pick<
+    EmailResponse | MobileResponse,
+    'fieldType' | '_id' | 'answer' | 'signature'
+  >[]
   encryptedContent: string
   attachments?: StorageModeAttachmentsMap
   version: number
