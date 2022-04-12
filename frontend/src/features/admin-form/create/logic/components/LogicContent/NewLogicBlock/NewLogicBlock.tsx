@@ -1,114 +1,144 @@
-import { useCallback, useLayoutEffect, useRef } from 'react'
-import { BiPlus, BiTrash } from 'react-icons/bi'
-import {
-  Box,
-  ButtonGroup,
-  Divider,
-  Flex,
-  Grid,
-  Stack,
-  Text,
-} from '@chakra-ui/react'
-
-import Button from '~components/Button'
-import IconButton from '~components/IconButton'
-import Input from '~components/Input'
+import { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
+import { useFieldArray, useForm } from 'react-hook-form'
+import { Stack } from '@chakra-ui/react'
 
 import { useAdminLogicStore } from '../../../adminLogicStore'
+import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
+import { useLogicMutations } from '../../../mutations'
+import { EditLogicInputs } from '../../../types'
+import {
+  AddConditionDivider,
+  EditConditionBlock,
+  EditConditionBlockDivider,
+  EditConditionWrapper,
+  SaveActionGroup,
+  ThenShowBlock,
+} from '../EditCondition'
 
-export const NewLogicBlock = () => {
+// Allow injection of custom hook for testing.
+const useNewLogicBlockDefault = () => {
   const setToInactive = useAdminLogicStore(
     useCallback((state) => state.setToInactive, []),
   )
+  const { logicableFields, mapIdToField, formFields } = useAdminFormLogic()
+  const { createLogicMutation } = useLogicMutations()
 
-  const ref = useRef<HTMLDivElement | null>(null)
+  const formMethods = useForm<EditLogicInputs>({
+    defaultValues: {
+      conditions: [{}],
+    },
+  })
+  const {
+    fields: logicConditionBlocks,
+    append,
+    remove,
+  } = useFieldArray({
+    control: formMethods.control,
+    name: 'conditions',
+  })
+
+  const wrapperRef = useRef<HTMLDivElement | null>(null)
 
   useLayoutEffect(() => {
-    if (ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth' })
+    if (wrapperRef.current) {
+      wrapperRef.current.scrollIntoView({
+        behavior: 'smooth',
+        // Block required so parent (with overflow:hidden) will not be scrolled
+        // and causing unscrollable white space.
+        // See https://stackoverflow.com/questions/48634459/scrollintoview-block-vs-inline/48635751#48635751
+        block: 'nearest',
+      })
     }
   }, [])
 
+  const handleAddCondition = useCallback(() => append({}), [append])
+
+  // Only allow logic removal if there is more than one logic block.
+  const handleRemoveLogic = useMemo(
+    () => (logicConditionBlocks.length > 1 ? remove : undefined),
+    [logicConditionBlocks.length, remove],
+  )
+
+  const handleCreateLogic = formMethods.handleSubmit((inputs) => {
+    return createLogicMutation.mutate(inputs, {
+      onSuccess: () => setToInactive(),
+    })
+  })
+
+  return {
+    formMethods,
+    logicConditionBlocks,
+    handleCreateLogic,
+    handleAddCondition,
+    handleRemoveLogic,
+    wrapperRef,
+    isLoading: createLogicMutation.isLoading,
+    setToInactive,
+    logicableFields,
+    mapIdToField,
+    formFields,
+  }
+}
+
+export interface NewLogicBlockProps {
+  useNewLogicBlock?: typeof useNewLogicBlockDefault
+}
+
+export const NewLogicBlock = ({
+  useNewLogicBlock = useNewLogicBlockDefault,
+}: NewLogicBlockProps) => {
+  const {
+    formMethods,
+    logicConditionBlocks,
+    wrapperRef,
+    handleRemoveLogic,
+    handleCreateLogic,
+    handleAddCondition,
+    isLoading,
+    setToInactive,
+    logicableFields,
+    mapIdToField,
+    formFields,
+  } = useNewLogicBlock()
+
   return (
-    <Box
-      ref={ref}
-      borderRadius="4px"
-      bg="white"
-      border="1px solid"
-      borderColor="neutral.400"
-      transitionProperty="common"
-      transitionDuration="normal"
-      _focusWithin={{
-        borderColor: 'primary.500',
-        boxShadow: '0 0 0 1px var(--chakra-colors-primary-500)',
-      }}
-    >
-      <Grid
-        gridTemplateColumns={{
-          base: 'minmax(100%, 1fr)',
-          md: 'max-content 1fr',
-        }}
-        alignItems="center"
-        columnGap="2rem"
-        rowGap="0.75rem"
+    <EditConditionWrapper ref={wrapperRef}>
+      <Stack
+        divider={<EditConditionBlockDivider />}
+        direction="column"
         py="1.5rem"
         px={{ base: '1.5rem', md: '2rem' }}
-        borderBottom="1px solid"
-        borderColor="neutral.300"
       >
-        <Text textStyle="subhead-3">IF</Text>
-        <Input autoFocus />
-
-        <Text textStyle="subhead-3">IS</Text>
-        <Stack direction="row" align="center">
-          <Input /> <Input />
-        </Stack>
-
-        <Divider
-          alignSelf="center"
-          display={{ base: 'none', md: 'block' }}
-          my="1.25rem"
-          // Padding and margin to extend beyond grid gap
-          mx="-2rem"
-          px="2rem"
-        />
-        <Flex flexDir="row" align="center" my="1.25rem">
-          <Divider
-            ml="-1.5rem"
-            pl="1.5rem"
-            w={0}
-            display={{ base: 'block', md: 'none' }}
-          />
-          <Button leftIcon={<BiPlus fontSize="1.5rem" />}>Add condition</Button>
-          <Divider
-            mr={{ base: '-1.5rem', md: '-2rem' }}
-            pr={{ base: '1.5rem', md: '2rem' }}
-          />
-        </Flex>
-
-        <Text textStyle="subhead-3">THEN</Text>
-        <Input />
-
-        <Text textStyle="subhead-3">SHOW</Text>
-        <Input />
-      </Grid>
-      <Flex
-        justify="flex-end"
-        align="center"
-        py="0.375rem"
-        px={{ base: '1rem', md: '2rem' }}
-      >
-        <ButtonGroup spacing="1rem">
-          <IconButton
-            variant="clear"
-            colorScheme="danger"
-            aria-label="Delete logic"
-            icon={<BiTrash />}
-            onClick={setToInactive}
-          />
-          <Button>Save changes</Button>
-        </ButtonGroup>
-      </Flex>
-    </Box>
+        {logicConditionBlocks.map((block, index) => {
+          return (
+            <EditConditionBlock
+              logicableFields={logicableFields}
+              mapIdToField={mapIdToField}
+              formMethods={formMethods}
+              isLoading={isLoading}
+              key={block.id}
+              index={index}
+              handleRemoveLogic={handleRemoveLogic}
+            />
+          )
+        })}
+      </Stack>
+      <AddConditionDivider
+        isDisabled={isLoading}
+        handleAddCondition={handleAddCondition}
+      />
+      <ThenShowBlock
+        formFields={formFields}
+        formMethods={formMethods}
+        mapIdToField={mapIdToField}
+        isLoading={isLoading}
+      />
+      <SaveActionGroup
+        isLoading={isLoading}
+        handleSubmit={handleCreateLogic}
+        handleCancel={setToInactive}
+        submitButtonLabel="Add logic"
+      />
+    </EditConditionWrapper>
   )
 }

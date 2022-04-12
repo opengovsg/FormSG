@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Text } from '@chakra-ui/react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import { isEqual } from 'lodash'
@@ -13,6 +14,7 @@ import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
 
+import { trackVisitPublicForm } from '~features/analytics/AnalyticsService'
 import {
   FetchNewTransactionResponse,
   useTransactionMutations,
@@ -33,9 +35,9 @@ export const PublicFormProvider = ({
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
-  const { data, error, ...rest } = usePublicFormView(formId)
+  const { data, error, isLoading, ...rest } = usePublicFormView(formId)
 
-  const [form, setForm] = useState<PublicFormViewDto>()
+  const [formView, setFormView] = useState<PublicFormViewDto>()
 
   const { createTransactionMutation } = useTransactionMutations(formId)
   const toast = useToast()
@@ -44,9 +46,10 @@ export const PublicFormProvider = ({
 
   useEffect(() => {
     if (data) {
-      if (!form) {
-        setForm(data)
-      } else if (!desyncToastIdRef.current && !isEqual(data, form)) {
+      if (!formView) {
+        trackVisitPublicForm(data.form)
+        setFormView(data)
+      } else if (!desyncToastIdRef.current && !isEqual(data, formView)) {
         desyncToastIdRef.current = toast({
           status: 'warning',
           title: (
@@ -63,7 +66,7 @@ export const PublicFormProvider = ({
         })
       }
     }
-  }, [data, form, toast])
+  }, [data, formView, toast])
 
   const getTransactionId = useCallback(async () => {
     if (!vfnTransaction || isPast(vfnTransaction.expireAt)) {
@@ -90,7 +93,7 @@ export const PublicFormProvider = ({
     if (vfnToastIdRef.current) {
       toast.close(vfnToastIdRef.current)
     }
-    const numVerifiable = form?.form.form_fields.filter((ff) =>
+    const numVerifiable = formView?.form.form_fields.filter((ff) =>
       get(ff, 'isVerifiable'),
     ).length
 
@@ -106,7 +109,7 @@ export const PublicFormProvider = ({
         ]} field[|s] again.`,
       })
     }
-  }, [form?.form.form_fields, toast])
+  }, [formView?.form.form_fields, toast])
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
@@ -118,10 +121,12 @@ export const PublicFormProvider = ({
         error,
         getTransactionId,
         expiryInMs,
-        ...form,
+        isLoading,
+        ...formView,
         ...rest,
       }}
     >
+      <Helmet title={formView?.form.title} />
       {isFormNotFound ? <div>404</div> : children}
     </PublicFormContext.Provider>
   )

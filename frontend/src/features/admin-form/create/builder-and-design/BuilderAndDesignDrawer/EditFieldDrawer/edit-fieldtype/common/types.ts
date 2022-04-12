@@ -11,9 +11,4 @@ export type FieldMutateOptions = MutateOptions<
 
 export type EditFieldProps<T extends FieldBase> = {
   field: T
-  isLoading: boolean
-  isPendingField: boolean
-  handleChange: (field: T) => void
-  handleSave: (field: T, options?: FieldMutateOptions) => void
-  handleCancel: () => void
 }

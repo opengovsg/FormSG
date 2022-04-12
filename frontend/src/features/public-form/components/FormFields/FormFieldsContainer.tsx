@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { Box, Flex, Spacer } from '@chakra-ui/react'
 
-import { FormAuthType, FormColorTheme } from '~shared/types/form/form'
+import { FormAuthType } from '~shared/types/form/form'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -12,24 +12,13 @@ import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
 
-export const FormFieldsContainer = (): JSX.Element => {
-  const { form, spcpSession, isLoading } = usePublicFormContext()
+export const FormFieldsContainer = (): JSX.Element | null => {
+  const { form, spcpSession, isLoading, submissionData } =
+    usePublicFormContext()
 
   const onSubmit = useCallback((values: Record<string, string>) => {
     console.log(values)
   }, [])
-
-  const bgColour = useMemo(() => {
-    if (isLoading) return 'neutral.100'
-    if (!form) return ''
-    const { colorTheme } = form.startPage
-    switch (colorTheme) {
-      case FormColorTheme.Blue:
-        return 'secondary.100'
-      default:
-        return `theme-${colorTheme}.100`
-    }
-  }, [form, isLoading])
 
   const isAuthRequired = useMemo(
     () => form && form.authType !== FormAuthType.NIL && !spcpSession,
@@ -61,9 +50,11 @@ export const FormFieldsContainer = (): JSX.Element => {
     )
   }, [form, isAuthRequired, isLoading, onSubmit])
 
+  if (submissionData) return null
+
   return (
     <FormSectionsProvider form={form}>
-      <Flex bg={bgColour} flex={1} justify="center" p="1.5rem">
+      <Flex flex={1} justify="center">
         {isAuthRequired ? null : <SectionSidebar />}
         <Box
           bg="white"

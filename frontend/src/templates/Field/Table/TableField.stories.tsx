@@ -31,6 +31,8 @@ export default {
   },
 } as Meta
 
+const STORYBOOK_DROPDOWN_OPTIONS = ['Eraser', 'Pencil', 'Pen', 'Book']
+
 const baseSchema: TableFieldSchema = {
   addMoreRows: true,
   title: 'Table',
@@ -64,7 +66,7 @@ const baseSchema: TableFieldSchema = {
       required: false,
     },
     {
-      fieldOptions: ['Eraser', 'Pencil', 'Pen', 'Book'],
+      fieldOptions: STORYBOOK_DROPDOWN_OPTIONS,
       _id: '616b055a6b1c3400122f46a2',
       columnType: BasicField.Dropdown,
       title: 'Field of employment',
@@ -195,7 +197,11 @@ ValidationValid.args = {
   schema: baseSchema,
   triggerValidation: true,
   defaultValue: baseSchema.columns.reduce<Record<string, string>>((acc, c) => {
-    acc[c._id] = 'This is a valid value'
+    if (c.columnType === BasicField.ShortText) {
+      acc[c._id] = 'This is a valid value'
+    } else if (c.columnType === BasicField.Dropdown) {
+      acc[c._id] = STORYBOOK_DROPDOWN_OPTIONS[1]
+    }
     return acc
   }, {}),
 }

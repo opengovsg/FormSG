@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from 'react'
+import { FC, useState } from 'react'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   Box,
@@ -11,15 +11,21 @@ import {
   Wrap,
 } from '@chakra-ui/react'
 
+import { AppFooter } from '~/app/AppFooter'
+
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 import { ReactComponent as LoginImageSvg } from '~assets/svgs/img-login.svg'
-import { FORM_GUIDE, REPORT_VULNERABILITY } from '~constants/externalLinks'
+import { APP_FOOTER_LINKS } from '~constants/externalLinks'
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { LANDING_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
-import Footer from '~components/Footer'
 import Link from '~components/Link'
+
+import {
+  trackAdminLogin,
+  trackAdminLoginFailure,
+} from '~features/analytics/AnalyticsService'
 
 import { LoginForm, LoginFormInputs } from './components/LoginForm'
 import { OtpForm, OtpFormInputs } from './components/OtpForm'
@@ -134,20 +140,6 @@ export const LoginPage = (): JSX.Element => {
   // breakpoint is smaller than base, so xs defaults to true.
   const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
 
-  const footerLinks = useMemo(
-    () => [
-      { label: 'Contact Us', href: '/contact-us' },
-      { label: 'Guide', href: FORM_GUIDE },
-      { label: 'Privacy', href: '/privacy' },
-      { label: 'Terms of Use', href: '/terms' },
-      {
-        label: 'Report Vulnerability',
-        href: REPORT_VULNERABILITY,
-      },
-    ],
-    [],
-  )
-
   const handleSendOtp = async ({ email }: LoginFormInputs) => {
     await sendLoginOtp(email)
     return setEmail(email)
@@ -159,8 +151,16 @@ export const LoginPage = (): JSX.Element => {
     if (!email) {
       throw new Error('Something went wrong')
     }
-    await verifyLoginOtp({ otp, email })
-    return setIsAuthenticated(true)
+    try {
+      await verifyLoginOtp({ otp, email })
+      trackAdminLogin()
+      return setIsAuthenticated(true)
+    } catch (error) {
+      if (error instanceof Error) {
+        trackAdminLoginFailure(error.message)
+      }
+      throw error
+    }
   }
 
   const handleResendOtp = async () => {
@@ -236,7 +236,7 @@ export const LoginPage = (): JSX.Element => {
               spacing={0}
               mx="-0.75rem"
             >
-              {footerLinks.map(({ label, href }, index) => (
+              {APP_FOOTER_LINKS.map(({ label, href }, index) => (
                 <Link variant="standalone" key={index} href={href} mx="0.75rem">
                   {label}
                 </Link>
@@ -245,13 +245,7 @@ export const LoginPage = (): JSX.Element => {
           </DesktopLinksGridArea>
         </BaseGridLayout>
       </BackgroundBox>
-      {!isDesktop && (
-        <Footer
-          appName="Form"
-          tagline="Build secure government forms in minutes"
-          footerLinks={footerLinks}
-        />
-      )}
+      {!isDesktop && <AppFooter />}
     </Flex>
   )
 }

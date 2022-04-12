@@ -37,8 +37,8 @@ type EditCheckboxKeys = typeof EDIT_CHECKBOX_FIELD_KEYS[number]
 type EditCheckboxInputs = Pick<CheckboxFieldBase, EditCheckboxKeys> & {
   fieldOptions: string
   ValidationOptions: {
-    customMin?: number | string
-    customMax?: number | string
+    customMin: string
+    customMax: string
   }
 }
 
@@ -47,8 +47,8 @@ const transformCheckboxFieldToEditForm = (
 ): EditCheckboxInputs => {
   const nextValidationOptions = field.validateByValue
     ? {
-        customMin: field.ValidationOptions.customMin || '',
-        customMax: field.ValidationOptions.customMax || '',
+        customMin: field.ValidationOptions.customMin?.toString() || '',
+        customMax: field.ValidationOptions.customMax?.toString() || '',
       }
     : { customMin: '', customMax: '' }
   return {
@@ -64,8 +64,9 @@ const transformCheckboxEditFormToField = (
 ): CheckboxFieldBase => {
   const nextValidationOptions = form.validateByValue
     ? {
-        customMin: form.ValidationOptions.customMin || null,
-        customMax: form.ValidationOptions.customMax || null,
+        // 0 is not allowed
+        customMin: parseInt(form.ValidationOptions.customMin) || null,
+        customMax: parseInt(form.ValidationOptions.customMax) || null,
       }
     : { customMin: null, customMax: null }
   return extend({}, originalField, form, {
@@ -74,7 +75,7 @@ const transformCheckboxEditFormToField = (
   })
 }
 
-export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
+export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
   const {
     register,
     formState: { errors },
@@ -84,8 +85,10 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
     watch,
     control,
     clearErrors,
+    isLoading,
+    handleCancel,
   } = useEditFieldForm<EditCheckboxInputs, CheckboxFieldBase>({
-    ...props,
+    field,
     transform: {
       input: transformCheckboxFieldToEditForm,
       output: transformCheckboxEditFormToField,
@@ -110,6 +113,10 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
       min: {
         value: 1,
         message: 'Cannot be less than 1',
+      },
+      max: {
+        value: 10000,
+        message: 'Cannot be more than 10,000',
       },
       validate: {
         minLargerThanMax: (val) => {
@@ -149,6 +156,10 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
         value: 1,
         message: 'Cannot be less than 1',
       },
+      max: {
+        value: 10000,
+        message: 'Cannot be more than 10,000',
+      },
       validate: {
         maxLargerThanMin: (val) => {
           return (
@@ -185,33 +196,29 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
 
   return (
     <DrawerContentContainer>
-      <FormControl
-        isRequired
-        isReadOnly={props.isLoading}
-        isInvalid={!!errors.title}
-      >
+      <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl
         isRequired
-        isReadOnly={props.isLoading}
+        isReadOnly={isLoading}
         isInvalid={!!errors.description}
       >
         <FormLabel>Description</FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl isReadOnly={props.isLoading}>
+      <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
-      <FormControl isReadOnly={props.isLoading}>
+      <FormControl isReadOnly={isLoading}>
         <Toggle {...register('othersRadioButton')} label="Others" />
       </FormControl>
       <FormControl
         isRequired
-        isReadOnly={props.isLoading}
+        isReadOnly={isLoading}
         isInvalid={!!errors.fieldOptions}
       >
         <FormLabel>Options</FormLabel>
@@ -230,7 +237,7 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
         />
         <FormControl
           isDisabled={!watchedInputs.validateByValue}
-          isReadOnly={props.isLoading}
+          isReadOnly={isLoading}
           isInvalid={!isEmpty(errors.ValidationOptions)}
         >
           <Stack mt="0.5rem" direction="row" spacing="0.5rem">
@@ -238,11 +245,17 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
               name="ValidationOptions.customMin"
               control={control}
               rules={customMinValidationOptions}
-              render={({ field }) => (
+              render={({ field: { onChange, ...rest } }) => (
                 <NumberInput
+                  inputMode="numeric"
+                  precision={0}
                   flex={1}
                   showSteppers={false}
-                  {...field}
+                  onChange={(val) => {
+                    // Only allow numeric inputs
+                    onChange(val.replace(/\D/g, ''))
+                  }}
+                  {...rest}
                   placeholder="Minimum"
                 />
               )}
@@ -251,11 +264,17 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
               name="ValidationOptions.customMax"
               control={control}
               rules={customMaxValidationOptions}
-              render={({ field }) => (
+              render={({ field: { onChange, ...rest } }) => (
                 <NumberInput
+                  inputMode="numeric"
+                  precision={0}
                   flex={1}
                   showSteppers={false}
-                  {...field}
+                  onChange={(val) => {
+                    // Only allow numeric inputs
+                    onChange(val.replace(/\D/g, ''))
+                  }}
+                  {...rest}
                   placeholder="Maximum"
                 />
               )}
@@ -268,11 +287,11 @@ export const EditCheckbox = (props: EditCheckboxProps): JSX.Element => {
         </FormControl>
       </Box>
       <FormFieldDrawerActions
-        isLoading={props.isLoading}
+        isLoading={isLoading}
         isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
-        handleCancel={props.handleCancel}
+        handleCancel={handleCancel}
       />
     </DrawerContentContainer>
   )

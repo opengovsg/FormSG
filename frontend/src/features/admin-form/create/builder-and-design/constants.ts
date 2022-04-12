@@ -1,6 +1,6 @@
 import { BasicField } from '~shared/types/field'
 
-const ALL_FIELDS_ORDERED = [
+export const ALL_FIELDS_ORDERED = [
   // Page section
   BasicField.Section,
   BasicField.Statement,

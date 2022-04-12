@@ -1,8 +1,11 @@
 import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
+import FormEndPage from './components/FormEndPage'
 import FormFields from './components/FormFields'
+import { FormFooter } from './components/FormFooter'
 import FormStartPage from './components/FormStartPage'
+import { PublicFormWrapper } from './components/PublicFormWrapper'
 import { PublicFormProvider } from './PublicFormProvider'
 
 export const PublicFormPage = (): JSX.Element => {
@@ -10,12 +13,16 @@ export const PublicFormPage = (): JSX.Element => {
   if (!formId) throw new Error('No formId provided')
 
   return (
-    <PublicFormProvider formId={formId}>
-      <Flex flexDir="column" h="100%" minH="100vh">
+    <Flex minH="100vh" flexDir="column" h="100%">
+      <PublicFormProvider formId={formId}>
         <FormStartPage />
-        <FormFields />
-      </Flex>
-    </PublicFormProvider>
+        <PublicFormWrapper>
+          <FormFields />
+          <FormEndPage />
+          <FormFooter />
+        </PublicFormWrapper>
+      </PublicFormProvider>
+    </Flex>
   )
 }
 
