@@ -9,6 +9,7 @@ import {
   postGenerateVfnOtpResponse,
   postVerifyVfnOtpResponse,
   postVfnTransactionResponse,
+  SHOW_FIELDS_ON_YES_LOGIC,
 } from '~/mocks/msw/handlers/public-form'
 
 import { StoryRouter } from '~utils/storybook'
@@ -182,6 +183,32 @@ VerifiedFieldsExpiry.parameters = {
               globalId: 'not-used',
             },
           ],
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+
+export const WithLogic = Template.bind({})
+WithLogic.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          form_fields: [
+            {
+              title: '',
+              description:
+                'Select "Yes" on the field below to show more fields',
+              required: true,
+              disabled: false,
+              fieldType: BasicField.Statement,
+              _id: 'some-random-id',
+              globalId: 'not-used',
+            },
+          ],
+          form_logics: [SHOW_FIELDS_ON_YES_LOGIC],
         },
       },
     }),
