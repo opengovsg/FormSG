@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { SubmitHandler } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import { isEqual } from 'lodash'
@@ -7,12 +8,14 @@ import get from 'lodash/get'
 import simplur from 'simplur'
 
 import { PublicFormViewDto } from '~shared/types/form'
+import { FieldResponse } from '~shared/types/response'
 
 import { PUBLICFORM_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
+import { FormFieldValues } from '~templates/Field'
 
 import { trackVisitPublicForm } from '~features/analytics/AnalyticsService'
 import {
@@ -20,6 +23,7 @@ import {
   useTransactionMutations,
 } from '~features/verifiable-fields'
 
+import { transformInputsToOutputs } from './utils/inputTransformation'
 import { PublicFormContext } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
@@ -37,7 +41,7 @@ export const PublicFormProvider = ({
   const miniHeaderRef = useRef<HTMLDivElement>(null)
   const { data, error, isLoading, ...rest } = usePublicFormView(formId)
 
-  const [formView, setFormView] = useState<PublicFormViewDto>()
+  const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
 
   const { createTransactionMutation } = useTransactionMutations(formId)
   const toast = useToast()
@@ -46,10 +50,10 @@ export const PublicFormProvider = ({
 
   useEffect(() => {
     if (data) {
-      if (!formView) {
+      if (!cachedDto) {
         trackVisitPublicForm(data.form)
-        setFormView(data)
-      } else if (!desyncToastIdRef.current && !isEqual(data, formView)) {
+        setCachedDto(data)
+      } else if (!desyncToastIdRef.current && !isEqual(data, cachedDto)) {
         desyncToastIdRef.current = toast({
           status: 'warning',
           title: (
@@ -66,7 +70,7 @@ export const PublicFormProvider = ({
         })
       }
     }
-  }, [data, formView, toast])
+  }, [data, cachedDto, toast])
 
   const getTransactionId = useCallback(async () => {
     if (!vfnTransaction || isPast(vfnTransaction.expireAt)) {
@@ -93,7 +97,7 @@ export const PublicFormProvider = ({
     if (vfnToastIdRef.current) {
       toast.close(vfnToastIdRef.current)
     }
-    const numVerifiable = formView?.form.form_fields.filter((ff) =>
+    const numVerifiable = cachedDto?.form.form_fields.filter((ff) =>
       get(ff, 'isVerifiable'),
     ).length
 
@@ -109,24 +113,45 @@ export const PublicFormProvider = ({
         ]} field[|s] again.`,
       })
     }
-  }, [formView?.form.form_fields, toast])
+  }, [cachedDto?.form.form_fields, toast])
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
+
+  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
+    (formInputs) => {
+      if (!cachedDto?.form) return
+      try {
+        const responses = cachedDto.form.form_fields
+          .map((ff) => transformInputsToOutputs(ff, formInputs[ff._id]))
+          .filter((output): output is FieldResponse => output !== undefined)
+
+        return console.log(responses)
+      } catch (error) {
+        toast({
+          status: 'danger',
+          description:
+            'An error occurred whilst processing your submission. Please refresh and try again.',
+        })
+      }
+    },
+    [cachedDto?.form, toast],
+  )
 
   return (
     <PublicFormContext.Provider
       value={{
         miniHeaderRef,
+        handleSubmitForm,
         formId,
         error,
         getTransactionId,
         expiryInMs,
         isLoading,
-        ...formView,
+        ...cachedDto,
         ...rest,
       }}
     >
-      <Helmet title={formView?.form.title} />
+      <Helmet title={cachedDto?.form.title} />
       {isFormNotFound ? <div>404</div> : children}
     </PublicFormContext.Provider>
   )

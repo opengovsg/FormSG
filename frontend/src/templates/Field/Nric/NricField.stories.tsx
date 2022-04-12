@@ -7,11 +7,9 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
-import {
-  NricField as NricFieldComponent,
-  NricFieldProps,
-  NricFieldSchema,
-} from './NricField'
+import { NricFieldSchema } from '../types'
+
+import { NricField as NricFieldComponent, NricFieldProps } from './NricField'
 
 export default {
   title: 'Templates/Field/NricField',

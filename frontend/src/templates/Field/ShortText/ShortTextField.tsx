@@ -4,15 +4,12 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { FormFieldWithId, ShortTextFieldBase } from '~shared/types/field'
-
 import { createTextValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import { SingleAnswerFieldInput } from '../types'
+import { ShortTextFieldSchema, SingleAnswerFieldInput } from '../types'
 
-export type ShortTextFieldSchema = FormFieldWithId<ShortTextFieldBase>
 export interface ShortTextFieldProps extends BaseFieldProps {
   schema: ShortTextFieldSchema
 }

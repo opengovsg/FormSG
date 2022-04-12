@@ -5,21 +5,18 @@ import { useTable } from 'react-table'
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 import { get, head, uniq } from 'lodash'
 
-import { FormFieldWithId, TableFieldBase } from '~shared/types/field'
-
 import { useIsMobile } from '~hooks/useIsMobile'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 
 import { BaseFieldProps } from '../FieldContainer'
-import { TableFieldInputs } from '../types'
+import { TableFieldInputs, TableFieldSchema } from '../types'
 
 import { AddRowFooter } from './AddRowFooter'
 import { ColumnCell } from './ColumnCell'
 import { ColumnHeader } from './ColumnHeader'
 import { TableFieldContainer } from './TableFieldContainer'
 
-export type TableFieldSchema = FormFieldWithId<TableFieldBase>
 export interface TableFieldProps extends BaseFieldProps {
   schema: TableFieldSchema
 }

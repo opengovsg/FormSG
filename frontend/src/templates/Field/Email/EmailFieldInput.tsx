@@ -8,9 +8,7 @@ import {
 import { createEmailValidationRules } from '~utils/fieldValidation'
 import Input, { InputProps } from '~components/Input'
 
-import { VerifiableFieldInput } from '../types'
-
-import { EmailFieldSchema } from './types'
+import { EmailFieldSchema, VerifiableFieldInput } from '../types'
 
 export interface EmailFieldInputProps {
   schema: EmailFieldSchema

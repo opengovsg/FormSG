@@ -4,15 +4,12 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { FormFieldWithId, LongTextFieldBase } from '~shared/types/field'
-
 import { createTextValidationRules } from '~utils/fieldValidation'
 import Textarea from '~components/Textarea'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import { SingleAnswerFieldInput } from '../types'
+import { LongTextFieldSchema, SingleAnswerFieldInput } from '../types'
 
-export type LongTextFieldSchema = FormFieldWithId<LongTextFieldBase>
 export interface LongTextFieldProps extends BaseFieldProps {
   schema: LongTextFieldSchema
 }

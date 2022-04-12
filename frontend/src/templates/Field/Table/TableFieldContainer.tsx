@@ -4,7 +4,7 @@ import { FormControl } from '@chakra-ui/react'
 import FormLabel from '~components/FormControl/FormLabel'
 import { FormLabelProps } from '~components/FormControl/FormLabel/FormLabel'
 
-import { TableFieldSchema } from './TableField'
+import { TableFieldSchema } from '../types'
 
 export type BaseTableFieldProps = {
   schema: TableFieldSchema

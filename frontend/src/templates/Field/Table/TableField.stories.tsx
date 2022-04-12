@@ -9,10 +9,11 @@ import { BasicField } from '~shared/types/field'
 import { viewports } from '~utils/storybook'
 import Button from '~components/Button'
 
+import { TableFieldSchema } from '../types'
+
 import {
   TableField as TableFieldComponent,
   TableFieldProps,
-  TableFieldSchema,
 } from './TableField'
 
 export default {

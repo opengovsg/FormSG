@@ -4,15 +4,12 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { FormFieldWithId, NricFieldBase } from '~shared/types/field'
-
 import { createNricValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import { SingleAnswerFieldInput } from '../types'
+import { NricFieldSchema, SingleAnswerFieldInput } from '../types'
 
-export type NricFieldSchema = FormFieldWithId<NricFieldBase>
 export interface NricFieldProps extends BaseFieldProps {
   schema: NricFieldSchema
 }
