@@ -65,9 +65,10 @@ export type FormFieldValue<F extends BasicField = BasicField> = F extends
   | BasicField.Rating
   | BasicField.Nric
   | BasicField.Uen
-  | BasicField.YesNo
   | BasicField.Date
   ? SingleAnswerValue
+  : F extends BasicField.YesNo
+  ? YesNoFieldValue
   : F extends BasicField.Attachment
   ? File
   : F extends BasicField.Email | BasicField.Mobile
@@ -83,13 +84,16 @@ export type FormFieldValue<F extends BasicField = BasicField> = F extends
 // Input values, what each field contains
 export type SingleAnswerValue = string
 export type MultiAnswerValue = string[]
-export type YesNoFieldValue = 'yes' | 'no'
+export type YesNoFieldValue = 'Yes' | 'No'
 export type VerifiableFieldValues = {
   signature?: string
   value: string
 }
 export type CheckboxFieldValues = {
-  value: string[]
+  // Can be `false` if no changes were triggered on checkbox field.
+  // Artifact of react-hook-form not knowing whether checkbox is an array or not.
+  // Unable to use `{schema}.value.{index}` since value is a nested field value.
+  value: string[] | false
   othersInput?: string
 }
 export type RadioFieldValues = {

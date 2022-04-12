@@ -8,6 +8,7 @@ import { SubmissionResponseDto } from '~shared/types/submission'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
+import { FormFieldValues } from '~templates/Field'
 
 import {
   createEmailSubmissionFormData,
@@ -63,7 +64,7 @@ export type SubmitEmailFormArgs = {
   formId: string
   captchaResponse?: string | null
   formFields: FormFieldDto[]
-  formInputs: Record<string, unknown>
+  formInputs: FormFieldValues
 }
 
 export type SubmitStorageFormArgs = SubmitEmailFormArgs & { publicKey: string }

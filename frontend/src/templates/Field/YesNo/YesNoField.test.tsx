@@ -39,7 +39,7 @@ describe('ValidationRequired', () => {
 
     // Assert
     // Should show success message.
-    const success = screen.getByText('You have submitted: yes')
+    const success = screen.getByText('You have submitted: Yes')
     expect(success).not.toBeNull()
     const error = screen.queryByText('Please fill in required field')
     expect(error).toBeNull()
@@ -78,7 +78,7 @@ describe('ValidationOptional', () => {
 
     // Assert
     // Should show success message.
-    const success = screen.getByText('You have submitted: no')
+    const success = screen.getByText('You have submitted: No')
     expect(success).not.toBeNull()
   })
 })

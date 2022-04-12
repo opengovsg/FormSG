@@ -12,6 +12,7 @@ import IconButton from '~components/IconButton'
 import { BaseFieldProps } from '../FieldContainer'
 import { TableFieldInputs, TableFieldSchema } from '../types'
 
+import { createTableRow } from './utils/createRow'
 import { AddRowFooter } from './AddRowFooter'
 import { ColumnCell } from './ColumnCell'
 import { ColumnHeader } from './ColumnHeader'
@@ -41,15 +42,6 @@ export const TableField = ({
     }))
   }, [schema.columns])
 
-  const baseRowData = useMemo(
-    () =>
-      schema.columns.reduce((acc, c) => {
-        acc[c._id] = ''
-        return acc
-      }, {} as Record<string, string>),
-    [schema.columns],
-  )
-
   const formMethods = useFormContext<TableFieldInputs>()
   const { errors } = useFormState({
     control: formMethods.control,
@@ -75,8 +67,8 @@ export const TableField = ({
 
   const handleAddRow = useCallback(() => {
     if (!schema.maximumRows || fields.length >= schema.maximumRows) return
-    return append(baseRowData)
-  }, [append, baseRowData, fields.length, schema.maximumRows])
+    return append(createTableRow(schema))
+  }, [append, fields.length, schema])
 
   const handleRemoveRow = useCallback(
     (rowIndex: number) => {
