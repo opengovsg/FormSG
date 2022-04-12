@@ -9,7 +9,10 @@ import { SubmissionResponseDto } from '~shared/types/submission'
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
-import { createEmailSubmissionFormData } from './utils/createSubmission'
+import {
+  createEmailSubmissionFormData,
+  createEncryptedSubmissionData,
+} from './utils/createSubmission'
 
 const PUBLIC_FORMS_ENDPOINT = '/forms'
 
@@ -56,24 +59,50 @@ export const logoutPublicForm = async (
   ).then(({ data }) => data)
 }
 
-export type SubmitEmailModeFormArgs = {
+export type SubmitEmailFormArgs = {
   formId: string
   captchaResponse?: string | null
   formFields: FormFieldDto[]
   formInputs: Record<string, unknown>
 }
 
+export type SubmitStorageFormArgs = SubmitEmailFormArgs & { publicKey: string }
+
 export const submitEmailModeForm = async ({
   formFields,
   formInputs,
   formId,
   captchaResponse = null,
-}: SubmitEmailModeFormArgs): Promise<SubmissionResponseDto> => {
+}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
   const formData = createEmailSubmissionFormData(formFields, formInputs)
 
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email`,
     formData,
+    {
+      params: {
+        captchaResponse: String(captchaResponse),
+      },
+    },
+  ).then(({ data }) => data)
+}
+
+export const submitStorageModeForm = async ({
+  formFields,
+  formInputs,
+  formId,
+  publicKey,
+  captchaResponse = null,
+}: SubmitStorageFormArgs) => {
+  const submissionContent = await createEncryptedSubmissionData(
+    formFields,
+    formInputs,
+    publicKey,
+  )
+
+  return ApiService.post<SubmissionResponseDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt`,
+    submissionContent,
     {
       params: {
         captchaResponse: String(captchaResponse),
