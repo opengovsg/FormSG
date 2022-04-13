@@ -1,13 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
-import {
-  BiCog,
-  BiDuplicate,
-  BiEdit,
-  BiGridHorizontal,
-  BiTrash,
-} from 'react-icons/bi'
+import { BiDuplicate, BiEdit, BiGridHorizontal, BiTrash } from 'react-icons/bi'
 import { useIsMutating } from 'react-query'
 import {
   Box,
@@ -200,6 +194,7 @@ export const FieldRowContainer = ({
           >
             <Fade in={isActive}>
               <chakra.button
+                display="flex"
                 tabIndex={isActive ? 0 : -1}
                 {...provided.dragHandleProps}
                 borderRadius="4px"
@@ -223,8 +218,8 @@ export const FieldRowContainer = ({
               </chakra.button>
             </Fade>
             <Box
-              p={{ base: '0.75rem', md: '1.5rem' }}
-              pt={0}
+              px={{ base: '0.75rem', md: '1.5rem' }}
+              pb={{ base: '0.75rem', md: '1.5rem' }}
               w="100%"
               pointerEvents={isActive ? undefined : 'none'}
             >
@@ -253,12 +248,6 @@ export const FieldRowContainer = ({
                   colorScheme="secondary"
                   spacing={0}
                 >
-                  <IconButton
-                    aria-label="Close field settings"
-                    icon={<BiCog fontSize="1.25rem" />}
-                    onClick={setToInactive}
-                    isDisabled={isAnyMutationLoading}
-                  />
                   {
                     // Fields which are not yet created cannot be duplicated
                     stateData.state !== BuildFieldState.CreatingField && (

@@ -1,6 +1,6 @@
 import { memo, useCallback, useMemo } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
-import { Box, Flex } from '@chakra-ui/react'
+import { Stack, Text } from '@chakra-ui/react'
 
 import { BasicField, FieldCreateDto } from '~shared/types/field'
 
@@ -75,7 +75,8 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 
   return (
     <>
-      <Flex
+      <Stack
+        direction="row"
         pos="sticky"
         top={0}
         px="1.5rem"
@@ -85,17 +86,26 @@ export const EditFieldDrawer = (): JSX.Element | null => {
         bg="white"
       >
         <IconButton
-          minH="1.5rem"
-          minW="1.5rem"
+          size="sm"
+          h="1.5rem"
+          w="1.5rem"
           aria-label="Back to field selection"
           variant="clear"
           colorScheme="secondary"
           onClick={setToInactive}
           icon={<BiLeftArrowAlt />}
         />
-        <Box m="auto">Edit {basicFieldText} field</Box>
+        <Text
+          textStyle="h4"
+          as="h4"
+          color="secondary.500"
+          flex={1}
+          textAlign="center"
+        >
+          Edit {basicFieldText}
+        </Text>
         <CreatePageDrawerCloseButton />
-      </Flex>
+      </Stack>
       <MemoFieldDrawerContent
         field={fieldToEdit}
         key={`${fieldIndex}-${numFields}`}

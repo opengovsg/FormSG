@@ -185,6 +185,10 @@ export const Button = {
     py: '9px',
   },
   sizes: {
+    sm: {
+      minH: 'auto',
+      minW: 'auto',
+    },
     md: {
       minH: '2.75rem',
       minW: '2.75rem',

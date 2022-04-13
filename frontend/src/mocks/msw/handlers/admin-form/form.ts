@@ -86,6 +86,16 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
     globalId: 'IsZAjzS1J2AJqsUnAnCSQStxoknyIdUEXam6cPlNYuJ',
   },
   {
+    allowIntlNumbers: false,
+    title: 'Home Number',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.HomeNo,
+    _id: '624a7bb87da1c9ace14fa4ee',
+    globalId: 'egs1hAtjIKibqc10hjz1s3qZ9PGunwL8vOXsNwIghuD',
+  },
+  {
     ValidationOptions: {
       customVal: null,
       selectedValidation: null,
@@ -213,6 +223,15 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
     globalId: '0KHU4aNnFVS5y8CLqkXWf9A0RknGIqzNoVfOUlqNRDl',
   },
   {
+    title: 'UEN',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Uen,
+    _id: '624a7c487da1c9ace14fa4ef',
+    globalId: 'TKhuZk5X4rFgSbrbnjpJ205J6uhsdu18YwFdMVB7y70',
+  },
+  {
     addMoreRows: false,
     title: 'Table',
     description: '',
@@ -280,7 +299,6 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
     globalId: '6M755frgrULuCQxhEoYjR7Ab18RdKItsnHQP2NA8UAK',
   },
 ]
-let mutableFormFields = [...MOCK_FORM_FIELDS]
 
 export const createMockForm = (
   props: Partial<AdminFormDto> = {},
@@ -307,7 +325,7 @@ export const createMockForm = (
         inactiveMessage:
           'If you think this is a mistake, please contact the agency that gave you the form link!',
         submissionLimit: null,
-        form_fields: mutableFormFields,
+        form_fields: [],
         form_logics: [],
         permissionList: [],
         title: 'Test form title',
@@ -335,22 +353,134 @@ export const createMockForm = (
   }
 }
 
-export const getAdminFormResponse = (
+export const createFormBuilderMocks = (
   props: Partial<AdminFormDto> = {},
-  delay: number | 'infinite' | 'real' = 0,
-): ReturnType<typeof rest['get']> => {
-  return rest.get<AdminFormViewDto>(
-    '/api/v3/admin/forms/:formId',
-    (req, res, ctx) => {
-      return res(
-        ctx.delay(delay),
-        ctx.status(200),
-        ctx.json(
-          createMockForm({ _id: req.params.formId as FormId, ...props }),
-        ),
+  delay: number | 'infinite' | 'real' = 500,
+) => {
+  const { form } = createMockForm(props)
+
+  const getAdminFormResponse = (): ReturnType<typeof rest['get']> => {
+    return rest.get<AdminFormViewDto>(
+      '/api/v3/admin/forms/:formId',
+      (req, res, ctx) => {
+        return res(
+          ctx.delay(delay),
+          ctx.status(200),
+          ctx.json({ form: { ...form, _id: req.params.formId as FormId } }),
+        )
+      },
+    )
+  }
+
+  const createSingleField = () => {
+    return rest.post<FieldCreateDto, { formId: string }, FormFieldDto>(
+      '/api/v3/admin/forms/:formId/fields',
+      (req, res, ctx) => {
+        const newField = {
+          ...req.body,
+          _id: `random-id-${form.form_fields.length}`,
+        } as FormFieldDto
+        if (req.body.fieldType === BasicField.Table) {
+          // eslint-disable-next-line @typescript-eslint/no-extra-semi
+          ;(newField as TableFieldDto).columns = req.body.columns.map(
+            (col) => ({
+              ...col,
+              _id: cuid(),
+            }),
+          )
+        }
+        const newIndex = parseInt(
+          req.url.searchParams.get('to') ?? `${form.form_fields.length}`,
+        )
+        form.form_fields = insertAt(form.form_fields, newIndex, newField)
+        return res(ctx.delay(delay), ctx.status(200), ctx.json(newField))
+      },
+    )
+  }
+
+  const updateSingleField = () => {
+    return rest.put<
+      FormFieldDto,
+      { formId: string; fieldId: string },
+      FormFieldDto
+    >('/api/v3/admin/forms/:formId/fields/:fieldId', (req, res, ctx) => {
+      const index = form.form_fields.findIndex(
+        (field) => field._id === req.params.fieldId,
       )
-    },
-  )
+      form.form_fields.splice(index, 1, req.body)
+      return res(ctx.delay(delay), ctx.status(200), ctx.json(req.body))
+    })
+  }
+
+  const reorderField = () => {
+    return rest.post<
+      Record<string, never>,
+      { formId: string; fieldId: string },
+      FormFieldDto[]
+    >(
+      '/api/v3/admin/forms/:formId/fields/:fieldId/reorder',
+      (req, res, ctx) => {
+        const fromIndex = form.form_fields.findIndex(
+          (field) => field._id === req.params.fieldId,
+        )
+        form.form_fields = reorder(
+          form.form_fields,
+          fromIndex,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          parseInt(req.url.searchParams.get('to')!),
+        )
+        return res(
+          ctx.delay(delay),
+          ctx.status(200),
+          ctx.json(form.form_fields),
+        )
+      },
+    )
+  }
+
+  const duplicateField = () => {
+    return rest.post<
+      Record<string, never>,
+      { formId: string; fieldId: string },
+      FormFieldDto
+    >(
+      '/api/v3/admin/forms/:formId/fields/:fieldId/duplicate',
+      (req, res, ctx) => {
+        const fieldToCopyIndex = form.form_fields.findIndex(
+          (field) => field._id === req.params.fieldId,
+        )
+        const newField = {
+          ...form.form_fields[fieldToCopyIndex],
+          _id: `random-id-${form.form_fields.length}`,
+        }
+        form.form_fields.push(newField)
+        return res(ctx.delay(delay), ctx.status(200), ctx.json(newField))
+      },
+    )
+  }
+
+  const deleteField = () => {
+    return rest.delete<
+      Record<string, never>,
+      { formId: string; fieldId: string },
+      FormFieldDto
+    >('/api/v3/admin/forms/:formId/fields/:fieldId', (req, res, ctx) => {
+      const fieldToDeleteIndex = form.form_fields.findIndex(
+        (field) => field._id === req.params.fieldId,
+      )
+      form.form_fields.splice(fieldToDeleteIndex, 1)
+      return res(ctx.delay(delay), ctx.status(200))
+    })
+  }
+
+  return [
+    getAdminFormResponse(),
+    createSingleField(),
+    updateSingleField(),
+    reorderField(),
+    duplicateField(),
+    deleteField(),
+  ]
 }
 
 export const getStorageSubmissionMetadataResponse = (
@@ -375,98 +505,6 @@ export const getStorageSubmissionMetadataResponse = (
       )
     },
   )
-}
-
-export const createSingleField = (delay = 500) => {
-  return rest.post<FieldCreateDto, { formId: string }, FormFieldDto>(
-    '/api/v3/admin/forms/:formId/fields',
-    (req, res, ctx) => {
-      const newField = {
-        ...req.body,
-        _id: `random-id-${mutableFormFields.length}`,
-      } as FormFieldDto
-      if (req.body.fieldType === BasicField.Table) {
-        // eslint-disable-next-line @typescript-eslint/no-extra-semi
-        ;(newField as TableFieldDto).columns = req.body.columns.map((col) => ({
-          ...col,
-          _id: cuid(),
-        }))
-      }
-      const newIndex = parseInt(
-        req.url.searchParams.get('to') ?? `${mutableFormFields.length}`,
-      )
-      mutableFormFields = insertAt(mutableFormFields, newIndex, newField)
-      return res(ctx.delay(delay), ctx.status(200), ctx.json(newField))
-    },
-  )
-}
-
-export const updateSingleField = (delay = 500) => {
-  return rest.put<
-    FormFieldDto,
-    { formId: string; fieldId: string },
-    FormFieldDto
-  >('/api/v3/admin/forms/:formId/fields/:fieldId', (req, res, ctx) => {
-    const index = mutableFormFields.findIndex(
-      (field) => field._id === req.params.fieldId,
-    )
-    mutableFormFields.splice(index, 1, req.body)
-    return res(ctx.delay(delay), ctx.status(200), ctx.json(req.body))
-  })
-}
-
-export const reorderField = (delay = 500) => {
-  return rest.post<
-    Record<string, never>,
-    { formId: string; fieldId: string },
-    FormFieldDto[]
-  >('/api/v3/admin/forms/:formId/fields/:fieldId/reorder', (req, res, ctx) => {
-    const fromIndex = mutableFormFields.findIndex(
-      (field) => field._id === req.params.fieldId,
-    )
-    mutableFormFields = reorder(
-      mutableFormFields,
-      fromIndex,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      parseInt(req.url.searchParams.get('to')!),
-    )
-    return res(ctx.delay(delay), ctx.status(200), ctx.json(mutableFormFields))
-  })
-}
-
-export const duplicateField = (delay = 500) => {
-  return rest.post<
-    Record<string, never>,
-    { formId: string; fieldId: string },
-    FormFieldDto
-  >(
-    '/api/v3/admin/forms/:formId/fields/:fieldId/duplicate',
-    (req, res, ctx) => {
-      const fieldToCopyIndex = mutableFormFields.findIndex(
-        (field) => field._id === req.params.fieldId,
-      )
-      const newField = {
-        ...mutableFormFields[fieldToCopyIndex],
-        _id: `random-id-${mutableFormFields.length}`,
-      }
-      mutableFormFields.push(newField)
-      return res(ctx.delay(delay), ctx.status(200), ctx.json(newField))
-    },
-  )
-}
-
-export const deleteField = (delay = 500) => {
-  return rest.delete<
-    Record<string, never>,
-    { formId: string; fieldId: string },
-    FormFieldDto
-  >('/api/v3/admin/forms/:formId/fields/:fieldId', (req, res, ctx) => {
-    const fieldToDeleteIndex = mutableFormFields.findIndex(
-      (field) => field._id === req.params.fieldId,
-    )
-    mutableFormFields.splice(fieldToDeleteIndex, 1)
-    return res(ctx.delay(delay), ctx.status(200))
-  })
 }
 
 export const createLogic = (delay?: number) => {

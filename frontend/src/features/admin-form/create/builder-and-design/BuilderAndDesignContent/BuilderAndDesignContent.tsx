@@ -6,6 +6,7 @@ import { Box, Flex, Modal, ModalOverlay } from '@chakra-ui/react'
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 
+import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
 import { useBuilderAndDesignContext } from '../BuilderAndDesignContext'
 import { FIELD_LIST_DROP_ID } from '../constants'
 import { MobileCreateEditModal } from '../MobileCreateEditModal'
@@ -29,6 +30,7 @@ export const BuilderAndDesignContent = ({
 }: BuilderAndDesignContentProps): JSX.Element => {
   const setFieldsToInactive = useBuilderAndDesignStore(setToInactiveSelector)
   const { builderFields } = useBuilderFields()
+  const { handleBuilderClick } = useCreatePageSidebar()
 
   useEffect(() => setFieldsToInactive, [setFieldsToInactive])
 
@@ -45,6 +47,13 @@ export const BuilderAndDesignContent = ({
     onMobileModalClose()
     setFieldsToInactive()
   }, [onMobileModalClose, setFieldsToInactive])
+
+  const handleEmptyPlaceholderClick = useCallback(() => {
+    if (isMobile) {
+      return onMobileModalOpen()
+    }
+    return handleBuilderClick()
+  }, [handleBuilderClick, isMobile, onMobileModalOpen])
 
   return (
     <>
@@ -89,7 +98,7 @@ export const BuilderAndDesignContent = ({
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     isDraggingOver={snapshot.isDraggingOver}
-                    onMobileModalOpen={onMobileModalOpen}
+                    onClick={handleEmptyPlaceholderClick}
                   />
                 )
               }

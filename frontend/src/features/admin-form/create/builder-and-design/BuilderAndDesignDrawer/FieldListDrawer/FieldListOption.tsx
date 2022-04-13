@@ -43,6 +43,11 @@ export const DraggableFieldListOption = ({
             {...provided.dragHandleProps}
             style={{
               ...provided.draggableProps.style,
+              // Speed up drop animation to smoothen out transition when field is
+              // dropped into the builder.
+              transition: snapshot.isDropAnimating
+                ? '0.1s'
+                : provided.draggableProps.style?.transition,
               transform: snapshot.isDragging
                 ? provided.draggableProps.style?.transform
                 : 'translate(0px, 0px)',

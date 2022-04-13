@@ -5,7 +5,7 @@ import { Meta, Story } from '@storybook/react'
 import { FormResponseMode } from '~shared/types/form'
 
 import {
-  getAdminFormResponse,
+  createFormBuilderMocks,
   getStorageSubmissionMetadataResponse,
 } from '~/mocks/msw/handlers/admin-form'
 
@@ -24,7 +24,7 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [getAdminFormResponse()],
+    msw: [...createFormBuilderMocks()],
   },
 } as Meta
 
@@ -69,7 +69,7 @@ EmailFormMobile.parameters = {
 export const StorageForm = Template.bind({})
 StorageForm.parameters = {
   msw: [
-    getAdminFormResponse({
+    ...createFormBuilderMocks({
       responseMode: FormResponseMode.Encrypt,
     }),
     getStorageSubmissionMetadataResponse(),
