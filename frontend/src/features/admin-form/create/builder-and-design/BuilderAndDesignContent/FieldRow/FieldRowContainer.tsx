@@ -90,7 +90,6 @@ export const FieldRowContainer = ({
   }, [stateData, field])
 
   const {
-    mobileCreateEditModalDisclosure: { onOpen: onMobileModalOpen },
     deleteFieldModalDisclosure: { onOpen: onDeleteModalOpen },
   } = useBuilderAndDesignContext()
 
@@ -109,9 +108,13 @@ export const FieldRowContainer = ({
   const handleFieldClick = useCallback(() => {
     if (!isActive) {
       updateEditState(field)
-      handleBuilderClick()
+      if (!isMobile) {
+        // Do not open builder if in mobile so user can view active state without
+        // drawer blocking the view.
+        handleBuilderClick()
+      }
     }
-  }, [isActive, updateEditState, field, handleBuilderClick])
+  }, [isActive, updateEditState, field, isMobile, handleBuilderClick])
 
   const handleKeydown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -125,9 +128,9 @@ export const FieldRowContainer = ({
 
   const handleEditFieldClick = useCallback(() => {
     if (isMobile) {
-      onMobileModalOpen()
+      handleBuilderClick()
     }
-  }, [isMobile, onMobileModalOpen])
+  }, [handleBuilderClick, isMobile])
 
   const handleDuplicateClick = useCallback(() => {
     // Duplicate button should be hidden if field
