@@ -99,7 +99,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
             <Toggle
               {...register('isVerifiable', {
                 onChange: (e) => {
-                  if (e.target.checked) {
+                  if (e.target.checked && !hasTwilioCredentials) {
                     smsCountsDisclosure.onOpen()
                   }
                 },
