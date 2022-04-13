@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
-import { BiDuplicate, BiEdit, BiGridHorizontal, BiTrash } from 'react-icons/bi'
+import { BiCog, BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
 import { useIsMutating } from 'react-query'
 import {
   Box,
@@ -239,22 +239,22 @@ export const FieldRowContainer = ({
                 px={{ base: '0.75rem', md: '1.5rem' }}
                 flex={1}
                 borderTop="1px solid var(--chakra-colors-neutral-300)"
-                justify={{ base: 'space-between', md: 'end' }}
+                justify="flex-end"
               >
-                {isMobile ? (
-                  <IconButton
-                    variant="clear"
-                    colorScheme="secondary"
-                    aria-label="Edit field"
-                    icon={<BiEdit fontSize="1.25rem" />}
-                    onClick={handleEditFieldClick}
-                  />
-                ) : null}
                 <ButtonGroup
                   variant="clear"
                   colorScheme="secondary"
                   spacing={0}
                 >
+                  {isMobile ? (
+                    <IconButton
+                      variant="clear"
+                      colorScheme="secondary"
+                      aria-label="Edit field"
+                      icon={<BiCog fontSize="1.25rem" />}
+                      onClick={handleEditFieldClick}
+                    />
+                  ) : null}
                   {
                     // Fields which are not yet created cannot be duplicated
                     stateData.state !== BuildFieldState.CreatingField && (
