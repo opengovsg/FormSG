@@ -51,7 +51,7 @@ export const PublicFormProvider = ({
     /* enabled= */ !!data?.form.hasCaptcha,
   )
   const { hasLoaded, getCaptchaResponse, containerId } = useRecaptcha({
-    sitekey: captchaPublicKey,
+    sitekey: data?.form.hasCaptcha ? captchaPublicKey : undefined,
   })
 
   const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
