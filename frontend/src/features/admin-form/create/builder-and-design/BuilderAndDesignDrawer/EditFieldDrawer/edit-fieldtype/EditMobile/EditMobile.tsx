@@ -62,14 +62,11 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
   const hasTwilioCredentials = useMemo(() => !!form?.msgSrvcName, [form])
 
   const { data: freeSmsCount } = useFreeSmsQuota()
-  const isToggleVfnDisabled = useMemo(
-    () =>
-      !field.isVerifiable &&
-      !hasTwilioCredentials &&
-      !!freeSmsCount &&
-      freeSmsCount?.freeSmsCounts >= freeSmsCount?.quota,
-    [field.isVerifiable, freeSmsCount, hasTwilioCredentials],
-  )
+  const isToggleVfnDisabled = useMemo(() => {
+    if (!freeSmsCount) return true
+    if (!field.isVerifiable || !hasTwilioCredentials) return false
+    return freeSmsCount.freeSmsCounts >= freeSmsCount.quota
+  }, [field.isVerifiable, freeSmsCount, hasTwilioCredentials])
 
   const smsCountsDisclosure = useDisclosure()
 

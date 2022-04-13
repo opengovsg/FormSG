@@ -18,8 +18,10 @@ export const putTwilioCredentials = ({
 
 export const getFreeSmsQuota = ({
   delay = 0,
+  override,
 }: {
   delay?: number | 'infinite' | 'real'
+  override?: Partial<SmsCountsDto>
 } = {}) => {
   return rest.get(
     '/api/v3/admin/forms/:formId/verified-sms/count/free',
@@ -30,6 +32,7 @@ export const getFreeSmsQuota = ({
         ctx.json<SmsCountsDto>({
           freeSmsCounts: 45,
           quota: 10000,
+          ...override,
         }),
       )
     },

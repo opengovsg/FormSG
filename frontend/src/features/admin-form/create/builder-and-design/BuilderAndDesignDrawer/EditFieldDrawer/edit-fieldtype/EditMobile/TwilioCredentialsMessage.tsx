@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link as ReactLink, useParams } from 'react-router-dom'
-import { Flex, Icon, Text } from '@chakra-ui/react'
+import { Flex, Icon, Skeleton, Text } from '@chakra-ui/react'
 
 import { SmsCountsDto } from '~shared/types'
 
@@ -42,18 +42,20 @@ export const TwilioCredentialsMessage = ({
       color={hasExceededQuota ? 'danger.500' : 'secondary.500'}
     >
       <Icon as={BxsXCircle} mr="0.5rem" />
-      <Text textStyle="caption-1">
-        {hasExceededQuota
-          ? 'You have reached the free tier limit for SMS verification.'
-          : 'Twilio credentials not added.'}{' '}
-        <Link
-          as={ReactLink}
-          to={`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SUBROUTE}`}
-          textStyle="caption-1"
-        >
-          Add credentials now
-        </Link>
-      </Text>
+      <Skeleton isLoaded={!!freeSmsCount}>
+        <Text textStyle="caption-1">
+          {hasExceededQuota
+            ? 'You have reached the free tier limit for SMS verification.'
+            : 'Twilio credentials not added.'}{' '}
+          <Link
+            as={ReactLink}
+            to={`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SUBROUTE}`}
+            textStyle="caption-1"
+          >
+            Add credentials now
+          </Link>
+        </Text>
+      </Skeleton>
     </Flex>
   )
 }
