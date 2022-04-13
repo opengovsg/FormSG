@@ -7,7 +7,6 @@ import { ChakraProvider } from '@chakra-ui/react'
 import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
 import { HttpError } from '~services/ApiService'
-import { AppMasthead } from '~components/GovtMasthead/'
 
 import { AppHelmet } from './AppHelmet'
 import { AppRouter } from './AppRouter'

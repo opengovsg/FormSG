@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
-import { AppMasthead } from '~components/GovtMasthead'
+import GovtMasthead from '~components/GovtMasthead'
 
 import FormEndPage from './components/FormEndPage'
 import FormFields from './components/FormFields'
@@ -16,7 +16,7 @@ export const PublicFormPage = (): JSX.Element => {
 
   return (
     <Flex minH="100vh" flexDir="column" h="100%">
-      <AppMasthead />
+      <GovtMasthead />
       <PublicFormProvider formId={formId}>
         <FormStartPage />
         <PublicFormWrapper>
