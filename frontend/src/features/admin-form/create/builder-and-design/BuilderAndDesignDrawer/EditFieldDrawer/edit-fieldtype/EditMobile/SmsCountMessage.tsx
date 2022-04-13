@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { BiMessage } from 'react-icons/bi'
 import { Flex, Icon, Text } from '@chakra-ui/react'
 
@@ -14,9 +15,13 @@ type SmsCountMessageProps = {
 export const SmsCountMessage = ({
   freeSmsCount,
 }: SmsCountMessageProps): JSX.Element => {
+  const hasExceededQuota = useMemo(() => {
+    return freeSmsCount && freeSmsCount.freeSmsCounts >= freeSmsCount.quota
+  }, [freeSmsCount])
+
   return (
-    <Flex mt="1rem">
-      <Icon as={BiMessage} mr="0.5rem" color="secondary.500" />
+    <Flex mt="1rem" color={hasExceededQuota ? 'danger.500' : 'secondary.500'}>
+      <Icon as={BiMessage} mr="0.5rem" />
       {freeSmsCount === undefined ? (
         <Spinner />
       ) : (
