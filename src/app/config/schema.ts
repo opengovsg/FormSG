@@ -291,11 +291,17 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
   },
   reactMigration: {
-    respondentRollout: {
-      doc: 'Percentage threshold to serve React for respondents',
+    respondentRolloutNoSPCP: {
+      doc: 'Percentage threshold to serve React for respondents for Phase 1 (NO SP/CP/MyInfo)',
       format: 'int',
       default: 0,
-      env: 'REACT_MIGRATION_RESPONDENT_ROLLOUT',
+      env: 'REACT_MIGRATION_RESP_ROLLOUT_NO_SPCP',
+    },
+    respondentRolloutSPCP: {
+      doc: 'Percentage threshold to serve React for respondents for Phase 2 (WITH SP/CP/MyInfo)',
+      format: 'int',
+      default: 0,
+      env: 'REACT_MIGRATION_RESP_ROLLOUT_SPCP',
     },
     adminRollout: {
       doc: 'Percentage threshold to serve React for admins',
