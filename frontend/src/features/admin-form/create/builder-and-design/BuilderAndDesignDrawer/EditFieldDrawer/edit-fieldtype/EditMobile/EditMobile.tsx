@@ -62,7 +62,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
   const hasTwilioCredentials = useMemo(() => !!form?.msgSrvcName, [form])
 
   const { data: freeSmsCount } = useFreeSmsQuota()
-  const smsCountsModal = useDisclosure()
+  const smsCountsDisclosure = useDisclosure()
 
   return (
     <>
@@ -100,7 +100,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
               {...register('isVerifiable', {
                 onChange: (e) => {
                   if (e.target.checked) {
-                    smsCountsModal.onOpen()
+                    smsCountsDisclosure.onOpen()
                   }
                 },
               })}
@@ -123,8 +123,8 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
       </DrawerContentContainer>
       <SmsCountsModal
         freeSmsCount={freeSmsCount}
-        isOpen={smsCountsModal.isOpen}
-        onClose={smsCountsModal.onClose}
+        isOpen={smsCountsDisclosure.isOpen}
+        onClose={smsCountsDisclosure.onClose}
       />
     </>
   )
