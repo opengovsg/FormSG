@@ -1,7 +1,9 @@
 import path from 'path'
 
+import { FormAuthType } from '../../../../shared/types'
 import config from '../../config/config'
 import { ControllerHandler } from '../core/core.types'
+import * as FormService from '../form/form.service'
 import * as PublicFormController from '../form/public-form/public-form.controller'
 import { RedirectParams } from '../form/public-form/public-form.types'
 import * as HomeController from '../home/home.controller'
@@ -45,10 +47,24 @@ export const serveForm: ControllerHandler<
   unknown,
   unknown,
   Record<string, string>
-> = (req, res, next) => {
+> = async (req, res, next) => {
+  const formResult = await FormService.retrieveFormKeysById(req.params.formId, [
+    'authType',
+  ])
   let showReact: boolean | undefined = undefined
+  let isSPCP = true
 
-  if (config.reactMigrationConfig.respondentRollout <= 0) {
+  if (!formResult.isErr()) {
+    isSPCP = [FormAuthType.SP, FormAuthType.CP, FormAuthType.MyInfo].includes(
+      formResult.value.authType,
+    )
+  }
+
+  const threshold = isSPCP
+    ? config.reactMigrationConfig.respondentRolloutSPCP
+    : config.reactMigrationConfig.respondentRolloutNoSPCP
+
+  if (threshold <= 0) {
     // Check the rollout value first, if it's 0, react is DISABLED
     // And we ignore cookies entirely!
     showReact = false
@@ -62,7 +78,7 @@ export const serveForm: ControllerHandler<
 
   if (showReact === undefined) {
     const rand = Math.random() * 100
-    showReact = rand <= config.reactMigrationConfig.respondentRollout
+    showReact = rand <= threshold
 
     res.cookie(
       RESPONDENT_COOKIE_NAME,
