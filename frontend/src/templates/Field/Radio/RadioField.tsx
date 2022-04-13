@@ -3,19 +3,17 @@ import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormFieldWithId, RadioFieldBase } from '~shared/types/field'
-
 import { RADIO_THEME_KEY } from '~theme/components/Radio'
 import { createRadioValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio, { OthersInput } from '~components/Radio'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { RadioFieldInputs, RadioFieldSchema } from '../types'
 
-export const RADIO_OTHERS_INPUT_KEY = 'others-input'
+export const RADIO_OTHERS_INPUT_KEY = 'othersInput'
 export const RADIO_OTHERS_INPUT_VALUE = '!!FORMSG_INTERNAL_RADIO_OTHERS_VALUE!!'
 
-export type RadioFieldSchema = FormFieldWithId<RadioFieldBase>
 export interface RadioFieldProps extends BaseFieldProps {
   schema: RadioFieldSchema
 }
@@ -23,29 +21,31 @@ export interface RadioFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const RadioField = ({
-  schema,
-  questionNumber,
-}: RadioFieldProps): JSX.Element => {
+export const RadioField = ({ schema }: RadioFieldProps): JSX.Element => {
   const styles = useMultiStyleConfig(RADIO_THEME_KEY, {})
 
   const othersInputName = useMemo(
-    () => `${schema._id}.${RADIO_OTHERS_INPUT_KEY}`,
+    () => `${schema._id}.${RADIO_OTHERS_INPUT_KEY}` as const,
     [schema._id],
   )
-  const radioInputName = useMemo(() => `${schema._id}.value`, [schema._id])
+  const radioInputName = useMemo(
+    () => `${schema._id}.value` as const,
+    [schema._id],
+  )
 
   const validationRules = useMemo(
     () => createRadioValidationRules(schema),
     [schema],
   )
 
-  const { register, getValues, trigger } = useFormContext()
-  const { isValid, isSubmitting, errors } = useFormState({ name: schema._id })
+  const { register, getValues, trigger } = useFormContext<RadioFieldInputs>()
+  const { isValid, isSubmitting, errors } = useFormState<RadioFieldInputs>({
+    name: schema._id,
+  })
 
   const othersValidationRules = useMemo(
     () => ({
-      validate: (value: string) => {
+      validate: (value?: string) => {
         return (
           !schema.othersRadioButton ||
           !(getValues(radioInputName) === RADIO_OTHERS_INPUT_VALUE) ||
@@ -58,11 +58,7 @@ export const RadioField = ({
   )
 
   return (
-    <FieldContainer
-      schema={schema}
-      questionNumber={questionNumber}
-      errorKey={radioInputName}
-    >
+    <FieldContainer schema={schema} errorKey={radioInputName}>
       <Controller
         name={radioInputName}
         rules={validationRules}

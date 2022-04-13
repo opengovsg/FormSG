@@ -1,12 +1,10 @@
 import { useMemo } from 'react'
+import { keyBy } from 'lodash'
 import pickBy from 'lodash/pickBy'
 
-import { FormFieldDto } from '~shared/types/field'
-
 import { useAdminForm } from '~features/admin-form/common/queries'
-
-import { ALLOWED_LOGIC_FIELDS } from '../constants'
-import { FormFieldWithQuestionNumber } from '../types'
+import { augmentWithQuestionNo } from '~features/form/utils/augmentWithQuestionNo'
+import { ALLOWED_LOGIC_FIELDS } from '~features/logic/constants'
 
 export const useAdminFormLogic = () => {
   const { data: form, isLoading } = useAdminForm()
@@ -14,10 +12,8 @@ export const useAdminFormLogic = () => {
   const mapIdToField = useMemo(() => {
     if (!form) return null
 
-    return form.form_fields.reduce((acc, field, index) => {
-      acc[field._id] = { ...field, questionNumber: index + 1 }
-      return acc
-    }, {} as Record<FormFieldDto['_id'], FormFieldWithQuestionNumber>)
+    const augmentedFormFields = augmentWithQuestionNo(form.form_fields)
+    return keyBy(augmentedFormFields, '_id')
   }, [form])
 
   const logicableFields = useMemo(() => {

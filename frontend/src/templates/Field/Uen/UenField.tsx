@@ -10,25 +10,23 @@ import { createUenValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { SingleAnswerFieldInput } from '../types'
 
 export type UenFieldSchema = FormFieldWithId<UenFieldBase>
 export interface UenFieldProps extends BaseFieldProps {
   schema: UenFieldSchema
 }
 
-export const UenField = ({
-  schema,
-  questionNumber,
-}: UenFieldProps): JSX.Element => {
+export const UenField = ({ schema }: UenFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createUenValidationRules(schema),
     [schema],
   )
 
-  const { register } = useFormContext()
+  const { register } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Input
         aria-label={schema.title}
         {...register(schema._id, validationRules)}

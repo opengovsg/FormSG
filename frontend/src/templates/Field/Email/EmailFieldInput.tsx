@@ -1,10 +1,14 @@
 import { useMemo } from 'react'
-import { Controller, ControllerRenderProps } from 'react-hook-form'
+import {
+  Controller,
+  ControllerRenderProps,
+  useFormContext,
+} from 'react-hook-form'
 
 import { createEmailValidationRules } from '~utils/fieldValidation'
 import Input, { InputProps } from '~components/Input'
 
-import { EmailFieldSchema } from './types'
+import { EmailFieldSchema, VerifiableFieldInput } from '../types'
 
 export interface EmailFieldInputProps {
   schema: EmailFieldSchema
@@ -28,8 +32,11 @@ export const EmailFieldInput = ({
     [schema],
   )
 
+  const { control } = useFormContext<VerifiableFieldInput>()
+
   return (
     <Controller
+      control={control}
       rules={validationRules}
       name={schema._id}
       render={({ field: { onChange, value, ...field } }) => (

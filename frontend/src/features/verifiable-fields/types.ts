@@ -6,8 +6,3 @@ export type VerifiableFieldType = VerifiableFieldBase['fieldType']
 export type VerifiableFieldSchema<T extends VerifiableFieldBase> = T & {
   isVerifiable: true
 }
-
-export type VerifiableFieldInput = {
-  value?: string
-  signature?: string
-}

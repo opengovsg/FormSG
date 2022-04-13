@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from 'react'
+import { forwardRef, useCallback, useMemo } from 'react'
 import {
   Flex,
   Icon,
@@ -45,6 +45,11 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       [selectedItem],
     )
 
+    const handleToggleMenu = useCallback(() => {
+      if (isReadOnly || isDisabled) return
+      return toggleMenu()
+    }, [isDisabled, isReadOnly, toggleMenu])
+
     return (
       <Flex>
         <VisuallyHidden id={inputAria.id}>{inputAria.label}</VisuallyHidden>
@@ -79,7 +84,11 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
                 aria-disabled={isDisabled}
               />
             ) : null}
-            <Text textStyle="body-1" isTruncated>
+            <Text
+              textStyle="body-1"
+              isTruncated
+              color={isDisabled ? 'neutral.500' : undefined}
+            >
               {selectedItemMeta.label}
             </Text>
           </Stack>
@@ -90,7 +99,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             placeholder={selectedItem ? undefined : placeholder}
             sx={styles.field}
             {...getInputProps({
-              onClick: toggleMenu,
+              onClick: handleToggleMenu,
               onBlur: () => !isOpen && resetInputValue(),
               ref,
               'aria-describedby': inputAria.id,

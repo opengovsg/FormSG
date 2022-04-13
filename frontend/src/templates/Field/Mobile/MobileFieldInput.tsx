@@ -1,12 +1,16 @@
 import { useMemo } from 'react'
-import { Controller, ControllerRenderProps } from 'react-hook-form'
+import {
+  Controller,
+  ControllerRenderProps,
+  useFormContext,
+} from 'react-hook-form'
 
 import { createMobileValidationRules } from '~utils/fieldValidation'
 import PhoneNumberInput, {
   PhoneNumberInputProps,
 } from '~components/PhoneNumberInput'
 
-import { MobileFieldSchema } from './types'
+import { MobileFieldSchema, VerifiableFieldInput } from '../types'
 
 export interface MobileFieldInputProps {
   schema: MobileFieldSchema
@@ -30,8 +34,11 @@ export const MobileFieldInput = ({
     [schema],
   )
 
+  const { control } = useFormContext<VerifiableFieldInput>()
+
   return (
     <Controller
+      control={control}
       rules={validationRules}
       name={schema._id}
       render={({ field: { onChange, value, ...field } }) => (

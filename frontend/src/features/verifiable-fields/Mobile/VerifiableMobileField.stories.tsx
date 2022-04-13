@@ -12,13 +12,15 @@ import {
 } from '~/mocks/msw/handlers/public-form'
 
 import Button from '~components/Button'
+import {
+  VerifiableFieldInput,
+  VerifiableFieldValues,
+} from '~templates/Field/types'
 
 import {
   PublicFormContext,
   PublicFormContextProps,
 } from '~features/public-form/PublicFormContext'
-
-import { VerifiableFieldInput } from '../types'
 
 import {
   VerifiableMobileField as VerifiableMobileFieldComponent,
@@ -53,7 +55,7 @@ const baseSchema: VerifiableMobileFieldSchema = {
 }
 
 interface StoryMobileFieldProps extends VerifiableMobileFieldProps {
-  defaultValue?: VerifiableFieldInput
+  defaultValue?: Partial<VerifiableFieldValues>
 }
 
 export default {
@@ -81,7 +83,7 @@ export default {
 } as Meta<StoryMobileFieldProps>
 
 const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
-  const formMethods = useForm({
+  const formMethods = useForm<VerifiableFieldInput>({
     defaultValues: {
       [args.schema._id]: defaultValue,
     },
@@ -89,9 +91,7 @@ const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (
-    values: Record<string, VerifiableFieldInput | undefined>,
-  ) => {
+  const onSubmit = (values: VerifiableFieldInput) => {
     setSubmitValues(
       JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
     )

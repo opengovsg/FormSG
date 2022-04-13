@@ -2,29 +2,30 @@
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
 import { useMemo } from 'react'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 
-import {
-  FormFieldWithId,
-  RatingFieldBase,
-  RatingShape,
-} from '~shared/types/field'
+import { RatingShape } from '~shared/types/field'
 
 import { createRatingValidationRules } from '~utils/fieldValidation'
 import Rating from '~components/Field/Rating'
 import { RatingProps } from '~components/Field/Rating/Rating'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { RatingFieldSchema, SingleAnswerFieldInput } from '../types'
 
-export type RatingFieldSchema = FormFieldWithId<RatingFieldBase>
 export interface RatingFieldProps extends BaseFieldProps {
   schema: RatingFieldSchema
 }
 
-export const RatingField = ({
-  schema,
-  questionNumber,
-}: RatingFieldProps): JSX.Element => {
+const transform = {
+  toString: (value?: number) => {
+    if (value === undefined) return
+    return String(value)
+  },
+  toNumber: (value: string) => Number(value),
+}
+
+export const RatingField = ({ schema }: RatingFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createRatingValidationRules(schema),
     [schema],
@@ -39,16 +40,21 @@ export const RatingField = ({
     }
   }, [schema.ratingOptions.shape])
 
+  const { control } = useFormContext<SingleAnswerFieldInput>()
+
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Controller
         rules={validationRules}
+        control={control}
         name={schema._id}
-        render={({ field }) => (
+        render={({ field: { value, onChange, ...rest } }) => (
           <Rating
             numberOfRatings={schema.ratingOptions.steps}
             variant={ratingVariant}
-            {...field}
+            value={transform.toNumber(value)}
+            onChange={(val) => onChange(transform.toString(val))}
+            {...rest}
           />
         )}
       />

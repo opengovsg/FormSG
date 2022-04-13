@@ -4,13 +4,12 @@ import { Icon, Stack, Text } from '@chakra-ui/react'
 import Tooltip from '~components/Tooltip'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
-
-import { FormFieldWithQuestionNumber } from '../../../types'
+import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import { LogicBadge } from './LogicBadge'
 
 interface FieldLogicBadgeProps {
-  field: FormFieldWithQuestionNumber
+  field: FormFieldWithQuestionNo
 }
 
 /**
@@ -32,7 +31,7 @@ export const FieldLogicBadge = ({ field }: FieldLogicBadgeProps) => {
         >
           <Icon as={fieldMeta.icon} fontSize="1rem" />
         </Tooltip>
-        <Text>{field.questionNumber}.</Text>
+        {field.questionNumber ? <Text>{field.questionNumber}.</Text> : null}
         <Text isTruncated>{field.title}</Text>
       </Stack>
     </LogicBadge>

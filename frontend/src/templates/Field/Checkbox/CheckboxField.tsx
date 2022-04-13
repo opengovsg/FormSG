@@ -7,8 +7,6 @@ import {
 } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 
-import { CheckboxFieldBase, FormFieldWithId } from '~shared/types/field'
-
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 import { createCheckboxValidationRules } from '~utils/fieldValidation'
 import Checkbox from '~components/Checkbox'
@@ -16,12 +14,12 @@ import { CheckboxProps } from '~components/Checkbox/Checkbox'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { CheckboxFieldInputs, CheckboxFieldSchema } from '../types'
 
-export const CHECKBOX_OTHERS_INPUT_KEY = 'others-input'
+export const CHECKBOX_OTHERS_INPUT_KEY = 'othersInput'
 export const CHECKBOX_OTHERS_INPUT_VALUE =
   '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
 
-export type CheckboxFieldSchema = FormFieldWithId<CheckboxFieldBase>
 export interface CheckboxFieldProps extends BaseFieldProps {
   schema: CheckboxFieldSchema
 }
@@ -29,31 +27,31 @@ export interface CheckboxFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const CheckboxField = ({
-  schema,
-  questionNumber,
-}: CheckboxFieldProps): JSX.Element => {
+export const CheckboxField = ({ schema }: CheckboxFieldProps): JSX.Element => {
   const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, {})
 
   const othersInputName = useMemo(
-    () => `${schema._id}.${CHECKBOX_OTHERS_INPUT_KEY}`,
+    () => `${schema._id}.${CHECKBOX_OTHERS_INPUT_KEY}` as const,
     [schema._id],
   )
-  const checkboxInputName = useMemo(() => `${schema._id}.value`, [schema._id])
+  const checkboxInputName = useMemo(
+    () => `${schema._id}.value` as const,
+    [schema._id],
+  )
 
   const validationRules = useMemo(
     () => createCheckboxValidationRules(schema),
     [schema],
   )
 
-  const { register, getValues, trigger } = useFormContext()
-  const { isValid, isSubmitting, errors } = useFormState({
+  const { register, getValues, trigger } = useFormContext<CheckboxFieldInputs>()
+  const { isValid, isSubmitting, errors } = useFormState<CheckboxFieldInputs>({
     name: schema._id,
   })
 
   const othersValidationRules = useMemo(
     () => ({
-      validate: (value: string) => {
+      validate: (value?: string) => {
         const currCheckedVals = getValues(checkboxInputName)
         return (
           !(
@@ -69,11 +67,7 @@ export const CheckboxField = ({
   )
 
   return (
-    <FieldContainer
-      schema={schema}
-      questionNumber={questionNumber}
-      errorKey={checkboxInputName}
-    >
+    <FieldContainer schema={schema} errorKey={checkboxInputName}>
       {schema.fieldOptions.map((o, idx) => (
         <Checkbox
           key={idx}

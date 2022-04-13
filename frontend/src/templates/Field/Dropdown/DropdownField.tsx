@@ -1,14 +1,12 @@
 import { useMemo } from 'react'
-import { Controller } from 'react-hook-form'
-
-import { DropdownFieldBase, FormFieldWithId } from '~shared/types/field'
+import { Controller, useFormContext } from 'react-hook-form'
 
 import { createDropdownValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { DropdownFieldSchema, SingleAnswerFieldInput } from '../types'
 
-export type DropdownFieldSchema = FormFieldWithId<DropdownFieldBase>
 export interface DropdownFieldProps extends BaseFieldProps {
   schema: DropdownFieldSchema
 }
@@ -16,18 +14,18 @@ export interface DropdownFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const DropdownField = ({
-  schema,
-  questionNumber,
-}: DropdownFieldProps): JSX.Element => {
+export const DropdownField = ({ schema }: DropdownFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createDropdownValidationRules(schema),
     [schema],
   )
 
+  const { control } = useFormContext<SingleAnswerFieldInput>()
+
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Controller
+        control={control}
         rules={validationRules}
         name={schema._id}
         defaultValue=""

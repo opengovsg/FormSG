@@ -3,11 +3,13 @@ import { Meta, Story } from '@storybook/react'
 import { BasicField } from '~shared/types/field'
 import { FormAuthType } from '~shared/types/form'
 
+import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
   getPublicFormResponse,
   postGenerateVfnOtpResponse,
   postVerifyVfnOtpResponse,
   postVfnTransactionResponse,
+  SHOW_FIELDS_ON_YES_LOGIC,
 } from '~/mocks/msw/handlers/public-form'
 
 import { StoryRouter } from '~utils/storybook'
@@ -15,6 +17,7 @@ import { StoryRouter } from '~utils/storybook'
 import PublicFormPage from './PublicFormPage'
 
 const DEFAULT_MSW_HANDLERS = [
+  ...envHandlers,
   getPublicFormResponse(),
   postVfnTransactionResponse(),
   postGenerateVfnOtpResponse(),
@@ -43,13 +46,14 @@ export const Default = Template.bind({})
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: [getPublicFormResponse({ delay: 'infinite' })],
+  msw: [...envHandlers, getPublicFormResponse({ delay: 'infinite' })],
 }
 
 export const SingpassUnauthorized = Template.bind({})
 SingpassUnauthorized.storyName = 'Singpass/Unauthorized'
 SingpassUnauthorized.parameters = {
   msw: [
+    ...envHandlers,
     getPublicFormResponse({
       delay: 0,
       overrides: {
@@ -66,6 +70,7 @@ export const SingpassAuthorized = Template.bind({})
 SingpassAuthorized.storyName = 'Singpass/Authorized'
 SingpassAuthorized.parameters = {
   msw: [
+    ...envHandlers,
     getPublicFormResponse({
       delay: 0,
       overrides: {
@@ -85,6 +90,7 @@ export const CorppassUnauthorized = Template.bind({})
 CorppassUnauthorized.storyName = 'Corppass/Unauthorized'
 CorppassUnauthorized.parameters = {
   msw: [
+    ...envHandlers,
     getPublicFormResponse({
       delay: 0,
       overrides: {
@@ -101,6 +107,7 @@ export const CorppassAuthorized = Template.bind({})
 CorppassAuthorized.storyName = 'Corppass/Authorized'
 CorppassAuthorized.parameters = {
   msw: [
+    ...envHandlers,
     getPublicFormResponse({
       delay: 0,
       overrides: {
@@ -120,6 +127,7 @@ export const SgidUnauthorized = Template.bind({})
 SgidUnauthorized.storyName = 'SGID/Unauthorized'
 SgidUnauthorized.parameters = {
   msw: [
+    ...envHandlers,
     getPublicFormResponse({
       delay: 0,
       overrides: {
@@ -136,6 +144,7 @@ export const SgidAuthorized = Template.bind({})
 SgidAuthorized.storyName = 'SGID/Authorized'
 SgidAuthorized.parameters = {
   msw: [
+    ...envHandlers,
     getPublicFormResponse({
       delay: 0,
       overrides: {
@@ -174,6 +183,32 @@ VerifiedFieldsExpiry.parameters = {
               globalId: 'not-used',
             },
           ],
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+
+export const WithLogic = Template.bind({})
+WithLogic.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          form_fields: [
+            {
+              title: '',
+              description:
+                'Select "Yes" on the field below to show more fields',
+              required: true,
+              disabled: false,
+              fieldType: BasicField.Statement,
+              _id: 'some-random-id',
+              globalId: 'not-used',
+            },
+          ],
+          form_logics: [SHOW_FIELDS_ON_YES_LOGIC],
         },
       },
     }),

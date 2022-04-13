@@ -1,9 +1,6 @@
 import { baseMobileValidationFn } from '~utils/fieldValidation'
-import {
-  MobileFieldInput,
-  MobileFieldProps,
-  MobileFieldSchema,
-} from '~templates/Field/Mobile'
+import { MobileFieldInput, MobileFieldProps } from '~templates/Field/Mobile'
+import { MobileFieldSchema } from '~templates/Field/types'
 
 import { VerifiableFieldContainer } from '../components/VerifiableFieldContainer'
 import { VerifiableFieldSchema } from '../types'

@@ -28,9 +28,10 @@ import IconButton from '~components/IconButton'
 import NumberInput from '~components/NumberInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+import { FormFieldWithQuestionNo } from '~features/form/types'
 import { getIfLogicType } from '~features/logic/utils'
 
-import { EditLogicInputs, FormFieldWithQuestionNumber } from '../../../types'
+import { EditLogicInputs } from '../../../types'
 
 import { BlockLabelText } from './BlockLabelText'
 
@@ -39,8 +40,8 @@ export interface EditConditionBlockProps {
   isLoading: boolean
   handleRemoveLogic?: (index?: number | number[] | undefined) => void
   formMethods: UseFormReturn<EditLogicInputs>
-  logicableFields: Dictionary<FormFieldWithQuestionNumber> | null
-  mapIdToField: Record<string, FormFieldWithQuestionNumber> | null
+  logicableFields: Dictionary<FormFieldWithQuestionNo> | null
+  mapIdToField: Record<string, FormFieldWithQuestionNo> | null
 }
 
 export const EditConditionBlock = ({

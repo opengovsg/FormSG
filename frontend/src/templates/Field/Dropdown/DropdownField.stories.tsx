@@ -7,10 +7,11 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { DropdownFieldSchema } from '../types'
+
 import {
   DropdownField as DropdownFieldComponent,
   DropdownFieldProps,
-  DropdownFieldSchema,
 } from './DropdownField'
 
 const baseSchema: DropdownFieldSchema = {

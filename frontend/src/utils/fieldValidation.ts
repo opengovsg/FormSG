@@ -41,11 +41,9 @@ import {
   INVALID_EMAIL_ERROR,
   REQUIRED_ERROR,
 } from '~constants/validation'
+import { VerifiableFieldValues } from '~templates/Field/types'
 
-import {
-  VerifiableFieldBase,
-  VerifiableFieldInput,
-} from '~features/verifiable-fields/types'
+import { VerifiableFieldBase } from '~features/verifiable-fields/types'
 
 import { isDateAfterToday, isDateBeforeToday, isDateOutOfRange } from './date'
 import { formatNumberToLocaleString } from './stringFormat'
@@ -78,11 +76,11 @@ const createBaseVfnFieldValidationRules: ValidationRuleFn<
 > = (schema) => {
   return {
     validate: {
-      required: (value?: VerifiableFieldInput) => {
+      required: (value?: VerifiableFieldValues) => {
         if (!schema.required) return true
         return !!value?.value || REQUIRED_ERROR
       },
-      hasSignature: (val?: VerifiableFieldInput) => {
+      hasSignature: (val?: VerifiableFieldValues) => {
         if (!schema.isVerifiable) return true
         // Either signature is filled, or both fields have no input.
         if (!!val?.signature || (!val?.value && !val?.signature)) {
@@ -163,7 +161,7 @@ export const createMobileValidationRules: ValidationRuleFn<MobileFieldBase> = (
 ) => {
   return {
     validate: {
-      baseValidations: (val?: VerifiableFieldInput) => {
+      baseValidations: (val?: VerifiableFieldValues) => {
         return baseMobileValidationFn(schema)(val?.value)
       },
       ...createBaseVfnFieldValidationRules(schema).validate,
@@ -408,7 +406,7 @@ export const createEmailValidationRules: ValidationRuleFn<EmailFieldBase> = (
 ) => {
   return {
     validate: {
-      baseValidations: (val?: VerifiableFieldInput) => {
+      baseValidations: (val?: VerifiableFieldValues) => {
         return baseEmailValidationFn(schema)(val?.value)
       },
       ...createBaseVfnFieldValidationRules(schema).validate,

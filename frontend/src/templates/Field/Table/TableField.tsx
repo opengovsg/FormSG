@@ -5,20 +5,19 @@ import { useTable } from 'react-table'
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 import { get, head, uniq } from 'lodash'
 
-import { FormFieldWithId, TableFieldBase } from '~shared/types/field'
-
 import { useIsMobile } from '~hooks/useIsMobile'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 
 import { BaseFieldProps } from '../FieldContainer'
+import { TableFieldInputs, TableFieldSchema } from '../types'
 
+import { createTableRow } from './utils/createRow'
 import { AddRowFooter } from './AddRowFooter'
 import { ColumnCell } from './ColumnCell'
 import { ColumnHeader } from './ColumnHeader'
 import { TableFieldContainer } from './TableFieldContainer'
 
-export type TableFieldSchema = FormFieldWithId<TableFieldBase>
 export interface TableFieldProps extends BaseFieldProps {
   schema: TableFieldSchema
 }
@@ -28,11 +27,9 @@ export interface TableFieldProps extends BaseFieldProps {
  * @precondition This component uses `react-hook-form#useFieldArray`, and will require defaultValues to be populated in the parent `useForm` hook.
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const TableField = ({
-  schema,
-  questionNumber,
-}: TableFieldProps): JSX.Element => {
+export const TableField = ({ schema }: TableFieldProps): JSX.Element => {
   const isMobile = useIsMobile()
+
   const columnsData = useMemo(() => {
     return schema.columns.map((c) => ({
       Header: (
@@ -43,17 +40,7 @@ export const TableField = ({
     }))
   }, [schema.columns])
 
-  const baseRowData = useMemo(
-    () =>
-      schema.columns.reduce((acc, c) => {
-        acc[c._id] = ''
-        return acc
-      }, {} as Record<string, unknown>),
-    [schema.columns],
-  )
-
-  const formMethods =
-    useFormContext<Record<string, Record<string, unknown>[]>>()
+  const formMethods = useFormContext<TableFieldInputs>()
   const { errors } = useFormState({
     control: formMethods.control,
     name: schema._id,
@@ -68,7 +55,7 @@ export const TableField = ({
     return head(uniq(tableErrors?.flatMap(Object.values)))
   }, [isMobile, tableErrors])
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove } = useFieldArray<TableFieldInputs>({
     control: formMethods.control,
     name: schema._id,
   })
@@ -78,8 +65,8 @@ export const TableField = ({
 
   const handleAddRow = useCallback(() => {
     if (!schema.maximumRows || fields.length >= schema.maximumRows) return
-    return append(baseRowData)
-  }, [append, baseRowData, fields.length, schema.maximumRows])
+    return append(createTableRow(schema))
+  }, [append, fields.length, schema])
 
   const handleRemoveRow = useCallback(
     (rowIndex: number) => {
@@ -92,7 +79,7 @@ export const TableField = ({
   )
 
   return (
-    <TableFieldContainer schema={schema} questionNumber={questionNumber}>
+    <TableFieldContainer schema={schema}>
       <Box d="block" w="100%" overflowX="auto">
         <Table
           {...getTableProps()}

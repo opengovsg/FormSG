@@ -7,10 +7,11 @@ import { BasicField, NumberSelectedValidation } from '~shared/types/field'
 
 import Button from '~components/Button'
 
+import { NumberFieldSchema } from '../types'
+
 import {
   NumberField as NumberFieldComponent,
   NumberFieldProps,
-  NumberFieldSchema,
 } from './NumberField'
 
 export default {

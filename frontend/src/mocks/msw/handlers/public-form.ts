@@ -1,8 +1,14 @@
 import { addMilliseconds } from 'date-fns'
-import { merge } from 'lodash'
+import { mergeWith } from 'lodash'
 import { rest } from 'msw'
 import { PartialDeep } from 'type-fest'
 
+import {
+  LogicConditionState,
+  LogicIfValue,
+  LogicType,
+  ShowFieldLogicDto,
+} from '~shared/types'
 import { FormId, PublicFormViewDto } from '~shared/types/form/form'
 
 import { FetchNewTransactionResponse } from '~features/verifiable-fields'
@@ -10,6 +16,35 @@ import { FetchNewTransactionResponse } from '~features/verifiable-fields'
 import mockFormLogo from '../assets/mockFormLogo.png'
 
 import { MOCK_ENVS } from './env'
+
+export const SHOW_FIELDS_ON_YES_LOGIC: ShowFieldLogicDto = {
+  show: [
+    '5da0290b4073c800128388b4',
+    '5da04ea3e397fc0013f63c78',
+    '5da04ea9e397fc0013f63c7b',
+    '5da04eab3738d10012607734',
+    '5da04eafe397fc0013f63c7c',
+    '5da04eb1e397fc0013f63c7d',
+    '5da04eb23738d10012607737',
+    '5da04eb7e397fc0013f63c80',
+    '5da04eb93738d10012607738',
+    '5da04ebfe397fc0013f63c83',
+    '5da04ec13738d1001260773a',
+    '5da04ec43738d1001260773b',
+    '5da04f833738d1001260777f',
+    '5da04f873738d10012607783',
+  ],
+  logicType: LogicType.ShowFields,
+  _id: '5fe1bab172689300133ce336',
+  conditions: [
+    {
+      ifValueType: LogicIfValue.SingleSelect,
+      field: '5da04eb5e397fc0013f63c7e',
+      state: LogicConditionState.Equal,
+      value: 'Yes',
+    },
+  ],
+}
 
 const BASE_FORM = {
   admin: {
@@ -298,38 +333,8 @@ const BASE_FORM = {
       globalId: 'gE8XOqZA6MA3Rl7bQbrSOKpxjfeVSeYSfMZhRSitEn1',
     },
   ],
-  form_logics: [
-    {
-      show: [
-        '5da0290b4073c800128388b4',
-        '5da04ea3e397fc0013f63c78',
-        '5da04ea9e397fc0013f63c7b',
-        '5da04eab3738d10012607734',
-        '5da04eafe397fc0013f63c7c',
-        '5da04eb1e397fc0013f63c7d',
-        '5da04eb23738d10012607737',
-        '5da04eb7e397fc0013f63c80',
-        '5da04eb93738d10012607738',
-        '5da04ebfe397fc0013f63c83',
-        '5da04ec13738d1001260773a',
-        '5da04ec43738d1001260773b',
-        '5da04f833738d1001260777f',
-        '5da04f873738d10012607783',
-      ],
-      logicType: 'showFields',
-      _id: '5fe1bab172689300133ce336',
-      conditions: [
-        {
-          ifValueType: 'single-select',
-          _id: '56870',
-          field: '5da04eb5e397fc0013f63c7e',
-          state: 'is equals to',
-          value: 'Yes',
-        },
-      ],
-    },
-  ],
-  hasCaptcha: true,
+  form_logics: [],
+  hasCaptcha: false,
   startPage: {
     colorTheme: 'blue',
     logo: { state: 'NONE' },
@@ -352,7 +357,8 @@ export const getPublicFormResponse = ({
     (req, res, ctx) => {
       const formId = req.params.formId ?? '61540ece3d4a6e50ac0cc6ff'
 
-      const response = merge(
+      const response = mergeWith(
+        {},
         {
           form: {
             _id: formId as FormId,
@@ -360,6 +366,11 @@ export const getPublicFormResponse = ({
           },
         },
         overrides,
+        (objValue, srcValue) => {
+          if (Array.isArray(objValue)) {
+            return [...srcValue, ...objValue]
+          }
+        },
       ) as PublicFormViewDto
       return res(ctx.delay(delay), ctx.json(response))
     },

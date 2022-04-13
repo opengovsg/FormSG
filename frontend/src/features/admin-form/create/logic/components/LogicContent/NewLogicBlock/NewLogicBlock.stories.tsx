@@ -25,8 +25,10 @@ import { MOCK_FORM_FIELDS } from '~/mocks/msw/handlers/admin-form'
 
 import { getMobileViewParameters } from '~utils/storybook'
 
-import { ALLOWED_LOGIC_FIELDS } from '../../../constants'
-import { EditLogicInputs, FormFieldWithQuestionNumber } from '../../../types'
+import { FormFieldWithQuestionNo } from '~features/form/types'
+import { ALLOWED_LOGIC_FIELDS } from '~features/logic/constants'
+
+import { EditLogicInputs } from '../../../types'
 
 import { NewLogicBlock, NewLogicBlockProps } from './NewLogicBlock'
 
@@ -44,7 +46,7 @@ interface TemplateStoryProps {
 const MAP_ID_TO_FIELD = MOCK_FORM_FIELDS.reduce((acc, field, index) => {
   acc[field._id] = { ...field, questionNumber: index + 1 }
   return acc
-}, {} as Record<string, FormFieldWithQuestionNumber>)
+}, {} as Record<string, FormFieldWithQuestionNo>)
 const FIELD_TYPE_TO_ID = MOCK_FORM_FIELDS.reduce((acc, field) => {
   acc[field.fieldType] = field._id
   return acc

@@ -2,8 +2,9 @@ import { rest } from 'msw'
 
 import { ClientEnvVars } from '~shared/types/core'
 
-export const MOCK_ENVS = {
+export const MOCK_ENVS: Partial<ClientEnvVars> = {
   logoBucketUrl: 'local-logo-bucket',
+  captchaPublicKey: 'mock-captcha-public-key',
 }
 
 export const envHandlers = [

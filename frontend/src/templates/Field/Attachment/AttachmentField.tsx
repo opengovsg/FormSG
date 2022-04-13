@@ -2,15 +2,14 @@ import { useCallback, useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { MB } from '~shared/constants/file'
-import { AttachmentFieldBase, FormFieldWithId } from '~shared/types/field'
 import { VALID_EXTENSIONS } from '~shared/utils/file-validation'
 
 import { createAttachmentValidationRules } from '~utils/fieldValidation'
 import Attachment from '~components/Field/Attachment'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { AttachmentFieldInput, AttachmentFieldSchema } from '../types'
 
-export type AttachmentFieldSchema = FormFieldWithId<AttachmentFieldBase>
 export interface AttachmentFieldProps extends BaseFieldProps {
   schema: AttachmentFieldSchema
 }
@@ -20,7 +19,6 @@ export interface AttachmentFieldProps extends BaseFieldProps {
  */
 export const AttachmentField = ({
   schema,
-  questionNumber,
 }: AttachmentFieldProps): JSX.Element => {
   const fieldName = schema._id
   const validationRules = useMemo(
@@ -28,7 +26,8 @@ export const AttachmentField = ({
     [schema],
   )
 
-  const { clearErrors, setError } = useFormContext()
+  const { clearErrors, setError, control } =
+    useFormContext<AttachmentFieldInput>()
 
   const maxSizeInBytes = useMemo(() => {
     return parseInt(schema.attachmentSize) * MB
@@ -42,8 +41,9 @@ export const AttachmentField = ({
   )
 
   return (
-    <FieldContainer schema={schema} questionNumber={questionNumber}>
+    <FieldContainer schema={schema}>
       <Controller
+        control={control}
         render={({ field: { onChange, ...rest } }) => (
           <Attachment
             {...rest}
