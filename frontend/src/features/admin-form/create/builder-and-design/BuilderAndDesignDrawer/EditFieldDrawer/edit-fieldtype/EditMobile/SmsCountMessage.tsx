@@ -7,21 +7,31 @@ import { SmsCountsDto } from '~shared/types/form'
 import { formatSmsCounts } from './utils'
 
 type SmsCountMessageProps = {
-  freeSmsCount?: SmsCountsDto
+  hasTwilioCredentials: boolean
+  freeSmsCount: SmsCountsDto | undefined
 }
 
 export const SmsCountMessage = ({
+  hasTwilioCredentials,
   freeSmsCount,
 }: SmsCountMessageProps): JSX.Element => {
-  const hasExceededQuota = useMemo(() => {
+  const textColor = useMemo(() => {
+    if (hasTwilioCredentials) return 'secondary.500'
     return freeSmsCount && freeSmsCount.freeSmsCounts >= freeSmsCount.quota
-  }, [freeSmsCount])
+      ? 'danger.500'
+      : 'secondary.500'
+  }, [freeSmsCount, hasTwilioCredentials])
 
   return (
-    <Flex mt="1rem" color={hasExceededQuota ? 'danger.500' : 'secondary.500'}>
+    <Flex mt="1rem" color={textColor}>
       <Icon as={BiMessage} mr="0.5rem" />
       <Skeleton isLoaded={!!freeSmsCount}>
-        <Text textStyle={'caption-1'}>{formatSmsCounts(freeSmsCount)}</Text>
+        <Text
+          textDecorationLine={hasTwilioCredentials ? 'line-through' : undefined}
+          textStyle="caption-1"
+        >
+          {formatSmsCounts(freeSmsCount)}
+        </Text>
       </Skeleton>
     </Flex>
   )

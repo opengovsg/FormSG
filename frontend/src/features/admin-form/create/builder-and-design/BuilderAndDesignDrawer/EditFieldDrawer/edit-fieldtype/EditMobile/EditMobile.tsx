@@ -117,7 +117,10 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
               description="Respondents must verify by entering a code sent to them. If you have added Twilio credentials, please test this OTP verification feature to make sure your credentials are accurate."
             />
           </FormControl>
-          <SmsCountMessage freeSmsCount={freeSmsCount} />
+          <SmsCountMessage
+            hasTwilioCredentials={hasTwilioCredentials}
+            freeSmsCount={freeSmsCount}
+          />
           <TwilioCredentialsMessage
             freeSmsCount={freeSmsCount}
             hasTwilioCredentials={hasTwilioCredentials}

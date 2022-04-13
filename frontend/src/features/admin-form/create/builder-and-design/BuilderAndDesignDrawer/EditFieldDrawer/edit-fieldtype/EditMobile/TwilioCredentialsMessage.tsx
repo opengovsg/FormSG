@@ -15,7 +15,7 @@ type TwilioCredentialsMessageProps = {
 
 const TwilioCredentialsSuccess = (): JSX.Element => {
   return (
-    <Flex alignItems="flex-start" mt="0.75rem">
+    <Flex alignItems="flex-start" mt="0.75rem" color="secondary.500">
       <Icon as={BxsCheckCircle} mr="0.5rem" color="success.500" />
       <Text textStyle="caption-1">Twilio credentials added</Text>
     </Flex>
