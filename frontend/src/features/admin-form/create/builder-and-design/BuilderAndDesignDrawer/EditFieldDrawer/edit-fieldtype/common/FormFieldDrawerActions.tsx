@@ -29,7 +29,6 @@ export const FormFieldDrawerActions = ({
         Cancel
       </Button>
       <Button
-        minW="8rem"
         isDisabled={!isSaveEnabled}
         isLoading={isLoading}
         onClick={handleClick}
