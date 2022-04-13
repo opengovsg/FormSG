@@ -60,8 +60,8 @@ export const Desktop = Template.bind({})
 export const PreventActivation = Template.bind({})
 PreventActivation.parameters = {
   msw: [
+    ...createFormBuilderMocks(),
     getFreeSmsQuota(),
-    getAdminFormResponse(),
     getAdminFormSubmissions(),
     patchAdminFormSettings(),
     getAdminFormSettings({
