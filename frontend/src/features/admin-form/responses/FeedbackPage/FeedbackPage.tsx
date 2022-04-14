@@ -1,3 +1,5 @@
+import { Container } from '@chakra-ui/layout'
+
 import { useFormFeedback } from './queries'
 
 export const FeedbackPage = (): JSX.Element => {
@@ -5,5 +7,9 @@ export const FeedbackPage = (): JSX.Element => {
   console.log('data is')
   console.log(data)
 
-  return <>{isLoading ? 'Loading' : 'Finished'}</>
+  return (
+    <Container maxW="69.5rem">
+      <>{isLoading ? 'Loading' : 'Finished'}</>
+    </Container>
+  )
 }
