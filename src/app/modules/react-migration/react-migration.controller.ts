@@ -23,7 +23,7 @@ export const RESPONDENT_COOKIE_OPTIONS = {
 
 export const ADMIN_COOKIE_OPTIONS = {
   httpOnly: true,
-  maxAge: 365 * 24 * 60 * 60, // 1 year
+  maxAge: 31 * 2 * 24 * 60 * 60, // 2 months
   sameSite: 'strict' as const,
   secure: !config.isDev,
 }
