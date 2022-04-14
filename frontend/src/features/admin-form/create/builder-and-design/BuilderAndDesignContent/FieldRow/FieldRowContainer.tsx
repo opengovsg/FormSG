@@ -21,6 +21,7 @@ import {
   CheckboxField,
   MobileField,
   NricField,
+  ParagraphField,
   RadioField,
   UenField,
   YesNoField,
@@ -292,6 +293,8 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
       return <MobileField schema={field} {...rest} />
     case BasicField.Nric:
       return <NricField schema={field} {...rest} />
+    case BasicField.Statement:
+      return <ParagraphField schema={field} {...rest} />
     case BasicField.Radio:
       return <RadioField schema={field} {...rest} />
     case BasicField.Section:

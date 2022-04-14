@@ -22,6 +22,7 @@ import {
   EditHeader,
   EditMobile,
   EditNric,
+  EditParagraph,
   EditRadio,
   EditUen,
   EditYesNo,
@@ -138,6 +139,8 @@ export const MemoFieldDrawerContent = memo(
         return <EditYesNo {...props} field={field} />
       case BasicField.Radio:
         return <EditRadio {...props} field={field} />
+      case BasicField.Statement:
+        return <EditParagraph {...props} field={field} />
       default:
         return <div>TODO: Insert field options here</div>
     }
