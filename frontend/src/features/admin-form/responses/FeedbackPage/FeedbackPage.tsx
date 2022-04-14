@@ -1,14 +1,12 @@
 import { useState } from 'react'
-import { CSVLink } from 'react-csv'
-import { BiDownload } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import { Box, Container, Skeleton, Text } from '@chakra-ui/react'
 
 import Pagination from '~/components/Pagination'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
 
+import { FeedbackDownloadButton } from './FeedbackDownloadButton'
 import { FeedbackTable } from './FeedbackTable'
 import { useFormFeedback } from './queries'
 
@@ -108,11 +106,10 @@ export const FeedbackPage = (): JSX.Element => {
               </Text>
             )}
           </Box>
-          <Button
-            disabled={isLoading || count === 0}
-            as={isLoading || count === 0 ? undefined : CSVLink}
-            filename={`${formId}-feedback.csv`}
-            data={
+          <FeedbackDownloadButton
+            isDisabled={isLoading || count === 0}
+            formId={formId}
+            feedbackData={
               feedback
                 ? feedback.map((entry) => {
                     return {
@@ -124,11 +121,7 @@ export const FeedbackPage = (): JSX.Element => {
                   })
                 : ''
             }
-            target="_blank"
-            leftIcon={<BiDownload />}
-          >
-            Export{' '}
-          </Button>
+          />
         </Box>
         <Box mb="2rem">
           <FeedbackTable
