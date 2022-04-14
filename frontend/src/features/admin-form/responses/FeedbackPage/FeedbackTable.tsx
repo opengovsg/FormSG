@@ -1,6 +1,6 @@
 import React from 'react'
-import { Column, useTable } from 'react-table'
-import { Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
+import { Column, useSortBy, useTable } from 'react-table'
+import { Box, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
 import { ProcessedFeedbackMeta } from '~shared/types/form'
 
@@ -24,13 +24,26 @@ export const FeedbackTable = ({
       {
         Header: '#',
         accessor: 'index',
+        sortType: 'basic',
+        width: '5rem',
       },
       {
         Header: 'Date',
         accessor: 'date',
+        sortType: 'datetime',
+        width: '10rem',
       },
-      { Header: 'Feedback', accessor: 'feedback' },
-      { Header: 'Rating', accessor: 'rating' },
+      {
+        Header: 'Feedback',
+        accessor: 'feedback',
+        sortType: 'basic',
+      },
+      {
+        Header: 'Rating',
+        accessor: 'rating',
+        sortType: 'basic',
+        width: '12rem',
+      },
     ],
     [],
   )
@@ -48,59 +61,36 @@ export const FeedbackTable = ({
       : []
   }, [feedbackData])
 
-  const { rows, prepareRow } = useTable<Data>({
-    columns,
-    data,
-  })
+  const { rows, prepareRow, headerGroups } = useTable<Data>(
+    {
+      columns,
+      data,
+    },
+    useSortBy,
+  )
 
   return (
     <Table>
       <Thead bgColor="secondary.500">
-        <Tr>
-          <Th
-            color="white"
-            pl="1rem"
-            textStyle="subhead-2"
-            fontWeight="500"
-            fontSize="0.875rem"
-            textTransform="none"
-            width="5rem"
-          >
-            #
-          </Th>
-          <Th
-            color="white"
-            pl="1rem"
-            textStyle="subhead-2"
-            fontWeight="500"
-            fontSize="0.875rem"
-            textTransform="none"
-            width="10rem"
-          >
-            Date
-          </Th>
-          <Th
-            color="white"
-            pl="1rem"
-            textStyle="subhead-2"
-            fontWeight="500"
-            fontSize="0.875rem"
-            textTransform="none"
-          >
-            Feedback
-          </Th>
-          <Th
-            color="white"
-            pl="1rem"
-            textStyle="subhead-2"
-            fontWeight="500"
-            fontSize="0.875rem"
-            textTransform="none"
-            width="12rem"
-          >
-            Rating
-          </Th>
-        </Tr>
+        {headerGroups.map((headerGroup) => (
+          <Tr {...headerGroup.getHeaderGroupProps()}>
+            {headerGroup.headers.map((column) => (
+              <Th
+                {...column.getHeaderProps({
+                  style: { minWidth: column.width },
+                })}
+                color="white"
+                pl="1rem"
+                textStyle="subhead-2"
+                fontWeight="500"
+                fontSize="0.875rem"
+                textTransform="none"
+              >
+                {column.render('Header')}
+              </Th>
+            ))}
+          </Tr>
+        ))}
       </Thead>
       <Tbody>
         {rows.map((row) => {
