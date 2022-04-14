@@ -18,8 +18,12 @@ export const getFormFeedback = async ({
 }
 
 export const getSmileyFromScore = (
-  averageScore: number,
+  averageScore: number | undefined,
 ): React.FunctionComponent => {
+  if (averageScore === undefined) {
+    return BxsMeh
+  }
+
   if (averageScore < 1) {
     return BxsAngry
   } else if (averageScore < 2) {
