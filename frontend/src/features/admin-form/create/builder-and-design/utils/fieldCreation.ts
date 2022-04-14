@@ -40,6 +40,14 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         othersRadioButton: false,
       }
     }
+    case BasicField.Mobile: {
+      return {
+        fieldType,
+        ...baseMeta,
+        isVerifiable: false,
+        allowIntlNumbers: false,
+      }
+    }
     case BasicField.Radio: {
       return {
         fieldType,
