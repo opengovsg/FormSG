@@ -2,6 +2,7 @@ import path from 'path'
 
 import { FormAuthType } from '../../../../shared/types'
 import config from '../../config/config'
+import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import * as PublicFormController from '../form/public-form/public-form.controller'
@@ -24,6 +25,8 @@ export const ADMIN_COOKIE_OPTIONS = {
   sameSite: 'strict' as const,
   secure: !config.isDev,
 }
+
+const logger = createLoggerWithLabel(module)
 
 const serveFormReact: ControllerHandler = (_req, res) => {
   const reactFrontendPath = path.resolve('dist/frontend')
@@ -84,12 +87,33 @@ export const serveForm: ControllerHandler<
     const rand = Math.random() * 100
     showReact = rand <= threshold
 
+    logger.info({
+      message: 'Randomly assigned UI environment',
+      meta: {
+        action: 'routeReact.random',
+        hasAuth,
+        rand,
+        threshold,
+        showReact,
+      },
+    })
+
     res.cookie(
       config.reactMigration.respondentCookieName,
       showReact ? 'react' : 'angular',
       RESPONDENT_COOKIE_OPTIONS,
     )
   }
+
+  logger.info({
+    message: 'Routing evaluation done',
+    meta: {
+      action: 'routeReact',
+      hasAuth,
+      threshold,
+      showReact,
+    },
+  })
 
   if (showReact) {
     return serveFormReact(req, res, next)
