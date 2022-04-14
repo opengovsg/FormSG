@@ -52,20 +52,21 @@ export const FeedbackPage = (): JSX.Element => {
   return (
     <Box overflowY="auto" pb="2rem">
       <Container maxW="69.5rem" mt="1.5rem">
-        <Text
-          textStyle="h4"
-          fontWeight="medium"
-          fontSize="1.125rem"
-          lineHeight="1.5rem"
-          color="secondary.500"
-          mb="1rem"
-          display={isMobile ? '' : 'None'}
-        >
-          <Text as="span" color="primary.500">
-            {data?.count}
+        {isMobile ? (
+          <Text
+            textStyle="h4"
+            fontWeight="medium"
+            fontSize="1.125rem"
+            lineHeight="1.5rem"
+            color="secondary.500"
+            mb="1rem"
+          >
+            <Text as="span" color="primary.500">
+              {data?.count}
+            </Text>
+            &nbsp; feedback submission(s) to date
           </Text>
-          &nbsp; feedback submission(s) to date
-        </Text>
+        ) : null}
         <Text textStyle="caption-1" fontWeight="400" textColor="secondary.400">
           Average Score
         </Text>
@@ -90,20 +91,22 @@ export const FeedbackPage = (): JSX.Element => {
                 {averageScore ? averageScore.toPrecision(2) : '-.--'}
               </Text>
             </Box>
-            <Text
-              textStyle="h4"
-              fontWeight="medium"
-              fontSize="1.125rem"
-              lineHeight="1.5rem"
-              color="secondary.500"
-              ml="2rem"
-              display={isMobile ? 'None' : ''}
-            >
-              <Text as="span" color="primary.500">
-                {data?.count}
+            {isMobile ? null : (
+              <Text
+                textStyle="h4"
+                fontWeight="medium"
+                fontSize="1.125rem"
+                lineHeight="1.5rem"
+                color="secondary.500"
+                ml="2rem"
+                display={isMobile ? 'None' : ''}
+              >
+                <Text as="span" color="primary.500">
+                  {data?.count}
+                </Text>
+                &nbsp; feedback submission(s) to date
               </Text>
-              &nbsp; feedback submission(s) to date
-            </Text>
+            )}
           </Box>
           <Button
             disabled={isLoading || count === 0}
