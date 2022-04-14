@@ -84,7 +84,8 @@ export const FeedbackPage = (): JSX.Element => {
           </Text>
         </Box>
         <Button
-          as={CSVLink}
+          disabled={isLoading || count === 0}
+          as={isLoading || count === 0 ? undefined : CSVLink}
           filename={`${formId}-feedback.csv`}
           data={
             feedback
