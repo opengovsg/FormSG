@@ -14,13 +14,12 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import { useCreateTabForm } from '../../../useCreateTabForm'
-
-import { DrawerContentContainer } from './common/DrawerContentContainer'
-import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
-import { EditFieldProps } from './common/types'
-import { useEditFieldForm } from './common/useEditFieldForm'
-import { SPLIT_TEXTAREA_TRANSFORM } from './common/utils'
+import { useCreateTabForm } from '../../../../useCreateTabForm'
+import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
+import { EditFieldProps } from '../common/types'
+import { useEditFieldForm } from '../common/useEditFieldForm'
+import { SPLIT_TEXTAREA_TRANSFORM } from '../common/utils'
 
 const EDIT_EMAIL_FIELD_KEYS = [
   'title',
