@@ -4,6 +4,7 @@ import { Box, Container, Icon, Text } from '@chakra-ui/react'
 import Button from '~components/Button'
 
 import { getSmileyFromScore } from './FeedbackService'
+import { FeedbackTable } from './FeedbackTable'
 import { useFormFeedback } from './queries'
 
 export const FeedbackPage = (): JSX.Element => {
@@ -12,6 +13,7 @@ export const FeedbackPage = (): JSX.Element => {
   console.log(data)
 
   const averageScore = data?.average ? Number(data?.average) : undefined
+  const feedbackData = data?.feedback
 
   console.log('xx')
   console.log(averageScore)
@@ -22,7 +24,12 @@ export const FeedbackPage = (): JSX.Element => {
       <Text textStyle="caption-1" fontWeight="400" textColor="secondary.400">
         Average Score
       </Text>
-      <Box display="flex" flexDir="row" justifyContent="space-between">
+      <Box
+        display="flex"
+        flexDir="row"
+        justifyContent="space-between"
+        mb="1rem"
+      >
         <Box display="flex" justifyContent="flex-start" alignItems="center">
           <Box>
             <Text
@@ -59,7 +66,7 @@ export const FeedbackPage = (): JSX.Element => {
         </Box>
         <Button leftIcon={<BiDownload />}>Export </Button>
       </Box>
-      <>{isLoading ? 'Loading' : 'Finished'}</>
+      <FeedbackTable feedbackData={feedbackData} />
     </Container>
   )
 }
