@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BiDownload } from 'react-icons/bi'
-import { Box, Container, Text } from '@chakra-ui/react'
+import { Box, Container, Skeleton, Text } from '@chakra-ui/react'
 
 import Pagination from '~/components/Pagination'
 
@@ -9,6 +9,29 @@ import Button from '~components/Button'
 import { FeedbackTable } from './FeedbackTable'
 import { useFormFeedback } from './queries'
 
+const FeedbackPageSkeleton = (): JSX.Element => {
+  return (
+    <Container maxW="69.5rem" mt="1.5rem">
+      <Skeleton w="4rem" h="0.75rem"></Skeleton>
+      <Box
+        display="flex"
+        flexDir="row"
+        justifyContent="space-between"
+        mb="1rem"
+      >
+        <Box display="flex" justifyContent="flex-start" alignItems="flex-end">
+          <Box>
+            <Skeleton mr="0.75rem" w="4.5rem" h="2rem" mt="0.5rem" />
+          </Box>
+          <Skeleton ml="2rem" w="14rem" h="2rem" />
+        </Box>
+        <Skeleton w="6rem" h="2rem" />
+      </Box>
+      <Skeleton w="100%" h="10rem" />
+    </Container>
+  )
+}
+
 export const FeedbackPage = (): JSX.Element => {
   const { data, isLoading } = useFormFeedback()
   const { average, count, feedback } = data || {}
@@ -16,7 +39,9 @@ export const FeedbackPage = (): JSX.Element => {
   const totalCount = count || 0
   const [currentPage, setCurrentPage] = useState<number>(1)
 
-  return (
+  return isLoading ? (
+    <FeedbackPageSkeleton />
+  ) : (
     <Container maxW="69.5rem" mt="1.5rem">
       <Text textStyle="caption-1" fontWeight="400" textColor="secondary.400">
         Average Score
