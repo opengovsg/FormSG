@@ -15,6 +15,37 @@ type Data = {
   rating: number
 }
 
+const FEEDBACK_TABLE_COLUMNS: Column<Data>[] = [
+  {
+    Header: '#',
+    accessor: 'index',
+    sortType: 'basic',
+    width: '5rem',
+  },
+  {
+    Header: 'Date',
+    accessor: 'date',
+    sortType: (rowA, rowB, columnId) => {
+      const dateA = new Date(rowA.values[columnId]) //rowA.values[columnId] is a date string
+      const dateB = new Date(rowB.values[columnId])
+      return dateA > dateB ? 1 : -1
+    },
+    width: '10rem',
+  },
+  {
+    Header: 'Feedback',
+    accessor: 'feedback',
+    sortType: 'basic',
+    width: undefined,
+  },
+  {
+    Header: 'Rating',
+    accessor: 'rating',
+    sortType: 'basic',
+    width: '12rem',
+  },
+]
+
 export const FeedbackTable = ({
   feedbackData,
   currentPage,
@@ -23,39 +54,6 @@ export const FeedbackTable = ({
   currentPage: number
 }) => {
   const isMobile = useIsMobile()
-  const columns = React.useMemo<Column<Data>[]>(
-    () => [
-      {
-        Header: '#',
-        accessor: 'index',
-        sortType: 'basic',
-        width: '5rem',
-      },
-      {
-        Header: 'Date',
-        accessor: 'date',
-        sortType: (rowA, rowB, columnId) => {
-          const dateA = new Date(rowA.values[columnId]) //rowA.values[columnId] is a date string
-          const dateB = new Date(rowB.values[columnId])
-          return dateA > dateB ? 1 : -1
-        },
-        width: '10rem',
-      },
-      {
-        Header: 'Feedback',
-        accessor: 'feedback',
-        sortType: 'basic',
-        width: undefined,
-      },
-      {
-        Header: 'Rating',
-        accessor: 'rating',
-        sortType: 'basic',
-        width: '12rem',
-      },
-    ],
-    [],
-  )
 
   const data = React.useMemo(() => {
     return feedbackData
@@ -72,7 +70,7 @@ export const FeedbackTable = ({
 
   const { prepareRow, headerGroups, page, gotoPage } = useTable<Data>(
     {
-      columns,
+      columns: FEEDBACK_TABLE_COLUMNS,
       data,
       initialState: { pageIndex: currentPage, pageSize: 9 },
     },
