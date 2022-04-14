@@ -1,4 +1,4 @@
-import { FormFeedbackDto } from '~shared/types/form/'
+import { FormFeedbackMetaDto } from '~shared/types/form/'
 
 import { ApiService } from '~services/ApiService'
 
@@ -8,8 +8,8 @@ export const getFormFeedback = async ({
   formId,
 }: {
   formId: string
-}): Promise<FormFeedbackDto> => {
-  return ApiService.get<FormFeedbackDto>(
+}): Promise<FormFeedbackMetaDto> => {
+  return ApiService.get<FormFeedbackMetaDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/feedback`,
   ).then(({ data }) => data)
 }

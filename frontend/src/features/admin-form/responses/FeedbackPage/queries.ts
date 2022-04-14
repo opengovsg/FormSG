@@ -1,7 +1,7 @@
 import { useQuery, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { FormFeedbackDto } from '~shared/types/form'
+import { FormFeedbackMetaDto } from '~shared/types/form'
 
 import { adminFormKeys } from '../../common/queries'
 
@@ -15,7 +15,7 @@ export const adminFormFeedbackKeys = {
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useFormFeedback = (): UseQueryResult<FormFeedbackDto> => {
+export const useFormFeedback = (): UseQueryResult<FormFeedbackMetaDto> => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
