@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { CSVLink } from 'react-csv'
 import { BiDownload } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
@@ -6,6 +6,7 @@ import { Box, Container, Skeleton, Text } from '@chakra-ui/react'
 
 import Pagination from '~/components/Pagination'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
 import { FeedbackTable } from './FeedbackTable'
@@ -42,15 +43,7 @@ export const FeedbackPage = (): JSX.Element => {
   const totalCount = count || 0
   const [currentPage, setCurrentPage] = useState<number>(1)
 
-  // Watch window size to shift feedback count position for small screens
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 576)
-  const updateMedia = () => {
-    setIsMobile(window.innerWidth <= 576)
-  }
-  useEffect(() => {
-    window.addEventListener('resize', updateMedia)
-    return () => window.removeEventListener('resize', updateMedia)
-  })
+  const isMobile = useIsMobile()
 
   return isLoading ? (
     <FeedbackPageSkeleton />
