@@ -122,7 +122,13 @@ export const FeedbackTable = ({
           return (
             <Tr>
               {row.cells.map((cell) => {
-                return <Td>{cell.render('Cell')}</Td>
+                return (
+                  <Td
+                    {...(cell.column.id === 'feedback' ? { px: 0, pl: 0 } : {})}
+                  >
+                    {cell.render('Cell')}
+                  </Td>
+                )
               })}
             </Tr>
           )
