@@ -41,6 +41,7 @@ export const FeedbackTable = ({
         Header: 'Feedback',
         accessor: 'feedback',
         sortType: 'basic',
+        width: undefined,
       },
       {
         Header: 'Rating',
@@ -82,7 +83,9 @@ export const FeedbackTable = ({
               <Th
                 {...column.getHeaderProps(
                   column.getSortByToggleProps({
-                    style: { minWidth: column.width },
+                    style: {
+                      width: column.width,
+                    },
                   }),
                 )}
                 color="white"
