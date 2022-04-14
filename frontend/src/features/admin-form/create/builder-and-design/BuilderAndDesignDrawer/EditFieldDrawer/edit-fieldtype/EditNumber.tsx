@@ -36,19 +36,14 @@ type EditNumberInputs = Pick<
 const transformNumberFieldToEditForm = (
   field: NumberFieldBase,
 ): EditNumberInputs => {
-  const nextValidationOptions =
-    field.ValidationOptions.selectedValidation === null
-      ? {
-          selectedValidation: '' as const,
-          customVal: '' as const,
-        }
-      : {
-          selectedValidation: field.ValidationOptions.selectedValidation,
-          customVal:
-            field.ValidationOptions.customVal === null
-              ? ('' as const)
-              : field.ValidationOptions.customVal,
-        }
+  const nextValidationOptions = {
+    selectedValidation:
+      field.ValidationOptions.selectedValidation || ('' as const),
+    customVal:
+      (!!field.ValidationOptions.selectedValidation &&
+        field.ValidationOptions.customVal) ||
+      ('' as const),
+  }
   return {
     ...pick(field, EDIT_NUMBER_FIELD_KEYS),
     ValidationOptions: nextValidationOptions,
@@ -75,6 +70,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
   const {
     register,
     formState: { errors },
+    getValues,
     isSaveEnabled,
     buttonText,
     handleUpdateField,
@@ -104,7 +100,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
   const customValValidationOptions: RegisterOptions = useMemo(
     () => ({
       required: {
-        value: watchedSelectedValidation !== '',
+        value: getValues('ValidationOptions.selectedValidation') !== '',
         message: 'Please enter number of characters',
       },
       min: {
@@ -116,12 +112,12 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
         message: 'Cannot be more than 10000',
       },
     }),
-    [watchedSelectedValidation],
+    [getValues],
   )
 
   // Effect to clear validation option errors when selection limit is toggled off.
   useEffect(() => {
-    if (watchedSelectedValidation === '') {
+    if (!watchedSelectedValidation) {
       clearErrors('ValidationOptions')
       setValue('ValidationOptions.customVal', '')
     }
@@ -172,7 +168,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
                 showSteppers={false}
                 {...field}
                 placeholder="Number of characters"
-                isDisabled={watchedSelectedValidation === ''}
+                isDisabled={!watchedSelectedValidation}
               />
             )}
           />
