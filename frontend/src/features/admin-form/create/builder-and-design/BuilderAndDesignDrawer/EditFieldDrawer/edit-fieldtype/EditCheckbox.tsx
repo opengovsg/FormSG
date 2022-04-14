@@ -201,11 +201,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl
-        isRequired
-        isReadOnly={isLoading}
-        isInvalid={!!errors.description}
-      >
+      <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
         <FormLabel>Description</FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
