@@ -45,75 +45,80 @@ export const FeedbackPage = (): JSX.Element => {
   return isLoading ? (
     <FeedbackPageSkeleton />
   ) : (
-    <Container maxW="69.5rem" mt="1.5rem">
-      <Text textStyle="caption-1" fontWeight="400" textColor="secondary.400">
-        Average Score
-      </Text>
-      <Box
-        display="flex"
-        flexDir="row"
-        justifyContent="space-between"
-        mb="1rem"
-      >
-        <Box display="flex" justifyContent="flex-start" alignItems="center">
-          <Box>
+    <Box overflowY="auto" pb="2rem">
+      <Container maxW="69.5rem" mt="1.5rem">
+        <Text textStyle="caption-1" fontWeight="400" textColor="secondary.400">
+          Average Score
+        </Text>
+        <Box
+          display="flex"
+          flexDir="row"
+          justifyContent="space-between"
+          mb="1rem"
+        >
+          <Box display="flex" justifyContent="flex-start" alignItems="center">
+            <Box>
+              <Text
+                textStyle="display-2"
+                fontWeight="semibold"
+                fontSize="2.5rem"
+                lineHeight="3rem"
+                color="secondary.500"
+                letterSpacing="-2.2%"
+                mr="0.75rem"
+              >
+                {averageScore ? averageScore.toPrecision(2) : '-.--'}
+              </Text>
+            </Box>
             <Text
-              textStyle="display-2"
-              fontWeight="semibold"
-              fontSize="2.5rem"
-              lineHeight="3rem"
+              textStyle="h4"
+              fontWeight="medium"
+              fontSize="1.125rem"
+              lineHeight="1.5rem"
               color="secondary.500"
-              letterSpacing="-2.2%"
-              mr="0.75rem"
+              ml="2rem"
             >
-              {averageScore ? averageScore.toPrecision(2) : '-.--'}
+              <Text as="span" color="primary.500">
+                {data?.count}
+              </Text>
+              &nbsp; feedback submission(s) to date
             </Text>
           </Box>
-          <Text
-            textStyle="h4"
-            fontWeight="medium"
-            fontSize="1.125rem"
-            lineHeight="1.5rem"
-            color="secondary.500"
-            ml="2rem"
+          <Button
+            disabled={isLoading || count === 0}
+            as={isLoading || count === 0 ? undefined : CSVLink}
+            filename={`${formId}-feedback.csv`}
+            data={
+              feedback
+                ? feedback.map((entry) => {
+                    return {
+                      index: entry.index,
+                      date: entry.date,
+                      feedback: entry.comment,
+                      rating: entry.rating,
+                    }
+                  })
+                : ''
+            }
+            target="_blank"
+            leftIcon={<BiDownload />}
           >
-            <Text as="span" color="primary.500">
-              {data?.count}
-            </Text>
-            &nbsp; feedback submission(s) to date
-          </Text>
+            Export{' '}
+          </Button>
         </Box>
-        <Button
-          disabled={isLoading || count === 0}
-          as={isLoading || count === 0 ? undefined : CSVLink}
-          filename={`${formId}-feedback.csv`}
-          data={
-            feedback
-              ? feedback.map((entry) => {
-                  return {
-                    index: entry.index,
-                    date: entry.date,
-                    feedback: entry.comment,
-                    rating: entry.rating,
-                  }
-                })
-              : ''
-          }
-          target="_blank"
-          leftIcon={<BiDownload />}
-        >
-          Export{' '}
-        </Button>
-      </Box>
-      <Box mb="2rem">
-        <FeedbackTable feedbackData={feedback} currentPage={currentPage - 1} />
-      </Box>
-      <Pagination
-        totalCount={totalCount}
-        currentPage={currentPage} //1-indexed
-        pageSize={9}
-        onPageChange={setCurrentPage}
-      ></Pagination>
-    </Container>
+        <Box mb="2rem">
+          <FeedbackTable
+            feedbackData={feedback}
+            currentPage={currentPage - 1}
+          />
+        </Box>
+        <Pagination
+          totalCount={totalCount}
+          currentPage={currentPage} //1-indexed
+          pageSize={9}
+          onPageChange={setCurrentPage}
+        ></Pagination>
+      </Container>
+    </Box>
   )
 }
