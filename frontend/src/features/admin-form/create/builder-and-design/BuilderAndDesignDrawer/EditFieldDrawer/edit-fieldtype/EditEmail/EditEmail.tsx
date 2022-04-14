@@ -27,7 +27,6 @@ const EDIT_EMAIL_FIELD_KEYS = [
   'required',
   'isVerifiable',
   'autoReplyOptions',
-  'hasAllowedEmailDomains',
 ] as const
 
 type EditEmailProps = EditFieldProps<EmailFieldBase>
@@ -36,28 +35,32 @@ type EditEmailInputs = Pick<
   EmailFieldBase,
   typeof EDIT_EMAIL_FIELD_KEYS[number]
 > & {
+  hasAllowedEmailDomains: boolean
   allowedEmailDomains: string
 }
 
 const transformEmailFieldToEditForm = (
   field: EmailFieldBase,
 ): EditEmailInputs => {
+  const allowedEmailDomains = field.allowedEmailDomains
   return {
     ...pick(field, EDIT_EMAIL_FIELD_KEYS),
-    allowedEmailDomains: SPLIT_TEXTAREA_TRANSFORM.input(
-      field.allowedEmailDomains,
-    ),
+    hasAllowedEmailDomains: allowedEmailDomains.length > 0,
+    allowedEmailDomains: SPLIT_TEXTAREA_TRANSFORM.input(allowedEmailDomains),
   }
 }
 
 const transformEmailEditFormToField = (
-  form: EditEmailInputs,
+  inputs: EditEmailInputs,
   originalField: EmailFieldBase,
 ): EmailFieldBase => {
-  return extend({}, originalField, form, {
-    allowedEmailDomains: SPLIT_TEXTAREA_TRANSFORM.output(
-      form.allowedEmailDomains,
-    ),
+  const { allowedEmailDomains, hasAllowedEmailDomains, ...rest } = inputs
+  return extend({}, originalField, rest, {
+    hasAllowedEmailDomains,
+    // Clear allowedEmailDomains when toggled off.
+    allowedEmailDomains: hasAllowedEmailDomains
+      ? SPLIT_TEXTAREA_TRANSFORM.output(allowedEmailDomains)
+      : [],
   })
 }
 
