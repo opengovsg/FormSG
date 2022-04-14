@@ -18,6 +18,7 @@ import { FeedbackPage, FormResultsLayout, ResponsesPage } from './responses'
 
 export default {
   title: 'Pages/AdminFormPage/Results/FeedbackTab',
+  component: FeedbackPage,
   parameters: {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
@@ -28,7 +29,9 @@ export default {
 
 const Template: Story = () => {
   return (
-    <MemoryRouter initialEntries={['/12345/results/feedback']}>
+    <MemoryRouter
+      initialEntries={['/61540ece3d4a6e50ac0cc6ff/results/feedback']}
+    >
       <Routes>
         <Route path="/:formId" element={<AdminFormLayout />}>
           <Route
