@@ -2,7 +2,11 @@ import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
 import { Meta, Story } from '@storybook/react'
 
-import { FormResponseMode, FormStatus } from '~shared/types/form/form'
+import {
+  FormAuthType,
+  FormResponseMode,
+  FormStatus,
+} from '~shared/types/form/form'
 
 import {
   createFormBuilderMocks,
@@ -52,6 +56,23 @@ export default {
 
 const Template: Story = () => <SettingsPage />
 export const Desktop = Template.bind({})
+
+export const PreventActivation = Template.bind({})
+PreventActivation.parameters = {
+  msw: [
+    ...createFormBuilderMocks(),
+    getFreeSmsQuota(),
+    getAdminFormSubmissions(),
+    patchAdminFormSettings(),
+    getAdminFormSettings({
+      overrides: {
+        status: FormStatus.Private,
+        authType: FormAuthType.SP,
+        esrvcId: '',
+      },
+    }),
+  ],
+}
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {

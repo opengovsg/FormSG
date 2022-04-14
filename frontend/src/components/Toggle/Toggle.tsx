@@ -63,6 +63,7 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
             </FormLabel.Label>
             {description && (
               <FormLabel.Description
+                useMarkdown
                 sx={{ ...styles.description, ...descriptionStyles }}
               >
                 {description}
