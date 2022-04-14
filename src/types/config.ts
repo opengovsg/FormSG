@@ -55,6 +55,8 @@ export type RateLimitConfig = {
 export type ReactMigrationConfig = {
   respondentRolloutNoAuth: number
   respondentRolloutAuth: number
+  respondentCookieName: string
+  adminCookieName: string
 }
 
 export type Config = {
@@ -80,7 +82,7 @@ export type Config = {
   siteBannerContent: string
   adminBannerContent: string
   rateLimitConfig: RateLimitConfig
-  reactMigrationConfig: ReactMigrationConfig
+  reactMigration: ReactMigrationConfig
   secretEnv: string
 
   // Functions
@@ -157,6 +159,8 @@ export interface IOptionalVarsSchema {
   reactMigration: {
     respondentRolloutNoAuth: number
     respondentRolloutAuth: number
+    respondentCookieName: string
+    adminCookieName: string
   }
 }
 

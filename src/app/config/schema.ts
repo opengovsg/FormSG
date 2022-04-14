@@ -303,6 +303,18 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 0,
       env: 'REACT_MIGRATION_RESP_ROLLOUT_AUTH',
     },
+    respondentCookieName: {
+      doc: "Name of the cookie that will store respondents' assigned environment.",
+      format: 'string',
+      default: 'v2-respondent-ui',
+      env: 'REACT_MIGRATION_RESP_COOKIE_NAME',
+    },
+    adminCookieName: {
+      doc: "Name of the cookie that will store admins' choice of environment.",
+      format: 'string',
+      default: 'v2-admin-ui',
+      env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME',
+    },
   },
 }
 
