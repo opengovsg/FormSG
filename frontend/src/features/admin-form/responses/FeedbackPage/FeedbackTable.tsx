@@ -1,6 +1,6 @@
 import React from 'react'
 import { Column, useSortBy, useTable } from 'react-table'
-import { Box, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
+import { Box, Icon, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
 import { ProcessedFeedbackMeta } from '~shared/types/form'
 
@@ -30,7 +30,11 @@ export const FeedbackTable = ({
       {
         Header: 'Date',
         accessor: 'date',
-        sortType: 'datetime',
+        sortType: (rowA, rowB) => {
+          const dateA = new Date(rowA.values.id)
+          const dateB = new Date(rowB.values.id)
+          return dateA > dateB ? 1 : -1
+        },
         width: '10rem',
       },
       {
@@ -76,9 +80,11 @@ export const FeedbackTable = ({
           <Tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map((column) => (
               <Th
-                {...column.getHeaderProps({
-                  style: { minWidth: column.width },
-                })}
+                {...column.getHeaderProps(
+                  column.getSortByToggleProps({
+                    style: { minWidth: column.width },
+                  }),
+                )}
                 color="white"
                 pl="1rem"
                 textStyle="subhead-2"
@@ -86,7 +92,20 @@ export const FeedbackTable = ({
                 fontSize="0.875rem"
                 textTransform="none"
               >
-                {column.render('Header')}
+                <Box display="flex" flexDir="row">
+                  {column.render('Header')}
+                  <Icon pb="0.2rem">
+                    {column.isSorted ? (
+                      column.isSortedDesc ? (
+                        <BxsChevronDown fontSize="2rem" />
+                      ) : (
+                        <BxsChevronUp fontSize="2rem" />
+                      )
+                    ) : (
+                      ''
+                    )}
+                  </Icon>
+                </Box>
               </Th>
             ))}
           </Tr>
