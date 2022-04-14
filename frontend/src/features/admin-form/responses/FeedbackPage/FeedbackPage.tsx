@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CSVLink } from 'react-csv'
 import { BiDownload } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
@@ -42,11 +42,35 @@ export const FeedbackPage = (): JSX.Element => {
   const totalCount = count || 0
   const [currentPage, setCurrentPage] = useState<number>(1)
 
+  // Watch window size to shift feedback count position for small screens
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 576)
+  const updateMedia = () => {
+    setIsMobile(window.innerWidth <= 576)
+  }
+  useEffect(() => {
+    window.addEventListener('resize', updateMedia)
+    return () => window.removeEventListener('resize', updateMedia)
+  })
+
   return isLoading ? (
     <FeedbackPageSkeleton />
   ) : (
     <Box overflowY="auto" pb="2rem">
       <Container maxW="69.5rem" mt="1.5rem">
+        <Text
+          textStyle="h4"
+          fontWeight="medium"
+          fontSize="1.125rem"
+          lineHeight="1.5rem"
+          color="secondary.500"
+          mb="1rem"
+          display={isMobile ? '' : 'None'}
+        >
+          <Text as="span" color="primary.500">
+            {data?.count}
+          </Text>
+          &nbsp; feedback submission(s) to date
+        </Text>
         <Text textStyle="caption-1" fontWeight="400" textColor="secondary.400">
           Average Score
         </Text>
@@ -55,6 +79,7 @@ export const FeedbackPage = (): JSX.Element => {
           flexDir="row"
           justifyContent="space-between"
           mb="1rem"
+          alignItems="center"
         >
           <Box display="flex" justifyContent="flex-start" alignItems="center">
             <Box>
@@ -77,6 +102,7 @@ export const FeedbackPage = (): JSX.Element => {
               lineHeight="1.5rem"
               color="secondary.500"
               ml="2rem"
+              display={isMobile ? 'None' : ''}
             >
               <Text as="span" color="primary.500">
                 {data?.count}
