@@ -21,7 +21,7 @@ export const useFormFeedback = (): UseQueryResult<FormFeedbackMetaDto> => {
 
   return useQuery(
     adminFormFeedbackKeys.id(formId),
-    () => getFormFeedback({ formId }),
+    () => getFormFeedback(formId),
     { staleTime: 10 * 60 * 1000 },
   )
 }
