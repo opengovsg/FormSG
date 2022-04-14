@@ -52,17 +52,18 @@ export const serveForm: ControllerHandler<
     'authType',
   ])
   let showReact: boolean | undefined = undefined
-  let isSPCP = true
+  let hasAuth = true
 
   if (!formResult.isErr()) {
-    isSPCP = [FormAuthType.SP, FormAuthType.CP, FormAuthType.MyInfo].includes(
-      formResult.value.authType,
-    )
+    // This conditional router is not the one to do error handling
+    // If there's any error, hasAuth will retain its value of true, and
+    // the handling route will handle the error later in the usual fashion
+    hasAuth = formResult.value.authType !== FormAuthType.NIL
   }
 
-  const threshold = isSPCP
-    ? config.reactMigrationConfig.respondentRolloutSPCP
-    : config.reactMigrationConfig.respondentRolloutNoSPCP
+  const threshold = hasAuth
+    ? config.reactMigrationConfig.respondentRolloutAuth
+    : config.reactMigrationConfig.respondentRolloutNoAuth
 
   if (threshold <= 0) {
     // Check the rollout value first, if it's 0, react is DISABLED
