@@ -40,7 +40,7 @@ export const FeedbackTable = ({
       ? feedbackData.map((feedback) => {
           return {
             index: feedback.index,
-            date: feedback.dateShort,
+            date: feedback.date,
             feedback: feedback.comment,
             rating: feedback.rating,
           }
@@ -64,6 +64,7 @@ export const FeedbackTable = ({
             fontWeight="500"
             fontSize="0.875rem"
             textTransform="none"
+            width="5rem"
           >
             #
           </Th>
@@ -74,6 +75,7 @@ export const FeedbackTable = ({
             fontWeight="500"
             fontSize="0.875rem"
             textTransform="none"
+            width="10rem"
           >
             Date
           </Th>
@@ -94,6 +96,7 @@ export const FeedbackTable = ({
             fontWeight="500"
             fontSize="0.875rem"
             textTransform="none"
+            width="12rem"
           >
             Rating
           </Th>
