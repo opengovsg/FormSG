@@ -14,10 +14,10 @@ import NumberInput from '~components/NumberInput'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import { DrawerContentContainer } from './common/DrawerContentContainer'
-import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
-import { EditFieldProps } from './common/types'
-import { useEditFieldForm } from './common/useEditFieldForm'
+import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
+import { EditFieldProps } from '../common/types'
+import { useEditFieldForm } from '../common/useEditFieldForm'
 
 type EditNumberProps = EditFieldProps<NumberFieldBase>
 
