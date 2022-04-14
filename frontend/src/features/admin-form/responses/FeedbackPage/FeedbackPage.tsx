@@ -112,12 +112,14 @@ export const FeedbackPage = (): JSX.Element => {
             currentPage={currentPage - 1}
           />
         </Box>
-        <Pagination
-          totalCount={totalCount}
-          currentPage={currentPage} //1-indexed
-          pageSize={9}
-          onPageChange={setCurrentPage}
-        ></Pagination>
+        <Box display={isLoading || count === 0 ? 'none' : ''}>
+          <Pagination
+            totalCount={totalCount}
+            currentPage={currentPage} //1-indexed
+            pageSize={9}
+            onPageChange={setCurrentPage}
+          />
+        </Box>
       </Container>
     </Box>
   )
