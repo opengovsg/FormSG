@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { Column, Row, usePagination, useSortBy, useTable } from 'react-table'
+import { useEffect, useMemo } from 'react'
+import { Column, usePagination, useSortBy, useTable } from 'react-table'
 import { Box, Icon, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
 import { ProcessedFeedbackMeta } from '~shared/types/form'
@@ -55,7 +55,7 @@ export const FeedbackTable = ({
 }) => {
   const isMobile = useIsMobile()
 
-  const data = React.useMemo(() => {
+  const data = useMemo(() => {
     return feedbackData
       ? feedbackData.map((feedback) => {
           return {
