@@ -71,8 +71,13 @@ export const serveForm: ControllerHandler<
     showReact = false
   } else if (req.cookies) {
     if (ADMIN_COOKIE_NAME in req.cookies) {
+      // Admins are dogfooders, the choice they made for the admin environment
+      // also applies to the forms they need to fill themselves
       showReact = req.cookies[ADMIN_COOKIE_NAME] === 'react'
     } else if (RESPONDENT_COOKIE_NAME in req.cookies) {
+      // Note: the respondent cookie is for the whole session, not for a specific form.
+      // That means that within a session, a respondent will see the same environment
+      // for all the forms he/she fills.
       showReact = req.cookies[RESPONDENT_COOKIE_NAME] === 'react'
     }
   }
