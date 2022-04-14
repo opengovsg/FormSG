@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { CSVLink } from 'react-csv'
 import { BiDownload } from 'react-icons/bi'
+import { useParams } from 'react-router-dom'
 import { Box, Container, Skeleton, Text } from '@chakra-ui/react'
 
 import Pagination from '~/components/Pagination'
@@ -34,6 +36,7 @@ const FeedbackPageSkeleton = (): JSX.Element => {
 
 export const FeedbackPage = (): JSX.Element => {
   const { data, isLoading } = useFormFeedback()
+  const { formId } = useParams()
   const { average, count, feedback } = data || {}
   const averageScore = average ? Number(average) : undefined
   const totalCount = count || 0
@@ -80,7 +83,26 @@ export const FeedbackPage = (): JSX.Element => {
             &nbsp; feedback submission(s) to date
           </Text>
         </Box>
-        <Button leftIcon={<BiDownload />}>Export </Button>
+        <Button
+          as={CSVLink}
+          filename={`${formId}-feedback.csv`}
+          data={
+            feedback
+              ? feedback.map((entry) => {
+                  return {
+                    index: entry.index,
+                    date: entry.date,
+                    feedback: entry.comment,
+                    rating: entry.rating,
+                  }
+                })
+              : ''
+          }
+          target="_blank"
+          leftIcon={<BiDownload />}
+        >
+          Export{' '}
+        </Button>
       </Box>
       <Box mb="2rem">
         <FeedbackTable feedbackData={feedback} currentPage={currentPage - 1} />
