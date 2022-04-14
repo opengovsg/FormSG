@@ -6,6 +6,7 @@ import { ProcessedFeedbackMeta } from '~shared/types/form'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 type Data = {
   index: number
@@ -21,6 +22,7 @@ export const FeedbackTable = ({
   feedbackData: ProcessedFeedbackMeta[] | undefined
   currentPage: number
 }) => {
+  const isMobile = useIsMobile()
   const columns = React.useMemo<Column<Data>[]>(
     () => [
       {
@@ -99,17 +101,17 @@ export const FeedbackTable = ({
               >
                 <Box display="flex" flexDir="row">
                   {column.render('Header')}
-                  <Icon>
-                    {column.isSorted ? (
-                      column.isSortedDesc ? (
-                        <BxsChevronDown fontSize="2rem" />
-                      ) : (
-                        <BxsChevronUp fontSize="2rem" />
-                      )
-                    ) : (
-                      ''
-                    )}
-                  </Icon>
+
+                  {column.isSorted ? (
+                    <Icon
+                      as={
+                        column.isSorted && column.isSortedDesc
+                          ? BxsChevronDown
+                          : BxsChevronUp
+                      }
+                      mt={isMobile ? '0.175rem' : ''}
+                    />
+                  ) : undefined}
                 </Box>
               </Th>
             ))}
