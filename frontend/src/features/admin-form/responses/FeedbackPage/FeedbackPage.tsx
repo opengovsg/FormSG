@@ -1,9 +1,8 @@
 import { BiDownload } from 'react-icons/bi'
-import { Box, Container, Icon, Text } from '@chakra-ui/react'
+import { Box, Container, Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
-import { getSmileyFromScore } from './FeedbackService'
 import { FeedbackTable } from './FeedbackTable'
 import { useFormFeedback } from './queries'
 
@@ -44,19 +43,13 @@ export const FeedbackPage = (): JSX.Element => {
               {averageScore ? averageScore.toPrecision(2) : '-.--'}
             </Text>
           </Box>
-          <Icon
-            as={getSmileyFromScore(averageScore)}
-            h="2.5rem"
-            w="2.5rem"
-            mr="2.5rem"
-            ml="0.75rem"
-          />
           <Text
             textStyle="h4"
             fontWeight="medium"
             fontSize="1.125rem"
             lineHeight="1.5rem"
             color="secondary.500"
+            ml="2rem"
           >
             <Text as="span" color="primary.500">
               {data?.count}
