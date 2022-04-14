@@ -83,7 +83,7 @@ export const FeedbackTable = ({
   }, [currentPage, gotoPage])
 
   return (
-    <Table>
+    <Table variant="solid" colorScheme="secondary">
       <Thead bgColor="secondary.500">
         {headerGroups.map((headerGroup) => (
           <Tr {...headerGroup.getHeaderGroupProps()}>
@@ -96,16 +96,10 @@ export const FeedbackTable = ({
                     },
                   }),
                 )}
-                color="white"
-                pl="1rem"
-                textStyle="subhead-2"
-                fontWeight="500"
-                fontSize="0.875rem"
-                textTransform="none"
               >
                 <Box display="flex" flexDir="row">
                   {column.render('Header')}
-                  <Icon pb="0.2rem">
+                  <Icon>
                     {column.isSorted ? (
                       column.isSortedDesc ? (
                         <BxsChevronDown fontSize="2rem" />
@@ -128,17 +122,7 @@ export const FeedbackTable = ({
           return (
             <Tr>
               {row.cells.map((cell) => {
-                return (
-                  <Td
-                    py="0.625rem"
-                    pl="1rem"
-                    color="secondary.500"
-                    fontWeight="regular"
-                    fontSize="0.875rem"
-                  >
-                    {cell.render('Cell')}
-                  </Td>
-                )
+                return <Td>{cell.render('Cell')}</Td>
               })}
             </Tr>
           )

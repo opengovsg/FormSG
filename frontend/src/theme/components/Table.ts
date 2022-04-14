@@ -41,6 +41,22 @@ const variantColumnStripe: PartsStyleFunction<typeof parts> = ({
   }
 }
 
+const variantSolid: PartsStyleFunction<typeof parts> = () => {
+  return {
+    th: {
+      ...textStyles['subhead-2'],
+      color: 'white',
+      pl: '1rem',
+      textTransform: 'none',
+    },
+    td: {
+      ...textStyles['body-2'],
+      py: '0.625rem',
+      pl: '1rem',
+    },
+  }
+}
+
 const sizes: ComponentMultiStyleConfig<typeof parts>['sizes'] = {
   sm: {
     th: {
@@ -59,6 +75,7 @@ export const Table: ComponentMultiStyleConfig<typeof parts> = {
   parts: parts.keys,
   variants: {
     'column-stripe': variantColumnStripe,
+    solid: variantSolid,
   },
   sizes,
 }
