@@ -1,6 +1,7 @@
 import { BiTrash } from 'react-icons/bi'
-import { Box, ButtonGroup, Flex } from '@chakra-ui/react'
+import { Box, ButtonGroup, Flex, Stack } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 
@@ -19,6 +20,8 @@ export const SaveActionGroup = ({
   handleSubmit,
   isLoading,
 }: SaveActionGroupProps): JSX.Element => {
+  const isMobile = useIsMobile()
+
   return (
     <Flex
       justify="space-between"
@@ -40,14 +43,28 @@ export const SaveActionGroup = ({
       ) : (
         <Box />
       )}
-      <ButtonGroup spacing="1rem">
-        <Button variant="clear" colorScheme="secondary" onClick={handleCancel}>
-          Cancel
-        </Button>
-        <Button isLoading={isLoading} onClick={handleSubmit}>
+      <Stack
+        spacing="1rem"
+        direction={{ base: 'column', md: 'row-reverse' }}
+        w="100%"
+      >
+        <Button
+          isLoading={isLoading}
+          onClick={handleSubmit}
+          isFullWidth={isMobile}
+        >
           {submitButtonLabel}
         </Button>
-      </ButtonGroup>
+        <Button
+          variant="clear"
+          colorScheme="secondary"
+          isDisabled={isLoading}
+          onClick={handleCancel}
+          isFullWidth={isMobile}
+        >
+          Cancel
+        </Button>
+      </Stack>
     </Flex>
   )
 }
