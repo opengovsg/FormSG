@@ -30,7 +30,7 @@ export const ADMIN_COOKIE_OPTIONS = {
 
 const serveFormReact: ControllerHandler = (_req, res) => {
   const reactFrontendPath = path.resolve('dist/frontend')
-  res.sendFile(path.join(reactFrontendPath, 'index.html'))
+  return res.sendFile(path.join(reactFrontendPath, 'index.html'))
 }
 
 const serveFormAngular: ControllerHandler<
@@ -39,7 +39,7 @@ const serveFormAngular: ControllerHandler<
   unknown,
   Record<string, string>
 > = (req, res, next) => {
-  PublicFormController.handleRedirect(req, res, next)
+  return PublicFormController.handleRedirect(req, res, next)
 }
 
 export const serveForm: ControllerHandler<
@@ -88,9 +88,9 @@ export const serveForm: ControllerHandler<
   }
 
   if (showReact) {
-    serveFormReact(req, res, next)
+    return serveFormReact(req, res, next)
   } else {
-    serveFormAngular(req, res, next)
+    return serveFormAngular(req, res, next)
   }
 }
 
@@ -98,10 +98,10 @@ export const serveDefault: ControllerHandler = (req, res, next) => {
   // only admin who chose react should see react, everybody else is plain angular
   if (req.cookies?.[ADMIN_COOKIE_NAME] === 'react') {
     // react
-    serveFormReact(req, res, next)
+    return serveFormReact(req, res, next)
   } else {
     // angular
-    HomeController.home(req, res, next)
+    return HomeController.home(req, res, next)
   }
 }
 
@@ -114,5 +114,5 @@ export const adminChooseEnvironment: ControllerHandler<
 > = (req, res) => {
   const ui = req.params.ui === 'react' ? 'react' : 'angular'
   res.cookie(ADMIN_COOKIE_NAME, ui, ADMIN_COOKIE_OPTIONS)
-  res.json({ ui })
+  return res.json({ ui })
 }
