@@ -10,11 +10,3 @@ export type GroupedLogicMeta = {
   groupedLogic: Record<FieldId, FormCondition[][]>
   hasInvalidLogic: boolean
 }
-
-export type LogicableField =
-  | BasicField.Dropdown
-  | BasicField.Radio
-  | BasicField.YesNo
-  | BasicField.Number
-  | BasicField.Decimal
-  | BasicField.Rating
