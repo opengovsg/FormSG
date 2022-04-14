@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { BiDownload } from 'react-icons/bi'
 import { Box, Container, Text } from '@chakra-ui/react'
+
+import Pagination from '~/components/Pagination'
 
 import Button from '~components/Button'
 
@@ -8,15 +11,10 @@ import { useFormFeedback } from './queries'
 
 export const FeedbackPage = (): JSX.Element => {
   const { data, isLoading } = useFormFeedback()
-  console.log('data is')
-  console.log(data)
-
-  const averageScore = data?.average ? Number(data?.average) : undefined
-  const feedbackData = data?.feedback
-
-  console.log('xx')
-  console.log(averageScore)
-  console.log()
+  const { average, count, feedback } = data || {}
+  const averageScore = average ? Number(average) : undefined
+  const totalCount = count || 0
+  const [currentPage, setCurrentPage] = useState<number>(1)
 
   return (
     <Container maxW="69.5rem" mt="1.5rem">
@@ -59,7 +57,15 @@ export const FeedbackPage = (): JSX.Element => {
         </Box>
         <Button leftIcon={<BiDownload />}>Export </Button>
       </Box>
-      <FeedbackTable feedbackData={feedbackData} />
+      <Box mb="2rem">
+        <FeedbackTable feedbackData={feedback} currentPage={currentPage - 1} />
+      </Box>
+      <Pagination
+        totalCount={totalCount}
+        currentPage={currentPage} //1-indexed
+        pageSize={9}
+        onPageChange={setCurrentPage}
+      ></Pagination>
     </Container>
   )
 }

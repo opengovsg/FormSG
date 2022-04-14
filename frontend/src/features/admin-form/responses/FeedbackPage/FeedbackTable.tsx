@@ -1,5 +1,5 @@
-import React from 'react'
-import { Column, useSortBy, useTable } from 'react-table'
+import React, { useEffect } from 'react'
+import { Column, usePagination, useSortBy, useTable } from 'react-table'
 import { Box, Icon, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
 import { ProcessedFeedbackMeta } from '~shared/types/form'
@@ -16,8 +16,10 @@ type Data = {
 
 export const FeedbackTable = ({
   feedbackData,
+  currentPage,
 }: {
   feedbackData: ProcessedFeedbackMeta[] | undefined
+  currentPage: number
 }) => {
   const columns = React.useMemo<Column<Data>[]>(
     () => [
@@ -66,13 +68,19 @@ export const FeedbackTable = ({
       : []
   }, [feedbackData])
 
-  const { rows, prepareRow, headerGroups } = useTable<Data>(
+  const { prepareRow, headerGroups, page, gotoPage } = useTable<Data>(
     {
       columns,
       data,
+      initialState: { pageIndex: currentPage, pageSize: 9 },
     },
     useSortBy,
+    usePagination,
   )
+
+  useEffect(() => {
+    gotoPage(currentPage)
+  }, [currentPage, gotoPage])
 
   return (
     <Table>
@@ -115,7 +123,7 @@ export const FeedbackTable = ({
         ))}
       </Thead>
       <Tbody>
-        {rows.map((row) => {
+        {page.map((row) => {
           prepareRow(row)
           return (
             <Tr>
