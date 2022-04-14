@@ -24,7 +24,7 @@ export const RetryToggle = (): JSX.Element | null => {
       isLoading={mutateWebhookRetries.isLoading}
       isChecked={settings.webhook.isRetryEnabled}
       label="Enable retries"
-      description={`Your system must meet certain requirements before retries can be safely enabled.\n\n[Learn more](https://go.gov.sg/form-webhook-retries)`}
+      description={`Your system must meet certain requirements before retries can be safely enabled. [Learn more](https://go.gov.sg/form-webhook-retries)`}
       onChange={handleToggleRetry}
     />
   )
