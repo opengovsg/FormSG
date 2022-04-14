@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Column, usePagination, useSortBy, useTable } from 'react-table'
+import { Column, Row, usePagination, useSortBy, useTable } from 'react-table'
 import { Box, Icon, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
 import { ProcessedFeedbackMeta } from '~shared/types/form'
@@ -34,9 +34,9 @@ export const FeedbackTable = ({
       {
         Header: 'Date',
         accessor: 'date',
-        sortType: (rowA, rowB) => {
-          const dateA = new Date(rowA.values.id)
-          const dateB = new Date(rowB.values.id)
+        sortType: (rowA, rowB, columnId) => {
+          const dateA = new Date(rowA.values[columnId]) //rowA.values[columnId] is a date string
+          const dateB = new Date(rowB.values[columnId])
           return dateA > dateB ? 1 : -1
         },
         width: '10rem',
