@@ -45,9 +45,11 @@ export const FeedbackPage = (): JSX.Element => {
 
   const isMobile = useIsMobile()
 
-  return isLoading ? (
-    <FeedbackPageSkeleton />
-  ) : (
+  if (isLoading) {
+    return <FeedbackPageSkeleton />
+  }
+
+  return (
     <Box overflowY="auto" pb="2rem">
       <Container maxW="69.5rem" mt="1.5rem">
         <Text
