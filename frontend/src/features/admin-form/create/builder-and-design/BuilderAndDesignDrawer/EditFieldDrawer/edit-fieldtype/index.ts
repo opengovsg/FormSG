@@ -1,6 +1,7 @@
 export * from './EditCheckbox'
 export * from './EditEmail'
 export * from './EditHeader'
+export * from './EditMobile'
 export * from './EditNric'
 export * from './EditRadio'
 export * from './EditUen'

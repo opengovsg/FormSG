@@ -21,6 +21,7 @@ import {
   EditCheckbox,
   EditEmail,
   EditHeader,
+  EditMobile,
   EditNric,
   EditRadio,
   EditUen,
@@ -126,6 +127,8 @@ export const MemoFieldDrawerContent = memo(
     switch (field.fieldType) {
       case BasicField.Checkbox:
         return <EditCheckbox {...props} field={field} />
+      case BasicField.Mobile:
+        return <EditMobile {...props} field={field} />
       case BasicField.Email:
         return <EditEmail {...props} field={field} />
       case BasicField.Nric:

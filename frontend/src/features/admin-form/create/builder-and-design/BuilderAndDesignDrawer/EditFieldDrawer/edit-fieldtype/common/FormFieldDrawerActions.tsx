@@ -1,6 +1,7 @@
 import { FieldValues, UseFormHandleSubmit } from 'react-hook-form'
-import { ButtonGroup } from '@chakra-ui/button'
+import { Stack } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
 interface FormFieldDrawerActionsProps {
@@ -18,24 +19,32 @@ export const FormFieldDrawerActions = ({
   handleCancel,
   buttonText,
 }: FormFieldDrawerActionsProps): JSX.Element => {
+  const isMobile = useIsMobile()
+
   return (
-    <ButtonGroup
+    <Stack
+      direction={{ base: 'column', md: 'row-reverse' }}
       justifyContent="end"
       w="100%"
-      isDisabled={isLoading}
       spacing="1rem"
     >
-      <Button variant="clear" colorScheme="secondary" onClick={handleCancel}>
-        Cancel
-      </Button>
       <Button
-        minW="8rem"
-        isDisabled={!isSaveEnabled}
+        isFullWidth={isMobile}
+        isDisabled={isLoading || !isSaveEnabled}
         isLoading={isLoading}
         onClick={handleClick}
       >
         {buttonText}
       </Button>
-    </ButtonGroup>
+      <Button
+        isDisabled={isLoading}
+        isFullWidth={isMobile}
+        variant="clear"
+        colorScheme="secondary"
+        onClick={handleCancel}
+      >
+        Cancel
+      </Button>
+    </Stack>
   )
 }

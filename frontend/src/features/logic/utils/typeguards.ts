@@ -1,12 +1,16 @@
 import { DeepPartial } from 'react-hook-form'
 
 import { BasicField } from '~shared/types/field'
-import { LogicDto, LogicType, ShowFieldLogicDto } from '~shared/types/form'
+import {
+  LogicableField,
+  LogicDto,
+  LogicType,
+  ShowFieldLogicDto,
+} from '~shared/types/form'
 
 import { FormFieldValue } from '~templates/Field'
 
 import { ALLOWED_LOGIC_FIELDS } from '../constants'
-import { LogicableField } from '../types'
 
 export const isShowFieldsLogic = (
   formLogic: LogicDto,

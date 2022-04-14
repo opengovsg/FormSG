@@ -6,12 +6,17 @@ import {
 import { CamelCasedProperties } from 'type-fest'
 
 import { BasicField } from '~shared/types/field'
-import { FormCondition, FormDto, LogicConditionState } from '~shared/types/form'
+import {
+  FormCondition,
+  FormDto,
+  LogicableField,
+  LogicConditionState,
+} from '~shared/types/form'
 
 import { FormFieldValue, FormFieldValues } from '~templates/Field'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/RadioField'
 
-import { FieldIdSet, FieldIdToType, LogicableField } from '../types'
+import { FieldIdSet, FieldIdToType } from '../types'
 
 import { groupLogicUnitsByField } from './groupLogicUnitsByField'
 import { isLogicableField, isRadioFormFieldValue } from './typeguards'

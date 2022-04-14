@@ -378,7 +378,7 @@ export const createFormBuilderMocks = (
       (req, res, ctx) => {
         const newField = {
           ...req.body,
-          _id: `random-id-${form.form_fields.length}`,
+          _id: cuid(),
         } as FormFieldDto
         if (req.body.fieldType === BasicField.Table) {
           // eslint-disable-next-line @typescript-eslint/no-extra-semi
@@ -451,7 +451,7 @@ export const createFormBuilderMocks = (
         )
         const newField = {
           ...form.form_fields[fieldToCopyIndex],
-          _id: `random-id-${form.form_fields.length}`,
+          _id: cuid(),
         }
         form.form_fields.push(newField)
         return res(ctx.delay(delay), ctx.status(200), ctx.json(newField))
