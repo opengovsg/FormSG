@@ -97,11 +97,18 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     'ValidationOptions.selectedValidation',
   )
 
-  const customValValidationOptions: RegisterOptions = useMemo(
+  const customValValidationOptions: RegisterOptions<
+    EditNumberInputs,
+    'ValidationOptions.customVal'
+  > = useMemo(
     () => ({
-      required: {
-        value: getValues('ValidationOptions.selectedValidation') !== '',
-        message: 'Please enter number of characters',
+      // customVal is required if there is selected validation.
+      validate: (val) => {
+        return (
+          !!val ||
+          !getValues('ValidationOptions.selectedValidation') ||
+          'Please enter number of characters'
+        )
       },
       min: {
         value: 1,
