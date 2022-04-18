@@ -44,4 +44,3 @@ jobs:
           autoAcceptChanges: form-v2/develop
           exitOnceUploaded: true
           onlyChanged: true
-          untraced: '*/package-lock.json'
