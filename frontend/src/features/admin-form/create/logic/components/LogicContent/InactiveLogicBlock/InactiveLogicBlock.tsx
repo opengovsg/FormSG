@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { BiTrash } from 'react-icons/bi'
 import {
   Box,
+  chakra,
   Divider,
   Stack,
   StackDivider,
@@ -13,6 +14,10 @@ import { LogicDto, LogicType } from '~shared/types/form'
 
 import IconButton from '~components/IconButton'
 
+import {
+  setToEditingSelector,
+  useAdminLogicStore,
+} from '../../../adminLogicStore'
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
 import { DeleteLogicModal } from '../../DeleteLogicModal'
 
@@ -29,6 +34,7 @@ export const InactiveLogicBlock = ({
 }: InactiveLogicBlockProps): JSX.Element | null => {
   const { mapIdToField } = useAdminFormLogic()
   const { isOpen, onClose, onOpen } = useDisclosure()
+  const setToEditing = useAdminLogicStore(setToEditingSelector)
 
   const renderThenContent = useMemo(() => {
     if (!mapIdToField) return null
@@ -55,49 +61,71 @@ export const InactiveLogicBlock = ({
     }
   }, [logic, mapIdToField])
 
+  const handleClick = useCallback(
+    () => setToEditing(logic._id),
+    [logic._id, setToEditing],
+  )
+
   if (!mapIdToField) return null
 
   return (
-    <Box
-      borderRadius="4px"
-      bg="white"
-      border="1px solid"
-      borderColor="neutral.300"
-      pos="relative"
-    >
-      <DeleteLogicModal isOpen={isOpen} onClose={onClose} logicId={logic._id} />
-      <Stack
-        spacing="1.5rem"
-        divider={<StackDivider borderColor="secondary.100" />}
-        p={{ base: '1.5rem', md: '2rem' }}
+    <Box pos="relative">
+      <chakra.button
+        type="button"
+        w="100%"
+        textAlign="start"
+        borderRadius="4px"
+        bg="white"
+        border="1px solid"
+        borderColor="neutral.300"
+        transitionProperty="common"
+        transitionDuration="normal"
+        _hover={{
+          bg: 'primary.100',
+        }}
+        _focus={{
+          boxShadow: `0 0 0 4px var(--chakra-colors-primary-300)`,
+        }}
+        onClick={handleClick}
       >
-        {logic.conditions.map((condition, index) => (
-          <Stack
-            key={index}
-            spacing="1.5rem"
-            textStyle="subhead-3"
-            color="secondary.500"
-          >
-            <Stack>
-              <Text>{index === 0 ? 'If' : 'and'}</Text>
-              <FieldLogicBadge field={mapIdToField[condition.field]} />
+        <DeleteLogicModal
+          isOpen={isOpen}
+          onClose={onClose}
+          logicId={logic._id}
+        />
+        <Stack
+          spacing="1.5rem"
+          divider={<StackDivider borderColor="secondary.100" />}
+          p={{ base: '1.5rem', md: '2rem' }}
+        >
+          {logic.conditions.map((condition, index) => (
+            <Stack
+              key={index}
+              spacing="1.5rem"
+              textStyle="subhead-3"
+              color="secondary.500"
+            >
+              <Stack>
+                <Text>{index === 0 ? 'If' : 'and'}</Text>
+                <FieldLogicBadge field={mapIdToField[condition.field]} />
+              </Stack>
+              <Stack>
+                <Text>{condition.state}</Text>
+                <LogicConditionValues value={condition.value} />
+              </Stack>
             </Stack>
-            <Stack>
-              <Text>{condition.state}</Text>
-              <LogicConditionValues value={condition.value} />
-            </Stack>
-          </Stack>
-        ))}
-      </Stack>
+          ))}
+        </Stack>
 
-      <Divider borderBottomWidth="2px" borderColor="secondary.200" />
-      <Stack
-        textStyle="subhead-3"
-        color="secondary.500"
-        p={{ base: '1.5rem', md: '2rem' }}
-      >
-        {renderThenContent}
-      </Stack>
+        <Divider borderBottomWidth="2px" borderColor="secondary.200" />
+        <Stack
+          textStyle="subhead-3"
+          color="secondary.500"
+          p={{ base: '1.5rem', md: '2rem' }}
+        >
+          {renderThenContent}
+        </Stack>
+      </chakra.button>
       <IconButton
         top={{ base: '0.5rem', md: '2rem' }}
         right={{ base: '0.5rem', md: '2rem' }}
