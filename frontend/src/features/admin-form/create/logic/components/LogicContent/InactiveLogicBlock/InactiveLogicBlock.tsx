@@ -15,6 +15,7 @@ import { LogicDto, LogicType } from '~shared/types/form'
 import IconButton from '~components/IconButton'
 
 import {
+  createOrEditDataSelector,
   setToEditingSelector,
   useAdminLogicStore,
 } from '../../../adminLogicStore'
@@ -35,6 +36,10 @@ export const InactiveLogicBlock = ({
   const { mapIdToField } = useAdminFormLogic()
   const { isOpen, onClose, onOpen } = useDisclosure()
   const setToEditing = useAdminLogicStore(setToEditingSelector)
+  const stateData = useAdminLogicStore(createOrEditDataSelector)
+
+  // Prevent editing logic if some other logic block is being edited.
+  const isPreventEdit = useMemo(() => !!stateData, [stateData])
 
   const renderThenContent = useMemo(() => {
     if (!mapIdToField) return null
@@ -61,10 +66,12 @@ export const InactiveLogicBlock = ({
     }
   }, [logic, mapIdToField])
 
-  const handleClick = useCallback(
-    () => setToEditing(logic._id),
-    [logic._id, setToEditing],
-  )
+  const handleClick = useCallback(() => {
+    if (isPreventEdit) {
+      return
+    }
+    setToEditing(logic._id)
+  }, [isPreventEdit, logic._id, setToEditing])
 
   if (!mapIdToField) return null
 
@@ -80,7 +87,13 @@ export const InactiveLogicBlock = ({
         borderColor="neutral.300"
         transitionProperty="common"
         transitionDuration="normal"
+        cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
+        disabled={isPreventEdit}
+        aria-disabled={isPreventEdit}
         _hover={{
+          _disabled: {
+            bg: 'white',
+          },
           bg: 'primary.100',
         }}
         _focus={{

@@ -25,11 +25,10 @@ export const deleteFormLogic = async (
 
 export const updateFormLogic = async (
   formId: string,
-  logicId: string,
   updatedLogic: LogicDto,
 ): Promise<LogicDto> => {
   return ApiService.put<LogicDto>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/logic/${logicId}`,
+    `${ADMIN_FORM_ENDPOINT}/${formId}/logic/${updatedLogic._id}`,
     updatedLogic,
   ).then(({ data }) => data)
 }

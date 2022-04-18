@@ -25,10 +25,15 @@ const INITIAL_STATE = {
 export const isCreatingStateSelector = (state: AdminLogicStore) =>
   state.createOrEditData?.state === AdminEditLogicState.CreatingLogic
 
-export const editDataSelector = (state: AdminLogicStore) =>
-  state.createOrEditData?.state === AdminEditLogicState.EditingLogic
-    ? state.createOrEditData
+export const createOrEditDataSelector = (state: AdminLogicStore) =>
+  state.createOrEditData
+
+export const editDataSelector = (state: AdminLogicStore) => {
+  const createOrEditData = createOrEditDataSelector(state)
+  return createOrEditData?.state === AdminEditLogicState.EditingLogic
+    ? createOrEditData
     : null
+}
 
 export const setToEditingSelector = (state: AdminLogicStore) =>
   state.setToEditing

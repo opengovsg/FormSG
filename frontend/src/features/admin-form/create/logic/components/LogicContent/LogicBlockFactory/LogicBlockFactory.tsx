@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { LogicDto } from '~shared/types'
 
 import { editDataSelector, useAdminLogicStore } from '../../../adminLogicStore'
+import { ActiveLogicBlock } from '../ActiveLogicBlock/ActiveLogicBlock'
 import { InactiveLogicBlock } from '../InactiveLogicBlock'
 
 export interface LogicBlockFactoryProps {
@@ -19,7 +20,7 @@ export const LogicBlockFactory = ({
     [editState?.logicId, logic._id],
   )
 
-  if (isActiveState) return <div>Active</div>
+  if (isActiveState) return <ActiveLogicBlock logic={logic} />
 
   return <InactiveLogicBlock logic={logic} />
 }
