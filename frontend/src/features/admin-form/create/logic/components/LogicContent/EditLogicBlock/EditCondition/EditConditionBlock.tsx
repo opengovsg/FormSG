@@ -28,10 +28,9 @@ import IconButton from '~components/IconButton'
 import NumberInput from '~components/NumberInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+import { EditLogicInputs } from '~features/admin-form/create/logic/types'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 import { getIfLogicType } from '~features/logic/utils'
-
-import { EditLogicInputs } from '../../../types'
 
 import { BlockLabelText } from './BlockLabelText'
 
