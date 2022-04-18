@@ -22,6 +22,17 @@ const INITIAL_STATE = {
   createOrEditData: null,
 }
 
+export const isCreatingStateSelector = (state: AdminLogicStore) =>
+  state.createOrEditData?.state === AdminEditLogicState.CreatingLogic
+
+export const editDataSelector = (state: AdminLogicStore) =>
+  state.createOrEditData?.state === AdminEditLogicState.EditingLogic
+    ? state.createOrEditData
+    : null
+
+export const setToEditingSelector = (state: AdminLogicStore) =>
+  state.setToEditing
+
 export const useAdminLogicStore = create<AdminLogicStore>(
   devtools((set) => ({
     createOrEditData: null,

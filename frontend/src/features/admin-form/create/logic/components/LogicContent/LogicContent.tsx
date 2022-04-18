@@ -1,22 +1,17 @@
-import { useCallback } from 'react'
 import { Stack } from '@chakra-ui/react'
 
-import { useAdminLogicStore } from '../../adminLogicStore'
+import {
+  isCreatingStateSelector,
+  useAdminLogicStore,
+} from '../../adminLogicStore'
 import { useAdminFormLogic } from '../../hooks/useAdminFormLogic'
-import { AdminEditLogicState } from '../../types'
 
 import { HeaderBlock } from './HeaderBlock'
 import { InactiveLogicBlock } from './InactiveLogicBlock'
 import { NewLogicBlock } from './NewLogicBlock'
 
 export const LogicContent = (): JSX.Element => {
-  const isCreatingState = useAdminLogicStore(
-    useCallback(
-      (state) =>
-        state.createOrEditData?.state === AdminEditLogicState.CreatingLogic,
-      [],
-    ),
-  )
+  const isCreatingState = useAdminLogicStore(isCreatingStateSelector)
   const { formLogics, isLoading } = useAdminFormLogic()
 
   if (isLoading) {
