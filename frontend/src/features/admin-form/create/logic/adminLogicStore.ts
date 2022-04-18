@@ -33,6 +33,9 @@ export const editDataSelector = (state: AdminLogicStore) =>
 export const setToEditingSelector = (state: AdminLogicStore) =>
   state.setToEditing
 
+export const setToInactiveSelector = (state: AdminLogicStore) =>
+  state.setToInactive
+
 export const useAdminLogicStore = create<AdminLogicStore>(
   devtools((set) => ({
     createOrEditData: null,

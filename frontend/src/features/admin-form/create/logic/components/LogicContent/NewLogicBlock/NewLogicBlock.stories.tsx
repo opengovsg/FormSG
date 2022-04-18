@@ -56,7 +56,7 @@ const LOGICABLE_FIELDS = pickBy(MAP_ID_TO_FIELD, (f) =>
 )
 
 const Template: Story<TemplateStoryProps> = ({ defaultValues }) => {
-  const useMockHook: NewLogicBlockProps['useNewLogicBlock'] = () => {
+  const useMockHook: NewLogicBlockProps['useEditLogicBlock'] = () => {
     const formMethods = useForm<EditLogicInputs>({
       defaultValues: merge({ conditions: [{}] }, defaultValues),
     })
@@ -72,7 +72,7 @@ const Template: Story<TemplateStoryProps> = ({ defaultValues }) => {
     const wrapperRef = useRef<HTMLDivElement | null>(null)
 
     // Only allow logic removal if there is more than one logic block.
-    const handleRemoveLogic = useMemo(
+    const handleRemoveCondition = useMemo(
       () => (logicConditionBlocks.length > 1 ? remove : undefined),
       [logicConditionBlocks.length, remove],
     )
@@ -84,7 +84,7 @@ const Template: Story<TemplateStoryProps> = ({ defaultValues }) => {
       handleCreateLogic: formMethods.handleSubmit((input) =>
         console.log(input),
       ),
-      handleRemoveLogic,
+      handleRemoveCondition,
       logicConditionBlocks,
       isLoading: false,
       logicableFields: LOGICABLE_FIELDS,
@@ -93,7 +93,7 @@ const Template: Story<TemplateStoryProps> = ({ defaultValues }) => {
       wrapperRef,
     }
   }
-  return <NewLogicBlock useNewLogicBlock={useMockHook} />
+  return <NewLogicBlock useEditLogicBlock={useMockHook} />
 }
 export const Default = Template.bind({})
 
