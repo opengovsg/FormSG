@@ -6,14 +6,15 @@ import {
 } from '../../../adminLogicStore'
 import { useLogicMutations } from '../../../mutations'
 import { EditLogicInputs } from '../../../types'
-import { EditLogicBlock, useEditLogicBlockDefault } from '../EditLogicBlock'
+import { EditLogicBlock } from '../EditLogicBlock'
 
 export interface NewLogicBlockProps {
-  useEditLogicBlock?: typeof useEditLogicBlockDefault
+  /** Prop to inject values for testing */
+  _defaultValues?: Partial<EditLogicInputs>
 }
 
 export const NewLogicBlock = ({
-  useEditLogicBlock,
+  _defaultValues,
 }: NewLogicBlockProps): JSX.Element => {
   const { createLogicMutation } = useLogicMutations()
   const setToInactive = useAdminLogicStore(setToInactiveSelector)
@@ -27,8 +28,9 @@ export const NewLogicBlock = ({
 
   return (
     <EditLogicBlock
+      defaultValues={_defaultValues}
       onSubmit={handleSubmit}
-      useEditLogicBlock={useEditLogicBlock}
+      submitButtonLabel="Add logic"
     />
   )
 }

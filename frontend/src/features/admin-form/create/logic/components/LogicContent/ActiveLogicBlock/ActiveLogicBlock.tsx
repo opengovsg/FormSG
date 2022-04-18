@@ -8,16 +8,13 @@ import {
 } from '../../../adminLogicStore'
 import { useLogicMutations } from '../../../mutations'
 import { EditLogicInputs } from '../../../types'
-import { EditLogicBlock, useEditLogicBlockDefault } from '../EditLogicBlock'
+import { EditLogicBlock } from '../EditLogicBlock'
 
 export interface ActiveLogicBlockProps {
-  /** Used for testing override */
-  useEditLogicBlock?: typeof useEditLogicBlockDefault
   logic: LogicDto
 }
 
 export const ActiveLogicBlock = ({
-  useEditLogicBlock,
   logic,
 }: ActiveLogicBlockProps): JSX.Element => {
   const { updateLogicMutation } = useLogicMutations()
@@ -36,8 +33,8 @@ export const ActiveLogicBlock = ({
   return (
     <EditLogicBlock
       onSubmit={handleSubmit}
-      logic={logic}
-      useEditLogicBlock={useEditLogicBlock}
+      defaultValues={logic}
+      submitButtonLabel="Save changes"
     />
   )
 }

@@ -3,8 +3,6 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { Stack } from '@chakra-ui/react'
 import { merge } from 'lodash'
 
-import { LogicDto } from '~shared/types'
-
 import { useAdminLogicStore } from '../../../adminLogicStore'
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
 import { useLogicMutations } from '../../../mutations'
@@ -19,16 +17,14 @@ import {
   ThenShowBlock,
 } from './EditCondition'
 
-type UseEditLogicBlockProps = {
+export interface UseEditLogicBlockProps {
   /** Sets default values of inputs if this is provided */
-  logic?: LogicDto
+  defaultValues?: Partial<EditLogicInputs>
   onSubmit: (inputs: EditLogicInputs) => void
 }
 
-// Allow injection of custom hook for testing.
-// Exported for testing.
-export const useEditLogicBlockDefault = ({
-  logic,
+export const useEditLogicBlock = ({
+  defaultValues,
   onSubmit,
 }: UseEditLogicBlockProps) => {
   const setToInactive = useAdminLogicStore(
@@ -38,7 +34,7 @@ export const useEditLogicBlockDefault = ({
   const { createLogicMutation } = useLogicMutations()
 
   const formMethods = useForm<EditLogicInputs>({
-    defaultValues: merge({ conditions: [{}] }, logic),
+    defaultValues: merge({ conditions: [{}] }, defaultValues),
   })
   const {
     fields: logicConditionBlocks,
@@ -71,14 +67,12 @@ export const useEditLogicBlockDefault = ({
     [logicConditionBlocks.length, remove],
   )
 
-  const handleCreateLogic = formMethods.handleSubmit((inputs) =>
-    onSubmit(inputs),
-  )
+  const handleSubmit = formMethods.handleSubmit((inputs) => onSubmit(inputs))
 
   return {
     formMethods,
     logicConditionBlocks,
-    handleCreateLogic,
+    handleSubmit,
     handleAddCondition,
     handleRemoveCondition,
     wrapperRef,
@@ -90,22 +84,20 @@ export const useEditLogicBlockDefault = ({
   }
 }
 
-export interface EditLogicBlockProps {
-  useEditLogicBlock?: typeof useEditLogicBlockDefault
-  logic?: LogicDto
-  onSubmit: (inputs: EditLogicInputs) => void
+export interface EditLogicBlockProps extends UseEditLogicBlockProps {
+  submitButtonLabel: string
 }
 
 export const EditLogicBlock = ({
-  useEditLogicBlock = useEditLogicBlockDefault,
   onSubmit,
-  logic,
+  defaultValues,
+  submitButtonLabel,
 }: EditLogicBlockProps) => {
   const {
     formMethods,
     logicConditionBlocks,
     wrapperRef,
-    handleCreateLogic,
+    handleSubmit,
     handleAddCondition,
     handleRemoveCondition,
     isLoading,
@@ -113,7 +105,7 @@ export const EditLogicBlock = ({
     logicableFields,
     mapIdToField,
     formFields,
-  } = useEditLogicBlock({ logic, onSubmit })
+  } = useEditLogicBlock({ defaultValues, onSubmit })
 
   return (
     <EditConditionWrapper ref={wrapperRef}>
@@ -149,9 +141,9 @@ export const EditLogicBlock = ({
       />
       <SaveActionGroup
         isLoading={isLoading}
-        handleSubmit={handleCreateLogic}
+        handleSubmit={handleSubmit}
         handleCancel={setToInactive}
-        submitButtonLabel={logic ? 'Save changes' : 'Add logic'}
+        submitButtonLabel={submitButtonLabel}
       />
     </EditConditionWrapper>
   )
