@@ -162,7 +162,11 @@ const ThenLogicInput = ({
           const mappedField = mapIdToField[f._id]
           return {
             value: f._id,
-            label: `${mappedField.questionNumber}. ${mappedField.title}`,
+            label: `${
+              mappedField.questionNumber
+                ? `${mappedField.questionNumber}. `
+                : ''
+            }${mappedField.title}`,
             icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
           }
         })
