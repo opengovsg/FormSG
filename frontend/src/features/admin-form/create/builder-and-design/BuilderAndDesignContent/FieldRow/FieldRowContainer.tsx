@@ -22,6 +22,7 @@ import {
   EmailField,
   MobileField,
   NricField,
+  NumberField,
   ParagraphField,
   RadioField,
   UenField,
@@ -296,6 +297,8 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
       return <EmailField schema={field} {...rest} />
     case BasicField.Nric:
       return <NricField schema={field} {...rest} />
+    case BasicField.Number:
+      return <NumberField schema={field} {...rest} />
     case BasicField.Statement:
       return <ParagraphField schema={field} {...rest} />
     case BasicField.Radio:
