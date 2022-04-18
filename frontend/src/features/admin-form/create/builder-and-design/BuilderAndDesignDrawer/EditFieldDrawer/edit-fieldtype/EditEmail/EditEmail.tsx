@@ -218,16 +218,23 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
               <FormLabel>Subject</FormLabel>
               <Input
                 autoFocus
+                placeholder="Default email subject"
                 {...register('autoReplyOptions.autoReplySubject')}
               />
             </FormControl>
             <FormControl isRequired isReadOnly={isLoading} mt="1.5rem">
               <FormLabel>Sender name</FormLabel>
-              <Input {...register('autoReplyOptions.autoReplySender')} />
+              <Input
+                placeholder="Default sender name is your agency name"
+                {...register('autoReplyOptions.autoReplySender')}
+              />
             </FormControl>
             <FormControl isReadOnly={isLoading} isRequired mt="1.5rem">
               <FormLabel>Content</FormLabel>
-              <Textarea {...register('autoReplyOptions.autoReplyMessage')} />
+              <Textarea
+                placeholder="Default email body"
+                {...register('autoReplyOptions.autoReplyMessage')}
+              />
             </FormControl>
             <FormControl isReadOnly={isLoading} mt="1.5rem">
               <Toggle
