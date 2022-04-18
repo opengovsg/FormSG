@@ -19,6 +19,7 @@ import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
 import {
   EditCheckbox,
+  EditEmail,
   EditHeader,
   EditMobile,
   EditNric,
@@ -129,6 +130,8 @@ export const MemoFieldDrawerContent = memo(
         return <EditCheckbox {...props} field={field} />
       case BasicField.Mobile:
         return <EditMobile {...props} field={field} />
+      case BasicField.Email:
+        return <EditEmail {...props} field={field} />
       case BasicField.Nric:
         return <EditNric {...props} field={field} />
       case BasicField.Section:
