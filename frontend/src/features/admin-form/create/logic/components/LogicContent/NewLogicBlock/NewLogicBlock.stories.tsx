@@ -29,7 +29,7 @@ import { FormFieldWithQuestionNo } from '~features/form/types'
 import { NewLogicBlock, NewLogicBlockProps } from './NewLogicBlock'
 
 export default {
-  title: 'Templates/Logic/NewLogicBlock',
+  title: 'Features/AdminForm/Logic/NewLogicBlock',
   component: NewLogicBlock,
   // Padding decorator so boxShadow gets snapshotted too.
   decorators: [
