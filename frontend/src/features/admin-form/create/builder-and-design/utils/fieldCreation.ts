@@ -59,6 +59,22 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         },
       }
     }
+    case BasicField.Email: {
+      return {
+        fieldType,
+        ...baseMeta,
+        isVerifiable: false,
+        hasAllowedEmailDomains: false,
+        allowedEmailDomains: [],
+        autoReplyOptions: {
+          hasAutoReply: false,
+          autoReplySubject: '',
+          autoReplyMessage: '',
+          autoReplySender: '',
+          includeFormSummary: false,
+        },
+      }
+    }
     case BasicField.Radio: {
       return {
         fieldType,

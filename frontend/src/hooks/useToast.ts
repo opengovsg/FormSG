@@ -28,11 +28,19 @@ export type UseToastReturn = {
   update: ReturnType<typeof useChakraToast>['update']
 }
 
+const DEFAULT_CONTAINER_STYLE = {
+  maxWidth: '100%',
+}
+
 export const useToast = ({
   status: initialStatus = 'success',
+  containerStyle: initialContainerStyle = DEFAULT_CONTAINER_STYLE,
   ...initialProps
 }: UseToastProps = {}): UseToastReturn => {
-  const toast = useChakraToast(initialProps)
+  const toast = useChakraToast({
+    ...initialProps,
+    containerStyle: initialContainerStyle,
+  })
 
   const customToastImpl = useMemo(() => {
     const impl = ({

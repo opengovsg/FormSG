@@ -31,7 +31,9 @@ export default {
   parameters: {
     layout: 'fullscreen',
     // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
+    // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
+    // the story has loaded
+    chromatic: { pauseAnimationAtEnd: true, delay: 50 },
     msw: buildMswRoutes(),
   },
 } as Meta
