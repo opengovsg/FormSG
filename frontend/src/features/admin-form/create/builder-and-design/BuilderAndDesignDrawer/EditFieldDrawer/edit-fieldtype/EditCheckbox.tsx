@@ -59,18 +59,18 @@ const transformCheckboxFieldToEditForm = (
 }
 
 const transformCheckboxEditFormToField = (
-  form: EditCheckboxInputs,
+  inputs: EditCheckboxInputs,
   originalField: CheckboxFieldBase,
 ): CheckboxFieldBase => {
-  const nextValidationOptions = form.validateByValue
+  const nextValidationOptions = inputs.validateByValue
     ? {
         // 0 is not allowed
-        customMin: parseInt(form.ValidationOptions.customMin) || null,
-        customMax: parseInt(form.ValidationOptions.customMax) || null,
+        customMin: parseInt(inputs.ValidationOptions.customMin) || null,
+        customMax: parseInt(inputs.ValidationOptions.customMax) || null,
       }
     : { customMin: null, customMax: null }
-  return extend({}, originalField, form, {
-    fieldOptions: SPLIT_TEXTAREA_TRANSFORM.output(form.fieldOptions),
+  return extend({}, originalField, inputs, {
+    fieldOptions: SPLIT_TEXTAREA_TRANSFORM.output(inputs.fieldOptions),
     ValidationOptions: nextValidationOptions,
   })
 }

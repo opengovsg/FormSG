@@ -51,17 +51,17 @@ const transformNumberFieldToEditForm = (
 }
 
 const transformNumberEditFormToField = (
-  form: EditNumberInputs,
+  inputs: EditNumberInputs,
   originalField: NumberFieldBase,
 ): NumberFieldBase => {
   const nextValidationOptions =
-    form.ValidationOptions.selectedValidation === ''
+    inputs.ValidationOptions.selectedValidation === ''
       ? {
           selectedValidation: null,
           customVal: null,
         }
-      : form.ValidationOptions
-  return extend({}, originalField, form, {
+      : inputs.ValidationOptions
+  return extend({}, originalField, inputs, {
     ValidationOptions: nextValidationOptions,
   })
 }
