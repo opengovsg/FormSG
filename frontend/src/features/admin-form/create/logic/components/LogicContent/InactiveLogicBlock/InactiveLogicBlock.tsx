@@ -20,11 +20,13 @@ import { FieldLogicBadge } from './FieldLogicBadge'
 import { LogicBadge } from './LogicBadge'
 import { LogicConditionValues } from './LogicConditionValues'
 
-interface LogicBlockProps {
+interface InactiveLogicBlockProps {
   logic: LogicDto
 }
 
-export const LogicBlock = ({ logic }: LogicBlockProps): JSX.Element | null => {
+export const InactiveLogicBlock = ({
+  logic,
+}: InactiveLogicBlockProps): JSX.Element | null => {
   const { mapIdToField } = useAdminFormLogic()
   const { isOpen, onClose, onOpen } = useDisclosure()
 

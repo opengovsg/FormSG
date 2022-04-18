@@ -6,7 +6,7 @@ import { useAdminFormLogic } from '../../hooks/useAdminFormLogic'
 import { AdminEditLogicState } from '../../types'
 
 import { HeaderBlock } from './HeaderBlock'
-import { LogicBlock } from './LogicBlock'
+import { InactiveLogicBlock } from './InactiveLogicBlock'
 import { NewLogicBlock } from './NewLogicBlock'
 
 export const LogicContent = (): JSX.Element => {
@@ -27,7 +27,7 @@ export const LogicContent = (): JSX.Element => {
     <Stack color="secondary.500" spacing="1rem">
       <HeaderBlock />
       {formLogics?.map((logic) => (
-        <LogicBlock key={logic._id} logic={logic} />
+        <InactiveLogicBlock key={logic._id} logic={logic} />
       ))}
       {isCreatingState ? <NewLogicBlock /> : null}
     </Stack>
