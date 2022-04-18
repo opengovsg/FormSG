@@ -39,7 +39,7 @@ export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
     modifiers: [matchWidth],
   })
 
-  const { styles, setIsFocused } = useSelectContext()
+  const { styles, setIsFocused, isOpen } = useSelectContext()
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const mergedPopperRefs = useMergeRefs(setReferenceElement, wrapperRef)
@@ -52,7 +52,7 @@ export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
   return (
     <SelectPopoverContext.Provider
       value={{
-        popperRef: setPopperElement,
+        popperRef: isOpen ? setPopperElement : null,
         popperStyles,
         popperAttributes,
         update,
