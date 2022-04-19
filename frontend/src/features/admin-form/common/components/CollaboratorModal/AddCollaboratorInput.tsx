@@ -150,6 +150,7 @@ export const AddCollaboratorInput = (): JSX.Element => {
         </FormErrorMessage>
       </FormControl>
       <Button
+        isDisabled={isLoading}
         isLoading={mutateAddCollaborator.isLoading}
         isFullWidth={isFullWidth}
         mt="1rem"

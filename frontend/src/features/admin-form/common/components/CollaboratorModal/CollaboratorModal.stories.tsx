@@ -19,7 +19,7 @@ import {
 import { CollaboratorModal } from './CollaboratorModal'
 
 const baseMswRoutes = [
-  createFormBuilderMocks({}, 0),
+  ...createFormBuilderMocks({}, 0),
   getAdminFormCollaborators(),
   getUser({ delay: 0 }),
 ]

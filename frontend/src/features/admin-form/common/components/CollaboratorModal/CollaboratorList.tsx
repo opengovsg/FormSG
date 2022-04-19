@@ -93,7 +93,7 @@ export const CollaboratorList = (): JSX.Element => {
   const ownerRow = useMemo(() => {
     return (
       <CollaboratorRow bg={{ base: 'primary.100', md: 'white' }}>
-        <Skeleton isLoaded={!!collaborators} py="0.5rem" w="100%">
+        <Skeleton isLoaded={!!collaborators} w="100%">
           <Stack direction="row" align="baseline">
             <CollaboratorText>{form?.admin.email}</CollaboratorText>
             {isCurrentUserHint({ email: form?.admin.email ?? '' })}
