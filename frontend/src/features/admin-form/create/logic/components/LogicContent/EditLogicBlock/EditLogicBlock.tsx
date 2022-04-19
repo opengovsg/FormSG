@@ -3,7 +3,10 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { Stack } from '@chakra-ui/react'
 import { merge } from 'lodash'
 
-import { useAdminLogicStore } from '../../../adminLogicStore'
+import {
+  setToInactiveSelector,
+  useAdminLogicStore,
+} from '../../../adminLogicStore'
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
 import { useLogicMutations } from '../../../mutations'
 import { EditLogicInputs } from '../../../types'
@@ -27,9 +30,7 @@ export const useEditLogicBlock = ({
   defaultValues,
   onSubmit,
 }: UseEditLogicBlockProps) => {
-  const setToInactive = useAdminLogicStore(
-    useCallback((state) => state.setToInactive, []),
-  )
+  const setToInactive = useAdminLogicStore(setToInactiveSelector)
   const { logicableFields, mapIdToField, formFields } = useAdminFormLogic()
   const { createLogicMutation } = useLogicMutations()
 
