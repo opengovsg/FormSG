@@ -1,4 +1,4 @@
-import { Box, Text } from '@chakra-ui/react'
+import { Text } from '@chakra-ui/react'
 
 import Menu from '~components/Menu'
 
@@ -22,18 +22,14 @@ export const PermissionDropdown = ({
     <Menu>
       {({ isOpen }) => (
         <>
-          <Box>
-            <Menu.Button
-              isDisabled={isLoading}
-              w="100%"
-              minW="8rem"
-              variant={buttonVariant}
-              colorScheme="secondary"
-              isActive={isOpen}
-            >
-              {value}
-            </Menu.Button>
-          </Box>
+          <Menu.Button
+            isDisabled={isLoading}
+            variant={buttonVariant}
+            colorScheme="secondary"
+            isActive={isOpen}
+          >
+            {value}
+          </Menu.Button>
           <Menu.List defaultValue={value}>
             {Object.values(DropdownRole).map((role) => (
               <Menu.Item key={role} onClick={() => onChange(role)}>

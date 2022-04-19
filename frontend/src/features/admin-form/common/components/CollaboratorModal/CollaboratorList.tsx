@@ -1,6 +1,6 @@
-import { Fragment, useMemo } from 'react'
+import { useMemo } from 'react'
 import { BiTrash } from 'react-icons/bi'
-import { Divider, Grid, Skeleton, Spacer, Text } from '@chakra-ui/react'
+import { Skeleton, Spacer, Stack, StackDivider, Text } from '@chakra-ui/react'
 
 import { FormPermission } from '~shared/types/form/form'
 
@@ -34,21 +34,24 @@ export const CollaboratorList = (): JSX.Element => {
 
   const ownerRow = useMemo(() => {
     return (
-      <>
+      <Stack
+        direction="row"
+        justify="space-between"
+        align="center"
+        minH="3.5rem"
+      >
         <Skeleton isLoaded={!!collaborators} alignSelf="center" py="0.5rem">
           <Text textStyle="body-2" color="secondary.900" isTruncated>
             {form?.admin.email}
           </Text>
         </Skeleton>
         <Skeleton isLoaded={!!collaborators}>
-          <Text textStyle="body-2" color="secondary.300" px="1rem" py="0.5rem">
+          <Text textStyle="body-2" color="secondary.300" p="0.25rem">
             Owner
           </Text>
+          <Spacer />
         </Skeleton>
-        {/* Spacer required for 3 column grid layout */}
-        <Spacer />
-        <Divider gridColumn="1 / -1" />
-      </>
+      </Stack>
     )
   }, [collaborators, form?.admin.email])
 
@@ -83,10 +86,16 @@ export const CollaboratorList = (): JSX.Element => {
   }
 
   return (
-    <Grid templateColumns="1fr auto auto" overflowY="auto">
+    <Stack spacing={0} divider={<StackDivider />}>
       {ownerRow}
       {list.map((row) => (
-        <Fragment key={row.email}>
+        <Stack
+          minH="3.5rem"
+          direction="row"
+          justify="space-between"
+          align="center"
+          key={row.email}
+        >
           <Text
             textStyle="body-2"
             color="secondary.900"
@@ -95,34 +104,35 @@ export const CollaboratorList = (): JSX.Element => {
           >
             {row.email}
           </Text>
-          <PermissionDropdown
-            buttonVariant="clear"
-            value={row.role}
-            isLoading={
-              mutateUpdateCollaborator.isLoading ||
-              mutateRemoveCollaborator.isLoading
-            }
-            onChange={handleUpdateRole(row)}
-          />
-          <IconButton
-            icon={<BiTrash />}
-            isLoading={
-              mutateRemoveCollaborator.isLoading &&
-              mutateRemoveCollaborator.variables?.permissionToRemove.email ===
-                row.email
-            }
-            isDisabled={
-              mutateUpdateCollaborator.isLoading ||
-              mutateRemoveCollaborator.isLoading
-            }
-            variant="clear"
-            aria-label="Remove collaborator"
-            colorScheme="danger"
-            onClick={handleRemoveCollaborator(row)}
-          />
-          <Divider gridColumn="1 / -1" />
-        </Fragment>
+          <Stack direction="row" align="center">
+            <PermissionDropdown
+              buttonVariant="clear"
+              value={row.role}
+              isLoading={
+                mutateUpdateCollaborator.isLoading ||
+                mutateRemoveCollaborator.isLoading
+              }
+              onChange={handleUpdateRole(row)}
+            />
+            <IconButton
+              icon={<BiTrash />}
+              isLoading={
+                mutateRemoveCollaborator.isLoading &&
+                mutateRemoveCollaborator.variables?.permissionToRemove.email ===
+                  row.email
+              }
+              isDisabled={
+                mutateUpdateCollaborator.isLoading ||
+                mutateRemoveCollaborator.isLoading
+              }
+              variant="clear"
+              aria-label="Remove collaborator"
+              colorScheme="danger"
+              onClick={handleRemoveCollaborator(row)}
+            />
+          </Stack>
+        </Stack>
       ))}
-    </Grid>
+    </Stack>
   )
 }

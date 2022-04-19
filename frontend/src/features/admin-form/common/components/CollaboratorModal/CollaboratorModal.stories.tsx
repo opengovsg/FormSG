@@ -4,8 +4,8 @@ import { useDisclosure } from '@chakra-ui/hooks'
 import { Meta, Story } from '@storybook/react'
 
 import {
+  createFormBuilderMocks,
   getAdminFormCollaborators,
-  getAdminFormResponse,
 } from '~/mocks/msw/handlers/admin-form'
 
 import {
@@ -17,7 +17,10 @@ import {
 
 import { CollaboratorModal } from './CollaboratorModal'
 
-const baseMswRoutes = [getAdminFormResponse(), getAdminFormCollaborators()]
+const baseMswRoutes = [
+  createFormBuilderMocks({}, 0),
+  getAdminFormCollaborators(),
+]
 
 export default {
   title: 'Features/AdminForm/CollaboratorModal',

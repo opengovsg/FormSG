@@ -43,7 +43,7 @@ export const previewForm = async (
 export const getFreeSmsQuota = async (formId: string) => {
   return ApiService.get<SmsCountsDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/verified-sms/count/free`,
-  )
+  ).then(({ data }) => data)
 }
 
 export const getFormCollaborators = async (
