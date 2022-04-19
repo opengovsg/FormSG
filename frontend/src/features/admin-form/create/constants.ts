@@ -5,6 +5,7 @@ import {
   BiCalendarEvent,
   BiCaretDownSquare,
   BiCloudUpload,
+  BiGlobe,
   BiHash,
   BiHeading,
   BiImage,
@@ -79,6 +80,12 @@ export const BASICFIELD_TO_DRAWER_META: {
   [BasicField.Dropdown]: {
     label: 'Dropdown',
     icon: BiCaretDownSquare,
+    isSubmitted: true,
+  },
+
+  [BasicField.Country]: {
+    label: 'Country',
+    icon: BiGlobe,
     isSubmitted: true,
   },
 
