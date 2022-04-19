@@ -35,7 +35,14 @@ export const FeedbackPage = (): JSX.Element => {
   }
 
   return (
-    <Container overflowY="auto" p="1.5rem" maxW="69.5rem" flex={1}>
+    <Container
+      overflowY="auto"
+      p="1.5rem"
+      maxW="69.5rem"
+      flex={1}
+      display="flex"
+      flexDir="column"
+    >
       <Stack
         mb={{ base: '1.25rem', md: '1rem' }}
         direction="row"
@@ -71,7 +78,7 @@ export const FeedbackPage = (): JSX.Element => {
           feedback={feedback}
         />
       </Stack>
-      <Box mb="2rem" overflow="auto">
+      <Box mb="2rem" overflow="auto" flex={1}>
         <FeedbackTable feedbackData={feedback} currentPage={currentPage - 1} />
       </Box>
       <Box display={isLoading || count === 0 ? 'none' : ''}>

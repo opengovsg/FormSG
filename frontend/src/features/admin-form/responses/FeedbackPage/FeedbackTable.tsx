@@ -84,12 +84,15 @@ export const FeedbackTable = ({
   }, [currentPage, gotoPage])
 
   return (
-    <Table variant="solid" colorScheme="secondary">
-      <Thead bgColor="secondary.500">
+    <Table variant="solid" colorScheme="secondary" pos="relative">
+      <Thead>
         {headerGroups.map((headerGroup) => (
           <Tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map((column) => (
               <Th
+                bg="secondary.500"
+                pos="sticky"
+                top={0}
                 {...column.getHeaderProps(
                   column.getSortByToggleProps({
                     style: {
