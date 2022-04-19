@@ -16,14 +16,13 @@ export const FormResultsNavbar = (): JSX.Element => {
       zIndex="docked"
       flex={1}
     >
-      <Container maxW="69.5rem">
+      <Container maxW="69.5rem" px="1.25rem" pt="0.625rem">
         <TabList
           ref={ref}
           onMouseDown={onMouseDown}
           w="100vw"
           borderBottom="none"
           justifyContent="flex-start"
-          pt="1rem"
         >
           <Tab>Responses</Tab>
           <Tab>Feedback</Tab>
