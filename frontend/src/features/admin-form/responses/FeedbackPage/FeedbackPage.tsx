@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Box, Container, Flex, Stack, Text } from '@chakra-ui/react'
+import simplur from 'simplur'
 
 import Pagination from '~/components/Pagination'
 
@@ -23,6 +24,11 @@ export const FeedbackPage = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1)
 
   const isMobile = useIsMobile()
+
+  const prettifiedFeedbackCount = useMemo(() => {
+    if (!data) return
+    return simplur` ${[data.count]}feedback submission[|s] to date`
+  }, [data])
 
   if (isLoading) {
     return isMobile ? <FeedbackPageSkeletonMobile /> : <FeedbackPageSkeleton />
@@ -55,7 +61,7 @@ export const FeedbackPage = (): JSX.Element => {
               <Text as="span" color="primary.500">
                 {data?.count}
               </Text>
-              &nbsp;feedback submission(s) to date
+              {prettifiedFeedbackCount}
             </Text>
           </Box>
         </Stack>
