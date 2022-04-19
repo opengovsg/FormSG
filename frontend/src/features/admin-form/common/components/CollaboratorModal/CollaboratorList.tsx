@@ -1,6 +1,13 @@
 import { useMemo } from 'react'
 import { BiTrash } from 'react-icons/bi'
-import { Skeleton, Spacer, Stack, StackDivider, Text } from '@chakra-ui/react'
+import {
+  Skeleton,
+  Spacer,
+  Stack,
+  StackDivider,
+  StackProps,
+  Text,
+} from '@chakra-ui/react'
 
 import { FormPermission } from '~shared/types/form/form'
 
@@ -12,6 +19,39 @@ import { useAdminForm, useAdminFormCollaborators } from '../../queries'
 import { DropdownRole } from './AddCollaboratorInput'
 import { PermissionDropdown } from './PermissionDropdown'
 import { permissionsToRole, roleToPermission } from './utils'
+
+const CollaboratorText = ({ children }: { children?: string }) => {
+  return (
+    <Text
+      textStyle={{ base: 'subhead-1', md: 'body-2' }}
+      color={{ base: 'secondary.700', md: 'secondary.900' }}
+      isTruncated
+      w="100%"
+    >
+      {children}
+    </Text>
+  )
+}
+
+const CollaboratorRow = ({
+  children,
+  ...props
+}: { children: React.ReactNode } & StackProps) => {
+  return (
+    <Stack
+      p={{ base: '1.5rem', md: 0 }}
+      w="100%"
+      minH="3.5rem"
+      direction={{ base: 'column', md: 'row' }}
+      justify="space-between"
+      align={{ base: 'flex-start', md: 'center' }}
+      spacing={{ base: '0.75rem', md: '0.5rem' }}
+      {...props}
+    >
+      {children}
+    </Stack>
+  )
+}
 
 export const CollaboratorList = (): JSX.Element => {
   // Admin form data required for checking for duplicate emails.
@@ -34,24 +74,17 @@ export const CollaboratorList = (): JSX.Element => {
 
   const ownerRow = useMemo(() => {
     return (
-      <Stack
-        direction="row"
-        justify="space-between"
-        align="center"
-        minH="3.5rem"
-      >
-        <Skeleton isLoaded={!!collaborators} alignSelf="center" py="0.5rem">
-          <Text textStyle="body-2" color="secondary.900" isTruncated>
-            {form?.admin.email}
-          </Text>
+      <CollaboratorRow bg={{ base: 'primary.100', md: 'white' }}>
+        <Skeleton isLoaded={!!collaborators} py="0.5rem">
+          <CollaboratorText>{form?.admin.email}</CollaboratorText>
         </Skeleton>
         <Skeleton isLoaded={!!collaborators}>
-          <Text textStyle="body-2" color="secondary.300" p="0.25rem">
+          <Text textStyle="subhead-1" color="secondary.500">
             Owner
           </Text>
           <Spacer />
         </Skeleton>
-      </Stack>
+      </CollaboratorRow>
     )
   }, [collaborators, form?.admin.email])
 
@@ -86,25 +119,21 @@ export const CollaboratorList = (): JSX.Element => {
   }
 
   return (
-    <Stack spacing={0} divider={<StackDivider />}>
+    <Stack spacing={0} align="flex-start" w="100%" divider={<StackDivider />}>
       {ownerRow}
-      {list.map((row) => (
-        <Stack
-          minH="3.5rem"
-          direction="row"
-          justify="space-between"
-          align="center"
+      {list.map((row, index) => (
+        <CollaboratorRow
           key={row.email}
+          bg={{ base: index % 2 ? 'primary.100' : 'white', md: 'white' }}
         >
-          <Text
-            textStyle="body-2"
-            color="secondary.900"
-            alignSelf="center"
-            isTruncated
+          <CollaboratorText>{row.email}</CollaboratorText>
+          <Stack
+            w="100%"
+            direction="row"
+            justify="space-between"
+            flex={0}
+            align="center"
           >
-            {row.email}
-          </Text>
-          <Stack direction="row" align="center">
             <PermissionDropdown
               buttonVariant="clear"
               value={row.role}
@@ -131,7 +160,7 @@ export const CollaboratorList = (): JSX.Element => {
               onClick={handleRemoveCollaborator(row)}
             />
           </Stack>
-        </Stack>
+        </CollaboratorRow>
       ))}
     </Stack>
   )
