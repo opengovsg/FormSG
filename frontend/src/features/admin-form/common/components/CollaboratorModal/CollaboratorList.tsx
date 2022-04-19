@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { BiTrash } from 'react-icons/bi'
 import {
   Skeleton,
@@ -13,6 +13,8 @@ import { FormPermission } from '~shared/types/form/form'
 
 import IconButton from '~components/IconButton'
 
+import { useUser } from '~features/user/queries'
+
 import { useMutateCollaborators } from '../../mutations'
 import { useAdminForm, useAdminFormCollaborators } from '../../queries'
 
@@ -20,13 +22,17 @@ import { DropdownRole } from './AddCollaboratorInput'
 import { PermissionDropdown } from './PermissionDropdown'
 import { permissionsToRole, roleToPermission } from './utils'
 
-const CollaboratorText = ({ children }: { children?: string }) => {
+type CollaboratorRowMeta = {
+  email: string
+  role: DropdownRole
+}
+
+const CollaboratorText = ({ children }: { children: React.ReactNode }) => {
   return (
     <Text
       textStyle={{ base: 'subhead-1', md: 'body-2' }}
       color={{ base: 'secondary.700', md: 'secondary.900' }}
       isTruncated
-      w="100%"
     >
       {children}
     </Text>
@@ -56,6 +62,7 @@ const CollaboratorRow = ({
 export const CollaboratorList = (): JSX.Element => {
   // Admin form data required for checking for duplicate emails.
   const { data: form } = useAdminForm()
+  const { user } = useUser()
   const { data: collaborators } = useAdminFormCollaborators({
     enabled: !!form,
   })
@@ -63,7 +70,18 @@ export const CollaboratorList = (): JSX.Element => {
   const { mutateUpdateCollaborator, mutateRemoveCollaborator } =
     useMutateCollaborators()
 
-  const list = useMemo(() => {
+  const isCurrentUserHint = useCallback(
+    (row: Pick<CollaboratorRowMeta, 'email'>) => {
+      return row.email === user?.email ? (
+        <Text as="span" textStyle="caption-1" color="neutral.600">
+          (You)
+        </Text>
+      ) : null
+    },
+    [user?.email],
+  )
+
+  const list: CollaboratorRowMeta[] = useMemo(() => {
     return (
       collaborators?.map((c) => ({
         email: c.email,
@@ -75,8 +93,11 @@ export const CollaboratorList = (): JSX.Element => {
   const ownerRow = useMemo(() => {
     return (
       <CollaboratorRow bg={{ base: 'primary.100', md: 'white' }}>
-        <Skeleton isLoaded={!!collaborators} py="0.5rem">
-          <CollaboratorText>{form?.admin.email}</CollaboratorText>
+        <Skeleton isLoaded={!!collaborators} py="0.5rem" w="100%">
+          <Stack direction="row" align="baseline">
+            <CollaboratorText>{form?.admin.email}</CollaboratorText>
+            {isCurrentUserHint({ email: form?.admin.email ?? '' })}
+          </Stack>
         </Skeleton>
         <Skeleton isLoaded={!!collaborators}>
           <Text textStyle="subhead-1" color="secondary.500">
@@ -86,7 +107,7 @@ export const CollaboratorList = (): JSX.Element => {
         </Skeleton>
       </CollaboratorRow>
     )
-  }, [collaborators, form?.admin.email])
+  }, [collaborators, form?.admin.email, isCurrentUserHint])
 
   const handleUpdateRole =
     (row: typeof list[number]) => (newRole: DropdownRole) => {
@@ -126,7 +147,10 @@ export const CollaboratorList = (): JSX.Element => {
           key={row.email}
           bg={{ base: index % 2 ? 'primary.100' : 'white', md: 'white' }}
         >
-          <CollaboratorText>{row.email}</CollaboratorText>
+          <Stack direction="row" w="100%" align="center">
+            <CollaboratorText>{row.email}</CollaboratorText>
+            {isCurrentUserHint(row)}
+          </Stack>
           <Stack
             w="100%"
             direction="row"

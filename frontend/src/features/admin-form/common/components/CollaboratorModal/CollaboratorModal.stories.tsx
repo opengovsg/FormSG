@@ -7,6 +7,7 @@ import {
   createFormBuilderMocks,
   getAdminFormCollaborators,
 } from '~/mocks/msw/handlers/admin-form'
+import { getUser } from '~/mocks/msw/handlers/user'
 
 import {
   fullScreenDecorator,
@@ -20,6 +21,7 @@ import { CollaboratorModal } from './CollaboratorModal'
 const baseMswRoutes = [
   createFormBuilderMocks({}, 0),
   getAdminFormCollaborators(),
+  getUser({ delay: 0 }),
 ]
 
 export default {
