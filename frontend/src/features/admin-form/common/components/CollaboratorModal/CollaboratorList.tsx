@@ -100,10 +100,18 @@ export const CollaboratorList = (): JSX.Element => {
           </Stack>
         </Skeleton>
         <Skeleton isLoaded={!!collaborators}>
-          <Text textStyle="subhead-1" color="secondary.500">
-            Owner
-          </Text>
-          <Spacer />
+          <Stack
+            w="100%"
+            direction="row"
+            justify="space-between"
+            flex={0}
+            align="center"
+          >
+            <Text textStyle="subhead-1" color="secondary.500">
+              Owner
+            </Text>
+            <Spacer w={collaborators?.length ? '5.75rem' : 0} />
+          </Stack>
         </Skeleton>
       </CollaboratorRow>
     )
