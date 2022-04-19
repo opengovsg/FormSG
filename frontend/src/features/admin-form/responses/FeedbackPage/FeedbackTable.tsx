@@ -8,14 +8,14 @@ import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useIsMobile } from '~hooks/useIsMobile'
 
-type Data = {
+type FeedbackColumnData = {
   index: number
   date: string
   feedback: string
   rating: number
 }
 
-const FEEDBACK_TABLE_COLUMNS: Column<Data>[] = [
+const FEEDBACK_TABLE_COLUMNS: Column<FeedbackColumnData>[] = [
   {
     Header: '#',
     accessor: 'index',
@@ -68,15 +68,16 @@ export const FeedbackTable = ({
       : []
   }, [feedbackData])
 
-  const { prepareRow, headerGroups, page, gotoPage } = useTable<Data>(
-    {
-      columns: FEEDBACK_TABLE_COLUMNS,
-      data,
-      initialState: { pageIndex: currentPage, pageSize: 9 },
-    },
-    useSortBy,
-    usePagination,
-  )
+  const { prepareRow, headerGroups, page, gotoPage } =
+    useTable<FeedbackColumnData>(
+      {
+        columns: FEEDBACK_TABLE_COLUMNS,
+        data,
+        initialState: { pageIndex: currentPage, pageSize: 9 },
+      },
+      useSortBy,
+      usePagination,
+    )
 
   useEffect(() => {
     gotoPage(currentPage)
