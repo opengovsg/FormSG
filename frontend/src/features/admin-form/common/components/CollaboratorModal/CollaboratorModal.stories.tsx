@@ -66,6 +66,26 @@ const Template: Story = () => {
 }
 export const Default = Template.bind({})
 
+export const WithCollaborators = Template.bind({})
+WithCollaborators.parameters = {
+  msw: [
+    getAdminFormCollaborators({
+      delay: 0,
+      overrides: [
+        {
+          email: 'viewer@example.com',
+          write: false,
+        },
+        {
+          email: 'editor@example.com',
+          write: true,
+        },
+      ],
+    }),
+    ...baseMswRoutes,
+  ],
+}
+
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: [getAdminFormCollaborators({ delay: 'infinite' }), ...baseMswRoutes],
@@ -77,4 +97,20 @@ Mobile.parameters = {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
+  msw: [
+    getAdminFormCollaborators({
+      delay: 0,
+      overrides: [
+        {
+          email: 'viewer@example.com',
+          write: false,
+        },
+        {
+          email: 'editor@example.com',
+          write: true,
+        },
+      ],
+    }),
+    ...baseMswRoutes,
+  ],
 }
