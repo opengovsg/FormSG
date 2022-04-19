@@ -30,6 +30,7 @@
     "test:frontend": "npm --prefix frontend test",
     "build": "npm run clean && npm run build:backend && npm run build:frontend",
     "dev:angularjs": "webpack --config webpack.dev.js",
+    "build:old-frontend": "webpack --config webpack.prod.js",
     "build:frontend": "npm run --prefix frontend build",
     "build:backend": "tsc -p tsconfig.build.json && npm run copyfiles:backend",
     "copyfiles:backend": "copyfiles -e src/public/**/*.html -u 1 src/**/*.html dist/backend/src",

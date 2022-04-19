@@ -19,6 +19,9 @@ COPY . ./
 
 RUN npm run build
 
+# Building angular (temporary)
+RUN npm run build:old-frontend
+
 # This stage builds the final container
 FROM node:fermium-alpine3.13
 LABEL maintainer=FormSG<formsg@data.gov.sg>
