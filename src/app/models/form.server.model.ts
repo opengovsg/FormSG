@@ -66,6 +66,7 @@ import {
   BaseFieldSchema,
   createAttachmentFieldSchema,
   createCheckboxFieldSchema,
+  createCountryFieldSchema,
   createDateFieldSchema,
   createDecimalFieldSchema,
   createDropdownFieldSchema,
@@ -441,6 +442,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     createAttachmentFieldSchema(),
   )
   FormFieldPath.discriminator(BasicField.Dropdown, createDropdownFieldSchema())
+  FormFieldPath.discriminator(BasicField.Country, createCountryFieldSchema())
   FormFieldPath.discriminator(BasicField.Radio, createRadioFieldSchema())
   FormFieldPath.discriminator(BasicField.Checkbox, createCheckboxFieldSchema())
   FormFieldPath.discriminator(

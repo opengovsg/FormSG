@@ -1,7 +1,7 @@
 import { Country } from '~shared/constants/countries'
 import {
   BasicField,
-  DropdownFieldBase,
+  CountryFieldBase,
   FormFieldWithId,
 } from '~shared/types/field'
 
@@ -9,8 +9,7 @@ import DropdownField from '~templates/Field/Dropdown'
 
 import { BaseFieldProps } from '../FieldContainer'
 
-// TODO: Change to CountryFieldBase when the new CountryField type is added in future PRs
-export type CountryFieldSchema = FormFieldWithId<DropdownFieldBase>
+export type CountryFieldSchema = FormFieldWithId<CountryFieldBase>
 export interface CountryFieldProps extends BaseFieldProps {
   schema: CountryFieldSchema
 }
