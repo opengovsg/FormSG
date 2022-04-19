@@ -59,7 +59,15 @@ export const useEditLogicBlock = ({
     }
   }, [])
 
-  const handleAddCondition = useCallback(() => append({}), [append])
+  const handleAddCondition = useCallback(
+    () =>
+      append({
+        // Cannot be undefined or the default value will be used.
+        // This may cause old values to be shown when appending.
+        field: '',
+      }),
+    [append],
+  )
 
   // Only allow logic removal if there is more than one logic block.
   const handleRemoveCondition = useMemo(
