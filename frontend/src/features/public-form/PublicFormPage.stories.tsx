@@ -12,7 +12,7 @@ import {
   SHOW_FIELDS_ON_YES_LOGIC,
 } from '~/mocks/msw/handlers/public-form'
 
-import { StoryRouter } from '~utils/storybook'
+import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 
 import PublicFormPage from './PublicFormPage'
 
@@ -62,6 +62,9 @@ export default {
 const Template: Story = () => <PublicFormPage />
 export const Default = Template.bind({})
 
+export const Mobile = Template.bind({})
+Mobile.parameters = getMobileViewParameters()
+
 export const ColorThemeGreen = Template.bind({})
 ColorThemeGreen.parameters = {
   msw: generateMswHandlersForColorTheme(FormColorTheme.Green),
@@ -107,6 +110,12 @@ SingpassUnauthorized.parameters = {
       },
     }),
   ],
+}
+
+export const UnauthedMobile = Template.bind({})
+UnauthedMobile.parameters = {
+  ...SingpassUnauthorized.parameters,
+  ...getMobileViewParameters(),
 }
 
 export const SingpassAuthorized = Template.bind({})
