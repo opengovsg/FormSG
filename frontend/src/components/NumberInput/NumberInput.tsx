@@ -12,6 +12,8 @@ import {
   useNumberInput,
 } from '@chakra-ui/react'
 
+import { ThemeColorScheme } from '~theme/foundations/colours'
+
 import IconButton from '../IconButton'
 
 export interface NumberInputProps extends ChakraNumberInputProps {
@@ -27,6 +29,11 @@ export interface NumberInputProps extends ChakraNumberInputProps {
    * Whether to show the increment and decrement steppers. Defaults to true.
    */
   showSteppers?: boolean
+
+  /**
+   * Color scheme of number input.
+   */
+  colorScheme?: ThemeColorScheme
 }
 
 export const NumberInput = forwardRef<NumberInputProps, 'input'>(
@@ -93,6 +100,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
           <Box __css={styles.stepperWrapper} ref={stepperWrapperRef}>
             <IconButton
               sx={styles.stepperButton}
+              colorScheme={props.colorScheme}
               aria-hidden
               aria-label="Decrement number"
               variant="clear"
@@ -102,6 +110,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
             <Divider __css={styles.stepperDivider} orientation="vertical" />
             <IconButton
               sx={styles.stepperButton}
+              colorScheme={props.colorScheme}
               aria-hidden
               aria-label="Increment number"
               variant="clear"
