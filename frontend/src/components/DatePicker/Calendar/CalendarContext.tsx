@@ -17,6 +17,8 @@ import {
 import { Props as DayzedProps, RenderProps, useDayzed } from 'dayzed'
 import { inRange } from 'lodash'
 
+import { ThemeColorScheme } from '~theme/foundations/colours'
+
 import { DatePickerProps } from '../DatePicker'
 import {
   generateClassNameForDate,
@@ -64,6 +66,10 @@ type PassthroughProps = {
    * Date currently being hovered, if any.
    */
   hoveredDate?: Date
+  /**
+   * Color scheme of date input
+   */
+  colorScheme?: ThemeColorScheme
 }
 export type UseProvideCalendarProps = Pick<DayzedProps, 'monthsToDisplay'> &
   PassthroughProps
@@ -122,6 +128,7 @@ const useProvideCalendar = ({
   onMouseLeaveCalendar,
   isDateInRange,
   hoveredDate,
+  colorScheme,
 }: UseProvideCalendarProps) => {
   // Ensure that calculations are always made based on date of initial render,
   // so component state doesn't suddenly jump at midnight
@@ -293,5 +300,6 @@ const useProvideCalendar = ({
     onMouseLeaveCalendar,
     isDateInRange,
     hoveredDate,
+    colorScheme,
   }
 }
