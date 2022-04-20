@@ -1,7 +1,7 @@
 import { Meta, Story } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
-import { FormAuthType } from '~shared/types/form'
+import { FormAuthType, FormColorTheme } from '~shared/types/form'
 
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
@@ -24,6 +24,24 @@ const DEFAULT_MSW_HANDLERS = [
   postVerifyVfnOtpResponse(),
 ]
 
+const generateMswHandlersForColorTheme = (colorTheme: FormColorTheme) => {
+  return [
+    ...envHandlers,
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          startPage: {
+            colorTheme,
+          },
+        },
+      },
+    }),
+    postVfnTransactionResponse(),
+    postGenerateVfnOtpResponse(),
+    postVerifyVfnOtpResponse(),
+  ]
+}
+
 export default {
   title: 'Pages/PublicFormPage',
   component: PublicFormPage,
@@ -43,6 +61,31 @@ export default {
 
 const Template: Story = () => <PublicFormPage />
 export const Default = Template.bind({})
+
+export const ColorThemeGreen = Template.bind({})
+ColorThemeGreen.parameters = {
+  msw: generateMswHandlersForColorTheme(FormColorTheme.Green),
+}
+
+export const ColorThemeGrey = Template.bind({})
+ColorThemeGrey.parameters = {
+  msw: generateMswHandlersForColorTheme(FormColorTheme.Grey),
+}
+
+export const ColorThemeBrown = Template.bind({})
+ColorThemeBrown.parameters = {
+  msw: generateMswHandlersForColorTheme(FormColorTheme.Brown),
+}
+
+export const ColorThemeRed = Template.bind({})
+ColorThemeRed.parameters = {
+  msw: generateMswHandlersForColorTheme(FormColorTheme.Red),
+}
+
+export const ColorThemeOrange = Template.bind({})
+ColorThemeOrange.parameters = {
+  msw: generateMswHandlersForColorTheme(FormColorTheme.Orange),
+}
 
 export const Loading = Template.bind({})
 Loading.parameters = {
