@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from 'react-query'
+import { useIntervalWhen } from 'rooks'
 
-import { useInterval } from '~hooks/useInterval'
 import { ButtonProps } from '~components/Button'
 
 import { ResendOtpButton } from './ResendOtpButton'
@@ -28,10 +28,11 @@ export const ResendOtpButtonContainer = ({
     onSuccess: () => setTimer(propTimer),
   })
 
-  useInterval(
+  useIntervalWhen(
     () => setTimer(timer - 1),
+    /* intervalDurationMs= */ 1000,
     // Stop interval if timer hits 0.
-    timer <= 0 ? null : 1000,
+    /* when= */ timer > 0,
   )
 
   return (
