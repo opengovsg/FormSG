@@ -55,7 +55,8 @@ export const FormFieldsContainer = (): JSX.Element | null => {
         {isAuthRequired ? null : <SectionSidebar />}
         <Box
           bg="white"
-          p="2.5rem"
+          py="2.5rem"
+          px={{ base: '1rem', md: '2.5rem' }}
           w="100%"
           minW={0}
           h="fit-content"
