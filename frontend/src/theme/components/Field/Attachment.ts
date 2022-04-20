@@ -34,6 +34,7 @@ export const Attachment: ComponentMultiStyleConfig<typeof parts> = {
         isDragActive,
         focusBorderColor: fc,
         errorBorderColor: ec,
+        colorScheme: c,
         theme,
       } = props
 
@@ -49,9 +50,9 @@ export const Attachment: ComponentMultiStyleConfig<typeof parts> = {
           justifyContent: 'center',
           cursor: 'pointer',
           border: '1px dashed',
-          borderColor: 'primary.700',
+          borderColor: `${c}.700`,
           borderRadius: '0.25rem',
-          bg: isDragActive ? 'primary.200' : 'neutral.100',
+          bg: isDragActive ? `${c}.200` : 'neutral.100',
           _invalid: {
             // Remove extra 1px of outline.
             borderColor: getColor(theme, ec),
@@ -66,10 +67,10 @@ export const Attachment: ComponentMultiStyleConfig<typeof parts> = {
             ...inputStyle._disabled,
           },
           _hover: {
-            bg: 'primary.100',
+            bg: `${c}.100`,
           },
           _active: {
-            bg: 'primary.200',
+            bg: `${c}.200`,
           },
         },
       }
@@ -77,5 +78,6 @@ export const Attachment: ComponentMultiStyleConfig<typeof parts> = {
   },
   defaultProps: {
     ...Input.defaultProps,
+    colorScheme: 'primary',
   },
 }
