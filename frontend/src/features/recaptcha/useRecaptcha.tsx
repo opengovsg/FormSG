@@ -141,12 +141,14 @@ export const useRecaptcha = ({
       if (isVfnInProgress && recaptchaVisibility === 'visible') {
         // Recaptcha now shown
         setHasDisplayed(true)
+        return
       }
       if (isVfnInProgress && recaptchaVisibility === 'hidden' && hasDisplayed) {
-        setIsVfnInProgress(false)
-        setHasDisplayed(false)
         executionPromise.current.reject?.(new RecaptchaClosedError())
       }
+
+      setIsVfnInProgress(false)
+      setHasDisplayed(false)
     },
     /* intervalDurationMs= */ 100,
     /* when= */ isVfnInProgress,
