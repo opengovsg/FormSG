@@ -18,7 +18,10 @@ import { FormFieldValues } from '~templates/Field'
 
 import { trackVisitPublicForm } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
-import { useRecaptcha } from '~features/recaptcha/useRecaptcha'
+import {
+  RecaptchaClosedError,
+  useRecaptcha,
+} from '~features/recaptcha/useRecaptcha'
 import {
   FetchNewTransactionResponse,
   useTransactionMutations,
@@ -59,7 +62,7 @@ export const PublicFormProvider = ({
   const { createTransactionMutation } = useTransactionMutations(formId)
   const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
     usePublicFormMutations(formId)
-  const toast = useToast()
+  const toast = useToast({ isClosable: true })
   const vfnToastIdRef = useRef<string | number>()
   const desyncToastIdRef = useRef<string | number>()
 
@@ -148,7 +151,11 @@ export const PublicFormProvider = ({
       let captchaResponse: string | null
       try {
         captchaResponse = await getCaptchaResponse()
-      } catch {
+      } catch (error) {
+        if (error instanceof RecaptchaClosedError) {
+          // Do nothing if recaptcha is closed.
+          return
+        }
         return showErrorToast()
       }
 
