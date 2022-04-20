@@ -5,6 +5,8 @@ import { useTable } from 'react-table'
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 import { get, head, uniq } from 'lodash'
 
+import { FormColorTheme } from '~shared/types'
+
 import { useIsMobile } from '~hooks/useIsMobile'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
@@ -27,7 +29,10 @@ export interface TableFieldProps extends BaseFieldProps {
  * @precondition This component uses `react-hook-form#useFieldArray`, and will require defaultValues to be populated in the parent `useForm` hook.
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const TableField = ({ schema }: TableFieldProps): JSX.Element => {
+export const TableField = ({
+  schema,
+  colorTheme = FormColorTheme.Blue,
+}: TableFieldProps): JSX.Element => {
   const isMobile = useIsMobile()
 
   const columnsData = useMemo(() => {
@@ -85,7 +90,7 @@ export const TableField = ({ schema }: TableFieldProps): JSX.Element => {
           {...getTableProps()}
           variant="column-stripe"
           size="sm"
-          colorScheme="primary"
+          colorScheme={`theme-${colorTheme}`}
         >
           <Thead display={{ base: 'none', md: 'table-header-group' }}>
             {headerGroups.map((headerGroup) => (
@@ -117,6 +122,7 @@ export const TableField = ({ schema }: TableFieldProps): JSX.Element => {
                       {cell.render('Cell', {
                         schemaId: schema._id,
                         columnSchema: schema.columns[j],
+                        colorTheme,
                       })}
                     </Td>
                   ))}
