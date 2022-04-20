@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { MB } from '~shared/constants/file'
+import { FormColorTheme } from '~shared/types'
 import { VALID_EXTENSIONS } from '~shared/utils/file-validation'
 
 import { createAttachmentValidationRules } from '~utils/fieldValidation'
@@ -19,6 +20,7 @@ export interface AttachmentFieldProps extends BaseFieldProps {
  */
 export const AttachmentField = ({
   schema,
+  colorTheme = FormColorTheme.Blue,
 }: AttachmentFieldProps): JSX.Element => {
   const fieldName = schema._id
   const validationRules = useMemo(
@@ -47,6 +49,7 @@ export const AttachmentField = ({
         render={({ field: { onChange, ...rest } }) => (
           <Attachment
             {...rest}
+            colorScheme={`theme-${colorTheme}`}
             maxSize={maxSizeInBytes}
             accept={VALID_EXTENSIONS}
             showFileSize
