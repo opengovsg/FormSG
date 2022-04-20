@@ -11,6 +11,7 @@ export interface SectionFieldContainerProps extends BaseFieldProps {
 
 export const SectionFieldContainer = ({
   schema,
+  colorTheme,
 }: SectionFieldContainerProps): JSX.Element => {
   const { sectionRefs, setActiveSectionId } = useFormSections()
 
@@ -18,6 +19,7 @@ export const SectionFieldContainer = ({
     <SectionField
       ref={sectionRefs[schema._id]}
       schema={schema}
+      colorTheme={colorTheme}
       handleSectionEnter={() => setActiveSectionId(schema._id)}
     />
   )

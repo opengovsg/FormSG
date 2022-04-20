@@ -13,7 +13,7 @@ export interface SectionFieldProps extends SectionFieldContainerProps {
 
 // Used by SectionFieldContainer
 export const SectionField = forwardRef<SectionFieldProps, 'div'>(
-  ({ schema, handleSectionEnter }, ref) => {
+  ({ schema, colorTheme, handleSectionEnter }, ref) => {
     return (
       <Box
         _notFirst={{
@@ -22,7 +22,7 @@ export const SectionField = forwardRef<SectionFieldProps, 'div'>(
       >
         {/* id given so app can scrolled to this section */}
         <Box id={schema._id} ref={ref}>
-          <Text textStyle="h2" color="primary.500">
+          <Text textStyle="h2" color={`theme-${colorTheme}.500`}>
             {schema.title}
           </Text>
           <Text textStyle="body-1" color="secondary.700" mt="1rem">
