@@ -1,6 +1,8 @@
 import { Waypoint } from 'react-waypoint'
 import { Box, forwardRef, Text } from '@chakra-ui/react'
 
+import { FormColorTheme } from '~shared/types'
+
 import { SectionFieldContainerProps } from './SectionFieldContainer'
 
 export interface SectionFieldProps extends SectionFieldContainerProps {
@@ -13,7 +15,7 @@ export interface SectionFieldProps extends SectionFieldContainerProps {
 
 // Used by SectionFieldContainer
 export const SectionField = forwardRef<SectionFieldProps, 'div'>(
-  ({ schema, colorTheme, handleSectionEnter }, ref) => {
+  ({ schema, colorTheme = FormColorTheme.Blue, handleSectionEnter }, ref) => {
     return (
       <Box
         _notFirst={{

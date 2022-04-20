@@ -128,7 +128,7 @@ const useProvideCalendar = ({
   onMouseLeaveCalendar,
   isDateInRange,
   hoveredDate,
-  colorScheme,
+  colorScheme = 'primary',
 }: UseProvideCalendarProps) => {
   // Ensure that calculations are always made based on date of initial render,
   // so component state doesn't suddenly jump at midnight

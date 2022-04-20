@@ -1,3 +1,5 @@
+import { FormColorTheme } from '~shared/types'
+
 import { useFormSections } from '~features/public-form/components/FormFields/FormSectionsContext'
 
 import { BaseFieldProps } from '../FieldContainer'
@@ -11,7 +13,7 @@ export interface SectionFieldContainerProps extends BaseFieldProps {
 
 export const SectionFieldContainer = ({
   schema,
-  colorTheme,
+  colorTheme = FormColorTheme.Blue,
 }: SectionFieldContainerProps): JSX.Element => {
   const { sectionRefs, setActiveSectionId } = useFormSections()
 
