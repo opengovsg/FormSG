@@ -4,7 +4,8 @@
 // https://github.com/sarneeh/reaptcha, and
 // https://github.com/dozoisch/react-google-recaptcha.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useInterval } from '@chakra-ui/react'
+import get from 'lodash/get'
+import { useIntervalWhen } from 'rooks'
 
 import { useScript } from '~hooks/useScript'
 
@@ -66,6 +67,12 @@ type GreptchaExecutionCallback = {
 
 const DEFAULT_CONTAINER_ID = 'recaptcha-container'
 
+export class RecaptchaClosedError extends Error {
+  constructor() {
+    super('Recaptcha was closed')
+  }
+}
+
 export const useRecaptcha = ({
   id: containerId = DEFAULT_CONTAINER_ID,
   sitekey,
@@ -83,17 +90,22 @@ export const useRecaptcha = ({
 
   const [hasLoaded, setHasLoaded] = useState(grecaptcha?.render ? true : false)
   const [widgetId, setWidgetId] = useState<number>()
+  const [isVfnInProgress, setIsVfnInProgress] = useState(false)
+  const [hasDisplayed, setHasDisplayed] = useState(false)
 
   const executionPromise = useRef<GreptchaExecutionCallback>({})
 
-  useInterval(
+  const captchaRef = useRef<HTMLDivElement | null>(null)
+
+  useIntervalWhen(
     () => {
       if (grecaptcha?.render) {
         setHasLoaded(true)
       }
     },
-    // Do not even start if sitekey is not provided
-    !sitekey || hasLoaded ? null : 500,
+    /* intervalDurationMs= */ 500,
+    // Start only if sitekey is provided and has not loaded.
+    /** when= */ !!sitekey && !hasLoaded,
   )
 
   const handleChange = useCallback((response: string | null) => {
@@ -114,6 +126,31 @@ export const useRecaptcha = ({
     grecaptcha?.reset(widgetId)
     handleChange(null)
   }, [grecaptcha, handleChange, widgetId])
+
+  // Poll to check if recaptcha window has closed and display error accordingly.
+  useIntervalWhen(
+    () => {
+      const iframes = document.querySelectorAll(
+        'iframe[src*="recaptcha/enterprise/bframe"]',
+      )
+      if (iframes.length === 0) return
+      const recaptchaVisibility = get(
+        iframes[0].parentNode?.parentNode,
+        'style.visibility',
+      )
+      if (isVfnInProgress && recaptchaVisibility === 'visible') {
+        // Recaptcha now shown
+        setHasDisplayed(true)
+      }
+      if (isVfnInProgress && recaptchaVisibility === 'hidden' && hasDisplayed) {
+        setIsVfnInProgress(false)
+        setHasDisplayed(false)
+        executionPromise.current.reject?.(new RecaptchaClosedError())
+      }
+    },
+    /* intervalDurationMs= */ 100,
+    /* when= */ isVfnInProgress,
+  )
 
   useEffect(() => {
     if (sitekey && hasLoaded && widgetId === undefined) {
@@ -147,9 +184,12 @@ export const useRecaptcha = ({
   /**
    * Executes reCAPTCHA asynchronously.
    * @returns captcha response if available, null if not instantiated.
+   * @throws RecaptchaClosedError if recaptcha window is closed before successfully completing recaptcha.
    */
   const getCaptchaResponse = useCallback(async () => {
     if (!grecaptcha || widgetId === undefined) return Promise.resolve(null)
+
+    setIsVfnInProgress(true)
 
     return new Promise<string | null>((resolve, reject) => {
       executionPromise.current = { resolve, reject }
@@ -161,5 +201,6 @@ export const useRecaptcha = ({
     hasLoaded,
     getCaptchaResponse,
     containerId,
+    captchaRef,
   }
 }
