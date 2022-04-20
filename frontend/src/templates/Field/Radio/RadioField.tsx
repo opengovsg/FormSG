@@ -3,6 +3,8 @@ import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
+import { FormColorTheme } from '~shared/types'
+
 import { RADIO_THEME_KEY } from '~theme/components/Radio'
 import { createRadioValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -21,8 +23,17 @@ export interface RadioFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const RadioField = ({ schema }: RadioFieldProps): JSX.Element => {
-  const styles = useMultiStyleConfig(RADIO_THEME_KEY, {})
+export const RadioField = ({
+  schema,
+  colorTheme = FormColorTheme.Blue,
+}: RadioFieldProps): JSX.Element => {
+  const fieldColorScheme = useMemo(
+    () => `theme-${colorTheme}` as const,
+    [colorTheme],
+  )
+  const styles = useMultiStyleConfig(RADIO_THEME_KEY, {
+    colorScheme: fieldColorScheme,
+  })
 
   const othersInputName = useMemo(
     () => `${schema._id}.${RADIO_OTHERS_INPUT_KEY}` as const,
@@ -66,6 +77,7 @@ export const RadioField = ({ schema }: RadioFieldProps): JSX.Element => {
         // radio themselves get the ref.
         render={({ field: { ref, onChange, value, ...rest } }) => (
           <Radio.RadioGroup
+            colorScheme={fieldColorScheme}
             {...rest}
             value={value}
             onChange={(nextValue) => {
@@ -86,7 +98,10 @@ export const RadioField = ({ schema }: RadioFieldProps): JSX.Element => {
               </Radio>
             ))}
             {schema.othersRadioButton ? (
-              <Radio.OthersWrapper value={RADIO_OTHERS_INPUT_VALUE}>
+              <Radio.OthersWrapper
+                colorScheme={fieldColorScheme}
+                value={RADIO_OTHERS_INPUT_VALUE}
+              >
                 <FormControl
                   isRequired={schema.required}
                   isDisabled={schema.disabled}
