@@ -25,7 +25,7 @@ import {
 } from '~features/verifiable-fields'
 
 import { usePublicFormMutations } from './mutations'
-import { PublicFormContext } from './PublicFormContext'
+import { PublicFormContext, SubmissionData } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
 interface PublicFormProviderProps {
@@ -37,15 +37,15 @@ export const PublicFormProvider = ({
   formId,
   children,
 }: PublicFormProviderProps): JSX.Element => {
-  // Once form has been submitted, submission ID will be set here.
-  const [submissionId, setSubmissionId] = useState<string>()
+  // Once form has been submitted, submission data will be set here.
+  const [submissionData, setSubmissionData] = useState<SubmissionData>()
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
   const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
-    // Stop querying once submissionId is present.
-    /* enabled= */ !submissionId,
+    // Stop querying once submissionData is present.
+    /* enabled= */ !submissionData,
   )
   const { data: { captchaPublicKey } = {} } = useEnv(
     /* enabled= */ !!data?.form.hasCaptcha,
@@ -161,7 +161,11 @@ export const PublicFormProvider = ({
                 { formFields: form.form_fields, formInputs, captchaResponse },
                 {
                   onSuccess: ({ submissionId }) =>
-                    setSubmissionId(submissionId),
+                    setSubmissionData({
+                      id: submissionId,
+                      // TODO: Server should return server time so browser time is not used.
+                      timeInEpochMs: Date.now(),
+                    }),
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
@@ -180,7 +184,11 @@ export const PublicFormProvider = ({
                 },
                 {
                   onSuccess: ({ submissionId }) =>
-                    setSubmissionId(submissionId),
+                    setSubmissionData({
+                      id: submissionId,
+                      // TODO: Server should return server time so browser time is not used.
+                      timeInEpochMs: Date.now(),
+                    }),
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
@@ -206,6 +214,7 @@ export const PublicFormProvider = ({
         error,
         getTransactionId,
         expiryInMs,
+        submissionData,
         captchaContainerId: containerId,
         isLoading: isLoading || (!!cachedDto?.form.hasCaptcha && !hasLoaded),
         ...cachedDto,
