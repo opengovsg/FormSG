@@ -67,6 +67,7 @@ export const FormFields = ({
             formLogics={formLogics}
           />
           <Button
+            colorScheme={`theme-${colorTheme}`}
             mt="1rem"
             type="submit"
             isLoading={formMethods.formState.isSubmitting}
