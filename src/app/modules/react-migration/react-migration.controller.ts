@@ -30,6 +30,15 @@ const logger = createLoggerWithLabel(module)
 
 const serveFormReact: ControllerHandler = (_req, res) => {
   const reactFrontendPath = path.resolve('dist/frontend')
+  logger.info({
+    message: 'serveFormReact',
+    meta: {
+      action: 'routeReact.serveFormReact',
+      __dirname,
+      cwd: process.cwd(),
+      reactFrontendPath,
+    },
+  })
   return res.sendFile(path.join(reactFrontendPath, 'index.html'))
 }
 
@@ -112,6 +121,7 @@ export const serveForm: ControllerHandler<
       hasAuth,
       threshold,
       showReact,
+      cwd: process.cwd(),
     },
   })
 
