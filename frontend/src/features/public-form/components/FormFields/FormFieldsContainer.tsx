@@ -53,15 +53,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     <FormSectionsProvider form={form}>
       <Flex flex={1} justify="center">
         {isAuthRequired ? null : <SectionSidebar />}
-        <Box
-          bg="white"
-          py="2.5rem"
-          px={{ base: '1rem', md: '2.5rem' }}
-          w="100%"
-          minW={0}
-          h="fit-content"
-          maxW="57rem"
-        >
+        <Box w="100%" minW={0} h="fit-content" maxW="57rem">
           {renderFields}
         </Box>
         {isAuthRequired ? null : <Spacer />}
