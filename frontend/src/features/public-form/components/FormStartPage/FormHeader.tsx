@@ -123,7 +123,12 @@ export const FormHeader = (): JSX.Element | null => {
   return (
     <>
       <MiniHeader isOpen={isOpen} />
-      <Flex p="3rem" justify="center" bg={titleBg}>
+      <Flex
+        px={{ base: '1.5rem', md: '3rem' }}
+        py={{ base: '2rem', md: '3rem' }}
+        justify="center"
+        bg={titleBg}
+      >
         <Flex
           maxW="32.5rem"
           flexDir="column"
@@ -131,14 +136,20 @@ export const FormHeader = (): JSX.Element | null => {
           color={titleColour}
         >
           <Skeleton isLoaded={!!title}>
-            <Text as="h1" textStyle="h1" textAlign="center">
+            <Text
+              as="h1"
+              textStyle="h1"
+              textAlign={{ base: 'start', md: 'center' }}
+            >
               {title ?? 'Loading title'}
             </Text>
           </Skeleton>
           {estTimeString && (
-            <Flex align="center" justify="center" mt="1rem">
+            <Flex align="flex-start" justify="center" mt="0.875rem">
               <Icon as={BxsTimeFive} fontSize="1.5rem" mr="0.5rem" />
-              <Text textStyle="body-2">{estTimeString}</Text>
+              <Text textStyle="body-2" mt="0.125rem">
+                {estTimeString}
+              </Text>
             </Flex>
           )}
           {loggedInId ? (
