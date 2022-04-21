@@ -17,7 +17,12 @@ export interface FormAuthProps {
 }
 
 export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
-  const { formId } = usePublicFormContext()
+  const { formId, form } = usePublicFormContext()
+
+  const buttonColorScheme = useMemo(() => {
+    if (!form) return
+    return `theme-${form.startPage.colorTheme}` as const
+  }, [form])
 
   const isMobile = useIsMobile()
 
@@ -58,6 +63,7 @@ export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
       <Stack spacing="1.5rem" align="center">
         <AuthImageSvgr />
         <Button
+          colorScheme={buttonColorScheme}
           isFullWidth={isMobile}
           rightIcon={<BiLogInCircle fontSize="1.5rem" />}
           onClick={() => handleLoginMutation.mutate()}

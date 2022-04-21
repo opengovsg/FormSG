@@ -106,6 +106,9 @@ SingpassUnauthorized.parameters = {
         form: {
           title: 'Singpass login form',
           authType: FormAuthType.SP,
+          startPage: {
+            colorTheme: FormColorTheme.Grey,
+          },
         },
       },
     }),
