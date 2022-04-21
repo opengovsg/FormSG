@@ -8,7 +8,6 @@ import { Connection } from 'mongoose'
 import path from 'path'
 import url from 'url'
 
-import { Environment } from '../../../types'
 import config from '../../config/config'
 import { AnalyticsRouter } from '../../modules/analytics/analytics.routes'
 import { AuthRouter } from '../../modules/auth/auth.routes'
@@ -21,6 +20,7 @@ import { FrontendRouter } from '../../modules/frontend/frontend.routes'
 import * as HomeController from '../../modules/home/home.controller'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
+import { ReactMigrationRouter } from '../../modules/react-migration/react-migration.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
 import {
   CorppassLoginRouter,
@@ -149,35 +149,20 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/sgid', SgidRouter)
   // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
+
   app.use(AdminFormsRouter)
   app.use(PublicFormRouter)
 
   // New routes in preparation for API refactor.
   app.use('/api', ApiRouter)
 
-  // Serve static client files only in prod
-  // This block must be after all our routes, since the React application is
-  // served in a catchall route.
-  if (config.nodeEnv === Environment.Prod) {
-    const frontendPath = path.resolve('dist/frontend')
-    app.use(express.static(frontendPath))
+  app.use(express.static(path.resolve('dist/frontend'), { index: false }))
+  app.use('/public', express.static(path.resolve('dist/angularjs')))
+  app.get('/old/', HomeController.home)
 
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(frontendPath, 'index.html'))
-    })
-  }
-
-  if (config.nodeEnv === Environment.Dev) {
-    app.use(
-      '/public/fonts',
-      express.static(path.resolve('./dist/angularjs/fonts')),
-    )
-    app.use('/public', express.static(path.resolve('./dist/angularjs')))
-    app.get('/old/', HomeController.home)
-  }
+  app.use('/', ReactMigrationRouter)
 
   app.use(sentryMiddlewares())
-
   app.use(errorHandlerMiddlewares())
 
   const server = http.createServer(app)

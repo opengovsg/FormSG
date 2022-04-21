@@ -74,7 +74,7 @@
     ]
   },
   "scripts": {
-    "gen:theme-typings": "chakra-cli tokens src/theme/index.ts",
+    "gen:theme-typings": "chakra-cli tokens src/theme/index.ts || true",
     "partytown": "partytown copylib public/~partytown",
     "clean:emotion-types": "rimraf node_modules/@emotion/core/types",
     "postinstall": "npm run gen:theme-typings && npm run clean:emotion-types && npm run partytown && npm --prefix ../shared install",

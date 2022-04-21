@@ -290,6 +290,32 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'SEND_AUTH_OTP_RATE_LIMIT',
     },
   },
+  reactMigration: {
+    respondentRolloutNoAuth: {
+      doc: 'Percentage threshold to serve React for respondents for Phase 1 (forms WITHOUT Auth)',
+      format: 'int',
+      default: 0,
+      env: 'REACT_MIGRATION_RESP_ROLLOUT_NO_AUTH',
+    },
+    respondentRolloutAuth: {
+      doc: 'Percentage threshold to serve React for respondents for Phase 2 (forms WITH Auth)',
+      format: 'int',
+      default: 0,
+      env: 'REACT_MIGRATION_RESP_ROLLOUT_AUTH',
+    },
+    respondentCookieName: {
+      doc: "Name of the cookie that will store respondents' assigned environment.",
+      format: String,
+      default: 'v2-respondent-ui',
+      env: 'REACT_MIGRATION_RESP_COOKIE_NAME',
+    },
+    adminCookieName: {
+      doc: "Name of the cookie that will store admins' choice of environment.",
+      format: String,
+      default: 'v2-admin-ui',
+      env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME',
+    },
+  },
 }
 
 export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
@@ -330,10 +356,10 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
           database: 'formsg',
           hosts: [ { host: 'database', port: 27017 } ]
         }
-        e.g. https://form.gov.sg will be parsed into: 
-        { 
-          scheme: 'https', 
-          hosts: [ { host: 'form.gov.sg' } ] 
+        e.g. https://form.gov.sg will be parsed into:
+        {
+          scheme: 'https',
+          hosts: [ { host: 'form.gov.sg' } ]
         }
       */
       if (uriObject.scheme !== 'mongodb') {
