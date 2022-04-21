@@ -36,8 +36,8 @@ const FEEDBACK_TABLE_COLUMNS: Column<FeedbackColumnData>[] = [
     Header: '#',
     accessor: 'index',
     sortType: 'basic',
-    minWidth: 50, // minWidth is only used as a limit for resizing
-    width: 50, // width is used for both the flex-basis and flex-grow
+    minWidth: 80, // minWidth is only used as a limit for resizing
+    width: 80, // width is used for both the flex-basis and flex-grow
     maxWidth: 100, // maxWidth is only used as a limit for resizing
   },
   {
@@ -64,9 +64,9 @@ const FEEDBACK_TABLE_COLUMNS: Column<FeedbackColumnData>[] = [
     Header: 'Rating',
     accessor: 'rating',
     sortType: 'basic',
-    minWidth: 70, // minWidth is only used as a limit for resizing
-    width: 70, // width is used for both the flex-basis and flex-grow
-    maxWidth: 100, // maxWidth is only used as a limit for resizing
+    minWidth: 90,
+    width: 90,
+    disableResizing: true,
   },
 ]
 
@@ -122,7 +122,12 @@ export const FeedbackTable = ({
     >
       <Thead as="div" pos="sticky" top={0}>
         {headerGroups.map((headerGroup) => (
-          <Tr as="div" {...headerGroup.getHeaderGroupProps()}>
+          <Tr
+            as="div"
+            {...headerGroup.getHeaderGroupProps()}
+            // To toggle _groupHover styles to show divider when header is hovered.
+            data-group
+          >
             {headerGroup.headers.map((column) => (
               <Th as="div" pos="relative" {...column.getHeaderProps()}>
                 <Flex align="center" {...column.getSortByToggleProps()}>
@@ -139,19 +144,33 @@ export const FeedbackTable = ({
                   ) : null}
                 </Flex>
 
-                <Box
-                  {...column.getResizerProps()}
-                  sx={{
-                    right: 0,
-                    background: column.isResizing ? 'red' : 'blue',
-                    width: '10px',
-                    height: '100%',
-                    position: 'absolute',
-                    top: 0,
-                    zIndex: 1,
-                    touchAction: 'none',
-                  }}
-                />
+                {column.disableResizing ? null : (
+                  <Flex
+                    {...column.getResizerProps()}
+                    justify="center"
+                    top={0}
+                    right={0}
+                    zIndex={1}
+                    pos="absolute"
+                    h="100%"
+                    borderX="8px solid"
+                    borderColor="secondary.500"
+                    _hover={{
+                      bg: column.isResizing ? 'white' : 'neutral.200',
+                    }}
+                    _groupHover={{
+                      bg: column.isResizing ? 'white' : 'neutral.500',
+                      _hover: {
+                        bg: column.isResizing ? 'white' : 'neutral.400',
+                      },
+                    }}
+                    w="18px"
+                    sx={{
+                      // background: column.isResizing ? 'red' : 'blue',
+                      touchAction: 'none',
+                    }}
+                  />
+                )}
               </Th>
             ))}
           </Tr>
@@ -164,11 +183,7 @@ export const FeedbackTable = ({
             <Tr as="div" {...row.getRowProps()} px={0}>
               {row.cells.map((cell) => {
                 return (
-                  <Td
-                    {...(cell.column.id === 'feedback' ? { px: 0, pl: 0 } : {})}
-                    as="div"
-                    {...cell.getCellProps()}
-                  >
+                  <Td as="div" {...cell.getCellProps()}>
                     {cell.render('Cell')}
                   </Td>
                 )
