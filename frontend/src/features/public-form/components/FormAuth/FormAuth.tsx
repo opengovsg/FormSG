@@ -58,14 +58,14 @@ export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
       mt={{ base: '1.5rem', md: 0 }}
       mb="1.5rem"
       py="4rem"
-      px="2.5rem"
+      px={{ base: '1.5rem', md: '2.5rem' }}
     >
       <Stack spacing="1.5rem" align="center">
         <AuthImageSvgr />
         <Button
           colorScheme={buttonColorScheme}
           isFullWidth={isMobile}
-          rightIcon={<BiLogInCircle fontSize="1.5rem" />}
+          rightIcon={isMobile ? undefined : <BiLogInCircle fontSize="1.5rem" />}
           onClick={() => handleLoginMutation.mutate()}
           isLoading={handleLoginMutation.isLoading}
         >
