@@ -7,7 +7,6 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { useKey } from 'react-use'
 import {
   addMonths,
   differenceInCalendarMonths,
@@ -16,6 +15,7 @@ import {
 } from 'date-fns'
 import { Props as DayzedProps, RenderProps, useDayzed } from 'dayzed'
 import { inRange } from 'lodash'
+import { useKey } from 'rooks'
 
 import { DatePickerProps } from '../DatePicker'
 import {
@@ -223,7 +223,7 @@ const useProvideCalendar = ({
     },
     [updateMonthYear, uuid],
   )
-  useKey((e) => ARROW_KEY_NAMES.includes(e.key), handleArrowKey)
+  useKey(ARROW_KEY_NAMES, handleArrowKey)
 
   const handleDateSelected = useCallback(
     (d: Date) => {
