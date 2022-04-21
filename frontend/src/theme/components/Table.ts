@@ -41,11 +41,12 @@ const variantColumnStripe: PartsStyleFunction<typeof parts> = ({
   }
 }
 
-const variantSolid: PartsStyleFunction<typeof parts> = () => {
+const variantSolid: PartsStyleFunction<typeof parts> = ({ colorScheme: c }) => {
   return {
     th: {
       ...textStyles['subhead-2'],
       color: 'white',
+      bg: `${c}.500`,
       pl: '1rem',
       textTransform: 'none',
     },
@@ -76,6 +77,9 @@ export const Table: ComponentMultiStyleConfig<typeof parts> = {
   variants: {
     'column-stripe': variantColumnStripe,
     solid: variantSolid,
+  },
+  defaultProps: {
+    colorScheme: 'secondary',
   },
   sizes,
 }

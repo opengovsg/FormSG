@@ -1,12 +1,28 @@
 import { useEffect, useMemo } from 'react'
-import { Column, usePagination, useSortBy, useTable } from 'react-table'
-import { Box, Icon, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
+import {
+  Column,
+  useFlexLayout,
+  usePagination,
+  useResizeColumns,
+  useSortBy,
+  useTable,
+} from 'react-table'
+import {
+  Box,
+  Flex,
+  Icon,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+} from '@chakra-ui/react'
 
 import { ProcessedFeedbackMeta } from '~shared/types/form'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
-import { useIsMobile } from '~hooks/useIsMobile'
 
 type FeedbackColumnData = {
   index: number
@@ -20,7 +36,9 @@ const FEEDBACK_TABLE_COLUMNS: Column<FeedbackColumnData>[] = [
     Header: '#',
     accessor: 'index',
     sortType: 'basic',
-    width: '5rem',
+    minWidth: 50, // minWidth is only used as a limit for resizing
+    width: 50, // width is used for both the flex-basis and flex-grow
+    maxWidth: 100, // maxWidth is only used as a limit for resizing
   },
   {
     Header: 'Date',
@@ -30,19 +48,25 @@ const FEEDBACK_TABLE_COLUMNS: Column<FeedbackColumnData>[] = [
       const dateB = new Date(rowB.values[columnId])
       return dateA > dateB ? 1 : -1
     },
-    width: '10rem',
+    minWidth: 120, // minWidth is only used as a limit for resizing
+    width: 120, // width is used for both the flex-basis and flex-grow
+    maxWidth: 240, // maxWidth is only used as a limit for resizing
   },
   {
     Header: 'Feedback',
     accessor: 'feedback',
     sortType: 'basic',
-    width: undefined,
+    minWidth: 200,
+    width: 300,
+    maxWidth: 600,
   },
   {
     Header: 'Rating',
     accessor: 'rating',
     sortType: 'basic',
-    width: '12rem',
+    minWidth: 70, // minWidth is only used as a limit for resizing
+    width: 70, // width is used for both the flex-basis and flex-grow
+    maxWidth: 100, // maxWidth is only used as a limit for resizing
   },
 ]
 
@@ -53,82 +77,97 @@ export const FeedbackTable = ({
   feedbackData: ProcessedFeedbackMeta[] | undefined
   currentPage: number
 }) => {
-  const isMobile = useIsMobile()
-
   const data = useMemo(() => {
-    return feedbackData
-      ? feedbackData.map((feedback) => {
-          return {
-            index: feedback.index,
-            date: feedback.date,
-            feedback: feedback.comment,
-            rating: feedback.rating,
-          }
-        })
-      : []
+    return (
+      feedbackData?.map((feedback) => {
+        return {
+          index: feedback.index,
+          date: feedback.date,
+          feedback: feedback.comment,
+          rating: feedback.rating,
+        }
+      }) ?? []
+    )
   }, [feedbackData])
 
-  const { prepareRow, headerGroups, page, gotoPage } =
-    useTable<FeedbackColumnData>(
-      {
-        columns: FEEDBACK_TABLE_COLUMNS,
-        data,
-        initialState: { pageIndex: currentPage, pageSize: 9 },
-      },
-      useSortBy,
-      usePagination,
-    )
+  const {
+    prepareRow,
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    page,
+    gotoPage,
+  } = useTable<FeedbackColumnData>(
+    {
+      columns: FEEDBACK_TABLE_COLUMNS,
+      data,
+      initialState: { pageIndex: currentPage, pageSize: 9 },
+    },
+    useSortBy,
+    usePagination,
+    useResizeColumns,
+    useFlexLayout,
+  )
 
   useEffect(() => {
     gotoPage(currentPage)
   }, [currentPage, gotoPage])
 
   return (
-    <Table variant="solid" colorScheme="secondary" pos="relative">
-      <Thead>
+    <Table
+      as="div"
+      variant="solid"
+      colorScheme="secondary"
+      {...getTableProps()}
+    >
+      <Thead as="div" pos="sticky" top={0}>
         {headerGroups.map((headerGroup) => (
-          <Tr {...headerGroup.getHeaderGroupProps()}>
+          <Tr as="div" {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map((column) => (
-              <Th
-                bg="secondary.500"
-                pos="sticky"
-                top={0}
-                {...column.getHeaderProps(
-                  column.getSortByToggleProps({
-                    style: {
-                      width: column.width,
-                    },
-                  }),
-                )}
-              >
-                <Box display="flex" flexDir="row">
+              <Th as="div" pos="relative" {...column.getHeaderProps()}>
+                <Flex align="center" {...column.getSortByToggleProps()}>
                   {column.render('Header')}
-
                   {column.isSorted ? (
                     <Icon
+                      fontSize="1rem"
                       as={
                         column.isSorted && column.isSortedDesc
                           ? BxsChevronDown
                           : BxsChevronUp
                       }
-                      mt={isMobile ? '0.175rem' : ''}
                     />
-                  ) : undefined}
-                </Box>
+                  ) : null}
+                </Flex>
+
+                <Box
+                  {...column.getResizerProps()}
+                  sx={{
+                    right: 0,
+                    background: column.isResizing ? 'red' : 'blue',
+                    width: '10px',
+                    height: '100%',
+                    position: 'absolute',
+                    top: 0,
+                    zIndex: 1,
+                    touchAction: 'none',
+                  }}
+                />
               </Th>
             ))}
           </Tr>
         ))}
       </Thead>
-      <Tbody>
+      <Tbody as="div" {...getTableBodyProps()}>
         {page.map((row) => {
           prepareRow(row)
           return (
-            <Tr>
+            <Tr as="div" {...row.getRowProps()} px={0}>
               {row.cells.map((cell) => {
                 return (
                   <Td
                     {...(cell.column.id === 'feedback' ? { px: 0, pl: 0 } : {})}
+                    as="div"
+                    {...cell.getCellProps()}
                   >
                     {cell.render('Cell')}
                   </Td>
