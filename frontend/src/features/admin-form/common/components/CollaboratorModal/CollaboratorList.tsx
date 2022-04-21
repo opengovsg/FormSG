@@ -70,7 +70,7 @@ export const CollaboratorList = (): JSX.Element => {
   const { mutateUpdateCollaborator, mutateRemoveCollaborator } =
     useMutateCollaborators()
 
-  const isCurrentUserHint = useCallback(
+  const createCurrentUserHint = useCallback(
     (row: Pick<CollaboratorRowMeta, 'email'>) => {
       return row.email === user?.email ? (
         <Text as="span" textStyle="caption-1" color="neutral.600">
@@ -96,7 +96,7 @@ export const CollaboratorList = (): JSX.Element => {
         <Skeleton isLoaded={!!collaborators} w="100%">
           <Stack direction="row" align="baseline">
             <CollaboratorText>{form?.admin.email}</CollaboratorText>
-            {isCurrentUserHint({ email: form?.admin.email ?? '' })}
+            {createCurrentUserHint({ email: form?.admin.email ?? '' })}
           </Stack>
         </Skeleton>
         <Skeleton isLoaded={!!collaborators}>
@@ -115,7 +115,7 @@ export const CollaboratorList = (): JSX.Element => {
         </Skeleton>
       </CollaboratorRow>
     )
-  }, [collaborators, form?.admin.email, isCurrentUserHint])
+  }, [collaborators, form?.admin.email, createCurrentUserHint])
 
   const handleUpdateRole =
     (row: typeof list[number]) => (newRole: DropdownRole) => {
@@ -157,7 +157,7 @@ export const CollaboratorList = (): JSX.Element => {
         >
           <Stack direction="row" w="100%" align="center">
             <CollaboratorText>{row.email}</CollaboratorText>
-            {isCurrentUserHint(row)}
+            {createCurrentUserHint(row)}
           </Stack>
           <Stack
             w="100%"
