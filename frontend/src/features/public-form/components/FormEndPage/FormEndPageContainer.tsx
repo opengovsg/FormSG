@@ -31,6 +31,7 @@ export const FormEndPageContainer = (): JSX.Element | null => {
   return (
     <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
       <FormEndPage
+        colorTheme={form.startPage.colorTheme}
         submissionData={submissionData}
         formTitle={form.title}
         endPage={form.endPage}
