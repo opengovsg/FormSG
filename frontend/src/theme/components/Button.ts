@@ -13,19 +13,41 @@ export type ThemeButtonVariant =
   | 'link'
   | 'inputAttached'
 
+const genVariantSolidColours = (c: string) => {
+  const defaultBackgrounds = {
+    bg: `${c}.500`,
+    activeBg: `${c}.700`,
+    hoverBg: `${c}.600`,
+    focusBoxShadow: `0 0 0 4px var(--chakra-colors-${c}-300)`,
+  }
+  switch (c) {
+    case 'success': {
+      return {
+        bg: `${c}.700`,
+        activeBg: `${c}.800`,
+        hoverBg: `${c}.800`,
+        focusBoxShadow: `0 0 0 4px var(--chakra-colors-${c}-400)`,
+      }
+    }
+    case 'theme-red':
+    case 'theme-orange':
+    case 'theme-yellow': {
+      return {
+        ...defaultBackgrounds,
+        bg: `${c}.600`,
+        activeBg: `${c}.800`,
+        hoverBg: `${c}.700`,
+      }
+    }
+    default: {
+      return defaultBackgrounds
+    }
+  }
+}
+
 const variantSolid: SystemStyleFunction = (props) => {
   const { colorScheme: c } = props
-  let bg = `${c}.500`
-  let activeBg = `${c}.700`
-  let hoverBg = `${c}.600`
-  let focusBoxShadow = `0 0 0 4px var(--chakra-colors-${c}-300)`
-
-  if (c === 'success') {
-    bg = `${c}.700`
-    activeBg = `${c}.800`
-    hoverBg = `${c}.800`
-    focusBoxShadow = `0 0 0 4px var(--chakra-colors-${c}-400)`
-  }
+  const { bg, hoverBg, activeBg, focusBoxShadow } = genVariantSolidColours(c)
 
   return {
     bg,
