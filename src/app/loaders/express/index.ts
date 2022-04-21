@@ -104,7 +104,7 @@ const loadExpressApp = async (connection: Connection) => {
 
   // Set views path and view engine
   app.set('view engine', 'server.view.html')
-  app.set('views', './dist/backend/src/app/views')
+  app.set('views', './src/app/views')
 
   app.use(parserMiddlewares())
 

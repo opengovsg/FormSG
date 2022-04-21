@@ -20,9 +20,7 @@ COPY . ./
 ENV NODE_OPTIONS=--max-old-space-size=3072
 
 RUN npm run build
-
-# Building angular (temporary)
-RUN npm run build:old-frontend
+RUN npm prune --production
 
 # This stage builds the final container
 FROM node:fermium-alpine3.13
@@ -33,9 +31,9 @@ WORKDIR /opt/formsg
 
 # Install build from backend-build
 COPY --from=build /build/node_modules /opt/formsg/node_modules
-COPY --from=build /build/shared/node_modules /opt/formsg/shared/node_modules
-COPY --from=build /build/dist /opt/formsg/dist
 COPY --from=build /build/package.json /opt/formsg/package.json
+COPY --from=build /build/dist /opt/formsg/dist
+RUN mv /opt/formsg/dist/backend/src /opt/formsg/
 
 # Make sure the views
 # COPY --from=build /build/src/app/views /opt/formsg/src/app/views
