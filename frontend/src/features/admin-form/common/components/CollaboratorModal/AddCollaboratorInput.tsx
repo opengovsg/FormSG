@@ -1,16 +1,12 @@
 import { useMemo } from 'react'
 import { Controller, RegisterOptions, useForm } from 'react-hook-form'
-import {
-  FormControl,
-  Skeleton,
-  Stack,
-  useBreakpointValue,
-} from '@chakra-ui/react'
+import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import { FormPermission } from '~shared/types/form/form'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -40,12 +36,16 @@ const useAddCollaboratorInput = () => {
     enabled: !!form,
   })
 
+  const { mutateAddCollaborator } = useMutateCollaborators()
+
   const formMethods = useForm<AddCollaboratorInputs>({
     defaultValues: {
       email: '',
       role: DropdownRole.Editor,
     },
   })
+
+  const { handleSubmit, reset } = formMethods
 
   const validationRules: RegisterOptions = useMemo(() => {
     return {
@@ -67,14 +67,32 @@ const useAddCollaboratorInput = () => {
     }
   }, [collaborators, form?.admin.email])
 
-  const isFullWidth = useBreakpointValue({ base: true, xs: true, md: false })
+  const isMobile = useIsMobile()
+
+  const handleAddCollaborator = handleSubmit((inputs) => {
+    if (!form?.permissionList) return
+    const newPermission: FormPermission = {
+      ...roleToPermission(inputs.role),
+      email: inputs.email,
+    }
+    return mutateAddCollaborator.mutate(
+      {
+        newPermission,
+        currentPermissions: form.permissionList,
+      },
+      {
+        onSuccess: () => reset(),
+      },
+    )
+  })
 
   return {
-    isLoading,
+    isQueryLoading: isLoading,
+    isMutationLoading: mutateAddCollaborator.isLoading,
     formMethods,
-    isFullWidth,
+    isFullWidth: isMobile,
     validationRules,
-    currentCollaborators: form?.permissionList,
+    handleAddCollaborator,
   }
 }
 
@@ -84,50 +102,27 @@ export const AddCollaboratorInput = (): JSX.Element => {
       control,
       register,
       formState: { errors },
-      handleSubmit,
-      reset,
     },
     isFullWidth,
-    isLoading,
+    isQueryLoading,
+    isMutationLoading,
     validationRules,
-    currentCollaborators,
+    handleAddCollaborator,
   } = useAddCollaboratorInput()
-
-  const { mutateAddCollaborator } = useMutateCollaborators()
-
-  const handleAddCollaborator = handleSubmit((inputs) => {
-    if (!currentCollaborators) return
-    const newPermission: FormPermission = {
-      ...roleToPermission(inputs.role),
-      email: inputs.email,
-    }
-    return mutateAddCollaborator.mutate(
-      {
-        newPermission,
-        currentPermissions: currentCollaborators,
-      },
-      {
-        onSuccess: () => reset(),
-      },
-    )
-  })
 
   return (
     <form noValidate onSubmit={handleAddCollaborator}>
-      <FormControl
-        isInvalid={!isEmpty(errors)}
-        isReadOnly={mutateAddCollaborator.isLoading}
-      >
+      <FormControl isInvalid={!isEmpty(errors)} isReadOnly={isMutationLoading}>
         <FormLabel
           isRequired
           description="Share your secret key with users who need to access response data"
         >
           Add collaborators or transfer form ownership
         </FormLabel>
-        <Skeleton isLoaded={!isLoading}>
+        <Skeleton isLoaded={!isQueryLoading}>
           <Stack direction={{ base: 'column', md: 'row' }}>
             <Input
-              isDisabled={isLoading}
+              isDisabled={isQueryLoading}
               type="email"
               {...register('email', validationRules)}
               placeholder="me@example.com"
@@ -137,7 +132,7 @@ export const AddCollaboratorInput = (): JSX.Element => {
               control={control}
               render={({ field: { value, onChange } }) => (
                 <PermissionDropdown
-                  isLoading={isLoading || mutateAddCollaborator.isLoading}
+                  isLoading={isQueryLoading || isMutationLoading}
                   value={value}
                   onChange={onChange}
                 />
@@ -150,8 +145,8 @@ export const AddCollaboratorInput = (): JSX.Element => {
         </FormErrorMessage>
       </FormControl>
       <Button
-        isDisabled={isLoading}
-        isLoading={mutateAddCollaborator.isLoading}
+        isDisabled={isQueryLoading}
+        isLoading={isMutationLoading}
         isFullWidth={isFullWidth}
         mt="1rem"
         type="submit"
