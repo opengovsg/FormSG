@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Container, Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, Container, Flex, Grid, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
 
 import Pagination from '~/components/Pagination'
@@ -43,42 +43,42 @@ export const FeedbackPage = (): JSX.Element => {
       display="flex"
       flexDir="column"
     >
-      <Stack
-        mb={{ base: '1.25rem', md: '1rem' }}
-        direction="row"
-        justify="space-between"
-        align="flex-end"
+      <Grid
+        mb="1rem"
+        alignItems="end"
         color="secondary.500"
+        gridTemplateColumns={{ base: 'auto', md: 'auto auto 1fr' }}
+        gridGap={{ base: '0.5rem', md: '1.5rem' }}
+        gridTemplateAreas={{
+          base: "'submissions submissions' 'score export'",
+          md: "'score submissions export'",
+        }}
       >
-        <Stack
-          spacing={{ base: '0.5rem', md: '1.5rem' }}
-          direction={{ base: 'column-reverse', md: 'row' }}
-          align={{ base: 'flex-start', md: 'flex-end' }}
-        >
-          <Flex flexDir="column">
-            <Text textStyle="caption-2" color="secondary.400">
-              Average Score
+        <Flex gridArea="score" flexDir="column">
+          <Text textStyle="caption-2" color="secondary.400">
+            Average Score
+          </Text>
+          <Text textStyle="display-2">
+            {averageScore ? averageScore.toPrecision(2) : '-.--'}
+          </Text>
+        </Flex>
+        <Box gridArea="submissions">
+          <Text textStyle="h4" mb="0.5rem">
+            <Text as="span" color="primary.500">
+              {data?.count}
             </Text>
-            <Text textStyle="display-2">
-              {averageScore ? averageScore.toPrecision(2) : '-.--'}
-            </Text>
-          </Flex>
-          <Box>
-            <Text textStyle="h4" mb="0.5rem">
-              <Text as="span" color="primary.500">
-                {data?.count}
-              </Text>
-              {prettifiedFeedbackCount}
-            </Text>
-          </Box>
-        </Stack>
-        <FeedbackDownloadButton
-          isDisabled={isLoading || count === 0}
-          formId={formId}
-          feedback={feedback}
-        />
-      </Stack>
-      <Box mb="2rem" overflow="auto" flex={1}>
+            {prettifiedFeedbackCount}
+          </Text>
+        </Box>
+        <Box gridArea="export" justifySelf="flex-end">
+          <FeedbackDownloadButton
+            isDisabled={isLoading || count === 0}
+            formId={formId}
+            feedback={feedback}
+          />
+        </Box>
+      </Grid>
+      <Box mb="3rem" overflow="auto" flex={1}>
         <FeedbackTable feedbackData={feedback} currentPage={currentPage - 1} />
       </Box>
       <Box display={isLoading || count === 0 ? 'none' : ''}>

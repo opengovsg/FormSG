@@ -7,17 +7,7 @@ import {
   useSortBy,
   useTable,
 } from 'react-table'
-import {
-  Box,
-  Flex,
-  Icon,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-} from '@chakra-ui/react'
+import { Flex, Icon, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
 import { ProcessedFeedbackMeta } from '~shared/types/form'
 

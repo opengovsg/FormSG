@@ -4,7 +4,7 @@ import { FormFeedbackMetaDto } from '~shared/types'
 
 const generateFormFeedbackMeta = (): FormFeedbackMetaDto => {
   return {
-    count: 2,
+    count: 3,
     average: '4.0',
     feedback: [
       {
@@ -21,6 +21,14 @@ const generateFormFeedbackMeta = (): FormFeedbackMetaDto => {
         date: '1 Apr 2021',
         dateShort: '1 Apr',
         index: 2,
+        timestamp: 1586291200000,
+      },
+      {
+        rating: 4,
+        comment: 'This is a test comment with rating 4',
+        date: '1 Apr 2021',
+        dateShort: '1 Apr',
+        index: 3,
         timestamp: 1586291200000,
       },
     ],
