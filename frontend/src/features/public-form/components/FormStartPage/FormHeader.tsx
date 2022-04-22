@@ -130,9 +130,9 @@ export const FormHeader = (): JSX.Element | null => {
         bg={titleBg}
       >
         <Flex
-          maxW="32.5rem"
+          maxW="57rem"
           flexDir="column"
-          align="center"
+          align={{ base: 'start', md: 'center' }}
           color={titleColour}
         >
           <Skeleton isLoaded={!!title}>
