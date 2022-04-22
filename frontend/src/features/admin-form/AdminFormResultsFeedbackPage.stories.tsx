@@ -12,10 +12,16 @@ import {
   ADMINFORM_RESULTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
-import { viewports } from '~utils/storybook'
+import { getMobileViewParameters, viewports } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import { FeedbackPage, FormResultsLayout, ResponsesPage } from './responses'
+
+const DEFAULT_MSW_ROUTES = [
+  ...createFormBuilderMocks({}, 0),
+  getStorageSubmissionMetadataResponse(),
+  getAdminFormFeedback(),
+]
 
 export default {
   title: 'Pages/AdminFormPage/Results/FeedbackTab',
@@ -24,11 +30,7 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [
-      ...createFormBuilderMocks(),
-      getStorageSubmissionMetadataResponse(),
-      getAdminFormFeedback(),
-    ],
+    msw: DEFAULT_MSW_ROUTES,
   },
 } as Meta
 
@@ -65,9 +67,16 @@ Tablet.parameters = {
 }
 
 export const Mobile = Template.bind({})
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
+Mobile.parameters = getMobileViewParameters()
+
+export const LoadingDesktop = Template.bind({})
+LoadingDesktop.storyName = 'Loading/Desktop'
+LoadingDesktop.parameters = {
+  msw: [getAdminFormFeedback({ delay: 'infinite' }), ...DEFAULT_MSW_ROUTES],
+}
+export const LoadingMobile = Template.bind({})
+LoadingMobile.storyName = 'Loading/Mobile'
+LoadingMobile.parameters = {
+  ...getMobileViewParameters(),
+  ...LoadingDesktop.parameters,
 }
