@@ -20,7 +20,7 @@ COPY . ./
 ENV NODE_OPTIONS=--max-old-space-size=3072
 
 RUN npm run build
-# RUN npm prune --production
+RUN npm prune --production
 
 # This stage builds the final container
 FROM node:fermium-alpine3.13
