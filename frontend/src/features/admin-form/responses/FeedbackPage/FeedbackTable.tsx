@@ -154,9 +154,8 @@ export const FeedbackTable = ({
                         bg: column.isResizing ? 'white' : 'neutral.400',
                       },
                     }}
-                    w="18px"
+                    w="17px"
                     sx={{
-                      // background: column.isResizing ? 'red' : 'blue',
                       touchAction: 'none',
                     }}
                   />
