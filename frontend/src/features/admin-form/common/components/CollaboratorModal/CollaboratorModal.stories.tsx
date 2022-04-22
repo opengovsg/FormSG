@@ -80,6 +80,11 @@ WithCollaborators.parameters = {
           email: 'editor@example.com',
           write: true,
         },
+        {
+          email:
+            'super-duper-long-email-the-quick-brown-fox-jumps-over-the-lazy-dog@example.com',
+          write: true,
+        },
       ],
     }),
     ...baseMswRoutes,

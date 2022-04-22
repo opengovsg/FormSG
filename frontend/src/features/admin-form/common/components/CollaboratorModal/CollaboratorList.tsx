@@ -94,7 +94,11 @@ export const CollaboratorList = (): JSX.Element => {
     return (
       <CollaboratorRow bg={{ base: 'primary.100', md: 'white' }}>
         <Skeleton isLoaded={!!collaborators} flex={1}>
-          <Stack direction="row" align="baseline">
+          <Stack
+            direction="row"
+            align="baseline" // Required to allow flex to shrink
+            minW={0}
+          >
             <CollaboratorText>{form?.admin.email}</CollaboratorText>
             {createCurrentUserHint({ email: form?.admin.email ?? '' })}
           </Stack>
@@ -154,7 +158,7 @@ export const CollaboratorList = (): JSX.Element => {
           key={row.email}
           bg={{ base: index % 2 ? 'primary.100' : 'white', md: 'white' }}
         >
-          <Stack direction="row" flex={1} align="center">
+          <Stack direction="row" flex={1} align="center" w="100%">
             <CollaboratorText>{row.email}</CollaboratorText>
             {createCurrentUserHint(row)}
           </Stack>
