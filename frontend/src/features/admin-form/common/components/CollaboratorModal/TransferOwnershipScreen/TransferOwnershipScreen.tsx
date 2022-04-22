@@ -1,16 +1,18 @@
 import {
-  ButtonGroup,
   ModalBody,
   ModalFooter,
   ModalHeader,
+  Stack,
   Text,
 } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
 import { useCollaboratorWizard } from '../CollaboratorWizardContext'
 
 export const TransferOwnershipScreen = (): JSX.Element => {
+  const isMobile = useIsMobile()
   const {
     handleBackToList,
     formMethods: { watch },
@@ -21,7 +23,7 @@ export const TransferOwnershipScreen = (): JSX.Element => {
   return (
     <>
       <ModalHeader color="secondary.700">Transfer form ownership</ModalHeader>
-      <ModalBody whiteSpace="pre-line" pb="3.25rem">
+      <ModalBody whiteSpace="pre-line">
         <Text>
           You are transferring this form to{' '}
           <Text color="danger.500" as="span" fontWeight={700}>
@@ -32,16 +34,23 @@ export const TransferOwnershipScreen = (): JSX.Element => {
         </Text>
       </ModalBody>
       <ModalFooter>
-        <ButtonGroup>
+        <Stack
+          flex={1}
+          spacing="1rem"
+          direction={{ base: 'column', md: 'row-reverse' }}
+        >
+          <Button isFullWidth={isMobile} colorScheme="danger">
+            Yes, transfer form
+          </Button>
           <Button
+            isFullWidth={isMobile}
             variant="clear"
             colorScheme="secondary"
             onClick={handleBackToList}
           >
             Cancel
           </Button>
-          <Button colorScheme="danger">Yes, transfer form</Button>
-        </ButtonGroup>
+        </Stack>
       </ModalFooter>
     </>
   )
