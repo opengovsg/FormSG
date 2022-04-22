@@ -27,7 +27,10 @@ export const CollaboratorModal = ({
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent
+        // Prevent motion box content from escaping modal
+        overflowX="hidden"
+      >
         <ModalCloseButton />
         {isOpen && (
           <CollaboratorWizardProvider>

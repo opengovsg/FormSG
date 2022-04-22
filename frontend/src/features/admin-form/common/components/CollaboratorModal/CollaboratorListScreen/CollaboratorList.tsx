@@ -96,7 +96,8 @@ export const CollaboratorList = (): JSX.Element => {
         <Skeleton isLoaded={!!collaborators} flex={1}>
           <Stack
             direction="row"
-            align="baseline" // Required to allow flex to shrink
+            align="baseline"
+            // Required to allow flex to shrink
             minW={0}
           >
             <CollaboratorText>{form?.admin.email}</CollaboratorText>
