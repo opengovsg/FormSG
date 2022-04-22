@@ -31,7 +31,7 @@ const CollaboratorText = ({ children }: { children: React.ReactNode }) => {
   return (
     <Text
       textStyle={{ base: 'subhead-1', md: 'body-2' }}
-      color={{ base: 'secondary.700', md: 'secondary.900' }}
+      color={{ base: 'secondary.700', md: 'secondary.500' }}
       isTruncated
     >
       {children}
@@ -93,7 +93,7 @@ export const CollaboratorList = (): JSX.Element => {
   const ownerRow = useMemo(() => {
     return (
       <CollaboratorRow bg={{ base: 'primary.100', md: 'white' }}>
-        <Skeleton isLoaded={!!collaborators} w="100%">
+        <Skeleton isLoaded={!!collaborators} flex={1}>
           <Stack direction="row" align="baseline">
             <CollaboratorText>{form?.admin.email}</CollaboratorText>
             {createCurrentUserHint({ email: form?.admin.email ?? '' })}
@@ -101,16 +101,15 @@ export const CollaboratorList = (): JSX.Element => {
         </Skeleton>
         <Skeleton isLoaded={!!collaborators}>
           <Stack
-            w="100%"
             direction="row"
             justify="space-between"
             flex={0}
             align="center"
           >
-            <Text textStyle="subhead-1" color="secondary.500">
+            <Text minW="6.25rem" textStyle="body-2" color="secondary.500">
               Owner
             </Text>
-            <Spacer w={collaborators?.length ? '5.75rem' : 0} />
+            <Spacer w={collaborators?.length ? '2.75rem' : 0} />
           </Stack>
         </Skeleton>
       </CollaboratorRow>
@@ -148,14 +147,14 @@ export const CollaboratorList = (): JSX.Element => {
   }
 
   return (
-    <Stack spacing={0} align="flex-start" w="100%" divider={<StackDivider />}>
+    <Stack spacing={0} align="flex-start" flex={1} divider={<StackDivider />}>
       {ownerRow}
       {list.map((row, index) => (
         <CollaboratorRow
           key={row.email}
           bg={{ base: index % 2 ? 'primary.100' : 'white', md: 'white' }}
         >
-          <Stack direction="row" w="100%" align="center">
+          <Stack direction="row" flex={1} align="center">
             <CollaboratorText>{row.email}</CollaboratorText>
             {createCurrentUserHint(row)}
           </Stack>
