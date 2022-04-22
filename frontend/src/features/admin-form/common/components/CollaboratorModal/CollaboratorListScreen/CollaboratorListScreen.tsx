@@ -7,10 +7,11 @@ export const CollaboratorListScreen = (): JSX.Element => {
   return (
     <>
       <ModalHeader color="secondary.700">Manage collaborators</ModalHeader>
-      <ModalBody whiteSpace="pre-line" pb="3.25rem">
+      <ModalBody whiteSpace="pre-line" pb="2rem">
         <AddCollaboratorInput />
         <Divider mt="2.5rem" />
         <CollaboratorList />
+        <Divider />
       </ModalBody>
     </>
   )
