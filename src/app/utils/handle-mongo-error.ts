@@ -1,5 +1,4 @@
-import { MongoError } from 'mongodb'
-import { Error as MongooseError } from 'mongoose'
+import { Error as MongooseError, mongo as mongodb } from 'mongoose'
 
 import {
   DatabaseConflictError,
@@ -8,6 +7,8 @@ import {
   DatabaseValidationError,
   PossibleDatabaseError,
 } from '../modules/core/core.errors'
+
+const { MongoError } = mongodb
 
 /**
  * Exported for testing.
