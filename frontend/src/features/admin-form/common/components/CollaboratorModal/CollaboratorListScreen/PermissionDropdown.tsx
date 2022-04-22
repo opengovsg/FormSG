@@ -2,7 +2,7 @@ import { Text } from '@chakra-ui/react'
 
 import Menu from '~components/Menu'
 
-import { DropdownRole } from './AddCollaboratorInput'
+import { DropdownRole } from '../constants'
 
 export interface PermissionDropdownProps {
   value: DropdownRole

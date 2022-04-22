@@ -1,17 +1,14 @@
 import {
-  Divider,
   Modal,
-  ModalBody,
   ModalContent,
-  ModalHeader,
   ModalOverlay,
   useBreakpointValue,
 } from '@chakra-ui/react'
 
 import { ModalCloseButton } from '~components/Modal'
 
-import { AddCollaboratorInput } from './AddCollaboratorInput'
-import { CollaboratorList } from './CollaboratorList'
+import { CollaboratorModalContent } from './CollaboratorModalContent'
+import { CollaboratorWizardProvider } from './CollaboratorWizardContext'
 
 interface CollaboratorModalProps {
   isOpen: boolean
@@ -32,12 +29,11 @@ export const CollaboratorModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="secondary.700">Manage collaborators</ModalHeader>
-        <ModalBody whiteSpace="pre-line" pb="3.25rem">
-          <AddCollaboratorInput />
-          <Divider mt="2.5rem" />
-          <CollaboratorList />
-        </ModalBody>
+        {isOpen && (
+          <CollaboratorWizardProvider>
+            <CollaboratorModalContent />
+          </CollaboratorWizardProvider>
+        )}
       </ModalContent>
     </Modal>
   )

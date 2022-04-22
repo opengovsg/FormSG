@@ -15,12 +15,12 @@ import IconButton from '~components/IconButton'
 
 import { useUser } from '~features/user/queries'
 
-import { useMutateCollaborators } from '../../mutations'
-import { useAdminForm, useAdminFormCollaborators } from '../../queries'
+import { useMutateCollaborators } from '../../../mutations'
+import { useAdminForm, useAdminFormCollaborators } from '../../../queries'
+import { DropdownRole } from '../constants'
+import { permissionsToRole, roleToPermission } from '../utils'
 
-import { DropdownRole } from './AddCollaboratorInput'
 import { PermissionDropdown } from './PermissionDropdown'
-import { permissionsToRole, roleToPermission } from './utils'
 
 type CollaboratorRowMeta = {
   email: string
