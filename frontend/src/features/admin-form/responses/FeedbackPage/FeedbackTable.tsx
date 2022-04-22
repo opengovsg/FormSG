@@ -141,17 +141,19 @@ export const FeedbackTable = ({
                     top={0}
                     right={0}
                     zIndex={1}
+                    transitionProperty="background"
+                    transitionDuration="normal"
                     pos="absolute"
                     h="100%"
                     borderX="8px solid"
                     borderColor="secondary.500"
                     _hover={{
-                      bg: column.isResizing ? 'white' : 'neutral.200',
+                      bg: column.isResizing ? 'white' : 'secondary.200',
                     }}
                     _groupHover={{
-                      bg: column.isResizing ? 'white' : 'neutral.500',
+                      bg: column.isResizing ? 'white' : 'secondary.300',
                       _hover: {
-                        bg: column.isResizing ? 'white' : 'neutral.400',
+                        bg: column.isResizing ? 'white' : 'secondary.200',
                       },
                     }}
                     w="17px"
