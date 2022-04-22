@@ -16,19 +16,21 @@ import { FeedbackTable } from './FeedbackTable'
 import { useFormFeedback } from './queries'
 
 export const FeedbackPage = (): JSX.Element => {
-  const { data, isLoading } = useFormFeedback()
+  const { data: { average, count, feedback } = {}, isLoading } =
+    useFormFeedback()
   const { formId } = useParams()
-  const { average, count, feedback } = data || {}
-  const averageScore = average ? Number(average) : undefined
-  const totalCount = count || 0
+  const isMobile = useIsMobile()
   const [currentPage, setCurrentPage] = useState<number>(1)
 
-  const isMobile = useIsMobile()
+  const prettifiedAverageScore = useMemo(
+    () => (average ? Number(average).toPrecision(2) : '-.--'),
+    [average],
+  )
 
   const prettifiedFeedbackCount = useMemo(() => {
-    if (!data) return
-    return simplur` ${[data.count]}feedback submission[|s] to date`
-  }, [data])
+    if (!count) return
+    return simplur` ${[count]}feedback submission[|s] to date`
+  }, [count])
 
   if (isLoading) {
     return isMobile ? <FeedbackPageSkeletonMobile /> : <FeedbackPageSkeleton />
@@ -58,14 +60,12 @@ export const FeedbackPage = (): JSX.Element => {
           <Text textStyle="caption-2" color="secondary.400">
             Average Score
           </Text>
-          <Text textStyle="display-2">
-            {averageScore ? averageScore.toPrecision(2) : '-.--'}
-          </Text>
+          <Text textStyle="display-2">{prettifiedAverageScore}</Text>
         </Flex>
         <Box gridArea="submissions">
           <Text textStyle="h4" mb="0.5rem">
             <Text as="span" color="primary.500">
-              {data?.count}
+              {count}
             </Text>
             {prettifiedFeedbackCount}
           </Text>
@@ -83,7 +83,7 @@ export const FeedbackPage = (): JSX.Element => {
       </Box>
       <Box display={isLoading || count === 0 ? 'none' : ''}>
         <Pagination
-          totalCount={totalCount}
+          totalCount={count ?? 0}
           currentPage={currentPage} //1-indexed
           pageSize={10}
           onPageChange={setCurrentPage}
