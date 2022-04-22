@@ -20,7 +20,7 @@ COPY . ./
 ENV NODE_OPTIONS=--max-old-space-size=3072
 
 RUN npm run build
-RUN npm prune --production
+# RUN npm prune --production
 
 # This stage builds the final container
 FROM node:fermium-alpine3.13
@@ -34,7 +34,7 @@ COPY --from=build /build/dist /opt/formsg/dist
 
 # Built backend goes back to root working directory
 RUN mv /opt/formsg/dist/backend/src /opt/formsg/
-# RUN mv /opt/formsg/dist/backend/shared /opt/formsg/
+RUN mv /opt/formsg/dist/backend/shared /opt/formsg/
 
 # Install chromium from official docs
 # https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#running-on-alpine
