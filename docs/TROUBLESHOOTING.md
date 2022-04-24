@@ -20,3 +20,24 @@ npm install
 ## JavaScript out of memory error
 
 On your Docker application, go to Preferences > Resources and increase the amount of memory allocated for Docker.
+
+## MongoDB: not primary and secondaryOk=false
+
+If you cannot login to the app and see an `MongoError: not primary and secondaryOk=false` error in the console, then your Mongo cluster is configured incorrectly.
+
+This is most likely due to the replicaSet being misconfigured with the wrong IP address of the MongoDB container.
+
+To fix this issue, follow these steps:
+
+1. Retrieve the container ID of the mongodb container using `docker ps`,
+2. Retrieve the IP address of the container `docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <mongodb-container-id>`.
+3. Login to the docker container using `docker exec -it <mongodb-container-id> /bin/sh`
+4. Start the mongodb shell with `mongosh`.
+5. Look at the replica set configuration by entering `rs.config()`. Look to see if the IP address listed is different than the one in step 2.
+6. Run the following commands within `mongosh` to force set the IP address within the replica set:
+
+```
+conf = rs.config()
+conf.members[0].host = '<ip-address>:27017'
+rs.reconfig(conf, {force:true})
+```
