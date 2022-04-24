@@ -23,7 +23,7 @@ On your Docker application, go to Preferences > Resources and increase the amoun
 
 ## MongoDB: not primary and secondaryOk=false
 
-If you cannot login to the app and see an `MongoError: not primary and secondaryOk=false` error in the console, then your Mongo cluster is configured incorrectly.
+If you cannot login to the app and see an `MongoError: not primary and secondaryOk=false` error in the console, then your Mongo container is configured incorrectly.
 
 This is most likely due to the replicaSet being misconfigured with the wrong IP address of the MongoDB container.
 
