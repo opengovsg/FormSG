@@ -38,13 +38,7 @@ export const EndPageBlock = ({
 
   return (
     <Flex flexDir="column">
-      <Accordion
-        allowToggle
-        m="-1rem"
-        flex={1}
-        variant="medium"
-        colorScheme={`theme-${colorTheme}`}
-      >
+      <Accordion allowToggle m="-1rem" flex={1} variant="medium">
         <AccordionItem color="secondary.500" border="none">
           <AccordionButton>
             <Stack
