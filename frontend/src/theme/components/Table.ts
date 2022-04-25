@@ -47,13 +47,15 @@ const variantSolid: PartsStyleFunction<typeof parts> = ({ colorScheme: c }) => {
       ...textStyles['subhead-2'],
       color: 'white',
       bg: `${c}.500`,
-      pl: '1rem',
+      px: '1rem',
       textTransform: 'none',
     },
     td: {
       ...textStyles['body-2'],
       py: '0.625rem',
-      pl: '1rem',
+      px: '1rem',
+      borderBottom: '1px solid',
+      borderColor: 'neutral.300',
     },
   }
 }
