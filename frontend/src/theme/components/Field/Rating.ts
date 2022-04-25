@@ -10,7 +10,7 @@ const getOptionThemeColor = (colorScheme: string) => {
     case 'theme-red':
     case 'theme-orange':
     case 'theme-yellow':
-      return `${colorScheme}.700`
+      return `${colorScheme}.600`
     default:
       return `${colorScheme}.500`
   }
