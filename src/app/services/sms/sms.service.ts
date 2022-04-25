@@ -7,6 +7,7 @@ import Twilio from 'twilio'
 import { isPhoneNumber } from '../../../../shared/utils/phone-num-validation'
 import { AdminContactOtpData, FormOtpData } from '../../../types'
 import config from '../../config/config'
+import { statsdClient } from '../../config/datadog-statsd-client'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel from '../../models/form.server.model'
 import {
@@ -49,6 +50,9 @@ const secretsManager = new SecretsManager({ region: config.aws.region })
 export const twilioClientCache = new NodeCache({
   deleteOnExpire: true,
   stdTTL: 10,
+})
+const ddClient = statsdClient.childClient({
+  prefix: 'vendor.twilio.',
 })
 
 /**
@@ -212,7 +216,17 @@ const sendSms = (
     },
   )
     .andThen(({ status, sid, errorCode, errorMessage }) => {
+      const ddTags = {
+        // msgsrvcsid: msgSrvcSid,
+        smsstatus: status,
+        errorcode: '0',
+      }
+
       if (!sid || errorCode) {
+        if (errorCode) {
+          ddTags.errorcode = `${errorCode}`
+        }
+
         logger.error({
           message: 'Encountered error code or missing sid after sending SMS',
           meta: {
@@ -222,6 +236,8 @@ const sendSms = (
             errorMessage,
           },
         })
+
+        ddClient.increment('sms.send', 1, 1, ddTags)
 
         // Invalid number error code, throw a more reasonable error for error
         // handling.
@@ -236,6 +252,8 @@ const sendSms = (
               }),
         )
       }
+
+      ddClient.increment('sms.send', 1, 1, ddTags)
 
       // No errors.
       logger.info({

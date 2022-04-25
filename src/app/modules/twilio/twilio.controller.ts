@@ -3,10 +3,14 @@ import { StatusCodes } from 'http-status-codes'
 
 import { ITwilioSmsWebhookBody } from 'src/types/twilio'
 
+import { statsdClient } from '../../config/datadog-statsd-client'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 
 const logger = createLoggerWithLabel(module)
+const ddClient = statsdClient.childClient({
+  prefix: 'vendor.twilio.',
+})
 
 /**
  * Middleware which validates that a request came from Twilio Webhook
@@ -24,6 +28,7 @@ const validateTwilioWebhook = celebrate({
       MessageStatus: Joi.string().required(),
       To: Joi.string().required(),
       MessageSid: Joi.string().required(),
+      MessagingServiceSid: Joi.string().required(),
       AccountSid: Joi.string().required(),
       From: Joi.string().required(),
       ApiVersion: Joi.string().required(),
@@ -51,7 +56,18 @@ export const twilioSmsUpdates: ControllerHandler<
    * Example: https://www.twilio.com/docs/usage/webhooks/sms-webhooks.
    */
 
+  // should we add
+  const ddTags = {
+    // msgsrvcsid: req.body.MessagingServiceSid,
+    smsstatus: req.body.SmsStatus,
+    errorcode: '0',
+  }
+
   if (req.body.ErrorCode || req.body.ErrorMessage) {
+    if (req.body.ErrorCode) {
+      ddTags.errorcode = `${req.body.ErrorCode}`
+    }
+
     logger.error({
       message: 'Error occurred when attempting to send SMS on twillio',
       meta: {
@@ -68,6 +84,8 @@ export const twilioSmsUpdates: ControllerHandler<
       },
     })
   }
+
+  ddClient.increment('sms.update', 1, 1, ddTags)
 
   return res.sendStatus(StatusCodes.OK)
 }
