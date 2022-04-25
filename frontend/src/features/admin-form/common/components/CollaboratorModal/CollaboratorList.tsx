@@ -158,7 +158,14 @@ export const CollaboratorList = (): JSX.Element => {
           key={row.email}
           bg={{ base: index % 2 ? 'primary.100' : 'white', md: 'white' }}
         >
-          <Stack direction="row" flex={1} align="center" w="100%">
+          <Stack
+            direction="row"
+            flex={1}
+            align="center"
+            w="100%"
+            // Required to allow flex to shrink
+            minW={0}
+          >
             <CollaboratorText>{row.email}</CollaboratorText>
             {createCurrentUserHint(row)}
           </Stack>
