@@ -22,8 +22,13 @@ export type AddCollaboratorInputs = {
 }
 
 const useAddCollaboratorInput = () => {
-  const { formMethods, handleListSubmit, isMutationLoading, formAdminEmail } =
-    useCollaboratorWizard()
+  const {
+    formMethods,
+    handleListSubmit,
+    isMutationLoading,
+    formAdminEmail,
+    isFormAdmin,
+  } = useCollaboratorWizard()
   const { isLoading, data: collaborators } = useAdminFormCollaborators({
     enabled: !!formAdminEmail,
   })
@@ -63,6 +68,7 @@ const useAddCollaboratorInput = () => {
     isQueryLoading: isLoading,
     isMutationLoading,
     isTransferOwnershipSelected,
+    isFormAdmin,
     formMethods,
     isFullWidth: isMobile,
     validationRules,
@@ -80,6 +86,7 @@ export const AddCollaboratorInput = (): JSX.Element => {
     isFullWidth,
     isQueryLoading,
     isTransferOwnershipSelected,
+    isFormAdmin,
     isMutationLoading,
     validationRules,
     handleListSubmit,
@@ -107,6 +114,7 @@ export const AddCollaboratorInput = (): JSX.Element => {
               control={control}
               render={({ field: { value, onChange } }) => (
                 <PermissionDropdown
+                  allowTransferOwnership={isFormAdmin}
                   isLoading={isQueryLoading || isMutationLoading}
                   value={value}
                   onChange={onChange}

@@ -1,7 +1,15 @@
-import { createContext, useCallback, useContext, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react'
 import { useForm, UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 
 import { FormPermission } from '~shared/types'
+
+import { useUser } from '~features/user/queries'
 
 import { useMutateCollaborators } from '../../mutations'
 import { useAdminForm } from '../../queries'
@@ -26,6 +34,7 @@ type CollaboratorWizardContextReturn = {
   >
   isMutationLoading: boolean
   formAdminEmail?: string
+  isFormAdmin: boolean
 }
 
 export type AddCollaboratorInputs = {
@@ -44,6 +53,7 @@ const INITIAL_STEP_STATE: [CollaboratorFlowStates, number] = [
 
 const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
   const { data: form } = useAdminForm()
+  const { user } = useUser()
   const { mutateAddCollaborator, mutateTransferFormOwnership } =
     useMutateCollaborators()
 
@@ -56,6 +66,11 @@ const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
       role: DropdownRole.Editor,
     },
   })
+
+  const isFormAdmin = useMemo(
+    () => !!user && !!form && user.email === form.admin.email,
+    [form, user],
+  )
 
   const handleBackToList = useCallback(() => {
     setCurrentStep([CollaboratorFlowStates.List, -1])
@@ -113,6 +128,7 @@ const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
     handleBackToList,
     formMethods,
     formAdminEmail: form?.admin.email,
+    isFormAdmin,
     handleListSubmit,
     handleTransferOwnershipSubmit,
     isMutationLoading:

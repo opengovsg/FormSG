@@ -16,7 +16,8 @@ import IconButton from '~components/IconButton'
 import { useUser } from '~features/user/queries'
 
 import { useMutateCollaborators } from '../../../mutations'
-import { useAdminForm, useAdminFormCollaborators } from '../../../queries'
+import { useAdminFormCollaborators } from '../../../queries'
+import { useCollaboratorWizard } from '../CollaboratorWizardContext'
 import { DropdownRole } from '../constants'
 import { permissionsToRole, roleToPermission } from '../utils'
 
@@ -61,10 +62,10 @@ const CollaboratorRow = ({
 
 export const CollaboratorList = (): JSX.Element => {
   // Admin form data required for checking for duplicate emails.
-  const { data: form } = useAdminForm()
+  const { formAdminEmail, isFormAdmin } = useCollaboratorWizard()
   const { user } = useUser()
   const { data: collaborators } = useAdminFormCollaborators({
-    enabled: !!form,
+    enabled: !!formAdminEmail,
   })
 
   const { mutateUpdateCollaborator, mutateRemoveCollaborator } =
@@ -100,8 +101,8 @@ export const CollaboratorList = (): JSX.Element => {
             // Required to allow flex to shrink
             minW={0}
           >
-            <CollaboratorText>{form?.admin.email}</CollaboratorText>
-            {createCurrentUserHint({ email: form?.admin.email ?? '' })}
+            <CollaboratorText>{formAdminEmail}</CollaboratorText>
+            {createCurrentUserHint({ email: formAdminEmail ?? '' })}
           </Stack>
         </Skeleton>
         <Skeleton isLoaded={!!collaborators}>
@@ -119,7 +120,7 @@ export const CollaboratorList = (): JSX.Element => {
         </Skeleton>
       </CollaboratorRow>
     )
-  }, [collaborators, form?.admin.email, createCurrentUserHint])
+  }, [collaborators, formAdminEmail, createCurrentUserHint])
 
   const handleUpdateRole =
     (row: typeof list[number]) => (newRole: DropdownRole) => {
@@ -180,6 +181,7 @@ export const CollaboratorList = (): JSX.Element => {
             <PermissionDropdown
               buttonVariant="clear"
               value={row.role}
+              allowTransferOwnership={isFormAdmin}
               isLoading={
                 mutateUpdateCollaborator.isLoading ||
                 mutateRemoveCollaborator.isLoading
