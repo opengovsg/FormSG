@@ -3,10 +3,14 @@ import { StatusCodes } from 'http-status-codes'
 
 import { ITwilioSmsWebhookBody } from 'src/types/twilio'
 
+import { statsdClient } from '../../config/datadog-statsd-client'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 
 const logger = createLoggerWithLabel(module)
+const ddClient = statsdClient.childClient({
+  prefix: 'vendor.twilio.',
+})
 
 /**
  * Middleware which validates that a request came from Twilio Webhook
@@ -51,7 +55,15 @@ export const twilioSmsUpdates: ControllerHandler<
    * Example: https://www.twilio.com/docs/usage/webhooks/sms-webhooks.
    */
 
+  // should we add
+  const tags = {
+    accountsid: req.body.AccountSid,
+    smsstatus: req.body.SmsStatus,
+    errorcode: '0',
+  }
+
   if (req.body.ErrorCode || req.body.ErrorMessage) {
+    tags.errorcode = `${req.body.ErrorCode}`
     logger.error({
       message: 'Error occurred when attempting to send SMS on twillio',
       meta: {
@@ -68,6 +80,8 @@ export const twilioSmsUpdates: ControllerHandler<
       },
     })
   }
+
+  ddClient.increment('sms.update', 1, 1, tags)
 
   return res.sendStatus(StatusCodes.OK)
 }
