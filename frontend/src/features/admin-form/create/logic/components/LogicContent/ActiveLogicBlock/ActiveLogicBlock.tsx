@@ -12,10 +12,12 @@ import { EditLogicBlock } from '../EditLogicBlock'
 
 export interface ActiveLogicBlockProps {
   logic: LogicDto
+  handleOpenDeleteModal: () => void
 }
 
 export const ActiveLogicBlock = ({
   logic,
+  handleOpenDeleteModal,
 }: ActiveLogicBlockProps): JSX.Element => {
   const { updateLogicMutation } = useLogicMutations()
   const setToInactive = useAdminLogicStore(setToInactiveSelector)
@@ -33,6 +35,7 @@ export const ActiveLogicBlock = ({
   return (
     <EditLogicBlock
       isLoading={updateLogicMutation.isLoading}
+      handleOpenDeleteModal={handleOpenDeleteModal}
       onSubmit={handleSubmit}
       defaultValues={logic}
       submitButtonLabel="Save changes"

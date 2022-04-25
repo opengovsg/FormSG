@@ -7,7 +7,6 @@ import {
   Stack,
   StackDivider,
   Text,
-  useDisclosure,
 } from '@chakra-ui/react'
 
 import { LogicDto, LogicType } from '~shared/types/form'
@@ -20,7 +19,6 @@ import {
   useAdminLogicStore,
 } from '../../../adminLogicStore'
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
-import { DeleteLogicModal } from '../../DeleteLogicModal'
 
 import { FieldLogicBadge } from './FieldLogicBadge'
 import { LogicBadge } from './LogicBadge'
@@ -28,13 +26,14 @@ import { LogicConditionValues } from './LogicConditionValues'
 
 interface InactiveLogicBlockProps {
   logic: LogicDto
+  handleOpenDeleteModal: () => void
 }
 
 export const InactiveLogicBlock = ({
   logic,
+  handleOpenDeleteModal,
 }: InactiveLogicBlockProps): JSX.Element | null => {
   const { mapIdToField } = useAdminFormLogic()
-  const { isOpen, onClose, onOpen } = useDisclosure()
   const setToEditing = useAdminLogicStore(setToEditingSelector)
   const stateData = useAdminLogicStore(createOrEditDataSelector)
 
@@ -101,11 +100,6 @@ export const InactiveLogicBlock = ({
         }}
         onClick={handleClick}
       >
-        <DeleteLogicModal
-          isOpen={isOpen}
-          onClose={onClose}
-          logicId={logic._id}
-        />
         <Stack
           spacing="1.5rem"
           divider={<StackDivider borderColor="secondary.100" />}
@@ -146,7 +140,7 @@ export const InactiveLogicBlock = ({
         aria-label="Delete logic"
         variant="clear"
         colorScheme="danger"
-        onClick={onOpen}
+        onClick={handleOpenDeleteModal}
         icon={<BiTrash fontSize="1.5rem" />}
       />
     </Box>

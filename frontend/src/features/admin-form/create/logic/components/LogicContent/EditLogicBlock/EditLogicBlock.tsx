@@ -92,6 +92,7 @@ export const useEditLogicBlock = ({
 
 export interface EditLogicBlockProps extends UseEditLogicBlockProps {
   submitButtonLabel: string
+  handleOpenDeleteModal?: () => void
   isLoading: boolean
 }
 
@@ -100,6 +101,7 @@ export const EditLogicBlock = ({
   defaultValues,
   isLoading,
   submitButtonLabel,
+  handleOpenDeleteModal,
 }: EditLogicBlockProps) => {
   const {
     formMethods,
@@ -149,6 +151,7 @@ export const EditLogicBlock = ({
       <SaveActionGroup
         isLoading={isLoading}
         handleSubmit={handleSubmit}
+        handleDelete={handleOpenDeleteModal}
         handleCancel={setToInactive}
         submitButtonLabel={submitButtonLabel}
       />
