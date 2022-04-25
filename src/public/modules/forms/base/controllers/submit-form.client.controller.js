@@ -8,6 +8,8 @@ angular
     'FormData',
     'SpcpSession',
     '$window',
+    '$location',
+    '$cookies',
     '$document',
     'GTag',
     'Toastr',
@@ -18,11 +20,31 @@ function SubmitFormController(
   FormData,
   SpcpSession,
   $window,
+  $location,
+  $cookies,
   $document,
   GTag,
   Toastr,
 ) {
   const vm = this
+
+  // React migration checker - ONLY for plain form URLs (no suffixes like /template or /preview)
+  if (/^\/[0-9a-fA-F]{24}\/?$/.test($location.path())) {
+    const adminCookie = $cookies.get($window.reactMigrationAdminCookieName)
+    const respondentCookie = $cookies.get(
+      $window.reactMigrationRespondentCookieName,
+    )
+
+    if (adminCookie) {
+      if (adminCookie === 'react') {
+        $window.location.href = `/${FormData.id}`
+        return
+      }
+    } else if (respondentCookie === 'react') {
+      $window.location.href = `/${FormData.id}`
+      return
+    }
+  }
 
   // The form attribute of the FormData object contains the form fields, logic etc
   vm.myform = FormData.form
