@@ -17,6 +17,16 @@ import {
 } from './AdminViewFormService'
 import { adminFormKeys } from './queries'
 
+export type MutateAddCollaboratorArgs = {
+  newPermission: FormPermission
+  currentPermissions: FormPermissionsDto
+}
+
+export type MutateRemoveCollaboratorArgs = {
+  permissionToRemove: FormPermission
+  currentPermissions: FormPermissionsDto
+}
+
 export const useMutateCollaborators = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
@@ -105,13 +115,7 @@ export const useMutateCollaborators = () => {
   )
 
   const mutateAddCollaborator = useMutation(
-    ({
-      newPermission,
-      currentPermissions,
-    }: {
-      newPermission: FormPermission
-      currentPermissions: FormPermissionsDto
-    }) => {
+    ({ newPermission, currentPermissions }: MutateAddCollaboratorArgs) => {
       const rebuiltPermissions = [newPermission].concat(currentPermissions)
       return updateFormCollaborators(formId, rebuiltPermissions)
     },
@@ -130,10 +134,7 @@ export const useMutateCollaborators = () => {
     ({
       permissionToRemove,
       currentPermissions,
-    }: {
-      permissionToRemove: FormPermission
-      currentPermissions: FormPermissionsDto
-    }) => {
+    }: MutateRemoveCollaboratorArgs) => {
       const filteredList = currentPermissions.filter(
         (c) => c.email !== permissionToRemove.email,
       )

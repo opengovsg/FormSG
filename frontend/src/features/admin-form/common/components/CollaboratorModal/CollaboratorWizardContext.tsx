@@ -1,21 +1,6 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react'
-import { useForm, UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
-
-import { FormPermission } from '~shared/types'
-
-import { useUser } from '~features/user/queries'
-
-import { useMutateCollaborators } from '../../mutations'
-import { useAdminForm } from '../../queries'
+import { createContext, useCallback, useContext, useState } from 'react'
 
 import { DropdownRole } from './constants'
-import { roleToPermission } from './utils'
 
 export enum CollaboratorFlowStates {
   List = 'list',
@@ -25,16 +10,9 @@ export enum CollaboratorFlowStates {
 type CollaboratorWizardContextReturn = {
   currentStep: CollaboratorFlowStates
   direction: number
-  /** So wizard screens can keep track of the current form state */
-  formMethods: UseFormReturn<AddCollaboratorInputs>
   handleBackToList: () => void
-  handleListSubmit: ReturnType<UseFormHandleSubmit<AddCollaboratorInputs>>
-  emailToTransfer: string
-  handleTransferOwnership: () => void
+  emailToTransfer: string | null
   handleForwardToTransferOwnership: (emailToTransfer: string) => void
-  isMutationLoading: boolean
-  formAdminEmail?: string
-  isFormAdmin: boolean
 }
 
 export type AddCollaboratorInputs = {
@@ -52,28 +30,12 @@ const INITIAL_STEP_STATE: [CollaboratorFlowStates, number] = [
 ]
 
 const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
-  const { data: form } = useAdminForm()
-  const { user } = useUser()
-  const { mutateAddCollaborator, mutateTransferFormOwnership } =
-    useMutateCollaborators()
-
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)
-  const [emailToTransfer, setEmailToTransfer] = useState('')
-
-  const formMethods = useForm<AddCollaboratorInputs>({
-    defaultValues: {
-      email: '',
-      role: DropdownRole.Editor,
-    },
-  })
-
-  const isFormAdmin = useMemo(
-    () => !!user && !!form && user.email === form.admin.email,
-    [form, user],
-  )
+  const [emailToTransfer, setEmailToTransfer] = useState<string | null>(null)
 
   const handleBackToList = useCallback(() => {
+    setEmailToTransfer(null)
     setCurrentStep([CollaboratorFlowStates.List, -1])
   }, [])
 
@@ -85,66 +47,12 @@ const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
     [],
   )
 
-  const handleAddCollaborator = useCallback(
-    (inputs: AddCollaboratorInputs) => {
-      if (!form?.permissionList) return
-
-      const newPermission: FormPermission = {
-        ...roleToPermission(inputs.role),
-        email: inputs.email,
-      }
-      return mutateAddCollaborator.mutate(
-        {
-          newPermission,
-          currentPermissions: form.permissionList,
-        },
-        {
-          onSuccess: () => formMethods.reset(),
-        },
-      )
-    },
-    [form?.permissionList, formMethods, mutateAddCollaborator],
-  )
-
-  const handleListSubmit = formMethods.handleSubmit((inputs) => {
-    if (!form?.permissionList) return
-
-    // Handle transfer form ownership instead of granting admin rights.
-    if (inputs.role === DropdownRole.Owner) {
-      return handleForwardToTransferOwnership(inputs.email)
-    }
-
-    return handleAddCollaborator(inputs)
-  })
-
-  const handleTransferOwnership = useCallback(() => {
-    if (!emailToTransfer) return
-    return mutateTransferFormOwnership.mutate(emailToTransfer, {
-      onSuccess: () => {
-        handleBackToList()
-        formMethods.reset()
-      },
-    })
-  }, [
-    emailToTransfer,
-    formMethods,
-    handleBackToList,
-    mutateTransferFormOwnership,
-  ])
-
   return {
     currentStep,
     direction,
     handleBackToList,
-    formMethods,
-    formAdminEmail: form?.admin.email,
     emailToTransfer,
-    isFormAdmin,
-    handleListSubmit,
-    handleTransferOwnership,
     handleForwardToTransferOwnership,
-    isMutationLoading:
-      mutateAddCollaborator.isLoading || mutateTransferFormOwnership.isLoading,
   }
 }
 

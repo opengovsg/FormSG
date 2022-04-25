@@ -13,8 +13,6 @@ import { FormPermission } from '~shared/types/form/form'
 
 import IconButton from '~components/IconButton'
 
-import { useUser } from '~features/user/queries'
-
 import { useMutateCollaborators } from '../../../mutations'
 import { useAdminFormCollaborators } from '../../../queries'
 import { useCollaboratorWizard } from '../CollaboratorWizardContext'
@@ -62,15 +60,18 @@ const CollaboratorRow = ({
 
 export const CollaboratorList = (): JSX.Element => {
   // Admin form data required for checking for duplicate emails.
-  const { formAdminEmail, isFormAdmin, handleForwardToTransferOwnership } =
-    useCollaboratorWizard()
-  const { user } = useUser()
-  const { data: collaborators } = useAdminFormCollaborators({
-    enabled: !!formAdminEmail,
-  })
+  const { handleForwardToTransferOwnership } = useCollaboratorWizard()
+  const { collaborators, user, isFormAdmin, form, isLoading } =
+    useAdminFormCollaborators()
 
   const { mutateUpdateCollaborator, mutateRemoveCollaborator } =
     useMutateCollaborators()
+
+  const areMutationsLoading = useMemo(
+    () =>
+      mutateRemoveCollaborator.isLoading || mutateUpdateCollaborator.isLoading,
+    [mutateRemoveCollaborator.isLoading, mutateUpdateCollaborator.isLoading],
+  )
 
   const createCurrentUserHint = useCallback(
     (row: Pick<CollaboratorRowMeta, 'email'>) => {
@@ -95,18 +96,18 @@ export const CollaboratorList = (): JSX.Element => {
   const ownerRow = useMemo(() => {
     return (
       <CollaboratorRow bg={{ base: 'primary.100', md: 'white' }}>
-        <Skeleton isLoaded={!!collaborators} flex={1}>
+        <Skeleton isLoaded={!isLoading} flex={1}>
           <Stack
             direction="row"
             align="baseline"
             // Required to allow flex to shrink
             minW={0}
           >
-            <CollaboratorText>{formAdminEmail}</CollaboratorText>
-            {createCurrentUserHint({ email: formAdminEmail ?? '' })}
+            <CollaboratorText>{form?.admin.email}</CollaboratorText>
+            {createCurrentUserHint({ email: form?.admin.email ?? '' })}
           </Stack>
         </Skeleton>
-        <Skeleton isLoaded={!!collaborators}>
+        <Skeleton isLoaded={!isLoading}>
           <Stack
             direction="row"
             justify="space-between"
@@ -121,14 +122,19 @@ export const CollaboratorList = (): JSX.Element => {
         </Skeleton>
       </CollaboratorRow>
     )
-  }, [collaborators, formAdminEmail, createCurrentUserHint])
+  }, [
+    isLoading,
+    form?.admin.email,
+    createCurrentUserHint,
+    collaborators?.length,
+  ])
 
   const handleUpdateRole =
     (row: typeof list[number]) => (newRole: DropdownRole) => {
       // Should not happen since this function cannot be invoked without the
       // collaborators being loaded, but guarding just in case.
       // Or when role to update is already the current role.
-      if (!collaborators || row.role === newRole) return
+      if (!collaborators || areMutationsLoading || row.role === newRole) return
 
       if (newRole === DropdownRole.Owner) {
         return handleForwardToTransferOwnership(row.email)
@@ -145,7 +151,7 @@ export const CollaboratorList = (): JSX.Element => {
     }
 
   const handleRemoveCollaborator = (row: typeof list[number]) => () => {
-    if (!collaborators) return
+    if (!collaborators || areMutationsLoading) return
     // May seem redundant since we already have the email, but this may prevent
     // issues arising from desync between `list` and `collaborators`.
     const permissionToRemove: FormPermission = {
@@ -188,10 +194,7 @@ export const CollaboratorList = (): JSX.Element => {
               buttonVariant="clear"
               value={row.role}
               allowTransferOwnership={isFormAdmin}
-              isLoading={
-                mutateUpdateCollaborator.isLoading ||
-                mutateRemoveCollaborator.isLoading
-              }
+              isLoading={areMutationsLoading}
               onChange={handleUpdateRole(row)}
             />
             <IconButton
@@ -201,10 +204,7 @@ export const CollaboratorList = (): JSX.Element => {
                 mutateRemoveCollaborator.variables?.permissionToRemove.email ===
                   row.email
               }
-              isDisabled={
-                mutateUpdateCollaborator.isLoading ||
-                mutateRemoveCollaborator.isLoading
-              }
+              isDisabled={areMutationsLoading}
               variant="clear"
               aria-label="Remove collaborator"
               colorScheme="danger"

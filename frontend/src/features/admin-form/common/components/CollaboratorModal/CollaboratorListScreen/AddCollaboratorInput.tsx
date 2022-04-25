@@ -1,8 +1,10 @@
-import { useMemo } from 'react'
-import { Controller, RegisterOptions } from 'react-hook-form'
+import { useCallback, useMemo } from 'react'
+import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
+
+import { FormPermission } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
@@ -10,9 +12,12 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
+import { useMutateCollaborators } from '~features/admin-form/common/mutations'
+
 import { useAdminFormCollaborators } from '../../../queries'
 import { useCollaboratorWizard } from '../CollaboratorWizardContext'
 import { DropdownRole } from '../constants'
+import { roleToPermission } from '../utils'
 
 import { PermissionDropdown } from './PermissionDropdown'
 
@@ -22,20 +27,51 @@ export type AddCollaboratorInputs = {
 }
 
 const useAddCollaboratorInput = () => {
-  const {
-    formMethods,
-    handleListSubmit,
-    isMutationLoading,
-    formAdminEmail,
-    isFormAdmin,
-  } = useCollaboratorWizard()
-  const { isLoading, data: collaborators } = useAdminFormCollaborators({
-    enabled: !!formAdminEmail,
+  const { handleForwardToTransferOwnership } = useCollaboratorWizard()
+  const { isLoading, collaborators, form, isFormAdmin } =
+    useAdminFormCollaborators()
+  const { mutateAddCollaborator } = useMutateCollaborators()
+
+  const formMethods = useForm<AddCollaboratorInputs>({
+    defaultValues: {
+      email: '',
+      role: DropdownRole.Editor,
+    },
   })
 
-  const { watch } = formMethods
+  const { watch, handleSubmit, reset } = formMethods
 
   const roleValue = watch('role')
+
+  const handleAddCollaborator = useCallback(
+    (inputs: AddCollaboratorInputs) => {
+      if (!form?.permissionList) return
+
+      const newPermission: FormPermission = {
+        ...roleToPermission(inputs.role),
+        email: inputs.email,
+      }
+      return mutateAddCollaborator.mutate(
+        {
+          newPermission,
+          currentPermissions: form.permissionList,
+        },
+        {
+          onSuccess: () => reset(),
+        },
+      )
+    },
+    [form?.permissionList, mutateAddCollaborator, reset],
+  )
+
+  const handleInputSubmission = handleSubmit((inputs) => {
+    // Handle transfer form ownership instead of granting admin rights.
+    if (inputs.role === DropdownRole.Owner) {
+      return handleForwardToTransferOwnership(inputs.email)
+    }
+
+    return handleAddCollaborator(inputs)
+  })
 
   const validationRules: RegisterOptions = useMemo(() => {
     return {
@@ -51,11 +87,11 @@ const useAddCollaboratorInput = () => {
           'This user is an existing collaborator. Edit role below.',
         ownerEmail: (value: string) =>
           !value ||
-          formAdminEmail?.toLowerCase() !== value.toLowerCase() ||
+          form?.admin.email?.toLowerCase() !== value.toLowerCase() ||
           'You cannot add the form owner as a collaborator',
       },
     }
-  }, [collaborators, formAdminEmail])
+  }, [collaborators, form?.admin.email])
 
   const isMobile = useIsMobile()
 
@@ -66,13 +102,13 @@ const useAddCollaboratorInput = () => {
 
   return {
     isQueryLoading: isLoading,
-    isMutationLoading,
+    isMutationLoading: mutateAddCollaborator.isLoading,
     isTransferOwnershipSelected,
     isFormAdmin,
     formMethods,
     isFullWidth: isMobile,
     validationRules,
-    handleListSubmit,
+    handleInputSubmission,
   }
 }
 
@@ -89,11 +125,11 @@ export const AddCollaboratorInput = (): JSX.Element => {
     isFormAdmin,
     isMutationLoading,
     validationRules,
-    handleListSubmit,
+    handleInputSubmission,
   } = useAddCollaboratorInput()
 
   return (
-    <form noValidate onSubmit={handleListSubmit}>
+    <form noValidate onSubmit={handleInputSubmission}>
       <FormControl isInvalid={!isEmpty(errors)} isReadOnly={isMutationLoading}>
         <FormLabel
           isRequired

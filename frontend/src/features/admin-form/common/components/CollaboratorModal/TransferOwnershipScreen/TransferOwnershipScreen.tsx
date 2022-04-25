@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import {
   ModalBody,
   ModalFooter,
@@ -9,16 +10,23 @@ import {
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
+import { useMutateCollaborators } from '~features/admin-form/common/mutations'
+
 import { useCollaboratorWizard } from '../CollaboratorWizardContext'
 
-export const TransferOwnershipScreen = (): JSX.Element => {
+export const TransferOwnershipScreen = (): JSX.Element | null => {
   const isMobile = useIsMobile()
-  const {
-    handleBackToList,
-    emailToTransfer,
-    handleTransferOwnership,
-    isMutationLoading,
-  } = useCollaboratorWizard()
+  const { mutateTransferFormOwnership } = useMutateCollaborators()
+  const { handleBackToList, emailToTransfer } = useCollaboratorWizard()
+
+  const handleTransferOwnership = useCallback(() => {
+    if (!emailToTransfer) return
+    return mutateTransferFormOwnership.mutate(emailToTransfer, {
+      onSuccess: () => handleBackToList(),
+    })
+  }, [emailToTransfer, handleBackToList, mutateTransferFormOwnership])
+
+  if (!emailToTransfer) return null
 
   return (
     <>
@@ -41,7 +49,7 @@ export const TransferOwnershipScreen = (): JSX.Element => {
         >
           <Button
             isFullWidth={isMobile}
-            isLoading={isMutationLoading}
+            isLoading={mutateTransferFormOwnership.isLoading}
             colorScheme="danger"
             onClick={handleTransferOwnership}
           >
@@ -49,7 +57,7 @@ export const TransferOwnershipScreen = (): JSX.Element => {
           </Button>
           <Button
             isFullWidth={isMobile}
-            isDisabled={isMutationLoading}
+            isDisabled={mutateTransferFormOwnership.isLoading}
             variant="clear"
             colorScheme="secondary"
             onClick={handleBackToList}
