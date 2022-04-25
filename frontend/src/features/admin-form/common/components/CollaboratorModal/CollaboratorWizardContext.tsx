@@ -21,6 +21,9 @@ type CollaboratorWizardContextReturn = {
   formMethods: UseFormReturn<AddCollaboratorInputs>
   handleBackToList: () => void
   handleListSubmit: ReturnType<UseFormHandleSubmit<AddCollaboratorInputs>>
+  handleTransferOwnershipSubmit: ReturnType<
+    UseFormHandleSubmit<AddCollaboratorInputs>
+  >
   isMutationLoading: boolean
   formAdminEmail?: string
 }
@@ -41,7 +44,8 @@ const INITIAL_STEP_STATE: [CollaboratorFlowStates, number] = [
 
 const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
   const { data: form } = useAdminForm()
-  const { mutateAddCollaborator } = useMutateCollaborators()
+  const { mutateAddCollaborator, mutateTransferFormOwnership } =
+    useMutateCollaborators()
 
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)
@@ -93,6 +97,16 @@ const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
     return handleAddCollaborator(inputs)
   })
 
+  const handleTransferOwnershipSubmit = formMethods.handleSubmit((inputs) => {
+    if (!form?.permissionList || inputs.role !== DropdownRole.Owner) return
+    return mutateTransferFormOwnership.mutate(inputs.email, {
+      onSuccess: () => {
+        handleBackToList()
+        formMethods.reset()
+      },
+    })
+  })
+
   return {
     currentStep,
     direction,
@@ -100,7 +114,9 @@ const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
     formMethods,
     formAdminEmail: form?.admin.email,
     handleListSubmit,
-    isMutationLoading: mutateAddCollaborator.isLoading,
+    handleTransferOwnershipSubmit,
+    isMutationLoading:
+      mutateAddCollaborator.isLoading || mutateTransferFormOwnership.isLoading,
   }
 }
 

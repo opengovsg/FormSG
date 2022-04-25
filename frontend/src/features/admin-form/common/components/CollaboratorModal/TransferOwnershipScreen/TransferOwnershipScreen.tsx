@@ -15,6 +15,8 @@ export const TransferOwnershipScreen = (): JSX.Element => {
   const isMobile = useIsMobile()
   const {
     handleBackToList,
+    handleTransferOwnershipSubmit,
+    isMutationLoading,
     formMethods: { watch },
   } = useCollaboratorWizard()
 
@@ -39,11 +41,17 @@ export const TransferOwnershipScreen = (): JSX.Element => {
           spacing="1rem"
           direction={{ base: 'column', md: 'row-reverse' }}
         >
-          <Button isFullWidth={isMobile} colorScheme="danger">
+          <Button
+            isFullWidth={isMobile}
+            isLoading={isMutationLoading}
+            colorScheme="danger"
+            onClick={handleTransferOwnershipSubmit}
+          >
             Yes, transfer form
           </Button>
           <Button
             isFullWidth={isMobile}
+            isDisabled={isMutationLoading}
             variant="clear"
             colorScheme="secondary"
             onClick={handleBackToList}
