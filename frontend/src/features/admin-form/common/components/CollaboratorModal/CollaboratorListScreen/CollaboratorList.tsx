@@ -62,7 +62,8 @@ const CollaboratorRow = ({
 
 export const CollaboratorList = (): JSX.Element => {
   // Admin form data required for checking for duplicate emails.
-  const { formAdminEmail, isFormAdmin } = useCollaboratorWizard()
+  const { formAdminEmail, isFormAdmin, handleForwardToTransferOwnership } =
+    useCollaboratorWizard()
   const { user } = useUser()
   const { data: collaborators } = useAdminFormCollaborators({
     enabled: !!formAdminEmail,
@@ -128,6 +129,11 @@ export const CollaboratorList = (): JSX.Element => {
       // collaborators being loaded, but guarding just in case.
       // Or when role to update is already the current role.
       if (!collaborators || row.role === newRole) return
+
+      if (newRole === DropdownRole.Owner) {
+        return handleForwardToTransferOwnership(row.email)
+      }
+
       const permissionToUpdate: FormPermission = {
         email: row.email,
         ...roleToPermission(newRole),

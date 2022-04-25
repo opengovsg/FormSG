@@ -29,9 +29,9 @@ type CollaboratorWizardContextReturn = {
   formMethods: UseFormReturn<AddCollaboratorInputs>
   handleBackToList: () => void
   handleListSubmit: ReturnType<UseFormHandleSubmit<AddCollaboratorInputs>>
-  handleTransferOwnershipSubmit: ReturnType<
-    UseFormHandleSubmit<AddCollaboratorInputs>
-  >
+  emailToTransfer: string
+  handleTransferOwnership: () => void
+  handleForwardToTransferOwnership: (emailToTransfer: string) => void
   isMutationLoading: boolean
   formAdminEmail?: string
   isFormAdmin: boolean
@@ -59,6 +59,7 @@ const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
 
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)
+  const [emailToTransfer, setEmailToTransfer] = useState('')
 
   const formMethods = useForm<AddCollaboratorInputs>({
     defaultValues: {
@@ -76,9 +77,13 @@ const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
     setCurrentStep([CollaboratorFlowStates.List, -1])
   }, [])
 
-  const handleForwardToTransferOwnership = useCallback(() => {
-    setCurrentStep([CollaboratorFlowStates.TransferOwner, 1])
-  }, [])
+  const handleForwardToTransferOwnership = useCallback(
+    (emailToTransfer: string) => {
+      setEmailToTransfer(emailToTransfer)
+      setCurrentStep([CollaboratorFlowStates.TransferOwner, 1])
+    },
+    [],
+  )
 
   const handleAddCollaborator = useCallback(
     (inputs: AddCollaboratorInputs) => {
@@ -106,21 +111,26 @@ const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
 
     // Handle transfer form ownership instead of granting admin rights.
     if (inputs.role === DropdownRole.Owner) {
-      return handleForwardToTransferOwnership()
+      return handleForwardToTransferOwnership(inputs.email)
     }
 
     return handleAddCollaborator(inputs)
   })
 
-  const handleTransferOwnershipSubmit = formMethods.handleSubmit((inputs) => {
-    if (!form?.permissionList || inputs.role !== DropdownRole.Owner) return
-    return mutateTransferFormOwnership.mutate(inputs.email, {
+  const handleTransferOwnership = useCallback(() => {
+    if (!emailToTransfer) return
+    return mutateTransferFormOwnership.mutate(emailToTransfer, {
       onSuccess: () => {
         handleBackToList()
         formMethods.reset()
       },
     })
-  })
+  }, [
+    emailToTransfer,
+    formMethods,
+    handleBackToList,
+    mutateTransferFormOwnership,
+  ])
 
   return {
     currentStep,
@@ -128,9 +138,11 @@ const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
     handleBackToList,
     formMethods,
     formAdminEmail: form?.admin.email,
+    emailToTransfer,
     isFormAdmin,
     handleListSubmit,
-    handleTransferOwnershipSubmit,
+    handleTransferOwnership,
+    handleForwardToTransferOwnership,
     isMutationLoading:
       mutateAddCollaborator.isLoading || mutateTransferFormOwnership.isLoading,
   }

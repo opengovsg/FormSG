@@ -15,12 +15,10 @@ export const TransferOwnershipScreen = (): JSX.Element => {
   const isMobile = useIsMobile()
   const {
     handleBackToList,
-    handleTransferOwnershipSubmit,
+    emailToTransfer,
+    handleTransferOwnership,
     isMutationLoading,
-    formMethods: { watch },
   } = useCollaboratorWizard()
-
-  const transferEmail = watch('email')
 
   return (
     <>
@@ -29,7 +27,7 @@ export const TransferOwnershipScreen = (): JSX.Element => {
         <Text>
           You are transferring this form to{' '}
           <Text color="danger.500" as="span" fontWeight={700}>
-            {transferEmail}
+            {emailToTransfer}
           </Text>
           . You will lose form ownership and the right to delete this form. You
           will still have Editor rights.
@@ -45,7 +43,7 @@ export const TransferOwnershipScreen = (): JSX.Element => {
             isFullWidth={isMobile}
             isLoading={isMutationLoading}
             colorScheme="danger"
-            onClick={handleTransferOwnershipSubmit}
+            onClick={handleTransferOwnership}
           >
             Yes, transfer form
           </Button>
