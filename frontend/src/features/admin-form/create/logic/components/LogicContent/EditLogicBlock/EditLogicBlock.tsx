@@ -8,7 +8,6 @@ import {
   useAdminLogicStore,
 } from '../../../adminLogicStore'
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
-import { useLogicMutations } from '../../../mutations'
 import { EditLogicInputs } from '../../../types'
 
 import {
@@ -32,7 +31,6 @@ export const useEditLogicBlock = ({
 }: UseEditLogicBlockProps) => {
   const setToInactive = useAdminLogicStore(setToInactiveSelector)
   const { logicableFields, mapIdToField, formFields } = useAdminFormLogic()
-  const { createLogicMutation } = useLogicMutations()
 
   const formMethods = useForm<EditLogicInputs>({
     defaultValues: merge({ conditions: [{}] }, defaultValues),
@@ -85,7 +83,6 @@ export const useEditLogicBlock = ({
     handleAddCondition,
     handleRemoveCondition,
     wrapperRef,
-    isLoading: createLogicMutation.isLoading,
     setToInactive,
     logicableFields,
     mapIdToField,
@@ -95,11 +92,13 @@ export const useEditLogicBlock = ({
 
 export interface EditLogicBlockProps extends UseEditLogicBlockProps {
   submitButtonLabel: string
+  isLoading: boolean
 }
 
 export const EditLogicBlock = ({
   onSubmit,
   defaultValues,
+  isLoading,
   submitButtonLabel,
 }: EditLogicBlockProps) => {
   const {
@@ -109,7 +108,6 @@ export const EditLogicBlock = ({
     handleSubmit,
     handleAddCondition,
     handleRemoveCondition,
-    isLoading,
     setToInactive,
     logicableFields,
     mapIdToField,

@@ -32,6 +32,7 @@ export const ActiveLogicBlock = ({
 
   return (
     <EditLogicBlock
+      isLoading={updateLogicMutation.isLoading}
       onSubmit={handleSubmit}
       defaultValues={logic}
       submitButtonLabel="Save changes"

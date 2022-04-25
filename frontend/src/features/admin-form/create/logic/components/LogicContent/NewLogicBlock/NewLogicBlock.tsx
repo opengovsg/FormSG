@@ -28,6 +28,7 @@ export const NewLogicBlock = ({
 
   return (
     <EditLogicBlock
+      isLoading={createLogicMutation.isLoading}
       defaultValues={_defaultValues}
       onSubmit={handleSubmit}
       submitButtonLabel="Add logic"
