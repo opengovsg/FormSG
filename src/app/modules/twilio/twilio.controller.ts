@@ -28,6 +28,7 @@ const validateTwilioWebhook = celebrate({
       MessageStatus: Joi.string().required(),
       To: Joi.string().required(),
       MessageSid: Joi.string().required(),
+      MessagingServiceSid: Joi.string().required(),
       AccountSid: Joi.string().required(),
       From: Joi.string().required(),
       ApiVersion: Joi.string().required(),
@@ -57,7 +58,7 @@ export const twilioSmsUpdates: ControllerHandler<
 
   // should we add
   const ddTags = {
-    accountsid: req.body.AccountSid,
+    // msgsrvcsid: req.body.MessagingServiceSid,
     smsstatus: req.body.SmsStatus,
     errorcode: '0',
   }

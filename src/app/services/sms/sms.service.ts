@@ -217,7 +217,7 @@ const sendSms = (
   )
     .andThen(({ status, sid, errorCode, errorMessage }) => {
       const ddTags = {
-        accountsid: msgSrvcSid,
+        // msgsrvcsid: msgSrvcSid,
         smsstatus: status,
         errorcode: '0',
       }
