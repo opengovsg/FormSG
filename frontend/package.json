@@ -45,6 +45,7 @@
     "react-use": "^17.3.1",
     "react-waypoint": "^10.1.0",
     "remark-gfm": "^3.0.1",
+    "rooks": "^5.11.0",
     "simplur": "^3.0.1",
     "type-fest": "^2.8.0",
     "typescript": "^4.5.3",
@@ -74,7 +75,7 @@
     ]
   },
   "scripts": {
-    "gen:theme-typings": "chakra-cli tokens src/theme/index.ts",
+    "gen:theme-typings": "chakra-cli tokens src/theme/index.ts || true",
     "partytown": "partytown copylib public/~partytown",
     "clean:emotion-types": "rimraf node_modules/@emotion/core/types",
     "postinstall": "npm run gen:theme-typings && npm run clean:emotion-types && npm run partytown && npm --prefix ../shared install",

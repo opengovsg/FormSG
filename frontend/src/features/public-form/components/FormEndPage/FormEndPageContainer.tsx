@@ -3,27 +3,33 @@ import { Box } from '@chakra-ui/react'
 
 import { useToast } from '~hooks/useToast'
 
+import { usePublicFormMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FeedbackFormInput } from './components/FeedbackBlock'
 import { FormEndPage } from './FormEndPage'
 
 export const FormEndPageContainer = (): JSX.Element | null => {
-  const { form, submissionData } = usePublicFormContext()
+  const { form, formId, submissionData } = usePublicFormContext()
+  const { submitFormFeedbackMutation } = usePublicFormMutations(formId)
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
-  // TODO: Update with real API call
   const handleSubmitFeedback = useCallback(
     (inputs: FeedbackFormInput) => {
-      toast({
-        description: 'Thank you for submitting your feedback!',
-        status: 'success',
-        isClosable: true,
+      // mutateAsync for react-hook-form to show correct loading state.
+      return submitFormFeedbackMutation.mutateAsync(inputs, {
+        onSuccess: () => {
+          toast({
+            description: 'Thank you for submitting your feedback!',
+            status: 'success',
+            isClosable: true,
+          })
+          setIsFeedbackSubmitted(true)
+        },
       })
-      setIsFeedbackSubmitted(true)
     },
-    [toast],
+    [submitFormFeedbackMutation, toast],
   )
 
   if (!form || !submissionData) return null
@@ -31,6 +37,7 @@ export const FormEndPageContainer = (): JSX.Element | null => {
   return (
     <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
       <FormEndPage
+        colorTheme={form.startPage.colorTheme}
         submissionData={submissionData}
         formTitle={form.title}
         endPage={form.endPage}

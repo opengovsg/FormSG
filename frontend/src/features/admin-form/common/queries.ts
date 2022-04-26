@@ -1,27 +1,32 @@
-import { QueryObserverOptions, useQuery, UseQueryResult } from 'react-query'
+import { useQuery, UseQueryOptions, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { AdminFormDto } from '~shared/types/form/form'
+import { AdminFormDto, FormPermissionsDto } from '~shared/types/form/form'
 
 import { ApiError } from '~typings/core'
 
-import { getAdminFormView, getFreeSmsQuota } from './AdminViewFormService'
+import {
+  getAdminFormView,
+  getFormCollaborators,
+  getFreeSmsQuota,
+} from './AdminViewFormService'
 
 export const adminFormKeys = {
   base: ['adminForm'] as const,
   id: (id: string) => ['adminForm', id] as const,
   freeSmsCount: (id: string) =>
     [...adminFormKeys.id(id), 'freeSmsCount'] as const,
+  collaborators: (id: string) =>
+    [...adminFormKeys.id(id), 'collaborators'] as const,
 }
 
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
 export const useAdminForm = (
-  props?: QueryObserverOptions<
+  props?: UseQueryOptions<
     AdminFormDto,
     ApiError,
-    AdminFormDto,
     AdminFormDto,
     ReturnType<typeof adminFormKeys.id>
   >,
@@ -42,5 +47,23 @@ export const useFreeSmsQuota = () => {
 
   return useQuery(adminFormKeys.freeSmsCount(formId), () =>
     getFreeSmsQuota(formId),
+  )
+}
+
+export const useAdminFormCollaborators = (
+  props?: UseQueryOptions<
+    FormPermissionsDto,
+    ApiError,
+    FormPermissionsDto,
+    ReturnType<typeof adminFormKeys.collaborators>
+  >,
+): UseQueryResult<FormPermissionsDto, ApiError> => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  return useQuery(
+    adminFormKeys.collaborators(formId),
+    () => getFormCollaborators(formId),
+    { ...props },
   )
 }

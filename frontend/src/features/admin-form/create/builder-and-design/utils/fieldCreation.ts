@@ -21,7 +21,8 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
     case BasicField.YesNo:
     case BasicField.Nric:
     case BasicField.Uen:
-    case BasicField.Section: {
+    case BasicField.Section:
+    case BasicField.Statement: {
       return {
         fieldType,
         ...baseMeta,
@@ -38,6 +39,40 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         validateByValue: false,
         fieldOptions: ['Option 1'],
         othersRadioButton: false,
+      }
+    }
+    case BasicField.Mobile: {
+      return {
+        fieldType,
+        ...baseMeta,
+        isVerifiable: false,
+        allowIntlNumbers: false,
+      }
+    }
+    case BasicField.Number: {
+      return {
+        fieldType,
+        ...baseMeta,
+        ValidationOptions: {
+          selectedValidation: null,
+          customVal: null,
+        },
+      }
+    }
+    case BasicField.Email: {
+      return {
+        fieldType,
+        ...baseMeta,
+        isVerifiable: false,
+        hasAllowedEmailDomains: false,
+        allowedEmailDomains: [],
+        autoReplyOptions: {
+          hasAutoReply: false,
+          autoReplySubject: '',
+          autoReplyMessage: '',
+          autoReplySender: '',
+          includeFormSummary: false,
+        },
       }
     }
     case BasicField.Radio: {

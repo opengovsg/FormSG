@@ -45,11 +45,11 @@ const transformRadioFieldToEditForm = (
 }
 
 const transformRadioEditFormToField = (
-  form: EditRadioInputs,
+  inputs: EditRadioInputs,
   originalField: RadioFieldBase,
 ): RadioFieldBase => {
-  return extend({}, originalField, form, {
-    fieldOptions: SPLIT_TEXTAREA_TRANSFORM.output(form.fieldOptionsString),
+  return extend({}, originalField, inputs, {
+    fieldOptions: SPLIT_TEXTAREA_TRANSFORM.output(inputs.fieldOptionsString),
   })
 }
 

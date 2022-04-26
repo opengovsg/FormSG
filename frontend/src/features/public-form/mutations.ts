@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from 'react-query'
 
-import { FormAuthType } from '~shared/types/form'
+import { FormAuthType, SubmitFormFeedbackBodyDto } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 
@@ -9,6 +9,7 @@ import {
   logoutPublicForm,
   SubmitEmailFormArgs,
   submitEmailModeForm,
+  submitFormFeedback,
   SubmitStorageFormArgs,
   submitStorageModeForm,
 } from './PublicFormService'
@@ -66,5 +67,13 @@ export const usePublicFormMutations = (formId: string) => {
     },
   )
 
-  return { submitEmailModeFormMutation, submitStorageModeFormMutation }
+  const submitFormFeedbackMutation = useMutation(
+    (args: SubmitFormFeedbackBodyDto) => submitFormFeedback(formId, args),
+  )
+
+  return {
+    submitEmailModeFormMutation,
+    submitStorageModeFormMutation,
+    submitFormFeedbackMutation,
+  }
 }

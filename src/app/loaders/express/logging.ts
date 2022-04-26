@@ -14,6 +14,12 @@ type LogMeta = {
   contentLength?: string
   transactionId?: string
   trace?: string
+  reactMigration?: {
+    respRolloutAuth: number
+    respRolloutNoAuth: number
+    adminCookie: string | undefined
+    respCookie: string | undefined
+  }
 }
 
 const loggingMiddleware = () => {
@@ -61,6 +67,20 @@ const loggingMiddleware = () => {
       if (transactionId) {
         meta.transactionId = transactionId
       }
+
+      // Temporary: cookies are blacklisted, but we to track the state of the rollout for this particular request
+      if (
+        req.cookies?.[config.reactMigration.adminCookieName] ||
+        req.cookies?.[config.reactMigration.respondentCookieName]
+      ) {
+        meta.reactMigration = {
+          respRolloutAuth: config.reactMigration.respondentRolloutAuth,
+          respRolloutNoAuth: config.reactMigration.respondentRolloutNoAuth,
+          adminCookie: req.cookies?.[config.reactMigration.adminCookieName],
+          respCookie: req.cookies?.[config.reactMigration.respondentCookieName],
+        }
+      }
+
       return meta
     },
     headerBlacklist: ['cookie'],

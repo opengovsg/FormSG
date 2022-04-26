@@ -7,7 +7,6 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { useKey } from 'react-use'
 import {
   addMonths,
   differenceInCalendarMonths,
@@ -16,6 +15,9 @@ import {
 } from 'date-fns'
 import { Props as DayzedProps, RenderProps, useDayzed } from 'dayzed'
 import { inRange } from 'lodash'
+import { useKey } from 'rooks'
+
+import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import { DatePickerProps } from '../DatePicker'
 import {
@@ -64,6 +66,10 @@ type PassthroughProps = {
    * Date currently being hovered, if any.
    */
   hoveredDate?: Date
+  /**
+   * Color scheme of date input
+   */
+  colorScheme?: ThemeColorScheme
 }
 export type UseProvideCalendarProps = Pick<DayzedProps, 'monthsToDisplay'> &
   PassthroughProps
@@ -122,6 +128,7 @@ const useProvideCalendar = ({
   onMouseLeaveCalendar,
   isDateInRange,
   hoveredDate,
+  colorScheme = 'primary',
 }: UseProvideCalendarProps) => {
   // Ensure that calculations are always made based on date of initial render,
   // so component state doesn't suddenly jump at midnight
@@ -223,7 +230,7 @@ const useProvideCalendar = ({
     },
     [updateMonthYear, uuid],
   )
-  useKey((e) => ARROW_KEY_NAMES.includes(e.key), handleArrowKey)
+  useKey(ARROW_KEY_NAMES, handleArrowKey)
 
   const handleDateSelected = useCallback(
     (d: Date) => {
@@ -293,5 +300,6 @@ const useProvideCalendar = ({
     onMouseLeaveCalendar,
     isDateInRange,
     hoveredDate,
+    colorScheme,
   }
 }

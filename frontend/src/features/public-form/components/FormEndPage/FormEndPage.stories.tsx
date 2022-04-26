@@ -1,5 +1,7 @@
 import { Meta, Story } from '@storybook/react'
 
+import { FormColorTheme } from '~shared/types'
+
 import { getMobileViewParameters } from '~utils/storybook'
 
 import { FormEndPage, FormEndPageProps } from './FormEndPage'
@@ -31,6 +33,36 @@ Default.args = {
   },
   formTitle: 'Test Form',
   handleSubmitFeedback: (inputs) => console.log(inputs),
+}
+
+export const ColorThemeGreen = Template.bind({})
+ColorThemeGreen.args = {
+  ...Default.args,
+  colorTheme: FormColorTheme.Green,
+}
+
+export const ColorThemeGrey = Template.bind({})
+ColorThemeGrey.args = {
+  ...Default.args,
+  colorTheme: FormColorTheme.Grey,
+}
+
+export const ColorThemeBrown = Template.bind({})
+ColorThemeBrown.args = {
+  ...Default.args,
+  colorTheme: FormColorTheme.Brown,
+}
+
+export const ColorThemeRed = Template.bind({})
+ColorThemeRed.args = {
+  ...Default.args,
+  colorTheme: FormColorTheme.Red,
+}
+
+export const ColorThemeOrange = Template.bind({})
+ColorThemeOrange.args = {
+  ...Default.args,
+  colorTheme: FormColorTheme.Orange,
 }
 
 export const FeedbackSubmitted = Template.bind({})

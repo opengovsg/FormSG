@@ -1,6 +1,6 @@
 import { Container, Flex, Stack, StackDivider } from '@chakra-ui/react'
 
-import { FormDto } from '~shared/types/form'
+import { FormColorTheme, FormDto } from '~shared/types/form'
 
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
@@ -15,11 +15,13 @@ export interface FormEndPageProps {
   submissionData: SubmissionData
   handleSubmitFeedback: (inputs: FeedbackFormInput) => void
   isFeedbackSubmitted: boolean
+  colorTheme: FormColorTheme
 }
 
 export const FormEndPage = ({
   handleSubmitFeedback,
   isFeedbackSubmitted,
+  colorTheme,
   ...endPageProps
 }: FormEndPageProps): JSX.Element => {
   return (
@@ -34,9 +36,12 @@ export const FormEndPage = ({
           w="100%"
           divider={<StackDivider />}
         >
-          <EndPageBlock {...endPageProps} />
+          <EndPageBlock {...endPageProps} colorTheme={colorTheme} />
           {isFeedbackSubmitted ? null : (
-            <FeedbackBlock onSubmit={handleSubmitFeedback} />
+            <FeedbackBlock
+              colorTheme={colorTheme}
+              onSubmit={handleSubmitFeedback}
+            />
           )}
         </Stack>
       </Flex>

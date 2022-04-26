@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
+import { FormColorTheme } from '~shared/types'
+
 import { createDropdownValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
 
@@ -14,7 +16,10 @@ export interface DropdownFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const DropdownField = ({ schema }: DropdownFieldProps): JSX.Element => {
+export const DropdownField = ({
+  schema,
+  colorTheme = FormColorTheme.Blue,
+}: DropdownFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createDropdownValidationRules(schema),
     [schema],
@@ -30,7 +35,11 @@ export const DropdownField = ({ schema }: DropdownFieldProps): JSX.Element => {
         name={schema._id}
         defaultValue=""
         render={({ field }) => (
-          <SingleSelect items={schema.fieldOptions} {...field} />
+          <SingleSelect
+            colorScheme={`theme-${colorTheme}`}
+            items={schema.fieldOptions}
+            {...field}
+          />
         )}
       />
     </FieldContainer>

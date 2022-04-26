@@ -22,6 +22,7 @@ export type ThemeColorScheme =
 export type FieldColorScheme = Extract<
   ThemeColorScheme,
   | 'primary'
+  | 'theme-blue'
   | 'theme-green'
   | 'theme-teal'
   | 'theme-purple'

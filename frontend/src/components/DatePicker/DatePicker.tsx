@@ -6,6 +6,7 @@ import {
 } from '@chakra-ui/react'
 
 import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
+import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import {
   CalendarPanel,
@@ -27,11 +28,15 @@ export interface DatePickerProps {
    * unavailable.
    */
   isDateUnavailable?: (d: Date) => boolean
+  /**
+   * Color scheme for date picker component
+   */
+  colorScheme?: ThemeColorScheme
 }
 
 export const DatePicker = forwardRef<DatePickerProps, 'input'>(
   ({ date, ...props }, initialFocusRef) => {
-    const styles = useMultiStyleConfig(DATE_INPUT_THEME_KEY, {})
+    const styles = useMultiStyleConfig(DATE_INPUT_THEME_KEY, props)
 
     return (
       <CalendarProvider {...props} selectedDates={date}>

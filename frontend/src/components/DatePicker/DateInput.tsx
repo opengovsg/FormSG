@@ -23,8 +23,8 @@ import Input, { InputProps } from '../Input'
 import { DatePicker, DatePickerProps } from './DatePicker'
 
 export interface DateInputProps
-  extends Omit<InputProps, 'value' | 'onChange'>,
-    Pick<DatePickerProps, 'isDateUnavailable'> {
+  extends Omit<InputProps, 'value' | 'onChange' | 'colorScheme'>,
+    Pick<DatePickerProps, 'isDateUnavailable' | 'colorScheme'> {
   name: string
   value?: string
   onChange?: (val: string) => void
@@ -44,6 +44,7 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
       isReadOnly: isReadOnlyProp,
       isRequired: isRequiredProp,
       isInvalid: isInvalidProp,
+      colorScheme,
       ...props
     },
     ref,
@@ -118,6 +119,7 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
               </PopoverAnchor>
               <PopoverTrigger>
                 <IconButton
+                  colorScheme={colorScheme}
                   aria-label={calendarButtonAria}
                   icon={<BxCalendar />}
                   variant="inputAttached"
@@ -152,6 +154,7 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                   </PopoverHeader>
                   <PopoverBody p={0}>
                     <DateInput.DatePicker
+                      colorScheme={colorScheme}
                       date={datePickerDate}
                       isDateUnavailable={isDateUnavailable}
                       onSelectDate={handleDatepickerSelection}
