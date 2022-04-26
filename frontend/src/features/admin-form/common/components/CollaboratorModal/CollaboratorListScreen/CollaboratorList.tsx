@@ -11,6 +11,7 @@ import {
 
 import { FormPermission } from '~shared/types/form/form'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 
 import { useMutateCollaborators } from '../../../mutations'
@@ -59,6 +60,7 @@ const CollaboratorRow = ({
 }
 
 export const CollaboratorList = (): JSX.Element => {
+  const isMobile = useIsMobile()
   // Admin form data required for checking for duplicate emails.
   const { handleForwardToTransferOwnership } = useCollaboratorWizard()
   const { collaborators, user, isFormAdmin, form, isLoading } =
@@ -165,7 +167,14 @@ export const CollaboratorList = (): JSX.Element => {
   }
 
   return (
-    <Stack spacing={0} align="flex-start" flex={1} divider={<StackDivider />}>
+    <Stack
+      spacing={0}
+      align="flex-start"
+      flex={1}
+      divider={isMobile ? undefined : <StackDivider />}
+      mt="2.5rem"
+      borderY={{ md: '1px solid var(--chakra-colors-neutral-300)' }}
+    >
       {ownerRow}
       {list.map((row, index) => (
         <CollaboratorRow
