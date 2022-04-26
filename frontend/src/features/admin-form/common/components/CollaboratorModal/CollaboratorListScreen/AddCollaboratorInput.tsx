@@ -1,10 +1,10 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { FormPermission } from '~shared/types/form/form'
+import { FormPermission } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
@@ -12,30 +12,24 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
-import { useMutateCollaborators } from '../../mutations'
-import { useAdminForm, useAdminFormCollaborators } from '../../queries'
+import { useMutateCollaborators } from '~features/admin-form/common/mutations'
+
+import { useAdminFormCollaborators } from '../../../queries'
+import { useCollaboratorWizard } from '../CollaboratorWizardContext'
+import { DropdownRole } from '../constants'
+import { roleToPermission } from '../utils'
 
 import { PermissionDropdown } from './PermissionDropdown'
-import { roleToPermission } from './utils'
 
 export type AddCollaboratorInputs = {
   email: string
   role: DropdownRole
 }
 
-export enum DropdownRole {
-  Admin = 'Admin',
-  Editor = 'Editor',
-  Viewer = 'Viewer',
-}
-
 const useAddCollaboratorInput = () => {
-  // Admin form data required for checking for duplicate emails.
-  const { data: form } = useAdminForm()
-  const { isLoading, data: collaborators } = useAdminFormCollaborators({
-    enabled: !!form,
-  })
-
+  const { handleForwardToTransferOwnership } = useCollaboratorWizard()
+  const { isLoading, collaborators, form, isFormAdmin } =
+    useAdminFormCollaborators()
   const { mutateAddCollaborator } = useMutateCollaborators()
 
   const formMethods = useForm<AddCollaboratorInputs>({
@@ -45,7 +39,39 @@ const useAddCollaboratorInput = () => {
     },
   })
 
-  const { handleSubmit, reset } = formMethods
+  const { watch, handleSubmit, reset } = formMethods
+
+  const roleValue = watch('role')
+
+  const handleAddCollaborator = useCallback(
+    (inputs: AddCollaboratorInputs) => {
+      if (!form?.permissionList) return
+
+      const newPermission: FormPermission = {
+        ...roleToPermission(inputs.role),
+        email: inputs.email,
+      }
+      return mutateAddCollaborator.mutate(
+        {
+          newPermission,
+          currentPermissions: form.permissionList,
+        },
+        {
+          onSuccess: () => reset(),
+        },
+      )
+    },
+    [form?.permissionList, mutateAddCollaborator, reset],
+  )
+
+  const handleInputSubmission = handleSubmit((inputs) => {
+    // Handle transfer form ownership instead of granting admin rights.
+    if (inputs.role === DropdownRole.Owner) {
+      return handleForwardToTransferOwnership(inputs.email)
+    }
+
+    return handleAddCollaborator(inputs)
+  })
 
   const validationRules: RegisterOptions = useMemo(() => {
     return {
@@ -61,7 +87,7 @@ const useAddCollaboratorInput = () => {
           'This user is an existing collaborator. Edit role below.',
         ownerEmail: (value: string) =>
           !value ||
-          form?.admin.email.toLowerCase() !== value.toLowerCase() ||
+          form?.admin.email?.toLowerCase() !== value.toLowerCase() ||
           'You cannot add the form owner as a collaborator',
       },
     }
@@ -69,30 +95,20 @@ const useAddCollaboratorInput = () => {
 
   const isMobile = useIsMobile()
 
-  const handleAddCollaborator = handleSubmit((inputs) => {
-    if (!form?.permissionList) return
-    const newPermission: FormPermission = {
-      ...roleToPermission(inputs.role),
-      email: inputs.email,
-    }
-    return mutateAddCollaborator.mutate(
-      {
-        newPermission,
-        currentPermissions: form.permissionList,
-      },
-      {
-        onSuccess: () => reset(),
-      },
-    )
-  })
+  const isTransferOwnershipSelected = useMemo(
+    () => roleValue === DropdownRole.Owner,
+    [roleValue],
+  )
 
   return {
     isQueryLoading: isLoading,
     isMutationLoading: mutateAddCollaborator.isLoading,
+    isTransferOwnershipSelected,
+    isFormAdmin,
     formMethods,
     isFullWidth: isMobile,
     validationRules,
-    handleAddCollaborator,
+    handleInputSubmission,
   }
 }
 
@@ -105,13 +121,15 @@ export const AddCollaboratorInput = (): JSX.Element => {
     },
     isFullWidth,
     isQueryLoading,
+    isTransferOwnershipSelected,
+    isFormAdmin,
     isMutationLoading,
     validationRules,
-    handleAddCollaborator,
+    handleInputSubmission,
   } = useAddCollaboratorInput()
 
   return (
-    <form noValidate onSubmit={handleAddCollaborator}>
+    <form noValidate onSubmit={handleInputSubmission}>
       <FormControl isInvalid={!isEmpty(errors)} isReadOnly={isMutationLoading}>
         <FormLabel
           isRequired
@@ -132,6 +150,7 @@ export const AddCollaboratorInput = (): JSX.Element => {
               control={control}
               render={({ field: { value, onChange } }) => (
                 <PermissionDropdown
+                  allowTransferOwnership={isFormAdmin}
                   isLoading={isQueryLoading || isMutationLoading}
                   value={value}
                   onChange={onChange}
@@ -145,13 +164,16 @@ export const AddCollaboratorInput = (): JSX.Element => {
         </FormErrorMessage>
       </FormControl>
       <Button
+        colorScheme={isTransferOwnershipSelected ? 'danger' : 'primary'}
         isDisabled={isQueryLoading}
         isLoading={isMutationLoading}
         isFullWidth={isFullWidth}
         mt="1rem"
         type="submit"
       >
-        Add collaborator
+        {isTransferOwnershipSelected
+          ? 'Transfer form ownership'
+          : 'Add collaborator'}
       </Button>
     </form>
   )

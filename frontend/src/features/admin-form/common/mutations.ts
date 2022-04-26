@@ -11,8 +11,21 @@ import {
 import { useToast } from '~hooks/useToast'
 
 import { permissionsToRole } from './components/CollaboratorModal/utils'
-import { updateFormCollaborators } from './AdminViewFormService'
+import {
+  transferFormOwner,
+  updateFormCollaborators,
+} from './AdminViewFormService'
 import { adminFormKeys } from './queries'
+
+export type MutateAddCollaboratorArgs = {
+  newPermission: FormPermission
+  currentPermissions: FormPermissionsDto
+}
+
+export type MutateRemoveCollaboratorArgs = {
+  permissionToRemove: FormPermission
+  currentPermissions: FormPermissionsDto
+}
 
 export const useMutateCollaborators = () => {
   const { formId } = useParams()
@@ -102,13 +115,7 @@ export const useMutateCollaborators = () => {
   )
 
   const mutateAddCollaborator = useMutation(
-    ({
-      newPermission,
-      currentPermissions,
-    }: {
-      newPermission: FormPermission
-      currentPermissions: FormPermissionsDto
-    }) => {
+    ({ newPermission, currentPermissions }: MutateAddCollaboratorArgs) => {
       const rebuiltPermissions = [newPermission].concat(currentPermissions)
       return updateFormCollaborators(formId, rebuiltPermissions)
     },
@@ -127,10 +134,7 @@ export const useMutateCollaborators = () => {
     ({
       permissionToRemove,
       currentPermissions,
-    }: {
-      permissionToRemove: FormPermission
-      currentPermissions: FormPermissionsDto
-    }) => {
+    }: MutateRemoveCollaboratorArgs) => {
       const filteredList = currentPermissions.filter(
         (c) => c.email !== permissionToRemove.email,
       )
@@ -146,9 +150,34 @@ export const useMutateCollaborators = () => {
     },
   )
 
+  const mutateTransferFormOwnership = useMutation(
+    (newOwnerEmail: string) => transferFormOwner(formId, newOwnerEmail),
+    {
+      onSuccess: (newData) => {
+        toast.closeAll()
+        // Show toast on success.
+        toast({
+          description: `${newData.form.admin.email} is now the owner of this form`,
+        })
+
+        // Update cached data.
+        queryClient.setQueryData(
+          adminFormKeys.collaborators(formId),
+          newData.form.permissionList,
+        )
+        queryClient.setQueryData<AdminFormDto | undefined>(
+          adminFormKeys.id(formId),
+          newData.form,
+        )
+      },
+      onError: handleError,
+    },
+  )
+
   return {
     mutateAddCollaborator,
     mutateUpdateCollaborator,
     mutateRemoveCollaborator,
+    mutateTransferFormOwnership,
   }
 }

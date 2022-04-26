@@ -1,14 +1,15 @@
+import { useMemo } from 'react'
 import { Text } from '@chakra-ui/react'
 
 import Menu from '~components/Menu'
 
-import { DropdownRole } from './AddCollaboratorInput'
+import { DropdownRole } from '../constants'
 
 export interface PermissionDropdownProps {
   value: DropdownRole
   onChange: (role: DropdownRole) => void
   isLoading: boolean
-
+  allowTransferOwnership: boolean
   buttonVariant?: 'outline' | 'clear'
 }
 
@@ -16,8 +17,16 @@ export const PermissionDropdown = ({
   value,
   onChange,
   isLoading,
+  allowTransferOwnership,
   buttonVariant = 'outline',
 }: PermissionDropdownProps): JSX.Element => {
+  const availableRoles = useMemo(() => {
+    return Object.values(DropdownRole).filter((role) => {
+      // Either not owner role, or owner role and allowTransferOwnership is true.
+      return role !== DropdownRole.Owner || allowTransferOwnership
+    })
+  }, [allowTransferOwnership])
+
   return (
     <Menu>
       {({ isOpen }) => (
@@ -33,7 +42,7 @@ export const PermissionDropdown = ({
             {value}
           </Menu.Button>
           <Menu.List defaultValue={value}>
-            {Object.values(DropdownRole).map((role) => (
+            {availableRoles.map((role) => (
               <Menu.Item key={role} onClick={() => onChange(role)}>
                 <Text
                   // Styling to hint to user the current active choice

@@ -63,3 +63,19 @@ export const updateFormCollaborators = async (
     collaborators,
   ).then(({ data }) => data)
 }
+
+/**
+ * Transfers ownership of form to another user with the given email.
+ * @param formId formId of the form to transfer ownership for
+ * @param newOwnerEmail Email of new owner
+ * @returns Updated form with new ownership.
+ */
+export const transferFormOwner = async (
+  formId: string,
+  newOwnerEmail: string,
+): Promise<AdminFormViewDto> => {
+  return ApiService.post<AdminFormViewDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/transfer-owner`,
+    { email: newOwnerEmail },
+  ).then(({ data }) => data)
+}

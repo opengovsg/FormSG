@@ -1,9 +1,12 @@
+import { useMemo } from 'react'
 import { useQuery, UseQueryOptions, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { AdminFormDto, FormPermissionsDto } from '~shared/types/form/form'
+import { AdminFormDto } from '~shared/types/form/form'
 
 import { ApiError } from '~typings/core'
+
+import { useUser } from '~features/user/queries'
 
 import {
   getAdminFormView,
@@ -50,20 +53,29 @@ export const useFreeSmsQuota = () => {
   )
 }
 
-export const useAdminFormCollaborators = (
-  props?: UseQueryOptions<
-    FormPermissionsDto,
-    ApiError,
-    FormPermissionsDto,
-    ReturnType<typeof adminFormKeys.collaborators>
-  >,
-): UseQueryResult<FormPermissionsDto, ApiError> => {
+export const useAdminFormCollaborators = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  return useQuery(
+  const { user, isLoading: isUserLoading } = useUser()
+  const { data: form, isLoading: isAdminFormLoading } = useAdminForm()
+
+  const { data: collaborators, isLoading: isCollabLoading } = useQuery(
     adminFormKeys.collaborators(formId),
     () => getFormCollaborators(formId),
-    { ...props },
+    { enabled: !!form },
   )
+
+  const isFormAdmin = useMemo(
+    () => !!user && !!form && user.email === form.admin.email,
+    [form, user],
+  )
+
+  return {
+    user,
+    form,
+    collaborators,
+    isLoading: isCollabLoading || isAdminFormLoading || isUserLoading,
+    isFormAdmin,
+  }
 }

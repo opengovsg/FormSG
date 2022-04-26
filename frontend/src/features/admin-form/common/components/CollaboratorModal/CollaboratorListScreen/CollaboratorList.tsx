@@ -11,16 +11,16 @@ import {
 
 import { FormPermission } from '~shared/types/form/form'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 
-import { useUser } from '~features/user/queries'
+import { useMutateCollaborators } from '../../../mutations'
+import { useAdminFormCollaborators } from '../../../queries'
+import { useCollaboratorWizard } from '../CollaboratorWizardContext'
+import { DropdownRole } from '../constants'
+import { permissionsToRole, roleToPermission } from '../utils'
 
-import { useMutateCollaborators } from '../../mutations'
-import { useAdminForm, useAdminFormCollaborators } from '../../queries'
-
-import { DropdownRole } from './AddCollaboratorInput'
 import { PermissionDropdown } from './PermissionDropdown'
-import { permissionsToRole, roleToPermission } from './utils'
 
 type CollaboratorRowMeta = {
   email: string
@@ -51,7 +51,7 @@ const CollaboratorRow = ({
       direction={{ base: 'column', md: 'row' }}
       justify="space-between"
       align={{ base: 'flex-start', md: 'center' }}
-      spacing={{ base: '0.75rem', md: '0.5rem' }}
+      spacing={{ base: '0.75rem', md: '2rem' }}
       {...props}
     >
       {children}
@@ -60,15 +60,20 @@ const CollaboratorRow = ({
 }
 
 export const CollaboratorList = (): JSX.Element => {
+  const isMobile = useIsMobile()
   // Admin form data required for checking for duplicate emails.
-  const { data: form } = useAdminForm()
-  const { user } = useUser()
-  const { data: collaborators } = useAdminFormCollaborators({
-    enabled: !!form,
-  })
+  const { handleForwardToTransferOwnership } = useCollaboratorWizard()
+  const { collaborators, user, isFormAdmin, form, isLoading } =
+    useAdminFormCollaborators()
 
   const { mutateUpdateCollaborator, mutateRemoveCollaborator } =
     useMutateCollaborators()
+
+  const areMutationsLoading = useMemo(
+    () =>
+      mutateRemoveCollaborator.isLoading || mutateUpdateCollaborator.isLoading,
+    [mutateRemoveCollaborator.isLoading, mutateUpdateCollaborator.isLoading],
+  )
 
   const createCurrentUserHint = useCallback(
     (row: Pick<CollaboratorRowMeta, 'email'>) => {
@@ -93,17 +98,18 @@ export const CollaboratorList = (): JSX.Element => {
   const ownerRow = useMemo(() => {
     return (
       <CollaboratorRow bg={{ base: 'primary.100', md: 'white' }}>
-        <Skeleton isLoaded={!!collaborators} flex={1}>
+        <Skeleton isLoaded={!isLoading} flex={1}>
           <Stack
             direction="row"
-            align="baseline" // Required to allow flex to shrink
+            align="baseline"
+            // Required to allow flex to shrink
             minW={0}
           >
             <CollaboratorText>{form?.admin.email}</CollaboratorText>
             {createCurrentUserHint({ email: form?.admin.email ?? '' })}
           </Stack>
         </Skeleton>
-        <Skeleton isLoaded={!!collaborators}>
+        <Skeleton isLoaded={!isLoading}>
           <Stack
             direction="row"
             justify="space-between"
@@ -118,14 +124,24 @@ export const CollaboratorList = (): JSX.Element => {
         </Skeleton>
       </CollaboratorRow>
     )
-  }, [collaborators, form?.admin.email, createCurrentUserHint])
+  }, [
+    isLoading,
+    form?.admin.email,
+    createCurrentUserHint,
+    collaborators?.length,
+  ])
 
   const handleUpdateRole =
     (row: typeof list[number]) => (newRole: DropdownRole) => {
       // Should not happen since this function cannot be invoked without the
       // collaborators being loaded, but guarding just in case.
       // Or when role to update is already the current role.
-      if (!collaborators || row.role === newRole) return
+      if (!collaborators || areMutationsLoading || row.role === newRole) return
+
+      if (newRole === DropdownRole.Owner) {
+        return handleForwardToTransferOwnership(row.email)
+      }
+
       const permissionToUpdate: FormPermission = {
         email: row.email,
         ...roleToPermission(newRole),
@@ -137,7 +153,7 @@ export const CollaboratorList = (): JSX.Element => {
     }
 
   const handleRemoveCollaborator = (row: typeof list[number]) => () => {
-    if (!collaborators) return
+    if (!collaborators || areMutationsLoading) return
     // May seem redundant since we already have the email, but this may prevent
     // issues arising from desync between `list` and `collaborators`.
     const permissionToRemove: FormPermission = {
@@ -151,7 +167,14 @@ export const CollaboratorList = (): JSX.Element => {
   }
 
   return (
-    <Stack spacing={0} align="flex-start" flex={1} divider={<StackDivider />}>
+    <Stack
+      spacing={0}
+      align="flex-start"
+      flex={1}
+      divider={isMobile ? undefined : <StackDivider />}
+      mt="2.5rem"
+      borderY={{ md: '1px solid var(--chakra-colors-neutral-300)' }}
+    >
       {ownerRow}
       {list.map((row, index) => (
         <CollaboratorRow
@@ -179,10 +202,8 @@ export const CollaboratorList = (): JSX.Element => {
             <PermissionDropdown
               buttonVariant="clear"
               value={row.role}
-              isLoading={
-                mutateUpdateCollaborator.isLoading ||
-                mutateRemoveCollaborator.isLoading
-              }
+              allowTransferOwnership={isFormAdmin}
+              isLoading={areMutationsLoading}
               onChange={handleUpdateRole(row)}
             />
             <IconButton
@@ -192,10 +213,7 @@ export const CollaboratorList = (): JSX.Element => {
                 mutateRemoveCollaborator.variables?.permissionToRemove.email ===
                   row.email
               }
-              isDisabled={
-                mutateUpdateCollaborator.isLoading ||
-                mutateRemoveCollaborator.isLoading
-              }
+              isDisabled={areMutationsLoading}
               variant="clear"
               aria-label="Remove collaborator"
               colorScheme="danger"
