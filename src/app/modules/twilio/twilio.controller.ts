@@ -56,14 +56,14 @@ export const twilioSmsUpdates: ControllerHandler<
    */
 
   // should we add
-  const tags = {
+  const ddTags = {
     accountsid: req.body.AccountSid,
     smsstatus: req.body.SmsStatus,
     errorcode: '0',
   }
 
   if (req.body.ErrorCode || req.body.ErrorMessage) {
-    tags.errorcode = `${req.body.ErrorCode}`
+    ddTags.errorcode = `${req.body.ErrorCode}`
     logger.error({
       message: 'Error occurred when attempting to send SMS on twillio',
       meta: {
@@ -81,7 +81,7 @@ export const twilioSmsUpdates: ControllerHandler<
     })
   }
 
-  ddClient.increment('sms.update', 1, 1, tags)
+  ddClient.increment('sms.update', 1, 1, ddTags)
 
   return res.sendStatus(StatusCodes.OK)
 }
