@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import {
   Column,
   useFlexLayout,
@@ -14,37 +14,34 @@ import { ProcessedFeedbackMeta } from '~shared/types/form'
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 
-type FeedbackColumnData = {
-  index: number
-  date: string
-  feedback: string
-  rating: number
-}
+import { DateCell } from './DateCell'
+
+type FeedbackColumnData = Pick<
+  ProcessedFeedbackMeta,
+  'comment' | 'timestamp' | 'rating'
+>
 
 const FEEDBACK_TABLE_COLUMNS: Column<FeedbackColumnData>[] = [
   {
     Header: '#',
-    accessor: 'index',
-    sortType: 'basic',
+    accessor: (_row, i) => i + 1,
+    sortType: 'number',
     minWidth: 80, // minWidth is only used as a limit for resizing
     width: 80, // width is used for both the flex-basis and flex-grow
     maxWidth: 100, // maxWidth is only used as a limit for resizing
   },
   {
     Header: 'Date',
-    accessor: 'date',
-    sortType: (rowA, rowB, columnId) => {
-      const dateA = new Date(rowA.values[columnId]) //rowA.values[columnId] is a date string
-      const dateB = new Date(rowB.values[columnId])
-      return dateA > dateB ? 1 : -1
-    },
+    accessor: 'timestamp',
+    sortType: 'number',
+    Cell: DateCell,
     minWidth: 120, // minWidth is only used as a limit for resizing
     width: 120, // width is used for both the flex-basis and flex-grow
     maxWidth: 240, // maxWidth is only used as a limit for resizing
   },
   {
     Header: 'Feedback',
-    accessor: 'feedback',
+    accessor: 'comment',
     sortType: 'basic',
     minWidth: 200,
     width: 300,
@@ -53,7 +50,7 @@ const FEEDBACK_TABLE_COLUMNS: Column<FeedbackColumnData>[] = [
   {
     Header: 'Rating',
     accessor: 'rating',
-    sortType: 'basic',
+    sortType: 'number',
     minWidth: 90,
     width: 90,
     disableResizing: true,
@@ -67,19 +64,6 @@ export const FeedbackTable = ({
   feedbackData: ProcessedFeedbackMeta[] | undefined
   currentPage: number
 }) => {
-  const data = useMemo(() => {
-    return (
-      feedbackData?.map((feedback) => {
-        return {
-          index: feedback.index,
-          date: feedback.date,
-          feedback: feedback.comment,
-          rating: feedback.rating,
-        }
-      }) ?? []
-    )
-  }, [feedbackData])
-
   const {
     prepareRow,
     getTableProps,
@@ -90,8 +74,17 @@ export const FeedbackTable = ({
   } = useTable<FeedbackColumnData>(
     {
       columns: FEEDBACK_TABLE_COLUMNS,
-      data,
-      initialState: { pageIndex: currentPage, pageSize: 9 },
+      data: feedbackData ?? [],
+      initialState: {
+        pageIndex: currentPage,
+        pageSize: 10,
+        sortBy: [
+          {
+            id: 'timestamp',
+            desc: true,
+          },
+        ],
+      },
     },
     useSortBy,
     usePagination,
