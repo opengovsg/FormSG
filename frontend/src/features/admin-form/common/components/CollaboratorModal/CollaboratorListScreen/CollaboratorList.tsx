@@ -50,7 +50,7 @@ const CollaboratorRow = ({
       direction={{ base: 'column', md: 'row' }}
       justify="space-between"
       align={{ base: 'flex-start', md: 'center' }}
-      spacing={{ base: '0.75rem', md: '0.5rem' }}
+      spacing={{ base: '0.75rem', md: '2rem' }}
       {...props}
     >
       {children}
