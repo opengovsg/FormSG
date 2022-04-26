@@ -71,11 +71,22 @@ export const useAdminFormCollaborators = () => {
     [form, user],
   )
 
+  const canEditCollaborators = useMemo(() => {
+    if (!form || !user) return false
+    return (
+      user.email === form.admin.email ||
+      form.permissionList.some(
+        (perms) => perms.write && perms.email === user.email,
+      )
+    )
+  }, [form, user])
+
   return {
     user,
     form,
     collaborators,
     isLoading: isCollabLoading || isAdminFormLoading || isUserLoading,
     isFormAdmin,
+    canEditCollaborators,
   }
 }
