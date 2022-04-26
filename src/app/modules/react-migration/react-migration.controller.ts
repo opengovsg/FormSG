@@ -14,13 +14,13 @@ export type SetEnvironmentParams = {
 }
 
 export const RESPONDENT_COOKIE_OPTIONS = {
-  httpOnly: true,
+  httpOnly: false,
   sameSite: 'strict' as const,
   secure: !config.isDev,
 }
 
 export const ADMIN_COOKIE_OPTIONS = {
-  httpOnly: true,
+  httpOnly: false,
   maxAge: 31 * 2 * 24 * 60 * 60, // 2 months
   sameSite: 'strict' as const,
   secure: !config.isDev,

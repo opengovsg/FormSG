@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { MongoError } from 'mongodb'
-import { Error as MongooseError } from 'mongoose'
+import { Error as MongooseError, mongo as mongodb } from 'mongoose'
 
 import {
   formatErrorRecoveryMessage,
   getMongoErrorMessage,
 } from 'src/app/utils/handle-mongo-error'
+
+const { MongoError } = mongodb
 
 describe('handleMongoError', () => {
   describe('getMongoErrorMessage', () => {
