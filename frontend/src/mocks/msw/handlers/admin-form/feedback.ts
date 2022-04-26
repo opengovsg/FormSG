@@ -13,7 +13,7 @@ const generateFormFeedbackMeta = (): FormFeedbackMetaDto => {
         date: '2 Apr 2021',
         dateShort: '2 Apr',
         index: 1,
-        timestamp: 1586291200000,
+        timestamp: 1648864683,
       },
       {
         rating: 3,
@@ -21,7 +21,7 @@ const generateFormFeedbackMeta = (): FormFeedbackMetaDto => {
         date: '1 Apr 2021',
         dateShort: '1 Apr',
         index: 2,
-        timestamp: 1586291200000,
+        timestamp: 1648778283,
       },
       {
         rating: 4,
@@ -29,7 +29,7 @@ const generateFormFeedbackMeta = (): FormFeedbackMetaDto => {
         date: '1 Apr 2021',
         dateShort: '1 Apr',
         index: 3,
-        timestamp: 1586291200000,
+        timestamp: 1648789083,
       },
     ],
   }
