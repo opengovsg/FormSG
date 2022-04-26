@@ -11,7 +11,7 @@ import { DefaultRequestReturn, WithDelayProps } from './types'
 
 export const MOCK_USER = {
   _id: 'mock_id' as UserId,
-  email: 'test@example.com',
+  email: 'admin@example.com',
   agency: {
     emailDomain: ['example.com'],
     _id: '59bb6d4ef06ef18400109733' as AgencyId,

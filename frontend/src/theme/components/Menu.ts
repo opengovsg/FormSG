@@ -11,11 +11,9 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       textAlign: 'left',
       justifyContent: 'space-between',
       _hover: {
-        bg: 'white',
         color: `${c}.900`,
       },
       _active: {
-        bg: 'white',
         color: `${c}.500`,
         _hover: {
           color: `${c}.900`,
