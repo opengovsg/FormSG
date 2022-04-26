@@ -7,13 +7,14 @@ import Pagination from '~/components/Pagination'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
+import { useFormFeedback } from '../queries'
+
 import { FeedbackDownloadButton } from './FeedbackDownloadButton'
 import {
   FeedbackPageSkeleton,
   FeedbackPageSkeletonMobile,
 } from './FeedbackSkeleton'
 import { FeedbackTable } from './FeedbackTable'
-import { useFormFeedback } from './queries'
 
 export const FeedbackPage = (): JSX.Element => {
   const { data: { average, count, feedback } = {}, isLoading } =
