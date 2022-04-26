@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-import { FormDto } from '~shared/types/form'
+import { FormColorTheme, FormDto } from '~shared/types/form'
 
 import Button from '~components/Button'
 
@@ -23,12 +23,14 @@ export interface EndPageBlockProps {
   formTitle: string
   endPage: FormDto['endPage']
   submissionData: SubmissionData
+  colorTheme?: FormColorTheme
 }
 
 export const EndPageBlock = ({
   formTitle,
   endPage,
   submissionData,
+  colorTheme = FormColorTheme.Blue,
 }: EndPageBlockProps): JSX.Element => {
   const prettifiedDateString = useMemo(() => {
     return format(new Date(submissionData.timeInEpochMs), 'dd MMM yyyy, h:mm a')
@@ -74,7 +76,7 @@ export const EndPageBlock = ({
           as="a"
           href={endPage.buttonLink ?? ''}
           variant="solid"
-          colorScheme="primary"
+          colorScheme={`theme-${colorTheme}`}
         >
           {endPage.buttonText}
         </Button>

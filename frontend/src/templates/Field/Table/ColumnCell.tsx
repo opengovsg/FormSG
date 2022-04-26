@@ -4,6 +4,7 @@ import { UseTableCellProps } from 'react-table'
 import { FormControl } from '@chakra-ui/react'
 import { get } from 'lodash'
 
+import { FormColorTheme } from '~shared/types'
 import {
   BasicField,
   Column,
@@ -28,17 +29,20 @@ export interface ColumnCellProps
   extends UseTableCellProps<TableFieldInputs, string> {
   schemaId: string
   columnSchema: ColumnDto
+  colorTheme: FormColorTheme
 }
 
 export interface FieldColumnCellProps<T extends Column = Column> {
   schema: ColumnDto<T>
   /** Represents `{schemaId}.{rowIndex}.{columnId}` */
   inputName: `${string}.${number}.${string}`
+  colorTheme: FormColorTheme
 }
 
 const ShortTextColumnCell = ({
   schema,
   inputName,
+  colorTheme,
 }: FieldColumnCellProps<ShortTextColumnBase>) => {
   const rules = useMemo(() => createTextValidationRules(schema), [schema])
 
@@ -49,7 +53,13 @@ const ShortTextColumnCell = ({
       control={control}
       name={inputName}
       rules={rules}
-      render={({ field }) => <Input aria-labelledby={schema._id} {...field} />}
+      render={({ field }) => (
+        <Input
+          colorScheme={`theme-${colorTheme}`}
+          aria-labelledby={schema._id}
+          {...field}
+        />
+      )}
     />
   )
 }
@@ -57,6 +67,7 @@ const ShortTextColumnCell = ({
 const DropdownColumnCell = ({
   schema,
   inputName,
+  colorTheme,
 }: FieldColumnCellProps<DropdownColumnBase>) => {
   const rules = useMemo(() => createDropdownValidationRules(schema), [schema])
 
@@ -66,7 +77,11 @@ const DropdownColumnCell = ({
       rules={rules}
       defaultValue=""
       render={({ field }) => (
-        <SingleSelect items={schema.fieldOptions} {...field} />
+        <SingleSelect
+          colorScheme={`theme-${colorTheme}`}
+          items={schema.fieldOptions}
+          {...field}
+        />
       )}
     />
   )
@@ -80,6 +95,7 @@ export const ColumnCell = ({
   row,
   column,
   columnSchema,
+  colorTheme,
 }: ColumnCellProps): JSX.Element => {
   const isMobile = useIsMobile()
   const { errors } = useFormState<TableFieldInputs>({ name: schemaId })
@@ -93,16 +109,24 @@ export const ColumnCell = ({
     switch (columnSchema.columnType) {
       case BasicField.ShortText:
         return (
-          <ShortTextColumnCell schema={columnSchema} inputName={inputName} />
+          <ShortTextColumnCell
+            colorTheme={colorTheme}
+            schema={columnSchema}
+            inputName={inputName}
+          />
         )
       case BasicField.Dropdown:
         return (
-          <DropdownColumnCell schema={columnSchema} inputName={inputName} />
+          <DropdownColumnCell
+            colorTheme={colorTheme}
+            schema={columnSchema}
+            inputName={inputName}
+          />
         )
       default:
         return null
     }
-  }, [columnSchema, inputName])
+  }, [colorTheme, columnSchema, inputName])
 
   return (
     <FormControl

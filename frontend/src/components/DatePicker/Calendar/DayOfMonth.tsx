@@ -33,12 +33,7 @@ export interface DayOfMonthProps extends ButtonProps {
 
 export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
   (
-    {
-      dateObj: { date, selected, today },
-      isOutsideCurrMonth,
-      colorScheme = 'primary',
-      ...props
-    },
+    { dateObj: { date, selected, today }, isOutsideCurrMonth, ...props },
     ref,
   ) => {
     const {
@@ -48,6 +43,7 @@ export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
       isDateInRange,
       selectedDates,
       hoveredDate,
+      colorScheme,
     } = useCalendar()
 
     const isAvailable = useMemo(
@@ -72,6 +68,7 @@ export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
       isSelected: selected,
       isToday: today,
       isOutsideCurrMonth,
+      colorScheme,
     })
 
     const buttonBoxBg = useMemo(() => {

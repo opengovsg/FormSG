@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
+import { FormColorTheme } from '~shared/types'
+
 import { createNumberValidationRules } from '~utils/fieldValidation'
 import NumberInput from '~components/NumberInput'
 
@@ -11,7 +13,10 @@ export interface NumberFieldProps extends BaseFieldProps {
   schema: NumberFieldSchema
 }
 
-export const NumberField = ({ schema }: NumberFieldProps): JSX.Element => {
+export const NumberField = ({
+  schema,
+  colorTheme = FormColorTheme.Blue,
+}: NumberFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createNumberValidationRules(schema),
     [schema],
@@ -29,6 +34,7 @@ export const NumberField = ({ schema }: NumberFieldProps): JSX.Element => {
           <NumberInput
             min={0}
             inputMode="numeric"
+            colorScheme={`theme-${colorTheme}`}
             aria-label={schema.title}
             allowMouseWheel
             precision={0}

@@ -27,18 +27,18 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       fontWeight: '400',
       color: 'secondary.700',
       _hover: {
-        bg: 'primary.100',
+        bg: `${c}.100`,
         borderWidth: '0rem',
       },
       _focus: {
-        bg: 'primary.100',
+        bg: `${c}.100`,
         boxShadow: `0 0 0 2px ${getColor(theme, fc)}`,
         _active: {
-          bg: 'primary.200',
+          bg: `${c}.200`,
         },
       },
       _active: {
-        bg: 'primary.200',
+        bg: `${c}.200`,
         fontWeight: 500,
       },
       _disabled: {

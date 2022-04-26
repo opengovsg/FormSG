@@ -6,6 +6,8 @@ import {
 } from '@chakra-ui/react'
 import { useCombobox, UseComboboxProps } from 'downshift'
 
+import { ThemeColorScheme } from '~theme/foundations/colours'
+
 import { useItems } from '../hooks/useItems'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
 import { ComboboxItem } from '../types'
@@ -32,6 +34,8 @@ export interface SingleSelectProviderProps<
     label: string
   }
   children: React.ReactNode
+  /** Color scheme of component */
+  colorScheme?: ThemeColorScheme
 }
 export const SingleSelectProvider = ({
   items: rawItems,
@@ -51,6 +55,7 @@ export const SingleSelectProvider = ({
   isRequired: isRequiredProp,
   children,
   inputAria: inputAriaProp,
+  colorScheme,
   comboboxProps = {},
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
@@ -178,6 +183,7 @@ export const SingleSelectProvider = ({
 
   const styles = useMultiStyleConfig('SingleSelect', {
     isClearable,
+    colorScheme,
   })
 
   const inputAria = useMemo(() => {
