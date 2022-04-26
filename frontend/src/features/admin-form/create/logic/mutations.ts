@@ -8,7 +8,11 @@ import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
-import { createFormLogic, deleteFormLogic } from './FormLogicService'
+import {
+  createFormLogic,
+  deleteFormLogic,
+  updateFormLogic,
+} from './FormLogicService'
 
 export const useLogicMutations = () => {
   const { formId } = useParams()
@@ -70,5 +74,29 @@ export const useLogicMutations = () => {
     },
   )
 
-  return { createLogicMutation, deleteLogicMutation }
+  const updateLogicMutation = useMutation(
+    (updateLogicBody: LogicDto) => updateFormLogic(formId, updateLogicBody),
+    {
+      onSuccess: (updatedLogic) => {
+        toast.closeAll()
+        queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
+          // Should not happen, should not be able to update field if there is no
+          // existing data.
+          if (!prev) throw new Error('Query should have been set')
+          // Update logic.
+          prev.form_logics = prev.form_logics.map((l) => {
+            if (l._id === updatedLogic._id) return updatedLogic
+            return l
+          })
+          return prev
+        })
+        toast({
+          description: 'Logic successfully updated.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  return { createLogicMutation, deleteLogicMutation, updateLogicMutation }
 }

@@ -41,7 +41,12 @@ export const SaveActionGroup = ({
         <Box />
       )}
       <ButtonGroup spacing="1rem">
-        <Button variant="clear" colorScheme="secondary" onClick={handleCancel}>
+        <Button
+          variant="clear"
+          colorScheme="secondary"
+          isDisabled={isLoading}
+          onClick={handleCancel}
+        >
           Cancel
         </Button>
         <Button isLoading={isLoading} onClick={handleSubmit}>

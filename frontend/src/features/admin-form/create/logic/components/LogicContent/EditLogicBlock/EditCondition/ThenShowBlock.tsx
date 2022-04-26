@@ -13,9 +13,8 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Textarea from '~components/Textarea'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+import { EditLogicInputs } from '~features/admin-form/create/logic/types'
 import { FormFieldWithQuestionNo } from '~features/form/types'
-
-import { EditLogicInputs } from '../../../types'
 
 import { BlockLabelText } from './BlockLabelText'
 
@@ -162,7 +161,11 @@ const ThenLogicInput = ({
           const mappedField = mapIdToField[f._id]
           return {
             value: f._id,
-            label: `${mappedField.questionNumber}. ${mappedField.title}`,
+            label: `${
+              mappedField.questionNumber
+                ? `${mappedField.questionNumber}. `
+                : ''
+            }${mappedField.title}`,
             icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
           }
         })

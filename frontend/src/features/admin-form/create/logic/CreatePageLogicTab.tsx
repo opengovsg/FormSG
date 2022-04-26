@@ -8,21 +8,17 @@ import { EmptyLogic } from './components/EmptyLogic'
 import { LogicContent } from './components/LogicContent'
 import { useAdminFormLogic } from './hooks/useAdminFormLogic'
 import { useAdminLogicStore } from './adminLogicStore'
-import { AdminEditLogicState } from './types'
 
 export const CreatePageLogicTab = (): JSX.Element => {
-  const { createOrEditData, setToCreating, reset, isCreatingLogic } =
-    useAdminLogicStore(
-      useCallback((state) => {
-        return {
-          createOrEditData: state.createOrEditData,
-          setToCreating: state.setToCreating,
-          reset: state.reset,
-          isCreatingLogic:
-            state.createOrEditData?.state === AdminEditLogicState.CreatingLogic,
-        }
-      }, []),
-    )
+  const { createOrEditData, setToCreating, reset } = useAdminLogicStore(
+    useCallback((state) => {
+      return {
+        createOrEditData: state.createOrEditData,
+        setToCreating: state.setToCreating,
+        reset: state.reset,
+      }
+    }, []),
+  )
   const { isLoading, formLogics } = useAdminFormLogic()
 
   const isEmptyLogic = useMemo(
@@ -42,7 +38,7 @@ export const CreatePageLogicTab = (): JSX.Element => {
   }
 
   return (
-    <Box flex={1} overflow="auto" bg="primary.100">
+    <Box flex={1} overflow="auto" bg="neutral.100">
       <Flex
         py={{ base: '2rem', md: '1rem' }}
         px={{ base: '1.5rem', md: '3.75rem' }}
@@ -52,7 +48,7 @@ export const CreatePageLogicTab = (): JSX.Element => {
           {isEmptyLogic ? <EmptyLogic /> : <LogicContent />}
         </Container>
         <Flex flex={1} pos="relative">
-          {!isEmptyLogic && !isCreatingLogic && (
+          {!isEmptyLogic && (
             <IconButton
               zIndex="docked"
               pos={{ base: 'fixed', md: 'sticky' }}
@@ -62,6 +58,7 @@ export const CreatePageLogicTab = (): JSX.Element => {
               right={{ base: '1rem', md: undefined }}
               icon={<BiPlus fontSize="1.5rem" />}
               aria-label="Add logic"
+              isDisabled={!!createOrEditData}
               onClick={setToCreating}
             />
           )}

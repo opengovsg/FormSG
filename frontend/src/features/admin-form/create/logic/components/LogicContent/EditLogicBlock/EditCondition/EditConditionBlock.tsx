@@ -28,17 +28,16 @@ import IconButton from '~components/IconButton'
 import NumberInput from '~components/NumberInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+import { EditLogicInputs } from '~features/admin-form/create/logic/types'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 import { getIfLogicType } from '~features/logic/utils'
-
-import { EditLogicInputs } from '../../../types'
 
 import { BlockLabelText } from './BlockLabelText'
 
 export interface EditConditionBlockProps {
   index: number
   isLoading: boolean
-  handleRemoveLogic?: (index?: number | number[] | undefined) => void
+  handleRemoveCondition?: (index?: number | number[] | undefined) => void
   formMethods: UseFormReturn<EditLogicInputs>
   logicableFields: Dictionary<FormFieldWithQuestionNo> | null
   mapIdToField: Record<string, FormFieldWithQuestionNo> | null
@@ -47,7 +46,7 @@ export interface EditConditionBlockProps {
 export const EditConditionBlock = ({
   index,
   isLoading,
-  handleRemoveLogic,
+  handleRemoveCondition,
   formMethods,
   logicableFields,
   mapIdToField,
@@ -213,25 +212,27 @@ export const EditConditionBlock = ({
           columnGap="0.5rem"
           gridTemplateColumns={{
             base: '1fr auto',
-            md: handleRemoveLogic ? 'auto 1fr auto' : 'auto 1fr',
+            md: handleRemoveCondition ? 'auto 1fr auto' : 'auto 1fr',
           }}
           gridTemplateAreas={{
             base: "'label delete' 'input input'",
-            md: handleRemoveLogic ? "'label input delete'" : "'label input'",
+            md: handleRemoveCondition
+              ? "'label input delete'"
+              : "'label input'",
           }}
         >
           <BlockLabelText id={`${name}.field-label`} htmlFor={`${name}.field`}>
             IF
           </BlockLabelText>
-          {handleRemoveLogic ? (
+          {handleRemoveCondition ? (
             <IconButton
               gridArea="delete"
               isDisabled={isLoading}
               variant="clear"
               colorScheme="danger"
               icon={<BiTrash />}
-              onClick={() => handleRemoveLogic(index)}
-              aria-label="Remove logic block"
+              onClick={() => handleRemoveCondition(index)}
+              aria-label="Remove logic condition block"
             />
           ) : null}
           <FormControl
@@ -338,7 +339,7 @@ export const EditConditionBlock = ({
               </FormErrorMessage>
             </FormControl>
           </Flex>
-          {handleRemoveLogic ? <Box aria-hidden w="2.75rem" /> : null}
+          {handleRemoveCondition ? <Box aria-hidden w="2.75rem" /> : null}
         </Stack>
         {/* Virtual input for ifLogicType field */}
         <input type="hidden" {...register(`${name}.ifValueType`)} aria-hidden />
