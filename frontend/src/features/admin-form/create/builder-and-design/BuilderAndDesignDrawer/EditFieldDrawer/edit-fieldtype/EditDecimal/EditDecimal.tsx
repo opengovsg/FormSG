@@ -60,10 +60,8 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
     handleUpdateField,
     watch,
     control,
-    clearErrors,
     isLoading,
     handleCancel,
-    setValue,
   } = useEditFieldForm<EditDecimalInputs, DecimalFieldBase>({
     field,
     transform: {
