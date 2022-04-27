@@ -49,6 +49,13 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         allowIntlNumbers: false,
       }
     }
+    case BasicField.HomeNo: {
+      return {
+        fieldType,
+        ...baseMeta,
+        allowIntlNumbers: false,
+      }
+    }
     case BasicField.Number: {
       return {
         fieldType,
