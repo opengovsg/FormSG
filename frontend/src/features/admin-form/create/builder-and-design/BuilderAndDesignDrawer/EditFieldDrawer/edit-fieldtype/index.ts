@@ -1,4 +1,5 @@
 export * from './EditCheckbox'
+export * from './EditDecimal'
 export * from './EditEmail'
 export * from './EditHeader'
 export * from './EditMobile'
