@@ -17,6 +17,7 @@ import {
 } from '../../useBuilderAndDesignStore'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
+import { EditHomeno } from './edit-fieldtype/EditHomeno'
 import {
   EditCheckbox,
   EditEmail,
@@ -131,6 +132,8 @@ export const MemoFieldDrawerContent = memo(
         return <EditCheckbox {...props} field={field} />
       case BasicField.Mobile:
         return <EditMobile {...props} field={field} />
+      case BasicField.HomeNo:
+        return <EditHomeno {...props} field={field} />
       case BasicField.Email:
         return <EditEmail {...props} field={field} />
       case BasicField.Nric:
