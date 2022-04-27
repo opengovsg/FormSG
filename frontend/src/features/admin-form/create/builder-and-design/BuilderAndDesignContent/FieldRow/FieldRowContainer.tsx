@@ -25,6 +25,7 @@ import {
   NumberField,
   ParagraphField,
   RadioField,
+  ShortTextField,
   UenField,
   YesNoField,
 } from '~templates/Field'
@@ -301,6 +302,8 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
       return <NumberField schema={field} {...rest} />
     case BasicField.Statement:
       return <ParagraphField schema={field} {...rest} />
+    case BasicField.ShortText:
+      return <ShortTextField schema={field} {...rest} />
     case BasicField.Radio:
       return <RadioField schema={field} {...rest} />
     case BasicField.Section:
