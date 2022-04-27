@@ -22,6 +22,9 @@ export const CollaboratorModalContent = () => {
       {currentStep === CollaboratorFlowStates.TransferOwner && (
         <TransferOwnershipScreen />
       )}
+      {currentStep === CollaboratorFlowStates.RemoveSelf && (
+        <div>Remove self</div>
+      )}
     </XMotionBox>
   )
 }
