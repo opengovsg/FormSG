@@ -26,6 +26,7 @@ import {
   EditNumber,
   EditParagraph,
   EditRadio,
+  EditShortText,
   EditUen,
   EditYesNo,
 } from './edit-fieldtype'
@@ -145,6 +146,8 @@ export const MemoFieldDrawerContent = memo(
         return <EditYesNo {...props} field={field} />
       case BasicField.Radio:
         return <EditRadio {...props} field={field} />
+      case BasicField.ShortText:
+        return <EditShortText {...props} field={field} />
       case BasicField.Statement:
         return <EditParagraph {...props} field={field} />
       default:
