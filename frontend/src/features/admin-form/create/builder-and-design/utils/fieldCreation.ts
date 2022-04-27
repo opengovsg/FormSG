@@ -60,6 +60,7 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         allowPrefill: false,
       }
     }
+    case BasicField.LongText:
     case BasicField.Number: {
       return {
         fieldType,
