@@ -5,7 +5,7 @@ import { Spacer, Stack, StackDivider } from '@chakra-ui/react'
 import { FormPermission } from '~shared/types/form/form'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import IconButton from '~components/IconButton'
+import IconButton, { IconButtonProps } from '~components/IconButton'
 
 import { useMutateCollaborators } from '../../../mutations'
 import { useAdminFormCollaborators } from '../../../queries'
@@ -21,6 +21,20 @@ import { ViewOnlyPermission } from './ViewOnlyPermission'
 type CollaboratorRowMeta = {
   email: string
   role: DropdownRole
+}
+
+const RemoveCollaboratorButton = (
+  props: Pick<IconButtonProps, 'isDisabled' | 'isLoading' | 'onClick'>,
+) => {
+  return (
+    <IconButton
+      icon={<BiTrash />}
+      variant="clear"
+      colorScheme="danger"
+      aria-label="Remove collaborator"
+      {...props}
+    />
+  )
 }
 
 export const CollaboratorList = (): JSX.Element => {
@@ -124,49 +138,56 @@ export const CollaboratorList = (): JSX.Element => {
         isCurrentUser={isFormAdmin}
         isLoading={isLoading}
       />
-      {list.map((row) => (
-        <CollaboratorRow
-          email={row.email}
-          isCurrentUser={row.email === user?.email}
-          key={row.email}
-          isLoading={isLoading}
-        >
-          {canEditCollaborators ? (
-            <Stack
-              w="100%"
-              direction="row"
-              justify="space-between"
-              flex={0}
-              align="center"
-            >
-              <PermissionDropdown
-                buttonVariant="clear"
-                value={row.role}
-                allowTransferOwnership={isFormAdmin}
-                isLoading={areMutationsLoading}
-                onChange={handleUpdateRole(row)}
-              />
-              <IconButton
-                icon={<BiTrash />}
-                isLoading={
-                  mutateRemoveCollaborator.isLoading &&
-                  mutateRemoveCollaborator.variables?.permissionToRemove
-                    .email === row.email
-                }
-                isDisabled={areMutationsLoading}
-                variant="clear"
-                aria-label="Remove collaborator"
-                colorScheme="danger"
-                onClick={handleRemoveCollaborator(row)}
-              />
-            </Stack>
-          ) : (
-            <ViewOnlyPermission role={row.role}>
-              <Spacer w="2.75rem" />
-            </ViewOnlyPermission>
-          )}
-        </CollaboratorRow>
-      ))}
+      {list.map((row) => {
+        const isCurrentUser = row.email === user?.email
+        return (
+          <CollaboratorRow
+            email={row.email}
+            isCurrentUser={isCurrentUser}
+            key={row.email}
+            isLoading={isLoading}
+          >
+            {canEditCollaborators ? (
+              <Stack
+                w="100%"
+                direction="row"
+                justify="space-between"
+                flex={0}
+                align="center"
+              >
+                <PermissionDropdown
+                  buttonVariant="clear"
+                  value={row.role}
+                  allowTransferOwnership={isFormAdmin}
+                  isLoading={areMutationsLoading}
+                  onChange={handleUpdateRole(row)}
+                />
+                <RemoveCollaboratorButton
+                  isLoading={
+                    areMutationsLoading &&
+                    mutateRemoveCollaborator.variables?.permissionToRemove
+                      .email === row.email
+                  }
+                  isDisabled={areMutationsLoading}
+                  // TODO: Add handling for removing self as collaborator.
+                  onClick={handleRemoveCollaborator(row)}
+                />
+              </Stack>
+            ) : (
+              <ViewOnlyPermission role={row.role}>
+                {isCurrentUser ? (
+                  <RemoveCollaboratorButton
+                    isDisabled={areMutationsLoading}
+                    // TODO: Add handling for removing self as collaborator.
+                  />
+                ) : (
+                  <Spacer w="2.75rem" />
+                )}
+              </ViewOnlyPermission>
+            )}
+          </CollaboratorRow>
+        )
+      })}
     </Stack>
   )
 }
