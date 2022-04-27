@@ -1,14 +1,11 @@
 import { XMotionBox } from '~templates/MotionBox'
 
-import { useAdminFormCollaborators } from '../../queries'
-
 import { CollaboratorListScreen } from './CollaboratorListScreen'
 import {
   CollaboratorFlowStates,
   useCollaboratorWizard,
 } from './CollaboratorWizardContext'
 import { TransferOwnershipScreen } from './TransferOwnershipScreen'
-import { ViewOnlyCollaboratorListScreen } from './ViewOnlyCollaboratorListScreen'
 
 /**
  * @preconditions Requires CollaboratorWizardProvider parent
@@ -16,11 +13,6 @@ import { ViewOnlyCollaboratorListScreen } from './ViewOnlyCollaboratorListScreen
  */
 export const CollaboratorModalContent = () => {
   const { direction, currentStep } = useCollaboratorWizard()
-  const { canEditCollaborators } = useAdminFormCollaborators()
-
-  if (!canEditCollaborators) {
-    return <ViewOnlyCollaboratorListScreen />
-  }
 
   return (
     <XMotionBox keyProp={currentStep} direction={direction}>
