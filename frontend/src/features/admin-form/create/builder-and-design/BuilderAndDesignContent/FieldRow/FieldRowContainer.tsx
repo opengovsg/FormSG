@@ -20,6 +20,7 @@ import IconButton from '~components/IconButton'
 import {
   CheckboxField,
   EmailField,
+  HomeNoField,
   MobileField,
   NricField,
   NumberField,
@@ -293,6 +294,8 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
       return <CheckboxField schema={field} {...rest} />
     case BasicField.Mobile:
       return <MobileField schema={field} {...rest} />
+    case BasicField.HomeNo:
+      return <HomeNoField schema={field} {...rest} />
     case BasicField.Email:
       return <EmailField schema={field} {...rest} />
     case BasicField.Nric:
