@@ -21,6 +21,7 @@ import {
   EditCheckbox,
   EditEmail,
   EditHeader,
+  EditLongText,
   EditMobile,
   EditNric,
   EditNumber,
@@ -123,10 +124,8 @@ interface MemoFieldDrawerContentProps {
   field: FieldCreateDto
 }
 
-export const MemoFieldDrawerContent = memo(
-  (props: MemoFieldDrawerContentProps) => {
-    // Extract field variable just to get field.fieldType types to cooperate
-    const field = props.field
+export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
+  ({ field, ...props }) => {
     switch (field.fieldType) {
       case BasicField.Checkbox:
         return <EditCheckbox {...props} field={field} />
@@ -148,6 +147,8 @@ export const MemoFieldDrawerContent = memo(
         return <EditRadio {...props} field={field} />
       case BasicField.ShortText:
         return <EditShortText {...props} field={field} />
+      case BasicField.LongText:
+        return <EditLongText {...props} field={field} />
       case BasicField.Statement:
         return <EditParagraph {...props} field={field} />
       default:
