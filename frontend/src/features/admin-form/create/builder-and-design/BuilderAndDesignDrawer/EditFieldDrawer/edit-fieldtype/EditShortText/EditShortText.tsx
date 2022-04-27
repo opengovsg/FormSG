@@ -103,12 +103,18 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
   > = useMemo(
     () => ({
       // customVal is required if there is selected validation.
-      validate: (val) => {
-        return (
-          !!val ||
-          !getValues('ValidationOptions.selectedValidation') ||
-          'Please enter number of characters'
-        )
+      validate: {
+        hasValidation: (val) => {
+          return (
+            !!val ||
+            !getValues('ValidationOptions.selectedValidation') ||
+            'Please enter number of characters'
+          )
+        },
+        validNumber: (val) => {
+          // Check whether input is a valid number, avoid e
+          return !isNaN(Number(val)) || 'Please enter a valid number'
+        },
       },
       min: {
         value: 1,
