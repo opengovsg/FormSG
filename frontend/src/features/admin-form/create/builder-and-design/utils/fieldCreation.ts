@@ -49,7 +49,17 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         allowIntlNumbers: false,
       }
     }
-    case BasicField.ShortText:
+    case BasicField.ShortText: {
+      return {
+        fieldType,
+        ...baseMeta,
+        ValidationOptions: {
+          selectedValidation: null,
+          customVal: null,
+        },
+        allowPrefill: false,
+      }
+    }
     case BasicField.Number: {
       return {
         fieldType,

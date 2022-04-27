@@ -1,6 +1,11 @@
 import { useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
-import { FormControl, SimpleGrid } from '@chakra-ui/react'
+import {
+  FormControl,
+  InputGroup,
+  InputRightElement,
+  SimpleGrid,
+} from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
 import { ShortTextFieldBase, TextSelectedValidation } from '~shared/types/field'
@@ -19,13 +24,20 @@ import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
+import { CopyFieldIdButton } from './CopyFieldIdButton'
+
 type EditShortTextProps = EditFieldProps<ShortTextFieldBase>
 
-const EDIT_NUMBER_FIELD_KEYS = ['title', 'description', 'required'] as const
+const EDIT_SHORTTEXT_FIELD_KEYS = [
+  'title',
+  'description',
+  'required',
+  'allowPrefill',
+] as const
 
 type EditShortTextInputs = Pick<
   ShortTextFieldBase,
-  typeof EDIT_NUMBER_FIELD_KEYS[number]
+  typeof EDIT_SHORTTEXT_FIELD_KEYS[number]
 > & {
   ValidationOptions: {
     selectedValidation: TextSelectedValidation | ''
@@ -45,7 +57,7 @@ const transformShortTextFieldToEditForm = (
       ('' as const),
   }
   return {
-    ...pick(field, EDIT_NUMBER_FIELD_KEYS),
+    ...pick(field, EDIT_SHORTTEXT_FIELD_KEYS),
     ValidationOptions: nextValidationOptions,
   }
 }
@@ -96,6 +108,8 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
   const watchedSelectedValidation = watch(
     'ValidationOptions.selectedValidation',
   )
+
+  const watchAllowPrefill = watch('allowPrefill')
 
   const customValValidationOptions: RegisterOptions<
     EditShortTextInputs,
@@ -189,6 +203,30 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
         <FormErrorMessage>
           {errors?.ValidationOptions?.customVal?.message}
         </FormErrorMessage>
+      </FormControl>
+      <FormControl isReadOnly={isLoading}>
+        <Toggle
+          {...register('allowPrefill')}
+          label="Enable pre-fill"
+          description="Use the Field ID to pre-populate this field for your users via an URL. [Learn how](https://go.gov.sg/form-prefill)"
+        />
+        {watchAllowPrefill ? (
+          <InputGroup mt="0.5rem">
+            <Input
+              isReadOnly
+              isDisabled={!field._id}
+              value={
+                field._id ??
+                'Field ID will be generated after this field is saved'
+              }
+            />
+            {field._id ? (
+              <InputRightElement>
+                <CopyFieldIdButton fieldId={field._id} />
+              </InputRightElement>
+            ) : null}
+          </InputGroup>
+        ) : null}
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
