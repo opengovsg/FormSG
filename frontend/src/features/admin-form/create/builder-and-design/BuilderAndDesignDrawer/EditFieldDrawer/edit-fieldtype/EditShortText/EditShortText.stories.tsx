@@ -12,9 +12,9 @@ import { StoryRouter } from '~utils/storybook'
 import { BuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
 import { CreatePageSidebarProvider } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
-import { EditShortText } from './EditShortText'
+import { EditShortText, EditShortTextProps } from './EditShortText'
 
-const DEFAULT_NUMBER_FIELD: ShortTextFieldBase = {
+const DEFAULT_SHORTTEXT_FIELD: ShortTextFieldBase = {
   title: 'Storybook ShortText',
   description: 'Some description',
   ValidationOptions: {
@@ -61,30 +61,40 @@ export default {
     chromatic: { pauseAnimationAtEnd: true },
   },
   args: {
-    field: DEFAULT_NUMBER_FIELD,
+    field: DEFAULT_SHORTTEXT_FIELD,
   },
-} as Meta<StoryArgs>
+} as Meta<EditShortTextProps>
 
-interface StoryArgs {
-  field: ShortTextFieldBase
-}
-
-const Template: Story<StoryArgs> = ({ field }) => {
+const Template: Story<EditShortTextProps> = ({ field }) => {
   return <EditShortText field={field} />
 }
 
 export const Default = Template.bind({})
-Default.args = {
-  field: DEFAULT_NUMBER_FIELD,
-}
 
 export const WithCustomVal = Template.bind({})
 WithCustomVal.args = {
   field: {
-    ...DEFAULT_NUMBER_FIELD,
+    ...DEFAULT_SHORTTEXT_FIELD,
     ValidationOptions: {
       customVal: 3,
       selectedValidation: TextSelectedValidation.Maximum,
     },
+  },
+}
+
+export const PrefillNoFieldId = Template.bind({})
+PrefillNoFieldId.args = {
+  field: {
+    ...DEFAULT_SHORTTEXT_FIELD,
+    allowPrefill: true,
+  },
+}
+
+export const PrefillWithFieldId = Template.bind({})
+PrefillWithFieldId.args = {
+  field: {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    ...PrefillNoFieldId.args.field!,
+    _id: 'mock-field-id-allow-copy',
   },
 }

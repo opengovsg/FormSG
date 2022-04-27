@@ -26,7 +26,7 @@ import { useEditFieldForm } from '../common/useEditFieldForm'
 
 import { CopyFieldIdButton } from './CopyFieldIdButton'
 
-type EditShortTextProps = EditFieldProps<ShortTextFieldBase>
+export type EditShortTextProps = EditFieldProps<ShortTextFieldBase>
 
 const EDIT_SHORTTEXT_FIELD_KEYS = [
   'title',
