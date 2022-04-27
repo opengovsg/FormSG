@@ -4,6 +4,7 @@ import { Meta, Story } from '@storybook/react'
 
 import {
   createFormBuilderMocks,
+  getAdminFormFeedback,
   getStorageSubmissionMetadataResponse,
 } from '~/mocks/msw/handlers/admin-form'
 
@@ -11,24 +12,33 @@ import {
   ADMINFORM_RESULTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
-import { viewports } from '~utils/storybook'
+import { getMobileViewParameters, viewports } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import { FeedbackPage, FormResultsLayout, ResponsesPage } from './responses'
 
+const DEFAULT_MSW_ROUTES = [
+  ...createFormBuilderMocks({}, 0),
+  getStorageSubmissionMetadataResponse(),
+  getAdminFormFeedback(),
+]
+
 export default {
   title: 'Pages/AdminFormPage/Results/FeedbackTab',
+  component: FeedbackPage,
   parameters: {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [...createFormBuilderMocks(), getStorageSubmissionMetadataResponse()],
+    msw: DEFAULT_MSW_ROUTES,
   },
 } as Meta
 
 const Template: Story = () => {
   return (
-    <MemoryRouter initialEntries={['/12345/results/feedback']}>
+    <MemoryRouter
+      initialEntries={['/61540ece3d4a6e50ac0cc6ff/results/feedback']}
+    >
       <Routes>
         <Route path="/:formId" element={<AdminFormLayout />}>
           <Route
@@ -57,9 +67,16 @@ Tablet.parameters = {
 }
 
 export const Mobile = Template.bind({})
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
+Mobile.parameters = getMobileViewParameters()
+
+export const LoadingDesktop = Template.bind({})
+LoadingDesktop.storyName = 'Loading/Desktop'
+LoadingDesktop.parameters = {
+  msw: [getAdminFormFeedback({ delay: 'infinite' }), ...DEFAULT_MSW_ROUTES],
+}
+export const LoadingMobile = Template.bind({})
+LoadingMobile.storyName = 'Loading/Mobile'
+LoadingMobile.parameters = {
+  ...getMobileViewParameters(),
+  ...LoadingDesktop.parameters,
 }

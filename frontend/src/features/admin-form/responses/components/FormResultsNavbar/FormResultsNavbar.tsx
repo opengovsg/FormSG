@@ -1,4 +1,4 @@
-import { Flex, TabList } from '@chakra-ui/react'
+import { Container, Flex, TabList } from '@chakra-ui/react'
 
 import { useDraggable } from '~hooks/useDraggable'
 import { Tab } from '~components/Tabs'
@@ -16,18 +16,18 @@ export const FormResultsNavbar = (): JSX.Element => {
       zIndex="docked"
       flex={1}
     >
-      <TabList
-        ref={ref}
-        onMouseDown={onMouseDown}
-        w="100vw"
-        borderBottom="none"
-        justifyContent="flex-start"
-        pt="1rem"
-        px="1.5rem"
-      >
-        <Tab>Responses</Tab>
-        <Tab>Feedback</Tab>
-      </TabList>
+      <Container maxW="69.5rem" px="1.25rem" pt="0.625rem">
+        <TabList
+          ref={ref}
+          onMouseDown={onMouseDown}
+          w="100vw"
+          borderBottom="none"
+          justifyContent="flex-start"
+        >
+          <Tab>Responses</Tab>
+          <Tab>Feedback</Tab>
+        </TabList>
+      </Container>
     </Flex>
   )
 }
