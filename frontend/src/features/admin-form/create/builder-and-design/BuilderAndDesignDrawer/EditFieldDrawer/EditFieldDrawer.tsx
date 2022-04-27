@@ -17,11 +17,11 @@ import {
 } from '../../useBuilderAndDesignStore'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
-import { EditHomeno } from './edit-fieldtype/EditHomeno'
 import {
   EditCheckbox,
   EditEmail,
   EditHeader,
+  EditHomeno,
   EditMobile,
   EditNric,
   EditNumber,
