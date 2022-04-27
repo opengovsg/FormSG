@@ -14,7 +14,6 @@ import { DropdownRole } from '../constants'
 import { permissionsToRole, roleToPermission } from '../utils'
 
 import { CollaboratorRow } from './CollaboratorRow'
-import { OwnerRow } from './OwnerRow'
 import { PermissionDropdown } from './PermissionDropdown'
 import { ViewOnlyPermission } from './ViewOnlyPermission'
 
@@ -133,11 +132,18 @@ export const CollaboratorList = (): JSX.Element => {
       divider={isMobile ? undefined : <StackDivider />}
       borderY={{ md: '1px solid var(--chakra-colors-neutral-300)' }}
     >
-      <OwnerRow
-        ownerEmail={form?.admin.email}
+      <CollaboratorRow
+        email={form?.admin.email}
         isCurrentUser={isFormAdmin}
         isLoading={isLoading}
-      />
+      >
+        <ViewOnlyPermission
+          role={DropdownRole.Owner}
+          textAlign={{ md: !collaborators?.length ? 'end' : undefined }}
+        >
+          {collaborators?.length ? <Spacer w="2.75rem" /> : null}
+        </ViewOnlyPermission>
+      </CollaboratorRow>
       {list.map((row) => {
         const isCurrentUser = row.email === user?.email
         return (
