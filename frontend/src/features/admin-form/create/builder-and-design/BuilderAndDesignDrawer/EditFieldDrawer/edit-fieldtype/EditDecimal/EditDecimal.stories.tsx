@@ -16,14 +16,12 @@ const DEFAULT_DECIMAL_FIELD = getFieldCreationMeta(
 ) as DecimalFieldBase
 
 const EditFieldDrawerDecorator: DecoratorFn = (storyFn) => {
-  const mobileCreateEditModalDisclosure = useDisclosure()
   const deleteFieldModalDisclosure = useDisclosure()
   return (
     <Box maxW="33.25rem">
       <CreatePageSidebarProvider>
         <BuilderAndDesignContext.Provider
           value={{
-            mobileCreateEditModalDisclosure,
             deleteFieldModalDisclosure,
           }}
         >
