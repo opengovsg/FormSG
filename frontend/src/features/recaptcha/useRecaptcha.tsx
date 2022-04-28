@@ -190,6 +190,8 @@ export const useRecaptcha = ({
    */
   const getCaptchaResponse = useCallback(async () => {
     if (!grecaptcha || widgetId === undefined) return Promise.resolve(null)
+    // Always reset before verifying again, or execute will never return.
+    grecaptcha.reset(widgetId)
 
     setIsVfnInProgress(true)
 

@@ -1,15 +1,9 @@
-import { useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
-import { BiPlus } from 'react-icons/bi'
-import { Box, Flex, Modal, ModalOverlay } from '@chakra-ui/react'
-
-import { useIsMobile } from '~hooks/useIsMobile'
-import IconButton from '~components/IconButton'
+import { Box, Flex } from '@chakra-ui/react'
 
 import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
-import { useBuilderAndDesignContext } from '../BuilderAndDesignContext'
 import { FIELD_LIST_DROP_ID } from '../constants'
-import { MobileCreateEditModal } from '../MobileCreateEditModal'
 import { DndPlaceholderProps } from '../types'
 import {
   setToInactiveSelector,
@@ -33,27 +27,6 @@ export const BuilderAndDesignContent = ({
   const { handleBuilderClick } = useCreatePageSidebar()
 
   useEffect(() => setFieldsToInactive, [setFieldsToInactive])
-
-  const isMobile = useIsMobile()
-  const {
-    mobileCreateEditModalDisclosure: {
-      isOpen: isMobileModalOpen,
-      onOpen: onMobileModalOpen,
-      onClose: onMobileModalClose,
-    },
-  } = useBuilderAndDesignContext()
-
-  const handleMobileModalClose = useCallback(() => {
-    onMobileModalClose()
-    setFieldsToInactive()
-  }, [onMobileModalClose, setFieldsToInactive])
-
-  const handleEmptyPlaceholderClick = useCallback(() => {
-    if (isMobile) {
-      return onMobileModalOpen()
-    }
-    return handleBuilderClick()
-  }, [handleBuilderClick, isMobile, onMobileModalOpen])
 
   return (
     <>
@@ -98,7 +71,7 @@ export const BuilderAndDesignContent = ({
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     isDraggingOver={snapshot.isDraggingOver}
-                    onClick={handleEmptyPlaceholderClick}
+                    onClick={handleBuilderClick}
                   />
                 )
               }
@@ -106,28 +79,6 @@ export const BuilderAndDesignContent = ({
           </Flex>
         </Flex>
       </Flex>
-      {isMobile && (
-        <Modal
-          isOpen={isMobileModalOpen}
-          onClose={handleMobileModalClose}
-          size="full"
-        >
-          <ModalOverlay />
-          <MobileCreateEditModal />
-        </Modal>
-      )}
-      {isMobile && (
-        <IconButton
-          aria-label="Add an element"
-          icon={<BiPlus />}
-          position="absolute"
-          right="1.5rem"
-          bottom="5.5rem"
-          w="3rem"
-          h="3rem"
-          onClick={onMobileModalOpen}
-        />
-      )}
     </>
   )
 }
