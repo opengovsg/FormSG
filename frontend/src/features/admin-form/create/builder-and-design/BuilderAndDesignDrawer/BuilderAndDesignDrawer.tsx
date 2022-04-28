@@ -18,29 +18,31 @@ import {
 import { EditFieldDrawer } from './EditFieldDrawer'
 import { FieldListDrawer } from './FieldListDrawer'
 
-const DRAWER_MOTION_PROPS = {
-  initial: { width: 0 },
-  animate: {
-    maxWidth: '33.25rem',
-    width: '36%',
-    transition: {
-      bounce: 0,
-      duration: 0.2,
-    },
-  },
-  exit: {
-    width: 0,
-    opacity: 0,
-    transition: {
-      duration: 0.2,
-    },
-  },
-}
-
 export const BuilderAndDesignDrawer = (): JSX.Element | null => {
   const isMobile = useIsMobile()
   const { activeTab, isDrawerOpen } = useCreatePageSidebar()
   const createOrEditData = useBuilderAndDesignStore(stateDataSelector)
+
+  const drawerMotionProps = useMemo(() => {
+    return {
+      initial: { width: 0 },
+      animate: {
+        maxWidth: isMobile ? '100%' : '33.25rem',
+        width: isMobile ? '100%' : '36%',
+        transition: {
+          bounce: 0,
+          duration: 0.2,
+        },
+      },
+      exit: {
+        width: 0,
+        opacity: 0,
+        transition: {
+          duration: 0.2,
+        },
+      },
+    }
+  }, [isMobile])
 
   const renderDrawerContent = useMemo(() => {
     switch (activeTab) {
@@ -60,9 +62,6 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
     }
   }, [createOrEditData, activeTab])
 
-  // Do not display in mobile
-  if (isMobile) return null
-
   return (
     <AnimatePresence>
       {isDrawerOpen ? (
@@ -72,7 +71,7 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
           pos="relative"
           as="aside"
           overflow="hidden"
-          {...DRAWER_MOTION_PROPS}
+          {...drawerMotionProps}
         >
           <Flex w="100%" h="100%" flexDir="column">
             {renderDrawerContent}
