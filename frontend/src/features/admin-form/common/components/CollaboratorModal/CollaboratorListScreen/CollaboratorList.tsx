@@ -46,7 +46,7 @@ export const CollaboratorList = (): JSX.Element => {
     isFormAdmin,
     form,
     isLoading,
-    canEditCollaborators,
+    showEditableModal,
   } = useAdminFormCollaborators()
 
   const { mutateUpdateCollaborator, mutateRemoveCollaborator } =
@@ -72,13 +72,7 @@ export const CollaboratorList = (): JSX.Element => {
       // Should not happen since this function cannot be invoked without the
       // collaborators being loaded, but guarding just in case.
       // Or when role to update is already the current role.
-      if (
-        !canEditCollaborators ||
-        !collaborators ||
-        areMutationsLoading ||
-        row.role === newRole
-      )
-        return
+      if (!collaborators || areMutationsLoading || row.role === newRole) return
 
       if (newRole === DropdownRole.Owner) {
         return handleForwardToTransferOwnership(row.email)
@@ -95,7 +89,6 @@ export const CollaboratorList = (): JSX.Element => {
     },
     [
       areMutationsLoading,
-      canEditCollaborators,
       collaborators,
       handleForwardToTransferOwnership,
       mutateUpdateCollaborator,
@@ -104,7 +97,7 @@ export const CollaboratorList = (): JSX.Element => {
 
   const handleRemoveCollaborator = useCallback(
     (row: typeof list[number]) => () => {
-      if (!canEditCollaborators || !collaborators || areMutationsLoading) return
+      if (!collaborators || areMutationsLoading) return
       // May seem redundant since we already have the email, but this may prevent
       // issues arising from desync between `list` and `collaborators`.
       const permissionToRemove: FormPermission = {
@@ -116,12 +109,7 @@ export const CollaboratorList = (): JSX.Element => {
         currentPermissions: collaborators,
       })
     },
-    [
-      areMutationsLoading,
-      canEditCollaborators,
-      collaborators,
-      mutateRemoveCollaborator,
-    ],
+    [areMutationsLoading, collaborators, mutateRemoveCollaborator],
   )
 
   return (
@@ -153,7 +141,7 @@ export const CollaboratorList = (): JSX.Element => {
             key={row.email}
             isLoading={isLoading}
           >
-            {canEditCollaborators ? (
+            {showEditableModal ? (
               <Stack
                 w="100%"
                 direction="row"

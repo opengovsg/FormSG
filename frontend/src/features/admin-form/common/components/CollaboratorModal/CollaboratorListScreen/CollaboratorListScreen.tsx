@@ -6,15 +6,15 @@ import { AddCollaboratorInput } from './AddCollaboratorInput'
 import { CollaboratorList } from './CollaboratorList'
 
 export const CollaboratorListScreen = (): JSX.Element => {
-  const { canEditCollaborators } = useAdminFormCollaborators()
+  const { showEditableModal } = useAdminFormCollaborators()
   return (
     <>
       <ModalHeader color="secondary.700">
-        {canEditCollaborators ? 'Manage collaborators' : 'Collaborators'}
+        {showEditableModal ? 'Manage collaborators' : 'Collaborators'}
       </ModalHeader>
       <ModalBody whiteSpace="pre-line">
         <Stack spacing="2.5rem" pb="2rem">
-          {canEditCollaborators ? <AddCollaboratorInput /> : null}
+          {showEditableModal ? <AddCollaboratorInput /> : null}
           <CollaboratorList />
         </Stack>
       </ModalBody>

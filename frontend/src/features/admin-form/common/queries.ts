@@ -71,13 +71,20 @@ export const useAdminFormCollaborators = () => {
     [form, user],
   )
 
-  const canEditCollaborators = useMemo(() => {
-    if (!form || !user || !collaborators) return false
-    return (
-      user.email === form.admin.email ||
-      collaborators.some((perms) => perms.write && perms.email === user.email)
+  const showEditableModal = useMemo(() => {
+    if (!form || !user) return false
+    if (isFormAdmin) return true
+    // Collaborators is source of truth if it has already loaded.
+    if (collaborators) {
+      return collaborators.some(
+        (perms) => perms.write && perms.email === user.email,
+      )
+    }
+    // Else use permissionList first
+    return form.permissionList.some(
+      (perms) => perms.write && perms.email === user.email,
     )
-  }, [collaborators, form, user])
+  }, [collaborators, form, isFormAdmin, user])
 
   return {
     user,
@@ -85,6 +92,6 @@ export const useAdminFormCollaborators = () => {
     collaborators,
     isLoading: isCollabLoading || isAdminFormLoading || isUserLoading,
     isFormAdmin,
-    canEditCollaborators,
+    showEditableModal,
   }
 }
