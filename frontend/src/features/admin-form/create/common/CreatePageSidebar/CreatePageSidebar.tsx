@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { BiGitMerge } from 'react-icons/bi'
 import { Stack } from '@chakra-ui/react'
 
@@ -10,17 +11,26 @@ import {
   useCreatePageSidebar,
 } from '~features/admin-form/create/common/CreatePageSidebarContext/CreatePageSidebarContext'
 
+import {
+  setToInactiveSelector,
+  useBuilderAndDesignStore,
+} from '../../builder-and-design/useBuilderAndDesignStore'
+
 import { DrawerTabIcon } from './DrawerTabIcon'
 
 export const CreatePageSidebar = (): JSX.Element | null => {
+  const isMobile = useIsMobile()
+  const setFieldsToInactive = useBuilderAndDesignStore(setToInactiveSelector)
   const { activeTab, handleBuilderClick, handleDesignClick, handleLogicClick } =
     useCreatePageSidebar()
 
-  const isMobile = useIsMobile()
-
-  if (isMobile) {
-    return null
-  }
+  const handleDrawerBuilderClick = useCallback(() => {
+    // Always show create field drawer when sidebar icon is tapped on mobile.
+    if (isMobile) {
+      setFieldsToInactive()
+    }
+    handleBuilderClick()
+  }, [handleBuilderClick, isMobile, setFieldsToInactive])
 
   return (
     <Stack
@@ -32,12 +42,12 @@ export const CreatePageSidebar = (): JSX.Element | null => {
       top={0}
       borderRight="1px solid"
       borderColor="neutral.300"
-      direction={{ base: 'row', md: 'column' }}
+      direction="column"
     >
       <DrawerTabIcon
         label="Build your form"
         icon={<BxsWidget fontSize="1.5rem" />}
-        onClick={handleBuilderClick}
+        onClick={handleDrawerBuilderClick}
         isActive={activeTab === DrawerTabs.Builder}
       />
       <DrawerTabIcon

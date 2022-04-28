@@ -96,7 +96,6 @@ export const BuilderAndDesignTab = (): JSX.Element => {
     [data, reorderFieldMutation, setToCreating, setPlaceholderProps],
   )
 
-  const mobileCreateEditModalDisclosure = useDisclosure()
   const deleteFieldModalDisclosure = useDisclosure()
 
   return (
@@ -107,7 +106,6 @@ export const BuilderAndDesignTab = (): JSX.Element => {
     >
       <BuilderAndDesignContext.Provider
         value={{
-          mobileCreateEditModalDisclosure,
           deleteFieldModalDisclosure,
         }}
       >

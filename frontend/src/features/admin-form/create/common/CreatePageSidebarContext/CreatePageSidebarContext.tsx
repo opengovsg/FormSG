@@ -8,6 +8,8 @@ import {
   useState,
 } from 'react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
+
 import {
   setToInactiveSelector,
   useBuilderAndDesignStore,
@@ -44,6 +46,7 @@ export const useCreatePageSidebar = (): CreatePageSidebarContextProps => {
 
 export const useCreatePageSidebarContext =
   (): CreatePageSidebarContextProps => {
+    const isMobile = useIsMobile()
     const [activeTab, setActiveTab] = useState<DrawerTabs | null>(null)
     const isDrawerOpen = useMemo(
       () => activeTab !== null && activeTab !== DrawerTabs.Logic,
@@ -53,7 +56,7 @@ export const useCreatePageSidebarContext =
 
     // Set state to inactive whenever active tab is not builder
     useEffect(() => {
-      if (activeTab !== DrawerTabs.Builder) {
+      if (activeTab !== null && activeTab !== DrawerTabs.Builder) {
         setFieldsToInactive()
       }
     }, [activeTab, setFieldsToInactive])
@@ -73,7 +76,12 @@ export const useCreatePageSidebarContext =
       [setActiveTab],
     )
 
-    const handleClose = useCallback(() => setActiveTab(null), [setActiveTab])
+    const handleClose = useCallback(() => {
+      if (!isMobile) {
+        setFieldsToInactive()
+      }
+      setActiveTab(null)
+    }, [isMobile, setFieldsToInactive])
 
     return {
       activeTab,
