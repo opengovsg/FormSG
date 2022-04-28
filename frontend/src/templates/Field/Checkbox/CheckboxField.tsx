@@ -89,6 +89,17 @@ export const CheckboxField = ({
           {o}
         </Checkbox>
       ))}
+      {schema.fieldOptions.length === 1 ? (
+        // React-hook-form quirk where the value will not be set in an array if there is only a single checkbox option.
+        // This is a workaround to set the value in an array by registering a hidden checkbox with the same id.
+        // See https://github.com/react-hook-form/react-hook-form/issues/7834#issuecomment-1040735711.
+        <input
+          type="checkbox"
+          hidden
+          value=""
+          {...register(checkboxInputName)}
+        />
+      ) : null}
       {schema.othersRadioButton ? (
         <Checkbox.OthersWrapper colorScheme={fieldColorScheme}>
           <FormControl
