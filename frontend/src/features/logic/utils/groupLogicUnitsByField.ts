@@ -1,21 +1,9 @@
-import { FormCondition, LogicDto } from '~shared/types/form'
+import { LogicDto } from '~shared/types/form'
 
 import { FieldIdToType, GroupedLogicMeta } from '../types'
 
+import { allConditionsExist } from './allConditionsExist'
 import { isShowFieldsLogic } from './typeguards'
-
-/**
- * Checks if the field ids in logic's conditions all exist in the fieldIds.
- * @param conditions the list of conditions to check
- * @param visibleFieldMap map containing all visible field ids to their corresponding field
- * @returns true if every condition's related form field id exists in the set of formFieldIds, false otherwise.
- */
-const allConditionsExist = (
-  conditions: FormCondition[],
-  visibleFieldMap: FieldIdToType,
-): boolean => {
-  return conditions.every((c) => !!visibleFieldMap[c.field])
-}
 
 /**
  * Parse logic into a map of fields that are shown/hidden depending on the
