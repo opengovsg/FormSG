@@ -28,14 +28,12 @@ const DEFAULT_SHORTTEXT_FIELD: ShortTextFieldBase = {
 }
 
 const EditFieldDrawerDecorator: DecoratorFn = (storyFn) => {
-  const mobileCreateEditModalDisclosure = useDisclosure()
   const deleteFieldModalDisclosure = useDisclosure()
   return (
     <Box maxW="33.25rem">
       <CreatePageSidebarProvider>
         <BuilderAndDesignContext.Provider
           value={{
-            mobileCreateEditModalDisclosure,
             deleteFieldModalDisclosure,
           }}
         >
