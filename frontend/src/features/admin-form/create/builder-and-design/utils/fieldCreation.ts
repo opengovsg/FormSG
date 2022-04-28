@@ -59,6 +59,17 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         },
       }
     }
+    case BasicField.Decimal: {
+      return {
+        fieldType,
+        ...baseMeta,
+        validateByValue: false,
+        ValidationOptions: {
+          customMin: null,
+          customMax: null,
+        },
+      }
+    }
     case BasicField.Email: {
       return {
         fieldType,
