@@ -66,6 +66,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           'isRequired',
           'isInvalid',
         ]),
+        name: props.name,
       }
 
       return [
@@ -78,7 +79,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           ...baseProps,
         }),
       ]
-    }, [formControlProps, getRadioProps])
+    }, [formControlProps, getRadioProps, props.name])
 
     return (
       // -1px so borders collapse.

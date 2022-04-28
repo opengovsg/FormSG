@@ -72,7 +72,11 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
     )
 
     return (
-      <Box as="label" __css={styles.container}>
+      <Box
+        as="label"
+        __css={styles.container}
+        data-testid={`${props.name}-${props.side}`}
+      >
         <input
           {...inputProps}
           onClick={handleSelect}
