@@ -22,6 +22,7 @@ import {
   EditDecimal,
   EditEmail,
   EditHeader,
+  EditHomeno,
   EditMobile,
   EditNric,
   EditNumber,
@@ -132,6 +133,8 @@ export const MemoFieldDrawerContent = memo(
         return <EditCheckbox {...props} field={field} />
       case BasicField.Mobile:
         return <EditMobile {...props} field={field} />
+      case BasicField.HomeNo:
+        return <EditHomeno {...props} field={field} />
       case BasicField.Email:
         return <EditEmail {...props} field={field} />
       case BasicField.Nric:
