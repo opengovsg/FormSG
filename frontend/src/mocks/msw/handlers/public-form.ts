@@ -7,6 +7,7 @@ import {
   LogicConditionState,
   LogicIfValue,
   LogicType,
+  PreventSubmitLogicDto,
   ShowFieldLogicDto,
 } from '~shared/types'
 import { FormId, PublicFormViewDto } from '~shared/types/form/form'
@@ -36,6 +37,21 @@ export const SHOW_FIELDS_ON_YES_LOGIC: ShowFieldLogicDto = {
   ],
   logicType: LogicType.ShowFields,
   _id: '5fe1bab172689300133ce336',
+  conditions: [
+    {
+      ifValueType: LogicIfValue.SingleSelect,
+      field: '5da04eb5e397fc0013f63c7e',
+      state: LogicConditionState.Equal,
+      value: 'Yes',
+    },
+  ],
+}
+
+export const PREVENT_SUBMISSION_LOGIC: PreventSubmitLogicDto = {
+  _id: 'mock-prevent-subm-logic',
+  preventSubmitMessage:
+    'This should show up in storybook mock when yes/no is true',
+  logicType: LogicType.PreventSubmit,
   conditions: [
     {
       ifValueType: LogicIfValue.SingleSelect,

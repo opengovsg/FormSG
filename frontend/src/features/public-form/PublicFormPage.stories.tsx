@@ -1,4 +1,5 @@
 import { Meta, Story } from '@storybook/react'
+import { userEvent, waitFor, within } from '@storybook/testing-library'
 
 import { BasicField } from '~shared/types/field'
 import { FormAuthType, FormColorTheme } from '~shared/types/form'
@@ -9,6 +10,7 @@ import {
   postGenerateVfnOtpResponse,
   postVerifyVfnOtpResponse,
   postVfnTransactionResponse,
+  PREVENT_SUBMISSION_LOGIC,
   SHOW_FIELDS_ON_YES_LOGIC,
 } from '~/mocks/msw/handlers/public-form'
 
@@ -245,8 +247,8 @@ VerifiedFieldsExpiry.parameters = {
   ],
 }
 
-export const WithLogic = Template.bind({})
-WithLogic.parameters = {
+export const WithShowFieldLogic = Template.bind({})
+WithShowFieldLogic.parameters = {
   msw: [
     getPublicFormResponse({
       overrides: {
@@ -269,4 +271,43 @@ WithLogic.parameters = {
     }),
     ...DEFAULT_MSW_HANDLERS,
   ],
+}
+
+export const WithPreventSubmissionLogic = Template.bind({})
+WithPreventSubmissionLogic.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          form_fields: [
+            {
+              title: '',
+              description:
+                'Select "Yes" on the field below to prevent submission',
+              required: true,
+              disabled: false,
+              fieldType: BasicField.Statement,
+              _id: 'some-random-id',
+              globalId: 'not-used',
+            },
+          ],
+          form_logics: [PREVENT_SUBMISSION_LOGIC],
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithPreventSubmissionLogic.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  await waitFor(
+    async () => {
+      await userEvent.click(
+        canvas.getByTestId(
+          `${PREVENT_SUBMISSION_LOGIC.conditions[0].field}-right`,
+        ),
+      )
+    },
+    { timeout: 5000 },
+  )
 }
