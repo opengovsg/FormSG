@@ -16,6 +16,10 @@ import { LogicDto } from '~shared/types/form'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
+import {
+  setToInactiveSelector,
+  useAdminLogicStore,
+} from '../../adminLogicStore'
 import { useLogicMutations } from '../../mutations'
 
 interface DeleteLogicModalProps {
@@ -29,6 +33,7 @@ export const DeleteLogicModal = ({
   isOpen,
   logicId,
 }: DeleteLogicModalProps): JSX.Element => {
+  const setToInactive = useAdminLogicStore(setToInactiveSelector)
   const { deleteLogicMutation } = useLogicMutations()
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -37,8 +42,11 @@ export const DeleteLogicModal = ({
   })
 
   const handleDelete = useCallback(() => {
+    // Cannot be put in onSuccess since this component will be unmounted by then.
+    // No big deal even if we set to inactive here.
+    setToInactive()
     return deleteLogicMutation.mutate(logicId)
-  }, [deleteLogicMutation, logicId])
+  }, [deleteLogicMutation, logicId, setToInactive])
 
   return (
     <Modal

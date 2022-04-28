@@ -10,6 +10,7 @@ import {
 } from '~constants/routes'
 
 import { useAdminForm } from '../../queries'
+import CollaboratorModal, { useCollaboratorModal } from '../CollaboratorModal'
 
 import { AdminFormNavbar } from './AdminFormNavbar'
 
@@ -46,10 +47,6 @@ const useAdminFormNavbar = () => {
     [navigate],
   )
 
-  const handleAddCollaborator = useCallback((): void => {
-    console.log('add collab button clicked')
-  }, [])
-
   const handlePreviewForm = useCallback((): void => {
     console.log('preview form button clicked')
   }, [])
@@ -67,7 +64,6 @@ const useAdminFormNavbar = () => {
     tabIndex,
     handleTabsChange,
     handleBackToDashboard,
-    handleAddCollaborator,
     handlePreviewForm,
     handleShareForm,
     form,
@@ -82,11 +78,16 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
     tabIndex,
     handleTabsChange,
     handleBackToDashboard,
-    handleAddCollaborator,
     handlePreviewForm,
     handleShareForm,
     form,
   } = useAdminFormNavbar()
+
+  const {
+    isCollaboratorModalOpen,
+    onCloseCollaboratorModal,
+    onOpenCollaboratorModal,
+  } = useCollaboratorModal()
 
   const responsiveVariant = useBreakpointValue({
     base: 'line-dark',
@@ -95,20 +96,26 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
   })
 
   return (
-    <Tabs
-      variant={responsiveVariant}
-      isLazy
-      defaultIndex={tabIndex}
-      index={tabIndex}
-      onChange={handleTabsChange}
-    >
-      <AdminFormNavbar
-        formInfo={form}
-        handleBackButtonClick={handleBackToDashboard}
-        handleAddCollabButtonClick={handleAddCollaborator}
-        handlePreviewFormButtonClick={handlePreviewForm}
-        handleShareButtonClick={handleShareForm}
+    <>
+      <CollaboratorModal
+        isOpen={isCollaboratorModalOpen}
+        onClose={onCloseCollaboratorModal}
       />
-    </Tabs>
+      <Tabs
+        variant={responsiveVariant}
+        isLazy
+        defaultIndex={tabIndex}
+        index={tabIndex}
+        onChange={handleTabsChange}
+      >
+        <AdminFormNavbar
+          formInfo={form}
+          handleBackButtonClick={handleBackToDashboard}
+          handleAddCollabButtonClick={onOpenCollaboratorModal}
+          handlePreviewFormButtonClick={handlePreviewForm}
+          handleShareButtonClick={handleShareForm}
+        />
+      </Tabs>
+    </>
   )
 }

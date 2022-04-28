@@ -1,8 +1,8 @@
-import { createContext, useContext } from 'react'
+import { createContext, Dispatch, SetStateAction, useContext } from 'react'
 import type { Instance as PopperInstance } from '@popperjs/core'
 
 interface SelectPopoverContextReturn {
-  popperRef: (element: HTMLDivElement | null) => void
+  popperRef: Dispatch<SetStateAction<HTMLDivElement | null>> | null
   popperStyles: { [key: string]: React.CSSProperties }
   popperAttributes: { [key: string]: { [key: string]: string } | undefined }
   update: PopperInstance['update'] | null

@@ -4,6 +4,7 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
+import { FormColorTheme } from '~shared/types'
 import { RatingShape } from '~shared/types/field'
 
 import { createRatingValidationRules } from '~utils/fieldValidation'
@@ -25,7 +26,10 @@ const transform = {
   toNumber: (value: string) => Number(value),
 }
 
-export const RatingField = ({ schema }: RatingFieldProps): JSX.Element => {
+export const RatingField = ({
+  schema,
+  colorTheme = FormColorTheme.Blue,
+}: RatingFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createRatingValidationRules(schema),
     [schema],
@@ -50,6 +54,7 @@ export const RatingField = ({ schema }: RatingFieldProps): JSX.Element => {
         name={schema._id}
         render={({ field: { value, onChange, ...rest } }) => (
           <Rating
+            colorScheme={`theme-${colorTheme}`}
             numberOfRatings={schema.ratingOptions.steps}
             variant={ratingVariant}
             value={transform.toNumber(value)}

@@ -1,5 +1,8 @@
+import { useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { chakra, Flex, FormControl } from '@chakra-ui/react'
+
+import { FormColorTheme } from '~shared/types/form'
 
 import Button from '~components/Button'
 import Rating from '~components/Field/Rating'
@@ -14,10 +17,12 @@ export type FeedbackFormInput = {
 
 export interface FeedbackBlockProps {
   onSubmit: (input: FeedbackFormInput) => void
+  colorTheme?: FormColorTheme
 }
 
 export const FeedbackBlock = ({
   onSubmit,
+  colorTheme = FormColorTheme.Blue,
 }: FeedbackBlockProps): JSX.Element => {
   const {
     control,
@@ -27,6 +32,10 @@ export const FeedbackBlock = ({
   } = useForm<FeedbackFormInput>()
 
   const handleFormSubmit = handleSubmit((inputs) => onSubmit(inputs))
+
+  const colorScheme = useMemo(() => {
+    return `theme-${colorTheme}` as const
+  }, [colorTheme])
 
   return (
     <Flex justify="center">
@@ -45,7 +54,12 @@ export const FeedbackBlock = ({
             control={control}
             name="rating"
             render={({ field }) => (
-              <Rating numberOfRatings={5} variant="star" {...field} />
+              <Rating
+                colorScheme={colorScheme}
+                numberOfRatings={5}
+                variant="star"
+                {...field}
+              />
             )}
           />
           <FormErrorMessage>{errors.rating?.message}</FormErrorMessage>
@@ -61,6 +75,7 @@ export const FeedbackBlock = ({
           mt="1.5rem"
           variant="outline"
           type="submit"
+          colorScheme={colorScheme}
           isLoading={isSubmitting}
         >
           Submit feedback

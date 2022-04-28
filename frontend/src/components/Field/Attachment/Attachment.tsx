@@ -14,6 +14,7 @@ import omit from 'lodash/omit'
 import simplur from 'simplur'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
+import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import { AttachmentDropzone } from './AttachmentDropzone'
 import { AttachmentFileInfo } from './AttachmentFileInfo'
@@ -56,11 +57,26 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    * input.
    */
   showFileSize?: boolean
+
+  /**
+   * Color scheme of the component.
+   */
+  colorScheme?: ThemeColorScheme
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
   (
-    { onChange, onError, maxSize, showFileSize, accept, value, name, ...props },
+    {
+      onChange,
+      onError,
+      maxSize,
+      showFileSize,
+      accept,
+      value,
+      name,
+      colorScheme,
+      ...props
+    },
     ref,
   ) => {
     // Merge given props with any form control props, if they exist.
@@ -179,6 +195,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
 
     const styles = useMultiStyleConfig(ATTACHMENT_THEME_KEY, {
       isDragActive,
+      colorScheme,
     })
 
     const handleRemoveFile = useCallback(() => {

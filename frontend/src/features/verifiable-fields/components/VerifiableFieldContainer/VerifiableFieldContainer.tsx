@@ -1,6 +1,7 @@
 import { BiCheck } from 'react-icons/bi'
 import { Box, Stack } from '@chakra-ui/react'
 
+import { FormColorTheme } from '~shared/types'
 import { FormFieldWithId } from '~shared/types/field'
 
 import Button from '~components/Button'
@@ -24,6 +25,7 @@ export interface VerifiableFieldContainerProps
  */
 export const VerifiableFieldContainer = ({
   schema,
+  colorTheme = FormColorTheme.Blue,
   children,
 }: VerifiableFieldContainerProps): JSX.Element => {
   const {
@@ -48,6 +50,7 @@ export const VerifiableFieldContainer = ({
               isDisabled={isVfnBoxOpen || hasSignature}
               isLoading={isSendingOtp}
               onClick={handleVfnButtonClick}
+              colorScheme={`theme-${colorTheme}`}
               leftIcon={
                 hasSignature ? <BiCheck fontSize="1.5rem" /> : undefined
               }

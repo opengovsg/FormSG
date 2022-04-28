@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
+import { FormColorTheme } from '~shared/types'
 import { DateSelectedValidation } from '~shared/types/field'
 
 import {
@@ -21,7 +22,10 @@ export interface DateFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const DateField = ({ schema }: DateFieldProps): JSX.Element => {
+export const DateField = ({
+  schema,
+  colorTheme = FormColorTheme.Blue,
+}: DateFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createDateValidationRules(schema),
     [schema],
@@ -58,7 +62,11 @@ export const DateField = ({ schema }: DateFieldProps): JSX.Element => {
         name={schema._id}
         rules={validationRules}
         render={({ field }) => (
-          <DateInput {...field} isDateUnavailable={isDateUnavailable} />
+          <DateInput
+            colorScheme={`theme-${colorTheme}`}
+            {...field}
+            isDateUnavailable={isDateUnavailable}
+          />
         )}
       />
     </FieldContainer>

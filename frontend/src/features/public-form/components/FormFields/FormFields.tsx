@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
-import { Stack } from '@chakra-ui/react'
+import { Box, Stack } from '@chakra-ui/react'
 import { times } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme, LogicDto } from '~shared/types/form'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import { FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
@@ -27,6 +28,8 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
+  const isMobile = useIsMobile()
+
   // TODO: Inject default values is field is also prefilled.
   const augmentedFormFields = useMemo(
     () => formFields.map(augmentWithMyInfo),
@@ -59,22 +62,28 @@ export const FormFields = ({
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
-        <Stack spacing="2.25rem">
-          <VisibleFormFields
-            colorTheme={colorTheme}
-            control={formMethods.control}
-            formFields={augmentedFormFields}
-            formLogics={formLogics}
-          />
+        <Box bg="white" py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
+          <Stack spacing="2.25rem">
+            <VisibleFormFields
+              colorTheme={colorTheme}
+              control={formMethods.control}
+              formFields={augmentedFormFields}
+              formLogics={formLogics}
+            />
+          </Stack>
+        </Box>
+        <Box px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
           <Button
-            mt="1rem"
+            isFullWidth={isMobile}
+            w="100%"
+            colorScheme={`theme-${colorTheme}`}
             type="submit"
             isLoading={formMethods.formState.isSubmitting}
             loadingText="Submitting"
           >
-            Submit
+            Submit now
           </Button>
-        </Stack>
+        </Box>
       </form>
     </FormProvider>
   )

@@ -21,6 +21,10 @@ const frontendVars = {
   myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
   GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
+  // react migration variables
+  reactMigrationRespondentCookieName:
+    config.reactMigration.respondentCookieName,
+  reactMigrationAdminCookieName: config.reactMigration.adminCookieName,
 }
 const environment = ejs.render(
   `
@@ -44,6 +48,9 @@ const environment = ejs.render(
     var formsgSdkMode = "<%= formsgSdkMode%>"
     // SPCP Cookie
     var spcpCookieDomain = "<%= spcpCookieDomain%>"
+    // React Migration
+    var reactMigrationRespondentCookieName = "<%= reactMigrationRespondentCookieName%>"
+    var reactMigrationAdminCookieName = "<%= reactMigrationAdminCookieName%>"
   `,
   frontendVars,
 )

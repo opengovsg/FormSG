@@ -4,6 +4,8 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
+import { FormColorTheme } from '~shared/types'
+
 import { createBaseValidationRules } from '~/utils/fieldValidation'
 
 import YesNo from '~components/Field/YesNo'
@@ -15,7 +17,10 @@ export interface YesNoFieldProps extends BaseFieldProps {
   schema: YesNoFieldSchema
 }
 
-export const YesNoField = ({ schema }: YesNoFieldProps): JSX.Element => {
+export const YesNoField = ({
+  schema,
+  colorTheme = FormColorTheme.Blue,
+}: YesNoFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createBaseValidationRules(schema),
     [schema],
@@ -29,7 +34,9 @@ export const YesNoField = ({ schema }: YesNoFieldProps): JSX.Element => {
         control={control}
         rules={validationRules}
         name={schema._id}
-        render={({ field }) => <YesNo {...field} />}
+        render={({ field }) => (
+          <YesNo colorScheme={`theme-${colorTheme}`} {...field} />
+        )}
       />
     </FieldContainer>
   )

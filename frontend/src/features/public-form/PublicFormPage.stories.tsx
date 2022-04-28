@@ -1,7 +1,7 @@
 import { Meta, Story } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
-import { FormAuthType } from '~shared/types/form'
+import { FormAuthType, FormColorTheme } from '~shared/types/form'
 
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
@@ -12,7 +12,7 @@ import {
   SHOW_FIELDS_ON_YES_LOGIC,
 } from '~/mocks/msw/handlers/public-form'
 
-import { StoryRouter } from '~utils/storybook'
+import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 
 import PublicFormPage from './PublicFormPage'
 
@@ -23,6 +23,24 @@ const DEFAULT_MSW_HANDLERS = [
   postGenerateVfnOtpResponse(),
   postVerifyVfnOtpResponse(),
 ]
+
+const generateMswHandlersForColorTheme = (colorTheme: FormColorTheme) => {
+  return [
+    ...envHandlers,
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          startPage: {
+            colorTheme,
+          },
+        },
+      },
+    }),
+    postVfnTransactionResponse(),
+    postGenerateVfnOtpResponse(),
+    postVerifyVfnOtpResponse(),
+  ]
+}
 
 export default {
   title: 'Pages/PublicFormPage',
@@ -44,6 +62,34 @@ export default {
 const Template: Story = () => <PublicFormPage />
 export const Default = Template.bind({})
 
+export const Mobile = Template.bind({})
+Mobile.parameters = getMobileViewParameters()
+
+export const ColorThemeGreen = Template.bind({})
+ColorThemeGreen.parameters = {
+  msw: generateMswHandlersForColorTheme(FormColorTheme.Green),
+}
+
+export const ColorThemeGrey = Template.bind({})
+ColorThemeGrey.parameters = {
+  msw: generateMswHandlersForColorTheme(FormColorTheme.Grey),
+}
+
+export const ColorThemeBrown = Template.bind({})
+ColorThemeBrown.parameters = {
+  msw: generateMswHandlersForColorTheme(FormColorTheme.Brown),
+}
+
+export const ColorThemeRed = Template.bind({})
+ColorThemeRed.parameters = {
+  msw: generateMswHandlersForColorTheme(FormColorTheme.Red),
+}
+
+export const ColorThemeOrange = Template.bind({})
+ColorThemeOrange.parameters = {
+  msw: generateMswHandlersForColorTheme(FormColorTheme.Orange),
+}
+
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: [...envHandlers, getPublicFormResponse({ delay: 'infinite' })],
@@ -60,10 +106,19 @@ SingpassUnauthorized.parameters = {
         form: {
           title: 'Singpass login form',
           authType: FormAuthType.SP,
+          startPage: {
+            colorTheme: FormColorTheme.Grey,
+          },
         },
       },
     }),
   ],
+}
+
+export const UnauthedMobile = Template.bind({})
+UnauthedMobile.parameters = {
+  ...SingpassUnauthorized.parameters,
+  ...getMobileViewParameters(),
 }
 
 export const SingpassAuthorized = Template.bind({})

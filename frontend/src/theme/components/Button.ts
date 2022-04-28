@@ -1,4 +1,8 @@
-import { getColor, SystemStyleFunction } from '@chakra-ui/theme-tools'
+import {
+  getColor,
+  StyleFunctionProps,
+  SystemStyleFunction,
+} from '@chakra-ui/theme-tools'
 import merge from 'lodash/merge'
 
 import { textStyles } from '../textStyles'
@@ -13,19 +17,63 @@ export type ThemeButtonVariant =
   | 'link'
   | 'inputAttached'
 
+const genVariantSolidColours = (c: string) => {
+  const defaultBackgrounds = {
+    bg: `${c}.500`,
+    activeBg: `${c}.700`,
+    hoverBg: `${c}.600`,
+    focusBoxShadow: `0 0 0 4px var(--chakra-colors-${c}-300)`,
+  }
+  switch (c) {
+    case 'success': {
+      return {
+        bg: `${c}.700`,
+        activeBg: `${c}.800`,
+        hoverBg: `${c}.800`,
+        focusBoxShadow: `0 0 0 4px var(--chakra-colors-${c}-400)`,
+      }
+    }
+    case 'theme-red':
+    case 'theme-orange':
+    case 'theme-yellow': {
+      return {
+        ...defaultBackgrounds,
+        bg: `${c}.600`,
+        activeBg: `${c}.800`,
+        hoverBg: `${c}.700`,
+      }
+    }
+    default: {
+      return defaultBackgrounds
+    }
+  }
+}
+
+const genVariantOutlineColours = ({
+  colorScheme: c,
+  theme,
+}: StyleFunctionProps) => {
+  switch (c) {
+    case 'theme-red':
+    case 'theme-orange':
+    case 'theme-yellow': {
+      return {
+        borderColor: `${c}.600` as const,
+        focusBorderColor: getColor(theme, `${c}.400`),
+      }
+    }
+    default: {
+      return {
+        borderColor: `${c}.500` as const,
+        focusBorderColor: getColor(theme, `${c}.300`),
+      }
+    }
+  }
+}
+
 const variantSolid: SystemStyleFunction = (props) => {
   const { colorScheme: c } = props
-  let bg = `${c}.500`
-  let activeBg = `${c}.700`
-  let hoverBg = `${c}.600`
-  let focusBoxShadow = `0 0 0 4px var(--chakra-colors-${c}-300)`
-
-  if (c === 'success') {
-    bg = `${c}.700`
-    activeBg = `${c}.800`
-    hoverBg = `${c}.800`
-    focusBoxShadow = `0 0 0 4px var(--chakra-colors-${c}-400)`
-  }
+  const { bg, hoverBg, activeBg, focusBoxShadow } = genVariantSolidColours(c)
 
   return {
     bg,
@@ -92,15 +140,16 @@ const variantClear: SystemStyleFunction = (props) => {
 
 const variantOutlineReverse: SystemStyleFunction = (props) => {
   const { colorScheme: c, variant } = props
+  const { borderColor, focusBorderColor } = genVariantOutlineColours(props)
   const showBorder = variant === 'outline'
 
   return {
     bg: 'white',
     px: '15px',
-    borderColor: showBorder ? `${c}.500` : 'white',
-    color: `${c}.500`,
+    borderColor: showBorder ? borderColor : 'white',
+    color: borderColor,
     _focus: {
-      boxShadow: `0 0 0 4px var(--chakra-colors-${c}-300)`,
+      boxShadow: `0 0 0 4px ${focusBorderColor}`,
     },
     _disabled: {
       color: `${c}.300`,
@@ -110,7 +159,7 @@ const variantOutlineReverse: SystemStyleFunction = (props) => {
     },
     _active: {
       bg: `${c}.200`,
-      borderColor: showBorder ? `${c}.500` : `${c}.200`,
+      borderColor: showBorder ? borderColor : `${c}.200`,
       _disabled: {
         bg: 'white',
         borderColor: showBorder ? `${c}.300` : 'white',
@@ -118,7 +167,7 @@ const variantOutlineReverse: SystemStyleFunction = (props) => {
     },
     _hover: {
       bg: `${c}.100`,
-      borderColor: showBorder ? `${c}.500` : `${c}.100`,
+      borderColor: showBorder ? borderColor : `${c}.100`,
       _disabled: {
         bg: 'white',
         borderColor: showBorder ? `${c}.300` : 'white',

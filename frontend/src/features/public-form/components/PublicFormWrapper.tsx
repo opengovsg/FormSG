@@ -22,7 +22,13 @@ export const PublicFormWrapper = ({
   }, [form, isLoading])
 
   return (
-    <Flex bg={bgColour} p="1.5rem" flex={1} justify="center" flexDir="column">
+    <Flex
+      bg={bgColour}
+      p={{ base: 0, md: '1.5rem' }}
+      flex={1}
+      justify="center"
+      flexDir="column"
+    >
       {children}
     </Flex>
   )

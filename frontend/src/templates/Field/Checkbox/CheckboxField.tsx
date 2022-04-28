@@ -7,6 +7,8 @@ import {
 } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 
+import { FormColorTheme } from '~shared/types'
+
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 import { createCheckboxValidationRules } from '~utils/fieldValidation'
 import Checkbox from '~components/Checkbox'
@@ -27,8 +29,17 @@ export interface CheckboxFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const CheckboxField = ({ schema }: CheckboxFieldProps): JSX.Element => {
-  const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, {})
+export const CheckboxField = ({
+  schema,
+  colorTheme = FormColorTheme.Blue,
+}: CheckboxFieldProps): JSX.Element => {
+  const fieldColorScheme = useMemo(
+    () => `theme-${colorTheme}` as const,
+    [colorTheme],
+  )
+  const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, {
+    colorScheme: fieldColorScheme,
+  })
 
   const othersInputName = useMemo(
     () => `${schema._id}.${CHECKBOX_OTHERS_INPUT_KEY}` as const,
@@ -70,6 +81,7 @@ export const CheckboxField = ({ schema }: CheckboxFieldProps): JSX.Element => {
     <FieldContainer schema={schema} errorKey={checkboxInputName}>
       {schema.fieldOptions.map((o, idx) => (
         <Checkbox
+          colorScheme={fieldColorScheme}
           key={idx}
           value={o}
           {...register(checkboxInputName, validationRules)}
@@ -78,7 +90,7 @@ export const CheckboxField = ({ schema }: CheckboxFieldProps): JSX.Element => {
         </Checkbox>
       ))}
       {schema.othersRadioButton ? (
-        <Checkbox.OthersWrapper>
+        <Checkbox.OthersWrapper colorScheme={fieldColorScheme}>
           <FormControl
             isRequired={schema.required}
             isDisabled={schema.disabled}
@@ -86,12 +98,14 @@ export const CheckboxField = ({ schema }: CheckboxFieldProps): JSX.Element => {
             isInvalid={!!get(errors, othersInputName)}
           >
             <OtherCheckboxField
+              colorScheme={fieldColorScheme}
               value={CHECKBOX_OTHERS_INPUT_VALUE}
               isInvalid={!!get(errors, checkboxInputName)}
               triggerOthersInputValidation={() => trigger(othersInputName)}
               {...register(checkboxInputName, validationRules)}
             />
             <Checkbox.OthersInput
+              colorScheme={fieldColorScheme}
               aria-label='Enter value for "Others" option'
               {...register(othersInputName, othersValidationRules)}
             />

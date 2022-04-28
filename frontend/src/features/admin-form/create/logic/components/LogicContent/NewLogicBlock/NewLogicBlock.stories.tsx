@@ -1,9 +1,5 @@
-import { useMemo, useRef } from 'react'
-import { useFieldArray, useForm } from 'react-hook-form'
 import { Box } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
-import { merge, pickBy } from 'lodash'
-import { PartialDeep } from 'type-fest'
 
 import {
   BasicField,
@@ -21,27 +17,34 @@ import {
   LogicType,
 } from '~shared/types/form'
 
-import { MOCK_FORM_FIELDS } from '~/mocks/msw/handlers/admin-form'
+import {
+  createFormBuilderMocks,
+  MOCK_FORM_FIELDS,
+} from '~/mocks/msw/handlers/admin-form'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 
 import { FormFieldWithQuestionNo } from '~features/form/types'
-import { ALLOWED_LOGIC_FIELDS } from '~features/logic/constants'
-
-import { EditLogicInputs } from '../../../types'
 
 import { NewLogicBlock, NewLogicBlockProps } from './NewLogicBlock'
 
 export default {
-  title: 'Templates/Logic/NewLogicBlock',
+  title: 'Features/AdminForm/Logic/NewLogicBlock',
   component: NewLogicBlock,
   // Padding decorator so boxShadow gets snapshotted too.
-  decorators: [(storyFn) => <Box p="0.5rem">{storyFn()}</Box>],
+  decorators: [
+    (storyFn) => <Box p="0.5rem">{storyFn()}</Box>,
+    StoryRouter({
+      initialEntries: ['/61540ece3d4a6e50ac0cc6ff'],
+      path: '/:formId',
+    }),
+  ],
+  parameters: {
+    // Required so skeleton "animation" does not hide content.
+    chromatic: { pauseAnimationAtEnd: true },
+    msw: createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS }, 0),
+  },
 } as Meta
-
-interface TemplateStoryProps {
-  defaultValues?: PartialDeep<EditLogicInputs>
-}
 
 const MAP_ID_TO_FIELD = MOCK_FORM_FIELDS.reduce((acc, field, index) => {
   acc[field._id] = { ...field, questionNumber: index + 1 }
@@ -51,55 +54,16 @@ const FIELD_TYPE_TO_ID = MOCK_FORM_FIELDS.reduce((acc, field) => {
   acc[field.fieldType] = field._id
   return acc
 }, {} as Record<BasicField, string>)
-const LOGICABLE_FIELDS = pickBy(MAP_ID_TO_FIELD, (f) =>
-  ALLOWED_LOGIC_FIELDS.has(f.fieldType),
+
+const Template: Story<NewLogicBlockProps> = (args) => (
+  <NewLogicBlock {...args} />
 )
 
-const Template: Story<TemplateStoryProps> = ({ defaultValues }) => {
-  const useMockHook: NewLogicBlockProps['useNewLogicBlock'] = () => {
-    const formMethods = useForm<EditLogicInputs>({
-      defaultValues: merge({ conditions: [{}] }, defaultValues),
-    })
-
-    const {
-      fields: logicConditionBlocks,
-      append,
-      remove,
-    } = useFieldArray({
-      control: formMethods.control,
-      name: 'conditions',
-    })
-    const wrapperRef = useRef<HTMLDivElement | null>(null)
-
-    // Only allow logic removal if there is more than one logic block.
-    const handleRemoveLogic = useMemo(
-      () => (logicConditionBlocks.length > 1 ? remove : undefined),
-      [logicConditionBlocks.length, remove],
-    )
-
-    return {
-      formFields: MOCK_FORM_FIELDS,
-      formMethods,
-      handleAddCondition: () => append({}),
-      handleCreateLogic: formMethods.handleSubmit((input) =>
-        console.log(input),
-      ),
-      handleRemoveLogic,
-      logicConditionBlocks,
-      isLoading: false,
-      logicableFields: LOGICABLE_FIELDS,
-      mapIdToField: MAP_ID_TO_FIELD,
-      setToInactive: () => console.log('setting to inactive'),
-      wrapperRef,
-    }
-  }
-  return <NewLogicBlock useNewLogicBlock={useMockHook} />
-}
 export const Default = Template.bind({})
 
 export const AllLogicConditions = Template.bind({})
 AllLogicConditions.args = {
-  defaultValues: {
+  _defaultValues: {
     conditions: generateAllLogicConditions(),
     logicType: LogicType.ShowFields,
     show: [
@@ -114,7 +78,7 @@ AllLogicConditions.args = {
 
 export const PreventSubmission = Template.bind({})
 PreventSubmission.args = {
-  defaultValues: {
+  _defaultValues: {
     logicType: LogicType.PreventSubmit,
     preventSubmitMessage:
       'No submission allowed because this is just a test block.',
