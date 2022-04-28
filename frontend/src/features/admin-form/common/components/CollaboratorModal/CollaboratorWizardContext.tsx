@@ -1,7 +1,5 @@
 import { createContext, useCallback, useContext, useState } from 'react'
 
-import { DropdownRole } from './constants'
-
 export enum CollaboratorFlowStates {
   List = 'list',
   TransferOwner = 'transferOwner',
@@ -13,11 +11,6 @@ type CollaboratorWizardContextReturn = {
   handleBackToList: () => void
   emailToTransfer: string | null
   handleForwardToTransferOwnership: (emailToTransfer: string) => void
-}
-
-export type AddCollaboratorInputs = {
-  email: string
-  role: DropdownRole
 }
 
 const CollaboratorWizardContext = createContext<

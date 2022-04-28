@@ -1,18 +1,11 @@
 import { useCallback, useMemo } from 'react'
 import { BiTrash } from 'react-icons/bi'
-import {
-  Skeleton,
-  Spacer,
-  Stack,
-  StackDivider,
-  StackProps,
-  Text,
-} from '@chakra-ui/react'
+import { Spacer, Stack, StackDivider } from '@chakra-ui/react'
 
 import { FormPermission } from '~shared/types/form/form'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import IconButton from '~components/IconButton'
+import IconButton, { IconButtonProps } from '~components/IconButton'
 
 import { useMutateCollaborators } from '../../../mutations'
 import { useAdminFormCollaborators } from '../../../queries'
@@ -20,42 +13,26 @@ import { useCollaboratorWizard } from '../CollaboratorWizardContext'
 import { DropdownRole } from '../constants'
 import { permissionsToRole, roleToPermission } from '../utils'
 
+import { CollaboratorRow } from './CollaboratorRow'
 import { PermissionDropdown } from './PermissionDropdown'
+import { ViewOnlyPermission } from './ViewOnlyPermission'
 
 type CollaboratorRowMeta = {
   email: string
   role: DropdownRole
 }
 
-const CollaboratorText = ({ children }: { children: React.ReactNode }) => {
+const RemoveCollaboratorButton = (
+  props: Pick<IconButtonProps, 'isDisabled' | 'isLoading' | 'onClick'>,
+) => {
   return (
-    <Text
-      textStyle={{ base: 'subhead-1', md: 'body-2' }}
-      color={{ base: 'secondary.700', md: 'secondary.500' }}
-      isTruncated
-    >
-      {children}
-    </Text>
-  )
-}
-
-const CollaboratorRow = ({
-  children,
-  ...props
-}: { children: React.ReactNode } & StackProps) => {
-  return (
-    <Stack
-      p={{ base: '1.5rem', md: 0 }}
-      w="100%"
-      minH="3.5rem"
-      direction={{ base: 'column', md: 'row' }}
-      justify="space-between"
-      align={{ base: 'flex-start', md: 'center' }}
-      spacing={{ base: '0.75rem', md: '2rem' }}
+    <IconButton
+      icon={<BiTrash />}
+      variant="clear"
+      colorScheme="danger"
+      aria-label="Remove collaborator"
       {...props}
-    >
-      {children}
-    </Stack>
+    />
   )
 }
 
@@ -63,8 +40,14 @@ export const CollaboratorList = (): JSX.Element => {
   const isMobile = useIsMobile()
   // Admin form data required for checking for duplicate emails.
   const { handleForwardToTransferOwnership } = useCollaboratorWizard()
-  const { collaborators, user, isFormAdmin, form, isLoading } =
-    useAdminFormCollaborators()
+  const {
+    collaborators,
+    user,
+    isFormAdmin,
+    form,
+    isLoading,
+    showEditableModal,
+  } = useAdminFormCollaborators()
 
   const { mutateUpdateCollaborator, mutateRemoveCollaborator } =
     useMutateCollaborators()
@@ -73,17 +56,6 @@ export const CollaboratorList = (): JSX.Element => {
     () =>
       mutateRemoveCollaborator.isLoading || mutateUpdateCollaborator.isLoading,
     [mutateRemoveCollaborator.isLoading, mutateUpdateCollaborator.isLoading],
-  )
-
-  const createCurrentUserHint = useCallback(
-    (row: Pick<CollaboratorRowMeta, 'email'>) => {
-      return row.email === user?.email ? (
-        <Text as="span" textStyle="caption-1" color="neutral.600">
-          (You)
-        </Text>
-      ) : null
-    },
-    [user?.email],
   )
 
   const list: CollaboratorRowMeta[] = useMemo(() => {
@@ -95,43 +67,7 @@ export const CollaboratorList = (): JSX.Element => {
     )
   }, [collaborators])
 
-  const ownerRow = useMemo(() => {
-    return (
-      <CollaboratorRow bg={{ base: 'primary.100', md: 'white' }}>
-        <Skeleton isLoaded={!isLoading} flex={1}>
-          <Stack
-            direction="row"
-            align="baseline"
-            // Required to allow flex to shrink
-            minW={0}
-          >
-            <CollaboratorText>{form?.admin.email}</CollaboratorText>
-            {createCurrentUserHint({ email: form?.admin.email ?? '' })}
-          </Stack>
-        </Skeleton>
-        <Skeleton isLoaded={!isLoading}>
-          <Stack
-            direction="row"
-            justify="space-between"
-            flex={0}
-            align="center"
-          >
-            <Text minW="6.25rem" textStyle="body-2" color="secondary.500">
-              Owner
-            </Text>
-            <Spacer w={collaborators?.length ? '2.75rem' : 0} />
-          </Stack>
-        </Skeleton>
-      </CollaboratorRow>
-    )
-  }, [
-    isLoading,
-    form?.admin.email,
-    createCurrentUserHint,
-    collaborators?.length,
-  ])
-
-  const handleUpdateRole =
+  const handleUpdateRole = useCallback(
     (row: typeof list[number]) => (newRole: DropdownRole) => {
       // Should not happen since this function cannot be invoked without the
       // collaborators being loaded, but guarding just in case.
@@ -150,21 +86,31 @@ export const CollaboratorList = (): JSX.Element => {
         permissionToUpdate,
         currentPermissions: collaborators,
       })
-    }
+    },
+    [
+      areMutationsLoading,
+      collaborators,
+      handleForwardToTransferOwnership,
+      mutateUpdateCollaborator,
+    ],
+  )
 
-  const handleRemoveCollaborator = (row: typeof list[number]) => () => {
-    if (!collaborators || areMutationsLoading) return
-    // May seem redundant since we already have the email, but this may prevent
-    // issues arising from desync between `list` and `collaborators`.
-    const permissionToRemove: FormPermission = {
-      email: row.email,
-      ...roleToPermission(row.role),
-    }
-    return mutateRemoveCollaborator.mutate({
-      permissionToRemove,
-      currentPermissions: collaborators,
-    })
-  }
+  const handleRemoveCollaborator = useCallback(
+    (row: typeof list[number]) => () => {
+      if (!collaborators || areMutationsLoading) return
+      // May seem redundant since we already have the email, but this may prevent
+      // issues arising from desync between `list` and `collaborators`.
+      const permissionToRemove: FormPermission = {
+        email: row.email,
+        ...roleToPermission(row.role),
+      }
+      return mutateRemoveCollaborator.mutate({
+        permissionToRemove,
+        currentPermissions: collaborators,
+      })
+    },
+    [areMutationsLoading, collaborators, mutateRemoveCollaborator],
+  )
 
   return (
     <Stack
@@ -172,56 +118,70 @@ export const CollaboratorList = (): JSX.Element => {
       align="flex-start"
       flex={1}
       divider={isMobile ? undefined : <StackDivider />}
-      mt="2.5rem"
       borderY={{ md: '1px solid var(--chakra-colors-neutral-300)' }}
     >
-      {ownerRow}
-      {list.map((row, index) => (
-        <CollaboratorRow
-          key={row.email}
-          bg={{ base: index % 2 ? 'primary.100' : 'white', md: 'white' }}
+      <CollaboratorRow
+        email={form?.admin.email}
+        isCurrentUser={isFormAdmin}
+        isLoading={isLoading}
+      >
+        <ViewOnlyPermission
+          role={DropdownRole.Owner}
+          textAlign={{ md: !collaborators?.length ? 'end' : undefined }}
         >
-          <Stack
-            direction="row"
-            flex={1}
-            align="center"
-            w="100%"
-            // Required to allow flex to shrink
-            minW={0}
+          {collaborators?.length ? <Spacer w="2.75rem" /> : null}
+        </ViewOnlyPermission>
+      </CollaboratorRow>
+      {list.map((row) => {
+        const isCurrentUser = row.email === user?.email
+        return (
+          <CollaboratorRow
+            email={row.email}
+            isCurrentUser={isCurrentUser}
+            key={row.email}
+            isLoading={isLoading}
           >
-            <CollaboratorText>{row.email}</CollaboratorText>
-            {createCurrentUserHint(row)}
-          </Stack>
-          <Stack
-            w="100%"
-            direction="row"
-            justify="space-between"
-            flex={0}
-            align="center"
-          >
-            <PermissionDropdown
-              buttonVariant="clear"
-              value={row.role}
-              allowTransferOwnership={isFormAdmin}
-              isLoading={areMutationsLoading}
-              onChange={handleUpdateRole(row)}
-            />
-            <IconButton
-              icon={<BiTrash />}
-              isLoading={
-                mutateRemoveCollaborator.isLoading &&
-                mutateRemoveCollaborator.variables?.permissionToRemove.email ===
-                  row.email
-              }
-              isDisabled={areMutationsLoading}
-              variant="clear"
-              aria-label="Remove collaborator"
-              colorScheme="danger"
-              onClick={handleRemoveCollaborator(row)}
-            />
-          </Stack>
-        </CollaboratorRow>
-      ))}
+            {showEditableModal ? (
+              <Stack
+                w="100%"
+                direction="row"
+                justify="space-between"
+                flex={0}
+                align="center"
+              >
+                <PermissionDropdown
+                  buttonVariant="clear"
+                  value={row.role}
+                  allowTransferOwnership={isFormAdmin}
+                  isLoading={areMutationsLoading}
+                  onChange={handleUpdateRole(row)}
+                />
+                <RemoveCollaboratorButton
+                  isLoading={
+                    areMutationsLoading &&
+                    mutateRemoveCollaborator.variables?.permissionToRemove
+                      .email === row.email
+                  }
+                  isDisabled={areMutationsLoading}
+                  // TODO: Add handling for removing self as collaborator.
+                  onClick={handleRemoveCollaborator(row)}
+                />
+              </Stack>
+            ) : (
+              <ViewOnlyPermission role={row.role}>
+                {isCurrentUser ? (
+                  <RemoveCollaboratorButton
+                    isDisabled={areMutationsLoading}
+                    // TODO: Add handling for removing self as collaborator.
+                  />
+                ) : (
+                  <Spacer w="2.75rem" />
+                )}
+              </ViewOnlyPermission>
+            )}
+          </CollaboratorRow>
+        )
+      })}
     </Stack>
   )
 }

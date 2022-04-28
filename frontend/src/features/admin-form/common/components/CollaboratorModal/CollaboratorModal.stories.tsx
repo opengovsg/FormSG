@@ -7,10 +7,11 @@ import {
   createFormBuilderMocks,
   getAdminFormCollaborators,
 } from '~/mocks/msw/handlers/admin-form'
-import { getUser } from '~/mocks/msw/handlers/user'
+import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
   fullScreenDecorator,
+  getMobileViewParameters,
   LoggedInDecorator,
   StoryRouter,
   viewports,
@@ -64,10 +65,10 @@ const Template: Story = () => {
     el,
   )
 }
-export const Default = Template.bind({})
+export const EditView = Template.bind({})
 
-export const WithCollaborators = Template.bind({})
-WithCollaborators.parameters = {
+export const EditViewWithCollaborators = Template.bind({})
+EditViewWithCollaborators.parameters = {
   msw: [
     getAdminFormCollaborators({
       delay: 0,
@@ -91,13 +92,13 @@ WithCollaborators.parameters = {
   ],
 }
 
-export const Loading = Template.bind({})
-Loading.parameters = {
+export const EditViewLoading = Template.bind({})
+EditViewLoading.parameters = {
   msw: [getAdminFormCollaborators({ delay: 'infinite' }), ...baseMswRoutes],
 }
 
-export const Mobile = Template.bind({})
-Mobile.parameters = {
+export const EditViewMobile = Template.bind({})
+EditViewMobile.parameters = {
   viewport: {
     defaultViewport: 'mobile1',
   },
@@ -117,5 +118,49 @@ Mobile.parameters = {
       ],
     }),
     ...baseMswRoutes,
+  ],
+}
+
+export const ViewerView = Template.bind({})
+ViewerView.parameters = {
+  msw: [
+    ...createFormBuilderMocks({}, 0),
+    getUser({
+      mockUser: { ...MOCK_USER, email: 'viewer@example.com' },
+      delay: 0,
+    }),
+    getAdminFormCollaborators({
+      overrides: [
+        {
+          email: 'viewer@example.com',
+          write: false,
+        },
+        {
+          email:
+            'super-duper-long-email-the-quick-brown-fox-jumps-over-the-lazy-dog@example.com',
+          write: true,
+        },
+      ],
+    }),
+  ],
+}
+
+export const ViewerViewMobile = Template.bind({})
+ViewerViewMobile.parameters = {
+  ...ViewerView.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const ViewerViewLoading = Template.bind({})
+ViewerViewLoading.parameters = {
+  msw: [
+    ...createFormBuilderMocks({}, 0),
+    getUser({
+      mockUser: { ...MOCK_USER, email: 'viewer@example.com' },
+      delay: 0,
+    }),
+    getAdminFormCollaborators({
+      delay: 'infinite',
+    }),
   ],
 }
