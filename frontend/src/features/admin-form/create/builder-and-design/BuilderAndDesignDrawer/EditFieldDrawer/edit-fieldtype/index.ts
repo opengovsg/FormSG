@@ -1,5 +1,6 @@
 export * from './EditCheckbox'
 export * from './EditDecimal'
+export * from './EditDropdown'
 export * from './EditEmail'
 export * from './EditHeader'
 export * from './EditHomeno'
