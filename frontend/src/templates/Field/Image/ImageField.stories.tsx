@@ -1,5 +1,6 @@
 import { Meta, Story } from '@storybook/react'
 import { merge } from 'lodash'
+import { rest } from 'msw'
 
 import { BasicField } from '~shared/types/field'
 
@@ -79,5 +80,22 @@ Tablet.parameters = {
 
 export const Loading = Template.bind({})
 Loading.args = {
+  schema: merge({}, baseSchema, { url: '/mock/api' }),
+}
+Loading.parameters = {
+  msw: [
+    rest.get('/mock/api', (_req, res, ctx) => {
+      return res(ctx.delay('infinite'))
+    }),
+  ],
+}
+
+export const EmptySrc = Template.bind({})
+EmptySrc.args = {
   schema: merge({}, baseSchema, { url: '' }),
+}
+
+export const InvalidSrc = Template.bind({})
+InvalidSrc.args = {
+  schema: merge({}, baseSchema, { url: 'this is an invalid url' }),
 }
