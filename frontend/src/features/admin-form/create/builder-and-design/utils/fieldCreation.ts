@@ -49,6 +49,13 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         allowIntlNumbers: false,
       }
     }
+    case BasicField.HomeNo: {
+      return {
+        fieldType,
+        ...baseMeta,
+        allowIntlNumbers: false,
+      }
+    }
     case BasicField.ShortText: {
       return {
         fieldType,
@@ -68,6 +75,17 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         ValidationOptions: {
           selectedValidation: null,
           customVal: null,
+        },
+      }
+    }
+    case BasicField.Decimal: {
+      return {
+        fieldType,
+        ...baseMeta,
+        validateByValue: false,
+        ValidationOptions: {
+          customMin: null,
+          customMax: null,
         },
       }
     }

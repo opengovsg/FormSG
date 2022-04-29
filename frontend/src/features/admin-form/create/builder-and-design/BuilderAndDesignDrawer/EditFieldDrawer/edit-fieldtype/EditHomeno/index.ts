@@ -1,0 +1,1 @@
+export { EditHomeno } from './EditHomeno'

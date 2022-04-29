@@ -1,10 +1,9 @@
 import { createContext, useCallback, useContext, useState } from 'react'
 
-import { DropdownRole } from './constants'
-
 export enum CollaboratorFlowStates {
   List = 'list',
   TransferOwner = 'transferOwner',
+  RemoveSelf = 'removeSelf',
 }
 
 type CollaboratorWizardContextReturn = {
@@ -13,11 +12,7 @@ type CollaboratorWizardContextReturn = {
   handleBackToList: () => void
   emailToTransfer: string | null
   handleForwardToTransferOwnership: (emailToTransfer: string) => void
-}
-
-export type AddCollaboratorInputs = {
-  email: string
-  role: DropdownRole
+  handleForwardToRemoveSelf: () => void
 }
 
 const CollaboratorWizardContext = createContext<
@@ -47,12 +42,17 @@ const useCollaboratorWizardContext = (): CollaboratorWizardContextReturn => {
     [],
   )
 
+  const handleForwardToRemoveSelf = useCallback(() => {
+    setCurrentStep([CollaboratorFlowStates.RemoveSelf, 1])
+  }, [])
+
   return {
     currentStep,
     direction,
     handleBackToList,
     emailToTransfer,
     handleForwardToTransferOwnership,
+    handleForwardToRemoveSelf,
   }
 }
 
