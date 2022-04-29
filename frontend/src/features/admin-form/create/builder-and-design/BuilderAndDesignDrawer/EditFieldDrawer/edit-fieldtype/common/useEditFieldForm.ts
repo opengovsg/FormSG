@@ -26,7 +26,6 @@ import {
 } from '~features/admin-form/create/builder-and-design/useBuilderAndDesignStore'
 
 import { EditFieldProps } from './types'
-import { getButtonText } from './utils'
 
 type UseEditFieldFormProps<
   FormShape,
@@ -133,7 +132,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   )
 
   const buttonText = useMemo(
-    () => getButtonText(isPendingField),
+    () => (isPendingField ? 'Create field' : 'Save field'),
     [isPendingField],
   )
 
