@@ -11,9 +11,9 @@ import Attachment from '~components/Field/Attachment'
 
 import { EditImageInputs } from './EditImage'
 
-type UploadImageInputProps = ControllerRenderProps<
-  EditImageInputs,
-  'attachment'
+type UploadImageInputProps = Pick<
+  ControllerRenderProps<EditImageInputs, 'attachment'>,
+  'name' | 'onChange' | 'value'
 >
 
 export const UploadImageInput = forwardRef<UploadImageInputProps, 'div'>(

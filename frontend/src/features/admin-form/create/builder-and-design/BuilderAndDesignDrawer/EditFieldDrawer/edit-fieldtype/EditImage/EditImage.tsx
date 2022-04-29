@@ -1,10 +1,11 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Controller } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 import { extend, get, isEmpty, pick } from 'lodash'
 
 import { ImageFieldBase } from '~shared/types/field'
 
+import { useToast } from '~hooks/useToast'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import {
   getByteFileSize,
@@ -78,10 +79,11 @@ const transformImageEditFormToField = (
 }
 
 export const EditImage = ({ field }: EditImageProps): JSX.Element => {
+  const toast = useToast({ status: 'danger' })
   const {
     register,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     isSaveEnabled,
     buttonText,
     handleUpdateField,
@@ -93,8 +95,12 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
       input: transformImageFieldToEditForm,
       output: transformImageEditFormToField,
       preSubmit: (output) => {
-        // TODO: Generate presigned url and update the url to the new one.
-        return output
+        // artificial delay of 2 seconds before throwing rejecting with an error
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject(new Error('Upload failed'))
+          }, 2000)
+        })
       },
     },
   })
@@ -104,11 +110,21 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
     [],
   )
 
+  // Required to override original updateField function due to possible errors
+  // from the generation of presigned urls.
+  const handleUpdateFieldWithCatch = useCallback(
+    () =>
+      handleUpdateField().catch((error) => {
+        toast({ description: error.message })
+      }),
+    [handleUpdateField, toast],
+  )
+
   return (
     <DrawerContentContainer>
       <FormControl
         isRequired
-        isReadOnly={isLoading}
+        isReadOnly={isLoading || isSubmitting}
         isInvalid={!isEmpty(errors.attachment)}
       >
         <FormLabel>Uploaded image</FormLabel>
@@ -125,16 +141,19 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
         />
         <FormErrorMessage>{get(errors, 'attachment.message')}</FormErrorMessage>
       </FormControl>
-      <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
+      <FormControl
+        isReadOnly={isLoading || isSubmitting}
+        isInvalid={!!errors.description}
+      >
         <FormLabel isRequired>Description</FormLabel>
         <Textarea {...register('description', requiredValidationRule)} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormFieldDrawerActions
-        isLoading={isLoading}
+        isLoading={isLoading || isSubmitting}
         isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
-        handleClick={handleUpdateField}
+        handleClick={handleUpdateFieldWithCatch}
         handleCancel={handleCancel}
       />
     </DrawerContentContainer>
