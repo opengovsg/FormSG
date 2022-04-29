@@ -1,5 +1,6 @@
 import { XMotionBox } from '~templates/MotionBox'
 
+import { RemoveSelfScreen } from './RemoveSelfScreen/RemoveSelfScreen'
 import { CollaboratorListScreen } from './CollaboratorListScreen'
 import {
   CollaboratorFlowStates,
@@ -21,6 +22,9 @@ export const CollaboratorModalContent = () => {
       )}
       {currentStep === CollaboratorFlowStates.TransferOwner && (
         <TransferOwnershipScreen />
+      )}
+      {currentStep === CollaboratorFlowStates.RemoveSelf && (
+        <RemoveSelfScreen />
       )}
     </XMotionBox>
   )

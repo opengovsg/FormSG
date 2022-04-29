@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 import {
   AdminFormDto,
@@ -8,10 +8,12 @@ import {
   FormPermissionsDto,
 } from '~shared/types/form/form'
 
+import { ROOT_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 
 import { permissionsToRole } from './components/CollaboratorModal/utils'
 import {
+  removeSelfFromFormCollaborators,
   transferFormOwner,
   updateFormCollaborators,
 } from './AdminViewFormService'
@@ -31,6 +33,7 @@ export const useMutateCollaborators = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
 
@@ -174,10 +177,27 @@ export const useMutateCollaborators = () => {
     },
   )
 
+  const mutateRemoveSelf = useMutation(
+    () => removeSelfFromFormCollaborators(formId),
+    {
+      onSuccess: () => {
+        toast({
+          description:
+            'You have removed yourself as a collaborator from the form.',
+        })
+        navigate(ROOT_ROUTE)
+        // Remove all related queries from cache.
+        queryClient.removeQueries(adminFormKeys.id(formId))
+      },
+      onError: handleError,
+    },
+  )
+
   return {
     mutateAddCollaborator,
     mutateUpdateCollaborator,
     mutateRemoveCollaborator,
     mutateTransferFormOwnership,
+    mutateRemoveSelf,
   }
 }

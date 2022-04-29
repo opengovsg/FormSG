@@ -79,3 +79,11 @@ export const transferFormOwner = async (
     { email: newOwnerEmail },
   ).then(({ data }) => data)
 }
+
+export const removeSelfFromFormCollaborators = async (
+  formId: string,
+): Promise<void> => {
+  return ApiService.delete(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/self`,
+  )
+}
