@@ -1,5 +1,4 @@
-import { Box, useDisclosure } from '@chakra-ui/react'
-import { DecoratorFn, Meta, Story } from '@storybook/react'
+import { Meta, Story } from '@storybook/react'
 
 import { BasicField, EmailFieldBase } from '~shared/types'
 
@@ -7,8 +6,7 @@ import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter } from '~utils/storybook'
 
-import { BuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
-import { CreatePageSidebarProvider } from '~features/admin-form/create/common/CreatePageSidebarContext'
+import { EditFieldDrawerDecorator } from '../__tests__/utils/storybook'
 
 import { EditEmail } from './EditEmail'
 
@@ -29,23 +27,6 @@ const DEFAULT_EMAIL_FIELD: EmailFieldBase = {
   isVerifiable: false,
   fieldType: BasicField.Email,
   globalId: 'unused',
-}
-
-const EditFieldDrawerDecorator: DecoratorFn = (storyFn) => {
-  const deleteFieldModalDisclosure = useDisclosure()
-  return (
-    <Box maxW="33.25rem">
-      <CreatePageSidebarProvider>
-        <BuilderAndDesignContext.Provider
-          value={{
-            deleteFieldModalDisclosure,
-          }}
-        >
-          {storyFn()}
-        </BuilderAndDesignContext.Provider>
-      </CreatePageSidebarProvider>
-    </Box>
-  )
 }
 
 export default {
