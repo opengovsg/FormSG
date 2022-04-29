@@ -1,9 +1,14 @@
 import { useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
-import { FormControl, SimpleGrid } from '@chakra-ui/react'
+import {
+  FormControl,
+  InputGroup,
+  InputRightElement,
+  SimpleGrid,
+} from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
-import { NumberFieldBase, NumberSelectedValidation } from '~shared/types/field'
+import { ShortTextFieldBase, TextSelectedValidation } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
@@ -19,23 +24,30 @@ import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
-type EditNumberProps = EditFieldProps<NumberFieldBase>
+import { CopyFieldIdButton } from './CopyFieldIdButton'
 
-const EDIT_NUMBER_FIELD_KEYS = ['title', 'description', 'required'] as const
+export type EditShortTextProps = EditFieldProps<ShortTextFieldBase>
 
-type EditNumberInputs = Pick<
-  NumberFieldBase,
-  typeof EDIT_NUMBER_FIELD_KEYS[number]
+const EDIT_SHORTTEXT_FIELD_KEYS = [
+  'title',
+  'description',
+  'required',
+  'allowPrefill',
+] as const
+
+type EditShortTextInputs = Pick<
+  ShortTextFieldBase,
+  typeof EDIT_SHORTTEXT_FIELD_KEYS[number]
 > & {
   ValidationOptions: {
-    selectedValidation: NumberSelectedValidation | ''
+    selectedValidation: TextSelectedValidation | ''
     customVal: number | ''
   }
 }
 
-const transformNumberFieldToEditForm = (
-  field: NumberFieldBase,
-): EditNumberInputs => {
+const transformShortTextFieldToEditForm = (
+  field: ShortTextFieldBase,
+): EditShortTextInputs => {
   const nextValidationOptions = {
     selectedValidation:
       field.ValidationOptions.selectedValidation || ('' as const),
@@ -45,15 +57,15 @@ const transformNumberFieldToEditForm = (
       ('' as const),
   }
   return {
-    ...pick(field, EDIT_NUMBER_FIELD_KEYS),
+    ...pick(field, EDIT_SHORTTEXT_FIELD_KEYS),
     ValidationOptions: nextValidationOptions,
   }
 }
 
-const transformNumberEditFormToField = (
-  inputs: EditNumberInputs,
-  originalField: NumberFieldBase,
-): NumberFieldBase => {
+const transformShortTextEditFormToField = (
+  inputs: EditShortTextInputs,
+  originalField: ShortTextFieldBase,
+): ShortTextFieldBase => {
   const nextValidationOptions =
     inputs.ValidationOptions.selectedValidation === ''
       ? {
@@ -66,7 +78,7 @@ const transformNumberEditFormToField = (
   })
 }
 
-export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
+export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
   const {
     register,
     formState: { errors },
@@ -80,11 +92,11 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     isLoading,
     handleCancel,
     setValue,
-  } = useEditFieldForm<EditNumberInputs, NumberFieldBase>({
+  } = useEditFieldForm<EditShortTextInputs, ShortTextFieldBase>({
     field,
     transform: {
-      input: transformNumberFieldToEditForm,
-      output: transformNumberEditFormToField,
+      input: transformShortTextFieldToEditForm,
+      output: transformShortTextEditFormToField,
     },
   })
 
@@ -97,8 +109,10 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     'ValidationOptions.selectedValidation',
   )
 
+  const watchAllowPrefill = watch('allowPrefill')
+
   const customValValidationOptions: RegisterOptions<
-    EditNumberInputs,
+    EditShortTextInputs,
     'ValidationOptions.customVal'
   > = useMemo(
     () => ({
@@ -166,7 +180,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
             control={control}
             render={({ field }) => (
               <SingleSelect
-                items={Object.values(NumberSelectedValidation)}
+                items={Object.values(TextSelectedValidation)}
                 {...field}
               />
             )}
@@ -189,6 +203,30 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
         <FormErrorMessage>
           {errors?.ValidationOptions?.customVal?.message}
         </FormErrorMessage>
+      </FormControl>
+      <FormControl isReadOnly={isLoading}>
+        <Toggle
+          {...register('allowPrefill')}
+          label="Enable pre-fill"
+          description="Use the Field ID to pre-populate this field for your users via an URL. [Learn how](https://go.gov.sg/form-prefill)"
+        />
+        {watchAllowPrefill ? (
+          <InputGroup mt="0.5rem">
+            <Input
+              isReadOnly
+              isDisabled={!field._id}
+              value={
+                field._id ??
+                'Field ID will be generated after this field is saved'
+              }
+            />
+            {field._id ? (
+              <InputRightElement>
+                <CopyFieldIdButton fieldId={field._id} />
+              </InputRightElement>
+            ) : null}
+          </InputGroup>
+        ) : null}
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}

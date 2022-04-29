@@ -10,5 +10,7 @@ export type FieldMutateOptions = MutateOptions<
 >
 
 export type EditFieldProps<T extends FieldBase> = {
-  field: T
+  field: T & {
+    _id?: FormFieldDto['_id']
+  }
 }

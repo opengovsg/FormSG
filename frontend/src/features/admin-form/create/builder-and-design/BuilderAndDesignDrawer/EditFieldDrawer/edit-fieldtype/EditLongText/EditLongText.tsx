@@ -1,9 +1,9 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { FormControl, SimpleGrid } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
-import { NumberFieldBase, NumberSelectedValidation } from '~shared/types/field'
+import { LongTextFieldBase, TextSelectedValidation } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
@@ -19,23 +19,23 @@ import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
-type EditNumberProps = EditFieldProps<NumberFieldBase>
+export type EditLongTextProps = EditFieldProps<LongTextFieldBase>
 
-const EDIT_NUMBER_FIELD_KEYS = ['title', 'description', 'required'] as const
+const EDIT_LONGTEXT_FIELD_KEYS = ['title', 'description', 'required'] as const
 
-type EditNumberInputs = Pick<
-  NumberFieldBase,
-  typeof EDIT_NUMBER_FIELD_KEYS[number]
+type EditLongTextInputs = Pick<
+  LongTextFieldBase,
+  typeof EDIT_LONGTEXT_FIELD_KEYS[number]
 > & {
   ValidationOptions: {
-    selectedValidation: NumberSelectedValidation | ''
+    selectedValidation: TextSelectedValidation | ''
     customVal: number | ''
   }
 }
 
-const transformNumberFieldToEditForm = (
-  field: NumberFieldBase,
-): EditNumberInputs => {
+const transformLongTextFieldToEditForm = (
+  field: LongTextFieldBase,
+): EditLongTextInputs => {
   const nextValidationOptions = {
     selectedValidation:
       field.ValidationOptions.selectedValidation || ('' as const),
@@ -45,15 +45,15 @@ const transformNumberFieldToEditForm = (
       ('' as const),
   }
   return {
-    ...pick(field, EDIT_NUMBER_FIELD_KEYS),
+    ...pick(field, EDIT_LONGTEXT_FIELD_KEYS),
     ValidationOptions: nextValidationOptions,
   }
 }
 
-const transformNumberEditFormToField = (
-  inputs: EditNumberInputs,
-  originalField: NumberFieldBase,
-): NumberFieldBase => {
+const transformLongTextEditFormToField = (
+  inputs: EditLongTextInputs,
+  originalField: LongTextFieldBase,
+): LongTextFieldBase => {
   const nextValidationOptions =
     inputs.ValidationOptions.selectedValidation === ''
       ? {
@@ -66,7 +66,7 @@ const transformNumberEditFormToField = (
   })
 }
 
-export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
+export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
   const {
     register,
     formState: { errors },
@@ -76,15 +76,13 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     handleUpdateField,
     watch,
     control,
-    clearErrors,
     isLoading,
     handleCancel,
-    setValue,
-  } = useEditFieldForm<EditNumberInputs, NumberFieldBase>({
+  } = useEditFieldForm<EditLongTextInputs, LongTextFieldBase>({
     field,
     transform: {
-      input: transformNumberFieldToEditForm,
-      output: transformNumberEditFormToField,
+      input: transformLongTextFieldToEditForm,
+      output: transformLongTextEditFormToField,
     },
   })
 
@@ -98,7 +96,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
   )
 
   const customValValidationOptions: RegisterOptions<
-    EditNumberInputs,
+    EditLongTextInputs,
     'ValidationOptions.customVal'
   > = useMemo(
     () => ({
@@ -128,14 +126,6 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     [getValues],
   )
 
-  // Effect to clear validation option errors when selection limit is toggled off.
-  useEffect(() => {
-    if (!watchedSelectedValidation) {
-      clearErrors('ValidationOptions')
-      setValue('ValidationOptions.customVal', '')
-    }
-  }, [clearErrors, setValue, watchedSelectedValidation])
-
   return (
     <DrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
@@ -164,9 +154,12 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
           <Controller
             name="ValidationOptions.selectedValidation"
             control={control}
+            rules={{
+              deps: ['ValidationOptions.customVal'],
+            }}
             render={({ field }) => (
               <SingleSelect
-                items={Object.values(NumberSelectedValidation)}
+                items={Object.values(TextSelectedValidation)}
                 {...field}
               />
             )}
