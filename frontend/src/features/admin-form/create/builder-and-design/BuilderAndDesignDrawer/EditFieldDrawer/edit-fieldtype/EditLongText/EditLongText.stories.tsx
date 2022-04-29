@@ -6,9 +6,7 @@ import {
   TextSelectedValidation,
 } from '~shared/types'
 
-import { StoryRouter } from '~utils/storybook'
-
-import { EditFieldDrawerDecorator } from '../__tests__/utils/storybook'
+import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { EditLongText, EditLongTextProps } from './EditLongText'
 

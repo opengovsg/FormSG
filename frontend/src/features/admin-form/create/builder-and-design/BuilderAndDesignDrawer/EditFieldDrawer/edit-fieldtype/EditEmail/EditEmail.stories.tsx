@@ -4,9 +4,7 @@ import { BasicField, EmailFieldBase } from '~shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
-import { StoryRouter } from '~utils/storybook'
-
-import { EditFieldDrawerDecorator } from '../__tests__/utils/storybook'
+import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { EditEmail } from './EditEmail'
 

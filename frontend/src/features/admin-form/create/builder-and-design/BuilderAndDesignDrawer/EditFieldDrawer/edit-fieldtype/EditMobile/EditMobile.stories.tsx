@@ -5,9 +5,7 @@ import { BasicField, MobileFieldBase } from '~shared/types'
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 
-import { StoryRouter } from '~utils/storybook'
-
-import { EditFieldDrawerDecorator } from '../__tests__/utils/storybook'
+import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { EditMobile } from './EditMobile'
 

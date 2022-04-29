@@ -2,11 +2,9 @@ import { Meta, Story } from '@storybook/react'
 
 import { BasicField, DecimalFieldBase } from '~shared/types'
 
-import { StoryRouter } from '~utils/storybook'
+import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
-
-import { EditFieldDrawerDecorator } from '../__tests__/utils/storybook'
 
 import { EditDecimal } from './EditDecimal'
 
