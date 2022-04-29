@@ -24,6 +24,7 @@ import {
   EditEmail,
   EditHeader,
   EditHomeno,
+  EditImage,
   EditLongText,
   EditMobile,
   EditNric,
@@ -160,6 +161,8 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditLongText {...props} field={field} />
       case BasicField.Statement:
         return <EditParagraph {...props} field={field} />
+      case BasicField.Image:
+        return <EditImage {...props} field={field} />
       default:
         return <div>TODO: Insert field options here</div>
     }

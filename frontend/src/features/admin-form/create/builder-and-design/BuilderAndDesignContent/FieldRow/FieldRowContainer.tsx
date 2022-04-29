@@ -23,6 +23,7 @@ import {
   DropdownField,
   EmailField,
   HomeNoField,
+  ImageField,
   LongTextField,
   MobileField,
   NricField,
@@ -327,6 +328,8 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
       return <UenField schema={field} {...rest} />
     case BasicField.YesNo:
       return <YesNoField schema={field} {...rest} />
+    case BasicField.Image:
+      return <ImageField schema={field} {...rest} />
     default:
       return <div>TODO: Add field row for {field.fieldType}</div>
   }
