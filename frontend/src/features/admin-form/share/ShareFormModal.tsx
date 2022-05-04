@@ -1,12 +1,11 @@
 import { useCallback, useMemo } from 'react'
 import { BiLinkExternal } from 'react-icons/bi'
-import { Link as ReactLink, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   Box,
   FormControl,
   InputGroup,
   InputRightElement,
-  Link,
   Modal,
   ModalBody,
   ModalContent,
@@ -18,7 +17,7 @@ import {
 } from '@chakra-ui/react'
 import dedent from 'dedent'
 
-import { ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
+import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
@@ -96,8 +95,8 @@ export const ShareFormModal = ({
 
   const handleRedirectToSettings = useCallback(() => {
     onClose()
-    navigate(ADMINFORM_SETTINGS_SUBROUTE)
-  }, [navigate, onClose])
+    navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SUBROUTE}`)
+  }, [formId, navigate, onClose])
 
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
