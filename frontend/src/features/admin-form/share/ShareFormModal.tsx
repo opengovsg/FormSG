@@ -1,9 +1,12 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { BiLinkExternal } from 'react-icons/bi'
+import { Link as ReactLink, useNavigate } from 'react-router-dom'
 import {
+  Box,
   FormControl,
   InputGroup,
   InputRightElement,
+  Link,
   Modal,
   ModalBody,
   ModalContent,
@@ -15,8 +18,11 @@ import {
 } from '@chakra-ui/react'
 import dedent from 'dedent'
 
+import { ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
+import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
+import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
@@ -29,14 +35,17 @@ interface ShareFormModalProps {
    * ID of form to generate share link for. If not provided, modal will be in a
    * loading state
    */
-  formId?: string
+  formId: string | undefined
+  isFormPrivate: boolean | undefined
 }
 
 export const ShareFormModal = ({
   isOpen,
   onClose,
   formId,
+  isFormPrivate,
 }: ShareFormModalProps): JSX.Element => {
+  const navigate = useNavigate()
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -85,6 +94,11 @@ export const ShareFormModal = ({
     `)
   }, [shareLink])
 
+  const handleRedirectToSettings = useCallback(() => {
+    onClose()
+    navigate(ADMINFORM_SETTINGS_SUBROUTE)
+  }, [navigate, onClose])
+
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -96,6 +110,21 @@ export const ShareFormModal = ({
         <ModalHeader color="secondary.700">Share form</ModalHeader>
         <ModalBody whiteSpace="pre-line">
           <Stack spacing="1rem" pb="2rem">
+            {isFormPrivate ? (
+              <InlineMessage variant="warning">
+                <Box>
+                  This form is currently closed to new responses.{' '}
+                  <Button
+                    p={0}
+                    variant="link"
+                    onClick={handleRedirectToSettings}
+                  >
+                    Activate your form
+                  </Button>{' '}
+                  to allow new responses.
+                </Box>
+              </InlineMessage>
+            ) : null}
             <FormControl isReadOnly>
               <FormLabel
                 isRequired

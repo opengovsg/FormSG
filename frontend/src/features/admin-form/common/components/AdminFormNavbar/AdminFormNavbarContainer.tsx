@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Tabs, useBreakpointValue, useDisclosure } from '@chakra-ui/react'
 
+import { FormStatus } from '~shared/types'
+
 import {
   ADMINFORM_BUILD_SUBROUTE,
   ADMINFORM_RESULTS_SUBROUTE,
@@ -102,6 +104,7 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
         isOpen={shareFormModalDisclosure.isOpen}
         onClose={shareFormModalDisclosure.onClose}
         formId={form?._id}
+        isFormPrivate={form?.status === FormStatus.Private}
       />
       <Tabs
         variant={responsiveVariant}
