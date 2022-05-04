@@ -6,6 +6,7 @@ export interface ITwilioSmsWebhookBody {
   To: string
   MessageSid: string
   AccountSid: string
+  MessagingServiceSid: string
   From: string
   ApiVersion: string
   ErrorCode?: number // Only filled when it is 'failed' or 'undelivered'
