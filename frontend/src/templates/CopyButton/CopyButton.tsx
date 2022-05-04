@@ -3,16 +3,15 @@ import { Icon, useClipboard } from '@chakra-ui/react'
 
 import IconButton, { IconButtonProps } from '~components/IconButton'
 
-export interface CopyFieldIdButtonProps
-  extends Omit<IconButtonProps, 'aria-label'> {
-  fieldId: string
+export interface CopyFieldIdButtonProps extends IconButtonProps {
+  stringToCopy: string
 }
 
-export const CopyFieldIdButton = ({
-  fieldId,
+export const CopyButton = ({
+  stringToCopy,
   ...iconButtonProps
 }: CopyFieldIdButtonProps): JSX.Element => {
-  const { onCopy, hasCopied } = useClipboard(fieldId)
+  const { onCopy, hasCopied } = useClipboard(stringToCopy)
 
   return hasCopied ? (
     <Icon as={BiCheck} color="success.700" fontSize="1.5rem" />
@@ -23,7 +22,6 @@ export const CopyFieldIdButton = ({
       w="2rem"
       size="sm"
       icon={<BiCopy fontSize="1.25rem" />}
-      aria-label="Copy field id value"
       onClick={onCopy}
       {...iconButtonProps}
     />
