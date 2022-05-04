@@ -56,7 +56,6 @@ export const twilioSmsUpdates: ControllerHandler<
    * Example: https://www.twilio.com/docs/usage/webhooks/sms-webhooks.
    */
 
-  // should we add
   const ddTags = {
     // msgsrvcsid: req.body.MessagingServiceSid,
     smsstatus: req.body.SmsStatus,
