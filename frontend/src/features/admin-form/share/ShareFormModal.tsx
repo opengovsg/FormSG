@@ -27,7 +27,7 @@ import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
 import { CopyButton } from '~templates/CopyButton'
 
-interface ShareFormModalProps {
+export interface ShareFormModalProps {
   isOpen: boolean
   onClose: () => void
   /**
