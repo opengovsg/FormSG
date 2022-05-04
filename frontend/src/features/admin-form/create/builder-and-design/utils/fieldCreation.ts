@@ -85,6 +85,16 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         fieldOptions: ['Option 1'],
       }
     }
+    case BasicField.Image: {
+      return {
+        fieldType,
+        ...baseMeta,
+        fileMd5Hash: '',
+        name: '',
+        url: '',
+        size: '',
+      }
+    }
     case BasicField.Decimal: {
       return {
         fieldType,
