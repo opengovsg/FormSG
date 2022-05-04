@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Box, Image, Skeleton, useBreakpointValue } from '@chakra-ui/react'
 import gfm from 'remark-gfm'
@@ -34,6 +34,13 @@ export const ImageField = ({ schema }: ImageFieldProps): JSX.Element => {
       },
     },
   })
+
+  // Reset fallback type to `loading` whenever url changes.
+  useEffect(() => {
+    if (schema.url) {
+      setFallbackType('loading')
+    }
+  }, [schema.url])
 
   const fallback = useMemo(() => {
     if (!schema.url) {
