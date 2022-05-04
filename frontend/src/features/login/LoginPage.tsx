@@ -1,4 +1,5 @@
 import { FC, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   Box,
@@ -134,6 +135,7 @@ const NonMobileSidebarGridArea: FC = ({ children }) => (
 export const LoginPage = (): JSX.Element => {
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
+  const { t } = useTranslation()
 
   const currentYear = new Date().getFullYear()
   // `xs` breakpoint needs to be explicitly set, suspect ChakraUI bug where xs
@@ -183,7 +185,7 @@ export const LoginPage = (): JSX.Element => {
               color="white"
               mb="2.5rem"
             >
-              Build secure government forms in minutes
+              {t('general.slogan')}
             </Text>
             <LoginImage aria-hidden />
           </NonMobileSidebarGridArea>
