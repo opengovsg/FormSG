@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
 
-import { FormId } from '~shared/types/form/form'
+import { AdminDashboardFormMetaDto } from '~shared/types/form'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
@@ -9,7 +9,7 @@ import { RowActionsDrawer } from './RowActionsDrawer'
 import { RowActionsDropdown } from './RowActionsDropdown'
 
 export interface RowActionsProps {
-  formId: FormId
+  formMeta: Pick<AdminDashboardFormMetaDto, '_id' | 'status'>
   isDisabled?: boolean
 }
 
