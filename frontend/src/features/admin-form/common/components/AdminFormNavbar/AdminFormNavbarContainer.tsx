@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Tabs, useBreakpointValue } from '@chakra-ui/react'
+import { Tabs, useBreakpointValue, useDisclosure } from '@chakra-ui/react'
 
 import {
   ADMINFORM_BUILD_SUBROUTE,
@@ -10,7 +10,7 @@ import {
 } from '~constants/routes'
 
 import { useAdminForm } from '../../queries'
-import CollaboratorModal, { useCollaboratorModal } from '../CollaboratorModal'
+import CollaboratorModal from '../CollaboratorModal'
 
 import { AdminFormNavbar } from './AdminFormNavbar'
 
@@ -60,6 +60,8 @@ const useAdminFormNavbar = () => {
     [navigate],
   )
 
+  const collaboratorModalDisclosure = useDisclosure()
+
   return {
     tabIndex,
     handleTabsChange,
@@ -67,6 +69,7 @@ const useAdminFormNavbar = () => {
     handlePreviewForm,
     handleShareForm,
     form,
+    collaboratorModalDisclosure,
   }
 }
 
@@ -80,14 +83,15 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
     handleBackToDashboard,
     handlePreviewForm,
     handleShareForm,
+    collaboratorModalDisclosure,
     form,
   } = useAdminFormNavbar()
 
   const {
-    isCollaboratorModalOpen,
-    onCloseCollaboratorModal,
-    onOpenCollaboratorModal,
-  } = useCollaboratorModal()
+    onOpen: onOpenCollaboratorModal,
+    onClose: onCloseCollaboratorModal,
+    isOpen: isCollaboratorModalOpen,
+  } = useDisclosure()
 
   const responsiveVariant = useBreakpointValue({
     base: 'line-dark',
@@ -98,8 +102,8 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
   return (
     <>
       <CollaboratorModal
-        isOpen={isCollaboratorModalOpen}
-        onClose={onCloseCollaboratorModal}
+        isOpen={collaboratorModalDisclosure.isOpen}
+        onClose={collaboratorModalDisclosure.onClose}
       />
       <Tabs
         variant={responsiveVariant}
@@ -111,7 +115,7 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
         <AdminFormNavbar
           formInfo={form}
           handleBackButtonClick={handleBackToDashboard}
-          handleAddCollabButtonClick={onOpenCollaboratorModal}
+          handleAddCollabButtonClick={collaboratorModalDisclosure.onOpen}
           handlePreviewFormButtonClick={handlePreviewForm}
           handleShareButtonClick={handleShareForm}
         />
