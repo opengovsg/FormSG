@@ -118,6 +118,8 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
     register,
     control,
     formState: { errors, isSubmitting },
+    setError,
+    clearErrors,
     isSaveEnabled,
     buttonText,
     handleUpdateField,
@@ -164,7 +166,16 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
             },
           }}
           name="attachment"
-          render={({ field }) => <UploadImageInput {...field} />}
+          render={({ field: { onChange, ...field } }) => (
+            <UploadImageInput
+              {...field}
+              onChange={(event) => {
+                clearErrors('attachment')
+                onChange(event)
+              }}
+              onError={(message) => setError('attachment', { message })}
+            />
+          )}
         />
         <FormErrorMessage>{get(errors, 'attachment.message')}</FormErrorMessage>
       </FormControl>

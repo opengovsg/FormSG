@@ -16,10 +16,12 @@ import { EditImageInputs } from './EditImage'
 type UploadImageInputProps = Pick<
   ControllerRenderProps<EditImageInputs, 'attachment'>,
   'name' | 'onChange' | 'value'
->
+> & {
+  onError?: (errMsg: string) => void
+}
 
 export const UploadImageInput = forwardRef<UploadImageInputProps, 'div'>(
-  ({ name, onChange, value }, ref): JSX.Element => {
+  ({ name, onChange, value, onError }, ref): JSX.Element => {
     useEffect(() => {
       return () => {
         if (!value?.srcUrl) return
@@ -60,6 +62,7 @@ export const UploadImageInput = forwardRef<UploadImageInputProps, 'div'>(
         showFileSize
         value={value?.file}
         onChange={handleChange}
+        onError={onError}
       />
     )
   },
