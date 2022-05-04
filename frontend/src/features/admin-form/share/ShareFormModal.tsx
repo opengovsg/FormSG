@@ -101,10 +101,7 @@ export const ShareFormModal = ({
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent
-        // Prevent motion box content from escaping modal
-        overflowX="hidden"
-      >
+      <ModalContent>
         <ModalCloseButton />
         <ModalHeader color="secondary.700">Share form</ModalHeader>
         <ModalBody whiteSpace="pre-line">
