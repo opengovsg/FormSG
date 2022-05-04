@@ -31,7 +31,7 @@ const useWorkspaceForms = () => {
   const [sortedForms, setSortedForms] = useState(dashboardForms)
   const [isManipulating, setIsManipulating] = useState(false)
 
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const createFormModalDisclosure = useDisclosure()
 
   const topRef = useRef<HTMLDivElement>(null)
 
@@ -89,9 +89,7 @@ const useWorkspaceForms = () => {
     setPageNumber,
     setSortOrder,
     topRef,
-    handleOpenCreateFormModal: onOpen,
-    handleCloseCreateFormModal: onClose,
-    isCreateFormModalOpen: isOpen,
+    createFormModalDisclosure,
   }
 }
 
@@ -103,20 +101,18 @@ export const WorkspacePage = (): JSX.Element => {
     currentPage,
     setPageNumber,
     topRef,
-    isCreateFormModalOpen,
-    handleCloseCreateFormModal,
-    handleOpenCreateFormModal,
+    createFormModalDisclosure,
   } = useWorkspaceForms()
 
   return (
     <>
       <CreateFormModal
-        isOpen={isCreateFormModalOpen}
-        onClose={handleCloseCreateFormModal}
+        isOpen={createFormModalDisclosure.isOpen}
+        onClose={createFormModalDisclosure.onClose}
       />
       {totalFormCount === 0 ? (
         <EmptyWorkspace
-          handleOpenCreateFormModal={handleOpenCreateFormModal}
+          handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
           isLoading={isLoading}
         />
       ) : (
@@ -137,7 +133,7 @@ export const WorkspacePage = (): JSX.Element => {
             <WorkspaceHeader
               isLoading={isLoading}
               totalFormCount={totalFormCount}
-              handleOpenCreateFormModal={handleOpenCreateFormModal}
+              handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
             />
           </Container>
           <Box gridArea="main">
