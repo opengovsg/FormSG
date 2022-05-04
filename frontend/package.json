@@ -24,7 +24,6 @@
     "framer-motion": "^5.4.5",
     "i18next": "^21.6.16",
     "i18next-browser-languagedetector": "^6.1.4",
-    "i18next-http-backend": "^1.4.0",
     "i18next-icu": "^2.0.3",
     "immer": "^9.0.6",
     "intl-messageformat": "^9.13.0",
