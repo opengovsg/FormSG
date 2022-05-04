@@ -41,7 +41,10 @@ type UseEditFieldFormProps<
      * Final transformation before submitting, if any.
      * This transformation will be ran with the output of transform.output.
      */
-    preSubmit?: (field: FieldShape) => Promise<FieldShape> | FieldShape
+    preSubmit?: (
+      input: UnpackNestedValue<FormShape>,
+      output: FieldShape,
+    ) => Promise<FieldShape> | FieldShape
   }
 }
 
@@ -105,7 +108,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   const handleUpdateField = editForm.handleSubmit(async (inputs) => {
     let updatedFormField = transform.output(inputs, field)
     if (transform.preSubmit) {
-      updatedFormField = await transform.preSubmit(updatedFormField)
+      updatedFormField = await transform.preSubmit(inputs, updatedFormField)
     }
     if (stateData.state === BuildFieldState.CreatingField) {
       return createFieldMutation.mutate(updatedFormField, {

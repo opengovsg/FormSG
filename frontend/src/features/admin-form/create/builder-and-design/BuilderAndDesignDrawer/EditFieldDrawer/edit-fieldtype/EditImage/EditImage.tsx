@@ -1,5 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { Controller } from 'react-hook-form'
+import { useMutation } from 'react-query'
+import { useParams } from 'react-router-dom'
 import { FormControl } from '@chakra-ui/react'
 import { extend, get, isEmpty, pick } from 'lodash'
 
@@ -7,6 +9,7 @@ import { ImageFieldBase } from '~shared/types/field'
 
 import { useToast } from '~hooks/useToast'
 import { createBaseValidationRules } from '~utils/fieldValidation'
+import { uploadImage } from '~services/FileHandlerService'
 import {
   getByteFileSize,
   getReadableFileSize,
@@ -80,6 +83,37 @@ const transformImageEditFormToField = (
 
 export const EditImage = ({ field }: EditImageProps): JSX.Element => {
   const toast = useToast({ status: 'danger' })
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  const uploadImageMutation = useMutation((image: File) =>
+    uploadImage({ formId, image }),
+  )
+
+  const preSubmitTransform = useCallback(
+    (
+      inputs: EditImageInputs,
+      output: ImageFieldBase,
+    ): ImageFieldBase | Promise<ImageFieldBase> => {
+      // No upload is required.
+      if (
+        !inputs.attachment?.file ||
+        !inputs.attachment?.srcUrl?.startsWith('blob:')
+      ) {
+        return output
+      }
+      return uploadImageMutation
+        .mutateAsync(inputs.attachment.file)
+        .then((uploadedFileData) => {
+          return {
+            ...output,
+            ...uploadedFileData,
+          }
+        })
+    },
+    [uploadImageMutation],
+  )
+
   const {
     register,
     control,
@@ -94,14 +128,7 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
     transform: {
       input: transformImageFieldToEditForm,
       output: transformImageEditFormToField,
-      preSubmit: (output) => {
-        // artificial delay of 2 seconds before throwing rejecting with an error
-        return new Promise((resolve, reject) => {
-          setTimeout(() => {
-            reject(new Error('Upload failed'))
-          }, 2000)
-        })
-      },
+      preSubmit: preSubmitTransform,
     },
   })
 
