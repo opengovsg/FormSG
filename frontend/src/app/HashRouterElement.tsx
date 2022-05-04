@@ -12,22 +12,28 @@ interface HashRouterElementProps {
   element: React.ReactElement
 }
 
+type FormRegExpMatchArray = RegExpMatchArray & {
+  groups: {
+    formid?: string
+  }
+}
+
 const hashRouteMapper = [
   {
     regex: /^#!\/(?<formid>[0-9a-fA-F]{24})$/,
-    getTarget: (m: RegExpMatchArray) => `/${m.groups.formid}`,
+    getTarget: (m: FormRegExpMatchArray) => `/${m.groups.formid}`,
   },
   {
     regex: /^#!\/(?<formid>[0-9a-fA-F]{24})\/admin$/,
-    getTarget: (m: RegExpMatchArray) => `/admin/${m.groups.formid}`,
+    getTarget: (m: FormRegExpMatchArray) => `/admin/${m.groups.formid}`,
   },
   {
     regex: /^#!\/(?<formid>[0-9a-fA-F]{24})\/preview$/,
-    getTarget: (m: RegExpMatchArray) => `/admin/${m.groups.formid}/preview`,
+    getTarget: (m: FormRegExpMatchArray) => `/admin/${m.groups.formid}/preview`,
   },
   {
     regex: /^#!\/examples$/,
-    getTarget: (m: RegExpMatchArray) => `/admin`,
+    getTarget: (m: FormRegExpMatchArray) => `/admin`,
   },
 ]
 
@@ -44,7 +50,7 @@ export const HashRouterElement = ({
     for (const { regex, getTarget } of hashRouteMapper) {
       const match = location.hash.match(regex)
       if (match) {
-        redirectTo = getTarget(match)
+        redirectTo = getTarget(match as FormRegExpMatchArray)
         return <Navigate replace to={redirectTo} state={{ from: location }} />
       }
     }
