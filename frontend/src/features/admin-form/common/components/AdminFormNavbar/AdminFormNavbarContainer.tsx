@@ -9,6 +9,8 @@ import {
   ROOT_ROUTE,
 } from '~constants/routes'
 
+import { ShareFormModal } from '~features/admin-form/share'
+
 import { useAdminForm } from '../../queries'
 import CollaboratorModal from '../CollaboratorModal'
 
@@ -51,25 +53,22 @@ const useAdminFormNavbar = () => {
     console.log('preview form button clicked')
   }, [])
 
-  const handleShareForm = useCallback((): void => {
-    console.log('share form button clicked')
-  }, [])
-
   const handleTabsChange = useCallback(
     (index: number) => navigate(ADMINFORM_ROUTES[index]),
     [navigate],
   )
 
   const collaboratorModalDisclosure = useDisclosure()
+  const shareFormModalDisclosure = useDisclosure()
 
   return {
     tabIndex,
     handleTabsChange,
     handleBackToDashboard,
     handlePreviewForm,
-    handleShareForm,
     form,
     collaboratorModalDisclosure,
+    shareFormModalDisclosure,
   }
 }
 
@@ -82,16 +81,10 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
     handleTabsChange,
     handleBackToDashboard,
     handlePreviewForm,
-    handleShareForm,
     collaboratorModalDisclosure,
+    shareFormModalDisclosure,
     form,
   } = useAdminFormNavbar()
-
-  const {
-    onOpen: onOpenCollaboratorModal,
-    onClose: onCloseCollaboratorModal,
-    isOpen: isCollaboratorModalOpen,
-  } = useDisclosure()
 
   const responsiveVariant = useBreakpointValue({
     base: 'line-dark',
@@ -105,6 +98,11 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
         isOpen={collaboratorModalDisclosure.isOpen}
         onClose={collaboratorModalDisclosure.onClose}
       />
+      <ShareFormModal
+        isOpen={shareFormModalDisclosure.isOpen}
+        onClose={shareFormModalDisclosure.onClose}
+        formId={form?._id}
+      />
       <Tabs
         variant={responsiveVariant}
         isLazy
@@ -117,7 +115,7 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
           handleBackButtonClick={handleBackToDashboard}
           handleAddCollabButtonClick={collaboratorModalDisclosure.onOpen}
           handlePreviewFormButtonClick={handlePreviewForm}
-          handleShareButtonClick={handleShareForm}
+          handleShareButtonClick={shareFormModalDisclosure.onOpen}
         />
       </Tabs>
     </>
