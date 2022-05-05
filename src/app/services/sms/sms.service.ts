@@ -7,7 +7,6 @@ import Twilio from 'twilio'
 import { isPhoneNumber } from '../../../../shared/utils/phone-num-validation'
 import { AdminContactOtpData, FormOtpData } from '../../../types'
 import config from '../../config/config'
-import { statsdClient } from '../../config/datadog-statsd-client'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel from '../../models/form.server.model'
 import {
@@ -15,6 +14,7 @@ import {
   MalformedParametersError,
   PossibleDatabaseError,
 } from '../../modules/core/core.errors'
+import { twilioStatsdClient } from '../../modules/twilio/twilio.statsd-client'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -50,9 +50,6 @@ const secretsManager = new SecretsManager({ region: config.aws.region })
 export const twilioClientCache = new NodeCache({
   deleteOnExpire: true,
   stdTTL: 10,
-})
-const ddClient = statsdClient.childClient({
-  prefix: 'vendor.twilio.',
 })
 
 /**
@@ -237,7 +234,7 @@ const sendSms = (
           },
         })
 
-        ddClient.increment('sms.send', 1, 1, ddTags)
+        twilioStatsdClient.increment('sms.send', 1, 1, ddTags)
 
         // Invalid number error code, throw a more reasonable error for error
         // handling.
@@ -253,7 +250,7 @@ const sendSms = (
         )
       }
 
-      ddClient.increment('sms.send', 1, 1, ddTags)
+      twilioStatsdClient.increment('sms.send', 1, 1, ddTags)
 
       // No errors.
       logger.info({

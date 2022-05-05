@@ -3,14 +3,12 @@ import { StatusCodes } from 'http-status-codes'
 
 import { ITwilioSmsWebhookBody } from 'src/types/twilio'
 
-import { statsdClient } from '../../config/datadog-statsd-client'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 
+import { twilioStatsdClient } from './twilio.statsd-client'
+
 const logger = createLoggerWithLabel(module)
-const ddClient = statsdClient.childClient({
-  prefix: 'vendor.twilio.',
-})
 
 /**
  * Middleware which validates that a request came from Twilio Webhook
@@ -84,7 +82,7 @@ export const twilioSmsUpdates: ControllerHandler<
     })
   }
 
-  ddClient.increment('sms.update', 1, 1, ddTags)
+  twilioStatsdClient.increment('sms.update', 1, 1, ddTags)
 
   return res.sendStatus(StatusCodes.OK)
 }
