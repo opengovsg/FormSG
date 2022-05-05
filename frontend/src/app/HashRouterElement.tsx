@@ -25,11 +25,12 @@ const hashRouteMapper = [
   },
   {
     regex: /^#!\/(?<formid>[0-9a-fA-F]{24})\/admin$/,
-    getTarget: (m: FormRegExpMatchArray) => `/admin/${m.groups.formid}`,
+    getTarget: (m: FormRegExpMatchArray) => `/admin/form/${m.groups.formid}`,
   },
   {
     regex: /^#!\/(?<formid>[0-9a-fA-F]{24})\/preview$/,
-    getTarget: (m: FormRegExpMatchArray) => `/admin/${m.groups.formid}/preview`,
+    getTarget: (m: FormRegExpMatchArray) =>
+      `/admin/form/${m.groups.formid}/preview`,
   },
   {
     regex: /^#!\/examples$/,
