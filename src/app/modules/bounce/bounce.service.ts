@@ -64,7 +64,7 @@ const snsKeys: { key: keyof ISnsNotification; toSign: boolean }[] = [
 ]
 
 // Hostname for AWS URLs
-const AWS_HOSTNAME = '.amazonaws.com'
+const AWS_HOSTNAME = /^sns\.[a-z]{2}-[a-z]+-\d+\.amazonaws.com$/
 
 /**
  * Checks that a request body has all the required keys for a message from SNS.
@@ -85,7 +85,7 @@ const isValidCertUrl = (certUrl: string): boolean => {
   return (
     parsed.protocol === 'https:' &&
     parsed.pathname.endsWith('.pem') &&
-    parsed.hostname.endsWith(AWS_HOSTNAME)
+    AWS_HOSTNAME.test(parsed.hostname)
   )
 }
 
