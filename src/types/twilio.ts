@@ -12,3 +12,8 @@ export interface ITwilioSmsWebhookBody {
   ErrorCode?: number // Only filled when it is 'failed' or 'undelivered'
   ErrorMessage?: string // Only filled when it is 'failed' or 'undelivered'
 }
+
+export type TwilioSmsStatsdTags = {
+  errorcode: string
+  smsstatus: string
+}

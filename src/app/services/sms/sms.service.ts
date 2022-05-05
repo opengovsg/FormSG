@@ -4,6 +4,8 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
+import { TwilioSmsStatsdTags } from 'src/types/twilio'
+
 import { isPhoneNumber } from '../../../../shared/utils/phone-num-validation'
 import { AdminContactOtpData, FormOtpData } from '../../../types'
 import config from '../../config/config'
@@ -213,7 +215,7 @@ const sendSms = (
     },
   )
     .andThen(({ status, sid, errorCode, errorMessage }) => {
-      const ddTags = {
+      const ddTags: TwilioSmsStatsdTags = {
         // msgSrvcSid not included to limit tag cardinality (for now?)
         smsstatus: status,
         errorcode: '0',

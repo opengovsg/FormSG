@@ -1,7 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 
-import { ITwilioSmsWebhookBody } from 'src/types/twilio'
+import { ITwilioSmsWebhookBody, TwilioSmsStatsdTags } from 'src/types/twilio'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
@@ -54,7 +54,7 @@ export const twilioSmsUpdates: ControllerHandler<
    * Example: https://www.twilio.com/docs/usage/webhooks/sms-webhooks.
    */
 
-  const ddTags = {
+  const ddTags: TwilioSmsStatsdTags = {
     // msgSrvcSid not included to limit tag cardinality (for now?)
     smsstatus: req.body.SmsStatus,
     errorcode: '0',
