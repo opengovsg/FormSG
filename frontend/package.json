@@ -163,6 +163,7 @@
     "rimraf": "^3.0.2",
     "storybook-addon-turbo-build": "^1.1.0",
     "storybook-preset-craco": "0.0.6",
+    "storybook-react-i18next": "^1.0.20",
     "ts-jest": "^27.1.1",
     "worker-loader": "^3.0.8"
   },

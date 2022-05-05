@@ -10,6 +10,7 @@ import { initialize, mswDecorator } from 'msw-storybook-addon'
 import { AuthProvider } from '~contexts/AuthContext'
 import * as dayjsUtils from '~utils/dayjs'
 
+import i18n from '../src/i18n/i18n'
 import { theme } from '../src/theme'
 
 import { StorybookTheme } from './themes'
@@ -41,6 +42,11 @@ const withHelmet: DecoratorFn = (storyFn) => (
 export const decorators = [withReactQuery, withChakra, withHelmet, mswDecorator]
 
 export const parameters = {
+  i18n,
+  locale: 'en-SG',
+  locales: {
+    'en-SG': 'English',
+  },
   docs: {
     theme: StorybookTheme.docs,
     inlineStories: true,

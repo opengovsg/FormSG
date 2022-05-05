@@ -16,6 +16,7 @@ module.exports = {
     '@storybook/addon-essentials',
     '@storybook/addon-a11y',
     'storybook-preset-craco',
+    'storybook-react-i18next',
     {
       name: 'storybook-addon-turbo-build',
       options: {

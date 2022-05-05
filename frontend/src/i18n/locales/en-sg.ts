@@ -1,11 +1,9 @@
-import Translation from './translation.interface'
+import Translation from './types'
 
-const enSG: Translation = {
+export const enSG: Translation = {
   translation: {
     general: {
       slogan: 'Build secure government forms in minutes',
     },
   },
 }
-
-export default enSG
