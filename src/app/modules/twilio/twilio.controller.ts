@@ -55,7 +55,7 @@ export const twilioSmsUpdates: ControllerHandler<
    */
 
   const ddTags = {
-    // msgsrvcsid: req.body.MessagingServiceSid,
+    // msgSrvcSid not included to limit tag cardinality (for now?)
     smsstatus: req.body.SmsStatus,
     errorcode: '0',
   }

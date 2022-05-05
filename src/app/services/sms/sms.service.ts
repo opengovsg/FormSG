@@ -214,7 +214,7 @@ const sendSms = (
   )
     .andThen(({ status, sid, errorCode, errorMessage }) => {
       const ddTags = {
-        // msgsrvcsid: msgSrvcSid,
+        // msgSrvcSid not included to limit tag cardinality (for now?)
         smsstatus: status,
         errorcode: '0',
       }
