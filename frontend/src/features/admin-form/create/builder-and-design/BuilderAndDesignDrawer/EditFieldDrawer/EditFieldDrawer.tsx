@@ -30,6 +30,7 @@ import {
   EditNumber,
   EditParagraph,
   EditRadio,
+  EditRating,
   EditShortText,
   EditUen,
   EditYesNo,
@@ -154,6 +155,8 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditYesNo {...props} field={field} />
       case BasicField.Radio:
         return <EditRadio {...props} field={field} />
+      case BasicField.Rating:
+        return <EditRating {...props} field={field} />
       case BasicField.ShortText:
         return <EditShortText {...props} field={field} />
       case BasicField.LongText:
