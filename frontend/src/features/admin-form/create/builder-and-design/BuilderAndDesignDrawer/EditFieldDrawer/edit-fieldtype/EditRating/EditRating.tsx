@@ -32,6 +32,11 @@ type EditRatingInputs = Pick<
   typeof EDIT_RATING_FIELD_KEYS[number]
 >
 
+const EDIT_RATING_OPTIONS = {
+  stepOptions: Array.from(Array(10), (_e, i) => String(i + 1)),
+  shapeOptions: Object.keys(RatingShape),
+}
+
 export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
   const {
     register,
@@ -78,7 +83,7 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
           name="ratingOptions.steps"
           render={({ field: { value, ...field } }) => (
             <SingleSelect
-              items={Array.from(Array(10), (e, i) => String(i + 1))}
+              items={EDIT_RATING_OPTIONS.stepOptions}
               value={String(value)}
               {...field}
             />
@@ -91,7 +96,7 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
           control={control}
           name="ratingOptions.shape"
           render={({ field }) => (
-            <SingleSelect items={Object.keys(RatingShape)} {...field} />
+            <SingleSelect items={EDIT_RATING_OPTIONS.shapeOptions} {...field} />
           )}
         />
       </FormControl>
