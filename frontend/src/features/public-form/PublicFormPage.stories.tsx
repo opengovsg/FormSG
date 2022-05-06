@@ -303,12 +303,6 @@ WithPreventSubmissionLogic.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
   await waitFor(
     async () => {
-      // Asserting different field visible so we know the form fields have loaded.
-      const field = await canvas.findByRole('textbox', {
-        name: /question number: 2\.email/i,
-      })
-      await expect(field).toBeInTheDocument()
-
       await userEvent.click(
         canvas.getByTestId(
           `${PREVENT_SUBMISSION_LOGIC.conditions[0].field}-right`,
@@ -317,4 +311,9 @@ WithPreventSubmissionLogic.play = async ({ canvasElement }) => {
     },
     { timeout: 5000 },
   )
+  await expect(
+    canvas.getByText(
+      /this should show up in storybook mock when yes\/no is true/i,
+    ),
+  ).toBeInTheDocument()
 }
