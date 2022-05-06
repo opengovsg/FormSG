@@ -2,16 +2,6 @@ import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { ApplicationError } from '../core/core.errors'
 
 /**
- * Error while retrieving the public key from the certificate URL provided
- * in the SNS notification body.
- */
-export class RetrieveAwsCertError extends ApplicationError {
-  constructor(message = 'Error while retrieving AWS signing public key') {
-    super(message)
-  }
-}
-
-/**
  * Unexpected shape of request body.
  */
 export class InvalidNotificationError extends ApplicationError {
