@@ -1,0 +1,99 @@
+import { useMemo } from 'react'
+import { Box, BoxProps, Flex, Grid, Skeleton, Stack } from '@chakra-ui/react'
+import { valueToPercent } from '@chakra-ui/utils'
+
+export interface AttachmentStackedBarProps {
+  /** Values to render in the stacked bar. If `undefined` the progress bar will be in the loading state */
+  values?: number[]
+  /** The min value of the bar. Defaults to `0` if not provided. */
+  min?: number
+  /** The maximum value of the bar */
+  max: number
+}
+
+interface FilledTrackProps extends BoxProps {
+  value: number
+  isOverQuota: boolean
+}
+
+const FilledTrack = ({ value, isOverQuota, ...rest }: FilledTrackProps) => {
+  if (value === 0) return null
+
+  return (
+    <Box
+      h="100%"
+      w="100%"
+      _first={{
+        borderStartRadius: '3px',
+      }}
+      _last={{
+        borderEndRadius: '3px',
+      }}
+      {...rest}
+    />
+  )
+}
+
+export const AttachmentStackedBar = ({
+  min = 0,
+  max,
+  values,
+}: AttachmentStackedBarProps): JSX.Element => {
+  const isOverQuota = useMemo(
+    () => !!values && max < values.reduce((sum, v) => sum + v, 0),
+    [max, values],
+  )
+
+  const barProps = useMemo(() => {
+    return [
+      { bg: 'warning.500' },
+      {
+        bg: isOverQuota ? 'danger.500' : 'success.500',
+        border: isOverQuota
+          ? undefined
+          : '1px dashed var(--chakra-colors-success-800)',
+      },
+    ]
+  }, [isOverQuota])
+
+  const widths = useMemo(() => {
+    return values
+      ?.map(
+        (value) => `minmax(max-content, ${valueToPercent(value, min, max)}%)`,
+      )
+      .join(' ')
+  }, [max, min, values])
+
+  return (
+    <Skeleton isLoaded={!!values}>
+      <Stack aria-hidden mt="1.5rem" spacing="0.5rem">
+        <Grid
+          overflow="hidden"
+          borderRadius="3px"
+          h="1rem"
+          bg="primary.300"
+          gridTemplateColumns={widths}
+        >
+          {values?.map((value, i) => (
+            <FilledTrack
+              {...barProps[i]}
+              isOverQuota={isOverQuota}
+              value={value}
+            />
+          ))}
+        </Grid>
+        {values ? (
+          <Grid
+            gridTemplateColumns={widths}
+            textStyle="caption-1"
+            color="secondary.700"
+          >
+            {values.map((value) => (
+              <Flex justify="center">{value} MB</Flex>
+            ))}
+          </Grid>
+        ) : null}
+      </Stack>
+    </Skeleton>
+  )
+}
