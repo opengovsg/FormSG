@@ -1,3 +1,4 @@
+import { expect } from '@storybook/jest'
 import { Meta, Story } from '@storybook/react'
 import { userEvent, waitFor, within } from '@storybook/testing-library'
 
@@ -275,8 +276,6 @@ WithShowFieldLogic.parameters = {
 
 export const WithPreventSubmissionLogic = Template.bind({})
 WithPreventSubmissionLogic.parameters = {
-  // For animation to finish playing just in case
-  chromatic: { delay: 5000 },
   msw: [
     getPublicFormResponse({
       overrides: {
@@ -304,6 +303,12 @@ WithPreventSubmissionLogic.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
   await waitFor(
     async () => {
+      // Asserting different field visible so we know the form fields have loaded.
+      const field = await canvas.findByRole('textbox', {
+        name: /question number: 2\.email/i,
+      })
+      await expect(field).toBeInTheDocument()
+
       await userEvent.click(
         canvas.getByTestId(
           `${PREVENT_SUBMISSION_LOGIC.conditions[0].field}-right`,
