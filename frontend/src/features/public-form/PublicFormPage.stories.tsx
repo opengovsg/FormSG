@@ -276,7 +276,7 @@ WithShowFieldLogic.parameters = {
 export const WithPreventSubmissionLogic = Template.bind({})
 WithPreventSubmissionLogic.parameters = {
   // For animation to finish playing just in case
-  chromatic: { delay: 500 },
+  chromatic: { delay: 5000 },
   msw: [
     getPublicFormResponse({
       overrides: {
