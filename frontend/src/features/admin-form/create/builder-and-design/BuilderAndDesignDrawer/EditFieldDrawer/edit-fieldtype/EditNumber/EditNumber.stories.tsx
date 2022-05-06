@@ -1,5 +1,4 @@
-import { Box, useDisclosure } from '@chakra-ui/react'
-import { DecoratorFn, Meta, Story } from '@storybook/react'
+import { Meta, Story } from '@storybook/react'
 
 import {
   BasicField,
@@ -7,10 +6,7 @@ import {
   NumberSelectedValidation,
 } from '~shared/types'
 
-import { StoryRouter } from '~utils/storybook'
-
-import { BuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
-import { CreatePageSidebarProvider } from '~features/admin-form/create/common/CreatePageSidebarContext'
+import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { EditNumber } from './EditNumber'
 
@@ -25,23 +21,6 @@ const DEFAULT_NUMBER_FIELD: NumberFieldBase = {
   disabled: false,
   fieldType: BasicField.Number,
   globalId: 'unused',
-}
-
-const EditFieldDrawerDecorator: DecoratorFn = (storyFn) => {
-  const deleteFieldModalDisclosure = useDisclosure()
-  return (
-    <Box maxW="33.25rem">
-      <CreatePageSidebarProvider>
-        <BuilderAndDesignContext.Provider
-          value={{
-            deleteFieldModalDisclosure,
-          }}
-        >
-          {storyFn()}
-        </BuilderAndDesignContext.Provider>
-      </CreatePageSidebarProvider>
-    </Box>
-  )
 }
 
 export default {

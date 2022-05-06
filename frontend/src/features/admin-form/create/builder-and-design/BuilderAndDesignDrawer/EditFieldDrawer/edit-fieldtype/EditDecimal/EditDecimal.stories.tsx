@@ -1,36 +1,16 @@
-import { Box, useDisclosure } from '@chakra-ui/react'
-import { DecoratorFn, Meta, Story } from '@storybook/react'
+import { Meta, Story } from '@storybook/react'
 
 import { BasicField, DecimalFieldBase } from '~shared/types'
 
-import { StoryRouter } from '~utils/storybook'
+import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
-import { BuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
-import { CreatePageSidebarProvider } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
 import { EditDecimal } from './EditDecimal'
 
 const DEFAULT_DECIMAL_FIELD = getFieldCreationMeta(
   BasicField.Decimal,
 ) as DecimalFieldBase
-
-const EditFieldDrawerDecorator: DecoratorFn = (storyFn) => {
-  const deleteFieldModalDisclosure = useDisclosure()
-  return (
-    <Box maxW="33.25rem">
-      <CreatePageSidebarProvider>
-        <BuilderAndDesignContext.Provider
-          value={{
-            deleteFieldModalDisclosure,
-          }}
-        >
-          {storyFn()}
-        </BuilderAndDesignContext.Provider>
-      </CreatePageSidebarProvider>
-    </Box>
-  )
-}
 
 export default {
   title: 'Features/AdminForm/EditFieldDrawer/EditDecimal',

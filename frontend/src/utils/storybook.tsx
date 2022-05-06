@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { Box, Center } from '@chakra-ui/react'
+import { Box, Center, useDisclosure } from '@chakra-ui/react'
 import { DecoratorFn } from '@storybook/react'
 import dayjs from 'dayjs'
 import mockdate from 'mockdate'
@@ -8,6 +8,9 @@ import mockdate from 'mockdate'
 import { theme } from '~/theme'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
+
+import { BuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
+import { CreatePageSidebarProvider } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
 export const centerDecorator: DecoratorFn = (storyFn) => (
   <Center>{storyFn()}</Center>
@@ -27,6 +30,23 @@ export const LoggedInDecorator: DecoratorFn = (storyFn) => {
   }, [])
 
   return storyFn()
+}
+
+export const EditFieldDrawerDecorator: DecoratorFn = (storyFn) => {
+  const deleteFieldModalDisclosure = useDisclosure()
+  return (
+    <Box maxW="33.25rem">
+      <CreatePageSidebarProvider>
+        <BuilderAndDesignContext.Provider
+          value={{
+            deleteFieldModalDisclosure,
+          }}
+        >
+          {storyFn()}
+        </BuilderAndDesignContext.Provider>
+      </CreatePageSidebarProvider>
+    </Box>
+  )
 }
 
 export const mockDateDecorator: DecoratorFn = (storyFn, { parameters }) => {

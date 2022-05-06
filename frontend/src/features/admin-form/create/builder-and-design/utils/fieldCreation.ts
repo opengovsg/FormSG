@@ -78,6 +78,13 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         },
       }
     }
+    case BasicField.Dropdown: {
+      return {
+        fieldType,
+        ...baseMeta,
+        fieldOptions: ['Option 1'],
+      }
+    }
     case BasicField.Decimal: {
       return {
         fieldType,
