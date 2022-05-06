@@ -20,7 +20,7 @@ export const MOCK_SNS_BODY: ISnsNotification = {
   Timestamp: 'timestamp',
   SignatureVersion: '1',
   Signature: 'signature',
-  SigningCertURL: 'https://fakeawsurl.amazonaws.com/cert.pem',
+  SigningCertURL: 'https://sns.fa-ke-1.amazonaws.com/cert.pem',
 }
 
 const makeEmailNotification = (
