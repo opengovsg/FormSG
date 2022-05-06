@@ -61,15 +61,17 @@ export const validateSnsRequest = (
     new Promise((resolve, reject) => {
       const snsValidator = new SNSMessageValidator()
 
-      snsValidator.encoding = 'utf8'
-      snsValidator.validate(body, (err: Error) => {
-        if (err) {
-          reject(new InvalidNotificationError())
-          return
-        }
+      snsValidator.validate(
+        body as unknown as Record<string, unknown>,
+        (err) => {
+          if (err) {
+            reject(new InvalidNotificationError())
+            return
+          }
 
-        resolve(true)
-      })
+          resolve(true)
+        },
+      )
     }),
     () => {
       return new InvalidNotificationError()
