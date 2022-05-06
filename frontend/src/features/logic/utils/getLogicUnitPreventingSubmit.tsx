@@ -21,14 +21,11 @@ const getPreventSubmitConditions = (
   formLogics: FormDto['form_logics'],
   visibleFieldMap: FieldIdToType,
 ) => {
-  const preventFormLogics =
-    formLogics.filter(
-      (formLogic): formLogic is PreventSubmitLogicDto =>
-        isPreventSubmitLogic(formLogic) &&
-        allConditionsExist(formLogic.conditions, visibleFieldMap),
-    ) ?? []
-
-  return preventFormLogics
+  return formLogics.filter(
+    (formLogic): formLogic is PreventSubmitLogicDto =>
+      isPreventSubmitLogic(formLogic) &&
+      allConditionsExist(formLogic.conditions, visibleFieldMap),
+  )
 }
 
 /**

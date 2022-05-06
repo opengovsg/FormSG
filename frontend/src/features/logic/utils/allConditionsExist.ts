@@ -12,5 +12,5 @@ export const allConditionsExist = (
   conditions: FormCondition[],
   visibleFieldMap: FieldIdToType,
 ): boolean => {
-  return conditions.every((c) => !!visibleFieldMap[c.field])
+  return conditions.every((c) => visibleFieldMap[c.field])
 }
