@@ -61,12 +61,18 @@ const transformImageFieldToEditForm = (
 const transformAttachmentInputToDto = (
   attachment: EditImageInputs['attachment'],
 ) => {
+  if (!attachment?.file || !attachment?.srcUrl) {
+    return {
+      name: null,
+      size: null,
+      url: null,
+    }
+  }
+
   return {
-    name: attachment?.file?.name ?? null,
-    size: attachment?.file?.size
-      ? getReadableFileSize(attachment.file.size)
-      : null,
-    url: attachment?.srcUrl ?? null,
+    name: attachment.file.name,
+    size: getReadableFileSize(attachment.file.size),
+    url: attachment.srcUrl,
   }
 }
 
