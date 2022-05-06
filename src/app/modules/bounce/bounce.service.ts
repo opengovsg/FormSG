@@ -65,7 +65,7 @@ export const validateSnsRequest = (
         body as unknown as Record<string, unknown>,
         (err) => {
           if (err) {
-            reject(new InvalidNotificationError())
+            reject(err)
             return
           }
 
@@ -73,7 +73,16 @@ export const validateSnsRequest = (
         },
       )
     }),
-    () => {
+    (error) => {
+      logger.error({
+        message: 'Invalid Email Bounce SNS notification',
+        meta: {
+          action: 'validateSnsRequest',
+          body,
+        },
+        error,
+      })
+
       return new InvalidNotificationError()
     },
   )
