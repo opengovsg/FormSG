@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
-import { FormControl } from '@chakra-ui/react'
+import { FormControl, Skeleton } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { FormResponseMode } from '~shared/types'
@@ -159,17 +159,23 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       </FormControl>
       <FormControl isReadOnly={isLoading} isInvalid={!!errors.attachmentSize}>
         <FormLabel isRequired>Attachment size</FormLabel>
-        <Controller
-          control={control}
-          rules={attachmentSizeValidationRule}
-          name="attachmentSize"
-          render={({ field }) => (
-            <SingleSelect items={attachmentSizeOptions} {...field} />
-          )}
-        />
+        <Skeleton isLoaded={!!form}>
+          <Controller
+            control={control}
+            rules={attachmentSizeValidationRule}
+            name="attachmentSize"
+            render={({ field }) => (
+              <SingleSelect items={attachmentSizeOptions} {...field} />
+            )}
+          />
+        </Skeleton>
         <FormErrorMessage>{errors?.attachmentSize?.message}</FormErrorMessage>
         <AttachmentStackedBar
-          values={[otherAttachmentsSize, Number(getValues('attachmentSize'))]}
+          values={
+            form
+              ? [otherAttachmentsSize, Number(getValues('attachmentSize'))]
+              : undefined
+          }
           max={maxTotalSizeMb}
         />
       </FormControl>

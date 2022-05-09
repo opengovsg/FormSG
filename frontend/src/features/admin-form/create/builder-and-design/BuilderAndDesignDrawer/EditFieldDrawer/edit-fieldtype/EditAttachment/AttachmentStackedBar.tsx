@@ -66,8 +66,8 @@ export const AttachmentStackedBar = ({
           bg="primary.300"
           gridTemplateColumns={gridTemplateColumns}
         >
-          {values?.map((value, i) => (
-            <FilledTrack {...barProps[i]} />
+          {barProps.map((props, i) => (
+            <FilledTrack key={i} {...props} />
           ))}
         </Grid>
         {values ? (
@@ -76,8 +76,14 @@ export const AttachmentStackedBar = ({
             textStyle="caption-1"
             color="secondary.700"
           >
-            {values.map((value) =>
-              value ? <Flex justify="center">{value} MB</Flex> : <Box />,
+            {values.map((value, i) =>
+              value ? (
+                <Flex key={i} justify="center">
+                  {value} MB
+                </Flex>
+              ) : (
+                <Box key={i} />
+              ),
             )}
           </Grid>
         ) : null}
