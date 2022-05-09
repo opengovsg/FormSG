@@ -51,6 +51,7 @@ WithUploadedFile.args = {
     'size',
     { value: 1100 * 1000 },
   ),
+  onChange: () => console.log('delete button pressed'),
 }
 
 export const Playground: Story<AttachmentProps> = ({

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
 import {
   Box,
@@ -26,9 +26,9 @@ import {
 
 export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
-   * If exists, callback to be invoked when the file is attached or removed.
+   * Callback to be invoked when the file is attached or removed.
    */
-  onChange?: (file?: File) => void
+  onChange: (file?: File) => void
   /**
    * If exists, callback to be invoked when file has errors.
    */
@@ -36,7 +36,7 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
    * Current value of the input.
    */
-  value?: File
+  value: File | undefined
   /**
    * Name of the input.
    */
@@ -84,16 +84,14 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     // id to set on the rendered max size FormFieldMessage component.
     const maxSizeTextId = useMemo(() => `${name}-max-size`, [name])
 
-    const [internalFile, setInternalFile] = useState<File | undefined>(value)
-
     const readableMaxSize = useMemo(
       () => (maxSize ? getReadableFileSize(maxSize) : undefined),
       [maxSize],
     )
 
     const showMaxSize = useMemo(
-      () => !internalFile && showFileSize && readableMaxSize,
-      [internalFile, readableMaxSize, showFileSize],
+      () => !value && showFileSize && readableMaxSize,
+      [value, readableMaxSize, showFileSize],
     )
 
     const ariaDescribedBy = useMemo(() => {
@@ -162,8 +160,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           }
         }
 
-        onChange?.(acceptedFile)
-        setInternalFile(acceptedFile)
+        onChange(acceptedFile)
       },
       [accept, onChange, onError],
     )
@@ -199,8 +196,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     })
 
     const handleRemoveFile = useCallback(() => {
-      setInternalFile(undefined)
-      onChange?.(undefined)
+      onChange(undefined)
       rootRef.current?.focus()
     }, [onChange, rootRef])
 
@@ -217,10 +213,10 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             return
           }
         },
-        tabIndex: internalFile ? -1 : 0,
+        tabIndex: value ? -1 : 0,
         'aria-describedby': ariaDescribedBy,
       })
-    }, [ariaDescribedBy, getRootProps, inputProps, internalFile])
+    }, [ariaDescribedBy, getRootProps, inputProps, value])
 
     const processedInputProps = useMemo(() => {
       return getInputProps({
@@ -235,11 +231,11 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           <Box
             {...processedRootProps}
             ref={mergedRefs}
-            __css={internalFile ? undefined : styles.dropzone}
+            __css={value ? undefined : styles.dropzone}
           >
-            {internalFile ? (
+            {value ? (
               <AttachmentFileInfo
-                file={internalFile}
+                file={value}
                 handleRemoveFile={handleRemoveFile}
               />
             ) : (
