@@ -73,7 +73,7 @@ const helmetMiddlewares = () => {
       // For inline styles in angular-sanitize.js
       "'sha256-b3IrgBVvuKx/Q3tmAi79fnf6AFClibrz/0S5x1ghdGU='",
     ],
-    frameAncestors: ['*'],
+    frameAncestors: ["'*'"],
   }
 
   const reportUri = sentryConfig.cspReportUri
@@ -87,7 +87,12 @@ const helmetMiddlewares = () => {
   // https://github.com/helmetjs/helmet/blob/cb170160e7c1ccac314cc19d3b979cfc771f1349/middlewares/content-security-policy/index.ts#L135
   if (reportUri) cspOptionalDirectives.reportUri = [reportUri]
 
+  // Remove upgradeInsecureRequest CSP header if config.isDev
+  // See https://github.com/helmetjs/helmet for use of null to disable default
+  if (config.isDev) cspOptionalDirectives.upgradeInsecureRequests = null
+
   const contentSecurityPolicyMiddleware = helmet.contentSecurityPolicy({
+    useDefaults: true,
     directives: {
       ...cspCoreDirectives,
       ...cspOptionalDirectives,
