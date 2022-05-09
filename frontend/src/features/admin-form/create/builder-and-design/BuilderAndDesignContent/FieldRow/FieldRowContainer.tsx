@@ -18,6 +18,7 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import {
+  AttachmentField,
   CheckboxField,
   DecimalField,
   DropdownField,
@@ -297,6 +298,8 @@ type MemoFieldRowProps = {
 
 const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
   switch (field.fieldType) {
+    case BasicField.Attachment:
+      return <AttachmentField schema={field} {...rest} />
     case BasicField.Checkbox:
       return <CheckboxField schema={field} {...rest} />
     case BasicField.Mobile:
