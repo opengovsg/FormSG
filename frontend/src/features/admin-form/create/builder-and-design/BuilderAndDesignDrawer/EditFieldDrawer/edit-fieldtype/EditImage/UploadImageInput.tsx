@@ -32,8 +32,9 @@ export const UploadImageInput = forwardRef<UploadImageInputProps, 'div'>(
     const handleChange = (file?: File) => {
       if (!file) return onChange({ file, srcUrl: undefined })
 
-      if (file.name.split('.').pop() === 'gif') {
-        // No compression for gifs
+      if (/\.gif$/i.test(file.name)) {
+        // No compression for gifs since they cannot be properly compressed and
+        // will just be compressed into a static image.
         return onChange({
           file,
           srcUrl: URL.createObjectURL(file),
