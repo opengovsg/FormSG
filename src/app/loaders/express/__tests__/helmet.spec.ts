@@ -63,7 +63,7 @@ describe('helmetMiddlewares', () => {
       // For inline styles in angular-sanitize.js
       "'sha256-b3IrgBVvuKx/Q3tmAi79fnf6AFClibrz/0S5x1ghdGU='",
     ],
-    frameAncestors: ['*'],
+    frameAncestors: ["'*'"],
   }
 
   beforeAll(() => {
@@ -138,6 +138,7 @@ describe('helmetMiddlewares', () => {
     mockConfig.isDev = false
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith({
+      useDefaults: true,
       directives: {
         ...cspCoreDirectives,
         reportUri: ['value'],
@@ -150,7 +151,9 @@ describe('helmetMiddlewares', () => {
     mockConfig.isDev = true
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith({
+      useDefaults: true,
       directives: {
+        upgradeInsecureRequests: null,
         ...cspCoreDirectives,
       },
     })
