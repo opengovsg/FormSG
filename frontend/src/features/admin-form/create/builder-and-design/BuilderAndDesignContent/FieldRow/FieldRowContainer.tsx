@@ -30,6 +30,7 @@ import {
   NumberField,
   ParagraphField,
   RadioField,
+  RatingField,
   ShortTextField,
   UenField,
   YesNoField,
@@ -324,6 +325,8 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
       return <LongTextField schema={field} {...rest} />
     case BasicField.Radio:
       return <RadioField schema={field} {...rest} />
+    case BasicField.Rating:
+      return <RatingField schema={field} {...rest} />
     case BasicField.Section:
       return <SectionFieldRow field={field} {...rest} />
     case BasicField.Uen:

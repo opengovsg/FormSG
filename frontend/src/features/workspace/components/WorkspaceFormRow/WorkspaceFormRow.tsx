@@ -93,7 +93,7 @@ export const WorkspaceFormRow = ({
         {/* Blank spacing for absolutely positioned RowActions component */}
         <Box gridArea="actions" />
       </chakra.button>
-      <RowActions formId={formMeta._id} />
+      <RowActions formMeta={formMeta} />
     </Box>
   )
 }

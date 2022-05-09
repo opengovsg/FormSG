@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useDisclosure } from '@chakra-ui/react'
 
 import { FormId } from '~shared/types/form/form'
 
@@ -8,23 +9,25 @@ type UseRowActionDropdownReturn = {
   handleEditForm: () => void
   handlePreviewForm: () => void
   handleDuplicateForm: () => void
-  handleShareForm: () => void
   handleManageFormAccess: () => void
   handleDeleteForm: () => void
+  shareFormModalDisclosure: ReturnType<typeof useDisclosure>
 }
 
 export const useRowActionDropdown = (
   formId: FormId,
 ): UseRowActionDropdownReturn => {
   const navigate = useNavigate()
+
+  const shareFormModalDisclosure = useDisclosure()
+
   return {
+    shareFormModalDisclosure,
     handleEditForm: () => navigate(`${ADMINFORM_ROUTE}/${formId}`),
     handlePreviewForm: () =>
       console.log(`preview button clicked for ${formId}`),
     handleDuplicateForm: () =>
       console.log(`duplicate form button clicked for ${formId}`),
-    handleShareForm: () =>
-      console.log(`share form button clicked for ${formId}`),
     handleManageFormAccess: () =>
       console.log(`manage form access button clicked for ${formId}`),
     handleDeleteForm: () =>

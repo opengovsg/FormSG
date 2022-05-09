@@ -4,8 +4,10 @@ import {
   UnpackNestedValue,
   useForm,
   UseFormReturn,
+  useWatch,
 } from 'react-hook-form'
 import { useDebounce } from 'react-use'
+import { cloneDeep } from 'lodash'
 
 import {
   FieldBase,
@@ -84,7 +86,16 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     defaultValues,
   })
 
-  const watchedInputs = editForm.watch()
+  const watchedInputs = useWatch({
+    control: editForm.control,
+  }) as UnpackNestedValue<FormShape>
+
+  // Cloning is required so any nested references are not pointing to the same object,
+  // which would prevent rerenders.
+  const clonedWatchedInputs = useMemo(
+    () => cloneDeep(watchedInputs),
+    [watchedInputs],
+  )
 
   const onSaveSuccess = useCallback(
     (newField) => {
@@ -126,9 +137,9 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   )
 
   useDebounce(
-    () => handleChange(transform.output(watchedInputs, field)),
+    () => handleChange(transform.output(clonedWatchedInputs, field)),
     300,
-    Object.values(watchedInputs),
+    Object.values(clonedWatchedInputs),
   )
 
   const buttonText = useMemo(

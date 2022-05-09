@@ -1,4 +1,9 @@
-import { AttachmentSize, BasicField, FieldCreateDto } from '~shared/types/field'
+import {
+  AttachmentSize,
+  BasicField,
+  FieldCreateDto,
+  RatingShape,
+} from '~shared/types/field'
 
 import { BASICFIELD_TO_DRAWER_META } from '../../constants'
 
@@ -125,6 +130,16 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         ...baseMeta,
         fieldOptions: ['Option 1'],
         othersRadioButton: false,
+      }
+    }
+    case BasicField.Rating: {
+      return {
+        fieldType,
+        ...baseMeta,
+        ratingOptions: {
+          shape: RatingShape.Star,
+          steps: 5,
+        },
       }
     }
     default: {
