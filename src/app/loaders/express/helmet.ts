@@ -27,7 +27,6 @@ const helmetMiddlewares = () => {
   })
 
   const cspCoreDirectives: ContentSecurityPolicyOptions['directives'] = {
-    defaultSrc: ["'self'"],
     imgSrc: [
       "'self'",
       'data:',
@@ -65,7 +64,6 @@ const helmetMiddlewares = () => {
       'https://www.google.com/recaptcha/',
       'https://www.recaptcha.net/recaptcha/',
     ],
-    objectSrc: ["'none'"],
     styleSrc: [
       "'self'",
       'https://www.google.com/recaptcha/',
@@ -75,7 +73,7 @@ const helmetMiddlewares = () => {
       // For inline styles in angular-sanitize.js
       "'sha256-b3IrgBVvuKx/Q3tmAi79fnf6AFClibrz/0S5x1ghdGU='",
     ],
-    formAction: ["'self'"],
+    frameAncestors: ['*'],
   }
 
   const reportUri = sentryConfig.cspReportUri
@@ -88,9 +86,6 @@ const helmetMiddlewares = () => {
   // See https://github.com/helmetjs/csp/issues/36 and
   // https://github.com/helmetjs/helmet/blob/cb170160e7c1ccac314cc19d3b979cfc771f1349/middlewares/content-security-policy/index.ts#L135
   if (reportUri) cspOptionalDirectives.reportUri = [reportUri]
-
-  // Add on upgradeInsecureRequest CSP header if !config.isDev
-  if (!config.isDev) cspOptionalDirectives.upgradeInsecureRequests = []
 
   const contentSecurityPolicyMiddleware = helmet.contentSecurityPolicy({
     directives: {
