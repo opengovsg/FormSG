@@ -56,12 +56,11 @@ export const AttachmentStackedBar = ({
     ]
   }, [isOverQuota])
 
-  const widths = useMemo(() => {
-    return values
-      ?.map(
-        (value) => `minmax(max-content, ${valueToPercent(value, min, max)}%)`,
-      )
-      .join(' ')
+  const gridTemplateColumns = useMemo(() => {
+    return [
+      `${valueToPercent(values?.[0] ?? 0, min, max)}%`,
+      `minmax(auto, ${valueToPercent(values?.[1] ?? 0, min, max)}%)`,
+    ].join(' ')
   }, [max, min, values])
 
   return (
@@ -72,7 +71,7 @@ export const AttachmentStackedBar = ({
           borderRadius="3px"
           h="1rem"
           bg="primary.300"
-          gridTemplateColumns={widths}
+          gridTemplateColumns={gridTemplateColumns}
         >
           {values?.map((value, i) => (
             <FilledTrack
@@ -84,7 +83,7 @@ export const AttachmentStackedBar = ({
         </Grid>
         {values ? (
           <Grid
-            gridTemplateColumns={widths}
+            gridTemplateColumns={gridTemplateColumns}
             textStyle="caption-1"
             color="secondary.700"
           >
