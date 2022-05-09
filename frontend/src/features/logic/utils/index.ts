@@ -1,4 +1,3 @@
 export * from './getIfLogicType'
+export * from './getLogicUnitPreventingSubmit'
 export * from './getVisibleFieldIds'
-export * from './groupLogicUnitsByField'
-export * from './typeguards'

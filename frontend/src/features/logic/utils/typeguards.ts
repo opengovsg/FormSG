@@ -5,6 +5,7 @@ import {
   LogicableField,
   LogicDto,
   LogicType,
+  PreventSubmitLogicDto,
   ShowFieldLogicDto,
 } from '~shared/types/form'
 
@@ -16,6 +17,12 @@ export const isShowFieldsLogic = (
   formLogic: LogicDto,
 ): formLogic is ShowFieldLogicDto => {
   return formLogic.logicType === LogicType.ShowFields
+}
+
+export const isPreventSubmitLogic = (
+  formLogic: LogicDto,
+): formLogic is PreventSubmitLogicDto => {
+  return formLogic.logicType === LogicType.PreventSubmit
 }
 
 export const isRadioFormFieldValue = <F extends BasicField>(

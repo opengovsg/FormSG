@@ -43,6 +43,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
       clampValueOnBlur = false,
       isSuccess,
       isPrefilled,
+      colorScheme,
       ...props
     },
     ref,
@@ -100,7 +101,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
           <Box __css={styles.stepperWrapper} ref={stepperWrapperRef}>
             <IconButton
               sx={styles.stepperButton}
-              colorScheme={props.colorScheme}
+              colorScheme={colorScheme}
               aria-hidden
               aria-label="Decrement number"
               variant="clear"
@@ -110,7 +111,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
             <Divider __css={styles.stepperDivider} orientation="vertical" />
             <IconButton
               sx={styles.stepperButton}
-              colorScheme={props.colorScheme}
+              colorScheme={colorScheme}
               aria-hidden
               aria-label="Increment number"
               variant="clear"

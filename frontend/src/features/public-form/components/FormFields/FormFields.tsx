@@ -8,9 +8,11 @@ import { FormColorTheme, LogicDto } from '~shared/types/form'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
+import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 
 import { VisibleFormFields } from './VisibleFormFields'
@@ -59,6 +61,16 @@ export const FormFields = ({
     shouldUnregister: true,
   })
 
+  const allInputs = formMethods.watch()
+
+  const preventSubmissionLogic = useMemo(() => {
+    return getLogicUnitPreventingSubmit({
+      formInputs: allInputs,
+      formFields: augmentedFormFields,
+      formLogics,
+    })
+  }, [allInputs, augmentedFormFields, formLogics])
+
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
@@ -72,18 +84,24 @@ export const FormFields = ({
             />
           </Stack>
         </Box>
-        <Box px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
+        <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
           <Button
             isFullWidth={isMobile}
             w="100%"
             colorScheme={`theme-${colorTheme}`}
             type="submit"
             isLoading={formMethods.formState.isSubmitting}
+            isDisabled={!!preventSubmissionLogic}
             loadingText="Submitting"
           >
-            Submit now
+            {preventSubmissionLogic ? 'Submission disabled' : 'Submit now'}
           </Button>
-        </Box>
+          {preventSubmissionLogic ? (
+            <InlineMessage variant="warning">
+              {preventSubmissionLogic.preventSubmitMessage}
+            </InlineMessage>
+          ) : null}
+        </Stack>
       </form>
     </FormProvider>
   )

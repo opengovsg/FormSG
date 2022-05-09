@@ -23,6 +23,7 @@ module.exports = {
         optimizationLevel: 2,
       },
     },
+    '@storybook/addon-interactions',
   ],
   // webpackFinal setup retrieved from ChakraUI's own Storybook setup
   // https://github.com/chakra-ui/chakra-ui/blob/main/.storybook/main.js
