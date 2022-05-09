@@ -18,13 +18,12 @@ import Input from '~components/Input'
 import NumberInput from '~components/NumberInput'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
+import { CopyButton } from '~templates/CopyButton'
 
 import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
-
-import { CopyFieldIdButton } from './CopyFieldIdButton'
 
 export type EditShortTextProps = EditFieldProps<ShortTextFieldBase>
 
@@ -222,7 +221,10 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
             />
             {field._id ? (
               <InputRightElement>
-                <CopyFieldIdButton fieldId={field._id} />
+                <CopyButton
+                  stringToCopy={field._id}
+                  aria-label="Copy field ID value"
+                />
               </InputRightElement>
             ) : null}
           </InputGroup>

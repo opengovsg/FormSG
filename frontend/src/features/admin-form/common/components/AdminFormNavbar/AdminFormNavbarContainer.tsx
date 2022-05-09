@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Tabs, useBreakpointValue } from '@chakra-ui/react'
+import { Tabs, useBreakpointValue, useDisclosure } from '@chakra-ui/react'
+
+import { FormStatus } from '~shared/types'
 
 import {
   ADMINFORM_BUILD_SUBROUTE,
@@ -9,8 +11,10 @@ import {
   ROOT_ROUTE,
 } from '~constants/routes'
 
+import { ShareFormModal } from '~features/admin-form/share'
+
 import { useAdminForm } from '../../queries'
-import CollaboratorModal, { useCollaboratorModal } from '../CollaboratorModal'
+import CollaboratorModal from '../CollaboratorModal'
 
 import { AdminFormNavbar } from './AdminFormNavbar'
 
@@ -51,22 +55,22 @@ const useAdminFormNavbar = () => {
     console.log('preview form button clicked')
   }, [])
 
-  const handleShareForm = useCallback((): void => {
-    console.log('share form button clicked')
-  }, [])
-
   const handleTabsChange = useCallback(
     (index: number) => navigate(ADMINFORM_ROUTES[index]),
     [navigate],
   )
+
+  const collaboratorModalDisclosure = useDisclosure()
+  const shareFormModalDisclosure = useDisclosure()
 
   return {
     tabIndex,
     handleTabsChange,
     handleBackToDashboard,
     handlePreviewForm,
-    handleShareForm,
     form,
+    collaboratorModalDisclosure,
+    shareFormModalDisclosure,
   }
 }
 
@@ -79,15 +83,10 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
     handleTabsChange,
     handleBackToDashboard,
     handlePreviewForm,
-    handleShareForm,
+    collaboratorModalDisclosure,
+    shareFormModalDisclosure,
     form,
   } = useAdminFormNavbar()
-
-  const {
-    isCollaboratorModalOpen,
-    onCloseCollaboratorModal,
-    onOpenCollaboratorModal,
-  } = useCollaboratorModal()
 
   const responsiveVariant = useBreakpointValue({
     base: 'line-dark',
@@ -98,8 +97,14 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
   return (
     <>
       <CollaboratorModal
-        isOpen={isCollaboratorModalOpen}
-        onClose={onCloseCollaboratorModal}
+        isOpen={collaboratorModalDisclosure.isOpen}
+        onClose={collaboratorModalDisclosure.onClose}
+      />
+      <ShareFormModal
+        isOpen={shareFormModalDisclosure.isOpen}
+        onClose={shareFormModalDisclosure.onClose}
+        formId={form?._id}
+        isFormPrivate={form?.status === FormStatus.Private}
       />
       <Tabs
         variant={responsiveVariant}
@@ -111,9 +116,9 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
         <AdminFormNavbar
           formInfo={form}
           handleBackButtonClick={handleBackToDashboard}
-          handleAddCollabButtonClick={onOpenCollaboratorModal}
+          handleAddCollabButtonClick={collaboratorModalDisclosure.onOpen}
           handlePreviewFormButtonClick={handlePreviewForm}
-          handleShareButtonClick={handleShareForm}
+          handleShareButtonClick={shareFormModalDisclosure.onOpen}
         />
       </Tabs>
     </>

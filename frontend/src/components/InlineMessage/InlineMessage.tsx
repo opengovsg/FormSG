@@ -8,7 +8,6 @@ import { useMdComponents } from '~hooks/useMdComponents'
 
 export interface InlineMessageProps extends FlexProps {
   variant?: InlineMessageVariant
-  children: string
   useMarkdown?: boolean
 }
 
@@ -28,7 +27,7 @@ export const InlineMessage = ({
         as={variant !== 'error' ? BxsInfoCircle : BxsErrorCircle}
         __css={styles.icon}
       />
-      {useMarkdown ? (
+      {useMarkdown && typeof children === 'string' ? (
         <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
       ) : (
         children
