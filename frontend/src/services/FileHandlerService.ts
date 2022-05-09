@@ -31,7 +31,7 @@ type PresignedData = { fields: Record<string, string>; url: string }
  */
 const computeChecksumMd5 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const chunkSize = 2097152 // Read in chunks of 2MB
+    const chunkSize = 2097152 // Read in chunks of 2MiB (1024^2 * 2)
     const spark = new SparkMD5.ArrayBuffer()
     const fileReader = new FileReader()
 
