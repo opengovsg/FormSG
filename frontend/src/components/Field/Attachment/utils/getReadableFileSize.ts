@@ -1,3 +1,5 @@
+import { DECIMAL_BYTE_UNITS } from '~shared/constants/file'
+
 /**
  * Converts the given file size in bytes to a human readable string.
  *
@@ -8,7 +10,7 @@
 export const getReadableFileSize = (fileSizeInBytes: number): string => {
   const i = Math.floor(Math.log(fileSizeInBytes) / Math.log(1000))
   const size = Number((fileSizeInBytes / Math.pow(1000, i)).toFixed(2))
-  return size + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i]
+  return size + ' ' + DECIMAL_BYTE_UNITS[i]
 }
 
 /**
@@ -20,6 +22,6 @@ export const getReadableFileSize = (fileSizeInBytes: number): string => {
  */
 export const getByteFileSize = (readableFileSize: string): number => {
   const [size, unit] = readableFileSize.split(' ')
-  const unitIndex = ['B', 'kB', 'MB', 'GB', 'TB'].indexOf(unit)
+  const unitIndex = DECIMAL_BYTE_UNITS.indexOf(unit)
   return Number(size) * Math.pow(1000, unitIndex)
 }
