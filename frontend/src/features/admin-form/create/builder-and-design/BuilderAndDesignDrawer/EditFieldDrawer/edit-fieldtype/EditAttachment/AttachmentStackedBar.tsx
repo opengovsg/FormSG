@@ -11,14 +11,7 @@ export interface AttachmentStackedBarProps {
   max: number
 }
 
-interface FilledTrackProps extends BoxProps {
-  value: number
-  isOverQuota: boolean
-}
-
-const FilledTrack = ({ value, isOverQuota, ...rest }: FilledTrackProps) => {
-  if (value === 0) return null
-
+const FilledTrack = (props: BoxProps) => {
   return (
     <Box
       h="100%"
@@ -29,7 +22,7 @@ const FilledTrack = ({ value, isOverQuota, ...rest }: FilledTrackProps) => {
       _last={{
         borderEndRadius: '3px',
       }}
-      {...rest}
+      {...props}
     />
   )
 }
@@ -74,11 +67,7 @@ export const AttachmentStackedBar = ({
           gridTemplateColumns={gridTemplateColumns}
         >
           {values?.map((value, i) => (
-            <FilledTrack
-              {...barProps[i]}
-              isOverQuota={isOverQuota}
-              value={value}
-            />
+            <FilledTrack {...barProps[i]} />
           ))}
         </Grid>
         {values ? (
@@ -87,9 +76,9 @@ export const AttachmentStackedBar = ({
             textStyle="caption-1"
             color="secondary.700"
           >
-            {values.map((value) => (
-              <Flex justify="center">{value} MB</Flex>
-            ))}
+            {values.map((value) =>
+              value ? <Flex justify="center">{value} MB</Flex> : <Box />,
+            )}
           </Grid>
         ) : null}
       </Stack>
