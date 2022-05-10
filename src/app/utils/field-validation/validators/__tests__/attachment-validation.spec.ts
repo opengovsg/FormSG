@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+import { mongo as mongodb } from 'mongoose'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField } from 'src/app/utils/field-validation/'
@@ -9,6 +9,8 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { AttachmentSize, BasicField } from '../../../../../../shared/types'
+
+const { ObjectId } = mongodb
 
 describe('Attachment validation', () => {
   const formId = new ObjectId().toHexString()

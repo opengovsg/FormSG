@@ -224,6 +224,7 @@ const config: Config = {
   siteBannerContent: basicVars.banner.siteBannerContent,
   adminBannerContent: basicVars.banner.adminBannerContent,
   rateLimitConfig: basicVars.rateLimit,
+  reactMigration: basicVars.reactMigration,
   configureAws,
   secretEnv: basicVars.core.secretEnv,
 }

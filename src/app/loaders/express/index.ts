@@ -5,7 +5,6 @@ import addRequestId from 'express-request-id'
 import { StatsD } from 'hot-shots'
 import http from 'http'
 import { Connection } from 'mongoose'
-import nocache from 'nocache'
 import path from 'path'
 import url from 'url'
 
@@ -18,9 +17,10 @@ import { ExamplesRouter } from '../../modules/examples/examples.routes'
 import { AdminFormsRouter } from '../../modules/form/admin-form/admin-form.routes'
 import { PublicFormRouter } from '../../modules/form/public-form/public-form.routes'
 import { FrontendRouter } from '../../modules/frontend/frontend.routes'
-import { HomeRouter } from '../../modules/home/home.routes'
+import * as HomeController from '../../modules/home/home.controller'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
+import { ReactMigrationRouter } from '../../modules/react-migration/react-migration.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
 import {
   CorppassLoginRouter,
@@ -110,31 +110,8 @@ const loadExpressApp = async (connection: Connection) => {
 
   app.use(helmetMiddlewares())
 
-  // !!!!! DO NOT CHANGE THE ORDER OF THE NEXT 3 LINES !!!!!
-  // The first line redirects requests to /public/fonts to
-  // ./dist/frontend/fonts. After that, nocache() ensures that
-  // cache headers are not set on requests for fonts, which ensures that
-  // fonts are shown correctly on IE11.
-  // The last line redirects requests to /public to ./dist/frontend,
-  // with cache headers set normally.
-  app.use(
-    '/public/fonts',
-    express.static(path.resolve('./dist/frontend/fonts')),
-  )
-
-  app.use(nocache()) // Add headers to prevent browser caching front-end code
-
   // Generate UUID for request and add it to X-Request-Id header
   app.use(addRequestId())
-
-  // Setting the app static folder
-  app.use('/public', express.static(path.resolve('./dist/frontend')))
-
-  // Point crawlers to our robots.txt
-  app.use(
-    '/robots.txt',
-    express.static(path.resolve('./dist/frontend/robots.txt')),
-  )
 
   app.use(sessionMiddlewares(connection))
 
@@ -154,7 +131,6 @@ const loadExpressApp = async (connection: Connection) => {
     }),
   )
 
-  app.use('/', HomeRouter)
   app.use('/frontend', FrontendRouter)
   app.use('/auth', AuthRouter)
   app.use('/user', UserRouter)
@@ -173,14 +149,20 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/sgid', SgidRouter)
   // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
+
   app.use(AdminFormsRouter)
   app.use(PublicFormRouter)
 
   // New routes in preparation for API refactor.
   app.use('/api', ApiRouter)
 
-  app.use(sentryMiddlewares())
+  app.use(express.static(path.resolve('dist/frontend'), { index: false }))
+  app.use('/public', express.static(path.resolve('dist/angularjs')))
+  app.get('/old/', HomeController.home)
 
+  app.use('/', ReactMigrationRouter)
+
+  app.use(sentryMiddlewares())
   app.use(errorHandlerMiddlewares())
 
   const server = http.createServer(app)
