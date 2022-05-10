@@ -1,6 +1,4 @@
-import axios from 'axios'
-import crypto from 'crypto'
-import { difference, isEmpty } from 'lodash'
+import { difference } from 'lodash'
 import mongoose from 'mongoose'
 import {
   combineWithAllErrors,
@@ -9,8 +7,8 @@ import {
   Result,
   ResultAsync,
 } from 'neverthrow'
+import SNSMessageValidator from 'sns-validator'
 
-import { hasProp } from '../../../../shared/utils/has-prop'
 import {
   BounceType,
   IBounceSchema,
@@ -36,7 +34,6 @@ import {
   InvalidNotificationError,
   MissingEmailHeadersError,
   ParseNotificationError,
-  RetrieveAwsCertError,
   SendBounceSmsNotificationError,
 } from './bounce.errors'
 import getBounceModel from './bounce.model'
@@ -50,109 +47,45 @@ const logger = createLoggerWithLabel(module)
 const shortTermLogger = createCloudWatchLogger('email')
 const Bounce = getBounceModel(mongoose)
 
-// Note that these need to be ordered in order to generate
-// the correct string to sign
-const snsKeys: { key: keyof ISnsNotification; toSign: boolean }[] = [
-  { key: 'Message', toSign: true },
-  { key: 'MessageId', toSign: true },
-  { key: 'Timestamp', toSign: true },
-  { key: 'TopicArn', toSign: true },
-  { key: 'Type', toSign: true },
-  { key: 'Signature', toSign: false },
-  { key: 'SigningCertURL', toSign: false },
-  { key: 'SignatureVersion', toSign: false },
-]
-
-// Hostname for AWS URLs
-const AWS_HOSTNAME = '.amazonaws.com'
-
-/**
- * Checks that a request body has all the required keys for a message from SNS.
- * @param body body from Express request object
- * @returns true if all required keys are present
- */
-const hasRequiredKeys = (body: unknown): body is ISnsNotification => {
-  return !isEmpty(body) && snsKeys.every((keyObj) => hasProp(body, keyObj.key))
-}
-
-/**
- * Validates that a URL points to a certificate belonging to AWS.
- * @param url URL to check
- * @returns true if URL is valid
- */
-const isValidCertUrl = (certUrl: string): boolean => {
-  const parsed = new URL(certUrl)
-  return (
-    parsed.protocol === 'https:' &&
-    parsed.pathname.endsWith('.pem') &&
-    parsed.hostname.endsWith(AWS_HOSTNAME)
-  )
-}
-
-/**
- * Returns an ordered list of keys to include in SNS signing string.
- * @returns array of keys
- */
-const getSnsKeysToSign = (): (keyof ISnsNotification)[] => {
-  return snsKeys.filter((keyObj) => keyObj.toSign).map((keyObj) => keyObj.key)
-}
-
-/**
- * Generates the string to sign.
- * @param body body from Express request object
- * @returns the basestring to be signed
- */
-const getSnsBasestring = (body: ISnsNotification): string => {
-  return getSnsKeysToSign().reduce((result, key) => {
-    return result + key + '\n' + body[key] + '\n'
-  }, '')
-}
-
-/**
- * Verify signature for SNS request
- * @param body body from Express request object
- * @returns true if signature is valid
- */
-const isValidSnsSignature = (
-  body: ISnsNotification,
-): ResultAsync<true, RetrieveAwsCertError | InvalidNotificationError> => {
-  return ResultAsync.fromPromise(
-    axios.get<string>(body.SigningCertURL),
-    (error) => {
-      logger.warn({
-        message: 'Error while retrieving AWS signing certificate',
-        meta: {
-          action: 'isValidSnsSignature',
-          signingCertUrl: body.SigningCertURL,
-        },
-        error,
-      })
-      return new RetrieveAwsCertError()
-    },
-  ).andThen(({ data: cert }) => {
-    const verifier = crypto.createVerify('RSA-SHA1')
-    verifier.update(getSnsBasestring(body), 'utf8')
-    const isValid = verifier.verify(cert, body.Signature, 'base64')
-    return isValid ? okAsync(isValid) : errAsync(new InvalidNotificationError())
-  })
-}
-
 /**
  * Verifies if a request object is correctly signed by Amazon SNS. More info:
  * https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html
+ * Uses AWS provided https://github.com/aws/aws-js-sns-message-validator
  * @param body Body of Express request object
  * @returns true if request shape and signature are valid
  */
 export const validateSnsRequest = (
   body: ISnsNotification,
-): ResultAsync<true, RetrieveAwsCertError | InvalidNotificationError> => {
-  if (
-    !hasRequiredKeys(body) ||
-    body.SignatureVersion !== '1' ||
-    !isValidCertUrl(body.SigningCertURL)
+): ResultAsync<true, InvalidNotificationError> => {
+  return ResultAsync.fromPromise(
+    new Promise((resolve, reject) => {
+      const snsValidator = new SNSMessageValidator()
+
+      snsValidator.validate(
+        body as unknown as Record<string, unknown>,
+        (err) => {
+          if (err) {
+            reject(err)
+            return
+          }
+
+          resolve(true)
+        },
+      )
+    }),
+    (error) => {
+      logger.error({
+        message: 'Invalid Email Bounce SNS notification',
+        meta: {
+          action: 'validateSnsRequest',
+          body,
+        },
+        error,
+      })
+
+      return new InvalidNotificationError()
+    },
   )
-    return errAsync(new InvalidNotificationError())
-  return isValidSnsSignature(body)
 }
 
 /**

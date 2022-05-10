@@ -29,6 +29,7 @@ describe('notifications.routes', () => {
     To: '+12345678',
     MessageSid: 'SM212312',
     AccountSid: 'AC123456',
+    MessagingServiceSid: 'MG123456',
     From: '+12345678',
     ApiVersion: '2011-11-01',
   }
@@ -40,6 +41,7 @@ describe('notifications.routes', () => {
     To: '+12345678',
     MessageSid: 'SM212312',
     AccountSid: 'AC123456',
+    MessagingServiceSid: 'MG123456',
     From: '+12345678',
     ApiVersion: '2011-11-01',
     ErrorCode: 30001,
