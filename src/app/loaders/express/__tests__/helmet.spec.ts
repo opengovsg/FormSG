@@ -17,7 +17,6 @@ describe('helmetMiddlewares', () => {
   const mockSentryConfig = mocked(sentryConfig, true)
 
   const cspCoreDirectives = {
-    defaultSrc: ["'self'"],
     imgSrc: [
       "'self'",
       'data:',
@@ -55,7 +54,6 @@ describe('helmetMiddlewares', () => {
       'https://www.google.com/recaptcha/',
       'https://www.recaptcha.net/recaptcha/',
     ],
-    objectSrc: ["'none'"],
     styleSrc: [
       "'self'",
       'https://www.google.com/recaptcha/',
@@ -65,7 +63,7 @@ describe('helmetMiddlewares', () => {
       // For inline styles in angular-sanitize.js
       "'sha256-b3IrgBVvuKx/Q3tmAi79fnf6AFClibrz/0S5x1ghdGU='",
     ],
-    formAction: ["'self'"],
+    frameAncestors: ['*'],
   }
 
   beforeAll(() => {
@@ -140,10 +138,10 @@ describe('helmetMiddlewares', () => {
     mockConfig.isDev = false
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith({
+      useDefaults: true,
       directives: {
         ...cspCoreDirectives,
         reportUri: ['value'],
-        upgradeInsecureRequests: [],
       },
     })
   })
@@ -153,7 +151,9 @@ describe('helmetMiddlewares', () => {
     mockConfig.isDev = true
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith({
+      useDefaults: true,
       directives: {
+        upgradeInsecureRequests: null,
         ...cspCoreDirectives,
       },
     })
