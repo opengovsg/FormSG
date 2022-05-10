@@ -4,6 +4,8 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
+import { TwilioSmsStatsdTags } from 'src/types/twilio'
+
 import { isPhoneNumber } from '../../../../shared/utils/phone-num-validation'
 import { AdminContactOtpData, FormOtpData } from '../../../types'
 import config from '../../config/config'
@@ -14,6 +16,7 @@ import {
   MalformedParametersError,
   PossibleDatabaseError,
 } from '../../modules/core/core.errors'
+import { twilioStatsdClient } from '../../modules/twilio/twilio.statsd-client'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -212,7 +215,17 @@ const sendSms = (
     },
   )
     .andThen(({ status, sid, errorCode, errorMessage }) => {
+      const ddTags: TwilioSmsStatsdTags = {
+        // msgSrvcSid not included to limit tag cardinality (for now?)
+        smsstatus: status,
+        errorcode: '0',
+      }
+
       if (!sid || errorCode) {
+        if (errorCode) {
+          ddTags.errorcode = `${errorCode}`
+        }
+
         logger.error({
           message: 'Encountered error code or missing sid after sending SMS',
           meta: {
@@ -222,6 +235,8 @@ const sendSms = (
             errorMessage,
           },
         })
+
+        twilioStatsdClient.increment('sms.send', 1, 1, ddTags)
 
         // Invalid number error code, throw a more reasonable error for error
         // handling.
@@ -236,6 +251,8 @@ const sendSms = (
               }),
         )
       }
+
+      twilioStatsdClient.increment('sms.send', 1, 1, ddTags)
 
       // No errors.
       logger.info({
