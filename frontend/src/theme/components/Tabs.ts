@@ -4,8 +4,6 @@ import merge from 'lodash/merge'
 
 import { ComponentMultiStyleConfig } from '~theme/types'
 
-import { textStyles } from '../textStyles'
-
 const sizesForLineLightDarkVariant: ComponentMultiStyleConfig<
   typeof parts
 >['sizes'] = {
@@ -45,7 +43,7 @@ const variantLineColor: PartsStyleFunction<typeof parts> = () => ({
     mt: '-2px',
   },
   tab: {
-    ...textStyles['subhead-3'],
+    apply: 'textStyles.subhead-3',
     position: 'relative',
     borderRadius: '0.25rem',
     _selected: {

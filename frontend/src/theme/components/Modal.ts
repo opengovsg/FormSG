@@ -8,8 +8,6 @@ import {
 
 import { ComponentMultiStyleConfig } from '~theme/types'
 
-import { textStyles } from '../textStyles'
-
 const baseStyleOverlay: SystemStyleObject = {
   bg: 'rgba(0, 0, 0, 0.65)',
 }
@@ -45,7 +43,7 @@ const getSize = (value: string): PartsStyleObject<typeof parts> => {
           pt: '2rem',
           pb: '1.5rem',
           px: '1.5rem',
-          ...textStyles['h3'],
+          apply: 'textStyles.h3',
         },
         body: {
           flex: 'initial',
@@ -63,7 +61,7 @@ const getSize = (value: string): PartsStyleObject<typeof parts> => {
         },
         dialog: fullDialogStyle,
         header: {
-          ...textStyles['h2'],
+          apply: 'textStyles.h2',
           p: '1.5rem',
         },
         closeButton: {
@@ -75,7 +73,7 @@ const getSize = (value: string): PartsStyleObject<typeof parts> => {
       return {
         dialog: { maxW: '42.5rem' },
         header: {
-          ...textStyles['h2'],
+          apply: 'textStyles.h2',
           pt: '2rem',
           pb: '1rem',
           px: '2rem',

@@ -3,8 +3,6 @@ import { PartsStyleFunction } from '@chakra-ui/theme-tools'
 
 import { ComponentMultiStyleConfig } from '~theme/types'
 
-import { textStyles } from '../textStyles'
-
 const variantColumnStripe: PartsStyleFunction<typeof parts> = ({
   colorScheme: c,
 }) => {
@@ -24,7 +22,7 @@ const variantColumnStripe: PartsStyleFunction<typeof parts> = ({
     th: {
       textAlign: 'center',
       textTransform: 'initial',
-      ...textStyles['subhead-2'],
+      apply: 'textStyles.subhead-2',
       color: 'secondary.500',
       bg: { base: 'transparent', md: 'white' },
       '&:nth-of-type(odd)': {
@@ -44,14 +42,14 @@ const variantColumnStripe: PartsStyleFunction<typeof parts> = ({
 const variantSolid: PartsStyleFunction<typeof parts> = ({ colorScheme: c }) => {
   return {
     th: {
-      ...textStyles['subhead-2'],
+      apply: 'textStyles.subhead-2',
       color: 'white',
       bg: `${c}.500`,
       px: '1rem',
       textTransform: 'none',
     },
     td: {
-      ...textStyles['body-2'],
+      apply: 'textStyles.body-2',
       py: '0.625rem',
       px: '1rem',
       borderBottom: '1px solid',
@@ -63,7 +61,6 @@ const variantSolid: PartsStyleFunction<typeof parts> = ({ colorScheme: c }) => {
 const sizes: ComponentMultiStyleConfig<typeof parts>['sizes'] = {
   sm: {
     th: {
-      fontSize: textStyles['subhead-2']['fontSize'],
       py: '0.5rem',
       px: '0.5rem',
     },

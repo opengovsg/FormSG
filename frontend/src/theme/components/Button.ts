@@ -5,8 +5,6 @@ import {
 } from '@chakra-ui/theme-tools'
 import merge from 'lodash/merge'
 
-import { textStyles } from '../textStyles'
-
 import { Link } from './Link'
 
 export type ThemeButtonVariant =
@@ -224,7 +222,7 @@ const variantInputAttached: SystemStyleFunction = (props) => {
 
 export const Button = {
   baseStyle: {
-    ...textStyles['subhead-1'],
+    apply: 'textStyles.subhead-1',
     whiteSpace: 'pre-wrap',
     borderRadius: '0.25rem',
     border: '1px solid',

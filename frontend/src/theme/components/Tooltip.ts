@@ -1,7 +1,5 @@
 import { ComponentStyleConfig } from '~theme/types'
 
-import { textStyles } from '../textStyles'
-
 export const Tooltip: ComponentStyleConfig = {
   baseStyle: {
     // overriding --tooltip-bg since Chakra UI does it this way -
@@ -15,8 +13,6 @@ export const Tooltip: ComponentStyleConfig = {
     textAlign: 'left',
     margin: '0.25rem',
     maxWidth: '19.5rem',
-    // For some reason textStyle prop is not accepted, so just
-    // pass all required styles
-    ...textStyles['body-2'],
+    apply: 'textStyles.body-2',
   },
 }

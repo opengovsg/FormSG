@@ -6,12 +6,10 @@ import {
 
 import { meetsWcagAaRatio } from '~theme/utils/contrast'
 
-import { textStyles } from '../textStyles'
-
 export type BadgeVariants = 'solid' | 'subtle'
 
 const baseStyle: SystemStyleObject = {
-  ...textStyles['caption-1'],
+  apply: 'textStyles.caption-1',
   textTransform: 'initial',
 }
 

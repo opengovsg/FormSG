@@ -8,14 +8,12 @@ import {
 
 import { meetsWcagAaRatio } from '~theme/utils/contrast'
 
-import { textStyles } from '../textStyles'
-
 import { Badge } from './Badge'
 
 const parts = tagAnatomy.extend('icon')
 
 const baseStyleContainer: SystemStyleObject = {
-  ...textStyles['body-2'],
+  apply: 'textStyles.body-2',
   transitionProperty: 'common',
   transitionDuration: 'normal',
 }
