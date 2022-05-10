@@ -19,6 +19,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import {
   CheckboxField,
+  DateField,
   DecimalField,
   DropdownField,
   EmailField,
@@ -313,6 +314,8 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
       return <NumberField schema={field} {...rest} />
     case BasicField.Decimal:
       return <DecimalField schema={field} {...rest} />
+    case BasicField.Date:
+      return <DateField schema={field} {...rest} />
     case BasicField.Dropdown:
       return <DropdownField schema={field} {...rest} />
     case BasicField.Statement:
