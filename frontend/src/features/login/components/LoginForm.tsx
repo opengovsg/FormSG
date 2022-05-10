@@ -24,7 +24,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
     useForm<LoginFormInputs>()
 
   const validateEmail = useCallback((value: string) => {
-    return isEmail(value) || INVALID_EMAIL_ERROR
+    return isEmail(value.trim()) || INVALID_EMAIL_ERROR
   }, [])
 
   const onSubmitForm = async (inputs: LoginFormInputs) => {
