@@ -59,8 +59,11 @@ import { OrderedListIcon } from './components/OrderedListIcon'
 import { SectionBodyText } from './components/SectionBodyText'
 import { SectionTitleText } from './components/SectionTitleText'
 import { StatsItem } from './components/StatsItem'
+import { useLanding } from './queries'
 
 export const LandingPage = (): JSX.Element => {
+  const { data } = useLanding()
+
   return (
     <Flex minH="100vh" flexDir="column" h="100%">
       <GovtMasthead />
@@ -164,11 +167,15 @@ export const LandingPage = (): JSX.Element => {
       <LandingSection>
         <SectionTitleText>Used by most government agencies</SectionTitleText>
         <Wrap shouldWrapChildren spacingX="3rem" mt="2.5rem">
-          {/* TODO: Fetch real stats from server */}
-          <StatsItem stat={297852} description="forms deployed" />
-          <StatsItem stat={127445893} description="submissions received" />
-          <StatsItem stat={82273} description="public officers onboard" />
-          <StatsItem stat={88} description="government agencies" />
+          <StatsItem stat={data?.formCount} description="forms deployed" />
+          <StatsItem
+            stat={data?.submissionCount}
+            description="submissions received"
+          />
+          <StatsItem
+            stat={data?.userCount}
+            description="public officers onboard"
+          />
         </Wrap>
         <VisuallyHidden>Examples of users of FormSG</VisuallyHidden>
         <Wrap shouldWrapChildren mt="4rem" spacingX="4.5rem">
