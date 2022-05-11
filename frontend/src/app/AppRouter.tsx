@@ -5,6 +5,7 @@ import {
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
+  LANDING_ROUTE,
   LOGIN_ROUTE,
   PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
@@ -29,6 +30,7 @@ const PublicFormPage = lazy(
   () => import('~features/public-form/PublicFormPage'),
 )
 const WorkspacePage = lazy(() => import('~features/workspace'))
+const LandingPage = lazy(() => import('~pages/Landing'))
 const LoginPage = lazy(() => import('~features/login'))
 const PrivacyPolicyPage = lazy(() => import('~pages/PrivacyPolicy'))
 const TermsOfUsePage = lazy(() => import('~pages/TermsOfUse'))
@@ -41,6 +43,10 @@ export const AppRouter = (): JSX.Element => {
   return (
     <WithSuspense>
       <Routes>
+        <Route
+          path={LANDING_ROUTE}
+          element={<PublicElement element={<LandingPage />} />}
+        />
         <Route
           path={ROOT_ROUTE}
           element={<PrivateElement element={<WorkspacePage />} />}
