@@ -1,10 +1,10 @@
 import { FC } from 'react'
-import { Flex, Image, Wrap, WrapProps } from '@chakra-ui/react'
+import { Flex, Image, Stack, StackProps } from '@chakra-ui/react'
 
 import { LandingSection } from './LandingSection'
 import { SectionTitleText } from './SectionTitleText'
 
-interface FeatureSectionProps extends WrapProps {
+interface FeatureSectionProps extends StackProps {
   title: string
   imgSrc?: string
 }
@@ -20,8 +20,8 @@ export const FeatureSection: FC<FeatureSectionProps> = ({
 }) => {
   return (
     <LandingSection bg={bg}>
-      <Wrap
-        spacingX="8.25rem"
+      <Stack
+        spacing="8.25rem"
         direction={direction}
         align={align}
         {...wrapProps}
@@ -33,7 +33,7 @@ export const FeatureSection: FC<FeatureSectionProps> = ({
         {imgSrc ? (
           <Image maxW="fit-content" flex={1} src={imgSrc} aria-hidden />
         ) : null}
-      </Wrap>
+      </Stack>
     </LandingSection>
   )
 }
