@@ -1,16 +1,13 @@
 import { Meta, Story } from '@storybook/react'
 
-import { viewports } from '~utils/storybook'
+import { getMobileViewParameters, viewports } from '~utils/storybook'
 
-import { PublicHeader } from './PublicHeader'
+import { PublicHeader, PublicHeaderProps } from './PublicHeader'
 
-export default {
-  title: 'Templates/PublicHeader',
-  component: PublicHeader,
-  decorators: [],
-} as Meta
-
-const defaultArgs = {
+const DEFAULT_ARGS: PublicHeaderProps = {
+  loginButtonProps: {
+    onClick: () => console.log('login clicked'),
+  },
   publicHeaderLinks: [
     {
       label: 'Products',
@@ -24,21 +21,23 @@ const defaultArgs = {
   ],
 }
 
+export default {
+  title: 'Templates/PublicHeader',
+  component: PublicHeader,
+  parameters: {
+    layout: 'fullscreen',
+  },
+  decorators: [],
+  args: DEFAULT_ARGS,
+} as Meta
+
 const Template: Story = (args) => <PublicHeader {...args} />
 export const Default = Template.bind({})
-Default.args = defaultArgs
 
 export const Mobile = Template.bind({})
-Mobile.args = defaultArgs
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
+Mobile.parameters = getMobileViewParameters()
 
 export const Tablet = Template.bind({})
-Tablet.args = defaultArgs
 Tablet.parameters = {
   viewport: {
     defaultViewport: 'tablet',

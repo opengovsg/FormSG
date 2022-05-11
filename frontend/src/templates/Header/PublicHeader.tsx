@@ -1,9 +1,14 @@
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-import { chakra, Flex, FlexProps, HStack } from '@chakra-ui/react'
+import {
+  chakra,
+  Flex,
+  FlexProps,
+  HStack,
+  useBreakpointValue,
+} from '@chakra-ui/react'
 
 import { ReactComponent as BrandHortSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
-import Button from '~components/Button'
+import Button, { ButtonProps } from '~components/Button'
 import Link from '~components/Link'
 
 const BrandHortLogo = chakra(BrandHortSvg)
@@ -18,16 +23,23 @@ type PublicHeaderLink = {
 export interface PublicHeaderProps {
   /** Footer links to display, if provided. */
   publicHeaderLinks?: PublicHeaderLink[]
+  /** Callback invoked when login button is clicked */
+  loginButtonProps?: ButtonProps
 }
 
 export const PublicHeader = ({
   publicHeaderLinks,
+  loginButtonProps,
 }: PublicHeaderProps): JSX.Element => {
+  const logoToRender = useBreakpointValue({
+    base: <BrandSmallLogo w="2.5rem" />,
+    sm: <BrandHortLogo w="7.75rem" />,
+  })
+
   return (
     <PublicHeader.Container>
       <Link title="Form Logo" href="https://form.gov.sg/">
-        <BrandSmallLogo display={{ base: 'block', sm: 'none' }} w="40px" />
-        <BrandHortLogo display={{ base: 'none', sm: 'block' }} w="124.25px" />
+        {logoToRender}
       </Link>
       <HStack>
         <HStack
@@ -48,8 +60,8 @@ export const PublicHeader = ({
             </Link>
           ))}
         </HStack>
-        <Button variant="solid" colorScheme="primary" size="small">
-          Log In
+        <Button variant="solid" colorScheme="primary" {...loginButtonProps}>
+          Log in
         </Button>
       </HStack>
     </PublicHeader.Container>
