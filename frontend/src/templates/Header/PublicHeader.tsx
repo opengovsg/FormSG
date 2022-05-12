@@ -1,4 +1,5 @@
 import {
+  As,
   chakra,
   Flex,
   FlexProps,
@@ -8,22 +9,62 @@ import {
 
 import { ReactComponent as BrandHortSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
+import { useIsMobile } from '~hooks/useIsMobile'
+import IconButton from '~components/IconButton'
 import Link from '~components/Link'
 
 const BrandHortLogo = chakra(BrandHortSvg)
 const BrandSmallLogo = chakra(BrandMarkSvg)
 
-type PublicHeaderLink = {
+type PublicHeaderLinkProps = {
   label: string
   href: string
   showOnMobile?: boolean
+  MobileIcon?: As
 }
 
 export interface PublicHeaderProps {
   /** Footer links to display, if provided. */
-  publicHeaderLinks?: PublicHeaderLink[]
+  publicHeaderLinks?: PublicHeaderLinkProps[]
   /** Call to action element to render, if any. */
   ctaElement?: React.ReactChild
+}
+
+const PublicHeaderLink = ({
+  showOnMobile,
+  MobileIcon,
+  href,
+  label,
+}: PublicHeaderLinkProps) => {
+  const isMobile = useIsMobile()
+
+  if (isMobile && !showOnMobile) {
+    return null
+  }
+
+  if (isMobile && MobileIcon) {
+    return (
+      <IconButton
+        variant="clear"
+        as="a"
+        href={href}
+        aria-label={label}
+        icon={<MobileIcon fontSize="1.25rem" color="primary.500" />}
+      />
+    )
+  }
+
+  return (
+    <Link
+      w="fit-content"
+      variant="standalone"
+      color="primary.500"
+      href={href}
+      aria-label={label}
+    >
+      {label}
+    </Link>
+  )
 }
 
 export const PublicHeader = ({
@@ -40,25 +81,13 @@ export const PublicHeader = ({
       <Link title="Form Logo" href="https://form.gov.sg/">
         {logoToRender}
       </Link>
-      <HStack>
-        <HStack
-          paddingEnd={{ base: '1.5rem', md: '2rem', xl: '2.5rem' }}
-          spacing={{ base: '1.5rem', md: '2rem', xl: '2.5rem' }}
-          textStyle="subhead-1"
-        >
-          {publicHeaderLinks?.map(({ label, href, showOnMobile }, index) => (
-            <Link
-              display={{ base: showOnMobile ? 'block' : 'none', md: 'block' }}
-              w="fit-content"
-              variant="standalone"
-              color="primary.500"
-              key={index}
-              href={href}
-            >
-              {label}
-            </Link>
-          ))}
-        </HStack>
+      <HStack
+        textStyle="subhead-1"
+        spacing={{ base: '1rem', md: '2rem', xl: '2.5rem' }}
+      >
+        {publicHeaderLinks?.map((link, index) => (
+          <PublicHeaderLink key={index} {...link} />
+        ))}
         {ctaButton ?? null}
       </HStack>
     </PublicHeader.Container>

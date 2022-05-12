@@ -1,6 +1,7 @@
 import { Button } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
+import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { getMobileViewParameters, viewports } from '~utils/storybook'
 
 import { PublicHeader, PublicHeaderProps } from './PublicHeader'
@@ -20,6 +21,7 @@ const DEFAULT_ARGS: PublicHeaderProps = {
       label: 'Help',
       href: 'https://guide.form.gov.sg',
       showOnMobile: true,
+      MobileIcon: BxsHelpCircle,
     },
   ],
 }
