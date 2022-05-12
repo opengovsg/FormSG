@@ -72,7 +72,11 @@ export const LandingPage = (): JSX.Element => {
       <GovtMasthead />
       <AppPublicHeader />
       <LandingSection bg="primary.100">
-        <Stack direction={{ base: 'column', lg: 'row' }}>
+        <Stack
+          direction={{ base: 'column', lg: 'row' }}
+          align="center"
+          spacing={{ base: '1.5rem', md: '3.125rem', lg: '7.5rem' }}
+        >
           <Flex flexDir="column" flex={1}>
             <Text
               as="h1"
@@ -97,7 +101,9 @@ export const LandingPage = (): JSX.Element => {
               </Button>
             </Box>
           </Flex>
-          <Box flex={1}> Animation placeholder</Box>
+          <Box flex={1} aria-hidden>
+            <Image src={howFormWorksImg} />
+          </Box>
         </Stack>
       </LandingSection>
       <LandingSection>
@@ -153,7 +159,11 @@ export const LandingPage = (): JSX.Element => {
         </SimpleGrid>
       </LandingSection>
       <LandingSection bg="primary.100">
-        <Stack direction={{ base: 'column', lg: 'row' }}>
+        <Stack
+          direction={{ base: 'column', lg: 'row' }}
+          align="center"
+          spacing={{ base: '1.5rem', md: '3.125rem', lg: '7.5rem' }}
+        >
           <Flex flexDir="column" flex={1}>
             <SectionTitleText>
               No onboarding, no fees, and no code required
@@ -169,7 +179,9 @@ export const LandingPage = (): JSX.Element => {
               </Button>
             </Box>
           </Flex>
-          <Box flex={1}> Animation placeholder</Box>
+          <Box flex={1} aria-hidden>
+            <Image src={howFormWorksImg} />
+          </Box>
         </Stack>
       </LandingSection>
       <LandingSection>
