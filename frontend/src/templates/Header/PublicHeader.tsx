@@ -8,7 +8,6 @@ import {
 
 import { ReactComponent as BrandHortSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
-import Button, { ButtonProps } from '~components/Button'
 import Link from '~components/Link'
 
 const BrandHortLogo = chakra(BrandHortSvg)
@@ -23,13 +22,13 @@ type PublicHeaderLink = {
 export interface PublicHeaderProps {
   /** Footer links to display, if provided. */
   publicHeaderLinks?: PublicHeaderLink[]
-  /** Callback invoked when login button is clicked */
-  loginButtonProps?: ButtonProps
+  /** Call to action button to render, if any. */
+  ctaButton?: React.ReactChild
 }
 
 export const PublicHeader = ({
   publicHeaderLinks,
-  loginButtonProps,
+  ctaButton,
 }: PublicHeaderProps): JSX.Element => {
   const logoToRender = useBreakpointValue({
     base: <BrandSmallLogo w="2.5rem" />,
@@ -60,9 +59,7 @@ export const PublicHeader = ({
             </Link>
           ))}
         </HStack>
-        <Button variant="solid" colorScheme="primary" {...loginButtonProps}>
-          Log in
-        </Button>
+        {ctaButton ?? null}
       </HStack>
     </PublicHeader.Container>
   )

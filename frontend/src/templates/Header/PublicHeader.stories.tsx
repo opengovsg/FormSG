@@ -1,3 +1,4 @@
+import { Button } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { getMobileViewParameters, viewports } from '~utils/storybook'
@@ -5,9 +6,11 @@ import { getMobileViewParameters, viewports } from '~utils/storybook'
 import { PublicHeader, PublicHeaderProps } from './PublicHeader'
 
 const DEFAULT_ARGS: PublicHeaderProps = {
-  loginButtonProps: {
-    onClick: () => console.log('login clicked'),
-  },
+  ctaButton: (
+    <Button variant="solid" colorScheme="primary">
+      Log in
+    </Button>
+  ),
   publicHeaderLinks: [
     {
       label: 'Products',
