@@ -37,7 +37,12 @@ export const useMdComponents = ({
   const mdComponents: Components = useMemo(
     () => ({
       ol: ({ node, ...props }) => (
-        <OrderedList marginInlineStart="1.25rem" {...props} {...textStyles} />
+        <OrderedList
+          marginInlineStart="1.25rem"
+          whiteSpace="initial"
+          {...props}
+          {...textStyles}
+        />
       ),
       li: ({ node, ...props }) => <ListItem {...props} {...textStyles} />,
       a: ({ node, ...props }) => {

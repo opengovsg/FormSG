@@ -1,4 +1,5 @@
 import { BiLockAlt, BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
+import ReactMarkdown from 'react-markdown'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   Accordion,
@@ -18,6 +19,7 @@ import {
   VisuallyHidden,
   Wrap,
 } from '@chakra-ui/react'
+import dedent from 'dedent'
 
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
@@ -27,6 +29,7 @@ import { BxlGithub } from '~assets/icons/BxlGithub'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
+import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import GovtMasthead from '~components/GovtMasthead'
 import Link from '~components/Link'
@@ -54,6 +57,7 @@ import restrictedNparksLogo from './assets/images/restricted__nparks.png'
 import restrictedPaLogo from './assets/images/restricted__pa.png'
 import storageModeImg from './assets/images/storage_mode.svg'
 import { FeatureGridItem } from './components/FeatureGridItem'
+import { FeatureLink } from './components/FeatureLink'
 import { FeatureSection } from './components/FeatureSection'
 import { HelpAccordionItem } from './components/HelpAccordionItem'
 import { LandingSection } from './components/LandingSection'
@@ -66,6 +70,7 @@ import { useLanding } from './queries'
 export const LandingPage = (): JSX.Element => {
   const { data } = useLanding()
   const isMobile = useIsMobile()
+  const mdComponents = useMdComponents()
 
   return (
     <Flex minH="100vh" flexDir="column" h="100%">
@@ -259,20 +264,14 @@ export const LandingPage = (): JSX.Element => {
           </Flex>
           <SectionBodyText mt={0}>Sensitive (High)</SectionBodyText>
         </SimpleGrid>
-        <Link
-          mt="2.5rem"
-          w="fit-content"
-          textStyle="subhead-1"
-          isExternal
-          variant="standalone"
-          p={0}
+        <FeatureLink
           href="https://go.gov.sg/form-what-is-storage-mode"
           externalLinkIcon={
             <Icon as={BiRightArrowAlt} ml="0.5rem" fontSize="1.5rem" />
           }
         >
           Read more about Storage Mode
-        </Link>
+        </FeatureLink>
       </FeatureSection>
       <FeatureSection
         title="Open sourced"
@@ -286,18 +285,12 @@ export const LandingPage = (): JSX.Element => {
           well. Furthermore, there are lessons that we have learnt that we feel
           could be of benefit to the wider developer community.
         </SectionBodyText>
-        <Link
-          mt="2.5rem"
-          w="fit-content"
-          textStyle="subhead-1"
-          isExternal
-          variant="standalone"
-          p={0}
+        <FeatureLink
           href="https://github.com/opengovsg/formsg"
           externalLinkIcon={<BxlGithub ml="0.5rem" fontSize="1.5rem" />}
         >
           Fork it on Github
-        </Link>
+        </FeatureLink>
       </FeatureSection>
       <FeatureSection
         title="Help Center"
@@ -315,35 +308,87 @@ export const LandingPage = (): JSX.Element => {
             mt="1rem"
             color="secondary.500"
             allowToggle
+            whiteSpace="pre-line"
           >
             <HelpAccordionItem title="What happens if I lose my Secret Key?">
-              Lorem ipsum 1
+              <ReactMarkdown components={mdComponents}>
+                {dedent`
+                  If you have lost your secret key, take these steps immediately:
+
+                  1. If your form is live, duplicate your form, save the new secret key securely and replace the original form's link with the new form's link to continue collecting responses. Deactivate the original form as soon as possible to avoid losing further responses.
+
+                  2. On the computer you used to create the original form, search for 'Form Secret Key'. Secret keys typically downloaded into your Downloads folder as .txt files with 'Form Secret Key' in the filename.
+
+                  3. If you have created multiple forms with similar titles in the past, it is possible that you have confused the different forms' secret keys with each other, as form titles are in the secret keys' filenames. Try all secret keys with similar filenames on your form.
+
+                  4. If you remember sending an email to share your secret key with collaborators, search the Sent folder in your email for the keyword 'secret key' and your form title. 
+
+                  5. If you still cannot find your secret key and would like our help to debug this further, contact us on our [help form](https://go.gov.sg/form-help). 
+
+                  Without your secret key, you will not be able to access your existing response data. Additionally, it's not possible for us to recover your lost secret key or response data on your behalf. This is because Form does not retain your secret key or any other way to unlock your encrypted data - the only way to ensure response data is truly private to agencies only. This is an important security benefit, because that means even if our server were to be compromised, an attacker would never be able to unlock your encrypted responses.
+                `}
+              </ReactMarkdown>
+              <FeatureLink mt="1rem" href="https://go.gov.sg/secretkeyloss">
+                Source
+              </FeatureLink>
             </HelpAccordionItem>
             <HelpAccordionItem title="How do I increase attachment size limit?">
-              Lorem ipsum 1
+              <ReactMarkdown components={mdComponents}>
+                {dedent`
+                  The current size limit is 7 MB for email mode forms, and 20 MB for storage mode forms.
+
+                  7 MB for email mode forms is a hard limit because the email service we use has a fixed 10 MB outgoing size, and we buffer 3 MB for email fields and metadata. 
+
+                  Because the smallest unit you can attach per attachment field is 1 MB, you can have a max of 7 attachments on your form in email mode, and a max of 20 attachments in storage mode. If your user has to submit more than 7  documents in email mode (or more than 20 in storage mode), you may create just one attachment field of 7 or 20 MB in their respective modes, and advise your user to zip documents up and submit as one attachment.
+                `}
+              </ReactMarkdown>
+              <FeatureLink
+                mt="1rem"
+                href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-increase-attachment-size-limit-and-what-if-there-are-many-attachments-for-my-form"
+              >
+                Source
+              </FeatureLink>
             </HelpAccordionItem>
             <HelpAccordionItem title="How does end-to-end encryption work?">
-              Lorem ipsum 1
+              <ReactMarkdown components={mdComponents}>
+                {dedent`
+                When a respondent submits a response, response data is encrypted in the respondent's browser before being sent to our servers for storage. This means that by the time Form's servers receive responses, they have already been scrambled and are stored in this unreadable form. Your response data remains in this encrypted state until you decrypt your responses with your secret key, transforming them into a readable format. 
+
+                The benefit of end-to-end encryption is that response data enters and remains in Form's servers in an encrypted state. This ensures that even if our servers are compromised by an attack, attackers will still not be able to decrypt and view your response data, as they do not possess your secret key.  
+              `}
+              </ReactMarkdown>
+              <FeatureLink
+                mt="1rem"
+                href="https://guide.form.gov.sg/AdvancedGuide.html#how-does-end-to-end-encryption-work"
+              >
+                Source
+              </FeatureLink>
             </HelpAccordionItem>
             <HelpAccordionItem title="How do I transfer ownership of my forms?">
-              Lorem ipsum 1
+              <ReactMarkdown components={mdComponents}>
+                {dedent`
+                  You can transfer ownership on the top right hand corner of each form by clicking the Add Collaborator button. 
+
+                  Note that you might not need to transfer ownership of your form. You may simply add your colleague as a collaborator. Collaborators have the same rights as form creators, except they cannot delete the form.
+                `}
+              </ReactMarkdown>
+              <FeatureLink
+                mt="1rem"
+                href="https://guide.form.gov.sg/AdvancedGuide.html#i-am-leaving-the-organisation-or-switching-over-to-a-new-email-how-do-i-transfer-ownership-of-my-forms"
+              >
+                Source
+              </FeatureLink>
             </HelpAccordionItem>
           </Accordion>
         </Box>
-        <Link
-          mt="2.5rem"
-          w="fit-content"
-          textStyle="subhead-1"
-          isExternal
-          variant="standalone"
-          p={0}
+        <FeatureLink
           href="https://guide.form.gov.sg/"
           externalLinkIcon={
             <Icon as={BxsHelpCircle} ml="0.5rem" fontSize="1.5rem" />
           }
         >
           Visit our Help Center
-        </Link>
+        </FeatureLink>
       </FeatureSection>
       <FeatureSection
         align="start"
@@ -395,7 +440,43 @@ export const LandingPage = (): JSX.Element => {
               </OrderedList>
             </TabPanel>
             <TabPanel>
-              <p>two!</p>
+              <SectionBodyText mt="1.5rem">
+                View your responses with your email client. All responses are
+                directly transmitted to your email and not stored in Form. Third
+                parties, including Form, will not be able to access or view your
+                form data.
+              </SectionBodyText>
+              <OrderedList
+                spacing="1rem"
+                mt="2.5rem"
+                listStyleType="none"
+                ml="2.5rem"
+                color="secondary.500"
+              >
+                <ListItem textStyle="body-2">
+                  <OrderedListIcon index={1} />
+                  Login to FormSG via Internet or Intranet
+                </ListItem>
+                <ListItem textStyle="body-2">
+                  <OrderedListIcon index={2} />
+                  Create a new form and choose Email mode
+                </ListItem>
+                <ListItem textStyle="body-2">
+                  <OrderedListIcon index={3} />
+                  Build and share form link with citizens
+                </ListItem>
+                <ListItem textStyle="body-2">
+                  <OrderedListIcon index={4} />
+                  Collect responses in your government email
+                </ListItem>
+                <ListItem textStyle="body-2">
+                  <OrderedListIcon index={5} />
+                  Collate responses with our{' '}
+                  <Link isExternal href="https://collate.form.gov.sg/">
+                    data collation tool
+                  </Link>
+                </ListItem>
+              </OrderedList>
             </TabPanel>
           </TabPanels>
         </Tabs>
@@ -414,6 +495,7 @@ export const LandingPage = (): JSX.Element => {
       <LandingSection bg="secondary.700" align="center">
         <Image src={FormBrandLogo} aria-hidden h="3.5rem" />
         <Text
+          textAlign="center"
           textStyle={{ base: 'display-2-mobile', md: 'display-2' }}
           color="white"
           mt="2rem"
