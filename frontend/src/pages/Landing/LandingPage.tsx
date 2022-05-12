@@ -20,6 +20,7 @@ import {
 } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
+import { AppPublicHeader } from '~/app/AppPublicHeader'
 import FormBrandLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
 
 import { BxlGithub } from '~assets/icons/BxlGithub'
@@ -67,6 +68,7 @@ export const LandingPage = (): JSX.Element => {
   return (
     <Flex minH="100vh" flexDir="column" h="100%">
       <GovtMasthead />
+      <AppPublicHeader />
       <LandingSection bg="primary.100">
         <Box>Public header placeholder</Box>
         <Stack direction="row">
