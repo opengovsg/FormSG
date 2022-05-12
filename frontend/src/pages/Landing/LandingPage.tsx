@@ -26,6 +26,7 @@ import FormBrandLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
 import { BxlGithub } from '~assets/icons/BxlGithub'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { LOGIN_ROUTE } from '~constants/routes'
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import GovtMasthead from '~components/GovtMasthead'
 import Link from '~components/Link'
@@ -64,16 +65,20 @@ import { useLanding } from './queries'
 
 export const LandingPage = (): JSX.Element => {
   const { data } = useLanding()
+  const isMobile = useIsMobile()
 
   return (
     <Flex minH="100vh" flexDir="column" h="100%">
       <GovtMasthead />
       <AppPublicHeader />
       <LandingSection bg="primary.100">
-        <Box>Public header placeholder</Box>
-        <Stack direction="row">
+        <Stack direction={{ base: 'column', lg: 'row' }}>
           <Flex flexDir="column" flex={1}>
-            <Text as="h1" textStyle="display-1" color="secondary.700">
+            <Text
+              as="h1"
+              textStyle={{ base: 'display-1-mobile', md: 'display-1' }}
+              color="secondary.700"
+            >
               Build secure government forms in minutes.
             </Text>
             <SectionBodyText>
@@ -83,6 +88,7 @@ export const LandingPage = (): JSX.Element => {
             </SectionBodyText>
             <Box mt="2.5rem">
               <Button
+                isFullWidth={isMobile}
                 as={ReactLink}
                 to={LOGIN_ROUTE}
                 rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
@@ -98,7 +104,12 @@ export const LandingPage = (): JSX.Element => {
         <SectionTitleText maxW="37.5rem">
           Our form building and data collection features
         </SectionTitleText>
-        <SimpleGrid columns={3} spacingX="2.5rem" spacingY="4rem" mt="4rem">
+        <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 3 }}
+          spacingX="2.5rem"
+          spacingY="4rem"
+          mt="4rem"
+        >
           <FeatureGridItem
             image={featureDndImg}
             title="Drag and drop builder"
@@ -139,15 +150,10 @@ export const LandingPage = (): JSX.Element => {
             title="Email confirmation"
             description="Send confirmation emails to your respondents along with a copy of their response."
           />
-          <FeatureGridItem
-            image={featureSectionsImg}
-            title="Templates"
-            description="Manage long forms by sectioning it so your users enjoy a more seamless experience."
-          />
         </SimpleGrid>
       </LandingSection>
       <LandingSection bg="primary.100">
-        <Stack direction="row">
+        <Stack direction={{ base: 'column', lg: 'row' }}>
           <Flex flexDir="column" flex={1}>
             <SectionTitleText>
               No onboarding, no fees, and no code required
@@ -180,7 +186,11 @@ export const LandingPage = (): JSX.Element => {
           />
         </Wrap>
         <VisuallyHidden>Examples of users of FormSG</VisuallyHidden>
-        <Wrap shouldWrapChildren mt="4rem" spacingX="4.5rem">
+        <Wrap
+          shouldWrapChildren
+          mt="4rem"
+          spacing={{ base: '2.5rem', md: '4.5rem' }}
+        >
           <Image
             alt="Immigration and Checkpoints Authority"
             src={restrictedIcaLogo}
@@ -208,6 +218,7 @@ export const LandingPage = (): JSX.Element => {
         <Image src={meetingCollaborationImg} aria-hidden mt="5rem" />
       </LandingSection>
       <FeatureSection
+        direction={{ base: 'column', lg: 'row' }}
         title="Secure collection of responses"
         imgSrc={storageModeImg}
       >
@@ -254,7 +265,7 @@ export const LandingPage = (): JSX.Element => {
       <FeatureSection
         title="Open sourced"
         imgSrc={openSourceImg}
-        direction="row-reverse"
+        direction={{ base: 'column', lg: 'row-reverse' }}
       >
         <SectionBodyText>
           We hope that by open-sourcing Form, others can take advantage of our
@@ -276,7 +287,12 @@ export const LandingPage = (): JSX.Element => {
           Fork it on Github
         </Link>
       </FeatureSection>
-      <FeatureSection title="Help Center" imgSrc={helpCenterImg} align="start">
+      <FeatureSection
+        title="Help Center"
+        imgSrc={helpCenterImg}
+        align="start"
+        direction={{ base: 'column', lg: 'row' }}
+      >
         <Box>
           <SectionBodyText>
             Have a question? Most answers can be found in our self service Help
@@ -319,6 +335,7 @@ export const LandingPage = (): JSX.Element => {
       </FeatureSection>
       <FeatureSection
         align="start"
+        direction={{ base: 'column', lg: 'row' }}
         bg="primary.100"
         title="How it works"
         imgSrc={howFormWorksImg}
@@ -384,7 +401,11 @@ export const LandingPage = (): JSX.Element => {
       </LandingSection>
       <LandingSection bg="secondary.700" align="center">
         <Image src={FormBrandLogo} aria-hidden h="3.5rem" />
-        <Text textStyle="display-2" color="white" mt="2rem">
+        <Text
+          textStyle={{ base: 'display-2-mobile', md: 'display-2' }}
+          color="white"
+          mt="2rem"
+        >
           Start building your form now.
         </Text>
         <Box mt="2rem">

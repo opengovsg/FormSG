@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import { Flex, Image, Stack, StackProps } from '@chakra-ui/react'
+import { Box, Flex, Image, Stack, StackProps } from '@chakra-ui/react'
 
 import { LandingSection } from './LandingSection'
 import { SectionTitleText } from './SectionTitleText'
@@ -21,7 +21,7 @@ export const FeatureSection: FC<FeatureSectionProps> = ({
   return (
     <LandingSection bg={bg}>
       <Stack
-        spacing="8.25rem"
+        spacing={{ base: '2.5rem', lg: '8.25rem' }}
         direction={direction}
         align={align}
         {...wrapProps}
@@ -31,7 +31,9 @@ export const FeatureSection: FC<FeatureSectionProps> = ({
           {children}
         </Flex>
         {imgSrc ? (
-          <Image maxW="fit-content" flex={1} src={imgSrc} aria-hidden />
+          <Box flex={1} aria-hidden>
+            <Image src={imgSrc} />
+          </Box>
         ) : null}
       </Stack>
     </LandingSection>

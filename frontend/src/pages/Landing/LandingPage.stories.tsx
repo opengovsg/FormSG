@@ -3,7 +3,11 @@ import { Meta, Story } from '@storybook/react'
 import { getLandingStats } from '~/mocks/msw/handlers/landing'
 
 import { LANDING_ROUTE } from '~constants/routes'
-import { StoryRouter } from '~utils/storybook'
+import {
+  getMobileViewParameters,
+  getTabletViewParameters,
+  StoryRouter,
+} from '~utils/storybook'
 
 import { LandingPage } from './LandingPage'
 
@@ -29,3 +33,9 @@ export const Loading = Template.bind({})
 Loading.parameters = {
   msw: [getLandingStats({ delay: 'infinite' })],
 }
+
+export const Mobile = Template.bind({})
+Mobile.parameters = getMobileViewParameters()
+
+export const Tablet = Template.bind({})
+Tablet.parameters = getTabletViewParameters()
