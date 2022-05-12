@@ -51,11 +51,11 @@ export const AppRouter = (): JSX.Element => {
         />
         <Route
           path={PRIVACY_POLICY_ROUTE}
-          element={<PublicElement strict element={<PrivacyPolicyPage />} />}
+          element={<PublicElement element={<PrivacyPolicyPage />} />}
         />
         <Route
           path={TOU_ROUTE}
-          element={<PublicElement strict element={<TermsOfUsePage />} />}
+          element={<PublicElement element={<TermsOfUsePage />} />}
         />
         <Route
           path={PUBLICFORM_ROUTE}
