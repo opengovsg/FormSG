@@ -71,7 +71,7 @@ export const LandingPage = (): JSX.Element => {
     <Flex minH="100vh" flexDir="column" h="100%">
       <GovtMasthead />
       <AppPublicHeader />
-      <LandingSection bg="primary.100">
+      <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }}>
         <Stack
           direction={{ base: 'column', lg: 'row' }}
           align="center"
