@@ -16,7 +16,7 @@ export const AppPublicHeader = (): JSX.Element => {
   return (
     <PublicHeader
       publicHeaderLinks={PUBLIC_HEADER_LINKS}
-      ctaButton={
+      ctaElement={
         <Button
           variant="solid"
           colorScheme="primary"

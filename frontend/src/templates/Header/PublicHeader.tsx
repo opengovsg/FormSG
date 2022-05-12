@@ -22,13 +22,13 @@ type PublicHeaderLink = {
 export interface PublicHeaderProps {
   /** Footer links to display, if provided. */
   publicHeaderLinks?: PublicHeaderLink[]
-  /** Call to action button to render, if any. */
-  ctaButton?: React.ReactChild
+  /** Call to action element to render, if any. */
+  ctaElement?: React.ReactChild
 }
 
 export const PublicHeader = ({
   publicHeaderLinks,
-  ctaButton,
+  ctaElement: ctaButton,
 }: PublicHeaderProps): JSX.Element => {
   const logoToRender = useBreakpointValue({
     base: <BrandSmallLogo w="2.5rem" />,

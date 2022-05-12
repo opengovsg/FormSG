@@ -6,7 +6,7 @@ import { getMobileViewParameters, viewports } from '~utils/storybook'
 import { PublicHeader, PublicHeaderProps } from './PublicHeader'
 
 const DEFAULT_ARGS: PublicHeaderProps = {
-  ctaButton: (
+  ctaElement: (
     <Button variant="solid" colorScheme="primary">
       Log in
     </Button>
@@ -34,8 +34,14 @@ export default {
   args: DEFAULT_ARGS,
 } as Meta
 
-const Template: Story = (args) => <PublicHeader {...args} />
+const Template: Story<PublicHeaderProps> = (args) => <PublicHeader {...args} />
 export const Default = Template.bind({})
+
+export const WithoutCTA = Template.bind({})
+WithoutCTA.args = {
+  ...DEFAULT_ARGS,
+  ctaElement: undefined,
+}
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
