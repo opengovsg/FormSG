@@ -184,7 +184,7 @@
     "@types/lodash": "^4.14.182",
     "@types/mongodb": "^3.6.20",
     "@types/mongodb-uri": "^0.9.1",
-    "@types/node": "^17.0.25",
+    "@types/node": "^17.0.32",
     "@types/nodemailer": "^6.4.4",
     "@types/opossum": "^6.2.1",
     "@types/promise-retry": "^1.1.3",
