@@ -496,7 +496,7 @@ export const getStorageSubmissionMetadataResponse = (
         ctx.json<StorageModeSubmissionMetadataList>(
           merge(
             {
-              count: 30,
+              count: 0,
               metadata: [],
             },
             props,

@@ -10,6 +10,8 @@ import Button from '~components/Button'
 import { useFormResponses } from '../queries'
 import useDecryptionWorkers from '../useDecryptionWorkers'
 
+import { EmptyResponses } from './EmptyResponses'
+
 interface StorageResponsesTabProps {
   form: AdminStorageFormDto
 }
@@ -26,6 +28,10 @@ export const StorageResponsesTab = ({
     if (!formId || !form.title) return
     return downloadEncryptedResponses(formId, form.title, secretKey)
   }, [downloadEncryptedResponses, formId, secretKey, form.title])
+
+  if (data?.count === 0) {
+    return <EmptyResponses />
+  }
 
   return (
     <Skeleton isLoaded={!isLoading && !!data}>
