@@ -1,6 +1,4 @@
-import { useCallback, useState } from 'react'
-import { useParams } from 'react-router'
-import { Skeleton } from '@chakra-ui/react'
+import { Container } from '@chakra-ui/react'
 
 import { AdminStorageFormDto } from '~shared/types/form'
 import { StorageModeSubmissionMetadata } from '~shared/types/submission'
@@ -8,9 +6,10 @@ import { StorageModeSubmissionMetadata } from '~shared/types/submission'
 import Button from '~components/Button'
 
 import { useFormResponses } from '../queries'
-import useDecryptionWorkers from '../useDecryptionWorkers'
 
 import { EmptyResponses } from './EmptyResponses'
+import { useResponsesContext } from './ResponsesContext'
+import { SecretKeyVerification } from './SecretKeyVerification'
 
 interface StorageResponsesTabProps {
   form: AdminStorageFormDto
@@ -19,40 +18,37 @@ interface StorageResponsesTabProps {
 export const StorageResponsesTab = ({
   form,
 }: StorageResponsesTabProps): JSX.Element => {
-  const { data, isLoading } = useFormResponses()
-  const { formId } = useParams()
-  const [secretKey, setSecretKey] = useState<string>('')
-  const { downloadEncryptedResponses } = useDecryptionWorkers()
+  const { responsesCount, secretKey, handleExportCsv } = useResponsesContext()
+  const { data } = useFormResponses()
 
-  const handleExportCsv = useCallback(() => {
-    if (!formId || !form.title) return
-    return downloadEncryptedResponses(formId, form.title, secretKey)
-  }, [downloadEncryptedResponses, formId, secretKey, form.title])
-
-  if (data?.count === 0) {
+  if (responsesCount === 0) {
     return <EmptyResponses />
   }
 
   return (
-    <Skeleton isLoaded={!isLoading && !!data}>
-      <div>
-        Enter secret key:
-        <input
-          style={{ backgroundColor: 'grey' }}
-          type="text"
-          value={secretKey}
-          onChange={(e) => setSecretKey(e.target.value)}
-        />
-        <Button onClick={handleExportCsv}>Export csv</Button>
-        <Button>Export csv and attachments</Button>
-        {data?.metadata.map((submission: StorageModeSubmissionMetadata) => {
-          return (
-            <div key={submission.refNo}>
-              Submission Ref No: {submission.refNo}
-            </div>
-          )
-        })}
-      </div>
-    </Skeleton>
+    <Container
+      overflowY="auto"
+      p="3rem"
+      maxW="69.5rem"
+      flex={1}
+      display="flex"
+      flexDir="column"
+    >
+      {secretKey ? (
+        <>
+          <Button onClick={handleExportCsv}>Export csv</Button>
+          <Button>Export csv and attachments</Button>
+          {data?.metadata.map((submission: StorageModeSubmissionMetadata) => {
+            return (
+              <div key={submission.refNo}>
+                Submission Ref No: {submission.refNo}
+              </div>
+            )
+          })}
+        </>
+      ) : (
+        <SecretKeyVerification />
+      )}
+    </Container>
   )
 }
