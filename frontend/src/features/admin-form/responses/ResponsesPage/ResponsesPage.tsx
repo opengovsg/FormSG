@@ -4,6 +4,7 @@ import { FormResponseMode } from '~shared/types/form'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
+import { ResponsesProvider } from './ResponsesProvider'
 import { StorageResponsesTab } from './StorageResponsesTab'
 
 export const ResponsesPage = (): JSX.Element => {
@@ -18,7 +19,11 @@ export const ResponsesPage = (): JSX.Element => {
   }
 
   if (form.responseMode === FormResponseMode.Encrypt) {
-    return <StorageResponsesTab form={form} />
+    return (
+      <ResponsesProvider>
+        <StorageResponsesTab form={form} />
+      </ResponsesProvider>
+    )
   }
 
   return <Box>Responses tab for email mode form</Box>
