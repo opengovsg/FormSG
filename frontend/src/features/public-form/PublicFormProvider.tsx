@@ -27,6 +27,7 @@ import {
   useTransactionMutations,
 } from '~features/verifiable-fields'
 
+import { FormNotFound } from './components/FormNotFound'
 import { usePublicFormMutations } from './mutations'
 import { PublicFormContext, SubmissionData } from './PublicFormContext'
 import { usePublicFormView } from './queries'
@@ -102,7 +103,7 @@ export const PublicFormProvider = ({
   const isFormNotFound = useMemo(() => {
     return (
       !PUBLICFORM_REGEX.test(formId) ||
-      (error instanceof HttpError && error.code === 404)
+      (error instanceof HttpError && (error.code === 404 || error.code === 410))
     )
   }, [error, formId])
 
@@ -228,8 +229,10 @@ export const PublicFormProvider = ({
         ...rest,
       }}
     >
-      <Helmet title={cachedDto?.form.title} />
-      {isFormNotFound ? <div>404</div> : children}
+      <Helmet
+        title={isFormNotFound ? 'Form not found' : cachedDto?.form.title}
+      />
+      {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
     </PublicFormContext.Provider>
   )
 }

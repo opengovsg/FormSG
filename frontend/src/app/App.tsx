@@ -17,8 +17,11 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 60 * 1000, // 60 seconds,
       retry: (failureCount, error) => {
-        // Do not retry if 404.
-        if (error instanceof HttpError && error.code === 404) {
+        // Do not retry if 404 or 410.
+        if (
+          error instanceof HttpError &&
+          (error.code === 404 || error.code === 410)
+        ) {
           return false
         }
         return failureCount !== 3
