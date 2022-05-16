@@ -5,6 +5,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ChakraProvider } from '@chakra-ui/react'
 import { DecoratorFn } from '@storybook/react'
+import { get } from 'lodash'
 import { initialize, mswDecorator } from 'msw-storybook-addon'
 
 import { AuthProvider } from '~contexts/AuthContext'
@@ -20,7 +21,19 @@ dayjsUtils.init()
 
 const withReactQuery: DecoratorFn = (storyFn) => {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { staleTime: Infinity } },
+    defaultOptions: {
+      queries: {
+        staleTime: Infinity,
+        retry: (failureCount, error) => {
+          const errorCode = get(error, 'code')
+          // Do not retry if 404 or 410.
+          if (errorCode === 404 || errorCode === 410) {
+            return false
+          }
+          return failureCount !== 3
+        },
+      },
+    },
   })
   return (
     <QueryClientProvider client={queryClient}>
