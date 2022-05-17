@@ -211,7 +211,7 @@ export const LoginPage = (): JSX.Element => {
                   color="secondary.500"
                   display={{ base: 'initial', lg: 'none' }}
                 >
-                  Build secure government forms in minutes
+                  {t('general.slogan')}
                 </Text>
               </Flex>
               {!email ? (
@@ -228,7 +228,7 @@ export const LoginPage = (): JSX.Element => {
 
           <DesktopCopyGridArea>
             <Text textStyle="caption-2" color="white">
-              © {currentYear} Open Government Products, GovTech Singapore
+              {t('general.copyright', { currentYear })}
             </Text>
           </DesktopCopyGridArea>
           <DesktopLinksGridArea>
