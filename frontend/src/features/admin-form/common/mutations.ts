@@ -66,7 +66,7 @@ export const useMutateCollaborators = () => {
 
   const getMappedBadRequestErrorMessage = (
     formCollaboratorAction: FormCollaboratorAction,
-  ) => {
+  ): string => {
     let badRequestErrorMessage
     switch (formCollaboratorAction) {
       case FormCollaboratorAction.ADD:
