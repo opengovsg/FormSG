@@ -47,14 +47,12 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
   const nextValidationOptions = {
     selectedDateValidation:
       field.dateValidation.selectedDateValidation ?? ('' as const),
-    customMaxDate:
-      (!!field.dateValidation.selectedDateValidation &&
-        transformDateToShortIsoString(field.dateValidation.customMaxDate)) ||
-      ('' as const),
-    customMinDate:
-      (!!field.dateValidation.selectedDateValidation &&
-        transformDateToShortIsoString(field.dateValidation.customMinDate)) ||
-      ('' as const),
+    customMaxDate: field.dateValidation.selectedDateValidation
+      ? transformDateToShortIsoString(field.dateValidation.customMaxDate) ?? ''
+      : ('' as const),
+    customMinDate: field.dateValidation.selectedDateValidation
+      ? transformDateToShortIsoString(field.dateValidation.customMinDate) ?? ''
+      : ('' as const),
   }
   return {
     ...pick(field, EDIT_DATE_FIELD_KEYS),
