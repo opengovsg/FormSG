@@ -116,7 +116,9 @@ export const useMutateCollaborators = () => {
       let errorMessage
       switch (error.code) {
         case 422:
-          errorMessage = `${!requestEmail} is not part of a whitelisted agency`
+          errorMessage = requestEmail
+            ? `${requestEmail} is not part of a whitelisted agency`
+            : `An unexpected error 422 happened`
           break
         case 400:
           errorMessage = getMappedBadRequestErrorMessage(formCollaboratorAction)
