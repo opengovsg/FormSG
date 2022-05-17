@@ -44,7 +44,6 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
       >
         <FormLabel
           isRequired
-          htmlFor="email"
           description="Only available for use by public officers with a gov.sg email"
         >
           Email
