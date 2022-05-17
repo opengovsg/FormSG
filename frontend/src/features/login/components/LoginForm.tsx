@@ -48,16 +48,20 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
         <FormLabel
           isRequired
           htmlFor="email"
-          description={t('loginPage.onlyAvailableForPublicOfficers')}
+          description={t(
+            'features.login.components.LoginForm.onlyAvailableForPublicOfficers',
+          )}
         >
-          {t('loginPage.email')}
+          {t('features.login.components.LoginForm.email')}
         </FormLabel>
         <Input
           autoComplete="email"
           autoFocus
           placeholder="e.g. jane@data.gov.sg"
           {...register('email', {
-            required: t('loginPage.emailEmptyErrorMsg'),
+            required: t(
+              'features.login.components.LoginForm.emailEmptyErrorMsg',
+            ),
             validate: validateEmail,
           })}
         />
@@ -75,10 +79,10 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
           isLoading={formState.isSubmitting}
           type="submit"
         >
-          {t('loginPage.login')}
+          {t('features.login.components.LoginForm.login')}
         </Button>
         <Link isExternal variant="standalone" href={FORM_GUIDE}>
-          {t('loginPage.haveAQuestion')}
+          {t('features.login.components.LoginForm.haveAQuestion')}
         </Link>
       </Stack>
     </form>
