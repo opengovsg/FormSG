@@ -12,7 +12,7 @@ import GovtMasthead from '~components/GovtMasthead'
 
 import { ForbiddenSvgr } from './ForbiddenSvgr'
 
-interface AdminForbidden403PageProps {
+export interface AdminForbidden403PageProps {
   message?: string
 }
 

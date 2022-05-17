@@ -6,7 +6,10 @@ import {
   StoryRouter,
 } from '~utils/storybook'
 
-import { AdminForbidden403Page } from './AdminForbidden403Page'
+import {
+  AdminForbidden403Page,
+  AdminForbidden403PageProps,
+} from './AdminForbidden403Page'
 
 export default {
   title: 'Pages/AdminForbidden403Page',
@@ -20,10 +23,17 @@ export default {
   parameters: {
     layout: 'fullscreen',
   },
-} as Meta
+} as Meta<AdminForbidden403PageProps>
 
-const Template: Story = () => <AdminForbidden403Page />
+const Template: Story = (args: AdminForbidden403PageProps) => (
+  <AdminForbidden403Page {...args} />
+)
 export const NotLoggedIn = Template.bind({})
+
+export const WithMessage = Template.bind({})
+WithMessage.args = {
+  message: 'You are not authorized to access this page.',
+}
 
 export const MobileNotLoggedIn = Template.bind({})
 MobileNotLoggedIn.parameters = getMobileViewParameters()

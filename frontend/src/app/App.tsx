@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
         // Do not retry if 404 or 410.
         if (
           error instanceof HttpError &&
-          (error.code === 404 || error.code === 410)
+          [404, 403, 410].includes(error.code)
         ) {
           return false
         }
