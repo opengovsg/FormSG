@@ -9,7 +9,7 @@ import simplur from 'simplur'
 
 import { FormResponseMode, PublicFormViewDto } from '~shared/types/form'
 
-import { PUBLICFORM_REGEX } from '~constants/routes'
+import { FORMID_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
@@ -102,7 +102,7 @@ export const PublicFormProvider = ({
 
   const isFormNotFound = useMemo(() => {
     return (
-      !PUBLICFORM_REGEX.test(formId) ||
+      !FORMID_REGEX.test(formId) ||
       (error instanceof HttpError && (error.code === 404 || error.code === 410))
     )
   }, [error, formId])
