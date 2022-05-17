@@ -103,30 +103,24 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
 
   const attachmentSizeOptions: ComboboxItem[] = useMemo(() => {
     if (!form) return []
-    switch (form.responseMode) {
-      case FormResponseMode.Email:
-        return [
-          { value: AttachmentSize.OneMb, label: `${AttachmentSize.OneMb} MB` },
-          { value: AttachmentSize.TwoMb, label: `${AttachmentSize.TwoMb} MB` },
-          {
-            value: AttachmentSize.ThreeMb,
-            label: `${AttachmentSize.ThreeMb} MB`,
-          },
-          {
-            value: AttachmentSize.FourMb,
-            label: `${AttachmentSize.FourMb} MB`,
-          },
-          {
-            value: AttachmentSize.SevenMb,
-            label: `${AttachmentSize.SevenMb} MB`,
-          },
-        ]
-      case FormResponseMode.Encrypt:
-        return Object.values(AttachmentSize).map((size) => ({
-          value: size,
-          label: `${size} MB`,
-        }))
+    let sizes: AttachmentSize[] = []
+
+    if (form.responseMode === FormResponseMode.Email) {
+      sizes = [
+        AttachmentSize.OneMb,
+        AttachmentSize.TwoMb,
+        AttachmentSize.ThreeMb,
+        AttachmentSize.FourMb,
+        AttachmentSize.SevenMb,
+      ]
+    } else if (form.responseMode === FormResponseMode.Encrypt) {
+      sizes = Object.values(AttachmentSize)
     }
+
+    return sizes.map((size) => ({
+      value: size,
+      label: `${size} MB`,
+    }))
   }, [form])
 
   const attachmentSizeValidationRule = useMemo(
