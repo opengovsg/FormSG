@@ -95,9 +95,9 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
     if (!form?.responseMode) return 0
     switch (form.responseMode) {
       case FormResponseMode.Email:
-        return 7
+        return Number(AttachmentSize.SevenMb)
       case FormResponseMode.Encrypt:
-        return 20
+        return Number(AttachmentSize.TwentyMb)
     }
   }, [form?.responseMode])
 
