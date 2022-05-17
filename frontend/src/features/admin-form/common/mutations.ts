@@ -81,7 +81,7 @@ export const useMutateCollaborators = () => {
 
   const getMappedDefaultErrorMessage = (
     formCollaboratorAction: FormCollaboratorAction,
-  ) => {
+  ): string => {
     let defaultErrorMessage
     switch (formCollaboratorAction) {
       case FormCollaboratorAction.ADD:
@@ -107,10 +107,10 @@ export const useMutateCollaborators = () => {
   }
 
   const getMappedErrorMessage = (
-    error: HttpError | Error,
+    error: Error,
     formCollaboratorAction: FormCollaboratorAction,
     requestEmail?: string,
-  ) => {
+  ): string => {
     // check if error is an instance of HttpError to be able to access status code of error
     if (error instanceof HttpError) {
       let errorMessage
