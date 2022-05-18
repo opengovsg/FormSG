@@ -82,7 +82,7 @@
     "angular-ui-bootstrap": "~2.5.6",
     "angular-ui-router": "~1.0.30",
     "aws-info": "^1.2.0",
-    "aws-sdk": "^2.1126.0",
+    "aws-sdk": "^2.1136.0",
     "axios": "^0.27.2",
     "bcrypt": "^5.0.1",
     "bluebird": "^3.5.2",
@@ -160,7 +160,7 @@
     "zod": "^3.14.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.17.9",
+    "@babel/core": "^7.17.12",
     "@babel/plugin-transform-runtime": "^7.17.0",
     "@babel/preset-env": "^7.17.10",
     "@opengovsg/mockpass": "^2.9.2",
@@ -227,7 +227,7 @@
     "jest-localstorage-mock": "^2.4.21",
     "jest-mock-axios": "^4.6.1",
     "lint-staged": "^12.4.1",
-    "maildev": "^2.0.2",
+    "maildev": "^2.0.4",
     "mini-css-extract-plugin": "^0.5.0",
     "mockdate": "^3.0.5",
     "mongodb-memory-server-core": "^6.9.6",
