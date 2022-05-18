@@ -153,10 +153,11 @@ export const Footer = ({
           <Stack
             spacing="1rem"
             direction="row"
+            mt="2rem"
             mb="0.5rem"
             justify={{ base: 'normal', lg: 'flex-end' }}
           >
-            {socialMediaLinks?.map(({ label, href, icon }, index) => (
+            {socialMediaLinks?.map(({ label, href, icon }) => (
               <Link
                 isExternal
                 title={label}
