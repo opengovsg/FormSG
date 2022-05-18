@@ -1,4 +1,9 @@
-import { BasicField, FieldCreateDto, RatingShape } from '~shared/types/field'
+import {
+  AttachmentSize,
+  BasicField,
+  FieldCreateDto,
+  RatingShape,
+} from '~shared/types/field'
 
 import { BASICFIELD_TO_DRAWER_META } from '../../constants'
 
@@ -18,6 +23,13 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
   }
 
   switch (fieldType) {
+    case BasicField.Attachment: {
+      return {
+        fieldType,
+        ...baseMeta,
+        attachmentSize: AttachmentSize.OneMb,
+      }
+    }
     case BasicField.YesNo:
     case BasicField.Nric:
     case BasicField.Uen:
