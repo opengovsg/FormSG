@@ -70,7 +70,7 @@ export const useMutateCollaborators = () => {
     let badRequestErrorMessage
     switch (formCollaboratorAction) {
       case FormCollaboratorAction.ADD:
-        badRequestErrorMessage = `Please ensure that the email entered is a valid government email. If the error still persists, refresh and try again later.`
+        badRequestErrorMessage = `The collaborator was unable to be added or edited. Please try again or refresh the page.`
         break
       default:
         badRequestErrorMessage = `Sorry, an error occurred. Please refresh the page and try again later.`

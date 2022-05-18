@@ -29,7 +29,7 @@ describe('400 bad request error', () => {
     await screen.findByRole('alert')
 
     expect(screen.getByRole('alert').textContent).toBe(
-      'Please ensure that the email entered is a valid government email. If the error still persists, refresh and try again later.',
+      'The collaborator was unable to be added or edited. Please try again or refresh the page.',
     )
   })
 })
