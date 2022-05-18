@@ -64,7 +64,7 @@ const BackgroundBox: FC = ({ children }) => (
 // Component that controls the various grid areas according to responsive breakpoints.
 const BaseGridLayout: FC = ({ children }) => (
   <Grid
-    minH={{ base: 'initial', lg: '100vh' }}
+    minH={{ base: 'initial', lg: '100%' }}
     maxW="90rem"
     margin="auto"
     templateAreas={{
@@ -175,7 +175,7 @@ export const LoginPage = (): JSX.Element => {
   }
 
   return (
-    <Flex flexDir="column" minH="100vh">
+    <Flex flexDir="column" h="100%">
       <BackgroundBox>
         <BaseGridLayout>
           <NonMobileSidebarGridArea>

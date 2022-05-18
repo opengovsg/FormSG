@@ -1,6 +1,8 @@
+import { Link as ReactLink } from 'react-router-dom'
 import { Box, chakra, Divider, Flex, Link, Stack, Text } from '@chakra-ui/react'
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
+import { PRIVACY_POLICY_ROUTE, TOU_ROUTE } from '~constants/routes'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -27,8 +29,22 @@ export const FormFooter = (): JSX.Element => {
         <BrandLogo />
       </Flex>
       <Stack direction="row" spacing="1.5rem">
-        <Link textStyle="body-2">Terms of Use</Link>
-        <Link textStyle="body-2">Privacy Policy</Link>
+        <Link
+          as={ReactLink}
+          to={TOU_ROUTE}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Terms of Use
+        </Link>
+        <Link
+          as={ReactLink}
+          to={PRIVACY_POLICY_ROUTE}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Privacy Policy
+        </Link>
       </Stack>
       <Box id={captchaContainerId} />
     </Stack>
