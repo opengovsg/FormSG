@@ -56,6 +56,7 @@ import restrictedMsfLogo from './assets/images/restricted__msf.png'
 import restrictedNparksLogo from './assets/images/restricted__nparks.png'
 import restrictedPaLogo from './assets/images/restricted__pa.png'
 import storageModeImg from './assets/images/storage_mode.svg'
+import { ExternalFormLink } from './components/ExternalFormLink'
 import { FeatureGridItem } from './components/FeatureGridItem'
 import { FeatureLink } from './components/FeatureLink'
 import { FeatureSection } from './components/FeatureSection'
@@ -230,8 +231,41 @@ export const LandingPage = (): JSX.Element => {
         </SectionTitleText>
         <SectionBodyText>
           An integral part of many agency workflows, Form has been instrumental
-          in data collection, especially during the COVID-19 pandemic.
+          in data collection, especially during the COVID-19 pandemic. Notable
+          forms launched include:
         </SectionBodyText>
+        <Wrap
+          shouldWrapChildren
+          spacingX="5rem"
+          spacingY="1rem"
+          mt="2.5rem"
+          justify="center"
+        >
+          <ExternalFormLink
+            href="https://form.gov.sg/600c490b7c026600138d4ca9"
+            label="Register for COVID-19 Vaccination"
+          />
+          <ExternalFormLink
+            href="https://form.gov.sg/6162b3c7ed9ee00013726baf"
+            label="Covid Positive Patient Details"
+          />
+          <ExternalFormLink
+            href="https://form.gov.sg/5eb38e989bd7d80011066a02"
+            label="Daily Reporting Health Symptoms"
+          />
+          <ExternalFormLink
+            href="https://form.gov.sg/5f085b4b3583420013af9a55"
+            label="Health and Travel Declaration Form"
+          />
+          <ExternalFormLink
+            href="https://form.gov.sg/6057667b248bbc0012ceda2f"
+            label="Gov.sg WhatsApp Subscription"
+          />
+          <ExternalFormLink
+            href="https://form.gov.sg/60b81af0f7c4df001210f2b3"
+            label="MOM ART Self Swab"
+          />
+        </Wrap>
         <Image src={meetingCollaborationImg} aria-hidden mt="5rem" />
       </LandingSection>
       <FeatureSection
