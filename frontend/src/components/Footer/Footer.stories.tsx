@@ -8,7 +8,7 @@ const DEFAULT_ARGS: FooterProps = {
   appName: 'Form',
   footerLinks: [
     {
-      label: 'User Guide',
+      label: 'User guide',
       href: '',
     },
     {
@@ -16,11 +16,11 @@ const DEFAULT_ARGS: FooterProps = {
       href: '',
     },
     {
-      label: 'Terms of Use',
+      label: 'Terms of use',
       href: '',
     },
     {
-      label: 'Report Vulnerability',
+      label: 'Report vulnerability',
       href: '',
     },
   ],
