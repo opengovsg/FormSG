@@ -173,11 +173,3 @@ EditCollaboratorBadRequestError.parameters = {
     ...baseMswRoutes,
   ],
 }
-
-export const EditCollaboratorUnprocessableEntityError = Template.bind({})
-EditCollaboratorUnprocessableEntityError.parameters = {
-  msw: [
-    updateFormCollaborators({ delay: 0, errorCode: 422 }),
-    ...baseMswRoutes,
-  ],
-}
