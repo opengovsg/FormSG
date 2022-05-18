@@ -14,20 +14,38 @@ import { ThemeColorScheme } from '~/theme/foundations/colours'
 import { BxlFacebook } from '~assets/icons/BxlFacebook'
 import { BxlInstagram } from '~assets/icons/BxlInstagram'
 import { BxlLinkedin } from '~assets/icons/BxlLinkedin'
-import { BxlYoutube } from '~assets/icons/BxlYoutube'
-import { ReactComponent as OgpLogoSvg } from '~assets/svgs/brand/ogp-logo.svg'
 import { ReactComponent as OgpLogoFullSvg } from '~assets/svgs/brand/ogp-logo-full.svg'
 import Link from '~components/Link'
 
 const OgpLogoFull = chakra(OgpLogoFullSvg)
-const OgpLogo = chakra(OgpLogoSvg)
 
-const SOCIAL_MEDIA_LINKS = {
-  facebook: 'https://www.facebook.com/opengovsg',
-  ogp: 'https://www.open.gov.sg/',
-  linkedin: 'https://sg.linkedin.com/company/open-government-products',
-  youtube: 'https://www.youtube.com/channel/UCuyiflEmkfLfIwOuuN5hAfg',
-  instagram: 'https://www.instagram.com/opengovsg/',
+const DEFAULT_FOOTER_ICON_LINK: FooterLinkWithIcon = {
+  href: 'https://open.gov.sg',
+  label: 'Open Government Products homepage',
+  icon: <OgpLogoFull w="183px" />,
+}
+
+const DEFAULT_SOCIAL_MEDIA_LINKS: FooterLinkWithIcon[] = [
+  {
+    href: 'https://sg.linkedin.com/company/open-government-products',
+
+    icon: <BxlLinkedin />,
+    label: 'Go to our LinkedIn page',
+  },
+  {
+    href: 'https://www.facebook.com/opengovsg',
+    icon: <BxlFacebook />,
+    label: 'Go to our Facebook page',
+  },
+  {
+    href: 'https://www.instagram.com/opengovsg',
+    icon: <BxlInstagram />,
+    label: 'Go to our Instagram page',
+  },
+]
+
+type FooterLinkWithIcon = FooterLink & {
+  icon: React.ReactElement
 }
 
 type FooterLink = {
@@ -40,8 +58,12 @@ export interface FooterProps {
   appName: string
   /** Tagline to display beside application name, if provided. */
   tagline?: string
+  /** Link for footer icon. Defaults to OGP homepage. */
+  footerIconLink?: FooterLinkWithIcon
   /** Footer links to display, if provided. */
   footerLinks?: FooterLink[]
+  /** Social media links to display, if provided. Defaults to OGP links. */
+  socialMediaLinks?: FooterLinkWithIcon[]
   /**
    * Colour scheme of the text in the footer.
    * Defaults to `secondary` if not provided.
@@ -58,6 +80,8 @@ export const Footer = ({
   appName,
   tagline,
   footerLinks,
+  footerIconLink = DEFAULT_FOOTER_ICON_LINK,
+  socialMediaLinks = DEFAULT_SOCIAL_MEDIA_LINKS,
   textColorScheme = 'secondary',
   bg = 'primary.100',
 }: FooterProps): JSX.Element => {
@@ -114,12 +138,12 @@ export const Footer = ({
             Built by
           </Text>
           <Link
-            title="Open Government Products Logo"
+            title={footerIconLink.label}
             colorScheme={textColorScheme}
             mb="2rem"
-            href={SOCIAL_MEDIA_LINKS.ogp}
+            href={footerIconLink.href}
           >
-            <OgpLogoFull w="183px" />
+            {footerIconLink.icon}
           </Link>
         </Box>
 
@@ -130,46 +154,16 @@ export const Footer = ({
             mb="0.5rem"
             justify={{ base: 'normal', lg: 'flex-end' }}
           >
-            <Link
-              title="link to LinkedIn page"
-              w="2rem"
-              href={SOCIAL_MEDIA_LINKS.linkedin}
-              colorScheme={textColorScheme}
-            >
-              <BxlLinkedin />
-            </Link>
-            <Link
-              title="link to Facebook page"
-              w="2rem"
-              href={SOCIAL_MEDIA_LINKS.facebook}
-              colorScheme={textColorScheme}
-            >
-              <BxlFacebook />
-            </Link>
-            <Link
-              title="link to YouTube page"
-              w="2rem"
-              href={SOCIAL_MEDIA_LINKS.youtube}
-              colorScheme={textColorScheme}
-            >
-              <BxlYoutube />
-            </Link>
-            <Link
-              title="link to Instagram page"
-              w="2rem"
-              href={SOCIAL_MEDIA_LINKS.instagram}
-              colorScheme={textColorScheme}
-            >
-              <BxlInstagram />
-            </Link>
-            <Link
-              title="link to OGP homepage"
-              w="2rem"
-              href={SOCIAL_MEDIA_LINKS.ogp}
-              colorScheme={textColorScheme}
-            >
-              <OgpLogo />
-            </Link>
+            {socialMediaLinks?.map(({ label, href, icon }, index) => (
+              <Link
+                title={label}
+                w="2rem"
+                href={href}
+                colorScheme={textColorScheme}
+              >
+                {icon}
+              </Link>
+            ))}
           </Stack>
           <Flex
             flexDir={{ base: 'column', md: 'row' }}

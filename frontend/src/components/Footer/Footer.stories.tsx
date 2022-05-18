@@ -4,18 +4,8 @@ import { viewports } from '~utils/storybook'
 
 import { Footer, FooterProps } from './Footer'
 
-export default {
-  title: 'Components/Footer',
-  component: Footer,
-  decorators: [],
-  parameters: {
-    layout: 'fullscreen',
-  },
-} as Meta
-
-const defaultArgs: FooterProps = {
+const DEFAULT_ARGS: FooterProps = {
   appName: 'Form',
-  tagline: 'Build secure government forms in minutes',
   footerLinks: [
     {
       label: 'User Guide',
@@ -36,12 +26,26 @@ const defaultArgs: FooterProps = {
   ],
 }
 
+export default {
+  title: 'Components/Footer',
+  component: Footer,
+  decorators: [],
+  parameters: {
+    layout: 'fullscreen',
+  },
+  args: DEFAULT_ARGS,
+} as Meta<FooterProps>
+
 const Template: Story<FooterProps> = (args) => <Footer {...args} />
 export const Default = Template.bind({})
-Default.args = defaultArgs
+
+export const WithTagline = Template.bind({})
+WithTagline.args = {
+  ...DEFAULT_ARGS,
+  tagline: 'Build secure government forms in minutes',
+}
 
 export const Mobile = Template.bind({})
-Mobile.args = defaultArgs
 Mobile.parameters = {
   viewport: {
     defaultViewport: 'mobile1',
@@ -50,7 +54,6 @@ Mobile.parameters = {
 }
 
 export const Tablet = Template.bind({})
-Tablet.args = defaultArgs
 Tablet.parameters = {
   viewport: {
     defaultViewport: 'tablet',
