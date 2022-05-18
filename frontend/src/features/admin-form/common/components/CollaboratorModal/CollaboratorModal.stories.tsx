@@ -1,11 +1,14 @@
 import { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { useDisclosure } from '@chakra-ui/hooks'
+import { expect } from '@storybook/jest'
 import { Meta, Story } from '@storybook/react'
+import { screen, userEvent, waitFor } from '@storybook/testing-library'
 
 import {
   createFormBuilderMocks,
   getAdminFormCollaborators,
+  updateFormCollaborators,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
@@ -163,4 +166,32 @@ ViewerViewLoading.parameters = {
       delay: 'infinite',
     }),
   ],
+}
+
+export const EditCollaboratorBadRequestError = Template.bind({})
+EditCollaboratorBadRequestError.parameters = {
+  msw: [
+    updateFormCollaborators({ delay: 0, errorCode: 400 }),
+    ...baseMswRoutes,
+  ],
+}
+
+export const EditCollaboratorUnprocessableEntityError = Template.bind({})
+EditCollaboratorUnprocessableEntityError.parameters = {
+  msw: [
+    updateFormCollaborators({ delay: 0, errorCode: 422 }),
+    ...baseMswRoutes,
+  ],
+}
+EditCollaboratorUnprocessableEntityError.play = async () => {
+  await waitFor(async () =>
+    expect(screen.getByText(/manage collaborators/i)).toBeVisible(),
+  )
+
+  const input = screen.getByPlaceholderText(/me@example.com/i)
+  const submitButton = screen.getByRole('button', { name: /add collaborator/i })
+  const mockEmail = '123@gmail.com'
+
+  await userEvent.type(input, mockEmail)
+  await userEvent.click(submitButton)
 }
