@@ -1,9 +1,7 @@
 import { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { useDisclosure } from '@chakra-ui/hooks'
-import { expect } from '@storybook/jest'
 import { Meta, Story } from '@storybook/react'
-import { screen, userEvent, waitFor } from '@storybook/testing-library'
 
 import {
   createFormBuilderMocks,
@@ -182,16 +180,4 @@ EditCollaboratorUnprocessableEntityError.parameters = {
     updateFormCollaborators({ delay: 0, errorCode: 422 }),
     ...baseMswRoutes,
   ],
-}
-EditCollaboratorUnprocessableEntityError.play = async () => {
-  await waitFor(async () =>
-    expect(screen.getByText(/manage collaborators/i)).toBeVisible(),
-  )
-
-  const input = screen.getByPlaceholderText(/me@example.com/i)
-  const submitButton = screen.getByRole('button', { name: /add collaborator/i })
-  const mockEmail = '123@gmail.com'
-
-  await userEvent.type(input, mockEmail)
-  await userEvent.click(submitButton)
 }
