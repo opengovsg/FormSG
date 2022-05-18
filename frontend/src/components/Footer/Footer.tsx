@@ -4,6 +4,7 @@ import {
   Divider,
   Flex,
   FlexProps,
+  Link,
   Stack,
   Text,
   Wrap,
@@ -15,7 +16,6 @@ import { BxlFacebook } from '~assets/icons/BxlFacebook'
 import { BxlInstagram } from '~assets/icons/BxlInstagram'
 import { BxlLinkedin } from '~assets/icons/BxlLinkedin'
 import { ReactComponent as OgpLogoFullSvg } from '~assets/svgs/brand/ogp-logo-full.svg'
-import Link from '~components/Link'
 
 const OgpLogoFull = chakra(OgpLogoFullSvg)
 
@@ -115,6 +115,7 @@ export const Footer = ({
         >
           {footerLinks?.map(({ label, href }, index) => (
             <Link
+              isExternal
               m="-0.25rem"
               key={index}
               colorScheme={textColorScheme}
@@ -138,6 +139,7 @@ export const Footer = ({
             Built by
           </Text>
           <Link
+            isExternal
             title={footerIconLink.label}
             colorScheme={textColorScheme}
             mb="2rem"
@@ -156,6 +158,7 @@ export const Footer = ({
           >
             {socialMediaLinks?.map(({ label, href, icon }, index) => (
               <Link
+                isExternal
                 title={label}
                 w="2rem"
                 href={href}
