@@ -46,6 +46,7 @@ import featurePrefillImg from './assets/images/icon_prefill.svg'
 import featureSectionsImg from './assets/images/icon_sections.svg'
 import featureWebhooksImg from './assets/images/icon_webhooks.svg'
 import meetingCollaborationImg from './assets/images/meeting_collaboration.svg'
+import ogpSuiteImg from './assets/images/ogp_suite.svg'
 import openSourceImg from './assets/images/open_source.svg'
 import restrictedIcaLogo from './assets/images/restricted__ica.png'
 import restrictedMfaLogo from './assets/images/restricted__mfa.png'
@@ -515,17 +516,26 @@ export const LandingPage = (): JSX.Element => {
           </TabPanels>
         </Tabs>
       </FeatureSection>
-      <LandingSection>
-        <SectionTitleText>
-          All the government tools you need to manage your workflow
-        </SectionTitleText>
+      <FeatureSection
+        title="All the government tools you need to manage your workflow"
+        imgSrc={ogpSuiteImg}
+        align="start"
+        direction={{ base: 'column', lg: 'row' }}
+      >
         <SectionBodyText>
           Form is part of the **Open Government Products Suite**, and as a
           public officer you can mix and match from our set of productivity and
-          collaboration tools. [Full list of OGP
-          products](https://www.open.gov.sg/products/overview)
+          collaboration tools.
         </SectionBodyText>
-      </LandingSection>
+        <FeatureLink
+          href="https://www.open.gov.sg/products/overview"
+          externalLinkIcon={
+            <Icon as={BiRightArrowAlt} ml="0.5rem" fontSize="1.5rem" />
+          }
+        >
+          Full list of OGP products
+        </FeatureLink>
+      </FeatureSection>
       <LandingSection bg="secondary.700" align="center">
         <Image src={FormBrandLogo} aria-hidden h="3.5rem" />
         <Text
