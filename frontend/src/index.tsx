@@ -4,15 +4,33 @@ import './i18n/i18n'
 
 import * as React from 'react'
 import ReactDOM from 'react-dom'
+import { datadogRum } from '@datadog/browser-rum'
 
 import { App } from './app/App'
 import * as dayjs from './utils/dayjs'
 import reportWebVitals from './reportWebVitals'
 import * as serviceWorker from './serviceWorker'
 
+datadogRum.startSessionReplayRecording()
 if (process.env.NODE_ENV === 'test') {
   import('./mocks/msw/browser').then(({ worker }) => worker.start())
 }
+
+// Init Datadog RUM
+datadogRum.init({
+  applicationId: process.env.REACT_APP_DD_RUM_APP_ID || '',
+  clientToken: process.env.REACT_APP_DD_RUM_CLIENT_TOKEN || '',
+  env: process.env.REACT_APP_DD_RUM_ENV || '',
+  site: 'datadoghq.com',
+  service: 'formsg-react',
+
+  // Specify a version number to identify the deployed version of your application in Datadog
+  // version: '1.0.0',
+  sampleRate: 10,
+  replaySampleRate: 10,
+  trackInteractions: true,
+  defaultPrivacyLevel: 'mask-user-input',
+})
 
 // Init dayjs
 dayjs.init()
