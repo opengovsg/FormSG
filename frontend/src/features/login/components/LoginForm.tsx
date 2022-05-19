@@ -47,7 +47,6 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
       >
         <FormLabel
           isRequired
-          htmlFor="email"
           description={t(
             'features.login.components.LoginForm.onlyAvailableForPublicOfficers',
           )}
