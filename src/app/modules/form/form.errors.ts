@@ -7,6 +7,12 @@ export class FormNotFoundError extends ApplicationError {
   }
 }
 
+export class FormTemplatesNotFoundError extends ApplicationError {
+  constructor(message = 'Form templates not found') {
+    super(message)
+  }
+}
+
 export class FormDeletedError extends ApplicationError {
   constructor(message = 'This form is no longer active') {
     super(message)

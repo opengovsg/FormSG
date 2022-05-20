@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { FormTemplateDto } from 'shared/types/form/form_template'
 
 import {
   FormAuthType,
@@ -18,6 +19,7 @@ import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
 } from '../../models/form.server.model'
+import getFormTemplateModel from '../../models/form_template.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
 import { IntranetService } from '../../services/intranet/intranet.service'
 import {
@@ -33,6 +35,7 @@ import {
 import {
   FormDeletedError,
   FormNotFoundError,
+  FormTemplatesNotFoundError,
   PrivateFormError,
 } from './form.errors'
 
@@ -41,6 +44,7 @@ const FormModel = getFormModel(mongoose)
 const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
+const FormTemplateModel = getFormTemplateModel(mongoose)
 
 /**
  * Deactivates a given form by its id
@@ -341,5 +345,36 @@ export const retrievePublicFormsWithSmsVerification = (
       })
     }
     return okAsync(forms)
+  })
+}
+
+/**
+ * Retrieves all form templates.
+ *
+ * @returns ok(formTemplates) if form templates exists
+ * @returns err(FormTemplatesNotFoundError) if the form templates do not exist
+ * @returns err(DatabaseError) if error occurs whilst querying the database
+ */
+export const retrieveFormTemplates = (): ResultAsync<
+  FormTemplateDto[],
+  FormNotFoundError | DatabaseError
+> => {
+  return ResultAsync.fromPromise(
+    FormTemplateModel.getFormTemplates(),
+    (error) => {
+      logger.error({
+        message: 'Error retrieving form templates from database',
+        meta: {
+          action: 'retrieveFormTemplates',
+        },
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).andThen((result) => {
+    if (!result) {
+      return errAsync(new FormTemplatesNotFoundError())
+    }
+    return okAsync(result)
   })
 }
