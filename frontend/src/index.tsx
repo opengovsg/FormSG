@@ -25,8 +25,8 @@ datadogRum.init({
 
   // Specify a version number to identify the deployed version of your application in Datadog
   // version: '1.0.0',
-  sampleRate: 10,
-  replaySampleRate: 10,
+  sampleRate: 100,
+  replaySampleRate: 100,
   trackInteractions: true,
   defaultPrivacyLevel: 'mask-user-input',
 })
