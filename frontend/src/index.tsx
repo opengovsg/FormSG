@@ -11,7 +11,6 @@ import * as dayjs from './utils/dayjs'
 import reportWebVitals from './reportWebVitals'
 import * as serviceWorker from './serviceWorker'
 
-datadogRum.startSessionReplayRecording()
 if (process.env.NODE_ENV === 'test') {
   import('./mocks/msw/browser').then(({ worker }) => worker.start())
 }
@@ -31,6 +30,8 @@ datadogRum.init({
   trackInteractions: true,
   defaultPrivacyLevel: 'mask-user-input',
 })
+
+datadogRum.startSessionReplayRecording()
 
 // Init dayjs
 dayjs.init()
