@@ -2671,6 +2671,23 @@ export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
     })
 }
 
+export const handleGetFormTemplates: ControllerHandler = async (req, res) => {
+  return FormService.retrieveFormTemplates()
+    .map((formTemplates) => res.json(formTemplates))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Failed to retrieve form templates',
+        meta: {
+          action: 'handleGetFormTemplates',
+          ...createReqMeta(req),
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
 // Handler for PUT /admin/forms/:formId/twilio
 export const handleUpdateTwilio = [
   validateTwilioCredentials,

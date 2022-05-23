@@ -1,8 +1,8 @@
 import { Router } from 'express'
 
-import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
+import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 
-export const PublicFormTemplatesRouter = Router()
+export const AdminFormTemplatesRouter = Router()
 
 /**
  * Returns all the available form templates to the user.
@@ -13,6 +13,6 @@ export const PublicFormTemplatesRouter = Router()
  * @returns 404 when form templates do not exist
  * @returns 500 when database error occurs
  */
-PublicFormTemplatesRouter.route('/templates').get(
-  PublicFormController.handleGetFormTemplates,
+AdminFormTemplatesRouter.route('/templates').get(
+  AdminFormController.handleGetFormTemplates,
 )

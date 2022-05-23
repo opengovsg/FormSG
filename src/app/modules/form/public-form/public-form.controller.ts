@@ -597,20 +597,3 @@ export const handleValidateFormEsrvcId: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
-
-export const handleGetFormTemplates: ControllerHandler = async (req, res) => {
-  return FormService.retrieveFormTemplates()
-    .map((formTemplates) => res.json(formTemplates))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Failed to retrieve form templates',
-        meta: {
-          action: 'handleGetFormTemplates',
-          ...createReqMeta(req),
-        },
-        error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
