@@ -4,6 +4,7 @@ import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
+import { FormTemplateDto } from 'shared/types/form/form_template'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
@@ -2671,9 +2672,21 @@ export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
     })
 }
 
-export const handleGetFormTemplates: ControllerHandler = async (req, res) => {
+/**
+ * Handler for GET /admin/forms/templates endpoint.
+ * @security session
+ *
+ * @returns 200 with list of forms templates when list is retrieved successfully
+ * @returns 500 when database errors occur
+ */
+export const handleGetFormTemplates: ControllerHandler<
+  unknown,
+  FormTemplateDto[] | ErrorDto
+> = async (req, res) => {
   return FormService.retrieveFormTemplates()
-    .map((formTemplates) => res.json(formTemplates))
+    .map((formTemplates) => {
+      return res.json(formTemplates)
+    })
     .mapErr((error) => {
       logger.error({
         message: 'Failed to retrieve form templates',

@@ -19,7 +19,7 @@ const getFormTemplateModel = (db: Mongoose): IFormTemplateModel => {
     FormTemplateSchema.statics.getFormTemplates = async function (): Promise<
       FormTemplateDto[]
     > {
-      return this.find({}).exec()
+      return this.find({}).lean().exec()
     }
 
     return db.model<IFormTemplateSchema, IFormTemplateModel>(

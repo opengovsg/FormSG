@@ -35,7 +35,6 @@ import {
 import {
   FormDeletedError,
   FormNotFoundError,
-  FormTemplatesNotFoundError,
   PrivateFormError,
 } from './form.errors'
 
@@ -352,12 +351,11 @@ export const retrievePublicFormsWithSmsVerification = (
  * Retrieves all form templates.
  *
  * @returns ok(formTemplates) if form templates exists
- * @returns err(FormTemplatesNotFoundError) if the form templates do not exist
  * @returns err(DatabaseError) if error occurs whilst querying the database
  */
 export const retrieveFormTemplates = (): ResultAsync<
   FormTemplateDto[],
-  FormNotFoundError | DatabaseError
+  DatabaseError
 > => {
   return ResultAsync.fromPromise(
     FormTemplateModel.getFormTemplates(),
@@ -371,10 +369,5 @@ export const retrieveFormTemplates = (): ResultAsync<
       })
       return new DatabaseError(getMongoErrorMessage(error))
     },
-  ).andThen((result) => {
-    if (!result) {
-      return errAsync(new FormTemplatesNotFoundError())
-    }
-    return okAsync(result)
-  })
+  )
 }

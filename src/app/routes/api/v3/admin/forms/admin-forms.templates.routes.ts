@@ -9,8 +9,8 @@ export const AdminFormTemplatesRouter = Router()
  *
  * @route GET /templates
  *
- * @returns 200 with form templates when form templates exist
- * @returns 404 when form templates do not exist
+ * @returns 200 with a list of all form templates
+ * @returns 401 when user is not logged in
  * @returns 500 when database error occurs
  */
 AdminFormTemplatesRouter.route('/templates').get(
