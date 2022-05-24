@@ -74,7 +74,9 @@ export const serveForm: ControllerHandler<
     ? config.reactMigration.respondentRolloutAuth
     : config.reactMigration.respondentRolloutNoAuth
 
-  if (threshold <= 0) {
+  if (config.reactMigration.qaCookieName in req.cookies) {
+    showReact = req.cookies[config.reactMigration.qaCookieName] === 'react'
+  } else if (threshold <= 0) {
     // Check the rollout value first, if it's 0, react is DISABLED
     // And we ignore cookies entirely!
     showReact = false

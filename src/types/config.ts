@@ -161,6 +161,7 @@ export interface IOptionalVarsSchema {
     respondentRolloutAuth: number
     respondentCookieName: string
     adminCookieName: string
+    qaCookieName: string
   }
 }
 
