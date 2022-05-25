@@ -6,6 +6,7 @@ import { Meta, Story } from '@storybook/react'
 import {
   createFormBuilderMocks,
   getAdminFormCollaborators,
+  updateFormCollaborators,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
@@ -162,5 +163,13 @@ ViewerViewLoading.parameters = {
     getAdminFormCollaborators({
       delay: 'infinite',
     }),
+  ],
+}
+
+export const EditCollaboratorBadRequestError = Template.bind({})
+EditCollaboratorBadRequestError.parameters = {
+  msw: [
+    updateFormCollaborators({ delay: 0, errorCode: 400 }),
+    ...baseMswRoutes,
   ],
 }

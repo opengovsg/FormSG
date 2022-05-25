@@ -64,7 +64,7 @@ const BackgroundBox: FC = ({ children }) => (
 // Component that controls the various grid areas according to responsive breakpoints.
 const BaseGridLayout: FC = ({ children }) => (
   <Grid
-    minH={{ base: 'initial', lg: '100vh' }}
+    minH={{ base: 'initial', lg: '100%' }}
     maxW="90rem"
     margin="auto"
     templateAreas={{
@@ -175,7 +175,7 @@ export const LoginPage = (): JSX.Element => {
   }
 
   return (
-    <Flex flexDir="column" minH="100vh">
+    <Flex flexDir="column" h="100%">
       <BackgroundBox>
         <BaseGridLayout>
           <NonMobileSidebarGridArea>
@@ -185,7 +185,7 @@ export const LoginPage = (): JSX.Element => {
               color="white"
               mb="2.5rem"
             >
-              {t('general.slogan')}
+              {t('features.login.LoginPage.slogan')}
             </Text>
             <LoginImage aria-hidden />
           </NonMobileSidebarGridArea>
@@ -211,7 +211,7 @@ export const LoginPage = (): JSX.Element => {
                   color="secondary.500"
                   display={{ base: 'initial', lg: 'none' }}
                 >
-                  Build secure government forms in minutes
+                  {t('features.login.LoginPage.slogan')}
                 </Text>
               </Flex>
               {!email ? (
@@ -228,7 +228,7 @@ export const LoginPage = (): JSX.Element => {
 
           <DesktopCopyGridArea>
             <Text textStyle="caption-2" color="white">
-              © {currentYear} Open Government Products, GovTech Singapore
+              {t('features.login.LoginPage.copyright', { currentYear })}
             </Text>
           </DesktopCopyGridArea>
           <DesktopLinksGridArea>

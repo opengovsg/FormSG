@@ -22,6 +22,7 @@ import {
 } from '~features/admin-form/responses'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
 
+import { HashRouterElement } from './HashRouterElement'
 import { PrivateElement } from './PrivateElement'
 import { PublicElement } from './PublicElement'
 
@@ -38,12 +39,13 @@ const WithSuspense = ({ children }: { children: React.ReactNode }) => (
 )
 
 export const AppRouter = (): JSX.Element => {
+  // code here?
   return (
     <WithSuspense>
       <Routes>
         <Route
           path={ROOT_ROUTE}
-          element={<PrivateElement element={<WorkspacePage />} />}
+          element={<HashRouterElement element={<WorkspacePage />} />}
         />
         <Route
           path={LOGIN_ROUTE}
@@ -51,11 +53,11 @@ export const AppRouter = (): JSX.Element => {
         />
         <Route
           path={PRIVACY_POLICY_ROUTE}
-          element={<PublicElement strict element={<PrivacyPolicyPage />} />}
+          element={<PublicElement element={<PrivacyPolicyPage />} />}
         />
         <Route
           path={TOU_ROUTE}
-          element={<PublicElement strict element={<TermsOfUsePage />} />}
+          element={<PublicElement element={<TermsOfUsePage />} />}
         />
         <Route
           path={PUBLICFORM_ROUTE}

@@ -1,4 +1,6 @@
+export * from './EditAttachment'
 export * from './EditCheckbox'
+export * from './EditDate'
 export * from './EditDecimal'
 export * from './EditDropdown'
 export * from './EditEmail'

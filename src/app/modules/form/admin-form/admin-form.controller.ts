@@ -2485,7 +2485,7 @@ export const handleUpdateStartPage = [
           then: Joi.string()
             // Captures only the extensions below regardless of their case
             // Refer to https://regex101.com/ with the below regex for a full explanation
-            .pattern(/\.(gif|png|jpeg|jpg)$/im)
+            .pattern(/\.(gif|png|jpeg|jpg|jfif)$/im)
             .required(),
           otherwise: Joi.any().forbidden(),
         }),

@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
@@ -20,6 +21,8 @@ interface LoginFormProps {
 }
 
 export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
+  const { t } = useTranslation()
+
   const { handleSubmit, register, formState, setError } =
     useForm<LoginFormInputs>()
 
@@ -44,17 +47,20 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
       >
         <FormLabel
           isRequired
-          htmlFor="email"
-          description="Only available for use by public officers with a gov.sg email"
+          description={t(
+            'features.login.components.LoginForm.onlyAvailableForPublicOfficers',
+          )}
         >
-          Email
+          {t('features.login.components.LoginForm.email')}
         </FormLabel>
         <Input
           autoComplete="email"
           autoFocus
           placeholder="e.g. jane@data.gov.sg"
           {...register('email', {
-            required: 'Please enter an email address',
+            required: t(
+              'features.login.components.LoginForm.emailEmptyErrorMsg',
+            ),
             validate: validateEmail,
           })}
         />
@@ -72,10 +78,10 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
           isLoading={formState.isSubmitting}
           type="submit"
         >
-          Log in
+          {t('features.login.components.LoginForm.login')}
         </Button>
         <Link isExternal variant="standalone" href={FORM_GUIDE}>
-          Have a question?
+          {t('features.login.components.LoginForm.haveAQuestion')}
         </Link>
       </Stack>
     </form>

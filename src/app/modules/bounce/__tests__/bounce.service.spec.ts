@@ -1,11 +1,9 @@
 /* eslint-disable import/first */
-import axios from 'axios'
 import { ObjectId } from 'bson'
-import crypto from 'crypto'
-import dedent from 'dedent'
 import { cloneDeep, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
+import SNSMessageValidator from 'sns-validator'
 import { mocked } from 'ts-jest/utils'
 
 import * as LoggerModule from 'src/app/config/logger'
@@ -29,8 +27,8 @@ import { UserWithContactNumber } from '../../user/user.types'
 
 import { makeBounceNotification, MOCK_SNS_BODY } from './bounce-test-helpers'
 
-jest.mock('axios')
-const mockAxios = mocked(axios, true)
+jest.mock('sns-validator')
+
 jest.mock('src/app/config/logger')
 const MockLoggerModule = mocked(LoggerModule, true)
 jest.mock('src/app/services/mail/mail.service')
@@ -711,79 +709,39 @@ describe('BounceService', () => {
   })
 
   describe('validateSnsRequest', () => {
-    const keys = crypto.generateKeyPairSync('rsa', {
-      modulusLength: 2048,
-      publicKeyEncoding: {
-        type: 'pkcs1',
-        format: 'pem',
-      },
-      privateKeyEncoding: {
-        type: 'pkcs8',
-        format: 'pem',
-      },
-    })
+    // Validation of SNS request is entirely deferred to the npm module sns-validator
+    // The tests in this block only check the return values and error types of our thin wrapper
 
     let body: ISnsNotification
 
     beforeEach(() => {
       body = cloneDeep(MOCK_SNS_BODY)
-      mockAxios.get.mockResolvedValue({
-        data: keys.publicKey,
+    })
+
+    it('should reject invalid notification with an InvalidNotificationError', async () => {
+      SNSMessageValidator.mockImplementation(() => {
+        return {
+          validate: (message, callback) => {
+            // we use a timeout to simulate the asynchronous getting of the validation cert
+            setTimeout(() => callback(new Error('Some internal SNS Error')), 0)
+          },
+        }
       })
-    })
 
-    it('should gracefully reject when input is empty', async () => {
-      const result = await BounceService.validateSnsRequest(undefined!)
-
-      expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
-    })
-
-    it('should reject requests when their structure is invalid', async () => {
-      const invalidBody = omit(cloneDeep(body), 'Type') as ISnsNotification
-
-      const result = await BounceService.validateSnsRequest(invalidBody)
-
-      expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
-    })
-
-    it('should reject requests when their certificate URL is invalid', async () => {
-      body.SigningCertURL = 'http://www.example.com'
-
-      const result = await BounceService.validateSnsRequest(body)
-
-      expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
-    })
-
-    it('should reject requests when their signature version is invalid', async () => {
-      body.SignatureVersion = 'wrongSignatureVersion'
-
-      const result = await BounceService.validateSnsRequest(body)
-
-      expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
-    })
-
-    it('should reject requests when their signature is invalid', async () => {
       const result = await BounceService.validateSnsRequest(body)
 
       expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
     })
 
     it('should accept when requests are valid', async () => {
-      const signer = crypto.createSign('RSA-SHA1')
-      const baseString =
-        dedent`Message
-        ${body.Message}
-        MessageId
-        ${body.MessageId}
-        Timestamp
-        ${body.Timestamp}
-        TopicArn
-        ${body.TopicArn}
-        Type
-        ${body.Type}
-        ` + '\n'
-      signer.write(baseString)
-      body.Signature = signer.sign(keys.privateKey, 'base64')
+      SNSMessageValidator.mockImplementation(() => {
+        return {
+          validate: (message, callback) => {
+            // we use a timeout to simulate the asynchronous getting of the validation cert
+            setTimeout(() => callback(null, message), 0)
+          },
+        }
+      })
 
       const result = await BounceService.validateSnsRequest(body)
 
