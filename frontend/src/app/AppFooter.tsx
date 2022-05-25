@@ -2,7 +2,7 @@ import { APP_FOOTER_LINKS } from '~constants/externalLinks'
 import Footer, { FooterProps } from '~components/Footer'
 
 interface AppFooterProps {
-  variant: FooterProps['variant']
+  variant?: FooterProps['variant']
   compactMonochromeLogos?: FooterProps['compactMonochromeLogos']
 }
 
