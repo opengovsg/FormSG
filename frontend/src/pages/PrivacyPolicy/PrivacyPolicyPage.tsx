@@ -294,7 +294,9 @@ export const PrivacyPolicyPage = (): JSX.Element => {
           </Stack>
         </Stack>
       </Container>
-      <AppFooter />
+      <Box px={{ lg: '9.25rem' }} pb={{ lg: '2rem' }}>
+        <AppFooter variant="compact" />
+      </Box>
     </Flex>
   )
 }
