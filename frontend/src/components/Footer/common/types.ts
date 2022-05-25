@@ -1,3 +1,5 @@
+import { SetOptional } from 'type-fest'
+
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
 export type FooterLink = {
@@ -9,25 +11,36 @@ export type FooterLinkWithIcon = FooterLink & {
   icon: React.ReactElement
 }
 
-export interface FooterProps {
+export interface FooterVariantProps {
   /** Application name to display in footer. */
   appName: string
   /** Tagline to display beside application name, if provided. */
   tagline?: string
   /** Link for footer icon. Defaults to OGP homepage. */
-  footerIconLink?: FooterLinkWithIcon
+  footerIconLink: FooterLinkWithIcon
   /** Footer links to display, if provided. */
   footerLinks?: FooterLink[]
   /** Social media links to display, if provided. Defaults to OGP links. */
-  socialMediaLinks?: FooterLinkWithIcon[]
+  socialMediaLinks: FooterLinkWithIcon[]
   /**
    * Colour scheme of the text in the footer.
    * Defaults to `secondary` if not provided.
    */
-  textColorScheme?: ThemeColorScheme
+  textColorScheme: ThemeColorScheme
   /**
    * Background color of footer.
    * Defaults to `primary.100` if not provided.
    */
-  bg?: string
+  bg: string
+}
+
+export interface FooterProps
+  extends SetOptional<
+    FooterVariantProps,
+    'socialMediaLinks' | 'textColorScheme' | 'footerIconLink' | 'bg'
+  > {
+  /**
+   * The footer variant to display. Defaults to `full` if not provided.
+   */
+  variant?: 'full' | 'compact'
 }
