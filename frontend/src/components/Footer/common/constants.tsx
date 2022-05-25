@@ -1,14 +1,14 @@
 import { BxlFacebook } from '~assets/icons/BxlFacebook'
 import { BxlInstagram } from '~assets/icons/BxlInstagram'
 import { BxlLinkedin } from '~assets/icons/BxlLinkedin'
+import { OgpLogoFull } from '~assets/svgrs/brand/OgpFullLogo'
 
-import { OgpFullLogo } from './OgpFullLogo'
 import { FooterLinkWithIcon } from './types'
 
 export const DEFAULT_FOOTER_ICON_LINK: FooterLinkWithIcon = {
   href: 'https://open.gov.sg',
   label: 'Open Government Products homepage',
-  Icon: OgpFullLogo,
+  Icon: OgpLogoFull,
 }
 
 export const DEFAULT_SOCIAL_MEDIA_LINKS: FooterLinkWithIcon[] = [

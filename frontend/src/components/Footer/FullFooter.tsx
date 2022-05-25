@@ -75,7 +75,7 @@ export const FullFooter = ({
             mb="2rem"
             href={footerIconLink.href}
           >
-            <footerIconLink.Icon w="183px"></footerIconLink.Icon>
+            <footerIconLink.Icon width="183px"></footerIconLink.Icon>
           </Link>
         </Box>
 

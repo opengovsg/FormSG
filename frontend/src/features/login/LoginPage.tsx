@@ -195,7 +195,7 @@ export const LoginPage = (): JSX.Element => {
             </Box>
           </LoginGridArea>
           <FooterGridArea>
-            <AppFooter variant="compact" />
+            <AppFooter compactMonochromeLogos variant="compact" />
           </FooterGridArea>
         </BaseGridLayout>
       </BackgroundBox>

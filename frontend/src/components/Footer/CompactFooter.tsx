@@ -1,29 +1,46 @@
 import { chakra, Divider, Flex, Link, Stack, Wrap } from '@chakra-ui/react'
 
 import { ReactComponent as BrandHortSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
+import { ReactComponent as BrandHortLightMonoSvg } from '~assets/svgs/brand/brand-hort-lightmono.svg'
 
 import { FooterContainerProps, FooterVariantProps } from './common/types'
 
 const BrandHortLogo = chakra(BrandHortSvg)
+const BrandHortLightMonoLogo = chakra(BrandHortLightMonoSvg)
+
+interface CompactedFooterProps extends FooterVariantProps {
+  compactMonochromeLogos?: boolean
+}
 
 /** Desktop only compact footer variant */
 export const CompactFooter = ({
   footerIconLink,
   textColorScheme,
   footerLinks,
-}: FooterVariantProps): JSX.Element => {
+  compactMonochromeLogos,
+}: CompactedFooterProps): JSX.Element => {
   return (
     <CompactFooter.Container>
       <Stack direction="row" h="2.25rem" align="center" spacing="2rem">
-        <BrandHortLogo h="1rem" />
-        <Divider orientation="vertical" />
+        {compactMonochromeLogos ? (
+          <BrandHortLightMonoLogo h="1rem" />
+        ) : (
+          <BrandHortLogo h="1rem" />
+        )}
+        <Divider
+          orientation="vertical"
+          color={compactMonochromeLogos ? 'neutral.300' : undefined}
+        />
         <Link
           isExternal
           title={footerIconLink.label}
-          colorScheme={textColorScheme}
+          colorScheme={compactMonochromeLogos ? 'white' : textColorScheme}
           href={footerIconLink.href}
         >
-          <footerIconLink.Icon h="1.5rem" />
+          <footerIconLink.Icon
+            fill={compactMonochromeLogos ? 'white' : undefined}
+            height="1.5rem"
+          />
         </Link>
       </Stack>
       <Wrap

@@ -9,6 +9,7 @@ export type FooterLink = {
 }
 
 export type FooterLinkWithIcon = FooterLink & {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Icon: (props: any) => JSX.Element
 }
 
@@ -48,4 +49,9 @@ export interface FooterProps
    * The footer variant to display. Defaults to `full` if not provided.
    */
   variant?: 'full' | 'compact'
+
+  /**
+   * Whether logos are monochrome in `compact` variant.
+   */
+  compactMonochromeLogos?: boolean
 }

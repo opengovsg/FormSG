@@ -14,6 +14,7 @@ export const Footer = ({
   socialMediaLinks = DEFAULT_SOCIAL_MEDIA_LINKS,
   textColorScheme = 'secondary',
   bg = 'primary.100',
+  compactMonochromeLogos,
   ...footerProps
 }: FooterProps): JSX.Element => {
   const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
@@ -21,6 +22,7 @@ export const Footer = ({
   if (variant === 'compact' && isDesktop) {
     return (
       <CompactFooter
+        compactMonochromeLogos={compactMonochromeLogos}
         socialMediaLinks={socialMediaLinks}
         textColorScheme={textColorScheme}
         bg={bg}
