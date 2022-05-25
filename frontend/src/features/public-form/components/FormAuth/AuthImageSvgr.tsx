@@ -3,43 +3,43 @@ import { forwardRef, memo, Ref, SVGProps } from 'react'
 export const AuthImageSvgr = memo(
   forwardRef((props: SVGProps<SVGSVGElement>, ref: Ref<SVGSVGElement>) => (
     <svg
-      width={117}
+      width={118}
       height={144}
+      viewBox="0 0 118 144"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
-      ref={ref}
       {...props}
     >
       <path
-        d="M113.401.402h-.25v143.196h3.515V.402h-3.265Z"
+        d="M113.902.402h-.25v143.196h3.515V.402h-3.265Z"
         fill="#293044"
         stroke="#293044"
         strokeWidth={0.5}
       />
       <path
-        d="M.583.402h-.25v143.196H113.382V.402H.583Z"
+        d="M1.084.402h-.25v143.196H113.883V.402H1.084Z"
         fill="#fff"
         stroke="#293044"
         strokeWidth={0.5}
       />
-      <path d="M.583 14.88h112.758v41.974H.583V14.881Z" fill="#4A61C0" />
+      <path d="M1.084 14.88h112.758v41.974H1.084V14.881Z" fill="#445072" />
       <path
-        d="M17.53 29.138h78.838v1.14H17.53v-1.14ZM17.53 35.322h78.838v1.14H17.53v-1.14ZM33.294 41.513h47.793v1.14H33.294v-1.14Z"
-        fill="#8998D6"
+        d="M18.031 29.138H96.87v1.14H18.03v-1.14ZM18.031 35.322H96.87v1.14H18.03v-1.14ZM33.795 41.513h47.793v1.14H33.795v-1.14Z"
+        fill="#69738E"
       />
-      <rect x={19.583} y={83.652} width={76} height={8} rx={4} fill="#E4E7F6" />
-      <rect x={19.583} y={99.652} width={76} height={8} rx={4} fill="#E4E7F6" />
+      <rect x={20.084} y={83.652} width={76} height={8} rx={4} fill="#DADCE3" />
+      <rect x={20.084} y={99.652} width={76} height={8} rx={4} fill="#DADCE3" />
       <rect
-        x={19.583}
+        x={20.084}
         y={115.652}
         width={76}
         height={8}
         rx={4}
-        fill="#E4E7F6"
+        fill="#DADCE3"
       />
       <rect
-        x={42.374}
+        x={42.875}
         y={47.875}
         width={19.821}
         height={19.821}
@@ -49,7 +49,7 @@ export const AuthImageSvgr = memo(
         strokeWidth={0.75}
       />
       <rect
-        x={40.499}
+        x={41}
         y={46}
         width={20.571}
         height={20.571}
@@ -57,7 +57,7 @@ export const AuthImageSvgr = memo(
         fill="url(#a)"
       />
       <rect
-        x={55.874}
+        x={56.375}
         y={61.375}
         width={19.821}
         height={19.821}
@@ -67,7 +67,7 @@ export const AuthImageSvgr = memo(
         strokeWidth={0.75}
       />
       <rect
-        x={53.999}
+        x={54.5}
         y={59.5}
         width={20.571}
         height={20.571}

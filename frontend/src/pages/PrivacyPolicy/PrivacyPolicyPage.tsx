@@ -12,6 +12,7 @@ import {
 } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
+import { AppPublicHeader } from '~/app/AppPublicHeader'
 
 import Link from '~components/Link'
 
@@ -64,6 +65,7 @@ const SectionParagraph: FC = ({ children }) => (
 export const PrivacyPolicyPage = (): JSX.Element => {
   return (
     <Flex flexDir="column" bg="primary.100">
+      <AppPublicHeader />
       <Container color="secondary.700" maxW="85ch" px="2rem" pb="5rem" flex={1}>
         <Stack spacing="5rem">
           <Box as="section">

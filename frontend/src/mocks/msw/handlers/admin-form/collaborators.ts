@@ -16,3 +16,18 @@ export const getAdminFormCollaborators = ({
     },
   )
 }
+
+export const updateFormCollaborators = ({
+  delay = 0,
+  errorCode,
+}: {
+  delay?: number | 'infinite'
+  errorCode: number
+}): ReturnType<typeof rest['put']> => {
+  return rest.put<FormPermissionsDto>(
+    '/api/v3/admin/forms/:formId/collaborators',
+    (_req, res, ctx) => {
+      return res(ctx.delay(delay), ctx.status(errorCode), ctx.json([]))
+    },
+  )
+}

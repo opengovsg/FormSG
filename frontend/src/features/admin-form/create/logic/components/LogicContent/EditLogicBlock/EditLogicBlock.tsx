@@ -34,6 +34,7 @@ export const useEditLogicBlock = ({
 
   const formMethods = useForm<EditLogicInputs>({
     defaultValues: merge({ conditions: [{}] }, defaultValues),
+    shouldUnregister: true,
   })
   const {
     fields: logicConditionBlocks,

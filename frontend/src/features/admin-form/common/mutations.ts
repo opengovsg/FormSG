@@ -10,6 +10,7 @@ import {
 
 import { ROOT_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
+import { HttpError } from '~services/ApiService'
 
 import { permissionsToRole } from './components/CollaboratorModal/utils'
 import {
@@ -27,6 +28,14 @@ export type MutateAddCollaboratorArgs = {
 export type MutateRemoveCollaboratorArgs = {
   permissionToRemove: FormPermission
   currentPermissions: FormPermissionsDto
+}
+
+enum FormCollaboratorAction {
+  UPDATE,
+  ADD,
+  REMOVE,
+  TRANSFER_OWNERSHIP,
+  REMOVE_SELF,
 }
 
 export const useMutateCollaborators = () => {
@@ -55,6 +64,74 @@ export const useMutateCollaborators = () => {
     [formId, queryClient],
   )
 
+  const getMappedBadRequestErrorMessage = (
+    formCollaboratorAction: FormCollaboratorAction,
+  ): string => {
+    let badRequestErrorMessage
+    switch (formCollaboratorAction) {
+      case FormCollaboratorAction.ADD:
+        badRequestErrorMessage = `The collaborator was unable to be added or edited. Please try again or refresh the page.`
+        break
+      default:
+        badRequestErrorMessage = `Sorry, an error occurred. Please refresh the page and try again later.`
+    }
+
+    return badRequestErrorMessage
+  }
+
+  const getMappedDefaultErrorMessage = (
+    formCollaboratorAction: FormCollaboratorAction,
+  ): string => {
+    let defaultErrorMessage
+    switch (formCollaboratorAction) {
+      case FormCollaboratorAction.ADD:
+        defaultErrorMessage = 'Error adding collaborator.'
+        break
+      case FormCollaboratorAction.UPDATE:
+        defaultErrorMessage = 'Error updating collaborator.'
+        break
+      case FormCollaboratorAction.REMOVE:
+        defaultErrorMessage = 'Error removing collaborator.'
+        break
+      case FormCollaboratorAction.REMOVE_SELF:
+        defaultErrorMessage = 'Error removing self.'
+        break
+      case FormCollaboratorAction.TRANSFER_OWNERSHIP:
+        defaultErrorMessage = 'Error transfering form ownership.'
+        break
+      //should not reach
+      default:
+        defaultErrorMessage = 'Error.'
+    }
+    return defaultErrorMessage
+  }
+
+  const getMappedErrorMessage = (
+    error: Error,
+    formCollaboratorAction: FormCollaboratorAction,
+    requestEmail?: string,
+  ): string => {
+    // check if error is an instance of HttpError to be able to access status code of error
+    if (error instanceof HttpError) {
+      let errorMessage
+      switch (error.code) {
+        case 422:
+          errorMessage = requestEmail
+            ? `${requestEmail} is not part of a whitelisted agency`
+            : `An unexpected error 422 happened`
+          break
+        case 400:
+          errorMessage = getMappedBadRequestErrorMessage(formCollaboratorAction)
+          break
+        default:
+          errorMessage = getMappedDefaultErrorMessage(formCollaboratorAction)
+      }
+      return errorMessage
+    }
+    // if error is not of type HttpError return the error message encapsulated in Error object
+    return error.message
+  }
+
   const handleSuccess = useCallback(
     ({
       newData,
@@ -75,10 +152,18 @@ export const useMutateCollaborators = () => {
   )
 
   const handleError = useCallback(
-    (error: Error) => {
+    (
+      error: Error,
+      formCollaboratorAction: FormCollaboratorAction,
+      requestEmail?: string,
+    ) => {
       toast.closeAll()
       toast({
-        description: error.message,
+        description: getMappedErrorMessage(
+          error,
+          formCollaboratorAction,
+          requestEmail,
+        ),
         status: 'danger',
       })
     },
@@ -113,7 +198,9 @@ export const useMutateCollaborators = () => {
         } has been updated to the ${permissionsToRole(permissionToUpdate)} role`
         handleSuccess({ newData, toastDescription })
       },
-      onError: handleError,
+      onError: (error: Error) => {
+        handleError(error, FormCollaboratorAction.UPDATE)
+      },
     },
   )
 
@@ -129,7 +216,9 @@ export const useMutateCollaborators = () => {
         } has been added as a ${permissionsToRole(newPermission)}`
         handleSuccess({ newData, toastDescription })
       },
-      onError: handleError,
+      onError: (error: Error, { newPermission }) => {
+        handleError(error, FormCollaboratorAction.ADD, newPermission.email)
+      },
     },
   )
 
@@ -149,7 +238,9 @@ export const useMutateCollaborators = () => {
         const toastDescription = `${permissionToRemove.email} has been removed as a collaborator`
         handleSuccess({ newData, toastDescription })
       },
-      onError: handleError,
+      onError: (error: Error) => {
+        handleError(error, FormCollaboratorAction.REMOVE)
+      },
     },
   )
 
@@ -173,7 +264,9 @@ export const useMutateCollaborators = () => {
           newData.form,
         )
       },
-      onError: handleError,
+      onError: (error: Error) => {
+        handleError(error, FormCollaboratorAction.TRANSFER_OWNERSHIP)
+      },
     },
   )
 
@@ -189,7 +282,9 @@ export const useMutateCollaborators = () => {
         // Remove all related queries from cache.
         queryClient.removeQueries(adminFormKeys.id(formId))
       },
-      onError: handleError,
+      onError: (error: Error) => {
+        handleError(error, FormCollaboratorAction.REMOVE_SELF)
+      },
     },
   )
 

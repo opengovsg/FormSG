@@ -1,7 +1,9 @@
 import { Navigate, useLocation } from 'react-router-dom'
+import { Flex } from '@chakra-ui/react'
 
 import { useAuth } from '~contexts/AuthContext'
 import { ROOT_ROUTE } from '~constants/routes'
+import GovtMasthead from '~components/GovtMasthead'
 
 interface PublicElementProps {
   /**
@@ -29,5 +31,10 @@ export const PublicElement = ({
     return <Navigate to={state?.from.pathname ?? ROOT_ROUTE} replace />
   }
 
-  return element
+  return (
+    <Flex flexDir="column" height="100vh" pos="relative">
+      <GovtMasthead />
+      {element}
+    </Flex>
+  )
 }
