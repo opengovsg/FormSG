@@ -28,6 +28,13 @@ export const validateWebhookUrl = (webhookUrl: string): Promise<void> => {
         ),
       )
     }
+    if (webhookUrlParsed.hostname.endsWith(appUrlParsed.hostname)) {
+      return reject(
+        new WebhookValidationError(
+          `You cannot send responses back to a subdomain of ${config.app.appUrl}.`,
+        ),
+      )
+    }
     dns
       .resolve(webhookUrlParsed.hostname)
       .then((addresses) => {
