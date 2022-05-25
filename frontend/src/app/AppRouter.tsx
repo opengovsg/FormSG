@@ -47,11 +47,11 @@ export const AppRouter = (): JSX.Element => {
       <Routes>
         <Route
           path={LANDING_ROUTE}
-          element={<PublicElement element={<LandingPage />} />}
+          element={<HashRouterElement element={<LandingPage />} />}
         />
         <Route
           path={ROOT_ROUTE}
-          element={<HashRouterElement element={<WorkspacePage />} />}
+          element={<PrivateElement element={<WorkspacePage />} />}
         />
         <Route
           path={LOGIN_ROUTE}
