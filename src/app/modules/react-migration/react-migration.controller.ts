@@ -9,8 +9,13 @@ import * as PublicFormController from '../form/public-form/public-form.controlle
 import { RedirectParams } from '../form/public-form/public-form.types'
 import * as HomeController from '../home/home.controller'
 
+export enum UiCookieValues {
+  react = 'react',
+  angular = 'angular',
+}
+
 export type SetEnvironmentParams = {
-  ui: 'react' | 'angular'
+  ui: UiCookieValues
 }
 
 export const RESPONDENT_COOKIE_OPTIONS = {
@@ -75,7 +80,8 @@ export const serveForm: ControllerHandler<
     : config.reactMigration.respondentRolloutNoAuth
 
   if (config.reactMigration.qaCookieName in req.cookies) {
-    showReact = req.cookies[config.reactMigration.qaCookieName] === 'react'
+    showReact =
+      req.cookies[config.reactMigration.qaCookieName] === UiCookieValues.react
   } else if (threshold <= 0) {
     // Check the rollout value first, if it's 0, react is DISABLED
     // And we ignore cookies entirely!
@@ -84,13 +90,16 @@ export const serveForm: ControllerHandler<
     if (config.reactMigration.adminCookieName in req.cookies) {
       // Admins are dogfooders, the choice they made for the admin environment
       // also applies to the forms they need to fill themselves
-      showReact = req.cookies[config.reactMigration.adminCookieName] === 'react'
+      showReact =
+        req.cookies[config.reactMigration.adminCookieName] ===
+        UiCookieValues.react
     } else if (config.reactMigration.respondentCookieName in req.cookies) {
       // Note: the respondent cookie is for the whole session, not for a specific form.
       // That means that within a session, a respondent will see the same environment
       // for all the forms he/she fills.
       showReact =
-        req.cookies[config.reactMigration.respondentCookieName] === 'react'
+        req.cookies[config.reactMigration.respondentCookieName] ===
+        UiCookieValues.react
     }
   }
 
@@ -111,7 +120,7 @@ export const serveForm: ControllerHandler<
 
     res.cookie(
       config.reactMigration.respondentCookieName,
-      showReact ? 'react' : 'angular',
+      showReact ? UiCookieValues.react : UiCookieValues.angular,
       RESPONDENT_COOKIE_OPTIONS,
     )
   }
@@ -136,7 +145,10 @@ export const serveForm: ControllerHandler<
 
 export const serveDefault: ControllerHandler = (req, res, next) => {
   // only admin who chose react should see react, everybody else is plain angular
-  if (req.cookies?.[config.reactMigration.adminCookieName] === 'react') {
+  if (
+    req.cookies?.[config.reactMigration.adminCookieName] ===
+    UiCookieValues.react
+  ) {
     // react
     return serveFormReact(req, res, next)
   } else {
@@ -152,7 +164,10 @@ export const adminChooseEnvironment: ControllerHandler<
   unknown,
   Record<string, string>
 > = (req, res) => {
-  const ui = req.params.ui === 'react' ? 'react' : 'angular'
+  const ui =
+    req.params.ui === UiCookieValues.react
+      ? UiCookieValues.react
+      : UiCookieValues.angular
   res.cookie(config.reactMigration.adminCookieName, ui, ADMIN_COOKIE_OPTIONS)
   return res.json({ ui })
 }
