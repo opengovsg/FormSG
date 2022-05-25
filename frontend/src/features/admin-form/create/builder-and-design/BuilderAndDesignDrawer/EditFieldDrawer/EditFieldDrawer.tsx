@@ -1,8 +1,13 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, ReactNode, useCallback, useMemo } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
 import { Stack, Text } from '@chakra-ui/react'
 
-import { BasicField, FieldCreateDto } from '~shared/types/field'
+import {
+  BasicField,
+  FieldCreateDto,
+  FormFieldDto,
+  MyInfoFormField,
+} from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
 
@@ -130,52 +135,76 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 }
 
 interface MemoFieldDrawerContentProps {
+  field: FormFieldDto
+}
+
+interface EditBasicFieldProps {
   field: FieldCreateDto
+  children?: ReactNode
+}
+
+const EditBasicField = ({
+  field,
+  ...props
+}: EditBasicFieldProps): JSX.Element => {
+  switch (field.fieldType) {
+    case BasicField.Attachment:
+      return <EditAttachment {...props} field={field} />
+    case BasicField.Checkbox:
+      return <EditCheckbox {...props} field={field} />
+    case BasicField.Dropdown:
+      return <EditDropdown {...props} field={field} />
+    case BasicField.Mobile:
+      return <EditMobile {...props} field={field} />
+    case BasicField.HomeNo:
+      return <EditHomeno {...props} field={field} />
+    case BasicField.Email:
+      return <EditEmail {...props} field={field} />
+    case BasicField.Nric:
+      return <EditNric {...props} field={field} />
+    case BasicField.Number:
+      return <EditNumber {...props} field={field} />
+    case BasicField.Decimal:
+      return <EditDecimal {...props} field={field} />
+    case BasicField.Section:
+      return <EditHeader {...props} field={field} />
+    case BasicField.Uen:
+      return <EditUen {...props} field={field} />
+    case BasicField.YesNo:
+      return <EditYesNo {...props} field={field} />
+    case BasicField.Radio:
+      return <EditRadio {...props} field={field} />
+    case BasicField.Rating:
+      return <EditRating {...props} field={field} />
+    case BasicField.ShortText:
+      return <EditShortText {...props} field={field} />
+    case BasicField.LongText:
+      return <EditLongText {...props} field={field} />
+    case BasicField.Statement:
+      return <EditParagraph {...props} field={field} />
+    case BasicField.Image:
+      return <EditImage {...props} field={field} />
+    default:
+      return <div>TODO: Insert field options here</div>
+  }
+}
+
+interface EditMyInfoFieldProps {
+  field: MyInfoFormField
+}
+
+const EditMyInfoField = ({
+  field,
+  ...props
+}: EditMyInfoFieldProps): JSX.Element => {
+  return <div>myinfo</div>
 }
 
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
-    switch (field.fieldType) {
-      case BasicField.Attachment:
-        return <EditAttachment {...props} field={field} />
-      case BasicField.Checkbox:
-        return <EditCheckbox {...props} field={field} />
-      case BasicField.Dropdown:
-        return <EditDropdown {...props} field={field} />
-      case BasicField.Mobile:
-        return <EditMobile {...props} field={field} />
-      case BasicField.HomeNo:
-        return <EditHomeno {...props} field={field} />
-      case BasicField.Email:
-        return <EditEmail {...props} field={field} />
-      case BasicField.Nric:
-        return <EditNric {...props} field={field} />
-      case BasicField.Number:
-        return <EditNumber {...props} field={field} />
-      case BasicField.Date:
-        return <EditDate {...props} field={field} />
-      case BasicField.Decimal:
-        return <EditDecimal {...props} field={field} />
-      case BasicField.Section:
-        return <EditHeader {...props} field={field} />
-      case BasicField.Uen:
-        return <EditUen {...props} field={field} />
-      case BasicField.YesNo:
-        return <EditYesNo {...props} field={field} />
-      case BasicField.Radio:
-        return <EditRadio {...props} field={field} />
-      case BasicField.Rating:
-        return <EditRating {...props} field={field} />
-      case BasicField.ShortText:
-        return <EditShortText {...props} field={field} />
-      case BasicField.LongText:
-        return <EditLongText {...props} field={field} />
-      case BasicField.Statement:
-        return <EditParagraph {...props} field={field} />
-      case BasicField.Image:
-        return <EditImage {...props} field={field} />
-      default:
-        return <div>TODO: Insert field options here</div>
+    if (field.isMyInfo) {
+      return <EditMyInfoField field={field} {...props} />
     }
+    return <EditBasicField field={field} {...props} />
   },
 )
