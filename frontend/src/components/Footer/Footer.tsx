@@ -169,14 +169,9 @@ export const Footer = ({
               </Link>
             ))}
           </Stack>
-          <Flex
-            flexDir={{ base: 'column', md: 'row' }}
-            textStyle="legal"
-            color={`${textColorScheme}.500`}
-          >
-            <Text>©{currentYear} Open Government Products,&nbsp;</Text>
-            <Text>Government Technology Agency of Singapore</Text>
-          </Flex>
+          <Text textStyle="legal" color={`${textColorScheme}.500`}>
+            ©{currentYear} Open Government Products
+          </Text>
         </Box>
       </Footer.Section>
     </Footer.Container>
