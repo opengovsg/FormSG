@@ -3,6 +3,7 @@ module.exports = {
   features: {
     emotionAlias: false,
   },
+  staticDirs: ['../public'],
   stories: [
     // Introduction stories set first so stories are ordered correctly.
     './introduction/Welcome/Welcome.stories.tsx',
