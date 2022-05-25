@@ -1,6 +1,5 @@
 import {
   Box,
-  chakra,
   Divider,
   Flex,
   FlexProps,
@@ -10,71 +9,11 @@ import {
   Wrap,
 } from '@chakra-ui/react'
 
-import { ThemeColorScheme } from '~/theme/foundations/colours'
-
-import { BxlFacebook } from '~assets/icons/BxlFacebook'
-import { BxlInstagram } from '~assets/icons/BxlInstagram'
-import { BxlLinkedin } from '~assets/icons/BxlLinkedin'
-import { ReactComponent as OgpLogoFullSvg } from '~assets/svgs/brand/ogp-logo-full.svg'
-
-const OgpLogoFull = chakra(OgpLogoFullSvg)
-
-const DEFAULT_FOOTER_ICON_LINK: FooterLinkWithIcon = {
-  href: 'https://open.gov.sg',
-  label: 'Open Government Products homepage',
-  icon: <OgpLogoFull w="183px" />,
-}
-
-const DEFAULT_SOCIAL_MEDIA_LINKS: FooterLinkWithIcon[] = [
-  {
-    href: 'https://sg.linkedin.com/company/open-government-products',
-
-    icon: <BxlLinkedin />,
-    label: 'Go to our LinkedIn page',
-  },
-  {
-    href: 'https://www.facebook.com/opengovsg',
-    icon: <BxlFacebook />,
-    label: 'Go to our Facebook page',
-  },
-  {
-    href: 'https://www.instagram.com/opengovsg',
-    icon: <BxlInstagram />,
-    label: 'Go to our Instagram page',
-  },
-]
-
-type FooterLinkWithIcon = FooterLink & {
-  icon: React.ReactElement
-}
-
-type FooterLink = {
-  label: string
-  href: string
-}
-
-export interface FooterProps {
-  /** Application name to display in footer. */
-  appName: string
-  /** Tagline to display beside application name, if provided. */
-  tagline?: string
-  /** Link for footer icon. Defaults to OGP homepage. */
-  footerIconLink?: FooterLinkWithIcon
-  /** Footer links to display, if provided. */
-  footerLinks?: FooterLink[]
-  /** Social media links to display, if provided. Defaults to OGP links. */
-  socialMediaLinks?: FooterLinkWithIcon[]
-  /**
-   * Colour scheme of the text in the footer.
-   * Defaults to `secondary` if not provided.
-   */
-  textColorScheme?: ThemeColorScheme
-  /**
-   * Background color of footer.
-   * Defaults to `primary.100` if not provided.
-   */
-  bg?: string
-}
+import {
+  DEFAULT_FOOTER_ICON_LINK,
+  DEFAULT_SOCIAL_MEDIA_LINKS,
+} from './common/constants'
+import { FooterProps } from './common/types'
 
 export const Footer = ({
   appName,

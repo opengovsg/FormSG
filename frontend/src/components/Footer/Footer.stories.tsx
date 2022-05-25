@@ -2,7 +2,8 @@ import { Meta, Story } from '@storybook/react'
 
 import { viewports } from '~utils/storybook'
 
-import { Footer, FooterProps } from './Footer'
+import { FooterProps } from './common/types'
+import { Footer } from './Footer'
 
 const DEFAULT_ARGS: FooterProps = {
   appName: 'Form',
