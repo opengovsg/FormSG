@@ -66,9 +66,12 @@ export type FormField =
 
 export type FormFieldWithId<T extends FormField = FormField> =
   T extends TableFieldBase
-    ? TableFieldDto
+    ? TableFieldDto & {
+        isMyInfo: false
+      }
     : T & {
         _id: string
+        isMyInfo: false
       }
 
 // MyInfo type that's seen by the public
@@ -76,6 +79,7 @@ export type FormFieldWithId<T extends FormField = FormField> =
 export type MyInfoPublicFormField<T extends FormField = FormField> =
   FormFieldWithId<T> & {
     fieldValue?: string
+    isMyInfo: true
   }
 
 /**
