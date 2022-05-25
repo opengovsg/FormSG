@@ -54,7 +54,7 @@ const helmetMiddlewares = () => {
       "'self'",
       'https://www.google-analytics.com/',
       'https://ssl.google-analytics.com/',
-      'https://*.browser-intake-datadoghq.com',
+      'https://*.browser-intake-datadoghq.com', // https://docs.datadoghq.com/real_user_monitoring/faq/content_security_policy/
       'https://sentry.io/api/',
       config.aws.attachmentBucketUrl, // Attachment downloads
       config.aws.imageBucketUrl, // Image field
@@ -74,7 +74,7 @@ const helmetMiddlewares = () => {
       "'unsafe-inline'",
     ],
     workerSrc: [
-      'blob:', // DataDog RUM session replay
+      'blob:', // DataDog RUM session replay - https://docs.datadoghq.com/real_user_monitoring/faq/content_security_policy/
     ],
     frameAncestors: ['*'],
   }
