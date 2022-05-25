@@ -1,3 +1,5 @@
+import { useIsMobile } from '~hooks/useIsMobile'
+
 import {
   DEFAULT_FOOTER_ICON_LINK,
   DEFAULT_SOCIAL_MEDIA_LINKS,
@@ -14,7 +16,9 @@ export const Footer = ({
   bg = 'primary.100',
   ...footerProps
 }: FooterProps): JSX.Element => {
-  if (variant === 'compact') {
+  const isMobile = useIsMobile()
+
+  if (variant === 'compact' && !isMobile) {
     return (
       <CompactFooter
         socialMediaLinks={socialMediaLinks}

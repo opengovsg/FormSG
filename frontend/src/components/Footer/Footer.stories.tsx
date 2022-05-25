@@ -40,6 +40,12 @@ export default {
 const Template: Story<FooterProps> = (args) => <Footer {...args} />
 export const Default = Template.bind({})
 
+export const CompactVariant = Template.bind({})
+CompactVariant.args = {
+  ...DEFAULT_ARGS,
+  variant: 'compact',
+}
+
 export const WithTagline = Template.bind({})
 WithTagline.args = {
   ...DEFAULT_ARGS,

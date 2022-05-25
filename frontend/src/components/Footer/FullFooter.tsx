@@ -1,19 +1,10 @@
-import {
-  Box,
-  Divider,
-  Flex,
-  FlexProps,
-  Link,
-  Stack,
-  Text,
-  Wrap,
-} from '@chakra-ui/react'
+import { Box, Divider, Flex, Link, Stack, Text, Wrap } from '@chakra-ui/react'
 
 import {
   DEFAULT_FOOTER_ICON_LINK,
   DEFAULT_SOCIAL_MEDIA_LINKS,
 } from './common/constants'
-import { FooterVariantProps } from './common/types'
+import { FooterContainerProps, FooterVariantProps } from './common/types'
 
 export const FullFooter = ({
   appName,
@@ -84,7 +75,7 @@ export const FullFooter = ({
             mb="2rem"
             href={footerIconLink.href}
           >
-            {footerIconLink.icon}
+            <footerIconLink.Icon w="183px"></footerIconLink.Icon>
           </Link>
         </Box>
 
@@ -96,7 +87,7 @@ export const FullFooter = ({
             mb="0.5rem"
             justify={{ base: 'normal', lg: 'flex-end' }}
           >
-            {socialMediaLinks?.map(({ label, href, icon }) => (
+            {socialMediaLinks?.map(({ label, href, Icon }) => (
               <Link
                 isExternal
                 title={label}
@@ -104,7 +95,7 @@ export const FullFooter = ({
                 href={href}
                 colorScheme={textColorScheme}
               >
-                {icon}
+                <Icon />
               </Link>
             ))}
           </Stack>
@@ -115,10 +106,6 @@ export const FullFooter = ({
       </FullFooter.Section>
     </FullFooter.Container>
   )
-}
-
-interface FooterContainerProps extends FlexProps {
-  children: React.ReactNode
 }
 
 FullFooter.Container = ({
@@ -138,14 +125,10 @@ FullFooter.Container = ({
   )
 }
 
-interface FullFooterSectionProps extends FlexProps {
-  children: React.ReactNode
-}
-
 FullFooter.Section = ({
   children,
   ...props
-}: FullFooterSectionProps): JSX.Element => {
+}: FooterContainerProps): JSX.Element => {
   return (
     <Flex
       align={{ base: 'normal', lg: 'center' }}

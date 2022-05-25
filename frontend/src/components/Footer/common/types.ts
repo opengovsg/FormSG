@@ -1,3 +1,4 @@
+import { FlexProps } from '@chakra-ui/react'
 import { SetOptional } from 'type-fest'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
@@ -8,7 +9,7 @@ export type FooterLink = {
 }
 
 export type FooterLinkWithIcon = FooterLink & {
-  icon: React.ReactElement
+  Icon: (props: any) => JSX.Element
 }
 
 export interface FooterVariantProps {
@@ -32,6 +33,10 @@ export interface FooterVariantProps {
    * Defaults to `primary.100` if not provided.
    */
   bg: string
+}
+
+export interface FooterContainerProps extends FlexProps {
+  children: React.ReactNode
 }
 
 export interface FooterProps
