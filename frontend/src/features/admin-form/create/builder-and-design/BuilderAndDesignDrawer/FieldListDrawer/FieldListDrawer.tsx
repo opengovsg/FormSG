@@ -17,6 +17,8 @@ import { Tab } from '~components/Tabs'
 import {
   CREATE_FIELD_DROP_ID,
   CREATE_FIELD_FIELDS_ORDERED,
+  CREATE_MYINFO_PERSONAL_DROP_ID,
+  CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
   CREATE_PAGE_DROP_ID,
   CREATE_PAGE_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
@@ -24,7 +26,10 @@ import {
 import { useCreateTabForm } from '../../useCreateTabForm'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
-import { DraggableFieldListOption } from './FieldListOption'
+import {
+  DraggableBasicFieldListOption,
+  DraggableMyInfoFieldListOption,
+} from './FieldListOption'
 
 export const FieldListDrawer = (): JSX.Element => {
   const { isLoading } = useCreateTabForm()
@@ -48,7 +53,9 @@ export const FieldListDrawer = (): JSX.Element => {
         <TabPanel>
           <BasicFieldPanelContent />
         </TabPanel>
-        <TabPanel>MyInfo</TabPanel>
+        <TabPanel>
+          <MyInfoFieldPanelContent />
+        </TabPanel>
       </TabPanels>
     </Tabs>
   )
@@ -64,7 +71,7 @@ const BasicFieldPanelContent = () => {
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             <FieldSection label="Page">
               {CREATE_PAGE_FIELDS_ORDERED.map((fieldType, index) => (
-                <DraggableFieldListOption
+                <DraggableBasicFieldListOption
                   index={index}
                   isDisabled={isLoading}
                   key={index}
@@ -81,7 +88,33 @@ const BasicFieldPanelContent = () => {
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             <FieldSection label="Fields">
               {CREATE_FIELD_FIELDS_ORDERED.map((fieldType, index) => (
-                <DraggableFieldListOption
+                <DraggableBasicFieldListOption
+                  index={index}
+                  isDisabled={isLoading}
+                  key={index}
+                  fieldType={fieldType}
+                />
+              ))}
+            </FieldSection>
+            <Box display="none">{provided.placeholder}</Box>
+          </Box>
+        )}
+      </Droppable>
+    </>
+  )
+}
+
+const MyInfoFieldPanelContent = () => {
+  const { isLoading } = useCreateTabForm()
+
+  return (
+    <>
+      <Droppable isDropDisabled droppableId={CREATE_MYINFO_PERSONAL_DROP_ID}>
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection label="Personal">
+              {CREATE_MYINFO_PERSONAL_FIELDS_ORDERED.map((fieldType, index) => (
+                <DraggableMyInfoFieldListOption
                   index={index}
                   isDisabled={isLoading}
                   key={index}
