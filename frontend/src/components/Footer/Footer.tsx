@@ -1,4 +1,4 @@
-import { useIsMobile } from '~hooks/useIsMobile'
+import { useBreakpointValue } from '@chakra-ui/react'
 
 import {
   DEFAULT_FOOTER_ICON_LINK,
@@ -16,9 +16,9 @@ export const Footer = ({
   bg = 'primary.100',
   ...footerProps
 }: FooterProps): JSX.Element => {
-  const isMobile = useIsMobile()
+  const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
 
-  if (variant === 'compact' && !isMobile) {
+  if (variant === 'compact' && isDesktop) {
     return (
       <CompactFooter
         socialMediaLinks={socialMediaLinks}
