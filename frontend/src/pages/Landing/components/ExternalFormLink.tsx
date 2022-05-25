@@ -13,9 +13,9 @@ export const ExternalFormLink = ({
   label,
 }: ExternalFormLinkProps): JSX.Element => {
   return (
-    <Link variant="standalone" isExternal href={href} minW="25rem">
+    <Link isExternal href={href} minW="25rem">
       <Icon
-        mr="1.5rem"
+        mr="1rem"
         color="secondary.500"
         fontSize="1.5rem"
         as={BiLayout}
