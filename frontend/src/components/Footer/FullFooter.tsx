@@ -87,8 +87,9 @@ export const FullFooter = ({
             mb="0.5rem"
             justify={{ base: 'normal', lg: 'flex-end' }}
           >
-            {socialMediaLinks?.map(({ label, href, Icon }) => (
+            {socialMediaLinks?.map(({ label, href, Icon }, index) => (
               <Link
+                key={index}
                 isExternal
                 title={label}
                 w="2rem"
