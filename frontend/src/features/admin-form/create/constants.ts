@@ -1,13 +1,23 @@
 import {
   BiAlignLeft,
+  BiBody,
+  BiBook,
   BiBuilding,
   BiCalculator,
   BiCalendarEvent,
+  BiCalendarMinus,
+  BiCar,
   BiCaretDownSquare,
   BiCloudUpload,
+  BiFlag,
+  BiGlobe,
   BiHash,
   BiHeading,
+  BiHome,
+  BiHomeAlt,
+  BiIdCard,
   BiImage,
+  BiInfinite,
   BiMailSend,
   BiMobile,
   BiPhone,
@@ -19,10 +29,11 @@ import {
   BiText,
   BiToggleLeft,
   BiUser,
+  BiUserVoice,
 } from 'react-icons/bi'
 import { As } from '@chakra-ui/react'
 
-import { BasicField } from '~shared/types/field'
+import { BasicField, MyInfoAttribute } from '~shared/types/field'
 
 type BuilderSidebarFieldMeta = {
   label: string
@@ -151,6 +162,76 @@ export const BASICFIELD_TO_DRAWER_META: {
   [BasicField.YesNo]: {
     label: 'Yes/No',
     icon: BiToggleLeft,
+    isSubmitted: true,
+  },
+}
+
+export const MYINFO_FIELD_TO_DRAWER_META: {
+  [key in MyInfoAttribute]: BuilderSidebarFieldMeta
+} = {
+  [MyInfoAttribute.Name]: {
+    label: 'Name',
+    icon: BiUser,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.Sex]: {
+    label: 'Gender',
+    icon: BiInfinite,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.DateOfBirth]: {
+    label: 'Date of Birth',
+    icon: BiCalculator,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.Race]: {
+    label: 'Race',
+    icon: BiBody,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.Nationality]: {
+    label: 'Nationality',
+    icon: BiGlobe,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.BirthCountry]: {
+    label: 'Birth Country',
+    icon: BiFlag,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.ResidentialStatus]: {
+    label: 'Residential Status',
+    icon: BiIdCard,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.Dialect]: {
+    label: 'Dialect',
+    icon: BiUserVoice,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.HousingType]: {
+    label: 'Housing Type',
+    icon: BiHomeAlt,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.HdbType]: {
+    label: 'HDB Type',
+    icon: BiHome,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.PassportNumber]: {
+    label: 'Passport Number',
+    icon: BiBook,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.PassportExpiryDate]: {
+    label: 'Passport Expiry Date',
+    icon: BiCalendarMinus,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.VehicleNo]: {
+    label: 'Vehicle Number',
+    icon: BiCar,
     isSubmitted: true,
   },
 }
