@@ -21,7 +21,7 @@ export const theme = extendTheme({
       body: {
         height: '100%',
         fontFeatureSettings: "'tnum' on, 'cv05' on",
-        '-webkit-font-smoothing': 'antialiased',
+        WebkitFontSmoothing: 'antialiased',
       },
       '#root, #__next': {
         isolation: 'isolate',
