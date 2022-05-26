@@ -68,12 +68,7 @@ export type FormField =
 type BaseMyInfoFormField = MyInfoField
 
 export type FormFieldWithId<T extends FormField = FormField> =
-  T extends TableFieldBase
-    ? TableFieldDto
-    : T & {
-        _id: string
-        isMyInfo: false
-      }
+  T extends TableFieldBase ? TableFieldDto<T> : T & { _id: string }
 
 // MyInfo type that's seen by the public
 // This means that the values might be pre-filled
@@ -92,11 +87,3 @@ export type FormFieldDto<T extends FormField = FormField> =
 
 export type FieldCreateDto = FormField
 export type FieldUpdateDto = FormFieldWithId
-
-export type BasicFormField = FormField & {
-  isMyInfo: false
-}
-
-export type MyInfoFormField = BaseMyInfoFormField & {
-  isMyInfo: true
-}
