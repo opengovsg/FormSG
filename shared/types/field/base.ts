@@ -76,6 +76,7 @@ export type AllowMyInfoBase<T extends FieldBase = FieldBase> = T & {
   }
   isMyInfo: true
 }
+
 export type VerifiableFieldBase = {
   isVerifiable: boolean
 }

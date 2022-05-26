@@ -1,13 +1,13 @@
-import { AllowMyInfoBase } from '../base'
-import { FormField } from '../index'
+import { BasicField } from '../base'
+import { FormField, MyInfoField } from '..'
 
-export const enum VerifiedFor {
+export enum VerifiedFor {
   Singaporeans = 'singaporeans',
   PermanentResidents = 'pr',
   ForeignersWithSingpass = 'singpassforeigners',
 }
 
-export const enum MyInfoDataSource {
+export enum MyInfoDataSource {
   HDB = 'Housing Development Board',
   ICA = 'Immigration & Checkpoints Authority',
   MOM = 'Ministry of Manpower',
@@ -19,11 +19,23 @@ export const enum MyInfoDataSource {
 // Type for MyInfo field within the editor view
 // A MyInfo field has UI related data tagged to it (description etc)
 // And it wraps a specific field type on public forms that is prefilled
-export type MyInfoField<T extends FormField = FormField> =
-  AllowMyInfoBase<T> & {
-    description: string
-    dataSource: MyInfoDataSource[]
-    verifiedFor: {
-      [K in VerifiedFor]: boolean
-    }
+export type MyInfoFieldWithMeta<T extends MyInfoField = MyInfoField> = T & {
+  dataSource: MyInfoDataSource[]
+  verifiedFor: {
+    [K in VerifiedFor]: boolean
   }
+}
+
+export const isMyInfo = (field: FormField): field is MyInfoField => {
+  switch (field.fieldType) {
+    case BasicField.Date:
+    case BasicField.Dropdown:
+    case BasicField.HomeNo:
+    case BasicField.Mobile:
+    case BasicField.Number:
+    case BasicField.ShortText:
+      return !!field.myInfo
+    default:
+      return false
+  }
+}
