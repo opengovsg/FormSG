@@ -315,6 +315,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 'v2-admin-ui',
       env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME',
     },
+    qaCookieName: {
+      doc: 'Priority cookie to select react/angular during QA.',
+      format: String,
+      default: 'v2-qa-ui',
+      env: 'REACT_MIGRATION_QA_COOKIE_NAME',
+    },
   },
 }
 
