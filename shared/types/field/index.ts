@@ -8,6 +8,7 @@ import { HomenoFieldBase } from './homeNoField'
 import { ImageFieldBase } from './imageField'
 import { LongTextFieldBase } from './longTextField'
 import { MobileFieldBase } from './mobileField'
+import { MyInfoField } from './myinfo'
 import { NricFieldBase } from './nricField'
 import { NumberFieldBase } from './numberField'
 import { RadioFieldBase } from './radioField'
@@ -64,11 +65,11 @@ export type FormField =
   | UenFieldBase
   | YesNoFieldBase
 
+type BaseMyInfoFormField = MyInfoField
+
 export type FormFieldWithId<T extends FormField = FormField> =
   T extends TableFieldBase
-    ? TableFieldDto & {
-        isMyInfo: false
-      }
+    ? TableFieldDto
     : T & {
         _id: string
         isMyInfo: false
@@ -91,3 +92,11 @@ export type FormFieldDto<T extends FormField = FormField> =
 
 export type FieldCreateDto = FormField
 export type FieldUpdateDto = FormFieldWithId
+
+export type BasicFormField = FormField & {
+  isMyInfo: false
+}
+
+export type MyInfoFormField = BaseMyInfoFormField & {
+  isMyInfo: true
+}
