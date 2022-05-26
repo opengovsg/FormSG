@@ -1,9 +1,8 @@
-import { Navigate, NavigateProps, useLocation } from 'react-router-dom'
-import { Flex } from '@chakra-ui/react'
+import { Navigate, useLocation } from 'react-router-dom'
 
-import { useAuth } from '~contexts/AuthContext'
-import { LOGIN_ROUTE, ROOT_ROUTE } from '~constants/routes'
-import GovtMasthead from '~components/GovtMasthead'
+import { ROOT_ROUTE } from '~constants/routes'
+
+import { PublicElement } from './PublicElement'
 
 interface HashRouterElementProps {
   /**
@@ -15,12 +14,6 @@ interface HashRouterElementProps {
    * Defaults to `false`.
    */
   strict?: boolean
-
-  /**
-   * Route to redirect to when user is not authenticated. Defaults to
-   * `LOGIN_ROUTE` if not provided.
-   */
-  redirectTo?: NavigateProps['to']
 
   element: React.ReactElement
 }
@@ -54,12 +47,9 @@ const hashRouteMapper = [
 
 export const HashRouterElement = ({
   element,
-  strict,
-  redirectTo = LOGIN_ROUTE,
+  strict = false,
 }: HashRouterElementProps): React.ReactElement => {
   const location = useLocation()
-  const state = location.state as { from: Location } | undefined
-  const { isAuthenticated } = useAuth()
 
   // Retire this custom routing after July 2024
   if (location.hash.startsWith('#!/')) {
@@ -67,20 +57,11 @@ export const HashRouterElement = ({
     for (const { regex, getTarget } of hashRouteMapper) {
       const match = location.hash.match(regex)
       if (match) {
-        redirectTo = getTarget(match as FormRegExpMatchArray)
+        const redirectTo = getTarget(match as FormRegExpMatchArray)
         return <Navigate replace to={redirectTo} state={{ from: location }} />
       }
     }
   }
 
-  if (isAuthenticated && strict) {
-    return <Navigate to={state?.from.pathname ?? ROOT_ROUTE} replace />
-  }
-
-  return (
-    <Flex flexDir="column" height="100vh" pos="relative">
-      <GovtMasthead />
-      {element}
-    </Flex>
-  )
+  return <PublicElement element={element} strict={strict} />
 }
