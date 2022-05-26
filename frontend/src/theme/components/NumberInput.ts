@@ -27,7 +27,7 @@ export const NumberInput: ComponentMultiStyleConfig<typeof parts> = {
     stepperWrapper: {
       zIndex: 1,
       h: '2.75rem',
-      d: 'flex',
+      display: 'flex',
       alignItems: 'center',
       pos: 'absolute',
       right: 0,
