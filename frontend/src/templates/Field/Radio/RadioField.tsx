@@ -49,9 +49,10 @@ export const RadioField = ({
     [schema],
   )
 
-  const { register, getValues, trigger } = useFormContext<RadioFieldInputs>()
+  const { register, getValues, trigger, control } =
+    useFormContext<RadioFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<RadioFieldInputs>({
-    name: schema._id,
+    control,
   })
 
   const othersValidationRules = useMemo(
@@ -116,7 +117,7 @@ export const RadioField = ({
                     ml={styles.othersInput?.ml as string}
                     mb={0}
                   >
-                    {get(errors, `${othersInputName}.message`) ?? ''}
+                    {errors?.[schema._id]?.othersInput?.message}
                   </FormErrorMessage>
                 </FormControl>
               </Radio.OthersWrapper>

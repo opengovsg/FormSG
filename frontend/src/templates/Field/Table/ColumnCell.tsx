@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
-import { UseTableCellProps } from 'react-table'
+import { Renderer, UseTableCellProps } from 'react-table'
 import { FormControl, VisuallyHidden } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -90,13 +90,13 @@ const DropdownColumnCell = ({
 /**
  * Renderer for each column cell in the table schema.
  */
-export const ColumnCell = ({
+export const ColumnCell: Renderer<ColumnCellProps> = ({
   schemaId,
   row,
   column,
   columnSchema,
   colorTheme,
-}: ColumnCellProps): JSX.Element => {
+}): JSX.Element => {
   const isMobile = useIsMobile()
   const { errors } = useFormState<TableFieldInputs>({ name: schemaId })
 
@@ -146,7 +146,7 @@ export const ColumnCell = ({
         // be shown in the individual column cells.
         isMobile ? (
           <FormErrorMessage>
-            {get(errors, `${inputName}.message`)}
+            {errors?.[schemaId]?.[row.index]?.[column.id]?.message}
           </FormErrorMessage>
         ) : null
       }

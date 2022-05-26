@@ -66,7 +66,12 @@ export const TableField = ({
   })
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable({ columns: columnsData, data: fields })
+    useTable({
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      columns: columnsData,
+      data: fields,
+    })
 
   const handleAddRow = useCallback(() => {
     if (!schema.maximumRows || fields.length >= schema.maximumRows) return
@@ -85,7 +90,7 @@ export const TableField = ({
 
   return (
     <TableFieldContainer schema={schema}>
-      <Box d="block" w="100%" overflowX="auto">
+      <Box display="block" w="100%" overflowX="auto">
         <Table
           {...getTableProps()}
           variant="column-stripe"
