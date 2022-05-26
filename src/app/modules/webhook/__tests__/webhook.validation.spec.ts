@@ -14,6 +14,7 @@ const MockDns = mocked(dns, true)
 
 const MOCK_APP_URL = 'https://example.com'
 const MOCK_APP_SUBDOMAIN_URL = 'https://mock.example.com'
+const MOCK_APP_SIMILAR_URL = 'https://mockexample.com'
 jest.mock('src/app/config/config')
 const MockConfig = mocked(config, true)
 MockConfig.app.appUrl = MOCK_APP_URL
@@ -67,7 +68,7 @@ describe('Webhook URL validation', () => {
       validateWebhookUrl(`${MOCK_APP_URL}/test`),
     ).rejects.toStrictEqual(
       new WebhookValidationError(
-        `You cannot send responses back to ${MOCK_APP_URL}.`,
+        `You cannot send responses back to ${MOCK_APP_URL} or its subdomain.`,
       ),
     )
   })
@@ -77,8 +78,15 @@ describe('Webhook URL validation', () => {
       validateWebhookUrl(`${MOCK_APP_SUBDOMAIN_URL}`),
     ).rejects.toStrictEqual(
       new WebhookValidationError(
-        `You cannot send responses back to a subdomain of ${MOCK_APP_URL}.`,
+        `You cannot send responses back to ${MOCK_APP_URL} or its subdomain.`,
       ),
     )
+  })
+
+  it('should allow URLs with a hostname which ends in the app hostname', async () => {
+    MockDns.resolve.mockResolvedValueOnce(['1.1.1.1'])
+    await expect(
+      validateWebhookUrl(`${MOCK_APP_SIMILAR_URL}`),
+    ).resolves.toEqual(undefined)
   })
 })
