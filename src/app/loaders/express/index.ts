@@ -1,8 +1,6 @@
 import compression from 'compression'
-import connectDatadog from 'connect-datadog'
 import express, { Express } from 'express'
 import addRequestId from 'express-request-id'
-import { StatsD } from 'hot-shots'
 import http from 'http'
 import { Connection } from 'mongoose'
 import nocache from 'nocache'
@@ -142,17 +140,6 @@ const loadExpressApp = async (connection: Connection) => {
 
   // Log intranet usage
   app.use(IntranetMiddleware.logIntranetUsage)
-
-  app.use(
-    connectDatadog({
-      method: true,
-      response_code: true,
-      path: false, // !! Important: do not turn this true or the tag cardinality will explode
-      dogstatsd: new StatsD({
-        useDefaultRoute: true,
-      }),
-    }),
-  )
 
   app.use('/', HomeRouter)
   app.use('/frontend', FrontendRouter)
