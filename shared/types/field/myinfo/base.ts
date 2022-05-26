@@ -1,4 +1,4 @@
-import { MyInfoableFieldBase } from '../base'
+import { AllowMyInfoBase } from '../base'
 import { FormField } from '../index'
 
 export const enum VerifiedFor {
@@ -19,8 +19,8 @@ export const enum MyInfoDataSource {
 // Type for MyInfo field within the editor view
 // A MyInfo field has UI related data tagged to it (description etc)
 // And it wraps a specific field type on public forms that is prefilled
-export type MyInfoField<T extends FormField = FormField> = T &
-  MyInfoableFieldBase & {
+export type MyInfoField<T extends FormField = FormField> =
+  AllowMyInfoBase<T> & {
     description: string
     dataSource: MyInfoDataSource[]
     verifiedFor: {
