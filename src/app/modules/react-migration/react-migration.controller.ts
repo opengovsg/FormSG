@@ -10,8 +10,8 @@ import { RedirectParams } from '../form/public-form/public-form.types'
 import * as HomeController from '../home/home.controller'
 
 export enum UiCookieValues {
-  react = 'react',
-  angular = 'angular',
+  React = 'react',
+  Angular = 'angular',
 }
 
 export type SetEnvironmentParams = {
@@ -81,7 +81,7 @@ export const serveForm: ControllerHandler<
 
   if (config.reactMigration.qaCookieName in req.cookies) {
     showReact =
-      req.cookies[config.reactMigration.qaCookieName] === UiCookieValues.react
+      req.cookies[config.reactMigration.qaCookieName] === UiCookieValues.React
   } else if (threshold <= 0) {
     // Check the rollout value first, if it's 0, react is DISABLED
     // And we ignore cookies entirely!
@@ -92,14 +92,14 @@ export const serveForm: ControllerHandler<
       // also applies to the forms they need to fill themselves
       showReact =
         req.cookies[config.reactMigration.adminCookieName] ===
-        UiCookieValues.react
+        UiCookieValues.React
     } else if (config.reactMigration.respondentCookieName in req.cookies) {
       // Note: the respondent cookie is for the whole session, not for a specific form.
       // That means that within a session, a respondent will see the same environment
       // for all the forms he/she fills.
       showReact =
         req.cookies[config.reactMigration.respondentCookieName] ===
-        UiCookieValues.react
+        UiCookieValues.React
     }
   }
 
@@ -120,7 +120,7 @@ export const serveForm: ControllerHandler<
 
     res.cookie(
       config.reactMigration.respondentCookieName,
-      showReact ? UiCookieValues.react : UiCookieValues.angular,
+      showReact ? UiCookieValues.React : UiCookieValues.Angular,
       RESPONDENT_COOKIE_OPTIONS,
     )
   }
@@ -147,7 +147,7 @@ export const serveDefault: ControllerHandler = (req, res, next) => {
   // only admin who chose react should see react, everybody else is plain angular
   if (
     req.cookies?.[config.reactMigration.adminCookieName] ===
-    UiCookieValues.react
+    UiCookieValues.React
   ) {
     // react
     return serveFormReact(req, res, next)
@@ -165,9 +165,9 @@ export const adminChooseEnvironment: ControllerHandler<
   Record<string, string>
 > = (req, res) => {
   const ui =
-    req.params.ui === UiCookieValues.react
-      ? UiCookieValues.react
-      : UiCookieValues.angular
+    req.params.ui === UiCookieValues.React
+      ? UiCookieValues.React
+      : UiCookieValues.Angular
   res.cookie(config.reactMigration.adminCookieName, ui, ADMIN_COOKIE_OPTIONS)
   return res.json({ ui })
 }
