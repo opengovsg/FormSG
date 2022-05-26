@@ -27,6 +27,9 @@ export interface TableFieldBase extends FieldBase {
   columns: Column[]
 }
 
-export type TableFieldDto = Merge<TableFieldBase, { columns: ColumnDto[] }> & {
+export type TableFieldDto<T extends TableFieldBase = TableFieldBase> = Merge<
+  T,
+  { columns: ColumnDto[] }
+> & {
   _id: string
 }
