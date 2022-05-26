@@ -27,7 +27,7 @@ export type BuilderAndDesignStore = {
     | { state: BuildFieldState.Inactive }
 }
 
-export const useBuilderAndDesignStore = create<BuilderAndDesignStore>(
+export const useBuilderAndDesignStore = create<BuilderAndDesignStore>()(
   devtools((set, get) => ({
     stateData: { state: BuildFieldState.Inactive },
     updateCreateState: (field, insertionIndex) => {
