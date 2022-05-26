@@ -106,7 +106,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   )
 
   const onSaveSuccess = useCallback(
-    (newField) => {
+    (newField: FormFieldDto) => {
       editForm.reset(
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore

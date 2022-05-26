@@ -44,7 +44,7 @@ export const FormResponseOptions = forwardRef<
         badge={<Badge colorScheme="success">Recommended</Badge>}
         isActive={value === FormResponseMode.Encrypt}
         onClick={() => onChange(FormResponseMode.Encrypt)}
-        isFullWidth
+        width="full"
         flex={1}
       >
         <Tile.Title>Storage Mode</Tile.Title>
@@ -60,7 +60,7 @@ export const FormResponseOptions = forwardRef<
         icon={BiMailSend}
         isActive={value === FormResponseMode.Email}
         onClick={() => onChange(FormResponseMode.Email)}
-        isFullWidth
+        width="full"
         flex={1}
       >
         <Tile.Title>Email Mode</Tile.Title>

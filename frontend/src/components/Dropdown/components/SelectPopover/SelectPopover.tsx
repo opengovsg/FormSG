@@ -1,4 +1,4 @@
-import { FC, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Modifier, usePopper } from 'react-popper'
 import { Box, useMergeRefs, useOutsideClick } from '@chakra-ui/react'
 
@@ -22,7 +22,11 @@ export const matchWidth: Modifier<'matchWidth'> = {
     },
 }
 
-export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
+export const SelectPopoverProvider = ({
+  children,
+}: {
+  children?: React.ReactNode
+}): JSX.Element => {
   const [referenceElement, setReferenceElement] =
     useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(

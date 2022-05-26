@@ -1,4 +1,3 @@
-import { FC } from 'react'
 import { Skeleton, Stack, Text } from '@chakra-ui/react'
 
 interface CollaboratorRowProps {
@@ -8,7 +7,11 @@ interface CollaboratorRowProps {
   children: React.ReactNode
 }
 
-export const CollaboratorText: FC = ({ children }) => {
+export const CollaboratorText = ({
+  children,
+}: {
+  children?: React.ReactNode
+}) => {
   return (
     <Text
       textStyle={{ base: 'subhead-1', md: 'body-2' }}

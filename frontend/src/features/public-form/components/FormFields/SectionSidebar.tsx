@@ -41,7 +41,7 @@ export const SectionSidebar = (): JSX.Element => {
   return (
     <Box
       flex={1}
-      d={{ base: 'none', md: 'initial' }}
+      display={{ base: 'none', md: 'initial' }}
       minW={scrollData.length > 0 ? '20%' : undefined}
     >
       <VStack

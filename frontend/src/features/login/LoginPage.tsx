@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import {
@@ -48,7 +48,7 @@ const LoginImage = chakra(LoginImageSvg, {
 })
 
 // Component for the split blue/white background.
-const BackgroundBox: FC = ({ children }) => (
+const BackgroundBox = ({ children }: { children?: React.ReactNode }) => (
   <Box
     flexGrow={1}
     px={{ base: '1.5rem', md: '5.5rem', lg: 0 }}
@@ -62,7 +62,7 @@ const BackgroundBox: FC = ({ children }) => (
 )
 
 // Component that controls the various grid areas according to responsive breakpoints.
-const BaseGridLayout: FC = ({ children }) => (
+const BaseGridLayout = ({ children }: { children?: React.ReactNode }) => (
   <Grid
     minH={{ base: 'initial', lg: '100%' }}
     maxW="90rem"
@@ -79,20 +79,20 @@ const BaseGridLayout: FC = ({ children }) => (
 )
 
 // Grid area styling for the login form.
-const LoginGridArea: FC = ({ children }) => (
+const LoginGridArea = ({ children }: { children?: React.ReactNode }) => (
   <GridItem
     h={{ base: '100vh', md: '100%' }}
     gridArea="login"
     px={{ base: 0, lg: '7.25rem' }}
     py="4rem"
-    d="flex"
+    display="flex"
     alignItems={{ base: 'initial', lg: 'center' }}
     children={children}
   />
 )
 
 // Desktop-only grid area styling for the bottom left area.
-const DesktopCopyGridArea: FC = ({ children }) => (
+const DesktopCopyGridArea = ({ children }: { children?: React.ReactNode }) => (
   <GridItem
     display={{ base: 'none', lg: 'initial' }}
     gridArea="copy"
@@ -105,7 +105,7 @@ const DesktopCopyGridArea: FC = ({ children }) => (
 )
 
 // Desktop-only grid area styling for the bottom right area.
-const DesktopLinksGridArea: FC = ({ children }) => (
+const DesktopLinksGridArea = ({ children }: { children?: React.ReactNode }) => (
   <GridItem
     px={{ base: '1.5rem', lg: '7.25rem' }}
     pt={0}
@@ -117,9 +117,13 @@ const DesktopLinksGridArea: FC = ({ children }) => (
 )
 
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
-const NonMobileSidebarGridArea: FC = ({ children }) => (
+const NonMobileSidebarGridArea = ({
+  children,
+}: {
+  children?: React.ReactNode
+}) => (
   <GridItem
-    d={{ base: 'none', md: 'flex' }}
+    display={{ base: 'none', md: 'flex' }}
     gridArea="sidebar"
     bg={{ base: 'transparent', lg: 'primary.500' }}
     px={{ base: '1.5rem', lg: '5rem' }}
