@@ -2,10 +2,15 @@ import {
   AttachmentSize,
   BasicField,
   FieldCreateDto,
+  MyInfoAttribute,
+  MyInfoField,
   RatingShape,
 } from '~shared/types/field'
 
-import { BASICFIELD_TO_DRAWER_META } from '../../constants'
+import {
+  BASICFIELD_TO_DRAWER_META,
+  MYINFO_FIELD_TO_DRAWER_META,
+} from '../../constants'
 
 /**
  * Utility methods to create bare minimum meta required for field creation.
@@ -168,6 +173,38 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         fieldType: BasicField.Section,
         ...baseMeta,
       }
+    }
+  }
+}
+
+export const getMyInfoFieldCreationMeta = (
+  myInfoAttribute: MyInfoAttribute,
+): MyInfoField => {
+  const baseMeta: Pick<MyInfoField, 'disabled' | 'required' | 'title'> = {
+    disabled: false,
+    required: true,
+    title: MYINFO_FIELD_TO_DRAWER_META[myInfoAttribute].label,
+  }
+
+  switch (myInfoAttribute) {
+    case MyInfoAttribute.Name: {
+      return {
+        ...baseMeta,
+        myInfo: {
+          attr: myInfoAttribute,
+        },
+        description:
+          'The registered name of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
+        fieldType: BasicField.ShortText,
+        ValidationOptions: {
+          selectedValidation: null,
+          customVal: null,
+        },
+      }
+    }
+    default: {
+      const exception: never = myInfoAttribute as never
+      throw new Error(exception)
     }
   }
 }
