@@ -71,7 +71,9 @@ export type FormFieldWithId<T extends FormField = FormField> =
         _id: string
       }
 
-export type MyInfoFormField<T extends FormField = FormField> =
+// MyInfo type that's seen by the public
+// This means that the values might be pre-filled
+export type MyInfoPublicFormField<T extends FormField = FormField> =
   FormFieldWithId<T> & {
     fieldValue?: string
   }
@@ -80,7 +82,7 @@ export type MyInfoFormField<T extends FormField = FormField> =
  * Form field POJO with id
  */
 export type FormFieldDto<T extends FormField = FormField> =
-  | MyInfoFormField<T>
+  | MyInfoPublicFormField<T>
   | FormFieldWithId<T>
 
 export type FieldCreateDto = FormField

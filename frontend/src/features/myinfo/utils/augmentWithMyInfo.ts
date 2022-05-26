@@ -1,14 +1,18 @@
 import { keyBy } from 'lodash'
 
 import { types as myInfoTypeArray } from '~shared/constants/field/myinfo'
-import { BasicField, FormFieldDto, MyInfoFormField } from '~shared/types/field'
+import {
+  BasicField,
+  FormFieldDto,
+  MyInfoPublicFormField,
+} from '~shared/types/field'
 
 const MAP_ATTR_TO_NAME = keyBy(myInfoTypeArray, 'name')
 
 // Making a copy by destructuring so original object does not get affected.
 export const augmentWithMyInfo = ({
   ...field
-}: FormFieldDto): MyInfoFormField => {
+}: FormFieldDto): MyInfoPublicFormField => {
   // Only dropdown fields have augmented options for now.
   switch (field.fieldType) {
     case BasicField.Dropdown: {
