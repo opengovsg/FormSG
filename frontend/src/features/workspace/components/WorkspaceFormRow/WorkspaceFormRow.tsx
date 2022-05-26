@@ -38,9 +38,9 @@ export const WorkspaceFormRow = ({
 
   const { handleEditForm } = useRowActionDropdown(formMeta._id)
 
-  const isTruncated = useBreakpointValue({
-    base: false,
-    md: true,
+  const noOfLines = useBreakpointValue({
+    base: undefined,
+    md: 1,
   })
 
   return (
@@ -76,7 +76,7 @@ export const WorkspaceFormRow = ({
       >
         <Flex flexDir="column" gridArea="title" textAlign="initial">
           <Text
-            isTruncated={isTruncated}
+            noOfLines={noOfLines}
             title={formMeta.title}
             textStyle="subhead-1"
             color="secondary.700"

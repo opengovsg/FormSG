@@ -25,6 +25,11 @@ export interface ButtonProps extends ChakraButtonProps {
    * Color scheme of button.
    */
   colorScheme?: ThemeColorScheme
+
+  /**
+   * Whether the button is full width.
+   */
+  isFullWidth?: boolean
 }
 
 export const Button = forwardRef<ButtonProps, 'button'>(
@@ -33,9 +38,8 @@ export const Button = forwardRef<ButtonProps, 'button'>(
       <ChakraButton
         ref={ref}
         spinner={<Spinner fontSize={spinnerFontSize ?? '1.5rem'} />}
-        isFullWidth={isFullWidth}
+        {...(isFullWidth ? { minH: '3.5rem', w: 'full' } : {})}
         {...props}
-        {...(isFullWidth ? { minH: '3.5rem' } : {})}
       >
         {children}
       </ChakraButton>
