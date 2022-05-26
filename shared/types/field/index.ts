@@ -8,7 +8,6 @@ import { HomenoFieldBase } from './homeNoField'
 import { ImageFieldBase } from './imageField'
 import { LongTextFieldBase } from './longTextField'
 import { MobileFieldBase } from './mobileField'
-import { MyInfoField } from './myinfo'
 import { NricFieldBase } from './nricField'
 import { NumberFieldBase } from './numberField'
 import { RadioFieldBase } from './radioField'
@@ -19,6 +18,7 @@ import { StatementFieldBase } from './statementField'
 import { TableFieldBase, TableFieldDto } from './tableField'
 import { UenFieldBase } from './uenField'
 import { YesNoFieldBase } from './yesNoField'
+import { SetRequired } from 'type-fest'
 
 export * from './attachmentField'
 export * from './base'
@@ -65,7 +65,17 @@ export type FormField =
   | UenFieldBase
   | YesNoFieldBase
 
-type BaseMyInfoFormField = MyInfoField
+// These types are extended through using MyInfoableFieldBase
+// And might possibly be myInfo fields if the attribute is set
+export type MyInfoField = SetRequired<
+  | DateFieldBase
+  | DropdownFieldBase
+  | HomenoFieldBase
+  | MobileFieldBase
+  | NumberFieldBase
+  | ShortTextFieldBase,
+  'myInfo'
+>
 
 export type FormFieldWithId<T extends FormField = FormField> =
   T extends TableFieldBase ? TableFieldDto<T> : T & { _id: string }
