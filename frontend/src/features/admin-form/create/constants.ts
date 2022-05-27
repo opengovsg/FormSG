@@ -2,10 +2,17 @@ import {
   BiAlignLeft,
   BiBody,
   BiBook,
+  BiBookContent,
+  BiBookHeart,
+  BiBriefcase,
   BiBuilding,
+  BiBuildings,
   BiCalculator,
+  BiCalendarAlt,
   BiCalendarEvent,
+  BiCalendarHeart,
   BiCalendarMinus,
+  BiCalendarX,
   BiCar,
   BiCaretDownSquare,
   BiCloudUpload,
@@ -13,12 +20,15 @@ import {
   BiGlobe,
   BiHash,
   BiHeading,
+  BiHeartCircle,
   BiHome,
   BiHomeAlt,
+  BiHomeHeart,
   BiIdCard,
   BiImage,
   BiInfinite,
   BiMailSend,
+  BiMap,
   BiMobile,
   BiPhone,
   BiRadioCircleMarked,
@@ -33,7 +43,11 @@ import {
 } from 'react-icons/bi'
 import { As } from '@chakra-ui/react'
 
-import { BasicField, MyInfoAttribute } from '~shared/types/field'
+import {
+  BasicField,
+  MyInfoAttribute,
+  MyInfoImplementedTypes,
+} from '~shared/types/field'
 
 type BuilderSidebarFieldMeta = {
   label: string
@@ -167,7 +181,7 @@ export const BASICFIELD_TO_DRAWER_META: {
 }
 
 export const MYINFO_FIELD_TO_DRAWER_META: {
-  [key in MyInfoAttribute]: BuilderSidebarFieldMeta
+  [key in MyInfoImplementedTypes]: BuilderSidebarFieldMeta
 } = {
   [MyInfoAttribute.Name]: {
     label: 'Name',
@@ -232,6 +246,61 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
   [MyInfoAttribute.VehicleNo]: {
     label: 'Vehicle Number',
     icon: BiCar,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.RegisteredAddress]: {
+    label: 'Registered Address',
+    icon: BiBuildings,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.MobileNo]: {
+    label: 'Mobile Number',
+    icon: BiBuildings,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.Occupation]: {
+    label: 'Occupation',
+    icon: BiBriefcase,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.Employment]: {
+    label: 'Name of Employer',
+    icon: BiBookContent,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.WorkpassStatus]: {
+    label: 'Workpass Status',
+    icon: BiMap,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.WorkpassExpiryDate]: {
+    label: 'Workpass Expiry Date',
+    icon: BiCalendarAlt,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.Marital]: {
+    label: 'Martial Status',
+    icon: BiHeartCircle,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.CountryOfMarriage]: {
+    label: 'Country of Marriage',
+    icon: BiHomeHeart,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.MarriageCertNo]: {
+    label: 'Marriage Certificate Number',
+    icon: BiBookHeart,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.MarriageDate]: {
+    label: 'Marriage Date',
+    icon: BiCalendarHeart,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.DivorceDate]: {
+    label: 'Divorce Date',
+    icon: BiCalendarX,
     isSubmitted: true,
   },
 }
