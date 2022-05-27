@@ -1,5 +1,6 @@
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { Box, HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import { identity } from 'lodash'
 
 import { MyInfoField } from '~shared/types'
 import { extendWithMyInfo } from '~shared/types/field/myinfo'
@@ -7,6 +8,8 @@ import { extendWithMyInfo } from '~shared/types/field/myinfo'
 import Link from '~components/Link'
 
 import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
+import { useEditFieldForm } from '../common/useEditFieldForm'
 
 const VerifiedIcon = ({ isVerified }: { isVerified: boolean }): JSX.Element => {
   return (
@@ -23,6 +26,20 @@ interface EditMyInfoProps {
 }
 export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
   const extendedField = extendWithMyInfo(field)
+  const {
+    isSaveEnabled,
+    buttonText,
+    handleUpdateField,
+    isLoading,
+    handleCancel,
+  } = useEditFieldForm<EditMyInfoProps, MyInfoField>({
+    field,
+    transform: {
+      input: identity,
+      output: (_, originalField) => originalField,
+    },
+  })
+
   return (
     <DrawerContentContainer>
       <VStack align="flex-start">
@@ -66,6 +83,13 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
       {/* NOTE: Drawer content container adds a divider between elements
        * Hence, an empty div is added to render a divider after the last child
        */}
+      <FormFieldDrawerActions
+        isLoading={isLoading}
+        isSaveEnabled={isSaveEnabled}
+        buttonText={buttonText}
+        handleClick={handleUpdateField}
+        handleCancel={handleCancel}
+      />
       <Box display="none" />
     </DrawerContentContainer>
   )
