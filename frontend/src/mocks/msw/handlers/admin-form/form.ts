@@ -485,7 +485,7 @@ export const createFormBuilderMocks = (
 
 export const getStorageSubmissionMetadataResponse = (
   props: Partial<StorageModeSubmissionMetadataList> = {},
-  delay = 0,
+  delay: number | 'infinite' | 'real' = 0,
 ) => {
   return rest.get<StorageModeSubmissionMetadataList>(
     '/api/v3/admin/forms/:formId/submissions/metadata',

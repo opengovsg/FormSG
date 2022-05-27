@@ -6,6 +6,7 @@ import { FormResponseMode } from '~shared/types/form'
 
 import {
   createFormBuilderMocks,
+  getAdminFormSubmissions,
   getStorageSubmissionMetadataResponse,
 } from '~/mocks/msw/handlers/admin-form'
 
@@ -13,7 +14,7 @@ import {
   ADMINFORM_RESULTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
-import { viewports } from '~utils/storybook'
+import { getMobileViewParameters, viewports } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
 import { FeedbackPage, FormResultsLayout, ResponsesPage } from './responses'
@@ -24,7 +25,7 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [...createFormBuilderMocks()],
+    msw: [...createFormBuilderMocks({}, 0), getAdminFormSubmissions()],
   },
 } as Meta
 
@@ -50,6 +51,25 @@ const Template: Story = () => {
 }
 export const EmailForm = Template.bind({})
 
+export const EmailFormLoading = Template.bind({})
+EmailFormLoading.parameters = EmailForm.parameters
+EmailFormLoading.parameters = {
+  msw: [
+    ...createFormBuilderMocks({}, 0),
+    getAdminFormSubmissions({ delay: 'infinite' }),
+  ],
+}
+
+export const EmptyEmailForm = Template.bind({})
+EmptyEmailForm.parameters = {
+  msw: [
+    ...createFormBuilderMocks({}, 0),
+    getAdminFormSubmissions({
+      override: 0,
+    }),
+  ],
+}
+
 export const EmailFormTablet = Template.bind({})
 EmailFormTablet.parameters = {
   viewport: {
@@ -59,19 +79,13 @@ EmailFormTablet.parameters = {
 }
 
 export const EmailFormMobile = Template.bind({})
-EmailFormMobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
+EmailFormMobile.parameters = getMobileViewParameters()
 
 export const StorageForm = Template.bind({})
 StorageForm.parameters = {
   msw: [
-    ...createFormBuilderMocks({
-      responseMode: FormResponseMode.Encrypt,
-    }),
+    ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }, 0),
+    getAdminFormSubmissions(),
     getStorageSubmissionMetadataResponse(),
   ],
 }
@@ -86,4 +100,14 @@ export const StorageFormMobile = Template.bind({})
 StorageFormMobile.parameters = {
   ...EmailFormMobile.parameters,
   ...StorageForm.parameters,
+}
+
+export const StorageFormLoading = Template.bind({})
+StorageFormLoading.parameters = StorageForm.parameters
+StorageFormLoading.parameters = {
+  msw: [
+    ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }, 0),
+    getAdminFormSubmissions({ delay: 'infinite' }),
+    getStorageSubmissionMetadataResponse({}, 'infinite'),
+  ],
 }
