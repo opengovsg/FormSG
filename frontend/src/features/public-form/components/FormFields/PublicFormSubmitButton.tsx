@@ -28,17 +28,16 @@ export const PublicFormSubmitButton = ({
   colorTheme,
 }: PublicFormSubmitButtonProps): JSX.Element => {
   const isMobile = useIsMobile()
-  const { control } = useFormContext<FormFieldValues>()
   const { isSubmitting } = useFormState()
-  const allInputs = useWatch({ control })
+  const formInputs = useWatch<FormFieldValues>({})
 
   const preventSubmissionLogic = useMemo(() => {
     return getLogicUnitPreventingSubmit({
-      formInputs: allInputs,
+      formInputs,
       formFields,
       formLogics,
     })
-  }, [allInputs, formFields, formLogics])
+  }, [formInputs, formFields, formLogics])
 
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
