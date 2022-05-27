@@ -6,6 +6,10 @@ import {
   MyInfoField,
   RatingShape,
 } from '~shared/types/field'
+import {
+  getMyInfoDropdownFieldMeta,
+  MYINFO_FIELD_CONSTANTS,
+} from '~shared/types/field/myinfo'
 
 import {
   BASICFIELD_TO_DRAWER_META,
@@ -180,21 +184,26 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
 export const getMyInfoFieldCreationMeta = (
   myInfoAttribute: MyInfoAttribute,
 ): MyInfoField => {
-  const baseMeta: Pick<MyInfoField, 'disabled' | 'required' | 'title'> = {
+  const baseMeta: Pick<
+    MyInfoField,
+    'disabled' | 'required' | 'title' | 'description' | 'fieldType' | 'myInfo'
+  > = {
     disabled: false,
     required: true,
     title: MYINFO_FIELD_TO_DRAWER_META[myInfoAttribute].label,
+    description: '',
+    fieldType: MYINFO_FIELD_CONSTANTS[myInfoAttribute].fieldType,
+    myInfo: {
+      attr: myInfoAttribute,
+    },
   }
 
   switch (myInfoAttribute) {
-    case MyInfoAttribute.Name: {
+    case MyInfoAttribute.Name:
+    case MyInfoAttribute.PassportNumber:
+    case MyInfoAttribute.VehicleNo: {
       return {
         ...baseMeta,
-        myInfo: {
-          attr: myInfoAttribute,
-        },
-        description:
-          'The registered name of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
         fieldType: BasicField.ShortText,
         ValidationOptions: {
           selectedValidation: null,
@@ -202,6 +211,35 @@ export const getMyInfoFieldCreationMeta = (
         },
       }
     }
+
+    case MyInfoAttribute.DateOfBirth:
+    case MyInfoAttribute.PassportExpiryDate: {
+      return {
+        ...baseMeta,
+        fieldType: BasicField.Date,
+        dateValidation: {
+          customMaxDate: null,
+          customMinDate: null,
+          selectedDateValidation: null,
+        },
+      }
+    }
+
+    case MyInfoAttribute.Sex:
+    case MyInfoAttribute.Race:
+    case MyInfoAttribute.Nationality:
+    case MyInfoAttribute.BirthCountry:
+    case MyInfoAttribute.ResidentialStatus:
+    case MyInfoAttribute.Dialect:
+    case MyInfoAttribute.HousingType:
+    case MyInfoAttribute.HdbType: {
+      return {
+        ...baseMeta,
+        fieldType: BasicField.Dropdown,
+        ...getMyInfoDropdownFieldMeta(myInfoAttribute),
+      }
+    }
+
     default: {
       const exception: never = myInfoAttribute as never
       throw new Error(exception)
