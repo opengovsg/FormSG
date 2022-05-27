@@ -1,9 +1,8 @@
-import { Box } from '@chakra-ui/react'
-
 import { FormResponseMode } from '~shared/types/form'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
+import { EmailResponsesTab } from './EmailResponsesTab'
 import { ResponsesProvider } from './ResponsesProvider'
 import { StorageResponsesTab } from './StorageResponsesTab'
 
@@ -26,5 +25,5 @@ export const ResponsesPage = (): JSX.Element => {
     )
   }
 
-  return <Box>Responses tab for email mode form</Box>
+  return <EmailResponsesTab />
 }
