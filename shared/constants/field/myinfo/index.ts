@@ -1,20 +1,20 @@
-import { BasicField, MyInfoAttribute } from '../../../types/field'
+import { BasicField, MyInfoAttribute, MyInfoField } from '../../../types/field'
 import COUNTRIES from './myinfo-countries'
 import DIALECTS from './myinfo-dialects'
 import NATIONALITIES from './myinfo-nationalities'
 import OCCUPATIONS from './myinfo-occupations'
 import RACES from './myinfo-races'
 
-type MyInfoVerifiedType = 'SG' | 'PR' | 'F'
+export type MyInfoVerifiedType = 'SG' | 'PR' | 'F'
 
-type MyInfoFieldBlock = {
+export type MyInfoFieldBlock = {
   name: MyInfoAttribute
   value: string
   category: string
   verified: MyInfoVerifiedType[]
   source: string
   description: string
-  fieldType: BasicField
+  fieldType: MyInfoField['fieldType']
   fieldOptions?: string[]
   ValidationOptions?: Record<string, unknown>
 }

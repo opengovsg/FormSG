@@ -70,6 +70,16 @@ export enum MyInfoAttribute {
   OwnershipOfPrivateResidentialProperty = 'ownership',
 }
 
+export type MyInfoDropdownTypes =
+  | MyInfoAttribute.Sex
+  | MyInfoAttribute.Race
+  | MyInfoAttribute.Nationality
+  | MyInfoAttribute.BirthCountry
+  | MyInfoAttribute.ResidentialStatus
+  | MyInfoAttribute.Dialect
+  | MyInfoAttribute.HousingType
+  | MyInfoAttribute.HdbType
+
 export type AllowMyInfoBase<T extends FieldBase = FieldBase> = T & {
   myInfo?: {
     attr: MyInfoAttribute
