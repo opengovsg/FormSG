@@ -9,6 +9,8 @@ import {
 import {
   getMyInfoDropdownFieldMeta,
   MYINFO_FIELD_CONSTANTS,
+  myInfoDateFieldMeta,
+  myInfoTextFieldMeta,
 } from '~shared/types/field/myinfo'
 
 import {
@@ -205,10 +207,7 @@ export const getMyInfoFieldCreationMeta = (
       return {
         ...baseMeta,
         fieldType: BasicField.ShortText,
-        ValidationOptions: {
-          selectedValidation: null,
-          customVal: null,
-        },
+        ...myInfoTextFieldMeta,
       }
     }
 
@@ -217,11 +216,7 @@ export const getMyInfoFieldCreationMeta = (
       return {
         ...baseMeta,
         fieldType: BasicField.Date,
-        dateValidation: {
-          customMaxDate: null,
-          customMinDate: null,
-          selectedDateValidation: null,
-        },
+        ...myInfoDateFieldMeta,
       }
     }
 
