@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { BiRightArrowAlt } from 'react-icons/bi'
-import { useDisclosure } from '@chakra-ui/hooks'
 import {
   Modal,
   ModalCloseButton,
@@ -16,17 +15,34 @@ import { NewFeatureContent } from './components/NewFeatureContent'
 import { ProgressIndicator } from './components/ProgressIndicator'
 import { NEW_FEATURES, OTHER_UPDATES } from './Announcements'
 
-export const RolloutAnnouncementModal = (): JSX.Element => {
-  const numOtherUpdatesPages = 1
-  const NUM_NEW_FEATURES = NEW_FEATURES.length + numOtherUpdatesPages
-  const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true })
+interface RolloutAnnouncementModalProps {
+  isOpen: boolean
+  onClose?: () => void
+  onOpen?: () => void
+}
+
+export const RolloutAnnouncementModal = (
+  props: RolloutAnnouncementModalProps,
+): JSX.Element => {
+  const { isOpen, onClose } = props
   const [currActiveIdx, setCurrActiveIdx] = useState<number>(0)
 
+  const numOtherUpdatesPages = 1
+  const NUM_NEW_FEATURES = NEW_FEATURES.length + numOtherUpdatesPages
   const isLastAnnouncement = currActiveIdx === NUM_NEW_FEATURES - 1
+
+  const handleNextClick = (): void => {
+    if (isLastAnnouncement) {
+      onClose && onClose()
+      return
+    }
+
+    setCurrActiveIdx(Math.min(currActiveIdx + 1, NUM_NEW_FEATURES - 1))
+  }
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={() => onClose && onClose()}>
         <ModalOverlay />
         <ModalContent>
           <ModalCloseButton />
@@ -41,14 +57,8 @@ export const RolloutAnnouncementModal = (): JSX.Element => {
               currActiveIdx={currActiveIdx}
               onClick={setCurrActiveIdx}
             />
-            <Button
-              onClick={() =>
-                setCurrActiveIdx(
-                  Math.min(currActiveIdx + 1, NUM_NEW_FEATURES - 1),
-                )
-              }
-            >
-              Next
+            <Button onClick={handleNextClick}>
+              {isLastAnnouncement ? 'Got it' : 'Next'}
               <BiRightArrowAlt size={22} />
             </Button>
           </ModalFooter>

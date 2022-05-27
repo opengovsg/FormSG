@@ -14,6 +14,6 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <RolloutAnnouncementModal />
+const Template: Story = () => <RolloutAnnouncementModal isOpen={true} />
 
 export const BasicUsage = Template.bind({})
