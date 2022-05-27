@@ -79,6 +79,42 @@ export type MyInfoDropdownTypes =
   | MyInfoAttribute.Dialect
   | MyInfoAttribute.HousingType
   | MyInfoAttribute.HdbType
+  | MyInfoAttribute.Occupation
+  | MyInfoAttribute.WorkpassStatus
+  | MyInfoAttribute.Marital
+  | MyInfoAttribute.CountryOfMarriage
+
+export type MyInfoUnimplementedTypes =
+  // Contact section
+  | MyInfoAttribute.MailingAddress
+  | MyInfoAttribute.BillingAddress
+  | MyInfoAttribute.HomeNo
+  // Particulars section
+  | MyInfoAttribute.HighestEducation
+  | MyInfoAttribute.SchoolName
+  | MyInfoAttribute.YearOfGraduation
+  | MyInfoAttribute.WorkpassType
+  | MyInfoAttribute.EmploymentSector
+  // Family (Children) section
+  | MyInfoAttribute.ChildrenBirthCertificateNumber
+  | MyInfoAttribute.ChildrenName
+  | MyInfoAttribute.ChildrenGender
+  | MyInfoAttribute.ChildrenDateOfBirth
+  | MyInfoAttribute.ChildrenLifeStatus
+  | MyInfoAttribute.ChildrenRace
+  | MyInfoAttribute.ChildrenCountryOfBirth
+  | MyInfoAttribute.ChildrenResidentialStatus
+  | MyInfoAttribute.ChildrenNationality
+  // Income section
+  | MyInfoAttribute.CPFAccountBalance
+  | MyInfoAttribute.CPFContributionHistory
+  | MyInfoAttribute.NoticeOfAssessment
+  | MyInfoAttribute.OwnershipOfPrivateResidentialProperty
+
+export type MyInfoImplementedTypes = Exclude<
+  MyInfoAttribute,
+  MyInfoUnimplementedTypes
+>
 
 export type AllowMyInfoBase<T extends FieldBase = FieldBase> = T & {
   myInfo?: {
