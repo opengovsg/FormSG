@@ -1,5 +1,5 @@
 import { BiLayout } from 'react-icons/bi'
-import { Icon } from '@chakra-ui/react'
+import { Flex, Icon } from '@chakra-ui/react'
 
 import Link from '~components/Link'
 
@@ -13,7 +13,7 @@ export const ExternalFormLink = ({
   label,
 }: ExternalFormLinkProps): JSX.Element => {
   return (
-    <Link isExternal href={href} minW="25rem">
+    <Flex>
       <Icon
         mr="1rem"
         color="secondary.500"
@@ -21,7 +21,9 @@ export const ExternalFormLink = ({
         as={BiLayout}
         aria-hidden
       />
-      {label}
-    </Link>
+      <Link display="inline-block" isExternal href={href}>
+        {label}
+      </Link>
+    </Flex>
   )
 }

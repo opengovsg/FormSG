@@ -193,7 +193,7 @@ export const LandingPage = (): JSX.Element => {
       </LandingSection>
       <LandingSection>
         <SectionTitleText>Used by most government agencies</SectionTitleText>
-        <Wrap shouldWrapChildren spacingX="3rem" mt="2.5rem">
+        <Wrap shouldWrapChildren spacingX="3rem" mt="2.5rem" spacingY="2.5rem">
           <StatsItem stat={data?.formCount} description="forms deployed" />
           <StatsItem
             stat={data?.submissionCount}
@@ -230,17 +230,17 @@ export const LandingPage = (): JSX.Element => {
         <SectionTitleText>
           Supporting national and emergent use cases
         </SectionTitleText>
-        <SectionBodyText textAlign="center">
+        <SectionBodyText>
           An integral part of many agency workflows, Form has been instrumental
           in data collection, especially during the COVID-19 pandemic. Notable
           forms launched include:
         </SectionBodyText>
-        <Wrap
-          shouldWrapChildren
+        <SimpleGrid
+          w="full"
+          columns={{ base: 1, lg: 3 }}
           spacingX="5rem"
           spacingY="1rem"
           mt="2.5rem"
-          justify="center"
         >
           <ExternalFormLink
             href="https://form.gov.sg/600c490b7c026600138d4ca9"
@@ -266,7 +266,7 @@ export const LandingPage = (): JSX.Element => {
             href="https://form.gov.sg/60b81af0f7c4df001210f2b3"
             label="MOM ART Self Swab"
           />
-        </Wrap>
+        </SimpleGrid>
         <Image src={meetingCollaborationImg} aria-hidden mt="5rem" />
       </LandingSection>
       <FeatureSection
