@@ -4,12 +4,16 @@ import {
   FieldCreateDto,
   MyInfoAttribute,
   MyInfoField,
+  MyInfoImplementedTypes,
+  MyInfoUnimplementedTypes,
   RatingShape,
 } from '~shared/types/field'
 import {
   getMyInfoDropdownFieldMeta,
   MYINFO_FIELD_CONSTANTS,
   myInfoDateFieldMeta,
+  myInfoMobileFieldMeta,
+  myInfoNumberFieldMeta,
   myInfoTextFieldMeta,
 } from '~shared/types/field/myinfo'
 
@@ -184,7 +188,7 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
 }
 
 export const getMyInfoFieldCreationMeta = (
-  myInfoAttribute: MyInfoAttribute,
+  myInfoAttribute: MyInfoImplementedTypes,
 ): MyInfoField => {
   const baseMeta: Pick<
     MyInfoField,
@@ -203,7 +207,9 @@ export const getMyInfoFieldCreationMeta = (
   switch (myInfoAttribute) {
     case MyInfoAttribute.Name:
     case MyInfoAttribute.PassportNumber:
-    case MyInfoAttribute.VehicleNo: {
+    case MyInfoAttribute.VehicleNo:
+    case MyInfoAttribute.RegisteredAddress:
+    case MyInfoAttribute.Employment: {
       return {
         ...baseMeta,
         fieldType: BasicField.ShortText,
@@ -212,7 +218,10 @@ export const getMyInfoFieldCreationMeta = (
     }
 
     case MyInfoAttribute.DateOfBirth:
-    case MyInfoAttribute.PassportExpiryDate: {
+    case MyInfoAttribute.PassportExpiryDate:
+    case MyInfoAttribute.WorkpassExpiryDate:
+    case MyInfoAttribute.MarriageDate:
+    case MyInfoAttribute.DivorceDate: {
       return {
         ...baseMeta,
         fieldType: BasicField.Date,
@@ -227,7 +236,11 @@ export const getMyInfoFieldCreationMeta = (
     case MyInfoAttribute.ResidentialStatus:
     case MyInfoAttribute.Dialect:
     case MyInfoAttribute.HousingType:
-    case MyInfoAttribute.HdbType: {
+    case MyInfoAttribute.HdbType:
+    case MyInfoAttribute.Occupation:
+    case MyInfoAttribute.WorkpassStatus:
+    case MyInfoAttribute.Marital:
+    case MyInfoAttribute.CountryOfMarriage: {
       return {
         ...baseMeta,
         fieldType: BasicField.Dropdown,
@@ -235,9 +248,25 @@ export const getMyInfoFieldCreationMeta = (
       }
     }
 
+    case MyInfoAttribute.MarriageCertNo: {
+      return {
+        ...baseMeta,
+        fieldType: BasicField.Number,
+        ...myInfoNumberFieldMeta,
+      }
+    }
+
+    case MyInfoAttribute.MobileNo: {
+      return {
+        ...baseMeta,
+        fieldType: BasicField.Mobile,
+        ...myInfoMobileFieldMeta,
+      }
+    }
+
     default: {
-      const exception: never = myInfoAttribute as never
-      throw new Error(exception)
+      const exception: MyInfoUnimplementedTypes = myInfoAttribute
+      throw new Error(`MyInfo type is not implemented: ${exception}`)
     }
   }
 }

@@ -23,6 +23,12 @@ import { BuilderAndDesignDrawer } from './BuilderAndDesignDrawer'
 import {
   CREATE_FIELD_DROP_ID,
   CREATE_FIELD_FIELDS_ORDERED,
+  CREATE_MYINFO_CONTACT_DROP_ID,
+  CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+  CREATE_MYINFO_MARRIAGE_DROP_ID,
+  CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
+  CREATE_MYINFO_PARTICULARS_DROP_ID,
+  CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
   CREATE_MYINFO_PERSONAL_DROP_ID,
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
   CREATE_PAGE_DROP_ID,
@@ -80,6 +86,7 @@ export const BuilderAndDesignTab = (): JSX.Element => {
             destination.index,
           )
         }
+
         case CREATE_FIELD_DROP_ID: {
           return setToCreating(
             getFieldCreationMeta(CREATE_FIELD_FIELDS_ORDERED[source.index]),
@@ -91,6 +98,33 @@ export const BuilderAndDesignTab = (): JSX.Element => {
           return setToCreating(
             getMyInfoFieldCreationMeta(
               CREATE_MYINFO_PERSONAL_FIELDS_ORDERED[source.index],
+            ),
+            destination.index,
+          )
+        }
+
+        case CREATE_MYINFO_CONTACT_DROP_ID: {
+          return setToCreating(
+            getMyInfoFieldCreationMeta(
+              CREATE_MYINFO_CONTACT_FIELDS_ORDERED[source.index],
+            ),
+            destination.index,
+          )
+        }
+
+        case CREATE_MYINFO_PARTICULARS_DROP_ID: {
+          return setToCreating(
+            getMyInfoFieldCreationMeta(
+              CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED[source.index],
+            ),
+            destination.index,
+          )
+        }
+
+        case CREATE_MYINFO_MARRIAGE_DROP_ID: {
+          return setToCreating(
+            getMyInfoFieldCreationMeta(
+              CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED[source.index],
             ),
             destination.index,
           )

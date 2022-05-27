@@ -17,6 +17,12 @@ import { Tab } from '~components/Tabs'
 import {
   CREATE_FIELD_DROP_ID,
   CREATE_FIELD_FIELDS_ORDERED,
+  CREATE_MYINFO_CONTACT_DROP_ID,
+  CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+  CREATE_MYINFO_MARRIAGE_DROP_ID,
+  CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
+  CREATE_MYINFO_PARTICULARS_DROP_ID,
+  CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
   CREATE_MYINFO_PERSONAL_DROP_ID,
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
   CREATE_PAGE_DROP_ID,
@@ -114,6 +120,59 @@ const MyInfoFieldPanelContent = () => {
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             <FieldSection label="Personal">
               {CREATE_MYINFO_PERSONAL_FIELDS_ORDERED.map((fieldType, index) => (
+                <DraggableMyInfoFieldListOption
+                  index={index}
+                  isDisabled={isLoading}
+                  key={index}
+                  fieldType={fieldType}
+                />
+              ))}
+            </FieldSection>
+            <Box display="none">{provided.placeholder}</Box>
+          </Box>
+        )}
+      </Droppable>
+      <Droppable isDropDisabled droppableId={CREATE_MYINFO_CONTACT_DROP_ID}>
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection label="Contact">
+              {CREATE_MYINFO_CONTACT_FIELDS_ORDERED.map((fieldType, index) => (
+                <DraggableMyInfoFieldListOption
+                  index={index}
+                  isDisabled={isLoading}
+                  key={index}
+                  fieldType={fieldType}
+                />
+              ))}
+            </FieldSection>
+            <Box display="none">{provided.placeholder}</Box>
+          </Box>
+        )}
+      </Droppable>
+      <Droppable isDropDisabled droppableId={CREATE_MYINFO_PARTICULARS_DROP_ID}>
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection label="Particulars">
+              {CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED.map(
+                (fieldType, index) => (
+                  <DraggableMyInfoFieldListOption
+                    index={index}
+                    isDisabled={isLoading}
+                    key={index}
+                    fieldType={fieldType}
+                  />
+                ),
+              )}
+            </FieldSection>
+            <Box display="none">{provided.placeholder}</Box>
+          </Box>
+        )}
+      </Droppable>
+      <Droppable isDropDisabled droppableId={CREATE_MYINFO_MARRIAGE_DROP_ID}>
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection label="Family (Marriage)">
+              {CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
                   isDisabled={isLoading}
