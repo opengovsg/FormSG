@@ -1,13 +1,9 @@
-import { memo, ReactNode, useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
 import { Stack, Text } from '@chakra-ui/react'
 
-import {
-  BasicField,
-  FieldCreateDto,
-  FormFieldDto,
-  MyInfoFormField,
-} from '~shared/types/field'
+import { BasicField, FieldCreateDto } from '~shared/types/field'
+import { isMyInfo, MYINFO_FIELD_CONSTANTS } from '~shared/types/field/myinfo'
 
 import IconButton from '~components/IconButton'
 
@@ -36,6 +32,7 @@ import {
   EditImage,
   EditLongText,
   EditMobile,
+  EditMyInfo,
   EditNric,
   EditNumber,
   EditParagraph,
@@ -68,8 +65,10 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 
   const basicFieldText = useMemo(() => {
     if (!fieldToEdit?.fieldType) return ''
+    if (isMyInfo(fieldToEdit))
+      return MYINFO_FIELD_CONSTANTS[fieldToEdit.myInfo.attr].value
     return BASICFIELD_TO_DRAWER_META[fieldToEdit?.fieldType].label
-  }, [fieldToEdit?.fieldType])
+  }, [fieldToEdit])
 
   // Hacky method of determining when to rerender the drawer,
   // i.e. when the user clicks into a different field.
@@ -135,76 +134,54 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 }
 
 interface MemoFieldDrawerContentProps {
-  field: FormFieldDto
-}
-
-interface EditBasicFieldProps {
   field: FieldCreateDto
-  children?: ReactNode
-}
-
-const EditBasicField = ({
-  field,
-  ...props
-}: EditBasicFieldProps): JSX.Element => {
-  switch (field.fieldType) {
-    case BasicField.Attachment:
-      return <EditAttachment {...props} field={field} />
-    case BasicField.Checkbox:
-      return <EditCheckbox {...props} field={field} />
-    case BasicField.Dropdown:
-      return <EditDropdown {...props} field={field} />
-    case BasicField.Mobile:
-      return <EditMobile {...props} field={field} />
-    case BasicField.HomeNo:
-      return <EditHomeno {...props} field={field} />
-    case BasicField.Email:
-      return <EditEmail {...props} field={field} />
-    case BasicField.Nric:
-      return <EditNric {...props} field={field} />
-    case BasicField.Number:
-      return <EditNumber {...props} field={field} />
-    case BasicField.Decimal:
-      return <EditDecimal {...props} field={field} />
-    case BasicField.Section:
-      return <EditHeader {...props} field={field} />
-    case BasicField.Uen:
-      return <EditUen {...props} field={field} />
-    case BasicField.YesNo:
-      return <EditYesNo {...props} field={field} />
-    case BasicField.Radio:
-      return <EditRadio {...props} field={field} />
-    case BasicField.Rating:
-      return <EditRating {...props} field={field} />
-    case BasicField.ShortText:
-      return <EditShortText {...props} field={field} />
-    case BasicField.LongText:
-      return <EditLongText {...props} field={field} />
-    case BasicField.Statement:
-      return <EditParagraph {...props} field={field} />
-    case BasicField.Image:
-      return <EditImage {...props} field={field} />
-    default:
-      return <div>TODO: Insert field options here</div>
-  }
-}
-
-interface EditMyInfoFieldProps {
-  field: MyInfoFormField
-}
-
-const EditMyInfoField = ({
-  field,
-  ...props
-}: EditMyInfoFieldProps): JSX.Element => {
-  return <div>myinfo</div>
 }
 
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
-    if (field.isMyInfo) {
-      return <EditMyInfoField field={field} {...props} />
+    if (isMyInfo(field)) {
+      return <EditMyInfo {...props} field={field} />
     }
-    return <EditBasicField field={field} {...props} />
+
+    switch (field.fieldType) {
+      case BasicField.Attachment:
+        return <EditAttachment {...props} field={field} />
+      case BasicField.Checkbox:
+        return <EditCheckbox {...props} field={field} />
+      case BasicField.Dropdown:
+        return <EditDropdown {...props} field={field} />
+      case BasicField.Mobile:
+        return <EditMobile {...props} field={field} />
+      case BasicField.HomeNo:
+        return <EditHomeno {...props} field={field} />
+      case BasicField.Email:
+        return <EditEmail {...props} field={field} />
+      case BasicField.Nric:
+        return <EditNric {...props} field={field} />
+      case BasicField.Number:
+        return <EditNumber {...props} field={field} />
+      case BasicField.Decimal:
+        return <EditDecimal {...props} field={field} />
+      case BasicField.Section:
+        return <EditHeader {...props} field={field} />
+      case BasicField.Uen:
+        return <EditUen {...props} field={field} />
+      case BasicField.YesNo:
+        return <EditYesNo {...props} field={field} />
+      case BasicField.Radio:
+        return <EditRadio {...props} field={field} />
+      case BasicField.Rating:
+        return <EditRating {...props} field={field} />
+      case BasicField.ShortText:
+        return <EditShortText {...props} field={field} />
+      case BasicField.LongText:
+        return <EditLongText {...props} field={field} />
+      case BasicField.Statement:
+        return <EditParagraph {...props} field={field} />
+      case BasicField.Image:
+        return <EditImage {...props} field={field} />
+      default:
+        return <div>TODO: Insert field options here</div>
+    }
   },
 )
