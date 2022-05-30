@@ -1,11 +1,11 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   Controller,
   useFieldArray,
   useFormContext,
   useFormState,
 } from 'react-hook-form'
-import { BiPlus } from 'react-icons/bi'
+import { BiPlus, BiTrash } from 'react-icons/bi'
 import { FormControl, Stack, StackDivider } from '@chakra-ui/react'
 import { pick } from 'lodash'
 
@@ -17,6 +17,7 @@ import { SingleSelect } from '~components/Dropdown'
 import { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 import Toggle from '~components/Toggle'
 
@@ -24,6 +25,7 @@ import { BASICFIELD_TO_DRAWER_META } from '../../../../../constants'
 
 import { EditTableInputs } from './EditTable'
 import { EditTableDropdown } from './EditTableDropdown'
+import { createTemporaryColumnId } from './utils'
 
 const TABLE_COLUMN_DROPDOWN_OPTIONS: ComboboxItem<
   TableFieldBase['columns'][number]['columnType']
@@ -62,6 +64,11 @@ export const EditTableColumns = ({
     [],
   )
 
+  const handleAddColumn = useCallback(
+    () => append({ ...DEFAULT_APPEND_COLUMN, _id: createTemporaryColumnId() }),
+    [append],
+  )
+
   return (
     <Stack
       divider={<StackDivider borderColor="secondary.100" />}
@@ -74,7 +81,19 @@ export const EditTableColumns = ({
             isReadOnly={isLoading}
             isInvalid={!!errors?.columns?.[index]?.title}
           >
-            <FormLabel>{`Column ${index + 1}`}</FormLabel>
+            <Stack justify="space-between" align="center" direction="row">
+              <FormLabel>{`Column ${index + 1}`}</FormLabel>
+              {fields.length !== 1 && (
+                <IconButton
+                  variant="clear"
+                  colorScheme="danger"
+                  fontSize="1.25rem"
+                  icon={<BiTrash />}
+                  aria-label="Delete column"
+                  onClick={() => remove(index)}
+                />
+              )}
+            </Stack>
             <Input
               {...register(`columns.${index}.title`, requiredValidationRule)}
             />
@@ -117,8 +136,8 @@ export const EditTableColumns = ({
         variant="link"
         w="fit-content"
         leftIcon={<BiPlus fontSize="1.5rem" />}
-        onClick={() => append(DEFAULT_APPEND_COLUMN)}
-        isLoading={isLoading}
+        onClick={handleAddColumn}
+        isDisabled={isLoading}
       >
         Add column
       </Button>

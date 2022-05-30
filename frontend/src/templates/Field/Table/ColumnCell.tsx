@@ -69,17 +69,20 @@ const DropdownColumnCell = ({
   inputName,
   colorTheme,
 }: FieldColumnCellProps<DropdownColumnBase>) => {
+  const { control } = useFormContext<TableFieldInputs>()
   const rules = useMemo(() => createDropdownValidationRules(schema), [schema])
 
   return (
     <Controller
+      control={control}
       name={inputName}
       rules={rules}
       defaultValue=""
       render={({ field }) => (
         <SingleSelect
           colorScheme={`theme-${colorTheme}`}
-          items={schema.fieldOptions}
+          // Possibility of fieldOptions being undefined during table field creation.
+          items={schema.fieldOptions ?? []}
           {...field}
         />
       )}

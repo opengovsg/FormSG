@@ -3,7 +3,7 @@ import { Controller, FormProvider, useFormState } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
-import { TableFieldBase } from '~shared/types/field'
+import { Column, ColumnDto, TableFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -19,6 +19,7 @@ import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
 import { EditTableColumns } from './EditTableColumns'
+import { isTemporaryColumnId } from './utils'
 
 const EDIT_TABLE_FIELD_KEYS = [
   'title',
@@ -29,10 +30,13 @@ const EDIT_TABLE_FIELD_KEYS = [
   'columns',
 ] as const
 
-export type EditTableInputs = Pick<
-  TableFieldBase,
-  typeof EDIT_TABLE_FIELD_KEYS[number]
->
+export type EditTableInputs = Omit<
+  Pick<TableFieldBase, typeof EDIT_TABLE_FIELD_KEYS[number]>,
+  'columns'
+> & {
+  // Every column must have an ID for react-table to render.
+  columns: ColumnDto[]
+}
 
 type EditTableProps = EditFieldProps<TableFieldBase>
 
@@ -50,6 +54,19 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
       input: (inputField) => pick(inputField, EDIT_TABLE_FIELD_KEYS),
       output: (formOutput, originalField) =>
         extend({}, originalField, formOutput),
+      preSubmit: ({ columns, ...rest }, output) => {
+        const columnsWithoutTempIds: Column[] = columns.map((column) => {
+          const { _id, ...restColumn } = column
+          if (isTemporaryColumnId(_id)) {
+            return restColumn
+          }
+          return column
+        })
+        return extend({}, output, {
+          ...rest,
+          columns: columnsWithoutTempIds,
+        })
+      },
     },
   })
 
