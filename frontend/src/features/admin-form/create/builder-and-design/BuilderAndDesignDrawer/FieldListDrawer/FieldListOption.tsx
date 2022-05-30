@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 
-import { BasicField, MyInfoAttribute } from '~shared/types/field'
+import { BasicField, MyInfoImplementedTypes } from '~shared/types/field'
 
 import {
   BASICFIELD_TO_DRAWER_META,
@@ -29,7 +29,7 @@ interface BasicFieldOptionProps extends FieldOptionProps {
 }
 
 interface MyInfoFieldOptionProps extends FieldOptionProps {
-  fieldType: MyInfoAttribute
+  fieldType: MyInfoImplementedTypes
 }
 
 interface DraggableBasicFieldOptionProps
@@ -41,7 +41,7 @@ interface DraggableBasicFieldOptionProps
 interface DraggableMyInfoFieldOptionProps
   extends Omit<FieldOptionProps, 'isActive'> {
   index: number
-  fieldType: MyInfoAttribute
+  fieldType: MyInfoImplementedTypes
 }
 
 export const DraggableBasicFieldListOption = ({
