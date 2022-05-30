@@ -453,6 +453,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
             return SgidService.createRedirectUrl(
               formId,
               Boolean(isPersistentLogin),
+              encodedQuery,
             )
           })
         default:

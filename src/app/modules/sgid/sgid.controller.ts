@@ -32,7 +32,7 @@ export const handleLogin: ControllerHandler<
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  const { formId, rememberMe } = parsedState.value
+  const { formId, rememberMe, decodedQuery } = parsedState.value
   const formResult = await FormService.retrieveFullFormById(formId)
   if (formResult.isErr()) {
     logger.error({
@@ -54,7 +54,7 @@ export const handleLogin: ControllerHandler<
       },
     })
     res.cookie('isLoginError', true)
-    return res.redirect(`/${formId}`)
+    return res.redirect(`/${formId}${decodedQuery}`)
   }
 
   const jwtResult = await SgidService.retrieveAccessToken(code)
@@ -68,7 +68,7 @@ export const handleLogin: ControllerHandler<
       error: jwtResult.error,
     })
     res.cookie('isLoginError', true)
-    return res.redirect(`/${formId}`)
+    return res.redirect(`/${formId}${decodedQuery}`)
   }
 
   const { maxAge, jwt } = jwtResult.value
@@ -79,5 +79,5 @@ export const handleLogin: ControllerHandler<
     secure: !config.isDev,
     ...SgidService.getCookieSettings(),
   })
-  return res.redirect(`/${formId}`)
+  return res.redirect(`/${formId}${decodedQuery}`)
 }
