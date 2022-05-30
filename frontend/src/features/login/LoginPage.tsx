@@ -143,8 +143,9 @@ export const LoginPage = (): JSX.Element => {
   const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
 
   const handleSendOtp = async ({ email }: LoginFormInputs) => {
-    await sendLoginOtp(email)
-    return setEmail(email)
+    const trimmedEmail = email.trim()
+    await sendLoginOtp(trimmedEmail)
+    return setEmail(trimmedEmail)
   }
 
   const handleVerifyOtp = async ({ otp }: OtpFormInputs) => {
