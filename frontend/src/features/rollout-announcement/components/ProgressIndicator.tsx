@@ -6,25 +6,26 @@ const ActiveIndicator = (): JSX.Element => (
     width="1.5rem"
     height="0.5rem"
     borderRadius="full"
-    backgroundColor="#5D6785"
+    backgroundColor="secondary.500"
   />
 )
 
-interface InactiveIndicatorProps {
+interface CircleIndicatorProps {
   onClick?: () => void
   isActiveIndicator: boolean
 }
 
-const CircleIndicator = (props: InactiveIndicatorProps): JSX.Element => {
+const CircleIndicator = (props: CircleIndicatorProps): JSX.Element => {
   const { onClick, isActiveIndicator } = props
   return (
     <Box
       width="0.5rem"
       height="0.5rem"
       borderRadius="full"
-      backgroundColor="#BABECB"
+      backgroundColor="secondary.500"
       marginRight={isActiveIndicator ? '1.5rem' : '0.5rem'}
       onClick={onClick}
+      cursor="pointer"
     />
   )
 }
