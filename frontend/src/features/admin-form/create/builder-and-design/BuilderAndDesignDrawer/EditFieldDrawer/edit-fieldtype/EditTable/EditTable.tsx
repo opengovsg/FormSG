@@ -1,10 +1,17 @@
-import { useMemo } from 'react'
-import { Controller, FormProvider, useFormState } from 'react-hook-form'
-import { FormControl } from '@chakra-ui/react'
+import { useCallback, useMemo } from 'react'
+import {
+  Controller,
+  DeepPartial,
+  FormProvider,
+  UnpackNestedValue,
+  useFormState,
+} from 'react-hook-form'
+import { FormControl, Stack, StackDivider } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { Column, ColumnDto, TableFieldBase } from '~shared/types/field'
 
+import { REQUIRED_ERROR } from '~constants/validation'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -26,6 +33,7 @@ const EDIT_TABLE_FIELD_KEYS = [
   'description',
   'required',
   'addMoreRows',
+  'minimumRows',
   'maximumRows',
   'columns',
 ] as const
@@ -40,7 +48,44 @@ export type EditTableInputs = Omit<
 
 type EditTableProps = EditFieldProps<TableFieldBase>
 
+const transformTableFieldToEditForm = (
+  field: TableFieldBase,
+): UnpackNestedValue<DeepPartial<EditTableInputs>> => {
+  const nextMaxRows = field.maximumRows || 0
+  const nextMinRows = field.minimumRows || 0
+
+  return {
+    ...pick(field, EDIT_TABLE_FIELD_KEYS),
+    maximumRows: nextMaxRows,
+    minimumRows: nextMinRows,
+  }
+}
+
+const transformTableEditFormToField = (
+  inputs: EditTableInputs,
+  originalField: TableFieldBase,
+): TableFieldBase => {
+  return extend({}, originalField, inputs)
+}
+
 export const EditTable = ({ field }: EditTableProps): JSX.Element => {
+  const preSubmitTransform = useCallback(
+    ({ columns, ...rest }: EditTableInputs, output: TableFieldBase) => {
+      const columnsWithoutTempIds: Column[] = columns.map((column) => {
+        const { _id, ...restColumn } = column
+        if (isTemporaryColumnId(_id)) {
+          return restColumn
+        }
+        return column
+      })
+      return extend({}, output, {
+        ...rest,
+        columns: columnsWithoutTempIds,
+      })
+    },
+    [],
+  )
+
   const {
     formMethods,
     isSaveEnabled,
@@ -51,22 +96,9 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
   } = useEditFieldForm<EditTableInputs, TableFieldBase>({
     field,
     transform: {
-      input: (inputField) => pick(inputField, EDIT_TABLE_FIELD_KEYS),
-      output: (formOutput, originalField) =>
-        extend({}, originalField, formOutput),
-      preSubmit: ({ columns, ...rest }, output) => {
-        const columnsWithoutTempIds: Column[] = columns.map((column) => {
-          const { _id, ...restColumn } = column
-          if (isTemporaryColumnId(_id)) {
-            return restColumn
-          }
-          return column
-        })
-        return extend({}, output, {
-          ...rest,
-          columns: columnsWithoutTempIds,
-        })
-      },
+      input: transformTableFieldToEditForm,
+      output: transformTableEditFormToField,
+      preSubmit: preSubmitTransform,
     },
   })
 
@@ -90,36 +122,68 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
-      <FormProvider {...formMethods}>
-        <EditTableColumns isLoading={isLoading} />
-      </FormProvider>
-      <FormControl isReadOnly={isLoading}>
-        <Toggle
-          {...register('addMoreRows')}
-          label="Allow respondent to add more rows"
-        />
-      </FormControl>
-      {getValues('addMoreRows') ? (
+      <Stack
+        divider={<StackDivider borderColor="secondary.100" />}
+        spacing="2rem"
+      >
         <FormControl
           isRequired
           isReadOnly={isLoading}
-          isInvalid={!!errors.maximumRows}
+          isInvalid={!!errors.minimumRows}
         >
-          <FormLabel>Maximum rows allowed</FormLabel>
+          <FormLabel>Minimum rows</FormLabel>
           <Controller
-            name="maximumRows"
+            name="minimumRows"
             control={control}
-            render={({ field }) => (
-              <NumberInput
-                flex={1}
-                {...field}
-                placeholder="Number of characters"
-              />
-            )}
+            rules={{
+              required: REQUIRED_ERROR,
+              min: {
+                value: 1,
+                message: 'Minimum rows must be greater than 0',
+              },
+              deps: ['maximumRows'],
+            }}
+            render={({ field }) => <NumberInput flex={1} {...field} />}
           />
-          <FormErrorMessage>{errors?.maximumRows?.message}</FormErrorMessage>
+          <FormErrorMessage>{errors?.minimumRows?.message}</FormErrorMessage>
         </FormControl>
-      ) : null}
+        <FormControl isReadOnly={isLoading}>
+          <Toggle
+            {...register('addMoreRows')}
+            label="Allow respondent to add more rows"
+          />
+        </FormControl>
+        {getValues('addMoreRows') ? (
+          <FormControl
+            isRequired
+            isReadOnly={isLoading}
+            isInvalid={!!errors.maximumRows}
+          >
+            <FormLabel>Maximum rows allowed</FormLabel>
+            <Controller
+              name="maximumRows"
+              rules={{
+                required: REQUIRED_ERROR,
+                min: {
+                  value: 1,
+                  message: 'Maximum rows must be greater than 0',
+                },
+                // Must be greater than minimum rows
+                validate: (value) =>
+                  !value ||
+                  value > getValues('minimumRows') ||
+                  'Maximum rows must be greater than minimum rows',
+              }}
+              control={control}
+              render={({ field }) => <NumberInput flex={1} {...field} />}
+            />
+            <FormErrorMessage>{errors?.maximumRows?.message}</FormErrorMessage>
+          </FormControl>
+        ) : null}
+      </Stack>
+      <FormProvider {...formMethods}>
+        <EditTableColumns isLoading={isLoading} />
+      </FormProvider>
       <FormFieldDrawerActions
         isLoading={isLoading}
         isSaveEnabled={isSaveEnabled}
