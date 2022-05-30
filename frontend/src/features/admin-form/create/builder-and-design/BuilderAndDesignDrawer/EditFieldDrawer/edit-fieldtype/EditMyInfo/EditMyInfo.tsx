@@ -1,5 +1,5 @@
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
-import { Box, HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { identity } from 'lodash'
 
 import { MyInfoField } from '~shared/types'
@@ -80,9 +80,6 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
         <Text textStyle="subhead-1">Field details</Text>
         <Text>{extendedField.details}</Text>
       </VStack>
-      {/* NOTE: Drawer content container adds a divider between elements
-       * Hence, an empty div is added to render a divider after the last child
-       */}
       <FormFieldDrawerActions
         isLoading={isLoading}
         isSaveEnabled={isSaveEnabled}
@@ -90,7 +87,6 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-      <Box display="none" />
     </DrawerContentContainer>
   )
 }
