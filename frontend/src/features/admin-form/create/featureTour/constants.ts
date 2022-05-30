@@ -26,7 +26,7 @@ export const FEATURE_TOUR: FeatureTourStepAttributes[] = [
   },
 ]
 
-export const FEATURE_STEPS = FEATURE_TOUR.map<Step>(
+export const FEATURE_STEPS: Step[] = FEATURE_TOUR.map(
   ({ id, title, content }) => {
     return {
       target: `#${id}`,

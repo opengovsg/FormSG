@@ -54,12 +54,12 @@ export const FeatureTourTooltip = ({
         justifyContent="space-between"
       >
         <Text>Progress</Text>
-        {!isLastStep ? (
+        {isLastStep ? (
+          <Button {...skipProps}>Done</Button>
+        ) : (
           <Button rightIcon={<BiRightArrowAlt />} {...primaryProps}>
             Next
           </Button>
-        ) : (
-          <Button {...skipProps}>Done</Button>
         )}
       </Flex>
     </Box>

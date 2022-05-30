@@ -9,7 +9,7 @@ import { FeatureTour } from './featureTour/FeatureTour'
 export const CreatePage = (): JSX.Element => {
   const [startFeatureTour, setStartFeatureTour] = useState(false)
 
-  // need to add logic to only set startFeatureTour to be true if user
+  // TODO: need to add logic to only set startFeatureTour to be true if user
   // has not seen feature tour before
   useEffect(() => {
     setStartFeatureTour(true)
