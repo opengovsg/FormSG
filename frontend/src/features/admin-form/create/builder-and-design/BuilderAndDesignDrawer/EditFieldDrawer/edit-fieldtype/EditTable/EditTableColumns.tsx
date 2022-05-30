@@ -6,7 +6,12 @@ import {
   useFormState,
 } from 'react-hook-form'
 import { BiPlus, BiTrash } from 'react-icons/bi'
-import { FormControl, Stack, StackDivider } from '@chakra-ui/react'
+import {
+  FormControl,
+  Stack,
+  StackDivider,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 import { pick } from 'lodash'
 
 import { BasicField, Column, TableFieldBase } from '~shared/types/field'
@@ -104,8 +109,11 @@ export const EditTableColumns = ({
           <FormControl
             isRequired
             isReadOnly={isLoading}
-            isInvalid={!!errors.columns?.[index]?.columnType}
+            id={`columns.${index}.columnType`}
           >
+            <VisuallyHidden>
+              <FormLabel>Column type</FormLabel>
+            </VisuallyHidden>
             <Controller
               name={`columns.${index}.columnType`}
               control={control}
