@@ -16,25 +16,30 @@ export const LastFeatureContent = (
 
   return (
     <>
-      <ModalHeader>Other updates</ModalHeader>
-      <ModalBody whiteSpace="pre-line" marginTop="2.5rem">
+      <ModalHeader>Other features and improvements</ModalHeader>
+      <ModalBody whiteSpace="pre-line" marginTop="2rem">
         <Container
           display="flex"
           flexDirection="column"
           paddingInline={0}
           marginInline={0}
-          rowGap={4}
+          rowGap={6}
         >
           {updates?.map((update) => (
             <Container
               display="flex"
               paddingInline={0}
               marginInline={0}
-              columnGap={8}
+              columnGap={6}
             >
               <Box>{update.ImageSvgr}</Box>
 
-              <Container paddingInline={0} marginInline={0}>
+              <Container
+                display="flex"
+                alignItems="center"
+                paddingInline={0}
+                marginInline={0}
+              >
                 <Text textStyle="subhead-1">{update.title}</Text>
               </Container>
             </Container>

@@ -7,7 +7,7 @@ import { NewFeatureTag } from './NewFeatureTag'
 const TopSpacer = (): JSX.Element => (
   <Box
     width="100%"
-    height="4.5rem"
+    height="4rem"
     backgroundColor="primary.100"
     borderTopRadius="1rem"
   />
@@ -57,8 +57,12 @@ export const NewFeatureContent = (props: {
       <ModalBody whiteSpace="pre-line" marginTop="2.5rem">
         <NewFeatureTag />
       </ModalBody>
-      <ModalHeader>{title}</ModalHeader>
-      <ModalBody whiteSpace="pre-line">{description}</ModalBody>
+      <ModalHeader paddingTop="1rem" paddingBottom="0.75rem">
+        {title}
+      </ModalHeader>
+      <ModalBody whiteSpace="pre-line" paddingRight="3rem">
+        {description}
+      </ModalBody>
     </>
   )
 }
