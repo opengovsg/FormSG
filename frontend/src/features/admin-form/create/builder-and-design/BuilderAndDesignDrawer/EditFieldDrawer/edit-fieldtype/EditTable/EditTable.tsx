@@ -20,13 +20,14 @@ import NumberInput from '~components/NumberInput'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
+import { isTemporaryColumnId } from '~features/admin-form/create/builder-and-design/utils/columnCreation'
+
 import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
 import { EditTableColumns } from './EditTableColumns'
-import { isTemporaryColumnId } from './utils'
 
 const EDIT_TABLE_FIELD_KEYS = [
   'title',
@@ -46,7 +47,7 @@ export type EditTableInputs = Omit<
   columns: ColumnDto[]
 }
 
-type EditTableProps = EditFieldProps<TableFieldBase>
+export type EditTableProps = EditFieldProps<TableFieldBase>
 
 const transformTableFieldToEditForm = (
   field: TableFieldBase,

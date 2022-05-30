@@ -26,11 +26,12 @@ import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 import Toggle from '~components/Toggle'
 
+import { createTemporaryColumnId } from '~features/admin-form/create/builder-and-design/utils/columnCreation'
+
 import { BASICFIELD_TO_DRAWER_META } from '../../../../../constants'
 
 import { EditTableInputs } from './EditTable'
 import { EditTableDropdown } from './EditTableDropdown'
-import { createTemporaryColumnId } from './utils'
 
 const TABLE_COLUMN_DROPDOWN_OPTIONS: ComboboxItem<
   TableFieldBase['columns'][number]['columnType']
