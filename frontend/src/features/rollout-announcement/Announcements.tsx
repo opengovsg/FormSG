@@ -2,6 +2,8 @@ import FirstAnnouncement from './assets/1-dnd.json'
 import SecondAnnouncement from './assets/2-listview.json'
 import ThirdAnnouncement from './assets/3-a11y.json'
 import { LogicOrderSvgr } from './assets/LogicOrderSvgr'
+import { SectionSvgr } from './assets/SectionSvgr'
+import { TwilioSvgr } from './assets/TwilioSvgr'
 
 export const NEW_FEATURES = [
   {
@@ -26,16 +28,18 @@ export const NEW_FEATURES = [
 
 export const OTHER_UPDATES = [
   {
-    title: 'Logic is now ordered by question number',
-    description: [
-      'Find logic conditions easily',
-      'Manage logic in your form more efficiently',
-    ],
+    title:
+      'Logic is now ordered by question number so you can find your conditions easily',
     ImageSvgr: <LogicOrderSvgr />,
   },
   {
-    title: 'Add your Twilio credentials for SMS verification',
-    description: ['Support your organisations needs for more SMS verification'],
-    ImageSvgr: <LogicOrderSvgr />,
+    title:
+      'Add your Twilio credentials so your end-users can verify their mobile number',
+    ImageSvgr: <TwilioSvgr />,
+  },
+  {
+    title:
+      'Create Sections to make creating repetitive fields easier, and to segment your form so your users can process information easily',
+    ImageSvgr: <SectionSvgr />,
   },
 ]

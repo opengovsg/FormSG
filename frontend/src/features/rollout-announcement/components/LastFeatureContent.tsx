@@ -1,16 +1,7 @@
-import {
-  Box,
-  Container,
-  ListItem,
-  ModalBody,
-  ModalHeader,
-  Text,
-  UnorderedList,
-} from '@chakra-ui/react'
+import { Box, Container, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
 
 interface FeatureUpdate {
   title: string
-  description: string[]
   ImageSvgr: JSX.Element
 }
 
@@ -34,29 +25,20 @@ export const LastFeatureContent = (
           marginInline={0}
           rowGap={4}
         >
-          {updates?.map((update) => {
-            const bulletPoints = update.description
+          {updates?.map((update) => (
+            <Container
+              display="flex"
+              paddingInline={0}
+              marginInline={0}
+              columnGap={8}
+            >
+              <Box>{update.ImageSvgr}</Box>
 
-            return (
-              <Container
-                display="flex"
-                paddingInline={0}
-                marginInline={0}
-                columnGap={8}
-              >
-                <Box>{update.ImageSvgr}</Box>
-
-                <Container paddingInline={0} marginInline={0}>
-                  <Text textStyle="subhead-1">{update.title}</Text>
-                  <UnorderedList>
-                    {bulletPoints?.map((bulletPoint) => {
-                      return <ListItem>{bulletPoint}</ListItem>
-                    })}
-                  </UnorderedList>
-                </Container>
+              <Container paddingInline={0} marginInline={0}>
+                <Text textStyle="subhead-1">{update.title}</Text>
               </Container>
-            )
-          })}
+            </Container>
+          ))}
         </Container>
       </ModalBody>
     </>
