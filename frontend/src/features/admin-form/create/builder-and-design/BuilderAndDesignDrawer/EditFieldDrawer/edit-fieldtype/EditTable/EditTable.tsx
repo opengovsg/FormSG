@@ -1,17 +1,11 @@
 import { useMemo } from 'react'
-import { Controller, useFieldArray } from 'react-hook-form'
-import { FormControl, Stack, StackDivider } from '@chakra-ui/react'
+import { Controller, FormProvider, useFormState } from 'react-hook-form'
+import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
-import {
-  BasicField,
-  DropdownColumnBase,
-  TableFieldBase,
-} from '~shared/types/field'
+import { TableFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import { SingleSelect } from '~components/Dropdown'
-import { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -19,13 +13,12 @@ import NumberInput from '~components/NumberInput'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import { BASICFIELD_TO_DRAWER_META } from '../../../../../constants'
 import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
-import { EditTableDropdown } from './EditTableDropdown'
+import { EditTableColumns } from './EditTableColumns'
 
 const EDIT_TABLE_FIELD_KEYS = [
   'title',
@@ -41,36 +34,11 @@ export type EditTableInputs = Pick<
   typeof EDIT_TABLE_FIELD_KEYS[number]
 >
 
-export type EditTableDropdownInputs = Omit<
-  DropdownColumnBase,
-  'ValidationOptions'
-> & {
-  // Differs from fieldOptions in DropdownFieldBase because input is a string. Will be converted to array using SPLIT_TEXTAREA_TRANSFORM
-  fieldOptionsString: string
-}
-
 type EditTableProps = EditFieldProps<TableFieldBase>
-
-const TABLE_COLUMN_DROPDOWN_OPTIONS: ComboboxItem<
-  TableFieldBase['columns'][number]['columnType']
->[] = [
-  {
-    ...pick(BASICFIELD_TO_DRAWER_META[BasicField.ShortText], 'icon', 'label'),
-    value: BasicField.ShortText,
-  },
-  {
-    ...pick(BASICFIELD_TO_DRAWER_META[BasicField.Dropdown], 'icon', 'label'),
-    value: BasicField.Dropdown,
-  },
-]
 
 export const EditTable = ({ field }: EditTableProps): JSX.Element => {
   const {
-    register,
-    getValues,
-    formState: { errors },
-    control,
-    watch,
+    formMethods,
     isSaveEnabled,
     buttonText,
     handleUpdateField,
@@ -85,17 +53,13 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
     },
   })
 
-  const watchedAddMoreRows = watch('addMoreRows')
+  const { register, getValues, control } = formMethods
+  const { errors } = useFormState({ control })
 
   const requiredValidationRule = useMemo(
     () => createBaseValidationRules({ required: true }),
     [],
   )
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'columns',
-  })
 
   return (
     <DrawerContentContainer>
@@ -109,55 +73,16 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
-      <Stack divider={<StackDivider />} spacing="3rem">
-        {fields.map((column, index) => (
-          <Stack key={column.id} spacing="1rem">
-            <FormControl isRequired isReadOnly={isLoading}>
-              <FormLabel>{`Column ${index + 1}`}</FormLabel>
-              <Input
-                {...register(`columns.${index}.title`, requiredValidationRule)}
-              />
-            </FormControl>
-            <FormControl
-              isRequired
-              isReadOnly={isLoading}
-              isInvalid={!!errors.maximumRows}
-            >
-              <Controller
-                name={`columns.${index}.columnType`}
-                control={control}
-                render={({ field }) => (
-                  <SingleSelect
-                    items={TABLE_COLUMN_DROPDOWN_OPTIONS}
-                    {...field}
-                  />
-                )}
-              />
-            </FormControl>
-            {getValues(`columns.${index}.columnType`) ===
-              BasicField.Dropdown && (
-              <EditTableDropdown
-                control={control}
-                index={index}
-                errors={errors}
-              />
-            )}
-            <FormControl isReadOnly={isLoading}>
-              <Toggle
-                {...register(`columns.${index}.required`)}
-                label="Required"
-              />
-            </FormControl>
-          </Stack>
-        ))}
-      </Stack>
+      <FormProvider {...formMethods}>
+        <EditTableColumns isLoading={isLoading} />
+      </FormProvider>
       <FormControl isReadOnly={isLoading}>
         <Toggle
           {...register('addMoreRows')}
           label="Allow respondent to add more rows"
         />
       </FormControl>
-      {watchedAddMoreRows ? (
+      {getValues('addMoreRows') ? (
         <FormControl
           isRequired
           isReadOnly={isLoading}

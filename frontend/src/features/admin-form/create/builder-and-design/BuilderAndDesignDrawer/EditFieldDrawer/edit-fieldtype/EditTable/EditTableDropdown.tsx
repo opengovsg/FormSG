@@ -1,5 +1,4 @@
-import { useMemo } from 'react'
-import { Control, Controller, FormState } from 'react-hook-form'
+import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -11,20 +10,14 @@ import { EditTableInputs } from './EditTable'
 import { EditTableDropdownInput } from './EditTableDropdownInput'
 
 interface EditTableDropdownProps {
-  index: number
-  control: Control<EditTableInputs>
-  errors: FormState<EditTableInputs>['errors']
+  inputName: `columns.${number}.fieldOptions`
 }
 
 export const EditTableDropdown = ({
-  index,
-  control,
-  errors,
+  inputName,
 }: EditTableDropdownProps): JSX.Element => {
-  const inputName = useMemo(
-    () => `columns.${index}.fieldOptions` as const,
-    [index],
-  )
+  const { control } = useFormContext<EditTableInputs>()
+  const { errors } = useFormState<EditTableInputs>()
 
   return (
     <FormControl isRequired isInvalid={get(errors, inputName)}>

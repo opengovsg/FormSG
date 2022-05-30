@@ -56,6 +56,7 @@ export type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
   buttonText: string
   isSaveEnabled: boolean
   isLoading: boolean
+  formMethods: UseFormReturn<U>
 }
 
 export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
@@ -165,6 +166,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
 
   return {
     ...editForm,
+    formMethods: editForm,
     buttonText,
     isSaveEnabled,
     handleUpdateField,
