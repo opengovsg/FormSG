@@ -128,6 +128,7 @@
     "jwt-decode": "^3.1.2",
     "libphonenumber-js": "^1.9.52",
     "lodash": "^4.17.21",
+    "lottie-web": "^5.9.4",
     "moment-timezone": "0.5.34",
     "mongodb-memory-server-core": "^6.9.6",
     "mongodb-uri": "^0.9.7",
