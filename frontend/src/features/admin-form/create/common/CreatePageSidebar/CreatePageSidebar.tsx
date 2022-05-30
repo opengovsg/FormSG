@@ -50,21 +50,21 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         icon={<BxsWidget fontSize="1.5rem" />}
         onClick={handleDrawerBuilderClick}
         isActive={activeTab === DrawerTabs.Builder}
-        id={FEATURE_TOUR.FIRST_STEP.id}
+        id={FEATURE_TOUR[0].id}
       />
       <DrawerTabIcon
         label="Design your form"
         icon={<BxsColorFill fontSize="1.5rem" />}
         onClick={handleDesignClick}
         isActive={activeTab === DrawerTabs.Design}
-        id={FEATURE_TOUR.SECOND_STEP.id}
+        id={FEATURE_TOUR[1].id}
       />
       <DrawerTabIcon
         label="Add conditional logic"
         icon={<BiGitMerge fontSize="1.5rem" />}
         onClick={handleLogicClick}
         isActive={activeTab === DrawerTabs.Logic}
-        id={FEATURE_TOUR.THIRD_STEP.id}
+        id={FEATURE_TOUR[2].id}
       />
     </Stack>
   )

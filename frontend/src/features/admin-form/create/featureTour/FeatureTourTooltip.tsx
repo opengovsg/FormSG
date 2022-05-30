@@ -5,19 +5,13 @@ import { Box, CloseButton, Flex, Icon, Text } from '@chakra-ui/react'
 import Badge from '~components/Badge'
 import Button from '~components/Button'
 
-import { getFeaturTourToolTipMarginTop } from './utils'
-
 export const FeatureTourTooltip = ({
   step,
-  index,
   tooltipProps,
   primaryProps,
   skipProps,
   isLastStep,
-  closeProps,
 }: TooltipRenderProps) => {
-  const featureTourToolTipMarginTop = getFeaturTourToolTipMarginTop(index)
-
   return (
     <Box
       padding="1.5rem"
@@ -29,7 +23,6 @@ export const FeatureTourTooltip = ({
       borderRadius="4px"
       {...tooltipProps}
       position="relative"
-      marginTop={featureTourToolTipMarginTop}
     >
       <CloseButton
         variant="clear"
@@ -61,12 +54,13 @@ export const FeatureTourTooltip = ({
         justifyContent="space-between"
       >
         <Text>Progress</Text>
-        {!isLastStep && (
+        {!isLastStep ? (
           <Button rightIcon={<BiRightArrowAlt />} {...primaryProps}>
             Next
           </Button>
+        ) : (
+          <Button {...skipProps}>Done</Button>
         )}
-        {isLastStep && <Button {...skipProps}>Done</Button>}
       </Flex>
     </Box>
   )
