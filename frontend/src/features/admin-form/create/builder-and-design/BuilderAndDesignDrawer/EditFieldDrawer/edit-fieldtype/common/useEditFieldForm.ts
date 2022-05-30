@@ -50,7 +50,7 @@ type UseEditFieldFormProps<
   }
 }
 
-type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
+export type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
   handleUpdateField: () => Promise<void>
   handleCancel: () => void
   buttonText: string
