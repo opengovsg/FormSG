@@ -801,9 +801,7 @@ export const TermsOfUsePage = (): JSX.Element => {
           </Box>
         </Stack>
       </Container>
-      <Box px={{ lg: '9.25rem' }} pb={{ lg: '2rem' }}>
-        <AppFooter />
-      </Box>
+      <AppFooter />
     </Flex>
   )
 }
