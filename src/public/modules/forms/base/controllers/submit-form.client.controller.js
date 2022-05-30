@@ -27,20 +27,55 @@ function SubmitFormController(
   // The form attribute of the FormData object contains the form fields, logic etc
   vm.myform = FormData.form
 
+  const isSpcpSgidForm = !!['SP', 'CP', 'SGID'].includes(vm.myform.authType)
+  const isMyInfoForm = !!(
+    !FormData.isTemplate && vm.myform.authType === 'MyInfo'
+  )
+  const isUserLoggedIn = !!(
+    FormData.spcpSession && FormData.spcpSession.userName
+  )
+
+  // If it is an authenticated form, read the storedQuery from local storage and append to query params
+  // Note that regardless of whether user is logged in, we should replace the queryId with the
+  // stored query params
+  if (isSpcpSgidForm || isMyInfoForm) {
+    const location = $window.location.toString().split('?')
+    if (location.length > 1) {
+      const queryParams = new URLSearchParams(location[1])
+      const queryId = queryParams.get('queryId')
+
+      let storedQuery
+
+      try {
+        // If storedQuery is not valid JSON, JSON.parse throws a SyntaxError
+        // In try-catch block as this should not prevent rest of form from being loaded
+        storedQuery = JSON.parse($window.localStorage.getItem('storedQuery'))
+      } catch (e) {
+        console.error('Unable to parse storedQuery, not valid JSON string')
+      }
+
+      if (
+        queryId &&
+        storedQuery &&
+        storedQuery._id === queryId &&
+        storedQuery.queryString
+      ) {
+        $window.location.href = `${location[0]}?${storedQuery.queryString}` // Replace the queryId with stored queryString
+        $window.localStorage.removeItem('storedQuery') // Delete after reading the stored queryString, as only needed once
+      }
+    }
+  }
+
   // For SP / CP forms, also include the spcpSession details
   // This allows the log out button to be correctly populated with the UID
   // Also provides time to cookie expiry so that client can refresh page
-  if (
-    ['SP', 'CP', 'SGID'].includes(vm.myform.authType) &&
-    FormData.spcpSession &&
-    FormData.spcpSession.userName
-  ) {
+  if (isSpcpSgidForm && isUserLoggedIn) {
     SpcpSession.setUser(FormData.spcpSession)
   }
 
   // Set MyInfo login status
-  if (!FormData.isTemplate && vm.myform.authType === 'MyInfo') {
-    if (FormData.spcpSession && FormData.spcpSession.userName) {
+  if (isMyInfoForm) {
+    if (isUserLoggedIn) {
       SpcpSession.setUserName(FormData.spcpSession.userName)
     } else {
       SpcpSession.clearUserName()

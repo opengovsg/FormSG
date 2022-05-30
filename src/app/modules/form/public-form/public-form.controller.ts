@@ -395,7 +395,7 @@ export const handleGetPublicForm: ControllerHandler<
  * NOTE: This is exported only for testing
  * Generates redirect URL to Official SingPass/CorpPass log in page
  * @param isPersistentLogin whether the client wants to have their login information stored
- * @param encodedQuery base64 encoded querystring (usually contains prefilled form information)
+ * @param encodedQuery base64 encoded queryId for frontend to retrieve stored query params (usually contains prefilled form information)
  * @returns 200 with the redirect url when the user authenticates successfully
  * @returns 400 when there is an error on the authType of the form
  * @returns 400 when the eServiceId of the form does not exist

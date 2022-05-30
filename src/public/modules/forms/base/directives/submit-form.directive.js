@@ -1,6 +1,7 @@
 'use strict'
 const cloneDeep = require('lodash/cloneDeep')
 const get = require('lodash/get')
+const { ObjectId } = require('bson')
 
 const FieldVerificationService = require('../../../../services/FieldVerificationService')
 const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
@@ -101,7 +102,25 @@ function submitFormDirective(
         if (isPersistentLogin) GTag.persistentLoginUse(scope.form)
 
         const query = $location.url().split('?')
-        const encodedQuery = query.length > 1 ? btoa(query[1]) : undefined
+        const queryString = query.length > 1 ? query[1] : undefined
+        const queryId = queryString ? new ObjectId() : undefined
+        const encodedQuery = queryId ? btoa(`queryId=${queryId}`) : undefined
+        const queryObject = {
+          _id: queryId,
+          queryString,
+        }
+
+        if (queryString) {
+          // Defensive - try catch block in case the storage is full
+          // See https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem
+          try {
+            localStorage.setItem('storedQuery', JSON.stringify(queryObject))
+          } catch (e) {
+            console.error('Failed to store query string')
+            // Login can proceed, since after login, user can still prefill form by accessing
+            // url with query params
+          }
+        }
 
         return $q
           .when(
