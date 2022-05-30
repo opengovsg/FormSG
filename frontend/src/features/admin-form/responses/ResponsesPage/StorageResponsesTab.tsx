@@ -28,7 +28,8 @@ export const StorageResponsesTab = ({
   return (
     <Container
       overflowY="auto"
-      p="3rem"
+      px={{ base: '1.5rem', md: '3rem' }}
+      py="2.25rem"
       maxW="69.5rem"
       flex={1}
       display="flex"

@@ -28,7 +28,7 @@ export const EmailResponsesTab = (): JSX.Element => {
       flexDir="column"
       color="secondary.500"
     >
-      <Container maxW="42.5rem">
+      <Container p={0} maxW="42.5rem">
         <Stack spacing="2rem">
           <FormActivationSvg />
           <Skeleton isLoaded={!isFormResponsesLoading} w="fit-content">

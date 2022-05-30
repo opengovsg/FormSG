@@ -1,8 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react'
 import { RegisterOptions, useForm } from 'react-hook-form'
-import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
+import { BiUpload } from 'react-icons/bi'
 import {
-  Button,
   Container,
   FormControl,
   FormErrorMessage,
@@ -14,7 +13,9 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import formsgSdk from '~utils/formSdk'
+import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import Link from '~components/Link'
 
@@ -124,8 +125,10 @@ export const SecretKeyVerification = (): JSX.Element => {
     secretKeyValidationRules,
   } = useSecretKeyVerification()
 
+  const isMobile = useIsMobile()
+
   return (
-    <Container maxW="42.5rem">
+    <Container p={0} maxW="42.5rem">
       <Stack spacing="2rem">
         <FormActivationSvg />
         <Skeleton isLoaded={!isLoading} w="fit-content">
@@ -169,12 +172,13 @@ export const SecretKeyVerification = (): JSX.Element => {
             </Stack>
             <FormErrorMessage>{errors.secretKey?.message}</FormErrorMessage>
           </FormControl>
-          <Stack spacing="2rem" direction="row" mt="2rem">
-            <Button
-              isDisabled={isLoading}
-              rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-              type="submit"
-            >
+          <Stack
+            spacing={{ base: '1.5rem', md: '2rem' }}
+            align="center"
+            direction={{ base: 'column', md: 'row' }}
+            mt="2rem"
+          >
+            <Button isFullWidth={isMobile} isDisabled={isLoading} type="submit">
               Unlock responses
             </Button>
             <Link
