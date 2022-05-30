@@ -14,7 +14,6 @@ export const DEFAULT_FOOTER_ICON_LINK: FooterLinkWithIcon = {
 export const DEFAULT_SOCIAL_MEDIA_LINKS: FooterLinkWithIcon[] = [
   {
     href: 'https://sg.linkedin.com/company/open-government-products',
-
     Icon: BxlLinkedin,
     label: 'Go to our LinkedIn page',
   },
