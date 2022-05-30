@@ -5,12 +5,14 @@ import {
   useFormContext,
   useFormState,
 } from 'react-hook-form'
+import { BiPlus } from 'react-icons/bi'
 import { FormControl, Stack, StackDivider } from '@chakra-ui/react'
 import { pick } from 'lodash'
 
-import { BasicField, TableFieldBase } from '~shared/types/field'
+import { BasicField, Column, TableFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
+import Button from '~components/Button'
 import { SingleSelect } from '~components/Dropdown'
 import { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -36,6 +38,12 @@ const TABLE_COLUMN_DROPDOWN_OPTIONS: ComboboxItem<
   },
 ]
 
+const DEFAULT_APPEND_COLUMN: Partial<Column> = {
+  columnType: BasicField.ShortText,
+  required: true,
+  title: 'Text Field',
+}
+
 interface EditTableColumnsProps {
   isLoading: boolean
 }
@@ -45,7 +53,7 @@ export const EditTableColumns = ({
 }: EditTableColumnsProps): JSX.Element => {
   const { register, control, getValues } = useFormContext<EditTableInputs>()
   const { errors } = useFormState<EditTableInputs>()
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove } = useFieldArray<EditTableInputs>({
     name: 'columns',
   })
 
@@ -105,6 +113,15 @@ export const EditTableColumns = ({
           </FormControl>
         </Stack>
       ))}
+      <Button
+        variant="link"
+        w="fit-content"
+        leftIcon={<BiPlus fontSize="1.5rem" />}
+        onClick={() => append(DEFAULT_APPEND_COLUMN)}
+        isLoading={isLoading}
+      >
+        Add column
+      </Button>
     </Stack>
   )
 }
