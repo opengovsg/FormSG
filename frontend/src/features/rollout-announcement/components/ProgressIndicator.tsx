@@ -22,7 +22,7 @@ const CircleIndicator = (props: CircleIndicatorProps): JSX.Element => {
       width="0.5rem"
       height="0.5rem"
       borderRadius="full"
-      backgroundColor="secondary.500"
+      backgroundColor="secondary.200"
       marginRight={isActiveIndicator ? '1.5rem' : '0.5rem'}
       onClick={onClick}
       cursor="pointer"
