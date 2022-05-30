@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react'
 import { pick } from 'lodash'
 
-import { BasicField, Column, TableFieldBase } from '~shared/types/field'
+import { BasicField, TableFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import Button from '~components/Button'
@@ -26,7 +26,7 @@ import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 import Toggle from '~components/Toggle'
 
-import { createTemporaryColumnId } from '~features/admin-form/create/builder-and-design/utils/columnCreation'
+import { createShortTextColumn } from '~features/admin-form/create/builder-and-design/utils/columnCreation'
 
 import { BASICFIELD_TO_DRAWER_META } from '../../../../../constants'
 
@@ -45,12 +45,6 @@ const TABLE_COLUMN_DROPDOWN_OPTIONS: ComboboxItem<
     value: BasicField.Dropdown,
   },
 ]
-
-const DEFAULT_APPEND_COLUMN: Partial<Column> = {
-  columnType: BasicField.ShortText,
-  required: true,
-  title: 'Text Field',
-}
 
 interface EditTableColumnsProps {
   isLoading: boolean
@@ -71,7 +65,7 @@ export const EditTableColumns = ({
   )
 
   const handleAddColumn = useCallback(
-    () => append({ ...DEFAULT_APPEND_COLUMN, _id: createTemporaryColumnId() }),
+    () => append(createShortTextColumn()),
     [append],
   )
 

@@ -41,10 +41,12 @@ const EDIT_TABLE_FIELD_KEYS = [
 
 export type EditTableInputs = Omit<
   Pick<TableFieldBase, typeof EDIT_TABLE_FIELD_KEYS[number]>,
-  'columns'
+  'columns' | 'maximumRows' | 'minimumRows'
 > & {
   // Every column must have an ID for react-table to render.
   columns: ColumnDto[]
+  maximumRows: string | number
+  minimumRows: string | number
 }
 
 export type EditTableProps = EditFieldProps<TableFieldBase>
@@ -52,8 +54,8 @@ export type EditTableProps = EditFieldProps<TableFieldBase>
 const transformTableFieldToEditForm = (
   field: TableFieldBase,
 ): UnpackNestedValue<DeepPartial<EditTableInputs>> => {
-  const nextMaxRows = field.maximumRows || 0
-  const nextMinRows = field.minimumRows || 0
+  const nextMaxRows = field.maximumRows || ''
+  const nextMinRows = field.minimumRows || ''
 
   return {
     ...pick(field, EDIT_TABLE_FIELD_KEYS),
@@ -163,6 +165,7 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
             <FormLabel>Maximum rows allowed</FormLabel>
             <Controller
               name="maximumRows"
+              defaultValue=""
               rules={{
                 required: REQUIRED_ERROR,
                 min: {
