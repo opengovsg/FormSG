@@ -97,8 +97,6 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
     name: 'columns',
   })
 
-  console.log(fields)
-
   return (
     <DrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
@@ -135,15 +133,15 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
                   />
                 )}
               />
-              {getValues(`columns.${index}.columnType`) ===
-                BasicField.Dropdown && (
-                <EditTableDropdown
-                  control={control}
-                  index={index}
-                  errors={errors}
-                />
-              )}
             </FormControl>
+            {getValues(`columns.${index}.columnType`) ===
+              BasicField.Dropdown && (
+              <EditTableDropdown
+                control={control}
+                index={index}
+                errors={errors}
+              />
+            )}
             <FormControl isReadOnly={isLoading}>
               <Toggle
                 {...register(`columns.${index}.required`)}

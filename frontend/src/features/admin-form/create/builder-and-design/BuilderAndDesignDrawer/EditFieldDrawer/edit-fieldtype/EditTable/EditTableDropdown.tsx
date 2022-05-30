@@ -1,13 +1,14 @@
+import { useMemo } from 'react'
 import { Control, Controller, FormState } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
+import { get } from 'lodash'
 
 import { REQUIRED_ERROR } from '~constants/validation'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import Textarea from '~components/Textarea'
-
-import { SPLIT_TEXTAREA_TRANSFORM } from '../common/constants'
 
 import { EditTableInputs } from './EditTable'
+import { EditTableDropdownInput } from './EditTableDropdownInput'
 
 interface EditTableDropdownProps {
   index: number
@@ -18,12 +19,18 @@ interface EditTableDropdownProps {
 export const EditTableDropdown = ({
   index,
   control,
+  errors,
 }: EditTableDropdownProps): JSX.Element => {
+  const inputName = useMemo(
+    () => `columns.${index}.fieldOptions` as const,
+    [index],
+  )
+
   return (
-    <FormControl isRequired>
+    <FormControl isRequired isInvalid={get(errors, inputName)}>
       <FormLabel>Options</FormLabel>
       <Controller
-        name={`columns.${index}.fieldOptions`}
+        name={inputName}
         control={control}
         // Required so value exists (and does not crash the app) when column is swapped to Dropdown type.
         defaultValue={[]}
@@ -36,16 +43,9 @@ export const EditTableDropdown = ({
             )
           },
         }}
-        render={({ field: { value, onChange, ...field } }) => (
-          <Textarea
-            value={SPLIT_TEXTAREA_TRANSFORM.input(value)}
-            onChange={(e) => {
-              return onChange(SPLIT_TEXTAREA_TRANSFORM.output(e.target.value))
-            }}
-            {...field}
-          />
-        )}
+        render={({ field }) => <EditTableDropdownInput {...field} />}
       />
+      <FormErrorMessage>{get(errors, `${inputName}.message`)}</FormErrorMessage>
     </FormControl>
   )
 }
