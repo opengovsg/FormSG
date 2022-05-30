@@ -1,28 +1,26 @@
-import { BuildFormSvgr } from './components/BuildFormSvgr'
-import { LogicOrderSvgr } from './components/LogicOrderSvgr'
+import FirstAnnouncement from './assets/1-dnd.json'
+import SecondAnnouncement from './assets/2-listview.json'
+import ThirdAnnouncement from './assets/3-a11y.json'
+import { LogicOrderSvgr } from './assets/LogicOrderSvgr'
 
-/**
- * TODO (hanstirtaputra):
- * Update ImageSvgrs to the animations when it's completed
- */
 export const NEW_FEATURES = [
   {
     title: 'Drag and drop fields to build your form',
     description:
       'Add and arrange fields with ease. Additionally, you can now preview your form while editing it.',
-    ImageSvgr: <BuildFormSvgr />,
+    animationData: FirstAnnouncement,
   },
   {
     title: 'Forms now appear in list view',
     description:
       'Get an overview of your forms in a structured and organised way.',
-    ImageSvgr: <BuildFormSvgr />,
+    animationData: SecondAnnouncement,
   },
   {
     title: 'Form filling is now accessible for visually impaired users',
     description:
       "Form filling should be accessible to everyone. We've prioritised it in the redesign so everyone can have a pleasant form filling experience.",
-    ImageSvgr: <BuildFormSvgr />,
+    animationData: ThirdAnnouncement,
   },
 ]
 

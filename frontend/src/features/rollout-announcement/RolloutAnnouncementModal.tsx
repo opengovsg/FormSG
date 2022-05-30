@@ -57,9 +57,11 @@ export const RolloutAnnouncementModal = (
               currActiveIdx={currActiveIdx}
               onClick={setCurrActiveIdx}
             />
-            <Button onClick={handleNextClick}>
+            <Button
+              rightIcon={<BiRightArrowAlt size={22} />}
+              onClick={handleNextClick}
+            >
               {isLastAnnouncement ? 'Got it' : 'Next'}
-              <BiRightArrowAlt size={22} />
             </Button>
           </ModalFooter>
         </ModalContent>
