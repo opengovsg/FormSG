@@ -6,34 +6,24 @@ import {
   StoryRouter,
 } from '~utils/storybook'
 
-import {
-  AdminForbidden403Page,
-  AdminForbidden403PageProps,
-} from './AdminForbidden403Page'
+import { NotFoundErrorPage } from './NotFoundErrorPage'
 
 export default {
-  title: 'Pages/AdminForbidden403Page',
-  component: AdminForbidden403Page,
+  title: 'Pages/NotFoundErrorPage',
+  component: NotFoundErrorPage,
   decorators: [
     StoryRouter({
-      initialEntries: ['/admin-forbidden-403'],
-      path: '/admin-forbidden-403',
+      initialEntries: ['/not-found-error'],
+      path: '/not-found-error',
     }),
   ],
   parameters: {
     layout: 'fullscreen',
   },
-} as Meta<AdminForbidden403PageProps>
+} as Meta
 
-const Template: Story = (args: AdminForbidden403PageProps) => (
-  <AdminForbidden403Page {...args} />
-)
+const Template: Story = () => <NotFoundErrorPage />
 export const NotLoggedIn = Template.bind({})
-
-export const WithMessage = Template.bind({})
-WithMessage.args = {
-  message: 'You are not authorized to access this page.',
-}
 
 export const MobileNotLoggedIn = Template.bind({})
 MobileNotLoggedIn.parameters = getMobileViewParameters()

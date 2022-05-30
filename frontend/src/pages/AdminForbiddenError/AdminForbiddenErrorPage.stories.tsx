@@ -6,24 +6,34 @@ import {
   StoryRouter,
 } from '~utils/storybook'
 
-import { NotFound404Page } from './NotFound404Page'
+import {
+  AdminForbiddenErrorPage,
+  AdminForbiddenErrorPageProps,
+} from './AdminForbiddenErrorPage'
 
 export default {
-  title: 'Pages/NotFound404Page',
-  component: NotFound404Page,
+  title: 'Pages/AdminForbiddenErrorPage',
+  component: AdminForbiddenErrorPage,
   decorators: [
     StoryRouter({
-      initialEntries: ['/not-found-404'],
-      path: '/not-found-404',
+      initialEntries: ['/admin-forbidden-error'],
+      path: '/admin-forbidden-error',
     }),
   ],
   parameters: {
     layout: 'fullscreen',
   },
-} as Meta
+} as Meta<AdminForbiddenErrorPageProps>
 
-const Template: Story = () => <NotFound404Page />
+const Template: Story = (args: AdminForbiddenErrorPageProps) => (
+  <AdminForbiddenErrorPage {...args} />
+)
 export const NotLoggedIn = Template.bind({})
+
+export const WithMessage = Template.bind({})
+WithMessage.args = {
+  message: 'You are not authorized to access this page.',
+}
 
 export const MobileNotLoggedIn = Template.bind({})
 MobileNotLoggedIn.parameters = getMobileViewParameters()

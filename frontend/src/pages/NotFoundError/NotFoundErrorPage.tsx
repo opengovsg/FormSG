@@ -12,7 +12,7 @@ import GovtMasthead from '~components/GovtMasthead'
 
 import { NotFoundSvgr } from './NotFoundSvgr'
 
-export const NotFound404Page = (): JSX.Element => {
+export const NotFoundErrorPage = (): JSX.Element => {
   const isMobile = useIsMobile()
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()

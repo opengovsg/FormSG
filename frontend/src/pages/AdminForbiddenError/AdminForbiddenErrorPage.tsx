@@ -12,13 +12,13 @@ import GovtMasthead from '~components/GovtMasthead'
 
 import { ForbiddenSvgr } from './ForbiddenSvgr'
 
-export interface AdminForbidden403PageProps {
+export interface AdminForbiddenErrorPageProps {
   message?: string
 }
 
-export const AdminForbidden403Page = ({
+export const AdminForbiddenErrorPage = ({
   message,
-}: AdminForbidden403PageProps): JSX.Element => {
+}: AdminForbiddenErrorPageProps): JSX.Element => {
   const isMobile = useIsMobile()
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()

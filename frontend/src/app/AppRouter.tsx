@@ -13,7 +13,7 @@ import {
   TOU_ROUTE,
 } from '~constants/routes'
 
-import NotFound404Page from '~pages/NotFound404'
+import NotFoundErrorPage from '~pages/NotFoundError'
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
 import { CreatePage } from '~features/admin-form/create/CreatePage'
 import {
@@ -82,7 +82,7 @@ export const AppRouter = (): JSX.Element => {
             />
           </Route>
         </Route>
-        <Route path="*" element={<NotFound404Page />} />
+        <Route path="*" element={<NotFoundErrorPage />} />
       </Routes>
     </WithSuspense>
   )

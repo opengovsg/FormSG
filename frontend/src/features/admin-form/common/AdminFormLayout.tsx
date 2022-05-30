@@ -2,8 +2,8 @@ import { Outlet, useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import AdminForbidden403 from '~pages/AdminForbidden403'
-import NotFound404 from '~pages/NotFound404'
+import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
+import NotFoundErrorPage from '~pages/NotFoundError'
 
 import AdminFormNavbar from './components/AdminFormNavbar'
 import { useAdminForm } from './queries'
@@ -18,10 +18,10 @@ export const AdminFormLayout = (): JSX.Element => {
   const { error } = useAdminForm()
 
   if (get(error, 'code') === 404) {
-    return <NotFound404 />
+    return <NotFoundErrorPage />
   }
   if (get(error, 'code') === 403) {
-    return <AdminForbidden403 message={error?.message} />
+    return <AdminForbiddenErrorPage message={error?.message} />
   }
 
   return (
