@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { FormResponseMode } from '~shared/types'
@@ -8,6 +8,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { useFormResponsesCount } from '../../queries'
 import useDecryptionWorkers from '../../useDecryptionWorkers'
 
+import { useSecretKey } from './hooks/useSecretKey'
 import { StorageResponsesContext } from './StorageResponsesContext'
 
 export const StorageResponsesProvider = ({
@@ -16,12 +17,14 @@ export const StorageResponsesProvider = ({
   children: React.ReactNode
 }): JSX.Element => {
   const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
   const { downloadEncryptedResponses } = useDecryptionWorkers()
 
   const { data: form, isLoading: isAdminFormLoading } = useAdminForm()
   const { data: responsesCount, isLoading: isFormResponsesLoading } =
     useFormResponsesCount()
-  const [secretKey, setSecretKey] = useState<string>()
+  const [secretKey, setSecretKey] = useSecretKey(formId)
 
   const handleExportCsv = useCallback(() => {
     if (!formId || !form?.title || !secretKey) return
