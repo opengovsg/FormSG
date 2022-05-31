@@ -1,9 +1,25 @@
 import { BiBulb, BiRightArrowAlt } from 'react-icons/bi'
-import { TooltipRenderProps } from 'react-joyride'
-import { Box, CloseButton, Flex, Icon, Text } from '@chakra-ui/react'
+import { Box, BoxProps, CloseButton, Flex, Icon, Text } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'
 import Button from '~components/Button'
+
+interface FeatureTourButtonProps {
+  onClick: (e: React.MouseEvent<HTMLElement>) => void
+}
+
+interface FeatureTourStep {
+  content: React.ReactNode
+  title?: React.ReactNode
+}
+
+interface FeatureTourTooltipProps {
+  step: FeatureTourStep
+  tooltipProps: BoxProps
+  primaryProps: FeatureTourButtonProps
+  skipProps: FeatureTourButtonProps
+  isLastStep: boolean
+}
 
 export const FeatureTourTooltip = ({
   step,
@@ -11,7 +27,7 @@ export const FeatureTourTooltip = ({
   primaryProps,
   skipProps,
   isLastStep,
-}: TooltipRenderProps) => {
+}: FeatureTourTooltipProps) => {
   return (
     <Box
       padding="1.5rem"
@@ -53,7 +69,8 @@ export const FeatureTourTooltip = ({
         alignItems="center"
         justifyContent="space-between"
       >
-        <Text>Progress</Text>
+        {/* Todo: Create pagination component */}
+        <Text>Pagination Component</Text>
         {isLastStep ? (
           <Button {...skipProps}>Done</Button>
         ) : (
