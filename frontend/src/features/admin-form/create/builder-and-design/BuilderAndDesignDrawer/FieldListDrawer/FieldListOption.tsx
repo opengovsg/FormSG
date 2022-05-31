@@ -1,5 +1,9 @@
-import { useCallback, useMemo } from 'react'
-import { Draggable } from 'react-beautiful-dnd'
+import { CSSProperties, useCallback, useMemo } from 'react'
+import {
+  Draggable,
+  DraggableProvided,
+  DraggableStateSnapshot,
+} from 'react-beautiful-dnd'
 import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { BasicField, MyInfoImplementedTypes } from '~shared/types/field'
@@ -18,6 +22,21 @@ import {
   getFieldCreationMeta,
   getMyInfoFieldCreationMeta,
 } from '../../utils/fieldCreation'
+
+const getDraggableAnimationProps = (
+  provided: DraggableProvided,
+  snapshot: DraggableStateSnapshot,
+): CSSProperties => ({
+  ...provided.draggableProps.style,
+  // Speed up drop animation to smoothen out transition when field is
+  // dropped into the builder.
+  transition: snapshot.isDropAnimating
+    ? '0.1s'
+    : provided.draggableProps.style?.transition,
+  transform: snapshot.isDragging
+    ? provided.draggableProps.style?.transform
+    : 'translate(0px, 0px)',
+})
 
 interface FieldOptionProps extends BoxProps {
   isActive?: boolean
@@ -63,17 +82,7 @@ export const DraggableBasicFieldListOption = ({
             {...props}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
-            style={{
-              ...provided.draggableProps.style,
-              // Speed up drop animation to smoothen out transition when field is
-              // dropped into the builder.
-              transition: snapshot.isDropAnimating
-                ? '0.1s'
-                : provided.draggableProps.style?.transition,
-              transform: snapshot.isDragging
-                ? provided.draggableProps.style?.transform
-                : 'translate(0px, 0px)',
-            }}
+            style={getDraggableAnimationProps(provided, snapshot)}
             ref={provided.innerRef}
           />
           {snapshot.isDragging && (
@@ -109,17 +118,7 @@ export const DraggableMyInfoFieldListOption = ({
             {...props}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
-            style={{
-              ...provided.draggableProps.style,
-              // Speed up drop animation to smoothen out transition when field is
-              // dropped into the builder.
-              transition: snapshot.isDropAnimating
-                ? '0.1s'
-                : provided.draggableProps.style?.transition,
-              transform: snapshot.isDragging
-                ? provided.draggableProps.style?.transform
-                : 'translate(0px, 0px)',
-            }}
+            style={getDraggableAnimationProps(provided, snapshot)}
             ref={provided.innerRef}
           />
           {snapshot.isDragging && (
