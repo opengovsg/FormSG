@@ -8,6 +8,7 @@ import {
   BasicField,
   FieldCreateDto,
   FormFieldDto,
+  MyInfoImplementedTypes,
   RatingShape,
   TableFieldDto,
 } from '~shared/types/field'
@@ -29,7 +30,19 @@ import { insertAt, reorder } from '~shared/utils/immutable-array-fns'
 
 import { getMyInfoFieldCreationMeta } from '~/features/admin-form/create/builder-and-design/utils/fieldCreation'
 
-import { MOCK_MYINFO_IMPLEMENTED_TYPES } from '~features/admin-form/create/builder-and-design/constants'
+import {
+  CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+  CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
+  CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
+  CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
+} from '~features/admin-form/create/builder-and-design/constants'
+
+export const MOCK_MYINFO_IMPLEMENTED_TYPES: MyInfoImplementedTypes[] = [
+  ...CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
+  ...CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+  ...CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
+  ...CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
+]
 
 export const MOCK_FORM_FIELDS: FormFieldDto[] = [
   {
