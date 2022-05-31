@@ -11,12 +11,14 @@ const ActiveIndicator = (): JSX.Element => (
 )
 
 interface CircleIndicatorProps {
-  onClick?: () => void
+  onClick: () => void
   isActiveIndicator: boolean
 }
 
-const CircleIndicator = (props: CircleIndicatorProps): JSX.Element => {
-  const { onClick, isActiveIndicator } = props
+const CircleIndicator = ({
+  onClick,
+  isActiveIndicator,
+}: CircleIndicatorProps): JSX.Element => {
   return (
     <Box
       width="0.5rem"
@@ -33,13 +35,14 @@ const CircleIndicator = (props: CircleIndicatorProps): JSX.Element => {
 interface ProgressIndicatorProps {
   numIndicators: number
   currActiveIdx: number
-  onClick?: (indicatorIdx: number) => void
+  onClick: (indicatorIdx: number) => void
 }
 
-export const ProgressIndicator = (
-  props: ProgressIndicatorProps,
-): JSX.Element => {
-  const { numIndicators, currActiveIdx, onClick } = props
+export const ProgressIndicator = ({
+  numIndicators,
+  currActiveIdx,
+  onClick,
+}: ProgressIndicatorProps): JSX.Element => {
   const dummyValue = 1
 
   const animationTranslationDistInRem = 1
@@ -55,7 +58,7 @@ export const ProgressIndicator = (
           return (
             <CircleIndicator
               isActiveIndicator={isActiveIndicator}
-              onClick={() => onClick && onClick(idx)}
+              onClick={() => onClick(idx)}
             />
           )
         })}
