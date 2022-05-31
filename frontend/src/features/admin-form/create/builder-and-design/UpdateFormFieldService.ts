@@ -1,5 +1,6 @@
 import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
 
+import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '~features/admin-form/common/AdminViewFormService'
@@ -24,7 +25,9 @@ export const createSingleFormField = async ({
     `${ADMIN_FORM_ENDPOINT}/${formId}/fields`,
     createFieldBody,
     { params: { to: insertionIndex } },
-  ).then(({ data }) => data)
+  )
+    .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
 }
 
 export const updateSingleFormField = async ({
@@ -37,7 +40,9 @@ export const updateSingleFormField = async ({
   return ApiService.put<FormFieldDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/fields/${updateFieldBody._id}`,
     updateFieldBody,
-  ).then(({ data }) => data)
+  )
+    .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
 }
 
 /**
@@ -60,7 +65,9 @@ export const reorderSingleFormField = async ({
     `${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}/reorder`,
     {},
     { params: { to: newPosition } },
-  ).then(({ data }) => data)
+  )
+    .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
 }
 
 /**
@@ -79,7 +86,9 @@ export const duplicateSingleFormField = async ({
 }): Promise<FormFieldDto> => {
   return ApiService.post<FormFieldDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}/duplicate`,
-  ).then(({ data }) => data)
+  )
+    .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
 }
 
 /**

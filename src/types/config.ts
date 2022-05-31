@@ -57,6 +57,7 @@ export type ReactMigrationConfig = {
   respondentRolloutAuth: number
   respondentCookieName: string
   adminCookieName: string
+  qaCookieName: string
 }
 
 export type Config = {
@@ -161,6 +162,7 @@ export interface IOptionalVarsSchema {
     respondentRolloutAuth: number
     respondentCookieName: string
     adminCookieName: string
+    qaCookieName: string
   }
 }
 
