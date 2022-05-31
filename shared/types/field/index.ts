@@ -85,7 +85,6 @@ export type FormFieldWithId<T extends FormField = FormField> =
 export type MyInfoPublicFormField<T extends FormField = FormField> =
   FormFieldWithId<T> & {
     fieldValue?: string
-    isMyInfo: true
   }
 
 /**

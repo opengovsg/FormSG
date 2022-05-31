@@ -120,7 +120,6 @@ export type AllowMyInfoBase<T extends FieldBase = FieldBase> = T & {
   myInfo?: {
     attr: MyInfoAttribute
   }
-  isMyInfo: true
 }
 
 export type VerifiableFieldBase = {
