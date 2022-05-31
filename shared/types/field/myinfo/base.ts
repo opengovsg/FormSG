@@ -144,13 +144,6 @@ export const myInfoMobileFieldMeta: MyInfoFieldMeta<MobileFieldBase> = {
   isVerifiable: false,
 }
 
-export const myInfoNumberFieldMeta: MyInfoFieldMeta<NumberFieldBase> = {
-  ValidationOptions: {
-    customVal: null,
-    selectedValidation: null,
-  },
-}
-
 export const myInfoDateFieldMeta: MyInfoFieldMeta<DateFieldBase> = {
   dateValidation: {
     customMaxDate: null,

@@ -13,7 +13,6 @@ import {
   MYINFO_FIELD_CONSTANTS,
   myInfoDateFieldMeta,
   myInfoMobileFieldMeta,
-  myInfoNumberFieldMeta,
   myInfoTextFieldMeta,
 } from '~shared/types/field/myinfo'
 
@@ -209,6 +208,7 @@ export const getMyInfoFieldCreationMeta = (
     case MyInfoAttribute.PassportNumber:
     case MyInfoAttribute.VehicleNo:
     case MyInfoAttribute.RegisteredAddress:
+    case MyInfoAttribute.MarriageCertNo:
     case MyInfoAttribute.Employment: {
       return {
         ...baseMeta,
@@ -245,14 +245,6 @@ export const getMyInfoFieldCreationMeta = (
         ...baseMeta,
         fieldType: BasicField.Dropdown,
         ...getMyInfoDropdownFieldMeta(myInfoAttribute),
-      }
-    }
-
-    case MyInfoAttribute.MarriageCertNo: {
-      return {
-        ...baseMeta,
-        fieldType: BasicField.Number,
-        ...myInfoNumberFieldMeta,
       }
     }
 
