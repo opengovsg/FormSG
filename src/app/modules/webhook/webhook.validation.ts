@@ -21,13 +21,17 @@ export const validateWebhookUrl = (webhookUrl: string): Promise<void> => {
     }
     const webhookUrlParsed = new URL(webhookUrl)
     const appUrlParsed = new URL(config.app.appUrl)
-    if (webhookUrlParsed.hostname === appUrlParsed.hostname) {
+    if (
+      webhookUrlParsed.hostname === appUrlParsed.hostname ||
+      webhookUrlParsed.hostname.endsWith(`.${appUrlParsed.hostname}`)
+    ) {
       return reject(
         new WebhookValidationError(
-          `You cannot send responses back to ${config.app.appUrl}.`,
+          `You cannot send responses back to ${config.app.appUrl} or its subdomain.`,
         ),
       )
     }
+
     dns
       .resolve(webhookUrlParsed.hostname)
       .then((addresses) => {
