@@ -53,15 +53,12 @@ export const ProgressIndicator = ({
     <Box display="inline-flex">
       {Array(numIndicators)
         .fill(dummyValue)
-        .map((_, idx) => {
-          const isActiveIndicator = idx === currActiveIdx
-          return (
-            <CircleIndicator
-              isActiveIndicator={isActiveIndicator}
-              onClick={() => onClick(idx)}
-            />
-          )
-        })}
+        .map((_, idx) => (
+          <CircleIndicator
+            isActiveIndicator={idx === currActiveIdx}
+            onClick={() => onClick(idx)}
+          />
+        ))}
 
       <motion.div
         style={{ position: 'absolute' }}
