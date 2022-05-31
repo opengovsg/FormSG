@@ -3,37 +3,37 @@ const examples = [
     img: '/public/modules/core/img/landing/restricted__1-MOM.png',
     agency: 'MOM',
     title: 'Report an Employment Act violation',
-    formLink: 'https://form.gov.sg/#!/5a0ae8bb66545d85005daf6f',
+    formLink: 'https://form.gov.sg/5a0ae8bb66545d85005daf6f',
   },
   {
     img: '/public/modules/core/img/landing/restricted__3-NEA.png',
     agency: 'NEA',
     title: 'Update particulars of deceased next-of-kin',
-    formLink: 'https://form.gov.sg/#!/5a9e53d0b3a3b6006e6e0b74',
+    formLink: 'https://form.gov.sg/5a9e53d0b3a3b6006e6e0b74',
   },
   {
     img: '/public/modules/core/img/landing/restricted__7-MFA.png',
     agency: 'MFA',
     title: 'Scholarship Mailing List',
-    formLink: 'https://form.gov.sg/#!/5a9f3906b3a3b6006e6ee595',
+    formLink: 'https://form.gov.sg/5a9f3906b3a3b6006e6ee595',
   },
   {
     img: '/public/modules/core/img/landing/restricted__8-IPOS.png',
     agency: 'IPOS',
     title: 'FinTech Fast Track Initiative Registration',
-    formLink: 'https://form.gov.sg/#!/5ac6cced5eaf2b0030597aaa',
+    formLink: 'https://form.gov.sg/5ac6cced5eaf2b0030597aaa',
   },
   {
     img: '/public/modules/core/img/landing/restricted__9-SCB.png',
     agency: 'SCB',
     title: 'National Science Challenge Registration',
-    formLink: 'https://form.gov.sg/#!/5a813986c860b96e00a3026d',
+    formLink: 'https://form.gov.sg/5a813986c860b96e00a3026d',
   },
   {
     img: '/public/modules/core/img/landing/restricted__2-MOE.png',
     agency: 'MOE',
     title: 'School placement for returning Singaporeans',
-    formLink: 'https://form.gov.sg/#!/5aa5e5b1dcff52006dfd5f86',
+    formLink: 'https://form.gov.sg/5aa5e5b1dcff52006dfd5f86',
   },
 ]
 

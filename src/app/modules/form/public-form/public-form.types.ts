@@ -9,5 +9,5 @@ export type Metatags = {
 export type RedirectParams = {
   state?: 'preview' | 'template' | 'use-template'
   // TODO(#144): Rename Id to formId after all routes have been updated.
-  Id: string
+  formId: string
 }
