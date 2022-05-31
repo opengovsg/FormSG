@@ -6,6 +6,7 @@ import Pagination from '~components/Pagination'
 
 import { useFormResponses } from '../../../queries'
 
+import { DownloadButton } from './DownloadButton'
 import { ResponsesTable } from './ResponsesTable'
 
 export const UnlockedResponses = (): JSX.Element => {
@@ -38,9 +39,7 @@ export const UnlockedResponses = (): JSX.Element => {
             {prettifiedResponsesCount}
           </Text>
         </Box>
-        <Box gridArea="export" justifySelf="flex-end">
-          Download button
-        </Box>
+        <DownloadButton />
       </Grid>
       <Box mb="3rem" overflow="auto" flex={1}>
         <ResponsesTable
