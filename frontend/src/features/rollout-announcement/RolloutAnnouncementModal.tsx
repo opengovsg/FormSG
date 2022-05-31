@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
+  Box,
   Modal,
   ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalOverlay,
+  Text,
 } from '@chakra-ui/react'
 
 import Button from '~components/Button'
@@ -17,14 +19,13 @@ import { NEW_FEATURES, OTHER_UPDATES } from './Announcements'
 
 interface RolloutAnnouncementModalProps {
   isOpen: boolean
-  onClose?: () => void
-  onOpen?: () => void
+  onClose: () => void
 }
 
-export const RolloutAnnouncementModal = (
-  props: RolloutAnnouncementModalProps,
-): JSX.Element => {
-  const { isOpen, onClose } = props
+export const RolloutAnnouncementModal = ({
+  isOpen,
+  onClose,
+}: RolloutAnnouncementModalProps): JSX.Element => {
   const [currActiveIdx, setCurrActiveIdx] = useState<number>(0)
 
   const numOtherUpdatesPages = 1
@@ -33,7 +34,7 @@ export const RolloutAnnouncementModal = (
 
   const handleNextClick = (): void => {
     if (isLastAnnouncement) {
-      onClose && onClose()
+      onClose()
       return
     }
 
@@ -42,7 +43,7 @@ export const RolloutAnnouncementModal = (
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={() => onClose && onClose()}>
+      <Modal isOpen={isOpen} onClose={() => onClose()}>
         <ModalOverlay />
         <ModalContent>
           <ModalCloseButton />
@@ -51,18 +52,32 @@ export const RolloutAnnouncementModal = (
           ) : (
             <NewFeatureContent content={NEW_FEATURES[currActiveIdx]} />
           )}
-          <ModalFooter display="flex" justifyContent="space-between">
+          <ModalFooter
+            display="flex"
+            justifyContent="space-between"
+            paddingTop="2.5rem"
+          >
             <ProgressIndicator
               numIndicators={NUM_NEW_FEATURES}
               currActiveIdx={currActiveIdx}
               onClick={setCurrActiveIdx}
             />
-            <Button
-              rightIcon={<BiRightArrowAlt size={22} />}
-              onClick={handleNextClick}
-            >
-              {isLastAnnouncement ? 'Got it' : 'Next'}
-            </Button>
+            <Box display="flex" alignItems="center" columnGap="2rem">
+              <Text textStyle="subhead-1" cursor="pointer" onClick={onClose}>
+                Cancel
+              </Text>
+
+              {isLastAnnouncement ? (
+                <Button onClick={handleNextClick}>Done</Button>
+              ) : (
+                <Button
+                  rightIcon={<BiRightArrowAlt size={24} />}
+                  onClick={handleNextClick}
+                >
+                  Next
+                </Button>
+              )}
+            </Box>
           </ModalFooter>
         </ModalContent>
       </Modal>
