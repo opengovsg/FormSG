@@ -65,8 +65,9 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 
   const basicFieldText = useMemo(() => {
     if (!fieldToEdit?.fieldType) return ''
-    if (isMyInfo(fieldToEdit))
+    if (isMyInfo(fieldToEdit)) {
       return MYINFO_FIELD_CONSTANTS[fieldToEdit.myInfo.attr].value
+    }
     return BASICFIELD_TO_DRAWER_META[fieldToEdit?.fieldType].label
   }, [fieldToEdit])
 
