@@ -4946,9 +4946,11 @@ describe('admin-form.routes', () => {
       expect(response.body.fields.key).toEqual(
         expect.stringContaining(DEFAULT_POST_PARAMS.fileId),
       )
-      expect(DEFAULT_POST_PARAMS.fileId.length).toBeLessThan(
-        response.body.fields.key.length,
+      expect(DEFAULT_POST_PARAMS.fileId.length).toEqual(
+        response.body.fields.key.length - 25,
       )
+
+      expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
     })
 
     it('should return 200 with presigned POST URL object and NOT append an objectId to the key if !isNewClient', async () => {
@@ -5228,9 +5230,11 @@ describe('admin-form.routes', () => {
       expect(response.body.fields.key).toEqual(
         expect.stringContaining(DEFAULT_POST_PARAMS.fileId),
       )
-      expect(DEFAULT_POST_PARAMS.fileId.length).toBeLessThan(
-        response.body.fields.key.length,
+      expect(DEFAULT_POST_PARAMS.fileId.length).toEqual(
+        response.body.fields.key.length - 25,
       )
+
+      expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
     })
 
     it('should return 200 with presigned POST URL object and NOT append an objectId to the key if !isNewClient', async () => {

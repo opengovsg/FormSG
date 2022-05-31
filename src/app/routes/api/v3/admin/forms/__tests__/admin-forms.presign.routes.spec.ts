@@ -92,9 +92,11 @@ describe('admin-form.presign.routes', () => {
       expect(response.body.fields.key).toEqual(
         expect.stringContaining(DEFAULT_POST_PARAMS.fileId),
       )
-      expect(DEFAULT_POST_PARAMS.fileId.length).toBeLessThan(
-        response.body.fields.key.length,
+      expect(DEFAULT_POST_PARAMS.fileId.length).toEqual(
+        response.body.fields.key.length - 25,
       )
+
+      expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
     })
 
     it('should return 200 with presigned POST URL object for old client', async () => {
@@ -374,9 +376,11 @@ describe('admin-form.presign.routes', () => {
       expect(response.body.fields.key).toEqual(
         expect.stringContaining(DEFAULT_POST_PARAMS.fileId),
       )
-      expect(DEFAULT_POST_PARAMS.fileId.length).toBeLessThan(
-        response.body.fields.key.length,
+      expect(DEFAULT_POST_PARAMS.fileId.length).toEqual(
+        response.body.fields.key.length - 25,
       )
+
+      expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
     })
 
     it('should return 200 with presigned POST URL object for old client', async () => {
