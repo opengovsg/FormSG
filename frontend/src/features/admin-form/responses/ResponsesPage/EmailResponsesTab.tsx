@@ -3,10 +3,9 @@ import simplur from 'simplur'
 
 import Link from '~components/Link'
 
-import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
-
 import { useFormResponsesCount } from '../queries'
 
+import { EmailResponsesSvgr } from './EmailResponsesSvgr'
 import { EmptyResponses } from './EmptyResponses'
 import { ResponsesTabWrapper } from './ResponsesTabWrapper'
 
@@ -22,7 +21,7 @@ export const EmailResponsesTab = (): JSX.Element => {
     <ResponsesTabWrapper>
       <Container p={0} maxW="42.5rem">
         <Stack spacing="2rem">
-          <FormActivationSvg />
+          <EmailResponsesSvgr />
           <Skeleton isLoaded={!isFormResponsesLoading} w="fit-content">
             <Text as="h2" textStyle="h2" whiteSpace="pre-line">
               <Text color="primary.500" as="span">
