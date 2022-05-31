@@ -15,6 +15,7 @@ export interface FeatureTourTooltipProps {
   primaryProps: ButtonProps
   skipProps: ButtonProps
   isLastStep: boolean
+  stepIndex?: number
 }
 
 export const FeatureTourTooltip = ({

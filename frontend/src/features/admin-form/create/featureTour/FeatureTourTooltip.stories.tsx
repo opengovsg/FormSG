@@ -21,10 +21,12 @@ export default {
 } as Meta
 
 const Template: Story<FeatureTourTooltipProps> = (args) => {
-  const [featureStep, setFeatureStep] = useState<number>(0)
+  const [featureStep, setFeatureStep] = useState<number>(args.stepIndex ?? 0)
 
   const handleNextClick = () => {
-    setFeatureStep(featureStep + 1)
+    featureStep === FEATURE_STEPS.length - 1
+      ? setFeatureStep(featureStep)
+      : setFeatureStep(featureStep + 1)
   }
 
   const getFeatureTourTooltipContent = (
@@ -37,7 +39,7 @@ const Template: Story<FeatureTourTooltipProps> = (args) => {
   }
 
   const featureTourTooltipContent = getFeatureTourTooltipContent(featureStep)
-  const isLastStep = featureStep === 2
+  const isLastStep = args.isLastStep ?? featureStep === FEATURE_STEPS.length - 1
   const mockPrimaryProps: ButtonProps = {
     onClick: handleNextClick,
   }
@@ -53,4 +55,9 @@ const Template: Story<FeatureTourTooltipProps> = (args) => {
 }
 
 export const BasicUsage = Template.bind({})
-BasicUsage.args = {}
+
+export const LastFeatureStep = Template.bind({})
+LastFeatureStep.args = {
+  stepIndex: FEATURE_STEPS.length - 1,
+  isLastStep: true,
+}
