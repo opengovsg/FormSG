@@ -3,11 +3,11 @@ import { StorageModeSubmissionMetadata } from '~shared/types/submission'
 
 import Button from '~components/Button'
 
-import { useFormResponses } from '../queries'
+import { useFormResponses } from '../../queries'
+import { EmptyResponses } from '../common/EmptyResponses'
+import { ResponsesTabWrapper } from '../common/ResponsesTabWrapper'
+import { useResponsesContext } from '../ResponsesContext'
 
-import { EmptyResponses } from './EmptyResponses'
-import { useResponsesContext } from './ResponsesContext'
-import { ResponsesTabWrapper } from './ResponsesTabWrapper'
 import { SecretKeyVerification } from './SecretKeyVerification'
 
 interface StorageResponsesTabProps {

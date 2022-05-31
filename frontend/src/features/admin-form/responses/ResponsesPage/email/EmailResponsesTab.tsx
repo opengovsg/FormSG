@@ -3,11 +3,11 @@ import simplur from 'simplur'
 
 import Link from '~components/Link'
 
-import { useFormResponsesCount } from '../queries'
+import { useFormResponsesCount } from '../../queries'
+import { EmptyResponses } from '../common/EmptyResponses'
+import { ResponsesTabWrapper } from '../common/ResponsesTabWrapper'
 
 import { EmailResponsesSvgr } from './EmailResponsesSvgr'
-import { EmptyResponses } from './EmptyResponses'
-import { ResponsesTabWrapper } from './ResponsesTabWrapper'
 
 export const EmailResponsesTab = (): JSX.Element => {
   const { data: responsesCount, isLoading: isFormResponsesLoading } =

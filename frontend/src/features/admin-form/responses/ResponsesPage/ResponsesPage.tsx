@@ -2,9 +2,9 @@ import { FormResponseMode } from '~shared/types/form'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { EmailResponsesTab } from './EmailResponsesTab'
+import { EmailResponsesTab } from './email/EmailResponsesTab'
+import { StorageResponsesTab } from './storage/StorageResponsesTab'
 import { ResponsesProvider } from './ResponsesProvider'
-import { StorageResponsesTab } from './StorageResponsesTab'
 
 export const ResponsesPage = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
