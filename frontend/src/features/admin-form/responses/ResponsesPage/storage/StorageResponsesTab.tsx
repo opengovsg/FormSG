@@ -1,4 +1,3 @@
-import { AdminStorageFormDto } from '~shared/types/form'
 import { StorageModeSubmissionMetadata } from '~shared/types/submission'
 
 import Button from '~components/Button'
@@ -6,18 +5,22 @@ import Button from '~components/Button'
 import { useFormResponses } from '../../queries'
 import { EmptyResponses } from '../common/EmptyResponses'
 import { ResponsesTabWrapper } from '../common/ResponsesTabWrapper'
-import { useResponsesContext } from '../ResponsesContext'
 
+import { StorageResponsesProvider } from './ResponsesProvider'
 import { SecretKeyVerification } from './SecretKeyVerification'
+import { useStorageResponsesContext } from './StorageResponsesContext'
 
-interface StorageResponsesTabProps {
-  form: AdminStorageFormDto
+export const StorageResponsesTab = () => {
+  return (
+    <StorageResponsesProvider>
+      <ProvidedStorageResponsesTab />
+    </StorageResponsesProvider>
+  )
 }
 
-export const StorageResponsesTab = ({
-  form,
-}: StorageResponsesTabProps): JSX.Element => {
-  const { responsesCount, secretKey, handleExportCsv } = useResponsesContext()
+const ProvidedStorageResponsesTab = (): JSX.Element => {
+  const { responsesCount, secretKey, handleExportCsv } =
+    useStorageResponsesContext()
   const { data } = useFormResponses()
 
   if (responsesCount === 0) {

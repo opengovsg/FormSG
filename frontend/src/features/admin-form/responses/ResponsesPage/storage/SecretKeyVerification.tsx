@@ -21,7 +21,7 @@ import Link from '~components/Link'
 
 import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
 
-import { useResponsesContext } from '../ResponsesContext'
+import { useStorageResponsesContext } from './StorageResponsesContext'
 
 const SECRET_KEY_NAME = 'secretKey'
 const SECRET_KEY_REGEX = /^[a-zA-Z0-9/+]+={0,2}$/
@@ -32,7 +32,7 @@ interface SecretKeyFormInputs {
 
 const useSecretKeyVerification = () => {
   const { setSecretKey, formPublicKey, isLoading, responsesCount } =
-    useResponsesContext()
+    useStorageResponsesContext()
 
   const {
     formState: { errors },

@@ -5,12 +5,12 @@ import { FormResponseMode } from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { useFormResponsesCount } from '../queries'
-import useDecryptionWorkers from '../useDecryptionWorkers'
+import { useFormResponsesCount } from '../../queries'
+import useDecryptionWorkers from '../../useDecryptionWorkers'
 
-import { ResponsesContext } from './ResponsesContext'
+import { StorageResponsesContext } from './StorageResponsesContext'
 
-export const ResponsesProvider = ({
+export const StorageResponsesProvider = ({
   children,
 }: {
   children: React.ReactNode
@@ -34,7 +34,7 @@ export const ResponsesProvider = ({
   }, [form])
 
   return (
-    <ResponsesContext.Provider
+    <StorageResponsesContext.Provider
       value={{
         isLoading: isAdminFormLoading || isFormResponsesLoading,
         formPublicKey,
@@ -45,6 +45,6 @@ export const ResponsesProvider = ({
       }}
     >
       {children}
-    </ResponsesContext.Provider>
+    </StorageResponsesContext.Provider>
   )
 }
