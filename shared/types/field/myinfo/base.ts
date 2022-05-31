@@ -5,7 +5,7 @@ import {
   MyInfoAttribute,
   MyInfoDropdownTypes,
 } from '../base'
-import { FormField, MyInfoField } from '..'
+import { FormField, FormFieldDto, MyInfoField } from '..'
 import { Dictionary, keyBy } from 'lodash'
 import { ShortTextFieldBase } from '../shortTextField'
 import { DropdownFieldBase } from '../dropdownField'
@@ -108,7 +108,11 @@ export const isMyInfo = (field: FormField): field is MyInfoField => {
   }
 }
 
-export const extendWithMyInfo = (field: MyInfoField): MyInfoPreviewMeta => {
+export const extendWithMyInfo = (
+  field: MyInfoField & {
+    _id?: FormFieldDto['_id']
+  },
+): MyInfoPreviewMeta => {
   return {
     dataSource: convertMyInfoDataSource(
       MYINFO_FIELD_CONSTANTS[field.myInfo.attr].source,
