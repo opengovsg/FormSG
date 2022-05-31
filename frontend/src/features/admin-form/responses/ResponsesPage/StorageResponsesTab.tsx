@@ -1,5 +1,3 @@
-import { Container } from '@chakra-ui/react'
-
 import { AdminStorageFormDto } from '~shared/types/form'
 import { StorageModeSubmissionMetadata } from '~shared/types/submission'
 
@@ -9,6 +7,7 @@ import { useFormResponses } from '../queries'
 
 import { EmptyResponses } from './EmptyResponses'
 import { useResponsesContext } from './ResponsesContext'
+import { ResponsesTabWrapper } from './ResponsesTabWrapper'
 import { SecretKeyVerification } from './SecretKeyVerification'
 
 interface StorageResponsesTabProps {
@@ -26,15 +25,7 @@ export const StorageResponsesTab = ({
   }
 
   return (
-    <Container
-      overflowY="auto"
-      px={{ base: '1.5rem', md: '3rem' }}
-      py="2.25rem"
-      maxW="69.5rem"
-      flex={1}
-      display="flex"
-      flexDir="column"
-    >
+    <ResponsesTabWrapper>
       {secretKey ? (
         <>
           <Button onClick={handleExportCsv}>Export csv</Button>
@@ -50,6 +41,6 @@ export const StorageResponsesTab = ({
       ) : (
         <SecretKeyVerification />
       )}
-    </Container>
+    </ResponsesTabWrapper>
   )
 }

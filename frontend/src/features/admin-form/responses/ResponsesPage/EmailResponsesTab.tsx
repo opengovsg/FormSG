@@ -8,6 +8,7 @@ import { FormActivationSvg } from '~features/admin-form/settings/components/Form
 import { useFormResponsesCount } from '../queries'
 
 import { EmptyResponses } from './EmptyResponses'
+import { ResponsesTabWrapper } from './ResponsesTabWrapper'
 
 export const EmailResponsesTab = (): JSX.Element => {
   const { data: responsesCount, isLoading: isFormResponsesLoading } =
@@ -18,16 +19,7 @@ export const EmailResponsesTab = (): JSX.Element => {
   }
 
   return (
-    <Container
-      overflowY="auto"
-      px={{ base: '1.5rem', md: '3rem' }}
-      py="2.25rem"
-      maxW="69.5rem"
-      flex={1}
-      display="flex"
-      flexDir="column"
-      color="secondary.500"
-    >
+    <ResponsesTabWrapper>
       <Container p={0} maxW="42.5rem">
         <Stack spacing="2rem">
           <FormActivationSvg />
@@ -49,6 +41,6 @@ export const EmailResponsesTab = (): JSX.Element => {
           </Text>
         </Stack>
       </Container>
-    </Container>
+    </ResponsesTabWrapper>
   )
 }
