@@ -17,7 +17,6 @@ import {
 import { SetRequired } from 'type-fest'
 import _ from 'lodash'
 import { MobileFieldBase } from '../mobileField'
-import { NumberFieldBase } from '../numberField'
 import { DateFieldBase } from '../dateField'
 
 export const MYINFO_FIELD_CONSTANTS = keyBy(MYINFO_TYPE_CONSTANTS, 'name')
@@ -126,7 +125,7 @@ export const myInfoTextFieldMeta: MyInfoFieldMeta<ShortTextFieldBase> = {
   },
 }
 
-export const getMyInfoDropdownFieldMeta = (
+export const getMyInfoDropdownOptions = (
   myInfoAttribute: MyInfoDropdownTypes,
 ): MyInfoFieldMeta<DropdownFieldBase> => {
   const myInfoDropdownFields = _(MYINFO_FIELD_CONSTANTS)
@@ -139,6 +138,9 @@ export const getMyInfoDropdownFieldMeta = (
   }
 }
 
+export const myInfoDropdownFieldMeta: MyInfoFieldMeta<DropdownFieldBase> = {
+  fieldOptions: [],
+}
 export const myInfoMobileFieldMeta: MyInfoFieldMeta<MobileFieldBase> = {
   allowIntlNumbers: false,
   isVerifiable: false,

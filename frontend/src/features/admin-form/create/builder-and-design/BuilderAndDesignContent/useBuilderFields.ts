@@ -9,6 +9,8 @@ import {
 } from '~shared/types/field'
 import { insertAt, replaceAt } from '~shared/utils/immutable-array-fns'
 
+import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
+
 import { PENDING_CREATE_FIELD_ID } from '../constants'
 import {
   BuildFieldState,
@@ -64,5 +66,7 @@ export const useBuilderFields = () => {
     return existingFields
   }, [formData, stateData])
 
-  return { builderFields }
+  return {
+    builderFields: builderFields?.map((field) => augmentWithMyInfo(field)),
+  }
 }

@@ -2,7 +2,7 @@ import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { identity } from 'lodash'
 
-import { MyInfoField } from '~shared/types'
+import { FormFieldWithId, MyInfoField } from '~shared/types'
 import { extendWithMyInfo } from '~shared/types/field/myinfo'
 
 import Link from '~components/Link'
@@ -22,7 +22,7 @@ const VerifiedIcon = ({ isVerified }: { isVerified: boolean }): JSX.Element => {
 }
 
 interface EditMyInfoProps {
-  field: MyInfoField
+  field: FormFieldWithId<MyInfoField>
 }
 export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
   const extendedField = extendWithMyInfo(field)
@@ -44,8 +44,8 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
     <DrawerContentContainer>
       <VStack align="flex-start">
         <Text textStyle="subhead-1">Data Source</Text>
-        {extendedField.dataSource.map((dataSource) => (
-          <HStack>
+        {extendedField.dataSource.map((dataSource, idx) => (
+          <HStack key={idx}>
             <Icon fontSize="1.5rem" as={BiData}></Icon>
             <Text>{dataSource}</Text>
           </HStack>

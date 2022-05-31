@@ -9,9 +9,9 @@ import {
   RatingShape,
 } from '~shared/types/field'
 import {
-  getMyInfoDropdownFieldMeta,
   MYINFO_FIELD_CONSTANTS,
   myInfoDateFieldMeta,
+  myInfoDropdownFieldMeta,
   myInfoMobileFieldMeta,
   myInfoTextFieldMeta,
 } from '~shared/types/field/myinfo'
@@ -244,7 +244,7 @@ export const getMyInfoFieldCreationMeta = (
       return {
         ...baseMeta,
         fieldType: BasicField.Dropdown,
-        ...getMyInfoDropdownFieldMeta(myInfoAttribute),
+        ...myInfoDropdownFieldMeta,
       }
     }
 
