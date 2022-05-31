@@ -1,10 +1,15 @@
-import { BoxProps } from '@chakra-ui/react'
+import { useState } from 'react'
 import { Meta, Story } from '@storybook/react'
 
 import { fullScreenDecorator } from '~utils/storybook'
+import { ButtonProps } from '~components/Button'
 
-import { FEATURE_TOUR } from './constants'
-import { FeatureTourTooltip } from './FeatureTourTooltip'
+import { FEATURE_STEPS } from './constants'
+import {
+  FeatureTourStep,
+  FeatureTourTooltip,
+  FeatureTourTooltipProps,
+} from './FeatureTourTooltip'
 
 export default {
   title: 'Pages/FeatureTour/Tooltip',
@@ -15,27 +20,37 @@ export default {
   },
 } as Meta
 
-const mockStep = {
-  content: `${FEATURE_TOUR[0].content}`,
-  title: `${FEATURE_TOUR[0].title}`,
-}
+const Template: Story<FeatureTourTooltipProps> = (args) => {
+  const [featureStep, setFeatureStep] = useState<number>(0)
 
-const mockButtonProps = {
-  onClick: () => {
-    return
-  },
-}
+  const handleNextClick = () => {
+    setFeatureStep(featureStep + 1)
+  }
 
-const Template: Story = () => {
+  const getFeatureTourTooltipContent = (
+    featureStep: number,
+  ): FeatureTourStep => {
+    return {
+      title: FEATURE_STEPS[featureStep].title,
+      content: FEATURE_STEPS[featureStep].content,
+    }
+  }
+
+  const featureTourTooltipContent = getFeatureTourTooltipContent(featureStep)
+  const isLastStep = featureStep === 2
+  const mockPrimaryProps: ButtonProps = {
+    onClick: handleNextClick,
+  }
+
   return (
     <FeatureTourTooltip
-      step={mockStep}
-      tooltipProps={{} as BoxProps}
-      primaryProps={mockButtonProps}
-      skipProps={mockButtonProps}
-      isLastStep={false}
+      {...args}
+      step={featureTourTooltipContent}
+      primaryProps={mockPrimaryProps}
+      isLastStep={isLastStep}
     />
   )
 }
 
 export const BasicUsage = Template.bind({})
+BasicUsage.args = {}

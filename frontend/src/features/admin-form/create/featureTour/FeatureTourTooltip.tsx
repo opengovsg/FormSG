@@ -2,22 +2,18 @@ import { BiBulb, BiRightArrowAlt } from 'react-icons/bi'
 import { Box, BoxProps, CloseButton, Flex, Icon, Text } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'
-import Button from '~components/Button'
+import Button, { ButtonProps } from '~components/Button'
 
-interface FeatureTourButtonProps {
-  onClick: (e: React.MouseEvent<HTMLElement>) => void
-}
-
-interface FeatureTourStep {
+export interface FeatureTourStep {
   content: React.ReactNode
   title?: React.ReactNode
 }
 
-interface FeatureTourTooltipProps {
+export interface FeatureTourTooltipProps {
   step: FeatureTourStep
   tooltipProps: BoxProps
-  primaryProps: FeatureTourButtonProps
-  skipProps: FeatureTourButtonProps
+  primaryProps: ButtonProps
+  skipProps: ButtonProps
   isLastStep: boolean
 }
 
