@@ -10,7 +10,6 @@ interface FeatureTourProps {
 
 export const FeatureTour = ({ shouldRun }: FeatureTourProps): JSX.Element => {
   const arrowColor: string = useToken('colors', ['primary.100'])
-
   return (
     <Joyride
       steps={FEATURE_STEPS}
@@ -22,6 +21,9 @@ export const FeatureTour = ({ shouldRun }: FeatureTourProps): JSX.Element => {
           arrow: {
             length: 8,
             spread: 16,
+          },
+          floaterWithAnimation: {
+            transition: 'opacity 0.3s ease 0s, transform 0s ease 0s',
           },
         },
       }}
