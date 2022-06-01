@@ -6,6 +6,7 @@ interface DrawerTabIconProps {
   onClick: () => void
   label: string
   isActive: boolean
+  id?: string
 }
 
 export const DrawerTabIcon = ({
@@ -13,6 +14,7 @@ export const DrawerTabIcon = ({
   onClick,
   label,
   isActive,
+  id,
 }: DrawerTabIconProps): JSX.Element => {
   return (
     <Tooltip label={label} placement="right">
@@ -22,6 +24,7 @@ export const DrawerTabIcon = ({
         isActive={isActive}
         icon={icon}
         onClick={onClick}
+        id={id}
       />
     </Tooltip>
   )
