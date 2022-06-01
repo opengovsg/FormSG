@@ -12,6 +12,7 @@ import getSubmissionModel from '../../models/submission.server.model'
 import MailService from '../../services/mail/mail.service'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
+import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError, MalformedParametersError } from '../core/core.errors'
 
 import { SendEmailConfirmationError } from './submission.errors'
@@ -132,3 +133,24 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
     return okAsync(true as const)
   })
 }
+
+export const checkDoesSubmissionIdExist = (
+  submissionId: string,
+): ResultAsync<boolean, DatabaseError> =>
+  ResultAsync.fromPromise(
+    SubmissionModel.exists({
+      _id: submissionId,
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error finding _id from submissions collection in database',
+        meta: {
+          action: 'checkDoesSubmissionIdExist',
+          submissionId,
+        },
+        error,
+      })
+
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  )

@@ -111,3 +111,27 @@ export const getFormFeedbacks = (
     }
   })
 }
+
+export const checkHasPreviousFeedback = (
+  formId: string,
+  submissionId: string,
+): ResultAsync<boolean, DatabaseError> =>
+  ResultAsync.fromPromise(
+    FormFeedbackModel.exists({
+      formId: formId,
+      formSubmissionId: submissionId,
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error finding feedback documents from database',
+        meta: {
+          action: 'checkHasPreviousFeedback',
+          formId,
+          submissionId,
+        },
+        error,
+      })
+
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  )

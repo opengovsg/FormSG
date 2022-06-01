@@ -17,6 +17,7 @@ export type FormFeedbackBase = {
   formId: FormDto['_id']
   created?: Date
   lastModified?: Date
+  formSubmissionId: string
 }
 
 // Convert to serialized version.
