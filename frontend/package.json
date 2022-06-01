@@ -22,6 +22,7 @@
     "dayzed": "^3.2.2",
     "dedent": "^0.7.0",
     "downshift": "^6.1.7",
+    "fetch-readablestream": "^0.2.0",
     "file-saver": "^2.0.5",
     "focus-visible": "^5.2.0",
     "framer-motion": "^5.4.5",

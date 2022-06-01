@@ -7,14 +7,17 @@ import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 
+import { useStorageResponsesContext } from '../StorageResponsesContext'
+
 export const DownloadButton = (): JSX.Element => {
+  const { handleExportCsv } = useStorageResponsesContext()
   return (
     <Box gridArea="export" justifySelf="flex-end">
       <Menu placement="bottom-end">
         {({ isOpen }) => (
           <>
             <ButtonGroup isAttached display="flex">
-              <Button px="1.5rem" mr="2px">
+              <Button px="1.5rem" mr="2px" onClick={handleExportCsv}>
                 Download
               </Button>
               <MenuButton

@@ -6,10 +6,10 @@ import { FormResponseMode } from '~shared/types'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { useFormResponsesCount } from '../../queries'
-import useDecryptionWorkers from '../../useDecryptionWorkers'
 
 import { useSecretKey } from './hooks/useSecretKey'
 import { StorageResponsesContext } from './StorageResponsesContext'
+import useDecryptionWorkers from './useDecryptionWorkers'
 
 export const StorageResponsesProvider = ({
   children,

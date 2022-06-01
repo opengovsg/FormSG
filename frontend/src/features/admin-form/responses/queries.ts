@@ -30,10 +30,8 @@ export const useFormResponsesCount = (): UseQueryResult<number> => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  return useQuery(
-    adminFormResponsesKeys.count(formId),
-    () => countFormSubmissions({ formId }),
-    { staleTime: 10 * 60 * 1000 },
+  return useQuery(adminFormResponsesKeys.count(formId), () =>
+    countFormSubmissions({ formId }),
   )
 }
 
