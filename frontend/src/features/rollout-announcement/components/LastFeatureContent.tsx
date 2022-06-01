@@ -40,7 +40,9 @@ export const LastFeatureContent = ({
                 paddingInline={0}
                 marginInline={0}
               >
-                <Text textStyle="subhead-1">{update.title}</Text>
+                <Text textStyle="body-1" color="secondary.500">
+                  {update.title}
+                </Text>
               </Container>
             </Container>
           ))}

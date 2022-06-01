@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Box, ModalBody, ModalHeader } from '@chakra-ui/react'
+import { Box, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
 import lottie from 'lottie-web'
 
 import { NewFeatureTag } from './NewFeatureTag'
@@ -61,7 +61,9 @@ export const NewFeatureContent = (props: {
         {title}
       </ModalHeader>
       <ModalBody whiteSpace="pre-line" paddingRight="3rem">
-        {description}
+        <Text textStyle="body-1" color="secondary.500">
+          {description}
+        </Text>
       </ModalBody>
     </>
   )
