@@ -6,7 +6,6 @@ export const zhSG: Translation = {
       login: {
         LoginPage: {
           slogan: '在几分钟内创建安全的政府表格',
-          copyright: '© {currentYear} 政府开源科技部, 新加坡政府科技局',
         },
         components: {
           LoginForm: {

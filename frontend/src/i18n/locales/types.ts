@@ -13,7 +13,6 @@ interface Translation {
         }
         LoginPage: {
           slogan: string
-          copyright: string
         }
       }
     }

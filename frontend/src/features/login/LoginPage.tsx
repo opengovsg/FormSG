@@ -1,22 +1,12 @@
 import { FC, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
-import {
-  Box,
-  chakra,
-  Flex,
-  Grid,
-  GridItem,
-  Text,
-  useBreakpointValue,
-  Wrap,
-} from '@chakra-ui/react'
+import { Box, chakra, Flex, Grid, GridItem, Text } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 import { ReactComponent as LoginImageSvg } from '~assets/svgs/img-login.svg'
-import { APP_FOOTER_LINKS } from '~constants/externalLinks'
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { LANDING_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
@@ -51,7 +41,6 @@ const LoginImage = chakra(LoginImageSvg, {
 const BackgroundBox: FC = ({ children }) => (
   <Box
     flexGrow={1}
-    px={{ base: '1.5rem', md: '5.5rem', lg: 0 }}
     bg={{
       base: 'initial',
       md: 'linear-gradient(180deg, var(--chakra-colors-primary-500) 20.625rem, white 0)',
@@ -68,9 +57,9 @@ const BaseGridLayout: FC = ({ children }) => (
     maxW="90rem"
     margin="auto"
     templateAreas={{
-      base: `'login'`,
-      md: `'sidebar' 'login'`,
-      lg: `'sidebar login' 'copy links'`,
+      base: `'login' 'footer'`,
+      md: `'sidebar' 'login' 'footer'`,
+      lg: `'sidebar login' 'footer footer'`,
     }}
     templateRows={{ lg: '1fr auto' }}
     templateColumns={{ lg: '5fr 7fr' }}
@@ -83,7 +72,7 @@ const LoginGridArea: FC = ({ children }) => (
   <GridItem
     h={{ base: '100vh', md: '100%' }}
     gridArea="login"
-    px={{ base: 0, lg: '7.25rem' }}
+    px={{ base: '1.5rem', md: '5.5rem', lg: '7.25rem' }}
     py="4rem"
     d="flex"
     alignItems={{ base: 'initial', lg: 'center' }}
@@ -91,27 +80,12 @@ const LoginGridArea: FC = ({ children }) => (
   />
 )
 
-// Desktop-only grid area styling for the bottom left area.
-const DesktopCopyGridArea: FC = ({ children }) => (
+// Grid area styling for the footer.
+const FooterGridArea: FC = ({ children }) => (
   <GridItem
-    display={{ base: 'none', lg: 'initial' }}
-    gridArea="copy"
-    bg={{ base: 'transparent', lg: 'primary.500' }}
-    px={{ base: '1.5rem', lg: '5rem' }}
-    pt={0}
-    pb="2.5rem"
-    children={children}
-  />
-)
-
-// Desktop-only grid area styling for the bottom right area.
-const DesktopLinksGridArea: FC = ({ children }) => (
-  <GridItem
-    px={{ base: '1.5rem', lg: '7.25rem' }}
-    pt={0}
-    pb="2.5rem"
-    display={{ base: 'none', lg: 'flex' }}
-    gridArea="links"
+    gridArea="footer"
+    px={{ base: 0, lg: '5rem' }}
+    pb={{ base: 0, lg: '4.5rem' }}
     children={children}
   />
 )
@@ -136,11 +110,6 @@ export const LoginPage = (): JSX.Element => {
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
   const { t } = useTranslation()
-
-  const currentYear = new Date().getFullYear()
-  // `xs` breakpoint needs to be explicitly set, suspect ChakraUI bug where xs
-  // breakpoint is smaller than base, so xs defaults to true.
-  const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
 
   const handleSendOtp = async ({ email }: LoginFormInputs) => {
     const trimmedEmail = email.trim()
@@ -226,29 +195,11 @@ export const LoginPage = (): JSX.Element => {
               )}
             </Box>
           </LoginGridArea>
-
-          <DesktopCopyGridArea>
-            <Text textStyle="caption-2" color="white">
-              {t('features.login.LoginPage.copyright', { currentYear })}
-            </Text>
-          </DesktopCopyGridArea>
-          <DesktopLinksGridArea>
-            <Wrap
-              shouldWrapChildren
-              textStyle="caption-2"
-              spacing={0}
-              mx="-0.75rem"
-            >
-              {APP_FOOTER_LINKS.map(({ label, href }, index) => (
-                <Link variant="standalone" key={index} href={href} mx="0.75rem">
-                  {label}
-                </Link>
-              ))}
-            </Wrap>
-          </DesktopLinksGridArea>
+          <FooterGridArea>
+            <AppFooter compactMonochromeLogos variant="compact" />
+          </FooterGridArea>
         </BaseGridLayout>
       </BackgroundBox>
-      {!isDesktop && <AppFooter />}
     </Flex>
   )
 }
