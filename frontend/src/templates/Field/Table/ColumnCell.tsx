@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { UseTableCellProps } from 'react-table'
-import { FormControl } from '@chakra-ui/react'
+import { FormControl, VisuallyHidden } from '@chakra-ui/react'
 import { get } from 'lodash'
 
 import { FormColorTheme } from '~shared/types'
@@ -130,10 +130,14 @@ export const ColumnCell = ({
 
   return (
     <FormControl
+      id={inputName}
       isRequired={columnSchema.required}
       isInvalid={!!get(errors, inputName)}
     >
-      <FormLabel display={{ base: 'flex', md: 'none' }} color="secondary.700">
+      <FormLabel
+        as={isMobile ? undefined : VisuallyHidden}
+        color="secondary.700"
+      >
         {columnSchema.title}
       </FormLabel>
       {renderedColumnCell}

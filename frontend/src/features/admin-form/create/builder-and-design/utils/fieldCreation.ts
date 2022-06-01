@@ -152,6 +152,17 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         },
       }
     }
+    case BasicField.Date: {
+      return {
+        fieldType,
+        ...baseMeta,
+        dateValidation: {
+          customMaxDate: null,
+          customMinDate: null,
+          selectedDateValidation: null,
+        },
+      }
+    }
     default: {
       return {
         fieldType: BasicField.Section,

@@ -6,15 +6,12 @@ import { times } from 'lodash'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme, LogicDto } from '~shared/types/form'
 
-import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
-import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 
+import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
 
 export interface FormFieldsProps {
@@ -30,9 +27,7 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
-  const isMobile = useIsMobile()
-
-  // TODO: Inject default values is field is also prefilled.
+  // TODO: Inject default values if field is also prefilled.
   const augmentedFormFields = useMemo(
     () => formFields.map(augmentWithMyInfo),
     [formFields],
@@ -61,16 +56,6 @@ export const FormFields = ({
     shouldUnregister: true,
   })
 
-  const allInputs = formMethods.watch()
-
-  const preventSubmissionLogic = useMemo(() => {
-    return getLogicUnitPreventingSubmit({
-      formInputs: allInputs,
-      formFields: augmentedFormFields,
-      formLogics,
-    })
-  }, [allInputs, augmentedFormFields, formLogics])
-
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
@@ -84,24 +69,11 @@ export const FormFields = ({
             />
           </Stack>
         </Box>
-        <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
-          <Button
-            isFullWidth={isMobile}
-            w="100%"
-            colorScheme={`theme-${colorTheme}`}
-            type="submit"
-            isLoading={formMethods.formState.isSubmitting}
-            isDisabled={!!preventSubmissionLogic}
-            loadingText="Submitting"
-          >
-            {preventSubmissionLogic ? 'Submission disabled' : 'Submit now'}
-          </Button>
-          {preventSubmissionLogic ? (
-            <InlineMessage variant="warning">
-              {preventSubmissionLogic.preventSubmitMessage}
-            </InlineMessage>
-          ) : null}
-        </Stack>
+        <PublicFormSubmitButton
+          formFields={augmentedFormFields}
+          formLogics={formLogics}
+          colorTheme={colorTheme}
+        />
       </form>
     </FormProvider>
   )
