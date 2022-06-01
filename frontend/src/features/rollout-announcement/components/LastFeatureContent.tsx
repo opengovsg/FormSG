@@ -9,11 +9,9 @@ interface LastFeatureContentProps {
   updates: FeatureUpdate[]
 }
 
-export const LastFeatureContent = (
-  props: LastFeatureContentProps,
-): JSX.Element => {
-  const { updates } = props
-
+export const LastFeatureContent = ({
+  updates,
+}: LastFeatureContentProps): JSX.Element => {
   return (
     <>
       <ModalHeader paddingBottom="0.5rem">

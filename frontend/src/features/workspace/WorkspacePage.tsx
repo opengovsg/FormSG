@@ -10,11 +10,12 @@ import { useSearchParams } from 'react-router-dom'
 import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
 import { chunk } from 'lodash'
 
-import { ROLLOUT_ANNOUNCEMENT_KEY } from '~constants/localStorage'
+import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import Pagination from '~components/Pagination'
 
 import RolloutAnnouncement from '~features/rollout-announcement'
+import { useUser } from '~features/user/queries'
 
 import CreateFormModal from './components/CreateFormModal'
 import { EmptyWorkspace } from './components/EmptyWorkspace'
@@ -107,7 +108,9 @@ export const WorkspacePage = (): JSX.Element => {
     topRef,
     createFormModalDisclosure,
   } = useWorkspaceForms()
+  const { user } = useUser()
 
+  const ROLLOUT_ANNOUNCEMENT_KEY = ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id
   const [hasSeenAnnouncement, setHasSeenAnnouncement] =
     useLocalStorage<boolean>(ROLLOUT_ANNOUNCEMENT_KEY)
 

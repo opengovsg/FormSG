@@ -22,14 +22,14 @@ interface RolloutAnnouncementModalProps {
   onClose: () => void
 }
 
+const NUM_OTHER_UPDATES_PAGES = 1
+const NUM_NEW_FEATURES = NEW_FEATURES.length + NUM_OTHER_UPDATES_PAGES
+
 export const RolloutAnnouncementModal = ({
   isOpen,
   onClose,
 }: RolloutAnnouncementModalProps): JSX.Element => {
   const [currActiveIdx, setCurrActiveIdx] = useState<number>(0)
-
-  const numOtherUpdatesPages = 1
-  const NUM_NEW_FEATURES = NEW_FEATURES.length + numOtherUpdatesPages
   const isLastAnnouncement = currActiveIdx === NUM_NEW_FEATURES - 1
 
   const handleNextClick = (): void => {
@@ -42,45 +42,43 @@ export const RolloutAnnouncementModal = ({
   }
 
   return (
-    <>
-      <Modal isOpen={isOpen} onClose={() => onClose()}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalCloseButton />
-          {isLastAnnouncement ? (
-            <LastFeatureContent updates={OTHER_UPDATES} />
-          ) : (
-            <NewFeatureContent content={NEW_FEATURES[currActiveIdx]} />
-          )}
-          <ModalFooter
-            display="flex"
-            justifyContent="space-between"
-            paddingTop="2.5rem"
-          >
-            <ProgressIndicator
-              numIndicators={NUM_NEW_FEATURES}
-              currActiveIdx={currActiveIdx}
-              onClick={setCurrActiveIdx}
-            />
-            <Box display="flex" alignItems="center" columnGap="2rem">
-              <Text textStyle="subhead-1" cursor="pointer" onClick={onClose}>
-                Cancel
-              </Text>
+    <Modal isOpen={isOpen} onClose={() => onClose()}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalCloseButton />
+        {isLastAnnouncement ? (
+          <LastFeatureContent updates={OTHER_UPDATES} />
+        ) : (
+          <NewFeatureContent content={NEW_FEATURES[currActiveIdx]} />
+        )}
+        <ModalFooter
+          display="flex"
+          justifyContent="space-between"
+          paddingTop="2.5rem"
+        >
+          <ProgressIndicator
+            numIndicators={NUM_NEW_FEATURES}
+            currActiveIdx={currActiveIdx}
+            onClick={setCurrActiveIdx}
+          />
+          <Box display="flex" alignItems="center" columnGap="2rem">
+            <Text textStyle="subhead-1" cursor="pointer" onClick={onClose}>
+              Cancel
+            </Text>
 
-              {isLastAnnouncement ? (
-                <Button onClick={handleNextClick}>Done</Button>
-              ) : (
-                <Button
-                  rightIcon={<BiRightArrowAlt size={24} />}
-                  onClick={handleNextClick}
-                >
-                  Next
-                </Button>
-              )}
-            </Box>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
+            {isLastAnnouncement ? (
+              <Button onClick={handleNextClick}>Done</Button>
+            ) : (
+              <Button
+                rightIcon={<BiRightArrowAlt size={24} />}
+                onClick={handleNextClick}
+              >
+                Next
+              </Button>
+            )}
+          </Box>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   )
 }
