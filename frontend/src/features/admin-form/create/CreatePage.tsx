@@ -13,17 +13,16 @@ import { FeatureTour } from './featureTour/FeatureTour'
 export const CreatePage = (): JSX.Element => {
   const { user, isLoading } = useUser()
   const localStorageFeatureTourKey = FEATURE_TOUR_KEY_PREFIX + user?._id
-  const [shouldFeatureRun, setShouldFeatureTourRun] = useLocalStorage<boolean>(
-    localStorageFeatureTourKey,
-  )
+  const [hasAdminSeenFeatureTour, setHasAdminSeenFeatureTour] =
+    useLocalStorage<boolean>(localStorageFeatureTourKey)
 
   return (
     <Flex h="100%" w="100%" overflow="auto" bg="neutral.200" direction="row">
       <CreatePageSidebarProvider>
         {!isLoading && (
           <FeatureTour
-            shouldRun={!shouldFeatureRun ?? true}
-            onClose={() => setShouldFeatureTourRun(true)}
+            shouldRun={!hasAdminSeenFeatureTour ?? true}
+            onClose={() => setHasAdminSeenFeatureTour(true)}
           />
         )}
         <CreatePageSidebar />
