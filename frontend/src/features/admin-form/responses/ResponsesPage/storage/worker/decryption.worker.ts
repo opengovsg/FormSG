@@ -108,8 +108,6 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
     '../utils/processDecryptedContent'
   )
 
-  console.log('Decrypting submission')
-
   const { line, secretKey, downloadAttachments } = data
 
   let submission: StorageModeSubmissionStreamDto

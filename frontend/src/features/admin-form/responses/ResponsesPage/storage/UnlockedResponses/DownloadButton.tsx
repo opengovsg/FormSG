@@ -1,3 +1,4 @@
+import { useMutation } from 'react-query'
 import { Box, ButtonGroup, MenuButton } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
@@ -7,22 +8,37 @@ import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 
-import { useStorageResponsesContext } from '../StorageResponsesContext'
+import useDecryptionWorkers from './useDecryptionWorkers'
 
 export const DownloadButton = (): JSX.Element => {
-  const { handleExportCsv } = useStorageResponsesContext()
+  const { downloadEncryptedResponses } = useDecryptionWorkers()
+
+  const handleExportCsvMutation = useMutation(
+    () => downloadEncryptedResponses(),
+    // TODO: add error and success handling
+  )
+
+  const handleExportCsv = () => {
+    return handleExportCsvMutation.mutate()
+  }
+
   return (
     <Box gridArea="export" justifySelf="flex-end">
       <Menu placement="bottom-end">
         {({ isOpen }) => (
           <>
             <ButtonGroup isAttached display="flex">
-              <Button px="1.5rem" mr="2px" onClick={handleExportCsv}>
+              <Button
+                isLoading={handleExportCsvMutation.isLoading}
+                px="1.5rem"
+                mr="2px"
+                onClick={handleExportCsv}
+              >
                 Download
               </Button>
               <MenuButton
                 as={IconButton}
-                // isDisabled={isDisabled}
+                isDisabled={handleExportCsvMutation.isLoading}
                 isActive={isOpen}
                 aria-label="More download options"
                 icon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
