@@ -74,6 +74,10 @@ const transformTableEditFormToField = (
 export const EditTable = ({ field }: EditTableProps): JSX.Element => {
   const preSubmitTransform = useCallback(
     ({ columns, ...rest }: EditTableInputs, output: TableFieldBase) => {
+      // Columns may have temporary ids due to admins adding new columns when editing the field.
+      // react-table requires an id to render the admin builder preview.
+      // We need to remove any temporary ids before submitting the updated field
+      // (without touching non-temp ids) so the server can assign an id as per usual.
       const columnsWithoutTempIds: Column[] = columns.map((column) => {
         const { _id, ...restColumn } = column
         if (isTemporaryColumnId(_id)) {
