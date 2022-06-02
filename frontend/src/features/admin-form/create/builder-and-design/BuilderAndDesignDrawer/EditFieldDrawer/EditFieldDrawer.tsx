@@ -7,8 +7,10 @@ import { BasicField, FieldCreateDto } from '~shared/types/field'
 import IconButton from '~components/IconButton'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+import { isMyInfo } from '~features/myinfo/utils'
 
 import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
+import { MYINFO_FIELD_CONSTANTS } from '../../constants'
 import {
   BuildFieldState,
   setToInactiveSelector,

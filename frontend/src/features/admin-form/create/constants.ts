@@ -43,11 +43,9 @@ import {
 } from 'react-icons/bi'
 import { As } from '@chakra-ui/react'
 
-import {
-  BasicField,
-  MyInfoAttribute,
-  MyInfoImplementedTypes,
-} from '~shared/types/field'
+import { BasicField, MyInfoAttribute } from '~shared/types/field'
+
+import { MyInfoImplementedTypes } from '~features/myinfo/types'
 
 type BuilderSidebarFieldMeta = {
   label: string
