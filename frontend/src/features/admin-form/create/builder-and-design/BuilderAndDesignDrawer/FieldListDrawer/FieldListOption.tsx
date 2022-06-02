@@ -137,7 +137,7 @@ export const DraggableMyInfoFieldListOption = ({
 )
 
 export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
-  ({ fieldType, isDisabled, isActive, ...props }, ref) => {
+  ({ fieldType, ...props }, ref) => {
     const meta = useMemo(
       () => BASICFIELD_TO_DRAWER_META[fieldType],
       [fieldType],
@@ -168,7 +168,7 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
 )
 
 export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
-  ({ fieldType, isDisabled, isActive, ...props }, ref) => {
+  ({ fieldType, ...props }, ref) => {
     const meta = useMemo(
       () => MYINFO_FIELD_TO_DRAWER_META[fieldType],
       [fieldType],
