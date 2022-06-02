@@ -70,7 +70,7 @@ export enum MyInfoAttribute {
   OwnershipOfPrivateResidentialProperty = 'ownership',
 }
 
-export type AllowMyInfoBase<T extends FieldBase = FieldBase> = T & {
+export type AllowMyInfoBase = {
   myInfo?: {
     attr: MyInfoAttribute
   }
@@ -89,4 +89,4 @@ export type FieldBase = {
   fieldType: BasicField
 }
 
-export type MyInfoableFieldBase = AllowMyInfoBase
+export type MyInfoableFieldBase = FieldBase & AllowMyInfoBase
