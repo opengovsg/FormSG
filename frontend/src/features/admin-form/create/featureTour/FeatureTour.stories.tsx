@@ -1,5 +1,3 @@
-import { MemoryRouter, Route } from 'react-router'
-import { Routes } from 'react-router-dom'
 import { Meta, Story } from '@storybook/react'
 
 import { AdminFormDto } from '~shared/types/form'
@@ -7,7 +5,8 @@ import { AdminFormDto } from '~shared/types/form'
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 
-import { AdminFormLayout } from '../../common/AdminFormLayout'
+import { AdminFormCreatePageDecorator } from '~utils/storybook'
+
 import { CreatePage } from '../CreatePage'
 
 const buildMswRoutes = (
@@ -23,21 +22,7 @@ const buildMswRoutes = (
 export default {
   title: 'Pages/FeatureTour/AdminFormBuilder',
   // component: To be implemented,
-  decorators: [
-    (storyFn) => {
-      // MemoryRouter is used so react-router-dom#Link components can work
-      // (and also to force the initial tab the page renders to be the settings tab).
-      return (
-        <MemoryRouter initialEntries={['/12345']}>
-          <Routes>
-            <Route path={'/:formId'} element={<AdminFormLayout />}>
-              <Route index element={storyFn()} />
-            </Route>
-          </Routes>
-        </MemoryRouter>
-      )
-    },
-  ],
+  decorators: [AdminFormCreatePageDecorator],
   parameters: {
     // Required so skeleton "animation" does not hide content.
     // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
@@ -48,6 +33,6 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <CreatePage />
+const Template: Story = () => <CreatePage testUserId="featureTourUserId" />
 
 export const AdminFormBuilderFeatureTour = Template.bind({})
