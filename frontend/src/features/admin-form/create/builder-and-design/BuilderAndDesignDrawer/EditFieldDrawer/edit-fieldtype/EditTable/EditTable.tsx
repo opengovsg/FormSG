@@ -129,10 +129,7 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
-      <Stack
-        divider={<StackDivider borderColor="secondary.100" />}
-        spacing="2rem"
-      >
+      <Stack spacing="2rem">
         <FormControl
           isRequired
           isReadOnly={isLoading}
