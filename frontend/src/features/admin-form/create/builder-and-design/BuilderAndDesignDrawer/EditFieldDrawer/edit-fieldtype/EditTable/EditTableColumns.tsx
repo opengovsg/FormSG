@@ -115,6 +115,7 @@ export const EditTableColumns = ({
               rules={requiredValidationRule}
               render={({ field }) => (
                 <SingleSelect
+                  isClearable={false}
                   items={TABLE_COLUMN_DROPDOWN_OPTIONS}
                   {...field}
                 />
