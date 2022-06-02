@@ -1,8 +1,16 @@
+import { keyBy } from 'lodash'
+
+import { types as MYINFO_TYPE_CONSTANTS } from '~shared/constants/field/myinfo'
 import {
   BasicField,
+  DateFieldBase,
+  DropdownFieldBase,
+  MobileFieldBase,
   MyInfoAttribute,
-  MyInfoImplementedTypes,
+  ShortTextFieldBase,
 } from '~shared/types/field'
+
+import { MyInfoFieldMeta, MyInfoImplementedTypes } from '~features/myinfo/types'
 
 export const BASIC_FIELDS_ORDERED = [
   // Page section
@@ -59,6 +67,31 @@ export const MYINFO_FIELDS_ORDERED: MyInfoImplementedTypes[] = [
   MyInfoAttribute.MarriageDate,
   MyInfoAttribute.DivorceDate,
 ]
+
+export const MYINFO_FIELD_CONSTANTS = keyBy(MYINFO_TYPE_CONSTANTS, 'name')
+
+export const MYINFO_TEXTFIELD_META: MyInfoFieldMeta<ShortTextFieldBase> = {
+  ValidationOptions: {
+    selectedValidation: null,
+    customVal: null,
+  },
+}
+
+export const MYINFO_DROPDOWNFIELD_META: MyInfoFieldMeta<DropdownFieldBase> = {
+  fieldOptions: [],
+}
+export const MYINFO_MOBILEFIELD_META: MyInfoFieldMeta<MobileFieldBase> = {
+  allowIntlNumbers: false,
+  isVerifiable: false,
+}
+
+export const MYINFO_DATEFIELD_META: MyInfoFieldMeta<DateFieldBase> = {
+  dateValidation: {
+    customMaxDate: null,
+    customMinDate: null,
+    selectedDateValidation: null,
+  },
+}
 
 export const CREATE_PAGE_FIELDS_ORDERED = BASIC_FIELDS_ORDERED.slice(0, 3)
 export const CREATE_FIELD_FIELDS_ORDERED = BASIC_FIELDS_ORDERED.slice(3)
