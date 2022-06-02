@@ -25,8 +25,7 @@ const validateSubmitFormFeedbackParams = celebrate({
     .unknown(true),
 })
 
-// TODO: Refactor this
-export const submitFormSubmissionFeedback: ControllerHandler<
+export const submitFormFeedback: ControllerHandler<
   { formId: string; submissionId: string },
   { message: string } | ErrorDto | PrivateFormErrorDto,
   { rating: number; comment: string }
@@ -38,10 +37,10 @@ export const submitFormSubmissionFeedback: ControllerHandler<
     await SubmissionService.checkDoesSubmissionIdExist(submissionId)
   if (checkDoesSubmissionIdExistRes.isErr()) {
     const { error } = checkDoesSubmissionIdExistRes
-    logger.warn({
-      message: 'Failed to check if submissionId is valid',
+    logger.error({
+      message: 'Failed to check if submissionId exists',
       meta: {
-        action: 'submitFormSubmissionFeedback',
+        action: 'submitFormFeedback',
         ...createReqMeta(req),
         formId,
         submissionId,
@@ -63,11 +62,11 @@ export const submitFormSubmissionFeedback: ControllerHandler<
     await FeedbackService.checkHasPreviousFeedback(formId, submissionId)
   if (checkHasPreviousFeedbackRes.isErr()) {
     const { error } = checkHasPreviousFeedbackRes
-    logger.warn({
+    logger.error({
       message:
         'Failed to check if feedback has already been submitted previously',
       meta: {
-        action: 'submitFormSubmissionFeedback',
+        action: 'submitFormFeedback',
         ...createReqMeta(req),
         formId,
         submissionId,
@@ -91,7 +90,7 @@ export const submitFormSubmissionFeedback: ControllerHandler<
     logger.error({
       message: 'Failed to retrieve form',
       meta: {
-        action: 'submitFormSubmissionFeedback',
+        action: 'submitFormFeedback',
         ...createReqMeta(req),
         formId,
         submissionId,
@@ -106,10 +105,10 @@ export const submitFormSubmissionFeedback: ControllerHandler<
   const isPublicResult = FormService.isFormPublic(form)
   if (isPublicResult.isErr()) {
     const { error } = isPublicResult
-    logger.warn({
+    logger.error({
       message: 'Form is not public',
       meta: {
-        action: 'submitFormSubmissionFeedback',
+        action: 'submitFormFeedback',
         ...createReqMeta(req),
         formId,
         submissionId,
@@ -145,7 +144,7 @@ export const submitFormSubmissionFeedback: ControllerHandler<
       logger.error({
         message: 'Error creating form feedback',
         meta: {
-          action: 'submitFormSubmissionFeedback',
+          action: 'submitFormFeedback',
           ...createReqMeta(req),
           formId,
           submissionId,
@@ -159,5 +158,5 @@ export const submitFormSubmissionFeedback: ControllerHandler<
 
 export const handleSubmitFormFeedback = [
   validateSubmitFormFeedbackParams,
-  submitFormSubmissionFeedback,
+  submitFormFeedback,
 ] as ControllerHandler[]
