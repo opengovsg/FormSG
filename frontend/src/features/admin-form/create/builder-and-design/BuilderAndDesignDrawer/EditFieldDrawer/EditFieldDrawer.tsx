@@ -160,6 +160,8 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditNric {...props} field={field} />
       case BasicField.Number:
         return <EditNumber {...props} field={field} />
+      case BasicField.Date:
+        return <EditDate {...props} field={field} />
       case BasicField.Decimal:
         return <EditDecimal {...props} field={field} />
       case BasicField.Section:
