@@ -16,7 +16,7 @@ interface CreatePageProps {
 
 export const CreatePage = ({ testUserId }: CreatePageProps): JSX.Element => {
   const { user, isLoading } = useUser()
-  // User id will never undefined unless it's in storybook testing because
+  // User id will never be undefined unless it's in storybook testing because
   // user will have to be logged in to be able to reach this page
   const userId = user?._id ?? testUserId
   const localStorageFeatureTourKey = FEATURE_TOUR_KEY_PREFIX + userId
