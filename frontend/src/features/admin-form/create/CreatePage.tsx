@@ -1,24 +1,31 @@
 import { Flex } from '@chakra-ui/react'
 
+import { FEATURE_TOUR_KEY_PREFIX } from '~constants/localStorage'
+import { useLocalStorage } from '~hooks/useLocalStorage'
+
+import { useUser } from '~features/user/queries'
+
 import { CreatePageContent } from './common/CreatePageContent'
 import { CreatePageSidebar } from './common/CreatePageSidebar'
 import { CreatePageSidebarProvider } from './common/CreatePageSidebarContext'
 import { FeatureTour } from './featureTour/FeatureTour'
 
-export interface CreatePageProps {
-  shouldFeatureTourRun?: boolean
-}
-
-export const CreatePage = ({
-  shouldFeatureTourRun,
-}: CreatePageProps): JSX.Element => {
-  // TODO: need to add logic to only show feature tour when user has
-  // not seen it before
+export const CreatePage = (): JSX.Element => {
+  const { user, isLoading } = useUser()
+  const localStorageFeatureTourKey = FEATURE_TOUR_KEY_PREFIX + user?._id
+  const [shouldFeatureRun, setShouldFeatureTourRun] = useLocalStorage<boolean>(
+    localStorageFeatureTourKey,
+  )
 
   return (
     <Flex h="100%" w="100%" overflow="auto" bg="neutral.200" direction="row">
       <CreatePageSidebarProvider>
-        <FeatureTour shouldRun={shouldFeatureTourRun ?? false} />
+        {!isLoading && (
+          <FeatureTour
+            shouldRun={!shouldFeatureRun ?? true}
+            onClose={() => setShouldFeatureTourRun(true)}
+          />
+        )}
         <CreatePageSidebar />
         <CreatePageContent />
       </CreatePageSidebarProvider>

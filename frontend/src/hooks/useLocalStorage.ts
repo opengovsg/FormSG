@@ -32,7 +32,7 @@ export const useLocalStorage = <T>(
       // Allow value to be a function so we have the same API as useState
       const newValue = value instanceof Function ? value(storedValue) : value
 
-      if (!value) {
+      if (value === undefined) {
         window.localStorage.removeItem(key)
       } else {
         // Save to local storage

@@ -8,7 +8,7 @@ import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 
 import { AdminFormLayout } from '../../common/AdminFormLayout'
-import { CreatePage, CreatePageProps } from '../CreatePage'
+import { CreatePage } from '../CreatePage'
 
 const buildMswRoutes = (
   overrides?: Partial<AdminFormDto>,
@@ -48,9 +48,6 @@ export default {
   },
 } as Meta
 
-const Template: Story<CreatePageProps> = (args) => <CreatePage {...args} />
+const Template: Story = () => <CreatePage />
 
 export const AdminFormBuilderFeatureTour = Template.bind({})
-AdminFormBuilderFeatureTour.args = {
-  shouldFeatureTourRun: true,
-}
