@@ -32,6 +32,12 @@ export const submitFormFeedback: ControllerHandler<
 > = async (req, res) => {
   const { formId, submissionId } = req.params
   const { rating, comment } = req.body
+  const logMeta = {
+    action: 'submitFormFeedback',
+    ...createReqMeta(req),
+    formId,
+    submissionId,
+  }
 
   const checkDoesSubmissionIdExistRes =
     await SubmissionService.checkDoesSubmissionIdExist(submissionId)
@@ -39,12 +45,7 @@ export const submitFormFeedback: ControllerHandler<
     const { error } = checkDoesSubmissionIdExistRes
     logger.error({
       message: 'Failed to check if submissionId exists',
-      meta: {
-        action: 'submitFormFeedback',
-        ...createReqMeta(req),
-        formId,
-        submissionId,
-      },
+      meta: logMeta,
       error,
     })
     const { errorMessage, statusCode } = mapRouteError(error)
@@ -65,12 +66,7 @@ export const submitFormFeedback: ControllerHandler<
     logger.error({
       message:
         'Failed to check if feedback has already been submitted previously',
-      meta: {
-        action: 'submitFormFeedback',
-        ...createReqMeta(req),
-        formId,
-        submissionId,
-      },
+      meta: logMeta,
       error,
     })
     const { errorMessage, statusCode } = mapRouteError(error)
@@ -89,12 +85,7 @@ export const submitFormFeedback: ControllerHandler<
     const { error } = formResult
     logger.error({
       message: 'Failed to retrieve form',
-      meta: {
-        action: 'submitFormFeedback',
-        ...createReqMeta(req),
-        formId,
-        submissionId,
-      },
+      meta: logMeta,
       error,
     })
     const { errorMessage, statusCode } = mapRouteError(error)
@@ -107,12 +98,7 @@ export const submitFormFeedback: ControllerHandler<
     const { error } = isPublicResult
     logger.error({
       message: 'Form is not public',
-      meta: {
-        action: 'submitFormFeedback',
-        ...createReqMeta(req),
-        formId,
-        submissionId,
-      },
+      meta: logMeta,
       error,
     })
     const { errorMessage, statusCode } = mapRouteError(error)
@@ -143,12 +129,7 @@ export const submitFormFeedback: ControllerHandler<
     .mapErr((error) => {
       logger.error({
         message: 'Error creating form feedback',
-        meta: {
-          action: 'submitFormFeedback',
-          ...createReqMeta(req),
-          formId,
-          submissionId,
-        },
+        meta: logMeta,
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
