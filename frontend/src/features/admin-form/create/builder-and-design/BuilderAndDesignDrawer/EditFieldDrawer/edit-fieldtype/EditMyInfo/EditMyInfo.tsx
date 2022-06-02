@@ -3,7 +3,6 @@ import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { identity } from 'lodash'
 
 import { MyInfoField } from '~shared/types'
-import { extendWithMyInfo } from '~shared/types/field/myinfo'
 
 import Link from '~components/Link'
 
@@ -11,6 +10,8 @@ import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
+
+import { extendWithMyInfo } from './utils'
 
 const VerifiedIcon = ({ isVerified }: { isVerified: boolean }): JSX.Element => {
   return (

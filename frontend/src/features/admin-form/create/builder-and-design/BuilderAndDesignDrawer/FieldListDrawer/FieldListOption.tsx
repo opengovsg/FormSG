@@ -6,12 +6,13 @@ import {
 } from 'react-beautiful-dnd'
 import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 
-import { BasicField, MyInfoImplementedTypes } from '~shared/types/field'
+import { BasicField } from '~shared/types/field'
 
 import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from '~features/admin-form/create/constants'
+import { MyInfoImplementedTypes } from '~features/myinfo/types'
 
 import {
   updateCreateStateSelector,

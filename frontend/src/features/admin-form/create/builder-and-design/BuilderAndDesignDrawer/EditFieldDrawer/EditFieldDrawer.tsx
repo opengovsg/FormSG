@@ -3,7 +3,6 @@ import { BiLeftArrowAlt } from 'react-icons/bi'
 import { Stack, Text } from '@chakra-ui/react'
 
 import { BasicField, FieldCreateDto } from '~shared/types/field'
-import { isMyInfo, MYINFO_FIELD_CONSTANTS } from '~shared/types/field/myinfo'
 
 import IconButton from '~components/IconButton'
 

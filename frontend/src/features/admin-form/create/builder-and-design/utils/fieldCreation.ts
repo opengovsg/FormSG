@@ -4,22 +4,25 @@ import {
   FieldCreateDto,
   MyInfoAttribute,
   MyInfoField,
-  MyInfoImplementedTypes,
-  MyInfoUnimplementedTypes,
   RatingShape,
 } from '~shared/types/field'
+
 import {
-  MYINFO_FIELD_CONSTANTS,
-  myInfoDateFieldMeta,
-  myInfoDropdownFieldMeta,
-  myInfoMobileFieldMeta,
-  myInfoTextFieldMeta,
-} from '~shared/types/field/myinfo'
+  MyInfoImplementedTypes,
+  MyInfoUnimplementedTypes,
+} from '~features/myinfo/types'
 
 import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from '../../constants'
+import {
+  MYINFO_DATEFIELD_META,
+  MYINFO_DROPDOWNFIELD_META,
+  MYINFO_FIELD_CONSTANTS,
+  MYINFO_MOBILEFIELD_META,
+  MYINFO_TEXTFIELD_META,
+} from '../constants'
 
 /**
  * Utility methods to create bare minimum meta required for field creation.
@@ -213,7 +216,7 @@ export const getMyInfoFieldCreationMeta = (
       return {
         ...baseMeta,
         fieldType: BasicField.ShortText,
-        ...myInfoTextFieldMeta,
+        ...MYINFO_TEXTFIELD_META,
       }
     }
 
@@ -225,7 +228,7 @@ export const getMyInfoFieldCreationMeta = (
       return {
         ...baseMeta,
         fieldType: BasicField.Date,
-        ...myInfoDateFieldMeta,
+        ...MYINFO_DATEFIELD_META,
       }
     }
 
@@ -244,7 +247,7 @@ export const getMyInfoFieldCreationMeta = (
       return {
         ...baseMeta,
         fieldType: BasicField.Dropdown,
-        ...myInfoDropdownFieldMeta,
+        ...MYINFO_DROPDOWNFIELD_META,
       }
     }
 
@@ -252,7 +255,7 @@ export const getMyInfoFieldCreationMeta = (
       return {
         ...baseMeta,
         fieldType: BasicField.Mobile,
-        ...myInfoMobileFieldMeta,
+        ...MYINFO_MOBILEFIELD_META,
       }
     }
 
