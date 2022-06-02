@@ -11,7 +11,7 @@ import DecryptionWorker, {
 } from './worker/decryption.worker'
 import { CleanableDecryptionWorkerApi } from './types'
 
-type EncryptedResponsesStreamParams = {
+export type EncryptedResponsesStreamParams = {
   startDate?: string
   endDate?: string
   downloadAttachments: boolean
