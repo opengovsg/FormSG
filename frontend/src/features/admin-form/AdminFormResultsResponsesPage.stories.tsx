@@ -1,6 +1,8 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
+import { expect } from '@storybook/jest'
 import { Meta, Story } from '@storybook/react'
+import { userEvent, waitFor, within } from '@storybook/testing-library'
 
 import { FormResponseMode } from '~shared/types/form'
 
@@ -28,6 +30,12 @@ export default {
     msw: [...createFormBuilderMocks({}, 0), getAdminFormSubmissions()],
   },
 } as Meta
+
+// Generated for testing.
+const MOCK_KEYPAIR = {
+  publicKey: 'lC4uMSTsWDuT6bZGE2cMEevSpIrcDoZOT1uyThWFzno=',
+  secretKey: 'xdXNlI2HyZzsVXcvCR/LT4350oW/yRZNx2lMi+555Yk=',
+}
 
 const Template: Story = () => {
   return (
@@ -84,10 +92,38 @@ EmailFormMobile.parameters = getMobileViewParameters()
 export const StorageForm = Template.bind({})
 StorageForm.parameters = {
   msw: [
-    ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }, 0),
+    ...createFormBuilderMocks(
+      {
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: MOCK_KEYPAIR.publicKey,
+      },
+      0,
+    ),
     getAdminFormSubmissions(),
     getStorageSubmissionMetadataResponse(),
   ],
+}
+StorageForm.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  const inputName =
+    /enter or upload secret key your secret key was downloaded when you created your form/i
+
+  await waitFor(
+    async () => {
+      expect(
+        canvas.getByRole('textbox', {
+          name: inputName,
+        }),
+      ).not.toBeDisabled()
+    },
+    { timeout: 5000 },
+  )
+  await userEvent.type(
+    canvas.getByRole('textbox', {
+      name: inputName,
+    }),
+    MOCK_KEYPAIR.secretKey,
+  )
 }
 
 export const StorageFormTablet = Template.bind({})
