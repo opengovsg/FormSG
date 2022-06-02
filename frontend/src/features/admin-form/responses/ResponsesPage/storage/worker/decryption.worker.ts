@@ -10,7 +10,14 @@ import { StorageModeSubmissionStreamDto } from '~shared/types'
 
 import formsgSdk from '~utils/formSdk'
 
-import { processDecryptedContent } from '../utils/processDecryptedContent'
+// Fixes issue raised at https://stackoverflow.com/questions/66472945/referenceerror-refreshreg-is-not-defined
+// Something to do with babel-loader.
+if (process.env.NODE_ENV !== 'production') {
+  // eslint-disable-next-line
+  ;(global as any).$RefreshReg$ = () => {}
+  // eslint-disable-next-line
+  ;(global as any).$RefreshSig$ = () => () => {}
+}
 
 const queue = new PQueue({ concurrency: 1 })
 
@@ -191,6 +198,17 @@ async function downloadAndDecryptAttachmentsAsZip(
  * @param data The data to decrypt into a csvRecord.
  */
 async function decryptIntoCsv(data: LineData): Promise<CsvRecord> {
+  // This needs to be dynamically imported due to sharing code between main app and worker code.
+  // Fixes issue raised at https://stackoverflow.com/questions/66472945/referenceerror-refreshreg-is-not-defined
+  // Something to do with babel-loader.
+
+  // TODO: May be removed when we move to Webpack 5, where web workers are now first class citizens?
+  const { processDecryptedContent } = await import(
+    '../utils/processDecryptedContent'
+  )
+
+  console.log('Decrypting submission')
+
   const { line, secretKey, downloadAttachments } = data
 
   let submission: StorageModeSubmissionStreamDto
@@ -279,6 +297,7 @@ const exports = {
   decryptIntoCsv,
 }
 
-export type DecryptionWorker = typeof exports
-
 expose(exports)
+
+export default {} as typeof Worker & { new (): Worker }
+export type DecryptionWorkerApi = typeof exports
