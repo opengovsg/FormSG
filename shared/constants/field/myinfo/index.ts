@@ -48,7 +48,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
-      'The registered name of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
+      'The registered date of birth of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Date,
   },
   {
