@@ -248,4 +248,64 @@ describe('feedback.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
   })
+
+  describe('checkHasPreviousFeedback', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_SUBMISSION_ID = new ObjectId().toHexString()
+
+    beforeEach(async () => {
+      await dbHandler.clearCollection(FormFeedback.collection.name)
+    })
+    afterEach(() => jest.clearAllMocks())
+
+    it('should return true when previous feedback exists', async () => {
+      await FormFeedback.create({
+        comment: `test feedback`,
+        formId: MOCK_FORM_ID,
+        formSubmissionId: MOCK_SUBMISSION_ID,
+        rating: 5,
+      })
+
+      const actualResult = await FeedbackService.checkHasPreviousFeedback(
+        MOCK_FORM_ID,
+        MOCK_SUBMISSION_ID,
+      )
+
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should return false previous feedback does not exist', async () => {
+      await FormFeedback.create({
+        comment: `test feedback`,
+        formId: MOCK_FORM_ID,
+        rating: 5,
+      })
+
+      const actualResult = await FeedbackService.checkHasPreviousFeedback(
+        MOCK_FORM_ID,
+        new ObjectId().toHexString(),
+      )
+
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(false)
+    })
+
+    it('should return DatabaseError when error occurs whilst querying database', async () => {
+      const existSpy = jest.spyOn(FormFeedback, 'exists')
+      existSpy.mockImplementationOnce(() => Promise.reject(new Error('boom')))
+
+      const actualResult = await FeedbackService.checkHasPreviousFeedback(
+        MOCK_FORM_ID,
+        MOCK_SUBMISSION_ID,
+      )
+
+      expect(existSpy).toHaveBeenCalledWith({
+        formId: MOCK_FORM_ID,
+        formSubmissionId: MOCK_SUBMISSION_ID,
+      })
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
 })

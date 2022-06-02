@@ -721,4 +721,66 @@ describe('submission.service', () => {
       )
     })
   })
+
+  describe('checkDoesSubmissionIdExist', () => {
+    const MOCK_SUBMISSION_ID = MOCK_SUBMISSION._id
+
+    beforeEach(async () => {
+      await dbHandler.clearCollection(Submission.collection.name)
+    })
+    afterEach(() => jest.clearAllMocks())
+
+    it('should return true with valid submissionId', async () => {
+      await Submission.create({
+        _id: MOCK_SUBMISSION_ID,
+        submissionType: SubmissionType.Encrypt,
+        form: MOCK_FORM_ID,
+        encryptedContent: 'some random encrypted content',
+        version: 1,
+        responseHash: 'hash',
+        responseSalt: 'salt',
+      })
+
+      const actualResult = await SubmissionService.checkDoesSubmissionIdExist(
+        MOCK_SUBMISSION_ID,
+      )
+
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should return false with invalid submissionId', async () => {
+      await Submission.create({
+        _id: MOCK_SUBMISSION_ID,
+        submissionType: SubmissionType.Encrypt,
+        form: MOCK_FORM_ID,
+        encryptedContent: 'some random encrypted content',
+        version: 1,
+        responseHash: 'hash',
+        responseSalt: 'salt',
+      })
+
+      const actualResult = await SubmissionService.checkDoesSubmissionIdExist(
+        new ObjectId().toHexString(),
+      )
+
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(false)
+    })
+
+    it('should return DatabaseError when error occurs whilst querying database', async () => {
+      const existSpy = jest.spyOn(Submission, 'exists')
+      existSpy.mockImplementationOnce(() => Promise.reject(new Error('boom')))
+
+      const actualResult = await SubmissionService.checkDoesSubmissionIdExist(
+        MOCK_SUBMISSION_ID,
+      )
+
+      expect(existSpy).toHaveBeenCalledWith({
+        _id: MOCK_SUBMISSION_ID,
+      })
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
 })
