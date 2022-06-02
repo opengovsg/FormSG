@@ -83,6 +83,7 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
           name="ratingOptions.steps"
           render={({ field: { value, ...field } }) => (
             <SingleSelect
+              isClearable={false}
               items={EDIT_RATING_OPTIONS.stepOptions}
               value={String(value)}
               {...field}
@@ -96,7 +97,11 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
           control={control}
           name="ratingOptions.shape"
           render={({ field }) => (
-            <SingleSelect items={EDIT_RATING_OPTIONS.shapeOptions} {...field} />
+            <SingleSelect
+              isClearable={false}
+              items={EDIT_RATING_OPTIONS.shapeOptions}
+              {...field}
+            />
           )}
         />
       </FormControl>
