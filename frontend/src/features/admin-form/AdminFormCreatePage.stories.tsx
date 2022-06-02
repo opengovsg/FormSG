@@ -2,7 +2,11 @@ import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
 import { Meta, Story } from '@storybook/react'
 
-import { AdminFormDto } from '~shared/types/form'
+import {
+  AdminFormDto,
+  FormAuthType,
+  FormResponseMode,
+} from '~shared/types/form'
 
 import {
   createFormBuilderMocks,
@@ -58,7 +62,11 @@ const Template: Story = () => <CreatePage />
 export const DesktopEmpty = Template.bind({})
 export const DesktopAllFields = Template.bind({})
 DesktopAllFields.parameters = {
-  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
+  msw: buildMswRoutes({
+    form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
+    authType: FormAuthType.MyInfo,
+    responseMode: FormResponseMode.Email,
+  }),
 }
 
 export const TabletEmpty = Template.bind({})

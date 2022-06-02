@@ -12,6 +12,10 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { AdminFormDto, FormAuthType, FormResponseMode } from '~shared/types'
+
+import InlineMessage from '~components/InlineMessage'
+import Link from '~components/Link'
 import { Tab } from '~components/Tabs'
 
 import {
@@ -28,6 +32,7 @@ import {
   CREATE_PAGE_DROP_ID,
   CREATE_PAGE_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
+import { isMyInfo } from '~features/myinfo/utils'
 
 import { useCreateTabForm } from '../../useCreateTabForm'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
@@ -111,10 +116,20 @@ const BasicFieldPanelContent = () => {
 }
 
 const MyInfoFieldPanelContent = () => {
-  const { isLoading } = useCreateTabForm()
+  const { data: form, isLoading } = useCreateTabForm()
+  // myInfo should be disabled if
+  // 1. form response mode is not email mode
+  // 2. form auth type is not myInfo
+  // 3. # of myInfo fields >= 30
+  const isMyInfoDisabled =
+    form?.responseMode !== FormResponseMode.Email ||
+    form?.authType !== FormAuthType.MyInfo ||
+    (form ? form.form_fields.filter(isMyInfo).length >= 30 : true)
+  const isDisabled = isMyInfoDisabled || isLoading
 
   return (
     <>
+      <MyInfoMessage />
       <Droppable isDropDisabled droppableId={CREATE_MYINFO_PERSONAL_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
@@ -122,7 +137,7 @@ const MyInfoFieldPanelContent = () => {
               {CREATE_MYINFO_PERSONAL_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
-                  isDisabled={isLoading}
+                  isDisabled={isDisabled}
                   key={index}
                   fieldType={fieldType}
                 />
@@ -139,7 +154,7 @@ const MyInfoFieldPanelContent = () => {
               {CREATE_MYINFO_CONTACT_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
-                  isDisabled={isLoading}
+                  isDisabled={isDisabled}
                   key={index}
                   fieldType={fieldType}
                 />
@@ -157,7 +172,7 @@ const MyInfoFieldPanelContent = () => {
                 (fieldType, index) => (
                   <DraggableMyInfoFieldListOption
                     index={index}
-                    isDisabled={isLoading}
+                    isDisabled={isDisabled}
                     key={index}
                     fieldType={fieldType}
                   />
@@ -175,7 +190,7 @@ const MyInfoFieldPanelContent = () => {
               {CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
-                  isDisabled={isLoading}
+                  isDisabled={isDisabled}
                   key={index}
                   fieldType={fieldType}
                 />
@@ -186,6 +201,54 @@ const MyInfoFieldPanelContent = () => {
         )}
       </Droppable>
     </>
+  )
+}
+
+type MyInfoTextProps = Pick<
+  AdminFormDto,
+  'authType' | 'responseMode' | 'form_fields'
+>
+
+const MyInfoText = ({
+  authType,
+  responseMode,
+  form_fields,
+}: MyInfoTextProps): JSX.Element => {
+  const isMyInfoDisabled = authType !== FormAuthType.MyInfo
+  const numMyInfoFields = form_fields.filter((ff) => isMyInfo(ff)).length
+
+  if (responseMode !== FormResponseMode.Email) {
+    return <Text>MyInfo fields are not available in Storage mode forms.</Text>
+  }
+
+  if (isMyInfoDisabled) {
+    return (
+      <Text>Enable MyInfo in the Settings tab to access these fields.</Text>
+    )
+  }
+
+  return (
+    <Text>
+      {`Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30).`}{' '}
+      <Link isExternal>Learn more</Link>
+    </Text>
+  )
+}
+
+const MyInfoMessage = (): JSX.Element => {
+  const { data: form } = useCreateTabForm()
+  if (!form) {
+    return <Box display="none" />
+  }
+  const numMyInfoFields = form.form_fields.filter((ff) => isMyInfo(ff)).length
+  const hasExceededLimit = numMyInfoFields >= 30
+
+  return (
+    <Box px="1.5rem" pt="2rem" pb="1.5rem">
+      <InlineMessage variant={hasExceededLimit ? 'error' : 'info'}>
+        <MyInfoText {...form} />
+      </InlineMessage>
+    </Box>
   )
 }
 
