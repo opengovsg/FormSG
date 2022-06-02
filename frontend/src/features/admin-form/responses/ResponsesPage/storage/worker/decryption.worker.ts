@@ -1,14 +1,21 @@
-import { FormField as VerifiedFormField } from '@opengovsg/formsg-sdk/dist/types'
 import { decode as decodeBase64 } from '@stablelib/base64'
 import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
 import JSZip from 'jszip'
-import { cloneDeep } from 'lodash'
 import PQueue from 'p-queue'
 
 import { StorageModeSubmissionStreamDto } from '~shared/types'
 
 import formsgSdk from '~utils/formSdk'
+
+import {
+  AttachmentsDownloadMap,
+  CsvRecordData,
+  CsvRecordStatus,
+  LineData,
+  MaterializedCsvRecord,
+} from '../types'
+import { CsvRecord } from '../utils/CsvRecord.class'
 
 // Fixes issue raised at https://stackoverflow.com/questions/66472945/referenceerror-refreshreg-is-not-defined
 // Something to do with babel-loader.
@@ -21,112 +28,6 @@ if (process.env.NODE_ENV !== 'production') {
 
 const queue = new PQueue({ concurrency: 1 })
 
-enum CsvRecordStatus {
-  Ok = 'OK',
-  Unknown = 'UNKNOWN',
-  Error = 'ERROR',
-  AttachmentError = 'ATTACHMENT_ERROR',
-  Unverified = 'UNVERIFIED',
-}
-
-type AttachmentsDownloadMap = Map<number, { url: string; filename?: string }>
-
-/** @class CsvRecord represents the CSV data to be passed back, along with helper functions */
-class CsvRecord {
-  id: string
-  created: string
-  status: CsvRecordStatus
-  downloadBlob?: Blob
-  submissionData?: {
-    created: string
-    submissionId: string
-    record: VerifiedFormField[]
-  }
-
-  private statusMessage: string
-  private record: VerifiedFormField[]
-
-  /**
-   * Creates an instance of CsvRecord
-   *
-   * @constructor
-   * @param id The ID of the submission
-   * @param created The time of submission
-   * @param status The status of the submission decryption/download process
-   */
-  constructor(id: string, created: string, status: CsvRecordStatus) {
-    this.id = id
-    this.created = created
-    this.status = status
-
-    /** @private */ this.statusMessage = status
-    /** @private */ this.record = []
-  }
-
-  /**
-   * Sets the decryption/download status
-   *
-   * @param status A status code indicating the decryption success to be consumed by submissions.client.factory.js
-   * @param msg A human readable status message to be presented as part of the CSV download
-   */
-  setStatus(status: CsvRecordStatus, msg: string) {
-    this.status = status
-    this.statusMessage = msg
-  }
-
-  /**
-   * Sets the ZIP attachment blob to be downloaded
-   *
-   * @param blob A blob containing a ZIP file of all the submission attachments downloaded
-   */
-  setDownloadBlob(blob: Blob) {
-    this.downloadBlob = blob
-  }
-
-  /**
-   * Sets the decrypted CSV record
-   *
-   * @param record The decrypted submission record
-   */
-  setRecord(record: VerifiedFormField[]) {
-    this.record = record
-  }
-
-  /**
-   * Materializes the `submissionData` field
-   *
-   * This function should be called before the CsvRecord is passed back using `postMessage`.
-   * Since `postMessage` does not support code being passed back to the main thread, the
-   * `CsvRecord` received will only contain simple fields (e.g. `created`, `status`, etc...).
-   *
-   * This function creates a `submissionData` field in the object containing the final
-   * answers to be added to the CSV file. This `submissionData` field will be passed back
-   * using `postMessage` since it does not contain code.
-   */
-  materializeSubmissionData() {
-    const downloadStatus: VerifiedFormField = {
-      _id: '000000000000000000000000',
-      fieldType: 'textfield',
-      question: 'Download Status',
-      answer: this.statusMessage,
-    }
-    const output = cloneDeep(this.record)
-    output.unshift(downloadStatus)
-
-    this.submissionData = {
-      created: this.created,
-      submissionId: this.id,
-      record: output,
-    }
-  }
-}
-
-type LineData = {
-  line: string
-  secretKey: string
-  downloadAttachments?: boolean
-}
-
 /**
  * Verifies that the signatures for every field that has a corresponding
  * signature are valid.
@@ -137,7 +38,7 @@ type LineData = {
  * @param created Database timestamp of submission
  */
 function verifySignature(
-  decryptedSubmission: VerifiedFormField[],
+  decryptedSubmission: CsvRecordData[],
   created: string,
 ) {
   const signatureFields = decryptedSubmission.filter((field) => field.signature)
@@ -197,7 +98,7 @@ async function downloadAndDecryptAttachmentsAsZip(
  * main thread.
  * @param data The data to decrypt into a csvRecord.
  */
-async function decryptIntoCsv(data: LineData): Promise<CsvRecord> {
+async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
   // This needs to be dynamically imported due to sharing code between main app and worker code.
   // Fixes issue raised at https://stackoverflow.com/questions/66472945/referenceerror-refreshreg-is-not-defined
   // Something to do with babel-loader.
@@ -290,7 +191,7 @@ async function decryptIntoCsv(data: LineData): Promise<CsvRecord> {
     csvRecord.setStatus(CsvRecordStatus.Error, 'Error')
   }
   csvRecord.materializeSubmissionData()
-  return csvRecord
+  return csvRecord as MaterializedCsvRecord
 }
 
 const exports = {

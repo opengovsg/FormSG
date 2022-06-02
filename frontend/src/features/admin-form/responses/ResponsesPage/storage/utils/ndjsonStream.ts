@@ -6,7 +6,7 @@
 
 export const ndjsonStream = (
   response: ReadableStream<Uint8Array> | null,
-): ReadableStream => {
+): ReadableStream<string> => {
   // For cancellation
   let maybeReader: ReadableStreamDefaultReader<Uint8Array> | undefined
   let shouldCancel = false

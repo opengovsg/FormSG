@@ -9,6 +9,7 @@ import { ndjsonStream } from './utils/ndjsonStream'
 import DecryptionWorker, {
   DecryptionWorkerApi,
 } from './worker/decryption.worker'
+import { CleanableDecryptionWorkerApi } from './types'
 
 type EncryptedResponsesStreamParams = {
   startDate?: string
@@ -54,17 +55,17 @@ export const getEncryptedResponsesStream = async (
   abortController?: AbortController,
 ) => {
   // Unable to use axios for streams, and thus using native fetch instead.
-  const res = await fetch(generateDownloadUrl(formId, params), {
+  return fetch(generateDownloadUrl(formId, params), {
     signal: abortController?.signal,
   })
-  const response = res.body
-  return ndjsonStream(response)
+    .then((res) => res.body)
+    .then(ndjsonStream)
 }
 
 /**
  * Creates a worker, a cleanup function and returns it
  */
-export const makeWorkerApiAndCleanup = () => {
+export const makeWorkerApiAndCleanup = (): CleanableDecryptionWorkerApi => {
   // Create a worker and wrap it with comlink for ease of interaction.
   const worker = new DecryptionWorker()
   const workerApi = wrap<DecryptionWorkerApi>(worker)
