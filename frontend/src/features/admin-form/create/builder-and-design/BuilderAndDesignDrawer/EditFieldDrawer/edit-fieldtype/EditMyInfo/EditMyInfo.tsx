@@ -1,6 +1,5 @@
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
-import { identity } from 'lodash'
 
 import { MyInfoField } from '~shared/types'
 
@@ -36,7 +35,8 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
   } = useEditFieldForm<EditMyInfoProps, MyInfoField>({
     field,
     transform: {
-      input: identity,
+      // MyInfo fields are not editable, so omit any transformation and output the original field
+      input: () => ({}),
       output: (_, originalField) => originalField,
     },
   })
