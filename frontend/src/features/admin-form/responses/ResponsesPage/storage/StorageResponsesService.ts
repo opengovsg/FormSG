@@ -1,3 +1,4 @@
+import { releaseProxy, wrap } from 'comlink'
 import { mapValues } from 'lodash'
 
 import { API_BASE_URL } from '~services/ApiService'
@@ -5,6 +6,9 @@ import { API_BASE_URL } from '~services/ApiService'
 import { ADMIN_FORM_ENDPOINT } from '~features/admin-form/common/AdminViewFormService'
 
 import { ndjsonStream } from './utils/ndjsonStream'
+import DecryptionWorker, {
+  DecryptionWorkerApi,
+} from './worker/decryption.worker'
 
 type EncryptedResponsesStreamParams = {
   startDate?: string
@@ -55,4 +59,23 @@ export const getEncryptedResponsesStream = async (
   })
   const response = res.body
   return ndjsonStream(response)
+}
+
+/**
+ * Creates a worker, a cleanup function and returns it
+ */
+export const makeWorkerApiAndCleanup = () => {
+  // Create a worker and wrap it with comlink for ease of interaction.
+  const worker = new DecryptionWorker()
+  const workerApi = wrap<DecryptionWorkerApi>(worker)
+
+  // A cleanup function that releases the comlink proxy and terminates the worker
+  const cleanup = () => {
+    workerApi[releaseProxy]()
+    worker.terminate()
+  }
+
+  const workerApiAndCleanup = { workerApi, cleanup }
+
+  return workerApiAndCleanup
 }
