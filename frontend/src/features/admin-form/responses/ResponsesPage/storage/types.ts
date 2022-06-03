@@ -1,7 +1,9 @@
 import { FormField } from '@opengovsg/formsg-sdk/dist/types'
+import { Remote } from 'comlink'
 import { SetRequired } from 'type-fest'
 
 import { CsvRecord } from './utils/CsvRecord.class'
+import { DecryptionWorkerApi } from './worker/decryption.worker'
 
 export enum CsvRecordStatus {
   Ok = 'OK',
@@ -30,4 +32,9 @@ export type LineData = {
   line: string
   secretKey: string
   downloadAttachments?: boolean
+}
+
+export type CleanableDecryptionWorkerApi = {
+  workerApi: Remote<DecryptionWorkerApi>
+  cleanup: () => void
 }
