@@ -8,7 +8,8 @@ export const ResponsesTabWrapper = ({
   return (
     <Container
       overflowY="auto"
-      p={{ base: '1.5rem', md: '3rem' }}
+      px={{ base: '1.5rem', md: '1.25rem' }}
+      py={{ base: '1.5rem', md: '3rem' }}
       maxW="69.5rem"
       flex={1}
       display="flex"
