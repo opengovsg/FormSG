@@ -240,7 +240,7 @@ The app applies per-minute, per-IP rate limits at specific API endpoints as a se
 | Variable | Description |
 | :-------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SUBMISSIONS_RATE_LIMIT` | Per-minute, per-IP request limit for each submissions endpoint. The limit is applied separately for the email mode and encrypt mode endpoints. |
-| `SEND_AUTH_OTP_RATE_LIMIT` | Per-minute, per-IP request limit for the endpoint which requests for new login OTPs for the admin console. |
+| `SEND_AUTH_OTP_RATE_LIMIT` | Per-minute, per-IP request limit for the endpoint which requests for new login OTPs for the admin console or mobile / email field verifications. |
 
 ### Additional Features
 

@@ -1,6 +1,8 @@
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../../../config/config'
 import * as VerificationController from '../../../../modules/verification/verification.controller'
+import { limitRate } from '../../../../utils/limit-rate'
 
 export const PublicFormsVerificationRouter = Router()
 
@@ -58,4 +60,7 @@ PublicFormsVerificationRouter.route(
  */
 PublicFormsVerificationRouter.route(
   '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/otp/generate',
-).post(VerificationController.handleGenerateOtp)
+).post(
+  limitRate({ max: rateLimitConfig.sendAuthOtp }),
+  VerificationController.handleGenerateOtp,
+)

@@ -952,6 +952,7 @@ describe('admin-form.controller', () => {
         fileId: 'any file id',
         fileMd5Hash: 'any hash',
         fileType: 'any type',
+        isNewClient: true, // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
       },
     })
 
@@ -979,6 +980,55 @@ describe('admin-form.controller', () => {
       // Act
       await AdminFormController.createPresignedPostUrlForImages(
         MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith(expectedPresignedPost)
+    })
+
+    it('should return 200 with presigned POST URL object when successful for old clients', async () => {
+      // TODO (#128): Test to be removed after isNewClient flag has been removed
+      // Arrange
+      const MOCK_REQ_OLD = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+        body: {
+          fileId: 'any file id',
+          fileMd5Hash: 'any hash',
+          fileType: 'any type',
+        },
+      })
+
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      const expectedPresignedPost: PresignedPost = {
+        fields: {
+          'X-Amz-Signature': 'some-amz-signature',
+          Policy: 'some policy',
+        },
+        url: 'some url',
+      }
+      MockAdminFormService.createPresignedPostUrlForImages.mockReturnValueOnce(
+        okAsync(expectedPresignedPost),
+      )
+
+      // Act
+      await AdminFormController.createPresignedPostUrlForImages(
+        MOCK_REQ_OLD,
         mockRes,
         jest.fn(),
       )
@@ -1187,6 +1237,7 @@ describe('admin-form.controller', () => {
         fileId: 'any file id',
         fileMd5Hash: 'any hash',
         fileType: 'any type',
+        isNewClient: true, // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
       },
     })
 
@@ -1214,6 +1265,55 @@ describe('admin-form.controller', () => {
       // Act
       await AdminFormController.createPresignedPostUrlForLogos(
         MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith(expectedPresignedPost)
+    })
+
+    it('should return 200 with presigned POST URL object when successful for old clients', async () => {
+      // TODO (#128): Test to be removed after isNewClient flag has been removed
+      // Arrange
+      const MOCK_REQ_OLD = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+        body: {
+          fileId: 'any file id',
+          fileMd5Hash: 'any hash',
+          fileType: 'any type',
+        },
+      })
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      const expectedPresignedPost: PresignedPost = {
+        fields: {
+          'X-Amz-Signature': 'some-amz-signature',
+          Policy: 'some policy',
+        },
+        url: 'some url',
+      }
+      MockAdminFormService.createPresignedPostUrlForLogos.mockReturnValueOnce(
+        okAsync(expectedPresignedPost),
+      )
+
+      // Act
+      await AdminFormController.createPresignedPostUrlForLogos(
+        MOCK_REQ_OLD,
         mockRes,
         jest.fn(),
       )
