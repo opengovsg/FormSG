@@ -9,6 +9,7 @@ import { ROOT_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import GovtMasthead from '~components/GovtMasthead'
+import Link from '~components/Link'
 
 import { NotFoundSvgr } from './NotFoundSvgr'
 
@@ -46,6 +47,7 @@ export const NotFoundErrorPage = (): JSX.Element => {
                 This page could not be found.
               </Text>
               <Stack
+                align="center"
                 direction={{ base: 'column', md: 'row' }}
                 w="100%"
                 justify="center"
@@ -54,9 +56,9 @@ export const NotFoundErrorPage = (): JSX.Element => {
                   Back
                 </Button>
                 {isAuthenticated ? (
-                  <Button variant="outline" as={ReactLink} to={ROOT_ROUTE}>
+                  <Link variant="standalone" as={ReactLink} to={ROOT_ROUTE}>
                     Go to dashboard
-                  </Button>
+                  </Link>
                 ) : null}
               </Stack>
             </Stack>
