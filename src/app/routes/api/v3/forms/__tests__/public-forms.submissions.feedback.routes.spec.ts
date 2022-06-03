@@ -126,7 +126,7 @@ describe('public-form.submissions.feedback.routes', () => {
       expect(actualResp.body).toEqual(expectedResp)
     })
 
-    it('should return 409 when form feedback for the submissionId has already been submitted', async () => {
+    it('should return 422 when form feedback for the submissionId has already been submitted', async () => {
       const MOCK_FEEDBACK = {
         rating: 5,
         comment: 'great mock',
@@ -150,7 +150,7 @@ describe('public-form.submissions.feedback.routes', () => {
         .post(`/forms/${form._id}/submissions/${submission._id}/feedback`)
         .send(MOCK_FEEDBACK)
 
-      expect(actualResp.status).toEqual(409)
+      expect(actualResp.status).toEqual(422)
       expect(actualResp.body).toEqual(expectedResp)
     })
 

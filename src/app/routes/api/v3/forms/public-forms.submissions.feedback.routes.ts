@@ -16,8 +16,8 @@ export const PublicFormSubmissionsFeedbackRouter = Router()
  * @returns 200 if feedback was successfully saved
  * @returns 400 if form feedback was malformed and hence cannot be saved
  * @returns 404 if form with formId or submissionId does not exist, or form is private
- * @returns 409 if form feedback for the submissionId has already been submitted
  * @returns 410 if form has been archived
+ * @returns 422 if form feedback for the submissionId has already been submitted
  * @returns 500 if database error occurs
  */
 PublicFormSubmissionsFeedbackRouter.route(

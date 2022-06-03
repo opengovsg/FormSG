@@ -76,7 +76,7 @@ export const submitFormFeedback: ControllerHandler<
   const hasPreviousFeedback = checkHasPreviousFeedbackRes.value
   if (hasPreviousFeedback) {
     return res
-      .status(StatusCodes.CONFLICT)
+      .status(StatusCodes.UNPROCESSABLE_ENTITY)
       .json({ message: 'Multiple feedbacks has already been submitted' })
   }
 
