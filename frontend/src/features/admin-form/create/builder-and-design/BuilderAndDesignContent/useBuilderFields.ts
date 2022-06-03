@@ -55,9 +55,7 @@ export const useBuilderFields = () => {
   const { data: formData } = useCreateTabForm()
   const stateData = useBuilderAndDesignStore(stateDataSelector)
   const builderFields = useMemo(() => {
-    const existingFields = formData?.form_fields?.map((field) =>
-      augmentWithMyInfo(field),
-    )
+    const existingFields = formData?.form_fields?.map(augmentWithMyInfo)
     if (!existingFields) return null
     if (stateData.state === BuildFieldState.EditingField) {
       return getFormFieldsWhileEditing(existingFields, stateData.field)
