@@ -6,9 +6,9 @@ import { useFormResponses } from '../../queries'
 import { EmptyResponses } from '../common/EmptyResponses'
 import { ResponsesTabWrapper } from '../common/ResponsesTabWrapper'
 
-import { StorageResponsesProvider } from './ResponsesProvider'
 import { SecretKeyVerification } from './SecretKeyVerification'
 import { useStorageResponsesContext } from './StorageResponsesContext'
+import { StorageResponsesProvider } from './StorageResponsesProvider'
 
 export const StorageResponsesTab = () => {
   return (
