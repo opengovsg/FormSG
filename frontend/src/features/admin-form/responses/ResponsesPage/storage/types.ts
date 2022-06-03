@@ -1,3 +1,11 @@
+import { FormField } from '@opengovsg/formsg-sdk/dist/types'
+
+export type DecryptedSubmissionData = {
+  created: string
+  submissionId: string
+  record: FormField[]
+}
+
 /**
  * Types used to determine decrypted responses
  */
