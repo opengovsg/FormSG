@@ -2,18 +2,17 @@ import { BasicField } from '~shared/types/field'
 import { hasProp } from '~shared/utils/has-prop'
 
 import {
+  ArrayAnswerResponse,
+  Response,
+  SingleAnswerResponse,
+  TableResponse,
+} from '../../common/utils'
+import {
   ArrayResponse,
   DisplayedResponseWithoutAnswer,
   NestedResponse,
   SingleResponse,
 } from '../types'
-
-import {
-  ArrayAnswerResponse,
-  Response,
-  SingleAnswerResponse,
-  TableResponse,
-} from './csv-response-classes'
 
 /**
  * Converts a field record into a custom response instance
