@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -26,12 +26,18 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
 
 const useDecryptionWorkers = () => {
   const [workers, setWorkers] = useState<CleanableDecryptionWorkerApi[]>([])
+  const abortControllerRef = useRef(new AbortController())
   const { data: adminForm } = useAdminForm()
 
   const { refetch } = useFormResponsesCount()
 
   useEffect(() => {
-    return () => killWorkers(workers)
+    const abortController = abortControllerRef.current
+
+    return () => {
+      killWorkers(workers)
+      abortController.abort()
+    }
   }, [workers])
 
   const downloadEncryptedResponses = useCallback(
@@ -47,8 +53,8 @@ const useDecryptionWorkers = () => {
         throwOnError: true,
       })
       if (!responsesCount) return
-
-      const downloadAbortController = new AbortController()
+      // Abort any existing downloads if this function is re-invoked.
+      abortControllerRef.current.abort()
       if (workers.length) killWorkers(workers)
 
       // Create a pool of decryption workers
@@ -78,7 +84,7 @@ const useDecryptionWorkers = () => {
       const stream = await getEncryptedResponsesStream(
         adminForm._id,
         { downloadAttachments, endDate, startDate },
-        downloadAbortController,
+        abortControllerRef.current,
       )
       const reader = stream.getReader()
       let read: (result: ReadableStreamDefaultReadResult<string>) => void
