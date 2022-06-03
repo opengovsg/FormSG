@@ -61,6 +61,15 @@ export type StorageModeSubmissionDto = {
   version: number
 }
 
+export type StorageModeSubmissionStreamDto = Pick<
+  StorageModeSubmissionBase,
+  'encryptedContent' | 'verifiedContent' | 'version'
+> & {
+  attachmentMetadata: Record<string, string>
+  _id: SubmissionId
+  created: DateString
+}
+
 export type StorageModeSubmissionMetadata = {
   number: number
   refNo: SubmissionId
