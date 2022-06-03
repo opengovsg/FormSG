@@ -77,6 +77,7 @@ describe('Verification Model', () => {
         hashedOtp: 'hashedOtp',
         hashCreatedAt: new Date(),
         hashRetries: 5,
+        otpRequests: 6,
       }
       const vfnParams = merge({}, VFN_PARAMS, { fields: [field] })
       const verification = new VerificationModel(vfnParams)
@@ -457,6 +458,7 @@ describe('Verification Model', () => {
           hashedOtp: 'mockHashedOtp',
           hashCreatedAt: new Date(),
           hashRetries: 3,
+          otpRequests: 3,
         }
         const transaction = await VerificationModel.create({
           ...VFN_PARAMS,
@@ -477,6 +479,7 @@ describe('Verification Model', () => {
         expect(result!.fields[0].hashCreatedAt).not.toEqual(field.hashCreatedAt)
         expect(result!.fields[0].signedData).toEqual(updateParams.signedData)
         expect(result!.fields[0].hashedOtp).toEqual(updateParams.hashedOtp)
+        expect(result!.fields[0].otpRequests).toEqual(field.otpRequests + 1)
 
         expect(result!.formId).toEqual(transaction.formId)
       })
@@ -488,6 +491,7 @@ describe('Verification Model', () => {
           hashedOtp: 'mockHashedOtp',
           hashCreatedAt: new Date(),
           hashRetries: 3,
+          otpRequests: 1,
         }
         const field2 = {
           ...generateFieldParams(),
@@ -495,6 +499,7 @@ describe('Verification Model', () => {
           hashedOtp: 'mockHashedOtp2',
           hashCreatedAt: new Date(),
           hashRetries: 2,
+          otpRequests: 3,
         }
         const transaction = await VerificationModel.create({
           ...VFN_PARAMS,
@@ -517,12 +522,14 @@ describe('Verification Model', () => {
         )
         expect(result!.fields[0].signedData).toEqual(updateParams.signedData)
         expect(result!.fields[0].hashedOtp).toEqual(updateParams.hashedOtp)
+        expect(result!.fields[0].otpRequests).toEqual(field1.otpRequests + 1)
 
         // field2 should remain completely unchanged
         expect(result!.fields[1].hashRetries).toEqual(field2.hashRetries)
         expect(result!.fields[1].signedData).toEqual(field2.signedData)
         expect(result!.fields[1].hashedOtp).toEqual(field2.hashedOtp)
         expect(result!.fields[1].hashCreatedAt).toEqual(field2.hashCreatedAt)
+        expect(result!.fields[1].otpRequests).toEqual(field2.otpRequests)
 
         expect(result!.formId).toEqual(transaction.formId)
       })

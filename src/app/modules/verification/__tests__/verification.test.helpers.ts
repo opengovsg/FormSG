@@ -13,6 +13,7 @@ export const VFN_FIELD_DEFAULTS = {
   hashedOtp: null,
   hashCreatedAt: null,
   hashRetries: 0,
+  otpRequests: 0,
 }
 
 export const generateFieldParams = (
