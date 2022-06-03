@@ -35,9 +35,8 @@ import {
   CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
-import { MyInfoImplementedTypes } from '~features/myinfo/types'
 
-export const MOCK_MYINFO_IMPLEMENTED_TYPES: MyInfoImplementedTypes[] = [
+export const MOCK_MYINFO_IMPLEMENTED_TYPES = [
   ...CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
   ...CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
   ...CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,

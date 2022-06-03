@@ -8,11 +8,6 @@ import {
 } from '~shared/types/field'
 
 import {
-  MyInfoImplementedTypes,
-  MyInfoUnimplementedTypes,
-} from '~features/myinfo/types'
-
-import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from '../../constants'
@@ -190,7 +185,7 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
 }
 
 export const getMyInfoFieldCreationMeta = (
-  myInfoAttribute: MyInfoImplementedTypes,
+  myInfoAttribute: MyInfoAttribute,
 ): MyInfoField => {
   const baseMeta: Pick<
     MyInfoField,
@@ -260,7 +255,7 @@ export const getMyInfoFieldCreationMeta = (
     }
 
     default: {
-      const exception: MyInfoUnimplementedTypes = myInfoAttribute
+      const exception: never = myInfoAttribute
       throw new Error(`MyInfo type is not implemented: ${exception}`)
     }
   }

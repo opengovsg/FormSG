@@ -1,9 +1,4 @@
-import {
-  FieldBase,
-  MyInfoableFieldBase,
-  MyInfoAttribute,
-  MyInfoField,
-} from '~shared/types'
+import { FieldBase, MyInfoableFieldBase, MyInfoField } from '~shared/types'
 
 export enum VerifiedFor {
   Singaporeans = 'singaporeans',
@@ -41,36 +36,4 @@ export type MyInfoPreviewMeta = {
 export type MyInfoFieldMeta<T extends MyInfoableFieldBase> = Omit<
   T,
   keyof FieldBase
->
-
-export type MyInfoUnimplementedTypes =
-  // Contact section
-  | MyInfoAttribute.MailingAddress
-  | MyInfoAttribute.BillingAddress
-  | MyInfoAttribute.HomeNo
-  // Particulars section
-  | MyInfoAttribute.HighestEducation
-  | MyInfoAttribute.SchoolName
-  | MyInfoAttribute.YearOfGraduation
-  | MyInfoAttribute.WorkpassType
-  | MyInfoAttribute.EmploymentSector
-  // Family (Children) section
-  | MyInfoAttribute.ChildrenBirthCertificateNumber
-  | MyInfoAttribute.ChildrenName
-  | MyInfoAttribute.ChildrenGender
-  | MyInfoAttribute.ChildrenDateOfBirth
-  | MyInfoAttribute.ChildrenLifeStatus
-  | MyInfoAttribute.ChildrenRace
-  | MyInfoAttribute.ChildrenCountryOfBirth
-  | MyInfoAttribute.ChildrenResidentialStatus
-  | MyInfoAttribute.ChildrenNationality
-  // Income section
-  | MyInfoAttribute.CPFAccountBalance
-  | MyInfoAttribute.CPFContributionHistory
-  | MyInfoAttribute.NoticeOfAssessment
-  | MyInfoAttribute.OwnershipOfPrivateResidentialProperty
-
-export type MyInfoImplementedTypes = Exclude<
-  MyInfoAttribute,
-  MyInfoUnimplementedTypes
 >

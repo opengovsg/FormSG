@@ -6,13 +6,12 @@ import {
 } from 'react-beautiful-dnd'
 import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 
-import { BasicField } from '~shared/types/field'
+import { BasicField, MyInfoAttribute } from '~shared/types/field'
 
 import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from '~features/admin-form/create/constants'
-import { MyInfoImplementedTypes } from '~features/myinfo/types'
 
 import {
   updateCreateStateSelector,
@@ -49,7 +48,7 @@ interface BasicFieldOptionProps extends FieldOptionProps {
 }
 
 interface MyInfoFieldOptionProps extends FieldOptionProps {
-  fieldType: MyInfoImplementedTypes
+  fieldType: MyInfoAttribute
 }
 
 interface DraggableBasicFieldOptionProps
@@ -61,7 +60,7 @@ interface DraggableBasicFieldOptionProps
 interface DraggableMyInfoFieldOptionProps
   extends Omit<FieldOptionProps, 'isActive'> {
   index: number
-  fieldType: MyInfoImplementedTypes
+  fieldType: MyInfoAttribute
 }
 
 export const DraggableBasicFieldListOption = ({
