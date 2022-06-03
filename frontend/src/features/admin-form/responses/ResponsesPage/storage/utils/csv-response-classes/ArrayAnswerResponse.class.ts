@@ -1,6 +1,5 @@
-import { ArrayResponse } from '../../types'
-
 import { Response } from './Response.class'
+import type { ArrayResponse } from './types'
 
 export class ArrayAnswerResponse extends Response {
   private response: ArrayResponse

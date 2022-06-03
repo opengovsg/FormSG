@@ -3,17 +3,14 @@ import { hasProp } from '~shared/utils/has-prop'
 
 import {
   ArrayAnswerResponse,
-  Response,
-  SingleAnswerResponse,
-  TableResponse,
-} from '../../common/utils'
-import {
   ArrayResponse,
   DisplayedResponseWithoutAnswer,
   NestedResponse,
+  Response,
+  SingleAnswerResponse,
   SingleResponse,
-} from '../types'
-
+  TableResponse,
+} from './csv-response-classes'
 /**
  * Converts a field record into a custom response instance
  * @param fieldRecordData Field record

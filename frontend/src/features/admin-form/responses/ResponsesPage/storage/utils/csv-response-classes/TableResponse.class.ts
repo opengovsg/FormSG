@@ -1,6 +1,5 @@
-import { NestedResponse } from '../../types'
-
 import { Response } from './Response.class'
+import type { NestedResponse } from './types'
 
 export class TableResponse extends Response {
   private response: NestedResponse
