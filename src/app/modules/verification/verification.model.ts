@@ -30,7 +30,10 @@ const VerificationFieldSchema = new Schema<IVerificationFieldSchema>({
   // No ttl index is applied on hashCreatedAt, as we do not want to delete the
   // entire document when a hash expires.
   hashCreatedAt: { type: Date, default: null },
+  // Number of retries attempted for a given OTP
   hashRetries: { type: Number, default: 0 },
+  // Number of OTPs requested for this field
+  otpRequests: { type: Number, default: 0 },
 })
 
 const compileVerificationModel = (db: Mongoose): IVerificationModel => {
@@ -164,6 +167,9 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
           'fields.$.hashedOtp': updateData.hashedOtp,
           'fields.$.signedData': updateData.signedData,
           'fields.$.hashRetries': 0,
+        },
+        $inc: {
+          'fields.$.otpRequests': 1,
         },
       },
       {

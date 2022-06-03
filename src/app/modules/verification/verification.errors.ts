@@ -73,6 +73,15 @@ export class WaitForOtpError extends ApplicationError {
 }
 
 /**
+ * Max OTP request count exceeded
+ */
+export class OtpRequestCountExceededError extends ApplicationError {
+  constructor(message = 'Max OTP request count exceeded') {
+    super(message)
+  }
+}
+
+/**
  * Unsupported field type for OTP verification
  */
 export class NonVerifiedFieldTypeError extends ApplicationError {
