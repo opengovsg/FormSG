@@ -45,8 +45,6 @@ import { As } from '@chakra-ui/react'
 
 import { BasicField, MyInfoAttribute } from '~shared/types/field'
 
-import { MyInfoImplementedTypes } from '~features/myinfo/types'
-
 type BuilderSidebarFieldMeta = {
   label: string
   icon: As
@@ -179,7 +177,7 @@ export const BASICFIELD_TO_DRAWER_META: {
 }
 
 export const MYINFO_FIELD_TO_DRAWER_META: {
-  [key in MyInfoImplementedTypes]: BuilderSidebarFieldMeta
+  [key in MyInfoAttribute]: BuilderSidebarFieldMeta
 } = {
   [MyInfoAttribute.Name]: {
     label: 'Name',

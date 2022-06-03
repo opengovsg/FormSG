@@ -10,7 +10,7 @@ import {
   ShortTextFieldBase,
 } from '~shared/types/field'
 
-import { MyInfoFieldMeta, MyInfoImplementedTypes } from '~features/myinfo/types'
+import { MyInfoFieldMeta } from '~features/myinfo/types'
 
 export const BASIC_FIELDS_ORDERED = [
   // Page section
@@ -37,7 +37,7 @@ export const BASIC_FIELDS_ORDERED = [
   BasicField.Uen,
 ]
 
-export const MYINFO_FIELDS_ORDERED: MyInfoImplementedTypes[] = [
+export const MYINFO_FIELDS_ORDERED: MyInfoAttribute[] = [
   // Personal section
   MyInfoAttribute.Name,
   MyInfoAttribute.Sex,
