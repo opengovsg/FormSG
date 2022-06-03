@@ -5,10 +5,11 @@ import { Flex, Stack, Text } from '@chakra-ui/react'
 import { AppFooter } from '~/app/AppFooter'
 
 import { useAuth } from '~contexts/AuthContext'
-import { ROOT_ROUTE } from '~constants/routes'
+import { LOGIN_ROUTE, ROOT_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import GovtMasthead from '~components/GovtMasthead'
+import Link from '~components/Link'
 
 import { ForbiddenSvgr } from './ForbiddenSvgr'
 
@@ -55,11 +56,18 @@ export const AdminForbiddenErrorPage = ({
                 textAlign="center"
               >
                 <Text as="h2" textStyle="h2">
-                  You are not authorised to view this page.
+                  You do not have access to this page.
                 </Text>
-                <Text textStyle="body-1">{message}</Text>
+                <Text textStyle="body-1">
+                  {isAuthenticated
+                    ? message
+                    : message ??
+                      'Log in, or contact the owner of the form for more information.'}
+                </Text>
               </Stack>
               <Stack
+                spacing="1rem"
+                align="center"
                 direction={{ base: 'column', md: 'row' }}
                 w="100%"
                 justify="center"
@@ -67,11 +75,14 @@ export const AdminForbiddenErrorPage = ({
                 <Button isFullWidth={isMobile} onClick={() => navigate(-1)}>
                   Back
                 </Button>
-                {isAuthenticated ? (
-                  <Button variant="outline" as={ReactLink} to={ROOT_ROUTE}>
-                    Go to dashboard
-                  </Button>
-                ) : null}
+
+                <Link
+                  variant="standalone"
+                  as={ReactLink}
+                  to={isAuthenticated ? ROOT_ROUTE : LOGIN_ROUTE}
+                >
+                  {isAuthenticated ? 'Go to dashboard' : 'Log in'}
+                </Link>
               </Stack>
             </Stack>
           </Flex>

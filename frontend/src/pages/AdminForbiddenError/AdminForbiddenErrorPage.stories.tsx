@@ -3,6 +3,7 @@ import { Meta, Story } from '@storybook/react'
 import {
   getMobileViewParameters,
   LoggedInDecorator,
+  LoggedOutDecorator,
   StoryRouter,
 } from '~utils/storybook'
 
@@ -29,6 +30,7 @@ const Template: Story = (args: AdminForbiddenErrorPageProps) => (
   <AdminForbiddenErrorPage {...args} />
 )
 export const NotLoggedIn = Template.bind({})
+NotLoggedIn.decorators = [LoggedOutDecorator]
 
 export const WithMessage = Template.bind({})
 WithMessage.args = {
