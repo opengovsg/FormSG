@@ -8,6 +8,7 @@ module.exports = {
     '<rootDir>/dist/',
     '<rootDir>/node_modules/',
     '<rootDir>/src/public',
+    '<rootDir>/frontend',
   ],
   collectCoverageFrom: ['./src/**/*.{ts,js}', '!**/__tests__/**'],
   coveragePathIgnorePatterns: ['./node_modules/', './tests'],

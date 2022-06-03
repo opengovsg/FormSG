@@ -1,0 +1,1 @@
+export { EditShortText } from './EditShortText'

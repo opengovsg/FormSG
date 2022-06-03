@@ -75,7 +75,18 @@ export const generateLoginOtpHtml = (htmlData: {
   appUrl: string
   ipAddress: string
 }): ResultAsync<string, MailSendError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/otp-email.server.view.html`
+  const pathToTemplate = `${__dirname}/../../views/templates/otp-email.server.view.html`
+
+  logger.info({
+    message: 'generateLoginOtpHtml',
+    meta: {
+      action: 'generateLoginOtpHtml',
+      pathToTemplate,
+      __dirname,
+      cwd: process.cwd(),
+    },
+  })
+
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
@@ -91,7 +102,7 @@ export const generateVerificationOtpHtml = ({
   return dedent`
     <p>You are currently submitting a form on ${appName}.</p>
     <p>
-      Your OTP is <b>${otp}</b>. It will expire in ${minutesToExpiry} minutes. 
+      Your OTP is <b>${otp}</b>. It will expire in ${minutesToExpiry} minutes.
       Please use this to verify your submission.
     </p>
     <p>If your OTP does not work, please request for a new OTP.</p>
@@ -105,7 +116,18 @@ export const generateVerificationOtpHtml = ({
 export const generateSubmissionToAdminHtml = (
   htmlData: SubmissionToAdminHtmlData,
 ): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-email.server.view.html`
+  const pathToTemplate = `${__dirname}/../../views/templates/submit-form-email.server.view.html`
+
+  logger.info({
+    message: 'generateSubmissionToAdminHtml',
+    meta: {
+      action: 'generateSubmissionToAdminHtml',
+      pathToTemplate,
+      __dirname,
+      cwd: process.cwd(),
+    },
+  })
+
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
@@ -115,10 +137,20 @@ export const generateBounceNotificationHtml = (
 ): ResultAsync<string, MailGenerationError> => {
   let pathToTemplate
   if (bounceType === BounceType.Permanent) {
-    pathToTemplate = `${process.cwd()}/src/app/views/templates/bounce-notification-permanent.server.view.html`
+    pathToTemplate = `${__dirname}/../../views/templates/bounce-notification-permanent.server.view.html`
   } else {
-    pathToTemplate = `${process.cwd()}/src/app/views/templates/bounce-notification-transient.server.view.html`
+    pathToTemplate = `${__dirname}/../../views/templates/bounce-notification-transient.server.view.html`
   }
+
+  logger.info({
+    message: 'generateBounceNotificationHtml',
+    meta: {
+      action: 'generateBounceNotificationHtml',
+      pathToTemplate,
+      __dirname,
+      cwd: process.cwd(),
+    },
+  })
 
   return safeRenderFile(pathToTemplate, htmlData)
 }
@@ -126,7 +158,17 @@ export const generateBounceNotificationHtml = (
 export const generateAutoreplyPdf = (
   renderData: AutoreplySummaryRenderData,
 ): ResultAsync<Buffer, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-summary-pdf.server.view.html`
+  const pathToTemplate = `${__dirname}/../../views/templates/submit-form-summary-pdf.server.view.html`
+
+  logger.info({
+    message: 'generateAutoreplyPdf',
+    meta: {
+      action: 'generateAutoreplyPdf',
+      pathToTemplate,
+      __dirname,
+      cwd: process.cwd(),
+    },
+  })
 
   return safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
     return ResultAsync.fromPromise(
@@ -151,7 +193,16 @@ export const generateAutoreplyPdf = (
 export const generateAutoreplyHtml = (
   htmlData: AutoreplyHtmlData,
 ): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-autoreply.server.view.html`
+  const pathToTemplate = `${__dirname}/../../views/templates/submit-form-autoreply.server.view.html`
+  logger.info({
+    message: 'generateAutoreplyHtml',
+    meta: {
+      action: 'generateAutoreplyHtml',
+      pathToTemplate,
+      __dirname,
+      cwd: process.cwd(),
+    },
+  })
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
@@ -178,6 +229,15 @@ export const generateSmsVerificationDisabledHtmlForAdmin = (
   htmlData: AdminSmsDisabledData,
 ): ResultAsync<string, MailGenerationError> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-disabled-admin.server.view.html`
+  logger.info({
+    message: 'generateSmsVerificationDisabledHtmlForAdmin',
+    meta: {
+      action: 'generateSmsVerificationDisabledHtmlForAdmin',
+      pathToTemplate,
+      __dirname,
+      cwd: process.cwd(),
+    },
+  })
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
@@ -185,6 +245,15 @@ export const generateSmsVerificationDisabledHtmlForCollab = (
   htmlData: CollabSmsDisabledData,
 ): ResultAsync<string, MailGenerationError> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-disabled-collab.server.view.html`
+  logger.info({
+    message: 'generateSmsVerificationDisabledHtmlForCollab',
+    meta: {
+      action: 'generateSmsVerificationDisabledHtmlForCollab',
+      pathToTemplate,
+      __dirname,
+      cwd: process.cwd(),
+    },
+  })
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
@@ -192,6 +261,15 @@ export const generateSmsVerificationWarningHtmlForAdmin = (
   htmlData: AdminSmsWarningData,
 ): ResultAsync<string, MailGenerationError> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-warning-admin.view.html`
+  logger.info({
+    message: 'generateSmsVerificationWarningHtmlForAdmin',
+    meta: {
+      action: 'generateSmsVerificationWarningHtmlForAdmin',
+      pathToTemplate,
+      __dirname,
+      cwd: process.cwd(),
+    },
+  })
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
@@ -199,5 +277,14 @@ export const generateSmsVerificationWarningHtmlForCollab = (
   htmlData: CollabSmsWarningData,
 ): ResultAsync<string, MailGenerationError> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-warning-collab.view.html`
+  logger.info({
+    message: 'generateSmsVerificationWarningHtmlForCollab',
+    meta: {
+      action: 'generateSmsVerificationWarningHtmlForCollab',
+      pathToTemplate,
+      __dirname,
+      cwd: process.cwd(),
+    },
+  })
   return safeRenderFile(pathToTemplate, htmlData)
 }
