@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useMutation } from 'react-query'
-import { Box, MenuButton } from '@chakra-ui/react'
+import { Box, MenuButton, useDisclosure } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -13,13 +13,25 @@ import useDecryptionWorkers, {
   DownloadEncryptedParams,
 } from '../useDecryptionWorkers'
 
+import { DownloadModal } from './DownloadModal'
+
 export const DownloadButton = (): JSX.Element => {
+  const {
+    isOpen: isDownloadModalOpen,
+    onClose: onDownloadModalClose,
+    onOpen: onDownloadModalOpen,
+  } = useDisclosure()
   const { downloadEncryptedResponses } = useDecryptionWorkers()
-  const { downloadParams } = useStorageResponsesContext()
+  const { downloadParams, responsesCount } = useStorageResponsesContext()
 
   const handleExportCsvMutation = useMutation(
     (params: DownloadEncryptedParams) => downloadEncryptedResponses(params),
     // TODO: add error and success handling
+    {
+      onSuccess: () => {
+        onDownloadModalClose()
+      },
+    },
   )
 
   const handleExportCsvNoAttachments = useCallback(() => {
@@ -39,34 +51,45 @@ export const DownloadButton = (): JSX.Element => {
   }, [downloadParams, handleExportCsvMutation])
 
   return (
-    <Box gridArea="export" justifySelf="flex-end">
-      <Menu placement="bottom-end">
-        {({ isOpen }) => (
-          <>
-            <MenuButton
-              as={Button}
-              isDisabled={!downloadParams}
-              isLoading={handleExportCsvMutation.isLoading}
-              isActive={isOpen}
-              aria-label="Download options"
-              rightIcon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
-            >
-              Download
-            </MenuButton>
-            <Menu.List>
-              <Menu.Item onClick={handleExportCsvNoAttachments}>
-                CSV only
-              </Menu.Item>
-              <Menu.Item onClick={handleExportCsvWithAttachments}>
-                CSV with attachments
-                <Badge ml="0.5rem" colorScheme="success">
-                  beta
-                </Badge>
-              </Menu.Item>
-            </Menu.List>
-          </>
-        )}
-      </Menu>
-    </Box>
+    <>
+      {responsesCount && (
+        <DownloadModal
+          responsesCount={responsesCount}
+          isOpen={isDownloadModalOpen}
+          onClose={onDownloadModalClose}
+          onDownload={handleExportCsvWithAttachments}
+          isDownloading={handleExportCsvMutation.isLoading}
+        />
+      )}
+      <Box gridArea="export" justifySelf="flex-end">
+        <Menu placement="bottom-end">
+          {({ isOpen }) => (
+            <>
+              <MenuButton
+                as={Button}
+                isDisabled={!downloadParams}
+                isLoading={handleExportCsvMutation.isLoading}
+                isActive={isOpen}
+                aria-label="Download options"
+                rightIcon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
+              >
+                Download
+              </MenuButton>
+              <Menu.List>
+                <Menu.Item onClick={handleExportCsvNoAttachments}>
+                  CSV only
+                </Menu.Item>
+                <Menu.Item onClick={onDownloadModalOpen}>
+                  CSV with attachments
+                  <Badge ml="0.5rem" colorScheme="success">
+                    beta
+                  </Badge>
+                </Menu.Item>
+              </Menu.List>
+            </>
+          )}
+        </Menu>
+      </Box>
+    </>
   )
 }
