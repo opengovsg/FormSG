@@ -230,7 +230,7 @@ export const LandingPage = (): JSX.Element => {
         <SectionTitleText>
           Supporting national and emergent use cases
         </SectionTitleText>
-        <SectionBodyText>
+        <SectionBodyText textAlign={{ lg: 'center' }}>
           An integral part of many agency workflows, Form has been instrumental
           in data collection, especially during the COVID-19 pandemic. Notable
           forms launched include:
