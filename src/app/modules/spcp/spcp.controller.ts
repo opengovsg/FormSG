@@ -11,7 +11,7 @@ import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
-import { SpcpService } from './spcp.service'
+import { SpcpOidcService, SpcpService } from './spcp.service'
 import { JwtName } from './spcp.types'
 import { mapRouteError } from './spcp.util'
 
@@ -183,4 +183,17 @@ export const handleLogin: (
       res.cookie('isLoginError', true)
       return res.redirect(destination)
     })
+}
+
+/**
+ * Handler to return the public JWKS hosted on the app's well known end point
+ * @returns public JWKS in json format
+ */
+export const handleGetWellKnown: ControllerHandler<
+  unknown,
+  Record<string, unknown>,
+  unknown,
+  unknown
+> = (_req, res) => {
+  return res.json(SpcpOidcService.publicJwks)
 }

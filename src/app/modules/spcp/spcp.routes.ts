@@ -95,3 +95,17 @@ CorppassLoginRouter.get(
   loginParamsMiddleware,
   SpcpController.handleLogin(FormAuthType.CP),
 )
+
+// Handles SingPass OIDC requests
+export const SingpassOidcRouter = Router()
+
+/**
+ * Returns the public json web key set (JWKS) for communication with NDI
+ * @route GET /singpass/.well-known/jwks.json
+ * @returns 200
+ */
+
+SingpassOidcRouter.get(
+  '/.well-known/jwks.json',
+  SpcpController.handleGetWellKnown,
+)

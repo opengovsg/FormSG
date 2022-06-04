@@ -33,6 +33,7 @@ import {
   JwtPayload,
   JwtPayloadFromCookie,
   ParsedSpcpParams,
+  PublicJwk,
   SingpassAttributes,
   SingpassJwtPayloadFromCookie,
   SpcpCookies,
@@ -498,3 +499,27 @@ export class SpcpServiceClass {
 }
 
 export const SpcpService = new SpcpServiceClass(spcpMyInfoConfig)
+
+/**
+ * Class for executing Singpass/Corppass-related services.
+ * Exported for testing.
+ */
+export class SpOidcServiceClass {
+  #publicJwks: PublicJwk
+  #secretJwks: SecretJwk
+
+  constructor() {
+    this.#publicJwks = JSON.parse(
+      fs.readFileSync(spcpMyInfoConfig.spOidcRpJwksPublicPath).toString(),
+    )
+  }
+
+  /**
+   * Retrieves the public JWKS hosted on the app's well-known end point
+   */
+  get publicJwks(): PublicJwk {
+    return this.#publicJwks
+  }
+}
+
+export const SpcpOidcService = new SpOidcServiceClass()

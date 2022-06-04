@@ -1,3 +1,5 @@
+import { JWK } from 'jose'
+
 import { FormAuthType } from '../../../../shared/types'
 import { IFormSchema } from '../../../types'
 
@@ -69,3 +71,5 @@ export type SpcpForm<T extends IFormSchema> = T & {
   authType: FormAuthType.SP | FormAuthType.CP
   esrvcId: string
 }
+
+export type PublicJwk = JWK
