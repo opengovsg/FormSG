@@ -133,6 +133,7 @@
     "nocache": "^3.0.3",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.7.5",
+    "openid-client": "^5.1.6",
     "opossum": "^6.3.0",
     "p-queue": "^6.6.2",
     "promise-retry": "^2.0.1",
