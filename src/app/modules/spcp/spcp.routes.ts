@@ -6,6 +6,7 @@ import * as SpcpController from './spcp.controller'
 import {
   loginParamsMiddleware,
   redirectParamsMiddleware,
+  spOidcLoginParamsMiddleware,
 } from './spcp.middlewares'
 // Shared routes for Singpass and Corppass
 export const SpcpRouter = Router()
@@ -70,8 +71,8 @@ export const SingpassLoginRouter = Router()
  */
 SingpassLoginRouter.get(
   '/',
-  loginParamsMiddleware,
-  SpcpController.handleLogin(FormAuthType.SP),
+  spOidcLoginParamsMiddleware,
+  SpcpController.handleSpOidcLogin,
 )
 
 // Handles CorpPass login requests
@@ -96,16 +97,13 @@ CorppassLoginRouter.get(
   SpcpController.handleLogin(FormAuthType.CP),
 )
 
-// Handles SingPass OIDC requests
-export const SingpassOidcRouter = Router()
+// Handles SingPass JWKS requests
+export const SpOidcJwksRouter = Router()
 
 /**
- * Returns the public json web key set (JWKS) for communication with NDI
+ * Returns the RP's public json web key set (JWKS) for communication with NDI
  * @route GET /singpass/.well-known/jwks.json
  * @returns 200
  */
 
-SingpassOidcRouter.get(
-  '/.well-known/jwks.json',
-  SpcpController.handleGetWellKnown,
-)
+SpOidcJwksRouter.get('/', SpcpController.handleGetWellKnown)

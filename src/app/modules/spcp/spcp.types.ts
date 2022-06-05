@@ -1,5 +1,3 @@
-import { JWK } from 'jose'
-
 import { FormAuthType } from '../../../../shared/types'
 import { IFormSchema } from '../../../types'
 
@@ -72,4 +70,13 @@ export type SpcpForm<T extends IFormSchema> = T & {
   esrvcId: string
 }
 
-export type PublicJwk = JWK
+// either <formId>,boolean or <formId>,boolean,encodedQuery
+export type RedirectTarget =
+  | `${string},${boolean}`
+  | `${string},${boolean},${string}`
+
+// either <formId>-boolean or <formId>-boolean-encodedQuery
+// NDI OIDC does not allow comma separated values in state
+export type RedirectTargetSpOidc =
+  | `${string}-${boolean}`
+  | `${string}-${boolean}-${string}`

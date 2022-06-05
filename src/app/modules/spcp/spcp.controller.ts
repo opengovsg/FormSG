@@ -11,7 +11,7 @@ import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
-import { SpcpOidcService, SpcpService } from './spcp.service'
+import { SpcpService, SpOidcService } from './spcp.service'
 import { JwtName } from './spcp.types'
 import { mapRouteError } from './spcp.util'
 
@@ -194,6 +194,102 @@ export const handleGetWellKnown: ControllerHandler<
   Record<string, unknown>,
   unknown,
   unknown
-> = (_req, res) => {
-  return res.json(SpcpOidcService.publicJwks)
+> = async (_req, res) => {
+  return res.json(SpOidcService.getRpPublicJwks())
+}
+
+/**
+ * Handler for SP OIDC logins
+ */
+export const handleSpOidcLogin: ControllerHandler<
+  unknown,
+  unknown,
+  unknown,
+  { state: string; code: string }
+> = async (req, res) => {
+  const { state, code } = req.query
+  const logMeta = {
+    action: 'handleLogin',
+    state,
+    code,
+  }
+
+  const nricResult = await SpOidcService.exchangeAuthCodeAndRetrieveNric(code)
+
+  if (nricResult.isErr()) {
+    logger.error({
+      message: 'Failed to exchange auth code and retrieve nric',
+      meta: logMeta,
+      error: nricResult.error,
+    })
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
+  }
+
+  const parseResult = SpOidcService.parseState(state)
+  if (parseResult.isErr()) {
+    logger.error({
+      message: 'Invalid SP login parameters',
+      meta: logMeta,
+      error: parseResult.error,
+    })
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
+  }
+  const { formId, destination, rememberMe, cookieDuration } = parseResult.value
+  const formResult = await FormService.retrieveFullFormById(formId)
+  if (formResult.isErr()) {
+    logger.error({
+      message: 'Form not found',
+      meta: logMeta,
+      error: formResult.error,
+    })
+    return res.sendStatus(StatusCodes.NOT_FOUND)
+  }
+  const form = formResult.value
+  if (form.authType !== FormAuthType.SP) {
+    logger.error({
+      message: "Log in attempt to wrong endpoint for form's authType",
+      meta: {
+        ...logMeta,
+        formAuthType: form.authType,
+        endpointAuthType: FormAuthType.SP,
+      },
+    })
+    res.cookie('isLoginError', true)
+    return res.redirect(destination)
+  }
+
+  const nric = nricResult.value
+  const jwtPayload = { userName: nric, rememberMe }
+  const jwtResult = await SpOidcService.createJWT(jwtPayload, cookieDuration)
+
+  if (jwtResult.isErr()) {
+    logger.error({
+      message: 'Error creating JWT',
+      meta: logMeta,
+      error: jwtResult.error,
+    })
+    res.cookie('isLoginError', true)
+    return res.redirect(destination)
+  }
+
+  return BillingService.recordLoginByForm(form)
+    .map(() => {
+      res.cookie(JwtName[FormAuthType.SP], jwtResult.value, {
+        maxAge: cookieDuration,
+        httpOnly: true,
+        sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
+        secure: !config.isDev,
+        ...SpOidcService.getCookieSettings(),
+      })
+      return res.redirect(destination)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error while adding login to database',
+        meta: logMeta,
+        error,
+      })
+      res.cookie('isLoginError', true)
+      return res.redirect(destination)
+    })
 }

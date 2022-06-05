@@ -23,6 +23,8 @@ import {
 } from './spcp.errors'
 import {
   CorppassJwtPayloadFromCookie,
+  RedirectTarget,
+  RedirectTargetSpOidc,
   SingpassJwtPayloadFromCookie,
   SpcpForm,
 } from './spcp.types'
@@ -52,11 +54,6 @@ const isArtifactValid = function (
     artifactHexLength === 88 && typeCode === 4 && sourceId === hashedEntityId
   )
 }
-
-// either <formId>,boolean or <formId>,boolean,encodedQuery
-export type RedirectTarget =
-  | `${string},${boolean}`
-  | `${string},${boolean},${string}`
 
 /**
  * Returns true if the SAML artifact and destination have the correct format,
@@ -310,4 +307,24 @@ export const getRedirectTarget = (
   return encodedQuery
     ? `/${formId},${persistentLogin},${encodedQuery}`
     : `/${formId},${persistentLogin}`
+}
+
+/**
+ * Generates the redirect target for the form
+ * Differs from SAML implementation in using hyphen separation because NDI OIDC does not allow comma in state
+ * @param formId
+ * @param isPersistentLogin
+ * @param encodedQuery
+ * @returns
+ */
+export const getRedirectTargetSpOidc = (
+  formId: string,
+  isPersistentLogin?: boolean,
+  encodedQuery?: string,
+): RedirectTargetSpOidc => {
+  // Need to cast to boolean because undefined is allowed as a valid value
+  const persistentLogin = !!isPersistentLogin
+  return encodedQuery
+    ? `/${formId}-${persistentLogin}-${encodedQuery}`
+    : `/${formId}-${persistentLogin}`
 }

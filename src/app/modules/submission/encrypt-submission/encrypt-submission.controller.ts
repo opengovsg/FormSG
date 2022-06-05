@@ -26,7 +26,7 @@ import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
-import { SpcpService } from '../../spcp/spcp.service'
+import { SpcpService, SpOidcService } from '../../spcp/spcp.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { WebhookFactory } from '../../webhook/webhook.factory'
@@ -198,10 +198,9 @@ const submitEncryptModeForm: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     }
     case FormAuthType.SP: {
-      const jwtPayloadResult = await SpcpService.extractJwt(
+      const jwtPayloadResult = await SpOidcService.extractJwt(
         req.cookies,
-        authType,
-      ).asyncAndThen((jwt) => SpcpService.extractSingpassJwtPayload(jwt))
+      ).asyncAndThen((jwt) => SpOidcService.extractSingpassJwtPayload(jwt))
       if (jwtPayloadResult.isErr()) {
         const { statusCode, errorMessage } = mapRouteError(
           jwtPayloadResult.error,

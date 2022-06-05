@@ -21,7 +21,7 @@ import {
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import * as MyInfoUtil from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
-import { SpcpService } from '../../spcp/spcp.service'
+import { SpcpService, SpOidcService } from '../../spcp/spcp.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as SubmissionService from '../submission.service'
 import { extractEmailConfirmationData } from '../submission.utils'
@@ -172,8 +172,10 @@ const submitEmailModeForm: ControllerHandler<
                 return error
               })
           case FormAuthType.SP:
-            return SpcpService.extractJwt(req.cookies, authType)
-              .asyncAndThen((jwt) => SpcpService.extractSingpassJwtPayload(jwt))
+            return SpOidcService.extractJwt(req.cookies)
+              .asyncAndThen((jwt) =>
+                SpOidcService.extractSingpassJwtPayload(jwt),
+              )
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: parsedResponses.addNdiResponses({

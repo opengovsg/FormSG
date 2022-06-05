@@ -25,8 +25,8 @@ import { SgidRouter } from '../../modules/sgid/sgid.routes'
 import {
   CorppassLoginRouter,
   SingpassLoginRouter,
-  SingpassOidcRouter,
   SpcpRouter,
+  SpOidcJwksRouter,
 } from '../../modules/spcp/spcp.routes'
 import { SubmissionRouter } from '../../modules/submission/submission.routes'
 import UserRouter from '../../modules/user/user.routes'
@@ -170,7 +170,8 @@ const loadExpressApp = async (connection: Connection) => {
   // Registered routes with the Singpass/Corppass servers
   app.use('/singpass/login', SingpassLoginRouter)
   app.use('/corppass/login', CorppassLoginRouter)
-  app.use('/singpass', SingpassOidcRouter)
+  // jwks endpoint for SP OIDC
+  app.use('/singpass/.well-known/jwks.json', SpOidcJwksRouter)
   // Registered routes with sgID
   app.use('/sgid', SgidRouter)
   // Use constant for registered routes with MyInfo servers
