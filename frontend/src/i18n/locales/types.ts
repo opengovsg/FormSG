@@ -1,6 +1,20 @@
 interface Translation {
   translation: {
+    general: {
+      languageName: string
+    }
     features: {
+      publicForm: {
+        components: {
+          FormFields: {
+            PublicFormSubmitButton: {
+              submissionDisabled: string
+              submitNow: string
+              submitting: string
+            }
+          }
+        }
+      }
       login: {
         components: {
           LoginForm: {

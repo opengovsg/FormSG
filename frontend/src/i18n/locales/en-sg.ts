@@ -2,7 +2,21 @@ import Translation from './types'
 
 export const enSG: Translation = {
   translation: {
+    general: {
+      languageName: 'English',
+    },
     features: {
+      publicForm: {
+        components: {
+          FormFields: {
+            PublicFormSubmitButton: {
+              submissionDisabled: 'Submission disabled',
+              submitNow: 'Submit now',
+              submitting: 'Submitting...',
+            },
+          },
+        },
+      },
       login: {
         LoginPage: {
           slogan: 'Build secure government forms in minutes',

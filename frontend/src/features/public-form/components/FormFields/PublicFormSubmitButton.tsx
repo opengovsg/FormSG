@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useFormContext, useFormState, useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Stack } from '@chakra-ui/react'
 
 import { FormField, LogicDto, MyInfoFormField } from '~shared/types'
@@ -27,6 +28,8 @@ export const PublicFormSubmitButton = ({
   formLogics,
   colorTheme,
 }: PublicFormSubmitButtonProps): JSX.Element => {
+  const { t } = useTranslation()
+
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({})
@@ -48,9 +51,17 @@ export const PublicFormSubmitButton = ({
         type="submit"
         isLoading={isSubmitting}
         isDisabled={!!preventSubmissionLogic}
-        loadingText="Submitting"
+        loadingText={t(
+          'features.publicForm.components.FormFields.PublicFormSubmitButton.submitting',
+        )}
       >
-        {preventSubmissionLogic ? 'Submission disabled' : 'Submit now'}
+        {preventSubmissionLogic
+          ? t(
+              'features.publicForm.components.FormFields.PublicFormSubmitButton.submissionDisabled',
+            )
+          : t(
+              'features.publicForm.components.FormFields.PublicFormSubmitButton.submitNow',
+            )}
       </Button>
       {preventSubmissionLogic ? (
         <InlineMessage variant="warning">

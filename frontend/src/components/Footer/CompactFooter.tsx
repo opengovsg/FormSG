@@ -1,5 +1,7 @@
 import { chakra, Divider, Flex, Link, Stack, Wrap } from '@chakra-ui/react'
 
+import { LanguageSelector } from '~/i18n/LanguageSelector'
+
 import { ReactComponent as BrandHortSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 import { ReactComponent as BrandHortLightMonoSvg } from '~assets/svgs/brand/brand-hort-lightmono.svg'
 
@@ -50,6 +52,7 @@ export const CompactFooter = ({
         spacing="1.5rem"
         justify="flex-end"
       >
+        <LanguageSelector />
         {footerLinks?.map(({ label, href }, index) => (
           <Link
             isExternal

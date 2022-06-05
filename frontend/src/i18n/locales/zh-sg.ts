@@ -2,7 +2,21 @@ import Translation from './types'
 
 export const zhSG: Translation = {
   translation: {
+    general: {
+      languageName: '中文',
+    },
     features: {
+      publicForm: {
+        components: {
+          FormFields: {
+            PublicFormSubmitButton: {
+              submissionDisabled: '不允许提交',
+              submitNow: '提交表格',
+              submitting: '正在提交...',
+            },
+          },
+        },
+      },
       login: {
         LoginPage: {
           slogan: '在几分钟内创建安全的政府表格',

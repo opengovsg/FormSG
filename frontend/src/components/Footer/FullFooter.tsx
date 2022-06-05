@@ -1,5 +1,7 @@
 import { Box, Divider, Flex, Link, Stack, Text, Wrap } from '@chakra-ui/react'
 
+import { LanguageSelector } from '~/i18n/LanguageSelector'
+
 import {
   DEFAULT_FOOTER_ICON_LINK,
   DEFAULT_SOCIAL_MEDIA_LINKS,
@@ -43,6 +45,7 @@ export const FullFooter = ({
           direction={{ base: 'column', lg: 'row' }}
           justify={{ base: 'normal', lg: 'flex-end' }}
         >
+          <LanguageSelector />
           {footerLinks?.map(({ label, href }, index) => (
             <Link
               isExternal
