@@ -21,6 +21,7 @@ import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
 import { FormFieldValues } from '~templates/Field'
 
+import NotFoundErrorPage from '~pages/NotFoundError'
 import { trackVisitPublicForm } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
 import {
@@ -109,12 +110,13 @@ export const PublicFormProvider = ({
     return vfnTransaction.transactionId
   }, [createTransactionMutation, vfnTransaction])
 
+  const isNotFormId = useMemo(() => !FORMID_REGEX.test(formId), [formId])
+
   const isFormNotFound = useMemo(() => {
     return (
-      !FORMID_REGEX.test(formId) ||
-      (error instanceof HttpError && (error.code === 404 || error.code === 410))
+      error instanceof HttpError && (error.code === 404 || error.code === 410)
     )
-  }, [error, formId])
+  }, [error])
 
   const expiryInMs = useMemo(() => {
     if (!vfnTransaction?.expireAt) return null
@@ -246,6 +248,10 @@ export const PublicFormProvider = ({
 
     return sections
   }, [cachedDto, isAuthRequired])
+
+  if (isNotFormId) {
+    return <NotFoundErrorPage />
+  }
 
   return (
     <PublicFormContext.Provider
