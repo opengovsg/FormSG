@@ -40,6 +40,7 @@ import {
   MissingHashDataError,
   NonVerifiedFieldTypeError,
   OtpExpiredError,
+  OtpRequestCountExceededError,
   OtpRequestError,
   OtpRetryExceededError,
   TransactionExpiredError,
@@ -52,6 +53,7 @@ import { SendOtpParams } from './verification.types'
 import {
   hasAdminExceededFreeSmsLimit,
   isOtpExpired,
+  isOtpRequestCountExceeded,
   isOtpWaitTimeElapsed,
   isTransactionExpired,
 } from './verification.util'
@@ -278,6 +280,7 @@ export const resetFieldForTransaction = (
  * @returns err(TransactionExpiredError) when transaction is expired
  * @returns err(FieldNotFoundInTransactionError) when field does not exist
  * @returns err(WaitForOtpError) when waiting time for new OTP has not elapsed
+ * @returns err(OtpRequestCountExceededError) when max OTP requests has been exceeded
  * @returns err(MalformedParametersError) when form data to send SMS OTP cannot be retrieved
  * @returns err(SmsSendError) when attempt to send OTP SMS fails
  * @returns err(InvalidNumberError) when SMS recipient is invalid
@@ -298,6 +301,7 @@ export const sendNewOtp = ({
   | FieldNotFoundInTransactionError
   | TransactionExpiredError
   | WaitForOtpError
+  | OtpRequestCountExceededError
   | MalformedParametersError
   | SmsSendError
   | InvalidNumberError
@@ -320,6 +324,14 @@ export const sendNewOtp = ({
             meta: logMeta,
           })
           return errAsync(new WaitForOtpError())
+        }
+
+        if (isOtpRequestCountExceeded(field.otpRequests)) {
+          logger.warn({
+            message: 'Max OTP request count exceeded',
+            meta: logMeta,
+          })
+          return errAsync(new OtpRequestCountExceededError())
         }
 
         return sendOtpForField(transaction.formId, field, recipient, otp)

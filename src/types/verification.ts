@@ -11,6 +11,7 @@ export interface IVerificationField {
   hashedOtp: string | null
   hashCreatedAt: Date | null
   hashRetries: number
+  otpRequests: number
 }
 
 export interface IVerificationFieldSchema
