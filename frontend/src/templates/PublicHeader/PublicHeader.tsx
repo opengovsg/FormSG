@@ -106,8 +106,8 @@ PublicHeader.Container = ({
     <Flex
       justify="space-between"
       align="center"
-      px={{ base: '1.5rem', sm: '5.5rem', xl: '9.25rem' }}
-      py={{ base: '0.625rem', sm: '5.5rem', xl: '5.5rem' }}
+      px={{ base: '1.5rem', md: '5.5rem', lg: '9.25rem' }}
+      py={{ base: '0.625rem', md: '4.5rem' }}
       bg="primary.100"
       {...props}
     >
