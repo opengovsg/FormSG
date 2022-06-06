@@ -104,6 +104,11 @@ describe('sms.service', () => {
         forceDelivery: true,
         statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
+
+      expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
+        expect.not.stringContaining('?senderIp'),
+      )
+
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
           form: MOCK_FORM_ID,
@@ -186,6 +191,11 @@ describe('sms.service', () => {
         forceDelivery: true,
         statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
+
+      expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
+        expect.not.stringContaining('?senderIp'),
+      )
+
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
           form: MOCK_FORM_ID,
@@ -302,6 +312,10 @@ describe('sms.service', () => {
       )
 
       // Assert
+      expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
+        expect.stringContaining('?senderIp'),
+      )
+
       expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Logging should also have happened.
       const expectedLogParams = {
@@ -351,6 +365,10 @@ describe('sms.service', () => {
       )
 
       // Assert
+      expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
+        expect.stringContaining('?senderIp'),
+      )
+
       // Should resolve to true
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(true)
