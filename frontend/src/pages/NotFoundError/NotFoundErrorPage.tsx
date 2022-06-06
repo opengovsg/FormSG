@@ -8,7 +8,6 @@ import { useAuth } from '~contexts/AuthContext'
 import { ROOT_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
-import GovtMasthead from '~components/GovtMasthead'
 import Link from '~components/Link'
 
 import { NotFoundSvgr } from './NotFoundSvgr'
@@ -21,8 +20,7 @@ export const NotFoundErrorPage = (): JSX.Element => {
   return (
     <>
       <Helmet title="Not found" />
-      <Flex minH="100vh" flexDir="column" h="100%">
-        <GovtMasthead />
+      <Flex flex={1} flexDir="column" h="100%">
         <Flex
           justify="center"
           align="center"

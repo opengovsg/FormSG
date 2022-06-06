@@ -8,7 +8,6 @@ import { useAuth } from '~contexts/AuthContext'
 import { LOGIN_ROUTE, ROOT_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
-import GovtMasthead from '~components/GovtMasthead'
 import Link from '~components/Link'
 
 import { ForbiddenSvgr } from './ForbiddenSvgr'
@@ -27,8 +26,7 @@ export const AdminForbiddenErrorPage = ({
   return (
     <>
       <Helmet title="Forbidden" />
-      <Flex minH="100vh" flexDir="column" h="100%">
-        <GovtMasthead />
+      <Flex flex={1} flexDir="column" h="100%">
         <Flex
           justify="center"
           align="center"

@@ -1,4 +1,4 @@
-import { Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
 import { FormFooter } from '../FormFooter'
 
@@ -10,21 +10,24 @@ interface FormNotFoundProps {
 
 export const FormNotFound = ({ message }: FormNotFoundProps): JSX.Element => {
   return (
-    <Flex
-      justify="center"
-      flexDir="column"
-      flex={1}
-      bgGradient="linear(to-b, primary.500 50%, primary.100 50%)"
-    >
+    <Flex flex={1} flexDir="column" h="100%">
       <Flex
-        flex={1}
         justify="center"
-        align="center"
         flexDir="column"
-        mt="3rem"
-        p="1.5rem"
+        align="center"
+        flex={1}
+        bgGradient={{
+          base: 'linear(to-b, primary.500, primary.500 40%, primary.100 0)',
+          md: 'linear(to-b, primary.500 50%, primary.100 50%)',
+        }}
+        py="3rem"
+        px="1.5rem"
       >
-        <FormNotFoundSvgr maxW="100%" mb="3rem" />
+        <FormNotFoundSvgr
+          maxW="100%"
+          mb={{ base: '1.5rem', md: '3rem' }}
+          maxH={{ base: '220px', md: 'initial' }}
+        />
         <Stack
           spacing="1rem"
           color="secondary.500"
@@ -37,7 +40,9 @@ export const FormNotFound = ({ message }: FormNotFoundProps): JSX.Element => {
           <Text textStyle="body-1">{message}</Text>
         </Stack>
       </Flex>
-      <FormFooter />
+      <Box bg="primary.100">
+        <FormFooter />
+      </Box>
     </Flex>
   )
 }
