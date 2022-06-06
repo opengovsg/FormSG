@@ -41,10 +41,9 @@ const LoginImage = chakra(LoginImageSvg, {
 const BackgroundBox: FC = ({ children }) => (
   <Box
     flexGrow={1}
-    bg={{
-      base: 'initial',
-      md: 'linear-gradient(180deg, var(--chakra-colors-primary-500) 20.625rem, white 0)',
-      lg: 'linear-gradient(90deg, var(--chakra-colors-primary-500) 42%, white 0)',
+    bgGradient={{
+      md: 'linear(to-b, primary.500 20.625rem, white 0)',
+      lg: 'linear(to-r, primary.500 42%, white 0)',
     }}
     children={children}
   />
@@ -60,6 +59,10 @@ const BaseGridLayout: FC = ({ children }) => (
       base: `'login' 'footer'`,
       md: `'sidebar' 'login' 'footer'`,
       lg: `'sidebar login' 'footer footer'`,
+    }}
+    bgGradient={{
+      md: 'linear(to-b, primary.500 20.625rem, white 0)',
+      lg: 'linear(to-r, primary.500 42%, white 0)',
     }}
     templateRows={{ lg: '1fr auto' }}
     templateColumns={{ lg: '5fr 7fr' }}
@@ -196,7 +199,11 @@ export const LoginPage = (): JSX.Element => {
             </Box>
           </LoginGridArea>
           <FooterGridArea>
-            <AppFooter compactMonochromeLogos variant="compact" />
+            <AppFooter
+              compactMonochromeLogos
+              variant="compact"
+              bg="transparent"
+            />
           </FooterGridArea>
         </BaseGridLayout>
       </BackgroundBox>
