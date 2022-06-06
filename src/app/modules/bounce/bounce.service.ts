@@ -47,6 +47,11 @@ const logger = createLoggerWithLabel(module)
 const shortTermLogger = createCloudWatchLogger('email')
 const Bounce = getBounceModel(mongoose)
 
+// Hostname for AWS SNS URLs.
+// Using this over sns-validator's default hostname because the latter
+// does not adequately validate that requests only come from SNS.
+const AWS_SNS_HOSTNAME = /^sns\.[a-z]{2}-[a-z]+-\d+\.amazonaws.com$/
+
 /**
  * Verifies if a request object is correctly signed by Amazon SNS. More info:
  * https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html
@@ -59,7 +64,7 @@ export const validateSnsRequest = (
 ): ResultAsync<true, InvalidNotificationError> => {
   return ResultAsync.fromPromise(
     new Promise((resolve, reject) => {
-      const snsValidator = new SNSMessageValidator()
+      const snsValidator = new SNSMessageValidator(AWS_SNS_HOSTNAME)
 
       snsValidator.validate(
         body as unknown as Record<string, unknown>,
