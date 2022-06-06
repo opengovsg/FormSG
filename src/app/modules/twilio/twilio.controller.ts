@@ -55,7 +55,7 @@ export const twilioSmsUpdates: ControllerHandler<
    */
 
   // Extract public sender's ip address which was passed to twilio as a query param in the status callback
-  const url = new URL(req.url)
+  const url = new URL(req.protocol + '://' + req.get('host') + req.originalUrl)
   const senderIp = url.searchParams.get('senderIp')
 
   const ddTags: TwilioSmsStatsdTags = {
