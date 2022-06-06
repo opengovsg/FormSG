@@ -2,7 +2,30 @@ import { Meta, Story } from '@storybook/react'
 
 import { viewports } from '~utils/storybook'
 
-import { Footer, FooterProps } from './Footer'
+import { FooterProps } from './common/types'
+import { Footer } from './Footer'
+
+const DEFAULT_ARGS: FooterProps = {
+  appName: 'Form',
+  footerLinks: [
+    {
+      label: 'User guide',
+      href: '',
+    },
+    {
+      label: 'Privacy',
+      href: '',
+    },
+    {
+      label: 'Terms of use',
+      href: '',
+    },
+    {
+      label: 'Report vulnerability',
+      href: '',
+    },
+  ],
+}
 
 export default {
   title: 'Components/Footer',
@@ -11,37 +34,25 @@ export default {
   parameters: {
     layout: 'fullscreen',
   },
-} as Meta
-
-const defaultArgs: FooterProps = {
-  appName: 'Form',
-  tagline: 'Build secure government forms in minutes',
-  footerLinks: [
-    {
-      label: 'User Guide',
-      href: '',
-    },
-    {
-      label: 'Privacy',
-      href: '',
-    },
-    {
-      label: 'Terms of Use',
-      href: '',
-    },
-    {
-      label: 'Report Vulnerability',
-      href: '',
-    },
-  ],
-}
+  args: DEFAULT_ARGS,
+} as Meta<FooterProps>
 
 const Template: Story<FooterProps> = (args) => <Footer {...args} />
 export const Default = Template.bind({})
-Default.args = defaultArgs
+
+export const CompactVariant = Template.bind({})
+CompactVariant.args = {
+  ...DEFAULT_ARGS,
+  variant: 'compact',
+}
+
+export const WithTagline = Template.bind({})
+WithTagline.args = {
+  ...DEFAULT_ARGS,
+  tagline: 'Build secure government forms in minutes',
+}
 
 export const Mobile = Template.bind({})
-Mobile.args = defaultArgs
 Mobile.parameters = {
   viewport: {
     defaultViewport: 'mobile1',
@@ -50,7 +61,6 @@ Mobile.parameters = {
 }
 
 export const Tablet = Template.bind({})
-Tablet.args = defaultArgs
 Tablet.parameters = {
   viewport: {
     defaultViewport: 'tablet',

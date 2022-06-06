@@ -1,18 +1,14 @@
 import { useMemo } from 'react'
 import { Box, Flex, VStack } from '@chakra-ui/react'
 
-import { BasicField, FormFieldDto } from '~shared/types/field'
-
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from './FormSectionsContext'
 import { SidebarLink } from './SidebarLink'
 
-export type SidebarSectionMeta = Pick<FormFieldDto, 'title' | '_id'>
-
 export const SectionSidebar = (): JSX.Element => {
   const { activeSectionId } = useFormSections()
-  const { miniHeaderRef, form } = usePublicFormContext()
+  const { miniHeaderRef, sectionScrollData } = usePublicFormContext()
 
   // Used for offsetting the section sidebar when the mini header is open.
   const sectionTopOffset = useMemo(() => {
@@ -24,25 +20,11 @@ export const SectionSidebar = (): JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [miniHeaderRef?.current?.clientHeight])
 
-  const scrollData = useMemo(() => {
-    if (!form) return []
-    const sections: SidebarSectionMeta[] = []
-    form.form_fields.forEach((f) => {
-      if (f.fieldType !== BasicField.Section) return
-      sections.push({
-        title: f.title,
-        _id: f._id,
-      })
-    })
-
-    return sections
-  }, [form])
-
   return (
     <Box
       flex={1}
       d={{ base: 'none', md: 'initial' }}
-      minW={scrollData.length > 0 ? '20%' : undefined}
+      minW={sectionScrollData.length > 0 ? '20%' : undefined}
     >
       <VStack
         pos="sticky"
@@ -52,7 +34,7 @@ export const SectionSidebar = (): JSX.Element => {
         align="flex-start"
         marginEnd="1rem"
       >
-        {scrollData?.map((d) => (
+        {sectionScrollData?.map((d) => (
           <Flex key={d._id} align="center">
             <SidebarLink isActive={activeSectionId === d._id} sectionMeta={d} />
           </Flex>

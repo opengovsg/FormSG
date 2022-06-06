@@ -1,8 +1,10 @@
 import {
   addDays,
   endOfToday,
+  format,
   isAfter,
   isBefore,
+  isDate,
   parseISO,
   startOfToday,
 } from 'date-fns'
@@ -83,6 +85,16 @@ export const isIsoDateString = (value: unknown): value is JsonDate => {
   )
 }
 
+export const SHORT_ISO_DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}$/
+
+export const isShortIsoDateString = (value: unknown): value is JsonDate => {
+  return (
+    typeof value === 'string' &&
+    SHORT_ISO_DATE_FORMAT_REGEX.test(value) &&
+    !isNaN(new Date(value).getTime())
+  )
+}
+
 /**
  * This function mutates given @param body, and transforms all ISO date strings
  * in the body object to Date objects.
@@ -113,4 +125,18 @@ export const mutableTransformAllIsoStringsToDate = (body: unknown) => {
 export const transformAllIsoStringsToDate = <T>(body: T): T => {
   mutableTransformAllIsoStringsToDate(body)
   return body
+}
+
+/** Transforms YYYY-MM-DD strings to date, otherwise null */
+export const transformShortIsoStringToDate = (
+  isoString: unknown,
+): Date | null => {
+  return isShortIsoDateString(isoString)
+    ? // Set to UTC time regardless.
+      parseISO(`${isoString}T00:00:00Z`)
+    : null
+}
+
+export const transformDateToShortIsoString = (date: unknown): string | null => {
+  return isDate(date) ? format(date as Date, 'yyyy-MM-dd') : null
 }

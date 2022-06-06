@@ -18,7 +18,9 @@ import {
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
 import {
+  EditAttachment,
   EditCheckbox,
+  EditDate,
   EditDecimal,
   EditDropdown,
   EditEmail,
@@ -132,6 +134,8 @@ interface MemoFieldDrawerContentProps {
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
     switch (field.fieldType) {
+      case BasicField.Attachment:
+        return <EditAttachment {...props} field={field} />
       case BasicField.Checkbox:
         return <EditCheckbox {...props} field={field} />
       case BasicField.Dropdown:
@@ -146,6 +150,8 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditNric {...props} field={field} />
       case BasicField.Number:
         return <EditNumber {...props} field={field} />
+      case BasicField.Date:
+        return <EditDate {...props} field={field} />
       case BasicField.Decimal:
         return <EditDecimal {...props} field={field} />
       case BasicField.Section:

@@ -138,3 +138,12 @@ export const getMobileViewParameters = () => {
     chromatic: { viewports: [viewports.xs] },
   }
 }
+
+export const getTabletViewParameters = () => {
+  return {
+    viewport: {
+      defaultViewport: 'tablet',
+    },
+    chromatic: { viewports: [viewports.md] },
+  }
+}

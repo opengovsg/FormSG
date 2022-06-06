@@ -43,6 +43,9 @@ const Form = getFormModel(mongoose)
 const verificationApp = setupApp('/forms', PublicFormsVerificationRouter)
 const VerificationModel = getVerificationModel(mongoose)
 
+// Prevent rate limiting.
+jest.mock('src/app/utils/limit-rate')
+
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockReturnValue({
     sendMail: jest.fn().mockResolvedValue(true),

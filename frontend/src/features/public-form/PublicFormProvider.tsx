@@ -7,7 +7,12 @@ import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormResponseMode, PublicFormViewDto } from '~shared/types/form'
+import { BasicField } from '~shared/types'
+import {
+  FormAuthType,
+  FormResponseMode,
+  PublicFormViewDto,
+} from '~shared/types/form'
 
 import { FORMID_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
@@ -29,7 +34,11 @@ import {
 
 import { FormNotFound } from './components/FormNotFound'
 import { usePublicFormMutations } from './mutations'
-import { PublicFormContext, SubmissionData } from './PublicFormContext'
+import {
+  PublicFormContext,
+  SidebarSectionMeta,
+  SubmissionData,
+} from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
 interface PublicFormProviderProps {
@@ -213,6 +222,31 @@ export const PublicFormProvider = ({
     ],
   )
 
+  const isAuthRequired = useMemo(
+    () =>
+      !!cachedDto?.form &&
+      cachedDto.form.authType !== FormAuthType.NIL &&
+      !cachedDto.spcpSession,
+    [cachedDto?.form, cachedDto?.spcpSession],
+  )
+
+  const sectionScrollData = useMemo(() => {
+    const { form } = cachedDto ?? {}
+    if (!form || isAuthRequired) {
+      return []
+    }
+    const sections: SidebarSectionMeta[] = []
+    form.form_fields.forEach((f) => {
+      if (f.fieldType !== BasicField.Section) return
+      sections.push({
+        title: f.title,
+        _id: f._id,
+      })
+    })
+
+    return sections
+  }, [cachedDto, isAuthRequired])
+
   return (
     <PublicFormContext.Provider
       value={{
@@ -223,6 +257,8 @@ export const PublicFormProvider = ({
         getTransactionId,
         expiryInMs,
         submissionData,
+        sectionScrollData,
+        isAuthRequired,
         captchaContainerId: containerId,
         isLoading: isLoading || (!!cachedDto?.form.hasCaptcha && !hasLoaded),
         ...cachedDto,

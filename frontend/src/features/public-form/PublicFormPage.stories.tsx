@@ -66,6 +66,21 @@ export default {
 const Template: Story = () => <PublicFormPage />
 export const Default = Template.bind({})
 
+export const WithCaptcha = Template.bind({})
+WithCaptcha.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          hasCaptcha: true,
+        },
+      },
+    }),
+  ],
+}
+
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
 

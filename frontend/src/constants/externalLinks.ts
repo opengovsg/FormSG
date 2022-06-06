@@ -6,12 +6,12 @@ export const OSS_README =
   'https://s3-ap-southeast-1.amazonaws.com/misc.form.gov.sg/OSS-Legal.pdf'
 
 export const APP_FOOTER_LINKS = [
-  { label: 'Contact Us', href: '/contact-us' },
+  { label: 'Contact us', href: '/contact-us' },
   { label: 'Guide', href: FORM_GUIDE },
   { label: 'Privacy', href: PRIVACY_POLICY_ROUTE },
-  { label: 'Terms of Use', href: TOU_ROUTE },
+  { label: 'Terms of use', href: TOU_ROUTE },
   {
-    label: 'Report Vulnerability',
+    label: 'Report vulnerability',
     href: REPORT_VULNERABILITY,
   },
 ]

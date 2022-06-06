@@ -1,6 +1,5 @@
-// TODO: Update landing route to correct route.
 export const LANDING_ROUTE = '/'
-export const ROOT_ROUTE = '/'
+export const ROOT_ROUTE = '/workspace'
 export const LOGIN_ROUTE = '/login'
 
 export const TOU_ROUTE = '/terms'
