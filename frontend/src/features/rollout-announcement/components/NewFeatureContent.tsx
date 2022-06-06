@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Box, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
+import { Box, BoxProps, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
 import lottie from 'lottie-web'
 
 import { NewFeatureTag } from './NewFeatureTag'
@@ -13,13 +13,14 @@ const TopSpacer = (): JSX.Element => (
   />
 )
 
-interface LottieProps {
+interface LottieAnimationProps extends BoxProps {
   animationData: unknown
-  width?: number
-  height?: number
 }
 
-export const Lottie = ({ animationData, width, height }: LottieProps) => {
+export const LottieAnimation = ({
+  animationData,
+  ...boxProps
+}: LottieAnimationProps) => {
   const element = useRef<HTMLDivElement>(null)
   const lottieInstance = useRef<unknown>()
 
@@ -36,7 +37,7 @@ export const Lottie = ({ animationData, width, height }: LottieProps) => {
     }
   }, [animationData])
 
-  return <div style={{ width, height }} ref={element}></div>
+  return <Box {...boxProps} ref={element} />
 }
 
 interface NewFeatureContentProps {
@@ -53,7 +54,7 @@ export const NewFeatureContent = (props: {
   return (
     <>
       <TopSpacer />
-      <Lottie animationData={animationData} />
+      <LottieAnimation animationData={animationData} />
       <ModalBody whiteSpace="pre-line" marginTop="2.5rem">
         <NewFeatureTag />
       </ModalBody>

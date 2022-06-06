@@ -1,18 +1,20 @@
 import { IoRocketSharp } from 'react-icons/io5'
-import { TagLabel } from '@chakra-ui/react'
+import { Icon, Text } from '@chakra-ui/react'
 
-import { Tag, TagLeftIcon } from '~components/Tag'
+import Badge from '~components/Badge'
 
 export const NewFeatureTag = (): JSX.Element => {
   return (
-    <Tag
-      _hover={{ backgroundColor: 'primary.100' }}
-      _active={{ backgroundColor: 'primary.100' }}
+    <Badge
+      variant="subtle"
+      display="inline-flex"
+      columnGap="0.5rem"
+      alignItems="center"
     >
-      <TagLeftIcon as={IoRocketSharp} color="secondary.500" />
-      <TagLabel color="secondary.500" textStyle={'caption-1'}>
+      <Icon as={IoRocketSharp} color="secondary.500" />
+      <Text color="secondary.500" textStyle={'caption-1'}>
         New feature
-      </TagLabel>
-    </Tag>
+      </Text>
+    </Badge>
   )
 }

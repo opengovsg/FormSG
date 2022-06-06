@@ -1,13 +1,12 @@
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
-  Box,
+  Flex,
   Modal,
   ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalOverlay,
-  Text,
 } from '@chakra-ui/react'
 
 import Button from '~components/Button'
@@ -30,16 +29,19 @@ export const RolloutAnnouncementModal = ({
   onClose,
 }: RolloutAnnouncementModalProps): JSX.Element => {
   const [currActiveIdx, setCurrActiveIdx] = useState<number>(0)
-  const isLastAnnouncement = currActiveIdx === NUM_NEW_FEATURES - 1
+  const isLastAnnouncement = useMemo(
+    () => currActiveIdx === NUM_NEW_FEATURES - 1,
+    [currActiveIdx],
+  )
 
-  const handleNextClick = (): void => {
+  const handleNextClick = useCallback(() => {
     if (isLastAnnouncement) {
       onClose()
       return
     }
 
     setCurrActiveIdx(Math.min(currActiveIdx + 1, NUM_NEW_FEATURES - 1))
-  }
+  }, [currActiveIdx, isLastAnnouncement, onClose])
 
   return (
     <Modal isOpen={isOpen} onClose={() => onClose()}>
@@ -51,32 +53,28 @@ export const RolloutAnnouncementModal = ({
         ) : (
           <NewFeatureContent content={NEW_FEATURES[currActiveIdx]} />
         )}
-        <ModalFooter
-          display="flex"
-          justifyContent="space-between"
-          paddingTop="2.5rem"
-        >
+        <ModalFooter justifyContent="space-between">
           <ProgressIndicator
             numIndicators={NUM_NEW_FEATURES}
             currActiveIdx={currActiveIdx}
             onClick={setCurrActiveIdx}
           />
-          <Box display="flex" alignItems="center" columnGap="2rem">
-            <Text textStyle="subhead-1" cursor="pointer" onClick={onClose}>
+          <Flex gap="1rem">
+            <Button onClick={onClose} variant="clear" colorScheme="secondary">
               Cancel
-            </Text>
+            </Button>
 
             {isLastAnnouncement ? (
               <Button onClick={handleNextClick}>Done</Button>
             ) : (
               <Button
-                rightIcon={<BiRightArrowAlt size={24} />}
+                rightIcon={<BiRightArrowAlt size="1.5rem" />}
                 onClick={handleNextClick}
               >
                 Next
               </Button>
             )}
-          </Box>
+          </Flex>
         </ModalFooter>
       </ModalContent>
     </Modal>

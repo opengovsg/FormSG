@@ -14,7 +14,7 @@ import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import Pagination from '~components/Pagination'
 
-import RolloutAnnouncement from '~features/rollout-announcement'
+import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { useUser } from '~features/user/queries'
 
 import CreateFormModal from './components/CreateFormModal'
@@ -108,9 +108,12 @@ export const WorkspacePage = (): JSX.Element => {
     topRef,
     createFormModalDisclosure,
   } = useWorkspaceForms()
-  const { user } = useUser()
+  const { user, isLoading: isUserLoading } = useUser()
 
-  const ROLLOUT_ANNOUNCEMENT_KEY = ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id
+  const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
+    () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
+    [user],
+  )
   const [hasSeenAnnouncement, setHasSeenAnnouncement] =
     useLocalStorage<boolean>(ROLLOUT_ANNOUNCEMENT_KEY)
 
@@ -148,9 +151,9 @@ export const WorkspacePage = (): JSX.Element => {
           </Container>
           <Box gridArea="main">
             <Box ref={topRef} />
-            <RolloutAnnouncement
+            <RolloutAnnouncementModal
               onClose={() => setHasSeenAnnouncement(true)}
-              isOpen={!hasSeenAnnouncement ?? true}
+              isOpen={!isUserLoading && (!hasSeenAnnouncement ?? true)}
             />
             <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
           </Box>

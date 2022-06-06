@@ -1,5 +1,8 @@
+import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
+
+import { MotionBox } from '~components/motion'
 
 const ActiveIndicator = (): JSX.Element => (
   <Box
@@ -27,7 +30,7 @@ const CircleIndicator = ({
       backgroundColor="secondary.200"
       marginRight={isActiveIndicator ? '1.5rem' : '0.5rem'}
       onClick={onClick}
-      cursor="pointer"
+      as="button"
     />
   )
 }
@@ -44,29 +47,36 @@ export const ProgressIndicator = ({
   onClick,
 }: ProgressIndicatorProps): JSX.Element => {
   const dummyValue = 1
+  const indicators = useMemo(
+    () => Array(numIndicators).fill(dummyValue),
+    [numIndicators],
+  )
 
   const animationTranslationDistInRem = 1
-  const xTranslation = animationTranslationDistInRem * currActiveIdx
-  const animationProps = { x: xTranslation.toString() + 'rem' }
+  const xTranslation = useMemo(
+    () => animationTranslationDistInRem * currActiveIdx,
+    [animationTranslationDistInRem, currActiveIdx],
+  )
+  const animationProps = useMemo(() => {
+    return { x: xTranslation.toString() + 'rem' }
+  }, [xTranslation])
 
   return (
     <Box display="inline-flex">
-      {Array(numIndicators)
-        .fill(dummyValue)
-        .map((_, idx) => (
-          <CircleIndicator
-            isActiveIndicator={idx === currActiveIdx}
-            onClick={() => onClick(idx)}
-          />
-        ))}
+      {indicators.map((_, idx) => (
+        <CircleIndicator
+          isActiveIndicator={idx === currActiveIdx}
+          onClick={() => onClick(idx)}
+        />
+      ))}
 
-      <motion.div
-        style={{ position: 'absolute' }}
+      <MotionBox
+        pos="absolute"
         animate={animationProps}
         transition={{ stiffness: 100 }}
       >
         <ActiveIndicator />
-      </motion.div>
+      </MotionBox>
     </Box>
   )
 }
