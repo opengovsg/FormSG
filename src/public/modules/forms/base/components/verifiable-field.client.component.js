@@ -44,7 +44,9 @@ function verifiableFieldController($q, $timeout, $interval) {
 
       // No id found, jump straight to failure
       if (!vm.transactionId) {
-        throw new Error('No transaction id')
+        throw new Error(
+          'Unable to generate OTP. Please refresh the page and try again.',
+        )
       }
 
       await FieldVerificationService.triggerSendOtp({
