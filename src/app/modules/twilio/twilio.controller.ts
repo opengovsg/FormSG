@@ -55,8 +55,22 @@ export const twilioSmsUpdates: ControllerHandler<
    */
 
   // Extract public sender's ip address which was passed to twilio as a query param in the status callback
-  const url = new URL(req.protocol + '://' + req.get('host') + req.originalUrl)
-  const senderIp = url.searchParams.get('senderIp')
+  let senderIp = null
+  try {
+    const url = new URL(
+      req.protocol + '://' + req.get('host') + req.originalUrl,
+    )
+    senderIp = url.searchParams.get('senderIp')
+  } catch {
+    logger.error({
+      message: 'Error occurred when extracting senderIp',
+      meta: {
+        action: 'twilioSmsUpdates',
+        body: req.body,
+        originalUrl: req.originalUrl,
+      },
+    })
+  }
 
   const ddTags: TwilioSmsStatsdTags = {
     // msgSrvcSid not included to limit tag cardinality (for now?)

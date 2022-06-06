@@ -49,9 +49,11 @@ describe('twilio.controller', () => {
       const mockReq = expressHandler.mockRequest({
         body: MOCK_SUCCESSFUL_MESSAGE,
         others: {
-          url: `https://webhook-endpoint.gov.sg?${encodeURI(
-            'senderIp=200.0.0.0',
-          )}`,
+          protocol: 'https',
+          host: 'webhook-endpoint.gov.sg',
+          url: `/endpoint?${encodeURI('senderIp=200.0.0.0')}`,
+          originalUrl: `/endpoint?${encodeURI('senderIp=200.0.0.0')}`,
+          get: () => 'webhook-endpoint.gov.sg',
         },
       })
       const mockRes = expressHandler.mockResponse()
@@ -73,9 +75,11 @@ describe('twilio.controller', () => {
       const mockReq = expressHandler.mockRequest({
         body: MOCK_FAILED_MESSAGE,
         others: {
-          url: `https://webhook-endpoint.gov.sg?${encodeURI(
-            'senderIp=200.0.0.0',
-          )}`,
+          protocol: 'https',
+          host: 'webhook-endpoint.gov.sg',
+          url: `/endpoint?${encodeURI('senderIp=200.0.0.0')}`,
+          originalUrl: `/endpoint?${encodeURI('senderIp=200.0.0.0')}`,
+          get: () => 'webhook-endpoint.gov.sg',
         },
       })
       const mockRes = expressHandler.mockResponse()
