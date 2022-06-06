@@ -16,6 +16,8 @@ export type FooterLinkWithIcon = FooterLink & {
 export interface FooterVariantProps {
   /** Application name to display in footer. */
   appName: string
+  /** Link when clicking on application name or logo. */
+  appLink: string
   /** Tagline to display beside application name, if provided. */
   tagline?: string
   /** Link for footer icon. Defaults to OGP homepage. */
