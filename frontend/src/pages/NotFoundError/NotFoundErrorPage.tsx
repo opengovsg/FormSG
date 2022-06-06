@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async'
 import { Link as ReactLink, useNavigate } from 'react-router-dom'
-import { Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
 
@@ -25,46 +25,50 @@ export const NotFoundErrorPage = (): JSX.Element => {
         <GovtMasthead />
         <Flex
           justify="center"
+          align="center"
           flexDir="column"
           flex={1}
-          bgGradient="linear(to-b, primary.500 50%, primary.100 50%)"
+          bgGradient={{
+            base: 'linear(to-b, primary.500, primary.500 40%, primary.100 0)',
+            md: 'linear(to-b, primary.500 50%, primary.100 50%)',
+          }}
+          py="3rem"
+          px="1.5rem"
         >
-          <Flex
-            flex={1}
-            justify="center"
+          <NotFoundSvgr
+            maxW="100%"
+            mb={{ base: '1.5rem', md: '3rem' }}
+            maxH={{ base: '220px', md: 'initial' }}
+          />
+          <Stack
+            spacing="2.5rem"
+            color="secondary.500"
             align="center"
-            flexDir="column"
-            p="1.5rem"
+            textAlign="center"
           >
-            <NotFoundSvgr maxW="100%" mb="3rem" />
+            <Text as="h2" textStyle="h2">
+              This page could not be found.
+            </Text>
             <Stack
-              spacing="2.5rem"
-              color="secondary.500"
               align="center"
-              textAlign="center"
+              direction={{ base: 'column', md: 'row' }}
+              w="100%"
+              justify="center"
             >
-              <Text as="h2" textStyle="h2">
-                This page could not be found.
-              </Text>
-              <Stack
-                align="center"
-                direction={{ base: 'column', md: 'row' }}
-                w="100%"
-                justify="center"
-              >
-                <Button isFullWidth={isMobile} onClick={() => navigate(-1)}>
-                  Back
-                </Button>
-                {isAuthenticated ? (
-                  <Link variant="standalone" as={ReactLink} to={ROOT_ROUTE}>
-                    Go to dashboard
-                  </Link>
-                ) : null}
-              </Stack>
+              <Button isFullWidth={isMobile} onClick={() => navigate(-1)}>
+                Back
+              </Button>
+              {isAuthenticated ? (
+                <Link variant="standalone" as={ReactLink} to={ROOT_ROUTE}>
+                  Go to dashboard
+                </Link>
+              ) : null}
             </Stack>
-          </Flex>
+          </Stack>
         </Flex>
-        <AppFooter />
+        <Box py={{ lg: '3rem' }} px={{ lg: '9.25rem' }} bg="primary.100">
+          <AppFooter variant="compact" />
+        </Box>
       </Flex>
     </>
   )

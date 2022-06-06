@@ -18,9 +18,10 @@ export const CompactFooter = ({
   textColorScheme,
   footerLinks,
   compactMonochromeLogos,
+  bg,
 }: CompactedFooterProps): JSX.Element => {
   return (
-    <CompactFooter.Container>
+    <CompactFooter.Container bg={bg}>
       <Stack direction="row" h="2.25rem" align="center" spacing="2rem">
         {compactMonochromeLogos ? (
           <BrandHortLightMonoLogo h="1rem" />
@@ -74,7 +75,7 @@ CompactFooter.Container = ({
   return (
     <Flex
       align="center"
-      flex={1}
+      width="100%"
       justify="space-between"
       flexDir="row"
       as="footer"
