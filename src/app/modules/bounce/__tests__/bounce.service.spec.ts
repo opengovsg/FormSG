@@ -28,6 +28,7 @@ import { UserWithContactNumber } from '../../user/user.types'
 import { makeBounceNotification, MOCK_SNS_BODY } from './bounce-test-helpers'
 
 jest.mock('sns-validator')
+const MockedSNSMessageValidator = mocked(SNSMessageValidator)
 
 jest.mock('src/app/config/logger')
 const MockLoggerModule = mocked(LoggerModule, true)
@@ -719,7 +720,7 @@ describe('BounceService', () => {
     })
 
     it('should reject invalid notification with an InvalidNotificationError', async () => {
-      SNSMessageValidator.mockImplementation(() => {
+      MockedSNSMessageValidator.mockImplementation(() => {
         return {
           validate: (message, callback) => {
             // we use a timeout to simulate the asynchronous getting of the validation cert
@@ -734,11 +735,11 @@ describe('BounceService', () => {
     })
 
     it('should accept when requests are valid', async () => {
-      SNSMessageValidator.mockImplementation(() => {
+      MockedSNSMessageValidator.mockImplementation(() => {
         return {
           validate: (message, callback) => {
             // we use a timeout to simulate the asynchronous getting of the validation cert
-            setTimeout(() => callback(null, message), 0)
+            setTimeout(() => callback(null), 0)
           },
         }
       })
