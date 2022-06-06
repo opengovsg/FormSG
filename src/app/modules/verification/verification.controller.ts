@@ -204,6 +204,7 @@ export const _handleGenerateOtp: ControllerHandler<
     action: 'handleGenerateOtp',
     transactionId,
     fieldId,
+    mobileNumber: answer,
     ...createReqMeta(req),
   }
   // Step 1: Ensure that the form for the specified transaction exists
