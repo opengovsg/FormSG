@@ -169,7 +169,7 @@ export const mapRouteError: MapRouteError = (
       }
     case OtpRequestCountExceededError:
       return {
-        errorMessage: `You have requested for too many OTPs. Please refresh and try again.`,
+        errorMessage: `You have requested too many OTPs. Please refresh and try again.`,
         statusCode: StatusCodes.BAD_REQUEST,
       }
     case InvalidNumberError:
