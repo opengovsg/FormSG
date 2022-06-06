@@ -34,6 +34,7 @@ const MOCK_ADMIN_EMAIL = 'adminEmail@email.com'
 const MOCK_ADMIN_ID = new ObjectId().toHexString()
 const MOCK_FORM_ID = new ObjectId().toHexString()
 const MOCK_FORM_TITLE = 'formTitle'
+const MOCK_SENDER_IP = '200.000.000.000'
 
 const MOCK_TWILIO_WEBHOOK_ROUTE = '/api/v3/notifications/twilio'
 
@@ -275,6 +276,7 @@ describe('sms.service', () => {
         /* recipient= */ TWILIO_TEST_NUMBER,
         /* otp= */ '111111',
         /* formId= */ testForm._id,
+        /* senderIp= */ MOCK_SENDER_IP,
         /* defaultConfig= */ MOCK_VALID_CONFIG,
       )
 
@@ -295,6 +297,7 @@ describe('sms.service', () => {
         /* recipient= */ TWILIO_TEST_NUMBER,
         /* otp= */ '111111',
         /* formId= */ testForm._id,
+        /* senderIp= */ MOCK_SENDER_IP,
         /* defaultConfig= */ MOCK_VALID_CONFIG,
       )
 
@@ -319,6 +322,7 @@ describe('sms.service', () => {
         /* recipient= */ TWILIO_TEST_NUMBER,
         /* otp= */ '111111',
         /* formId= */ testForm._id,
+        /* senderIp= */ MOCK_SENDER_IP,
         /* defaultConfig= */ MOCK_INVALID_CONFIG,
       )
 
@@ -342,6 +346,7 @@ describe('sms.service', () => {
         /* recipient= */ TWILIO_TEST_NUMBER,
         /* otp= */ '111111',
         /* userId= */ testUser._id,
+        /* senderIp= */ MOCK_SENDER_IP,
         /* defaultConfig= */ MOCK_VALID_CONFIG,
       )
 
@@ -398,6 +403,7 @@ describe('sms.service', () => {
       /* recipient= */ TWILIO_TEST_NUMBER,
       /* otp= */ '111111',
       /* userId= */ testUser._id,
+      /* senderIp= */ MOCK_SENDER_IP,
       /* defaultConfig= */ MOCK_INVALID_CONFIG,
     )
 

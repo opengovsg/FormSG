@@ -66,6 +66,7 @@ import {
   MOCK_HASHED_OTP,
   MOCK_OTP,
   MOCK_RECIPIENT,
+  MOCK_SENDER_IP,
   MOCK_SIGNED_DATA,
 } from './verification.test.helpers'
 
@@ -327,6 +328,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       // Default mock params has fieldType: 'mobile'
@@ -334,6 +336,7 @@ describe('Verification service', () => {
         MOCK_RECIPIENT,
         MOCK_OTP,
         mockTransaction.formId,
+        MOCK_SENDER_IP,
       )
       expect(MockFormsgSdk.verification.generateSignature).toHaveBeenCalledWith(
         {
@@ -360,6 +363,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
@@ -384,6 +388,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
@@ -403,6 +408,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
@@ -434,6 +440,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
@@ -492,6 +499,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockMailService.sendVerificationOtp).toHaveBeenCalledWith(
@@ -526,12 +534,14 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
         MOCK_RECIPIENT,
         MOCK_OTP,
         new ObjectId(mockFormId),
+        MOCK_SENDER_IP,
       )
       expect(
         MockFormsgSdk.verification.generateSignature,
@@ -551,6 +561,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       // Mock params default to mobile
@@ -558,6 +569,7 @@ describe('Verification service', () => {
         MOCK_RECIPIENT,
         MOCK_OTP,
         new ObjectId(mockFormId),
+        MOCK_SENDER_IP,
       )
       expect(MockFormsgSdk.verification.generateSignature).toHaveBeenCalledWith(
         {

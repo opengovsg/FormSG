@@ -54,6 +54,12 @@ export const twilioSmsUpdates: ControllerHandler<
    * Example: https://www.twilio.com/docs/usage/webhooks/sms-webhooks.
    */
 
+  // Extract public sender's ip address which was passed to twilio as a query param in the status callback
+  const url = req.url.split('?')
+  const paramsString = url.length > 1 ? url[1] : ''
+  const queryParams = new URLSearchParams(paramsString)
+  const senderIp = queryParams.get('senderIp')
+
   const ddTags: TwilioSmsStatsdTags = {
     // msgSrvcSid not included to limit tag cardinality (for now?)
     smsstatus: req.body.SmsStatus,
@@ -70,6 +76,7 @@ export const twilioSmsUpdates: ControllerHandler<
       meta: {
         action: 'twilioSmsUpdates',
         body: req.body,
+        senderIp,
       },
     })
   } else {
@@ -78,6 +85,7 @@ export const twilioSmsUpdates: ControllerHandler<
       meta: {
         action: 'twilioSmsUpdates',
         body: req.body,
+        senderIp,
       },
     })
   }
