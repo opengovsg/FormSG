@@ -31,7 +31,6 @@ import { LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
-import GovtMasthead from '~components/GovtMasthead'
 import Link from '~components/Link'
 import { Tab } from '~components/Tabs'
 
@@ -75,8 +74,8 @@ export const LandingPage = (): JSX.Element => {
   const mdComponents = useMdComponents()
 
   return (
-    <Flex minH="100vh" flexDir="column" h="100%">
-      <GovtMasthead />
+    <>
+      {/* <GovtMasthead /> */}
       <AppPublicHeader />
       <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }}>
         <Stack
@@ -553,6 +552,6 @@ export const LandingPage = (): JSX.Element => {
         </Box>
       </LandingSection>
       <AppFooter />
-    </Flex>
+    </>
   )
 }
