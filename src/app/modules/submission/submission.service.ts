@@ -135,7 +135,16 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   })
 }
 
-export const checkDoesSubmissionIdExist = (
+/**
+ * Checks if submissionId exists amongst all the form submissions.
+ *
+ * @param submissionId the submission id to find amongst all the form submissions
+ *
+ * @returns ok(true) if submission id exists amongst all the form submissions
+ * @returns err(InvalidSubmissionIdError) if submissionId does not exist amongst all the form submissions
+ * @returns err(DatabaseError) if database query errors
+ */
+export const doesSubmissionIdExist = (
   submissionId: string,
 ): ResultAsync<true, InvalidSubmissionIdError | DatabaseError> =>
   ResultAsync.fromPromise(
@@ -146,7 +155,7 @@ export const checkDoesSubmissionIdExist = (
       logger.error({
         message: 'Error finding _id from submissions collection in database',
         meta: {
-          action: 'checkDoesSubmissionIdExist',
+          action: 'doesSubmissionIdExist',
           submissionId,
         },
         error,

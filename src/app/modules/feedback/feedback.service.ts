@@ -114,6 +114,18 @@ export const getFormFeedbacks = (
   })
 }
 
+/**
+ * Checks if a feedback for the form with formId and submission with submissionId
+ * already exists.
+ *
+ * @param formId the form id of the form that the feedback is for
+ * @param submissionId the submission id of the form submission that the feedback is for
+ *
+ * @returns ok(true) if there is no existing feedback for the form with formId and submission
+ * with submissionId
+ * @returns err(InvalidSubmissionIdError) if submissionId does not exist amongst all the form submissions
+ * @returns err(DatabaseError) if database query errors
+ */
 export const hasNoPreviousFeedback = (
   formId: string,
   submissionId: string,

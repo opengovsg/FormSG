@@ -723,7 +723,7 @@ describe('submission.service', () => {
     })
   })
 
-  describe('checkDoesSubmissionIdExist', () => {
+  describe('doesSubmissionIdExist', () => {
     const MOCK_SUBMISSION_ID = MOCK_SUBMISSION._id
 
     beforeEach(async () => {
@@ -742,7 +742,7 @@ describe('submission.service', () => {
         responseSalt: 'salt',
       })
 
-      const actualResult = await SubmissionService.checkDoesSubmissionIdExist(
+      const actualResult = await SubmissionService.doesSubmissionIdExist(
         MOCK_SUBMISSION_ID,
       )
 
@@ -761,7 +761,7 @@ describe('submission.service', () => {
         responseSalt: 'salt',
       })
 
-      const actualResult = await SubmissionService.checkDoesSubmissionIdExist(
+      const actualResult = await SubmissionService.doesSubmissionIdExist(
         new ObjectId().toHexString(),
       )
 
@@ -775,7 +775,7 @@ describe('submission.service', () => {
       const existSpy = jest.spyOn(Submission, 'exists')
       existSpy.mockImplementationOnce(() => Promise.reject(new Error('boom')))
 
-      const actualResult = await SubmissionService.checkDoesSubmissionIdExist(
+      const actualResult = await SubmissionService.doesSubmissionIdExist(
         MOCK_SUBMISSION_ID,
       )
 

@@ -20,6 +20,7 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema, IFormFeedbackModel>(
       ref: SUBMISSION_SCHEMA_ID,
       // TODO: Update to true once we fully migrate to /submissions/{submissionId}/feedback endpoint
       required: false,
+      index: true,
     },
     rating: {
       type: Number,

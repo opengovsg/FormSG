@@ -1,5 +1,6 @@
 import { Merge } from 'type-fest'
 import { DateString } from '../generic'
+import { SubmissionResponseDto } from '../submission'
 import { FormDto } from './form'
 
 export type SubmitFormFeedbackBodyDto = {
@@ -17,7 +18,7 @@ export type FormFeedbackBase = {
   formId: FormDto['_id']
   created?: Date
   lastModified?: Date
-  submissionId: string
+  submissionId: SubmissionResponseDto['submissionId']
 }
 
 // Convert to serialized version.
