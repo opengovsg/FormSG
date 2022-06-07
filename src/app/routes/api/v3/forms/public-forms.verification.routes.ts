@@ -8,7 +8,10 @@ export const PublicFormsVerificationRouter = Router()
 
 PublicFormsVerificationRouter.route(
   '/:formId([a-fA-F0-9]{24})/fieldverifications',
-).post(VerificationController.handleCreateVerificationTransaction)
+).post(
+  limitRate({ max: rateLimitConfig.submissions }),
+  VerificationController.handleCreateVerificationTransaction,
+)
 
 /**
  * Route for resetting the verification of a given field

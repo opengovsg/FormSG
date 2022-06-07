@@ -166,6 +166,7 @@ const logSmsSend = (logParams: LogSmsParams) => {
  * @param smsData The data for logging smsCount
  * @param recipient The mobile number of the recipient
  * @param message The message to send
+ * @param senderIp The ip address of the person triggering the SMS
  */
 const sendSms = (
   twilioConfig: TwilioConfig,
@@ -173,6 +174,7 @@ const sendSms = (
   recipient: string,
   message: string,
   smsType: SmsType,
+  senderIp?: string,
 ): ResultAsync<true, SmsSendError | InvalidNumberError> => {
   if (!isPhoneNumber(recipient)) {
     logger.warn({
@@ -194,13 +196,19 @@ const sendSms = (
 
   const statusCallbackRoute = '/api/v3/notifications/twilio'
 
+  const statusCallback = senderIp
+    ? `${config.app.appUrl}${statusCallbackRoute}?${encodeURI(
+        `senderIp=${senderIp}`,
+      )}`
+    : `${config.app.appUrl}${statusCallbackRoute}`
+
   return ResultAsync.fromPromise(
     client.messages.create({
       to: recipient,
       body: message,
       from: msgSrvcSid,
       forceDelivery: true,
-      statusCallback: config.app.appUrl + statusCallbackRoute,
+      statusCallback,
     }),
     (error) => {
       logger.error({
@@ -290,12 +298,13 @@ const sendSms = (
  * @param recipient The phone number to send to
  * @param otp The OTP to send
  * @param formId Form id for retrieving otp data.
- *
+ * @param senderIp The ip address of the person triggering the SMS
  */
 export const sendVerificationOtp = (
   recipient: string,
   otp: string,
   formId: string,
+  senderIp: string,
   defaultConfig: TwilioConfig,
 ): ResultAsync<
   true,
@@ -348,6 +357,7 @@ export const sendVerificationOtp = (
         recipient,
         message,
         SmsType.Verification,
+        senderIp,
       )
     })
   })
@@ -357,6 +367,7 @@ export const sendAdminContactOtp = (
   recipient: string,
   otp: string,
   userId: string,
+  senderIp: string,
   defaultConfig: TwilioConfig,
 ): ResultAsync<true, SmsSendError | InvalidNumberError> => {
   logger.info({
@@ -379,6 +390,7 @@ export const sendAdminContactOtp = (
     recipient,
     message,
     SmsType.AdminContact,
+    senderIp,
   )
 }
 
