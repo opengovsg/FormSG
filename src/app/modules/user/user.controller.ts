@@ -40,10 +40,12 @@ export const _handleContactSendOtp: ControllerHandler<
     return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
   }
 
+  const senderIp = getRequestIp(req)
+
   const logMeta = {
     action: 'handleContactSendOtp',
     userId,
-    ip: getRequestIp(req),
+    ip: senderIp,
   }
 
   // Step 1: Create OTP for contact verification.
@@ -67,6 +69,7 @@ export const _handleContactSendOtp: ControllerHandler<
     contact,
     otp,
     userId,
+    senderIp,
   )
 
   // Error sending OTP.

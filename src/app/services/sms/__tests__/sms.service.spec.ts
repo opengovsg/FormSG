@@ -34,6 +34,7 @@ const MOCK_ADMIN_EMAIL = 'adminEmail@email.com'
 const MOCK_ADMIN_ID = new ObjectId().toHexString()
 const MOCK_FORM_ID = new ObjectId().toHexString()
 const MOCK_FORM_TITLE = 'formTitle'
+const MOCK_SENDER_IP = '200.000.000.000'
 
 const MOCK_TWILIO_WEBHOOK_ROUTE = '/api/v3/notifications/twilio'
 
@@ -103,6 +104,11 @@ describe('sms.service', () => {
         forceDelivery: true,
         statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
+
+      expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
+        expect.not.stringContaining('?senderIp'),
+      )
+
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
           form: MOCK_FORM_ID,
@@ -185,6 +191,11 @@ describe('sms.service', () => {
         forceDelivery: true,
         statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
       })
+
+      expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
+        expect.not.stringContaining('?senderIp'),
+      )
+
       expect(smsCountSpy).toHaveBeenCalledWith({
         smsData: {
           form: MOCK_FORM_ID,
@@ -275,6 +286,7 @@ describe('sms.service', () => {
         /* recipient= */ TWILIO_TEST_NUMBER,
         /* otp= */ '111111',
         /* formId= */ testForm._id,
+        /* senderIp= */ MOCK_SENDER_IP,
         /* defaultConfig= */ MOCK_VALID_CONFIG,
       )
 
@@ -295,10 +307,15 @@ describe('sms.service', () => {
         /* recipient= */ TWILIO_TEST_NUMBER,
         /* otp= */ '111111',
         /* formId= */ testForm._id,
+        /* senderIp= */ MOCK_SENDER_IP,
         /* defaultConfig= */ MOCK_VALID_CONFIG,
       )
 
       // Assert
+      expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
+        expect.stringContaining('?senderIp'),
+      )
+
       expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Logging should also have happened.
       const expectedLogParams = {
@@ -319,6 +336,7 @@ describe('sms.service', () => {
         /* recipient= */ TWILIO_TEST_NUMBER,
         /* otp= */ '111111',
         /* formId= */ testForm._id,
+        /* senderIp= */ MOCK_SENDER_IP,
         /* defaultConfig= */ MOCK_INVALID_CONFIG,
       )
 
@@ -342,10 +360,15 @@ describe('sms.service', () => {
         /* recipient= */ TWILIO_TEST_NUMBER,
         /* otp= */ '111111',
         /* userId= */ testUser._id,
+        /* senderIp= */ MOCK_SENDER_IP,
         /* defaultConfig= */ MOCK_VALID_CONFIG,
       )
 
       // Assert
+      expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
+        expect.stringContaining('?senderIp'),
+      )
+
       // Should resolve to true
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(true)
@@ -398,6 +421,7 @@ describe('sms.service', () => {
       /* recipient= */ TWILIO_TEST_NUMBER,
       /* otp= */ '111111',
       /* userId= */ testUser._id,
+      /* senderIp= */ MOCK_SENDER_IP,
       /* defaultConfig= */ MOCK_INVALID_CONFIG,
     )
 
