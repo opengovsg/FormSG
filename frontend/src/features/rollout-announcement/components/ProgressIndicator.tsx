@@ -45,31 +45,27 @@ export const ProgressIndicator = ({
   currActiveIdx,
   onClick,
 }: ProgressIndicatorProps): JSX.Element => {
-  const dummyValue = 1
   const indicators = useMemo(
-    () => Array(numIndicators).fill(dummyValue),
+    () => Array(numIndicators).fill(1),
     [numIndicators],
   )
 
-  const animationTranslationDistInRem = 1
-  const xTranslation = useMemo(
-    () => animationTranslationDistInRem * currActiveIdx,
-    [animationTranslationDistInRem, currActiveIdx],
-  )
   const animationProps = useMemo(() => {
-    return { x: xTranslation.toString() + 'rem' }
-  }, [xTranslation])
+    return { x: currActiveIdx.toString() + 'rem' }
+  }, [currActiveIdx])
 
   return (
     <Box display="inline-flex" alignSelf="center">
       {indicators.map((_, idx) => (
         <CircleIndicator
+          key={idx}
           isActiveIndicator={idx === currActiveIdx}
           onClick={() => onClick(idx)}
         />
       ))}
 
       <MotionBox
+        // Absolute positioning is required for the active progress indicator to slide over inactive ones
         pos="absolute"
         animate={animationProps}
         transition={{ stiffness: 100 }}

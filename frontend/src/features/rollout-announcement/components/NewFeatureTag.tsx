@@ -1,6 +1,6 @@
-import { IoRocketSharp } from 'react-icons/io5'
 import { Icon, Text } from '@chakra-ui/react'
 
+import { BxsRocket } from '~assets/icons'
 import Badge from '~components/Badge'
 
 export const NewFeatureTag = (): JSX.Element => {
@@ -10,11 +10,10 @@ export const NewFeatureTag = (): JSX.Element => {
       display="inline-flex"
       columnGap="0.5rem"
       alignItems="center"
+      color="secondary.500"
     >
-      <Icon as={IoRocketSharp} color="secondary.500" />
-      <Text color="secondary.500" textStyle={'caption-1'}>
-        New feature
-      </Text>
+      <Icon as={BxsRocket} />
+      <Text textStyle="caption-1">New feature</Text>
     </Badge>
   )
 }

@@ -63,6 +63,7 @@ export const RolloutAnnouncementModal = ({
             width="100vw"
             alignItems={isMobile ? 'normal' : 'center'}
             justifyContent="space-between"
+            spacing="2rem"
           >
             <ProgressIndicator
               numIndicators={NUM_NEW_FEATURES}

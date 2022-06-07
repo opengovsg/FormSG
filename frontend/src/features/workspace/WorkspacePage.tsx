@@ -117,6 +117,11 @@ export const WorkspacePage = (): JSX.Element => {
   const [hasSeenAnnouncement, setHasSeenAnnouncement] =
     useLocalStorage<boolean>(ROLLOUT_ANNOUNCEMENT_KEY)
 
+  const isAnnouncementModalOpen = useMemo(
+    () => !isUserLoading && !hasSeenAnnouncement,
+    [isUserLoading, hasSeenAnnouncement],
+  )
+
   return (
     <>
       <CreateFormModal
@@ -153,7 +158,7 @@ export const WorkspacePage = (): JSX.Element => {
             <Box ref={topRef} />
             <RolloutAnnouncementModal
               onClose={() => setHasSeenAnnouncement(true)}
-              isOpen={!isUserLoading && (!hasSeenAnnouncement ?? true)}
+              isOpen={isAnnouncementModalOpen}
             />
             <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
           </Box>
