@@ -1,19 +1,34 @@
-import Joyride from 'react-joyride'
+import { useState } from 'react'
+import Joyride, { CallBackProps, EVENTS, STATUS } from 'react-joyride'
 import { useToken } from '@chakra-ui/react'
 
 import { FEATURE_STEPS } from './constants'
 import { FeatureTourTooltip } from './FeatureTourTooltip'
 
 interface FeatureTourProps {
-  shouldRun: boolean
+  onClose: () => void
 }
 
-export const FeatureTour = ({ shouldRun }: FeatureTourProps): JSX.Element => {
+export const FeatureTour = ({ onClose }: FeatureTourProps): JSX.Element => {
+  const [stepIndex, setStepIndex] = useState<number>(0)
   const arrowColor: string = useToken('colors', ['primary.100'])
+
+  const handleJoyrideCallback = ({ index, status, type }: CallBackProps) => {
+    if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
+      setStepIndex(index + 1)
+    }
+
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      onClose()
+    }
+  }
+
   return (
     <Joyride
       steps={FEATURE_STEPS}
-      run={shouldRun}
+      callback={handleJoyrideCallback}
+      stepIndex={stepIndex}
+      run
       hideBackButton
       floaterProps={{
         placement: 'right-start',

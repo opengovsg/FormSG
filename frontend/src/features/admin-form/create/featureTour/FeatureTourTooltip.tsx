@@ -24,7 +24,7 @@ export const FeatureTourTooltip = ({
   primaryProps,
   skipProps,
   isLastStep,
-}: FeatureTourTooltipProps) => {
+}: FeatureTourTooltipProps): JSX.Element => {
   return (
     <Box
       padding="1.5rem"
