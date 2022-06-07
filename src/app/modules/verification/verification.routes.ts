@@ -17,6 +17,7 @@ const formatOfId = Joi.string().length(24).hex().required()
  */
 VfnRouter.post(
   '/',
+  limitRate({ max: rateLimitConfig.submissions }),
   celebrate({
     [Segments.BODY]: Joi.object({
       formId: formatOfId,
