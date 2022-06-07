@@ -147,7 +147,9 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
   ): string {
     const fieldRecord = unprocessedRecord[fieldId]
     if (!fieldRecord) return ''
-    return fieldRecord.getAnswer(colIndex)
+    const answer = fieldRecord.getAnswer(colIndex)
+    // wrap answer in quotes if answer is not a number
+    return isNaN(Number(answer)) ? `'${answer}'` : answer
   }
 
   /**
