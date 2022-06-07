@@ -9,17 +9,11 @@ interface FeatureTourProps {
   onClose: () => void
 }
 
-type JoyrideCallbackProps = Pick<CallBackProps, 'index' | 'status' | 'type'>
-
 export const FeatureTour = ({ onClose }: FeatureTourProps): JSX.Element => {
   const [stepIndex, setStepIndex] = useState<number>(0)
   const arrowColor: string = useToken('colors', ['primary.100'])
 
-  const handleJoyrideCallback = ({
-    index,
-    status,
-    type,
-  }: JoyrideCallbackProps) => {
+  const handleJoyrideCallback = ({ index, status, type }: CallBackProps) => {
     if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
       setStepIndex(index + 1)
     }
