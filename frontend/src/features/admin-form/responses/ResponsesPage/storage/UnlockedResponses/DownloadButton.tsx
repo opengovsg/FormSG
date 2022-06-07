@@ -12,7 +12,7 @@ import Menu from '~components/Menu'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import useDecryptionWorkers from '../useDecryptionWorkers'
 
-import { DownloadModal } from './DownloadModal'
+import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
 
 export const DownloadButton = (): JSX.Element => {
@@ -77,11 +77,12 @@ export const DownloadButton = (): JSX.Element => {
   return (
     <>
       {responsesCount && (
-        <DownloadModal
+        <DownloadWithAttachmentModal
           responsesCount={responsesCount}
           isOpen={isDownloadModalOpen}
           onClose={onDownloadModalClose}
           onDownload={handleExportCsvWithAttachments}
+          progress={downloadCount}
           isDownloading={handleExportCsvMutation.isLoading}
         />
       )}

@@ -20,11 +20,12 @@ import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
 
-export interface DownloadModalProps
+export interface DownloadWithAttachmentModalProps
   extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
   onDownload: () => void
   isDownloading: boolean
   responsesCount: number
+  progress: number
 }
 
 const InlineTextListItem = ({
@@ -38,13 +39,13 @@ const InlineTextListItem = ({
   </ListItem>
 )
 
-export const DownloadModal = ({
+export const DownloadWithAttachmentModal = ({
   isOpen,
   onClose,
   onDownload,
   isDownloading,
   responsesCount,
-}: DownloadModalProps): JSX.Element => {
+}: DownloadWithAttachmentModalProps): JSX.Element => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
