@@ -44,9 +44,6 @@ export const DownloadButton = (): JSX.Element => {
   const { handleExportCsvMutation, abortDecryption } = useDecryptionWorkers({
     onProgress: setDownloadCount,
     mutateProps: {
-      onMutate: () => {
-        setProgressModalTimeout(5000)
-      },
       onSuccess: () => {
         onDownloadModalClose()
       },
@@ -59,6 +56,7 @@ export const DownloadButton = (): JSX.Element => {
 
   const handleExportCsvNoAttachments = useCallback(() => {
     if (!downloadParams) return
+    setProgressModalTimeout(5000)
     return handleExportCsvMutation.mutate({
       ...downloadParams,
       downloadAttachments: false,
@@ -73,11 +71,16 @@ export const DownloadButton = (): JSX.Element => {
     })
   }, [downloadParams, handleExportCsvMutation])
 
-  const handleAbortDecryption = useCallback(() => {
+  const resetDownload = useCallback(() => {
+    setDownloadCount(0)
     setProgressModalTimeout(null)
     abortDecryption()
+  }, [abortDecryption])
+
+  const handleAbortDecryption = useCallback(() => {
+    resetDownload()
     onProgressModalClose()
-  }, [abortDecryption, onProgressModalClose])
+  }, [onProgressModalClose, resetDownload])
 
   return (
     <>
@@ -87,7 +90,8 @@ export const DownloadButton = (): JSX.Element => {
           isOpen={isDownloadModalOpen}
           onClose={onDownloadModalClose}
           onDownload={handleExportCsvWithAttachments}
-          progress={downloadCount}
+          onCancel={resetDownload}
+          downloadPercentage={downloadPercentage}
           isDownloading={handleExportCsvMutation.isLoading}
         />
       )}

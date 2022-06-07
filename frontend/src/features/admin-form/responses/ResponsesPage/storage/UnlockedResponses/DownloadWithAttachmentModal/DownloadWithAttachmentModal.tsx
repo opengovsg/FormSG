@@ -1,112 +1,94 @@
-import { BiCheck } from 'react-icons/bi'
+import { useCallback, useState } from 'react'
 import {
-  ButtonGroup,
-  List,
-  ListIcon,
-  ListItem,
   Modal,
-  ModalBody,
   ModalContent,
-  ModalFooter,
-  ModalHeader,
   ModalOverlay,
-  Stack,
   Text,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
-import Badge from '~components/Badge'
-import Button from '~components/Button'
-import InlineMessage from '~components/InlineMessage'
-import { ModalCloseButton } from '~components/Modal'
+import { XMotionBox } from '~templates/MotionBox'
+
+import { ProgressModalContent } from '../ProgressModal'
+
+import { ConfirmationScreen } from './ConfirmationScreen'
 
 export interface DownloadWithAttachmentModalProps
   extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
   onDownload: () => void
+  onCancel: () => void
   isDownloading: boolean
   responsesCount: number
-  progress: number
+  downloadPercentage: number
 }
 
-const InlineTextListItem = ({
-  children,
-}: {
-  children: string
-}): JSX.Element => (
-  <ListItem display="flex" alignItems="center">
-    <ListIcon as={BiCheck} />
-    {children}
-  </ListItem>
-)
+export enum DownloadWithAttachmentFlowStates {
+  Confirmation = 'confirmation',
+  Progress = 'progress',
+  Complete = 'complete',
+}
+
+const INITIAL_STEP_STATE: [DownloadWithAttachmentFlowStates, number] = [
+  DownloadWithAttachmentFlowStates.Confirmation,
+  0 | 1 | -1,
+]
 
 export const DownloadWithAttachmentModal = ({
   isOpen,
   onClose,
   onDownload,
+  onCancel,
   isDownloading,
   responsesCount,
+  downloadPercentage,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
+  const [[currentStep, direction], setCurrentStep] =
+    useState(INITIAL_STEP_STATE)
+
+  const handleDownload = useCallback(() => {
+    setCurrentStep([DownloadWithAttachmentFlowStates.Progress, 1])
+    return onDownload()
+  }, [onDownload])
+
+  const handleCancel = useCallback(() => {
+    // TODO: Move to conclusion page.
+    setCurrentStep([DownloadWithAttachmentFlowStates.Confirmation, 1])
+    return onCancel()
+  }, [onCancel])
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      closeOnOverlayClick={
+        currentStep !== DownloadWithAttachmentFlowStates.Progress
+      }
+    >
       <ModalOverlay />
-      <ModalContent>
-        <ModalCloseButton />
-        <ModalHeader color="secondary.700">
-          <Stack direction="row" align="center">
-            <Text>Download responses and attachments</Text>
-            <Badge w="fit-content" colorScheme="success">
-              beta
-            </Badge>
-          </Stack>
-        </ModalHeader>
-        <ModalBody whiteSpace="pre-line" color="secondary.500">
-          <Stack spacing="1rem">
-            <Text>
-              Separate zip files will be downloaded,{' '}
-              <b>one for each response</b>. You can adjust the date range before
-              proceeding.
-              <br />
-              <br />
-              <b>Number of responses and attachments:</b>{' '}
-              {responsesCount.toLocaleString()}
-              <br />
-              <b>Estimated time:</b> 30-50 mins per 1,000 responses
-            </Text>
-            <InlineMessage>
-              <Stack>
-                <Text textStyle="subhead-1">
-                  Downloading many attachments can be an intensive operation.
-                </Text>
-                <List>
-                  <InlineTextListItem>
-                    Do not use Internet Explorer
-                  </InlineTextListItem>
-                  <InlineTextListItem>
-                    Ensure network connectivity is strong
-                  </InlineTextListItem>
-                  <InlineTextListItem>
-                    Ensure device has sufficient disk space for the download
-                  </InlineTextListItem>
-                </List>
-              </Stack>
-            </InlineMessage>
-          </Stack>
-        </ModalBody>
-        <ModalFooter>
-          <ButtonGroup>
-            <Button
-              variant="clear"
-              colorScheme="secondary"
-              onClick={onClose}
-              isDisabled={isDownloading}
+      <ModalContent overflow="hidden">
+        <XMotionBox keyProp={currentStep} custom={direction}>
+          {currentStep === DownloadWithAttachmentFlowStates.Confirmation && (
+            <ConfirmationScreen
+              isDownloading={isDownloading}
+              responsesCount={responsesCount}
+              onCancel={onClose}
+              onDownload={handleDownload}
+            />
+          )}
+          {currentStep === DownloadWithAttachmentFlowStates.Progress && (
+            <ProgressModalContent
+              downloadPercentage={downloadPercentage}
+              isDownloading={isDownloading}
+              onClose={handleCancel}
             >
-              Cancel
-            </Button>
-            <Button onClick={onDownload} isLoading={isDownloading}>
-              Start download
-            </Button>
-          </ButtonGroup>
-        </ModalFooter>
+              <Text mb="1rem">
+                Up to <b>{responsesCount.toLocaleString()}</b> files are being
+                downloaded into your destination folder. Navigating away from
+                this page will stop the download.
+              </Text>
+            </ProgressModalContent>
+          )}
+        </XMotionBox>
       </ModalContent>
     </Modal>
   )
