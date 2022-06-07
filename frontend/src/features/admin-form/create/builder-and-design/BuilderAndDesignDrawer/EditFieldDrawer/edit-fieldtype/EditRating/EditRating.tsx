@@ -76,7 +76,7 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
+      <FormControl id="ratingOptions.steps" isReadOnly={isLoading}>
         <FormLabel isRequired>Number of steps</FormLabel>
         <Controller
           control={control}
@@ -91,7 +91,7 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
           )}
         />
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
+      <FormControl id="ratingOptions.shape" isReadOnly={isLoading}>
         <FormLabel isRequired>Shape</FormLabel>
         <Controller
           control={control}
