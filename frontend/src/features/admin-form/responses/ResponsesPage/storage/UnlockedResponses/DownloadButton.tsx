@@ -1,19 +1,19 @@
-import { useCallback } from 'react'
-import { useMutation } from 'react-query'
+import { useCallback, useState } from 'react'
+import { useThrottle } from 'react-use'
 import { Box, MenuButton, useDisclosure } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
+import { useTimeout } from '~hooks/useTimeout'
 import Badge from '~components/Badge'
 import Button from '~components/Button'
 import Menu from '~components/Menu'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
-import useDecryptionWorkers, {
-  DownloadEncryptedParams,
-} from '../useDecryptionWorkers'
+import useDecryptionWorkers from '../useDecryptionWorkers'
 
 import { DownloadModal } from './DownloadModal'
+import { ProgressModal } from './ProgressModal'
 
 export const DownloadButton = (): JSX.Element => {
   const {
@@ -21,18 +21,36 @@ export const DownloadButton = (): JSX.Element => {
     onClose: onDownloadModalClose,
     onOpen: onDownloadModalOpen,
   } = useDisclosure()
-  const { downloadEncryptedResponses } = useDecryptionWorkers()
-  const { downloadParams, responsesCount } = useStorageResponsesContext()
+  const {
+    isOpen: isProgressModalOpen,
+    onClose: onProgressModalClose,
+    onOpen: onProgressModalOpen,
+  } = useDisclosure()
 
-  const handleExportCsvMutation = useMutation(
-    (params: DownloadEncryptedParams) => downloadEncryptedResponses(params),
-    // TODO: add error and success handling
-    {
+  const [progressModalTimeout, setProgressModalTimeout] = useState<
+    number | null
+  >(null)
+  const { downloadParams, responsesCount } = useStorageResponsesContext()
+  const [_downloadCount, setDownloadCount] = useState(0)
+  const downloadCount = useThrottle(_downloadCount, 1000)
+
+  useTimeout(onProgressModalOpen, progressModalTimeout)
+
+  const { handleExportCsvMutation, abortDecryption } = useDecryptionWorkers({
+    onProgress: setDownloadCount,
+    mutateProps: {
+      onMutate: () => {
+        setProgressModalTimeout(5000)
+      },
       onSuccess: () => {
         onDownloadModalClose()
       },
+      onSettled: () => {
+        setProgressModalTimeout(null)
+        setDownloadCount(0)
+      },
     },
-  )
+  })
 
   const handleExportCsvNoAttachments = useCallback(() => {
     if (!downloadParams) return
@@ -50,6 +68,12 @@ export const DownloadButton = (): JSX.Element => {
     })
   }, [downloadParams, handleExportCsvMutation])
 
+  const handleAbortDecryption = useCallback(() => {
+    setProgressModalTimeout(null)
+    abortDecryption()
+    onProgressModalClose()
+  }, [abortDecryption, onProgressModalClose])
+
   return (
     <>
       {responsesCount && (
@@ -58,6 +82,15 @@ export const DownloadButton = (): JSX.Element => {
           isOpen={isDownloadModalOpen}
           onClose={onDownloadModalClose}
           onDownload={handleExportCsvWithAttachments}
+          isDownloading={handleExportCsvMutation.isLoading}
+        />
+      )}
+      {responsesCount && (
+        <ProgressModal
+          isOpen={isProgressModalOpen}
+          onClose={handleAbortDecryption}
+          responsesCount={responsesCount}
+          progress={downloadCount}
           isDownloading={handleExportCsvMutation.isLoading}
         />
       )}
