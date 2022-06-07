@@ -44,12 +44,15 @@ const useDecryptionWorkers = () => {
   }, [])
 
   const downloadEncryptedResponses = useCallback(
-    async ({
-      downloadAttachments,
-      secretKey,
-      endDate,
-      startDate,
-    }: DownloadEncryptedParams) => {
+    async (
+      {
+        downloadAttachments,
+        secretKey,
+        endDate,
+        startDate,
+      }: DownloadEncryptedParams,
+      onProgress: (progress: number) => void,
+    ) => {
       if (!adminForm) return
 
       const { data: responsesCount } = await refetch({
@@ -91,6 +94,8 @@ const useDecryptionWorkers = () => {
       let read: (result: ReadableStreamDefaultReadResult<string>) => void
       const downloadStartTime = performance.now()
 
+      let progress = 0
+
       return reader
         .read()
         .then(
@@ -104,6 +109,8 @@ const useDecryptionWorkers = () => {
                 secretKey,
                 downloadAttachments,
               })
+              progress += 1
+              onProgress(progress)
 
               switch (decryptResult.status) {
                 case CsvRecordStatus.Error:
