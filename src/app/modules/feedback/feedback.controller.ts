@@ -117,7 +117,7 @@ export const submitFormFeedback: ControllerHandler<
 
   return PublicFormService.insertFormFeedback({
     formId: form._id,
-    formSubmissionId: submissionId,
+    submissionId: submissionId,
     rating,
     comment,
   })

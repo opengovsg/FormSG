@@ -138,7 +138,7 @@ describe('public-form.submissions.feedback.routes', () => {
       })
       await dbHandler.insertFormFeedback({
         formId: form._id,
-        formSubmissionId: submission._id,
+        submissionId: submission._id,
       })
 
       const expectedResp = JSON.parse(

@@ -119,7 +119,7 @@ export const checkHasPreviousFeedback = (
   ResultAsync.fromPromise(
     FormFeedbackModel.exists({
       formId: formId,
-      formSubmissionId: submissionId,
+      submissionId: submissionId,
     }),
     (error) => {
       logger.error({

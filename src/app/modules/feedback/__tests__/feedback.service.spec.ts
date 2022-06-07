@@ -262,7 +262,7 @@ describe('feedback.service', () => {
       await FormFeedback.create({
         comment: `test feedback`,
         formId: MOCK_FORM_ID,
-        formSubmissionId: MOCK_SUBMISSION_ID,
+        submissionId: MOCK_SUBMISSION_ID,
         rating: 5,
       })
 
@@ -302,7 +302,7 @@ describe('feedback.service', () => {
 
       expect(existSpy).toHaveBeenCalledWith({
         formId: MOCK_FORM_ID,
-        formSubmissionId: MOCK_SUBMISSION_ID,
+        submissionId: MOCK_SUBMISSION_ID,
       })
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)

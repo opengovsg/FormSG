@@ -28,12 +28,12 @@ const logger = createLoggerWithLabel(module)
  */
 export const insertFormFeedback = ({
   formId,
-  formSubmissionId,
+  submissionId,
   rating,
   comment,
 }: {
   formId: string
-  formSubmissionId?: string
+  submissionId?: string
   rating: number
   comment?: string
 }): ResultAsync<IFormFeedbackSchema, FormNotFoundError | DatabaseError> => {
@@ -44,7 +44,7 @@ export const insertFormFeedback = ({
   return ResultAsync.fromPromise(
     FormFeedbackModel.create({
       formId,
-      formSubmissionId,
+      submissionId,
       rating,
       comment,
     }),

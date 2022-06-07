@@ -15,7 +15,7 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema, IFormFeedbackModel>(
       ref: FORM_SCHEMA_ID,
       required: true,
     },
-    formSubmissionId: {
+    submissionId: {
       type: Schema.Types.ObjectId,
       ref: SUBMISSION_SCHEMA_ID,
       // TODO: Update to true once we fully migrate to /submissions/{submissionId}/feedback endpoint

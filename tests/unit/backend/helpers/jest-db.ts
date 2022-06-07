@@ -301,12 +301,12 @@ const insertFormSubmission = async ({
 
 const insertFormFeedback = async ({
   formId,
-  formSubmissionId,
+  submissionId,
   rating = '5',
   comment = 'FormSG rocks!',
 }: {
   formId?: ObjectID
-  formSubmissionId?: ObjectID
+  submissionId?: ObjectID
   rating?: string
   comment?: string
 } = {}): Promise<{
@@ -317,7 +317,7 @@ const insertFormFeedback = async ({
     formId,
     comment,
     rating,
-    formSubmissionId,
+    submissionId,
   })
 
   return {
