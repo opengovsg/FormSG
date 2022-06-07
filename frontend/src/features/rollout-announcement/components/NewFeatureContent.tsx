@@ -55,13 +55,11 @@ export const NewFeatureContent = (props: {
     <>
       <TopSpacer />
       <LottieAnimation animationData={animationData} />
-      <ModalBody whiteSpace="pre-line" marginTop="2.5rem">
+      <ModalHeader>
         <NewFeatureTag />
-      </ModalBody>
-      <ModalHeader paddingTop="0.625rem" paddingBottom="0.625rem">
-        {title}
+        <Text paddingTop="0.5rem">{title}</Text>
       </ModalHeader>
-      <ModalBody whiteSpace="pre-line" paddingRight="3rem">
+      <ModalBody whiteSpace="pre-line">
         <Text textStyle="body-1" color="secondary.500">
           {description}
         </Text>

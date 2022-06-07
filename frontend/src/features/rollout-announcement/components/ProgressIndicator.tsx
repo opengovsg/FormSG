@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
-import { motion } from 'framer-motion'
 
 import { MotionBox } from '~components/motion'
 
@@ -62,7 +61,7 @@ export const ProgressIndicator = ({
   }, [xTranslation])
 
   return (
-    <Box display="inline-flex">
+    <Box display="inline-flex" alignSelf="center">
       {indicators.map((_, idx) => (
         <CircleIndicator
           isActiveIndicator={idx === currActiveIdx}
