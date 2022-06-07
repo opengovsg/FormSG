@@ -14,6 +14,7 @@ import { AutoReplyMailData } from '../../services/mail/mail.types'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError, MalformedParametersError } from '../core/core.errors'
+import { InvalidSubmissionIdError } from '../feedback/feedback.error'
 
 import { SendEmailConfirmationError } from './submission.errors'
 
@@ -136,7 +137,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
 
 export const checkDoesSubmissionIdExist = (
   submissionId: string,
-): ResultAsync<boolean, DatabaseError> =>
+): ResultAsync<true, InvalidSubmissionIdError | DatabaseError> =>
   ResultAsync.fromPromise(
     SubmissionModel.exists({
       _id: submissionId,
@@ -153,4 +154,9 @@ export const checkDoesSubmissionIdExist = (
 
       return new DatabaseError(getMongoErrorMessage(error))
     },
-  )
+  ).andThen((hasSubmissionId) => {
+    if (!hasSubmissionId) {
+      return errAsync(new InvalidSubmissionIdError())
+    }
+    return okAsync(true as const)
+  })

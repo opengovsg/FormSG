@@ -1,7 +1,7 @@
 import { isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
-import { ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import {
   FormFeedbackMetaDto,
@@ -12,6 +12,8 @@ import { createLoggerWithLabel } from '../../config/logger'
 import getFormFeedbackModel from '../../models/form_feedback.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
+
+import { DuplicateFeedbackSubmissionError } from './feedback.error'
 
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
 const logger = createLoggerWithLabel(module)
@@ -112,10 +114,10 @@ export const getFormFeedbacks = (
   })
 }
 
-export const checkHasPreviousFeedback = (
+export const hasNoPreviousFeedback = (
   formId: string,
   submissionId: string,
-): ResultAsync<boolean, DatabaseError> =>
+): ResultAsync<true, DuplicateFeedbackSubmissionError | DatabaseError> =>
   ResultAsync.fromPromise(
     FormFeedbackModel.exists({
       formId: formId,
@@ -125,7 +127,7 @@ export const checkHasPreviousFeedback = (
       logger.error({
         message: 'Error finding feedback documents from database',
         meta: {
-          action: 'checkHasPreviousFeedback',
+          action: 'hasNoPreviousFeedback',
           formId,
           submissionId,
         },
@@ -134,4 +136,9 @@ export const checkHasPreviousFeedback = (
 
       return new DatabaseError(getMongoErrorMessage(error))
     },
-  )
+  ).andThen((hasPreviousFeedback) => {
+    if (hasPreviousFeedback) {
+      return errAsync(new DuplicateFeedbackSubmissionError())
+    }
+    return okAsync(true as const)
+  })

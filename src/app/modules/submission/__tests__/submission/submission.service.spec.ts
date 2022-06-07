@@ -9,6 +9,7 @@ import {
   DatabaseError,
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
+import { InvalidSubmissionIdError } from 'src/app/modules/feedback/feedback.error'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import MailService from 'src/app/services/mail/mail.service'
 import { createQueryWithDateParam } from 'src/app/utils/date'
@@ -730,7 +731,7 @@ describe('submission.service', () => {
     })
     afterEach(() => jest.clearAllMocks())
 
-    it('should return true with valid submissionId', async () => {
+    it('should return true if submissionId already exists', async () => {
       await Submission.create({
         _id: MOCK_SUBMISSION_ID,
         submissionType: SubmissionType.Encrypt,
@@ -749,7 +750,7 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(true)
     })
 
-    it('should return false with invalid submissionId', async () => {
+    it('should return false if submissionId does not exist', async () => {
       await Submission.create({
         _id: MOCK_SUBMISSION_ID,
         submissionType: SubmissionType.Encrypt,
@@ -764,8 +765,10 @@ describe('submission.service', () => {
         new ObjectId().toHexString(),
       )
 
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(false)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidSubmissionIdError,
+      )
     })
 
     it('should return DatabaseError when error occurs whilst querying database', async () => {

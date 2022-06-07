@@ -3,6 +3,10 @@ import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
+import {
+  DuplicateFeedbackSubmissionError,
+  InvalidSubmissionIdError,
+} from 'src/app/modules/feedback/feedback.error'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
@@ -111,7 +115,7 @@ describe('public-form.submissions.feedback.routes', () => {
       const { form } = await dbHandler.insertEmailForm()
       const expectedResp = JSON.parse(
         JSON.stringify({
-          message: 'SubmissionId is not valid',
+          message: new InvalidSubmissionIdError().message,
         }),
       )
 
@@ -143,7 +147,7 @@ describe('public-form.submissions.feedback.routes', () => {
 
       const expectedResp = JSON.parse(
         JSON.stringify({
-          message: 'Multiple feedbacks has already been submitted',
+          message: new DuplicateFeedbackSubmissionError().message,
         }),
       )
       const actualResp = await request

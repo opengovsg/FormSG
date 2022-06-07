@@ -8,10 +8,10 @@ import { ControllerHandler } from '../core/core.types'
 import { PrivateFormError } from '../form/form.errors'
 import * as FormService from '../form/form.service'
 import * as PublicFormService from '../form/public-form/public-form.service'
-import { mapRouteError } from '../form/public-form/public-form.utils'
 import * as SubmissionService from '../submission/submission.service'
 
 import * as FeedbackService from './feedback.service'
+import { mapRouteError } from './feedback.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -25,7 +25,18 @@ const validateSubmitFormFeedbackParams = celebrate({
     .unknown(true),
 })
 
-export const submitFormFeedback: ControllerHandler<
+/**
+ * Handler for POST api/v3/forms/:formId/submissions/:submissionId/feedback endpoint
+ * @precondition formId and submissionId should be present in req.params.
+ * @precondition Joi validation should enforce shape of req.body before this handler is invoked.
+ *
+ * @returns 200 if feedback was successfully saved
+ * @returns 404 if form with formId does not exist or is private, or submissionId does not exist
+ * @returns 422 if duplicate feedback with the same submissionId and formId exists
+ * @returns 410 if form has been archived
+ * @returns 500 if database error occurs
+ */
+const submitFormFeedbackV2: ControllerHandler<
   { formId: string; submissionId: string },
   { message: string } | ErrorDto | PrivateFormErrorDto,
   { rating: number; comment: string }
@@ -39,105 +50,44 @@ export const submitFormFeedback: ControllerHandler<
     submissionId,
   }
 
-  const checkDoesSubmissionIdExistRes =
-    await SubmissionService.checkDoesSubmissionIdExist(submissionId)
-  if (checkDoesSubmissionIdExistRes.isErr()) {
-    const { error } = checkDoesSubmissionIdExistRes
-    logger.error({
-      message: 'Failed to check if submissionId exists',
-      meta: logMeta,
-      error,
+  return SubmissionService.checkDoesSubmissionIdExist(submissionId)
+    .andThen(() => FeedbackService.hasNoPreviousFeedback(formId, submissionId))
+    .andThen(() => FormService.retrieveFullFormById(formId))
+    .andThen((form) => FormService.isFormPublic(form).map(() => form))
+    .andThen((form) => {
+      return PublicFormService.insertFormFeedback({
+        formId: form._id,
+        submissionId: submissionId,
+        rating,
+        comment,
+      }).map(() =>
+        res
+          .status(StatusCodes.OK)
+          .json({ message: 'Successfully submitted feedback' }),
+      )
     })
-    const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  const isSubmissionIdValid = checkDoesSubmissionIdExistRes.value
-  if (!isSubmissionIdValid) {
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: 'SubmissionId is not valid' })
-  }
-
-  const checkHasPreviousFeedbackRes =
-    await FeedbackService.checkHasPreviousFeedback(formId, submissionId)
-  if (checkHasPreviousFeedbackRes.isErr()) {
-    const { error } = checkHasPreviousFeedbackRes
-    logger.error({
-      message:
-        'Failed to check if feedback has already been submitted previously',
-      meta: logMeta,
-      error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  const hasPreviousFeedback = checkHasPreviousFeedbackRes.value
-  if (hasPreviousFeedback) {
-    return res
-      .status(StatusCodes.UNPROCESSABLE_ENTITY)
-      .json({ message: 'Multiple feedbacks has already been submitted' })
-  }
-
-  const formResult = await FormService.retrieveFullFormById(formId)
-  if (formResult.isErr()) {
-    const { error } = formResult
-    logger.error({
-      message: 'Failed to retrieve form',
-      meta: logMeta,
-      error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  const form = formResult.value
-  const isPublicResult = FormService.isFormPublic(form)
-  if (isPublicResult.isErr()) {
-    const { error } = isPublicResult
-    logger.error({
-      message: 'Form is not public',
-      meta: logMeta,
-      error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(error)
-
-    // Specialized error response for PrivateFormError.
-    if (error instanceof PrivateFormError) {
-      return res.status(statusCode).json({
-        message: error.message,
-        // Flag to prevent default 404 subtext ("please check link") from showing.
-        isPageFound: true,
-        formTitle: error.formTitle,
-      })
-    }
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  return PublicFormService.insertFormFeedback({
-    formId: form._id,
-    submissionId: submissionId,
-    rating,
-    comment,
-  })
-    .map(() =>
-      res
-        .status(StatusCodes.OK)
-        .json({ message: 'Successfully submitted feedback' }),
-    )
     .mapErr((error) => {
+      const { errorMessage, statusCode } = mapRouteError(error)
       logger.error({
-        message: 'Error creating form feedback',
+        message: errorMessage,
         meta: logMeta,
         error,
       })
-      const { errorMessage, statusCode } = mapRouteError(error)
+
+      // Specialized error response for PrivateFormError.
+      if (error instanceof PrivateFormError) {
+        return res.status(statusCode).json({
+          message: error.message,
+          // Flag to prevent default 404 subtext ("please check link") from showing.
+          isPageFound: true,
+          formTitle: error.formTitle,
+        })
+      }
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
 
 export const handleSubmitFormFeedback = [
   validateSubmitFormFeedbackParams,
-  submitFormFeedback,
+  submitFormFeedbackV2,
 ] as ControllerHandler[]

@@ -10,6 +10,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormFeedbackMetaDto } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
+import { DuplicateFeedbackSubmissionError } from '../feedback.error'
 import * as FeedbackService from '../feedback.service'
 
 const FormFeedback = getFormFeedbackModel(mongoose)
@@ -249,7 +250,7 @@ describe('feedback.service', () => {
     })
   })
 
-  describe('checkHasPreviousFeedback', () => {
+  describe('hasNoPreviousFeedback', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_SUBMISSION_ID = new ObjectId().toHexString()
 
@@ -258,7 +259,7 @@ describe('feedback.service', () => {
     })
     afterEach(() => jest.clearAllMocks())
 
-    it('should return true when previous feedback exists', async () => {
+    it('should return DuplicateFeedbackSubmissionError when feedback already exists for given submissionId', async () => {
       await FormFeedback.create({
         comment: `test feedback`,
         formId: MOCK_FORM_ID,
@@ -266,36 +267,38 @@ describe('feedback.service', () => {
         rating: 5,
       })
 
-      const actualResult = await FeedbackService.checkHasPreviousFeedback(
+      const actualResult = await FeedbackService.hasNoPreviousFeedback(
         MOCK_FORM_ID,
         MOCK_SUBMISSION_ID,
       )
 
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(true)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        DuplicateFeedbackSubmissionError,
+      )
     })
 
-    it('should return false previous feedback does not exist', async () => {
+    it('should return true if there is no existing feedback for given submissionId', async () => {
       await FormFeedback.create({
         comment: `test feedback`,
         formId: MOCK_FORM_ID,
         rating: 5,
       })
 
-      const actualResult = await FeedbackService.checkHasPreviousFeedback(
+      const actualResult = await FeedbackService.hasNoPreviousFeedback(
         MOCK_FORM_ID,
         new ObjectId().toHexString(),
       )
 
       expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(false)
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should return DatabaseError when error occurs whilst querying database', async () => {
       const existSpy = jest.spyOn(FormFeedback, 'exists')
       existSpy.mockImplementationOnce(() => Promise.reject(new Error('boom')))
 
-      const actualResult = await FeedbackService.checkHasPreviousFeedback(
+      const actualResult = await FeedbackService.hasNoPreviousFeedback(
         MOCK_FORM_ID,
         MOCK_SUBMISSION_ID,
       )
