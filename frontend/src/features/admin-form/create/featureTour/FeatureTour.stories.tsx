@@ -33,6 +33,6 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <CreatePage testUserId="featureTourUserId" />
+const Template: Story = () => <CreatePage />
 
 export const AdminFormBuilderFeatureTour = Template.bind({})

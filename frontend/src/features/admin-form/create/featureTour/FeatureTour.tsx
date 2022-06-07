@@ -6,14 +6,10 @@ import { FEATURE_STEPS } from './constants'
 import { FeatureTourTooltip } from './FeatureTourTooltip'
 
 interface FeatureTourProps {
-  shouldRun: boolean
   onClose: () => void
 }
 
-export const FeatureTour = ({
-  shouldRun,
-  onClose,
-}: FeatureTourProps): JSX.Element => {
+export const FeatureTour = ({ onClose }: FeatureTourProps): JSX.Element => {
   const [stepIndex, setStepIndex] = useState<number>(0)
   const arrowColor: string = useToken('colors', ['primary.100'])
 
@@ -34,7 +30,7 @@ export const FeatureTour = ({
       steps={FEATURE_STEPS}
       callback={handleJoyrideCallback}
       stepIndex={stepIndex}
-      run={shouldRun}
+      run={true}
       hideBackButton
       floaterProps={{
         placement: 'right-start',
