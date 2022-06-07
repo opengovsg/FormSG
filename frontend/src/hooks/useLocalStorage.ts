@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { LOCAL_STORAGE_EVENT } from '~/constants/localStorage'
 
 export const useLocalStorage = <T>(
-  key: string,
+  key: string | null,
   initialValue?: T,
 ): readonly [T | undefined, (value?: T) => void] => {
   // Get from local storage then
@@ -15,11 +15,13 @@ export const useLocalStorage = <T>(
     if (typeof window === 'undefined') {
       return initialValue
     }
-    try {
-      const item = window.localStorage.getItem(key)
-      return item ? JSON.parse(item) : initialValue
-    } catch (error) {
-      return initialValue
+    if (key) {
+      try {
+        const item = window.localStorage.getItem(key)
+        return item ? JSON.parse(item) : initialValue
+      } catch (error) {
+        return initialValue
+      }
     }
   }, [initialValue, key])
   // State to store our value
@@ -28,23 +30,25 @@ export const useLocalStorage = <T>(
   // Return a wrapped version of useState's setter function that ...
   // ... persists the new value to localStorage.
   const setValue = (value?: T) => {
-    try {
-      // Allow value to be a function so we have the same API as useState
-      const newValue = value instanceof Function ? value(storedValue) : value
+    if (key) {
+      try {
+        // Allow value to be a function so we have the same API as useState
+        const newValue = value instanceof Function ? value(storedValue) : value
 
-      if (value === undefined) {
-        window.localStorage.removeItem(key)
-      } else {
-        // Save to local storage
-        window.localStorage.setItem(key, JSON.stringify(newValue))
-        // Save state
+        if (value === undefined) {
+          window.localStorage.removeItem(key)
+        } else {
+          // Save to local storage
+          window.localStorage.setItem(key, JSON.stringify(newValue))
+          // Save state
+        }
+        setStoredValue(newValue)
+        // We dispatch a custom event so every useLocalStorage hook are notified
+        window.dispatchEvent(new Event(LOCAL_STORAGE_EVENT))
+        // eslint-disable-next-line no-empty
+      } catch {
+        // TODO (#2640) Pass in some sort of logger here.
       }
-      setStoredValue(newValue)
-      // We dispatch a custom event so every useLocalStorage hook are notified
-      window.dispatchEvent(new Event(LOCAL_STORAGE_EVENT))
-      // eslint-disable-next-line no-empty
-    } catch {
-      // TODO (#2640) Pass in some sort of logger here.
     }
   }
   useEffect(() => {

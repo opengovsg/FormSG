@@ -38,14 +38,12 @@ export const ViewedFeatureTourDecorator: DecoratorFn = (
   { parameters },
 ) => {
   const userId = parameters.userId
+  const featureTourKey = FEATURE_TOUR_KEY_PREFIX + userId
   useEffect(() => {
-    window.localStorage.setItem(
-      FEATURE_TOUR_KEY_PREFIX + userId,
-      JSON.stringify(true),
-    )
+    window.localStorage.setItem(featureTourKey, JSON.stringify(true))
 
-    return () => window.localStorage.removeItem(LOGGED_IN_KEY)
-  }, [userId])
+    return () => window.localStorage.removeItem(featureTourKey)
+  }, [featureTourKey, userId])
 
   return storyFn()
 }

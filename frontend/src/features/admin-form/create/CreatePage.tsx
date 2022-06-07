@@ -13,22 +13,23 @@ import { FeatureTour } from './featureTour/FeatureTour'
 
 export const CreatePage = (): JSX.Element => {
   const { user, isLoading } = useUser()
-  // User id will never be undefined unless it's in storybook testing because
-  // user will have to be logged in to be able to reach this page
-  const userId = user?._id
-  const localStorageFeatureTourKey = useMemo(
-    () => FEATURE_TOUR_KEY_PREFIX + userId,
-    [userId],
-  )
+  const localStorageFeatureTourKey = useMemo(() => {
+    if (!user?._id) {
+      return null
+    }
+    return `${FEATURE_TOUR_KEY_PREFIX}${user?._id}`
+  }, [user?._id])
   const [hasAdminSeenFeatureTour, setHasAdminSeenFeatureTour] =
     useLocalStorage<boolean>(localStorageFeatureTourKey)
 
-  const shouldFeatureTourRun = !hasAdminSeenFeatureTour ?? true
+  const shouldFeatureTourRender = useMemo(() => {
+    return !isLoading && !hasAdminSeenFeatureTour
+  }, [isLoading, hasAdminSeenFeatureTour])
 
   return (
     <Flex h="100%" w="100%" overflow="auto" bg="neutral.200" direction="row">
       <CreatePageSidebarProvider>
-        {!isLoading && shouldFeatureTourRun && (
+        {shouldFeatureTourRender && (
           <FeatureTour onClose={() => setHasAdminSeenFeatureTour(true)} />
         )}
         <CreatePageSidebar />
