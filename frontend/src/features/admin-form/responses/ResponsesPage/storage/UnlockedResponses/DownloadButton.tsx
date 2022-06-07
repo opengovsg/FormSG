@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useThrottle } from 'react-use'
-import { Box, MenuButton, useDisclosure } from '@chakra-ui/react'
+import { Box, MenuButton, Text, useDisclosure } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -33,6 +33,11 @@ export const DownloadButton = (): JSX.Element => {
   const { downloadParams, responsesCount } = useStorageResponsesContext()
   const [_downloadCount, setDownloadCount] = useState(0)
   const downloadCount = useThrottle(_downloadCount, 1000)
+
+  const downloadPercentage = useMemo(() => {
+    if (!responsesCount) return 0
+    return Math.floor((downloadCount / responsesCount) * 100)
+  }, [downloadCount, responsesCount])
 
   useTimeout(onProgressModalOpen, progressModalTimeout)
 
@@ -90,10 +95,14 @@ export const DownloadButton = (): JSX.Element => {
         <ProgressModal
           isOpen={isProgressModalOpen}
           onClose={handleAbortDecryption}
-          responsesCount={responsesCount}
-          progress={downloadCount}
+          downloadPercentage={downloadPercentage}
           isDownloading={handleExportCsvMutation.isLoading}
-        />
+        >
+          <Text mb="1rem">
+            <b>{responsesCount.toLocaleString()}</b> responses are being
+            processed. Navigating away from this page will stop the download.
+          </Text>
+        </ProgressModal>
       )}
       <Box gridArea="export" justifySelf="flex-end">
         <Menu placement="bottom-end">
