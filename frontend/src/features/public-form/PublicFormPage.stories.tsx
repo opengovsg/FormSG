@@ -7,6 +7,7 @@ import { FormAuthType, FormColorTheme } from '~shared/types/form'
 
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
+  getPublicFormErrorResponse,
   getPublicFormResponse,
   postGenerateVfnOtpResponse,
   postVerifyVfnOtpResponse,
@@ -331,4 +332,15 @@ WithPreventSubmissionLogic.play = async ({ canvasElement }) => {
       /this should show up in storybook mock when yes\/no is true/i,
     ),
   ).toBeInTheDocument()
+}
+
+export const FormNotFound = Template.bind({})
+FormNotFound.parameters = {
+  msw: [getPublicFormErrorResponse()],
+}
+
+export const FormNotFoundMobile = Template.bind({})
+FormNotFoundMobile.parameters = {
+  ...FormNotFound.parameters,
+  ...getMobileViewParameters(),
 }

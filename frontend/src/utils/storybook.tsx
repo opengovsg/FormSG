@@ -22,6 +22,14 @@ export const fullScreenDecorator: DecoratorFn = (storyFn) => (
   </Box>
 )
 
+export const LoggedOutDecorator: DecoratorFn = (storyFn) => {
+  useEffect(() => {
+    window.localStorage.removeItem(LOGGED_IN_KEY)
+  }, [])
+
+  return storyFn()
+}
+
 export const LoggedInDecorator: DecoratorFn = (storyFn) => {
   useEffect(() => {
     window.localStorage.setItem(LOGGED_IN_KEY, JSON.stringify(true))

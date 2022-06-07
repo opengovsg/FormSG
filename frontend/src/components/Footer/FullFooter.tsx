@@ -8,6 +8,7 @@ import { FooterContainerProps, FooterVariantProps } from './common/types'
 
 export const FullFooter = ({
   appName,
+  appLink,
   tagline,
   footerLinks,
   footerIconLink = DEFAULT_FOOTER_ICON_LINK,
@@ -28,9 +29,15 @@ export const FullFooter = ({
           paddingEnd={{ base: 0, lg: '1.5rem' }}
           align="baseline"
         >
-          <Text textStyle="h4" color={`${textColorScheme}.500`}>
-            {appName}
-          </Text>
+          <Link
+            colorScheme={textColorScheme}
+            variant="standalone"
+            m="-0.25rem"
+            isExternal
+            href={appLink}
+          >
+            <Text textStyle="h4">{appName}</Text>
+          </Link>
           <Text textStyle="body-2" color={`${textColorScheme}.500`}>
             {tagline}
           </Text>

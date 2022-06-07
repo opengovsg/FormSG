@@ -6,7 +6,6 @@ import { Box, chakra, Flex, Grid, GridItem, Text } from '@chakra-ui/react'
 import { AppFooter } from '~/app/AppFooter'
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
-import { ReactComponent as LoginImageSvg } from '~assets/svgs/img-login.svg'
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { LANDING_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
@@ -19,6 +18,7 @@ import {
 } from '~features/analytics/AnalyticsService'
 
 import { LoginForm, LoginFormInputs } from './components/LoginForm'
+import { LoginImageSvgr } from './components/LoginImageSvgr'
 import { OtpForm, OtpFormInputs } from './components/OtpForm'
 
 export type LoginOtpData = {
@@ -30,21 +30,14 @@ const BrandLogo = chakra(BrandLogoSvg, {
     h: { base: '1.5rem', lg: '2rem' },
   },
 })
-const LoginImage = chakra(LoginImageSvg, {
-  baseStyle: {
-    maxH: { base: '18.5rem' },
-    w: '100%',
-  },
-})
 
 // Component for the split blue/white background.
 const BackgroundBox: FC = ({ children }) => (
   <Box
     flexGrow={1}
-    bg={{
-      base: 'initial',
-      md: 'linear-gradient(180deg, var(--chakra-colors-primary-500) 20.625rem, white 0)',
-      lg: 'linear-gradient(90deg, var(--chakra-colors-primary-500) 42%, white 0)',
+    bgGradient={{
+      md: 'linear(to-b, primary.500 20.5rem, white 0)',
+      lg: 'linear(to-r, primary.500 50%, white 0)',
     }}
     children={children}
   />
@@ -62,7 +55,7 @@ const BaseGridLayout: FC = ({ children }) => (
       lg: `'sidebar login' 'footer footer'`,
     }}
     templateRows={{ lg: '1fr auto' }}
-    templateColumns={{ lg: '5fr 7fr' }}
+    templateColumns={{ lg: 'repeat(2, 1fr)' }}
     children={children}
   />
 )
@@ -72,7 +65,7 @@ const LoginGridArea: FC = ({ children }) => (
   <GridItem
     h={{ base: '100vh', md: '100%' }}
     gridArea="login"
-    px={{ base: '1.5rem', md: '5.5rem', lg: '7.25rem' }}
+    px={{ base: '1.5rem', md: '5.5rem', lg: '10%' }}
     py="4rem"
     d="flex"
     alignItems={{ base: 'initial', lg: 'center' }}
@@ -95,8 +88,8 @@ const NonMobileSidebarGridArea: FC = ({ children }) => (
   <GridItem
     d={{ base: 'none', md: 'flex' }}
     gridArea="sidebar"
-    bg={{ base: 'transparent', lg: 'primary.500' }}
-    px={{ base: '1.5rem', lg: '5rem' }}
+    pl={{ base: '1.5rem', lg: '5rem' }}
+    pr={{ base: '1.5rem', lg: '2rem' }}
     pt={{ base: '1.5rem', md: '4rem', lg: '6rem' }}
     pb={{ lg: '3.25rem' }}
     flexDir="column"
@@ -149,17 +142,8 @@ export const LoginPage = (): JSX.Element => {
       <BackgroundBox>
         <BaseGridLayout>
           <NonMobileSidebarGridArea>
-            <Text
-              display={{ base: 'none', lg: 'initial' }}
-              textStyle="display-2"
-              color="white"
-              mb="2.5rem"
-            >
-              {t('features.login.LoginPage.slogan')}
-            </Text>
-            <LoginImage aria-hidden />
+            <LoginImageSvgr maxW="100%" aria-hidden />
           </NonMobileSidebarGridArea>
-
           <LoginGridArea>
             <Box
               maxW={{ base: '100%', lg: '28rem' }}
@@ -167,7 +151,15 @@ export const LoginPage = (): JSX.Element => {
               minH={{ base: 'auto', lg: '17.25rem' }}
             >
               <Flex mb={{ base: '2.5rem', lg: 0 }} flexDir="column">
-                <Box>
+                <Text
+                  display={{ base: 'none', lg: 'initial' }}
+                  textStyle="display-2"
+                  color="secondary.500"
+                  mb="2.5rem"
+                >
+                  {t('features.login.LoginPage.slogan')}
+                </Text>
+                <Box display={{ base: 'initial', lg: 'none' }}>
                   <Link
                     as={ReactLink}
                     to={LANDING_ROUTE}
@@ -175,14 +167,10 @@ export const LoginPage = (): JSX.Element => {
                   >
                     <BrandLogo title="FormSG logo" />
                   </Link>
+                  <Text textStyle="h4" color="secondary.500">
+                    {t('features.login.LoginPage.slogan')}
+                  </Text>
                 </Box>
-                <Text
-                  textStyle="h4"
-                  color="secondary.500"
-                  display={{ base: 'initial', lg: 'none' }}
-                >
-                  {t('features.login.LoginPage.slogan')}
-                </Text>
               </Flex>
               {!email ? (
                 <LoginForm onSubmit={handleSendOtp} />
@@ -196,7 +184,11 @@ export const LoginPage = (): JSX.Element => {
             </Box>
           </LoginGridArea>
           <FooterGridArea>
-            <AppFooter compactMonochromeLogos variant="compact" />
+            <AppFooter
+              compactMonochromeLogos
+              variant="compact"
+              bg="transparent"
+            />
           </FooterGridArea>
         </BaseGridLayout>
       </BackgroundBox>

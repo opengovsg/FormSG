@@ -14,13 +14,14 @@ import {
   PublicFormViewDto,
 } from '~shared/types/form'
 
-import { PUBLICFORM_REGEX } from '~constants/routes'
+import { FORMID_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
 import { FormFieldValues } from '~templates/Field'
 
+import NotFoundErrorPage from '~pages/NotFoundError'
 import { trackVisitPublicForm } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
 import {
@@ -32,6 +33,7 @@ import {
   useTransactionMutations,
 } from '~features/verifiable-fields'
 
+import { FormNotFound } from './components/FormNotFound'
 import { usePublicFormMutations } from './mutations'
 import {
   PublicFormContext,
@@ -108,12 +110,13 @@ export const PublicFormProvider = ({
     return vfnTransaction.transactionId
   }, [createTransactionMutation, vfnTransaction])
 
+  const isNotFormId = useMemo(() => !FORMID_REGEX.test(formId), [formId])
+
   const isFormNotFound = useMemo(() => {
     return (
-      !PUBLICFORM_REGEX.test(formId) ||
-      (error instanceof HttpError && error.code === 404)
+      error instanceof HttpError && (error.code === 404 || error.code === 410)
     )
-  }, [error, formId])
+  }, [error])
 
   const expiryInMs = useMemo(() => {
     if (!vfnTransaction?.expireAt) return null
@@ -246,6 +249,10 @@ export const PublicFormProvider = ({
     return sections
   }, [cachedDto, isAuthRequired])
 
+  if (isNotFormId) {
+    return <NotFoundErrorPage />
+  }
+
   return (
     <PublicFormContext.Provider
       value={{
@@ -264,8 +271,10 @@ export const PublicFormProvider = ({
         ...rest,
       }}
     >
-      <Helmet title={cachedDto?.form.title} />
-      {isFormNotFound ? <div>404</div> : children}
+      <Helmet
+        title={isFormNotFound ? 'Form not found' : cachedDto?.form.title}
+      />
+      {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
     </PublicFormContext.Provider>
   )
 }

@@ -18,15 +18,24 @@ export const CompactFooter = ({
   textColorScheme,
   footerLinks,
   compactMonochromeLogos,
+  appLink,
+  bg,
 }: CompactedFooterProps): JSX.Element => {
   return (
-    <CompactFooter.Container>
+    <CompactFooter.Container bg={bg}>
       <Stack direction="row" h="2.25rem" align="center" spacing="2rem">
-        {compactMonochromeLogos ? (
-          <BrandHortLightMonoLogo h="1rem" />
-        ) : (
-          <BrandHortLogo h="1rem" />
-        )}
+        <Link
+          colorScheme={compactMonochromeLogos ? 'white' : textColorScheme}
+          isExternal
+          title="Link to application homepage"
+          href={appLink}
+        >
+          {compactMonochromeLogos ? (
+            <BrandHortLightMonoLogo h="1rem" />
+          ) : (
+            <BrandHortLogo h="1rem" />
+          )}
+        </Link>
         <Divider
           orientation="vertical"
           color={compactMonochromeLogos ? 'neutral.300' : undefined}
@@ -74,7 +83,7 @@ CompactFooter.Container = ({
   return (
     <Flex
       align="center"
-      flex={1}
+      width="100%"
       justify="space-between"
       flexDir="row"
       as="footer"

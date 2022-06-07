@@ -7,6 +7,7 @@ import { Footer } from './Footer'
 
 const DEFAULT_ARGS: FooterProps = {
   appName: 'Form',
+  appLink: 'https://form.gov.sg',
   footerLinks: [
     {
       label: 'User guide',
