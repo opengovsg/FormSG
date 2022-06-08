@@ -1,6 +1,6 @@
 import { Meta, Story } from '@storybook/react'
 
-import { fullScreenDecorator } from '~utils/storybook'
+import { fullScreenDecorator, getMobileViewParameters } from '~utils/storybook'
 
 import { RolloutAnnouncementModal } from './RolloutAnnouncementModal'
 
@@ -23,3 +23,8 @@ const Template: Story = () => (
 )
 
 export const BasicUsage = Template.bind({})
+
+export const Mobile = Template.bind({})
+Mobile.parameters = {
+  ...getMobileViewParameters(),
+}
