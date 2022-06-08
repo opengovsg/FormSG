@@ -49,7 +49,7 @@ function SubmitFormController(
       try {
         // If storedQuery is not valid JSON, JSON.parse throws a SyntaxError
         // In try-catch block as this should not prevent rest of form from being loaded
-        storedQuery = JSON.parse($window.localStorage.getItem('storedQuery'))
+        storedQuery = JSON.parse($window.sessionStorage.getItem('storedQuery'))
       } catch (e) {
         console.error('Unable to parse storedQuery, not valid JSON string')
       }
@@ -61,7 +61,7 @@ function SubmitFormController(
         storedQuery.queryString
       ) {
         $window.location.href = `${location[0]}?${storedQuery.queryString}` // Replace the queryId with stored queryString
-        $window.localStorage.removeItem('storedQuery') // Delete after reading the stored queryString, as only needed once
+        $window.sessionStorage.removeItem('storedQuery') // Delete after reading the stored queryString, as only needed once
       }
     }
   }

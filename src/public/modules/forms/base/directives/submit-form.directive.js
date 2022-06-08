@@ -114,7 +114,7 @@ function submitFormDirective(
           // Defensive - try catch block in case the storage is full
           // See https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem
           try {
-            localStorage.setItem('storedQuery', JSON.stringify(queryObject))
+            sessionStorage.setItem('storedQuery', JSON.stringify(queryObject))
           } catch (e) {
             console.error('Failed to store query string')
             // Login can proceed, since after login, user can still prefill form by accessing
