@@ -1,13 +1,17 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
+import { ok } from 'neverthrow'
 
-import { ErrorDto } from '../../../../shared/types'
+import { ErrorDto, FormAuthType } from '../../../../shared/types'
 import { SALT_ROUNDS } from '../../../../shared/utils/verification'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
+import * as MyInfoUtil from '../myinfo/myinfo.util'
+import { SgidService } from '../sgid/sgid.service'
+import { SpcpService } from '../spcp/spcp.service'
 
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
@@ -212,45 +216,97 @@ export const _handleGenerateOtp: ControllerHandler<
     ...createReqMeta(req),
   }
   // Step 1: Ensure that the form for the specified transaction exists
-  return (
-    FormService.retrieveFullFormById(formId)
-      // Step 2: Generate hash and otp
-      .andThen((form) =>
-        generateOtpWithHash(logMeta, SALT_ROUNDS)
-          .andThen(({ otp, hashedOtp }) =>
-            // Step 3: Send otp
-            VerificationService.sendNewOtp({
-              fieldId,
-              hashedOtp,
-              otp,
-              recipient: answer,
-              transactionId,
-              senderIp,
-            }),
-          )
-          // Return the required data for next steps.
-          .map((updatedTransaction) => ({ updatedTransaction, form })),
-      )
-      .map(({ updatedTransaction, form }) => {
-        res.sendStatus(StatusCodes.CREATED)
-        // NOTE: This is returned because tests require this to avoid async mocks interfering with each other.
-        // However, this is not an issue in reality because express does not require awaiting on the sendStatus call.
-        return VerificationService.disableVerifiedFieldsIfRequired(
-          form,
-          updatedTransaction,
-          fieldId,
+  return FormService.retrieveFullFormById(formId)
+    .andThen((form) => {
+      const { authType } = form
+      switch (authType) {
+        case FormAuthType.CP: {
+          return SpcpService.extractJwt(req.cookies, authType)
+            .asyncAndThen((jwt) => SpcpService.extractCorppassJwtPayload(jwt))
+            .map(() => form)
+            .mapErr((error) => {
+              logger.error({
+                message: 'Failed to verify Corppass JWT with auth client',
+                meta: logMeta,
+                error,
+              })
+              return error
+            })
+        }
+        case FormAuthType.SP:
+          return SpcpService.extractJwt(req.cookies, authType)
+            .asyncAndThen((jwt) => SpcpService.extractSingpassJwtPayload(jwt))
+            .map(() => form)
+            .mapErr((error) => {
+              logger.error({
+                message: 'Failed to verify Singpass JWT with auth client',
+                meta: logMeta,
+                error,
+              })
+              return error
+            })
+        case FormAuthType.SGID:
+          return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
+            .map(() => form)
+            .mapErr((error) => {
+              logger.error({
+                message: 'Failed to verify sgID JWT with auth client',
+                meta: logMeta,
+                error,
+              })
+              return error
+            })
+        case FormAuthType.MyInfo:
+          return MyInfoUtil.extractMyInfoCookie(req.cookies)
+            .andThen(MyInfoUtil.extractAccessTokenFromCookie)
+            .map(() => form)
+            .mapErr((error) => {
+              logger.error({
+                message: 'Error verifying MyInfo hashes',
+                meta: logMeta,
+                error,
+              })
+              return error
+            })
+        default:
+          return ok(form)
+      }
+    })
+    .andThen((form) =>
+      generateOtpWithHash(logMeta, SALT_ROUNDS)
+        .andThen(({ otp, hashedOtp }) =>
+          // Step 3: Send otp
+          VerificationService.sendNewOtp({
+            fieldId,
+            hashedOtp,
+            otp,
+            recipient: answer,
+            transactionId,
+            senderIp,
+          }),
         )
+        // Return the required data for next steps.
+        .map((updatedTransaction) => ({ updatedTransaction, form })),
+    )
+    .map(({ updatedTransaction, form }) => {
+      res.sendStatus(StatusCodes.CREATED)
+      // NOTE: This is returned because tests require this to avoid async mocks interfering with each other.
+      // However, this is not an issue in reality because express does not require awaiting on the sendStatus call.
+      return VerificationService.disableVerifiedFieldsIfRequired(
+        form,
+        updatedTransaction,
+        fieldId,
+      )
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error creating new OTP',
+        meta: logMeta,
+        error,
       })
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error creating new OTP',
-          meta: logMeta,
-          error,
-        })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
-      })
-  )
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 /**
