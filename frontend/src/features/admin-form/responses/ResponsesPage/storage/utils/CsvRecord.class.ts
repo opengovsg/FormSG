@@ -8,9 +8,6 @@ import {
 
 /** @class CsvRecord represents the CSV data to be passed back, along with helper functions */
 export class CsvRecord {
-  id: string
-  created: string
-  status: CsvRecordStatus
   downloadBlob?: Blob
   submissionData?: DecryptedSubmissionData
 
@@ -25,11 +22,11 @@ export class CsvRecord {
    * @param created The time of submission
    * @param status The status of the submission decryption/download process
    */
-  constructor(id: string, created: string, status: CsvRecordStatus) {
-    this.id = id
-    this.created = created
-    this.status = status
-
+  constructor(
+    public id: string,
+    public created: string,
+    public status: CsvRecordStatus,
+  ) {
     this.#statusMessage = status
     this.#record = []
   }
