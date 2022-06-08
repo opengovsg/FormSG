@@ -6,8 +6,6 @@ export const enSG: Translation = {
       login: {
         LoginPage: {
           slogan: 'Build secure government forms in minutes',
-          copyright:
-            '© {currentYear} Open Government Products, GovTech Singapore',
         },
         components: {
           LoginForm: {

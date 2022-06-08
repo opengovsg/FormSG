@@ -1,3 +1,8 @@
+/**
+ * This file is used to add global decorators and parameters to all storybook stories.
+ * @see https://storybook.js.org/docs/react/configure/overview#configure-story-rendering
+ */
+
 import 'focus-visible/dist/focus-visible.min.js'
 import '../src/assets/fonts/inter.css'
 
@@ -20,7 +25,12 @@ dayjsUtils.init()
 
 const withReactQuery: DecoratorFn = (storyFn) => {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { staleTime: Infinity } },
+    defaultOptions: {
+      queries: {
+        staleTime: Infinity,
+        retry: false,
+      },
+    },
   })
   return (
     <QueryClientProvider client={queryClient}>

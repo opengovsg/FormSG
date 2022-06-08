@@ -7,8 +7,9 @@ import mockdate from 'mockdate'
 
 import { theme } from '~/theme'
 
-import { LOGGED_IN_KEY } from '~constants/localStorage'
+import { FEATURE_TOUR_KEY_PREFIX, LOGGED_IN_KEY } from '~constants/localStorage'
 
+import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
 import { BuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
 import { CreatePageSidebarProvider } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
@@ -22,12 +23,35 @@ export const fullScreenDecorator: DecoratorFn = (storyFn) => (
   </Box>
 )
 
+export const LoggedOutDecorator: DecoratorFn = (storyFn) => {
+  useEffect(() => {
+    window.localStorage.removeItem(LOGGED_IN_KEY)
+  }, [])
+
+  return storyFn()
+}
+
 export const LoggedInDecorator: DecoratorFn = (storyFn) => {
   useEffect(() => {
     window.localStorage.setItem(LOGGED_IN_KEY, JSON.stringify(true))
 
     return () => window.localStorage.removeItem(LOGGED_IN_KEY)
   }, [])
+
+  return storyFn()
+}
+
+export const ViewedFeatureTourDecorator: DecoratorFn = (
+  storyFn,
+  { parameters },
+) => {
+  const userId = parameters.userId
+  const featureTourKey = FEATURE_TOUR_KEY_PREFIX + userId
+  useEffect(() => {
+    window.localStorage.setItem(featureTourKey, JSON.stringify(true))
+
+    return () => window.localStorage.removeItem(featureTourKey)
+  }, [featureTourKey, userId])
 
   return storyFn()
 }
@@ -46,6 +70,18 @@ export const EditFieldDrawerDecorator: DecoratorFn = (storyFn) => {
         </BuilderAndDesignContext.Provider>
       </CreatePageSidebarProvider>
     </Box>
+  )
+}
+
+export const AdminFormCreatePageDecorator: DecoratorFn = (storyFn) => {
+  return (
+    <MemoryRouter initialEntries={['/12345']}>
+      <Routes>
+        <Route path={'/:formId'} element={<AdminFormLayout />}>
+          <Route index element={storyFn()} />
+        </Route>
+      </Routes>
+    </MemoryRouter>
   )
 }
 
@@ -128,5 +164,14 @@ export const getMobileViewParameters = () => {
       defaultViewport: 'mobile1',
     },
     chromatic: { viewports: [viewports.xs] },
+  }
+}
+
+export const getTabletViewParameters = () => {
+  return {
+    viewport: {
+      defaultViewport: 'tablet',
+    },
+    chromatic: { viewports: [viewports.md] },
   }
 }

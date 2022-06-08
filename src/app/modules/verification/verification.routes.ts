@@ -1,6 +1,9 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../config/config'
+import { limitRate } from '../../utils/limit-rate'
+
 import * as VerificationController from './verification.controller'
 
 export const VfnRouter = Router()
@@ -14,6 +17,7 @@ const formatOfId = Joi.string().length(24).hex().required()
  */
 VfnRouter.post(
   '/',
+  limitRate({ max: rateLimitConfig.submissions }),
   celebrate({
     [Segments.BODY]: Joi.object({
       formId: formatOfId,
@@ -40,6 +44,7 @@ VfnRouter.post(
  */
 VfnRouter.post(
   '/:transactionId([a-fA-F0-9]{24})/otp',
+  limitRate({ max: rateLimitConfig.sendAuthOtp }),
   celebrate({
     [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,

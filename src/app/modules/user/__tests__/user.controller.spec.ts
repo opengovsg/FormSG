@@ -63,6 +63,7 @@ describe('user.controller', () => {
         MOCK_REQ.body.contact,
         expectedOtp,
         MOCK_REQ.body.userId,
+        'MOCK_IP',
       )
       expect(mockRes.sendStatus).toBeCalledWith(200)
     })

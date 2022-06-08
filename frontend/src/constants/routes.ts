@@ -1,6 +1,5 @@
-// TODO: Update landing route to correct route.
 export const LANDING_ROUTE = '/'
-export const ROOT_ROUTE = '/'
+export const ROOT_ROUTE = '/workspace'
 export const LOGIN_ROUTE = '/login'
 
 export const TOU_ROUTE = '/terms'
@@ -9,7 +8,7 @@ export const PRIVACY_POLICY_ROUTE = '/privacy'
 // Cannot use regex match in react-router@6, which means we need to validate
 // the regex in PublicFormPage.
 export const PUBLICFORM_ROUTE = '/:formId'
-export const PUBLICFORM_REGEX = /^([a-fA-F0-9]{24})$/
+export const FORMID_REGEX = /^([a-fA-F0-9]{24})$/
 
 export const ADMINFORM_ROUTE = '/admin/form'
 /** Build tab has no subroute, its the index admin form route. */

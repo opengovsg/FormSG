@@ -2,7 +2,10 @@ import { Button } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
-import { getMobileViewParameters, viewports } from '~utils/storybook'
+import {
+  getMobileViewParameters,
+  getTabletViewParameters,
+} from '~utils/storybook'
 
 import { PublicHeader, PublicHeaderProps } from './PublicHeader'
 
@@ -49,9 +52,4 @@ export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
 
 export const Tablet = Template.bind({})
-Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
-}
+Tablet.parameters = getTabletViewParameters()
