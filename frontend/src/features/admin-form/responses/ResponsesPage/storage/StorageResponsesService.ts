@@ -21,17 +21,14 @@ const generateDownloadUrl = (
   formId: string,
   params: EncryptedResponsesStreamParams,
 ) => {
-  // NOTE: The ? is appended behind to ensure that the query parameters in url are constructed correctly
-  const url = `${API_BASE_URL}/${ADMIN_FORM_ENDPOINT}/${formId}/submissions/download?`
-
   if (!params.startDate || !params.endDate) {
     delete params.startDate
     delete params.endDate
   }
 
-  // stringify all values in params.
+  // Stringify all values in params.
   const uriEncodedParams = new URLSearchParams(mapValues(params, String))
-  return `${url}${uriEncodedParams}`
+  return `${API_BASE_URL}/${ADMIN_FORM_ENDPOINT}/${formId}/submissions/download?${uriEncodedParams}`
 }
 
 export const getEncryptedResponsesStream = async (
