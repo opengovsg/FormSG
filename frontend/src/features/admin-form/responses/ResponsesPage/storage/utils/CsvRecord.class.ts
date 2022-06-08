@@ -14,8 +14,8 @@ export class CsvRecord {
   downloadBlob?: Blob
   submissionData?: DecryptedSubmissionData
 
-  private statusMessage: string
-  private record: CsvRecordData[]
+  #statusMessage: string
+  #record: CsvRecordData[]
 
   /**
    * Creates an instance of CsvRecord
@@ -30,8 +30,8 @@ export class CsvRecord {
     this.created = created
     this.status = status
 
-    /** @private */ this.statusMessage = status
-    /** @private */ this.record = []
+    this.#statusMessage = status
+    this.#record = []
   }
 
   /**
@@ -42,7 +42,7 @@ export class CsvRecord {
    */
   setStatus(status: CsvRecordStatus, msg: string) {
     this.status = status
-    this.statusMessage = msg
+    this.#statusMessage = msg
   }
 
   /**
@@ -60,7 +60,7 @@ export class CsvRecord {
    * @param record The decrypted submission record
    */
   setRecord(record: CsvRecordData[]) {
-    this.record = record
+    this.#record = record
   }
 
   /**
@@ -79,9 +79,9 @@ export class CsvRecord {
       _id: '000000000000000000000000',
       fieldType: 'textfield',
       question: 'Download Status',
-      answer: this.statusMessage,
+      answer: this.#statusMessage,
     }
-    const output = cloneDeep(this.record)
+    const output = cloneDeep(this.#record)
     output.unshift(downloadStatus)
 
     this.submissionData = {
