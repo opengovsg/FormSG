@@ -7,8 +7,6 @@ import JSZip from 'jszip'
 // See https://github.com/sindresorhus/p-queue/issues/145
 import PQueue from 'p-queue/dist'
 
-import { StorageModeSubmissionStreamDto } from '~shared/types'
-
 import formsgSdk from '~utils/formSdk'
 
 import {
@@ -110,16 +108,17 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
   const { processDecryptedContent } = await import(
     '../utils/processDecryptedContent'
   )
+  const { StorageModeSubmissionStreamDto } = await import('~shared/types')
 
   const { line, secretKey, downloadAttachments } = data
 
-  let submission: StorageModeSubmissionStreamDto
   let csvRecord: CsvRecord
   const attachmentDownloadUrls: AttachmentsDownloadMap = new Map()
   let downloadBlob: Blob
 
   try {
-    submission = JSON.parse(line)
+    // Validate that the submission is of a valid shape.
+    const submission = StorageModeSubmissionStreamDto.parse(JSON.parse(line))
     csvRecord = new CsvRecord(
       submission._id,
       submission.created,
@@ -189,7 +188,7 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
       formatInTimeZone(new Date(), 'Asia/Singapore', 'DD MMM YYYY hh:mm:ss A'),
       CsvRecordStatus.Error,
     )
-    csvRecord.setStatus(CsvRecordStatus.Error, 'Error')
+    csvRecord.setStatus(CsvRecordStatus.Error, 'Submission decryption error')
   }
   csvRecord.materializeSubmissionData()
   return csvRecord as MaterializedCsvRecord
