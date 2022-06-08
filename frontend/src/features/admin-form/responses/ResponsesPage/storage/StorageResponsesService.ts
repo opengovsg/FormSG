@@ -17,36 +17,21 @@ export type EncryptedResponsesStreamParams = {
   downloadAttachments: boolean
 }
 
-const fixParamsToUrl = (dict: Record<string, unknown>, url: string) => {
-  Object.keys(dict).forEach((key) => {
-    url = url.replace(':' + key, String(dict[key]))
-  })
-  return url
-}
-
 const generateDownloadUrl = (
   formId: string,
   params: EncryptedResponsesStreamParams,
 ) => {
   // NOTE: The ? is appended behind to ensure that the query parameters in url are constructed correctly
-  let resUrl = `${fixParamsToUrl(
-    params,
-    `${API_BASE_URL}/${ADMIN_FORM_ENDPOINT}/${formId}/submissions/download?`,
-  )}`
+  const url = `${API_BASE_URL}/${ADMIN_FORM_ENDPOINT}/${formId}/submissions/download?`
 
   if (!params.startDate || !params.endDate) {
     delete params.startDate
     delete params.endDate
   }
 
-  const uriEncodedParams = mapValues(params, encodeURIComponent)
-
-  if (params) {
-    resUrl += Object.keys(uriEncodedParams)
-      .map((key) => `${key}=${uriEncodedParams[key]}`)
-      .join('&')
-  }
-  return resUrl
+  // stringify all values in params.
+  const uriEncodedParams = new URLSearchParams(mapValues(params, String))
+  return `${url}${uriEncodedParams}`
 }
 
 export const getEncryptedResponsesStream = async (
