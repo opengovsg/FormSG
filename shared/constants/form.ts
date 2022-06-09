@@ -29,6 +29,7 @@ const FORM_SETTINGS_FIELDS = <const>[
   'submissionLimit',
   'title',
   'webhook',
+  'endPage',
 ]
 
 export const EMAIL_FORM_SETTINGS_FIELDS = <const>[
