@@ -3,8 +3,6 @@ import { chakra } from '@chakra-ui/react'
 
 export const LoginImageSvgr = chakra((props: SVGProps<SVGSVGElement>) => (
   <svg
-    width={418}
-    height={390}
     viewBox="0 0 418 390"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
