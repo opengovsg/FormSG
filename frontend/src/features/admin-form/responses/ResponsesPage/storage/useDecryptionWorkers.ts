@@ -27,18 +27,21 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
 const useDecryptionWorkers = () => {
   const [workers, setWorkers] = useState<CleanableDecryptionWorkerApi[]>([])
   const abortControllerRef = useRef(new AbortController())
+
   const { data: adminForm } = useAdminForm()
 
   const { refetch } = useFormResponsesCount()
 
   useEffect(() => {
-    const abortController = abortControllerRef.current
+    return () => killWorkers(workers)
+  }, [workers])
 
+  useEffect(() => {
+    const abortController = abortControllerRef.current
     return () => {
-      killWorkers(workers)
       abortController.abort()
     }
-  }, [workers])
+  }, [])
 
   const downloadEncryptedResponses = useCallback(
     async ({
@@ -53,8 +56,6 @@ const useDecryptionWorkers = () => {
         throwOnError: true,
       })
       if (!responsesCount) return
-      // Abort any existing downloads if this function is re-invoked.
-      abortControllerRef.current.abort()
       if (workers.length) killWorkers(workers)
 
       // Create a pool of decryption workers

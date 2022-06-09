@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { FormResponseMode } from '~shared/types'
@@ -6,9 +6,9 @@ import { FormResponseMode } from '~shared/types'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { useFormResponsesCount } from '../../queries'
-import useDecryptionWorkers from '../../useDecryptionWorkers'
 
 import { StorageResponsesContext } from './StorageResponsesContext'
+import { useSecretKey } from './useSecretKey'
 
 export const StorageResponsesProvider = ({
   children,
@@ -16,22 +16,28 @@ export const StorageResponsesProvider = ({
   children: React.ReactNode
 }): JSX.Element => {
   const { formId } = useParams()
-  const { downloadEncryptedResponses } = useDecryptionWorkers()
+  if (!formId) throw new Error('No formId provided')
 
   const { data: form, isLoading: isAdminFormLoading } = useAdminForm()
   const { data: responsesCount, isLoading: isFormResponsesLoading } =
     useFormResponsesCount()
-  const [secretKey, setSecretKey] = useState<string>()
-
-  const handleExportCsv = useCallback(() => {
-    if (!formId || !form?.title || !secretKey) return
-    return downloadEncryptedResponses(formId, form.title, secretKey)
-  }, [downloadEncryptedResponses, formId, secretKey, form?.title])
+  const [secretKey, setSecretKey] = useSecretKey(formId)
 
   const formPublicKey = useMemo(() => {
     if (!form || form.responseMode !== FormResponseMode.Encrypt) return null
     return form.publicKey
   }, [form])
+
+  const downloadParams = useMemo(() => {
+    if (!secretKey) return null
+
+    return {
+      secretKey,
+      // TODO: Add selector for start and end dates.
+      endDate: undefined,
+      startDate: undefined,
+    }
+  }, [secretKey])
 
   return (
     <StorageResponsesContext.Provider
@@ -39,7 +45,7 @@ export const StorageResponsesProvider = ({
         isLoading: isAdminFormLoading || isFormResponsesLoading,
         formPublicKey,
         responsesCount,
-        handleExportCsv,
+        downloadParams,
         secretKey,
         setSecretKey,
       }}
