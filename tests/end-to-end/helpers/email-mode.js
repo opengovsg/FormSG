@@ -12,8 +12,53 @@ const {
   getResponseTitle,
   expectSpcpLogin,
   getAuthFields,
+  tableHandler,
 } = require('./util')
 
+/**
+ * Gets answers for a field as displayed in response email's Data Collation
+ * Tool section. Always returns an array, so caller must always loop through result.
+ * @param {Object} field Field as created by makeField
+ * @param {string} formMode 'email' or 'encrypt'
+ */
+const getExpectedJSONArray = (field, formMode) => {
+  // Deal with table first to avoid special cases later
+  if (field.fieldType === 'table') {
+    return tableHandler.getValues(field, formMode)
+  }
+  // Only allow blanks if field is not visible or optional
+  if (!field.isVisible || (!field.required && field.isLeftBlank)) {
+    return ['']
+  }
+  switch (field.fieldType) {
+    case 'checkbox':
+      return [
+        `'${field.val
+          .map((selected) => {
+            return field.fieldOptions.includes(selected)
+              ? selected
+              : `Others: ${selected}`
+          })
+          .join(', ')}'`,
+      ]
+    case 'radiobutton':
+      return [
+        field.fieldOptions.includes(field.val)
+          ? isNaN(Number(field.val))
+            ? `'${field.val}'`
+            : field.val
+          : `'Others: ${field.val}'`,
+      ]
+    default:
+      return [
+        field.val instanceof Array
+          ? `'${field.val.join(', ')}'`
+          : isNaN(Number(field.val))
+          ? `'${String(field.val)}'`
+          : String(field.val),
+      ]
+  }
+}
 // Checks that an attachment field's attachment is contained in the email.
 const expectAttachment = async (t, field, attachments) => {
   // Attachments can only be in fields that are visible AND either required
@@ -74,7 +119,10 @@ const verifySubmission = async (t, testFormData, authData) => {
     await t
       .expect(response[rowIdx].question)
       .eql(getResponseTitle(field, true, 'email'))
-    for (let expectedAnswer of getResponseArray(field, 'email')) {
+    for (let expectedAnswer of getExpectedJSONArray(
+      field,
+      'emailDataCollation',
+    )) {
       await t.expect(response[rowIdx].answer).eql(expectedAnswer)
       rowIdx++
     }
