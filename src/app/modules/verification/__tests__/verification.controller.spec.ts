@@ -87,7 +87,7 @@ describe('Verification controller', () => {
   const MOCK_OTP = 'otp'
   let mockTransaction: IVerificationSchema
   let mockRes: Response
-  const expectedParamsForSendingOtp = {
+  const EXPECTED_PARAMS_FOR_SENDING_OTP = {
     transactionId: MOCK_TRANSACTION_ID,
     fieldId: MOCK_FIELD_ID,
     otp: MOCK_OTP,
@@ -111,8 +111,7 @@ describe('Verification controller', () => {
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
-    // jest.resetAllMocks()
+    jest.resetAllMocks()
   })
 
   afterAll(async () => {
@@ -424,7 +423,7 @@ describe('Verification controller', () => {
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
@@ -438,7 +437,7 @@ describe('Verification controller', () => {
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -453,7 +452,7 @@ describe('Verification controller', () => {
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -468,7 +467,7 @@ describe('Verification controller', () => {
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -498,7 +497,7 @@ describe('Verification controller', () => {
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.UNPROCESSABLE_ENTITY,
@@ -515,7 +514,7 @@ describe('Verification controller', () => {
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -530,7 +529,7 @@ describe('Verification controller', () => {
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -545,7 +544,7 @@ describe('Verification controller', () => {
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -560,7 +559,7 @@ describe('Verification controller', () => {
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -575,7 +574,7 @@ describe('Verification controller', () => {
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -590,7 +589,7 @@ describe('Verification controller', () => {
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
@@ -676,7 +675,7 @@ describe('Verification controller', () => {
       expect(MockMyInfoUtil.extractAccessTokenFromCookie).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(
         MockVerificationService.disableVerifiedFieldsIfRequired,
@@ -728,7 +727,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(
         MockVerificationService.disableVerifiedFieldsIfRequired,
@@ -781,7 +780,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(
         MockVerificationService.disableVerifiedFieldsIfRequired,
@@ -832,7 +831,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(
         MockVerificationService.disableVerifiedFieldsIfRequired,
@@ -876,7 +875,7 @@ describe('Verification controller', () => {
       expect(MockMyInfoUtil.extractAccessTokenFromCookie).toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(
         MockVerificationService.disableVerifiedFieldsIfRequired,
@@ -910,7 +909,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -938,7 +937,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -966,7 +965,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -995,7 +994,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -1024,7 +1023,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -1074,7 +1073,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -1418,7 +1417,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -1446,7 +1445,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -1474,7 +1473,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.UNPROCESSABLE_ENTITY,
@@ -1529,7 +1528,7 @@ describe('Verification controller', () => {
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
-        expectedParamsForSendingOtp,
+        EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
