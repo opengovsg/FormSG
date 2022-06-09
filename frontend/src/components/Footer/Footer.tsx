@@ -14,7 +14,6 @@ export const Footer = ({
   socialMediaLinks = DEFAULT_SOCIAL_MEDIA_LINKS,
   textColorScheme = 'secondary',
   compactMonochromeLogos,
-  containerProps,
   ...footerProps
 }: FooterProps): JSX.Element => {
   const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
@@ -26,7 +25,6 @@ export const Footer = ({
         socialMediaLinks={socialMediaLinks}
         textColorScheme={textColorScheme}
         footerIconLink={footerIconLink}
-        containerProps={containerProps}
         {...footerProps}
       />
     )
@@ -35,7 +33,6 @@ export const Footer = ({
     <FullFooter
       socialMediaLinks={socialMediaLinks}
       textColorScheme={textColorScheme}
-      containerProps={containerProps}
       footerIconLink={footerIconLink}
       {...footerProps}
     />

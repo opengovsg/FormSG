@@ -1,7 +1,7 @@
 import { FC, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
-import { Box, chakra, Flex, GridItem, Text } from '@chakra-ui/react'
+import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
 
@@ -35,9 +35,10 @@ const BrandLogo = chakra(BrandLogoSvg, {
 // Component for the split blue/white background.
 const BackgroundBox: FC = ({ children }) => (
   <Flex
+    flex={1}
     overflow={{ lg: 'auto' }}
+    flexDir="column"
     h="inherit"
-    justify="center"
     bgGradient={{
       md: 'linear(to-b, primary.500 20.5rem, white 0)',
       lg: 'linear(to-r, primary.500 42%, white 0)',
@@ -47,20 +48,14 @@ const BackgroundBox: FC = ({ children }) => (
 )
 
 // Component that controls the various grid areas according to responsive breakpoints.
-const BaseGridLayout: FC = ({ children }) => (
-  <AppGrid
-    templateRows={{ md: 'auto 1fr auto', lg: '1fr auto' }}
-    minH={{ base: 'initial', lg: '100%' }}
-    w="100%"
-    children={children}
-  />
+const BaseGridLayout = (props: GridProps) => (
+  <AppGrid templateRows={{ md: 'auto 1fr auto', lg: '1fr auto' }} {...props} />
 )
 
 // Grid area styling for the login form.
 const LoginGridArea: FC = ({ children }) => (
   <GridItem
-    colStart={{ base: 1, md: 2, lg: 7 }}
-    colEnd={{ base: 5, md: 12 }}
+    gridColumn={{ base: '1 / 5', md: '2 / 12', lg: '7 / 12' }}
     py="4rem"
     d="flex"
     alignItems={{ base: 'initial', lg: 'center' }}
@@ -73,10 +68,9 @@ const LoginGridArea: FC = ({ children }) => (
 const FooterGridArea: FC = ({ children }) => (
   <GridItem
     alignSelf="end"
-    rowStart={{ lg: 2 }}
-    colStart={{ base: 1, md: 2 }}
-    colEnd={{ base: 5, md: 12 }}
+    gridColumn={{ base: '1 / 5', md: '2 / 12' }}
     pb={{ base: 0, lg: '2.5rem' }}
+    bg={{ base: 'primary.100', lg: 'transparent' }}
     children={children}
   />
 )
@@ -137,7 +131,7 @@ export const LoginPage = (): JSX.Element => {
 
   return (
     <BackgroundBox>
-      <BaseGridLayout>
+      <BaseGridLayout flex={1}>
         <NonMobileSidebarGridArea>
           <LoginImageSvgr maxW="100%" aria-hidden />
         </NonMobileSidebarGridArea>
@@ -176,6 +170,8 @@ export const LoginPage = (): JSX.Element => {
             )}
           </Box>
         </LoginGridArea>
+      </BaseGridLayout>
+      <BaseGridLayout bg={{ base: 'primary.100', lg: 'transparent' }}>
         <FooterGridArea>
           <AppFooter
             compactMonochromeLogos
