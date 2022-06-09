@@ -1,4 +1,4 @@
-import { Icon, Text } from '@chakra-ui/react'
+import { Icon } from '@chakra-ui/react'
 
 import { BxsRocket } from '~assets/icons'
 import Badge from '~components/Badge'
@@ -13,7 +13,7 @@ export const NewFeatureTag = (): JSX.Element => {
       color="secondary.500"
     >
       <Icon as={BxsRocket} />
-      <Text textStyle="caption-1">New feature</Text>
+      New feature
     </Badge>
   )
 }

@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
-  Box,
   Flex,
   Modal,
   ModalCloseButton,

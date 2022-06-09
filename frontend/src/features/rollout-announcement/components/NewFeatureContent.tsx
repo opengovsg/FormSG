@@ -4,15 +4,6 @@ import lottie from 'lottie-web'
 
 import { NewFeatureTag } from './NewFeatureTag'
 
-const TopSpacer = (): JSX.Element => (
-  <Box
-    width="100%"
-    height="4.5rem"
-    backgroundColor="primary.100"
-    borderTopRadius="1rem"
-  />
-)
-
 interface LottieAnimationProps extends BoxProps {
   animationData: unknown
 }
@@ -20,7 +11,7 @@ interface LottieAnimationProps extends BoxProps {
 export const LottieAnimation = ({
   animationData,
   ...boxProps
-}: LottieAnimationProps) => {
+}: LottieAnimationProps): JSX.Element => {
   const element = useRef<HTMLDivElement>(null)
   const lottieInstance = useRef<unknown>()
 
@@ -53,11 +44,14 @@ export const NewFeatureContent = (props: {
 
   return (
     <>
-      <TopSpacer />
-      <LottieAnimation animationData={animationData} />
+      <LottieAnimation
+        bg="primary.100"
+        pt="4.5rem"
+        animationData={animationData}
+      />
       <ModalHeader>
         <NewFeatureTag />
-        <Text paddingTop="0.5rem">{title}</Text>
+        <Text mt="0.625rem">{title}</Text>
       </ModalHeader>
       <ModalBody whiteSpace="pre-line">
         <Text textStyle="body-1" color="secondary.500">
