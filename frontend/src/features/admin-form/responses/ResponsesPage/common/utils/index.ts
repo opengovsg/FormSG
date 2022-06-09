@@ -1,1 +1,1 @@
-export * from './CsvGenerator.class'
+export * from './CsvGenerator'

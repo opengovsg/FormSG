@@ -5,7 +5,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { useFormResponsesCount } from '../../queries'
 
 import { downloadResponseAttachment } from './utils/downloadCsv'
-import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator.class'
+import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
 import {
   EncryptedResponsesStreamParams,
   getEncryptedResponsesStream,
