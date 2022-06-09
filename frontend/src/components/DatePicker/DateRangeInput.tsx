@@ -23,17 +23,19 @@ import {
 } from '@chakra-ui/react'
 import { compareAsc } from 'date-fns'
 
+import { DateString } from '~shared/types'
+
 import { BxCalendar } from '~assets/icons'
 import IconButton from '~components/IconButton'
 import Input, { InputProps } from '~components/Input'
 
 import { DateRangePicker } from './DateRangePicker'
-import { convertToDateString, IsoDateString } from './utils'
+import { convertToDateString } from './utils'
 
 export interface DateRangeInputProps
   extends Omit<InputProps, 'value' | 'onChange'> {
-  value?: IsoDateString[]
-  onChange?: (val: IsoDateString[]) => void
+  value?: DateString[]
+  onChange?: (val: DateString[]) => void
 }
 
 export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
