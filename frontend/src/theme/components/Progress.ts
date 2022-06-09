@@ -34,7 +34,7 @@ const filledStyle: SystemStyleFunction = ({
 
 const baseStyleFilledTrack: SystemStyleFunction = (props) => {
   return {
-    transitionProperty: 'common',
+    transitionProperty: 'all',
     transitionDuration: 'slow',
     ...filledStyle(props),
   }

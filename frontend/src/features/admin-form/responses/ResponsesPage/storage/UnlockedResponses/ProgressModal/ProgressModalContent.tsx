@@ -36,7 +36,7 @@ export const ProgressModalContent = ({
         <Text textStyle="subhead-1" mb="0.5rem">
           {downloadPercentage}% completed
         </Text>
-        <Progress size="xl" value={downloadPercentage} />
+        <Progress size="xl" value={downloadPercentage} hasStripe isAnimated />
       </ModalBody>
       <ModalFooter>
         <ButtonGroup>
