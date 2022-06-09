@@ -6,6 +6,7 @@ import simplur from 'simplur'
 import {
   AdminFormDto,
   FormAuthType,
+  FormEndPage,
   FormSettings,
   FormStatus,
 } from '~shared/types/form/form'
@@ -24,6 +25,7 @@ import {
   updateFormAuthType,
   updateFormCaptcha,
   updateFormEmails,
+  updateFormEndPage,
   updateFormEsrvcId,
   updateFormInactiveMessage,
   updateFormLimit,
@@ -278,6 +280,23 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  /**
+   * TODO (hans): MAYBE make the updates more modular - not entire end page, but make
+   * make it edit field by field
+   */
+  const mutateFormEndPage = useMutation(
+    (endPage: FormEndPage) => updateFormEndPage(formId, endPage),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: 'Successfully updated form thank you page',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   return {
     mutateWebhookRetries,
     mutateFormWebhookUrl,
@@ -289,6 +308,7 @@ export const useMutateFormSettings = () => {
     mutateFormTitle,
     mutateFormAuthType,
     mutateFormEsrvcId,
+    mutateFormEndPage,
   }
 }
 

@@ -26,5 +26,11 @@ export const updateSettingsValidator = celebrate({
       url: Joi.string().uri().allow(''),
       isRetryEnabled: Joi.boolean(),
     }).min(1),
+    endPage: Joi.object({
+      title: Joi.string(),
+      paragraph: Joi.string().allow(''),
+      buttonLink: Joi.string().uri().allow(''),
+      buttonText: Joi.string(),
+    }).min(1),
   }).min(1),
 })
