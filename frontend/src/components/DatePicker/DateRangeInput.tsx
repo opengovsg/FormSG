@@ -186,13 +186,18 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
           {({ isOpen }) => (
             <>
               <PopoverAnchor>
-                <Wrap shouldWrapChildren spacing="0.5rem" align="center">
+                <Wrap
+                  shouldWrapChildren
+                  spacingX="0.5rem"
+                  spacingY={0}
+                  align="center"
+                >
                   <Input
                     aria-label="Start date"
                     id={`${props.name}-start-date`}
                     onKeyDown={handlePreventOpenNativeCalendar}
                     type="date"
-                    w="fit-content"
+                    w="8.5rem"
                     sx={{
                       // Chrome displays a default calendar icon, which we want to hide
                       // so all browsers display our icon consistently.
@@ -213,7 +218,8 @@ export const DateRangeInput = forwardRef<DateRangeInputProps, 'input'>(
                     id={`${props.name}-end-date`}
                     onKeyDown={handlePreventOpenNativeCalendar}
                     type="date"
-                    w="fit-content"
+                    w="8.5rem"
+                    borderRightRadius={0}
                     sx={{
                       // Chrome displays a default calendar icon, which we want to hide
                       // so all browsers display our icon consistently.
