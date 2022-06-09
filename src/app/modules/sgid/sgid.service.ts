@@ -1,5 +1,6 @@
 import { SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
+import Jwt from 'jsonwebtoken'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
 import { sgid } from '../../config/features/sgid.config'
@@ -23,6 +24,7 @@ export class SgidServiceClass {
   private client: SgidClient
 
   private publicKeyPath: string | Buffer
+  private privateKey: string
 
   private cookieDomain: string
   private cookieMaxAge: number
@@ -46,9 +48,10 @@ export class SgidServiceClass {
     cookieMaxAge: number
     cookieMaxAgePreserved: number
   }) {
+    this.privateKey = fs.readFileSync(privateKeyPath, { encoding: 'utf8' })
     this.client = new SgidClient({
       ...sgidOptions,
-      privateKey: fs.readFileSync(privateKeyPath),
+      privateKey: this.privateKey,
     })
     this.publicKeyPath = fs.readFileSync(publicKeyPath)
     this.cookieDomain = cookieDomain
@@ -171,8 +174,12 @@ export class SgidServiceClass {
     const userName = data['myinfo.nric_number']
     const payload = { userName, rememberMe }
     const maxAge = rememberMe ? this.cookieMaxAgePreserved : this.cookieMaxAge
+    const jwt = Jwt.sign(payload, this.privateKey, {
+      algorithm: 'RS256',
+      expiresIn: maxAge / 1000,
+    })
     return ok({
-      jwt: this.client.createJWT(payload, maxAge / 1000),
+      jwt,
       maxAge,
     })
   }
@@ -195,7 +202,9 @@ export class SgidServiceClass {
         return err(new SgidMissingJwtError())
       }
 
-      const payload = this.client.verifyJWT(jwtSgid, this.publicKeyPath)
+      const payload = Jwt.verify(jwtSgid, this.publicKeyPath, {
+        algorithms: ['RS256'],
+      })
 
       if (isSgidJwtPayload(payload)) {
         return ok(payload)
