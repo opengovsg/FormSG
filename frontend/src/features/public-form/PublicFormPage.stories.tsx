@@ -7,6 +7,7 @@ import { FormAuthType, FormColorTheme } from '~shared/types/form'
 
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
+  getPublicFormErrorResponse,
   getPublicFormResponse,
   postGenerateVfnOtpResponse,
   postVerifyVfnOtpResponse,
@@ -64,6 +65,21 @@ export default {
 
 const Template: Story = () => <PublicFormPage />
 export const Default = Template.bind({})
+
+export const WithCaptcha = Template.bind({})
+WithCaptcha.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          hasCaptcha: true,
+        },
+      },
+    }),
+  ],
+}
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
@@ -316,4 +332,15 @@ WithPreventSubmissionLogic.play = async ({ canvasElement }) => {
       /this should show up in storybook mock when yes\/no is true/i,
     ),
   ).toBeInTheDocument()
+}
+
+export const FormNotFound = Template.bind({})
+FormNotFound.parameters = {
+  msw: [getPublicFormErrorResponse()],
+}
+
+export const FormNotFoundMobile = Template.bind({})
+FormNotFoundMobile.parameters = {
+  ...FormNotFound.parameters,
+  ...getMobileViewParameters(),
 }

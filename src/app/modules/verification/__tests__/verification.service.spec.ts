@@ -18,7 +18,10 @@ MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 import { smsConfig } from 'src/app/config/features/sms.config'
 import formsgSdk from 'src/app/config/formsg-sdk'
 import * as FormService from 'src/app/modules/form/form.service'
-import { OtpRequestError } from 'src/app/modules/verification/verification.errors'
+import {
+  OtpRequestCountExceededError,
+  OtpRequestError,
+} from 'src/app/modules/verification/verification.errors'
 import {
   MailGenerationError,
   MailSendError,
@@ -63,6 +66,7 @@ import {
   MOCK_HASHED_OTP,
   MOCK_OTP,
   MOCK_RECIPIENT,
+  MOCK_SENDER_IP,
   MOCK_SIGNED_DATA,
 } from './verification.test.helpers'
 
@@ -324,6 +328,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       // Default mock params has fieldType: 'mobile'
@@ -331,6 +336,7 @@ describe('Verification service', () => {
         MOCK_RECIPIENT,
         MOCK_OTP,
         mockTransaction.formId,
+        MOCK_SENDER_IP,
       )
       expect(MockFormsgSdk.verification.generateSignature).toHaveBeenCalledWith(
         {
@@ -357,6 +363,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
@@ -381,6 +388,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
@@ -400,6 +408,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
@@ -431,6 +440,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
@@ -440,6 +450,36 @@ describe('Verification service', () => {
       ).not.toHaveBeenCalled()
       expect(updateHashSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(new WaitForOtpError())
+    })
+
+    it('should return OtpRequestCountExceededError when OTP max requests are exceeded', async () => {
+      const maxExceededOtpField = generateFieldParams({
+        otpRequests: 11,
+      })
+      const maxExceededOtpTransaction = await VerificationModel.create({
+        formId: mockFormId,
+        // Expire 1 hour in future
+        expireAt: addHours(new Date(), 1),
+        fields: [maxExceededOtpField],
+      })
+
+      const result = await VerificationService.sendNewOtp({
+        transactionId: maxExceededOtpTransaction._id,
+        fieldId: maxExceededOtpField._id,
+        hashedOtp: MOCK_HASHED_OTP,
+        otp: MOCK_OTP,
+        recipient: MOCK_RECIPIENT,
+      })
+
+      expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
+      expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+      expect(
+        MockFormsgSdk.verification.generateSignature,
+      ).not.toHaveBeenCalled()
+      expect(updateHashSpy).not.toHaveBeenCalled()
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new OtpRequestCountExceededError(),
+      )
     })
 
     it('should forward errors returned by MailService.sendVerificationOtp', async () => {
@@ -459,6 +499,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockMailService.sendVerificationOtp).toHaveBeenCalledWith(
@@ -493,12 +534,14 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
         MOCK_RECIPIENT,
         MOCK_OTP,
         new ObjectId(mockFormId),
+        MOCK_SENDER_IP,
       )
       expect(
         MockFormsgSdk.verification.generateSignature,
@@ -518,6 +561,7 @@ describe('Verification service', () => {
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
         recipient: MOCK_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       // Mock params default to mobile
@@ -525,6 +569,7 @@ describe('Verification service', () => {
         MOCK_RECIPIENT,
         MOCK_OTP,
         new ObjectId(mockFormId),
+        MOCK_SENDER_IP,
       )
       expect(MockFormsgSdk.verification.generateSignature).toHaveBeenCalledWith(
         {

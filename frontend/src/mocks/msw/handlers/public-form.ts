@@ -407,6 +407,23 @@ export const getPublicFormResponse = ({
   )
 }
 
+export const getPublicFormErrorResponse = ({
+  delay = 0,
+  status = 404,
+  message = 'If you think this is a mistake, please contact the agency that gave you the form link.',
+}: {
+  delay?: number | 'infinite'
+  status?: number
+  message?: string
+} = {}) => {
+  return rest.get<PublicFormViewDto>(
+    '/api/v3/forms/:formId',
+    (req, res, ctx) => {
+      return res(ctx.delay(delay), ctx.status(status), ctx.json({ message }))
+    },
+  )
+}
+
 export const getCustomLogoResponse = () => {
   return rest.get(
     `/${MOCK_ENVS.logoBucketUrl}/:fileId`,

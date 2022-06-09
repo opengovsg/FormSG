@@ -7,15 +7,21 @@ import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormResponseMode, PublicFormViewDto } from '~shared/types/form'
+import { BasicField } from '~shared/types'
+import {
+  FormAuthType,
+  FormResponseMode,
+  PublicFormViewDto,
+} from '~shared/types/form'
 
-import { PUBLICFORM_REGEX } from '~constants/routes'
+import { FORMID_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
 import { FormFieldValues } from '~templates/Field'
 
+import NotFoundErrorPage from '~pages/NotFoundError'
 import { trackVisitPublicForm } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
 import {
@@ -27,8 +33,13 @@ import {
   useTransactionMutations,
 } from '~features/verifiable-fields'
 
+import { FormNotFound } from './components/FormNotFound'
 import { usePublicFormMutations } from './mutations'
-import { PublicFormContext, SubmissionData } from './PublicFormContext'
+import {
+  PublicFormContext,
+  SidebarSectionMeta,
+  SubmissionData,
+} from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
 interface PublicFormProviderProps {
@@ -99,12 +110,13 @@ export const PublicFormProvider = ({
     return vfnTransaction.transactionId
   }, [createTransactionMutation, vfnTransaction])
 
+  const isNotFormId = useMemo(() => !FORMID_REGEX.test(formId), [formId])
+
   const isFormNotFound = useMemo(() => {
     return (
-      !PUBLICFORM_REGEX.test(formId) ||
-      (error instanceof HttpError && error.code === 404)
+      error instanceof HttpError && (error.code === 404 || error.code === 410)
     )
-  }, [error, formId])
+  }, [error])
 
   const expiryInMs = useMemo(() => {
     if (!vfnTransaction?.expireAt) return null
@@ -212,6 +224,35 @@ export const PublicFormProvider = ({
     ],
   )
 
+  const isAuthRequired = useMemo(
+    () =>
+      !!cachedDto?.form &&
+      cachedDto.form.authType !== FormAuthType.NIL &&
+      !cachedDto.spcpSession,
+    [cachedDto?.form, cachedDto?.spcpSession],
+  )
+
+  const sectionScrollData = useMemo(() => {
+    const { form } = cachedDto ?? {}
+    if (!form || isAuthRequired) {
+      return []
+    }
+    const sections: SidebarSectionMeta[] = []
+    form.form_fields.forEach((f) => {
+      if (f.fieldType !== BasicField.Section) return
+      sections.push({
+        title: f.title,
+        _id: f._id,
+      })
+    })
+
+    return sections
+  }, [cachedDto, isAuthRequired])
+
+  if (isNotFormId) {
+    return <NotFoundErrorPage />
+  }
+
   return (
     <PublicFormContext.Provider
       value={{
@@ -222,14 +263,18 @@ export const PublicFormProvider = ({
         getTransactionId,
         expiryInMs,
         submissionData,
+        sectionScrollData,
+        isAuthRequired,
         captchaContainerId: containerId,
         isLoading: isLoading || (!!cachedDto?.form.hasCaptcha && !hasLoaded),
         ...cachedDto,
         ...rest,
       }}
     >
-      <Helmet title={cachedDto?.form.title} />
-      {isFormNotFound ? <div>404</div> : children}
+      <Helmet
+        title={isFormNotFound ? 'Form not found' : cachedDto?.form.title}
+      />
+      {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
     </PublicFormContext.Provider>
   )
 }

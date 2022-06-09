@@ -25,6 +25,7 @@ export const theme = extendTheme({
       },
       '#root, #__next': {
         isolation: 'isolate',
+        height: 'inherit',
       },
       /**
        * This will hide the focus indicator if the element receives focus via

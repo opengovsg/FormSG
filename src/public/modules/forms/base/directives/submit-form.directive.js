@@ -466,11 +466,22 @@ function submitFormDirective(
       if (!scope.disableSubmitButton) {
         $q.resolve(
           FieldVerificationService.createTransactionForForm(scope.form._id),
-        ).then((res) => {
-          if (res.transactionId) {
-            scope.transactionId = res.transactionId
-          }
-        })
+        )
+          .then((res) => {
+            if (res.transactionId) {
+              scope.transactionId = res.transactionId
+            }
+          })
+          .catch((error) => {
+            const statusCode = get(error, 'response.status')
+            if (statusCode === 429) {
+              const toastMessage =
+                'You have requested this form too many times and fields that require verification will fail. Please try refreshing the form after one minute.'
+
+              console.error('transactionId error:\t', error)
+              Toastr.permanentError(toastMessage)
+            }
+          })
       }
 
       // Variable to indicate if there are prefill fields

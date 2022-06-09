@@ -5,6 +5,7 @@ import {
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
+  LANDING_ROUTE,
   LOGIN_ROUTE,
   PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
@@ -13,6 +14,7 @@ import {
   TOU_ROUTE,
 } from '~constants/routes'
 
+import NotFoundErrorPage from '~pages/NotFoundError'
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
 import { CreatePage } from '~features/admin-form/create/CreatePage'
 import {
@@ -30,6 +32,7 @@ const PublicFormPage = lazy(
   () => import('~features/public-form/PublicFormPage'),
 )
 const WorkspacePage = lazy(() => import('~features/workspace'))
+const LandingPage = lazy(() => import('~pages/Landing'))
 const LoginPage = lazy(() => import('~features/login'))
 const PrivacyPolicyPage = lazy(() => import('~pages/PrivacyPolicy'))
 const TermsOfUsePage = lazy(() => import('~pages/TermsOfUse'))
@@ -44,8 +47,12 @@ export const AppRouter = (): JSX.Element => {
     <WithSuspense>
       <Routes>
         <Route
+          path={LANDING_ROUTE}
+          element={<HashRouterElement element={<LandingPage />} />}
+        />
+        <Route
           path={ROOT_ROUTE}
-          element={<HashRouterElement element={<WorkspacePage />} />}
+          element={<PrivateElement element={<WorkspacePage />} />}
         />
         <Route
           path={LOGIN_ROUTE}
@@ -83,7 +90,7 @@ export const AppRouter = (): JSX.Element => {
             />
           </Route>
         </Route>
-        <Route path="*" element={<div>404!!!</div>} />
+        <Route path="*" element={<NotFoundErrorPage />} />
       </Routes>
     </WithSuspense>
   )

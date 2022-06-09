@@ -4,7 +4,7 @@ import { PublicFormViewDto } from '~shared/types/form/form'
 
 import { ApiError } from '~typings/core'
 
-import { PUBLICFORM_REGEX } from '~constants/routes'
+import { FORMID_REGEX } from '~constants/routes'
 
 import { getPublicFormView } from './PublicFormService'
 
@@ -24,7 +24,7 @@ export const usePublicFormView = (
     publicFormKeys.id(formId),
     () => getPublicFormView(formId),
     {
-      enabled: PUBLICFORM_REGEX.test(formId) && enabled,
+      enabled: FORMID_REGEX.test(formId) && enabled,
     },
   )
 }

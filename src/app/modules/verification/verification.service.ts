@@ -40,6 +40,7 @@ import {
   MissingHashDataError,
   NonVerifiedFieldTypeError,
   OtpExpiredError,
+  OtpRequestCountExceededError,
   OtpRequestError,
   OtpRetryExceededError,
   TransactionExpiredError,
@@ -52,6 +53,7 @@ import { SendOtpParams } from './verification.types'
 import {
   hasAdminExceededFreeSmsLimit,
   isOtpExpired,
+  isOtpRequestCountExceeded,
   isOtpWaitTimeElapsed,
   isTransactionExpired,
 } from './verification.util'
@@ -278,6 +280,7 @@ export const resetFieldForTransaction = (
  * @returns err(TransactionExpiredError) when transaction is expired
  * @returns err(FieldNotFoundInTransactionError) when field does not exist
  * @returns err(WaitForOtpError) when waiting time for new OTP has not elapsed
+ * @returns err(OtpRequestCountExceededError) when max OTP requests has been exceeded
  * @returns err(MalformedParametersError) when form data to send SMS OTP cannot be retrieved
  * @returns err(SmsSendError) when attempt to send OTP SMS fails
  * @returns err(InvalidNumberError) when SMS recipient is invalid
@@ -291,6 +294,7 @@ export const sendNewOtp = ({
   recipient,
   otp,
   hashedOtp,
+  senderIp,
 }: SendOtpParams): ResultAsync<
   IVerificationSchema,
   | TransactionNotFoundError
@@ -298,6 +302,7 @@ export const sendNewOtp = ({
   | FieldNotFoundInTransactionError
   | TransactionExpiredError
   | WaitForOtpError
+  | OtpRequestCountExceededError
   | MalformedParametersError
   | SmsSendError
   | InvalidNumberError
@@ -322,7 +327,21 @@ export const sendNewOtp = ({
           return errAsync(new WaitForOtpError())
         }
 
-        return sendOtpForField(transaction.formId, field, recipient, otp)
+        if (isOtpRequestCountExceeded(field.otpRequests)) {
+          logger.warn({
+            message: 'Max OTP request count exceeded',
+            meta: logMeta,
+          })
+          return errAsync(new OtpRequestCountExceededError())
+        }
+
+        return sendOtpForField(
+          transaction.formId,
+          field,
+          recipient,
+          otp,
+          senderIp,
+        )
       })
       .andThen(() => {
         const signedData = formsgSdk.verification.generateSignature({
@@ -492,12 +511,14 @@ export const verifyOtp = (
  * @param field
  * @param recipient
  * @param otp
+ * @param senderIp
  */
 const sendOtpForField = (
   formId: string,
   field: IVerificationFieldSchema,
   recipient: string,
   otp: string,
+  senderIp: string,
 ): ResultAsync<
   true,
   | DatabaseError
@@ -517,7 +538,7 @@ const sendOtpForField = (
             .andThen((form) => shouldGenerateMobileOtp(form, fieldId))
             // call sms - it should validate the recipient
             .andThen(() =>
-              SmsFactory.sendVerificationOtp(recipient, otp, formId),
+              SmsFactory.sendVerificationOtp(recipient, otp, formId, senderIp),
             )
         : errAsync(new MalformedParametersError('Field id not present'))
     case BasicField.Email:

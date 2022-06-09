@@ -15,11 +15,13 @@ interface ISmsFactory {
     recipient: string,
     otp: string,
     formId: string,
+    senderIp: string,
   ) => ReturnType<typeof sendVerificationOtp>
   sendAdminContactOtp: (
     recipient: string,
     otp: string,
     userId: string,
+    senderIp: string,
   ) => ReturnType<typeof sendAdminContactOtp>
   /**
    * Informs recipient that the given form was deactivated. Rejects if SMS feature
@@ -65,10 +67,10 @@ export const createSmsFactory = (smsConfig: ISms): ISmsFactory => {
   }
 
   return {
-    sendVerificationOtp: (recipient, otp, formId) =>
-      sendVerificationOtp(recipient, otp, formId, twilioConfig),
-    sendAdminContactOtp: (recipient, otp, userId) =>
-      sendAdminContactOtp(recipient, otp, userId, twilioConfig),
+    sendVerificationOtp: (recipient, otp, formId, senderIp) =>
+      sendVerificationOtp(recipient, otp, formId, senderIp, twilioConfig),
+    sendAdminContactOtp: (recipient, otp, userId, senderIp) =>
+      sendAdminContactOtp(recipient, otp, userId, senderIp, twilioConfig),
     sendFormDeactivatedSms: (params) =>
       sendFormDeactivatedSms(params, twilioConfig),
     sendBouncedSubmissionSms: (params) =>

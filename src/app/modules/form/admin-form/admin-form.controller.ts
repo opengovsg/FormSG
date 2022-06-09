@@ -1,4 +1,5 @@
 import JoiDate from '@joi/date'
+import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
@@ -188,6 +189,7 @@ const fileUploadValidator = celebrate({
     fileType: Joi.string()
       .valid(...VALID_UPLOAD_FILE_TYPES)
       .required(),
+    isNewClient: Joi.boolean().optional(),
   },
 })
 
@@ -383,11 +385,17 @@ export const createPresignedPostUrlForImages: ControllerHandler<
     fileId: string
     fileMd5Hash: string
     fileType: string
+    isNewClient?: boolean // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   }
 > = async (req, res) => {
   const { formId } = req.params
-  const { fileId, fileMd5Hash, fileType } = req.body
+  const { fileId, fileMd5Hash, fileType, isNewClient } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Adding random objectId ensures fileId is unpredictable by client
+  const randomizedFileId = isNewClient
+    ? `${String(new ObjectId())}-${fileId}`
+    : fileId // TODO (#128): if !isNewClient, returns fileId for backward compatability. To remove fallback for !isNewClient 2 weeks after release.
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -403,7 +411,7 @@ export const createPresignedPostUrlForImages: ControllerHandler<
       // Step 3: Has write permissions, generate presigned POST URL.
       .andThen(() =>
         AdminFormService.createPresignedPostUrlForImages({
-          fileId,
+          fileId: randomizedFileId,
           fileMd5Hash,
           fileType,
         }),
@@ -448,11 +456,17 @@ export const createPresignedPostUrlForLogos: ControllerHandler<
     fileId: string
     fileMd5Hash: string
     fileType: string
+    isNewClient?: boolean // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   }
 > = async (req, res) => {
   const { formId } = req.params
-  const { fileId, fileMd5Hash, fileType } = req.body
+  const { fileId, fileMd5Hash, fileType, isNewClient } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Adding random objectId ensures fileId is unpredictable by client
+  const randomizedFileId = isNewClient
+    ? `${String(new ObjectId())}-${fileId}`
+    : fileId // TODO (#128): if !isNewClient, returns fileId for backward compatability. To remove fallback for !isNewClient 2 weeks after release.
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -468,7 +482,7 @@ export const createPresignedPostUrlForLogos: ControllerHandler<
       // Step 3: Has write permissions, generate presigned POST URL.
       .andThen(() =>
         AdminFormService.createPresignedPostUrlForLogos({
-          fileId,
+          fileId: randomizedFileId,
           fileMd5Hash,
           fileType,
         }),

@@ -7,12 +7,14 @@ export const MOCK_SIGNED_DATA = 'mockSignedData'
 export const MOCK_HASHED_OTP = 'mockHashedOtp'
 export const MOCK_OTP = '123456'
 export const MOCK_RECIPIENT = '81234567'
+export const MOCK_SENDER_IP = '200.0.0.0'
 
 export const VFN_FIELD_DEFAULTS = {
   signedData: null,
   hashedOtp: null,
   hashCreatedAt: null,
   hashRetries: 0,
+  otpRequests: 0,
 }
 
 export const generateFieldParams = (
