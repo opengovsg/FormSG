@@ -76,13 +76,14 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
+      <FormControl id="ratingOptions.steps" isReadOnly={isLoading}>
         <FormLabel isRequired>Number of steps</FormLabel>
         <Controller
           control={control}
           name="ratingOptions.steps"
           render={({ field: { value, ...field } }) => (
             <SingleSelect
+              isClearable={false}
               items={EDIT_RATING_OPTIONS.stepOptions}
               value={String(value)}
               {...field}
@@ -90,13 +91,17 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
           )}
         />
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
+      <FormControl id="ratingOptions.shape" isReadOnly={isLoading}>
         <FormLabel isRequired>Shape</FormLabel>
         <Controller
           control={control}
           name="ratingOptions.shape"
           render={({ field }) => (
-            <SingleSelect items={EDIT_RATING_OPTIONS.shapeOptions} {...field} />
+            <SingleSelect
+              isClearable={false}
+              items={EDIT_RATING_OPTIONS.shapeOptions}
+              {...field}
+            />
           )}
         />
       </FormControl>

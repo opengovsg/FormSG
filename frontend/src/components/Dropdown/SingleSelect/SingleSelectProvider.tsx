@@ -148,6 +148,13 @@ export const SingleSelectProvider = ({
             // Clear inputValue on item selection
             inputValue: '',
           }
+        case useCombobox.stateChangeTypes.InputKeyDownEscape: {
+          if (isClearable) return changes
+          return {
+            ...changes,
+            selectedItem: _state.selectedItem,
+          }
+        }
         case useCombobox.stateChangeTypes.FunctionSelectItem:
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.InputBlur:
