@@ -1,7 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
-import { FormResponseMode } from '~shared/types'
+import { DateString, FormResponseMode } from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -22,6 +22,7 @@ export const StorageResponsesProvider = ({
   const { data: responsesCount, isLoading: isFormResponsesLoading } =
     useFormResponsesCount()
   const [secretKey, setSecretKey] = useSecretKey(formId)
+  const [dateRange, setDateRange] = useState<DateString[]>([])
 
   const formPublicKey = useMemo(() => {
     if (!form || form.responseMode !== FormResponseMode.Encrypt) return null
@@ -33,11 +34,10 @@ export const StorageResponsesProvider = ({
 
     return {
       secretKey,
-      // TODO: Add selector for start and end dates.
-      endDate: undefined,
-      startDate: undefined,
+      startDate: dateRange[0],
+      endDate: dateRange[1],
     }
-  }, [secretKey])
+  }, [dateRange, secretKey])
 
   return (
     <StorageResponsesContext.Provider
@@ -48,6 +48,8 @@ export const StorageResponsesProvider = ({
         downloadParams,
         secretKey,
         setSecretKey,
+        dateRange,
+        setDateRange,
       }}
     >
       {children}

@@ -1,10 +1,14 @@
 import { createContext, useContext } from 'react'
 
+import { DateString } from '~shared/types'
+
 import { DownloadEncryptedParams } from './useDecryptionWorkers'
 
 export interface StorageResponsesContextProps {
   secretKey?: string
   setSecretKey: (secretKey: string) => void
+  dateRange: DateString[]
+  setDateRange: (dateRange: DateString[]) => void
   downloadParams: Omit<DownloadEncryptedParams, 'downloadAttachments'> | null
   responsesCount?: number
   formPublicKey: string | null

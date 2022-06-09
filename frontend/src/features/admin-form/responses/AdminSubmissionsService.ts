@@ -23,9 +23,13 @@ export const countFormSubmissions = async ({
   dates,
 }: {
   formId: string
-  dates?: SubmissionCountQueryDto
+  dates?: Partial<SubmissionCountQueryDto>
 }): Promise<number> => {
   const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/count`
+  if (dates && (!dates.startDate || !dates.endDate)) {
+    delete dates.startDate
+    delete dates.endDate
+  }
   if (dates) {
     return ApiService.get(queryUrl, {
       params: { ...dates },

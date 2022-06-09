@@ -3,7 +3,10 @@ import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
 
 import Button from '~components/Button'
+import { DateRangeInput } from '~components/DatePicker/DateRangeInput'
 import Pagination from '~components/Pagination'
+
+import { useStorageResponsesContext } from '../StorageResponsesContext'
 
 import { DownloadButton } from './DownloadButton'
 import { ResponsesTable } from './ResponsesTable'
@@ -28,6 +31,8 @@ export const UnlockedResponses = (): JSX.Element => {
     }
     return count
   }, [filteredCount, count, submissionId])
+
+  const { dateRange, setDateRange } = useStorageResponsesContext()
 
   const prettifiedResponsesCount = useMemo(() => {
     if (filteredCount !== undefined) {
@@ -76,6 +81,7 @@ export const UnlockedResponses = (): JSX.Element => {
         </Stack>
         <Stack direction="row" gridArea="export" justifySelf="end">
           <SubmissionSearchbar />
+          <DateRangeInput value={dateRange} onChange={setDateRange} />
           <DownloadButton />
         </Stack>
       </Grid>

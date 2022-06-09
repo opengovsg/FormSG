@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, UseMutationOptions } from 'react-query'
 
+import { DateString } from '~shared/types'
+
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { useFormResponsesCount } from '../../queries'
+import { countFormSubmissions } from '../../AdminSubmissionsService'
 
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
+import { useStorageResponsesContext } from './StorageResponsesContext'
 import {
   EncryptedResponsesStreamParams,
   getEncryptedResponsesStream,
@@ -42,8 +45,7 @@ const useDecryptionWorkers = ({
   const abortControllerRef = useRef(new AbortController())
 
   const { data: adminForm } = useAdminForm()
-
-  const { refetch } = useFormResponsesCount()
+  const { dateRange } = useStorageResponsesContext()
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -69,8 +71,12 @@ const useDecryptionWorkers = ({
       const freshAbortController = new AbortController()
       abortControllerRef.current = freshAbortController
 
-      const { data: responsesCount } = await refetch({
-        throwOnError: true,
+      const responsesCount = await countFormSubmissions({
+        formId: adminForm._id,
+        dates: {
+          startDate: dateRange[0] as DateString,
+          endDate: dateRange[1] as DateString,
+        },
       })
       if (!responsesCount) return
       if (workers.length) killWorkers(workers)
@@ -250,7 +256,7 @@ const useDecryptionWorkers = ({
           checkComplete()
         })
     },
-    [adminForm, onProgress, refetch, workers],
+    [adminForm, dateRange, onProgress, workers],
   )
 
   const handleExportCsvMutation = useMutation(
