@@ -12,6 +12,7 @@ import {
   Flex,
   Icon,
 } from '@chakra-ui/react'
+import { times } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
 
@@ -34,9 +35,11 @@ import {
   RadioField,
   RatingField,
   ShortTextField,
+  TableField,
   UenField,
   YesNoField,
 } from '~templates/Field'
+import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
@@ -87,7 +90,18 @@ export const FieldRowContainer = ({
   const { duplicateFieldMutation } = useDuplicateFormField()
   const { deleteFieldMutation } = useDeleteFormField()
 
-  const formMethods = useForm({ mode: 'onChange' })
+  const defaultFieldValues = useMemo(() => {
+    if (field.fieldType === BasicField.Table) {
+      return {
+        [field._id]: times(field.minimumRows, () => createTableRow(field)),
+      }
+    }
+  }, [field])
+
+  const formMethods = useForm({
+    mode: 'onChange',
+    defaultValues: defaultFieldValues,
+  })
 
   const isActive = useMemo(() => {
     if (stateData.state === BuildFieldState.EditingField) {
@@ -339,7 +353,7 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
       return <YesNoField schema={field} {...rest} />
     case BasicField.Image:
       return <ImageField schema={field} {...rest} />
-    default:
-      return <div>TODO: Add field row for {field.fieldType}</div>
+    case BasicField.Table:
+      return <TableField schema={field} {...rest} />
   }
 })

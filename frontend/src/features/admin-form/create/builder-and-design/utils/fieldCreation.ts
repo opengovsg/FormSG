@@ -7,9 +7,10 @@ import {
 
 import { BASICFIELD_TO_DRAWER_META } from '../../constants'
 
+import { createShortTextColumn } from './columnCreation'
+
 /**
  * Utility methods to create bare minimum meta required for field creation.
- * TODO: Create one for every field type.
  */
 export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
   const baseMeta: Pick<
@@ -163,10 +164,12 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         },
       }
     }
-    default: {
+    case BasicField.Table: {
       return {
-        fieldType: BasicField.Section,
+        fieldType,
         ...baseMeta,
+        columns: [createShortTextColumn()],
+        minimumRows: 2,
       }
     }
   }

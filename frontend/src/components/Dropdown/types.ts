@@ -1,9 +1,9 @@
 import type { As } from '@chakra-ui/react'
 
-export type ComboboxItem =
+export type ComboboxItem<T = string> =
   | {
       /** Value to be passed to onChange */
-      value: string
+      value: T
       /** Label to render on input when selected. `value` will be used if this is not provided */
       label?: string
       /** Description to render below label if provided */
