@@ -13,6 +13,10 @@ export type FooterLinkWithIcon = FooterLink & {
   Icon: (props: any) => JSX.Element
 }
 
+export interface FooterContainerProps extends FlexProps {
+  children: React.ReactNode
+}
+
 export interface FooterVariantProps {
   /** Application name to display in footer. */
   appName: string
@@ -31,21 +35,13 @@ export interface FooterVariantProps {
    * Defaults to `secondary` if not provided.
    */
   textColorScheme: ThemeColorScheme
-  /**
-   * Background color of footer.
-   * Defaults to `primary.100` if not provided.
-   */
-  bg: string
-}
-
-export interface FooterContainerProps extends FlexProps {
-  children: React.ReactNode
+  containerProps?: Partial<FooterContainerProps>
 }
 
 export interface FooterProps
   extends SetOptional<
     FooterVariantProps,
-    'socialMediaLinks' | 'textColorScheme' | 'footerIconLink' | 'bg'
+    'socialMediaLinks' | 'textColorScheme' | 'footerIconLink'
   > {
   /**
    * The footer variant to display. Defaults to `full` if not provided.

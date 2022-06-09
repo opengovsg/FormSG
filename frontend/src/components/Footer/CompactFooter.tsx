@@ -19,10 +19,10 @@ export const CompactFooter = ({
   footerLinks,
   compactMonochromeLogos,
   appLink,
-  bg,
+  containerProps,
 }: CompactedFooterProps): JSX.Element => {
   return (
-    <CompactFooter.Container bg={bg}>
+    <CompactFooter.Container {...containerProps}>
       <Stack direction="row" h="2.25rem" align="center" spacing="2rem">
         <Link
           colorScheme={compactMonochromeLogos ? 'white' : textColorScheme}
@@ -87,6 +87,7 @@ CompactFooter.Container = ({
       justify="space-between"
       flexDir="row"
       as="footer"
+      bg="primary.100"
       {...props}
     >
       {children}
