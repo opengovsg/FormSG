@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { FormControl, Stack } from '@chakra-ui/react'
 import validator from 'validator'
@@ -26,8 +26,8 @@ export const EndPageSettingsInput = ({
   const { title, paragraph, buttonText, buttonLink } = settings
   const { mutateFormEndPage } = useMutateFormSettings()
 
-  const defaultParagraph = paragraph ?? ''
-  const defaultButtonLink = buttonLink ?? ''
+  const defaultParagraph = useMemo(() => paragraph ?? '', [paragraph])
+  const defaultButtonLink = useMemo(() => buttonLink ?? '', [buttonLink])
   const isMobile = useIsMobile()
 
   const {
