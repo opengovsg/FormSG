@@ -55,7 +55,7 @@ export const NewFeatureContent = (props: {
       <LottieAnimation
         bg="primary.100"
         pt="4.5rem"
-        height={isMobile ? '33vh' : ''}
+        height={isMobile ? '30vh' : ''}
         animationData={animationData}
         preserveAspectRatio="xMidYMax slice"
       />
