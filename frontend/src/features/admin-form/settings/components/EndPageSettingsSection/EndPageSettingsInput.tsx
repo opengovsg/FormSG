@@ -11,13 +11,6 @@ import Textarea from '~components/Textarea'
 
 import { useMutateFormSettings } from '../../mutations'
 
-type SettingsInput = {
-  title: string
-  paragraph: string
-  buttonText: string
-  buttonLink: string
-}
-
 interface EndPageSettingsInputProps {
   settings: {
     title: string
@@ -32,19 +25,21 @@ export const EndPageSettingsInput = ({
 }: EndPageSettingsInputProps): JSX.Element => {
   const { title, paragraph, buttonText, buttonLink } = settings
   const { mutateFormEndPage } = useMutateFormSettings()
+  const defaultParagraph = paragraph ?? ''
+  const defaultButtonLink = buttonLink ?? ''
 
   const {
     register,
-    formState: { errors, isValid },
+    formState: { errors },
     resetField,
     handleSubmit,
-  } = useForm<SettingsInput>({
-    mode: 'onBlur',
+  } = useForm<EndPageSettingsInputProps['settings']>({
+    mode: 'onChange',
     defaultValues: {
       title: title,
-      paragraph: paragraph ?? '',
+      paragraph: defaultParagraph,
       buttonText: buttonText,
-      buttonLink: buttonLink ?? '',
+      buttonLink: defaultButtonLink,
     },
   })
 
@@ -53,8 +48,8 @@ export const EndPageSettingsInput = ({
       if (
         endPage.title === title &&
         endPage.buttonText === buttonText &&
-        endPage.buttonLink === buttonLink &&
-        endPage.paragraph === paragraph
+        endPage.buttonLink === defaultButtonLink &&
+        endPage.paragraph === defaultParagraph
       ) {
         return
       }
@@ -62,20 +57,21 @@ export const EndPageSettingsInput = ({
       return mutateFormEndPage.mutate(endPage)
     })()
   }, [
-    buttonLink,
     buttonText,
+    defaultButtonLink,
+    defaultParagraph,
     handleSubmit,
     mutateFormEndPage,
-    paragraph,
     title,
   ])
 
   const handleUpdateButtonLink = useCallback(() => {
-    if (!isValid) {
+    if (errors.buttonLink) {
       return resetField('buttonLink')
     }
+
     return handleUpdateEndPage()
-  }, [handleUpdateEndPage, isValid, resetField])
+  }, [errors.buttonLink, handleUpdateEndPage, resetField])
 
   return (
     <Stack gap="2rem" paddingTop="2.5rem">
@@ -99,13 +95,16 @@ export const EndPageSettingsInput = ({
           <FormLabel isRequired>Button redirect link</FormLabel>
           <Input
             {...register('buttonLink', {
-              onBlur: handleUpdateButtonLink,
               validate: (url) =>
+                !url ||
                 validator.isURL(url, {
                   protocols: ['https'],
-                }) || 'Please enter a valid URL (starting with https://)',
+                  require_protocol: true,
+                }) ||
+                'Please enter a valid URL (starting with https://)',
             })}
             placeholder="Default form link"
+            onBlur={handleUpdateButtonLink}
           />
           <FormErrorMessage>{errors.buttonLink?.message}</FormErrorMessage>
         </FormControl>
