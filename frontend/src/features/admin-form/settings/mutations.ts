@@ -280,10 +280,6 @@ export const useMutateFormSettings = () => {
     },
   )
 
-  /**
-   * TODO (hans): MAYBE make the updates more modular - not entire end page, but make
-   * make it edit field by field
-   */
   const mutateFormEndPage = useMutation(
     (endPage: FormEndPage) => updateFormEndPage(formId, endPage),
     {
