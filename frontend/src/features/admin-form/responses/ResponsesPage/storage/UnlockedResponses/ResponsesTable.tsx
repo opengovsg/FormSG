@@ -69,9 +69,6 @@ export const ResponsesTable = ({
     useFlexLayout,
   )
 
-  console.log('metadata', metadata)
-  console.log('page', page)
-
   useEffect(() => {
     gotoPage(currentPage)
   }, [currentPage, gotoPage])
