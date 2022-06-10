@@ -1,8 +1,7 @@
 import { Outlet } from 'react-router-dom'
 
-import { ResponsesTabWrapper } from '../common/ResponsesTabWrapper'
-
-import { UnlockedResponsesProvider } from './UnlockedResponses/UnlockedResponsesProvider'
+import { ResponsesTabWrapper } from './common/ResponsesTabWrapper'
+import { UnlockedResponsesProvider } from './storage/UnlockedResponses'
 
 /**
  * Page for rendering subroutes via `Outlet` component for admin form result responses pages.

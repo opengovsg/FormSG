@@ -20,9 +20,9 @@ import { CreatePage } from '~features/admin-form/create/CreatePage'
 import {
   FeedbackPage,
   FormResultsLayout,
+  ResponsesLayout,
   ResponsesPage,
 } from '~features/admin-form/responses'
-import { ResponsesLayout } from '~features/admin-form/responses/ResponsesPage/storage/ResponsesLayout'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
 
 import { HashRouterElement } from './HashRouterElement'
