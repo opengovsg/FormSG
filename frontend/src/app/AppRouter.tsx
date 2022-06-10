@@ -22,6 +22,7 @@ import {
   FormResultsLayout,
   ResponsesPage,
 } from '~features/admin-form/responses'
+import { ResponsesLayout } from '~features/admin-form/responses/ResponsesPage/storage/ResponsesLayout'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
 
 import { HashRouterElement } from './HashRouterElement'
@@ -83,7 +84,13 @@ export const AppRouter = (): JSX.Element => {
             path={ADMINFORM_RESULTS_SUBROUTE}
             element={<FormResultsLayout />}
           >
-            <Route index element={<ResponsesPage />} />
+            <Route element={<ResponsesLayout />}>
+              <Route index element={<ResponsesPage />} />
+              <Route
+                path=":submissionId"
+                element={<div>individual response page</div>}
+              />
+            </Route>
             <Route
               path={RESULTS_FEEDBACK_SUBROUTE}
               element={<FeedbackPage />}

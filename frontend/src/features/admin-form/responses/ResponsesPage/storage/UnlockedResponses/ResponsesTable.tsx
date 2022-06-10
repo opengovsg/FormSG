@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Column,
   useFlexLayout,
@@ -9,6 +10,8 @@ import {
 import { Flex, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
 import { StorageModeSubmissionMetadata } from '~shared/types'
+
+import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
 type ResponseColumnData = StorageModeSubmissionMetadata
 
@@ -36,15 +39,16 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
 ]
 
-interface ResponsesTableProps {
-  metadata: StorageModeSubmissionMetadata[]
-  currentPage: number
-}
+export const ResponsesTable = () => {
+  const { currentPage: currentPage1Indexed, metadata } = useUnlockedResponses()
 
-export const ResponsesTable = ({
-  metadata,
-  currentPage,
-}: ResponsesTableProps) => {
+  const navigate = useNavigate()
+
+  const currentPage = useMemo(
+    () => currentPage1Indexed - 1,
+    [currentPage1Indexed],
+  )
+
   const {
     prepareRow,
     getTableProps,
@@ -72,6 +76,13 @@ export const ResponsesTable = ({
   useEffect(() => {
     gotoPage(currentPage)
   }, [currentPage, gotoPage])
+
+  const handleRowClick = useCallback(
+    (submissionId: string) => {
+      return navigate(`${submissionId}`)
+    },
+    [navigate],
+  )
 
   return (
     <Table
@@ -129,7 +140,12 @@ export const ResponsesTable = ({
         {page.map((row) => {
           prepareRow(row)
           return (
-            <Tr as="div" {...row.getRowProps()} px={0}>
+            <Tr
+              as="div"
+              {...row.getRowProps()}
+              px={0}
+              onClick={() => handleRowClick(row.values.refNo)}
+            >
               {row.cells.map((cell) => {
                 return (
                   <Td as="div" {...cell.getCellProps()}>

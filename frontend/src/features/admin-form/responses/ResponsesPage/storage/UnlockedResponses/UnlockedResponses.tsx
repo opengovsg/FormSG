@@ -9,7 +9,7 @@ import { ResponsesTable } from './ResponsesTable'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
 export const UnlockedResponses = (): JSX.Element => {
-  const { currentPage, setCurrentPage, metadata, count, isLoading } =
+  const { currentPage, setCurrentPage, count, isLoading } =
     useUnlockedResponses()
 
   const prettifiedResponsesCount = useMemo(() => {
@@ -41,10 +41,7 @@ export const UnlockedResponses = (): JSX.Element => {
         <DownloadButton />
       </Grid>
       <Box mb="3rem" overflow="auto" flex={1}>
-        <ResponsesTable
-          metadata={metadata ?? []}
-          currentPage={currentPage - 1}
-        />
+        <ResponsesTable />
       </Box>
       <Box display={isLoading || count === 0 ? 'none' : ''}>
         <Pagination
