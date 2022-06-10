@@ -16,6 +16,8 @@ export const adminFormResponsesKeys = {
   base: [...adminFormKeys.base, 'responses'] as const,
   id: (id: string) => [...adminFormResponsesKeys.base, id] as const,
   count: (id: string) => [...adminFormResponsesKeys.id(id), 'count'] as const,
+  metadata: (id: string, page = 1) =>
+    [...adminFormResponsesKeys.id(id), 'metadata', page] as const,
 }
 
 export const adminFormFeedbackKeys = {
@@ -40,17 +42,18 @@ export const useFormResponsesCount = (): UseQueryResult<number> => {
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useFormResponses =
-  (): UseQueryResult<StorageModeSubmissionMetadataList> => {
-    const { formId } = useParams()
-    if (!formId) throw new Error('No formId provided')
+export const useFormResponses = (
+  page = 1,
+): UseQueryResult<StorageModeSubmissionMetadataList> => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
 
-    return useQuery(
-      adminFormResponsesKeys.id(formId),
-      () => getFormSubmissionsMetadata(formId),
-      { staleTime: 10 * 60 * 1000 },
-    )
-  }
+  return useQuery(
+    adminFormResponsesKeys.metadata(formId, page),
+    () => getFormSubmissionsMetadata(formId, page),
+    { staleTime: 10 * 60 * 1000, keepPreviousData: true, enabled: page > 0 },
+  )
+}
 
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.

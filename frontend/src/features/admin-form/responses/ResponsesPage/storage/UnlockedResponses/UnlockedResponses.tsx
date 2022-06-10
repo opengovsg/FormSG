@@ -10,8 +10,9 @@ import { DownloadButton } from './DownloadButton'
 import { ResponsesTable } from './ResponsesTable'
 
 export const UnlockedResponses = (): JSX.Element => {
-  const { data: { count, metadata } = {}, isLoading } = useFormResponses()
   const [currentPage, setCurrentPage] = useState(1)
+  const { data: { count, metadata } = {}, isLoading } =
+    useFormResponses(currentPage)
 
   const prettifiedResponsesCount = useMemo(() => {
     if (!count) return
