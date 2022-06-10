@@ -46,7 +46,7 @@ export const UnlockedResponses = (): JSX.Element => {
       <Box display={isLoading || count === 0 ? 'none' : ''}>
         <Pagination
           totalCount={count ?? 0}
-          currentPage={currentPage} //1-indexed
+          currentPage={currentPage ?? 1} //1-indexed
           pageSize={10}
           onPageChange={setCurrentPage}
         />

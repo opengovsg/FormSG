@@ -7,7 +7,8 @@ export const usePageSearchParams = () => {
   const [params, setParams] = useSearchParams()
   const currentPage = useMemo(() => {
     const value = params.get(PAGE_KEY)
-    if (!value || Number(value) < 1) return 1
+    if (!value) return
+    if (Number(value) < 1) return 1
     return Number(value)
   }, [params])
 

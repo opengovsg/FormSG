@@ -45,7 +45,7 @@ export const ResponsesTable = () => {
   const navigate = useNavigate()
 
   const currentPage = useMemo(
-    () => currentPage1Indexed - 1,
+    () => (currentPage1Indexed ?? 1) - 1,
     [currentPage1Indexed],
   )
 

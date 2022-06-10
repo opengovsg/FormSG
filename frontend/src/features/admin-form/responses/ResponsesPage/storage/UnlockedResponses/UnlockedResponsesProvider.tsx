@@ -14,7 +14,7 @@ import { useFormResponses } from '~features/admin-form/responses/queries'
 import { usePageSearchParams } from './hooks/usePageSearchParams'
 
 interface UnlockedResponsesContextProps {
-  currentPage: number
+  currentPage?: number
   setCurrentPage: (page: number) => void
   count?: number
   metadata: StorageModeSubmissionMetadata[]
@@ -57,11 +57,11 @@ const useProvideUnlockedResponses = () => {
   const {
     data: { metadata: prevMetadata = [] } = {},
     isLoading: isPrevLoading,
-  } = useFormResponses(currentPage - 1)
+  } = useFormResponses(currentPage ?? 1 - 1)
   const {
     data: { metadata: nextMetadata = [] } = {},
     isLoading: isNextLoading,
-  } = useFormResponses(currentPage + 1)
+  } = useFormResponses(currentPage ?? 1 + 1)
 
   const isAnyLoading = useMemo(
     () => isLoading || isPrevLoading || isNextLoading,
@@ -78,7 +78,7 @@ const useProvideUnlockedResponses = () => {
       // If id belongs to the last submission in page, return first of next page
       if (currentResponseIndex === metadata.length - 1) {
         const data = nextMetadata[0]
-        setCurrentPage(currentPage + 1)
+        setCurrentPage(currentPage ?? 1 + 1)
         return data?.refNo
       } else {
         return metadata[currentResponseIndex + 1]?.refNo
@@ -97,7 +97,7 @@ const useProvideUnlockedResponses = () => {
       )
       // If id belongs to the first submission in page, return last of previous page
       if (currentResponseIndex === 0) {
-        if (currentPage === 1) return
+        if (!currentPage || currentPage === 1) return
         const data = prevMetadata[prevMetadata.length - 1]
         setCurrentPage(currentPage - 1)
         return data?.refNo
