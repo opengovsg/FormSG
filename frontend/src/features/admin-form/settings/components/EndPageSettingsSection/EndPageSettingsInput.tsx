@@ -98,7 +98,10 @@ export const EndPageSettingsInput = ({
         <Textarea {...register('paragraph')} onBlur={handleUpdateEndPage} />
         <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
       </FormControl>
-      <Stack direction={isMobile ? 'column' : 'row'} gap="1rem">
+      <Stack
+        direction={isMobile ? 'column' : 'row'}
+        gap={isMobile ? '2rem' : '1rem'}
+      >
         <FormControl isInvalid={!!errors.buttonText}>
           <FormLabel isRequired>Button text</FormLabel>
           <Input {...register('buttonText')} onBlur={handleUpdateEndPage} />
