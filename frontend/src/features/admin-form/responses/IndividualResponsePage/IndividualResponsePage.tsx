@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 import {
   BiChevronLeft,
   BiChevronRight,
@@ -15,10 +15,11 @@ import {
   Link,
   Skeleton,
   Stack,
+  StackDivider,
   Text,
 } from '@chakra-ui/react'
+import { times } from 'lodash'
 
-import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import IconButton from '~components/IconButton'
 
 import {
@@ -27,12 +28,37 @@ import {
 } from '../ResponsesPage/storage'
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
+import { useIndividualSubmission } from './queries'
+
+const LoadingDecryption = memo(() => {
+  return (
+    <Stack spacing="1.5rem" divider={<StackDivider />}>
+      <Skeleton h="2rem" maxW="20rem" mb="0.5rem" />
+      <Stack>
+        <Skeleton h="1.5rem" maxW="32rem" />
+        <Skeleton h="1.5rem" maxW="5rem" />
+      </Stack>
+      <Stack>
+        <Skeleton h="1.5rem" maxW="12rem" />
+        <Skeleton h="1.5rem" maxW="5rem" />
+      </Stack>
+      <Stack>
+        <Skeleton h="1.5rem" maxW="24rem" />
+        <Skeleton h="1.5rem" maxW="3rem" />
+      </Stack>
+      <Box />
+    </Stack>
+  )
+})
+
 export const IndividualResponsePage = (): JSX.Element => {
   const { submissionId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
 
   const { secretKey } = useStorageResponsesContext()
-  const { lastNavPage } = useUnlockedResponses()
+  const { lastNavPage, getNextSubmissionId, getPreviousSubmissionId } =
+    useUnlockedResponses()
+  const { data, isLoading } = useIndividualSubmission()
 
   const backLink = useMemo(() => {
     if (lastNavPage) {
@@ -51,28 +77,58 @@ export const IndividualResponsePage = (): JSX.Element => {
       columnGap={{ base: '0.5rem', lg: '1rem' }}
       templateColumns={{ base: 'repeat(4, 1fr)', md: 'repeat(12, 1fr)' }}
     >
-      <Stack direction="row" gridColumn="2 / -2" justify="space-between">
-        <Link
-          display="inline-flex"
-          as={ReactLink}
-          variant="standalone"
-          to={backLink}
+      <Stack spacing="2.5rem" gridColumn="2 / -2">
+        <Stack direction="row" justify="space-between" align="center">
+          <Link
+            display="inline-flex"
+            as={ReactLink}
+            variant="standalone"
+            to={backLink}
+          >
+            <Icon as={BiLeftArrowAlt} fontSize="1.5rem" mr="0.5rem" />
+            Back to list
+          </Link>
+          <Skeleton isLoaded={!isLoading}>
+            <Text textStyle="h2" as="h2">
+              Respondent #2
+            </Text>
+          </Skeleton>
+          <ButtonGroup>
+            <IconButton
+              icon={<BiChevronLeft />}
+              aria-label="Previous submission"
+            />
+            <IconButton
+              icon={<BiChevronRight />}
+              aria-label="Next submission"
+            />
+          </ButtonGroup>
+        </Stack>
+        <Stack
+          bg="primary.100"
+          p="1.5rem"
+          sx={{
+            fontFeatureSettings: "'tnum' on, 'lnum' on, 'zero' on, 'cv05' on",
+          }}
         >
-          <Icon as={BiLeftArrowAlt} fontSize="1.5rem" mr="0.5rem" />
-          Back to list
-        </Link>
-        <Skeleton>
-          <Text textStyle="h2" as="h2">
-            Respondent #2
+          <Text display="inline-flex">
+            <Text as="span" textStyle="subhead-1">
+              Reference number:
+            </Text>
+            &nbsp;{submissionId}
           </Text>
-        </Skeleton>
-        <ButtonGroup>
-          <IconButton
-            icon={<BiChevronLeft />}
-            aria-label="Previous submission"
-          />
-          <IconButton icon={<BiChevronRight />} aria-label="Next submission" />
-        </ButtonGroup>
+          <Text display="inline-flex">
+            <Text as="span" textStyle="subhead-1">
+              Time:
+            </Text>
+            <Skeleton isLoaded={!isLoading}>
+              &nbsp;{data?.submissionTime ?? 'Loading...'}
+            </Skeleton>
+          </Text>
+        </Stack>
+        <Stack>
+          <LoadingDecryption />
+        </Stack>
       </Stack>
     </Grid>
   )
