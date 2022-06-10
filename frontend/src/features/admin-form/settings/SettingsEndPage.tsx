@@ -9,9 +9,7 @@ export const SettingsEndPage = (): JSX.Element => {
 
   return (
     <>
-      <CategoryHeader mb={0} mr="2rem">
-        Customise Thank You page
-      </CategoryHeader>
+      <CategoryHeader mb={0}>Customise Thank You page</CategoryHeader>
       <Skeleton isLoaded={!isLoading && !!settings}>
         {settings ? <EndPageSettingsInput settings={settings.endPage} /> : null}
       </Skeleton>

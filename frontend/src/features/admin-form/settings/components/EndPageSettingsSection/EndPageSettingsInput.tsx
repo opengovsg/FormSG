@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
-import { Flex } from '@chakra-ui/layout'
 import { FormControl, Stack } from '@chakra-ui/react'
 import validator from 'validator'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -25,8 +25,10 @@ export const EndPageSettingsInput = ({
 }: EndPageSettingsInputProps): JSX.Element => {
   const { title, paragraph, buttonText, buttonLink } = settings
   const { mutateFormEndPage } = useMutateFormSettings()
+
   const defaultParagraph = paragraph ?? ''
   const defaultButtonLink = buttonLink ?? ''
+  const isMobile = useIsMobile()
 
   const {
     register,
@@ -73,6 +75,17 @@ export const EndPageSettingsInput = ({
     return handleUpdateEndPage()
   }, [errors.buttonLink, handleUpdateEndPage, resetField])
 
+  const buttonLinkRegister = register('buttonLink', {
+    onBlur: handleUpdateButtonLink,
+    validate: (url) =>
+      !url ||
+      validator.isURL(url, {
+        protocols: ['https'],
+        require_protocol: true,
+      }) ||
+      'Please enter a valid URL (starting with https://)',
+  })
+
   return (
     <Stack gap="2rem" paddingTop="2.5rem">
       <FormControl isInvalid={!!errors.title}>
@@ -85,7 +98,7 @@ export const EndPageSettingsInput = ({
         <Textarea {...register('paragraph')} onBlur={handleUpdateEndPage} />
         <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
       </FormControl>
-      <Flex gap="1rem">
+      <Stack direction={isMobile ? 'column' : 'row'} gap="1rem">
         <FormControl isInvalid={!!errors.buttonText}>
           <FormLabel isRequired>Button text</FormLabel>
           <Input {...register('buttonText')} onBlur={handleUpdateEndPage} />
@@ -93,22 +106,10 @@ export const EndPageSettingsInput = ({
         </FormControl>
         <FormControl isInvalid={!!errors.buttonLink}>
           <FormLabel isRequired>Button redirect link</FormLabel>
-          <Input
-            {...register('buttonLink', {
-              validate: (url) =>
-                !url ||
-                validator.isURL(url, {
-                  protocols: ['https'],
-                  require_protocol: true,
-                }) ||
-                'Please enter a valid URL (starting with https://)',
-            })}
-            placeholder="Default form link"
-            onBlur={handleUpdateButtonLink}
-          />
+          <Input placeholder="Default form link" {...buttonLinkRegister} />
           <FormErrorMessage>{errors.buttonLink?.message}</FormErrorMessage>
         </FormControl>
-      </Flex>
+      </Stack>
     </Stack>
   )
 }
