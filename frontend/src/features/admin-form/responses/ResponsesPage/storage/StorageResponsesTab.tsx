@@ -1,6 +1,7 @@
 import { EmptyResponses } from '../common/EmptyResponses'
 import { ResponsesTabWrapper } from '../common/ResponsesTabWrapper'
 
+import { UnlockedResponsesProvider } from './UnlockedResponses/UnlockedResponsesProvider'
 import { SecretKeyVerification } from './SecretKeyVerification'
 import { useStorageResponsesContext } from './StorageResponsesContext'
 import { StorageResponsesProvider } from './StorageResponsesProvider'
@@ -23,7 +24,13 @@ const ProvidedStorageResponsesTab = (): JSX.Element => {
 
   return (
     <ResponsesTabWrapper>
-      {secretKey ? <UnlockedResponses /> : <SecretKeyVerification />}
+      {secretKey ? (
+        <UnlockedResponsesProvider>
+          <UnlockedResponses />
+        </UnlockedResponsesProvider>
+      ) : (
+        <SecretKeyVerification />
+      )}
     </ResponsesTabWrapper>
   )
 }
