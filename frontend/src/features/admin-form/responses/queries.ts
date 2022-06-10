@@ -7,6 +7,7 @@ import { StorageModeSubmissionMetadataList } from '~shared/types/submission'
 import { adminFormKeys } from '../common/queries'
 
 import { getFormFeedback } from './FeedbackPage/FeedbackService'
+import { useStorageResponsesContext } from './ResponsesPage/storage/StorageResponsesContext'
 import {
   countFormSubmissions,
   getFormSubmissionsMetadata,
@@ -48,10 +49,16 @@ export const useFormResponses = (
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
+  const { secretKey } = useStorageResponsesContext()
+
   return useQuery(
     adminFormResponsesKeys.metadata(formId, page),
     () => getFormSubmissionsMetadata(formId, page),
-    { staleTime: 10 * 60 * 1000, keepPreviousData: true, enabled: page > 0 },
+    {
+      staleTime: 10 * 60 * 1000,
+      keepPreviousData: true,
+      enabled: !!secretKey && page > 0,
+    },
   )
 }
 

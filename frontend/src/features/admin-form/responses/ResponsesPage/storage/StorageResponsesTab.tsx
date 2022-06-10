@@ -1,6 +1,5 @@
 import { EmptyResponses } from '../common/EmptyResponses'
 
-import { UnlockedResponsesProvider } from './UnlockedResponses/UnlockedResponsesProvider'
 import { SecretKeyVerification } from './SecretKeyVerification'
 import { useStorageResponsesContext } from './StorageResponsesContext'
 import { UnlockedResponses } from './UnlockedResponses'
@@ -12,11 +11,5 @@ export const StorageResponsesTab = (): JSX.Element => {
     return <EmptyResponses />
   }
 
-  return secretKey ? (
-    <UnlockedResponsesProvider>
-      <UnlockedResponses />
-    </UnlockedResponsesProvider>
-  ) : (
-    <SecretKeyVerification />
-  )
+  return secretKey ? <UnlockedResponses /> : <SecretKeyVerification />
 }
