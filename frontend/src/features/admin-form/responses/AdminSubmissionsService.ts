@@ -1,5 +1,6 @@
 import {
   FormSubmissionMetadataQueryDto,
+  StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionCountQueryDto,
 } from '~shared/types/submission'
@@ -45,5 +46,23 @@ export const getFormSubmissionsMetadata = async (
         page,
       },
     },
+  ).then(({ data }) => data)
+}
+
+/**
+ * Returns the data of a single submission of a given storage mode form
+ * @param formId The id of the form to query
+ * @param submissionId The id of the submission
+ * @returns The data of the submission
+ */
+export const getEncryptedSubmissionById = async ({
+  formId,
+  submissionId,
+}: {
+  formId: string
+  submissionId: string
+}): Promise<StorageModeSubmissionDto> => {
+  return ApiService.get<StorageModeSubmissionDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}`,
   ).then(({ data }) => data)
 }
