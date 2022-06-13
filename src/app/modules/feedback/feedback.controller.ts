@@ -35,6 +35,8 @@ const validateSubmitFormFeedbackParams = celebrate({
  * @returns 422 if duplicate feedback with the same submissionId and formId exists
  * @returns 410 if form has been archived
  * @returns 500 if database error occurs
+ *
+ * TODO #3964: Rename to `submitFormFeedback` once we fully migrate feedback endpoint to /submissions/{submissionId}/feedback
  */
 const submitFormFeedbackV2: ControllerHandler<
   { formId: string; submissionId: string },

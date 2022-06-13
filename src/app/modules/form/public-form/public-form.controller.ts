@@ -65,6 +65,8 @@ const validateSubmitFormFeedbackParams = celebrate({
 
 /**
  * @deprecated use submitFormFeedbackV2 instead
+ *
+ * TODO #3964: Cleanup we fully migrate feedback endpoint to /submissions/{submissionId}/feedback
  */
 export const submitFormFeedback: ControllerHandler<
   { formId: string },
