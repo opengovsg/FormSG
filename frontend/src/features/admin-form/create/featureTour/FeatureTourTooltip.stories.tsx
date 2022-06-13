@@ -21,7 +21,7 @@ export default {
 } as Meta
 
 const Template: Story<FeatureTourTooltipProps> = (args) => {
-  const [featureStep, setFeatureStep] = useState<number>(args.stepIndex ?? 0)
+  const [featureStep, setFeatureStep] = useState<number>(args.index ?? 0)
 
   const handleNextClick = () => {
     featureStep === FEATURE_STEPS.length - 1
@@ -58,6 +58,6 @@ export const BasicUsage = Template.bind({})
 
 export const LastFeatureStep = Template.bind({})
 LastFeatureStep.args = {
-  stepIndex: FEATURE_STEPS.length - 1,
+  index: FEATURE_STEPS.length - 1,
   isLastStep: true,
 }
