@@ -41,7 +41,7 @@ const BackgroundBox: FC = ({ children }) => (
     h="inherit"
     bgGradient={{
       md: 'linear(to-b, primary.500 20.5rem, white 0)',
-      lg: 'linear(to-r, primary.500 42%, white 0)',
+      lg: 'linear(to-r, primary.500 calc(41.6667% - 4px), white 0)',
     }}
     children={children}
   />
@@ -79,13 +79,14 @@ const FooterGridArea: FC = ({ children }) => (
 const NonMobileSidebarGridArea: FC = ({ children }) => (
   <GridItem
     d={{ base: 'none', md: 'flex' }}
-    colSpan={{ md: 12, lg: 5 }}
-    px={{ base: '1.5rem', lg: '6.25%' }}
+    gridColumn={{ md: '1 / 13', lg: '2 / 6' }}
+    // colSpan={{ md: 12, lg: 5 }}
+    // pl={{ base: '1.5rem', lg: '8%' }}
     h={{ md: '20.5rem', lg: 'auto' }}
     pt={{ base: '1.5rem', md: '2.5rem', lg: '3rem' }}
     pb={{ lg: '3rem' }}
     flexDir="column"
-    alignItems={{ base: 'center', lg: 'flex-start' }}
+    alignItems={{ base: 'center', lg: 'flex-end' }}
     justifyContent="center"
     children={children}
   />
