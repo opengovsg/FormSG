@@ -5,6 +5,7 @@ import { fullScreenDecorator } from '~utils/storybook'
 import { ButtonProps } from '~components/Button'
 
 import { FEATURE_STEPS } from './constants'
+import { FeatureTourContext } from './FeatureTourContext'
 import {
   FeatureTourStep,
   FeatureTourTooltip,
@@ -43,14 +44,22 @@ const Template: Story<FeatureTourTooltipProps> = (args) => {
   const mockPrimaryProps: ButtonProps = {
     onClick: handleNextClick,
   }
+  const paginationCallback = (indicatorIdx: number) => {
+    setFeatureStep(indicatorIdx)
+  }
 
   return (
-    <FeatureTourTooltip
-      {...args}
-      step={featureTourTooltipContent}
-      primaryProps={mockPrimaryProps}
-      isLastStep={isLastStep}
-    />
+    <FeatureTourContext.Provider
+      value={{ paginationCallback: paginationCallback }}
+    >
+      <FeatureTourTooltip
+        {...args}
+        step={featureTourTooltipContent}
+        primaryProps={mockPrimaryProps}
+        isLastStep={isLastStep}
+        index={featureStep}
+      />
+    </FeatureTourContext.Provider>
   )
 }
 
