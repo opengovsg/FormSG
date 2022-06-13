@@ -52,7 +52,7 @@ export const NewFeatureContent = (props: {
       <LottieAnimation
         bg="primary.100"
         pt="4.5rem"
-        height={{ base: '33vh', md: 'initial' }}
+        height={{ base: '30vh', md: 'initial' }}
         animationData={animationData}
         preserveAspectRatio="xMidYMax slice"
       />
