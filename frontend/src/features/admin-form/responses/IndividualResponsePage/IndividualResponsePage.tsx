@@ -128,6 +128,9 @@ export const IndividualResponsePage = (): JSX.Element => {
         </Stack>
         <Stack>
           <LoadingDecryption />
+          {data?.responses.map((r) => (
+            <div>{JSON.stringify(r)}</div>
+          ))}
         </Stack>
       </Stack>
     </Grid>

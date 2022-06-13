@@ -10,6 +10,7 @@ import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
 
+import { augmentDecryptedResponses } from './ResponsesPage/storage/utils/augmentDecryptedResponses'
 import { processDecryptedContent } from './ResponsesPage/storage/utils/processDecryptedContent'
 
 /**
@@ -81,19 +82,22 @@ export const getDecryptedSubmissionById = async ({
 }) => {
   if (!secretKey) return
 
-  return getEncryptedSubmissionById({ formId, submissionId }).then(
-    ({ content, version, verified, ...rest }) => {
-      if (!secretKey) return
-      const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
-        encryptedContent: content,
-        verifiedContent: verified,
-        version,
-      })
-      if (!decryptedContent) throw new Error('Could not decrypt the response')
-      return {
-        ...rest,
-        responses: processDecryptedContent(decryptedContent),
-      }
-    },
+  const { content, version, verified, attachmentMetadata, ...rest } =
+    await getEncryptedSubmissionById({ formId, submissionId })
+
+  const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
+    encryptedContent: content,
+    verifiedContent: verified,
+    version,
+  })
+  if (!decryptedContent) throw new Error('Could not decrypt the response')
+  const processedContent = augmentDecryptedResponses(
+    processDecryptedContent(decryptedContent),
+    attachmentMetadata,
   )
+  // Add metadata for display.
+  return {
+    ...rest,
+    responses: processedContent,
+  }
 }
