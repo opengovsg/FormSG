@@ -8,7 +8,7 @@ import * as FormErrors from '../form/form.errors'
 import {
   DuplicateFeedbackSubmissionError,
   InvalidSubmissionIdError,
-} from './feedback.error'
+} from './feedback.errors'
 
 const logger = createLoggerWithLabel(module)
 

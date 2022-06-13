@@ -286,8 +286,8 @@ const insertFormSubmission = async ({
 } = {}): Promise<{
   submission: ISubmissionSchema
 }> => {
-  const SubmissionFormModel = getSubmissionModel(mongoose)
-  const submission = await SubmissionFormModel.create({
+  const SubmissionModel = getSubmissionModel(mongoose)
+  const submission = await SubmissionModel.create({
     form: formId,
     submissionType,
     encryptedContent,

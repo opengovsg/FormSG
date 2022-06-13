@@ -10,7 +10,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormFeedbackMetaDto } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
-import { DuplicateFeedbackSubmissionError } from '../feedback.error'
+import { DuplicateFeedbackSubmissionError } from '../feedback.errors'
 import * as FeedbackService from '../feedback.service'
 
 const FormFeedback = getFormFeedbackModel(mongoose)

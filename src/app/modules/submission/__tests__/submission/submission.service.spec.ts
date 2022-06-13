@@ -9,7 +9,7 @@ import {
   DatabaseError,
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
-import { InvalidSubmissionIdError } from 'src/app/modules/feedback/feedback.error'
+import { InvalidSubmissionIdError } from 'src/app/modules/feedback/feedback.errors'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import MailService from 'src/app/services/mail/mail.service'
 import { createQueryWithDateParam } from 'src/app/utils/date'

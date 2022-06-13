@@ -6,7 +6,7 @@ import { DatabaseError } from 'src/app/modules/core/core.errors'
 import {
   DuplicateFeedbackSubmissionError,
   InvalidSubmissionIdError,
-} from 'src/app/modules/feedback/feedback.error'
+} from 'src/app/modules/feedback/feedback.errors'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
