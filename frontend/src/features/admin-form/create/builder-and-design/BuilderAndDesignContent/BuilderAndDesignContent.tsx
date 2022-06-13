@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
-import { Box, Flex } from '@chakra-ui/react'
+import { Box, Flex, Text } from '@chakra-ui/react'
+
+import Button from '~components/Button'
 
 import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
 import { FIELD_LIST_DROP_ID } from '../constants'
@@ -76,6 +78,15 @@ export const BuilderAndDesignContent = ({
                 )
               }
             </Droppable>
+            <Button
+              py="1.5rem"
+              mt="1.5rem"
+              variant="outline"
+              colorScheme="secondary"
+              onClick={handleBuilderClick}
+            >
+              <Text textStyle="subhead-2">Thank you</Text>
+            </Button>
           </Flex>
         </Flex>
       </Flex>
