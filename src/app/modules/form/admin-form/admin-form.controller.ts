@@ -2221,7 +2221,9 @@ export const handleUpdateEndPage = [
     [Segments.BODY]: Joi.object({
       title: Joi.string(),
       paragraph: Joi.string().allow(''),
-      buttonLink: Joi.string().uri().allow(''),
+      buttonLink: Joi.string()
+        .uri({ scheme: ['http', 'https'] })
+        .allow(''),
       buttonText: Joi.string().allow(''),
       // TODO(#1895): Remove when deprecated `buttons` key is removed from all forms in the database
     }).unknown(true),
