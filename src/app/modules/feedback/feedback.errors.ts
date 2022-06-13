@@ -1,9 +1,7 @@
 import { ApplicationError } from '../core/core.errors'
 
 export class InvalidSubmissionIdError extends ApplicationError {
-  constructor(
-    message = 'Feedback submissionId can not be found in the form submissions. Please submit a form before you submit a feedback.',
-  ) {
+  constructor(message = 'Sorry, something went wrong. Please try again.') {
     super(message)
   }
 }

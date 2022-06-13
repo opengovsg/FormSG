@@ -14,23 +14,26 @@ const logger = createLoggerWithLabel(module)
 
 export const mapRouteError: MapRouteError = (
   error: ApplicationError,
-  coreErrorMessage?: string,
+  coreErrorMessage = 'Sorry, something went wrong. Please refresh and try again.',
 ) => {
   switch (error.constructor) {
     case FormErrors.FormNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: error.message,
+        errorMessage:
+          'This form no longer exists, please contact the agency that gave you the form link if you wish to provide feedback.',
       }
     case FormErrors.FormDeletedError:
       return {
         statusCode: StatusCodes.GONE,
-        errorMessage: error.message,
+        errorMessage:
+          'This form has been deleted, so feedback submissions are no longer accepted',
       }
     case FormErrors.PrivateFormError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: error.message,
+        errorMessage:
+          'This form has been made private, so feedback submissions are no longer accepted',
       }
     case InvalidSubmissionIdError:
       return {
@@ -57,7 +60,7 @@ export const mapRouteError: MapRouteError = (
       })
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: 'Something went wrong. Please refresh and try again.',
+        errorMessage: coreErrorMessage,
       }
   }
 }

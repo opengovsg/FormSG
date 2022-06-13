@@ -327,7 +327,8 @@ describe('public-form.submissions.feedback.routes', () => {
 
       const expectedResp = JSON.parse(
         JSON.stringify({
-          message: 'This form is no longer active',
+          message:
+            'This form has been deleted, so feedback submissions are no longer accepted',
         }),
       )
 
@@ -340,7 +341,8 @@ describe('public-form.submissions.feedback.routes', () => {
     })
 
     it('should return 500 when form could not be retrieved due to a database error', async () => {
-      const MOCK_ERROR_MESSAGE = 'mock me'
+      const MOCK_ERROR_MESSAGE =
+        'Sorry, something went wrong. Please refresh and try again.'
       const MOCK_FEEDBACK = {
         rating: 5,
         comment: 'great mock',

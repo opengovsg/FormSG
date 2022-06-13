@@ -46,7 +46,7 @@ const submitFormFeedbackV2: ControllerHandler<
   const { formId, submissionId } = req.params
   const { rating, comment } = req.body
   const logMeta = {
-    action: 'submitFormFeedback',
+    action: 'submitFormFeedbackV2',
     ...createReqMeta(req),
     formId,
     submissionId,
