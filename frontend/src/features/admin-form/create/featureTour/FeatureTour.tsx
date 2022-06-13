@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Joyride, { CallBackProps, EVENTS, STATUS } from 'react-joyride'
+import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS } from 'react-joyride'
 import { useToken } from '@chakra-ui/react'
 
 import { FEATURE_STEPS } from './constants'
@@ -15,13 +15,22 @@ export const FeatureTour = ({ onClose }: FeatureTourProps): JSX.Element => {
   const arrowColor: string = useToken('colors', ['primary.100'])
   const [isPaginationClicked, setIsPaginationClicked] = useState<boolean>(false)
 
-  const handleJoyrideCallback = ({ index, status, type }: CallBackProps) => {
+  const handleJoyrideCallback = ({
+    action,
+    index,
+    status,
+    type,
+  }: CallBackProps) => {
     if (!isPaginationClicked) {
       if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
         setStepIndex(index + 1)
       }
 
-      if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      if (
+        status === STATUS.FINISHED ||
+        status === STATUS.SKIPPED ||
+        action === ACTIONS.CLOSE
+      ) {
         onClose()
       }
     } else {
