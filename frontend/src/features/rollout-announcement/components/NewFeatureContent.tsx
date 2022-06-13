@@ -1,19 +1,17 @@
 import { useEffect, useRef } from 'react'
 import { Box, BoxProps, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
-import lottie from 'lottie-web'
-
-import { useIsMobile } from '~hooks/useIsMobile'
+import lottie, { AnimationConfigWithData, SVGRendererConfig } from 'lottie-web'
 
 import { NewFeatureTag } from './NewFeatureTag'
 
 interface LottieAnimationProps extends BoxProps {
-  animationData: unknown
-  preserveAspectRatio?: string
+  animationData: AnimationConfigWithData['animationData']
+  preserveAspectRatio?: SVGRendererConfig['preserveAspectRatio']
 }
 
 export const LottieAnimation = ({
   animationData,
-  preserveAspectRatio = '',
+  preserveAspectRatio,
   ...boxProps
 }: LottieAnimationProps): JSX.Element => {
   const element = useRef<HTMLDivElement>(null)
@@ -41,21 +39,20 @@ export const LottieAnimation = ({
 interface NewFeatureContentProps {
   title: string
   description: string
-  animationData: unknown
+  animationData: AnimationConfigWithData['animationData']
 }
 
 export const NewFeatureContent = (props: {
   content: NewFeatureContentProps
 }): JSX.Element => {
   const { title, description, animationData } = props.content
-  const isMobile = useIsMobile()
 
   return (
     <>
       <LottieAnimation
         bg="primary.100"
         pt="4.5rem"
-        height={isMobile ? '30vh' : ''}
+        height={{ base: '33vh', md: 'initial' }}
         animationData={animationData}
         preserveAspectRatio="xMidYMax slice"
       />
