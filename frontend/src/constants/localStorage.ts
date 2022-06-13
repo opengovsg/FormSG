@@ -14,6 +14,11 @@ export const LOGGED_IN_KEY = 'is-logged-in'
 export const LOCAL_STORAGE_EVENT = 'local-storage'
 
 /**
+ * Key to store whether a user has seen the rollout announcements before.
+ */
+export const ROLLOUT_ANNOUNCEMENT_KEY_PREFIX = 'has-seen-rollout-announcement-'
+
+/**
  * Key to store whether the admin has seen the feature tour in localStorage.
  */
 export const FEATURE_TOUR_KEY_PREFIX = 'has-seen-feature-tour-'
