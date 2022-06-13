@@ -3,8 +3,7 @@ import { Box, BoxProps, CloseButton, Flex, Icon, Text } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'
 import Button, { ButtonProps } from '~components/Button'
-
-import { ProgressIndicator } from '~features/rollout-announcement/components/ProgressIndicator'
+import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 
 import { FEATURE_STEPS } from './constants'
 import { useFeatureTour } from './FeatureTourContext'
