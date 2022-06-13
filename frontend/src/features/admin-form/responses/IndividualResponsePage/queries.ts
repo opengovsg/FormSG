@@ -1,7 +1,7 @@
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { getEncryptedSubmissionById } from '../AdminSubmissionsService'
+import { getDecryptedSubmissionById } from '../AdminSubmissionsService'
 import { adminFormResponsesKeys } from '../queries'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
@@ -18,7 +18,7 @@ export const useIndividualSubmission = () => {
 
   return useQuery(
     adminFormResponsesKeys.individual(formId, submissionId),
-    () => getEncryptedSubmissionById({ formId, submissionId }),
+    () => getDecryptedSubmissionById({ formId, submissionId, secretKey }),
     {
       staleTime: 10 * 60 * 1000,
       enabled: !!secretKey,

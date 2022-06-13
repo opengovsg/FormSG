@@ -117,14 +117,14 @@ export const IndividualResponsePage = (): JSX.Element => {
             </Text>
             &nbsp;{submissionId}
           </Text>
-          <Text display="inline-flex">
+          <Box display="inline-flex">
             <Text as="span" textStyle="subhead-1">
               Time:
             </Text>
             <Skeleton isLoaded={!isLoading}>
               &nbsp;{data?.submissionTime ?? 'Loading...'}
             </Skeleton>
-          </Text>
+          </Box>
         </Stack>
         <Stack>
           <LoadingDecryption />
