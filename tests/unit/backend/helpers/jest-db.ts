@@ -117,7 +117,7 @@ const insertFormCollectionReqs = async ({
   mailName?: string
   mailDomain?: string
   shortName?: string
-  flags?: { lastSeenFeatureUpdateDate: string }
+  flags?: { lastSeenFeatureUpdateDate: Date }
 } = {}): Promise<{
   agency: AgencyDocument
   user: IUserSchema

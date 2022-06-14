@@ -333,7 +333,7 @@ describe('user.service', () => {
         userId: mockUserIdWithLastSeenFeatureUpdate,
         mailName: 'userWithLastSeenFeatureUpdate',
         mailDomain: ALLOWED_DOMAIN,
-        flags: { lastSeenFeatureUpdateDate: '17/07/2022' },
+        flags: { lastSeenFeatureUpdateDate: MOCKED_DATE },
       })
 
       const defaultUserWithLastSeenFeatureUpdate: IUserSchema = user

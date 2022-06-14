@@ -17,7 +17,7 @@ export const UserBase = z.object({
     })
     .optional(),
   flags: z
-    .object({ lastSeenFeatureUpdateDate: z.string().optional() })
+    .object({ lastSeenFeatureUpdateDate: z.date().optional() })
     .optional(),
   created: z.date(),
   lastAccessed: z.date().optional(),
