@@ -49,7 +49,8 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
       case DrawerTabs.Builder: {
         if (
           createOrEditData.state === BuildFieldState.EditingField ||
-          createOrEditData.state === BuildFieldState.CreatingField
+          createOrEditData.state === BuildFieldState.CreatingField ||
+          createOrEditData.state === BuildFieldState.EditingEndPage
         ) {
           return <EditFieldDrawer />
         }

@@ -2,7 +2,12 @@ import { memo, useCallback, useMemo } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
 import { Stack, Text } from '@chakra-ui/react'
 
-import { BasicField, FieldCreateDto } from '~shared/types/field'
+import {
+  BasicField,
+  EndPageUpdateDto,
+  FieldCreateDto,
+  FormPage,
+} from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
 
@@ -16,6 +21,7 @@ import {
   useBuilderAndDesignStore,
 } from '../../useBuilderAndDesignStore'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
+import { EditEndPage } from '../EditEndPageDrawer/EditEndPage'
 
 import {
   EditAttachment,
@@ -85,7 +91,8 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   }, [builderFields, stateData])
   const numFields = useMemo(() => builderFields?.length, [builderFields])
 
-  if (!fieldToEdit) return null
+  if (!fieldToEdit && stateData.state !== BuildFieldState.EditingEndPage)
+    return null
 
   return (
     <>
@@ -116,11 +123,14 @@ export const EditFieldDrawer = (): JSX.Element | null => {
           flex={1}
           textAlign="center"
         >
+          {/* TODO (hans): Make this compatible with edit end page */}
           Edit {basicFieldText}
         </Text>
         <CreatePageDrawerCloseButton />
       </Stack>
+      {/* TODO (hans): Make this compatible with edit end page */}
       <MemoFieldDrawerContent
+        state={stateData.state}
         field={fieldToEdit}
         key={`${fieldIndex}-${numFields}`}
       />
@@ -129,12 +139,19 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 }
 
 interface MemoFieldDrawerContentProps {
-  field: FieldCreateDto
+  // TODO (hans): Probably rename this since it's not just field anymore, it's end page too
+  field?: FieldCreateDto | EndPageUpdateDto
+  state: BuildFieldState
 }
 
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
-  ({ field, ...props }) => {
-    switch (field.fieldType) {
+  ({ field, state, ...props }) => {
+    switch (state) {
+      case BuildFieldState.EditingEndPage:
+        return <EditEndPage {...props} />
+    }
+
+    switch (field?.fieldType) {
       case BasicField.Attachment:
         return <EditAttachment {...props} field={field} />
       case BasicField.Checkbox:
@@ -175,6 +192,8 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditParagraph {...props} field={field} />
       case BasicField.Image:
         return <EditImage {...props} field={field} />
+      case FormPage.EndPage:
+        return <EditEndPage {...props} />
       default:
         return <div>TODO: Insert field options here</div>
     }

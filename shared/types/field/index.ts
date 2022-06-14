@@ -1,4 +1,6 @@
+import { FormEndPage } from '../form'
 import { AttachmentFieldBase } from './attachmentField'
+import { FormPage } from './base'
 import { CheckboxFieldBase } from './checkboxField'
 import { DateFieldBase } from './dateField'
 import { DecimalFieldBase } from './decimalField'
@@ -85,3 +87,8 @@ export type FormFieldDto<T extends FormField = FormField> =
 
 export type FieldCreateDto = FormField
 export type FieldUpdateDto = FormFieldWithId
+
+export interface EndPageUpdateDto extends FormEndPage {
+  _id: string
+  fieldType: FormPage.EndPage
+}

@@ -21,6 +21,10 @@ export enum BasicField {
   Uen = 'uen',
 }
 
+export enum FormPage {
+  EndPage = 'end_page',
+}
+
 export enum MyInfoAttribute {
   Name = 'name',
   PassportNumber = 'passportnumber',
