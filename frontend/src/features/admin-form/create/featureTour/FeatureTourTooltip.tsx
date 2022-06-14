@@ -3,6 +3,10 @@ import { Box, BoxProps, CloseButton, Flex, Icon, Text } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'
 import Button, { ButtonProps } from '~components/Button'
+import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
+
+import { FEATURE_STEPS } from './constants'
+import { useFeatureTourContext } from './FeatureTourContext'
 
 export interface FeatureTourStep {
   content: React.ReactNode
@@ -15,7 +19,7 @@ export interface FeatureTourTooltipProps {
   primaryProps: ButtonProps
   skipProps: ButtonProps
   isLastStep: boolean
-  stepIndex?: number
+  index: number
 }
 
 export const FeatureTourTooltip = ({
@@ -24,7 +28,9 @@ export const FeatureTourTooltip = ({
   primaryProps,
   skipProps,
   isLastStep,
+  index,
 }: FeatureTourTooltipProps): JSX.Element => {
+  const { paginationCallback } = useFeatureTourContext()
   return (
     <Box
       padding="1.5rem"
@@ -66,8 +72,11 @@ export const FeatureTourTooltip = ({
         alignItems="center"
         justifyContent="space-between"
       >
-        {/* Todo: Create pagination component */}
-        <Text>Pagination Component</Text>
+        <ProgressIndicator
+          numIndicators={FEATURE_STEPS.length}
+          currActiveIdx={index}
+          onClick={paginationCallback}
+        />
         {isLastStep ? (
           <Button {...skipProps}>Done</Button>
         ) : (

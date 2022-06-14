@@ -5,6 +5,7 @@ import { fullScreenDecorator } from '~utils/storybook'
 import { ButtonProps } from '~components/Button'
 
 import { FEATURE_STEPS } from './constants'
+import { FeatureTourContext } from './FeatureTourContext'
 import {
   FeatureTourStep,
   FeatureTourTooltip,
@@ -21,7 +22,7 @@ export default {
 } as Meta
 
 const Template: Story<FeatureTourTooltipProps> = (args) => {
-  const [featureStep, setFeatureStep] = useState<number>(args.stepIndex ?? 0)
+  const [featureStep, setFeatureStep] = useState<number>(args.index ?? 0)
 
   const handleNextClick = () => {
     featureStep === FEATURE_STEPS.length - 1
@@ -43,14 +44,22 @@ const Template: Story<FeatureTourTooltipProps> = (args) => {
   const mockPrimaryProps: ButtonProps = {
     onClick: handleNextClick,
   }
+  const paginationCallback = (indicatorIdx: number) => {
+    setFeatureStep(indicatorIdx)
+  }
 
   return (
-    <FeatureTourTooltip
-      {...args}
-      step={featureTourTooltipContent}
-      primaryProps={mockPrimaryProps}
-      isLastStep={isLastStep}
-    />
+    <FeatureTourContext.Provider
+      value={{ paginationCallback: paginationCallback }}
+    >
+      <FeatureTourTooltip
+        {...args}
+        step={featureTourTooltipContent}
+        primaryProps={mockPrimaryProps}
+        isLastStep={isLastStep}
+        index={featureStep}
+      />
+    </FeatureTourContext.Provider>
   )
 }
 
@@ -58,6 +67,6 @@ export const BasicUsage = Template.bind({})
 
 export const LastFeatureStep = Template.bind({})
 LastFeatureStep.args = {
-  stepIndex: FEATURE_STEPS.length - 1,
+  index: FEATURE_STEPS.length - 1,
   isLastStep: true,
 }

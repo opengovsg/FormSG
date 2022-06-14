@@ -13,9 +13,10 @@ import {
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
+import { ProgressIndicator } from '../../components/ProgressIndicator/ProgressIndicator'
+
 import { LastFeatureContent } from './components/LastFeatureContent'
 import { NewFeatureContent } from './components/NewFeatureContent'
-import { ProgressIndicator } from './components/ProgressIndicator'
 import { NEW_FEATURES, OTHER_UPDATES } from './Announcements'
 
 interface RolloutAnnouncementModalProps {
