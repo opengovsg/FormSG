@@ -2167,6 +2167,7 @@ export const handleDeleteFormField: ControllerHandler<
  * @security session
  *
  * @returns 200 with updated end page
+ * @returns 400 when end page form field has invalid updates to be performed
  * @returns 403 when current user does not have permissions to update the end page
  * @returns 404 when form cannot be found
  * @returns 410 when updating the end page for an archived form
@@ -2223,7 +2224,8 @@ export const handleUpdateEndPage = [
       paragraph: Joi.string().allow(''),
       buttonLink: Joi.string()
         .uri({ scheme: ['http', 'https'] })
-        .allow(''),
+        .allow('')
+        .message('Please enter a valid HTTP or HTTPS URI'),
       buttonText: Joi.string().allow(''),
       // TODO(#1895): Remove when deprecated `buttons` key is removed from all forms in the database
     }).unknown(true),
