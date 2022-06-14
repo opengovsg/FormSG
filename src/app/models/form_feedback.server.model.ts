@@ -20,7 +20,6 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema, IFormFeedbackModel>(
       ref: SUBMISSION_SCHEMA_ID,
       // TODO #3964: Update to true once we fully migrate to /submissions/{submissionId}/feedback endpoint
       required: false,
-      index: true,
     },
     rating: {
       type: Number,
@@ -41,6 +40,10 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema, IFormFeedbackModel>(
     },
   },
 )
+
+FormFeedbackSchema.index({
+  submissionId: 1,
+})
 
 /**
  * Returns a cursor for all feedback for the form with formId.
