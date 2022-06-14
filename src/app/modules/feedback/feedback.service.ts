@@ -127,12 +127,10 @@ export const getFormFeedbacks = (
  * @returns err(DatabaseError) if database query errors
  */
 export const hasNoPreviousFeedback = (
-  formId: string,
   submissionId: string,
 ): ResultAsync<true, DuplicateFeedbackSubmissionError | DatabaseError> =>
   ResultAsync.fromPromise(
     FormFeedbackModel.exists({
-      formId: formId,
       submissionId: submissionId,
     }),
     (error) => {
@@ -140,7 +138,6 @@ export const hasNoPreviousFeedback = (
         message: 'Error finding feedback documents from database',
         meta: {
           action: 'hasNoPreviousFeedback',
-          formId,
           submissionId,
         },
         error,

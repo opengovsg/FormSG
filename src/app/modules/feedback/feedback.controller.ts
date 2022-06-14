@@ -53,7 +53,7 @@ const submitFormFeedbackV2: ControllerHandler<
   }
 
   return SubmissionService.doesSubmissionIdExist(submissionId)
-    .andThen(() => FeedbackService.hasNoPreviousFeedback(formId, submissionId))
+    .andThen(() => FeedbackService.hasNoPreviousFeedback(submissionId))
     .andThen(() => FormService.retrieveFullFormById(formId))
     .andThen((form) => FormService.isFormPublic(form).map(() => form))
     .andThen((form) => {

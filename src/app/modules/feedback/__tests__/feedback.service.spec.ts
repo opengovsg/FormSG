@@ -268,7 +268,6 @@ describe('feedback.service', () => {
       })
 
       const actualResult = await FeedbackService.hasNoPreviousFeedback(
-        MOCK_FORM_ID,
         MOCK_SUBMISSION_ID,
       )
 
@@ -286,7 +285,6 @@ describe('feedback.service', () => {
       })
 
       const actualResult = await FeedbackService.hasNoPreviousFeedback(
-        MOCK_FORM_ID,
         new ObjectId().toHexString(),
       )
 
@@ -299,12 +297,10 @@ describe('feedback.service', () => {
       existSpy.mockImplementationOnce(() => Promise.reject(new Error('boom')))
 
       const actualResult = await FeedbackService.hasNoPreviousFeedback(
-        MOCK_FORM_ID,
         MOCK_SUBMISSION_ID,
       )
 
       expect(existSpy).toHaveBeenCalledWith({
-        formId: MOCK_FORM_ID,
         submissionId: MOCK_SUBMISSION_ID,
       })
       expect(actualResult.isErr()).toEqual(true)
