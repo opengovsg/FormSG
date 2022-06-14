@@ -1,15 +1,9 @@
-import { memo, useCallback, useMemo } from 'react'
-import {
-  BiChevronLeft,
-  BiChevronRight,
-  BiLeftArrow,
-  BiLeftArrowAlt,
-} from 'react-icons/bi'
+import { memo, useMemo } from 'react'
+import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
 import { Link as ReactLink, useParams } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
-  Flex,
   Grid,
   Icon,
   Link,
@@ -18,7 +12,6 @@ import {
   StackDivider,
   Text,
 } from '@chakra-ui/react'
-import { times } from 'lodash'
 
 import IconButton from '~components/IconButton'
 
@@ -28,6 +21,7 @@ import {
 } from '../ResponsesPage/storage'
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
+import { DecryptedRow } from './DecryptedRow'
 import { useIndividualSubmission } from './queries'
 
 const LoadingDecryption = memo(() => {
@@ -127,10 +121,16 @@ export const IndividualResponsePage = (): JSX.Element => {
           </Box>
         </Stack>
         <Stack>
-          <LoadingDecryption />
-          {data?.responses.map((r) => (
-            <div>{JSON.stringify(r)}</div>
-          ))}
+          {isLoading ? (
+            <LoadingDecryption />
+          ) : (
+            <Stack spacing="1.5rem" divider={<StackDivider />}>
+              {data?.responses.map((r, idx) => (
+                <DecryptedRow row={r} secretKey={secretKey} key={idx} />
+              ))}
+              <Box />
+            </Stack>
+          )}
         </Stack>
       </Stack>
     </Grid>

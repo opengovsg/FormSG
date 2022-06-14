@@ -7,8 +7,13 @@ import { BasicField } from '~shared/types'
 
 import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 
+export type AugmentedDecryptedResponse = FormField & {
+  questionNumber?: number
+  downloadUrl?: string
+}
+
 type AugmentedFieldAccumulator = {
-  fields: (FormField & { questionNumber?: number; downloadUrl?: string })[]
+  fields: AugmentedDecryptedResponse[]
   nonResponseFieldsCount: number
 }
 
@@ -19,7 +24,7 @@ const isBasicField = (test: string): test is BasicField => {
 export const augmentDecryptedResponses = (
   formFields: FormField[],
   attachmentMetadata: EncryptedAttachmentRecords,
-) => {
+): AugmentedDecryptedResponse[] => {
   const { fields } = formFields.reduce<AugmentedFieldAccumulator>(
     (acc, field, index) => {
       if (!isBasicField(field.fieldType)) return acc
