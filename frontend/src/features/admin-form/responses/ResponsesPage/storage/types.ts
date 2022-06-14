@@ -18,13 +18,13 @@ export type AttachmentsDownloadMap = Map<
   { url: string; filename?: string }
 >
 
+export type CsvRecordData = FormField
+
 export type DecryptedSubmissionData = {
   created: string
   submissionId: string
-  record: FormField[]
+  record: CsvRecordData[]
 }
-
-export type CsvRecordData = FormField
 
 export type MaterializedCsvRecord = SetRequired<CsvRecord, 'submissionData'>
 
