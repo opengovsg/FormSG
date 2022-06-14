@@ -6,7 +6,6 @@ import * as SpcpController from './spcp.controller'
 import {
   loginParamsMiddleware,
   redirectParamsMiddleware,
-  spOidcLoginParamsMiddleware,
 } from './spcp.middlewares'
 // Shared routes for Singpass and Corppass
 export const SpcpRouter = Router()
@@ -71,8 +70,8 @@ export const SingpassLoginRouter = Router()
  */
 SingpassLoginRouter.get(
   '/',
-  spOidcLoginParamsMiddleware,
-  SpcpController.handleSpOidcLogin,
+  loginParamsMiddleware,
+  SpcpController.handleLogin(FormAuthType.SP),
 )
 
 // Handles CorpPass login requests
