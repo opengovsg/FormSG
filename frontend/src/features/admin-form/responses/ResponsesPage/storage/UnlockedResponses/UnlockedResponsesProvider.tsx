@@ -76,6 +76,9 @@ const useProvideUnlockedResponses = () => {
       const currentResponseIndex = metadata.findIndex(
         (response) => response.refNo === currentSubmissionId,
       )
+
+      if (currentResponseIndex === -1) return
+
       // If id belongs to the last submission in page, return first of next page
       if (currentResponseIndex === metadata.length - 1) {
         const data = nextMetadata[0]
@@ -96,6 +99,9 @@ const useProvideUnlockedResponses = () => {
       const currentResponseIndex = metadata.findIndex(
         (response) => response.refNo === currentSubmissionId,
       )
+
+      if (currentResponseIndex === -1) return
+
       // If id belongs to the first submission in page, return last of previous page
       if (currentResponseIndex === 0) {
         if (!currentPage || currentPage === 1) return
