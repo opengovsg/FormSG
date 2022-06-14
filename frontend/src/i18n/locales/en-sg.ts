@@ -10,7 +10,7 @@ export const enSG: Translation = {
         components: {
           LoginForm: {
             onlyAvailableForPublicOfficers:
-              'Only available for use by public officers with a gov.sg email',
+              'Log in with a .gov.sg or other whitelisted email address',
             email: 'Email',
             emailEmptyErrorMsg: 'Please enter an email address',
             login: 'Log in',

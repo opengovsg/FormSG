@@ -14,12 +14,12 @@ export const FullFooter = ({
   footerIconLink = DEFAULT_FOOTER_ICON_LINK,
   socialMediaLinks = DEFAULT_SOCIAL_MEDIA_LINKS,
   textColorScheme = 'secondary',
-  bg = 'primary.100',
+  containerProps,
 }: FooterVariantProps): JSX.Element => {
   const currentYear = new Date().getFullYear()
 
   return (
-    <FullFooter.Container bg={bg}>
+    <FullFooter.Container {...containerProps}>
       <FullFooter.Section>
         <Stack
           flex={1}
@@ -124,6 +124,7 @@ FullFooter.Container = ({
     <Flex
       as="footer"
       flexDirection="column"
+      bg="primary.100"
       py="3rem"
       px={{ base: '1.5rem', md: '5.5rem', lg: '9.25rem' }}
       {...props}

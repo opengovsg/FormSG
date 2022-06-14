@@ -13,7 +13,6 @@ export const Footer = ({
   footerIconLink = DEFAULT_FOOTER_ICON_LINK,
   socialMediaLinks = DEFAULT_SOCIAL_MEDIA_LINKS,
   textColorScheme = 'secondary',
-  bg = 'primary.100',
   compactMonochromeLogos,
   ...footerProps
 }: FooterProps): JSX.Element => {
@@ -25,7 +24,6 @@ export const Footer = ({
         compactMonochromeLogos={compactMonochromeLogos}
         socialMediaLinks={socialMediaLinks}
         textColorScheme={textColorScheme}
-        bg={bg}
         footerIconLink={footerIconLink}
         {...footerProps}
       />
@@ -35,7 +33,6 @@ export const Footer = ({
     <FullFooter
       socialMediaLinks={socialMediaLinks}
       textColorScheme={textColorScheme}
-      bg={bg}
       footerIconLink={footerIconLink}
       {...footerProps}
     />
