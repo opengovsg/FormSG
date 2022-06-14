@@ -1,7 +1,5 @@
-import { decode as decodeBase64 } from '@stablelib/base64'
 import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
-import JSZip from 'jszip'
 // Some webpack pipelines (Chromatic for ours) fails with the default export, but works with /dist export.
 // Due to not recognizing export from the package's package.json.
 // See https://github.com/sindresorhus/p-queue/issues/145
@@ -63,37 +61,6 @@ function verifySignature(
   return verified.every((v) => v)
 }
 
-async function downloadAndDecryptAttachment(url: string, secretKey: string) {
-  const response = await fetch(url)
-  const data = await response.json()
-  data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
-  return await formsgSdk.crypto.decryptFile(secretKey, data.encryptedFile)
-}
-
-async function downloadAndDecryptAttachmentsAsZip(
-  attachmentDownloadUrls: AttachmentsDownloadMap,
-  secretKey: string,
-) {
-  const zip = new JSZip()
-  const downloadPromises = []
-  for (const [questionNum, metadata] of attachmentDownloadUrls) {
-    downloadPromises.push(
-      downloadAndDecryptAttachment(metadata.url, secretKey).then(
-        (bytesArray) => {
-          if (bytesArray) {
-            zip.file(
-              'Question ' + questionNum + ' - ' + metadata.filename,
-              bytesArray,
-            )
-          }
-        },
-      ),
-    )
-  }
-  await Promise.all(downloadPromises)
-  return await zip.generateAsync({ type: 'blob' })
-}
-
 /**
  * Decrypts given data into a {@type CsvRecord} and posts the result back to the
  * main thread.
@@ -108,6 +75,10 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
   const { processDecryptedContent } = await import(
     '../utils/processDecryptedContent'
   )
+  const { downloadAndDecryptAttachmentsAsZip } = await import(
+    '../utils/downloadAndDecryptAttachment'
+  )
+
   const { StorageModeSubmissionStreamDto } = await import('~shared/types')
 
   const { line, secretKey, downloadAttachments } = data
