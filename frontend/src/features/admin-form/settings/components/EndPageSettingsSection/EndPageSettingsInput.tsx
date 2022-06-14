@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form'
 import { FormControl, Stack } from '@chakra-ui/react'
 import validator from 'validator'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -28,7 +27,6 @@ export const EndPageSettingsInput = ({
 
   const defaultParagraph = useMemo(() => paragraph ?? '', [paragraph])
   const defaultButtonLink = useMemo(() => buttonLink ?? '', [buttonLink])
-  const isMobile = useIsMobile()
 
   const {
     register,
@@ -99,8 +97,8 @@ export const EndPageSettingsInput = ({
         <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
       </FormControl>
       <Stack
-        direction={isMobile ? 'column' : 'row'}
-        gap={isMobile ? '2rem' : '1rem'}
+        direction={{ base: 'column', md: 'row' }}
+        gap={{ base: '2rem', md: '1rem' }}
       >
         <FormControl isInvalid={!!errors.buttonText}>
           <FormLabel isRequired>Button text</FormLabel>
