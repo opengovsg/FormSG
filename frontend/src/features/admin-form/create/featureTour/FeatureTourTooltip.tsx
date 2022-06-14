@@ -6,7 +6,7 @@ import Button, { ButtonProps } from '~components/Button'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 
 import { FEATURE_STEPS } from './constants'
-import { useFeatureTour } from './FeatureTourContext'
+import { useFeatureTourContext } from './FeatureTourContext'
 
 export interface FeatureTourStep {
   content: React.ReactNode
@@ -30,7 +30,7 @@ export const FeatureTourTooltip = ({
   isLastStep,
   index,
 }: FeatureTourTooltipProps): JSX.Element => {
-  const { paginationCallback } = useFeatureTour()
+  const { paginationCallback } = useFeatureTourContext()
   return (
     <Box
       padding="1.5rem"

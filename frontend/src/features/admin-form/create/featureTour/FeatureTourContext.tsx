@@ -8,12 +8,12 @@ export const FeatureTourContext = createContext<
   FeatureTourContextProps | undefined
 >(undefined)
 
-export const useFeatureTour = () => {
+export const useFeatureTourContext = () => {
   const context = useContext(FeatureTourContext)
 
   if (context === undefined) {
     throw new Error(
-      `useSelectContext must be used within a SelectContextProvider`,
+      `useFeatureTourContext must be used within a FeatureTourContextProvider`,
     )
   }
 
