@@ -20,7 +20,11 @@ export class FeedbackCsvGenerator extends CsvGenerator {
     const createdAt = moment(feedback.created)
       .tz('Asia/Singapore')
       .format('DD MMM YYYY hh:mm:ss A')
-
-    this.addLine([createdAt, feedback.comment || '', feedback.rating])
+    // wrap feedback comment in quotes
+    this.addLine([
+      createdAt,
+      feedback.comment ? `'${feedback.comment}'` : '',
+      feedback.rating,
+    ])
   }
 }
