@@ -327,6 +327,32 @@ describe('user.service', () => {
       expect(actualResult._unsafeUnwrap()?.toObject()).toEqual(expected)
     })
 
+    it('should return populated user with last seen feature update date successfully', async () => {
+      const mockUserIdWithLastSeenFeatureUpdate = new ObjectID()
+      const { agency, user } = await dbHandler.insertFormCollectionReqs({
+        userId: mockUserIdWithLastSeenFeatureUpdate,
+        mailName: 'userWithLastSeenFeatureUpdate',
+        mailDomain: ALLOWED_DOMAIN,
+        flags: { lastSeenFeatureUpdateDate: MOCKED_DATE },
+      })
+
+      const defaultUserWithLastSeenFeatureUpdate: IUserSchema = user
+      const defaultAgencyWithLastSeenFeatureUpdate: AgencyDocument = agency
+      const expected = {
+        ...defaultUserWithLastSeenFeatureUpdate.toObject(),
+        agency: defaultAgencyWithLastSeenFeatureUpdate.toObject(),
+      }
+
+      // Act
+      const actualResult = await UserService.getPopulatedUserById(
+        mockUserIdWithLastSeenFeatureUpdate,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()?.toObject()).toEqual(expected)
+    })
+
     it('should return MissingUserError when user cannot be found', async () => {
       // Arrange
       const invalidUser = new ObjectID()

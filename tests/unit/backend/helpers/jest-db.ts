@@ -111,11 +111,13 @@ const insertFormCollectionReqs = async ({
   mailDomain = 'test.gov.sg',
   mailName = 'test',
   shortName = 'govtest',
+  flags,
 }: {
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
   shortName?: string
+  flags?: { lastSeenFeatureUpdateDate: Date }
 } = {}): Promise<{
   agency: AgencyDocument
   user: IUserSchema
@@ -128,6 +130,7 @@ const insertFormCollectionReqs = async ({
     email: `${mailName}@${mailDomain}`,
     _id: userId ?? new ObjectID(),
     agency: agency._id,
+    flags: flags,
   })
 
   return { agency, user }
