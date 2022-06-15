@@ -37,6 +37,10 @@ describe('public-form.feedback.routes', () => {
     jest.restoreAllMocks()
   })
   afterAll(async () => await dbHandler.closeDatabase())
+  /**
+   * TODO #3964: Remove /forms/:formId/feedback tests, and keep '/forms/:formId/submissions/:submissionId/feedback'
+   * test once `/api/v3/forms/{formId}/feedback` route is cleaned up
+   */
   describe('POST /forms/:formId/feedback', () => {
     it('should return 200 when feedback was successfully saved', async () => {
       // Arrange
@@ -168,24 +172,7 @@ describe('public-form.feedback.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
   })
-})
 
-/**
- * TODO #3964: Update the `describe` path from 'public-form.submissions.feedback.routes'
- * to 'public-form.feedback.routes' once `/api/v3/forms/{formId}/feedback` route is cleaned up
- */
-describe('public-form.submissions.feedback.routes', () => {
-  let request: Session
-
-  beforeAll(async () => await dbHandler.connect())
-  beforeEach(async () => {
-    request = supertest(app)
-  })
-  afterEach(async () => {
-    await dbHandler.clearDatabase()
-    jest.restoreAllMocks()
-  })
-  afterAll(async () => await dbHandler.closeDatabase())
   describe('POST /forms/:formId/submissions/:submissionId/feedback', () => {
     it('should return 200 when feedback was successfully saved', async () => {
       const MOCK_FEEDBACK = {
