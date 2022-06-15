@@ -18,7 +18,8 @@ export type FormFeedbackBase = {
   formId: FormDto['_id']
   created?: Date
   lastModified?: Date
-  submissionId: SubmissionResponseDto['submissionId']
+  // TODO #3964: Update to not optional once we fully migrate to /submissions/{submissionId}/feedback endpoint
+  submissionId?: SubmissionResponseDto['submissionId']
 }
 
 // Convert to serialized version.
