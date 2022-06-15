@@ -1,6 +1,6 @@
-import { memo, useMemo } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
-import { Link as ReactLink, useParams } from 'react-router-dom'
+import { Link as ReactLink, useNavigate, useParams } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
@@ -46,13 +46,40 @@ const LoadingDecryption = memo(() => {
 })
 
 export const IndividualResponsePage = (): JSX.Element => {
+  const navigate = useNavigate()
   const { submissionId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
 
   const { secretKey } = useStorageResponsesContext()
-  const { lastNavPage, getNextSubmissionId, getPreviousSubmissionId } =
-    useUnlockedResponses()
+  const {
+    lastNavPage,
+    getNextSubmissionId,
+    getPreviousSubmissionId,
+    onNavNextSubmissionId,
+    onNavPreviousSubmissionId,
+  } = useUnlockedResponses()
   const { data, isLoading } = useIndividualSubmission()
+
+  const nextSubmissionId = useMemo(
+    () => getNextSubmissionId(submissionId),
+    [getNextSubmissionId, submissionId],
+  )
+  const prevSubmissionId = useMemo(
+    () => getPreviousSubmissionId(submissionId),
+    [getPreviousSubmissionId, submissionId],
+  )
+
+  const handleNavigateNext = useCallback(() => {
+    if (!nextSubmissionId) return
+    navigate(`../${nextSubmissionId}`)
+    onNavNextSubmissionId(submissionId)
+  }, [navigate, nextSubmissionId, onNavNextSubmissionId, submissionId])
+
+  const handleNavigatePrev = useCallback(() => {
+    if (!prevSubmissionId) return
+    navigate(`../${prevSubmissionId}`)
+    onNavPreviousSubmissionId(submissionId)
+  }, [navigate, onNavPreviousSubmissionId, prevSubmissionId, submissionId])
 
   const backLink = useMemo(() => {
     if (lastNavPage) {
@@ -84,15 +111,20 @@ export const IndividualResponsePage = (): JSX.Element => {
           </Link>
           <Skeleton isLoaded={!isLoading}>
             <Text textStyle="h2" as="h2">
+              {/* TODO: add respondent number according to position in table, if exists */}
               Respondent #2
             </Text>
           </Skeleton>
           <ButtonGroup>
             <IconButton
+              isDisabled={!prevSubmissionId}
+              onClick={handleNavigatePrev}
               icon={<BiChevronLeft />}
               aria-label="Previous submission"
             />
             <IconButton
+              isDisabled={!nextSubmissionId}
+              onClick={handleNavigateNext}
               icon={<BiChevronRight />}
               aria-label="Next submission"
             />
