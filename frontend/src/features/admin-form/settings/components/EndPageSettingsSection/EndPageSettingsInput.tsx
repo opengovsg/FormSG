@@ -3,27 +3,22 @@ import { useForm } from 'react-hook-form'
 import { FormControl, Stack } from '@chakra-ui/react'
 import validator from 'validator'
 
+import { FormEndPage } from '~shared/types'
+
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 
-import { useMutateFormSettings } from '../../mutations'
-
-interface EndPageSettingsInputProps {
-  settings: {
-    title: string
-    paragraph?: string
-    buttonLink?: string
-    buttonText: string
-  }
-}
+import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
 export const EndPageSettingsInput = ({
-  settings,
-}: EndPageSettingsInputProps): JSX.Element => {
-  const { title, paragraph, buttonText, buttonLink } = settings
-  const { mutateFormEndPage } = useMutateFormSettings()
+  title,
+  paragraph,
+  buttonLink,
+  buttonText,
+}: FormEndPage): JSX.Element => {
+  const { mutateFormEndPage } = useMutateFormPage()
 
   const defaultParagraph = useMemo(() => paragraph ?? '', [paragraph])
   const defaultButtonLink = useMemo(() => buttonLink ?? '', [buttonLink])
@@ -33,7 +28,7 @@ export const EndPageSettingsInput = ({
     formState: { errors },
     resetField,
     handleSubmit,
-  } = useForm<EndPageSettingsInputProps['settings']>({
+  } = useForm<FormEndPage>({
     mode: 'onChange',
     defaultValues: {
       title: title,

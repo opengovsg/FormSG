@@ -104,13 +104,6 @@ export const updateFormWebhookRetries = async (
   })
 }
 
-export const updateFormEndPage: UpdateFormFn<'endPage'> = async (
-  formId,
-  endPage,
-) => {
-  return updateFormSettings(formId, { endPage: endPage })
-}
-
 /**
  * Internal function that calls the PATCH API.
  * @param formId the id of the form to update

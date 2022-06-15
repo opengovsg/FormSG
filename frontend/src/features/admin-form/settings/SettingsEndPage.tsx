@@ -1,17 +1,18 @@
 import { Skeleton } from '@chakra-ui/react'
 
+import { useAdminForm } from '../common/queries'
+
 import { CategoryHeader } from './components/CategoryHeader'
 import { EndPageSettingsInput } from './components/EndPageSettingsSection/EndPageSettingsInput'
-import { useAdminFormSettings } from './queries'
 
 export const SettingsEndPage = (): JSX.Element => {
-  const { data: settings, isLoading } = useAdminFormSettings()
+  const { data: form, isLoading } = useAdminForm()
 
   return (
     <>
       <CategoryHeader mb={0}>Customise Thank You page</CategoryHeader>
-      <Skeleton isLoaded={!isLoading && !!settings}>
-        {settings ? <EndPageSettingsInput settings={settings.endPage} /> : null}
+      <Skeleton isLoaded={!isLoading && !!form}>
+        {form ? <EndPageSettingsInput {...form.endPage} /> : null}
       </Skeleton>
     </>
   )
