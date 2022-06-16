@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, UseMutationOptions } from 'react-query'
 
-import { DateString } from '~shared/types'
-
 import { useAdminForm } from '~features/admin-form/common/queries'
-
-import { countFormSubmissions } from '../../AdminSubmissionsService'
 
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
@@ -26,6 +22,8 @@ const killWorkers = (workers: CleanableDecryptionWorkerApi[]): void => {
 export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   // The key to decrypt the submission responses.
   secretKey: string
+  // Number of responses to expect to download.
+  responsesCount: number
 }
 interface UseDecryptionWorkersProps {
   onProgress: (progress: number) => void
@@ -60,25 +58,18 @@ const useDecryptionWorkers = ({
 
   const downloadEncryptedResponses = useCallback(
     async ({
+      responsesCount,
       downloadAttachments,
       secretKey,
       endDate,
       startDate,
     }: DownloadEncryptedParams) => {
-      if (!adminForm) return
+      if (!adminForm || !responsesCount) return
 
       abortControllerRef.current.abort()
       const freshAbortController = new AbortController()
       abortControllerRef.current = freshAbortController
 
-      const responsesCount = await countFormSubmissions({
-        formId: adminForm._id,
-        dates: {
-          startDate: dateRange[0] as DateString,
-          endDate: dateRange[1] as DateString,
-        },
-      })
-      if (!responsesCount) return
       if (workers.length) killWorkers(workers)
 
       // Create a pool of decryption workers
@@ -256,7 +247,7 @@ const useDecryptionWorkers = ({
           checkComplete()
         })
     },
-    [adminForm, dateRange, onProgress, workers],
+    [adminForm, onProgress, workers],
   )
 
   const handleExportCsvMutation = useMutation(
