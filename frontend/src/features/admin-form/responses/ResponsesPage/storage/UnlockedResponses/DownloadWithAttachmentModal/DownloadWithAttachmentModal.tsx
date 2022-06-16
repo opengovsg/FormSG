@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Modal,
   ModalContent,
@@ -44,6 +44,13 @@ export const DownloadWithAttachmentModal = ({
 }: DownloadWithAttachmentModalProps): JSX.Element => {
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)
+
+  useEffect(() => {
+    // Reset step whenever modal is closed.
+    if (!isOpen) {
+      setCurrentStep(INITIAL_STEP_STATE)
+    }
+  }, [isOpen])
 
   const handleDownload = useCallback(() => {
     setCurrentStep([DownloadWithAttachmentFlowStates.Progress, 1])

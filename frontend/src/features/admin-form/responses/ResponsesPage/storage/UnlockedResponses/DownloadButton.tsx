@@ -48,8 +48,7 @@ export const DownloadButton = (): JSX.Element => {
         onDownloadModalClose()
       },
       onSettled: () => {
-        setProgressModalTimeout(null)
-        setDownloadCount(0)
+        resetDownload()
       },
     },
   })
@@ -75,7 +74,8 @@ export const DownloadButton = (): JSX.Element => {
     setDownloadCount(0)
     setProgressModalTimeout(null)
     abortDecryption()
-  }, [abortDecryption])
+    onProgressModalClose()
+  }, [abortDecryption, onProgressModalClose])
 
   const handleAbortDecryption = useCallback(() => {
     resetDownload()
