@@ -16,6 +16,7 @@ import { IPopulatedUser } from 'src/types'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { DatabaseError } from '../../core/core.errors'
+import { UPDATE_LAST_SEEN_FEATURE_DATE } from '../user.constant'
 
 jest.mock('src/app/modules/user/user.service')
 jest.mock('src/app/services/sms/sms.factory')
@@ -465,9 +466,7 @@ describe('user.controller', () => {
         MOCK_REQ.body.latestLastSeenFeatureUpdateDate,
       )
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(
-        "Updated user's last seen feature update date successfully.",
-      )
+      expect(mockRes.json).toBeCalledWith(UPDATE_LAST_SEEN_FEATURE_DATE.SUCCESS)
     })
 
     it('should return 401 if session does not contain user id', async () => {

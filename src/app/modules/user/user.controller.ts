@@ -13,6 +13,10 @@ import { getUserIdFromSession } from '../auth/auth.utils'
 import { ControllerHandler } from '../core/core.types'
 
 import {
+  UNAUTHORIZED_USER_MESSAGE,
+  UPDATE_LAST_SEEN_FEATURE_DATE,
+} from './user.constant'
+import {
   validateContactOtpVerificationParams,
   validateContactSendOtpParams,
   validateUpdateUserLastSeenFeatureUpdateParams,
@@ -40,7 +44,7 @@ export const _handleContactSendOtp: ControllerHandler<
   // Guard against user updating for a different user, or if user is not logged
   // in.
   if (!sessionUserId || sessionUserId !== userId) {
-    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
+    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
   }
 
   const senderIp = getRequestIp(req)
@@ -122,7 +126,7 @@ export const _handleContactVerifyOtp: ControllerHandler<
   // Guard against user updating for a different user, or if user is not logged
   // in.
   if (!sessionUserId || sessionUserId !== userId) {
-    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
+    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
   }
 
   const logMeta = {
@@ -191,7 +195,7 @@ export const handleFetchUser: ControllerHandler = async (req, res) => {
   if (!sessionUserId) {
     return res
       .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: 'User is unauthorized.' })
+      .json({ message: UNAUTHORIZED_USER_MESSAGE })
   }
 
   return getPopulatedUserById(sessionUserId)
@@ -220,7 +224,7 @@ export const _handleUpdateUserLastSeenFeatureUpdateDate: ControllerHandler<
   const sessionUserId = getUserIdFromSession(req.session)
 
   if (!sessionUserId) {
-    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
+    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
   }
 
   return updateUserLastSeenFeatureUpdateDate(
@@ -230,12 +234,11 @@ export const _handleUpdateUserLastSeenFeatureUpdateDate: ControllerHandler<
     .map(() => {
       return res
         .status(StatusCodes.OK)
-        .json("Updated user's last seen feature update date successfully.")
+        .json(UPDATE_LAST_SEEN_FEATURE_DATE.SUCCESS)
     })
     .mapErr((error) => {
       logger.error({
-        message:
-          "Error occurred while updating user's last seen feature update date",
+        message: UPDATE_LAST_SEEN_FEATURE_DATE.ERROR,
         meta: {
           action: 'handleUpdateUserLastSeenFeatureUpdate',
           userId: sessionUserId,

@@ -175,8 +175,8 @@ export const updateUserLastSeenFeatureUpdateDate = (
   userId: IUserSchema['_id'],
   latestLastSeenFeatureUpdateDate: Date,
 ): ResultAsync<true, MissingUserError | DatabaseError> => {
-  // Retrieve user from database and.
-  // Update user's last seen feature update date attribute.
+  // Retrieve user from database and
+  // update user's last seen feature update date attribute.
   return ResultAsync.fromPromise(
     UserModel.findByIdAndUpdate(
       userId,
@@ -189,7 +189,8 @@ export const updateUserLastSeenFeatureUpdateDate = (
     ).exec(),
     (error) => {
       logger.error({
-        message: 'Database error when updating user contacts',
+        message:
+          'Database error when updating user last seen feature update date',
         meta: { action: 'updateUserLastSeenFeatureUpdateDate', userId },
         error,
       })

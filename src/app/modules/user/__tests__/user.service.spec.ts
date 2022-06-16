@@ -327,7 +327,12 @@ describe('user.service', () => {
           MOCK_DATE,
         )
 
+      const updatedUser = await UserService.getPopulatedUserById(user._id)
       expect(actualResult.isOk()).toEqual(true)
+      expect(
+        updatedUser._unsafeUnwrap()?.toObject().flags
+          ?.lastSeenFeatureUpdateDate,
+      ).toEqual(MOCK_DATE)
     })
 
     it('should return MissingUserError if userId is invalid', async () => {
