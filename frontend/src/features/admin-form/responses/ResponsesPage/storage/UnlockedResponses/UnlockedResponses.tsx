@@ -26,7 +26,7 @@ export const UnlockedResponses = (): JSX.Element => {
         gridTemplateColumns={{ base: 'auto', md: 'auto 1fr' }}
         gridGap={{ base: '0.5rem', md: '1.5rem' }}
         gridTemplateAreas={{
-          base: "'submissions submissions' 'export'",
+          base: "'submissions' 'export'",
           md: "'submissions export'",
         }}
       >
