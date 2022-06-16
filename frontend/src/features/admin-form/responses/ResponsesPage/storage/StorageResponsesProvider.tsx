@@ -19,10 +19,18 @@ export const StorageResponsesProvider = ({
   if (!formId) throw new Error('No formId provided')
 
   const { data: form, isLoading: isAdminFormLoading } = useAdminForm()
+
+  const [dateRange, setDateRange] = useState<DateString[]>([])
   const { data: totalResponsesCount, isLoading: isFormResponsesLoading } =
     useFormResponsesCount()
+  const {
+    data: dateRangeResponsesCount,
+    isLoading: isDateRangeResponsesCountLoading,
+  } = useFormResponsesCount({
+    startDate: dateRange?.[0],
+    endDate: dateRange?.[1],
+  })
   const [secretKey, setSecretKey] = useSecretKey(formId)
-  const [dateRange, setDateRange] = useState<DateString[]>([])
 
   const formPublicKey = useMemo(() => {
     if (!form || form.responseMode !== FormResponseMode.Encrypt) return null
@@ -42,9 +50,13 @@ export const StorageResponsesProvider = ({
   return (
     <StorageResponsesContext.Provider
       value={{
-        isLoading: isAdminFormLoading || isFormResponsesLoading,
+        isLoading:
+          isAdminFormLoading ||
+          isFormResponsesLoading ||
+          isDateRangeResponsesCountLoading,
         formPublicKey,
         totalResponsesCount,
+        dateRangeResponsesCount,
         downloadParams,
         secretKey,
         setSecretKey,

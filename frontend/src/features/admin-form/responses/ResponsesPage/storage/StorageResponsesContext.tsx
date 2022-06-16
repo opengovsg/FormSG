@@ -11,6 +11,7 @@ export interface StorageResponsesContextProps {
   setDateRange: (dateRange: DateString[]) => void
   downloadParams: Omit<DownloadEncryptedParams, 'downloadAttachments'> | null
   totalResponsesCount?: number
+  dateRangeResponsesCount?: number
   formPublicKey: string | null
   isLoading: boolean
 }
