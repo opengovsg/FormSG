@@ -2,6 +2,7 @@ import {
   Modal,
   ModalContent,
   ModalOverlay,
+  useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
@@ -21,8 +22,18 @@ export const ProgressModal = ({
   downloadPercentage,
   children,
 }: ProgressModalProps): JSX.Element => {
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'md',
+  })
   return (
-    <Modal isOpen={isOpen} onClose={onClose} closeOnOverlayClick={false}>
+    <Modal
+      size={modalSize}
+      isOpen={isOpen}
+      onClose={onClose}
+      closeOnOverlayClick={false}
+    >
       <ModalOverlay />
       <ModalContent>
         <ProgressModalContent

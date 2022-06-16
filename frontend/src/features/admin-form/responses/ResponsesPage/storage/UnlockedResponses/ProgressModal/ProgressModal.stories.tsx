@@ -1,7 +1,7 @@
 import { useDisclosure } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import { fullScreenDecorator } from '~utils/storybook'
+import { fullScreenDecorator, getMobileViewParameters } from '~utils/storybook'
 
 import { ProgressModal, ProgressModalProps } from './ProgressModal'
 
@@ -29,5 +29,7 @@ const Template: Story<ProgressModalProps> = (args) => {
     />
   )
 }
-export const Default = Template.bind({})
-Default.storyName = 'ProgressModal'
+export const Desktop = Template.bind({})
+
+export const Mobile = Template.bind({})
+Mobile.parameters = getMobileViewParameters()

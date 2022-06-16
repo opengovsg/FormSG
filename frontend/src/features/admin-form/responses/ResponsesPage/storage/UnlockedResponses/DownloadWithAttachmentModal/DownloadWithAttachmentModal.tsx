@@ -4,6 +4,7 @@ import {
   ModalContent,
   ModalOverlay,
   Text,
+  useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
@@ -45,6 +46,11 @@ export const DownloadWithAttachmentModal = ({
   downloadPercentage,
   initialState = INITIAL_STEP_STATE,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'md',
+  })
   const [[currentStep, direction], setCurrentStep] = useState(initialState)
 
   useEffect(() => {
@@ -69,6 +75,7 @@ export const DownloadWithAttachmentModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      size={modalSize}
       closeOnOverlayClick={
         currentStep !== DownloadWithAttachmentFlowStates.Progress
       }

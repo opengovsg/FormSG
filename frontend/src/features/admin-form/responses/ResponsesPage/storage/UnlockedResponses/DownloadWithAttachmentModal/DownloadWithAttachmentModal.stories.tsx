@@ -1,7 +1,7 @@
 import { useDisclosure } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import { fullScreenDecorator } from '~utils/storybook'
+import { fullScreenDecorator, getMobileViewParameters } from '~utils/storybook'
 
 import {
   DownloadWithAttachmentFlowStates,
@@ -32,17 +32,24 @@ const Template: Story<DownloadWithAttachmentModalProps> = (args) => {
     />
   )
 }
-export const ConfirmationState = Template.bind({})
-ConfirmationState.args = {
+export const ConfirmationStateDesktop = Template.bind({})
+ConfirmationStateDesktop.args = {
   downloadPercentage: 0,
   isDownloading: false,
   responsesCount: 9001,
 }
+export const ConfirmationStateMobile = Template.bind({})
+ConfirmationStateMobile.args = ConfirmationStateDesktop.args
+ConfirmationStateMobile.parameters = getMobileViewParameters()
 
-export const DownloadingState = Template.bind({})
-DownloadingState.args = {
+export const DownloadingStateDesktop = Template.bind({})
+DownloadingStateDesktop.args = {
   initialState: [DownloadWithAttachmentFlowStates.Progress, -1],
   downloadPercentage: 30,
   isDownloading: false,
   responsesCount: 12345,
 }
+
+export const DownloadingStateMobile = Template.bind({})
+DownloadingStateMobile.args = DownloadingStateDesktop.args
+DownloadingStateMobile.parameters = getMobileViewParameters()
