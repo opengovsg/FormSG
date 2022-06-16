@@ -7,6 +7,8 @@ import { useBlocker } from './useBlocker'
 
 /**
  * @source https://github.com/remix-run/react-router/issues/8139#issuecomment-1021457943
+ *
+ * Prompts the user with a window alert before they leave the current screen.
  */
 export const usePrompt = (
   message:

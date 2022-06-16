@@ -20,6 +20,9 @@ type NavigationContextWithBlock =
 
 /**
  * @source https://github.com/remix-run/react-router/commit/256cad70d3fd4500b1abcfea66f3ee622fb90874
+ *
+ * Blocks all navigation attempts. This is useful for preventing the page from
+ * changing until some condition is met, like saving form data.
  */
 export const useBlocker = (blocker: Blocker, when = true) => {
   const navigationContext = useContext(
