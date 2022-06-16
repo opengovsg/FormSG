@@ -16,7 +16,10 @@ import { IPopulatedUser } from 'src/types'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { DatabaseError } from '../../core/core.errors'
-import { UPDATE_LAST_SEEN_FEATURE_DATE } from '../user.constant'
+import {
+  UNAUTHORIZED_USER_MESSAGE,
+  UPDATE_LAST_SEEN_FEATURE_DATE,
+} from '../user.constant'
 
 jest.mock('src/app/modules/user/user.service')
 jest.mock('src/app/services/sms/sms.factory')
@@ -90,7 +93,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
+      expect(mockRes.json).toBeCalledWith(UNAUTHORIZED_USER_MESSAGE)
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -121,7 +124,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
+      expect(mockRes.json).toBeCalledWith(UNAUTHORIZED_USER_MESSAGE)
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -241,7 +244,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
+      expect(mockRes.json).toBeCalledWith(UNAUTHORIZED_USER_MESSAGE)
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -273,7 +276,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
+      expect(mockRes.json).toBeCalledWith(UNAUTHORIZED_USER_MESSAGE)
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -409,7 +412,9 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith({ message: 'User is unauthorized.' })
+      expect(mockRes.json).toBeCalledWith({
+        message: UNAUTHORIZED_USER_MESSAGE,
+      })
     })
 
     it('should return 422 when MissingUserError is returned when retrieving user', async () => {
@@ -488,7 +493,7 @@ describe('user.controller', () => {
         MockUserService.updateUserLastSeenFeatureUpdateDate,
       ).not.toHaveBeenCalled()
       expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
-      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
+      expect(mockRes.json).toBeCalledWith(UNAUTHORIZED_USER_MESSAGE)
     })
 
     it('should return 422 if user id does not exist in database', async () => {
