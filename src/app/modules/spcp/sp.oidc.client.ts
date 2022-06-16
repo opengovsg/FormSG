@@ -65,13 +65,17 @@ export class SpOidcClientCache extends NodeCache {
     // On expiry, refresh cache. If fail to refresh, log but do not throw error.
     this.on('expired', () =>
       this.refresh().catch((err) =>
-        console.error(`Failed to refresh cache on expiry. Reason: ${err}`),
+        console.warn(
+          `Attempted but failed to refresh sp oidc cache on expiry. Reason: ${err}`,
+        ),
       ),
     )
 
     // Trigger refresh on instantiation to populate cache. If fail to refresh, log but do not throw error.
     void this.refresh().catch((err) =>
-      console.error(`Failed to refresh cache on expiry. Reason: ${err}`),
+      console.warn(
+        `Attempted but failed to refresh sp oidc on instantiation. Reason: ${err}`,
+      ),
     )
   }
 

@@ -46,6 +46,8 @@ jest.mock('nodemailer', () => ({
   }),
 }))
 
+jest.mock('../../../../../../modules/spcp/sp.oidc.service')
+
 const UserModel = getUserModel(mongoose)
 const FormModel = getFormModel(mongoose)
 const EmailFormModel = getEmailFormModel(mongoose)
