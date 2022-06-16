@@ -513,6 +513,75 @@ describe('user.routes', () => {
       expect(response.body).toEqual(mockErrorString)
     })
   })
+
+  describe('POST /user/whats-new/last-seen', () => {
+    const MOCK_UPDATE_DATE = '2022-07-07'
+    it('should return 200 if update is successful', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
+      const MOCK_UPDATE_DATE = '2022-07-07'
+
+      // Act
+      const response = await session.post('/user/whats-new/last-seen').send({
+        latestLastSeenFeatureUpdateDate: MOCK_UPDATE_DATE,
+      })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(
+        "Updated user's last seen feature update date successfully.",
+      )
+    })
+
+    it('should return 401 if user is not logged in', async () => {
+      // Act
+      const response = await request
+        .post('/user/whats-new/last-seen')
+        .send({ latestLastSeenFeatureUpdateDate: MOCK_UPDATE_DATE })
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual('User is unauthorized.')
+    })
+
+    it('should return 422 if user id does not exist in the database', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await session
+        .post('/user/whats-new/last-seen')
+        .send({ latestLastSeenFeatureUpdateDate: MOCK_UPDATE_DATE })
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual('User not found')
+    })
+
+    it('should return 500 if database error occurs', async () => {
+      // Arrange
+      // Log in user.
+      const session = await createAuthedSession(VALID_EMAIL, request)
+
+      const mockErrorString = 'Database goes boom'
+      // Mock database error from service call.
+      const retrieveUserSpy = jest
+        .spyOn(UserService, 'updateUserLastSeenFeatureUpdateDate')
+        .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
+
+      // Act
+      const response = await session
+        .post('/user/whats-new/last-seen')
+        .send({ latestLastSeenFeatureUpdateDate: MOCK_UPDATE_DATE })
+
+      // Assert
+      expect(retrieveUserSpy).toBeCalled()
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual(mockErrorString)
+    })
+  })
 })
 
 // Helper methods

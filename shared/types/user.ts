@@ -53,3 +53,7 @@ export type VerifyUserContactOtpDto = {
   otp: string
   contact: string
 }
+
+export type UpdateUserLastFeatureUpdateDateDto = {
+  latestLastSeenFeatureUpdateDate: Date
+}

@@ -163,6 +163,48 @@ export const updateUserContact = (
 }
 
 /**
+ * Updates the user document with the userId with the given latest seen feature update date and
+ * returns the populated updated user.
+ * @param userId the user id of the user document to update
+ * @param latestLastSeenFeatureUpdateDate the latest last seen feature update date to update with
+ * @returns ok(true) if update was successful
+ * @returns err(MissingUserError) if user document cannot be found
+ * @returns err(DatabaseError) if any error occurs whilst querying the database
+ */
+export const updateUserLastSeenFeatureUpdateDate = (
+  userId: IUserSchema['_id'],
+  latestLastSeenFeatureUpdateDate: Date,
+): ResultAsync<true, MissingUserError | DatabaseError> => {
+  // Retrieve user from database and.
+  // Update user's last seen feature update date attribute.
+  return ResultAsync.fromPromise(
+    UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          flags: { lastSeenFeatureUpdateDate: latestLastSeenFeatureUpdateDate },
+        },
+      },
+      { new: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Database error when updating user contacts',
+        meta: { action: 'updateUserLastSeenFeatureUpdateDate', userId },
+        error,
+      })
+
+      return new DatabaseError()
+    },
+  ).andThen((admin) => {
+    if (!admin) {
+      return errAsync(new MissingUserError())
+    }
+    return okAsync(true as const)
+  })
+}
+
+/**
  * Retrieved the user with populated references by given id.
  * @param userId the id of the user to retrieve
  * @returns ok(populated user document) if user exists
