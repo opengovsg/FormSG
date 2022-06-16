@@ -19,7 +19,7 @@ export const StorageResponsesProvider = ({
   if (!formId) throw new Error('No formId provided')
 
   const { data: form, isLoading: isAdminFormLoading } = useAdminForm()
-  const { data: responsesCount, isLoading: isFormResponsesLoading } =
+  const { data: totalResponsesCount, isLoading: isFormResponsesLoading } =
     useFormResponsesCount()
   const [secretKey, setSecretKey] = useSecretKey(formId)
   const [dateRange, setDateRange] = useState<DateString[]>([])
@@ -44,7 +44,7 @@ export const StorageResponsesProvider = ({
       value={{
         isLoading: isAdminFormLoading || isFormResponsesLoading,
         formPublicKey,
-        responsesCount,
+        totalResponsesCount,
         downloadParams,
         secretKey,
         setSecretKey,

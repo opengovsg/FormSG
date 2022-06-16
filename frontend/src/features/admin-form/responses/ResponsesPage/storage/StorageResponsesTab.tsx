@@ -2,12 +2,21 @@ import { EmptyResponses } from '../common/EmptyResponses'
 
 import { SecretKeyVerification } from './SecretKeyVerification'
 import { useStorageResponsesContext } from './StorageResponsesContext'
+import { StorageResponsesProvider } from './StorageResponsesProvider'
 import { UnlockedResponses } from './UnlockedResponses'
 
-export const StorageResponsesTab = (): JSX.Element => {
-  const { responsesCount, secretKey } = useStorageResponsesContext()
+export const StorageResponsesTab = () => {
+  return (
+    <StorageResponsesProvider>
+      <ProvidedStorageResponsesTab />
+    </StorageResponsesProvider>
+  )
+}
 
-  if (responsesCount === 0) {
+const ProvidedStorageResponsesTab = (): JSX.Element => {
+  const { totalResponsesCount, secretKey } = useStorageResponsesContext()
+
+  if (totalResponsesCount === 0) {
     return <EmptyResponses />
   }
 

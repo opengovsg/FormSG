@@ -30,14 +30,14 @@ export const DownloadButton = (): JSX.Element => {
   const [progressModalTimeout, setProgressModalTimeout] = useState<
     number | null
   >(null)
-  const { downloadParams, responsesCount } = useStorageResponsesContext()
+  const { downloadParams, totalResponsesCount } = useStorageResponsesContext()
   const [_downloadCount, setDownloadCount] = useState(0)
   const downloadCount = useThrottle(_downloadCount, 1000)
 
   const downloadPercentage = useMemo(() => {
-    if (!responsesCount) return 0
-    return Math.floor((downloadCount / responsesCount) * 100)
-  }, [downloadCount, responsesCount])
+    if (!totalResponsesCount) return 0
+    return Math.floor((downloadCount / totalResponsesCount) * 100)
+  }, [downloadCount, totalResponsesCount])
 
   useTimeout(onProgressModalOpen, progressModalTimeout)
 
@@ -84,9 +84,9 @@ export const DownloadButton = (): JSX.Element => {
 
   return (
     <>
-      {responsesCount && (
+      {totalResponsesCount && (
         <DownloadWithAttachmentModal
-          responsesCount={responsesCount}
+          responsesCount={totalResponsesCount}
           isOpen={isDownloadModalOpen}
           onClose={onDownloadModalClose}
           onDownload={handleExportCsvWithAttachments}
@@ -95,7 +95,7 @@ export const DownloadButton = (): JSX.Element => {
           isDownloading={handleExportCsvMutation.isLoading}
         />
       )}
-      {responsesCount && (
+      {totalResponsesCount && (
         <ProgressModal
           isOpen={isProgressModalOpen}
           onClose={handleAbortDecryption}
@@ -103,7 +103,7 @@ export const DownloadButton = (): JSX.Element => {
           isDownloading={handleExportCsvMutation.isLoading}
         >
           <Text mb="1rem">
-            <b>{responsesCount.toLocaleString()}</b> responses are being
+            <b>{totalResponsesCount.toLocaleString()}</b> responses are being
             processed. Navigating away from this page will stop the download.
           </Text>
         </ProgressModal>
