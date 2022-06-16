@@ -19,7 +19,12 @@ import {
 import { getMobileViewParameters, viewports } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
-import { FeedbackPage, FormResultsLayout, ResponsesPage } from './responses'
+import {
+  FeedbackPage,
+  FormResultsLayout,
+  ResponsesLayout,
+  ResponsesPage,
+} from './responses'
 
 export default {
   title: 'Pages/AdminFormPage/Results/ResponsesTab',
@@ -46,7 +51,9 @@ const Template: Story = () => {
             path={ADMINFORM_RESULTS_SUBROUTE}
             element={<FormResultsLayout />}
           >
-            <Route index element={<ResponsesPage />} />
+            <Route element={<ResponsesLayout />}>
+              <Route index element={<ResponsesPage />} />
+            </Route>
             <Route
               path={RESULTS_FEEDBACK_SUBROUTE}
               element={<FeedbackPage />}
@@ -103,7 +110,10 @@ StorageForm.parameters = {
     getStorageSubmissionMetadataResponse(),
   ],
 }
-StorageForm.play = async ({ canvasElement }) => {
+
+export const StorageFormUnlocked = Template.bind({})
+StorageFormUnlocked.parameters = StorageForm.parameters
+StorageFormUnlocked.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
   const inputName =
     /enter or upload secret key your secret key was downloaded when you created your form/i
@@ -124,7 +134,25 @@ StorageForm.play = async ({ canvasElement }) => {
     }),
     MOCK_KEYPAIR.secretKey,
   )
+
+  await userEvent.click(
+    canvas.getByRole('button', { name: /unlock responses/i }),
+  )
 }
+
+export const StorageFormUnlockedTablet = Template.bind({})
+StorageFormUnlockedTablet.parameters = {
+  ...EmailFormTablet.parameters,
+  ...StorageFormUnlocked.parameters,
+}
+StorageFormUnlockedTablet.play = StorageFormUnlocked.play
+
+export const StorageFormUnlockedMobile = Template.bind({})
+StorageFormUnlockedMobile.parameters = {
+  ...EmailFormMobile.parameters,
+  ...StorageFormUnlocked.parameters,
+}
+StorageFormUnlockedMobile.play = StorageFormUnlocked.play
 
 export const StorageFormTablet = Template.bind({})
 StorageFormTablet.parameters = {
