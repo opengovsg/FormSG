@@ -16,10 +16,6 @@ import { IPopulatedUser } from 'src/types'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { DatabaseError } from '../../core/core.errors'
-import {
-  UNAUTHORIZED_USER_MESSAGE,
-  UPDATE_LAST_SEEN_FEATURE_DATE,
-} from '../user.constant'
 
 jest.mock('src/app/modules/user/user.service')
 jest.mock('src/app/services/sms/sms.factory')
@@ -93,7 +89,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith(UNAUTHORIZED_USER_MESSAGE)
+      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -124,7 +120,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith(UNAUTHORIZED_USER_MESSAGE)
+      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -244,7 +240,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith(UNAUTHORIZED_USER_MESSAGE)
+      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -276,7 +272,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith(UNAUTHORIZED_USER_MESSAGE)
+      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -413,7 +409,7 @@ describe('user.controller', () => {
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
       expect(mockRes.json).toBeCalledWith({
-        message: UNAUTHORIZED_USER_MESSAGE,
+        message: 'User is unauthorized.',
       })
     })
 
@@ -436,27 +432,36 @@ describe('user.controller', () => {
   })
 
   describe('handleUpdateUserLastSeenFeatureUpdateDate', () => {
-    const MOCK_DATE = new Date()
     const MOCK_REQ = expressHandler.mockRequest({
-      body: { latestLastSeenFeatureUpdateDate: MOCK_DATE },
       session: {
         user: {
           _id: VALID_SESSION_USER_ID,
         },
       },
     })
+    // Mock implementaion of Date.now() due to slight difference in Date.now() execution in test and when
+    // Date.now() in updateUserLastSeenFeatureUpdateDate function is executed
+    jest
+      .spyOn(global.Date, 'now')
+      .mockReturnValue(new Date('2022-07-14T11:01:58.135Z').valueOf())
+    const MOCK_DATE = new Date('2022-07-14T11:01:58.135Z')
 
     it('should return 200 when successful', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
+      const mockPopulatedUser = {
+        agency: {},
+        email: 'mockEmail',
+        _id: VALID_SESSION_USER_ID,
+      }
 
       // Mock all UserService calls to pass.
       MockUserService.updateUserLastSeenFeatureUpdateDate.mockReturnValueOnce(
-        okAsync(true as const),
+        okAsync(mockPopulatedUser as IPopulatedUser),
       )
 
       // Act
-      await UserController._handleUpdateUserLastSeenFeatureUpdateDate(
+      await UserController.handleUpdateUserLastSeenFeatureUpdateDate(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -466,24 +471,21 @@ describe('user.controller', () => {
       // Expect services to be called with correct arguments.
       expect(
         MockUserService.updateUserLastSeenFeatureUpdateDate,
-      ).toBeCalledWith(
-        MOCK_REQ.session.user?._id,
-        MOCK_REQ.body.latestLastSeenFeatureUpdateDate,
-      )
+      ).toBeCalledWith(MOCK_REQ.session.user?._id, MOCK_DATE)
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(UPDATE_LAST_SEEN_FEATURE_DATE.SUCCESS)
+      expect(mockRes.json).toBeCalledWith(mockPopulatedUser)
     })
 
     it('should return 401 if session does not contain user id', async () => {
       // Arrange
       const MOCK_REQ_WITH_NO_USER_ID_IN_SESSION = expressHandler.mockRequest({
-        body: { latestLastSeenFeatureUpdateDate: MOCK_DATE },
+        body: { date: MOCK_DATE },
         session: {},
       })
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await UserController._handleUpdateUserLastSeenFeatureUpdateDate(
+      await UserController.handleUpdateUserLastSeenFeatureUpdateDate(
         MOCK_REQ_WITH_NO_USER_ID_IN_SESSION,
         mockRes,
         jest.fn(),
@@ -493,7 +495,7 @@ describe('user.controller', () => {
         MockUserService.updateUserLastSeenFeatureUpdateDate,
       ).not.toHaveBeenCalled()
       expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
-      expect(mockRes.json).toBeCalledWith(UNAUTHORIZED_USER_MESSAGE)
+      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
     })
 
     it('should return 422 if user id does not exist in database', async () => {
@@ -507,7 +509,7 @@ describe('user.controller', () => {
       )
 
       // Act
-      await UserController._handleUpdateUserLastSeenFeatureUpdateDate(
+      await UserController.handleUpdateUserLastSeenFeatureUpdateDate(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -515,10 +517,7 @@ describe('user.controller', () => {
 
       expect(
         MockUserService.updateUserLastSeenFeatureUpdateDate,
-      ).toBeCalledWith(
-        MOCK_REQ.session.user?._id,
-        MOCK_REQ.body.latestLastSeenFeatureUpdateDate,
-      )
+      ).toBeCalledWith(MOCK_REQ.session.user?._id, MOCK_DATE)
       expect(mockRes.status).toBeCalledWith(StatusCodes.UNPROCESSABLE_ENTITY)
       expect(mockRes.json).toBeCalledWith(expectedError.message)
     })
@@ -534,7 +533,7 @@ describe('user.controller', () => {
       )
 
       // Act
-      await UserController._handleUpdateUserLastSeenFeatureUpdateDate(
+      await UserController.handleUpdateUserLastSeenFeatureUpdateDate(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -542,10 +541,7 @@ describe('user.controller', () => {
 
       expect(
         MockUserService.updateUserLastSeenFeatureUpdateDate,
-      ).toBeCalledWith(
-        MOCK_REQ.session.user?._id,
-        MOCK_REQ.body.latestLastSeenFeatureUpdateDate,
-      )
+      ).toBeCalledWith(MOCK_REQ.session.user?._id, MOCK_DATE)
       expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
       expect(mockRes.json).toBeCalledWith(expectedError.message)
     })

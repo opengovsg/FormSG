@@ -25,15 +25,3 @@ export const validateContactOtpVerificationParams = celebrate({
     contact: Joi.string().required(),
   }),
 })
-
-/**
- * Celebrate validation for the update user's last seen feature update date endpoint.
- */
-export const validateUpdateUserLastSeenFeatureUpdateParams = celebrate({
-  [Segments.BODY]: Joi.object({
-    latestLastSeenFeatureUpdateDate: Joi.date()
-      .format('YYYY-MM-DD')
-      .raw()
-      .required(),
-  }),
-})

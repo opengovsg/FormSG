@@ -2,7 +2,6 @@ import { StatusCodes } from 'http-status-codes'
 
 import {
   SendUserContactOtpDto,
-  UpdateUserLastFeatureUpdateDateDto,
   VerifyUserContactOtpDto,
 } from '../../../../shared/types'
 import { IPopulatedUser } from '../../../types'
@@ -13,13 +12,8 @@ import { getUserIdFromSession } from '../auth/auth.utils'
 import { ControllerHandler } from '../core/core.types'
 
 import {
-  UNAUTHORIZED_USER_MESSAGE,
-  UPDATE_LAST_SEEN_FEATURE_DATE,
-} from './user.constant'
-import {
   validateContactOtpVerificationParams,
   validateContactSendOtpParams,
-  validateUpdateUserLastSeenFeatureUpdateParams,
 } from './user.middleware'
 import {
   createContactOtp,
@@ -44,7 +38,7 @@ export const _handleContactSendOtp: ControllerHandler<
   // Guard against user updating for a different user, or if user is not logged
   // in.
   if (!sessionUserId || sessionUserId !== userId) {
-    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
+    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
   }
 
   const senderIp = getRequestIp(req)
@@ -126,7 +120,7 @@ export const _handleContactVerifyOtp: ControllerHandler<
   // Guard against user updating for a different user, or if user is not logged
   // in.
   if (!sessionUserId || sessionUserId !== userId) {
-    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
+    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
   }
 
   const logMeta = {
@@ -195,7 +189,7 @@ export const handleFetchUser: ControllerHandler = async (req, res) => {
   if (!sessionUserId) {
     return res
       .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: UNAUTHORIZED_USER_MESSAGE })
+      .json({ message: 'User is unauthorized.' })
   }
 
   return getPopulatedUserById(sessionUserId)
@@ -215,50 +209,38 @@ export const handleFetchUser: ControllerHandler = async (req, res) => {
     })
 }
 
-export const _handleUpdateUserLastSeenFeatureUpdateDate: ControllerHandler<
-  unknown,
-  string,
-  UpdateUserLastFeatureUpdateDateDto
-> = async (req, res) => {
-  const { latestLastSeenFeatureUpdateDate } = req.body
-  const sessionUserId = getUserIdFromSession(req.session)
-
-  if (!sessionUserId) {
-    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
-  }
-
-  return updateUserLastSeenFeatureUpdateDate(
-    sessionUserId,
-    latestLastSeenFeatureUpdateDate,
-  )
-    .map(() => {
-      return res
-        .status(StatusCodes.OK)
-        .json(UPDATE_LAST_SEEN_FEATURE_DATE.SUCCESS)
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: UPDATE_LAST_SEEN_FEATURE_DATE.ERROR,
-        meta: {
-          action: 'handleUpdateUserLastSeenFeatureUpdate',
-          userId: sessionUserId,
-        },
-        error,
-      })
-
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json(errorMessage)
-    })
-}
-
 /**
- * @route POST /whats-new/last-seen
+ * @route POST /flag/last-seen
  * @returns 200 when user last seen feature update date update success
  * @returns 401 if user is not currently logged in
  * @returns 422 when user id does not exist in the database
  * @returns 500 database errors occurs
  */
-export const handleUpdateUserLastSeenFeatureUpdateDate = [
-  validateUpdateUserLastSeenFeatureUpdateParams,
-  _handleUpdateUserLastSeenFeatureUpdateDate,
-] as ControllerHandler[]
+export const handleUpdateUserLastSeenFeatureUpdateDate: ControllerHandler =
+  async (req, res) => {
+    const currentDateTime = new Date(Date.now())
+    const sessionUserId = getUserIdFromSession(req.session)
+
+    if (!sessionUserId) {
+      return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
+    }
+
+    return updateUserLastSeenFeatureUpdateDate(sessionUserId, currentDateTime)
+      .map((updatedUser) => {
+        return res.status(StatusCodes.OK).json(updatedUser)
+      })
+      .mapErr((error) => {
+        logger.error({
+          message:
+            'Error occurred while updating user last seen feature update date',
+          meta: {
+            action: 'handleUpdateUserLastSeenFeatureUpdate',
+            userId: sessionUserId,
+          },
+          error,
+        })
+
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json(errorMessage)
+      })
+  }

@@ -166,15 +166,15 @@ export const updateUserContact = (
  * Updates the user document with the userId with the given latest seen feature update date and
  * returns the populated updated user.
  * @param userId the user id of the user document to update
- * @param latestLastSeenFeatureUpdateDate the latest last seen feature update date to update with
+ * @param date the latest last seen feature update date to update with
  * @returns ok(true) if update was successful
  * @returns err(MissingUserError) if user document cannot be found
  * @returns err(DatabaseError) if any error occurs whilst querying the database
  */
 export const updateUserLastSeenFeatureUpdateDate = (
   userId: IUserSchema['_id'],
-  latestLastSeenFeatureUpdateDate: Date,
-): ResultAsync<true, MissingUserError | DatabaseError> => {
+  date: Date,
+): ResultAsync<IPopulatedUser, MissingUserError | DatabaseError> => {
   // Retrieve user from database and
   // update user's last seen feature update date attribute.
   return ResultAsync.fromPromise(
@@ -182,11 +182,16 @@ export const updateUserLastSeenFeatureUpdateDate = (
       userId,
       {
         $set: {
-          flags: { lastSeenFeatureUpdateDate: latestLastSeenFeatureUpdateDate },
+          flags: { lastSeenFeatureUpdateDate: date },
         },
       },
       { new: true },
-    ).exec(),
+    )
+      .populate({
+        path: 'agency',
+        model: AGENCY_SCHEMA_ID,
+      })
+      .exec(),
     (error) => {
       logger.error({
         message:
@@ -201,7 +206,7 @@ export const updateUserLastSeenFeatureUpdateDate = (
     if (!admin) {
       return errAsync(new MissingUserError())
     }
-    return okAsync(true as const)
+    return okAsync(admin as IPopulatedUser)
   })
 }
 

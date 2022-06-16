@@ -514,30 +514,33 @@ describe('user.routes', () => {
     })
   })
 
-  describe('POST /user/whats-new/last-seen', () => {
-    const MOCK_UPDATE_DATE = '2022-07-07'
+  describe('POST /user/flag/last-seen', () => {
+    jest
+      .spyOn(global.Date, 'now')
+      .mockReturnValue(new Date('2022-07-14T11:01:58.135Z').valueOf())
+    const MOCK_DATE = new Date('2022-07-14T11:01:58.135Z')
     it('should return 200 if update is successful', async () => {
       // Arrange
       const session = await createAuthedSession(defaultUser.email, request)
-      const MOCK_UPDATE_DATE = '2022-07-07'
 
       // Act
-      const response = await session.post('/user/whats-new/last-seen').send({
-        latestLastSeenFeatureUpdateDate: MOCK_UPDATE_DATE,
-      })
+      const response = await session.post('/user/flag/last-seen')
 
       // Assert
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual(
-        "Updated user's last seen feature update date successfully.",
-      )
+      expect(response.body).toEqual({
+        ...JSON.parse(JSON.stringify(defaultUser.toObject())),
+        agency: JSON.parse(JSON.stringify(defaultAgency.toObject())),
+        // Dynamic date strings to be returned.
+        updatedAt: expect.any(String),
+        lastAccessed: expect.any(String),
+        flags: { lastSeenFeatureUpdateDate: MOCK_DATE.toISOString() },
+      })
     })
 
     it('should return 401 if user is not logged in', async () => {
       // Act
-      const response = await request
-        .post('/user/whats-new/last-seen')
-        .send({ latestLastSeenFeatureUpdateDate: MOCK_UPDATE_DATE })
+      const response = await request.post('/user/flag/last-seen')
 
       // Assert
       expect(response.status).toEqual(401)
@@ -551,9 +554,7 @@ describe('user.routes', () => {
       await dbHandler.clearCollection(UserModel.collection.name)
 
       // Act
-      const response = await session
-        .post('/user/whats-new/last-seen')
-        .send({ latestLastSeenFeatureUpdateDate: MOCK_UPDATE_DATE })
+      const response = await session.post('/user/flag/last-seen')
 
       // Assert
       expect(response.status).toEqual(422)
@@ -572,9 +573,7 @@ describe('user.routes', () => {
         .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
 
       // Act
-      const response = await session
-        .post('/user/whats-new/last-seen')
-        .send({ latestLastSeenFeatureUpdateDate: MOCK_UPDATE_DATE })
+      const response = await session.post('/user/flag/last-seen')
 
       // Assert
       expect(retrieveUserSpy).toBeCalled()
