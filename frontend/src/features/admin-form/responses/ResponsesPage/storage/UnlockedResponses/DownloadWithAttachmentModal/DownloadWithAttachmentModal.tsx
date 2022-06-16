@@ -20,17 +20,19 @@ export interface DownloadWithAttachmentModalProps
   isDownloading: boolean
   responsesCount: number
   downloadPercentage: number
+  initialState?: [DownloadWithAttachmentFlowStates, number]
 }
 
+/** Exported for testing. */
 export enum DownloadWithAttachmentFlowStates {
   Confirmation = 'confirmation',
   Progress = 'progress',
   Complete = 'complete',
 }
 
-const INITIAL_STEP_STATE: [DownloadWithAttachmentFlowStates, number] = [
+const INITIAL_STEP_STATE: DownloadWithAttachmentModalProps['initialState'] = [
   DownloadWithAttachmentFlowStates.Confirmation,
-  0 | 1 | -1,
+  -1,
 ]
 
 export const DownloadWithAttachmentModal = ({
@@ -41,9 +43,9 @@ export const DownloadWithAttachmentModal = ({
   isDownloading,
   responsesCount,
   downloadPercentage,
+  initialState = INITIAL_STEP_STATE,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
-  const [[currentStep, direction], setCurrentStep] =
-    useState(INITIAL_STEP_STATE)
+  const [[currentStep, direction], setCurrentStep] = useState(initialState)
 
   useEffect(() => {
     // Reset step whenever modal is closed.
