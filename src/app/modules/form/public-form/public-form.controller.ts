@@ -35,8 +35,9 @@ import {
 } from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
+import { SpOidcService } from '../../spcp/sp.oidc.service'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
-import { SpcpService, SpOidcService } from '../../spcp/spcp.service'
+import { SpcpService } from '../../spcp/spcp.service'
 import {
   getRedirectTarget,
   getRedirectTargetSpOidc,

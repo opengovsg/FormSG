@@ -11,7 +11,8 @@ import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
-import { SpcpService, SpOidcService } from './spcp.service'
+import { SpOidcService } from './sp.oidc.service'
+import { SpcpService } from './spcp.service'
 import { JwtName } from './spcp.types'
 import { mapRouteError } from './spcp.util'
 
