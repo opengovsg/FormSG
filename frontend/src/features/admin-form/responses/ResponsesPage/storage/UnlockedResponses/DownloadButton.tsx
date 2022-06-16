@@ -30,14 +30,16 @@ export const DownloadButton = (): JSX.Element => {
   const [progressModalTimeout, setProgressModalTimeout] = useState<
     number | null
   >(null)
-  const { downloadParams, totalResponsesCount } = useStorageResponsesContext()
+  const { downloadParams, dateRangeResponsesCount } =
+    useStorageResponsesContext()
+
   const [_downloadCount, setDownloadCount] = useState(0)
   const downloadCount = useThrottle(_downloadCount, 1000)
 
   const downloadPercentage = useMemo(() => {
-    if (!totalResponsesCount) return 0
-    return Math.floor((downloadCount / totalResponsesCount) * 100)
-  }, [downloadCount, totalResponsesCount])
+    if (!dateRangeResponsesCount) return 0
+    return Math.floor((downloadCount / dateRangeResponsesCount) * 100)
+  }, [downloadCount, dateRangeResponsesCount])
 
   useTimeout(onProgressModalOpen, progressModalTimeout)
 
@@ -84,9 +86,9 @@ export const DownloadButton = (): JSX.Element => {
 
   return (
     <>
-      {totalResponsesCount && (
+      {dateRangeResponsesCount !== undefined && (
         <DownloadWithAttachmentModal
-          responsesCount={totalResponsesCount}
+          responsesCount={dateRangeResponsesCount}
           isOpen={isDownloadModalOpen}
           onClose={onDownloadModalClose}
           onDownload={handleExportCsvWithAttachments}
@@ -95,7 +97,7 @@ export const DownloadButton = (): JSX.Element => {
           isDownloading={handleExportCsvMutation.isLoading}
         />
       )}
-      {totalResponsesCount && (
+      {dateRangeResponsesCount !== undefined && (
         <ProgressModal
           isOpen={isProgressModalOpen}
           onClose={handleAbortDecryption}
@@ -103,8 +105,9 @@ export const DownloadButton = (): JSX.Element => {
           isDownloading={handleExportCsvMutation.isLoading}
         >
           <Text mb="1rem">
-            <b>{totalResponsesCount.toLocaleString()}</b> responses are being
-            processed. Navigating away from this page will stop the download.
+            <b>{dateRangeResponsesCount.toLocaleString()}</b> responses are
+            being processed. Navigating away from this page will stop the
+            download.
           </Text>
         </ProgressModal>
       )}
