@@ -20,7 +20,8 @@ export const useIndividualSubmission = () => {
     adminFormResponsesKeys.individual(formId, submissionId),
     () => getDecryptedSubmissionById({ formId, submissionId, secretKey }),
     {
-      staleTime: 10 * 60 * 1000,
+      // Will never update once fetched.
+      staleTime: Infinity,
       enabled: !!secretKey,
     },
   )

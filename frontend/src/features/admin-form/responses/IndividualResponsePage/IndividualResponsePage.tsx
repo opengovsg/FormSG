@@ -1,6 +1,11 @@
 import { memo, useCallback, useMemo } from 'react'
 import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
-import { Link as ReactLink, useNavigate, useParams } from 'react-router-dom'
+import {
+  Link as ReactLink,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
@@ -46,9 +51,14 @@ const LoadingDecryption = memo(() => {
 })
 
 export const IndividualResponsePage = (): JSX.Element => {
+  const { state } = useLocation()
   const navigate = useNavigate()
   const { submissionId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
+
+  const currentRespondentNumber = useMemo(() => {
+    return (state as { respondentNumber?: number })?.respondentNumber
+  }, [state])
 
   const { secretKey } = useStorageResponsesContext()
   const {
@@ -57,6 +67,7 @@ export const IndividualResponsePage = (): JSX.Element => {
     getPreviousSubmissionId,
     onNavNextSubmissionId,
     onNavPreviousSubmissionId,
+    isAnyLoading,
   } = useUnlockedResponses()
   const { data, isLoading } = useIndividualSubmission()
 
@@ -71,15 +82,39 @@ export const IndividualResponsePage = (): JSX.Element => {
 
   const handleNavigateNext = useCallback(() => {
     if (!nextSubmissionId) return
-    navigate(`../${nextSubmissionId}`)
+    navigate(`../${nextSubmissionId}`, {
+      state: {
+        respondentNumber: currentRespondentNumber
+          ? currentRespondentNumber - 1
+          : undefined,
+      },
+    })
     onNavNextSubmissionId(submissionId)
-  }, [navigate, nextSubmissionId, onNavNextSubmissionId, submissionId])
+  }, [
+    currentRespondentNumber,
+    navigate,
+    nextSubmissionId,
+    onNavNextSubmissionId,
+    submissionId,
+  ])
 
   const handleNavigatePrev = useCallback(() => {
     if (!prevSubmissionId) return
-    navigate(`../${prevSubmissionId}`)
+    navigate(`../${prevSubmissionId}`, {
+      state: {
+        respondentNumber: currentRespondentNumber
+          ? currentRespondentNumber + 1
+          : undefined,
+      },
+    })
     onNavPreviousSubmissionId(submissionId)
-  }, [navigate, onNavPreviousSubmissionId, prevSubmissionId, submissionId])
+  }, [
+    currentRespondentNumber,
+    navigate,
+    onNavPreviousSubmissionId,
+    prevSubmissionId,
+    submissionId,
+  ])
 
   const backLink = useMemo(() => {
     if (lastNavPage) {
@@ -111,19 +146,19 @@ export const IndividualResponsePage = (): JSX.Element => {
           </Link>
           <Skeleton isLoaded={!isLoading}>
             <Text textStyle="h2" as="h2">
-              {/* TODO: add respondent number according to position in table, if exists */}
-              Respondent #2
+              Respondent
+              {currentRespondentNumber ? ` #${currentRespondentNumber}` : ''}
             </Text>
           </Skeleton>
           <ButtonGroup>
             <IconButton
-              isDisabled={!prevSubmissionId}
+              isDisabled={!prevSubmissionId || isAnyLoading}
               onClick={handleNavigatePrev}
               icon={<BiChevronLeft />}
               aria-label="Previous submission"
             />
             <IconButton
-              isDisabled={!nextSubmissionId}
+              isDisabled={!nextSubmissionId || isAnyLoading}
               onClick={handleNavigateNext}
               icon={<BiChevronRight />}
               aria-label="Next submission"

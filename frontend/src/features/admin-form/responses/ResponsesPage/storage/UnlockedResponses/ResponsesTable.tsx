@@ -78,8 +78,12 @@ export const ResponsesTable = () => {
   }, [currentPage, gotoPage])
 
   const handleRowClick = useCallback(
-    (submissionId: string) => {
-      return navigate(`${submissionId}`)
+    (submissionId: string, respondentNumber) => {
+      return navigate(submissionId, {
+        state: {
+          respondentNumber,
+        },
+      })
     },
     [navigate],
   )
@@ -144,7 +148,9 @@ export const ResponsesTable = () => {
               as="div"
               {...row.getRowProps()}
               px={0}
-              onClick={() => handleRowClick(row.values.refNo)}
+              onClick={() =>
+                handleRowClick(row.values.refNo, row.values.number)
+              }
             >
               {row.cells.map((cell) => {
                 return (
