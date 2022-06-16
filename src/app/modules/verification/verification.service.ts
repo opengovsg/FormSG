@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { BasicField } from '../../../../shared/types'
+import { startsWithSgPrefix } from '../../../../shared/utils/phone-num-validation'
 import {
   NUM_OTP_RETRIES,
   SMS_WARNING_TIERS,
@@ -535,7 +536,9 @@ const sendOtpForField = (
       return fieldId
         ? FormService.retrieveFormById(formId)
             // check if we should allow public user to request for otp
-            .andThen((form) => shouldGenerateMobileOtp(form, fieldId))
+            .andThen((form) =>
+              shouldGenerateMobileOtp(form, fieldId, recipient),
+            )
             // call sms - it should validate the recipient
             .andThen(() =>
               SmsFactory.sendVerificationOtp(recipient, otp, formId, senderIp),
@@ -611,20 +614,33 @@ const checkSmsCountAndPerformAction = (
 }
 
 /**
- * Check whether the field in the form is verifiable.
- * If it is not, then we don't need to generate an OTP.
+ * Check whether we should generate an OTP according to the requirements:
+ * 1. the field in the form is verifiable, and
+ * 2. if the recipient is within the allowed countries set by the field
+ * If these conditions are not met, then don't generate an OTP.
  */
 export const shouldGenerateMobileOtp = (
   { form_fields }: Pick<IFormSchema, 'form_fields'>,
   fieldId: string,
+  recipient: string,
 ): ResultAsync<true, OtpRequestError> => {
-  const isVerifiableMobileField =
-    !!form_fields &&
-    form_fields.filter(
-      ({ _id, isVerifiable }) => fieldId === String(_id) && isVerifiable,
-    ).length > 0
+  // Get the field with this fieldId
+  const field = form_fields?.find(({ _id }) => fieldId === String(_id))
 
-  return isVerifiableMobileField
+  if (!field)
+    return errAsync(new MalformedParametersError('Field id not found'))
+
+  if (field.fieldType !== BasicField.Mobile) {
+    return errAsync(
+      new MalformedParametersError('Field id is not a mobile field'),
+    )
+  }
+
+  // Check if recipient is within the allowed countries set by the field
+  const recipientIsWithinAllowedCountries =
+    startsWithSgPrefix(recipient) || field.allowIntlNumbers
+
+  return field.isVerifiable && recipientIsWithinAllowedCountries
     ? okAsync(true)
     : errAsync(new OtpRequestError())
 }
