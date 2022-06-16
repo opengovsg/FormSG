@@ -24,6 +24,7 @@ interface UnlockedResponsesContextProps {
   getPreviousSubmissionId: (
     currentSubmissionId: string,
   ) => SubmissionId | undefined
+  lastNavPage?: number
 }
 
 const UnlockedResponsesContext = createContext<
@@ -108,10 +109,6 @@ const useProvideUnlockedResponses = () => {
     [currentPage, isAnyLoading, metadata, prevMetadata, setCurrentPage],
   )
 
-  const navigateBackToTable = useCallback(() => {
-    setCurrentPage(lastNavPage)
-  }, [lastNavPage, setCurrentPage])
-
   return {
     currentPage,
     setCurrentPage,
@@ -121,7 +118,7 @@ const useProvideUnlockedResponses = () => {
     isAnyLoading,
     getNextSubmissionId,
     getPreviousSubmissionId,
-    navigateBackToTable,
+    lastNavPage,
   }
 }
 
