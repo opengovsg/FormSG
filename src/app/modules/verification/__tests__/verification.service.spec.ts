@@ -44,7 +44,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { BasicField } from '../../../../../shared/types'
 import { SMS_WARNING_TIERS } from '../../../../../shared/utils/verification'
-import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
+import { DatabaseError } from '../../core/core.errors'
 import * as AdminFormService from '../../form/admin-form/admin-form.service'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormUtils from '../../form/form.utils'
@@ -1043,7 +1043,7 @@ describe('Verification service', () => {
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(OtpRequestError)
     })
 
-    it('should return MalformedParametersError if there are no matching form fields with the correct id', async () => {
+    it('should return OtpRequestError if there are no matching form fields with the correct id', async () => {
       // Arrange
       const mockForm = {
         form_fields: [
@@ -1064,10 +1064,10 @@ describe('Verification service', () => {
       )
 
       // Assert
-      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(OtpRequestError)
     })
 
-    it('should return MalformedParametersError if form_fields is empty', async () => {
+    it('should return OtpRequestError if form_fields is empty', async () => {
       // Arrange
       const mockForm = {
         form_fields: [],
@@ -1083,7 +1083,7 @@ describe('Verification service', () => {
       )
 
       // Assert
-      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(OtpRequestError)
     })
 
     it('should return OtpRequestError when OTP is requested for an intl number and the form does not allow intl numbers', async () => {
