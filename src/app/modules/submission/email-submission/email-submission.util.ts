@@ -651,7 +651,7 @@ const getDataCollationFormattedResponse = (
   if (fieldType !== BasicField.Section) {
     return {
       question: getJsonPrefixedQuestion(response),
-      answer: isNaN(Number(answer)) ? `'${answer}'` : answer,
+      answer,
     }
   }
   return undefined

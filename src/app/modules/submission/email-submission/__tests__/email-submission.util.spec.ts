@@ -18,7 +18,6 @@ import {
   generateNewAttachmentResponse,
   generateNewCheckboxResponse,
   generateNewSingleAnswerResponse,
-  generateNewSingleDataCollationAnswerResponse,
   generateNewTableResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
 
@@ -109,16 +108,6 @@ const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
       ![BasicField.Attachment, BasicField.Section].includes(t.name),
   )
   .map((t) => generateNewSingleAnswerResponse(t.name))
-
-const ALL_SINGLE_SUBMITTED_RESPONSES_FOR_DATA_COLLATION = basicTypes
-  // This differs from ALL_SINGLE_SUBMITTED_RESPONSES in that answers
-  // which are not pure numbers are wrapped by quotes
-  .filter(
-    (t) =>
-      !t.answerArray &&
-      ![BasicField.Attachment, BasicField.Section].includes(t.name),
-  )
-  .map((t) => generateNewSingleDataCollationAnswerResponse(t.name))
 
 describe('email-submission.util', () => {
   describe('getInvalidFileExtensions', () => {
@@ -382,10 +371,9 @@ describe('email-submission.util', () => {
       const expectedAutoReplyData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
         generateSingleAnswerAutoreply,
       )
-      const expectedDataCollationData =
-        ALL_SINGLE_SUBMITTED_RESPONSES_FOR_DATA_COLLATION.map(
-          generateSingleAnswerJson,
-        )
+      const expectedDataCollationData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
+        generateSingleAnswerJson,
+      )
       const expectedFormData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
         generateSingleAnswerFormData,
       )
@@ -415,10 +403,6 @@ describe('email-submission.util', () => {
       const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
         isVisible: false,
       })
-      const dataCollationResponse =
-        generateNewSingleDataCollationAnswerResponse(BasicField.ShortText, {
-          isVisible: false,
-        })
 
       const emailData = new SubmissionEmailObj(
         [response],
@@ -427,7 +411,7 @@ describe('email-submission.util', () => {
       )
 
       expect(emailData.dataCollationData).toEqual([
-        generateSingleAnswerJson(dataCollationResponse),
+        generateSingleAnswerJson(response),
       ])
       expect(emailData.autoReplyData).toEqual([])
       expect(emailData.formData).toEqual([
@@ -449,8 +433,8 @@ describe('email-submission.util', () => {
       const secondRow = response.answerArray[1].join(',')
 
       const expectedDataCollationData = [
-        { question: `${TABLE_PREFIX}${question}`, answer: `'${firstRow}'` },
-        { question: `${TABLE_PREFIX}${question}`, answer: `'${secondRow}'` },
+        { question: `${TABLE_PREFIX}${question}`, answer: firstRow },
+        { question: `${TABLE_PREFIX}${question}`, answer: secondRow },
       ]
 
       const expectedAutoReplyData = [
@@ -490,9 +474,7 @@ describe('email-submission.util', () => {
       const question = response.question
       const answer = response.answerArray.join(', ')
 
-      const expectedDataCollationData = [
-        { question, answer: isNaN(Number(answer)) ? `'${answer}'` : answer },
-      ]
+      const expectedDataCollationData = [{ question, answer }]
       const expectedAutoReplyData = [{ question, answerTemplate: [answer] }]
       const expectedFormData = [
         {
@@ -521,16 +503,13 @@ describe('email-submission.util', () => {
       const answer = response.answer
 
       const expectedDataCollationData = [
-        {
-          question: `${ATTACHMENT_PREFIX}${question}`,
-          answer: isNaN(Number(answer)) ? `'${answer}'` : answer,
-        },
+        { question: `${ATTACHMENT_PREFIX}${question}`, answer },
       ]
       const expectedAutoReplyData = [{ question, answerTemplate: [answer] }]
       const expectedFormData = [
         {
           question: `${ATTACHMENT_PREFIX}${question}`,
-          answer: answer,
+          answer,
           answerTemplate: [answer],
           fieldType: BasicField.Attachment,
         },
@@ -555,9 +534,7 @@ describe('email-submission.util', () => {
 
       const question = response.question
 
-      const expectedDataCollationData = [
-        { question, answer: isNaN(Number(answer)) ? `'${answer}'` : answer },
-      ]
+      const expectedDataCollationData = [{ question, answer }]
       const expectedAutoReplyData = [
         { question, answerTemplate: answer.split('\n') },
       ]
@@ -591,10 +568,7 @@ describe('email-submission.util', () => {
       const answer = answerArray[0].join(',')
 
       const expectedDataCollationData = [
-        {
-          question: `${TABLE_PREFIX}${question}`,
-          answer: isNaN(Number(answer)) ? `'${answer}'` : answer,
-        },
+        { question: `${TABLE_PREFIX}${question}`, answer },
       ]
       const expectedAutoReplyData = [
         { question, answerTemplate: answer.split('\n') },
@@ -626,9 +600,7 @@ describe('email-submission.util', () => {
       const question = response.question
       const answer = answerArray.join(', ')
 
-      const expectedDataCollationData = [
-        { question, answer: isNaN(Number(answer)) ? `'${answer}'` : answer },
-      ]
+      const expectedDataCollationData = [{ question, answer }]
       const expectedAutoReplyData = [
         { question, answerTemplate: answer.split('\n') },
       ]
@@ -660,14 +632,12 @@ describe('email-submission.util', () => {
       const question = response.question
       const answer = response.answer
 
-      const expectedDataCollationData = [
-        { question, answer: isNaN(Number(answer)) ? `'${answer}'` : answer },
-      ]
+      const expectedDataCollationData = [{ question, answer }]
       const expectedAutoReplyData = [{ question, answerTemplate: [answer] }]
       const expectedFormData = [
         {
           question: `${VERIFIED_PREFIX}${question}`,
-          answer: answer,
+          answer,
           answerTemplate: [answer],
           fieldType: BasicField.Email,
         },
@@ -704,17 +674,10 @@ describe('email-submission.util', () => {
       )
 
       const expectedDataCollationData = [
-        {
-          question: nameResponse.question,
-          answer: isNaN(Number(nameResponse.answer))
-            ? `'${nameResponse.answer}'`
-            : nameResponse.answer,
-        },
+        { question: nameResponse.question, answer: nameResponse.answer },
         {
           question: vehicleResponse.question,
-          answer: isNaN(Number(vehicleResponse.answer))
-            ? `'${vehicleResponse.answer}'`
-            : vehicleResponse.answer,
+          answer: vehicleResponse.answer,
         },
       ]
       const expectedAutoReplyData = [
@@ -750,24 +713,18 @@ describe('email-submission.util', () => {
     })
 
     it('should return the response in correct json format when dataCollationData() method is called', () => {
-      const response1Answer = (response1 as ResponseFormattedForEmail).answer
-      const response2Answer = (response2 as ResponseFormattedForEmail).answer
       const correctJson = [
         {
           question: getJsonPrefixedQuestion(
             response1 as ResponseFormattedForEmail,
           ),
-          answer: isNaN(Number(response1Answer))
-            ? `'${response1Answer}'`
-            : response1Answer,
+          answer: (response1 as ResponseFormattedForEmail).answer,
         },
         {
           question: getJsonPrefixedQuestion(
             response2 as ResponseFormattedForEmail,
           ),
-          answer: isNaN(Number(response2Answer))
-            ? `'${response2Answer}'`
-            : response2Answer,
+          answer: (response2 as ResponseFormattedForEmail).answer,
         },
       ]
       expect(submissionEmailObj.dataCollationData).toEqual(correctJson)

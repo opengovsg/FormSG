@@ -222,30 +222,6 @@ export const generateNewSingleAnswerResponse = (
   } as ProcessedSingleAnswerResponse
 }
 
-export const generateNewSingleDataCollationAnswerResponse = (
-  fieldType: BasicField,
-  customParams?: Partial<ProcessedSingleAnswerResponse>,
-): ProcessedSingleAnswerResponse => {
-  if (
-    [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
-      fieldType,
-    )
-  ) {
-    throw new Error(
-      'Call the custom response generator functions for attachment, table and checkbox.',
-    )
-  }
-  return {
-    // Wrap answer in quotes
-    _id: new ObjectId().toHexString(),
-    question: `${fieldType} question`,
-    answer: `'${fieldType} answer'`,
-    fieldType: fieldType,
-    isVisible: true,
-    ...customParams,
-  } as ProcessedSingleAnswerResponse
-}
-
 export const generateUnprocessedSingleAnswerResponse = (
   fieldType: BasicField,
   customParams?: Partial<SingleAnswerFieldResponse>,
