@@ -577,6 +577,7 @@ export const handlePublicAuthLogout = [
 
 /**
  * Handler for validating the eServiceId of a given form
+ * @deprecated with transition to SP OIDC because NDI no longer returns error page for invalid eservice ID
  *
  * @returns 200 with eserviceId validation result
  * @returns 400 when there is an error on the authType of the form

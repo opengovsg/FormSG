@@ -58,6 +58,7 @@ export const handleRedirect: ControllerHandler<
 
 /**
  * Validates the given e-service ID.
+ * @deprecated with transition to SP OIDC because NDI no longer returns error page for invalid eservice ID
  * @param req - Express request object
  * @param res - Express response object
  */
