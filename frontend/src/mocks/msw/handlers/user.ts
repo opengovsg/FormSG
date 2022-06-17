@@ -5,8 +5,6 @@ import { ErrorDto } from '~shared/types/core'
 import { DateString } from '~shared/types/generic'
 import { UserDto, UserId, VerifyUserContactOtpDto } from '~shared/types/user'
 
-import { LOGGED_IN_KEY } from '~constants/localStorage'
-
 import { DefaultRequestReturn, WithDelayProps } from './types'
 
 export const MOCK_USER = {
@@ -34,18 +32,6 @@ export const getUser = ({
   return rest.get<never, never, UserDto | ErrorDto>(
     '/api/v3/user',
     (_req, res, ctx) => {
-      // Check if the user is authenticated in this session
-      const isAuthenticated = localStorage.getItem(LOGGED_IN_KEY)
-      if (!isAuthenticated) {
-        // If not authenticated, respond with a 403 error
-        return res(
-          ctx.delay(),
-          ctx.status(403),
-          ctx.json({
-            message: 'Not authorized',
-          }),
-        )
-      }
       // If authenticated, return a mocked user details
       return res(ctx.delay(delay), ctx.status(200), ctx.json(mockUser))
     },
