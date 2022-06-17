@@ -11,6 +11,7 @@ import {
 import jwkToPem from 'jwk-to-pem'
 import NodeCache from 'node-cache'
 import { BaseClient, Issuer } from 'openid-client'
+import promiseRetry from 'promise-retry'
 
 import {
   CreateAuthorisationUrlError,
@@ -80,7 +81,7 @@ export class SpOidcClientCache extends NodeCache {
   }
 
   async getNdiPublicKeys(): Promise<CryptoKeySet> {
-    const ndiPublicKeys: CryptoKeySet | undefined = this.get('ndiPublicKeys')
+    const ndiPublicKeys = this.get<CryptoKeySet>('ndiPublicKeys')
     if (!ndiPublicKeys) {
       const { ndiPublicKeys } = await this.refresh()
       return ndiPublicKeys
@@ -89,7 +90,7 @@ export class SpOidcClientCache extends NodeCache {
   }
 
   async getBaseClient(): Promise<BaseClient> {
-    const baseClient: BaseClient | undefined = this.get('baseClient')
+    const baseClient = this.get<BaseClient>('baseClient')
     if (!baseClient) {
       const { baseClient } = await this.refresh()
       return baseClient
@@ -113,9 +114,22 @@ export class SpOidcClientCache extends NodeCache {
   }
 
   async retrievePublicKeysFromNdi(): Promise<CryptoKeySet> {
-    const spOidcNdiPublicJwks = await axios
-      .get<PublicJwks>(this.#spOidcNdiJwksEndpoint)
-      .then(({ data }) => data)
+    const getJwksWithRetries = promiseRetry(
+      (retry) => {
+        return axios
+          .get<PublicJwks>(this.#spOidcNdiJwksEndpoint)
+          .then(({ data }) => data)
+          .catch(retry)
+      },
+      {
+        retries: 2, // NDI specs: 3 attempts. Do once then retry two times
+        // Timeout is calculated as Math.min(minTimeout * Math.pow(factor, attempt), maxTimeout)
+        minTimeout: 3000, // NDI specs: timeout of max 3s
+        maxTimeout: 3000, // NDI specs: timeout of max 3s
+      },
+    )
+
+    const spOidcNdiPublicJwks = await getJwksWithRetries
 
     return spOidcNdiPublicJwks.keys.map((jwk) => {
       if (!isEC(jwk) || !jwk.kid || !jwk.use) {
@@ -130,7 +144,19 @@ export class SpOidcClientCache extends NodeCache {
   }
 
   async retrieveBaseClientFromNdi(): Promise<BaseClient> {
-    const issuer = await Issuer.discover(this.#spOidcNdiDiscoveryEndpoint)
+    const getIssuerWithRetries = promiseRetry(
+      (retry) => {
+        return Issuer.discover(this.#spOidcNdiDiscoveryEndpoint).catch(retry)
+      },
+      {
+        retries: 2, // NDI specs: 3 attempts. Do once then retry two times
+        // Timeout is calculated as Math.min(minTimeout * Math.pow(factor, attempt), maxTimeout)
+        minTimeout: 3000, // NDI specs: timeout of max 3s
+        maxTimeout: 3000, // NDI specs: timeout of max 3s
+      },
+    )
+
+    const issuer = await getIssuerWithRetries
 
     const baseClient = new issuer.Client(
       {
