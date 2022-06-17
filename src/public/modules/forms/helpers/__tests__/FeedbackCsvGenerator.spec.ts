@@ -35,7 +35,7 @@ describe('FeedbackCsvGenerator', () => {
         .tz('Asia/Singapore')
         .format('DD MMM YYYY hh:mm:ss A')
 
-      const insertedLine = `${insertedCreatedDate},'${feedback.comment}',${feedback.rating}`
+      const insertedLine = `${insertedCreatedDate},${feedback.comment},${feedback.rating}`
 
       // Act
       feedbackCsv.addLineFromFeedback(feedback)

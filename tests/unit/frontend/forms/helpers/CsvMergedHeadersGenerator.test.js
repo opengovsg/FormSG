@@ -370,10 +370,10 @@ describe('CsvMergedHeadersGenerator', () => {
           moment(mockRecord.created)
             .tz('Asia/Singapore')
             .format('DD MMM YYYY hh:mm:ss A'),
-          `'${mockDecryptedRecord[0].answer}'`,
-          `'${mockDecryptedRecord[1].answer}'`,
-          `'${mockDecryptedRecord[2].answer}'`,
-          `'${mockDecryptedRecord[3].answer}'`,
+          mockDecryptedRecord[0].answer,
+          mockDecryptedRecord[1].answer,
+          mockDecryptedRecord[2].answer,
+          mockDecryptedRecord[3].answer,
         ])
         expect(generator.records).toEqual([
           UTF8_BYTE_ORDER_MARK,
@@ -432,10 +432,10 @@ describe('CsvMergedHeadersGenerator', () => {
           moment(mockFirstRecord.created)
             .tz('Asia/Singapore')
             .format('DD MMM YYYY hh:mm:ss A'),
-          `'${mockFirstDecryptedRecord[0].answer}'`,
-          `'${mockFirstDecryptedRecord[1].answer}'`,
-          `'${mockFirstDecryptedRecord[2].answer}'`,
-          `'${mockFirstDecryptedRecord[3].answer}'`,
+          mockFirstDecryptedRecord[0].answer,
+          mockFirstDecryptedRecord[1].answer,
+          mockFirstDecryptedRecord[2].answer,
+          mockFirstDecryptedRecord[3].answer,
         ])
         // Second processed row should be mockReversedRecord's answers in reversed
         // order since the fieldIds are reversed
@@ -444,10 +444,10 @@ describe('CsvMergedHeadersGenerator', () => {
           moment(mockReversedRecord.created)
             .tz('Asia/Singapore')
             .format('DD MMM YYYY hh:mm:ss A'),
-          `'${mockReversedDecryptedRecord[3].answer}'`,
-          `'${mockReversedDecryptedRecord[2].answer}'`,
-          `'${mockReversedDecryptedRecord[1].answer}'`,
-          `'${mockReversedDecryptedRecord[0].answer}'`,
+          mockReversedDecryptedRecord[3].answer,
+          mockReversedDecryptedRecord[2].answer,
+          mockReversedDecryptedRecord[1].answer,
+          mockReversedDecryptedRecord[0].answer,
         ])
 
         expect(generator.records).toEqual([
@@ -510,10 +510,10 @@ describe('CsvMergedHeadersGenerator', () => {
           moment(mockRecord.created)
             .tz('Asia/Singapore')
             .format('DD MMM YYYY hh:mm:ss A'),
-          `'${mockDecryptedRecord[0].answer}'`,
-          `'${mockDecryptedRecord[1].answer}'`,
-          `'${mockDecryptedRecord[2].answer}'`,
-          `'${mockDecryptedRecord[3].answer}'`,
+          mockDecryptedRecord[0].answer,
+          mockDecryptedRecord[1].answer,
+          mockDecryptedRecord[2].answer,
+          mockDecryptedRecord[3].answer,
           // Should have extra blank space due to new header
           '',
         ])
@@ -529,8 +529,8 @@ describe('CsvMergedHeadersGenerator', () => {
           '',
           '',
           // Others should be blank, but the later 'intersect' key should be first
-          `'${newDecryptedRecord[1].answer}'`,
-          `'${newDecryptedRecord[0].answer}'`,
+          newDecryptedRecord[1].answer,
+          newDecryptedRecord[0].answer,
         ])
         expect(generator.records).toEqual([
           UTF8_BYTE_ORDER_MARK,
@@ -572,7 +572,7 @@ describe('CsvMergedHeadersGenerator', () => {
             .tz('Asia/Singapore')
             .format('DD MMM YYYY hh:mm:ss A'),
           // Answer array values should be joined by a semicolon
-          `'${mockDecryptedRecord[0].answerArray.join(';')}'`,
+          mockDecryptedRecord[0].answerArray.join(';'),
         ])
 
         expect(generator.records).toEqual([
@@ -621,8 +621,8 @@ describe('CsvMergedHeadersGenerator', () => {
             .tz('Asia/Singapore')
             .format('DD MMM YYYY hh:mm:ss A'),
           // Answer array values should be joined by a semicolon
-          `'${mockDecryptedRecord[0].answerArray[0].join(';')}'`,
-          `'${mockDecryptedRecord[0].answerArray[1].join(';')}'`,
+          mockDecryptedRecord[0].answerArray[0].join(';'),
+          mockDecryptedRecord[0].answerArray[1].join(';'),
         ])
 
         expect(generator.records).toEqual([
@@ -668,7 +668,7 @@ describe('CsvMergedHeadersGenerator', () => {
             .tz('Asia/Singapore')
             .format('DD MMM YYYY hh:mm:ss A'),
           // Answer array values should be joined by a semicolon
-          `'${mockAnswerArray[0].answerArray.join(';')}'`,
+          mockAnswerArray[0].answerArray.join(';'),
         ])
         // Second row is answer, but same field Id, so same number of headers
         const expectedSubmissionRow2 = stringify([
@@ -677,7 +677,7 @@ describe('CsvMergedHeadersGenerator', () => {
             .tz('Asia/Singapore')
             .format('DD MMM YYYY hh:mm:ss A'),
           // Answer array values should be joined by a semicolon
-          `'${mockAnswer[0].answer}'`,
+          mockAnswer[0].answer,
         ])
 
         expect(generator.records).toEqual([

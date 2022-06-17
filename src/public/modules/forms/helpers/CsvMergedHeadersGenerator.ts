@@ -147,10 +147,7 @@ export class CsvMergedHeadersGenerator extends CsvGenerator {
   ): string {
     const fieldRecord = unprocessedRecord[fieldId]
     if (!fieldRecord) return ''
-    const answer = fieldRecord.getAnswer(colIndex)
-    // wrap answer in quotes if answer is not a number.
-    // for number, do not wrap in quotes so that excel parses it as number
-    return isNaN(Number(answer)) ? `'${answer}'` : answer
+    return fieldRecord.getAnswer(colIndex)
   }
 
   /**
