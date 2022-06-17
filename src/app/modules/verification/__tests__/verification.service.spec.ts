@@ -64,8 +64,9 @@ import * as VerificationService from '../verification.service'
 import {
   generateFieldParams,
   MOCK_HASHED_OTP,
+  MOCK_INTL_RECIPIENT,
+  MOCK_LOCAL_RECIPIENT,
   MOCK_OTP,
-  MOCK_RECIPIENT,
   MOCK_SENDER_IP,
   MOCK_SIGNED_DATA,
 } from './verification.test.helpers'
@@ -327,13 +328,13 @@ describe('Verification service', () => {
         fieldId: mockFieldId,
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
-        recipient: MOCK_RECIPIENT,
+        recipient: MOCK_LOCAL_RECIPIENT,
         senderIp: MOCK_SENDER_IP,
       })
 
       // Default mock params has fieldType: 'mobile'
       expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
-        MOCK_RECIPIENT,
+        MOCK_LOCAL_RECIPIENT,
         MOCK_OTP,
         mockTransaction.formId,
         MOCK_SENDER_IP,
@@ -343,7 +344,7 @@ describe('Verification service', () => {
           transactionId: mockTransactionId,
           formId: mockTransaction.formId,
           fieldId: mockFieldId,
-          answer: MOCK_RECIPIENT,
+          answer: MOCK_LOCAL_RECIPIENT,
         },
       )
       expect(updateHashSpy).toHaveBeenCalledWith({
@@ -362,7 +363,7 @@ describe('Verification service', () => {
         fieldId: mockFieldId,
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
-        recipient: MOCK_RECIPIENT,
+        recipient: MOCK_LOCAL_RECIPIENT,
         senderIp: MOCK_SENDER_IP,
       })
 
@@ -387,7 +388,7 @@ describe('Verification service', () => {
         fieldId: mockFieldId,
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
-        recipient: MOCK_RECIPIENT,
+        recipient: MOCK_LOCAL_RECIPIENT,
         senderIp: MOCK_SENDER_IP,
       })
 
@@ -407,7 +408,7 @@ describe('Verification service', () => {
         fieldId: new ObjectId().toHexString(),
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
-        recipient: MOCK_RECIPIENT,
+        recipient: MOCK_LOCAL_RECIPIENT,
         senderIp: MOCK_SENDER_IP,
       })
 
@@ -439,7 +440,7 @@ describe('Verification service', () => {
         fieldId: expiredOtpField._id,
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
-        recipient: MOCK_RECIPIENT,
+        recipient: MOCK_LOCAL_RECIPIENT,
         senderIp: MOCK_SENDER_IP,
       })
 
@@ -468,7 +469,8 @@ describe('Verification service', () => {
         fieldId: maxExceededOtpField._id,
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
-        recipient: MOCK_RECIPIENT,
+        recipient: MOCK_LOCAL_RECIPIENT,
+        senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
@@ -498,12 +500,12 @@ describe('Verification service', () => {
         fieldId: field._id,
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
-        recipient: MOCK_RECIPIENT,
+        recipient: MOCK_LOCAL_RECIPIENT,
         senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockMailService.sendVerificationOtp).toHaveBeenCalledWith(
-        MOCK_RECIPIENT,
+        MOCK_LOCAL_RECIPIENT,
         MOCK_OTP,
       )
       expect(
@@ -533,12 +535,12 @@ describe('Verification service', () => {
         fieldId: mockFieldId,
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
-        recipient: MOCK_RECIPIENT,
+        recipient: MOCK_LOCAL_RECIPIENT,
         senderIp: MOCK_SENDER_IP,
       })
 
       expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
-        MOCK_RECIPIENT,
+        MOCK_LOCAL_RECIPIENT,
         MOCK_OTP,
         new ObjectId(mockFormId),
         MOCK_SENDER_IP,
@@ -560,13 +562,13 @@ describe('Verification service', () => {
         fieldId: mockFieldId,
         hashedOtp: MOCK_HASHED_OTP,
         otp: MOCK_OTP,
-        recipient: MOCK_RECIPIENT,
+        recipient: MOCK_LOCAL_RECIPIENT,
         senderIp: MOCK_SENDER_IP,
       })
 
       // Mock params default to mobile
       expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
-        MOCK_RECIPIENT,
+        MOCK_LOCAL_RECIPIENT,
         MOCK_OTP,
         new ObjectId(mockFormId),
         MOCK_SENDER_IP,
@@ -576,7 +578,7 @@ describe('Verification service', () => {
           transactionId: mockTransactionId,
           formId: new ObjectId(mockFormId),
           fieldId: mockFieldId,
-          answer: MOCK_RECIPIENT,
+          answer: MOCK_LOCAL_RECIPIENT,
         },
       )
       expect(updateHashSpy).toHaveBeenCalledWith({
@@ -1003,11 +1005,13 @@ describe('Verification service', () => {
           }),
         ],
       }
+      const recipient = MOCK_LOCAL_RECIPIENT
 
       // Act
       const actual = await VerificationService.shouldGenerateMobileOtp(
         mockForm,
         fieldId,
+        recipient,
       )
 
       // Assert
@@ -1026,11 +1030,13 @@ describe('Verification service', () => {
           }),
         ],
       }
+      const recipient = MOCK_LOCAL_RECIPIENT
 
       // Act
       const actual = await VerificationService.shouldGenerateMobileOtp(
         mockForm,
         fieldId,
+        recipient,
       )
 
       // Assert
@@ -1047,12 +1053,14 @@ describe('Verification service', () => {
           }),
         ],
       }
+      const recipient = MOCK_LOCAL_RECIPIENT
       const fieldIdOtherString = new ObjectId().toHexString()
 
       // Act
       const actual = await VerificationService.shouldGenerateMobileOtp(
         mockForm,
         fieldIdOtherString,
+        recipient,
       )
 
       // Assert
@@ -1065,11 +1073,38 @@ describe('Verification service', () => {
         form_fields: [],
       }
       const fieldId = new ObjectId().toHexString()
+      const recipient = MOCK_LOCAL_RECIPIENT
 
       // Act
       const actual = await VerificationService.shouldGenerateMobileOtp(
         mockForm,
         fieldId,
+        recipient,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(OtpRequestError)
+    })
+
+    it('should return OtpRequestError when OTP is requested for an intl number and the form does not allow intl numbers', async () => {
+      // Arrange
+      const fieldId = new ObjectId().toHexString()
+      const mockForm = {
+        form_fields: [
+          generateDefaultField(BasicField.Mobile, {
+            _id: fieldId,
+            isVerifiable: true,
+            allowIntlNumbers: false,
+          }),
+        ],
+      }
+      const recipient = MOCK_INTL_RECIPIENT
+
+      // Act
+      const actual = await VerificationService.shouldGenerateMobileOtp(
+        mockForm,
+        fieldId,
+        recipient,
       )
 
       // Assert
