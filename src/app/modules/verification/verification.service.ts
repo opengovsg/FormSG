@@ -627,14 +627,8 @@ export const shouldGenerateMobileOtp = (
   // Get the field with this fieldId
   const field = form_fields?.find(({ _id }) => fieldId === String(_id))
 
-  if (!field)
-    return errAsync(new MalformedParametersError('Field id not found'))
-
-  if (field.fieldType !== BasicField.Mobile) {
-    return errAsync(
-      new MalformedParametersError('Field id is not a mobile field'),
-    )
-  }
+  if (!field || field.fieldType !== BasicField.Mobile)
+    return errAsync(new OtpRequestError())
 
   // Check if recipient is within the allowed countries set by the field
   const recipientIsWithinAllowedCountries =
