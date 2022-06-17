@@ -30,6 +30,20 @@ import {
   MalformedParametersError,
 } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
+import {
+  MyInfoCookieStateError,
+  MyInfoMissingAccessTokenError,
+} from '../myinfo/myinfo.errors'
+import {
+  SgidInvalidJwtError,
+  SgidMissingJwtError,
+  SgidVerifyJwtError,
+} from '../sgid/sgid.errors'
+import {
+  InvalidJwtError,
+  MissingJwtError,
+  VerifyJwtError,
+} from '../spcp/spcp.errors'
 
 import {
   FieldNotFoundInTransactionError,
@@ -183,6 +197,18 @@ export const mapRouteError: MapRouteError = (
     case NonVerifiedFieldTypeError:
     case MissingHashDataError:
     case DatabaseValidationError:
+      return {
+        errorMessage: coreErrorMsg,
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
+    case MissingJwtError:
+    case InvalidJwtError:
+    case VerifyJwtError:
+    case SgidVerifyJwtError:
+    case SgidInvalidJwtError:
+    case SgidMissingJwtError:
+    case MyInfoMissingAccessTokenError:
+    case MyInfoCookieStateError:
       return {
         errorMessage: coreErrorMsg,
         statusCode: StatusCodes.BAD_REQUEST,
