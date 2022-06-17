@@ -322,10 +322,7 @@ describe('user.service', () => {
       expect(user.flags?.lastSeenFeatureUpdateDate).toBeUndefined()
 
       const actualResult =
-        await UserService.updateUserLastSeenFeatureUpdateDate(
-          user._id,
-          MOCK_DATE,
-        )
+        await UserService.updateUserLastSeenFeatureUpdateDate(user._id)
 
       const updatedUser = await UserService.getPopulatedUserById(user._id)
       expect(actualResult.isOk()).toEqual(true)
@@ -338,14 +335,10 @@ describe('user.service', () => {
     it('should return MissingUserError if userId is invalid', async () => {
       // Arrange
       const invalidUserId = new ObjectID()
-      const MOCK_DATE = new Date()
 
       // Act
       const actualResult =
-        await UserService.updateUserLastSeenFeatureUpdateDate(
-          invalidUserId,
-          MOCK_DATE,
-        )
+        await UserService.updateUserLastSeenFeatureUpdateDate(invalidUserId)
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MissingUserError)
     })

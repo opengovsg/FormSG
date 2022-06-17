@@ -11,6 +11,7 @@ import { getRequestIp } from '../../utils/request'
 import { getUserIdFromSession } from '../auth/auth.utils'
 import { ControllerHandler } from '../core/core.types'
 
+import { UNAUTHORIZED_USER_MESSAGE } from './user.constant'
 import {
   validateContactOtpVerificationParams,
   validateContactSendOtpParams,
@@ -38,7 +39,7 @@ export const _handleContactSendOtp: ControllerHandler<
   // Guard against user updating for a different user, or if user is not logged
   // in.
   if (!sessionUserId || sessionUserId !== userId) {
-    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
+    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
   }
 
   const senderIp = getRequestIp(req)
@@ -120,7 +121,7 @@ export const _handleContactVerifyOtp: ControllerHandler<
   // Guard against user updating for a different user, or if user is not logged
   // in.
   if (!sessionUserId || sessionUserId !== userId) {
-    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
+    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
   }
 
   const logMeta = {
@@ -189,7 +190,7 @@ export const handleFetchUser: ControllerHandler = async (req, res) => {
   if (!sessionUserId) {
     return res
       .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: 'User is unauthorized.' })
+      .json({ message: UNAUTHORIZED_USER_MESSAGE })
   }
 
   return getPopulatedUserById(sessionUserId)
@@ -218,14 +219,15 @@ export const handleFetchUser: ControllerHandler = async (req, res) => {
  */
 export const handleUpdateUserLastSeenFeatureUpdateDate: ControllerHandler =
   async (req, res) => {
-    const currentDateTime = new Date(Date.now())
     const sessionUserId = getUserIdFromSession(req.session)
 
     if (!sessionUserId) {
-      return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json(UNAUTHORIZED_USER_MESSAGE)
     }
 
-    return updateUserLastSeenFeatureUpdateDate(sessionUserId, currentDateTime)
+    return updateUserLastSeenFeatureUpdateDate(sessionUserId)
       .map((updatedUser) => {
         return res.status(StatusCodes.OK).json(updatedUser)
       })

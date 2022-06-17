@@ -46,15 +46,14 @@ UserRouter.post('/contact/otp/verify', UserController.handleContactVerifyOtp)
 /**
  * Verify the contact verification one-time password (OTP) for the user as part
  * of the contact verification process
- * @route POST /user/flag/last-seen
- * @param body.date the latest seen feature update date to update user with
+ * @route POST /user/flag/new-features-last-seen
  * @returns 200 when user last seen feature update updates sucessfully
  * @returns 401 if user is not currently logged in
  * @returns 422 when userId does not exist in the database
  * @returns 500 when database errors occurs
  */
 UserRouter.post(
-  '/flag/last-seen',
+  '/flag/new-features-last-seen',
   UserController.handleUpdateUserLastSeenFeatureUpdateDate,
 )
 
