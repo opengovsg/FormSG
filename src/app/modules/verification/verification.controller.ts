@@ -1,13 +1,17 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
+import { ok } from 'neverthrow'
 
-import { ErrorDto } from '../../../../shared/types'
+import { ErrorDto, FormAuthType } from '../../../../shared/types'
 import { SALT_ROUNDS } from '../../../../shared/utils/verification'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
+import * as MyInfoUtil from '../myinfo/myinfo.util'
+import { SgidService } from '../sgid/sgid.service'
+import { SpcpService } from '../spcp/spcp.service'
 
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
@@ -214,7 +218,62 @@ export const _handleGenerateOtp: ControllerHandler<
   // Step 1: Ensure that the form for the specified transaction exists
   return (
     FormService.retrieveFullFormById(formId)
-      // Step 2: Generate hash and otp
+      // Step 2: Verify SPCP/MyInfo, if form requires it
+      .andThen((form) => {
+        const { authType } = form
+        switch (authType) {
+          case FormAuthType.CP: {
+            return SpcpService.extractJwt(req.cookies, authType)
+              .asyncAndThen((jwt) => SpcpService.extractCorppassJwtPayload(jwt))
+              .map(() => form)
+              .mapErr((error) => {
+                logger.error({
+                  message: 'Failed to verify Corppass JWT with auth client',
+                  meta: logMeta,
+                  error,
+                })
+                return error
+              })
+          }
+          case FormAuthType.SP:
+            return SpcpService.extractJwt(req.cookies, authType)
+              .asyncAndThen((jwt) => SpcpService.extractSingpassJwtPayload(jwt))
+              .map(() => form)
+              .mapErr((error) => {
+                logger.error({
+                  message: 'Failed to verify Singpass JWT with auth client',
+                  meta: logMeta,
+                  error,
+                })
+                return error
+              })
+          case FormAuthType.SGID:
+            return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
+              .map(() => form)
+              .mapErr((error) => {
+                logger.error({
+                  message: 'Failed to verify sgID JWT with auth client',
+                  meta: logMeta,
+                  error,
+                })
+                return error
+              })
+          case FormAuthType.MyInfo:
+            return MyInfoUtil.extractMyInfoCookie(req.cookies)
+              .andThen(MyInfoUtil.extractAccessTokenFromCookie)
+              .map(() => form)
+              .mapErr((error) => {
+                logger.error({
+                  message: 'Failed to verify MyInfo hashes',
+                  meta: logMeta,
+                  error,
+                })
+                return error
+              })
+          default:
+            return ok(form)
+        }
+      })
       .andThen((form) =>
         generateOtpWithHash(logMeta, SALT_ROUNDS)
           .andThen(({ otp, hashedOtp }) =>

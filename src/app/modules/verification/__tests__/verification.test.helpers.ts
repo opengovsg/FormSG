@@ -6,7 +6,8 @@ import { IVerificationField } from 'src/types'
 export const MOCK_SIGNED_DATA = 'mockSignedData'
 export const MOCK_HASHED_OTP = 'mockHashedOtp'
 export const MOCK_OTP = '123456'
-export const MOCK_RECIPIENT = '81234567'
+export const MOCK_LOCAL_RECIPIENT = '+6581234567'
+export const MOCK_INTL_RECIPIENT = '+011234567890'
 export const MOCK_SENDER_IP = '200.0.0.0'
 
 export const VFN_FIELD_DEFAULTS = {
