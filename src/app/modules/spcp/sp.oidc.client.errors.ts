@@ -69,3 +69,12 @@ export class VerificationKeyError extends Error {
     super(message)
   }
 }
+
+/**
+ * Failed to exchange auth code for nric
+ */
+export class ExchangeAuthTokenError extends Error {
+  constructor(message = 'Exchange auth code for nric failed') {
+    super(message)
+  }
+}

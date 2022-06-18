@@ -2,6 +2,7 @@ import { KeyObject } from 'crypto'
 import { JWK } from 'jose'
 import { EC, ECPrivate } from 'jwk-to-pem'
 import { Options } from 'node-cache'
+import { BaseClient } from 'openid-client'
 
 type PublicJwk = Partial<JWK> & Required<Pick<JWK, 'use' | 'kid'>>
 
@@ -14,6 +15,12 @@ export type PublicJwks = {
 }
 export type SecretJwks = {
   keys: SecretJwk[]
+}
+
+// Object returned when cache calls refresh
+export type Refresh = {
+  ndiPublicKeys: CryptoKeySet
+  baseClient: BaseClient
 }
 
 // Object with jwks converted to a crypto KeyObject

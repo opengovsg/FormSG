@@ -16,6 +16,7 @@ import promiseRetry from 'promise-retry'
 import {
   CreateAuthorisationUrlError,
   CreateJwtError,
+  ExchangeAuthTokenError,
   GetDecryptionKeyError,
   GetVerificationKeyError,
   InvalidIdTokenError,
@@ -29,6 +30,7 @@ import {
   isECPrivate,
   isSigningKey,
   PublicJwks,
+  Refresh,
   SecretJwks,
   SigningKey,
   SpOidcClientCacheConstructorParams,
@@ -47,6 +49,10 @@ export class SpOidcClientCache extends NodeCache {
   #spOidcRpRedirectUrl: string
   #spOidcRpSecretJwks: SecretJwks
 
+  /**
+   * Constructor for cache
+   * On instantiation, trigger a refresh to populate the cache
+   */
   constructor({
     options,
     spOidcNdiDiscoveryEndpoint,
@@ -80,6 +86,11 @@ export class SpOidcClientCache extends NodeCache {
     )
   }
 
+  /**
+   * Method to retrieve NDI's public keys from cache
+   * @async
+   * @returns NDI's public keys
+   */
   async getNdiPublicKeys(): Promise<CryptoKeySet> {
     const ndiPublicKeys = this.get<CryptoKeySet>('ndiPublicKeys')
     if (!ndiPublicKeys) {
@@ -89,6 +100,11 @@ export class SpOidcClientCache extends NodeCache {
     return ndiPublicKeys
   }
 
+  /**
+   * Method to retrieve base client from cache
+   * Triggers a refresh
+   * @returns Base client
+   */
   async getBaseClient(): Promise<BaseClient> {
     const baseClient = this.get<BaseClient>('baseClient')
     if (!baseClient) {
@@ -98,10 +114,14 @@ export class SpOidcClientCache extends NodeCache {
     return baseClient
   }
 
-  async refresh(): Promise<{
-    ndiPublicKeys: CryptoKeySet
-    baseClient: BaseClient
-  }> {
+  /**
+   * Method to trigger a refresh and fetch NDI's public keys and
+   * discover the well known endpoint to construct the base client
+   * Stores NDI's public key and base client in cache with a TTL of 60 mins
+   * Sets `expiry` key in cache with TTL of 59 mins to trigger refresh ahead
+   * @returns object {ndiPublicKeys, baseClient}
+   */
+  async refresh(): Promise<Refresh> {
     const [ndiPublicKeys, baseClient] = await Promise.all([
       this.retrievePublicKeysFromNdi(),
       this.retrieveBaseClientFromNdi(),
@@ -109,10 +129,17 @@ export class SpOidcClientCache extends NodeCache {
 
     this.set('ndiPublicKeys', ndiPublicKeys, 3600) // TTL of 60 minutes
     this.set('baseClient', baseClient, 3600) // TTL of 60 minutes
-    this.set('expiry', 'expiry', 3000) // set expiry key with TTL of 50 minutes, to trigger refresh ahead
+    this.set('expiry', 'expiry', 3300) // set expiry key with TTL of 55 minutes, to trigger refresh up to 5min ahead (note that expiry check is done every 60s)
     return { ndiPublicKeys, baseClient }
   }
 
+  /**
+   * Method to make network call to retrieve public JWKS from NDI
+   * Max of 3 attemps with timeout of 3s per attempt
+   * @async
+   * @returns NDI's public keys
+   * @throws JwkError if keys are not the correct shape
+   */
   async retrievePublicKeysFromNdi(): Promise<CryptoKeySet> {
     const getJwksWithRetries = promiseRetry(
       (retry) => {
@@ -123,7 +150,7 @@ export class SpOidcClientCache extends NodeCache {
       },
       {
         retries: 2, // NDI specs: 3 attempts. Do once then retry two times
-        // Timeout is calculated as Math.min(minTimeout * Math.pow(factor, attempt), maxTimeout)
+        // Timeout is calculated as Math.min(minTimeout * Math.pow(factor, attempt), maxTimeout). Factor is a value between 1 and 2 by default
         minTimeout: 3000, // NDI specs: timeout of max 3s
         maxTimeout: 3000, // NDI specs: timeout of max 3s
       },
@@ -143,6 +170,12 @@ export class SpOidcClientCache extends NodeCache {
     })
   }
 
+  /**
+   * Method to make network call to NDI's discovery endpoint and construct the base client
+   * Max of 3 attemps with timeout of 3s per attempt
+   * @async
+   * @returns Base client
+   */
   async retrieveBaseClientFromNdi(): Promise<BaseClient> {
     const getIssuerWithRetries = promiseRetry(
       (retry) => {
@@ -150,7 +183,7 @@ export class SpOidcClientCache extends NodeCache {
       },
       {
         retries: 2, // NDI specs: 3 attempts. Do once then retry two times
-        // Timeout is calculated as Math.min(minTimeout * Math.pow(factor, attempt), maxTimeout)
+        // Timeout is calculated as Math.min(minTimeout * Math.pow(factor, attempt), maxTimeout). Factor is a value between 1 and 2 by default
         minTimeout: 3000, // NDI specs: timeout of max 3s
         maxTimeout: 3000, // NDI specs: timeout of max 3s
       },
@@ -185,6 +218,7 @@ export class SpOidcClient {
   /**
    * Constructor for client
    * @param config
+   * @throws JwkError if RP's secret or public keys are not of correct shape
    */
   constructor(config: SpOidcClientConstructorParams) {
     const {
@@ -204,6 +238,7 @@ export class SpOidcClient {
       spOidcRpSecretJwks,
       options: {
         useClones: false,
+        checkperiod: 60, // Check cache expiry every 60 seconds
       },
     })
 
@@ -250,7 +285,7 @@ export class SpOidcClient {
   }
 
   /**
-   * Method to retrieve NDI's public keys
+   * Method to retrieve NDI's public keys from cache
    * @async
    * @returns NDI's Public Key
    */
@@ -259,7 +294,7 @@ export class SpOidcClient {
   }
 
   /**
-   * Method to retrieve baseClient
+   * Method to retrieve baseClient from cache
    * @async
    * @returns baseClient from discovery of NDI's discovery endpoint
    */
@@ -272,7 +307,7 @@ export class SpOidcClient {
    * @param state - contains formId, remember me, and stored queryId
    * @param esrvcId - eServiceId
    * @return authorisation url
-   * @return CreateAuthorisationUrlError if state or esrvcId is undefined
+   * @throws CreateAuthorisationUrlError if state or esrvcId is undefined
    */
   async createAuthorisationUrl(
     state: string,
@@ -307,7 +342,7 @@ export class SpOidcClient {
    * @param jwe
    * @param keySet keySet to choose from
    * @returns decryptKey
-   * @returns KidError if unable to find decryption key
+   * @returns GetDecryptionKeyError if unable to find decryption key
    */
   getDecryptionKey(
     jwe: string,
@@ -342,7 +377,7 @@ export class SpOidcClient {
    * @param jws
    * @param keySet keySet to choose from
    * @returns verificationKey
-   * @returns KidError is unable to find verification key
+   * @returns GetVerificationKeyError is unable to find verification key
    */
   getVerificationKey(
     jws: string,
@@ -377,70 +412,87 @@ export class SpOidcClient {
    * @async
    * @param authCode authorisation code provided from browser after authorisation
    * @returns Decoded and verified idToken
+   * @throws MissingIdTokenError if id token is missing in tokenSet
+   * @throws GetDecryptionKeyError if unable to retrieve decryption key
+   * @throws GetVerificationKeyError if unable to retrieve verification key
+   * @throws ExchangeAuthTokenError if exchange fails for any other reason
    */
   async exchangeAuthCodeAndDecodeVerifyToken(
     authCode: string,
   ): Promise<JWTVerifyResult> {
     const baseClient = await this.getBaseClientFromCache()
-    // Exchange Auth Code for tokenSet
 
-    const tokenSet = await baseClient.grant({
-      grant_type: 'authorization_code',
-      redirect_uri: this.#spOidcRpRedirectUrl,
-      code: authCode,
-      client_assertion_type:
-        'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-    })
+    try {
+      // Exchange Auth Code for tokenSet
+      const tokenSet = await baseClient.grant({
+        grant_type: 'authorization_code',
+        redirect_uri: this.#spOidcRpRedirectUrl,
+        code: authCode,
+        client_assertion_type:
+          'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+      })
 
-    // Retrieve idToken from tokenSet
-    const { id_token: idToken } = tokenSet
+      // Retrieve idToken from tokenSet
+      const { id_token: idToken } = tokenSet
 
-    if (!idToken) {
-      throw new MissingIdTokenError()
+      if (!idToken) {
+        throw new MissingIdTokenError()
+      }
+
+      // Get the correct decryption key
+      const decryptKeyResult = this.getDecryptionKey(
+        idToken,
+        this.#spOidcRpSecretKeys,
+      )
+      if (decryptKeyResult instanceof GetDecryptionKeyError) {
+        throw decryptKeyResult
+      }
+
+      // Decrypt using decryption key
+      const decoder = new TextDecoder()
+
+      const decryptedIdToken = await compactDecrypt(
+        idToken,
+        decryptKeyResult,
+      ).then((result) => decoder.decode(result.plaintext))
+
+      // Choose the correct verification key for the jws
+      const ndiPublicKeys = await this.getNdiPublicKeysFromCache()
+
+      const verificationKeyResult = this.getVerificationKey(
+        decryptedIdToken,
+        ndiPublicKeys,
+      )
+
+      if (verificationKeyResult instanceof GetVerificationKeyError) {
+        throw verificationKeyResult
+      }
+
+      // Verify using verification key
+      const verifiedIdToken = await jwtVerify(
+        decryptedIdToken,
+        verificationKeyResult,
+      )
+
+      return verifiedIdToken
+    } catch (err) {
+      // If any error in the exchange, trigger refresh of cache. Possible sources of failure are:
+      // NDI changed /token endpoint url, hence need to rediscover well-known endpoint
+      // NDI changed the signing keys without broadcasting both old and new keys for the 1h cache duration, hence need to refetch keys
+      void this.#spOidcClientCache.refresh()
+      if (err instanceof Error) {
+        throw err
+      } else {
+        throw new ExchangeAuthTokenError()
+      }
     }
-
-    // Get the correct decryption key
-    const decryptKeyResult = this.getDecryptionKey(
-      idToken,
-      this.#spOidcRpSecretKeys,
-    )
-    if (decryptKeyResult instanceof GetDecryptionKeyError) {
-      throw decryptKeyResult
-    }
-
-    // Decrypt using decryption key
-    const decoder = new TextDecoder()
-
-    const decryptedIdToken = await compactDecrypt(
-      idToken,
-      decryptKeyResult,
-    ).then((result) => decoder.decode(result.plaintext))
-
-    // Choose the correct verification key for the jws
-    const ndiPublicKeys = await this.getNdiPublicKeysFromCache()
-
-    const verificationKeyResult = this.getVerificationKey(
-      decryptedIdToken,
-      ndiPublicKeys,
-    )
-
-    if (verificationKeyResult instanceof GetVerificationKeyError) {
-      throw verificationKeyResult
-    }
-
-    // Verify using verification key
-    const verifiedIdToken = await jwtVerify(
-      decryptedIdToken,
-      verificationKeyResult,
-    )
-
-    return verifiedIdToken
   }
-
   /**
+
    * Method to extract NRIC from decrypted and verified idToken
    * @param idToken decrypted and verified idToken
    * @returns nric string
+   * @returns InvalidIdTokenError is nric not found in idToken
    */
   extractNricFromIdToken(
     idToken: JWTVerifyResult,
@@ -465,6 +517,7 @@ export class SpOidcClient {
    * @param  payload - Payload to sign
    * @param  expiresIn - The lifetime of the jwt token
    * @return the created JWT
+   * @throws CreateJwtError if no signing keys found in RP's secret keys
    */
   async createJWT(
     payload: Record<string, unknown>,
@@ -492,6 +545,7 @@ export class SpOidcClient {
    * Verifies a JWT for SingPass authenticated session
    * @param  jwt - The JWT to verify
    * @return the decoded payload
+   * @throws VerificationKeyError if no verification key found
    */
   async verifyJwt(jwt: string): Promise<JWTPayload> {
     const verificationKeyResult = this.getVerificationKey(
@@ -509,6 +563,11 @@ export class SpOidcClient {
     return payload
   }
 
+  /**
+   * Getter to return the RP's public JWKS
+   * Used to host jwks endpoint for NDI's to retrieve RP's public JWKS
+   * @returns RP's public jwks
+   */
   get rpPublicJwks(): PublicJwks {
     return this.#spOidcRpPublicJwks
   }
