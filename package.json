@@ -120,7 +120,6 @@
     "jose": "^4.8.1",
     "json-stringify-safe": "^5.0.1",
     "jszip": "^3.10.0",
-    "jsonfile": "^6.1.0",
     "jwk-to-pem": "^2.0.5",
     "jwt-decode": "^3.1.2",
     "libphonenumber-js": "^1.10.6",
