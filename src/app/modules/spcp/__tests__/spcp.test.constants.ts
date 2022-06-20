@@ -45,8 +45,8 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   spOidcNdiJwksEndpoint: 'https://stg-id.singpass.gov.sg/.well-known/keys',
   spOidcRpClientId: 'spOidcRpClientId',
   spOidcRpRedirectUrl: 'https://staging.form.gov.sg/singpass/login',
-  spOidcRpJwksPublicPath: './tests/certs/test_public_jwks.json',
-  spOidcRpJwksSecretPath: './tests/certs/test_public_jwks.json',
+  spOidcRpJwksPublicPath: 'tests/certs/test_rp_public_jwks.json',
+  spOidcRpJwksSecretPath: 'tests/certs/test_rp_secret_jwks.json',
 }
 
 export const MOCK_ESRVCID = 'eServiceId'
