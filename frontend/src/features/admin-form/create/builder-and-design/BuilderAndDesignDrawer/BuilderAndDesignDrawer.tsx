@@ -15,6 +15,7 @@ import {
   useBuilderAndDesignStore,
 } from '../useBuilderAndDesignStore'
 
+import { EditEndPageDrawer } from './EditEndPageDrawer/EditEndPageDrawer'
 import { EditFieldDrawer } from './EditFieldDrawer'
 import { FieldListDrawer } from './FieldListDrawer'
 
@@ -49,10 +50,11 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
       case DrawerTabs.Builder: {
         if (
           createOrEditData.state === BuildFieldState.EditingField ||
-          createOrEditData.state === BuildFieldState.CreatingField ||
-          createOrEditData.state === BuildFieldState.EditingEndPage
+          createOrEditData.state === BuildFieldState.CreatingField
         ) {
           return <EditFieldDrawer />
+        } else if (createOrEditData.state === BuildFieldState.EditingEndPage) {
+          return <EditEndPageDrawer />
         }
         return <FieldListDrawer />
       }

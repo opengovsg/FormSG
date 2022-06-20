@@ -1,22 +1,16 @@
-import { memo, useCallback, useMemo } from 'react'
-import { BiLeftArrowAlt } from 'react-icons/bi'
-import { Stack, Text } from '@chakra-ui/react'
+import { memo, useMemo } from 'react'
 
 import { BasicField, FieldCreateDto } from '~shared/types/field'
-
-import IconButton from '~components/IconButton'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
 import {
   BuildFieldState,
-  setToInactiveSelector,
   stateDataSelector,
   useBuilderAndDesignStore,
 } from '../../useBuilderAndDesignStore'
-import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
-import { EditEndPage } from '../EditEndPageDrawer/EditEndPage'
+import { BuilderDrawerContainer } from '../common/BuilderDrawerContainer'
 
 import {
   EditAttachment,
@@ -42,15 +36,7 @@ import {
 } from './edit-fieldtype'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
-  const { stateData, setToInactive } = useBuilderAndDesignStore(
-    useCallback(
-      (state) => ({
-        stateData: stateDataSelector(state),
-        setToInactive: setToInactiveSelector(state),
-      }),
-      [],
-    ),
-  )
+  const stateData = useBuilderAndDesignStore(stateDataSelector)
 
   const fieldToEdit: FieldCreateDto | undefined = useMemo(() => {
     if (
@@ -86,66 +72,27 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   }, [builderFields, stateData])
   const numFields = useMemo(() => builderFields?.length, [builderFields])
 
-  if (!fieldToEdit && stateData.state !== BuildFieldState.EditingEndPage)
-    return null
+  if (!fieldToEdit) return null
 
   return (
-    <>
-      <Stack
-        direction="row"
-        pos="sticky"
-        top={0}
-        px="1.5rem"
-        py="1rem"
-        align="center"
-        borderBottom="1px solid var(--chakra-colors-neutral-300)"
-        bg="white"
-      >
-        <IconButton
-          size="sm"
-          h="1.5rem"
-          w="1.5rem"
-          aria-label="Back to field selection"
-          variant="clear"
-          colorScheme="secondary"
-          onClick={setToInactive}
-          icon={<BiLeftArrowAlt />}
+    <BuilderDrawerContainer
+      title={basicFieldText}
+      content={
+        <MemoFieldDrawerContent
+          field={fieldToEdit}
+          key={`${fieldIndex}-${numFields}`}
         />
-        <Text
-          textStyle="h4"
-          as="h4"
-          color="secondary.500"
-          flex={1}
-          textAlign="center"
-        >
-          {/* TODO (hans): Make this compatible with edit end page */}
-          Edit {basicFieldText}
-        </Text>
-        <CreatePageDrawerCloseButton />
-      </Stack>
-      {/* TODO (hans): Make this compatible with edit end page */}
-      <MemoFieldDrawerContent
-        state={stateData.state}
-        field={fieldToEdit}
-        key={`${fieldIndex}-${numFields}`}
-      />
-    </>
+      }
+    />
   )
 }
 
 interface MemoFieldDrawerContentProps {
-  // TODO (hans): Probably rename this since it's not just field anymore, it's end page too
   field?: FieldCreateDto
-  state: BuildFieldState
 }
 
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
-  ({ field, state, ...props }) => {
-    switch (state) {
-      case BuildFieldState.EditingEndPage:
-        return <EditEndPage />
-    }
-
+  ({ field, ...props }) => {
     switch (field?.fieldType) {
       case BasicField.Attachment:
         return <EditAttachment {...props} field={field} />
