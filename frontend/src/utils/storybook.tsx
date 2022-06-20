@@ -8,7 +8,10 @@ import mockdate from 'mockdate'
 import { theme } from '~/theme'
 
 import { AuthContext } from '~contexts/AuthContext'
-import { FEATURE_TOUR_KEY_PREFIX } from '~constants/localStorage'
+import {
+  FEATURE_TOUR_KEY_PREFIX,
+  ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
+} from '~constants/localStorage'
 
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
 import { BuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
@@ -51,6 +54,21 @@ export const ViewedFeatureTourDecorator: DecoratorFn = (
   useEffect(() => {
     return () => window.localStorage.removeItem(featureTourKey)
   }, [featureTourKey, userId])
+
+  return storyFn()
+}
+
+export const ViewedRolloutDecorator: DecoratorFn = (
+  storyFn,
+  { parameters },
+) => {
+  const userId = parameters.userId
+  const rolloutKey = ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + userId
+  window.localStorage.setItem(rolloutKey, JSON.stringify(true))
+
+  useEffect(() => {
+    return () => window.localStorage.removeItem(rolloutKey)
+  }, [rolloutKey, userId])
 
   return storyFn()
 }
