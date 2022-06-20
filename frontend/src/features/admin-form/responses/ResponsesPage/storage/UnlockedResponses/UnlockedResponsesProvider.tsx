@@ -18,8 +18,12 @@ const PAGE_SIZE = 10
 interface UnlockedResponsesContextProps {
   currentPage?: number
   setCurrentPage: (page: number) => void
+  submissionId?: string
+  setSubmissionId: (submissionId: string | null) => void
   count?: number
   metadata: StorageModeSubmissionMetadata[]
+  filteredCount?: number
+  filteredMetadata: StorageModeSubmissionMetadata[]
   isLoading: boolean
   isAnyFetching: boolean
   getNextSubmissionId: (currentSubmissionId: string) => SubmissionId | undefined
@@ -46,7 +50,10 @@ export const useUnlockedResponses = (): UnlockedResponsesContextProps => {
 }
 
 const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
-  const [currentPage, setCurrentPage] = usePageSearchParams()
+  const {
+    page: [currentPage, setCurrentPage],
+    submissionId: [submissionId, setSubmissionId],
+  } = usePageSearchParams()
   // Storing the params in the state for navigation when user returns from
   // individual response view.
   const [lastNavPage, setLastNavPage] = useState(currentPage)
@@ -57,17 +64,26 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     }
   }, [currentPage, lastNavPage])
 
-  const { data: { count, metadata = [] } = {}, isLoading } = useFormResponses(
-    lastNavPage ?? 1,
-  )
+  const {
+    data: { count: filteredCount, metadata: filteredMetadata = [] } = {},
+    isFetching: isFilterFetching,
+  } = useFormResponses({
+    // Will not run if submissionId does not exist.
+    page: 0,
+    submissionId,
+  })
+
+  const { data: { count, metadata = [] } = {}, isLoading } = useFormResponses({
+    page: lastNavPage ?? 1,
+  })
   const {
     data: { metadata: prevMetadata = [] } = {},
     isFetching: isPrevFetching,
-  } = useFormResponses(currentPage ? 0 : lastNavPage ?? 0)
+  } = useFormResponses({ page: currentPage ? 0 : lastNavPage ?? 0 })
   const {
     data: { metadata: nextMetadata = [] } = {},
     isFetching: isNextFetching,
-  } = useFormResponses(currentPage ? 0 : lastNavPage ?? 2)
+  } = useFormResponses({ page: currentPage ? 0 : lastNavPage ?? 2 })
 
   const totalPageCount = useMemo(
     () => (count ? Math.ceil(count / PAGE_SIZE) : 0),
@@ -75,8 +91,8 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   )
 
   const isAnyFetching = useMemo(
-    () => isLoading || isPrevFetching || isNextFetching,
-    [isLoading, isNextFetching, isPrevFetching],
+    () => isLoading || isPrevFetching || isNextFetching || isFilterFetching,
+    [isFilterFetching, isLoading, isNextFetching, isPrevFetching],
   )
 
   const onNavNextSubmissionId = useCallback(
@@ -165,6 +181,10 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     onNavNextSubmissionId,
     onNavPreviousSubmissionId,
     lastNavPage,
+    filteredCount,
+    filteredMetadata,
+    submissionId,
+    setSubmissionId,
   }
 }
 

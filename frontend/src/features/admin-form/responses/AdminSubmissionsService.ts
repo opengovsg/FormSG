@@ -41,14 +41,12 @@ export const countFormSubmissions = async ({
  */
 export const getFormSubmissionsMetadata = async (
   formId: string,
-  page: NonNullable<FormSubmissionMetadataQueryDto['page']> = 1,
+  queryParams: FormSubmissionMetadataQueryDto,
 ): Promise<StorageModeSubmissionMetadataList> => {
   return ApiService.get(
     `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`,
     {
-      params: {
-        page,
-      },
+      params: queryParams,
     },
   ).then(({ data }) => data)
 }
