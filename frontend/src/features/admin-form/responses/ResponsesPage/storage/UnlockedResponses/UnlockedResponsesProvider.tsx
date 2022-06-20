@@ -32,7 +32,9 @@ interface UnlockedResponsesContextProps {
   ) => SubmissionId | undefined
   onNavNextSubmissionId: (currentSubmissionId: string) => void
   onNavPreviousSubmissionId: (currentSubmissionId: string) => void
+  onRowClick: () => void
   lastNavPage?: number
+  lastNavSubmissionId?: string
 }
 
 const UnlockedResponsesContext = createContext<
@@ -57,12 +59,18 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   // Storing the params in the state for navigation when user returns from
   // individual response view.
   const [lastNavPage, setLastNavPage] = useState(currentPage)
+  const [lastNavSubmissionId, setLastNavSubmissionId] = useState(submissionId)
 
   useEffect(() => {
     if (currentPage && currentPage !== lastNavPage) {
       setLastNavPage(currentPage)
     }
   }, [currentPage, lastNavPage])
+
+  const onRowClick = useCallback(() => {
+    setLastNavSubmissionId(submissionId)
+    setLastNavPage(currentPage ?? 1)
+  }, [currentPage, submissionId])
 
   const {
     data: { count: filteredCount, metadata: filteredMetadata = [] } = {},
@@ -97,7 +105,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
 
   const onNavNextSubmissionId = useCallback(
     (currentSubmissionId: string) => {
-      if (isAnyFetching || (lastNavPage ?? 1) >= totalPageCount) return
+      if (
+        isAnyFetching ||
+        (lastNavPage ?? 1) >= totalPageCount ||
+        !!lastNavSubmissionId
+      )
+        return
       // Get row index of current submission in the metadata.
       const currentResponseIndex = metadata.findIndex(
         (response) => response.refNo === currentSubmissionId,
@@ -110,12 +123,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
         setLastNavPage((lastNavPage ?? 1) + 1)
       }
     },
-    [isAnyFetching, lastNavPage, metadata, totalPageCount],
+    [isAnyFetching, lastNavPage, lastNavSubmissionId, metadata, totalPageCount],
   )
 
   const onNavPreviousSubmissionId = useCallback(
     (currentSubmissionId: string) => {
-      if (isAnyFetching) return
+      if (isAnyFetching || !!lastNavSubmissionId) return
 
       // Get row index of current submission in the metadata.
       const currentResponseIndex = metadata.findIndex(
@@ -127,12 +140,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
         setLastNavPage(lastNavPage - 1)
       }
     },
-    [isAnyFetching, lastNavPage, metadata],
+    [isAnyFetching, lastNavPage, lastNavSubmissionId, metadata],
   )
 
   const getNextSubmissionId = useCallback(
     (currentSubmissionId: string) => {
-      if (isAnyFetching) return
+      if (isAnyFetching || !!lastNavSubmissionId) return
       // Get row index of current submission in the metadata.
       const currentResponseIndex = metadata.findIndex(
         (response) => response.refNo === currentSubmissionId,
@@ -146,12 +159,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       }
       return metadata[currentResponseIndex + 1]?.refNo
     },
-    [isAnyFetching, metadata, nextMetadata],
+    [isAnyFetching, metadata, nextMetadata, lastNavSubmissionId],
   )
 
   const getPreviousSubmissionId = useCallback(
     (currentSubmissionId: string) => {
-      if (isAnyFetching) return
+      if (isAnyFetching || !!lastNavSubmissionId) return
 
       // Get row index of current submission in the metadata.
       const currentResponseIndex = metadata.findIndex(
@@ -166,7 +179,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       }
       return metadata[currentResponseIndex - 1]?.refNo
     },
-    [isAnyFetching, lastNavPage, metadata, prevMetadata],
+    [isAnyFetching, lastNavPage, metadata, prevMetadata, lastNavSubmissionId],
   )
 
   return {
@@ -181,10 +194,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     onNavNextSubmissionId,
     onNavPreviousSubmissionId,
     lastNavPage,
+    lastNavSubmissionId,
     filteredCount,
     filteredMetadata,
     submissionId,
     setSubmissionId,
+    onRowClick,
   }
 }
 

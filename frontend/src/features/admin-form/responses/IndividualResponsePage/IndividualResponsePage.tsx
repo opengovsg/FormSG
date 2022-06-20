@@ -63,6 +63,7 @@ export const IndividualResponsePage = (): JSX.Element => {
   const { secretKey } = useStorageResponsesContext()
   const {
     lastNavPage,
+    lastNavSubmissionId,
     getNextSubmissionId,
     getPreviousSubmissionId,
     onNavNextSubmissionId,
@@ -117,11 +118,19 @@ export const IndividualResponsePage = (): JSX.Element => {
   ])
 
   const backLink = useMemo(() => {
-    if (lastNavPage) {
-      return `..?page=${lastNavPage}`
+    const searchParams = new URLSearchParams()
+    if (!lastNavPage && !lastNavSubmissionId) {
+      return `..`
     }
-    return `..`
-  }, [lastNavPage])
+
+    if (lastNavPage) {
+      searchParams.append('page', lastNavPage.toString())
+    }
+    if (lastNavSubmissionId) {
+      searchParams.append('submissionId', lastNavSubmissionId)
+    }
+    return `..?${searchParams}`
+  }, [lastNavPage, lastNavSubmissionId])
 
   if (!secretKey) {
     return <SecretKeyVerification />

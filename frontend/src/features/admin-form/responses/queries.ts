@@ -82,7 +82,9 @@ export const useFormResponses = ({
     {
       refetchOnMount: true,
       refetchOnWindowFocus: false,
-      keepPreviousData: true,
+      // Data will never change.
+      staleTime: Infinity,
+      keepPreviousData: !submissionId,
       enabled: !!secretKey && (page > 0 || !!submissionId),
     },
   )

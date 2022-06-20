@@ -1,21 +1,39 @@
 import { useMemo } from 'react'
-import { Box, Flex, Grid, Text } from '@chakra-ui/react'
+import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
 
 import Pagination from '~components/Pagination'
 
 import { DownloadButton } from './DownloadButton'
 import { ResponsesTable } from './ResponsesTable'
+import { SubmissionSearchbar } from './SubmissionSearchbar'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
 export const UnlockedResponses = (): JSX.Element => {
-  const { currentPage, setCurrentPage, count, isLoading } =
-    useUnlockedResponses()
+  const {
+    currentPage,
+    setCurrentPage,
+    count,
+    filteredCount,
+    isLoading,
+    submissionId,
+    isAnyFetching,
+  } = useUnlockedResponses()
+
+  const countToUse = useMemo(() => {
+    if (submissionId) {
+      return filteredCount
+    }
+    return count
+  }, [filteredCount, count, submissionId])
 
   const prettifiedResponsesCount = useMemo(() => {
-    if (!count) return
-    return simplur` ${[count]}response[|s] to date`
-  }, [count])
+    if (filteredCount !== undefined) {
+      return simplur` ${[filteredCount]}result[|s] found`
+    } else if (count !== undefined) {
+      return simplur` ${[count]}response[|s] to date`
+    }
+  }, [count, filteredCount])
 
   return (
     <Flex flexDir="column" h="100%">
@@ -31,21 +49,26 @@ export const UnlockedResponses = (): JSX.Element => {
         }}
       >
         <Box gridArea="submissions">
-          <Text textStyle="h4">
-            <Text as="span" color="primary.500">
-              {count?.toLocaleString()}
+          <Skeleton isLoaded={!isAnyFetching}>
+            <Text textStyle="h4">
+              <Text as="span" color="primary.500">
+                {countToUse?.toLocaleString()}
+              </Text>
+              {prettifiedResponsesCount}
             </Text>
-            {prettifiedResponsesCount}
-          </Text>
+          </Skeleton>
         </Box>
-        <DownloadButton />
+        <Stack direction="row" gridArea="export" justifySelf="end">
+          <SubmissionSearchbar />
+          <DownloadButton />
+        </Stack>
       </Grid>
       <Box mb="3rem" overflow="auto" flex={1}>
         <ResponsesTable />
       </Box>
-      <Box display={isLoading || count === 0 ? 'none' : ''}>
+      <Box display={isLoading || countToUse === 0 ? 'none' : ''}>
         <Pagination
-          totalCount={count ?? 0}
+          totalCount={countToUse ?? 0}
           currentPage={currentPage ?? 1} //1-indexed
           pageSize={10}
           onPageChange={setCurrentPage}
