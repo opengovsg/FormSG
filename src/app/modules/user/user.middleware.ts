@@ -1,4 +1,7 @@
-import { celebrate, Joi, Segments } from 'celebrate'
+import JoiDate from '@joi/date'
+import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
+
+const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 /**
  * Celebrate validation for the contact OTP sending endpoint.

@@ -1,10 +1,12 @@
 import { ObjectId } from 'bson-ext'
 import { pick } from 'lodash'
+import MockDate from 'mockdate'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import getUserModel from 'src/app/models/user.server.model'
+import { UNAUTHORIZED_USER_MESSAGE } from 'src/app/modules/user/user.constant'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import * as SmsService from 'src/app/services/sms/sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
@@ -20,6 +22,9 @@ import * as UserService from '../../../../../modules/user/user.service'
 import UserRouter from '../user.routes'
 
 const UserModel = getUserModel(mongoose)
+
+const MOCKED_DATE = new Date()
+MockDate.set(MOCKED_DATE)
 
 const app = setupApp('/user', UserRouter, {
   setupWithAuth: true,
@@ -83,7 +88,7 @@ describe('user.routes', () => {
       // Assert
       expect(response.status).toEqual(401)
       expect(response.body).toEqual({
-        message: 'User is unauthorized.',
+        message: UNAUTHORIZED_USER_MESSAGE,
       })
     })
 
@@ -167,7 +172,7 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.body).toEqual('User is unauthorized.')
+      expect(response.body).toEqual(UNAUTHORIZED_USER_MESSAGE)
     })
 
     it('should return 401 when user is not currently logged in', async () => {
@@ -180,7 +185,7 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.body).toEqual('User is unauthorized.')
+      expect(response.body).toEqual(UNAUTHORIZED_USER_MESSAGE)
     })
 
     it('should return 422 when userId cannot be found in the database', async () => {
@@ -332,7 +337,7 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.body).toEqual('User is unauthorized.')
+      expect(response.body).toEqual(UNAUTHORIZED_USER_MESSAGE)
     })
 
     it('should return 401 when user is not currently logged in', async () => {
@@ -346,7 +351,7 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.body).toEqual('User is unauthorized.')
+      expect(response.body).toEqual(UNAUTHORIZED_USER_MESSAGE)
     })
 
     it('should return 404 when hashes does not exist for current contact', async () => {
@@ -509,6 +514,70 @@ describe('user.routes', () => {
 
       // Assert
       expect(uodateSpy).toBeCalled()
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual(mockErrorString)
+    })
+  })
+
+  describe('POST /user/flag/new-features-last-seen', () => {
+    it('should return 200 if update is successful', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
+
+      // Act
+      const response = await session.post('/user/flag/new-features-last-seen')
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        ...JSON.parse(JSON.stringify(defaultUser.toObject())),
+        agency: JSON.parse(JSON.stringify(defaultAgency.toObject())),
+        // Dynamic date strings to be returned.
+        updatedAt: expect.any(String),
+        lastAccessed: expect.any(String),
+        flags: { lastSeenFeatureUpdateDate: MOCKED_DATE.toISOString() },
+      })
+    })
+
+    it('should return 401 if user is not logged in', async () => {
+      // Act
+      const response = await request.post('/user/flag/new-features-last-seen')
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual(UNAUTHORIZED_USER_MESSAGE)
+    })
+
+    it('should return 422 if user id does not exist in the database', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await session.post('/user/flag/new-features-last-seen')
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual('User not found')
+    })
+
+    it('should return 500 if database error occurs', async () => {
+      // Arrange
+      // Log in user.
+      const session = await createAuthedSession(VALID_EMAIL, request)
+
+      const mockErrorString = 'Database goes boom'
+      // Mock database error from service call.
+      const retrieveUserSpy = jest
+        .spyOn(UserService, 'updateUserLastSeenFeatureUpdateDate')
+        .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
+
+      // Act
+      const response = await session.post('/user/flag/new-features-last-seen')
+
+      // Assert
+      expect(retrieveUserSpy).toBeCalled()
       expect(response.status).toEqual(500)
       expect(response.body).toEqual(mockErrorString)
     })
