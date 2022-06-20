@@ -142,17 +142,21 @@ export class SpOidcClientCache extends NodeCache {
    */
   async retrievePublicKeysFromNdi(): Promise<CryptoKeySet> {
     const getJwksWithRetries = promiseRetry(
-      (retry) => {
-        return axios
-          .get<PublicJwks>(this.#spOidcNdiJwksEndpoint)
-          .then(({ data }) => data)
-          .catch(retry)
+      async (retry) => {
+        try {
+          const { data } = await axios.get<PublicJwks>(
+            this.#spOidcNdiJwksEndpoint,
+          )
+          return data
+        } catch (e) {
+          return retry(e)
+        }
       },
       {
         retries: 2, // NDI specs: 3 attempts. Do once then retry two times
-        // Timeout is calculated as Math.min(minTimeout * Math.pow(factor, attempt), maxTimeout). Factor is a value between 1 and 2 by default
-        minTimeout: 3000, // NDI specs: timeout of max 3s
+        minTimeout: 0, // Retry immediately upon failure
         maxTimeout: 3000, // NDI specs: timeout of max 3s
+        maxRetryTime: 3000,
       },
     )
 
@@ -178,14 +182,19 @@ export class SpOidcClientCache extends NodeCache {
    */
   async retrieveBaseClientFromNdi(): Promise<BaseClient> {
     const getIssuerWithRetries = promiseRetry(
-      (retry) => {
-        return Issuer.discover(this.#spOidcNdiDiscoveryEndpoint).catch(retry)
+      async (retry) => {
+        try {
+          const result = await Issuer.discover(this.#spOidcNdiDiscoveryEndpoint)
+          return result
+        } catch (e) {
+          return retry(e)
+        }
       },
       {
         retries: 2, // NDI specs: 3 attempts. Do once then retry two times
-        // Timeout is calculated as Math.min(minTimeout * Math.pow(factor, attempt), maxTimeout). Factor is a value between 1 and 2 by default
-        minTimeout: 3000, // NDI specs: timeout of max 3s
+        minTimeout: 0, // Retry immediately upon failure
         maxTimeout: 3000, // NDI specs: timeout of max 3s
+        maxRetryTime: 3000,
       },
     )
 
