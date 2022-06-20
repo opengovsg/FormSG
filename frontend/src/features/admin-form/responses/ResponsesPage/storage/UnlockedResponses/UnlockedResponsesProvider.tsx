@@ -21,7 +21,7 @@ interface UnlockedResponsesContextProps {
   count?: number
   metadata: StorageModeSubmissionMetadata[]
   isLoading: boolean
-  isAnyLoading: boolean
+  isAnyFetching: boolean
   getNextSubmissionId: (currentSubmissionId: string) => SubmissionId | undefined
   getPreviousSubmissionId: (
     currentSubmissionId: string,
@@ -57,30 +57,31 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     }
   }, [currentPage, lastNavPage])
 
-  const { data: { count, metadata = [] } = {}, isLoading } =
-    useFormResponses(lastNavPage)
+  const { data: { count, metadata = [] } = {}, isLoading } = useFormResponses(
+    lastNavPage ?? 1,
+  )
   const {
     data: { metadata: prevMetadata = [] } = {},
-    isLoading: isPrevLoading,
-  } = useFormResponses(lastNavPage ?? 0)
+    isFetching: isPrevFetching,
+  } = useFormResponses(currentPage ? 0 : lastNavPage ?? 0)
   const {
     data: { metadata: nextMetadata = [] } = {},
-    isLoading: isNextLoading,
-  } = useFormResponses(lastNavPage ?? 2)
+    isFetching: isNextFetching,
+  } = useFormResponses(currentPage ? 0 : lastNavPage ?? 2)
 
   const totalPageCount = useMemo(
     () => (count ? Math.ceil(count / PAGE_SIZE) : 0),
     [count],
   )
 
-  const isAnyLoading = useMemo(
-    () => isLoading || isPrevLoading || isNextLoading,
-    [isLoading, isNextLoading, isPrevLoading],
+  const isAnyFetching = useMemo(
+    () => isLoading || isPrevFetching || isNextFetching,
+    [isLoading, isNextFetching, isPrevFetching],
   )
 
   const onNavNextSubmissionId = useCallback(
     (currentSubmissionId: string) => {
-      if (isAnyLoading || (lastNavPage ?? 1) >= totalPageCount) return
+      if (isAnyFetching || (lastNavPage ?? 1) >= totalPageCount) return
       // Get row index of current submission in the metadata.
       const currentResponseIndex = metadata.findIndex(
         (response) => response.refNo === currentSubmissionId,
@@ -93,12 +94,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
         setLastNavPage((lastNavPage ?? 1) + 1)
       }
     },
-    [isAnyLoading, lastNavPage, metadata, totalPageCount],
+    [isAnyFetching, lastNavPage, metadata, totalPageCount],
   )
 
   const onNavPreviousSubmissionId = useCallback(
     (currentSubmissionId: string) => {
-      if (isAnyLoading) return
+      if (isAnyFetching) return
 
       // Get row index of current submission in the metadata.
       const currentResponseIndex = metadata.findIndex(
@@ -110,12 +111,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
         setLastNavPage(lastNavPage - 1)
       }
     },
-    [isAnyLoading, lastNavPage, metadata],
+    [isAnyFetching, lastNavPage, metadata],
   )
 
   const getNextSubmissionId = useCallback(
     (currentSubmissionId: string) => {
-      if (isAnyLoading) return
+      if (isAnyFetching) return
       // Get row index of current submission in the metadata.
       const currentResponseIndex = metadata.findIndex(
         (response) => response.refNo === currentSubmissionId,
@@ -129,12 +130,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       }
       return metadata[currentResponseIndex + 1]?.refNo
     },
-    [isAnyLoading, metadata, nextMetadata],
+    [isAnyFetching, metadata, nextMetadata],
   )
 
   const getPreviousSubmissionId = useCallback(
     (currentSubmissionId: string) => {
-      if (isAnyLoading) return
+      if (isAnyFetching) return
 
       // Get row index of current submission in the metadata.
       const currentResponseIndex = metadata.findIndex(
@@ -149,7 +150,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       }
       return metadata[currentResponseIndex - 1]?.refNo
     },
-    [isAnyLoading, lastNavPage, metadata, prevMetadata],
+    [isAnyFetching, lastNavPage, metadata, prevMetadata],
   )
 
   return {
@@ -158,7 +159,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     count,
     metadata,
     isLoading,
-    isAnyLoading,
+    isAnyFetching,
     getNextSubmissionId,
     getPreviousSubmissionId,
     onNavNextSubmissionId,

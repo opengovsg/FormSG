@@ -67,7 +67,7 @@ export const IndividualResponsePage = (): JSX.Element => {
     getPreviousSubmissionId,
     onNavNextSubmissionId,
     onNavPreviousSubmissionId,
-    isAnyLoading,
+    isAnyFetching,
   } = useUnlockedResponses()
   const { data, isLoading } = useIndividualSubmission()
 
@@ -152,13 +152,13 @@ export const IndividualResponsePage = (): JSX.Element => {
           </Skeleton>
           <ButtonGroup>
             <IconButton
-              isDisabled={!prevSubmissionId || isAnyLoading}
+              isDisabled={!prevSubmissionId || isAnyFetching}
               onClick={handleNavigatePrev}
               icon={<BiChevronLeft />}
               aria-label="Previous submission"
             />
             <IconButton
-              isDisabled={!nextSubmissionId || isAnyLoading}
+              isDisabled={!nextSubmissionId || isAnyFetching}
               onClick={handleNavigateNext}
               icon={<BiChevronRight />}
               aria-label="Next submission"
