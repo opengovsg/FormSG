@@ -311,6 +311,39 @@ describe('user.service', () => {
     })
   })
 
+  describe('updateUserLastSeenFeatureUpdateDate', () => {
+    it('should update user successfully', async () => {
+      const user = await dbHandler.insertUser({
+        agencyId: defaultAgency._id,
+        mailName: 'updateUserLastSeenFeatureUpdateDate',
+      })
+      const MOCK_DATE = new Date()
+
+      expect(user.flags?.lastSeenFeatureUpdateDate).toBeUndefined()
+
+      const actualResult =
+        await UserService.updateUserLastSeenFeatureUpdateDate(user._id)
+
+      const updatedUser = await UserService.getPopulatedUserById(user._id)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(
+        updatedUser._unsafeUnwrap()?.toObject().flags
+          ?.lastSeenFeatureUpdateDate,
+      ).toEqual(MOCK_DATE)
+    })
+
+    it('should return MissingUserError if userId is invalid', async () => {
+      // Arrange
+      const invalidUserId = new ObjectID()
+
+      // Act
+      const actualResult =
+        await UserService.updateUserLastSeenFeatureUpdateDate(invalidUserId)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MissingUserError)
+    })
+  })
+
   describe('getPopulatedUserById', () => {
     it('should return populated user successfully', async () => {
       // Arrange
