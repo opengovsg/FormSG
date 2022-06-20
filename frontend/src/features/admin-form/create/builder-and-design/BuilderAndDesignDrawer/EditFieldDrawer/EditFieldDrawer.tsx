@@ -2,12 +2,7 @@ import { memo, useCallback, useMemo } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
 import { Stack, Text } from '@chakra-ui/react'
 
-import {
-  BasicField,
-  EndPageUpdateDto,
-  FieldCreateDto,
-  FormPage,
-} from '~shared/types/field'
+import { BasicField, FieldCreateDto } from '~shared/types/field'
 
 import IconButton from '~components/IconButton'
 
@@ -140,7 +135,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 
 interface MemoFieldDrawerContentProps {
   // TODO (hans): Probably rename this since it's not just field anymore, it's end page too
-  field?: FieldCreateDto | EndPageUpdateDto
+  field?: FieldCreateDto
   state: BuildFieldState
 }
 
@@ -148,7 +143,7 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, state, ...props }) => {
     switch (state) {
       case BuildFieldState.EditingEndPage:
-        return <EditEndPage {...props} />
+        return <EditEndPage />
     }
 
     switch (field?.fieldType) {
@@ -192,8 +187,6 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditParagraph {...props} field={field} />
       case BasicField.Image:
         return <EditImage {...props} field={field} />
-      case FormPage.EndPage:
-        return <EditEndPage {...props} />
       default:
         return <div>TODO: Insert field options here</div>
     }

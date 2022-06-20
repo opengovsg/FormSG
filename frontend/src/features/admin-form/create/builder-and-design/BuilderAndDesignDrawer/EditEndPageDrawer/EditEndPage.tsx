@@ -14,8 +14,8 @@ import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 
-import { useMutateFormSettings } from '~features/admin-form/settings/mutations'
-import { useAdminFormSettings } from '~features/admin-form/settings/queries'
+import { useMutateFormPage } from '~features/admin-form/common/mutations'
+import { useAdminForm } from '~features/admin-form/common/queries'
 
 import {
   setToInactiveSelector,
@@ -28,22 +28,15 @@ import {
   useEndPageBuilderStore,
 } from './useEndPageBuilderStore'
 
-interface EndPageBuilderInputProps {
-  settings: {
-    title: string
-    paragraph?: string
-    buttonLink?: string
-    buttonText: string
-  }
-}
-
 // TODO (hans): Refactor this based on end-page-builder-1 PR
 export const EndPageBuilderInput = ({
-  settings,
-}: EndPageBuilderInputProps): JSX.Element => {
+  title,
+  paragraph,
+  buttonLink,
+  buttonText,
+}: FormEndPage): JSX.Element => {
   const isMobile = useIsMobile()
-  const { title, paragraph, buttonText, buttonLink } = settings
-  const { mutateFormEndPage } = useMutateFormSettings()
+  const { mutateFormEndPage } = useMutateFormPage()
 
   const defaultParagraph = useMemo(() => paragraph ?? '', [paragraph])
   const defaultButtonLink = useMemo(() => buttonLink ?? '', [buttonLink])
@@ -150,12 +143,12 @@ export const EndPageBuilderInput = ({
   )
 }
 
-export const EditEndPage = ({ ...props }): JSX.Element => {
-  const { data: settings, isLoading } = useAdminFormSettings()
+export const EditEndPage = (): JSX.Element => {
+  const { data: form, isLoading } = useAdminForm()
 
   return (
-    <Skeleton isLoaded={!isLoading && !!settings}>
-      {settings ? <EndPageBuilderInput settings={settings.endPage} /> : null}
+    <Skeleton isLoaded={!isLoading && !!form}>
+      {form ? <EndPageBuilderInput {...form.endPage} /> : null}
     </Skeleton>
   )
 }
