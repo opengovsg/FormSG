@@ -1041,11 +1041,15 @@ const tableHandler = {
     return tableTitle
   },
   getValues: (tableField, formMode) => {
-    if (formMode === 'email') {
-      return tableField.val.map((row) => row.join(','))
-    } else {
-      // storage mode has a space
-      return tableField.val.map((row) => row.join(', '))
+    switch (formMode) {
+      case 'email':
+        return tableField.val.map((row) => row.join(','))
+      case 'emailDataCollation':
+        // add single quote in front of field
+        return tableField.val.map((row) => `'${row.join(',')}`)
+      default:
+        // storage mode has a space
+        return tableField.val.map((row) => row.join(', '))
     }
   },
 }
@@ -1278,4 +1282,5 @@ module.exports = {
   verifySubmissionDisabled,
   getDownloadsFolder,
   getFeatureState,
+  tableHandler,
 }

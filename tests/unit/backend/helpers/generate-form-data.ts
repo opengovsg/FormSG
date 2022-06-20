@@ -222,6 +222,32 @@ export const generateNewSingleAnswerResponse = (
   } as ProcessedSingleAnswerResponse
 }
 
+export const generateNewSingleDataCollationAnswerResponse = (
+  fieldType: BasicField,
+  customParams?: Partial<ProcessedSingleAnswerResponse>,
+): ProcessedSingleAnswerResponse => {
+  if (
+    [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
+      fieldType,
+    )
+  ) {
+    throw new Error(
+      'Call the custom response generator functions for attachment, table and checkbox.',
+    )
+  }
+  return {
+    // put single quote in front of answer if answer is not a number.
+    // to prevent formula injection.
+    // for number, do not add the quote so that excel parses it as number
+    _id: new ObjectId().toHexString(),
+    question: `${fieldType} question`,
+    answer: `'${fieldType} answer`,
+    fieldType: fieldType,
+    isVisible: true,
+    ...customParams,
+  } as ProcessedSingleAnswerResponse
+}
+
 export const generateUnprocessedSingleAnswerResponse = (
   fieldType: BasicField,
   customParams?: Partial<SingleAnswerFieldResponse>,

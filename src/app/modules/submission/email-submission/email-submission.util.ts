@@ -651,7 +651,10 @@ const getDataCollationFormattedResponse = (
   if (fieldType !== BasicField.Section) {
     return {
       question: getJsonPrefixedQuestion(response),
-      answer,
+      // put single quote in front of answer if answer is not a number
+      // to prevent formula injection.
+      // for number, do not add the quote so that excel parses it as number
+      answer: isNaN(Number(answer)) ? `'${answer}` : answer,
     }
   }
   return undefined

@@ -30,14 +30,19 @@ const WEBHOOK_PORT = process.env.MOCK_WEBHOOK_PORT
 const WEBHOOK_CONFIG_FILE = process.env.MOCK_WEBHOOK_CONFIG_FILE
 
 // We can't just call getResponseArray because CSVs use different
-// delimiters for checkbox and table. Hence we treat checbox and table
+// delimiters for checkbox and table. Radiobutton is also singled
+// out to account for the case where the field is hidden or
+// optional. Additionally, we have to add a single quote in front
+// of the CSV field if the value is not a pure number to prevent
+// formula injection. Hence we treat checkbox, table and radiobutton
 // specially, and call getResponseArray for the rest.
 const addExpectedCsvAnswer = (field, answers) => {
   const numCols = field.fieldType === 'table' ? field.val.length : 1
+  let responseArray = getResponseArray(field).join('')
   switch (field.fieldType) {
     case 'table':
       for (let i = 0; i < numCols; i++) {
-        answers.push(field.val[i].join(';'))
+        answers.push(`'${field.val[i].join(';')}`)
       }
       break
     case 'checkbox':
@@ -45,18 +50,37 @@ const addExpectedCsvAnswer = (field, answers) => {
         answers.push('')
       } else {
         answers.push(
-          field.val
+          `'${field.val
             .map((selected) => {
               return field.fieldOptions.includes(selected)
                 ? selected
                 : `Others: ${selected}`
             })
-            .join(';'),
+            .join(';')}`,
         )
       }
       break
+    case 'radiobutton':
+      if (!field.isVisible || field.isLeftBlank) {
+        answers.push('')
+      } else {
+        if (field.fieldOptions.includes(field.val)) {
+          if (isNaN(Number(field.val))) {
+            answers.push(`'${field.val}`)
+          } else {
+            answers.push(field.val)
+          }
+        } else {
+          answers.push(`'Others: ${field.val}`)
+        }
+      }
+      break
     default:
-      answers.push(...getResponseArray(field))
+      if (isNaN(Number(responseArray))) {
+        answers.push(`'${responseArray}`)
+      } else {
+        answers.push(responseArray)
+      }
   }
 }
 

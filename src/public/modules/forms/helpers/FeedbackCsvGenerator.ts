@@ -20,7 +20,13 @@ export class FeedbackCsvGenerator extends CsvGenerator {
     const createdAt = moment(feedback.created)
       .tz('Asia/Singapore')
       .format('DD MMM YYYY hh:mm:ss A')
-
-    this.addLine([createdAt, feedback.comment || '', feedback.rating])
+    // put single quote in front of answer if answer is not a number
+    // to prevent formula injection.
+    // for number, do not add the quote so that excel parses it as number
+    this.addLine([
+      createdAt,
+      feedback.comment ? `'${feedback.comment}` : '',
+      feedback.rating,
+    ])
   }
 }
