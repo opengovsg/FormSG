@@ -4,11 +4,11 @@ import { BASICFIELD_TO_DRAWER_META } from '../../constants'
 
 export const getBuilderQuestionNumbers = (
   fields: FormFieldDto[],
-): (string | undefined)[] => {
+): (number | undefined)[] => {
   let questionCounter = 0
   return fields.map((field) => {
     if (BASICFIELD_TO_DRAWER_META[field.fieldType].isSubmitted) {
-      return `${++questionCounter}.`
+      return ++questionCounter
     }
     return undefined
   })
