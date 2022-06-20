@@ -355,7 +355,7 @@ export const createMockForm = (
 
 export const createFormBuilderMocks = (
   props: Partial<AdminFormDto> = {},
-  delay: number | 'infinite' | 'real' = 500,
+  delay: number | 'infinite' | 'real' = 0,
 ) => {
   const { form } = createMockForm(props)
 
