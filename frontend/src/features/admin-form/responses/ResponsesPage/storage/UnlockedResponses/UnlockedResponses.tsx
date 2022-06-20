@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
 
+import Button from '~components/Button'
 import Pagination from '~components/Pagination'
 
 import { DownloadButton } from './DownloadButton'
@@ -18,6 +19,7 @@ export const UnlockedResponses = (): JSX.Element => {
     isLoading,
     submissionId,
     isAnyFetching,
+    setSubmissionId,
   } = useUnlockedResponses()
 
   const countToUse = useMemo(() => {
@@ -35,6 +37,10 @@ export const UnlockedResponses = (): JSX.Element => {
     }
   }, [count, filteredCount])
 
+  const clearSubmissionId = useCallback(() => {
+    setSubmissionId(null)
+  }, [setSubmissionId])
+
   return (
     <Flex flexDir="column" h="100%">
       <Grid
@@ -48,7 +54,12 @@ export const UnlockedResponses = (): JSX.Element => {
           md: "'submissions export'",
         }}
       >
-        <Box gridArea="submissions">
+        <Stack
+          align="center"
+          spacing="1rem"
+          direction="row"
+          gridArea="submissions"
+        >
           <Skeleton isLoaded={!isAnyFetching}>
             <Text textStyle="h4">
               <Text as="span" color="primary.500">
@@ -57,7 +68,12 @@ export const UnlockedResponses = (): JSX.Element => {
               {prettifiedResponsesCount}
             </Text>
           </Skeleton>
-        </Box>
+          {submissionId && (
+            <Button onClick={clearSubmissionId} variant="link">
+              Reset
+            </Button>
+          )}
+        </Stack>
         <Stack direction="row" gridArea="export" justifySelf="end">
           <SubmissionSearchbar />
           <DownloadButton />

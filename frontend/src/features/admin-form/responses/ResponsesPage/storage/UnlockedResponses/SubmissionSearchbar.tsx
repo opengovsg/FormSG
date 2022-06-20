@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BiX } from 'react-icons/bi'
 import { InputRightElement } from '@chakra-ui/react'
 
@@ -12,6 +12,11 @@ export const SubmissionSearchbar = (): JSX.Element => {
     useUnlockedResponses()
 
   const [inputValue, setInputValue] = useState(submissionId)
+
+  useEffect(() => {
+    // Sync input value with submissionId.
+    setInputValue(submissionId ?? '')
+  }, [submissionId])
 
   const { isExpanded, inputRef, handleExpansion, handleCollapse } =
     useSearchbar({
