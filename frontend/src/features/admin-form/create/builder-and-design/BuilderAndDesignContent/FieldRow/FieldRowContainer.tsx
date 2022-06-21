@@ -61,14 +61,12 @@ import { SectionFieldRow } from './SectionFieldRow'
 export interface FieldRowContainerProps {
   field: FormFieldDto
   index: number
-  questionNumber?: number
   isDraggingOver: boolean
 }
 
 export const FieldRowContainer = ({
   field,
   index,
-  questionNumber,
   isDraggingOver,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
@@ -254,7 +252,7 @@ export const FieldRowContainer = ({
               pointerEvents={isActive ? undefined : 'none'}
             >
               <FormProvider {...formMethods}>
-                <MemoFieldRow field={field} questionNumber={questionNumber} />
+                <MemoFieldRow field={field} />
               </FormProvider>
             </Box>
             <Collapse in={isActive} style={{ width: '100%' }}>
@@ -310,63 +308,49 @@ export const FieldRowContainer = ({
 
 type MemoFieldRowProps = {
   field: FormFieldDto
-  questionNumber?: number
 }
 
-const MemoFieldRow = memo(
-  ({ field, questionNumber, ...rest }: MemoFieldRowProps) => {
-    // Q: The generation of question numbers is done way upstream and produces a
-    // number|undefined. Seems like there is no type guarantee that
-    // fieldType is submitted <==> questionNumber: number
-    // Is it worth refactoring to get this guarantee?
-
-    switch (field.fieldType) {
-      // Page fields with no question numbers
-      case BasicField.Section:
-        return <SectionFieldRow field={field} {...rest} />
-      case BasicField.Image:
-        return <ImageField schema={field} {...rest} />
-      case BasicField.Statement:
-        return <ParagraphField schema={field} {...rest} />
-      // User fields with question numbers
-      case BasicField.Attachment:
-        return (
-          <AttachmentField schema={{ ...field, questionNumber }} {...rest} />
-        )
-      case BasicField.Checkbox:
-        return <CheckboxField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.Mobile:
-        return <MobileField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.HomeNo:
-        return <HomeNoField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.Email:
-        return <EmailField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.Nric:
-        return <NricField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.Number:
-        return <NumberField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.Decimal:
-        return <DecimalField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.Date:
-        return <DateField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.Dropdown:
-        return <DropdownField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.ShortText:
-        return (
-          <ShortTextField schema={{ ...field, questionNumber }} {...rest} />
-        )
-      case BasicField.LongText:
-        return <LongTextField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.Radio:
-        return <RadioField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.Rating:
-        return <RatingField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.Uen:
-        return <UenField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.YesNo:
-        return <YesNoField schema={{ ...field, questionNumber }} {...rest} />
-      case BasicField.Table:
-        return <TableField schema={{ ...field, questionNumber }} {...rest} />
-    }
-  },
-)
+const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
+  switch (field.fieldType) {
+    case BasicField.Section:
+      return <SectionFieldRow field={field} {...rest} />
+    case BasicField.Image:
+      return <ImageField schema={field} {...rest} />
+    case BasicField.Statement:
+      return <ParagraphField schema={field} {...rest} />
+    case BasicField.Attachment:
+      return <AttachmentField schema={field} {...rest} />
+    case BasicField.Checkbox:
+      return <CheckboxField schema={field} {...rest} />
+    case BasicField.Mobile:
+      return <MobileField schema={field} {...rest} />
+    case BasicField.HomeNo:
+      return <HomeNoField schema={field} {...rest} />
+    case BasicField.Email:
+      return <EmailField schema={field} {...rest} />
+    case BasicField.Nric:
+      return <NricField schema={field} {...rest} />
+    case BasicField.Number:
+      return <NumberField schema={field} {...rest} />
+    case BasicField.Decimal:
+      return <DecimalField schema={field} {...rest} />
+    case BasicField.Date:
+      return <DateField schema={field} {...rest} />
+    case BasicField.Dropdown:
+      return <DropdownField schema={field} {...rest} />
+    case BasicField.ShortText:
+      return <ShortTextField schema={field} {...rest} />
+    case BasicField.LongText:
+      return <LongTextField schema={field} {...rest} />
+    case BasicField.Radio:
+      return <RadioField schema={field} {...rest} />
+    case BasicField.Rating:
+      return <RatingField schema={field} {...rest} />
+    case BasicField.Uen:
+      return <UenField schema={field} {...rest} />
+    case BasicField.YesNo:
+      return <YesNoField schema={field} {...rest} />
+    case BasicField.Table:
+      return <TableField schema={field} {...rest} />
+  }
+})
