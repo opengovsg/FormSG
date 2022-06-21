@@ -21,6 +21,7 @@ export const adminFormKeys = {
     [...adminFormKeys.id(id), 'freeSmsCount'] as const,
   collaborators: (id: string) =>
     [...adminFormKeys.id(id), 'collaborators'] as const,
+  endPage: (id: string) => [...adminFormKeys.id(id), 'endPage'] as const,
 }
 
 /**

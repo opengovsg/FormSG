@@ -308,7 +308,7 @@ export const useMutateFormPage = () => {
 
   const updateFormData = useCallback(
     (newData: EndPageUpdateDto) => {
-      queryClient.setQueryData(adminFormKeys.collaborators(formId), newData)
+      queryClient.setQueryData(adminFormKeys.endPage(formId), newData)
       // Only update adminForm if it already has prior data.
       queryClient.setQueryData<AdminFormDto | undefined>(
         adminFormKeys.id(formId),
