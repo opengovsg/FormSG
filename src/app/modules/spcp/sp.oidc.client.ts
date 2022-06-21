@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { ObjectId } from 'bson'
 import { createPrivateKey, createPublicKey, KeyObject } from 'crypto'
 import {
   compactDecrypt,
@@ -12,6 +11,7 @@ import jwkToPem from 'jwk-to-pem'
 import NodeCache from 'node-cache'
 import { BaseClient, Issuer } from 'openid-client'
 import { promiseStateSync } from 'p-state'
+import { ulid } from 'ulid'
 
 import {
   CreateAuthorisationUrlError,
@@ -234,16 +234,14 @@ export class SpOidcClient {
    * @param config
    * @throws JwkError if RP's secret or public keys are not of correct shape
    */
-  constructor(config: SpOidcClientConstructorParams) {
-    const {
-      spOidcRpClientId,
-      spOidcRpRedirectUrl,
-      spOidcNdiDiscoveryEndpoint,
-      spOidcNdiJwksEndpoint,
-      spOidcRpSecretJwks,
-      spOidcRpPublicJwks,
-    } = config
-
+  constructor({
+    spOidcRpClientId,
+    spOidcRpRedirectUrl,
+    spOidcNdiDiscoveryEndpoint,
+    spOidcNdiJwksEndpoint,
+    spOidcRpSecretJwks,
+    spOidcRpPublicJwks,
+  }: SpOidcClientConstructorParams) {
     this.#spOidcClientCache = new SpOidcClientCache({
       spOidcNdiDiscoveryEndpoint,
       spOidcNdiJwksEndpoint,
@@ -349,7 +347,7 @@ export class SpOidcClient {
       response_type: 'code',
       state: state,
       esrvc: esrvcId,
-      nonce: String(new ObjectId()), // Not used - nonce is a required parameter for SPCP's OIDC implementation although it is optional in OIDC specs
+      nonce: ulid(), // Not used - nonce is a required parameter for SPCP's OIDC implementation although it is optional in OIDC specs
     })
 
     return authorisationUrl
