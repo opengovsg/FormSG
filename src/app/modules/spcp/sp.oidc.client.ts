@@ -38,6 +38,7 @@ import {
   isEC,
   isECPrivate,
   isSigningKey,
+  retryPromiseForever,
   retryPromiseThreeAttempts,
 } from './sp.oidc.util'
 
@@ -131,20 +132,23 @@ export class SpOidcClientCache extends NodeCache {
    * Method to create a promise to fetch NDI's public keys and
    * discover the well known endpoint to construct the base client,
    * and store NDI's public key and base client in cache
-   * Sets `expiry` key in cache with TTL of 55 mins to trigger refresh ahead
+   * Sets `expiry` key in cache with TTL of 1hour to attempt refresh ahead
+   * Refresh ahead will attempt infinite number of times with exponential backoff in time between retries
    * @returns object {ndiPublicKeys, baseClient}
    * @async
    * @throws error if retrievePublicKeysFromNdi or retrieveBaseClientFromNdi fails
    */
   async createRefreshPromise(): Promise<Refresh> {
-    const [ndiPublicKeys, baseClient] = await Promise.all([
-      this.retrievePublicKeysFromNdi(),
-      this.retrieveBaseClientFromNdi(),
-    ])
+    const [ndiPublicKeys, baseClient] = await retryPromiseForever(
+      Promise.all([
+        this.retrievePublicKeysFromNdi(),
+        this.retrieveBaseClientFromNdi(),
+      ]),
+    )
 
-    this.set(NDI_PUBLIC_KEY_NAME, ndiPublicKeys, 3600) // TTL of 60 minutes
-    this.set(BASE_CLIENT_NAME, baseClient, 3600) // TTL of 60 minutes
-    this.set(EXPIRY_NAME, 'expiry', 3300) // set expiry key with TTL of 55 minutes, to trigger refresh up to 5min ahead (note that expiry check is done every 60s)
+    this.set(NDI_PUBLIC_KEY_NAME, ndiPublicKeys) // No TTL - key will be kept forever until refresh is successful on expiry of EXPIRY_NAME key
+    this.set(BASE_CLIENT_NAME, baseClient) // No TTL - key will be kept forever until refresh is successful on expiry of EXPIRY_NAME key
+    this.set(EXPIRY_NAME, 'expiry', 3600) // set expiry key with TTL of 1 hour, to trigger refresh ahead (note that expiry check is done every 60s)
     return { ndiPublicKeys, baseClient }
   }
 
@@ -169,7 +173,7 @@ export class SpOidcClientCache extends NodeCache {
 
   /**
    * Method to make network call to retrieve public JWKS from NDI
-   * Max of 3 attemps with timeout of 3s per attempt
+   * Max of 3 attemps with timeout of 3s per attempt as per NDI specs
    * @async
    * @returns NDI's public keys
    * @throws JwkError if keys are not the correct shape
@@ -197,7 +201,7 @@ export class SpOidcClientCache extends NodeCache {
 
   /**
    * Method to make network call to NDI's discovery endpoint and construct the base client
-   * Max of 3 attemps with timeout of 3s per attempt
+   * Max of 3 attemps with timeout of 3s per attempt as per NDI specs
    * @async
    * @returns Base client
    */
