@@ -543,7 +543,7 @@ export class SpOidcClient {
       throw new CreateJwtError('Create JWT failed. No signing keys found.')
     }
 
-    const signingKey = possibleSigningKeys[0]
+    const signingKey = possibleSigningKeys[0] // Can use any of the RP's secret keys. For key rotation, we need to expose the RP's old + new public signing keys for 1h (to allow NDI to refresh cache), and then load only the new secret signing key on our servers.
 
     const jwt = await new SignJWT(payload)
       .setProtectedHeader({ alg: signingKey.alg, kid: signingKey.kid })
