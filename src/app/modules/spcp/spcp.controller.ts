@@ -211,7 +211,7 @@ export const handleSpOidcLogin: ControllerHandler<
 > = async (req, res) => {
   const { state, code } = req.query
   const logMeta = {
-    action: 'handleLogin',
+    action: 'handleSpOidcLogin',
     state,
     code,
   }

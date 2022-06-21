@@ -37,7 +37,11 @@ const logger = createLoggerWithLabel(module)
  * Exported for testing.
  */
 export class SpOidcServiceClass {
-  #spOidcProps: ISpcpMyInfo
+  #spOidcProps: Pick<
+    ISpcpMyInfo,
+    'spCookieMaxAge' | 'spCookieMaxAgePreserved' | 'spcpCookieDomain'
+  >
+
   #spOidcClient: SpOidcClient
 
   constructor(props: ISpcpMyInfo) {
@@ -53,7 +57,12 @@ export class SpOidcServiceClass {
         fs.readFileSync(props.spOidcRpJwksSecretPath).toString(),
       ),
     })
-    this.#spOidcProps = props
+
+    this.#spOidcProps = {
+      spCookieMaxAge: props.spCookieMaxAge,
+      spCookieMaxAgePreserved: props.spCookieMaxAgePreserved,
+      spcpCookieDomain: props.spcpCookieDomain,
+    }
   }
 
   /**
@@ -93,8 +102,7 @@ export class SpOidcServiceClass {
    * @returns err(missingJwtError) if the SP JWT does not exist
    */
   extractJwt(cookies: SpcpCookies): Result<string, MissingJwtError> {
-    const jwtName = JwtName.SP
-    const cookie = cookies[jwtName]
+    const cookie = cookies[JwtName.SP]
     return cookie ? ok(cookie) : err(new MissingJwtError())
   }
 
