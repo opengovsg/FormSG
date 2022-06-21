@@ -12,7 +12,6 @@ import jwkToPem from 'jwk-to-pem'
 import NodeCache from 'node-cache'
 import { BaseClient, Issuer } from 'openid-client'
 import { promiseStateSync } from 'p-state'
-import promiseRetry from 'promise-retry'
 
 import {
   CreateAuthorisationUrlError,
@@ -37,6 +36,7 @@ import {
   SpOidcClientCacheConstructorParams,
   SpOidcClientConstructorParams,
 } from './sp.oidc.client.types'
+import { retryPromiseThreeAttempts } from './sp.oidc.util'
 
 /**
  * Cache class which provides read-through capability and refresh-ahead before expiry
@@ -167,26 +167,11 @@ export class SpOidcClientCache extends NodeCache {
    * @throws JwkError if keys are not the correct shape
    */
   async retrievePublicKeysFromNdi(): Promise<CryptoKeySet> {
-    const getJwksWithRetries = promiseRetry(
-      async (retry) => {
-        try {
-          const { data } = await axios.get<PublicJwks>(
-            this.#spOidcNdiJwksEndpoint,
-          )
-          return data
-        } catch (e) {
-          return retry(e)
-        }
-      },
-      {
-        retries: 2, // NDI specs: 3 attempts. Do once then retry two times
-        minTimeout: 0, // Retry immediately upon failure
-        maxTimeout: 3000, // NDI specs: timeout of max 3s
-        maxRetryTime: 3000,
-      },
+    const getJwksWithRetries = retryPromiseThreeAttempts(
+      axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint),
     )
 
-    const spOidcNdiPublicJwks = await getJwksWithRetries
+    const { data: spOidcNdiPublicJwks } = await getJwksWithRetries
 
     return spOidcNdiPublicJwks.keys.map((jwk) => {
       if (!isEC(jwk) || !jwk.kid || !jwk.use) {
@@ -195,7 +180,9 @@ export class SpOidcClientCache extends NodeCache {
       return {
         kid: jwk.kid,
         use: jwk.use,
-        key: createPublicKey(jwkToPem(jwk)), // Conversion to pem is necessary because in node 14, crypto does not support import of JWK directly
+        // Conversion to pem is necessary because in node 14, crypto does not support import of JWK directly
+        // TODO (#4021): load JWK directly after node upgrade
+        key: createPublicKey(jwkToPem(jwk)),
       }
     })
   }
@@ -207,21 +194,8 @@ export class SpOidcClientCache extends NodeCache {
    * @returns Base client
    */
   async retrieveBaseClientFromNdi(): Promise<BaseClient> {
-    const getIssuerWithRetries = promiseRetry(
-      async (retry) => {
-        try {
-          const result = await Issuer.discover(this.#spOidcNdiDiscoveryEndpoint)
-          return result
-        } catch (e) {
-          return retry(e)
-        }
-      },
-      {
-        retries: 2, // NDI specs: 3 attempts. Do once then retry two times
-        minTimeout: 0, // Retry immediately upon failure
-        maxTimeout: 3000, // NDI specs: timeout of max 3s
-        maxRetryTime: 3000,
-      },
+    const getIssuerWithRetries = retryPromiseThreeAttempts(
+      Issuer.discover(this.#spOidcNdiDiscoveryEndpoint),
     )
 
     const issuer = await getIssuerWithRetries
@@ -293,7 +267,9 @@ export class SpOidcClient {
         kid: jwk.kid,
         use: jwk.use,
         alg: jwk.alg,
-        key: createPrivateKey(jwkToPem(jwk, { private: true })), // Conversion to pem is necessary because in node 14, crypto does not support import of JWK directly
+        // Conversion to pem is necessary because in node 14, crypto does not support import of JWK directly
+        // TODO (#4021): load JWK directly after node upgrade
+        key: createPrivateKey(jwkToPem(jwk, { private: true })),
       }
 
       return cryptoKeySet
@@ -312,7 +288,9 @@ export class SpOidcClient {
         kid: jwk.kid,
         use: jwk.use,
         alg: jwk.alg,
-        key: createPublicKey(jwkToPem(jwk)), // Conversion to pem is necessary because in node 14, crypto does not support import of JWK directly
+        // Conversion to pem is necessary because in node 14, crypto does not support import of JWK directly
+        // TODO (#4021): load JWK directly after node upgrade
+        key: createPublicKey(jwkToPem(jwk)),
       }
 
       return cryptoKeySet
