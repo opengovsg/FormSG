@@ -237,7 +237,12 @@ const MyInfoText = ({
   return (
     <Text>
       {`Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30).`}{' '}
-      <Link isExternal>Learn more</Link>
+      <Link
+        isExternal
+        href="https://guide.form.gov.sg/AdvancedGuide.html#email-mode"
+      >
+        Learn more
+      </Link>
     </Text>
   )
 }
