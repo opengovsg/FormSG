@@ -1,8 +1,6 @@
 import { useMemo } from 'react'
 import { Box, BoxProps } from '@chakra-ui/react'
-import { getColor } from '@chakra-ui/theme-tools'
 
-import { theme } from '~theme/index'
 import { MotionBox } from '~components/motion'
 
 const ActiveIndicator = ({ ...props }: BoxProps): JSX.Element => (
@@ -14,7 +12,6 @@ const ActiveIndicator = ({ ...props }: BoxProps): JSX.Element => (
     borderRadius="full"
     backgroundColor="secondary.500"
     position="absolute"
-    as="button"
     {...props}
   />
 )
@@ -44,7 +41,7 @@ const CircleIndicator = ({
           ? undefined
           : {
               backgroundColor: 'secondary.300',
-              boxShadow: `0 0 0 1px ${getColor(theme, 'secondary.400')}`,
+              boxShadow: `0 0 0 1px var(--chakra-colors-secondary-400)`,
             }
       }
       backgroundClip="content-box"
@@ -71,7 +68,7 @@ export const ProgressIndicator = ({
   )
 
   const animationProps = useMemo(() => {
-    return { x: (currActiveIdx + 0.125).toString() + 'rem' }
+    return { x: `${currActiveIdx + 0.125}rem` }
   }, [currActiveIdx])
 
   return (
