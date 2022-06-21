@@ -92,6 +92,7 @@ export class SpOidcClientCache extends NodeCache {
    * Method to retrieve NDI's public keys from cache
    * @async
    * @returns NDI's public keys
+   * @throws error if refresh fails
    */
   async getNdiPublicKeys(): Promise<CryptoKeySet> {
     const ndiPublicKeys = this.get<CryptoKeySet>('ndiPublicKeys')
@@ -105,7 +106,9 @@ export class SpOidcClientCache extends NodeCache {
   /**
    * Method to retrieve base client from cache
    * Triggers a refresh
+   * @async
    * @returns Base client
+   * @throws error if refresh fails
    */
   async getBaseClient(): Promise<BaseClient> {
     const baseClient = this.get<BaseClient>('baseClient')
@@ -123,6 +126,7 @@ export class SpOidcClientCache extends NodeCache {
    * Sets `expiry` key in cache with TTL of 55 mins to trigger refresh ahead
    * @returns object {ndiPublicKeys, baseClient}
    * @async
+   * @throws error if retrievePublicKeysFromNdi or retrieveBaseClientFromNdi fails
    */
   async createRefreshPromise(): Promise<Refresh> {
     const [ndiPublicKeys, baseClient] = await Promise.all([
