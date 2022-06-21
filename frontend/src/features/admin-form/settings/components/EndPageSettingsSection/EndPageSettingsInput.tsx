@@ -1,10 +1,11 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
-import { FormControl, Stack } from '@chakra-ui/react'
+import { Flex, FormControl, Stack } from '@chakra-ui/react'
 import validator from 'validator'
 
 import { FormEndPage } from '~shared/types'
 
+import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -21,50 +22,29 @@ export const EndPageSettingsInput = ({
 }: EndPageSettingsInputProps): JSX.Element => {
   const { mutateFormEndPage } = useMutateFormPage()
 
-  const defaultParagraph = useMemo(() => endPage.paragraph ?? '', [endPage])
-  const defaultButtonLink = useMemo(() => endPage.buttonLink ?? '', [endPage])
-  const buttonLinkValidation = useMemo(() => {
-    return { protocols: ['https'], require_protocol: true }
-  }, [])
+  const buttonLinkValidation = useCallback(
+    (url) =>
+      !url ||
+      validator.isURL(url, {
+        protocols: ['https'],
+        require_protocol: true,
+      }) ||
+      'Please enter a valid URL (starting with https://)',
+    [],
+  )
 
   const {
     register,
     formState: { errors },
-    resetField,
     handleSubmit,
   } = useForm<FormEndPage>({
     mode: 'onChange',
     defaultValues: endPage,
   })
 
-  const handleUpdateEndPage = useCallback(() => {
-    return handleSubmit((data) => {
-      if (
-        data.title === endPage.title &&
-        data.buttonText === endPage.buttonText &&
-        data.buttonLink === defaultButtonLink &&
-        data.paragraph === defaultParagraph
-      ) {
-        return
-      }
-
-      return mutateFormEndPage.mutate(endPage)
-    })()
-  }, [
-    defaultButtonLink,
-    defaultParagraph,
-    endPage,
-    handleSubmit,
-    mutateFormEndPage,
-  ])
-
-  const handleUpdateButtonLink = useCallback(() => {
-    if (errors.buttonLink) {
-      return resetField('buttonLink')
-    }
-
-    return handleUpdateEndPage()
-  }, [errors.buttonLink, handleUpdateEndPage, resetField])
+  const handleUpdateEndPage = handleSubmit((endPage) =>
+    mutateFormEndPage.mutate(endPage),
+  )
 
   return (
     <Stack gap="2rem" paddingTop="2.5rem">
@@ -74,7 +54,6 @@ export const EndPageSettingsInput = ({
           {...register('title', {
             required: 'Title is required for the Thank You page',
           })}
-          onBlur={handleUpdateEndPage}
         />
         <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
       </FormControl>
@@ -85,7 +64,6 @@ export const EndPageSettingsInput = ({
             required:
               'Follow-up instructions are required for the Thank You page',
           })}
-          onBlur={handleUpdateEndPage}
         />
         <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
       </FormControl>
@@ -95,25 +73,21 @@ export const EndPageSettingsInput = ({
       >
         <FormControl isInvalid={!!errors.buttonText}>
           <FormLabel isRequired>Button text</FormLabel>
-          <Input {...register('buttonText')} onBlur={handleUpdateEndPage} />
+          <Input {...register('buttonText')} />
           <FormErrorMessage>{errors.buttonText?.message}</FormErrorMessage>
         </FormControl>
         <FormControl isInvalid={!!errors.buttonLink}>
           <FormLabel isRequired>Button redirect link</FormLabel>
           <Input
             placeholder="Default form link"
-            {...register('buttonLink', {
-              onBlur: handleUpdateButtonLink,
-              validate: (url) =>
-                !url ||
-                validator.isURL(url, buttonLinkValidation) ||
-                'Please enter a valid URL (starting with https://)',
-            })}
+            {...register('buttonLink', { validate: buttonLinkValidation })}
           />
           <FormErrorMessage>{errors.buttonLink?.message}</FormErrorMessage>
         </FormControl>
-        {/* TODO (hans): Check with designers to use submit button instead onblur autosave*/}
       </Stack>
+      <Flex>
+        <Button onClick={handleUpdateEndPage}>Save</Button>
+      </Flex>
     </Stack>
   )
 }
