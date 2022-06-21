@@ -27,9 +27,6 @@ import {
 } from './sp.oidc.client.errors'
 import {
   CryptoKeys,
-  isEC,
-  isECPrivate,
-  isSigningKey,
   PublicJwks,
   Refresh,
   SecretJwks,
@@ -37,7 +34,12 @@ import {
   SpOidcClientCacheConstructorParams,
   SpOidcClientConstructorParams,
 } from './sp.oidc.client.types'
-import { retryPromiseThreeAttempts } from './sp.oidc.util'
+import {
+  isEC,
+  isECPrivate,
+  isSigningKey,
+  retryPromiseThreeAttempts,
+} from './sp.oidc.util'
 
 // Name of keys in cache
 const BASE_CLIENT_NAME = 'baseClient'

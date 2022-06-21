@@ -1,4 +1,9 @@
+import { EC, ECPrivate } from 'jwk-to-pem'
 import promiseRetry from 'promise-retry'
+
+import { hasProp } from '../../../../shared/utils/has-prop'
+
+import { CryptoKey, SigningKey } from './sp.oidc.client.types'
 
 /**
  * Helper function to retry a promise 2 times
@@ -53,4 +58,38 @@ export const retryPromiseForever = <T>(promise: Promise<T>): Promise<T> => {
       // See https://github.com/tim-kos/node-retry
     },
   )
+}
+
+// Typeguards
+
+export const isEC = (jwk: unknown): jwk is EC => {
+  return (
+    typeof jwk === 'object' &&
+    !!jwk &&
+    hasProp(jwk, 'kty') &&
+    jwk.kty === 'EC' &&
+    hasProp(jwk, 'crv') &&
+    typeof jwk.crv === 'string' &&
+    hasProp(jwk, 'x') &&
+    typeof jwk.x === 'string' &&
+    hasProp(jwk, 'y') &&
+    typeof jwk.y === 'string'
+  )
+}
+
+export const isECPrivate = (jwk: unknown): jwk is ECPrivate => {
+  return (
+    typeof jwk === 'object' &&
+    !!jwk &&
+    hasProp(jwk, 'kty') &&
+    jwk.kty === 'EC' &&
+    hasProp(jwk, 'crv') &&
+    typeof jwk.crv === 'string' &&
+    hasProp(jwk, 'd') &&
+    typeof jwk.d === 'string'
+  )
+}
+
+export const isSigningKey = (key: CryptoKey): key is SigningKey => {
+  return !!key.alg && key.use === 'sig'
 }
