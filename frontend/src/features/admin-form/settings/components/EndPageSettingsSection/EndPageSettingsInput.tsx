@@ -12,16 +12,20 @@ import Textarea from '~components/Textarea'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
+interface EndPageSettingsInputProps {
+  endPage: FormEndPage
+}
+
 export const EndPageSettingsInput = ({
-  title,
-  paragraph,
-  buttonLink,
-  buttonText,
-}: FormEndPage): JSX.Element => {
+  endPage,
+}: EndPageSettingsInputProps): JSX.Element => {
   const { mutateFormEndPage } = useMutateFormPage()
 
-  const defaultParagraph = useMemo(() => paragraph ?? '', [paragraph])
-  const defaultButtonLink = useMemo(() => buttonLink ?? '', [buttonLink])
+  const defaultParagraph = useMemo(() => endPage.paragraph ?? '', [endPage])
+  const defaultButtonLink = useMemo(() => endPage.buttonLink ?? '', [endPage])
+  const buttonLinkValidation = useMemo(() => {
+    return { protocols: ['https'], require_protocol: true }
+  }, [])
 
   const {
     register,
@@ -30,21 +34,16 @@ export const EndPageSettingsInput = ({
     handleSubmit,
   } = useForm<FormEndPage>({
     mode: 'onChange',
-    defaultValues: {
-      title: title,
-      paragraph: defaultParagraph,
-      buttonText: buttonText,
-      buttonLink: defaultButtonLink,
-    },
+    defaultValues: endPage,
   })
 
   const handleUpdateEndPage = useCallback(() => {
-    return handleSubmit((endPage) => {
+    return handleSubmit((data) => {
       if (
-        endPage.title === title &&
-        endPage.buttonText === buttonText &&
-        endPage.buttonLink === defaultButtonLink &&
-        endPage.paragraph === defaultParagraph
+        data.title === endPage.title &&
+        data.buttonText === endPage.buttonText &&
+        data.buttonLink === defaultButtonLink &&
+        data.paragraph === defaultParagraph
       ) {
         return
       }
@@ -52,12 +51,11 @@ export const EndPageSettingsInput = ({
       return mutateFormEndPage.mutate(endPage)
     })()
   }, [
-    buttonText,
     defaultButtonLink,
     defaultParagraph,
+    endPage,
     handleSubmit,
     mutateFormEndPage,
-    title,
   ])
 
   const handleUpdateButtonLink = useCallback(() => {
@@ -68,27 +66,27 @@ export const EndPageSettingsInput = ({
     return handleUpdateEndPage()
   }, [errors.buttonLink, handleUpdateEndPage, resetField])
 
-  const buttonLinkRegister = register('buttonLink', {
-    onBlur: handleUpdateButtonLink,
-    validate: (url) =>
-      !url ||
-      validator.isURL(url, {
-        protocols: ['https'],
-        require_protocol: true,
-      }) ||
-      'Please enter a valid URL (starting with https://)',
-  })
-
   return (
     <Stack gap="2rem" paddingTop="2.5rem">
       <FormControl isInvalid={!!errors.title}>
         <FormLabel isRequired>Title</FormLabel>
-        <Input {...register('title')} onBlur={handleUpdateEndPage} />
+        <Input
+          {...register('title', {
+            required: 'Title is required for the Thank You page',
+          })}
+          onBlur={handleUpdateEndPage}
+        />
         <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isInvalid={!!errors.paragraph}>
-        <FormLabel isRequired>Follow-up paragraph</FormLabel>
-        <Textarea {...register('paragraph')} onBlur={handleUpdateEndPage} />
+        <FormLabel isRequired>Follow-up instructions</FormLabel>
+        <Textarea
+          {...register('paragraph', {
+            required:
+              'Follow-up instructions are required for the Thank You page',
+          })}
+          onBlur={handleUpdateEndPage}
+        />
         <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
       </FormControl>
       <Stack
@@ -102,9 +100,19 @@ export const EndPageSettingsInput = ({
         </FormControl>
         <FormControl isInvalid={!!errors.buttonLink}>
           <FormLabel isRequired>Button redirect link</FormLabel>
-          <Input placeholder="Default form link" {...buttonLinkRegister} />
+          <Input
+            placeholder="Default form link"
+            {...register('buttonLink', {
+              onBlur: handleUpdateButtonLink,
+              validate: (url) =>
+                !url ||
+                validator.isURL(url, buttonLinkValidation) ||
+                'Please enter a valid URL (starting with https://)',
+            })}
+          />
           <FormErrorMessage>{errors.buttonLink?.message}</FormErrorMessage>
         </FormControl>
+        {/* TODO (hans): Check with designers to use submit button instead onblur autosave*/}
       </Stack>
     </Stack>
   )

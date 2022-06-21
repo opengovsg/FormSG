@@ -12,7 +12,7 @@ export const SettingsEndPage = (): JSX.Element => {
     <>
       <CategoryHeader mb={0}>Customise Thank You page</CategoryHeader>
       <Skeleton isLoaded={!isLoading && !!form}>
-        {form ? <EndPageSettingsInput {...form.endPage} /> : null}
+        {form && <EndPageSettingsInput endPage={form.endPage} />}
       </Skeleton>
     </>
   )
