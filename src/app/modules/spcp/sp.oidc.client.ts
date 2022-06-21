@@ -11,6 +11,7 @@ import {
 import jwkToPem from 'jwk-to-pem'
 import NodeCache from 'node-cache'
 import { BaseClient, Issuer } from 'openid-client'
+import { promiseStateSync } from 'p-state'
 import promiseRetry from 'promise-retry'
 
 import {
@@ -48,6 +49,7 @@ export class SpOidcClientCache extends NodeCache {
   #spOidcRpClientId: string
   #spOidcRpRedirectUrl: string
   #spOidcRpSecretJwks: SecretJwks
+  #refreshPromise?: Promise<Refresh> // Stores the refresh promise so that there is at most one in-flight refresh at any point in time
 
   /**
    * Constructor for cache
@@ -115,13 +117,14 @@ export class SpOidcClientCache extends NodeCache {
   }
 
   /**
-   * Method to trigger a refresh and fetch NDI's public keys and
-   * discover the well known endpoint to construct the base client
-   * Stores NDI's public key and base client in cache with a TTL of 60 mins
-   * Sets `expiry` key in cache with TTL of 59 mins to trigger refresh ahead
+   * Method to create a promise to fetch NDI's public keys and
+   * discover the well known endpoint to construct the base client,
+   * and store NDI's public key and base client in cache
+   * Sets `expiry` key in cache with TTL of 55 mins to trigger refresh ahead
    * @returns object {ndiPublicKeys, baseClient}
+   * @async
    */
-  async refresh(): Promise<Refresh> {
+  async createRefreshPromise(): Promise<Refresh> {
     const [ndiPublicKeys, baseClient] = await Promise.all([
       this.retrievePublicKeysFromNdi(),
       this.retrieveBaseClientFromNdi(),
@@ -131,6 +134,25 @@ export class SpOidcClientCache extends NodeCache {
     this.set('baseClient', baseClient, 3600) // TTL of 60 minutes
     this.set('expiry', 'expiry', 3300) // set expiry key with TTL of 55 minutes, to trigger refresh up to 5min ahead (note that expiry check is done every 60s)
     return { ndiPublicKeys, baseClient }
+  }
+
+  /**
+   * Returns stored refresh promise if it exists and is pending, or else
+   * calls createRefreshPromise(), saves the refresh promise and returns it
+   * @returns object {ndiPublicKeys, baseClient}
+   * @async
+   */
+  async refresh(): Promise<Refresh> {
+    // If promise does not exist or promise is not pending, create and store the promise
+    if (
+      !this.#refreshPromise ||
+      promiseStateSync(this.#refreshPromise) !== 'pending'
+    ) {
+      this.#refreshPromise = this.createRefreshPromise()
+    }
+
+    // Return the refresh promise
+    return this.#refreshPromise
   }
 
   /**
