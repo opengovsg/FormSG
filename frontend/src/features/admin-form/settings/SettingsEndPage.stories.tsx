@@ -7,7 +7,11 @@ import {
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { StoryRouter, viewports } from '~utils/storybook'
+import {
+  getMobileViewParameters,
+  getTabletViewParameters,
+  StoryRouter,
+} from '~utils/storybook'
 
 import { SettingsEndPage } from './SettingsEndPage'
 
@@ -38,17 +42,7 @@ const Template: Story = () => <SettingsEndPage />
 export const Desktop = Template.bind({})
 
 export const Tablet = Template.bind({})
-Tablet.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
-}
+Tablet.parameters = getTabletViewParameters()
 
 export const Mobile = Template.bind({})
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
+Mobile.parameters = getMobileViewParameters()
