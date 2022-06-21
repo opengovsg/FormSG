@@ -38,6 +38,11 @@ import {
 } from './sp.oidc.client.types'
 import { retryPromiseThreeAttempts } from './sp.oidc.util'
 
+// Name of keys in cache
+const BASE_CLIENT_NAME = 'baseClient'
+const NDI_PUBLIC_KEY_NAME = 'ndiPublicKeys'
+const EXPIRY_NAME = 'expiry'
+
 /**
  * Cache class which provides read-through capability and refresh-ahead before expiry
  * Handles discovery and retrieval of NDI's public jwks
@@ -95,7 +100,7 @@ export class SpOidcClientCache extends NodeCache {
    * @throws error if refresh fails
    */
   async getNdiPublicKeys(): Promise<CryptoKeySet> {
-    const ndiPublicKeys = this.get<CryptoKeySet>('ndiPublicKeys')
+    const ndiPublicKeys = this.get<CryptoKeySet>(NDI_PUBLIC_KEY_NAME)
     if (!ndiPublicKeys) {
       const { ndiPublicKeys } = await this.refresh()
       return ndiPublicKeys
@@ -111,7 +116,7 @@ export class SpOidcClientCache extends NodeCache {
    * @throws error if refresh fails
    */
   async getBaseClient(): Promise<BaseClient> {
-    const baseClient = this.get<BaseClient>('baseClient')
+    const baseClient = this.get<BaseClient>(BASE_CLIENT_NAME)
     if (!baseClient) {
       const { baseClient } = await this.refresh()
       return baseClient
@@ -134,9 +139,9 @@ export class SpOidcClientCache extends NodeCache {
       this.retrieveBaseClientFromNdi(),
     ])
 
-    this.set('ndiPublicKeys', ndiPublicKeys, 3600) // TTL of 60 minutes
-    this.set('baseClient', baseClient, 3600) // TTL of 60 minutes
-    this.set('expiry', 'expiry', 3300) // set expiry key with TTL of 55 minutes, to trigger refresh up to 5min ahead (note that expiry check is done every 60s)
+    this.set(NDI_PUBLIC_KEY_NAME, ndiPublicKeys, 3600) // TTL of 60 minutes
+    this.set(BASE_CLIENT_NAME, baseClient, 3600) // TTL of 60 minutes
+    this.set(EXPIRY_NAME, 'expiry', 3300) // set expiry key with TTL of 55 minutes, to trigger refresh up to 5min ahead (note that expiry check is done every 60s)
     return { ndiPublicKeys, baseClient }
   }
 
@@ -328,12 +333,12 @@ export class SpOidcClient {
   ): Promise<string> {
     if (!state) {
       throw new CreateAuthorisationUrlError(
-        'Undefined state, failed to create redirect url.',
+        'Empty state, failed to create redirect url.',
       )
     }
     if (!esrvcId) {
       throw new CreateAuthorisationUrlError(
-        'Undefined esrvcId, failed to create redirect url.',
+        'Empty esrvcId, failed to create redirect url.',
       )
     }
 
