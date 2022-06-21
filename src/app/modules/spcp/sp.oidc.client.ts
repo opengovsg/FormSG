@@ -2,6 +2,7 @@ import axios from 'axios'
 import { createPrivateKey, createPublicKey, KeyObject } from 'crypto'
 import {
   compactDecrypt,
+  decodeProtectedHeader,
   JWTPayload,
   jwtVerify,
   JWTVerifyResult,
@@ -369,16 +370,14 @@ export class SpOidcClient {
       return new GetDecryptionKeyError('jwe is empty')
     }
 
-    const kidJwe: string | undefined = JSON.parse(
-      Buffer.from(jwe.split('.')[0], 'base64').toString(),
-    )['kid']
+    const { kid } = decodeProtectedHeader(jwe)
 
-    if (!kidJwe) {
+    if (!kid) {
       return new GetDecryptionKeyError(
         'getDecryptionKey failed, no kid in idToken JWE',
       )
     }
-    const possibleDecryptKeys = keySet.filter((key) => key.kid === kidJwe)
+    const possibleDecryptKeys = keySet.filter((key) => key.kid === kid)
     if (possibleDecryptKeys.length === 0) {
       return new GetDecryptionKeyError(
         'getDecryptionKey failed, no decryption key matches jwe kid',
@@ -403,16 +402,14 @@ export class SpOidcClient {
       return new GetVerificationKeyError('jws is empty')
     }
 
-    const kidJws: string | undefined = JSON.parse(
-      Buffer.from(jws.split('.')[0], 'base64').toString(),
-    )['kid']
-
-    if (!kidJws) {
+    const { kid } = decodeProtectedHeader(jws)
+    if (!kid) {
       return new GetVerificationKeyError(
         'getVerificationKey failed, no kid in JWS',
       )
     }
-    const possibleVerificationKeys = keySet.filter((key) => key.kid === kidJws)
+
+    const possibleVerificationKeys = keySet.filter((key) => key.kid === kid)
     if (possibleVerificationKeys.length === 0) {
       return new GetVerificationKeyError(
         'getVerificationKey failed, no decryption key matches jws kid',
