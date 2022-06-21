@@ -19,7 +19,7 @@ export type SecretJwks = {
 
 // Object returned when cache calls refresh
 export type Refresh = {
-  ndiPublicKeys: CryptoKeySet
+  ndiPublicKeys: CryptoKeys
   baseClient: BaseClient
 }
 
@@ -33,7 +33,7 @@ type CryptoKey = {
 
 export type SigningKey = Required<CryptoKey>
 
-export type CryptoKeySet = CryptoKey[]
+export type CryptoKeys = CryptoKey[]
 
 export type SpOidcClientConstructorParams = {
   spOidcRpClientId: string

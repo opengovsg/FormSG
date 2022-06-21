@@ -26,7 +26,7 @@ import {
   VerificationKeyError,
 } from './sp.oidc.client.errors'
 import {
-  CryptoKeySet,
+  CryptoKeys,
   isEC,
   isECPrivate,
   isSigningKey,
@@ -100,8 +100,8 @@ export class SpOidcClientCache extends NodeCache {
    * @returns NDI's public keys
    * @throws error if refresh fails
    */
-  async getNdiPublicKeys(): Promise<CryptoKeySet> {
-    const ndiPublicKeys = this.get<CryptoKeySet>(NDI_PUBLIC_KEY_NAME)
+  async getNdiPublicKeys(): Promise<CryptoKeys> {
+    const ndiPublicKeys = this.get<CryptoKeys>(NDI_PUBLIC_KEY_NAME)
     if (!ndiPublicKeys) {
       const { ndiPublicKeys } = await this.refresh()
       return ndiPublicKeys
@@ -172,7 +172,7 @@ export class SpOidcClientCache extends NodeCache {
    * @returns NDI's public keys
    * @throws JwkError if keys are not the correct shape
    */
-  async retrievePublicKeysFromNdi(): Promise<CryptoKeySet> {
+  async retrievePublicKeysFromNdi(): Promise<CryptoKeys> {
     const getJwksWithRetries = retryPromiseThreeAttempts(
       axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint),
     )
@@ -224,8 +224,8 @@ export class SpOidcClientCache extends NodeCache {
  * and provides methods for decryption and verification of JWE/JWS returned by NDI after authorisation code exchange
  */
 export class SpOidcClient {
-  #spOidcRpSecretKeys: CryptoKeySet
-  #spOidcRpPublicKeys: CryptoKeySet
+  #spOidcRpSecretKeys: CryptoKeys
+  #spOidcRpPublicKeys: CryptoKeys
   #spOidcRpPublicJwks: PublicJwks
   #spOidcClientCache: SpOidcClientCache
   #spOidcRpRedirectUrl: string
@@ -267,7 +267,7 @@ export class SpOidcClient {
         throw new JwkError()
       }
 
-      const cryptoKeySet = {
+      const cryptoKeys = {
         kid: jwk.kid,
         use: jwk.use,
         alg: jwk.alg,
@@ -276,7 +276,7 @@ export class SpOidcClient {
         key: createPrivateKey(jwkToPem(jwk, { private: true })),
       }
 
-      return cryptoKeySet
+      return cryptoKeys
     })
 
     this.#spOidcRpPublicKeys = spOidcRpPublicJwks.keys.map((jwk) => {
@@ -288,7 +288,7 @@ export class SpOidcClient {
         throw new JwkError()
       }
 
-      const cryptoKeySet = {
+      const cryptoKeys = {
         kid: jwk.kid,
         use: jwk.use,
         alg: jwk.alg,
@@ -297,7 +297,7 @@ export class SpOidcClient {
         key: createPublicKey(jwkToPem(jwk)),
       }
 
-      return cryptoKeySet
+      return cryptoKeys
     })
   }
 
@@ -306,7 +306,7 @@ export class SpOidcClient {
    * @async
    * @returns NDI's Public Key
    */
-  async getNdiPublicKeysFromCache(): Promise<CryptoKeySet> {
+  async getNdiPublicKeysFromCache(): Promise<CryptoKeys> {
     return this.#spOidcClientCache.getNdiPublicKeys()
   }
 
@@ -357,13 +357,13 @@ export class SpOidcClient {
   /**
    * Method to select the correct decryption key based on kid value of jwe
    * @param jwe
-   * @param keySet keySet to choose from
+   * @param keys keys to choose from
    * @returns decryptKey
    * @returns GetDecryptionKeyError if unable to find decryption key
    */
   getDecryptionKey(
     jwe: string,
-    keySet: CryptoKeySet,
+    keys: CryptoKeys,
   ): KeyObject | GetDecryptionKeyError {
     // Choose the correct decryption key for the jwe
     if (!jwe) {
@@ -377,7 +377,7 @@ export class SpOidcClient {
         'getDecryptionKey failed, no kid in idToken JWE',
       )
     }
-    const possibleDecryptKeys = keySet.filter((key) => key.kid === kid)
+    const possibleDecryptKeys = keys.filter((key) => key.kid === kid)
     if (possibleDecryptKeys.length === 0) {
       return new GetDecryptionKeyError(
         'getDecryptionKey failed, no decryption key matches jwe kid',
@@ -390,13 +390,13 @@ export class SpOidcClient {
   /**
    * Method to select the correct verification key based on kid value of jws
    * @param jws
-   * @param keySet keySet to choose from
+   * @param keys keys to choose from
    * @returns verificationKey
    * @returns GetVerificationKeyError is unable to find verification key
    */
   getVerificationKey(
     jws: string,
-    keySet: CryptoKeySet,
+    keys: CryptoKeys,
   ): KeyObject | GetVerificationKeyError {
     if (!jws) {
       return new GetVerificationKeyError('jws is empty')
@@ -409,7 +409,7 @@ export class SpOidcClient {
       )
     }
 
-    const possibleVerificationKeys = keySet.filter((key) => key.kid === kid)
+    const possibleVerificationKeys = keys.filter((key) => key.kid === kid)
     if (possibleVerificationKeys.length === 0) {
       return new GetVerificationKeyError(
         'getVerificationKey failed, no decryption key matches jws kid',
@@ -501,7 +501,6 @@ export class SpOidcClient {
     }
   }
   /**
-
    * Method to extract NRIC from decrypted and verified idToken
    * @param idToken decrypted and verified idToken
    * @returns nric string
