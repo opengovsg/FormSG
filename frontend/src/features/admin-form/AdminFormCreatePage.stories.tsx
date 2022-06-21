@@ -6,7 +6,7 @@ import { AdminFormDto } from '~shared/types/form'
 
 import {
   createFormBuilderMocks,
-  MOCK_FORM_FIELDS,
+  MOCK_FORM_FIELDS_WITH_MYINFO,
 } from '~/mocks/msw/handlers/admin-form'
 import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 
@@ -58,7 +58,7 @@ const Template: Story = () => <CreatePage />
 export const DesktopEmpty = Template.bind({})
 export const DesktopAllFields = Template.bind({})
 DesktopAllFields.parameters = {
-  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS }),
+  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
 }
 
 export const TabletEmpty = Template.bind({})
@@ -74,7 +74,7 @@ TabletAllFields.parameters = {
     defaultViewport: 'tablet',
   },
   chromatic: { viewports: [viewports.md] },
-  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS }),
+  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
 }
 
 export const MobileEmpty = Template.bind({})
@@ -90,5 +90,5 @@ MobileAllFields.parameters = {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
-  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS }),
+  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
 }

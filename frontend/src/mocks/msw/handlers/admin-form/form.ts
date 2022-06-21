@@ -314,12 +314,17 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
     size: '0.86 MB',
     globalId: '6M755frgrULuCQxhEoYjR7Ab18RdKItsnHQP2NA8UAK',
   },
+]
+
+export const MOCK_FORM_FIELDS_WITH_MYINFO = [
+  ...MOCK_FORM_FIELDS,
   ...MOCK_MYINFO_IMPLEMENTED_TYPES.map((myInfoAttr, idx) => ({
     _id: idx.toString(),
     globalId: idx.toString(),
     ...getMyInfoFieldCreationMeta(myInfoAttr),
   })),
 ]
+
 export const createMockForm = (
   props: Partial<AdminFormDto> = {},
 ): AdminFormViewDto => {
