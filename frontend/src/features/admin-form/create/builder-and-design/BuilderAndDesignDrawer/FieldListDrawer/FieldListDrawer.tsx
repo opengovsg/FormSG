@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import {
   Box,
@@ -121,10 +122,13 @@ const MyInfoFieldPanelContent = () => {
   // 1. form response mode is not email mode
   // 2. form auth type is not myInfo
   // 3. # of myInfo fields >= 30
-  const isMyInfoDisabled =
-    form?.responseMode !== FormResponseMode.Email ||
-    form?.authType !== FormAuthType.MyInfo ||
-    (form ? form.form_fields.filter(isMyInfo).length >= 30 : true)
+  const isMyInfoDisabled = useMemo(
+    () =>
+      form?.responseMode !== FormResponseMode.Email ||
+      form?.authType !== FormAuthType.MyInfo ||
+      (form ? form.form_fields.filter(isMyInfo).length >= 30 : true),
+    [form],
+  )
   const isDisabled = isMyInfoDisabled || isLoading
 
   return (
@@ -215,7 +219,10 @@ const MyInfoText = ({
   form_fields,
 }: MyInfoTextProps): JSX.Element => {
   const isMyInfoDisabled = authType !== FormAuthType.MyInfo
-  const numMyInfoFields = form_fields.filter((ff) => isMyInfo(ff)).length
+  const numMyInfoFields = useMemo(
+    () => form_fields.filter((ff) => isMyInfo(ff)).length,
+    [form_fields],
+  )
 
   if (responseMode !== FormResponseMode.Email) {
     return <Text>MyInfo fields are not available in Storage mode forms.</Text>
@@ -235,21 +242,21 @@ const MyInfoText = ({
   )
 }
 
-const MyInfoMessage = (): JSX.Element => {
+const MyInfoMessage = (): JSX.Element | null => {
   const { data: form } = useCreateTabForm()
-  if (!form) {
-    return <Box display="none" />
-  }
-  const numMyInfoFields = form.form_fields.filter((ff) => isMyInfo(ff)).length
-  const hasExceededLimit = numMyInfoFields >= 30
+  const numMyInfoFields = form?.form_fields.filter((ff) => isMyInfo(ff)).length
+  const hasExceededLimit = useMemo(
+    () => numMyInfoFields && numMyInfoFields >= 30,
+    [numMyInfoFields],
+  )
 
-  return (
+  return form ? (
     <Box px="1.5rem" pt="2rem" pb="1.5rem">
       <InlineMessage variant={hasExceededLimit ? 'error' : 'info'}>
         <MyInfoText {...form} />
       </InlineMessage>
     </Box>
-  )
+  ) : null
 }
 
 const FieldSection = ({
