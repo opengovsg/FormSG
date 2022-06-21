@@ -1,8 +1,8 @@
-import axios from 'axios'
-
 import { EndPageUpdateDto } from '~shared/types'
 
-const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
+import { ApiService } from '~services/ApiService'
+
+const ADMIN_FORM_ENDPOINT = 'admin/forms'
 
 /**
  * Updates the end page for the given form referenced by its id
@@ -15,10 +15,8 @@ export const updateFormEndPage = async (
   formId: string,
   newEndPage: EndPageUpdateDto,
 ): Promise<EndPageUpdateDto> => {
-  return axios
-    .put<EndPageUpdateDto>(
-      `${ADMIN_FORM_ENDPOINT}/${formId}/end-page`,
-      newEndPage,
-    )
-    .then(({ data }) => data)
+  return ApiService.put<EndPageUpdateDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/end-page`,
+    newEndPage,
+  ).then(({ data }) => data)
 }
