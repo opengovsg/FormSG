@@ -13,6 +13,8 @@ import NodeCache from 'node-cache'
 import { BaseClient, Issuer } from 'openid-client'
 import { ulid } from 'ulid'
 
+import { createLoggerWithLabel } from '../../config/logger'
+
 import {
   CreateAuthorisationUrlError,
   CreateJwtError,
@@ -47,6 +49,8 @@ import {
 const BASE_CLIENT_NAME = 'baseClient'
 const NDI_PUBLIC_KEY_NAME = 'ndiPublicKeys'
 const EXPIRY_NAME = 'expiry'
+
+const logger = createLoggerWithLabel(module)
 
 /**
  * Cache class which provides read-through capability and refresh-ahead before expiry
@@ -84,17 +88,26 @@ export class SpOidcClientCache {
     // On expiry, refresh cache. If fail to refresh, log but do not throw error.
     this.#cache.on('expired', () =>
       this.refresh().catch((err) =>
-        console.warn(
-          `Attempted but failed to refresh sp oidc cache on expiry. Reason: ${err}`,
-        ),
+        logger.warn({
+          message: 'Attempted but failed to refresh sp oidc cache on expiry',
+          meta: {
+            action: 'refresh',
+          },
+          error: err,
+        }),
       ),
     )
 
     // Trigger refresh on instantiation to populate cache. If fail to refresh, log but do not throw error.
     void this.refresh().catch((err) =>
-      console.warn(
-        `Attempted but failed to refresh sp oidc on instantiation. Reason: ${err}`,
-      ),
+      logger.warn({
+        message:
+          'Attempted but failed to refresh sp oidc cache on instantiation',
+        meta: {
+          action: 'refresh',
+        },
+        error: err,
+      }),
     )
   }
 

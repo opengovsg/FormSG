@@ -6,10 +6,12 @@ import {
   isMFinSeriesValid,
   isNricValid,
 } from '../../../../shared/utils/nric-validation'
+import { createLoggerWithLabel } from '../../config/logger'
 
 import { InvalidIdTokenError } from './sp.oidc.client.errors'
 import { CryptoKey, ParsedSub, SigningKey } from './sp.oidc.client.types'
 
+const logger = createLoggerWithLabel(module)
 /**
  * Helper function to retry a promise 2 times
  * Used to call NDI's endpoints
@@ -20,11 +22,36 @@ export const retryPromiseThreeAttempts = <T>(
   promise: Promise<T>,
 ): Promise<T> => {
   return promiseRetry(
-    async (retry) => {
+    async (retry, attemptNo) => {
+      logger.info({
+        message: 'Attempting promise',
+        meta: {
+          action: 'retryPromiseThreeAttempts',
+          promise,
+          attemptNo,
+        },
+      })
       try {
         const result = await promise
+        logger.info({
+          message: 'Promise resolved',
+          meta: {
+            action: 'retryPromiseThreeAttempts',
+            promise,
+            attemptNo,
+          },
+        })
         return result
       } catch (e) {
+        logger.warn({
+          message: 'Promise rejected',
+          meta: {
+            action: 'retryPromiseThreeAttempts',
+            promise,
+            attemptNo,
+          },
+          error: e,
+        })
         return retry(e)
       }
     },
@@ -47,11 +74,36 @@ export const retryPromiseThreeAttempts = <T>(
  */
 export const retryPromiseForever = <T>(promise: Promise<T>): Promise<T> => {
   return promiseRetry(
-    async (retry) => {
+    async (retry, attemptNo) => {
+      logger.info({
+        message: 'Attempting promise',
+        meta: {
+          action: 'retryPromiseForever',
+          promise,
+          attemptNo,
+        },
+      })
       try {
         const result = await promise
+        logger.info({
+          message: 'Promise resolved',
+          meta: {
+            action: 'retryPromiseForever',
+            promise,
+            attemptNo,
+          },
+        })
         return result
       } catch (e) {
+        logger.warn({
+          message: 'Promise rejected',
+          meta: {
+            action: 'retryPromiseForever',
+            promise,
+            attemptNo,
+          },
+          error: e,
+        })
         return retry(e)
       }
     },
