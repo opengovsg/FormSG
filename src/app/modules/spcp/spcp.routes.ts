@@ -1,6 +1,7 @@
-import { Router } from 'express'
+import express, { Router } from 'express'
 
 import { FormAuthType } from '../../../../shared/types'
+import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
 import * as SpcpController from './spcp.controller'
 import {
@@ -105,4 +106,7 @@ export const SpOidcJwksRouter = Router()
  * @returns 200
  */
 
-SpOidcJwksRouter.get('/', SpcpController.handleGetWellKnown)
+SpOidcJwksRouter.get(
+  '/',
+  express.static(spcpMyInfoConfig.spOidcRpJwksPublicPath),
+)

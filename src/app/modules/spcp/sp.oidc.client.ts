@@ -230,7 +230,6 @@ export class SpOidcClientCache {
 export class SpOidcClient {
   #spOidcRpSecretKeys: CryptoKeys
   #spOidcRpPublicKeys: CryptoKeys
-  #spOidcRpPublicJwks: PublicJwks
   #spOidcClientCache: SpOidcClientCache
   #spOidcRpRedirectUrl: string
 
@@ -259,7 +258,6 @@ export class SpOidcClient {
       },
     })
 
-    this.#spOidcRpPublicJwks = spOidcRpPublicJwks
     this.#spOidcRpRedirectUrl = spOidcRpRedirectUrl
 
     this.#spOidcRpSecretKeys = spOidcRpSecretJwks.keys.map((jwk) => {
@@ -577,14 +575,5 @@ export class SpOidcClient {
     const { payload } = await jwtVerify(jwt, verificationKeyResult)
 
     return payload
-  }
-
-  /**
-   * Getter to return the RP's public JWKS
-   * Used to host jwks endpoint for NDI's to retrieve RP's public JWKS
-   * @returns RP's public jwks
-   */
-  get rpPublicJwks(): PublicJwks {
-    return this.#spOidcRpPublicJwks
   }
 }

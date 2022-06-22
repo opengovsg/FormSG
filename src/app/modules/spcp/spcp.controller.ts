@@ -188,19 +188,6 @@ export const handleLogin: (
 }
 
 /**
- * Handler to return the public JWKS hosted on the app's well known end point
- * @returns public JWKS in json format
- */
-export const handleGetWellKnown: ControllerHandler<
-  unknown,
-  Record<string, unknown>,
-  unknown,
-  unknown
-> = async (_req, res) => {
-  return res.json(SpOidcService.getRpPublicJwks())
-}
-
-/**
  * Handler for SP OIDC logins
  */
 export const handleSpOidcLogin: ControllerHandler<

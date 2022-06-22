@@ -8,7 +8,6 @@ import {
 import { createLoggerWithLabel } from '../../config/logger'
 
 import { SpOidcClient } from './sp.oidc.client'
-import { PublicJwks } from './sp.oidc.client.types'
 import {
   CreateJwtError,
   CreateRedirectUrlError,
@@ -305,13 +304,6 @@ export class SpOidcServiceClass {
   getCookieSettings(): SpcpDomainSettings {
     const spcpCookieDomain = this.#spOidcProps.spcpCookieDomain
     return spcpCookieDomain ? { domain: spcpCookieDomain, path: '/' } : {}
-  }
-
-  /**
-   * Gets the RP's public JWKS
-   */
-  getRpPublicJwks(): PublicJwks {
-    return this.#spOidcClient.rpPublicJwks
   }
 }
 
