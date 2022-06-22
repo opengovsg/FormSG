@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import { Container, Grid, useDisclosure } from '@chakra-ui/react'
+import { useMemo, useState } from 'react'
+import { Container, Grid, Stack, useDisclosure } from '@chakra-ui/react'
 
 import {
   EMERGENCY_CONTACT_KEY_PREFIX,
@@ -10,14 +10,20 @@ import { useLocalStorage } from '~hooks/useLocalStorage'
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUser } from '~features/user/queries'
+import {
+  CONTAINER_MAXW,
+  WorkspaceContent,
+} from '~features/workspace/WorkspaceContent'
 
 // TODO #4279: Remove after React rollout is complete
 import { AdminSwitchEnvMessage } from './components/AdminSwitchEnvMessage'
-import { EmptyWorkspace } from './components/EmptyWorkspace'
-import { CONTAINER_MAXW, WorkspaceContent } from './WorkspaceContent'
+import { WorkspaceMenuHeader } from './components/WorkspaceSideMenu/WorkspaceMenuHeader'
+import { WorkspaceMenuTab } from './components/WorkspaceSideMenu/WorkspaceMenuTab'
 
+// TODO (hans): Add mobile view for WorkspacePage, probably split the views
 export const WorkspacePage = (): JSX.Element => {
   const { user, isLoading: isUserLoading } = useUser()
+  const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
@@ -53,35 +59,64 @@ export const WorkspacePage = (): JSX.Element => {
   const totalFormCount = Math.round(Math.random())
   const isLoading = false
 
+  // TODO (hans): Get workspaces data from workspace API once it's implemented
+  const MOCK_WORKSPACES_DATA = [
+    {
+      _id: '',
+      title: 'All forms',
+      numForms: 531159249035,
+    },
+    {
+      _id: '2',
+      title: 'Product feedback',
+      numForms: 35002,
+    },
+    {
+      _id: '3',
+      title: 'Public sentiment',
+      numForms: 12,
+    },
+    {
+      _id: '4',
+      title: 'Very long number of forms',
+      numForms: 531159214021,
+    },
+  ]
+
+  // TODO (hans): Add <EmptyWorkspace/> if totalFormCount === 0
   return (
     <>
-      {totalFormCount === 0 ? (
-        <EmptyWorkspace
-          handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
-          isLoading={isLoading}
-        />
-      ) : (
-        <Grid
-          bg="neutral.100"
-          templateColumns="1fr"
-          templateRows="auto auto 1fr auto"
-          minH="100vh"
-          templateAreas="'banner' 'header' 'main' 'footer'"
-        >
-          <Container gridArea="banner" maxW={CONTAINER_MAXW} pt="1.5rem">
-            <AdminSwitchEnvMessage />
-          </Container>
-          <WorkspaceContent />
-          <RolloutAnnouncementModal
-            onClose={() => setHasSeenAnnouncement(true)}
-            isOpen={isAnnouncementModalOpen}
-          />
-          <EmergencyContactModal
-            onClose={() => setHasSeenEmergencyContact(true)}
-            isOpen={isEmergencyContactModalOpen}
-          />
-        </Grid>
-      )}
+      <Grid
+        templateColumns="15.5rem 1fr"
+        minH="100vh"
+        templateAreas="'menu' 'content'"
+      >
+        <Container gridArea="banner" maxW={CONTAINER_MAXW} pt="1.5rem">
+          <AdminSwitchEnvMessage />
+        </Container>
+        <Stack>
+          <WorkspaceMenuHeader />
+          {MOCK_WORKSPACES_DATA.map((workspace) => (
+            <WorkspaceMenuTab
+              key={workspace._id}
+              label={workspace.title}
+              numForms={workspace.numForms}
+              isSelected={workspace._id === currWorkspaceId}
+              onClick={() => setCurrWorkspaceId(workspace._id)}
+            />
+          ))}
+        </Stack>
+        <WorkspaceContent workspaceId={currWorkspaceId} />
+      </Grid>
+
+      <RolloutAnnouncementModal
+        onClose={() => setHasSeenAnnouncement(true)}
+        isOpen={isAnnouncementModalOpen}
+      />
+      <EmergencyContactModal
+        onClose={() => setHasSeenEmergencyContact(true)}
+        isOpen={isEmergencyContactModalOpen}
+      />
     </>
   )
 }

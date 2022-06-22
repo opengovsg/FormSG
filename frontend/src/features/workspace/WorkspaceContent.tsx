@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Box, Container, useDisclosure } from '@chakra-ui/react'
+import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
 import { chunk } from 'lodash'
 
 import Pagination from '~components/Pagination'
@@ -92,7 +92,14 @@ const useWorkspaceForms = () => {
   }
 }
 
-export const WorkspaceContent = (): JSX.Element => {
+interface WorkspaceContentProps {
+  workspaceId: string
+}
+
+export const WorkspaceContent = ({
+  workspaceId,
+}: WorkspaceContentProps): JSX.Element => {
+  // TODO (hans): Use workspaceId to fetch workspace data once API created (depends on final design decision)
   const {
     isLoading,
     totalFormCount,
@@ -109,38 +116,46 @@ export const WorkspaceContent = (): JSX.Element => {
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
       />
-      <Container
-        gridArea="header"
-        maxW={CONTAINER_MAXW}
-        borderBottom="1px solid var(--chakra-colors-neutral-300)"
-        px="2rem"
-        py="1rem"
+      <Grid
+        bg="neutral.100"
+        templateColumns="1fr"
+        templateRows="auto 1fr auto"
+        minH="100vh"
+        templateAreas="'header' 'main' 'footer'"
       >
-        <WorkspaceHeader
-          isLoading={isLoading}
-          totalFormCount={totalFormCount}
-          handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
-        />
-      </Container>
-      <Box gridArea="main">
-        <Box ref={topRef} />
-        <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
-      </Box>
-      <Container
-        gridArea="footer"
-        py={{ base: '1rem', md: '3rem' }}
-        px="2rem"
-        maxW={CONTAINER_MAXW}
-        borderTop="1px solid var(--chakra-colors-neutral-300)"
-      >
-        <Pagination
-          isDisabled={isLoading}
-          currentPage={currentPage}
-          totalCount={totalFormCount ?? 0}
-          onPageChange={setPageNumber}
-          pageSize={PAGE_DEFAULTS.size}
-        />
-      </Container>
+        <Container
+          gridArea="header"
+          maxW={CONTAINER_MAXW}
+          borderBottom="1px solid var(--chakra-colors-neutral-300)"
+          px="2rem"
+          py="1rem"
+          ref={topRef}
+        >
+          <WorkspaceHeader
+            isLoading={isLoading}
+            totalFormCount={totalFormCount}
+            handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
+          />
+        </Container>
+        <Box gridArea="main">
+          <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
+        </Box>
+        <Container
+          gridArea="footer"
+          py={{ base: '1rem', md: '3rem' }}
+          px="2rem"
+          maxW={CONTAINER_MAXW}
+          borderTop="1px solid var(--chakra-colors-neutral-300)"
+        >
+          <Pagination
+            isDisabled={isLoading}
+            currentPage={currentPage}
+            totalCount={totalFormCount ?? 0}
+            onPageChange={setPageNumber}
+            pageSize={PAGE_DEFAULTS.size}
+          />
+        </Container>
+      </Grid>
     </>
   )
 }
