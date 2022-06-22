@@ -27,6 +27,22 @@ import { StorageModeSubmissionMetadataList } from '~shared/types/submission'
 import { UserDto } from '~shared/types/user'
 import { insertAt, reorder } from '~shared/utils/immutable-array-fns'
 
+import { getMyInfoFieldCreationMeta } from '~/features/admin-form/create/builder-and-design/utils/fieldCreation'
+
+import {
+  CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+  CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
+  CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
+  CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
+} from '~features/admin-form/create/builder-and-design/constants'
+
+export const MOCK_MYINFO_IMPLEMENTED_TYPES = [
+  ...CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
+  ...CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+  ...CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
+  ...CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
+]
+
 export const MOCK_FORM_FIELDS: FormFieldDto[] = [
   {
     title: 'Yes/No',
@@ -298,6 +314,15 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
     size: '0.86 MB',
     globalId: '6M755frgrULuCQxhEoYjR7Ab18RdKItsnHQP2NA8UAK',
   },
+]
+
+export const MOCK_FORM_FIELDS_WITH_MYINFO = [
+  ...MOCK_FORM_FIELDS,
+  ...MOCK_MYINFO_IMPLEMENTED_TYPES.map((myInfoAttr, idx) => ({
+    _id: idx.toString(),
+    globalId: idx.toString(),
+    ...getMyInfoFieldCreationMeta(myInfoAttr),
+  })),
 ]
 
 export const createMockForm = (
