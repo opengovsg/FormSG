@@ -26,12 +26,12 @@ import {
   CorppassLoginRouter,
   SingpassLoginRouter,
   SpcpRouter,
-  SpOidcJwksRouter,
 } from '../../modules/spcp/spcp.routes'
 import { SubmissionRouter } from '../../modules/submission/submission.routes'
 import UserRouter from '../../modules/user/user.routes'
 import { VfnRouter } from '../../modules/verification/verification.routes'
 import { ApiRouter } from '../../routes/api'
+import { SpOidcJwksRouter } from '../../routes/singpass'
 import * as IntranetMiddleware from '../../services/intranet/intranet.middleware'
 
 import errorHandlerMiddlewares from './error-handler'

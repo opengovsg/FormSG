@@ -1,7 +1,6 @@
-import express, { Router } from 'express'
+import { Router } from 'express'
 
 import { FormAuthType } from '../../../../shared/types'
-import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
 import * as SpcpController from './spcp.controller'
 import {
@@ -95,18 +94,4 @@ CorppassLoginRouter.get(
   '/',
   loginParamsMiddleware,
   SpcpController.handleLogin(FormAuthType.CP),
-)
-
-// Handles SingPass JWKS requests
-export const SpOidcJwksRouter = Router()
-
-/**
- * Returns the RP's public json web key set (JWKS) for communication with NDI
- * @route GET /singpass/.well-known/jwks.json
- * @returns 200
- */
-
-SpOidcJwksRouter.get(
-  '/',
-  express.static(spcpMyInfoConfig.spOidcRpJwksPublicPath),
 )
