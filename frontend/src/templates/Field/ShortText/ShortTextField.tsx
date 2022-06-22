@@ -7,6 +7,8 @@ import { useFormContext } from 'react-hook-form'
 import { createTextValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
+import { isMyInfoFormField } from '~features/myinfo/utils'
+
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { ShortTextFieldSchema, SingleAnswerFieldInput } from '../types'
 
@@ -28,7 +30,10 @@ export const ShortTextField = ({
     <FieldContainer schema={schema}>
       <Input
         aria-label={schema.title}
-        {...register(schema._id, validationRules)}
+        {...register(schema._id, {
+          ...validationRules,
+          ...(isMyInfoFormField(schema) && { value: schema.fieldValue }),
+        })}
       />
     </FieldContainer>
   )

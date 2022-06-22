@@ -12,6 +12,8 @@ import {
 import { createDateValidationRules } from '~utils/fieldValidation'
 import DateInput from '~components/DatePicker'
 
+import { isMyInfoFormField } from '~features/myinfo/utils'
+
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { DateFieldSchema, SingleAnswerFieldInput } from '../types'
 
@@ -61,6 +63,7 @@ export const DateField = ({
         control={control}
         name={schema._id}
         rules={validationRules}
+        defaultValue={isMyInfoFormField(schema) ? schema.fieldValue : ''}
         render={({ field }) => (
           <DateInput
             colorScheme={`theme-${colorTheme}`}

@@ -6,6 +6,8 @@ import { FormColorTheme } from '~shared/types'
 import { createDropdownValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
 
+import { isMyInfoFormField } from '~features/myinfo/utils'
+
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { DropdownFieldSchema, SingleAnswerFieldInput } from '../types'
 
@@ -33,7 +35,7 @@ export const DropdownField = ({
         control={control}
         rules={validationRules}
         name={schema._id}
-        defaultValue=""
+        defaultValue={isMyInfoFormField(schema) ? schema.fieldValue : ''}
         render={({ field }) => (
           <SingleSelect
             colorScheme={`theme-${colorTheme}`}
