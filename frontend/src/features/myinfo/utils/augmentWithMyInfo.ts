@@ -7,12 +7,6 @@ import { isMyInfo } from './isMyInfo'
 
 const MAP_ATTR_TO_NAME = keyBy(myInfoTypeArray, 'name')
 
-export const isMyInfoFormField = (
-  field: FormFieldDto,
-): field is MyInfoFormField => {
-  return isMyInfo(field) && (field as MyInfoFormField).fieldValue !== undefined
-}
-
 // Making a copy by destructuring so original object does not get affected.
 export const augmentWithMyInfo = ({
   ...field
