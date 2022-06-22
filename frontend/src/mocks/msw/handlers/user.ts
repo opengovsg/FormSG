@@ -29,13 +29,9 @@ export const getUser = ({
   delay,
   mockUser = MOCK_USER,
 }: { mockUser?: UserDto } & WithDelayProps = {}): DefaultRequestReturn => {
-  return rest.get<never, never, UserDto | ErrorDto>(
-    '/api/v3/user',
-    (_req, res, ctx) => {
-      // If authenticated, return a mocked user details
-      return res(ctx.delay(delay), ctx.status(200), ctx.json(mockUser))
-    },
-  )
+  return rest.get<never, never, UserDto>('/api/v3/user', (_req, res, ctx) => {
+    return res(ctx.delay(delay), ctx.status(200), ctx.json(mockUser))
+  })
 }
 
 export const postGenerateContactOtp = ({
