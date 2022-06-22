@@ -51,3 +51,8 @@ export type SpOidcClientCacheConstructorParams = {
   spOidcRpRedirectUrl: string
   spOidcRpSecretJwks: SecretJwks
 }
+
+export type ParsedSub = {
+  key: string
+  value: string
+}[]

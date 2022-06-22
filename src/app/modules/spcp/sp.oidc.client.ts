@@ -34,9 +34,11 @@ import {
   SpOidcClientConstructorParams,
 } from './sp.oidc.client.types'
 import {
+  extractNricFromParsedSub,
   isEC,
   isECPrivate,
   isSigningKey,
+  parseSub,
   retryPromiseForever,
   retryPromiseThreeAttempts,
 } from './sp.oidc.util'
@@ -514,14 +516,20 @@ export class SpOidcClient {
     if (!idToken.payload.sub) {
       return new InvalidIdTokenError('sub attribute missing in idToken payload')
     }
-    const nricMatches = idToken.payload.sub.match(/s=([STFG])(\d{7})([A-Z])/g)
-    if (!nricMatches) {
+
+    const parsedSub = parseSub(idToken.payload.sub)
+
+    if (parsedSub instanceof InvalidIdTokenError) {
+      return parsedSub
+    }
+
+    const nric = extractNricFromParsedSub(parsedSub)
+
+    if (!nric) {
       return new InvalidIdTokenError(
         'NRIC not found in idToken payload sub attribute',
       )
     }
-
-    const nric = nricMatches[0].substring(2)
 
     return nric
   }

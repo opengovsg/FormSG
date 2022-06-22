@@ -2,8 +2,13 @@ import { EC, ECPrivate } from 'jwk-to-pem'
 import promiseRetry from 'promise-retry'
 
 import { hasProp } from '../../../../shared/utils/has-prop'
+import {
+  isMFinSeriesValid,
+  isNricValid,
+} from '../../../../shared/utils/nric-validation'
 
-import { CryptoKey, SigningKey } from './sp.oidc.client.types'
+import { InvalidIdTokenError } from './sp.oidc.client.errors'
+import { CryptoKey, ParsedSub, SigningKey } from './sp.oidc.client.types'
 
 /**
  * Helper function to retry a promise 2 times
@@ -58,6 +63,47 @@ export const retryPromiseForever = <T>(promise: Promise<T>): Promise<T> => {
       // See https://github.com/tim-kos/node-retry
     },
   )
+}
+
+/**
+ * Helper function to parse the `sub` attribute in the idToken
+ * NDI Spec: `sub` is the principal that is the subject of the JWT.
+ * Contains a comma-separated, key=value mapping that identifies the user;
+ * possibly including multiple alternate IDs representing the user.
+ * @param sub attribute from idToken
+ * @returns ParsedSub
+ * @returns InvalidIdTokenError if mapping fails - too few or too many `=` chars
+ */
+export const parseSub = (sub: string): ParsedSub | InvalidIdTokenError => {
+  let keyValuePairs
+  try {
+    keyValuePairs = sub.split(',').map((keyValuePair) => {
+      const pair = keyValuePair.split('=')
+      return {
+        key: pair[0],
+        value: pair[1],
+      }
+    })
+    return keyValuePairs
+  } catch {
+    return new InvalidIdTokenError()
+  }
+}
+
+/**
+ * Helper function to extract NRIC from a parsed sub attribute
+ * @param parsedSub
+ * @returns NRIC if it exists
+ * @returns undefined if NRIC does not exist
+ */
+export const extractNricFromParsedSub = (
+  parsedSub: ParsedSub,
+): string | undefined => {
+  const nric = parsedSub.find((keyValuePair) => {
+    const { key, value } = keyValuePair
+    return key === 's' && (isNricValid(value) || isMFinSeriesValid(value))
+  })
+  return nric ? nric.value : undefined
 }
 
 // Typeguards
