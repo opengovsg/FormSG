@@ -3,7 +3,7 @@ import { Box, BoxProps } from '@chakra-ui/react'
 
 import { MotionBox } from '~components/motion'
 
-const ActiveIndicator = ({ ...props }: BoxProps): JSX.Element => (
+const ActiveIndicator = (): JSX.Element => (
   <Box
     // Top required to align it with CircleIndicators
     top="0.125rem"
@@ -12,7 +12,6 @@ const ActiveIndicator = ({ ...props }: BoxProps): JSX.Element => (
     borderRadius="full"
     backgroundColor="secondary.500"
     position="absolute"
-    {...props}
   />
 )
 
@@ -78,11 +77,7 @@ export const ProgressIndicator = ({
           key={idx}
           isActiveIndicator={idx === currActiveIdx}
           onClick={() => onClick(idx)}
-          aria-label={
-            idx === currActiveIdx
-              ? undefined
-              : `Page ${idx + 1} of ${numIndicators}`
-          }
+          aria-label={`Page ${idx + 1} of ${numIndicators}`}
         />
       ))}
 
@@ -92,9 +87,7 @@ export const ProgressIndicator = ({
         animate={animationProps}
         transition={{ stiffness: 100 }}
       >
-        <ActiveIndicator
-          aria-label={`Page ${currActiveIdx + 1} of ${numIndicators}`}
-        />
+        <ActiveIndicator />
       </MotionBox>
     </Box>
   )
