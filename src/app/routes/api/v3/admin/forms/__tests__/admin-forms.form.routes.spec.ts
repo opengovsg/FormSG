@@ -2134,7 +2134,55 @@ describe('admin-form.form.routes', () => {
       buttonText: 'end page button',
     }
 
-    it('should return 400 when button link does not use valid URI scheme', async () => {
+    it('should return 200 when button link is updated with a valid HTTPS URI scheme', async () => {
+      //Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        endpage: MOCK_END_PAGE,
+      })
+
+      //Act
+      const validUriScheme = 'https://valid.scheme'
+      const response = await request
+        .put(`/admin/forms/${form._id}/end-page`)
+        .send({
+          buttonLink: validUriScheme,
+        })
+
+      //Assert
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual(
+        expect.objectContaining({ buttonLink: validUriScheme }),
+      )
+    })
+
+    it('should return 200 when button link is updated with a valid HTTP URI scheme', async () => {
+      //Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        endpage: MOCK_END_PAGE,
+      })
+
+      //Act
+      const validUriScheme = 'http://valid.scheme'
+      const response = await request
+        .put(`/admin/forms/${form._id}/end-page`)
+        .send({
+          buttonLink: validUriScheme,
+        })
+
+      //Assert
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual(
+        expect.objectContaining({ buttonLink: validUriScheme }),
+      )
+    })
+
+    it('should return 400 when button link is updated with an invalid URI scheme', async () => {
       //Arrange
       const form = await EmailFormModel.create({
         emails: [defaultUser.email],
