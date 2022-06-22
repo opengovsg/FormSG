@@ -495,5 +495,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
       return <YesNoField schema={field} {...rest} />
     case BasicField.Table:
       return <TableField schema={field} {...rest} />
+    default:
+      return <div>TODO: Add field row for {field.fieldType}</div>
   }
 }

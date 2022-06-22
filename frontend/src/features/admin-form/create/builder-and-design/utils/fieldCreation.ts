@@ -182,6 +182,13 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         minimumRows: 2,
       }
     }
+    case BasicField.Country: {
+      return {
+        fieldType,
+        ...baseMeta,
+        fieldOptions: [],
+      }
+    }
   }
 }
 

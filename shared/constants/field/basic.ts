@@ -79,6 +79,12 @@ export const types: BasicFieldBlock[] = [
     answerArray: false,
   },
   {
+    name: BasicField.Country,
+    value: 'Country',
+    submitted: true,
+    answerArray: false,
+  },
+  {
     name: BasicField.YesNo,
     value: 'Yes/No',
     submitted: true,
