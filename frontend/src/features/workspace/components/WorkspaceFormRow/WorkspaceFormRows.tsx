@@ -2,7 +2,7 @@ import { Divider, Stack } from '@chakra-ui/react'
 
 import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
 
-import { CONTAINER_MAXW } from '~features/workspace/WorkspacePage'
+import { CONTAINER_MAXW } from '~features/workspace/WorkspaceContent'
 
 import { WorkspaceFormRow } from './WorkspaceFormRow'
 import { WorkspaceFormRowSkeleton } from './WorkspaceFormRowSkeleton'
