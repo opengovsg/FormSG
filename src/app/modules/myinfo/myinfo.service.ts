@@ -202,10 +202,11 @@ export class MyInfoServiceClass {
     formId,
     formEsrvcId,
     requestedAttributes,
+    encodedQuery,
   }: IMyInfoRedirectURLArgs): Result<string, never> {
     const redirectURL = this.#myInfoGovClient.createRedirectURL({
       purpose: MYINFO_CONSENT_PAGE_PURPOSE,
-      relayState: createRelayState(formId),
+      relayState: createRelayState(formId, encodedQuery),
       // Always request consent for NRIC/FIN
       requestedAttributes: internalAttrListToScopes(requestedAttributes),
       singpassEserviceId: formEsrvcId,
@@ -241,6 +242,7 @@ export class MyInfoServiceClass {
         return ok({
           uuid: parsed.uuid,
           formId: parsed.formId,
+          encodedQuery: parsed.encodedQuery,
           // Cookie duration is currently not derived from the relay state
           // but may be in future, e.g. if rememberMe is implemented
           cookieDuration: this.#spCookieMaxAge,

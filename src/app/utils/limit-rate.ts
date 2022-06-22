@@ -1,6 +1,6 @@
 import RateLimit, {
   Options as RateLimitOptions,
-  RateLimit as RateLimitFn,
+  RateLimitRequestHandler,
 } from 'express-rate-limit'
 import { StatusCodes } from 'http-status-codes'
 import { merge } from 'lodash'
@@ -17,8 +17,12 @@ const logger = createLoggerWithLabel(module)
  * @param options Custom options to be passed to RateLimit
  * @return Rate-limiting middleware
  */
-export const limitRate = (options: RateLimitOptions = {}): RateLimitFn => {
-  const defaultOptions: RateLimitOptions = {
+export const limitRate = (
+  options: Partial<RateLimitOptions> = {},
+): RateLimitRequestHandler => {
+  const defaultOptions: Partial<RateLimitOptions> = {
+    // Change key name in `src/types/vendor/express.d.ts` if this property name is changed.
+    requestPropertyName: 'rateLimit',
     windowMs: 60 * 1000, // Apply rate per-minute
     max: 1200,
     handler: (req, res) => {

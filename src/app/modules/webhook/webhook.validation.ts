@@ -21,13 +21,17 @@ export const validateWebhookUrl = (webhookUrl: string): Promise<void> => {
     }
     const webhookUrlParsed = new URL(webhookUrl)
     const appUrlParsed = new URL(config.app.appUrl)
-    if (webhookUrlParsed.hostname === appUrlParsed.hostname) {
+    if (
+      webhookUrlParsed.hostname === appUrlParsed.hostname ||
+      webhookUrlParsed.hostname.endsWith(`.${appUrlParsed.hostname}`)
+    ) {
       return reject(
         new WebhookValidationError(
-          `You cannot send responses back to ${config.app.appUrl}.`,
+          `You cannot send responses back to ${config.app.appUrl} or its subdomain.`,
         ),
       )
     }
+
     dns
       .resolve(webhookUrlParsed.hostname)
       .then((addresses) => {
@@ -53,8 +57,8 @@ export const validateWebhookUrl = (webhookUrl: string): Promise<void> => {
       .catch(() => {
         return reject(
           new WebhookValidationError(
-            `Error encountered during DNS resolution for ${webhookUrl}.` +
-              ` Check that the URL is correct.`,
+            `Error encountered during DNS resolution for webhook URL: ${webhookUrl}.` +
+              ` Check that the URL is correct or delete the webhook before proceeding.`,
           ),
         )
       })

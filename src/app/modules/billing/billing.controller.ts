@@ -11,19 +11,12 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 
+import { validateGetBillingInfoParams } from './billing.middlewares'
 import * as BillingService from './billing.service'
 
 const logger = createLoggerWithLabel(module)
 
-/**
- * Handler for GET /billing endpoint.
- * @security session
- *
- * @return 200 with login statistics when query is valid
- * @return 401 when request does not contain a user session
- * @return 500 when error occurs whilst querying database
- */
-export const handleGetBillInfo: ControllerHandler<
+export const _handleGetBillInfo: ControllerHandler<
   unknown,
   ErrorDto | BillingInfoDto,
   unknown,
@@ -72,3 +65,16 @@ export const handleGetBillInfo: ControllerHandler<
     loginStats: loginStatsResult.value,
   })
 }
+
+/**
+ * Handler for GET /billing endpoint.
+ * @security session
+ *
+ * @return 200 with login statistics when query is valid
+ * @return 401 when request does not contain a user session
+ * @return 500 when error occurs whilst querying database
+ */
+export const handleGetBillInfo = [
+  validateGetBillingInfoParams,
+  _handleGetBillInfo,
+] as ControllerHandler[]

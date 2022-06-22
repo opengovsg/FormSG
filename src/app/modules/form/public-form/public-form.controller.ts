@@ -427,6 +427,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
               formEsrvcId: form.esrvcId,
               formId,
               requestedAttributes: form.getUniqueMyInfoAttrs(),
+              encodedQuery,
             }),
           )
         case FormAuthType.SP:

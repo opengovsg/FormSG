@@ -5,7 +5,7 @@ import { ErrorDto } from '../../../../shared/types'
 import { SALT_ROUNDS } from '../../../../shared/utils/verification'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
-import { createReqMeta } from '../../utils/request'
+import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
@@ -143,6 +143,8 @@ export const handleGetOtp: ControllerHandler<
 > = async (req, res) => {
   const { transactionId } = req.params
   const { answer, fieldId } = req.body
+  const senderIp = getRequestIp(req)
+
   const logMeta = {
     action: 'handleGetOtp',
     transactionId,
@@ -157,6 +159,7 @@ export const handleGetOtp: ControllerHandler<
         otp,
         recipient: answer,
         transactionId,
+        senderIp,
       }),
     )
     .map(() => res.sendStatus(StatusCodes.CREATED))
@@ -200,6 +203,8 @@ export const _handleGenerateOtp: ControllerHandler<
 > = async (req, res) => {
   const { transactionId, formId, fieldId } = req.params
   const { answer } = req.body
+  const senderIp = getRequestIp(req)
+
   const logMeta = {
     action: 'handleGenerateOtp',
     transactionId,
@@ -220,6 +225,7 @@ export const _handleGenerateOtp: ControllerHandler<
               otp,
               recipient: answer,
               transactionId,
+              senderIp,
             }),
           )
           // Return the required data for next steps.

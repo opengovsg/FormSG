@@ -66,9 +66,9 @@ Firstly, name the secret with a unique secret name and store the secret value in
 ```json
 {
   "accountSid": "<redacted>",
-  "apiKey": "redacted>",
-  "apiSecret": "redacted>",
-  "messagingServiceSid": "redacted>"
+  "apiKey": "<redacted>",
+  "apiSecret": "<redacted>",
+  "messagingServiceSid": "<redacted>"
 }
 ```
 
@@ -107,9 +107,10 @@ The list of categories can be inferred by looking at the file `.ebextensions/env
 
 #### AWS Service Manager
 
-| Variable     | Description                                                                                                  |
-| :----------- | ------------------------------------------------------------------------------------------------------------ |
-| `SSM_PREFIX` | String prefix (typically the environment name) for AWS SSM parameter names to create a .env file for FormSG. |
+| Variable     | Description                                                                                                           |
+| :----------- | --------------------------------------------------------------------------------------------------------------------- |
+| `SSM_PREFIX` | String prefix (typically the environment name) for AWS SSM parameter names to create a .env file for FormSG.          |
+| `SECRET_ENV` | String (typically the environment name) to be used in building of AWS Secrets Manager keys in different environments. |
 
 #### App Config
 
@@ -239,7 +240,7 @@ The app applies per-minute, per-IP rate limits at specific API endpoints as a se
 | Variable | Description |
 | :-------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SUBMISSIONS_RATE_LIMIT` | Per-minute, per-IP request limit for each submissions endpoint. The limit is applied separately for the email mode and encrypt mode endpoints. |
-| `SEND_AUTH_OTP_RATE_LIMIT` | Per-minute, per-IP request limit for the endpoint which requests for new login OTPs for the admin console. |
+| `SEND_AUTH_OTP_RATE_LIMIT` | Per-minute, per-IP request limit for the endpoint which requests for new login OTPs for the admin console or mobile / email field verifications. |
 
 ### Additional Features
 

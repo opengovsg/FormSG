@@ -391,6 +391,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
@@ -409,6 +410,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -428,6 +430,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -447,6 +450,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -481,6 +485,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.UNPROCESSABLE_ENTITY,
@@ -502,6 +507,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -521,6 +527,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -540,6 +547,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -559,6 +567,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -578,6 +587,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
@@ -597,6 +607,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
@@ -664,6 +675,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(
         MockVerificationService.disableVerifiedFieldsIfRequired,
@@ -702,6 +714,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -734,6 +747,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -766,6 +780,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -799,6 +814,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -832,6 +848,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -886,6 +903,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -944,6 +962,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -976,6 +995,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -1008,6 +1028,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.UNPROCESSABLE_ENTITY,
@@ -1067,6 +1088,7 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
+        senderIp: 'MOCK_IP',
       })
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,

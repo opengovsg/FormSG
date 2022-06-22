@@ -63,7 +63,12 @@ type PresignedData = { fields: Record<string, string>; url: string }
 
 const fetchPresignedData = async (
   url: string,
-  params: { fileId: string; fileMd5Hash: string; fileType: string },
+  params: {
+    fileId: string
+    fileMd5Hash: string
+    fileType: string
+    isNewClient: boolean // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
+  },
   cancelToken?: CancelToken,
 ): Promise<PresignedData> => {
   return axios
@@ -110,6 +115,7 @@ export const uploadFile = async ({
     fileId,
     fileMd5Hash,
     fileType: file.type,
+    isNewClient: true, // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   }
 
   const postData = await fetchPresignedData(
@@ -126,7 +132,7 @@ export const uploadFile = async ({
   // POST generated formData to presigned url.
   const response = await postToPresignedUrl(postData.url, formData, cancelToken)
 
-  const encodedFileId = encodeURIComponent(fileId)
+  const encodedFileId = encodeURIComponent(postData.fields.key)
 
   const uploadedFileData: UploadedFileData = {
     url: `${response.config.url}/${encodedFileId}`,

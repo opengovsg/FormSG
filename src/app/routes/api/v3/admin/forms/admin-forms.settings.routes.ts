@@ -1,37 +1,8 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import {
-  FormAuthType,
-  FormStatus,
-  SettingsUpdateDto,
-} from '../../../../../../../shared/types'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 
 export const AdminFormsSettingsRouter = Router()
-
-/**
- * Joi validator for PATCH /forms/:formId/settings route.
- */
-const updateSettingsValidator = celebrate({
-  [Segments.BODY]: Joi.object<SettingsUpdateDto>({
-    authType: Joi.string().valid(...Object.values(FormAuthType)),
-    emails: Joi.alternatives().try(
-      Joi.array().items(Joi.string().email()),
-      Joi.string().email({ multiple: true }),
-    ),
-    esrvcId: Joi.string().allow(''),
-    hasCaptcha: Joi.boolean(),
-    inactiveMessage: Joi.string(),
-    status: Joi.string().valid(...Object.values(FormStatus)),
-    submissionLimit: Joi.number().allow(null),
-    title: Joi.string(),
-    webhook: Joi.object({
-      url: Joi.string().uri().allow(''),
-      isRetryEnabled: Joi.boolean(),
-    }).min(1),
-  }).min(1),
-})
 
 AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings')
   /**
@@ -53,7 +24,7 @@ AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings')
    * @returns 422 when user in session cannot be retrieved from the database
    * @returns 500 when database error occurs
    */
-  .patch(updateSettingsValidator, AdminFormController.handleUpdateSettings)
+  .patch(AdminFormController.handleUpdateSettings)
   /**
    * Retrieve the settings of the specified form
    * @route GET /admin/forms/:formId/settings

@@ -45,9 +45,9 @@ export const respondWithRedirectURL: ControllerHandler<
   unknown,
   { redirectURL: string } | { message: string },
   unknown,
-  { formId: string }
+  { formId: string; encodedQuery?: string }
 > = async (req, res) => {
-  const { formId } = req.query
+  const { formId, encodedQuery } = req.query
   return FormService.retrieveFormById(formId)
     .andThen((form) => validateMyInfoForm(form))
     .andThen((form) =>
@@ -55,6 +55,7 @@ export const respondWithRedirectURL: ControllerHandler<
         formEsrvcId: form.esrvcId,
         formId,
         requestedAttributes: form.getUniqueMyInfoAttrs(),
+        encodedQuery,
       }),
     )
     .map((redirectURL) => res.json({ redirectURL }))
@@ -194,8 +195,21 @@ export const loginToMyInfo: ControllerHandler<
     })
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
-  const { formId, cookieDuration } = parseStateResult.value
-  const redirectDestination = `/${formId}`
+  const { formId, cookieDuration, encodedQuery } = parseStateResult.value
+
+  let redirectDestination = `/${formId}`
+
+  if (encodedQuery) {
+    try {
+      redirectDestination = `/${formId}?${Buffer.from(
+        encodedQuery,
+        'base64',
+      ).toString('utf8')}`
+    } catch {
+      // Buffer.from might throw an error if there is a badly encoded
+      // string, in which case we will fall back to the default.
+    }
+  }
 
   // Ensure form exists
   const formResult = await FormService.retrieveFullFormById(formId)

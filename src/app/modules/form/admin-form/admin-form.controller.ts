@@ -1,4 +1,5 @@
 import JoiDate from '@joi/date'
+import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
@@ -81,12 +82,14 @@ import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
+import { TwilioCredentials } from './../../../services/sms/sms.types'
 import {
   PREVIEW_CORPPASS_UID,
   PREVIEW_CORPPASS_UINFIN,
   PREVIEW_SINGPASS_UINFIN,
 } from './admin-form.constants'
 import { EditFieldError } from './admin-form.errors'
+import { updateSettingsValidator } from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
@@ -186,6 +189,7 @@ const fileUploadValidator = celebrate({
     fileType: Joi.string()
       .valid(...VALID_UPLOAD_FILE_TYPES)
       .required(),
+    isNewClient: Joi.boolean().optional(),
   },
 })
 
@@ -381,11 +385,17 @@ export const createPresignedPostUrlForImages: ControllerHandler<
     fileId: string
     fileMd5Hash: string
     fileType: string
+    isNewClient?: boolean // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   }
 > = async (req, res) => {
   const { formId } = req.params
-  const { fileId, fileMd5Hash, fileType } = req.body
+  const { fileId, fileMd5Hash, fileType, isNewClient } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Adding random objectId ensures fileId is unpredictable by client
+  const randomizedFileId = isNewClient
+    ? `${String(new ObjectId())}-${fileId}`
+    : fileId // TODO (#128): if !isNewClient, returns fileId for backward compatability. To remove fallback for !isNewClient 2 weeks after release.
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -401,7 +411,7 @@ export const createPresignedPostUrlForImages: ControllerHandler<
       // Step 3: Has write permissions, generate presigned POST URL.
       .andThen(() =>
         AdminFormService.createPresignedPostUrlForImages({
-          fileId,
+          fileId: randomizedFileId,
           fileMd5Hash,
           fileType,
         }),
@@ -446,11 +456,17 @@ export const createPresignedPostUrlForLogos: ControllerHandler<
     fileId: string
     fileMd5Hash: string
     fileType: string
+    isNewClient?: boolean // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   }
 > = async (req, res) => {
   const { formId } = req.params
-  const { fileId, fileMd5Hash, fileType } = req.body
+  const { fileId, fileMd5Hash, fileType, isNewClient } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Adding random objectId ensures fileId is unpredictable by client
+  const randomizedFileId = isNewClient
+    ? `${String(new ObjectId())}-${fileId}`
+    : fileId // TODO (#128): if !isNewClient, returns fileId for backward compatability. To remove fallback for !isNewClient 2 weeks after release.
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -466,7 +482,7 @@ export const createPresignedPostUrlForLogos: ControllerHandler<
       // Step 3: Has write permissions, generate presigned POST URL.
       .andThen(() =>
         AdminFormService.createPresignedPostUrlForLogos({
-          fileId,
+          fileId: randomizedFileId,
           fileMd5Hash,
           fileType,
         }),
@@ -1246,22 +1262,7 @@ export const handleDuplicateFormField: ControllerHandler<
     })
 }
 
-/**
- * Handler for PATCH /forms/:formId/settings.
- * @security session
- *
- * @returns 200 with updated form settings
- * @returns 400 when body is malformed; can happen when email parameter is passed for encrypt-mode forms
- * @returns 403 when current user does not have permissions to update form settings
- * @returns 404 when form to update settings for cannot be found
- * @returns 409 when saving form settings incurs a conflict in the database
- * @returns 410 when updating settings for archived form
- * @returns 413 when updating settings causes form to be too large to be saved in the database
- * @returns 422 when an invalid settings update is attempted on the form
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when database error occurs
- */
-export const handleUpdateSettings: ControllerHandler<
+export const _handleUpdateSettings: ControllerHandler<
   { formId: string },
   FormSettings | ErrorDto,
   SettingsUpdateDto
@@ -1300,6 +1301,26 @@ export const handleUpdateSettings: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * Handler for PATCH /forms/:formId/settings.
+ * @security session
+ *
+ * @returns 200 with updated form settings
+ * @returns 400 when body is malformed; can happen when email parameter is passed for encrypt-mode forms
+ * @returns 403 when current user does not have permissions to update form settings
+ * @returns 404 when form to update settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 410 when updating settings for archived form
+ * @returns 413 when updating settings causes form to be too large to be saved in the database
+ * @returns 422 when an invalid settings update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateSettings = [
+  updateSettingsValidator,
+  _handleUpdateSettings,
+] as ControllerHandler[]
 
 /**
  * NOTE: Exported for testing.
@@ -1707,9 +1728,11 @@ export const handleUpdateFormField = [
 export const _handleCreateFormField: ControllerHandler<
   { formId: string },
   FormFieldDto | ErrorDto,
-  FieldCreateDto
+  FieldCreateDto,
+  { to?: number }
 > = (req, res) => {
   const { formId } = req.params
+  const { to } = req.query
   const formFieldToCreate = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
@@ -1730,7 +1753,7 @@ export const _handleCreateFormField: ControllerHandler<
       )
       // Step 4: User has permissions, proceed to create form field with provided body.
       .andThen((form) =>
-        AdminFormService.createFormField(form, formFieldToCreate),
+        AdminFormService.createFormField(form, formFieldToCreate, to),
       )
       .map((createdFormField) =>
         res.status(StatusCodes.OK).json(createdFormField as FormFieldDto),
@@ -1929,6 +1952,10 @@ export const handleCreateFormField = [
       // Allow other field related key-values to be provided and let the model
       // layer handle the validation.
     }).unknown(true),
+    [Segments.QUERY]: {
+      // Optional index to insert the field at.
+      to: Joi.number().min(0),
+    },
   }),
   _handleCreateFormField,
 ]
@@ -2472,7 +2499,7 @@ export const handleUpdateStartPage = [
           then: Joi.string()
             // Captures only the extensions below regardless of their case
             // Refer to https://regex101.com/ with the below regex for a full explanation
-            .pattern(/\.(gif|png|jpeg|jpg)$/im)
+            .pattern(/\.(gif|png|jpeg|jpg|jfif)$/im)
             .required(),
           otherwise: Joi.any().forbidden(),
         }),
@@ -2533,3 +2560,133 @@ export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
       })
   )
 }
+
+// Validates Twilio Credentials
+const validateTwilioCredentials = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    accountSid: Joi.string().required().pattern(new RegExp('^AC')),
+    apiKey: Joi.string().required().pattern(new RegExp('^SK')),
+    apiSecret: Joi.string().required(),
+    messagingServiceSid: Joi.string().required().pattern(new RegExp('^MG')),
+  }),
+})
+/**
+ * Handler for PUT /:formId/twilio.
+ * @security session
+ *
+ * @returns 200 with twilio credentials succesfully updated
+ * @returns 400 with twilio credentials are invalid
+ * @returns 401 when user is not logged in
+ * @returns 403 when user does not have permissions to update the form
+ * @returns 404 when form to update cannot be found
+ * @returns 422 when id of user who is updating the form cannot be found
+ * @returns 500 when database error occurs
+ */
+export const updateTwilioCredentials: ControllerHandler<
+  { formId: string },
+  unknown,
+  TwilioCredentials
+> = (req, res) => {
+  const { formId } = req.params
+  const twilioCredentials = req.body
+
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) => {
+      const { msgSrvcName } = retrievedForm
+
+      return msgSrvcName
+        ? AdminFormService.updateTwilioCredentials(
+            msgSrvcName,
+            twilioCredentials,
+          )
+        : AdminFormService.createTwilioCredentials(
+            twilioCredentials,
+            retrievedForm,
+          )
+    })
+    .map(() =>
+      res
+        .status(StatusCodes.OK)
+        .json({ message: 'Successfully updated Twilio credentials' }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating twilio credentials',
+        meta: {
+          action: 'handleUpdateTwilio',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          twilioCredentials,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for DELETE /:formId/twilio.
+ * @security session
+ *
+ * @returns 200 with twilio credentials succesfully updated
+ * @returns 401 when user is not logged in
+ * @returns 403 when user does not have permissions to update the form
+ * @returns 404 when form to delete credentials cannot be found
+ * @returns 422 when id of user who is updating the form cannot be found
+ * @returns 500 when database error occurs
+ */
+export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Delete,
+      }),
+    )
+    .andThen((retrievedForm) => {
+      return AdminFormService.deleteTwilioCredentials(retrievedForm)
+    })
+    .map(() =>
+      res
+        .status(StatusCodes.OK)
+        .json({ message: 'Successfully deleted Twilio credentials' }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when deleting twilio credentials',
+        meta: {
+          action: 'handleDeleteTwilio',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+// Handler for PUT /admin/forms/:formId/twilio
+export const handleUpdateTwilio = [
+  validateTwilioCredentials,
+  updateTwilioCredentials,
+] as ControllerHandler[]

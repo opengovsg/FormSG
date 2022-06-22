@@ -1,4 +1,5 @@
 import {
+  ClientSession,
   Document,
   LeanDocument,
   Model,
@@ -149,10 +150,15 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   /**
    * Inserts a form field into the form
    * @param newField the new field to insert
+   * @param to Optional position to insert the field at. If not provided, field will be inserted at the end.
    * @returns updated form after the insertion if field insertion is successful
    * @throws validation error on invalid updates
    */
-  insertFormField<T>(this: T, newField: FormField): Promise<T | null>
+  insertFormField<T>(
+    this: T,
+    newField: FormField,
+    to?: number,
+  ): Promise<T | null>
 
   /**
    * Returns the dashboard form view of the form.
@@ -189,6 +195,22 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   getDuplicateParams(
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
+
+  /**
+   * Updates the msgSrvcName of the form with the specified msgSrvcName
+   * @param msgSrvcName msgSrvcName to update the Form docuemnt with
+   * @param session transaction session in which update operation is a part of
+   */
+  updateMsgSrvcName(
+    msgSrvcName: string,
+    session?: ClientSession,
+  ): Promise<IFormSchema>
+
+  /**
+   * Deletes the msgSrvcName of the form
+   * @param session transaction session in which delete operation is a part of
+   */
+  deleteMsgSrvcName(session?: ClientSession): Promise<IFormSchema>
 }
 
 /**

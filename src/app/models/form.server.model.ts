@@ -1,6 +1,7 @@
 import BSON, { ObjectId } from 'bson-ext'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
+  ClientSession,
   Mongoose,
   Query,
   Schema,
@@ -396,7 +397,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       },
 
       webhook: {
-        // TODO: URL validation, encrypt mode validation
         url: {
           type: String,
           default: '',
@@ -529,6 +529,22 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
+  FormSchema.methods.updateMsgSrvcName = async function (
+    msgSrvcName: string,
+    session?: ClientSession,
+  ) {
+    this.msgSrvcName = msgSrvcName
+
+    return this.save({ session })
+  }
+
+  FormSchema.methods.deleteMsgSrvcName = async function (
+    session?: ClientSession,
+  ) {
+    this.msgSrvcName = undefined
+    return this.save({ session })
+  }
+
   const FormDocumentSchema = FormSchema as unknown as Schema<IFormDocument>
 
   FormDocumentSchema.methods.getDashboardView = function (
@@ -611,9 +627,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
-  FormDocumentSchema.methods.insertFormField = function (newField: FormField) {
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
-    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(newField)
+  FormDocumentSchema.methods.insertFormField = function (
+    newField: FormField,
+    to?: number,
+  ) {
+    const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
+    // Must use undefined check since number can be 0; i.e. falsey.
+    if (to !== undefined) {
+      formFields.splice(to, 0, newField as any) // Typings are not complete for splice.
+    } else {
+      formFields.push(newField)
+    }
     return this.save()
   }
 
@@ -864,6 +888,18 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       const err = new Error('Form size exceeded.')
       err.name = 'FormSizeError'
       return next(err)
+    }
+
+    // Webhooks only allowed if encrypt mode
+    if (
+      this.responseMode !== FormResponseMode.Encrypt &&
+      (this.webhook?.url?.length ?? 0) > 0
+    ) {
+      const validationError = this.invalidate(
+        'webhook',
+        'Webhook only allowed on storage mode form',
+      ) as mongoose.Error.ValidationError
+      return next(validationError)
     }
 
     // Validate that admin exists before form is created.

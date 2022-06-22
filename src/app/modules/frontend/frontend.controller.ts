@@ -1,9 +1,13 @@
 import ejs from 'ejs'
 import { StatusCodes } from 'http-status-codes'
 
+import { ClientEnvVars } from '../../../../shared/types/core'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
+
+import { validateGenerateRedirectParams } from './frontend.middlewares'
+import { getClientEnvVars } from './frontend.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -76,12 +80,23 @@ export const addEnvVarData: ControllerHandler<unknown, { message: string }> = (
 }
 
 /**
+ * Handler for GET /frontend/env endpoint.
+ * @returns the environment variables needed to hydrate the frontend.
+ */
+export const handleGetEnvironment: ControllerHandler<never, ClientEnvVars> = (
+  _req,
+  res,
+) => {
+  return res.json(getClientEnvVars())
+}
+
+/**
  * Handler for GET /frontend/redirect endpoint.
  * @param req - Express request object
  * @param res - Express response object
  * @returns Templated Javascript code for the frontend that redirects to specific form url
  */
-export const generateRedirectUrl: ControllerHandler<
+export const _generateRedirectUrl: ControllerHandler<
   unknown,
   string | { message: string },
   unknown,
@@ -114,6 +129,11 @@ export const generateRedirectUrl: ControllerHandler<
     })
   }
 }
+
+export const generateRedirectUrl = [
+  validateGenerateRedirectParams,
+  _generateRedirectUrl,
+] as ControllerHandler[]
 
 // Duplicated here since the feature manager is being deprecated.
 // TODO (#2147): delete this.

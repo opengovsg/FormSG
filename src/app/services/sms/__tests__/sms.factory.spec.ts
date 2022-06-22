@@ -56,6 +56,7 @@ describe('sms.factory', () => {
       'mockRecipient',
       'mockOtp',
       'mockFormId',
+      'mockSenderIp',
     ]
 
     // Act
@@ -77,6 +78,7 @@ describe('sms.factory', () => {
       'mockRecipient',
       'mockOtp',
       'mockUserId',
+      'mockSenderIp',
     ]
 
     // Act

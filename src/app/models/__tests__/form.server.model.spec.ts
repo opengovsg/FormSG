@@ -431,6 +431,41 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
       })
 
+      it('should create and save successfully if encrypt mode form has webhook', async () => {
+        // Arrange + Act
+
+        const MOCK_ENCRYPTED_FORM_PARAMS_WITH_WEBHOOK = {
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          webhook: { url: 'https://www.form.gov.sg' },
+        }
+
+        const validForm = new EncryptedForm(
+          MOCK_ENCRYPTED_FORM_PARAMS_WITH_WEBHOOK,
+        )
+
+        const saved = await validForm.save()
+
+        // Assert
+        // All fields should exist
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge(
+          {},
+          ENCRYPT_FORM_DEFAULTS,
+          MOCK_ENCRYPTED_FORM_PARAMS_WITH_WEBHOOK,
+        )
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
       it('should save successfully, but not save fields that is not defined in the schema', async () => {
         // Arrange
         const formParamsWithExtra = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
@@ -817,6 +852,22 @@ describe('Form Model', () => {
         expect(updatedForm.admin).toEqual(newAdmin._id)
         // PermissionList should now be empty.
         expect(updatedForm.permissionList).toEqual([])
+      })
+
+      it('should reject when webhook url exists in email mode form', async () => {
+        // Arrange
+        const MOCK_EMAIL_FORM_PARAMS_WITH_WEBHOOK = {
+          ...MOCK_EMAIL_FORM_PARAMS,
+          webhook: { url: 'https://www.form.gov.sg' },
+        }
+
+        // Act
+        const invalidForm = new EmailForm(MOCK_EMAIL_FORM_PARAMS_WITH_WEBHOOK)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrowError(
+          mongoose.Error.ValidationError,
+        )
       })
 
       it('should reject when emails array is missing', async () => {
@@ -2098,6 +2149,56 @@ describe('Form Model', () => {
         // Assert
         expect(actual.status).toEqual(FormStatus.Archived)
       })
+
+      it('should allow archive if form has valid webhook url', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          publicKey: 'any public key',
+          responseMode: FormResponseMode.Encrypt,
+          title: 'mock encrypt form',
+          status: FormStatus.Public,
+          webhook: {
+            url: 'https://www.form.gov.sg',
+          },
+        })
+        expect(form).toBeDefined()
+
+        // Act
+        const actual = await form.archive()
+
+        // Assert
+        expect(actual.status).toEqual(FormStatus.Archived)
+      })
+
+      it('should prevent archive and return validation error if form has invalid webhook url', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          publicKey: 'any public key',
+          responseMode: FormResponseMode.Encrypt,
+          title: 'mock encrypt form',
+          status: FormStatus.Public,
+          webhook: {
+            url: 'https://www.form.gov.sg',
+          },
+        })
+
+        if (form?.webhook?.url) {
+          form.webhook.url = 'https://wwwww.form.gov.sg' // Inject invalid webhook url
+        }
+
+        expect(form).toBeDefined()
+        // Act
+
+        const actual = await form.archive().catch((err) => err)
+
+        // Assert
+        expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+        expect(actual.message).toEqual(
+          expect.stringContaining('Error encountered during DNS resolution'),
+        )
+      })
     })
 
     describe('getDashboardView', () => {
@@ -2412,6 +2513,46 @@ describe('Form Model', () => {
         expect(actual?.form_fields.toObject()).toEqual([expectedField])
       })
 
+      it('should return updated document with inserted form field with positional argument', async () => {
+        // Arrange
+        const shouldBeSecondField = generateDefaultField(BasicField.Checkbox)
+        const shouldBeFirstField = generateDefaultField(BasicField.Statement)
+        const expectedSecondField = {
+          ...omit(shouldBeSecondField, 'getQuestion'),
+          _id: new ObjectId(shouldBeSecondField._id),
+        }
+        const expectedFirstField = {
+          ...omit(shouldBeFirstField, 'getQuestion'),
+          _id: new ObjectId(shouldBeFirstField._id),
+        }
+        const formWithField = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields: [shouldBeSecondField],
+        })
+        // @ts-ignore
+        expect(formWithField.form_fields.toObject()).toEqual([
+          expectedSecondField,
+        ])
+
+        // Act
+        // Inserting new field but at the beginning.
+        const actual = await formWithField.insertFormField(
+          shouldBeFirstField,
+          0,
+        )
+
+        // Assert
+        // @ts-ignore
+        expect(actual?.form_fields.toObject()).toEqual([
+          // Should be expected order even though first field was inserted later.
+          expectedFirstField,
+          expectedSecondField,
+        ])
+      })
+
       it('should return validation error if model validation fails whilst creating field', async () => {
         // Arrange
         const newField = {
@@ -2594,6 +2735,40 @@ describe('Form Model', () => {
         await expect(actual).rejects.toBeInstanceOf(
           mongoose.Error.ValidationError,
         )
+      })
+    })
+
+    describe('updateMsgSrvcName', () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
+      it('should update msgSrvcName of form to new msgSrvcName', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          title: 'mock mobile form',
+        })
+
+        // Act
+        const updatedForm = await form.updateMsgSrvcName(MOCK_MSG_SRVC_NAME)
+        // Assert
+        expect(updatedForm!.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
+      })
+    })
+
+    describe('deleteMsgSrvcName', () => {
+      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
+      it('should delete msgSrvcName of form', async () => {
+        // Arrange
+        const form = await Form.create({
+          admin: populatedAdmin._id,
+          title: 'mock mobile form',
+          msgSrvcName: MOCK_MSG_SRVC_NAME,
+        })
+
+        // Act
+        const updatedForm = await form.deleteMsgSrvcName()
+
+        // Assert
+        expect(updatedForm!.msgSrvcName).toBeUndefined()
       })
     })
   })

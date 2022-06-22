@@ -4,6 +4,8 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
+import { TwilioSmsStatsdTags } from 'src/types/twilio'
+
 import { isPhoneNumber } from '../../../../shared/utils/phone-num-validation'
 import { AdminContactOtpData, FormOtpData } from '../../../types'
 import config from '../../config/config'
@@ -14,6 +16,7 @@ import {
   MalformedParametersError,
   PossibleDatabaseError,
 } from '../../modules/core/core.errors'
+import { twilioStatsdClient } from '../../modules/twilio/twilio.statsd-client'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -46,7 +49,10 @@ const secretsManager = new SecretsManager({ region: config.aws.region })
 // Given that it is held in memory, when credentials are modified on
 // secretsManager, the app will need to be redeployed to retrieve new
 // credentials, or wait 10 seconds before.
-const twilioClientCache = new NodeCache({ deleteOnExpire: true, stdTTL: 10 })
+export const twilioClientCache = new NodeCache({
+  deleteOnExpire: true,
+  stdTTL: 10,
+})
 
 /**
  * Retrieves credentials from secrets manager
@@ -160,6 +166,7 @@ const logSmsSend = (logParams: LogSmsParams) => {
  * @param smsData The data for logging smsCount
  * @param recipient The mobile number of the recipient
  * @param message The message to send
+ * @param senderIp The ip address of the person triggering the SMS
  */
 const sendSms = (
   twilioConfig: TwilioConfig,
@@ -167,6 +174,7 @@ const sendSms = (
   recipient: string,
   message: string,
   smsType: SmsType,
+  senderIp?: string,
 ): ResultAsync<true, SmsSendError | InvalidNumberError> => {
   if (!isPhoneNumber(recipient)) {
     logger.warn({
@@ -188,13 +196,19 @@ const sendSms = (
 
   const statusCallbackRoute = '/api/v3/notifications/twilio'
 
+  const statusCallback = senderIp
+    ? `${config.app.appUrl}${statusCallbackRoute}?${encodeURI(
+        `senderIp=${senderIp}`,
+      )}`
+    : `${config.app.appUrl}${statusCallbackRoute}`
+
   return ResultAsync.fromPromise(
     client.messages.create({
       to: recipient,
       body: message,
       from: msgSrvcSid,
       forceDelivery: true,
-      statusCallback: config.app.appUrl + statusCallbackRoute,
+      statusCallback,
     }),
     (error) => {
       logger.error({
@@ -209,7 +223,17 @@ const sendSms = (
     },
   )
     .andThen(({ status, sid, errorCode, errorMessage }) => {
+      const ddTags: TwilioSmsStatsdTags = {
+        // msgSrvcSid not included to limit tag cardinality (for now?)
+        smsstatus: status,
+        errorcode: '0',
+      }
+
       if (!sid || errorCode) {
+        if (errorCode) {
+          ddTags.errorcode = `${errorCode}`
+        }
+
         logger.error({
           message: 'Encountered error code or missing sid after sending SMS',
           meta: {
@@ -219,6 +243,8 @@ const sendSms = (
             errorMessage,
           },
         })
+
+        twilioStatsdClient.increment('sms.send', 1, 1, ddTags)
 
         // Invalid number error code, throw a more reasonable error for error
         // handling.
@@ -233,6 +259,8 @@ const sendSms = (
               }),
         )
       }
+
+      twilioStatsdClient.increment('sms.send', 1, 1, ddTags)
 
       // No errors.
       logger.info({
@@ -270,12 +298,13 @@ const sendSms = (
  * @param recipient The phone number to send to
  * @param otp The OTP to send
  * @param formId Form id for retrieving otp data.
- *
+ * @param senderIp The ip address of the person triggering the SMS
  */
 export const sendVerificationOtp = (
   recipient: string,
   otp: string,
   formId: string,
+  senderIp: string,
   defaultConfig: TwilioConfig,
 ): ResultAsync<
   true,
@@ -328,6 +357,7 @@ export const sendVerificationOtp = (
         recipient,
         message,
         SmsType.Verification,
+        senderIp,
       )
     })
   })
@@ -337,6 +367,7 @@ export const sendAdminContactOtp = (
   recipient: string,
   otp: string,
   userId: string,
+  senderIp: string,
   defaultConfig: TwilioConfig,
 ): ResultAsync<true, SmsSendError | InvalidNumberError> => {
   logger.info({
@@ -359,6 +390,7 @@ export const sendAdminContactOtp = (
     recipient,
     message,
     SmsType.AdminContact,
+    senderIp,
   )
 }
 

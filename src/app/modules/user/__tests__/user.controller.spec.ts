@@ -51,7 +51,7 @@ describe('user.controller', () => {
       MockSmsFactory.sendAdminContactOtp.mockReturnValueOnce(okAsync(true))
 
       // Act
-      await UserController.handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
+      await UserController._handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       // Check passed in params.
@@ -63,6 +63,7 @@ describe('user.controller', () => {
         MOCK_REQ.body.contact,
         expectedOtp,
         MOCK_REQ.body.userId,
+        'MOCK_IP',
       )
       expect(mockRes.sendStatus).toBeCalledWith(200)
     })
@@ -78,7 +79,7 @@ describe('user.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await UserController.handleContactSendOtp(
+      await UserController._handleContactSendOtp(
         reqWithoutSession,
         mockRes,
         jest.fn(),
@@ -109,7 +110,7 @@ describe('user.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await UserController.handleContactSendOtp(
+      await UserController._handleContactSendOtp(
         reqWithDiffUserParam,
         mockRes,
         jest.fn(),
@@ -137,7 +138,7 @@ describe('user.controller', () => {
       )
 
       // Act
-      await UserController.handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
+      await UserController._handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
@@ -158,7 +159,7 @@ describe('user.controller', () => {
       )
 
       // Act
-      await UserController.handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
+      await UserController._handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
@@ -200,7 +201,7 @@ describe('user.controller', () => {
       )
 
       // Act
-      await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await UserController._handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       // Expect services to be called with correct arguments.
@@ -229,7 +230,7 @@ describe('user.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await UserController.handleContactVerifyOtp(
+      await UserController._handleContactVerifyOtp(
         reqWithoutSession,
         mockRes,
         jest.fn(),
@@ -261,7 +262,7 @@ describe('user.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await UserController.handleContactVerifyOtp(
+      await UserController._handleContactVerifyOtp(
         reqWithDiffUserParam,
         mockRes,
         jest.fn(),
@@ -289,7 +290,7 @@ describe('user.controller', () => {
       )
 
       // Act
-      await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await UserController._handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
@@ -298,7 +299,7 @@ describe('user.controller', () => {
       expect(MockUserService.updateUserContact).toHaveBeenCalledTimes(1)
     })
 
-    it('should return 401 when verifying contact returns InvalidOtpError', async () => {
+    it('should return 404 when verifying contact returns InvalidOtpError', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       const expectedError = new InvalidOtpError('mock error')
@@ -309,10 +310,10 @@ describe('user.controller', () => {
       )
 
       // Act
-      await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await UserController._handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(401)
+      expect(mockRes.status).toBeCalledWith(404)
       expect(mockRes.json).toBeCalledWith(expectedError.message)
       expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -329,7 +330,7 @@ describe('user.controller', () => {
       )
 
       // Act
-      await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await UserController._handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
@@ -349,7 +350,7 @@ describe('user.controller', () => {
       )
 
       // Act
-      await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+      await UserController._handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)

@@ -2,7 +2,7 @@ import JSZip from 'jszip'
 import flattenDeep from 'lodash/flattenDeep'
 import uniq from 'lodash/uniq'
 
-const VALID_EXTENSIONS = [
+export const VALID_EXTENSIONS = [
   '.asc',
   '.avi',
   '.bmp',
@@ -23,9 +23,11 @@ const VALID_EXTENSIONS = [
   '.gz',
   '.htm',
   '.html',
+  '.jfif',
   '.jpeg',
   '.jpg',
   '.log',
+  '.mov',
   '.mpeg',
   '.mpg',
   '.mpp',
