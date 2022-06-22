@@ -138,7 +138,6 @@
     "openid-client": "^5.1.6",
     "opossum": "^6.3.0",
     "p-queue": "^6.6.2",
-    "p-state": "^1.0.0",
     "promise-retry": "^2.0.1",
     "puppeteer-core": "^5.3.1",
     "selectize": "0.12.6",

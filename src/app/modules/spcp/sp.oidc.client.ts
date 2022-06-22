@@ -11,7 +11,6 @@ import {
 import jwkToPem from 'jwk-to-pem'
 import NodeCache from 'node-cache'
 import { BaseClient, Issuer } from 'openid-client'
-import { promiseStateSync } from 'p-state'
 import { ulid } from 'ulid'
 
 import {
@@ -58,7 +57,7 @@ export class SpOidcClientCache extends NodeCache {
   #spOidcRpClientId: string
   #spOidcRpRedirectUrl: string
   #spOidcRpSecretJwks: SecretJwks
-  #refreshPromise?: Promise<Refresh> // Stores the refresh promise so that there is at most one in-flight refresh at any point in time
+  #refreshPromise?: Promise<Refresh> // Stores the refresh promise so that there is at most one in-flight refresh at any point in time. Stored promise is always pending
 
   /**
    * Constructor for cache
@@ -159,12 +158,11 @@ export class SpOidcClientCache extends NodeCache {
    * @async
    */
   async refresh(): Promise<Refresh> {
-    // If promise does not exist or promise is not pending, create and store the promise
-    if (
-      !this.#refreshPromise ||
-      promiseStateSync(this.#refreshPromise) !== 'pending'
-    ) {
-      this.#refreshPromise = this.createRefreshPromise()
+    // If promise does not exist, create and store the promise
+    if (!this.#refreshPromise) {
+      this.#refreshPromise = this.createRefreshPromise().finally(() => {
+        this.#refreshPromise = undefined // Clean up once promise is fulfilled
+      })
     }
 
     // Return the refresh promise
