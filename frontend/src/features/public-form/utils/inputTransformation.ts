@@ -98,7 +98,7 @@ const transformToTableOutput = (
   // Build table shape
   // Set default input if undefined.
   const populatedInput =
-    input ?? times(schema.minimumRows, () => createTableRow(schema))
+    input ?? times(schema.minimumRows || 0, () => createTableRow(schema))
   const orderedColumnIds = schema.columns.map((col) => col._id)
   const answerArray = populatedInput.map(
     (rowResponse) =>

@@ -75,7 +75,7 @@ WithAddMoreRows.args = {
   field: {
     ...DEFAULT_TABLE_FIELD,
     addMoreRows: true,
-    maximumRows: DEFAULT_TABLE_FIELD.minimumRows - 1,
+    maximumRows: (DEFAULT_TABLE_FIELD.minimumRows || 0) - 1,
   },
 }
 

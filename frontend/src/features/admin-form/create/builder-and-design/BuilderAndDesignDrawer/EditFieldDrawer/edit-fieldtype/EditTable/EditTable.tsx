@@ -45,8 +45,8 @@ export type EditTableInputs = Omit<
 > & {
   // Every column must have an ID for react-table to render.
   columns: ColumnDto[]
-  maximumRows: string | number
-  minimumRows: string | number
+  maximumRows: number | ''
+  minimumRows: number | ''
 }
 
 export type EditTableProps = EditFieldProps<TableFieldBase>

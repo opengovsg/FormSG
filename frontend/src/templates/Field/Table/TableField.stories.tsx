@@ -119,7 +119,10 @@ const Template: Story<StoryTableFieldProps> = ({
   )
 
   const data = useMemo(() => {
-    return times(args.schema.minimumRows, () => defaultValue ?? baseRowData)
+    return times(
+      args.schema.minimumRows || 0,
+      () => defaultValue ?? baseRowData,
+    )
   }, [args.schema.minimumRows, defaultValue, baseRowData])
 
   const formMethods = useForm({
