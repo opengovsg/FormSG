@@ -177,7 +177,11 @@ export const FieldRowContainer = ({
   return (
     <Draggable
       index={index}
-      isDragDisabled={!isActive || !!numFormFieldMutations}
+      isDragDisabled={
+        !isActive ||
+        !!numFormFieldMutations ||
+        stateData.state === BuildFieldState.CreatingField
+      }
       disableInteractiveElementBlocking
       draggableId={field._id}
     >
