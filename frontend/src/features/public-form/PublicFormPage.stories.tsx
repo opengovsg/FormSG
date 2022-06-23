@@ -5,7 +5,7 @@ import { userEvent, waitFor, within } from '@storybook/testing-library'
 import { BasicField } from '~shared/types/field'
 import { FormAuthType, FormColorTheme } from '~shared/types/form'
 
-import { MOCK_FORM_FIELDS_WITH_MYINFO } from '~/mocks/msw/handlers/admin-form'
+import { MOCK_MYINFO_FIELDS } from '~/mocks/msw/handlers/admin-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
   getPublicFormErrorResponse,
@@ -352,7 +352,7 @@ WithMyInfo.parameters = {
     getPublicFormResponse({
       overrides: {
         form: {
-          form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
+          form_fields: MOCK_MYINFO_FIELDS,
         },
       },
     }),

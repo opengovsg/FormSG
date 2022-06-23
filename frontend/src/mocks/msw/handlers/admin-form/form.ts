@@ -316,13 +316,17 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
   },
 ]
 
-export const MOCK_FORM_FIELDS_WITH_MYINFO = [
-  ...MOCK_FORM_FIELDS,
-  ...MOCK_MYINFO_IMPLEMENTED_TYPES.map((myInfoAttr, idx) => ({
+export const MOCK_MYINFO_FIELDS = MOCK_MYINFO_IMPLEMENTED_TYPES.map(
+  (myInfoAttr, idx) => ({
     _id: idx.toString(),
     globalId: idx.toString(),
     ...getMyInfoFieldCreationMeta(myInfoAttr),
-  })),
+  }),
+)
+
+export const MOCK_FORM_FIELDS_WITH_MYINFO = [
+  ...MOCK_FORM_FIELDS,
+  ...MOCK_MYINFO_FIELDS,
 ]
 
 export const createMockForm = (
