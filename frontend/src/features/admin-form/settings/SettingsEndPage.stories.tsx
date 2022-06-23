@@ -1,11 +1,6 @@
 import { Meta, Story } from '@storybook/react'
 
-import { FormSettings } from '~shared/types'
-
-import {
-  getAdminFormSettings,
-  patchAdminFormSettings,
-} from '~/mocks/msw/handlers/admin-form'
+import { getAdminForm } from '~/mocks/msw/handlers/admin-form'
 
 import {
   getMobileViewParameters,
@@ -16,15 +11,10 @@ import {
 import { SettingsEndPage } from './SettingsEndPage'
 
 const buildMswRoutes = ({
-  overrides,
   delay,
 }: {
-  overrides?: Partial<FormSettings>
   delay?: number | 'infinite'
-} = {}) => [
-  getAdminFormSettings({ overrides, delay }),
-  patchAdminFormSettings({ overrides }),
-]
+} = {}) => [getAdminForm({}, delay)]
 
 export default {
   title: 'Pages/AdminFormPage/Settings/EndPage',
