@@ -1,6 +1,12 @@
 import { useMemo } from 'react'
 import { Components } from 'react-markdown'
-import { CSSObject, ListItem, OrderedList, Text } from '@chakra-ui/react'
+import {
+  CSSObject,
+  ListItem,
+  OrderedList,
+  Text,
+  UnorderedList,
+} from '@chakra-ui/react'
 
 import Link from '~components/Link'
 
@@ -44,6 +50,7 @@ export const useMdComponents = ({
           {...textStyles}
         />
       ),
+      ul: ({ node, ...props }) => <UnorderedList {...props} {...textStyles} />,
       li: ({ node, ordered, ...props }) => (
         <ListItem {...props} {...textStyles} />
       ),
