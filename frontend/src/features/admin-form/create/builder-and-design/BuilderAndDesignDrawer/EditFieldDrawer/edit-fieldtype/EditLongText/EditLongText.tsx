@@ -168,13 +168,19 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
             name="ValidationOptions.customVal"
             control={control}
             rules={customValValidationOptions}
-            render={({ field }) => (
+            render={({ field: { onChange, ...rest } }) => (
               <NumberInput
                 flex={1}
+                inputMode="numeric"
                 showSteppers={false}
-                {...field}
                 placeholder="Number of characters"
                 isDisabled={!watchedSelectedValidation}
+                onChange={(val) => {
+                  // Only allow numeric inputs and return it as a number
+                  const numericValue = parseInt(val.replace(/\D/g, ''))
+                  onChange(isNaN(numericValue) ? 0 : numericValue)
+                }}
+                {...rest}
               />
             )}
           />

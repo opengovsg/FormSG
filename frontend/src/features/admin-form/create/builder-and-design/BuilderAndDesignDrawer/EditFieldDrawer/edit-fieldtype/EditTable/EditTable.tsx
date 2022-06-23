@@ -147,7 +147,17 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
               },
               deps: ['maximumRows'],
             }}
-            render={({ field }) => <NumberInput flex={1} {...field} />}
+            render={({ field: { onChange, ...rest } }) => (
+              <NumberInput
+                flex={1}
+                onChange={(val) => {
+                  // Only allow numeric inputs and return it as a number
+                  const numericValue = parseInt(val.replace(/\D/g, ''))
+                  onChange(isNaN(numericValue) ? 0 : numericValue)
+                }}
+                {...rest}
+              />
+            )}
           />
           <FormErrorMessage>{errors?.minimumRows?.message}</FormErrorMessage>
         </FormControl>
@@ -180,7 +190,17 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
                   'Maximum rows must be greater than minimum rows',
               }}
               control={control}
-              render={({ field }) => <NumberInput flex={1} {...field} />}
+              render={({ field: { onChange, ...rest } }) => (
+                <NumberInput
+                  flex={1}
+                  onChange={(val) => {
+                    // Only allow numeric inputs and return it as a number
+                    const numericValue = parseInt(val.replace(/\D/g, ''))
+                    onChange(isNaN(numericValue) ? 0 : numericValue)
+                  }}
+                  {...rest}
+                />
+              )}
             />
             <FormErrorMessage>{errors?.maximumRows?.message}</FormErrorMessage>
           </FormControl>
