@@ -3,14 +3,21 @@ import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { Box, Stack } from '@chakra-ui/react'
 import { times } from 'lodash'
 
-import { BasicField, FormFieldDto } from '~shared/types/field'
+import {
+  BasicField,
+  FormFieldDto,
+  isMyInfoPrefilledFormField,
+} from '~shared/types/field'
 import { FormColorTheme, LogicDto } from '~shared/types/form'
 
 import { FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
-import { augmentWithMyInfoPrefill } from '~features/myinfo/utils'
-import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
+import {
+  augmentWithMyInfo,
+  augmentWithMyInfoPrefill,
+  extractPrefilledValue,
+} from '~features/myinfo/utils'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
@@ -35,16 +42,8 @@ export const FormFields = ({
 
   const defaultFormValues = useMemo(() => {
     return augmentedFormFields.reduce<FormFieldValues>((acc, field) => {
-      if (
-        field.fieldValue !== undefined &&
-        field.fieldType === BasicField.Mobile
-      ) {
-        acc[field._id] = { value: field.fieldValue }
-        return acc
-      }
-
-      if (field.fieldValue !== undefined) {
-        acc[field._id] = field.fieldValue
+      if (isMyInfoPrefilledFormField(field)) {
+        acc[field._id] = extractPrefilledValue(field)
         return acc
       }
 
