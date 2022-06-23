@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
-import { useForm } from 'react-hook-form'
+import { useMemo } from 'react'
+import { FieldValues, useForm } from 'react-hook-form'
 import { Flex, FormControl, Stack } from '@chakra-ui/react'
 import validator from 'validator'
 
@@ -22,17 +22,6 @@ export const EndPageSettingsInput = ({
 }: EndPageSettingsInputProps): JSX.Element => {
   const { mutateFormEndPage } = useMutateFormPage()
 
-  const buttonLinkValidation = useCallback(
-    (url) =>
-      !url ||
-      validator.isURL(url, {
-        protocols: ['https'],
-        require_protocol: true,
-      }) ||
-      'Please enter a valid URL (starting with https://)',
-    [],
-  )
-
   const {
     register,
     formState: { errors },
@@ -41,6 +30,18 @@ export const EndPageSettingsInput = ({
     mode: 'onChange',
     defaultValues: endPage,
   })
+
+  const buttonLinkRules = useMemo(() => {
+    return {
+      validate: (url: string) =>
+        !url ||
+        validator.isURL(url, {
+          protocols: ['https'],
+          require_protocol: true,
+        }) ||
+        'Please enter a valid URL (starting with https://)',
+    } as FieldValues
+  }, [])
 
   const handleUpdateEndPage = handleSubmit((endPage) =>
     mutateFormEndPage.mutate(endPage),
@@ -80,7 +81,7 @@ export const EndPageSettingsInput = ({
           <FormLabel isRequired>Button redirect link</FormLabel>
           <Input
             placeholder="Default form link"
-            {...register('buttonLink', { validate: buttonLinkValidation })}
+            {...register('buttonLink', buttonLinkRules)}
           />
           <FormErrorMessage>{errors.buttonLink?.message}</FormErrorMessage>
         </FormControl>
