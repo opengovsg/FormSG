@@ -1,0 +1,27 @@
+import { useParams } from 'react-router-dom'
+
+import FormEndPage from '~features//public-form/components/FormEndPage'
+import FormFields from '~features//public-form/components/FormFields'
+import { FormFooter } from '~features//public-form/components/FormFooter'
+import FormStartPage from '~features//public-form/components/FormStartPage'
+import { PublicFormWrapper } from '~features//public-form/components/PublicFormWrapper'
+
+import { PreviewFormProvider } from './PreviewFormProvider'
+
+export const PreviewFormPage = (): JSX.Element => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  return (
+    <PreviewFormProvider formId={formId}>
+      <FormStartPage />
+      <PublicFormWrapper>
+        <FormFields />
+        <FormEndPage isPreview={true} />
+        <FormFooter />
+      </PublicFormWrapper>
+    </PreviewFormProvider>
+  )
+}
+
+export default PreviewFormPage

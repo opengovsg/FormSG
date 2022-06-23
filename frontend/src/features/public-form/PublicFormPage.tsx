@@ -16,7 +16,7 @@ export const PublicFormPage = (): JSX.Element => {
       <FormStartPage />
       <PublicFormWrapper>
         <FormFields />
-        <FormEndPage />
+        <FormEndPage isPreview={false} />
         <FormFooter />
       </PublicFormWrapper>
     </PublicFormProvider>
