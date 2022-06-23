@@ -82,6 +82,11 @@ export type MyInfoFormField<T extends FormField = FormField> =
     fieldValue?: string
   }
 
+export type MyInfoPrefilledFormField = SetRequired<
+  MyInfoFormField,
+  'fieldValue'
+>
+
 /**
  * Form field POJO with id
  */
