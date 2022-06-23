@@ -5,6 +5,7 @@ import validator from 'validator'
 
 import { FormEndPage } from '~shared/types'
 
+import { REQUIRED_ERROR } from '~constants/validation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -27,7 +28,7 @@ export const EndPageSettingsInput = ({
     formState: { errors },
     handleSubmit,
   } = useForm<FormEndPage>({
-    mode: 'onChange',
+    mode: 'onBlur',
     defaultValues: endPage,
   })
 
@@ -51,21 +52,12 @@ export const EndPageSettingsInput = ({
     <Stack gap="2rem" paddingTop="2.5rem">
       <FormControl isInvalid={!!errors.title}>
         <FormLabel isRequired>Title</FormLabel>
-        <Input
-          {...register('title', {
-            required: 'Title is required for the Thank You page',
-          })}
-        />
+        <Input {...register('title', { required: REQUIRED_ERROR })} />
         <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isInvalid={!!errors.paragraph}>
         <FormLabel isRequired>Follow-up instructions</FormLabel>
-        <Textarea
-          {...register('paragraph', {
-            required:
-              'Follow-up instructions are required for the Thank You page',
-          })}
-        />
+        <Textarea {...register('paragraph')} />
         <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
       </FormControl>
       <Stack
