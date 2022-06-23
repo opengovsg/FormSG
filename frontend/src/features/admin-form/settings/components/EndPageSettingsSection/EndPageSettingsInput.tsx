@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { FieldValues, useForm } from 'react-hook-form'
 import { Flex, FormControl, Stack } from '@chakra-ui/react'
 import validator from 'validator'
@@ -13,6 +12,16 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
+
+const buttonLinkRules = {
+  validate: (url: string) =>
+    !url ||
+    validator.isURL(url, {
+      protocols: ['https'],
+      require_protocol: true,
+    }) ||
+    'Please enter a valid URL (starting with https://)',
+} as FieldValues
 
 interface EndPageSettingsInputProps {
   endPage: FormEndPage
@@ -31,18 +40,6 @@ export const EndPageSettingsInput = ({
     mode: 'onBlur',
     defaultValues: endPage,
   })
-
-  const buttonLinkRules = useMemo(() => {
-    return {
-      validate: (url: string) =>
-        !url ||
-        validator.isURL(url, {
-          protocols: ['https'],
-          require_protocol: true,
-        }) ||
-        'Please enter a valid URL (starting with https://)',
-    } as FieldValues
-  }, [])
 
   const handleUpdateEndPage = handleSubmit((endPage) =>
     mutateFormEndPage.mutate(endPage),
@@ -66,7 +63,10 @@ export const EndPageSettingsInput = ({
       >
         <FormControl isInvalid={!!errors.buttonText}>
           <FormLabel isRequired>Button text</FormLabel>
-          <Input {...register('buttonText')} />
+          <Input
+            placeholder="Submit another form"
+            {...register('buttonText')}
+          />
           <FormErrorMessage>{errors.buttonText?.message}</FormErrorMessage>
         </FormControl>
         <FormControl isInvalid={!!errors.buttonLink}>
