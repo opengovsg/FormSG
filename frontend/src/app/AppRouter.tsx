@@ -7,6 +7,7 @@ import {
   ADMINFORM_SETTINGS_SUBROUTE,
   LANDING_ROUTE,
   LOGIN_ROUTE,
+  PREVIEW_ROUTE,
   PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
@@ -36,6 +37,7 @@ const LandingPage = lazy(() => import('~pages/Landing'))
 const LoginPage = lazy(() => import('~features/login'))
 const PrivacyPolicyPage = lazy(() => import('~pages/PrivacyPolicy'))
 const TermsOfUsePage = lazy(() => import('~pages/TermsOfUse'))
+const PreviewFormPage = lazy(() => import('~features/admin-form/preview'))
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
@@ -90,6 +92,10 @@ export const AppRouter = (): JSX.Element => {
             />
           </Route>
         </Route>
+        <Route
+          path={`/:formId/${PREVIEW_ROUTE}`}
+          element={<PrivateElement isPreview element={<PreviewFormPage />} />}
+        />
         <Route path="*" element={<NotFoundErrorPage />} />
       </Routes>
     </WithSuspense>
