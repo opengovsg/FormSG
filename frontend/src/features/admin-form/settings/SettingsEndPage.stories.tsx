@@ -1,6 +1,6 @@
 import { Meta, Story } from '@storybook/react'
 
-import { getAdminForm } from '~/mocks/msw/handlers/admin-form'
+import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
 import {
   getMobileViewParameters,
@@ -14,7 +14,7 @@ const buildMswRoutes = ({
   delay,
 }: {
   delay?: number | 'infinite'
-} = {}) => [getAdminForm({}, delay)]
+} = {}) => [...createFormBuilderMocks({}, delay)]
 
 export default {
   title: 'Pages/AdminFormPage/Settings/EndPage',
@@ -23,7 +23,7 @@ export default {
   parameters: {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
-    msw: buildMswRoutes(),
+    msw: buildMswRoutes({ delay: 0 }),
   },
 } as Meta
 

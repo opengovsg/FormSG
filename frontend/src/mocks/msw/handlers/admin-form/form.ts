@@ -528,21 +528,3 @@ export const deleteLogic = (delay?: number) => {
     },
   )
 }
-
-export const getAdminForm = (
-  props: Partial<AdminFormDto> = {},
-  delay: number | 'infinite' | 'real' = 0,
-) => {
-  const { form } = createMockForm(props)
-
-  return rest.get<AdminFormViewDto>(
-    '/api/v3/admin/forms/:formId',
-    (req, res, ctx) => {
-      return res(
-        ctx.delay(delay),
-        ctx.status(200),
-        ctx.json({ form: { ...form, _id: req.params.formId as FormId } }),
-      )
-    },
-  )
-}
