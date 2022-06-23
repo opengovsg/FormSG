@@ -14,8 +14,11 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     id: 1,
     date: '17 July',
     title: 'UI Improvements',
-    description:
-      '* Cool new datepicker with day, month, and year views\n * Loading indicators for verified field OTPs\n * Consistent mobile field styling',
+    description: `
+  * Cool new datepicker with day, month, and year views
+  * Loading indicators for verified field OTPs
+  * Consistent mobile field styling
+  `,
   },
   {
     id: 2,
@@ -37,8 +40,11 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     id: 4,
     date: '17 July',
     title: 'UI Improvements',
-    description:
-      '* Cool new datepicker with day, month, and year views\n * Loading indicators for verified field OTPs\n * Consistent mobile field styling',
+    description: `
+* Cool new datepicker with day, month, and year views
+* Loading indicators for verified field OTPs
+* Consistent mobile field styling
+    `,
   },
   {
     id: 5,
@@ -60,8 +66,11 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     id: 7,
     date: '17 July',
     title: 'UI Improvements',
-    description:
-      '* Cool new datepicker with day, month, and year views\n * Loading indicators for verified field OTPs\n * Consistent mobile field styling',
+    description: `
+* Cool new datepicker with day, month, and year views
+* Loading indicators for verified field OTPs
+* Consistent mobile field styling
+    `,
   },
   {
     id: 8,
@@ -83,8 +92,11 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     id: 10,
     date: '17 July',
     title: 'UI Improvements',
-    description:
-      '* Cool new datepicker with day, month, and year views\n * Loading indicators for verified field OTPs\n * Consistent mobile field styling',
+    description: `
+* Cool new datepicker with day, month, and year views
+* Loading indicators for verified field OTPs
+* Consistent mobile field styling
+    `,
   },
   {
     id: 11,
@@ -106,8 +118,11 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     id: 13,
     date: '10 July',
     title: 'UI Improvements',
-    description:
-      '* Cool new datepicker with day, month, and year views\n * Loading indicators for verified field OTPs\n * Consistent mobile field styling',
+    description: `
+* Cool new datepicker with day, month, and year views
+* Loading indicators for verified field OTPs
+* Consistent mobile field styling
+    `,
   },
   {
     id: 14,
