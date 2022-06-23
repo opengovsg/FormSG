@@ -43,6 +43,7 @@ import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
+import { augmentWithMyInfoPrefill } from '~features/myinfo/utils'
 
 import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
 import { PENDING_CREATE_FIELD_ID } from '../../constants'
@@ -96,9 +97,28 @@ export const FieldRowContainer = ({
         [field._id]: times(field.minimumRows, () => createTableRow(field)),
       }
     }
+
+    const { fieldValue } = augmentWithMyInfoPrefill(field)
+
+    // NOTE: The mobile number field uses value?.value to inject the input.
+    // Hence, we have to give a nested object here in order for the mobile number field
+    // to read the default value correctly.
+    if (fieldValue && field.fieldType === BasicField.Mobile) {
+      return {
+        [field._id]: { value: fieldValue },
+      }
+    }
+
+    if (fieldValue) {
+      return {
+        [field._id]: fieldValue,
+      }
+    }
+
+    return field
   }, [field])
 
-  const formMethods = useForm({
+  const formMethods = useForm<FormFieldDto>({
     mode: 'onChange',
     defaultValues: defaultFieldValues,
   })

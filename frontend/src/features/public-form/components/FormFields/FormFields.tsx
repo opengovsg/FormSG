@@ -9,6 +9,7 @@ import { FormColorTheme, LogicDto } from '~shared/types/form'
 import { FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
+import { augmentWithMyInfoPrefill } from '~features/myinfo/utils'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
@@ -27,18 +28,26 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
-  // TODO: Inject default values if field is also prefilled.
   const augmentedFormFields = useMemo(
-    () => formFields.map(augmentWithMyInfo),
+    () => formFields.map(augmentWithMyInfo).map(augmentWithMyInfoPrefill),
     [formFields],
   )
 
   const defaultFormValues = useMemo(() => {
     return augmentedFormFields.reduce<FormFieldValues>((acc, field) => {
+      if (
+        field.fieldValue !== undefined &&
+        field.fieldType === BasicField.Mobile
+      ) {
+        acc[field._id] = { value: field.fieldValue }
+        return acc
+      }
+
       if (field.fieldValue !== undefined) {
         acc[field._id] = field.fieldValue
         return acc
       }
+
       switch (field.fieldType) {
         // Required so table column fields will render due to useFieldArray usage.
         // See https://react-hook-form.com/api/usefieldarray
