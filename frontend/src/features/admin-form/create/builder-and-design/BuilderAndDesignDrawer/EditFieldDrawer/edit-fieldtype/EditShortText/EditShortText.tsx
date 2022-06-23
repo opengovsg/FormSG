@@ -195,10 +195,8 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
                 showSteppers={false}
                 placeholder="Number of characters"
                 isDisabled={!watchedSelectedValidation}
-                onChange={(val) => {
-                  // Only allow numeric inputs and return it as a number
-                  const numericValue = parseInt(val.replace(/\D/g, ''))
-                  onChange(isNaN(numericValue) ? val : numericValue)
+                onChange={(_, valNum) => {
+                  onChange(isNaN(valNum) ? '' : valNum)
                 }}
                 {...rest}
               />

@@ -247,10 +247,8 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
                   precision={0}
                   flex={1}
                   showSteppers={false}
-                  onChange={(val) => {
-                    // Only allow numeric inputs and return it as a number
-                    const numericValue = parseInt(val.replace(/\D/g, ''))
-                    onChange(isNaN(numericValue) ? val : numericValue)
+                  onChange={(_, valNum) => {
+                    onChange(isNaN(valNum) ? '' : valNum)
                   }}
                   {...rest}
                   placeholder="Minimum"
@@ -267,10 +265,8 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
                   precision={0}
                   flex={1}
                   showSteppers={false}
-                  onChange={(val) => {
-                    // Only allow numeric inputs and return it as a number
-                    const numericValue = parseInt(val.replace(/\D/g, ''))
-                    onChange(isNaN(numericValue) ? val : numericValue)
+                  onChange={(_, valNum) => {
+                    onChange(isNaN(valNum) ? '' : valNum)
                   }}
                   {...rest}
                   placeholder="Maximum"

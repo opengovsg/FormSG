@@ -150,10 +150,8 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
             render={({ field: { onChange, ...rest } }) => (
               <NumberInput
                 flex={1}
-                onChange={(val) => {
-                  // Only allow numeric inputs and return it as a number
-                  const numericValue = parseInt(val.replace(/\D/g, ''))
-                  onChange(isNaN(numericValue) ? val : numericValue)
+                onChange={(_, valNum) => {
+                  onChange(isNaN(valNum) ? '' : valNum)
                 }}
                 {...rest}
               />
@@ -193,10 +191,8 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
               render={({ field: { onChange, ...rest } }) => (
                 <NumberInput
                   flex={1}
-                  onChange={(val) => {
-                    // Only allow numeric inputs and return it as a number
-                    const numericValue = parseInt(val.replace(/\D/g, ''))
-                    onChange(isNaN(numericValue) ? val : numericValue)
+                  onChange={(_, valNum) => {
+                    onChange(isNaN(valNum) ? '' : valNum)
                   }}
                   {...rest}
                 />
