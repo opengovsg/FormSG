@@ -1,7 +1,8 @@
 import { Box } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import { WhatsNewBlock, WhatsNewBlockProps } from './WhatsNewBlock'
+import WorkspaceFeatureUpdateImg from './assets/workspaces_feature_update.svg'
+import { WhatsNewContent, WhatsNewContentProps } from './WhatsNewContent'
 
 export default {
   title: 'Features/WhatsNew/WhatsNewBlock',
@@ -10,10 +11,10 @@ export default {
   },
 } as Meta
 
-const Template: Story<WhatsNewBlockProps> = (args) => {
+const Template: Story<WhatsNewContentProps> = (args) => {
   return (
     <Box width="37.25rem">
-      <WhatsNewBlock {...args} />
+      <WhatsNewContent {...args} />
     </Box>
   )
 }
@@ -24,5 +25,5 @@ Desktop.args = {
   title: 'Introducing Workspaces',
   description:
     'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
-  imageUrl: '/whats-new/workspaces-feature-update.svg',
+  imageUrl: WorkspaceFeatureUpdateImg,
 }

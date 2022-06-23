@@ -26,12 +26,12 @@ export const WhatsNewContent = ({
     },
     overrides: {
       ul: ({ node, ...mdProps }) => (
-        <UnorderedList {...mdProps} mb="2rem" color="secondary.700" />
+        <UnorderedList {...mdProps} color="secondary.700" />
       ),
     },
   })
   return (
-    <Box>
+    <Box paddingX="2.5rem" paddingY="1.25">
       <Text textStyle="caption-1">{date}</Text>
       <Text textStyle="h4" mb="0.5rem" mt="1rem">
         {title}
@@ -39,14 +39,7 @@ export const WhatsNewContent = ({
       <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
         {description}
       </ReactMarkdown>
-      {imageUrl && (
-        <Image
-          width="100%"
-          mb="2rem"
-          src={process.env.PUBLIC_URL + imageUrl}
-          mt="2rem"
-        />
-      )}
+      {imageUrl && <Image width="100%" src={imageUrl} mt="2rem" />}
     </Box>
   )
 }

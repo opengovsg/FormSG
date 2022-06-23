@@ -7,11 +7,13 @@ import {
   DrawerHeader,
   DrawerOverlay,
   Link,
+  Stack,
+  StackDivider,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
-import { FeatureUpdateList } from './test'
-import { WhatsNewBlock } from './WhatsNewBlock'
+import { FeatureUpdate, FeatureUpdateList } from './FeatureUpdateList'
+import { WhatsNewContent } from './WhatsNewContent'
 
 export type WhatsNewDrawerProps = Pick<
   UseDisclosureReturn,
@@ -22,9 +24,8 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
   const [numberOfFeatureUpdatesShown, setNumberOfFeatureUpdatesShown] =
     useState<number>(10)
 
-  const listOfFeatureUpdatesShown = FeatureUpdateList.filter(
-    (featureUpdate) =>
-      parseInt(featureUpdate.id) <= numberOfFeatureUpdatesShown,
+  const listOfFeatureUpdatesShown: FeatureUpdate[] = FeatureUpdateList.filter(
+    (featureUpdate) => featureUpdate.id <= numberOfFeatureUpdatesShown,
   )
 
   const handleOnViewAllUpdatesClick = () => {
@@ -52,17 +53,19 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
           alignItems="center"
           flexDirection="column"
         >
-          {listOfFeatureUpdatesShown.map((featureUpdate, key) => {
-            return (
-              <WhatsNewBlock
-                date={featureUpdate.date}
-                title={featureUpdate.title}
-                description={featureUpdate.description}
-                imageUrl={featureUpdate.imageUrl}
-                key={key}
-              />
-            )
-          })}
+          <Stack divider={<StackDivider />} spacing="2rem">
+            {listOfFeatureUpdatesShown.map((featureUpdate, key) => {
+              return (
+                <WhatsNewContent
+                  date={featureUpdate.date}
+                  title={featureUpdate.title}
+                  description={featureUpdate.description}
+                  imageUrl={featureUpdate.imageUrl}
+                  key={key}
+                />
+              )
+            })}
+          </Stack>
           <Link mt="2rem" mb="5.75rem" onClick={handleOnViewAllUpdatesClick}>
             View all updates
           </Link>
