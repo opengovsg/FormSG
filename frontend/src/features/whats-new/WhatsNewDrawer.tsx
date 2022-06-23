@@ -20,16 +20,28 @@ export type WhatsNewDrawerProps = Pick<
   'onClose' | 'isOpen'
 >
 
+const UNEXTENDED_LIST_LINK_TEXT = 'View all updates'
+const EXTENDED_LIST_LINK_TEXT = 'Show less'
+const DEFAULT_FEATURE_UPDATE_COUNT = 10
+
 export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
   const [numberOfFeatureUpdatesShown, setNumberOfFeatureUpdatesShown] =
-    useState<number>(10)
+    useState<number>(DEFAULT_FEATURE_UPDATE_COUNT)
+  const [linkText, setLinkText] = useState<string>(UNEXTENDED_LIST_LINK_TEXT)
+  const [isListExtended, setIsListExtended] = useState<boolean>(false)
 
   const listOfFeatureUpdatesShown: FeatureUpdate[] = FeatureUpdateList.filter(
     (featureUpdate) => featureUpdate.id <= numberOfFeatureUpdatesShown,
   )
 
   const handleOnViewAllUpdatesClick = () => {
-    setNumberOfFeatureUpdatesShown(FeatureUpdateList.length)
+    setNumberOfFeatureUpdatesShown(
+      isListExtended ? DEFAULT_FEATURE_UPDATE_COUNT : FeatureUpdateList.length,
+    )
+    setLinkText(
+      isListExtended ? UNEXTENDED_LIST_LINK_TEXT : EXTENDED_LIST_LINK_TEXT,
+    )
+    setIsListExtended(!isListExtended)
   }
 
   return (
@@ -67,7 +79,7 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
             })}
           </Stack>
           <Link mt="2rem" mb="5.75rem" onClick={handleOnViewAllUpdatesClick}>
-            View all updates
+            {linkText}
           </Link>
         </DrawerBody>
       </DrawerContent>
