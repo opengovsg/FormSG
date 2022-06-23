@@ -198,7 +198,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
                 onChange={(val) => {
                   // Only allow numeric inputs and return it as a number
                   const numericValue = parseInt(val.replace(/\D/g, ''))
-                  onChange(isNaN(numericValue) ? 0 : numericValue)
+                  onChange(isNaN(numericValue) ? val : numericValue)
                 }}
                 {...rest}
               />
