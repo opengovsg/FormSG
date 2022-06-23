@@ -10,8 +10,6 @@ import PhoneNumberInput, {
   PhoneNumberInputProps,
 } from '~components/PhoneNumberInput'
 
-import { isMyInfoFormField } from '~features/myinfo/utils'
-
 import { MobileFieldSchema, VerifiableFieldInput } from '../types'
 
 export interface MobileFieldInputProps {
@@ -43,13 +41,6 @@ export const MobileFieldInput = ({
       control={control}
       rules={validationRules}
       name={schema._id}
-      // NOTE: Conditionally set this property only when it is myInfo field
-      // so that when it is not myInfo field, there is no error message displayed.
-      {...(isMyInfoFormField(schema) && {
-        defaultValue: {
-          value: schema.fieldValue ?? '',
-        },
-      })}
       render={({ field: { onChange, value, ...field } }) => (
         <PhoneNumberInput
           autoComplete="tel"
