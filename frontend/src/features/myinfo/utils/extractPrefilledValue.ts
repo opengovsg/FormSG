@@ -14,5 +14,5 @@ export const extractPrefilledValue = ({
       value: fieldValue,
     }
   }
-  return fieldType
+  return fieldValue
 }
