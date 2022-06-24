@@ -21,10 +21,12 @@ import { isSgidJwtPayload } from './sgid.util'
 
 const logger = createLoggerWithLabel(module)
 
+const JWT_ALGORITHM = 'RS256'
+
 export class SgidServiceClass {
   private client: SgidClient
 
-  private publicKeyPath: string | Buffer
+  private publicKey: string | Buffer
   private privateKey: string
 
   private cookieDomain: string
@@ -44,7 +46,7 @@ export class SgidServiceClass {
       ...sgidOptions,
       privateKey: this.privateKey,
     })
-    this.publicKeyPath = fs.readFileSync(publicKeyPath)
+    this.publicKey = fs.readFileSync(publicKeyPath)
     this.cookieDomain = cookieDomain
     this.cookieMaxAge = cookieMaxAge
     this.cookieMaxAgePreserved = cookieMaxAgePreserved
@@ -166,7 +168,7 @@ export class SgidServiceClass {
     const payload = { userName, rememberMe }
     const maxAge = rememberMe ? this.cookieMaxAgePreserved : this.cookieMaxAge
     const jwt = Jwt.sign(payload, this.privateKey, {
-      algorithm: 'RS256',
+      algorithm: JWT_ALGORITHM,
       expiresIn: maxAge / 1000,
     })
     return ok({
@@ -193,8 +195,8 @@ export class SgidServiceClass {
         return err(new SgidMissingJwtError())
       }
 
-      const payload = Jwt.verify(jwtSgid, this.publicKeyPath, {
-        algorithms: ['RS256'],
+      const payload = Jwt.verify(jwtSgid, this.publicKey, {
+        algorithms: [JWT_ALGORITHM],
       })
 
       if (isSgidJwtPayload(payload)) {
