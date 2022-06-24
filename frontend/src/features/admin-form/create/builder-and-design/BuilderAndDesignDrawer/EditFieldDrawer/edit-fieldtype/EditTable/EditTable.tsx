@@ -21,6 +21,7 @@ import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
 import { isTemporaryColumnId } from '~features/admin-form/create/builder-and-design/utils/columnCreation'
+import { validateNumberInput } from '~features/admin-form/create/builder-and-design/utils/validateNumberInput'
 
 import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
@@ -45,8 +46,8 @@ export type EditTableInputs = Omit<
 > & {
   // Every column must have an ID for react-table to render.
   columns: ColumnDto[]
-  maximumRows: string | number
-  minimumRows: string | number
+  maximumRows: number | ''
+  minimumRows: number | ''
 }
 
 export type EditTableProps = EditFieldProps<TableFieldBase>
@@ -147,7 +148,13 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
               },
               deps: ['maximumRows'],
             }}
-            render={({ field }) => <NumberInput flex={1} {...field} />}
+            render={({ field: { onChange, ...rest } }) => (
+              <NumberInput
+                flex={1}
+                onChange={validateNumberInput(onChange)}
+                {...rest}
+              />
+            )}
           />
           <FormErrorMessage>{errors?.minimumRows?.message}</FormErrorMessage>
         </FormControl>
@@ -180,7 +187,13 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
                   'Maximum rows must be greater than minimum rows',
               }}
               control={control}
-              render={({ field }) => <NumberInput flex={1} {...field} />}
+              render={({ field: { onChange, ...rest } }) => (
+                <NumberInput
+                  flex={1}
+                  onChange={validateNumberInput(onChange)}
+                  {...rest}
+                />
+              )}
             />
             <FormErrorMessage>{errors?.maximumRows?.message}</FormErrorMessage>
           </FormControl>

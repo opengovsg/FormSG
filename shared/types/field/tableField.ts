@@ -21,9 +21,9 @@ export type ColumnDto<C extends Column = Column> = C & { _id: string }
 
 export interface TableFieldBase extends FieldBase {
   fieldType: BasicField.Table
-  minimumRows: number
+  minimumRows: number | ''
   addMoreRows?: boolean
-  maximumRows?: number
+  maximumRows?: number | ''
   columns: Column[]
 }
 

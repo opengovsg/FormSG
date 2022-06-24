@@ -43,7 +43,9 @@ export const FormFields = ({
         // Required so table column fields will render due to useFieldArray usage.
         // See https://react-hook-form.com/api/usefieldarray
         case BasicField.Table:
-          acc[field._id] = times(field.minimumRows, () => createTableRow(field))
+          acc[field._id] = times(field.minimumRows || 0, () =>
+            createTableRow(field),
+          )
           break
       }
       return acc

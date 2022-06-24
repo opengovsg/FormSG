@@ -7,7 +7,7 @@ export enum NumberSelectedValidation {
 }
 
 export type NumberValidationOptions = {
-  customVal: number | null
+  customVal: number | '' | null
   selectedValidation: NumberSelectedValidation | null
 }
 

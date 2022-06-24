@@ -14,6 +14,8 @@ import NumberInput from '~components/NumberInput'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
+import { validateNumberInput } from '~features/admin-form/create/builder-and-design/utils/validateNumberInput'
+
 import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
@@ -168,13 +170,15 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
             name="ValidationOptions.customVal"
             control={control}
             rules={customValValidationOptions}
-            render={({ field }) => (
+            render={({ field: { onChange, ...rest } }) => (
               <NumberInput
                 flex={1}
+                inputMode="numeric"
                 showSteppers={false}
-                {...field}
                 placeholder="Number of characters"
                 isDisabled={!watchedSelectedValidation}
+                onChange={validateNumberInput(onChange)}
+                {...rest}
               />
             )}
           />

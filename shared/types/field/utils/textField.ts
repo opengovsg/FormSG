@@ -10,6 +10,6 @@ export enum TextSelectedValidation {
 }
 
 export type TextValidationOptions = {
-  customVal: number | null
+  customVal: number | '' | null
   selectedValidation: TextSelectedValidation | null
 }

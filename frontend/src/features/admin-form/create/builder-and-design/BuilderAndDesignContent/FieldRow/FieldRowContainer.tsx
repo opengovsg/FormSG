@@ -91,7 +91,7 @@ export const FieldRowContainer = ({
   const defaultFieldValues = useMemo(() => {
     if (field.fieldType === BasicField.Table) {
       return {
-        [field._id]: times(field.minimumRows, () => createTableRow(field)),
+        [field._id]: times(field.minimumRows || 0, () => createTableRow(field)),
       }
     }
   }, [field])
