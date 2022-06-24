@@ -16,10 +16,9 @@ import {
   SidebarSectionMeta,
   SubmissionData,
 } from '~/features/public-form/PublicFormContext'
+import { useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
 
-import { FORMID_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
-import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 import Link from '~components/Link'
 
@@ -30,10 +29,7 @@ import {
   RecaptchaClosedError,
   useRecaptcha,
 } from '~features/recaptcha/useRecaptcha'
-import {
-  FetchNewTransactionResponse,
-  useTransactionMutations,
-} from '~features/verifiable-fields'
+import { FetchNewTransactionResponse } from '~features/verifiable-fields'
 
 interface PreviewFormProviderProps {
   formId: string
@@ -63,10 +59,13 @@ export const PreviewFormProvider = ({
 
   const [cachedDto, setCachedDto] = useState<PreviewFormViewDto>()
 
-  const { createTransactionMutation } = useTransactionMutations(formId)
-  const toast = useToast({ isClosable: true })
-  const vfnToastIdRef = useRef<string | number>()
-  const desyncToastIdRef = useRef<string | number>()
+  const {
+    createTransactionMutation,
+    toast,
+    vfnToastIdRef,
+    desyncToastIdRef,
+    isNotFormId,
+  } = useCommonFormProvider(formId)
 
   useEffect(() => {
     if (data) {
@@ -90,7 +89,7 @@ export const PreviewFormProvider = ({
         })
       }
     }
-  }, [data, cachedDto, toast])
+  }, [data, cachedDto, toast, desyncToastIdRef])
 
   const getTransactionId = useCallback(async () => {
     if (!vfnTransaction || isPast(vfnTransaction.expireAt)) {
@@ -100,8 +99,6 @@ export const PreviewFormProvider = ({
     }
     return vfnTransaction.transactionId
   }, [createTransactionMutation, vfnTransaction])
-
-  const isNotFormId = useMemo(() => !FORMID_REGEX.test(formId), [formId])
 
   const isFormNotFound = useMemo(() => {
     return (
@@ -134,7 +131,7 @@ export const PreviewFormProvider = ({
         ]} field[|s] again.`,
       })
     }
-  }, [cachedDto?.form.form_fields, toast])
+  }, [cachedDto?.form.form_fields, toast, vfnToastIdRef])
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 

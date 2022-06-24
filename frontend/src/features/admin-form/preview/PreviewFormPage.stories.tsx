@@ -8,13 +8,15 @@ import { FormAuthType, FormColorTheme } from '~shared/types/form'
 import {
   getPreviewFormErrorResponse,
   getPreviewFormResponse,
+} from '~/mocks/msw/handlers/admin-form/preview-form'
+import { envHandlers } from '~/mocks/msw/handlers/env'
+import {
   postGenerateVfnOtpResponse,
   postVerifyVfnOtpResponse,
   postVfnTransactionResponse,
   PREVENT_SUBMISSION_LOGIC,
   SHOW_FIELDS_ON_YES_LOGIC,
-} from '~/mocks/msw/handlers/admin-form/preview-form'
-import { envHandlers } from '~/mocks/msw/handlers/env'
+} from '~/mocks/msw/handlers/public-form'
 
 import { PREVIEW_ROUTE } from '~constants/routes'
 import { getMobileViewParameters, StoryRouter } from '~utils/storybook'

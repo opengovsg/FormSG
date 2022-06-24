@@ -47,6 +47,22 @@ interface PublicFormProviderProps {
   children: React.ReactNode
 }
 
+export function useCommonFormProvider(formId: string) {
+  const { createTransactionMutation } = useTransactionMutations(formId)
+  const toast = useToast({ isClosable: true })
+  const vfnToastIdRef = useRef<string | number>()
+  const desyncToastIdRef = useRef<string | number>()
+  const isNotFormId = useMemo(() => !FORMID_REGEX.test(formId), [formId])
+
+  return {
+    createTransactionMutation,
+    toast,
+    vfnToastIdRef,
+    desyncToastIdRef,
+    isNotFormId,
+  }
+}
+
 export const PublicFormProvider = ({
   formId,
   children,
@@ -70,12 +86,16 @@ export const PublicFormProvider = ({
 
   const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
 
-  const { createTransactionMutation } = useTransactionMutations(formId)
+  const {
+    createTransactionMutation,
+    toast,
+    vfnToastIdRef,
+    desyncToastIdRef,
+    isNotFormId,
+  } = useCommonFormProvider(formId)
+
   const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
     usePublicFormMutations(formId)
-  const toast = useToast({ isClosable: true })
-  const vfnToastIdRef = useRef<string | number>()
-  const desyncToastIdRef = useRef<string | number>()
 
   useEffect(() => {
     if (data) {
@@ -99,7 +119,7 @@ export const PublicFormProvider = ({
         })
       }
     }
-  }, [data, cachedDto, toast])
+  }, [data, cachedDto, toast, desyncToastIdRef])
 
   const getTransactionId = useCallback(async () => {
     if (!vfnTransaction || isPast(vfnTransaction.expireAt)) {
@@ -109,8 +129,6 @@ export const PublicFormProvider = ({
     }
     return vfnTransaction.transactionId
   }, [createTransactionMutation, vfnTransaction])
-
-  const isNotFormId = useMemo(() => !FORMID_REGEX.test(formId), [formId])
 
   const isFormNotFound = useMemo(() => {
     return (
@@ -143,7 +161,7 @@ export const PublicFormProvider = ({
         ]} field[|s] again.`,
       })
     }
-  }, [cachedDto?.form.form_fields, toast])
+  }, [cachedDto?.form.form_fields, toast, vfnToastIdRef])
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
