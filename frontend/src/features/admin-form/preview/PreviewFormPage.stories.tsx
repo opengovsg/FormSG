@@ -18,7 +18,7 @@ import {
   SHOW_FIELDS_ON_YES_LOGIC,
 } from '~/mocks/msw/handlers/public-form'
 
-import { PREVIEW_ROUTE } from '~constants/routes'
+import { ADMINFORM_PREVIEW_ROUTE } from '~constants/routes'
 import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 
 import PreviewFormPage from './PreviewFormPage'
@@ -55,7 +55,7 @@ export default {
   decorators: [
     StoryRouter({
       initialEntries: ['/61540ece3d4a6e50ac0cc6ff/preview'],
-      path: `/:formId/${PREVIEW_ROUTE}`,
+      path: `/:formId/${ADMINFORM_PREVIEW_ROUTE}`,
     }),
   ],
   parameters: {

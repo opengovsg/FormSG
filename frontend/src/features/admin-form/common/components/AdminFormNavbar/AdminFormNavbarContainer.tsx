@@ -6,9 +6,9 @@ import { FormStatus } from '~shared/types'
 
 import {
   ADMINFORM_BUILD_SUBROUTE,
+  ADMINFORM_PREVIEW_ROUTE,
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
-  PREVIEW_ROUTE,
   ROOT_ROUTE,
 } from '~constants/routes'
 
@@ -55,7 +55,7 @@ const useAdminFormNavbar = () => {
 
   const handlePreviewForm = useCallback((): void => {
     console.log('preview form button clicked')
-    navigate(`/${formId}/${PREVIEW_ROUTE}`)
+    navigate(`/${formId}/${ADMINFORM_PREVIEW_ROUTE}`)
   }, [navigate, formId])
 
   const handleTabsChange = useCallback(

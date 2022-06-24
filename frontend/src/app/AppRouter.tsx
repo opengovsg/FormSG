@@ -2,12 +2,12 @@ import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 
 import {
+  ADMINFORM_PREVIEW_ROUTE,
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
   LANDING_ROUTE,
   LOGIN_ROUTE,
-  PREVIEW_ROUTE,
   PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
@@ -93,7 +93,7 @@ export const AppRouter = (): JSX.Element => {
           </Route>
         </Route>
         <Route
-          path={`/:formId/${PREVIEW_ROUTE}`}
+          path={`/:formId/${ADMINFORM_PREVIEW_ROUTE}`}
           element={<PrivateElement element={<PreviewFormPage />} />}
         />
         <Route path="*" element={<NotFoundErrorPage />} />
