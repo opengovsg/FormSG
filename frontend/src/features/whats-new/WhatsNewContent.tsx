@@ -23,11 +23,9 @@ export const WhatsNewContent = ({
         color: 'secondary.700',
         textStyle: 'body-1',
       },
-    },
-    overrides: {
-      ul: ({ node, ...mdProps }) => (
-        <UnorderedList {...mdProps} color="secondary.700" />
-      ),
+      list: {
+        color: 'secondary.700',
+      },
     },
   })
   return (

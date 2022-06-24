@@ -67,15 +67,7 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
         >
           <Stack divider={<StackDivider />} spacing="2rem">
             {listOfFeatureUpdatesShown.map((featureUpdate, key) => {
-              return (
-                <WhatsNewContent
-                  date={featureUpdate.date}
-                  title={featureUpdate.title}
-                  description={featureUpdate.description}
-                  imageUrl={featureUpdate.imageUrl}
-                  key={key}
-                />
-              )
+              return <WhatsNewContent {...featureUpdate} key={key} />
             })}
           </Stack>
           <Link mt="2rem" mb="5.75rem" onClick={handleOnViewAllUpdatesClick}>
