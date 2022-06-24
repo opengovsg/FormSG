@@ -20,6 +20,8 @@ import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 import { CopyButton } from '~templates/CopyButton'
 
+import { validateNumberInput } from '~features/admin-form/create/builder-and-design/utils/validateNumberInput'
+
 import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
@@ -195,8 +197,8 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
                 showSteppers={false}
                 placeholder="Number of characters"
                 isDisabled={!watchedSelectedValidation}
-                onChange={(_, valNum) => {
-                  onChange(isNaN(valNum) ? '' : valNum)
+                onChange={(valStr, valNum) => {
+                  validateNumberInput(onChange, valStr, valNum)
                 }}
                 {...rest}
               />

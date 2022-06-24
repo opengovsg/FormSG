@@ -21,6 +21,7 @@ import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
 import { isTemporaryColumnId } from '~features/admin-form/create/builder-and-design/utils/columnCreation'
+import { validateNumberInput } from '~features/admin-form/create/builder-and-design/utils/validateNumberInput'
 
 import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
@@ -150,8 +151,8 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
             render={({ field: { onChange, ...rest } }) => (
               <NumberInput
                 flex={1}
-                onChange={(_, valNum) => {
-                  onChange(isNaN(valNum) ? '' : valNum)
+                onChange={(valStr, valNum) => {
+                  validateNumberInput(onChange, valStr, valNum)
                 }}
                 {...rest}
               />
@@ -191,8 +192,8 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
               render={({ field: { onChange, ...rest } }) => (
                 <NumberInput
                   flex={1}
-                  onChange={(_, valNum) => {
-                    onChange(isNaN(valNum) ? '' : valNum)
+                  onChange={(valStr, valNum) => {
+                    validateNumberInput(onChange, valStr, valNum)
                   }}
                   {...rest}
                 />
