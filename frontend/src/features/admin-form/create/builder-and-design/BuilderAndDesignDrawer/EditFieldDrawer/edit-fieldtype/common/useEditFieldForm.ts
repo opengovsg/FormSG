@@ -113,8 +113,9 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
         // @ts-ignore
         transform.input(newField),
       )
+      setToInactive()
     },
-    [editForm, transform],
+    [editForm, transform, setToInactive],
   )
 
   const handleUpdateField = editForm.handleSubmit(async (inputs) => {
