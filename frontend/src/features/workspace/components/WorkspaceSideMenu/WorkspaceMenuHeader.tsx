@@ -1,10 +1,10 @@
 import { BiPlus } from 'react-icons/bi'
-import { Flex, Text } from '@chakra-ui/react'
+import { Flex, FlexProps, Text } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'
 
-export const WorkspaceMenuHeader = (): JSX.Element => (
-  <Flex justifyContent="space-between" px="2rem" mt="1.5rem">
+export const WorkspaceMenuHeader = ({ ...props }: FlexProps): JSX.Element => (
+  <Flex justifyContent="space-between" px="2rem" mt="1.5rem" {...props}>
     <Text textStyle="h4" color="secondary.700">
       Workspaces
     </Text>

@@ -3,7 +3,6 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -31,8 +30,6 @@ const useWorkspaceForms = () => {
   const [isManipulating, setIsManipulating] = useState(false)
 
   const createFormModalDisclosure = useDisclosure()
-
-  const topRef = useRef<HTMLDivElement>(null)
 
   const currentPage = Number(
     searchParams.get('page') ?? PAGE_DEFAULTS.pageNumber,
@@ -69,8 +66,11 @@ const useWorkspaceForms = () => {
   )
 
   useLayoutEffect(() => {
-    // Scroll to top on workspace list page on change
-    topRef.current?.scrollIntoView()
+    /**
+     * Scroll to top on workspace page on change. Use scrollTo(0,0) instead of a ref on workspace container
+     * because mobile view has headers on top of the workspace container
+     */
+    window.scrollTo(0, 0)
   }, [currentPage])
 
   const paginatedData = useMemo(() => {
@@ -87,7 +87,6 @@ const useWorkspaceForms = () => {
     paginatedData,
     setPageNumber,
     setSortOrder,
-    topRef,
     createFormModalDisclosure,
   }
 }
@@ -106,7 +105,6 @@ export const WorkspaceContent = ({
     paginatedData,
     currentPage,
     setPageNumber,
-    topRef,
     createFormModalDisclosure,
   } = useWorkspaceForms()
 
@@ -129,7 +127,6 @@ export const WorkspaceContent = ({
           borderBottom="1px solid var(--chakra-colors-neutral-300)"
           px="2rem"
           py="1rem"
-          ref={topRef}
         >
           <WorkspaceHeader
             isLoading={isLoading}
