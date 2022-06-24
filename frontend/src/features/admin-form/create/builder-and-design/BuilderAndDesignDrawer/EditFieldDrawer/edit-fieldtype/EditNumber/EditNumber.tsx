@@ -184,9 +184,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
                 showSteppers={false}
                 placeholder="Number of characters"
                 isDisabled={!watchedSelectedValidation}
-                onChange={(valStr, valNum) => {
-                  validateNumberInput(onChange, valStr, valNum)
-                }}
+                onChange={validateNumberInput(onChange)}
                 {...rest}
               />
             )}

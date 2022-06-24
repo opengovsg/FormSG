@@ -151,9 +151,7 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
             render={({ field: { onChange, ...rest } }) => (
               <NumberInput
                 flex={1}
-                onChange={(valStr, valNum) => {
-                  validateNumberInput(onChange, valStr, valNum)
-                }}
+                onChange={validateNumberInput(onChange)}
                 {...rest}
               />
             )}
@@ -192,9 +190,7 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
               render={({ field: { onChange, ...rest } }) => (
                 <NumberInput
                   flex={1}
-                  onChange={(valStr, valNum) => {
-                    validateNumberInput(onChange, valStr, valNum)
-                  }}
+                  onChange={validateNumberInput(onChange)}
                   {...rest}
                 />
               )}

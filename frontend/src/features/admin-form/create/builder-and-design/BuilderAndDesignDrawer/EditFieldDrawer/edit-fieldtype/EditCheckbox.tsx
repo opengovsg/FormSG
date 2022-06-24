@@ -249,9 +249,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
                   precision={0}
                   flex={1}
                   showSteppers={false}
-                  onChange={(valStr, valNum) => {
-                    validateNumberInput(onChange, valStr, valNum)
-                  }}
+                  onChange={validateNumberInput(onChange)}
                   {...rest}
                   placeholder="Minimum"
                 />
@@ -267,9 +265,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
                   precision={0}
                   flex={1}
                   showSteppers={false}
-                  onChange={(valStr, valNum) => {
-                    validateNumberInput(onChange, valStr, valNum)
-                  }}
+                  onChange={validateNumberInput(onChange)}
                   {...rest}
                   placeholder="Maximum"
                 />
