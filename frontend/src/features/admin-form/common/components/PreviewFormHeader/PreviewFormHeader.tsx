@@ -13,9 +13,7 @@ export const PreviewFormHeader = (): JSX.Element => {
   return (
     <Flex bg="success.600" py="0.5rem" px="2rem" display="flex" width="100%">
       <Flex align="center" flex={1} justify="space-between" flexDir="row">
-        <Box>
-          <Text textStyle="h4">Preview mode</Text>
-        </Box>
+        <Text textStyle="h4">Preview mode</Text>
         <Link
           variant="standalone"
           color="secondary.700"
