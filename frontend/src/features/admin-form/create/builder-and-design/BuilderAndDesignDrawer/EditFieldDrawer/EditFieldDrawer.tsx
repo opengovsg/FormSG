@@ -88,12 +88,12 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 }
 
 interface MemoFieldDrawerContentProps {
-  field?: FieldCreateDto
+  field: FieldCreateDto
 }
 
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
-    switch (field?.fieldType) {
+    switch (field.fieldType) {
       case BasicField.Attachment:
         return <EditAttachment {...props} field={field} />
       case BasicField.Checkbox:
