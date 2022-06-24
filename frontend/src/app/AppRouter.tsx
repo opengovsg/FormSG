@@ -94,7 +94,7 @@ export const AppRouter = (): JSX.Element => {
         </Route>
         <Route
           path={`/:formId/${PREVIEW_ROUTE}`}
-          element={<PrivateElement isPreview element={<PreviewFormPage />} />}
+          element={<PrivateElement element={<PreviewFormPage />} />}
         />
         <Route path="*" element={<NotFoundErrorPage />} />
       </Routes>
