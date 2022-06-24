@@ -13,10 +13,6 @@ export const validateNumberInput = (
   valStr: string,
   valNum: number,
 ): void => {
-  if (!valStr) {
-    onChange('')
-    return
-  }
-  if (isNaN(valNum)) return
-  onChange(valNum)
+  if (!valStr) return onChange('')
+  if (!isNaN(valNum)) onChange(valNum)
 }
