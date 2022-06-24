@@ -13,7 +13,7 @@ import Textarea from '~components/Textarea'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
-const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
+export const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
   validate: (url: string) =>
     !url ||
     validator.isURL(url, {

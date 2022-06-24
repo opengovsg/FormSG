@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from 'react'
 import { UnpackNestedValue, useForm, useWatch } from 'react-hook-form'
 import { useDebounce } from 'react-use'
-import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
+import { FormControl, Stack } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
-import validator from 'validator'
 
 import { FormEndPage } from '~shared/types'
 
+import { REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -16,6 +16,7 @@ import Textarea from '~components/Textarea'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { buttonLinkRules } from '~features/admin-form/settings/components/EndPageSettingsSection/EndPageSettingsInput'
 
 import {
   setToInactiveSelector,
@@ -28,18 +29,15 @@ import {
   useEndPageBuilderStore,
 } from './useEndPageBuilderStore'
 
-// TODO (hans): Refactor this based on end-page-builder-1 PR
+interface EndPageBuilderInputProps {
+  endPage: FormEndPage
+}
+
 export const EndPageBuilderInput = ({
-  title,
-  paragraph,
-  buttonLink,
-  buttonText,
-}: FormEndPage): JSX.Element => {
+  endPage,
+}: EndPageBuilderInputProps): JSX.Element => {
   const isMobile = useIsMobile()
   const { mutateFormEndPage } = useMutateFormPage()
-
-  const defaultParagraph = useMemo(() => paragraph ?? '', [paragraph])
-  const defaultButtonLink = useMemo(() => buttonLink ?? '', [buttonLink])
 
   const closeBuilderDrawer = useBuilderAndDesignStore(setToInactiveSelector)
   const setEndPageBuilderState = useEndPageBuilderStore(setStateSelector)
@@ -50,13 +48,8 @@ export const EndPageBuilderInput = ({
     control,
     handleSubmit,
   } = useForm<FormEndPage>({
-    mode: 'onChange',
-    defaultValues: {
-      title: title,
-      paragraph: defaultParagraph,
-      buttonText: buttonText,
-      buttonLink: defaultButtonLink,
-    },
+    mode: 'onBlur',
+    defaultValues: endPage,
   })
 
   const handleEndPageBuilderChanges = useCallback(
@@ -79,44 +72,38 @@ export const EndPageBuilderInput = ({
     Object.values(clonedWatchedInputs),
   ])
 
-  const buttonLinkRegister = register('buttonLink', {
-    validate: (url) =>
-      !url ||
-      validator.isURL(url, {
-        protocols: ['https'],
-        require_protocol: true,
-      }) ||
-      'Please enter a valid URL (starting with https://)',
-  })
-
-  const handleUpdateEndPage = useCallback(() => {
-    return handleSubmit((endPage) => {
-      return mutateFormEndPage.mutate(endPage)
-    })()
-  }, [handleSubmit, mutateFormEndPage])
+  const handleUpdateEndPage = handleSubmit((endPage) =>
+    mutateFormEndPage.mutate(endPage),
+  )
 
   return (
     <DrawerContentContainer>
       <Stack gap="2rem">
-        <FormControl isInvalid={false}>
+        <FormControl isInvalid={!!errors.title}>
           <FormLabel isRequired>Title</FormLabel>
-          <Input {...register('title')} autoFocus />
-          <FormErrorMessage>error</FormErrorMessage>
+          <Input {...register('title', { required: REQUIRED_ERROR })} />
+          <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
         </FormControl>
-        <FormControl isInvalid={false}>
-          <FormLabel isRequired>Follow-up paragraph</FormLabel>
+        <FormControl isInvalid={!!errors.paragraph}>
+          <FormLabel isRequired>Follow-up instructions</FormLabel>
           <Textarea {...register('paragraph')} />
-          <FormErrorMessage>error</FormErrorMessage>
+          <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
         </FormControl>
         <Stack direction={['column', 'row']} gap={['2rem', '1rem']}>
-          <FormControl isInvalid={false}>
+          <FormControl isInvalid={!!errors.buttonText}>
             <FormLabel isRequired>Button text</FormLabel>
-            <Input {...register('buttonText')} />
-            <FormErrorMessage>error</FormErrorMessage>
+            <Input
+              placeholder="Submit another form"
+              {...register('buttonText')}
+            />
+            <FormErrorMessage>{errors.buttonText?.message}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!!errors.buttonLink}>
             <FormLabel isRequired>Button redirect link</FormLabel>
-            <Input placeholder="Default form link" {...buttonLinkRegister} />
+            <Input
+              placeholder="Default form link"
+              {...register('buttonLink', buttonLinkRules)}
+            />
             <FormErrorMessage>{errors.buttonLink?.message}</FormErrorMessage>
           </FormControl>
         </Stack>
@@ -144,11 +131,7 @@ export const EndPageBuilderInput = ({
 }
 
 export const EditEndPage = (): JSX.Element => {
-  const { data: form, isLoading } = useAdminForm()
+  const { data: form } = useAdminForm()
 
-  return (
-    <Skeleton isLoaded={!isLoading && !!form}>
-      {form ? <EndPageBuilderInput {...form.endPage} /> : null}
-    </Skeleton>
-  )
+  return <>{form ? <EndPageBuilderInput endPage={form.endPage} /> : null}</>
 }
