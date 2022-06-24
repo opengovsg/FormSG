@@ -3,6 +3,7 @@ import fs from 'fs'
 import Jwt from 'jsonwebtoken'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
+import { ISgidVarsSchema } from '../../../types'
 import { sgid } from '../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
@@ -37,17 +38,7 @@ export class SgidServiceClass {
     privateKeyPath,
     publicKeyPath,
     ...sgidOptions
-  }: {
-    endpoint: string
-    clientId: string
-    clientSecret: string
-    privateKeyPath: string
-    publicKeyPath: string
-    redirectUri: string
-    cookieDomain: string
-    cookieMaxAge: number
-    cookieMaxAgePreserved: number
-  }) {
+  }: ISgidVarsSchema) {
     this.privateKey = fs.readFileSync(privateKeyPath, { encoding: 'utf8' })
     this.client = new SgidClient({
       ...sgidOptions,
