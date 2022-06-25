@@ -58,7 +58,13 @@ const logger = createLoggerWithLabel(module)
  * Exported for testing
  */
 export class SpOidcClientCache {
-  #cache: NodeCache
+  /**
+   * Cache to store NDI's keys and client
+   * @private
+   * accessible only for testing
+   */
+  _cache: NodeCache
+
   #spOidcNdiDiscoveryEndpoint: string
   #spOidcNdiJwksEndpoint: string
   #spOidcRpClientId: string
@@ -83,10 +89,10 @@ export class SpOidcClientCache {
     this.#spOidcRpClientId = spOidcRpClientId
     this.#spOidcRpRedirectUrl = spOidcRpRedirectUrl
     this.#spOidcRpSecretJwks = spOidcRpSecretJwks
-    this.#cache = new NodeCache(options)
+    this._cache = new NodeCache(options)
 
     // On expiry, refresh cache. If fail to refresh, log but do not throw error.
-    this.#cache.on('expired', () =>
+    this._cache.on('expired', () =>
       this.refresh().catch((err) =>
         logger.warn({
           message: 'Attempted but failed to refresh sp oidc cache on expiry',
@@ -118,7 +124,7 @@ export class SpOidcClientCache {
    * @throws error if refresh fails
    */
   async getNdiPublicKeys(): Promise<CryptoKeys> {
-    const ndiPublicKeys = this.#cache.get<CryptoKeys>(NDI_PUBLIC_KEY_NAME)
+    const ndiPublicKeys = this._cache.get<CryptoKeys>(NDI_PUBLIC_KEY_NAME)
     if (!ndiPublicKeys) {
       const { ndiPublicKeys } = await this.refresh()
       return ndiPublicKeys
@@ -134,7 +140,7 @@ export class SpOidcClientCache {
    * @throws error if refresh fails
    */
   async getBaseClient(): Promise<BaseClient> {
-    const baseClient = this.#cache.get<BaseClient>(BASE_CLIENT_NAME)
+    const baseClient = this._cache.get<BaseClient>(BASE_CLIENT_NAME)
     if (!baseClient) {
       const { baseClient } = await this.refresh()
       return baseClient
@@ -164,9 +170,9 @@ export class SpOidcClientCache {
       `Promise.all([this.retrievePublicKeysFromNdi(), this.retrieveBaseClientFromNdi()])`,
     )
 
-    this.#cache.set(NDI_PUBLIC_KEY_NAME, ndiPublicKeys) // No TTL - key will be kept forever until refresh is successful on expiry of EXPIRY_NAME key
-    this.#cache.set(BASE_CLIENT_NAME, baseClient) // No TTL - key will be kept forever until refresh is successful on expiry of EXPIRY_NAME key
-    this.#cache.set(EXPIRY_NAME, 'expiry', 3600) // set expiry key with TTL of 1 hour, to trigger refresh ahead (note that expiry check is done every 60s)
+    this._cache.set(NDI_PUBLIC_KEY_NAME, ndiPublicKeys) // No TTL - key will be kept forever until refresh is successful on expiry of EXPIRY_NAME key
+    this._cache.set(BASE_CLIENT_NAME, baseClient) // No TTL - key will be kept forever until refresh is successful on expiry of EXPIRY_NAME key
+    this._cache.set(EXPIRY_NAME, 'expiry', 3600) // set expiry key with TTL of 1 hour, to trigger refresh ahead (note that expiry check is done every 60s)
     return { ndiPublicKeys, baseClient }
   }
 

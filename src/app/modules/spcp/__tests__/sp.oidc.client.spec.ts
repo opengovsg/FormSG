@@ -3,23 +3,27 @@ import { createPublicKey } from 'crypto'
 import fs from 'fs'
 import jwkToPem, { EC } from 'jwk-to-pem'
 import { omit } from 'lodash'
+import NodeCache from 'node-cache'
 import { BaseClient, Issuer } from 'openid-client'
 
 import * as SpOidcClientClasses from '../sp.oidc.client'
-import { SpOidcClientCache } from '../sp.oidc.client'
+import { SpOidcClient, SpOidcClientCache } from '../sp.oidc.client'
 import { JwkError } from '../sp.oidc.client.errors'
 import {
-  CryptoKeySet,
+  CryptoKeys,
   PublicJwks,
   Refresh,
   SecretJwks,
   SpOidcClientCacheConstructorParams,
+  SpOidcClientConstructorParams,
 } from '../sp.oidc.client.types'
 
 jest.mock('openid-client')
 jest.mock('axios')
 
-jest.useFakeTimers()
+const TEST_RP_PUBLIC_JWKS: PublicJwks = JSON.parse(
+  fs.readFileSync('tests/certs/test_rp_public_jwks.json').toString(),
+)
 const TEST_RP_SECRET_JWKS: SecretJwks = JSON.parse(
   fs.readFileSync('tests/certs/test_rp_secret_jwks.json').toString(),
 )
@@ -40,18 +44,14 @@ const SP_OIDC_NDI_JWKS_ENDPOINT = 'spOidcNdiJwksEndpoint'
 const SP_OIDC_RP_CLIENT_ID = 'spOidcRpClientId'
 const SP_OIDC_RP_REDIRECT_URL = 'spOidcRpRedirectUrl'
 
-afterEach(() => {
-  jest.clearAllMocks()
-  jest.restoreAllMocks()
-})
-
 describe('SpOidcClient', () => {
   afterEach(() => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
   })
+
   describe('SpOidcClientCache class', () => {
-    const config: SpOidcClientCacheConstructorParams = {
+    const spOidcClientCacheConfig: SpOidcClientCacheConstructorParams = {
       spOidcNdiDiscoveryEndpoint: SP_OIDC_NDI_DISCOVERY_ENDPOINT,
       spOidcNdiJwksEndpoint: SP_OIDC_NDI_JWKS_ENDPOINT,
       spOidcRpClientId: SP_OIDC_RP_CLIENT_ID,
@@ -70,11 +70,12 @@ describe('SpOidcClient', () => {
           .mockReturnValueOnce(undefined as unknown as SpOidcClientCache)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
 
         // Assert
         expect(spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
         expect(constructorSpy).toHaveBeenCalledOnce()
+        expect(constructorSpy).toBeCalledWith(spOidcClientCacheConfig)
       })
 
       it('should call refresh() on instantiation', async () => {
@@ -84,46 +85,22 @@ describe('SpOidcClient', () => {
           .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
 
         // Assert
         expect(spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
         expect(refreshSpy).toHaveBeenCalledOnce()
-      })
-
-      it('should call console.warn if refresh() attempt on instantiation fails', async () => {
-        // Arrange
-        const refreshSpy = jest
-          .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockRejectedValueOnce(new Error('failed'))
-
-        const warnSpy = jest
-          .spyOn(console, 'warn')
-          .mockImplementationOnce(() => undefined)
-        // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
-        await Promise.resolve('ok') // Add promise to PromiseJobs queue as refresh() is void in constructor
-
-        // Assert
-        expect(spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
-        expect(warnSpy).toHaveBeenCalledOnce()
-        expect(refreshSpy).toHaveBeenCalledOnce()
-        expect(warnSpy).toHaveBeenCalledWith(
-          expect.stringContaining(
-            'Attempted but failed to refresh sp oidc on instantiation',
-          ),
-        )
       })
 
       it('should correctly set expiry rule and provide a callback function', async () => {
         // Arrange
-        const onSpy = jest.spyOn(SpOidcClientCache.prototype, 'on')
+        const onSpy = jest.spyOn(NodeCache.prototype, 'on')
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
           .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
 
         // Assert
         expect(spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
@@ -140,11 +117,11 @@ describe('SpOidcClient', () => {
           .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         const getSpy = jest
-          .spyOn(SpOidcClientCache.prototype, 'get')
-          .mockReturnValue('keys')
+          .spyOn(NodeCache.prototype, 'get')
+          .mockReturnValueOnce('keys')
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const ndiPublicKeys = await spOidcClientCache.getNdiPublicKeys()
 
         // Assert
@@ -159,10 +136,11 @@ describe('SpOidcClient', () => {
         // Arrange
         const refreshSpy = jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue({ ndiPublicKeys: 'ok' } as unknown as Refresh)
+          .mockResolvedValueOnce({ ndiPublicKeys: 'ok' } as unknown as Refresh)
+          .mockResolvedValueOnce({ ndiPublicKeys: 'ok' } as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const ndiPublicKeys = await spOidcClientCache.getNdiPublicKeys()
 
         // Assert
@@ -178,7 +156,7 @@ describe('SpOidcClient', () => {
           .mockRejectedValueOnce(new Error('failed'))
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const ndiPublicKeysReusult = spOidcClientCache.getNdiPublicKeys()
 
         // Assert
@@ -196,11 +174,11 @@ describe('SpOidcClient', () => {
           .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         const getSpy = jest
-          .spyOn(SpOidcClientCache.prototype, 'get')
-          .mockReturnValue('baseClient')
+          .spyOn(NodeCache.prototype, 'get')
+          .mockReturnValueOnce('baseClient')
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const baseClient = await spOidcClientCache.getBaseClient()
 
         // Assert
@@ -215,10 +193,11 @@ describe('SpOidcClient', () => {
         // Arrange
         const refreshSpy = jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue({ baseClient: 'ok' } as unknown as Refresh)
+          .mockResolvedValueOnce({ baseClient: 'ok' } as unknown as Refresh)
+          .mockResolvedValueOnce({ baseClient: 'ok' } as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const baseClient = await spOidcClientCache.getBaseClient()
 
         // Assert
@@ -234,7 +213,7 @@ describe('SpOidcClient', () => {
           .mockRejectedValueOnce(new Error('failed'))
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const baseClientResult = spOidcClientCache.getNdiPublicKeys()
 
         // Assert
@@ -250,18 +229,20 @@ describe('SpOidcClient', () => {
         const axiosSpy = jest
           .spyOn(axios, 'get')
           .mockResolvedValueOnce({ data: TEST_NDI_PUBLIC_JWKS })
-        jest
+
+        const refreshSpy = jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         const expectedKeyResult = createPublicKeysFromJwks(TEST_NDI_PUBLIC_JWKS)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const keyResult = await spOidcClientCache.retrievePublicKeysFromNdi()
 
         // Assert
         expect(axiosSpy).toHaveBeenCalledOnce()
+        expect(refreshSpy).toHaveBeenCalledOnce()
         expect(keyResult).toMatchObject(expectedKeyResult)
       })
 
@@ -273,17 +254,18 @@ describe('SpOidcClient', () => {
           .mockRejectedValueOnce(new Error())
           .mockResolvedValueOnce({ data: TEST_NDI_PUBLIC_JWKS })
 
-        jest
+        const refreshSpy = jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         const expectedKeyResult = createPublicKeysFromJwks(TEST_NDI_PUBLIC_JWKS)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const keyResult = await spOidcClientCache.retrievePublicKeysFromNdi()
 
         // Assert
+        expect(refreshSpy).toHaveBeenCalledOnce()
         expect(axiosSpy).toHaveBeenCalledTimes(3)
         expect(keyResult.length).toEqual(1)
         expect(keyResult).toMatchObject(expectedKeyResult)
@@ -299,10 +281,10 @@ describe('SpOidcClient', () => {
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const keyResult = async () => {
           const key = await spOidcClientCache.retrievePublicKeysFromNdi()
           return key
@@ -323,10 +305,10 @@ describe('SpOidcClient', () => {
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const keyResult = async () => {
           const key = await spOidcClientCache.retrievePublicKeysFromNdi()
           return key
@@ -350,10 +332,10 @@ describe('SpOidcClient', () => {
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const keyResult = async () => {
           const key = await spOidcClientCache.retrievePublicKeysFromNdi()
           return key
@@ -374,10 +356,10 @@ describe('SpOidcClient', () => {
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const keyResult = async () => {
           const key = await spOidcClientCache.retrievePublicKeysFromNdi()
           return key
@@ -397,10 +379,10 @@ describe('SpOidcClient', () => {
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const keyResult = async () => {
           const key = await spOidcClientCache.retrievePublicKeysFromNdi()
           return key
@@ -420,10 +402,10 @@ describe('SpOidcClient', () => {
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const keyResult = async () => {
           const key = await spOidcClientCache.retrievePublicKeysFromNdi()
           return key
@@ -443,10 +425,10 @@ describe('SpOidcClient', () => {
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const keyResult = async () => {
           const key = await spOidcClientCache.retrievePublicKeysFromNdi()
           return key
@@ -466,10 +448,10 @@ describe('SpOidcClient', () => {
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const keyResult = async () => {
           const key = await spOidcClientCache.retrievePublicKeysFromNdi()
           return key
@@ -490,10 +472,10 @@ describe('SpOidcClient', () => {
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const keyResult = await spOidcClientCache.retrievePublicKeysFromNdi()
 
         // Assert
@@ -517,7 +499,7 @@ describe('SpOidcClient', () => {
 
         Issuer.discover = jest
           .fn()
-          .mockResolvedValue(mockIssuer as unknown as Issuer<BaseClient>)
+          .mockResolvedValueOnce(mockIssuer as unknown as Issuer<BaseClient>)
 
         const discoverySpy = jest.spyOn(Issuer, 'discover')
         const clientSpy = jest.spyOn(mockIssuer, 'Client')
@@ -525,10 +507,10 @@ describe('SpOidcClient', () => {
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const clientResult = await spOidcClientCache.retrieveBaseClientFromNdi()
 
         // Assert
@@ -561,7 +543,7 @@ describe('SpOidcClient', () => {
           .fn()
           .mockRejectedValueOnce(new Error())
           .mockRejectedValueOnce(new Error())
-          .mockResolvedValue(mockIssuer as unknown as Issuer<BaseClient>)
+          .mockResolvedValueOnce(mockIssuer as unknown as Issuer<BaseClient>)
 
         const discoverySpy = jest.spyOn(Issuer, 'discover')
         const clientSpy = jest.spyOn(mockIssuer, 'Client')
@@ -569,10 +551,10 @@ describe('SpOidcClient', () => {
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const clientResult = await spOidcClientCache.retrieveBaseClientFromNdi()
 
         // Assert
@@ -591,16 +573,18 @@ describe('SpOidcClient', () => {
 
       it('should call the NDI Discovery endpoint and not retry more than 2 more times if it fails', async () => {
         // Arrange
-        Issuer.discover = jest.fn().mockRejectedValue(new Error('Failed'))
-
-        const discoverySpy = jest.spyOn(Issuer, 'discover')
+        const discoverySpy = jest
+          .spyOn(Issuer, 'discover')
+          .mockRejectedValueOnce(new Error('Failed'))
+          .mockRejectedValueOnce(new Error('Failed'))
+          .mockRejectedValueOnce(new Error('Failed'))
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'refresh')
-          .mockResolvedValue('ok' as unknown as Refresh)
+          .mockResolvedValueOnce('ok' as unknown as Refresh)
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         const clientResult = async () => {
           const result = await spOidcClientCache.retrieveBaseClientFromNdi()
           return result
@@ -616,7 +600,7 @@ describe('SpOidcClient', () => {
         // Arrange
         const retrieveKeysSpy = jest
           .spyOn(SpOidcClientCache.prototype, 'retrievePublicKeysFromNdi')
-          .mockResolvedValueOnce('keys' as unknown as CryptoKeySet)
+          .mockResolvedValueOnce('keys' as unknown as CryptoKeys)
 
         const retrieveBaseClientSpy = jest
           .spyOn(SpOidcClientCache.prototype, 'retrieveBaseClientFromNdi')
@@ -632,7 +616,7 @@ describe('SpOidcClient', () => {
         }
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         await Promise.resolve() // void refresh after instantiation
         const result = await spOidcClientCache.refresh()
 
@@ -647,7 +631,7 @@ describe('SpOidcClient', () => {
         // Arrange
         jest
           .spyOn(SpOidcClientCache.prototype, 'retrievePublicKeysFromNdi')
-          .mockResolvedValueOnce('keys' as unknown as CryptoKeySet)
+          .mockResolvedValueOnce('keys' as unknown as CryptoKeys)
 
         jest
           .spyOn(SpOidcClientCache.prototype, 'retrieveBaseClientFromNdi')
@@ -657,29 +641,60 @@ describe('SpOidcClient', () => {
           .spyOn(SpOidcClientCache.prototype, 'refresh')
           .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-        const setSpy = jest.spyOn(SpOidcClientCache.prototype, 'set')
+        const setSpy = jest.spyOn(NodeCache.prototype, 'set')
 
         // Act
-        const spOidcClientCache = new SpOidcClientCache(config)
+        const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
         await Promise.resolve() // void refresh after instantiation
         await spOidcClientCache.refresh()
 
-        const keysTtl = spOidcClientCache.getTtl('ndiPublicKeys') || 0
-        const clientTtl = spOidcClientCache.getTtl('baseClient') || 0
-        const expiryTtl = spOidcClientCache.getTtl('expiry') || 0
+        const keysTtl = spOidcClientCache._cache.getTtl('ndiPublicKeys')
+        const clientTtl = spOidcClientCache._cache.getTtl('baseClient')
+        const expiryTtl = spOidcClientCache._cache.getTtl('expiry') || 0
 
         // Assert
         expect(setSpy).toBeCalledTimes(3)
-        expect(setSpy).toHaveBeenCalledWith('ndiPublicKeys', 'keys', 3600)
-        expect(setSpy).toHaveBeenCalledWith('baseClient', 'baseClient', 3600)
-        expect(setSpy).toHaveBeenLastCalledWith('expiry', 'expiry', 3300)
-        expect(spOidcClientCache.get('ndiPublicKeys')).toBe('keys')
-        expect(spOidcClientCache.get('baseClient')).toBe('baseClient')
-        expect(spOidcClientCache.get('expiry')).toBe('expiry')
-        expect(Date.now() + 3600 * 1000 - keysTtl).toBeLessThan(100) // not more than 100ms difference
-        expect(Date.now() + 3600 * 1000 - clientTtl).toBeLessThan(100)
-        expect(Date.now() + 3300 * 1000 - expiryTtl).toBeLessThan(100)
+        expect(setSpy).toHaveBeenCalledWith('ndiPublicKeys', 'keys')
+        expect(setSpy).toHaveBeenCalledWith('baseClient', 'baseClient')
+        expect(setSpy).toHaveBeenLastCalledWith('expiry', 'expiry', 3600)
+        expect(spOidcClientCache._cache.get('ndiPublicKeys')).toBe('keys')
+        expect(spOidcClientCache._cache.get('baseClient')).toBe('baseClient')
+        expect(spOidcClientCache._cache.get('expiry')).toBe('expiry')
+        expect(keysTtl).toBe(0)
+        expect(clientTtl).toBe(0)
+        expect(Date.now() + 3300 * 1000 - expiryTtl).toBeLessThan(100) // not more than 100ms difference
       })
+    })
+  })
+})
+
+describe('SpOidcClient class', () => {
+  const spOidcClientConfig: SpOidcClientConstructorParams = {
+    spOidcNdiDiscoveryEndpoint: SP_OIDC_NDI_DISCOVERY_ENDPOINT,
+    spOidcNdiJwksEndpoint: SP_OIDC_NDI_JWKS_ENDPOINT,
+    spOidcRpClientId: SP_OIDC_RP_CLIENT_ID,
+    spOidcRpRedirectUrl: SP_OIDC_RP_REDIRECT_URL,
+    spOidcRpSecretJwks: TEST_RP_SECRET_JWKS,
+    spOidcRpPublicJwks: TEST_RP_PUBLIC_JWKS,
+  }
+
+  describe('Constructor', () => {
+    it('should correctly call the SpOidcClient constructor', () => {
+      // Arrange
+      const constructorSpy = jest
+        .spyOn(SpOidcClientClasses, 'SpOidcClient')
+        .mockReturnValueOnce(undefined as unknown as SpOidcClient)
+
+      // Act
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      // Assert
+      expect(spOidcClient).toBeInstanceOf(SpOidcClient)
+      expect(constructorSpy).toHaveBeenCalledOnce()
+    })
+
+    it('should call the SpOidcClientCache constructor', async () => {
+      expect(1).toBe(1)
     })
   })
 })
