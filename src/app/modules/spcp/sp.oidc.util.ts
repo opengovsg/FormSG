@@ -20,7 +20,7 @@ const logger = createLoggerWithLabel(module)
  * @returns promise with 3 attempts
  */
 export const retryPromiseThreeAttempts = <T>(
-  promise: Promise<T>,
+  promiseFn: () => Promise<T>,
   promiseName: string,
 ): Promise<T> => {
   return promiseRetry(
@@ -34,7 +34,7 @@ export const retryPromiseThreeAttempts = <T>(
         },
       })
       try {
-        const result = await promise
+        const result = await promiseFn()
         logger.info({
           message: 'Promise resolved',
           meta: {
@@ -76,7 +76,7 @@ export const retryPromiseThreeAttempts = <T>(
  * @returns promise with unlimited attempts
  */
 export const retryPromiseForever = <T>(
-  promise: Promise<T>,
+  promiseFn: () => Promise<T>,
   promiseName: string,
 ): Promise<T> => {
   return promiseRetry(
@@ -90,7 +90,7 @@ export const retryPromiseForever = <T>(
         },
       })
       try {
-        const result = await promise
+        const result = await promiseFn()
         logger.info({
           message: 'Promise resolved',
           meta: {

@@ -156,10 +156,11 @@ export class SpOidcClientCache {
    */
   async createRefreshPromise(): Promise<Refresh> {
     const [ndiPublicKeys, baseClient] = await retryPromiseForever(
-      Promise.all([
-        this.retrievePublicKeysFromNdi(),
-        this.retrieveBaseClientFromNdi(),
-      ]),
+      () =>
+        Promise.all([
+          this.retrievePublicKeysFromNdi(),
+          this.retrieveBaseClientFromNdi(),
+        ]),
       `Promise.all([this.retrievePublicKeysFromNdi(), this.retrieveBaseClientFromNdi()])`,
     )
 
@@ -196,7 +197,7 @@ export class SpOidcClientCache {
    */
   async retrievePublicKeysFromNdi(): Promise<CryptoKeys> {
     const getJwksWithRetries = retryPromiseThreeAttempts(
-      axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint),
+      () => axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint),
       `axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint)`,
     )
 
@@ -224,7 +225,7 @@ export class SpOidcClientCache {
    */
   async retrieveBaseClientFromNdi(): Promise<BaseClient> {
     const getIssuerWithRetries = retryPromiseThreeAttempts(
-      Issuer.discover(this.#spOidcNdiDiscoveryEndpoint),
+      () => Issuer.discover(this.#spOidcNdiDiscoveryEndpoint),
       `axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint)`,
     )
 
