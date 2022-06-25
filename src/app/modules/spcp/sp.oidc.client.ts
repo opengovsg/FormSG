@@ -65,12 +65,20 @@ export class SpOidcClientCache {
    */
   _cache: NodeCache
 
+  /**
+   * Stores the refresh promise so that there is at most
+   * one in-flight refresh at any point in time.
+   * Stored promise is always pending
+   * @private
+   * accessible only for testing
+   */
+  _refreshPromise?: Promise<Refresh>
+
   #spOidcNdiDiscoveryEndpoint: string
   #spOidcNdiJwksEndpoint: string
   #spOidcRpClientId: string
   #spOidcRpRedirectUrl: string
   #spOidcRpSecretJwks: SecretJwks
-  #refreshPromise?: Promise<Refresh> // Stores the refresh promise so that there is at most one in-flight refresh at any point in time. Stored promise is always pending
 
   /**
    * Constructor for cache
@@ -184,14 +192,14 @@ export class SpOidcClientCache {
    */
   async refresh(): Promise<Refresh> {
     // If promise does not exist, create and store the promise
-    if (!this.#refreshPromise) {
-      this.#refreshPromise = this.createRefreshPromise().finally(() => {
-        this.#refreshPromise = undefined // Clean up once promise is fulfilled
+    if (!this._refreshPromise) {
+      this._refreshPromise = this.createRefreshPromise().finally(() => {
+        this._refreshPromise = undefined // Clean up once promise is fulfilled
       })
     }
 
     // Return the refresh promise
-    return this.#refreshPromise
+    return this._refreshPromise
   }
 
   /**
