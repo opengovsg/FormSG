@@ -234,7 +234,7 @@ export class SpOidcClient {
     const possibleVerificationKeys = keys.filter((key) => key.kid === kid)
     if (possibleVerificationKeys.length === 0) {
       return new GetVerificationKeyError(
-        'getVerificationKey failed, no decryption key matches jws kid',
+        'getVerificationKey failed, no verification key matches jws kid',
       )
     }
     const verificationKey = possibleVerificationKeys[0].key
@@ -255,6 +255,10 @@ export class SpOidcClient {
   async exchangeAuthCodeAndDecodeVerifyToken(
     authCode: string,
   ): Promise<JWTVerifyResult> {
+    if (!authCode) {
+      throw new ExchangeAuthTokenError('empty authCode')
+    }
+
     const baseClient = await this.getBaseClientFromCache()
 
     try {
