@@ -24,7 +24,6 @@ import {
 
 jest.mock('openid-client')
 jest.mock('axios')
-jest.mock('jose')
 
 const TEST_RP_PUBLIC_JWKS: PublicJwks = JSON.parse(
   fs.readFileSync('tests/certs/test_rp_public_jwks.json').toString(),
@@ -781,6 +780,60 @@ describe('SpOidcClient', () => {
   })
 
   describe('exchangeAuthCodeAndDecodeVerifyToken', () => {
+    const MOCK_SUB_CLAIM = 'nric=S1234567A'
+    const createMockJws = async () => {
+      const MOCK_JWS = await new jose.SignJWT({})
+        .setSubject(MOCK_SUB_CLAIM)
+        .setProtectedHeader({
+          alg: 'ES512',
+          kid: TEST_NDI_SECRET_JWKS.keys.find((key) => key.use === 'sig')?.kid,
+        })
+        .sign(
+          createPrivateKey(
+            jwkToPem(
+              TEST_NDI_SECRET_JWKS.keys.find(
+                (key) => key.use === 'sig',
+              ) as unknown as jwkToPem.ECPrivate,
+              { private: true },
+            ),
+          ),
+        )
+      return MOCK_JWS
+    }
+
+    const createMockJwe = async () => {
+      const MOCK_JWS = await createMockJws()
+      const MOCK_JWE = await new jose.CompactEncrypt(
+        new TextEncoder().encode(MOCK_JWS),
+      )
+        .setProtectedHeader({
+          alg: 'ECDH-ES+A256KW',
+          enc: 'A256CBC-HS512',
+          kid: TEST_RP_PUBLIC_JWKS.keys.find((key) => key.use === 'enc')?.kid,
+        })
+        .encrypt(
+          createPublicKey(
+            jwkToPem(
+              TEST_RP_PUBLIC_JWKS.keys.find(
+                (key) => key.use === 'enc',
+              ) as unknown as jwkToPem.EC,
+            ),
+          ),
+        )
+
+      return MOCK_JWE
+    }
+
+    const NDI_KEYS = TEST_NDI_PUBLIC_JWKS.keys.map((jwk) => {
+      return {
+        kid: jwk.kid,
+        use: jwk.use,
+        // Conversion to pem is necessary because in node 14, crypto does not support import of JWK directly
+        // TODO (#4021): load JWK directly after node upgrade
+        key: createPublicKey(jwkToPem(jwk as jwkToPem.EC)),
+      }
+    })
+
     it('should throw ExchangeAuthTokenError if authCode is empty and NOT call refresh', async () => {
       // Arrange
       const refreshSpy = jest
@@ -802,6 +855,361 @@ describe('SpOidcClient', () => {
       )
       await expect(tryExchangeAuthCode).rejects.toThrowError('empty authCode')
       expect(refreshSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should throw an error if failed to retrieve baseClient from cache and NOT call refresh', async () => {
+      // Arrange
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockRejectedValueOnce(new Error('failed'))
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError('failed')
+      expect(refreshSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should throw an error if exchange at token endpoint fails and call refresh', async () => {
+      // Arrange
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('grant failed'))
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError('grant failed')
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should throw a MissingIdTokenError if tokenSet does not contain idToken and call refresh', async () => {
+      // Arrange
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({})
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        MissingIdTokenError,
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should throw a MissingIdTokenError if tokenSet contains empty idToken and call refresh', async () => {
+      // Arrange
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: '' })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        MissingIdTokenError,
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should return the correct payload containing the nric sub if idToken is valid', async () => {
+      // Arrange
+
+      const MOCK_JWE = await createMockJwe()
+
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getNdiPublicKeysFromCache')
+        .mockResolvedValueOnce(NDI_KEYS)
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = await spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
+        MOCK_AUTHCODE,
+      )
+
+      // Assert
+      expect(result.payload.sub).toBeDefined()
+      expect(result.payload.sub).toBe(MOCK_SUB_CLAIM)
+    })
+
+    it('should throw a GetDecryptionKeyError if fails to obtain the correct decryption key and call refresh', async () => {
+      // Arrange
+
+      const MOCK_JWE = await createMockJwe()
+
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getDecryptionKey')
+        .mockReturnValueOnce(new GetDecryptionKeyError())
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        GetDecryptionKeyError,
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should throw a GetDecryptionKeyError if decryption fails and call refresh', async () => {
+      // Arrange
+
+      const MOCK_JWE = await createMockJwe()
+
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getDecryptionKey')
+        .mockReturnValueOnce(new GetDecryptionKeyError())
+
+      jest
+        .spyOn(jose, 'compactDecrypt')
+        .mockRejectedValueOnce(new Error('decrypt failed'))
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        GetDecryptionKeyError,
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should throw an ExchangeAuthTokenError if fails to retrieve NDI public keys from cache and call refresh', async () => {
+      // Arrange
+
+      const MOCK_JWE = await createMockJwe()
+
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getNdiPublicKeysFromCache')
+        .mockRejectedValueOnce('getNdiKeysfailed')
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        ExchangeAuthTokenError,
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should throw an GetVerificationKeyError if fails to get verification key and call refresh', async () => {
+      // Arrange
+
+      const MOCK_JWE = await createMockJwe()
+
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getNdiPublicKeysFromCache')
+        .mockResolvedValueOnce(NDI_KEYS)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getVerificationKey')
+        .mockReturnValueOnce(new GetVerificationKeyError())
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        GetVerificationKeyError,
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should throw an error if fails to verify id token and call refresh', async () => {
+      // Arrange
+
+      const MOCK_JWE = await createMockJwe()
+
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getNdiPublicKeysFromCache')
+        .mockResolvedValueOnce(NDI_KEYS)
+
+      jest
+        .spyOn(jose, 'jwtVerify')
+        .mockRejectedValueOnce(new Error('verify jwt failed'))
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        'verify jwt failed',
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
   })
 })
