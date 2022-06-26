@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { createPrivateKey, createPublicKey, KeyObject } from 'crypto'
 import {
   compactDecrypt,
@@ -9,12 +8,10 @@ import {
   SignJWT,
 } from 'jose'
 import jwkToPem from 'jwk-to-pem'
-import NodeCache from 'node-cache'
-import { BaseClient, Issuer } from 'openid-client'
+import { BaseClient } from 'openid-client'
 import { ulid } from 'ulid'
 
-import { createLoggerWithLabel } from '../../config/logger'
-
+import { SpOidcClientCache } from './sp.oidc.client.cache'
 import {
   CreateAuthorisationUrlError,
   CreateJwtError,
@@ -28,11 +25,7 @@ import {
 } from './sp.oidc.client.errors'
 import {
   CryptoKeys,
-  PublicJwks,
-  Refresh,
-  SecretJwks,
   SigningKey,
-  SpOidcClientCacheConstructorParams,
   SpOidcClientConstructorParams,
 } from './sp.oidc.client.types'
 import {
@@ -41,222 +34,7 @@ import {
   isECPrivate,
   isSigningKey,
   parseSub,
-  retryPromiseForever,
-  retryPromiseThreeAttempts,
 } from './sp.oidc.util'
-
-// Name of keys in cache
-const BASE_CLIENT_NAME = 'baseClient'
-const NDI_PUBLIC_KEY_NAME = 'ndiPublicKeys'
-const EXPIRY_NAME = 'expiry'
-
-const logger = createLoggerWithLabel(module)
-
-/**
- * Cache class which provides read-through capability and refresh-ahead before expiry
- * Handles discovery and retrieval of NDI's public jwks
- * Exported for testing
- */
-export class SpOidcClientCache {
-  /**
-   * Cache to store NDI's keys and client
-   * @private
-   * accessible only for testing
-   */
-  _cache: NodeCache
-
-  /**
-   * Stores the refresh promise so that there is at most
-   * one in-flight refresh at any point in time.
-   * Stored promise is always pending
-   * @private
-   * accessible only for testing
-   */
-  _refreshPromise?: Promise<Refresh>
-
-  #spOidcNdiDiscoveryEndpoint: string
-  #spOidcNdiJwksEndpoint: string
-  #spOidcRpClientId: string
-  #spOidcRpRedirectUrl: string
-  #spOidcRpSecretJwks: SecretJwks
-
-  /**
-   * Constructor for cache
-   * On instantiation, trigger a refresh to populate the cache
-   */
-  constructor({
-    options,
-    spOidcNdiDiscoveryEndpoint,
-    spOidcNdiJwksEndpoint,
-    spOidcRpClientId,
-    spOidcRpRedirectUrl,
-    spOidcRpSecretJwks,
-  }: SpOidcClientCacheConstructorParams) {
-    this.#spOidcNdiDiscoveryEndpoint = spOidcNdiDiscoveryEndpoint
-    this.#spOidcNdiJwksEndpoint = spOidcNdiJwksEndpoint
-    this.#spOidcRpClientId = spOidcRpClientId
-    this.#spOidcRpRedirectUrl = spOidcRpRedirectUrl
-    this.#spOidcRpSecretJwks = spOidcRpSecretJwks
-    this._cache = new NodeCache(options)
-
-    // On expiry, refresh cache. If fail to refresh, log but do not throw error.
-    this._cache.on('expired', () =>
-      this.refresh().catch((err) =>
-        logger.warn({
-          message: 'Attempted but failed to refresh sp oidc cache on expiry',
-          meta: {
-            action: 'refresh',
-          },
-          error: err,
-        }),
-      ),
-    )
-
-    // Trigger refresh on instantiation to populate cache. If fail to refresh, log but do not throw error.
-    void this.refresh().catch((err) =>
-      logger.warn({
-        message:
-          'Attempted but failed to refresh sp oidc cache on instantiation',
-        meta: {
-          action: 'refresh',
-        },
-        error: err,
-      }),
-    )
-  }
-
-  /**
-   * Method to retrieve NDI's public keys from cache
-   * @async
-   * @returns NDI's public keys
-   * @throws error if refresh fails
-   */
-  async getNdiPublicKeys(): Promise<CryptoKeys> {
-    const ndiPublicKeys = this._cache.get<CryptoKeys>(NDI_PUBLIC_KEY_NAME)
-    if (!ndiPublicKeys) {
-      const { ndiPublicKeys } = await this.refresh()
-      return ndiPublicKeys
-    }
-    return ndiPublicKeys
-  }
-
-  /**
-   * Method to retrieve base client from cache
-   * Triggers a refresh
-   * @async
-   * @returns Base client
-   * @throws error if refresh fails
-   */
-  async getBaseClient(): Promise<BaseClient> {
-    const baseClient = this._cache.get<BaseClient>(BASE_CLIENT_NAME)
-    if (!baseClient) {
-      const { baseClient } = await this.refresh()
-      return baseClient
-    }
-    return baseClient
-  }
-
-  /**
-   * Method to create a promise to fetch NDI's public keys and
-   * discover the well known endpoint to construct the base client,
-   * and store NDI's public key and base client in cache
-   * Sets `expiry` key in cache with TTL of 1hour to attempt refresh ahead
-   * Will retry infinite number of times until success, with each retry consisting of
-   * at most 3 back-to-back attempts (retryPromiseThreeAttempts), and
-   * 10s between each retry
-   * @returns object {ndiPublicKeys, baseClient}
-   * @async
-   * @throws error if retrievePublicKeysFromNdi or retrieveBaseClientFromNdi fails
-   */
-  async createRefreshPromise(): Promise<Refresh> {
-    const [ndiPublicKeys, baseClient] = await retryPromiseForever(
-      () =>
-        Promise.all([
-          this.retrievePublicKeysFromNdi(),
-          this.retrieveBaseClientFromNdi(),
-        ]),
-      `Promise.all([this.retrievePublicKeysFromNdi(), this.retrieveBaseClientFromNdi()])`,
-    )
-
-    this._cache.set(NDI_PUBLIC_KEY_NAME, ndiPublicKeys) // No TTL - key will be kept forever until refresh is successful on expiry of EXPIRY_NAME key
-    this._cache.set(BASE_CLIENT_NAME, baseClient) // No TTL - key will be kept forever until refresh is successful on expiry of EXPIRY_NAME key
-    this._cache.set(EXPIRY_NAME, 'expiry', 3600) // set expiry key with TTL of 1 hour, to trigger refresh ahead (note that expiry check is done every 60s)
-    return { ndiPublicKeys, baseClient }
-  }
-
-  /**
-   * Returns stored refresh promise if it exists and is pending, or else
-   * calls createRefreshPromise(), saves the refresh promise and returns it
-   * @returns object {ndiPublicKeys, baseClient}
-   * @async
-   */
-  async refresh(): Promise<Refresh> {
-    // If promise does not exist, create and store the promise
-    if (!this._refreshPromise) {
-      this._refreshPromise = this.createRefreshPromise().finally(() => {
-        this._refreshPromise = undefined // Clean up once promise is fulfilled
-      })
-    }
-
-    // Return the refresh promise
-    return this._refreshPromise
-  }
-
-  /**
-   * Method to make network call to retrieve public JWKS from NDI
-   * Max of 3 back-to-back attemps with timeout of 3s per attempt as per NDI specs
-   * @async
-   * @returns NDI's public keys
-   * @throws JwkError if keys are not the correct shape
-   */
-  async retrievePublicKeysFromNdi(): Promise<CryptoKeys> {
-    const getJwksWithRetries = retryPromiseThreeAttempts(
-      () => axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint),
-      `axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint)`,
-    )
-
-    const { data: spOidcNdiPublicJwks } = await getJwksWithRetries
-
-    return spOidcNdiPublicJwks.keys.map((jwk) => {
-      if (!isEC(jwk) || !jwk.kid || !jwk.use) {
-        throw new JwkError()
-      }
-      return {
-        kid: jwk.kid,
-        use: jwk.use,
-        // Conversion to pem is necessary because in node 14, crypto does not support import of JWK directly
-        // TODO (#4021): load JWK directly after node upgrade
-        key: createPublicKey(jwkToPem(jwk)),
-      }
-    })
-  }
-
-  /**
-   * Method to make network call to NDI's discovery endpoint and construct the base client
-   * Max of 3 back-to-back attemps with timeout of 3s per attempt as per NDI specs
-   * @async
-   * @returns Base client
-   */
-  async retrieveBaseClientFromNdi(): Promise<BaseClient> {
-    const getIssuerWithRetries = retryPromiseThreeAttempts(
-      () => Issuer.discover(this.#spOidcNdiDiscoveryEndpoint),
-      `axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint)`,
-    )
-
-    const issuer = await getIssuerWithRetries
-
-    const baseClient = new issuer.Client(
-      {
-        client_id: this.#spOidcRpClientId,
-        token_endpoint_auth_method: 'private_key_jwt',
-        redirect_uris: [this.#spOidcRpRedirectUrl],
-      },
-      this.#spOidcRpSecretJwks,
-    )
-
-    return baseClient
-  }
-}
 
 /**
  * Wrapper around the openid-client library to carry out authentication related tasks with Singpass NDI,
@@ -265,8 +43,13 @@ export class SpOidcClientCache {
 export class SpOidcClient {
   #spOidcRpSecretKeys: CryptoKeys
   #spOidcRpPublicKeys: CryptoKeys
-  #spOidcClientCache: SpOidcClientCache
   #spOidcRpRedirectUrl: string
+
+  /**
+   * @private
+   * accessible only for testing
+   */
+  _spOidcClientCache: SpOidcClientCache
 
   /**
    * Constructor for client
@@ -281,7 +64,7 @@ export class SpOidcClient {
     spOidcRpSecretJwks,
     spOidcRpPublicJwks,
   }: SpOidcClientConstructorParams) {
-    this.#spOidcClientCache = new SpOidcClientCache({
+    this._spOidcClientCache = new SpOidcClientCache({
       spOidcNdiDiscoveryEndpoint,
       spOidcNdiJwksEndpoint,
       spOidcRpClientId,
@@ -342,18 +125,20 @@ export class SpOidcClient {
    * Method to retrieve NDI's public keys from cache
    * @async
    * @returns NDI's Public Key
+   * @throws error if this._spOidcClientCache.getNdiPublicKeys() rejects
    */
   async getNdiPublicKeysFromCache(): Promise<CryptoKeys> {
-    return this.#spOidcClientCache.getNdiPublicKeys()
+    return this._spOidcClientCache.getNdiPublicKeys()
   }
 
   /**
    * Method to retrieve baseClient from cache
    * @async
    * @returns baseClient from discovery of NDI's discovery endpoint
+   * @throws error if this._spOidcClientCache.getBaseClient() rejects
    */
   async getBaseClientFromCache(): Promise<BaseClient> {
-    return this.#spOidcClientCache.getBaseClient()
+    return this._spOidcClientCache.getBaseClient()
   }
 
   /**
@@ -529,7 +314,7 @@ export class SpOidcClient {
       // If any error in the exchange, trigger refresh of cache. Possible sources of failure are:
       // NDI changed /token endpoint url, hence need to rediscover well-known endpoint
       // NDI changed the signing keys without broadcasting both old and new keys for the 1h cache duration, hence need to refetch keys
-      void this.#spOidcClientCache.refresh()
+      void this._spOidcClientCache.refresh()
       if (err instanceof Error) {
         throw err
       } else {
