@@ -75,15 +75,12 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   if (!fieldToEdit) return null
 
   return (
-    <BuilderDrawerContainer
-      title={basicFieldText}
-      content={
-        <MemoFieldDrawerContent
-          field={fieldToEdit}
-          key={`${fieldIndex}-${numFields}`}
-        />
-      }
-    />
+    <BuilderDrawerContainer title={basicFieldText}>
+      <MemoFieldDrawerContent
+        field={fieldToEdit}
+        key={`${fieldIndex}-${numFields}`}
+      />
+    </BuilderDrawerContainer>
   )
 }
 
