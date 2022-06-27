@@ -1,5 +1,4 @@
 import {
-  ButtonGroup,
   ModalBody,
   ModalFooter,
   ModalHeader,
@@ -7,6 +6,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import { usePrompt } from '~hooks/usePrompt'
 import Button from '~components/Button'
 
@@ -23,6 +23,8 @@ export const ProgressModalContent = ({
   isDownloading,
   onClose,
 }: ProgressModalContentProps): JSX.Element => {
+  const isMobile = useIsMobile()
+
   usePrompt(
     'Are you sure you want to navigate away from this page? Navigating away from this page will stop the download.',
     isDownloading,
@@ -39,11 +41,9 @@ export const ProgressModalContent = ({
         <Progress size="xl" value={downloadPercentage} hasStripe isAnimated />
       </ModalBody>
       <ModalFooter>
-        <ButtonGroup>
-          <Button colorScheme="danger" onClick={onClose}>
-            Stop download
-          </Button>
-        </ButtonGroup>
+        <Button colorScheme="danger" onClick={onClose} isFullWidth={isMobile}>
+          Stop download
+        </Button>
       </ModalFooter>
     </>
   )

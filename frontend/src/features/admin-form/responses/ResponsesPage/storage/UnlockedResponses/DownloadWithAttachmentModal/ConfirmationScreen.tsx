@@ -2,7 +2,6 @@ import { BiCheck } from 'react-icons/bi'
 import {
   Badge,
   Button,
-  ButtonGroup,
   List,
   ListIcon,
   ListItem,
@@ -14,6 +13,7 @@ import {
   Wrap,
 } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
 
@@ -41,6 +41,8 @@ export const ConfirmationScreen = ({
   onDownload,
   responsesCount,
 }: ConfirmationScreenProps): JSX.Element => {
+  const isMobile = useIsMobile()
+
   return (
     <>
       <ModalCloseButton />
@@ -85,8 +87,20 @@ export const ConfirmationScreen = ({
         </Stack>
       </ModalBody>
       <ModalFooter>
-        <ButtonGroup>
+        <Stack
+          direction={{ base: 'column', md: 'row-reverse' }}
+          w="100%"
+          justify="end"
+        >
           <Button
+            isFullWidth={isMobile}
+            onClick={onDownload}
+            isLoading={isDownloading}
+          >
+            Start download
+          </Button>
+          <Button
+            isFullWidth={isMobile}
             variant="clear"
             colorScheme="secondary"
             onClick={onCancel}
@@ -94,10 +108,7 @@ export const ConfirmationScreen = ({
           >
             Cancel
           </Button>
-          <Button onClick={onDownload} isLoading={isDownloading}>
-            Start download
-          </Button>
-        </ButtonGroup>
+        </Stack>
       </ModalFooter>
     </>
   )
