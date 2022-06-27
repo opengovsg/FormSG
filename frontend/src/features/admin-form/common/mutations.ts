@@ -12,6 +12,16 @@ import { ROOT_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 
+import {
+  SubmitEmailFormArgs,
+  SubmitStorageFormArgs,
+} from '~features/public-form/PublicFormService'
+
+import {
+  submitEmailModeForm,
+  submitStorageModeForm,
+} from '../common/AdminViewFormService'
+
 import { permissionsToRole } from './components/CollaboratorModal/utils'
 import {
   removeSelfFromFormCollaborators,
@@ -294,5 +304,24 @@ export const useMutateCollaborators = () => {
     mutateRemoveCollaborator,
     mutateTransferFormOwnership,
     mutateRemoveSelf,
+  }
+}
+
+export const usePreviewFormMutations = (formId: string) => {
+  const submitEmailModeFormMutation = useMutation(
+    (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
+      return submitEmailModeForm({ ...args, formId })
+    },
+  )
+
+  const submitStorageModeFormMutation = useMutation(
+    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+      return submitStorageModeForm({ ...args, formId })
+    },
+  )
+
+  return {
+    submitEmailModeFormMutation,
+    submitStorageModeFormMutation,
   }
 }
