@@ -5,16 +5,22 @@ import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 
 import { CreateOrRenameWorkspaceModal } from '../WorkspaceModals/CreateOrRenameWorkspaceModal'
+import { DeleteWorkspaceModal } from '../WorkspaceModals/DeleteWorkspaceModal'
 
 export const WorkspaceEditDropdown = (): JSX.Element => {
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const renameModal = useDisclosure()
+  const deleteModal = useDisclosure()
 
   return (
     <>
       <CreateOrRenameWorkspaceModal
-        onClose={onClose}
-        isOpen={isOpen}
+        onClose={renameModal.onClose}
+        isOpen={renameModal.isOpen}
         isCreatingWorkspace={false}
+      />
+      <DeleteWorkspaceModal
+        onClose={deleteModal.onClose}
+        isOpen={deleteModal.isOpen}
       />
 
       <Menu placement="bottom-start">
@@ -30,8 +36,10 @@ export const WorkspaceEditDropdown = (): JSX.Element => {
               colorScheme="secondary"
             />
             <Menu.List>
-              <Menu.Item onClick={onOpen}>Rename workspace</Menu.Item>
-              <Menu.Item onClick={() => console.log('Click')}>
+              <Menu.Item onClick={renameModal.onOpen}>
+                Rename workspace
+              </Menu.Item>
+              <Menu.Item onClick={deleteModal.onOpen}>
                 Delete workspace
               </Menu.Item>
             </Menu.List>

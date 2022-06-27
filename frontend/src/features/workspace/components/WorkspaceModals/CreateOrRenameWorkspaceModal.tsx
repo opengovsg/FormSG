@@ -18,7 +18,7 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 
-type CreateWorkspaceInputProps = {
+type CreateOrRenameWorkspaceInputProps = {
   title: string
 }
 
@@ -37,7 +37,7 @@ export const CreateOrRenameWorkspaceModal = ({
     handleSubmit,
     formState: { errors },
     register,
-  } = useForm<CreateWorkspaceInputProps>({
+  } = useForm<CreateOrRenameWorkspaceInputProps>({
     defaultValues: {
       title: '',
     },
