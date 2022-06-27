@@ -9,7 +9,11 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { FeedbackFormInput } from './components/FeedbackBlock'
 import { FormEndPage } from './FormEndPage'
 
-export const FormEndPageContainer = (): JSX.Element | null => {
+export const FormEndPageContainer = ({
+  isPreview,
+}: {
+  isPreview?: boolean
+}): JSX.Element | null => {
   const { form, formId, submissionData } = usePublicFormContext()
   const { submitFormFeedbackMutation } = usePublicFormMutations(formId)
   const toast = useToast()
@@ -22,7 +26,7 @@ export const FormEndPageContainer = (): JSX.Element | null => {
   const handleSubmitFeedback = useCallback(
     (inputs: FeedbackFormInput) => {
       // no mutation required in preview-form mode
-      if (inputs.isPreview) {
+      if (isPreview) {
         toast({
           description: 'Thank you for submitting your feedback!',
           status: 'success',
