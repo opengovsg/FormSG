@@ -29,35 +29,16 @@ import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
 import { BuilderFields } from './BuilderFields'
 import { useBuilderFields } from './useBuilderFields'
 
-interface BuilderAndDesignContentProps {
+interface FormBuilderProps {
   placeholderProps: DndPlaceholderProps
 }
 
-export const BuilderAndDesignContent = ({
-  placeholderProps,
-}: BuilderAndDesignContentProps): JSX.Element => {
+const FormBuilder = ({ placeholderProps }: FormBuilderProps): JSX.Element => {
   const { builderFields } = useBuilderFields()
-  const { data: form } = useAdminForm()
   const { handleBuilderClick } = useCreatePageSidebar()
-  const {
-    stateData,
-    setEditEndPage,
-    setToInactive: setFieldsToInactive,
-  } = useBuilderAndDesignStore(
-    useCallback(
-      (state) => ({
-        stateData: stateDataSelector(state),
-        setToInactive: setToInactiveSelector(state),
-        setEditEndPage: setToEditEndPageSelector(state),
-      }),
-      [],
-    ),
-  )
-  const endPageData = useEndPageBuilderStore(endPageDataSelector)
+  const setEditEndPage = useBuilderAndDesignStore(setToEditEndPageSelector)
 
-  useEffect(() => setFieldsToInactive, [setFieldsToInactive])
-
-  const FormBuilder = (): JSX.Element => (
+  return (
     <Flex
       m={{ base: 0, md: '2rem' }}
       mb={0}
@@ -118,8 +99,13 @@ export const BuilderAndDesignContent = ({
       </Flex>
     </Flex>
   )
+}
 
-  const EndPageView = (): JSX.Element => (
+const EndPageView = (): JSX.Element => {
+  const { data: form } = useAdminForm()
+  const endPageData = useEndPageBuilderStore(endPageDataSelector)
+
+  return (
     <Flex
       m={{ base: 0, md: '2rem' }}
       mb={0}
@@ -131,7 +117,7 @@ export const BuilderAndDesignContent = ({
     >
       <Stack w="100%">
         <Flex justifyContent="center" pt="1rem" pb="0.5rem">
-          <Image src={form?.admin.agency.logo ?? ''} h="4rem" />
+          <Image src={form?.admin?.agency?.logo ?? ''} h="4rem" />
         </Flex>
         <Flex backgroundColor="primary.100" justifyContent="center">
           <ThankYouSvgr h="100%" pt="2.5rem" />
@@ -166,6 +152,26 @@ export const BuilderAndDesignContent = ({
       </Stack>
     </Flex>
   )
+}
+interface BuilderAndDesignContentProps {
+  placeholderProps: DndPlaceholderProps
+}
+
+export const BuilderAndDesignContent = ({
+  placeholderProps,
+}: BuilderAndDesignContentProps): JSX.Element => {
+  const { stateData, setToInactive: setFieldsToInactive } =
+    useBuilderAndDesignStore(
+      useCallback(
+        (state) => ({
+          stateData: stateDataSelector(state),
+          setToInactive: setToInactiveSelector(state),
+        }),
+        [],
+      ),
+    )
+
+  useEffect(() => setFieldsToInactive, [setFieldsToInactive])
 
   return (
     <>
@@ -173,7 +179,7 @@ export const BuilderAndDesignContent = ({
         {stateData.state === BuildFieldState.EditingEndPage ? (
           <EndPageView />
         ) : (
-          <FormBuilder />
+          <FormBuilder placeholderProps={placeholderProps} />
         )}
       </Flex>
     </>
