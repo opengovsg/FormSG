@@ -11,20 +11,14 @@ import { WorkspaceEditDropdown } from './WorkspaceEditDropdown'
 import { WorkspaceSortDropdown } from './WorkspaceSortDropdown'
 
 export interface WorkspaceHeaderProps {
-  /**
-   * Number of forms in the workspace.
-   * Defaults to '---' (to account for loading or error states)
-   */
-  totalFormCount?: number | '---'
   isLoading: boolean
   handleOpenCreateFormModal: () => void
 }
 
 /**
- * Header for listing number of forms, or updating the sort order of listed forms, etc.
+ * Header for editing workspace, or updating the sort order of listed forms, etc.
  */
 export const WorkspaceHeader = ({
-  totalFormCount = '---',
   isLoading,
   handleOpenCreateFormModal,
 }: WorkspaceHeaderProps): JSX.Element => {
