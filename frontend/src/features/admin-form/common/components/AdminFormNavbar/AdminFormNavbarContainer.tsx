@@ -54,7 +54,6 @@ const useAdminFormNavbar = () => {
   )
 
   const handlePreviewForm = useCallback((): void => {
-    console.log('preview form button clicked')
     navigate(`/${formId}/${ADMINFORM_PREVIEW_ROUTE}`)
   }, [navigate, formId])
 
