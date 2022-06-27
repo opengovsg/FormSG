@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { BiPlus } from 'react-icons/bi'
-import { Skeleton, Stack, Text } from '@chakra-ui/react'
+import { Flex, Stack, Text } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
 import { SortOption } from '~features/workspace/types'
 
+import { WorkspaceEditDropdown } from './WorkspaceEditDropdown'
 import { WorkspaceSortDropdown } from './WorkspaceSortDropdown'
 
 export interface WorkspaceHeaderProps {
@@ -37,15 +38,19 @@ export const WorkspaceHeader = ({
       align={{ base: 'flex-start', md: 'center' }}
       spacing="1rem"
     >
-      <Text
-        flex={1}
-        as="h2"
-        textStyle="h2"
-        display="flex"
-        color="secondary.500"
-      >
-        All forms (<Skeleton isLoaded={!isLoading}>{totalFormCount}</Skeleton>)
-      </Text>
+      <Flex alignItems="center">
+        <Text
+          flex={1}
+          as="h2"
+          textStyle="h2"
+          display="flex"
+          color="secondary.500"
+        >
+          All forms
+        </Text>
+        <WorkspaceEditDropdown />
+      </Flex>
+
       <Stack
         w={{ base: '100%', md: 'auto' }}
         spacing="1rem"
