@@ -1,5 +1,8 @@
+import { createPrivateKey, createPublicKey } from 'crypto'
 import fs from 'fs'
 import * as jose from 'jose'
+import { JWTVerifyResult } from 'jose'
+import jwkToPem from 'jwk-to-pem'
 import { omit } from 'lodash'
 import { BaseClient } from 'openid-client'
 
@@ -12,7 +15,9 @@ import {
   ExchangeAuthTokenError,
   GetDecryptionKeyError,
   GetVerificationKeyError,
+  InvalidIdTokenError,
   JwkError,
+  MissingIdTokenError,
 } from '../sp.oidc.client.errors'
 import {
   CryptoKeys,
@@ -32,12 +37,20 @@ const TEST_RP_SECRET_JWKS: SecretJwks = JSON.parse(
   fs.readFileSync('tests/certs/test_rp_secret_jwks.json').toString(),
 )
 
+const TEST_NDI_SECRET_JWKS: PublicJwks = JSON.parse(
+  fs.readFileSync('tests/certs/test_ndi_secret_jwks.json').toString(),
+)
+
+const TEST_NDI_PUBLIC_JWKS: PublicJwks = JSON.parse(
+  fs.readFileSync('tests/certs/test_ndi_public_jwks.json').toString(),
+)
+
 const SP_OIDC_NDI_DISCOVERY_ENDPOINT = 'spOidcNdiDiscoveryEndpoint'
 const SP_OIDC_NDI_JWKS_ENDPOINT = 'spOidcNdiJwksEndpoint'
 const SP_OIDC_RP_CLIENT_ID = 'spOidcRpClientId'
 const SP_OIDC_RP_REDIRECT_URL = 'spOidcRpRedirectUrl'
 
-describe('SpOidcClient', () => {
+describe('SpOidcClientCache', () => {
   afterEach(() => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
@@ -778,9 +791,8 @@ describe('SpOidcClient', () => {
       expect(result).toBe(MOCK_FIRST_KEY.key)
     })
   })
-
   describe('exchangeAuthCodeAndDecodeVerifyToken', () => {
-    const MOCK_SUB_CLAIM = 'nric=S1234567A'
+    const MOCK_SUB_CLAIM = 's=S1234567D'
     const createMockJws = async () => {
       const MOCK_JWS = await new jose.SignJWT({})
         .setSubject(MOCK_SUB_CLAIM)
@@ -1210,6 +1222,134 @@ describe('SpOidcClient', () => {
         'verify jwt failed',
       )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('extractNricFromIdToken', () => {
+    it('should return InvalidIdTokenError if sub attribute is missing in payload', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_IDTOKEN_MISSING_SUB = {
+        payload: {
+          something: 'else',
+        },
+      } as unknown as JWTVerifyResult
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = spOidcClient.extractNricFromIdToken(
+        MOCK_IDTOKEN_MISSING_SUB,
+      )
+
+      // Assert
+
+      expect(result).toBeInstanceOf(InvalidIdTokenError)
+    })
+
+    it('should return InvalidIdTokenError if parseSub fails', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_IDTOKEN_MALFORMED_SUB = {
+        payload: {
+          sub: 's=S1234567D,,something=else',
+        },
+      } as unknown as JWTVerifyResult
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = spOidcClient.extractNricFromIdToken(
+        MOCK_IDTOKEN_MALFORMED_SUB,
+      )
+
+      // Assert
+
+      expect(result).toBeInstanceOf(InvalidIdTokenError)
+    })
+
+    it('should return InvalidIdTokenError if sub does not contain nric', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_IDTOKEN_NONRIC = {
+        payload: {
+          sub: 'something=else,another=other',
+        },
+      } as unknown as JWTVerifyResult
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = spOidcClient.extractNricFromIdToken(MOCK_IDTOKEN_NONRIC)
+
+      // Assert
+
+      expect(result).toBeInstanceOf(InvalidIdTokenError)
+    })
+
+    it('should correctly return the first NRIC from sub when sub contains multiple key value pairs', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const FIRST_NRIC = 'S1234567D'
+      const MOCK_SUB_MULTIPLE = `s=${FIRST_NRIC},otherKey=otherValue,s=S9876543C`
+
+      const MOCK_ID_TOKEN = {
+        payload: { sub: MOCK_SUB_MULTIPLE },
+      } as unknown as JWTVerifyResult
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = spOidcClient.extractNricFromIdToken(MOCK_ID_TOKEN)
+
+      // Assert
+
+      expect(result).toBe(FIRST_NRIC)
+    })
+
+    it('should correctly return the NRIC from sub when sub contains only one key value pair', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const FIRST_NRIC = 'S1234567D'
+      const MOCK_SUB_MULTIPLE = `s=${FIRST_NRIC}`
+
+      const MOCK_ID_TOKEN = {
+        payload: { sub: MOCK_SUB_MULTIPLE },
+      } as unknown as JWTVerifyResult
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = spOidcClient.extractNricFromIdToken(MOCK_ID_TOKEN)
+
+      // Assert
+
+      expect(result).toBe(FIRST_NRIC)
     })
   })
 })

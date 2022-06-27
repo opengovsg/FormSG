@@ -41,7 +41,7 @@ const SP_OIDC_NDI_JWKS_ENDPOINT = 'spOidcNdiJwksEndpoint'
 const SP_OIDC_RP_CLIENT_ID = 'spOidcRpClientId'
 const SP_OIDC_RP_REDIRECT_URL = 'spOidcRpRedirectUrl'
 
-describe('SpOidcClientCache class', () => {
+describe('SpOidcClientCache', () => {
   afterEach(() => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
