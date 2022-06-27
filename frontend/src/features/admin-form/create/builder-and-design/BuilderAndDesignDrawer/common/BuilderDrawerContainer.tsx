@@ -1,3 +1,4 @@
+import { ReactNode } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
 import { Stack, Text } from '@chakra-ui/react'
 
@@ -11,12 +12,12 @@ import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
 interface BuilderDrawerContainerProps {
   title: string
-  content: JSX.Element
+  children: ReactNode
 }
 
 export const BuilderDrawerContainer = ({
   title,
-  content,
+  children,
 }: BuilderDrawerContainerProps): JSX.Element | null => {
   const setToInactive = useBuilderAndDesignStore(setToInactiveSelector)
 
@@ -53,7 +54,7 @@ export const BuilderDrawerContainer = ({
         </Text>
         <CreatePageDrawerCloseButton />
       </Stack>
-      {content}
+      {children}
     </>
   )
 }
