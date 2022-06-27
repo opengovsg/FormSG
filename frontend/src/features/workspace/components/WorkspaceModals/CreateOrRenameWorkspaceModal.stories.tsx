@@ -42,7 +42,14 @@ const Template: Story<CreateOrRenameWorkspaceModalProps> = (args) => {
     />
   )
 }
-export const Default = Template.bind({})
+export const CreateWorkspace = Template.bind({})
+CreateWorkspace.args = { isCreatingWorkspace: true }
 
-export const Mobile = Template.bind({})
-Mobile.parameters = getMobileViewParameters()
+export const RenameWorkspace = Template.bind({})
+
+export const CreateWorkspaceMobile = Template.bind({})
+CreateWorkspaceMobile.parameters = getMobileViewParameters()
+CreateWorkspaceMobile.args = { isCreatingWorkspace: true }
+
+export const RenameWorkspaceMobile = Template.bind({})
+RenameWorkspaceMobile.parameters = getMobileViewParameters()
