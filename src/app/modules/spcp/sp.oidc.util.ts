@@ -136,6 +136,11 @@ export const parseSub = (sub: string): ParsedSub | InvalidIdTokenError => {
   try {
     keyValuePairs = sub.split(',').map((keyValuePair) => {
       const pair = keyValuePair.split('=')
+      if (pair.length !== 2) {
+        // Error thrown is caught in catch block
+        // eslint-disable-next-line typesafe/no-throw-sync-func
+        throw new Error()
+      }
       return {
         key: pair[0],
         value: pair[1],
