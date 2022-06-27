@@ -22,7 +22,7 @@ type CreateWorkspaceInputProps = {
   title: string
 }
 
-interface CreateOrRenameWorkspaceModalProps {
+export interface CreateOrRenameWorkspaceModalProps {
   isOpen: boolean
   onClose: () => void
 }
