@@ -12,12 +12,14 @@ import * as SpOidcClientCacheClass from '../sp.oidc.client.cache'
 import { SpOidcClientCache } from '../sp.oidc.client.cache'
 import {
   CreateAuthorisationUrlError,
+  CreateJwtError,
   ExchangeAuthTokenError,
   GetDecryptionKeyError,
   GetVerificationKeyError,
   InvalidIdTokenError,
   JwkError,
   MissingIdTokenError,
+  VerificationKeyError,
 } from '../sp.oidc.client.errors'
 import {
   CryptoKeys,
@@ -480,10 +482,10 @@ describe('SpOidcClientCache', () => {
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
-      const keyResultPromise = spOidcClient.getBaseClientFromCache()
+      const tryGetBaseClient = spOidcClient.getBaseClientFromCache()
 
       // Assert
-      await expect(keyResultPromise).rejects.toThrowError('Failure')
+      await expect(tryGetBaseClient).rejects.toThrowError('Failure')
       expect(getBaseClientSpy).toHaveBeenCalledOnce()
     })
   })
@@ -501,12 +503,16 @@ describe('SpOidcClientCache', () => {
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
-      const createUrl = () =>
-        spOidcClient.createAuthorisationUrl(MOCK_EMPTY_STATE, MOCK_ESRVCID)
+      const tryCreateUrl = spOidcClient.createAuthorisationUrl(
+        MOCK_EMPTY_STATE,
+        MOCK_ESRVCID,
+      )
 
       // Assert
-      await expect(createUrl).rejects.toThrowError(CreateAuthorisationUrlError)
-      await expect(createUrl).rejects.toThrowError('Empty state')
+      await expect(tryCreateUrl).rejects.toThrowError(
+        CreateAuthorisationUrlError,
+      )
+      await expect(tryCreateUrl).rejects.toThrowError('Empty state')
     })
 
     it('should throw CreateAuthorisationUrlError if esrvcId parameter is empty', async () => {
@@ -521,12 +527,16 @@ describe('SpOidcClientCache', () => {
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
-      const createUrl = () =>
-        spOidcClient.createAuthorisationUrl(MOCK_STATE, MOCK_EMPTY_ESRVCID)
+      const tryCreateUrl = spOidcClient.createAuthorisationUrl(
+        MOCK_STATE,
+        MOCK_EMPTY_ESRVCID,
+      )
 
       // Assert
-      await expect(createUrl).rejects.toThrowError(CreateAuthorisationUrlError)
-      await expect(createUrl).rejects.toThrowError('Empty esrvcId')
+      await expect(tryCreateUrl).rejects.toThrowError(
+        CreateAuthorisationUrlError,
+      )
+      await expect(tryCreateUrl).rejects.toThrowError('Empty esrvcId')
     })
 
     it('should reject if getBaseClientFromCache rejects', async () => {
@@ -545,8 +555,10 @@ describe('SpOidcClientCache', () => {
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
-      const tryGetAuthorisationUrl = () =>
-        spOidcClient.createAuthorisationUrl(MOCK_STATE, MOCK_ESRVCID)
+      const tryGetAuthorisationUrl = spOidcClient.createAuthorisationUrl(
+        MOCK_STATE,
+        MOCK_ESRVCID,
+      )
 
       // Assert
       await expect(tryGetAuthorisationUrl).rejects.toThrowError('Failed')
@@ -1350,6 +1362,111 @@ describe('SpOidcClientCache', () => {
       // Assert
 
       expect(result).toBe(FIRST_NRIC)
+    })
+  })
+
+  describe('createJWT', () => {
+    const MOCK_PAYLOAD = {
+      key: 'value',
+    }
+
+    const MOCK_EXPIRES_IN = 2000
+
+    it('should throw CreateJwtError if no signing keys found', async () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClientConfigWithoutSigningKeys = {
+        ...spOidcClientConfig,
+        spOidcRpSecretJwks: {
+          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.filter(
+            (key) => key.use !== 'sig',
+          ),
+        },
+      }
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(
+        spOidcClientConfigWithoutSigningKeys,
+      )
+
+      const tryCreateJWT = spOidcClient.createJWT(MOCK_PAYLOAD, MOCK_EXPIRES_IN)
+
+      // Assert
+
+      await expect(tryCreateJWT).rejects.toThrowError(CreateJwtError)
+      await expect(tryCreateJWT).rejects.toThrowError('No signing keys found')
+    })
+  })
+
+  describe('verifyJwt', () => {
+    const MOCK_JWT = 'jwt'
+
+    it('should throw VerificationKeyError if no verification key found', async () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getVerificationKey')
+        .mockReturnValueOnce(new GetVerificationKeyError())
+
+      const spOidcClientConfigWithoutVerificationKeys = {
+        ...spOidcClientConfig,
+        spOidcRpPublicJwks: {
+          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.filter(
+            (key) => key.use !== 'sig',
+          ),
+        },
+      }
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(
+        spOidcClientConfigWithoutVerificationKeys,
+      )
+
+      const tryVerifyJwt = spOidcClient.verifyJwt(MOCK_JWT)
+
+      // Assert
+
+      await expect(tryVerifyJwt).rejects.toThrowError(VerificationKeyError)
+      await expect(tryVerifyJwt).rejects.toThrowError(
+        'no verification key found',
+      )
+    })
+  })
+
+  describe('createJwt and verifyJwt', () => {
+    const MOCK_PAYLOAD = {
+      key: 'value',
+    }
+
+    const MOCK_EXPIRES_IN = '1h'
+    it('should correctly create and verify a jwt', async () => {
+      // Arrange
+
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const jwtResult = await spOidcClient.createJWT(
+        MOCK_PAYLOAD,
+        MOCK_EXPIRES_IN,
+      )
+      const decodedJwt = await spOidcClient.verifyJwt(jwtResult)
+
+      // Assert
+
+      expect(decodedJwt).toMatchObject(MOCK_PAYLOAD)
     })
   })
 })
