@@ -37,7 +37,7 @@ export interface PublicFormContextProps
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleSubmitForm: (formInputs: any) => void
   /** id of container to render captcha in  */
-  captchaContainerId: string
+  captchaContainerId?: string
 }
 
 export const PublicFormContext = createContext<

@@ -11,6 +11,7 @@ import { BasicField } from '~shared/types'
 import {
   FormAuthType,
   FormResponseMode,
+  PreviewFormViewDto,
   PublicFormViewDto,
 } from '~shared/types/form'
 
@@ -47,55 +48,22 @@ interface PublicFormProviderProps {
   children: React.ReactNode
 }
 
-export function useCommonFormProvider(formId: string) {
+export function useCommonFormProvider(
+  formId: string,
+  data: PreviewFormViewDto | PublicFormViewDto | undefined,
+) {
+  const [vfnTransaction, setVfnTransaction] =
+    useState<FetchNewTransactionResponse>()
+  const miniHeaderRef = useRef<HTMLDivElement>(null)
   const { createTransactionMutation } = useTransactionMutations(formId)
   const toast = useToast({ isClosable: true })
   const vfnToastIdRef = useRef<string | number>()
   const desyncToastIdRef = useRef<string | number>()
   const isNotFormId = useMemo(() => !FORMID_REGEX.test(formId), [formId])
 
-  return {
-    createTransactionMutation,
-    toast,
-    vfnToastIdRef,
-    desyncToastIdRef,
-    isNotFormId,
-  }
-}
-
-export const PublicFormProvider = ({
-  formId,
-  children,
-}: PublicFormProviderProps): JSX.Element => {
-  // Once form has been submitted, submission data will be set here.
-  const [submissionData, setSubmissionData] = useState<SubmissionData>()
-  const [vfnTransaction, setVfnTransaction] =
-    useState<FetchNewTransactionResponse>()
-  const miniHeaderRef = useRef<HTMLDivElement>(null)
-  const { data, isLoading, error, ...rest } = usePublicFormView(
-    formId,
-    // Stop querying once submissionData is present.
-    /* enabled= */ !submissionData,
-  )
-  const { data: { captchaPublicKey } = {} } = useEnv(
-    /* enabled= */ !!data?.form.hasCaptcha,
-  )
-  const { hasLoaded, getCaptchaResponse, containerId } = useRecaptcha({
-    sitekey: data?.form.hasCaptcha ? captchaPublicKey : undefined,
-  })
-
-  const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
-
-  const {
-    createTransactionMutation,
-    toast,
-    vfnToastIdRef,
-    desyncToastIdRef,
-    isNotFormId,
-  } = useCommonFormProvider(formId)
-
-  const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
-    usePublicFormMutations(formId)
+  const [cachedDto, setCachedDto] = useState<
+    PreviewFormViewDto | PublicFormViewDto
+  >()
 
   useEffect(() => {
     if (data) {
@@ -129,12 +97,6 @@ export const PublicFormProvider = ({
     }
     return vfnTransaction.transactionId
   }, [createTransactionMutation, vfnTransaction])
-
-  const isFormNotFound = useMemo(() => {
-    return (
-      error instanceof HttpError && (error.code === 404 || error.code === 410)
-    )
-  }, [error])
 
   const expiryInMs = useMemo(() => {
     if (!vfnTransaction?.expireAt) return null
@@ -172,6 +134,79 @@ export const PublicFormProvider = ({
         'An error occurred whilst processing your submission. Please refresh and try again.',
     })
   }, [toast])
+
+  const isAuthRequired = useMemo(
+    () => !!cachedDto?.form && cachedDto.form.authType !== FormAuthType.NIL,
+    [cachedDto?.form],
+  )
+
+  const sectionScrollData = useMemo(() => {
+    const { form } = cachedDto ?? {}
+    if (!form || isAuthRequired) {
+      return []
+    }
+    const sections: SidebarSectionMeta[] = []
+    form.form_fields.forEach((f) => {
+      if (f.fieldType !== BasicField.Section) return
+      sections.push({
+        title: f.title,
+        _id: f._id,
+      })
+    })
+
+    return sections
+  }, [cachedDto, isAuthRequired])
+
+  return {
+    miniHeaderRef,
+    isNotFormId,
+    cachedDto,
+    getTransactionId,
+    expiryInMs,
+    showErrorToast,
+    isAuthRequired,
+    sectionScrollData,
+  }
+}
+
+export const PublicFormProvider = ({
+  formId,
+  children,
+}: PublicFormProviderProps): JSX.Element => {
+  // Once form has been submitted, submission data will be set here.
+  const [submissionData, setSubmissionData] = useState<SubmissionData>()
+
+  const { data, isLoading, error, ...rest } = usePublicFormView(
+    formId,
+    // Stop querying once submissionData is present.
+    /* enabled= */ !submissionData,
+  )
+  const { data: { captchaPublicKey } = {} } = useEnv(
+    /* enabled= */ !!data?.form.hasCaptcha,
+  )
+  const { hasLoaded, getCaptchaResponse, containerId } = useRecaptcha({
+    sitekey: data?.form.hasCaptcha ? captchaPublicKey : undefined,
+  })
+
+  const {
+    miniHeaderRef,
+    isNotFormId,
+    cachedDto,
+    getTransactionId,
+    expiryInMs,
+    showErrorToast,
+    isAuthRequired,
+    sectionScrollData,
+  } = useCommonFormProvider(formId, data)
+
+  const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
+    usePublicFormMutations(formId)
+
+  const isFormNotFound = useMemo(() => {
+    return (
+      error instanceof HttpError && (error.code === 404 || error.code === 410)
+    )
+  }, [error])
 
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async (formInputs) => {
@@ -241,31 +276,6 @@ export const PublicFormProvider = ({
       submitStorageModeFormMutation,
     ],
   )
-
-  const isAuthRequired = useMemo(
-    () =>
-      !!cachedDto?.form &&
-      cachedDto.form.authType !== FormAuthType.NIL &&
-      !cachedDto.spcpSession,
-    [cachedDto?.form, cachedDto?.spcpSession],
-  )
-
-  const sectionScrollData = useMemo(() => {
-    const { form } = cachedDto ?? {}
-    if (!form || isAuthRequired) {
-      return []
-    }
-    const sections: SidebarSectionMeta[] = []
-    form.form_fields.forEach((f) => {
-      if (f.fieldType !== BasicField.Section) return
-      sections.push({
-        title: f.title,
-        _id: f._id,
-      })
-    })
-
-    return sections
-  }, [cachedDto, isAuthRequired])
 
   if (isNotFormId) {
     return <NotFoundErrorPage />
