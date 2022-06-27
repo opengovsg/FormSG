@@ -1,14 +1,9 @@
-import { MemoryRouter } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import {
-  fullScreenDecorator,
-  getMobileViewParameters,
-  LoggedInDecorator,
-} from '~utils/storybook'
+import { getMobileViewParameters } from '~utils/storybook'
 
 import {
   CreateOrRenameWorkspaceModal,
@@ -18,11 +13,6 @@ import {
 export default {
   title: 'Pages/WorkspacePage/CreateOrRenameWorkspaceModal',
   component: CreateOrRenameWorkspaceModal,
-  decorators: [
-    (storyFn) => <MemoryRouter>{storyFn()}</MemoryRouter>,
-    fullScreenDecorator,
-    LoggedInDecorator,
-  ],
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
