@@ -1,40 +1,49 @@
-import axios from 'axios'
-import { createPublicKey } from 'crypto'
+import { createPrivateKey, createPublicKey } from 'crypto'
 import fs from 'fs'
-import jwkToPem, { EC } from 'jwk-to-pem'
+import * as jose from 'jose'
+import { JWTVerifyResult } from 'jose'
+import jwkToPem from 'jwk-to-pem'
 import { omit } from 'lodash'
-import NodeCache from 'node-cache'
-import { BaseClient, Issuer } from 'openid-client'
+import { BaseClient } from 'openid-client'
 
+import * as SpOidcClientClass from '../sp.oidc.client'
+import { SpOidcClient } from '../sp.oidc.client'
 import * as SpOidcClientCacheClass from '../sp.oidc.client.cache'
 import { SpOidcClientCache } from '../sp.oidc.client.cache'
-import { JwkError } from '../sp.oidc.client.errors'
+import {
+  CreateAuthorisationUrlError,
+  ExchangeAuthTokenError,
+  GetDecryptionKeyError,
+  GetVerificationKeyError,
+  InvalidIdTokenError,
+  JwkError,
+  MissingIdTokenError,
+} from '../sp.oidc.client.errors'
 import {
   CryptoKeys,
   PublicJwks,
   Refresh,
   SecretJwks,
-  SpOidcClientCacheConstructorParams,
+  SpOidcClientConstructorParams,
 } from '../sp.oidc.client.types'
-import * as SpOidcUtils from '../sp.oidc.util'
 
 jest.mock('openid-client')
 jest.mock('axios')
 
+const TEST_RP_PUBLIC_JWKS: PublicJwks = JSON.parse(
+  fs.readFileSync('tests/certs/test_rp_public_jwks.json').toString(),
+)
 const TEST_RP_SECRET_JWKS: SecretJwks = JSON.parse(
   fs.readFileSync('tests/certs/test_rp_secret_jwks.json').toString(),
 )
+
+const TEST_NDI_SECRET_JWKS: PublicJwks = JSON.parse(
+  fs.readFileSync('tests/certs/test_ndi_secret_jwks.json').toString(),
+)
+
 const TEST_NDI_PUBLIC_JWKS: PublicJwks = JSON.parse(
   fs.readFileSync('tests/certs/test_ndi_public_jwks.json').toString(),
 )
-
-const createPublicKeysFromJwks = (jwks: PublicJwks) => {
-  return jwks.keys.map((jwk) => ({
-    kid: jwk.kid,
-    use: jwk.use,
-    key: createPublicKey(jwkToPem(jwk as unknown as EC)),
-  }))
-}
 
 const SP_OIDC_NDI_DISCOVERY_ENDPOINT = 'spOidcNdiDiscoveryEndpoint'
 const SP_OIDC_NDI_JWKS_ENDPOINT = 'spOidcNdiJwksEndpoint'
@@ -46,785 +55,1301 @@ describe('SpOidcClientCache', () => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
   })
-  const spOidcClientCacheConfig: SpOidcClientCacheConstructorParams = {
+
+  const spOidcClientConfig: SpOidcClientConstructorParams = {
     spOidcNdiDiscoveryEndpoint: SP_OIDC_NDI_DISCOVERY_ENDPOINT,
     spOidcNdiJwksEndpoint: SP_OIDC_NDI_JWKS_ENDPOINT,
     spOidcRpClientId: SP_OIDC_RP_CLIENT_ID,
     spOidcRpRedirectUrl: SP_OIDC_RP_REDIRECT_URL,
     spOidcRpSecretJwks: TEST_RP_SECRET_JWKS,
-    options: {
-      useClones: false,
-      checkperiod: 60,
-    },
+    spOidcRpPublicJwks: TEST_RP_PUBLIC_JWKS,
   }
-  describe('constructor', () => {
-    it('should correctly call the SpOidcClientCache constructor', () => {
+
+  describe('Constructor', () => {
+    it('should correctly call the SpOidcClient constructor', () => {
       // Arrange
       const constructorSpy = jest
-        .spyOn(SpOidcClientCacheClass, 'SpOidcClientCache')
-        .mockReturnValueOnce(undefined as unknown as SpOidcClientCache)
+        .spyOn(SpOidcClientClass, 'SpOidcClient')
+        .mockReturnValueOnce(undefined as unknown as SpOidcClient)
 
       // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
       // Assert
-      expect(spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
+      expect(spOidcClient).toBeInstanceOf(SpOidcClient)
       expect(constructorSpy).toHaveBeenCalledOnce()
-      expect(constructorSpy).toBeCalledWith(spOidcClientCacheConfig)
+      expect(constructorSpy).toHaveBeenCalledWith(spOidcClientConfig)
     })
 
-    it('should call refresh() on instantiation', async () => {
+    it('should correctly instantiate a SpOidcClientCache', async () => {
       // Arrange
-      const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-
-      // Assert
-      expect(spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
-      expect(refreshSpy).toHaveBeenCalledOnce()
-    })
-
-    it('should correctly set expiry rule and provide a callback function', async () => {
-      // Arrange
-      const onSpy = jest.spyOn(NodeCache.prototype, 'on')
       jest
         .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const cacheConstructorSpy = jest
+        .spyOn(SpOidcClientCacheClass, 'SpOidcClientCache')
+        .mockReturnValueOnce('ok' as unknown as SpOidcClientCache)
 
-      // Assert
-      expect(spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
-      expect(onSpy).toHaveBeenCalledOnce()
-      expect(onSpy).toHaveBeenCalledWith('expired', expect.any(Function))
-    })
-  })
-
-  describe('getNdiPublicKeys()', () => {
-    it('should retrieve and return the keys from the cache and not refresh the cache if key is present', async () => {
-      // Arrange
-      const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      const getSpy = jest
-        .spyOn(NodeCache.prototype, 'get')
-        .mockReturnValueOnce('keys')
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const ndiPublicKeys = await spOidcClientCache.getNdiPublicKeys()
-
-      // Assert
-
-      expect(ndiPublicKeys).toBe('keys')
-      expect(refreshSpy).toHaveBeenCalledOnce() // On Instantiation
-      expect(getSpy).toHaveBeenCalledOnce()
-      expect(getSpy).toHaveBeenCalledWith('ndiPublicKeys')
-    })
-
-    it('should attempt to retrieve the keys from the cache and refresh the cache if key is not present', async () => {
-      // Arrange
-      const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce({ ndiPublicKeys: 'ok' } as unknown as Refresh)
-        .mockResolvedValueOnce({ ndiPublicKeys: 'ok' } as unknown as Refresh)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const ndiPublicKeys = await spOidcClientCache.getNdiPublicKeys()
-
-      // Assert
-      expect(refreshSpy).toHaveBeenCalledTimes(2) // Once on instantiation, once on key retrieval
-      expect(ndiPublicKeys).toBe('ok')
-    })
-
-    it('should return a rejected promise if key is not present in cache and refresh() returns a rejected promise', async () => {
-      // Arrange
-      const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-        .mockRejectedValueOnce(new Error('failed'))
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const ndiPublicKeysReusult = spOidcClientCache.getNdiPublicKeys()
-
-      // Assert
-
-      expect(refreshSpy).toHaveBeenCalledTimes(2) // Once on instantiation, once on key retrieval
-      await expect(ndiPublicKeysReusult).toReject()
-    })
-  })
-
-  describe('getBaseClient()', () => {
-    it('should retrieve and return the baseClilent from the cache and not refresh the cache if baseClient is present', async () => {
-      // Arrange
-      const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      const getSpy = jest
-        .spyOn(NodeCache.prototype, 'get')
-        .mockReturnValueOnce('baseClient')
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const baseClient = await spOidcClientCache.getBaseClient()
-
-      // Assert
-
-      expect(baseClient).toBe('baseClient')
-      expect(refreshSpy).toHaveBeenCalledOnce() // On Instantiation
-      expect(getSpy).toHaveBeenCalledOnce()
-      expect(getSpy).toHaveBeenCalledWith('baseClient')
-    })
-
-    it('should attempt to retrieve the baseClient from the cache and refresh the cache if baseClient is not present', async () => {
-      // Arrange
-      const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce({ baseClient: 'ok' } as unknown as Refresh)
-        .mockResolvedValueOnce({ baseClient: 'ok' } as unknown as Refresh)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const baseClient = await spOidcClientCache.getBaseClient()
-
-      // Assert
-      expect(refreshSpy).toHaveBeenCalledTimes(2) // Once on instantiation, once on key retrieval
-      expect(baseClient).toBe('ok')
-    })
-
-    it('should return a rejected promise if baseClient is not present in cache and refresh() returns a rejected promise', async () => {
-      // Arrange
-      const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-        .mockRejectedValueOnce(new Error('failed'))
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const baseClientResult = spOidcClientCache.getNdiPublicKeys()
-
-      // Assert
-
-      expect(refreshSpy).toHaveBeenCalledTimes(2) // Once on instantiation, once on key retrieval
-      await expect(baseClientResult).toReject()
-    })
-  })
-
-  describe('createRefreshPromise()', () => {
-    it('should call retryPromiseForever on retrievePublicKeysFromNdi and retrieveBaseClientFromNdi', () => {
-      // Arrange
-
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'retrievePublicKeysFromNdi')
-        .mockResolvedValueOnce('keys' as unknown as CryptoKeys)
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'retrieveBaseClientFromNdi')
-        .mockResolvedValueOnce('baseClient' as unknown as BaseClient)
-
-      const retryForeverSpy = jest.spyOn(SpOidcUtils, 'retryPromiseForever')
-
-      // Act
-
-      new SpOidcClientCache(spOidcClientCacheConfig)
-
-      //Assert
-      expect(retryForeverSpy).toHaveBeenCalledOnce()
-    })
-
-    it('should set the cache correctly and return the correct values', async () => {
-      // Arrange
-
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'retrievePublicKeysFromNdi')
-        .mockResolvedValueOnce('keys' as unknown as CryptoKeys)
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'retrieveBaseClientFromNdi')
-        .mockResolvedValueOnce('baseClient' as unknown as BaseClient)
-
-      const setSpy = jest.spyOn(NodeCache.prototype, 'set')
-
-      const expectedResult = {
-        ndiPublicKeys: 'keys',
-        baseClient: 'baseClient',
+      const expectedCacheConstructorParams = {
+        ...omit(spOidcClientConfig, 'spOidcRpPublicJwks'),
+        options: {
+          useClones: false,
+          checkperiod: 60,
+        },
       }
 
       // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      await Promise.resolve() // void refresh after instantiation
-      const result = await spOidcClientCache.refresh()
-
-      const keysTtl = spOidcClientCache._cache.getTtl('ndiPublicKeys')
-      const clientTtl = spOidcClientCache._cache.getTtl('baseClient')
-      const expiryTtl = spOidcClientCache._cache.getTtl('expiry') || 0
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      await Promise.resolve()
 
       // Assert
-      expect(setSpy).toBeCalledTimes(3)
-      expect(setSpy).toHaveBeenCalledWith('ndiPublicKeys', 'keys')
-      expect(setSpy).toHaveBeenCalledWith('baseClient', 'baseClient')
-      expect(setSpy).toHaveBeenLastCalledWith('expiry', 'expiry', 3600)
-      expect(spOidcClientCache._cache.get('ndiPublicKeys')).toBe('keys')
-      expect(spOidcClientCache._cache.get('baseClient')).toBe('baseClient')
-      expect(spOidcClientCache._cache.get('expiry')).toBe('expiry')
-      expect(keysTtl).toBe(0)
-      expect(clientTtl).toBe(0)
-      expect(Date.now() + 3300 * 1000 - expiryTtl).toBeLessThan(100) // not more than 100ms difference
-      expect(result).toMatchObject(expectedResult)
-    })
-  })
-
-  describe('retrievePublicKeysFromNdi()', () => {
-    it('should call the NDI JWKS endpoint and return the correct result', async () => {
-      // Arrange
-      const axiosSpy = jest
-        .spyOn(axios, 'get')
-        .mockResolvedValueOnce({ data: TEST_NDI_PUBLIC_JWKS })
-
-      const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      const expectedKeyResult = createPublicKeysFromJwks(TEST_NDI_PUBLIC_JWKS)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const keyResult = await spOidcClientCache.retrievePublicKeysFromNdi()
-
-      // Assert
-      expect(axiosSpy).toHaveBeenCalledOnce()
-      expect(refreshSpy).toHaveBeenCalledOnce()
-      expect(keyResult).toMatchObject(expectedKeyResult)
+      expect(spOidcClient).toBeInstanceOf(SpOidcClient)
+      expect(cacheConstructorSpy).toHaveBeenCalledOnce()
+      expect(cacheConstructorSpy).toHaveBeenCalledWith(
+        expectedCacheConstructorParams,
+      )
+      expect(spOidcClient._spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
     })
 
-    it('should call the NDI JWKS endpoint and retry 2 more times if it fails', async () => {
+    it('should throw JwkError if `alg` attribute not present on rp secret jwk', () => {
       // Arrange
-      const axiosSpy = jest
-        .spyOn(axios, 'get')
-        .mockRejectedValueOnce(new Error())
-        .mockRejectedValueOnce(new Error())
-        .mockResolvedValueOnce({ data: TEST_NDI_PUBLIC_JWKS })
-
-      const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      const expectedKeyResult = createPublicKeysFromJwks(TEST_NDI_PUBLIC_JWKS)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const keyResult = await spOidcClientCache.retrievePublicKeysFromNdi()
-
-      // Assert
-      expect(refreshSpy).toHaveBeenCalledOnce()
-      expect(axiosSpy).toHaveBeenCalledTimes(3)
-      expect(keyResult.length).toEqual(1)
-      expect(keyResult).toMatchObject(expectedKeyResult)
-    })
-
-    it('should call the NDI JWKS endpoint and not retry more than 2 more times if it fails', async () => {
-      // Arrange
-      const axiosSpy = jest
-        .spyOn(axios, 'get')
-        .mockRejectedValueOnce(new Error('Failure'))
-        .mockRejectedValueOnce(new Error('Failure'))
-        .mockRejectedValueOnce(new Error('Failure'))
-
       jest
         .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
+      const spOidcClientConfigNoAlg = {
+        ...spOidcClientConfig,
+        spOidcRpSecretJwks: {
+          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.map((jwk) => ({
+            ...omit(jwk, 'alg'),
+          })),
+        },
+      }
+
       // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const keyResultPromise = spOidcClientCache.retrievePublicKeysFromNdi()
+      const attemptConstructor = () => {
+        new SpOidcClient(
+          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+        )
+      }
+
+      // Assert
+      expect(attemptConstructor).toThrow(JwkError)
+    })
+
+    it('should throw JwkError if `kty` attribute not present on rp secret jwk', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClientConfigNoAlg = {
+        ...spOidcClientConfig,
+        spOidcRpSecretJwks: {
+          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.map((jwk) => ({
+            ...omit(jwk, 'kty'),
+          })),
+        },
+      }
+
+      // Act
+      const attemptConstructor = () => {
+        new SpOidcClient(
+          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+        )
+      }
+
+      // Assert
+      expect(attemptConstructor).toThrow(JwkError)
+    })
+
+    it('should throw JwkError if `kty` attribute is present on rp secret jwk but not set to EC', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClientConfigNoAlg = {
+        ...spOidcClientConfig,
+        spOidcRpSecretJwks: {
+          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.map((jwk) => ({
+            ...jwk,
+            kty: 'something',
+          })),
+        },
+      }
+
+      // Act
+      const attemptConstructor = () => {
+        new SpOidcClient(
+          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+        )
+      }
+
+      // Assert
+      expect(attemptConstructor).toThrow(JwkError)
+    })
+
+    it('should throw JwkError if `crv` attribute not present on rp secret jwk', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClientConfigNoAlg = {
+        ...spOidcClientConfig,
+        spOidcRpSecretJwks: {
+          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.map((jwk) => ({
+            ...omit(jwk, 'crv'),
+          })),
+        },
+      }
+
+      // Act
+      const attemptConstructor = () => {
+        new SpOidcClient(
+          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+        )
+      }
+
+      // Assert
+      expect(attemptConstructor).toThrow(JwkError)
+    })
+
+    it('should throw JwkError if `d` attribute not present on rp secret jwk', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClientConfigNoAlg = {
+        ...spOidcClientConfig,
+        spOidcRpSecretJwks: {
+          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.map((jwk) => ({
+            ...omit(jwk, 'd'),
+          })),
+        },
+      }
+
+      // Act
+      const attemptConstructor = () => {
+        new SpOidcClient(
+          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+        )
+      }
+
+      // Assert
+      expect(attemptConstructor).toThrow(JwkError)
+    })
+
+    it('should throw JwkError if `alg` attribute not present on rp public jwk', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClientConfigNoAlg = {
+        ...spOidcClientConfig,
+        spOidcRpPublicJwks: {
+          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.map((jwk) => ({
+            ...omit(jwk, 'alg'),
+          })),
+        },
+      }
+
+      // Act
+      const attemptConstructor = () => {
+        new SpOidcClient(
+          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+        )
+      }
+
+      // Assert
+      expect(attemptConstructor).toThrow(JwkError)
+    })
+
+    it('should throw JwkError if `kty` attribute not present on rp public jwk', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClientConfigNoAlg = {
+        ...spOidcClientConfig,
+        spOidcRpPublicJwks: {
+          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.map((jwk) => ({
+            ...omit(jwk, 'kty'),
+          })),
+        },
+      }
+
+      // Act
+      const attemptConstructor = () => {
+        new SpOidcClient(
+          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+        )
+      }
+
+      // Assert
+      expect(attemptConstructor).toThrow(JwkError)
+    })
+
+    it('should throw JwkError if `kty` attribute is present on rp public jwk but not set to EC', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClientConfigNoAlg = {
+        ...spOidcClientConfig,
+        spOidcRpPublicJwks: {
+          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.map((jwk) => ({
+            ...jwk,
+            kty: 'something',
+          })),
+        },
+      }
+
+      // Act
+      const attemptConstructor = () => {
+        new SpOidcClient(
+          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+        )
+      }
+
+      // Assert
+      expect(attemptConstructor).toThrow(JwkError)
+    })
+    it('should throw JwkError if `crv` attribute not present on rp public jwk', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClientConfigNoAlg = {
+        ...spOidcClientConfig,
+        spOidcRpPublicJwks: {
+          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.map((jwk) => ({
+            ...omit(jwk, 'crv'),
+          })),
+        },
+      }
+
+      // Act
+      const attemptConstructor = () => {
+        new SpOidcClient(
+          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+        )
+      }
+
+      // Assert
+      expect(attemptConstructor).toThrow(JwkError)
+    })
+
+    it('should throw JwkError if `x` attribute not present on rp public jwk', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClientConfigNoAlg = {
+        ...spOidcClientConfig,
+        spOidcRpPublicJwks: {
+          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.map((jwk) => ({
+            ...omit(jwk, 'x'),
+          })),
+        },
+      }
+
+      // Act
+      const attemptConstructor = () => {
+        new SpOidcClient(
+          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+        )
+      }
+
+      // Assert
+      expect(attemptConstructor).toThrow(JwkError)
+    })
+
+    it('should throw JwkError if `y` attribute not present on rp public jwk', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClientConfigNoAlg = {
+        ...spOidcClientConfig,
+        spOidcRpPublicJwks: {
+          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.map((jwk) => ({
+            ...omit(jwk, 'y'),
+          })),
+        },
+      }
+
+      // Act
+      const attemptConstructor = () => {
+        new SpOidcClient(
+          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+        )
+      }
+
+      // Assert
+      expect(attemptConstructor).toThrow(JwkError)
+    })
+  })
+
+  describe('getNdiPublicKeysFromCache', () => {
+    it('should correctly retrieve ndi public keys from cache and resolve if _spOidcClientCache.getNdiPublicKeys resolves', async () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const getNdiKeysSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'getNdiPublicKeys')
+        .mockResolvedValueOnce('ok' as unknown as CryptoKeys)
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = await spOidcClient.getNdiPublicKeysFromCache()
+
+      // Assert
+
+      expect(result).toBe('ok')
+      expect(getNdiKeysSpy).toHaveBeenCalledOnce()
+    })
+
+    it('should reject if _spOidcClientCache.getNdiPublicKeys rejects', async () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const getNdiKeysSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'getNdiPublicKeys')
+        .mockRejectedValueOnce(new Error('Failure'))
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const keyResultPromise = spOidcClient.getNdiPublicKeysFromCache()
 
       // Assert
       await expect(keyResultPromise).rejects.toThrowError('Failure')
-      expect(axiosSpy).toHaveBeenCalledTimes(3)
-    })
-
-    it('should throw an JwkError if the NDI JWKS retrieved does not have the `kty` property', async () => {
-      // Arrange
-      const axiosSpy = jest.spyOn(axios, 'get').mockResolvedValueOnce({
-        data: {
-          keys: TEST_NDI_PUBLIC_JWKS.keys.map((key) => omit(key, 'kty')),
-        },
-      })
-
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const keyResult = async () => {
-        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
-        return key
-      }
-
-      // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
-      expect(axiosSpy).toHaveBeenCalledTimes(1)
-    })
-
-    it('should throw an JwkError if the NDI JWKS retrieved does has the `kty` property but it is not set to `EC`', async () => {
-      // Arrange
-      const axiosSpy = jest.spyOn(axios, 'get').mockResolvedValueOnce({
-        data: {
-          keys: TEST_NDI_PUBLIC_JWKS.keys.map((key) => ({
-            ...key,
-            kty: 'something else',
-          })),
-        },
-      })
-
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const keyResult = async () => {
-        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
-        return key
-      }
-
-      // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
-      expect(axiosSpy).toHaveBeenCalledTimes(1)
-    })
-
-    it('should throw an JwkError if the NDI JWKS retrieved does not have the `crv` property', async () => {
-      // Arrange
-      const axiosSpy = jest.spyOn(axios, 'get').mockResolvedValueOnce({
-        data: {
-          keys: TEST_NDI_PUBLIC_JWKS.keys.map((key) => omit(key, 'crv')),
-        },
-      })
-
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const keyResult = async () => {
-        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
-        return key
-      }
-
-      // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
-      expect(axiosSpy).toHaveBeenCalledTimes(1)
-    })
-    it('should throw an JwkError if the NDI JWKS retrieved does not have the `x` property', async () => {
-      // Arrange
-      const axiosSpy = jest.spyOn(axios, 'get').mockResolvedValueOnce({
-        data: {
-          keys: TEST_NDI_PUBLIC_JWKS.keys.map((key) => omit(key, 'x')),
-        },
-      })
-
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const keyResult = async () => {
-        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
-        return key
-      }
-
-      // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
-      expect(axiosSpy).toHaveBeenCalledTimes(1)
-    })
-    it('should throw an JwkError if the NDI JWKS retrieved does not have the `y` property', async () => {
-      // Arrange
-      const axiosSpy = jest.spyOn(axios, 'get').mockResolvedValueOnce({
-        data: {
-          keys: TEST_NDI_PUBLIC_JWKS.keys.map((key) => omit(key, 'y')),
-        },
-      })
-
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const keyResult = async () => {
-        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
-        return key
-      }
-
-      // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
-      expect(axiosSpy).toHaveBeenCalledTimes(1)
-    })
-    it('should throw an JwkError if the NDI JWKS retrieved does not have the `kid` property', async () => {
-      // Arrange
-      const axiosSpy = jest.spyOn(axios, 'get').mockResolvedValueOnce({
-        data: {
-          keys: TEST_NDI_PUBLIC_JWKS.keys.map((key) => omit(key, 'kid')),
-        },
-      })
-
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const keyResult = async () => {
-        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
-        return key
-      }
-
-      // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
-      expect(axiosSpy).toHaveBeenCalledTimes(1)
-    })
-    it('should throw an JwkError if the NDI JWKS retrieved does not have the `use` property', async () => {
-      // Arrange
-      const axiosSpy = jest.spyOn(axios, 'get').mockResolvedValueOnce({
-        data: {
-          keys: TEST_NDI_PUBLIC_JWKS.keys.map((key) => omit(key, 'use')),
-        },
-      })
-
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const keyResult = async () => {
-        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
-        return key
-      }
-
-      // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
-      expect(axiosSpy).toHaveBeenCalledTimes(1)
-    })
-
-    it('should accept if NDI returns more than one key in the JWKS', async () => {
-      // Arrange
-      const axiosSpy = jest.spyOn(axios, 'get').mockResolvedValueOnce({
-        data: {
-          keys: [TEST_NDI_PUBLIC_JWKS.keys[0], TEST_NDI_PUBLIC_JWKS.keys[0]],
-        },
-      })
-
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const keyResult = await spOidcClientCache.retrievePublicKeysFromNdi()
-
-      // Assert
-      expect(keyResult.length).toEqual(2)
-      expect(axiosSpy).toHaveBeenCalledTimes(1)
+      expect(getNdiKeysSpy).toHaveBeenCalledOnce()
     })
   })
 
-  describe('retrieveBaseClientFromNdi()', () => {
-    it('should call the NDI Discovery endpoint and return the correct result', async () => {
+  describe('getBaseClientFromCache', () => {
+    it('should correctly retrieve baseClient from cache and resolve if _spOidcClientCache.getBaseClient resolves', async () => {
       // Arrange
-      const mockBaseClient = {
-        baseClient: 'baseClient',
-      } as unknown as BaseClient
-
-      const mockIssuer = {
-        Client: jest.fn().mockImplementation(() => {
-          return mockBaseClient
-        }),
-      }
-
-      Issuer.discover = jest
-        .fn()
-        .mockResolvedValueOnce(mockIssuer as unknown as Issuer<BaseClient>)
-
-      const discoverySpy = jest.spyOn(Issuer, 'discover')
-      const clientSpy = jest.spyOn(mockIssuer, 'Client')
-      const expectedClientResult = mockBaseClient
-
       jest
         .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
+      const getBaseClientSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'getBaseClient')
+        .mockResolvedValueOnce('ok' as unknown as BaseClient)
+
       // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const clientResult = await spOidcClientCache.retrieveBaseClientFromNdi()
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = await spOidcClient.getBaseClientFromCache()
 
       // Assert
-      expect(discoverySpy).toHaveBeenCalledOnce()
-      expect(clientSpy).toHaveBeenCalledOnce()
-      expect(clientSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          client_id: SP_OIDC_RP_CLIENT_ID,
-          token_endpoint_auth_method: 'private_key_jwt',
-          redirect_uris: [SP_OIDC_RP_REDIRECT_URL],
-        }),
-        TEST_RP_SECRET_JWKS,
-      )
-      expect(clientResult).toEqual(expectedClientResult)
+
+      expect(result).toBe('ok')
+      expect(getBaseClientSpy).toHaveBeenCalledOnce()
     })
 
-    it('should call the NDI Discovery endpoint and retry 2 more times if it fails', async () => {
+    it('should reject if _spOidcClientCache.getBaseClient rejects', async () => {
       // Arrange
-      const mockBaseClient = {
-        baseClient: 'baseClient',
-      } as unknown as BaseClient
-
-      const mockIssuer = {
-        Client: jest.fn().mockImplementation(() => {
-          return mockBaseClient
-        }),
-      }
-
-      Issuer.discover = jest
-        .fn()
-        .mockRejectedValueOnce(new Error())
-        .mockRejectedValueOnce(new Error())
-        .mockResolvedValueOnce(mockIssuer as unknown as Issuer<BaseClient>)
-
-      const discoverySpy = jest.spyOn(Issuer, 'discover')
-      const clientSpy = jest.spyOn(mockIssuer, 'Client')
-      const expectedClientResult = mockBaseClient
-
       jest
         .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const clientResult = await spOidcClientCache.retrieveBaseClientFromNdi()
-
-      // Assert
-      expect(discoverySpy).toHaveBeenCalledTimes(3)
-      expect(clientSpy).toHaveBeenCalledOnce()
-      expect(clientSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          client_id: SP_OIDC_RP_CLIENT_ID,
-          token_endpoint_auth_method: 'private_key_jwt',
-          redirect_uris: [SP_OIDC_RP_REDIRECT_URL],
-        }),
-        TEST_RP_SECRET_JWKS,
-      )
-      expect(clientResult).toEqual(expectedClientResult)
-    })
-
-    it('should call the NDI Discovery endpoint and not retry more than 2 more times if it fails', async () => {
-      // Arrange
-      const discoverySpy = jest
-        .spyOn(Issuer, 'discover')
-        .mockRejectedValueOnce(new Error('Failed'))
-        .mockRejectedValueOnce(new Error('Failed'))
-        .mockRejectedValueOnce(new Error('Failed'))
-
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
+      const getBaseClientSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'getBaseClient')
+        .mockRejectedValueOnce(new Error('Failure'))
 
       // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const clientResult = async () => {
-        const result = await spOidcClientCache.retrieveBaseClientFromNdi()
-        return result
-      }
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const keyResultPromise = spOidcClient.getBaseClientFromCache()
 
       // Assert
-      await expect(clientResult).rejects.toThrowError('Failed')
-      expect(discoverySpy).toHaveBeenCalledTimes(3)
+      await expect(keyResultPromise).rejects.toThrowError('Failure')
+      expect(getBaseClientSpy).toHaveBeenCalledOnce()
     })
   })
-  describe('refresh()', () => {
-    it('should call both retrievePublicKeysFromNdi and retrieveBaseClientFromNdi and return the correct values', async () => {
+
+  describe('createAuthorisationUrl', () => {
+    it('should throw CreateAuthorisationUrlError if state parameter is empty', async () => {
       // Arrange
-      const retrieveKeysSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'retrievePublicKeysFromNdi')
-        .mockResolvedValueOnce('keys' as unknown as CryptoKeys)
-
-      const retrieveBaseClientSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'retrieveBaseClientFromNdi')
-        .mockResolvedValueOnce('baseClient' as unknown as BaseClient)
-
-      const refreshSpy = jest
+      jest
         .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh) // On instantiation
-
-      const expectedResult = {
-        ndiPublicKeys: 'keys',
-        baseClient: 'baseClient',
-      }
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      await Promise.resolve() // void refresh after instantiation
-      const result = await spOidcClientCache.refresh()
-
-      // Assert
-      expect(retrieveKeysSpy).toHaveBeenCalledOnce()
-      expect(retrieveBaseClientSpy).toHaveBeenCalledOnce()
-      expect(refreshSpy).toHaveBeenCalledTimes(2) // once in instantiation, once in act
-      expect(result).toMatchObject(expectedResult)
-    })
-
-    it('should call createRefreshPromise and return the created promise if _refreshPromise does not exist', async () => {
-      // Arrange
-      const retrieveKeysSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'retrievePublicKeysFromNdi')
-        .mockResolvedValueOnce('keys' as unknown as CryptoKeys)
-
-      const retrieveBaseClientSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'retrieveBaseClientFromNdi')
-        .mockResolvedValueOnce('baseClient' as unknown as BaseClient)
-
-      const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh) // On instantiation
-
-      const createRefreshSpy = jest.spyOn(
-        SpOidcClientCache.prototype,
-        'createRefreshPromise',
-      )
-
-      const expectedResult = {
-        ndiPublicKeys: 'keys',
-        baseClient: 'baseClient',
-      }
-
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      await Promise.resolve() // void refresh after instantiation
-      const result = await spOidcClientCache.refresh()
-
-      // Assert
-      expect(retrieveKeysSpy).toHaveBeenCalledOnce()
-      expect(retrieveBaseClientSpy).toHaveBeenCalledOnce()
-      expect(refreshSpy).toHaveBeenCalledTimes(2) // once in instantiation, once in act
-      expect(createRefreshSpy).toHaveBeenCalledOnce()
-      expect(result).toMatchObject(expectedResult)
-    })
-
-    it('should clean up refreshPromise after createRefreshPromise resolves', async () => {
-      // Arrange
-      const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh) // On instantiation
-
-      const createRefreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'createRefreshPromise')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
+      const MOCK_EMPTY_STATE = ''
+      const MOCK_ESRVCID = 'esrvcId'
+
       // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      await Promise.resolve() // void refresh after instantiation
-      await spOidcClientCache.refresh()
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const createUrl = () =>
+        spOidcClient.createAuthorisationUrl(MOCK_EMPTY_STATE, MOCK_ESRVCID)
 
       // Assert
-      expect(refreshSpy).toHaveBeenCalledTimes(2) // once in instantiation, once in act
-      expect(createRefreshSpy).toHaveBeenCalledOnce()
-      expect(spOidcClientCache._refreshPromise).toBeUndefined()
+      await expect(createUrl).rejects.toThrowError(CreateAuthorisationUrlError)
+      await expect(createUrl).rejects.toThrowError('Empty state')
     })
 
-    it('should clean up refreshPromise after createRefreshPromise rejects', async () => {
+    it('should throw CreateAuthorisationUrlError if esrvcId parameter is empty', async () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_STATE = 'state'
+      const MOCK_EMPTY_ESRVCID = ''
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const createUrl = () =>
+        spOidcClient.createAuthorisationUrl(MOCK_STATE, MOCK_EMPTY_ESRVCID)
+
+      // Assert
+      await expect(createUrl).rejects.toThrowError(CreateAuthorisationUrlError)
+      await expect(createUrl).rejects.toThrowError('Empty esrvcId')
+    })
+
+    it('should reject if getBaseClientFromCache rejects', async () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_STATE = 'state'
+      const MOCK_ESRVCID = 'esrvcId'
+
+      const getBaseClientSpy = jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockRejectedValueOnce(new Error('Failed'))
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const tryGetAuthorisationUrl = () =>
+        spOidcClient.createAuthorisationUrl(MOCK_STATE, MOCK_ESRVCID)
+
+      // Assert
+      await expect(tryGetAuthorisationUrl).rejects.toThrowError('Failed')
+      expect(getBaseClientSpy).toHaveBeenCalledOnce()
+    })
+
+    it('should correctly return the authorisation url generated by the base client', async () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_STATE = 'state'
+      const MOCK_ESRVCID = 'esrvcId'
+      const MOCK_URL = 'url'
+
+      const mockAuthorisationUrlFn = jest.fn().mockReturnValue(MOCK_URL)
+
+      const getBaseClientSpy = jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          authorizationUrl: mockAuthorisationUrlFn,
+        } as unknown as BaseClient)
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const result = await spOidcClient.createAuthorisationUrl(
+        MOCK_STATE,
+        MOCK_ESRVCID,
+      )
+
+      // Assert
+      expect(getBaseClientSpy).toHaveBeenCalledOnce()
+      expect(result).toBe(MOCK_URL)
+      expect(mockAuthorisationUrlFn).toHaveBeenCalledOnce()
+    })
+  })
+
+  describe('getDecryptionKey', () => {
+    it('should return GetDecryptionKeyError if jwe is empty', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_EMPTY_JWE = ''
+      const MOCK_KEYS = [{ kid: 'someKid' }] as unknown as CryptoKeys
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const result = spOidcClient.getDecryptionKey(MOCK_EMPTY_JWE, MOCK_KEYS)
+
+      // Assert
+      expect(result).toBeInstanceOf(GetDecryptionKeyError)
+      expect((result as GetDecryptionKeyError).message).toContain(
+        'jwe is empty',
+      )
+    })
+
+    it('should return GetDecryptionKeyError if `kid` does not exist on the jwe header', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_JWE = 'jwe'
+      const MOCK_KEYS = [{ kid: 'someKid' }] as unknown as CryptoKeys
+
+      jest.spyOn(jose, 'decodeProtectedHeader').mockReturnValueOnce({})
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const result = spOidcClient.getDecryptionKey(MOCK_JWE, MOCK_KEYS)
+
+      // Assert
+      expect(result).toBeInstanceOf(GetDecryptionKeyError)
+      expect((result as GetDecryptionKeyError).message).toContain(
+        'no kid in idToken JWE',
+      )
+    })
+
+    it('should return GetDecryptionKeyError if there is no matching `kid` in the keys', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_JWE = 'jwe'
+      const MOCK_KEYS = [
+        { kid: 'someKid' },
+        { kid: 'anotherKid' },
+      ] as unknown as CryptoKeys
+
+      jest
+        .spyOn(jose, 'decodeProtectedHeader')
+        .mockReturnValueOnce({ kid: 'otherKid' })
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const result = spOidcClient.getDecryptionKey(MOCK_JWE, MOCK_KEYS)
+
+      // Assert
+      expect(result).toBeInstanceOf(GetDecryptionKeyError)
+      expect((result as GetDecryptionKeyError).message).toContain(
+        'no decryption key matches jwe kid',
+      )
+    })
+
+    it('should return the first correct decryption key', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_JWE = 'jwe'
+      const MOCK_FIRST_KEY = { kid: 'someKid', key: 'firstKey' }
+      const MOCK_SECOND_KEY = { kid: 'anotherKid', key: 'secondKey' }
+      const MOCK_THIRD_KEY = { kid: 'someKid', key: 'thirdKey' }
+      const MOCK_KEYS = [
+        MOCK_FIRST_KEY,
+        MOCK_SECOND_KEY,
+        MOCK_THIRD_KEY,
+      ] as unknown as CryptoKeys
+
+      jest
+        .spyOn(jose, 'decodeProtectedHeader')
+        .mockReturnValueOnce({ kid: 'someKid' })
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const result = spOidcClient.getDecryptionKey(MOCK_JWE, MOCK_KEYS)
+
+      // Assert
+      expect(result).toBe(MOCK_FIRST_KEY.key)
+    })
+  })
+
+  describe('getVerificationKey', () => {
+    it('should return GetVerificationKeyError if jws is empty', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_EMPTY_JWS = ''
+      const MOCK_KEYS = [{ kid: 'someKid' }] as unknown as CryptoKeys
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const result = spOidcClient.getVerificationKey(MOCK_EMPTY_JWS, MOCK_KEYS)
+
+      // Assert
+      expect(result).toBeInstanceOf(GetVerificationKeyError)
+      expect((result as GetVerificationKeyError).message).toContain(
+        'jws is empty',
+      )
+    })
+
+    it('should return GetVerificationKeyError if `kid` does not exist on the jws header', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_JWS = 'jws'
+      const MOCK_KEYS = [{ kid: 'someKid' }] as unknown as CryptoKeys
+
+      jest.spyOn(jose, 'decodeProtectedHeader').mockReturnValueOnce({})
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const result = spOidcClient.getVerificationKey(MOCK_JWS, MOCK_KEYS)
+
+      // Assert
+      expect(result).toBeInstanceOf(GetVerificationKeyError)
+      expect((result as GetVerificationKeyError).message).toContain(
+        'no kid in JWS',
+      )
+    })
+
+    it('should return GetVerificationKeyError if there is no matching `kid` in the keys', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_JWS = 'jws'
+      const MOCK_KEYS = [
+        { kid: 'someKid' },
+        { kid: 'anotherKid' },
+      ] as unknown as CryptoKeys
+
+      jest
+        .spyOn(jose, 'decodeProtectedHeader')
+        .mockReturnValueOnce({ kid: 'otherKid' })
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const result = spOidcClient.getVerificationKey(MOCK_JWS, MOCK_KEYS)
+
+      // Assert
+      expect(result).toBeInstanceOf(GetVerificationKeyError)
+      expect((result as GetVerificationKeyError).message).toContain(
+        'no verification key matches jws kid',
+      )
+    })
+
+    it('should return the first correct verification key', () => {
+      // Arrange
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_JWS = 'jws'
+      const MOCK_FIRST_KEY = { kid: 'someKid', key: 'firstKey' }
+      const MOCK_SECOND_KEY = { kid: 'anotherKid', key: 'secondKey' }
+      const MOCK_THIRD_KEY = { kid: 'someKid', key: 'thirdKey' }
+      const MOCK_KEYS = [
+        MOCK_FIRST_KEY,
+        MOCK_SECOND_KEY,
+        MOCK_THIRD_KEY,
+      ] as unknown as CryptoKeys
+
+      jest
+        .spyOn(jose, 'decodeProtectedHeader')
+        .mockReturnValueOnce({ kid: 'someKid' })
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const result = spOidcClient.getVerificationKey(MOCK_JWS, MOCK_KEYS)
+
+      // Assert
+      expect(result).toBe(MOCK_FIRST_KEY.key)
+    })
+  })
+  describe('exchangeAuthCodeAndDecodeVerifyToken', () => {
+    const MOCK_SUB_CLAIM = 's=S1234567D'
+    const createMockJws = async () => {
+      const MOCK_JWS = await new jose.SignJWT({})
+        .setSubject(MOCK_SUB_CLAIM)
+        .setProtectedHeader({
+          alg: 'ES512',
+          kid: TEST_NDI_SECRET_JWKS.keys.find((key) => key.use === 'sig')?.kid,
+        })
+        .sign(
+          createPrivateKey(
+            jwkToPem(
+              TEST_NDI_SECRET_JWKS.keys.find(
+                (key) => key.use === 'sig',
+              ) as unknown as jwkToPem.ECPrivate,
+              { private: true },
+            ),
+          ),
+        )
+      return MOCK_JWS
+    }
+
+    const createMockJwe = async () => {
+      const MOCK_JWS = await createMockJws()
+      const MOCK_JWE = await new jose.CompactEncrypt(
+        new TextEncoder().encode(MOCK_JWS),
+      )
+        .setProtectedHeader({
+          alg: 'ECDH-ES+A256KW',
+          enc: 'A256CBC-HS512',
+          kid: TEST_RP_PUBLIC_JWKS.keys.find((key) => key.use === 'enc')?.kid,
+        })
+        .encrypt(
+          createPublicKey(
+            jwkToPem(
+              TEST_RP_PUBLIC_JWKS.keys.find(
+                (key) => key.use === 'enc',
+              ) as unknown as jwkToPem.EC,
+            ),
+          ),
+        )
+
+      return MOCK_JWE
+    }
+
+    const NDI_KEYS = TEST_NDI_PUBLIC_JWKS.keys.map((jwk) => {
+      return {
+        kid: jwk.kid,
+        use: jwk.use,
+        // Conversion to pem is necessary because in node 14, crypto does not support import of JWK directly
+        // TODO (#4021): load JWK directly after node upgrade
+        key: createPublicKey(jwkToPem(jwk as jwkToPem.EC)),
+      }
+    })
+
+    it('should throw ExchangeAuthTokenError if authCode is empty and NOT call refresh', async () => {
       // Arrange
       const refreshSpy = jest
         .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh) // On instantiation
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const createRefreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'createRefreshPromise')
+      const MOCK_EMPTY_AUTHCODE = ''
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_EMPTY_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        ExchangeAuthTokenError,
+      )
+      await expect(tryExchangeAuthCode).rejects.toThrowError('empty authCode')
+      expect(refreshSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should throw an error if failed to retrieve baseClient from cache and NOT call refresh', async () => {
+      // Arrange
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
         .mockRejectedValueOnce(new Error('failed'))
 
-      // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      await Promise.resolve() // void refresh after instantiation
+      const MOCK_AUTHCODE = 'authCode'
 
-      const attemptRefresh = async () => {
-        const result = await spOidcClientCache.refresh()
-        return result
-      }
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      await expect(attemptRefresh()).rejects.toThrowError('failed')
-      expect(refreshSpy).toHaveBeenCalledTimes(2) // once in instantiation, once in act
-      expect(createRefreshSpy).toHaveBeenCalledOnce()
-      expect(spOidcClientCache._refreshPromise).toBeUndefined()
+      await expect(tryExchangeAuthCode).rejects.toThrowError('failed')
+      expect(refreshSpy).toHaveBeenCalledTimes(1)
     })
 
-    it('should return the promise stored in _refreshPromise if it exists', async () => {
+    it('should throw an error if exchange at token endpoint fails and call refresh', async () => {
       // Arrange
       const refreshSpy = jest
         .spyOn(SpOidcClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh) // On instantiation
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const mockGrant = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('grant failed'))
 
-      const existingPromise = new Promise((resolve) =>
-        resolve('ok'),
-      ) as unknown as Promise<Refresh>
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
 
-      spOidcClientCache._refreshPromise = existingPromise
+      const MOCK_AUTHCODE = 'authCode'
 
       // Act
 
-      const result = await spOidcClientCache.refresh()
-      await Promise.resolve() // void refresh after instantiation
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      expect(refreshSpy).toHaveBeenCalledTimes(2) // once in instantiation, once in act
-      expect(result).toBe('ok')
+      await expect(tryExchangeAuthCode).rejects.toThrowError('grant failed')
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
-    it('should set the cache correctly after calling retrievePublicKeysFromNdi and retrieveBaseClientFromNdi', async () => {
+    it('should throw a MissingIdTokenError if tokenSet does not contain idToken and call refresh', async () => {
       // Arrange
-      jest
-        .spyOn(SpOidcClientCache.prototype, 'retrievePublicKeysFromNdi')
-        .mockResolvedValueOnce('keys' as unknown as CryptoKeys)
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({})
 
       jest
-        .spyOn(SpOidcClientCache.prototype, 'retrieveBaseClientFromNdi')
-        .mockResolvedValueOnce('baseClient' as unknown as BaseClient)
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        MissingIdTokenError,
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should throw a MissingIdTokenError if tokenSet contains empty idToken and call refresh', async () => {
+      // Arrange
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: '' })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        MissingIdTokenError,
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should return the correct payload containing the nric sub if idToken is valid', async () => {
+      // Arrange
+
+      const MOCK_JWE = await createMockJwe()
 
       jest
         .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const setSpy = jest.spyOn(NodeCache.prototype, 'set')
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getNdiPublicKeysFromCache')
+        .mockResolvedValueOnce(NDI_KEYS)
+
+      const MOCK_AUTHCODE = 'authCode'
 
       // Act
-      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      await Promise.resolve() // void refresh after instantiation
-      await spOidcClientCache.refresh()
 
-      const keysTtl = spOidcClientCache._cache.getTtl('ndiPublicKeys')
-      const clientTtl = spOidcClientCache._cache.getTtl('baseClient')
-      const expiryTtl = spOidcClientCache._cache.getTtl('expiry') || 0
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = await spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
+        MOCK_AUTHCODE,
+      )
 
       // Assert
-      expect(setSpy).toBeCalledTimes(3)
-      expect(setSpy).toHaveBeenCalledWith('ndiPublicKeys', 'keys')
-      expect(setSpy).toHaveBeenCalledWith('baseClient', 'baseClient')
-      expect(setSpy).toHaveBeenLastCalledWith('expiry', 'expiry', 3600)
-      expect(spOidcClientCache._cache.get('ndiPublicKeys')).toBe('keys')
-      expect(spOidcClientCache._cache.get('baseClient')).toBe('baseClient')
-      expect(spOidcClientCache._cache.get('expiry')).toBe('expiry')
-      expect(keysTtl).toBe(0)
-      expect(clientTtl).toBe(0)
-      expect(Date.now() + 3300 * 1000 - expiryTtl).toBeLessThan(100) // not more than 100ms difference
+      expect(result.payload.sub).toBeDefined()
+      expect(result.payload.sub).toBe(MOCK_SUB_CLAIM)
+    })
+
+    it('should throw a GetDecryptionKeyError if fails to obtain the correct decryption key and call refresh', async () => {
+      // Arrange
+
+      const MOCK_JWE = await createMockJwe()
+
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getDecryptionKey')
+        .mockReturnValueOnce(new GetDecryptionKeyError())
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        GetDecryptionKeyError,
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should throw a GetDecryptionKeyError if decryption fails and call refresh', async () => {
+      // Arrange
+
+      const MOCK_JWE = await createMockJwe()
+
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getDecryptionKey')
+        .mockReturnValueOnce(new GetDecryptionKeyError())
+
+      jest
+        .spyOn(jose, 'compactDecrypt')
+        .mockRejectedValueOnce(new Error('decrypt failed'))
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        GetDecryptionKeyError,
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should throw an ExchangeAuthTokenError if fails to retrieve NDI public keys from cache and call refresh', async () => {
+      // Arrange
+
+      const MOCK_JWE = await createMockJwe()
+
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getNdiPublicKeysFromCache')
+        .mockRejectedValueOnce('getNdiKeysfailed')
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        ExchangeAuthTokenError,
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should throw an GetVerificationKeyError if fails to get verification key and call refresh', async () => {
+      // Arrange
+
+      const MOCK_JWE = await createMockJwe()
+
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getNdiPublicKeysFromCache')
+        .mockResolvedValueOnce(NDI_KEYS)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getVerificationKey')
+        .mockReturnValueOnce(new GetVerificationKeyError())
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        GetVerificationKeyError,
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('should throw an error if fails to verify id token and call refresh', async () => {
+      // Arrange
+
+      const MOCK_JWE = await createMockJwe()
+
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          grant: mockGrant,
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getNdiPublicKeysFromCache')
+        .mockResolvedValueOnce(NDI_KEYS)
+
+      jest
+        .spyOn(jose, 'jwtVerify')
+        .mockRejectedValueOnce(new Error('verify jwt failed'))
+
+      const MOCK_AUTHCODE = 'authCode'
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const tryExchangeAuthCode =
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
+
+      // Assert
+      await expect(tryExchangeAuthCode).rejects.toThrowError(
+        'verify jwt failed',
+      )
+      expect(refreshSpy).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('extractNricFromIdToken', () => {
+    it('should return InvalidIdTokenError if sub attribute is missing in payload', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_IDTOKEN_MISSING_SUB = {
+        payload: {
+          something: 'else',
+        },
+      } as unknown as JWTVerifyResult
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = spOidcClient.extractNricFromIdToken(
+        MOCK_IDTOKEN_MISSING_SUB,
+      )
+
+      // Assert
+
+      expect(result).toBeInstanceOf(InvalidIdTokenError)
+    })
+
+    it('should return InvalidIdTokenError if parseSub fails', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_IDTOKEN_MALFORMED_SUB = {
+        payload: {
+          sub: 's=S1234567D,,something=else',
+        },
+      } as unknown as JWTVerifyResult
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = spOidcClient.extractNricFromIdToken(
+        MOCK_IDTOKEN_MALFORMED_SUB,
+      )
+
+      // Assert
+
+      expect(result).toBeInstanceOf(InvalidIdTokenError)
+    })
+
+    it('should return InvalidIdTokenError if sub does not contain nric', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_IDTOKEN_NONRIC = {
+        payload: {
+          sub: 'something=else,another=other',
+        },
+      } as unknown as JWTVerifyResult
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = spOidcClient.extractNricFromIdToken(MOCK_IDTOKEN_NONRIC)
+
+      // Assert
+
+      expect(result).toBeInstanceOf(InvalidIdTokenError)
+    })
+
+    it('should correctly return the first NRIC from sub when sub contains multiple key value pairs', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const FIRST_NRIC = 'S1234567D'
+      const MOCK_SUB_MULTIPLE = `s=${FIRST_NRIC},otherKey=otherValue,s=S9876543C`
+
+      const MOCK_ID_TOKEN = {
+        payload: { sub: MOCK_SUB_MULTIPLE },
+      } as unknown as JWTVerifyResult
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = spOidcClient.extractNricFromIdToken(MOCK_ID_TOKEN)
+
+      // Assert
+
+      expect(result).toBe(FIRST_NRIC)
+    })
+
+    it('should correctly return the NRIC from sub when sub contains only one key value pair', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const FIRST_NRIC = 'S1234567D'
+      const MOCK_SUB_MULTIPLE = `s=${FIRST_NRIC}`
+
+      const MOCK_ID_TOKEN = {
+        payload: { sub: MOCK_SUB_MULTIPLE },
+      } as unknown as JWTVerifyResult
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result = spOidcClient.extractNricFromIdToken(MOCK_ID_TOKEN)
+
+      // Assert
+
+      expect(result).toBe(FIRST_NRIC)
     })
   })
 })
