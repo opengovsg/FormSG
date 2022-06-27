@@ -25,11 +25,13 @@ type CreateWorkspaceInputProps = {
 export interface CreateOrRenameWorkspaceModalProps {
   isOpen: boolean
   onClose: () => void
+  isCreatingWorkspace: boolean
 }
 
 export const CreateOrRenameWorkspaceModal = ({
   isOpen,
   onClose,
+  isCreatingWorkspace,
 }: CreateOrRenameWorkspaceModalProps): JSX.Element => {
   const {
     handleSubmit,
@@ -51,11 +53,17 @@ export const CreateOrRenameWorkspaceModal = ({
     onClose()
   })
 
+  const handleRenameWorkspace = handleSubmit((data) => {
+    onClose()
+  })
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Create workspace</ModalHeader>
+        <ModalHeader>
+          {isCreatingWorkspace ? 'Create' : 'Rename'} workspace
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Text textStyle="subhead-1">Workspace name</Text>
@@ -81,7 +89,17 @@ export const CreateOrRenameWorkspaceModal = ({
             <Button onClick={onClose} variant="clear" colorScheme="secondary">
               Cancel
             </Button>
-            <Button onClick={handleCreateWorkspace}>Create workspace</Button>
+            <Button
+              onClick={() => {
+                if (isCreatingWorkspace) {
+                  handleCreateWorkspace()
+                } else {
+                  handleRenameWorkspace()
+                }
+              }}
+            >
+              {isCreatingWorkspace ? 'Create' : 'Rename'} workspace
+            </Button>
           </Stack>
         </ModalFooter>
       </ModalContent>
