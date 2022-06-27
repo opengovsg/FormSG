@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
 
@@ -12,7 +12,6 @@ import {
 } from '~/features/public-form/PublicFormContext'
 import { useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
 
-import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
@@ -31,7 +30,12 @@ export const PreviewFormProvider = ({
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
 
-  const { data, isLoading, error, ...rest } = usePreviewForm(
+  const {
+    data,
+    isLoading,
+    error: PreviewFormError,
+    ...rest
+  } = usePreviewForm(
     formId,
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
@@ -40,22 +44,18 @@ export const PreviewFormProvider = ({
   const {
     miniHeaderRef,
     isNotFormId,
+    isFormNotFound,
     cachedDto,
     getTransactionId,
     expiryInMs,
     showErrorToast,
     isAuthRequired,
     sectionScrollData,
-  } = useCommonFormProvider(formId, data)
+    error,
+  } = useCommonFormProvider(formId, data, PreviewFormError)
 
   const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
     usePreviewFormMutations(formId)
-
-  const isFormNotFound = useMemo(() => {
-    return (
-      error instanceof HttpError && (error.code === 404 || error.code === 410)
-    )
-  }, [error])
 
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async (formInputs) => {

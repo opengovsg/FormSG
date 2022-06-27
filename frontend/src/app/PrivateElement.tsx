@@ -7,9 +7,6 @@ interface PrivateElementProps {
   /**
    * Route to redirect to when user is not authenticated. Defaults to
    * `LOGIN_ROUTE` if not provided.
-   *
-   * If `isPreview` is true, Govt Masthead will appear.
-   * Defaults to `false`.
    */
   redirectTo?: NavigateProps['to']
   element: React.ReactElement

@@ -15,6 +15,8 @@ import {
   PublicFormViewDto,
 } from '~shared/types/form'
 
+import { ApiError } from '~typings/core'
+
 import { FORMID_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
@@ -51,6 +53,7 @@ interface PublicFormProviderProps {
 export function useCommonFormProvider(
   formId: string,
   data: PreviewFormViewDto | PublicFormViewDto | undefined,
+  error: ApiError | null,
 ) {
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
@@ -97,6 +100,12 @@ export function useCommonFormProvider(
     }
     return vfnTransaction.transactionId
   }, [createTransactionMutation, vfnTransaction])
+
+  const isFormNotFound = useMemo(() => {
+    return (
+      error instanceof HttpError && (error.code === 404 || error.code === 410)
+    )
+  }, [error])
 
   const expiryInMs = useMemo(() => {
     if (!vfnTransaction?.expireAt) return null
@@ -160,12 +169,14 @@ export function useCommonFormProvider(
   return {
     miniHeaderRef,
     isNotFormId,
+    isFormNotFound,
     cachedDto,
     getTransactionId,
     expiryInMs,
     showErrorToast,
     isAuthRequired,
     sectionScrollData,
+    error,
   }
 }
 
@@ -176,7 +187,12 @@ export const PublicFormProvider = ({
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
 
-  const { data, isLoading, error, ...rest } = usePublicFormView(
+  const {
+    data,
+    isLoading,
+    error: PublicFormError,
+    ...rest
+  } = usePublicFormView(
     formId,
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
@@ -191,22 +207,18 @@ export const PublicFormProvider = ({
   const {
     miniHeaderRef,
     isNotFormId,
+    isFormNotFound,
     cachedDto,
     getTransactionId,
     expiryInMs,
     showErrorToast,
     isAuthRequired,
     sectionScrollData,
-  } = useCommonFormProvider(formId, data)
+    error,
+  } = useCommonFormProvider(formId, data, PublicFormError)
 
   const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
     usePublicFormMutations(formId)
-
-  const isFormNotFound = useMemo(() => {
-    return (
-      error instanceof HttpError && (error.code === 404 || error.code === 410)
-    )
-  }, [error])
 
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async (formInputs) => {
