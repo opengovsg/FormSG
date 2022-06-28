@@ -1,7 +1,7 @@
 import { BiCheck } from 'react-icons/bi'
 import {
   Badge,
-  Button,
+  Flex,
   List,
   ListIcon,
   ListItem,
@@ -14,6 +14,7 @@ import {
 } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
 
@@ -22,8 +23,10 @@ const InlineTextListItem = ({
 }: {
   children: string
 }): JSX.Element => (
-  <ListItem display="flex" alignItems="center">
-    <ListIcon as={BiCheck} />
+  <ListItem display="flex">
+    <Flex h="1.5rem" align="center">
+      <ListIcon as={BiCheck} />
+    </Flex>
     {children}
   </ListItem>
 )
