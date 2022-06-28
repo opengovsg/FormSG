@@ -13,6 +13,7 @@ import {
   getMobileViewParameters,
   mockDateDecorator,
   StoryRouter,
+  ViewedRolloutDecorator,
 } from '~utils/storybook'
 
 import { WorkspacePage } from './WorkspacePage'
@@ -48,6 +49,7 @@ export default {
   title: 'Pages/WorkspacePage',
   component: WorkspacePage,
   decorators: [
+    ViewedRolloutDecorator,
     StoryRouter({
       initialEntries: [ROOT_ROUTE],
       path: ROOT_ROUTE,

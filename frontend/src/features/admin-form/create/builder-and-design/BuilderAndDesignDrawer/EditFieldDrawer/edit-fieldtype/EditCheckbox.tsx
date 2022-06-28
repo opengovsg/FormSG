@@ -13,6 +13,8 @@ import NumberInput from '~components/NumberInput'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
+import { validateNumberInput } from '../../../utils/validateNumberInput'
+
 import {
   SPLIT_TEXTAREA_TRANSFORM,
   SPLIT_TEXTAREA_VALIDATION,
@@ -247,10 +249,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
                   precision={0}
                   flex={1}
                   showSteppers={false}
-                  onChange={(val) => {
-                    // Only allow numeric inputs
-                    onChange(val.replace(/\D/g, ''))
-                  }}
+                  onChange={validateNumberInput(onChange)}
                   {...rest}
                   placeholder="Minimum"
                 />
@@ -266,10 +265,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
                   precision={0}
                   flex={1}
                   showSteppers={false}
-                  onChange={(val) => {
-                    // Only allow numeric inputs
-                    onChange(val.replace(/\D/g, ''))
-                  }}
+                  onChange={validateNumberInput(onChange)}
                   {...rest}
                   placeholder="Maximum"
                 />

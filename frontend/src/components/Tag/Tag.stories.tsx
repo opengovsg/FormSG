@@ -11,6 +11,7 @@ export default {
 } as Meta
 
 const Template: Story<TagProps> = (args) => <Tag {...args} />
+
 export const Subtle = Template.bind({})
 Subtle.args = {
   children: 'Subtle tag',

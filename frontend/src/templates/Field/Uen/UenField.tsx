@@ -10,9 +10,8 @@ import { createUenValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import { SingleAnswerFieldInput } from '../types'
+import { SingleAnswerFieldInput, UenFieldSchema } from '../types'
 
-export type UenFieldSchema = FormFieldWithId<UenFieldBase>
 export interface UenFieldProps extends BaseFieldProps {
   schema: UenFieldSchema
 }

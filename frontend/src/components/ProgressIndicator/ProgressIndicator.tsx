@@ -1,18 +1,21 @@
 import { useMemo } from 'react'
-import { Box } from '@chakra-ui/react'
+import { Box, BoxProps } from '@chakra-ui/react'
 
 import { MotionBox } from '~components/motion'
 
 const ActiveIndicator = (): JSX.Element => (
   <Box
+    // Top required to align it with CircleIndicators
+    top="0.125rem"
     width="1.5rem"
     height="0.5rem"
     borderRadius="full"
     backgroundColor="secondary.500"
+    position="absolute"
   />
 )
 
-interface CircleIndicatorProps {
+interface CircleIndicatorProps extends BoxProps {
   onClick: () => void
   isActiveIndicator: boolean
 }
@@ -20,16 +23,29 @@ interface CircleIndicatorProps {
 const CircleIndicator = ({
   onClick,
   isActiveIndicator,
+  ...props
 }: CircleIndicatorProps): JSX.Element => {
   return (
     <Box
-      width="0.5rem"
-      height="0.5rem"
+      width="0.75rem"
+      height="0.75rem"
+      padding="0.125rem"
       borderRadius="full"
       backgroundColor="secondary.200"
-      marginRight={isActiveIndicator ? '1.5rem' : '0.5rem'}
+      marginRight={isActiveIndicator ? '1.25rem' : '0.25rem'}
       onClick={onClick}
+      _hover={{ backgroundColor: 'secondary.300' }}
+      _focus={
+        isActiveIndicator
+          ? undefined
+          : {
+              backgroundColor: 'secondary.300',
+              boxShadow: `0 0 0 1px var(--chakra-colors-secondary-400)`,
+            }
+      }
+      backgroundClip="content-box"
       as="button"
+      {...props}
     />
   )
 }
@@ -51,7 +67,7 @@ export const ProgressIndicator = ({
   )
 
   const animationProps = useMemo(() => {
-    return { x: currActiveIdx.toString() + 'rem' }
+    return { x: `${currActiveIdx + 0.125}rem` }
   }, [currActiveIdx])
 
   return (
@@ -61,6 +77,7 @@ export const ProgressIndicator = ({
           key={idx}
           isActiveIndicator={idx === currActiveIdx}
           onClick={() => onClick(idx)}
+          aria-label={`Page ${idx + 1} of ${numIndicators}`}
         />
       ))}
 

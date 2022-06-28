@@ -7,7 +7,11 @@ import mockdate from 'mockdate'
 
 import { theme } from '~/theme'
 
-import { FEATURE_TOUR_KEY_PREFIX, LOGGED_IN_KEY } from '~constants/localStorage'
+import { AuthContext } from '~contexts/AuthContext'
+import {
+  FEATURE_TOUR_KEY_PREFIX,
+  ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
+} from '~constants/localStorage'
 
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
 import { BuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
@@ -24,21 +28,19 @@ export const fullScreenDecorator: DecoratorFn = (storyFn) => (
 )
 
 export const LoggedOutDecorator: DecoratorFn = (storyFn) => {
-  useEffect(() => {
-    window.localStorage.removeItem(LOGGED_IN_KEY)
-  }, [])
-
-  return storyFn()
+  return (
+    <AuthContext.Provider value={{ isAuthenticated: false }}>
+      {storyFn()}
+    </AuthContext.Provider>
+  )
 }
 
 export const LoggedInDecorator: DecoratorFn = (storyFn) => {
-  useEffect(() => {
-    window.localStorage.setItem(LOGGED_IN_KEY, JSON.stringify(true))
-
-    return () => window.localStorage.removeItem(LOGGED_IN_KEY)
-  }, [])
-
-  return storyFn()
+  return (
+    <AuthContext.Provider value={{ isAuthenticated: true }}>
+      {storyFn()}
+    </AuthContext.Provider>
+  )
 }
 
 export const ViewedFeatureTourDecorator: DecoratorFn = (
@@ -47,11 +49,26 @@ export const ViewedFeatureTourDecorator: DecoratorFn = (
 ) => {
   const userId = parameters.userId
   const featureTourKey = FEATURE_TOUR_KEY_PREFIX + userId
-  useEffect(() => {
-    window.localStorage.setItem(featureTourKey, JSON.stringify(true))
+  window.localStorage.setItem(featureTourKey, JSON.stringify(true))
 
+  useEffect(() => {
     return () => window.localStorage.removeItem(featureTourKey)
   }, [featureTourKey, userId])
+
+  return storyFn()
+}
+
+export const ViewedRolloutDecorator: DecoratorFn = (
+  storyFn,
+  { parameters },
+) => {
+  const userId = parameters.userId
+  const rolloutKey = ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + userId
+  window.localStorage.setItem(rolloutKey, JSON.stringify(true))
+
+  useEffect(() => {
+    return () => window.localStorage.removeItem(rolloutKey)
+  }, [rolloutKey, userId])
 
   return storyFn()
 }
