@@ -3,8 +3,7 @@ import { createPublicKey } from 'crypto'
 import jwkToPem from 'jwk-to-pem'
 import NodeCache from 'node-cache'
 import { BaseClient, Issuer } from 'openid-client'
-
-import { createLoggerWithLabel } from '../../config/logger'
+import { timeout } from 'promise-timeout'
 
 import { JwkError } from './sp.oidc.client.errors'
 import {
@@ -24,8 +23,6 @@ import {
 const BASE_CLIENT_NAME = 'baseClient'
 const NDI_PUBLIC_KEY_NAME = 'ndiPublicKeys'
 const EXPIRY_NAME = 'expiry'
-
-const logger = createLoggerWithLabel(module)
 
 /**
  * Cache class which provides read-through capability and refresh-ahead before expiry
@@ -73,42 +70,23 @@ export class SpOidcClientCache {
     this.#spOidcRpSecretJwks = spOidcRpSecretJwks
     this._cache = new NodeCache(options)
 
-    // On expiry, refresh cache. If fail to refresh, log but do not throw error.
-    this._cache.on('expired', () =>
-      this.refresh().catch((err) =>
-        logger.warn({
-          message: 'Attempted but failed to refresh sp oidc cache on expiry',
-          meta: {
-            action: 'refresh',
-          },
-          error: err,
-        }),
-      ),
-    )
+    // On expiry, refresh cache.
+    this._cache.on('expired', () => this.refresh())
 
-    // Trigger refresh on instantiation to populate cache. If fail to refresh, log but do not throw error.
-    void this.refresh().catch((err) =>
-      logger.warn({
-        message:
-          'Attempted but failed to refresh sp oidc cache on instantiation',
-        meta: {
-          action: 'refresh',
-        },
-        error: err,
-      }),
-    )
+    // Trigger refresh on instantiation to populate cache.
+    void this.refresh()
   }
 
   /**
    * Method to retrieve NDI's public keys from cache
    * @async
    * @returns NDI's public keys
-   * @throws error if refresh fails
+   * @throws error if refresh does not complete within 10s
    */
   async getNdiPublicKeys(): Promise<CryptoKeys> {
     const ndiPublicKeys = this._cache.get<CryptoKeys>(NDI_PUBLIC_KEY_NAME)
     if (!ndiPublicKeys) {
-      const { ndiPublicKeys } = await this.refresh()
+      const { ndiPublicKeys } = await timeout(this.refresh(), 10000)
       return ndiPublicKeys
     }
     return ndiPublicKeys
@@ -119,12 +97,12 @@ export class SpOidcClientCache {
    * Triggers a refresh
    * @async
    * @returns Base client
-   * @throws error if refresh fails
+   * @throws error if refresh does not complete within 10s
    */
   async getBaseClient(): Promise<BaseClient> {
     const baseClient = this._cache.get<BaseClient>(BASE_CLIENT_NAME)
     if (!baseClient) {
-      const { baseClient } = await this.refresh()
+      const { baseClient } = await timeout(this.refresh(), 10000)
       return baseClient
     }
     return baseClient

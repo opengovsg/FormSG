@@ -1,8 +1,3 @@
-import { mocked } from 'ts-jest/utils'
-
-import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
-
-import * as LoggerModule from '../../../config/logger'
 import { InvalidIdTokenError } from '../sp.oidc.client.errors'
 import {
   extractNricFromParsedSub,
@@ -12,12 +7,6 @@ import {
 } from '../sp.oidc.util'
 
 const MOCK_PROMISE_NAME = 'promise'
-
-const MockLoggerModule = mocked(LoggerModule, true)
-const mockLogger = getMockLogger()
-
-jest.mock('src/app/config/logger')
-MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 
 // Set longer timeout for testing because
 // There does not seem to be an easy way to flush promise queue each of which fulfils with a delay

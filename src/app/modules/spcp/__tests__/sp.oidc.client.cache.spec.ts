@@ -160,6 +160,31 @@ describe('SpOidcClientCache', () => {
       await expect(ndiPublicKeysReusult).toReject()
     })
   })
+  it('should return a rejected promise if refresh fails to resolve within 10s', async () => {
+    // Arrange
+    const refreshSpy = jest
+      .spyOn(SpOidcClientCache.prototype, 'refresh')
+      .mockResolvedValueOnce('ok' as unknown as Refresh)
+      .mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => resolve('ok' as unknown as Refresh), 50000)
+          }),
+      )
+
+    jest.useFakeTimers()
+
+    // Act
+    const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+    const baseClientResult = spOidcClientCache.getNdiPublicKeys()
+
+    jest.advanceTimersByTime(30000)
+    // Assert
+
+    expect(refreshSpy).toHaveBeenCalledTimes(2) // Once on instantiation, once on key retrieval
+    await expect(baseClientResult).toReject()
+    jest.useRealTimers()
+  })
 
   describe('getBaseClient()', () => {
     it('should retrieve and return the baseClilent from the cache and not refresh the cache if baseClient is present', async () => {
@@ -209,12 +234,38 @@ describe('SpOidcClientCache', () => {
 
       // Act
       const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
-      const baseClientResult = spOidcClientCache.getNdiPublicKeys()
+      const baseClientResult = spOidcClientCache.getBaseClient()
 
       // Assert
 
       expect(refreshSpy).toHaveBeenCalledTimes(2) // Once on instantiation, once on key retrieval
       await expect(baseClientResult).toReject()
+    })
+
+    it('should return a rejected promise if refresh fails to resolve within 10s', async () => {
+      // Arrange
+      const refreshSpy = jest
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+        .mockImplementation(
+          () =>
+            new Promise((resolve) => {
+              setTimeout(() => resolve('ok' as unknown as Refresh), 50000)
+            }),
+        )
+
+      jest.useFakeTimers()
+
+      // Act
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const baseClientResult = spOidcClientCache.getBaseClient()
+
+      jest.advanceTimersByTime(30000)
+      // Assert
+
+      expect(refreshSpy).toHaveBeenCalledTimes(2) // Once on instantiation, once on key retrieval
+      await expect(baseClientResult).toReject()
+      jest.useRealTimers()
     })
   })
 
