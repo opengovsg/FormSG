@@ -58,11 +58,11 @@ const useProvideUnlockedResponses = () => {
   const {
     data: { metadata: prevMetadata = [] } = {},
     isLoading: isPrevLoading,
-  } = useFormResponses(currentPage ?? 1 - 1)
+  } = useFormResponses(currentPage ?? 0)
   const {
     data: { metadata: nextMetadata = [] } = {},
     isLoading: isNextLoading,
-  } = useFormResponses(currentPage ?? 1 + 1)
+  } = useFormResponses(currentPage ?? 2)
 
   const isAnyLoading = useMemo(
     () => isLoading || isPrevLoading || isNextLoading,
@@ -79,7 +79,7 @@ const useProvideUnlockedResponses = () => {
       // If id belongs to the last submission in page, return first of next page
       if (currentResponseIndex === metadata.length - 1) {
         const data = nextMetadata[0]
-        setCurrentPage(currentPage ?? 1 + 1)
+        setCurrentPage(currentPage ?? 2)
         return data?.refNo
       } else {
         return metadata[currentResponseIndex + 1]?.refNo
