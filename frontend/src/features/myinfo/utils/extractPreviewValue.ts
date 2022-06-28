@@ -2,7 +2,7 @@ import { BasicField, MyInfoPrefilledFormField } from '~shared/types'
 
 type PrefilledMyInfoValue = string | { value: string }
 
-export const extractPrefilledValue = ({
+export const extractPreviewValue = ({
   fieldType,
   fieldValue,
 }: MyInfoPrefilledFormField): PrefilledMyInfoValue => {
