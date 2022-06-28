@@ -8,6 +8,7 @@ import {
   ADMINFORM_BUILD_SUBROUTE,
   ADMINFORM_PREVIEW_ROUTE,
   ADMINFORM_RESULTS_SUBROUTE,
+  ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
   ROOT_ROUTE,
 } from '~constants/routes'
@@ -54,7 +55,7 @@ const useAdminFormNavbar = () => {
   )
 
   const handlePreviewForm = useCallback((): void => {
-    navigate(`/${formId}/${ADMINFORM_PREVIEW_ROUTE}`)
+    navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`)
   }, [navigate, formId])
 
   const handleTabsChange = useCallback(
