@@ -25,5 +25,8 @@ Desktop.args = {
   title: 'Introducing Workspaces',
   description:
     'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
-  imageUrl: WorkspaceFeatureUpdateImg,
+  image: {
+    url: WorkspaceFeatureUpdateImg,
+    alt: 'Workspace Feature Update',
+  },
 }

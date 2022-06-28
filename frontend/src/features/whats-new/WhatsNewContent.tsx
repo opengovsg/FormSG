@@ -1,21 +1,23 @@
 import ReactMarkdown from 'react-markdown'
-import { Box, Image, Text, UnorderedList } from '@chakra-ui/react'
+import { Box, Image, Text } from '@chakra-ui/react'
 import gfm from 'remark-gfm'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+
+import { FeatureUpdateImage } from './FeatureUpdateList'
 
 export interface WhatsNewContentProps {
   date: string
   title: string
   description: string
-  imageUrl?: string
+  image?: FeatureUpdateImage
 }
 
 export const WhatsNewContent = ({
   date,
   title,
   description,
-  imageUrl,
+  image,
 }: WhatsNewContentProps) => {
   const mdComponents = useMdComponents({
     styles: {
@@ -37,7 +39,9 @@ export const WhatsNewContent = ({
       <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
         {description}
       </ReactMarkdown>
-      {imageUrl && <Image width="100%" src={imageUrl} mt="2rem" />}
+      {image && (
+        <Image width="100%" src={image.url} mt="2rem" alt={image.alt} />
+      )}
     </Box>
   )
 }

@@ -1,12 +1,16 @@
 import PhoneFieldFeatureUpdateImg from './assets/phone_field_feature_update.svg'
 import WorkspaceFeatureUpdateImg from './assets/workspaces_feature_update.svg'
 
+export interface FeatureUpdateImage {
+  url: string
+  alt: string
+}
 export interface FeatureUpdate {
   id: number
   date: string
   title: string
   description: string
-  imageUrl?: string
+  image?: FeatureUpdateImage
 }
 
 export const FeatureUpdateList: FeatureUpdate[] = [
@@ -26,7 +30,10 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     title: 'No more hangups',
     description:
       'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
-    imageUrl: PhoneFieldFeatureUpdateImg,
+    image: {
+      url: PhoneFieldFeatureUpdateImg,
+      alt: 'Phone Field Feature Update',
+    },
   },
   {
     id: 3,
@@ -34,7 +41,10 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     title: 'Introducing Workspaces',
     description:
       "A workspace that's never messy. The first thing you see when you log into FormSG is your Workspace. This is where you store and organize all of your forms. Create multiple Workspaces and move your forms into them to stay organised.",
-    imageUrl: WorkspaceFeatureUpdateImg,
+    image: {
+      url: WorkspaceFeatureUpdateImg,
+      alt: 'Workspace Feature Update',
+    },
   },
   {
     id: 4,
@@ -52,7 +62,10 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     title: 'No more hangups',
     description:
       'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
-    imageUrl: PhoneFieldFeatureUpdateImg,
+    image: {
+      url: PhoneFieldFeatureUpdateImg,
+      alt: 'Phone Field Feature Update',
+    },
   },
   {
     id: 6,
@@ -60,7 +73,10 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     title: 'Introducing Workspaces',
     description:
       "A workspace that's never messy. The first thing you see when you log into FormSG is your Workspace. This is where you store and organize all of your forms. Create multiple Workspaces and move your forms into them to stay organised.",
-    imageUrl: WorkspaceFeatureUpdateImg,
+    image: {
+      url: WorkspaceFeatureUpdateImg,
+      alt: 'Workspace Feature Update',
+    },
   },
   {
     id: 7,
@@ -78,7 +94,10 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     title: 'No more hangups',
     description:
       'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
-    imageUrl: PhoneFieldFeatureUpdateImg,
+    image: {
+      url: PhoneFieldFeatureUpdateImg,
+      alt: 'Phone Field Feature Update',
+    },
   },
   {
     id: 9,
@@ -86,7 +105,10 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     title: 'Introducing Workspaces',
     description:
       "A workspace that's never messy. The first thing you see when you log into FormSG is your Workspace. This is where you store and organize all of your forms. Create multiple Workspaces and move your forms into them to stay organised.",
-    imageUrl: WorkspaceFeatureUpdateImg,
+    image: {
+      url: WorkspaceFeatureUpdateImg,
+      alt: 'Workspace Feature Update',
+    },
   },
   {
     id: 10,
@@ -104,7 +126,10 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     title: 'No more hangups',
     description:
       'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
-    imageUrl: PhoneFieldFeatureUpdateImg,
+    image: {
+      url: PhoneFieldFeatureUpdateImg,
+      alt: 'Phone Field Feature Update',
+    },
   },
   {
     id: 12,
@@ -112,7 +137,10 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     title: 'Introducing Workspaces',
     description:
       "A workspace that's never messy. The first thing you see when you log into FormSG is your Workspace. This is where you store and organize all of your forms. Create multiple Workspaces and move your forms into them to stay organised.",
-    imageUrl: WorkspaceFeatureUpdateImg,
+    image: {
+      url: WorkspaceFeatureUpdateImg,
+      alt: 'Workspace Feature Update',
+    },
   },
   {
     id: 13,
@@ -130,7 +158,10 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     title: 'No more hangups',
     description:
       'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
-    imageUrl: PhoneFieldFeatureUpdateImg,
+    image: {
+      url: PhoneFieldFeatureUpdateImg,
+      alt: 'Phone Field Feature Update',
+    },
   },
   {
     id: 15,
@@ -138,6 +169,9 @@ export const FeatureUpdateList: FeatureUpdate[] = [
     title: 'Introducing Workspaces',
     description:
       "A workspace that's never messy. The first thing you see when you log into FormSG is your Workspace. This is where you store and organize all of your forms. Create multiple Workspaces and move your forms into them to stay organised.",
-    imageUrl: WorkspaceFeatureUpdateImg,
+    image: {
+      url: WorkspaceFeatureUpdateImg,
+      alt: 'Workspace Feature Update',
+    },
   },
 ]
