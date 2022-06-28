@@ -38,6 +38,9 @@ export interface PublicFormContextProps
   handleSubmitForm: (formInputs: any) => void
   /** id of container to render captcha in  */
   captchaContainerId: string
+  isMobileSectionSidebarOpen?: boolean
+  handleMobileSectionSidebarClick?: () => void
+  handleMobileSectionSidebarClose: () => void
 }
 
 export const PublicFormContext = createContext<

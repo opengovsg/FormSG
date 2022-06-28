@@ -14,11 +14,18 @@ import simplur from 'simplur'
 
 import { FormAuthType, FormColorTheme } from '~shared/types/form/form'
 
+import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
 import Button from '~components/Button'
+import IconButton from '~components/IconButton'
 
 import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+import {
+  FormSectionsProvider,
+  useFormSections,
+} from '../FormFields/FormSectionsContext'
 
 const useFormHeader = () => {
   const { form, spcpSession, formId, submissionData, miniHeaderRef } =
@@ -59,6 +66,7 @@ const useFormHeader = () => {
     showHeader: !submissionData,
     miniHeaderRef,
     handleLogout,
+    form,
   }
 }
 
@@ -68,28 +76,54 @@ export interface MiniHeaderProps {
 
 // Exported for testing.
 export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
+  const { handleMobileSectionSidebarClick } = usePublicFormContext()
+  const { activeSectionId } = useFormSections()
+
   const { title, titleBg, titleColour, showHeader, miniHeaderRef } =
     useFormHeader()
 
   if (!showHeader) return null
 
   return (
-    <Slide
-      // Screen readers do not need to know of the existence of this component.
-      aria-hidden
-      ref={miniHeaderRef}
-      direction="top"
-      in={isOpen}
-      style={{ zIndex: 10 }}
-    >
-      <Box bg={titleBg} px="2rem" py="1rem">
-        <Skeleton isLoaded={!!title}>
-          <Text as="h2" textStyle="h2" textAlign="start" color={titleColour}>
-            {title ?? 'Loading title'}
-          </Text>
-        </Skeleton>
-      </Box>
-    </Slide>
+    <Flex>
+      <Slide
+        // Screen readers do not need to know of the existence of this component.
+        aria-hidden
+        ref={miniHeaderRef}
+        direction="top"
+        in={isOpen}
+        style={{ zIndex: 1000 }}
+      >
+        <Box bg={titleBg} px="1.5rem" py="1rem">
+          <Skeleton isLoaded={!!title}>
+            <Flex align="center" flex={1} justify="space-between" flexDir="row">
+              <Text
+                as="h2"
+                textStyle="h2"
+                textAlign="start"
+                color={titleColour}
+              >
+                {title ?? 'Loading title'}
+              </Text>
+              {activeSectionId ? (
+                // Section sidebar icon should only show up if sections exist
+                <IconButton
+                  variant="solid"
+                  colorScheme="primary"
+                  aria-label="Mobile section sidebar"
+                  fontSize="1.5rem"
+                  icon={<BxMenuAltLeft />}
+                  d={{ base: 'flex', md: 'none' }}
+                  onClick={handleMobileSectionSidebarClick}
+                />
+              ) : (
+                <></>
+              )}
+            </Flex>
+          </Skeleton>
+        </Box>
+      </Slide>
+    </Flex>
   )
 }
 
@@ -102,6 +136,7 @@ export const FormHeader = (): JSX.Element | null => {
     loggedInId,
     handleLogout,
     showHeader,
+    form,
   } = useFormHeader()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -122,7 +157,9 @@ export const FormHeader = (): JSX.Element | null => {
 
   return (
     <>
-      <MiniHeader isOpen={isOpen} />
+      <FormSectionsProvider form={form}>
+        <MiniHeader isOpen={isOpen} />
+      </FormSectionsProvider>
       <Flex
         px={{ base: '1.5rem', md: '3rem' }}
         py={{ base: '2rem', md: '3rem' }}
@@ -146,7 +183,12 @@ export const FormHeader = (): JSX.Element | null => {
           </Skeleton>
           {estTimeString && (
             <Flex align="flex-start" justify="center" mt="0.875rem">
-              <Icon as={BxsTimeFive} fontSize="1.5rem" mr="0.5rem" />
+              <Icon
+                as={BxsTimeFive}
+                fontSize="1.5rem"
+                mr="0.5rem"
+                d={{ base: 'initial', md: 'none' }}
+              />
               <Text textStyle="body-2" mt="0.125rem">
                 {estTimeString}
               </Text>

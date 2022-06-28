@@ -56,6 +56,17 @@ export const PublicFormProvider = ({
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
+
+  // For mobile section sidebar
+  const [isMobileSectionSidebarOpen, setIsMobileSectionSidebarOpen] =
+    useState<boolean>(false)
+  const handleMobileSectionSidebarClick = useCallback(() => {
+    setIsMobileSectionSidebarOpen(!isMobileSectionSidebarOpen)
+  }, [setIsMobileSectionSidebarOpen, isMobileSectionSidebarOpen])
+  const handleMobileSectionSidebarClose = useCallback(() => {
+    setIsMobileSectionSidebarOpen(false)
+  }, [setIsMobileSectionSidebarOpen])
+
   const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
     // Stop querying once submissionData is present.
@@ -267,6 +278,9 @@ export const PublicFormProvider = ({
         isAuthRequired,
         captchaContainerId: containerId,
         isLoading: isLoading || (!!cachedDto?.form.hasCaptcha && !hasLoaded),
+        isMobileSectionSidebarOpen,
+        handleMobileSectionSidebarClick,
+        handleMobileSectionSidebarClose,
         ...cachedDto,
         ...rest,
       }}
