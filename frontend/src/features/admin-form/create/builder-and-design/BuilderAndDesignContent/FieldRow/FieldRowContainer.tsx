@@ -14,11 +14,7 @@ import {
 } from '@chakra-ui/react'
 import { times } from 'lodash'
 
-import {
-  BasicField,
-  FormFieldDto,
-  isMyInfoPrefilledFormField,
-} from '~shared/types/field'
+import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
@@ -49,7 +45,8 @@ import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 import {
   augmentWithMyInfoPrefill,
-  extractPrefilledValue,
+  extractPreviewValue,
+  hasExistingFieldValue,
 } from '~features/myinfo/utils'
 
 import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
@@ -107,9 +104,9 @@ export const FieldRowContainer = ({
 
     const augmentedField = augmentWithMyInfoPrefill(field)
 
-    if (isMyInfoPrefilledFormField(augmentedField)) {
+    if (hasExistingFieldValue(augmentedField)) {
       return {
-        [field._id]: extractPrefilledValue(augmentedField),
+        [field._id]: extractPreviewValue(augmentedField),
       }
     }
   }, [field])
