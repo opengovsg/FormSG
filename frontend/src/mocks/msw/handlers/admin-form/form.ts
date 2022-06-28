@@ -35,6 +35,7 @@ import {
   CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
+import { augmentWithMyInfoPrefill } from '~features/myinfo/utils'
 
 export const MOCK_MYINFO_IMPLEMENTED_TYPES = [
   ...CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
@@ -322,6 +323,15 @@ export const MOCK_MYINFO_FIELDS = MOCK_MYINFO_IMPLEMENTED_TYPES.map(
     globalId: idx.toString(),
     ...getMyInfoFieldCreationMeta(myInfoAttr),
   }),
+)
+
+// NOTE: This should be used in public forms, whereas the above should be used in
+// admin form preview.
+// This is done to ensure that
+// 1. Admin form preview previews the myInfo fields correctly (with mock values)
+// 2. Public form has correct display of the myInfo fields with prefilled value
+export const MOCK_PREFILLED_MYINFO_FIELDS = MOCK_MYINFO_FIELDS.map(
+  augmentWithMyInfoPrefill,
 )
 
 export const MOCK_FORM_FIELDS_WITH_MYINFO = [
