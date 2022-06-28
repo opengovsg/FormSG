@@ -18,8 +18,8 @@ import {
 } from '~features/public-form/PublicFormService'
 
 import {
-  submitEmailModeForm,
-  submitStorageModeForm,
+  submitEmailModeFormPreview,
+  submitStorageModeFormPreview,
 } from '../common/AdminViewFormService'
 
 import { permissionsToRole } from './components/CollaboratorModal/utils'
@@ -310,13 +310,13 @@ export const useMutateCollaborators = () => {
 export const usePreviewFormMutations = (formId: string) => {
   const submitEmailModeFormMutation = useMutation(
     (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
-      return submitEmailModeForm({ ...args, formId })
+      return submitEmailModeFormPreview({ ...args, formId })
     },
   )
 
   const submitStorageModeFormMutation = useMutation(
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
-      return submitStorageModeForm({ ...args, formId })
+      return submitStorageModeFormPreview({ ...args, formId })
     },
   )
 

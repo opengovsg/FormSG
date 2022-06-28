@@ -101,13 +101,11 @@ export const removeSelfFromFormCollaborators = async (
 /**
  * Submit an email mode form in preview mode
  */
-
-export const submitEmailModeForm = async ({
+export const submitEmailModeFormPreview = async ({
   formFields,
   formInputs,
   formId,
-}: //   captchaResponse = null,
-SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
+}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
   const formData = createEmailSubmissionFormData(formFields, formInputs)
 
   return ApiService.post<SubmissionResponseDto>(
@@ -119,14 +117,12 @@ SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
 /**
  * Submit a storage mode form in preview mode
  */
-
-export const submitStorageModeForm = async ({
+export const submitStorageModeFormPreview = async ({
   formFields,
   formInputs,
   formId,
   publicKey,
-}: // captchaResponse = null,
-SubmitStorageFormArgs) => {
+}: SubmitStorageFormArgs) => {
   const submissionContent = await createEncryptedSubmissionData(
     formFields,
     formInputs,
