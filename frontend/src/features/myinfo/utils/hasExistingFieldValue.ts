@@ -1,6 +1,6 @@
-import { MyInfoPrefilledFormField, MyInfoFormField } from '../index'
+import { MyInfoFormField, MyInfoPrefilledFormField } from '~shared/types'
 
-export const isMyInfoPrefilledFormField = (
+export const hasExistingFieldValue = (
   possiblyPrefilledMyInfoField: MyInfoFormField,
 ): possiblyPrefilledMyInfoField is MyInfoPrefilledFormField => {
   return !!possiblyPrefilledMyInfoField.fieldValue
