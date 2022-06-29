@@ -24,6 +24,10 @@ const BASE_CLIENT_NAME = 'baseClient'
 const NDI_PUBLIC_KEY_NAME = 'ndiPublicKeys'
 const EXPIRY_NAME = 'expiry'
 
+// Timeout for getNdiPublicKeys and getBaseClient when cache is first being populated
+// Prevents accumulation of callers if refresh never resolves
+const INITIAL_REFRESH_TIMEOUT = 10000
+
 /**
  * Cache class which provides read-through capability and refresh-ahead before expiry
  * Handles discovery and retrieval of NDI's public jwks
@@ -86,7 +90,10 @@ export class SpOidcClientCache {
   async getNdiPublicKeys(): Promise<CryptoKeys> {
     const ndiPublicKeys = this._cache.get<CryptoKeys>(NDI_PUBLIC_KEY_NAME)
     if (!ndiPublicKeys) {
-      const { ndiPublicKeys } = await timeout(this.refresh(), 10000)
+      const { ndiPublicKeys } = await timeout(
+        this.refresh(),
+        INITIAL_REFRESH_TIMEOUT,
+      )
       return ndiPublicKeys
     }
     return ndiPublicKeys
@@ -102,7 +109,10 @@ export class SpOidcClientCache {
   async getBaseClient(): Promise<BaseClient> {
     const baseClient = this._cache.get<BaseClient>(BASE_CLIENT_NAME)
     if (!baseClient) {
-      const { baseClient } = await timeout(this.refresh(), 10000)
+      const { baseClient } = await timeout(
+        this.refresh(),
+        INITIAL_REFRESH_TIMEOUT,
+      )
       return baseClient
     }
     return baseClient
@@ -192,7 +202,7 @@ export class SpOidcClientCache {
   async retrieveBaseClientFromNdi(): Promise<BaseClient> {
     const getIssuerWithRetries = retryPromiseThreeAttempts(
       () => Issuer.discover(this.#spOidcNdiDiscoveryEndpoint),
-      `axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint)`,
+      `Issuer.discover(this.#spOidcNdiDiscoveryEndpoint)`,
     )
 
     const issuer = await getIssuerWithRetries
