@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
+import Jwt from 'jsonwebtoken'
 import { mocked } from 'ts-jest/utils'
 
 import {
@@ -30,6 +32,8 @@ import {
 
 jest.mock('@opengovsg/sgid-client')
 const MockSgidClient = mocked(SgidClient, true)
+jest.mock('jsonwebtoken')
+const MockJwt = mocked(Jwt)
 jest.mock('fs', () => ({
   ...(jest.requireActual('fs') as typeof fs),
   readFileSync: jest.fn().mockImplementation((v) => v),
@@ -73,7 +77,6 @@ describe('sgid.service', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
       const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
       sgidClient.authorizationUrl.mockReturnValue({
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         url: undefined,
         nonce: MOCK_NONCE,
@@ -151,86 +154,93 @@ describe('sgid.service', () => {
   describe('createJwt', () => {
     it('should return a jwt with short shelf life', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
-      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
-      sgidClient.createJWT.mockReturnValue(MOCK_JWT)
+      // @ts-ignore
+      MockJwt.sign.mockReturnValue(MOCK_JWT)
       const result = SgidService.createJwt(MOCK_USER_INFO.data, false)
       expect(result._unsafeUnwrap()).toStrictEqual({
         jwt: MOCK_JWT,
         maxAge: MOCK_OPTIONS.cookieMaxAge,
       })
-      expect(sgidClient.createJWT).toHaveBeenCalledWith(
+      expect(MockJwt.sign).toHaveBeenCalledWith(
         {
           userName: MOCK_USER_INFO.data['myinfo.nric_number'],
           rememberMe: false,
         },
-        MOCK_OPTIONS.cookieMaxAge / 1000,
+        MOCK_OPTIONS.privateKeyPath,
+        {
+          algorithm: 'RS256',
+          expiresIn: MOCK_OPTIONS.cookieMaxAge / 1000,
+        },
       )
     })
 
     it('should return a jwt with long shelf life', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
-      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
-      sgidClient.createJWT.mockReturnValue(MOCK_JWT)
+      // @ts-ignore
+      MockJwt.sign.mockReturnValue(MOCK_JWT)
       const result = SgidService.createJwt(MOCK_USER_INFO.data, true)
       expect(result._unsafeUnwrap()).toStrictEqual({
         jwt: MOCK_JWT,
         maxAge: MOCK_OPTIONS.cookieMaxAgePreserved,
       })
-      expect(sgidClient.createJWT).toHaveBeenCalledWith(
+      expect(MockJwt.sign).toHaveBeenCalledWith(
         {
           userName: MOCK_USER_INFO.data['myinfo.nric_number'],
           rememberMe: true,
         },
-        MOCK_OPTIONS.cookieMaxAgePreserved / 1000,
+        MOCK_OPTIONS.privateKeyPath,
+        {
+          algorithm: 'RS256',
+          expiresIn: MOCK_OPTIONS.cookieMaxAgePreserved / 1000,
+        },
       )
     })
   })
   describe('extractSgidJwtPayload', () => {
     it('should return an sgID JWT payload', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
-      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
-      sgidClient.verifyJWT.mockReturnValue(MOCK_JWT_PAYLOAD)
+      // @ts-ignore
+      MockJwt.verify.mockReturnValue(MOCK_JWT_PAYLOAD)
       const result = SgidService.extractSgidJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrap()).toStrictEqual(MOCK_JWT_PAYLOAD)
-      expect(sgidClient.verifyJWT).toHaveBeenCalledWith(
+      expect(MockJwt.verify).toHaveBeenCalledWith(
         MOCK_JWT,
         MOCK_OPTIONS.publicKeyPath,
+        { algorithms: ['RS256'] },
       )
     })
 
     it('should return SgidMissingJwtError on malformed payload', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
-      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
-      sgidClient.verifyJWT.mockReturnValue({})
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const result = SgidService.extractSgidJwtPayload(undefined)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(SgidMissingJwtError)
-      expect(sgidClient.verifyJWT).not.toHaveBeenCalled()
+      expect(MockJwt.verify).not.toHaveBeenCalled()
     })
 
     it('should return SgidInvalidJwtError on malformed payload', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
-      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
-      sgidClient.verifyJWT.mockReturnValue({})
+      // @ts-ignore
+      MockJwt.verify.mockReturnValue({})
       const result = SgidService.extractSgidJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(SgidInvalidJwtError)
-      expect(sgidClient.verifyJWT).toHaveBeenCalledWith(
+      expect(MockJwt.verify).toHaveBeenCalledWith(
         MOCK_JWT,
         MOCK_OPTIONS.publicKeyPath,
+        { algorithms: ['RS256'] },
       )
     })
     it('should return SgidVerifyJwtError on verify failure', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
-      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
-      sgidClient.verifyJWT.mockImplementation(() => {
+      MockJwt.verify.mockImplementation(() => {
         throw new Error()
       })
       const result = SgidService.extractSgidJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(SgidVerifyJwtError)
-      expect(sgidClient.verifyJWT).toHaveBeenCalledWith(
+      expect(MockJwt.verify).toHaveBeenCalledWith(
         MOCK_JWT,
         MOCK_OPTIONS.publicKeyPath,
+        { algorithms: ['RS256'] },
       )
     })
   })
