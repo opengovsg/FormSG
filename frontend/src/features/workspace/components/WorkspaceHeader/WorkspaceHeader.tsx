@@ -18,6 +18,7 @@ export interface WorkspaceHeaderProps {
   isLoading: boolean
   handleOpenCreateFormModal: () => void
   handleOpenWhatsNewDrawer: () => void
+  isWhatsNewButtonSolid: boolean
 }
 
 /**
@@ -28,9 +29,12 @@ export const WorkspaceHeader = ({
   isLoading,
   handleOpenCreateFormModal,
   handleOpenWhatsNewDrawer,
+  isWhatsNewButtonSolid,
 }: WorkspaceHeaderProps): JSX.Element => {
   const [sortOption, setSortOption] = useState(SortOption.LastUpdated)
   const isMobile = useIsMobile()
+
+  const whatsNewButtonVariant = isWhatsNewButtonSolid ? 'solid' : 'outline'
 
   return (
     <Stack
@@ -67,7 +71,11 @@ export const WorkspaceHeader = ({
         >
           Create form
         </Button>
-        <Button isFullWidth={isMobile} onClick={handleOpenWhatsNewDrawer}>
+        <Button
+          isFullWidth={isMobile}
+          onClick={handleOpenWhatsNewDrawer}
+          variant={whatsNewButtonVariant}
+        >
           What's New
         </Button>
       </Stack>

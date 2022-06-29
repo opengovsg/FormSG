@@ -16,7 +16,7 @@ export interface FeatureUpdate {
 export const FeatureUpdateList: FeatureUpdate[] = [
   {
     id: 1,
-    date: '17 July',
+    date: '17 June 2022',
     title: 'UI Improvements',
     description: `
   * Cool new datepicker with day, month, and year views
@@ -26,7 +26,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 2,
-    date: '17 July',
+    date: '17 June 2022',
     title: 'No more hangups',
     description:
       'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
@@ -37,7 +37,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 3,
-    date: '17 July',
+    date: '17 June 2022',
     title: 'Introducing Workspaces',
     description:
       "A workspace that's never messy. The first thing you see when you log into FormSG is your Workspace. This is where you store and organize all of your forms. Create multiple Workspaces and move your forms into them to stay organised.",
@@ -48,7 +48,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 4,
-    date: '17 July',
+    date: '17 June 2022',
     title: 'UI Improvements',
     description: `
 * Cool new datepicker with day, month, and year views
@@ -58,7 +58,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 5,
-    date: '17 July',
+    date: '17 June 2022',
     title: 'No more hangups',
     description:
       'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
@@ -69,7 +69,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 6,
-    date: '17 July',
+    date: '17 June 2022',
     title: 'Introducing Workspaces',
     description:
       "A workspace that's never messy. The first thing you see when you log into FormSG is your Workspace. This is where you store and organize all of your forms. Create multiple Workspaces and move your forms into them to stay organised.",
@@ -80,7 +80,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 7,
-    date: '17 July',
+    date: '17 June 2022',
     title: 'UI Improvements',
     description: `
 * Cool new datepicker with day, month, and year views
@@ -90,7 +90,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 8,
-    date: '17 July',
+    date: '17 June 2022',
     title: 'No more hangups',
     description:
       'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
@@ -101,7 +101,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 9,
-    date: '17 July',
+    date: '17 June 2022',
     title: 'Introducing Workspaces',
     description:
       "A workspace that's never messy. The first thing you see when you log into FormSG is your Workspace. This is where you store and organize all of your forms. Create multiple Workspaces and move your forms into them to stay organised.",
@@ -112,7 +112,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 10,
-    date: '17 July',
+    date: '17 June 2022',
     title: 'UI Improvements',
     description: `
 * Cool new datepicker with day, month, and year views
@@ -122,7 +122,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 11,
-    date: '17 July',
+    date: '17 June 2022',
     title: 'No more hangups',
     description:
       'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
@@ -133,7 +133,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 12,
-    date: '10 July',
+    date: '10 June 2022',
     title: 'Introducing Workspaces',
     description:
       "A workspace that's never messy. The first thing you see when you log into FormSG is your Workspace. This is where you store and organize all of your forms. Create multiple Workspaces and move your forms into them to stay organised.",
@@ -144,7 +144,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 13,
-    date: '10 July',
+    date: '10 June 2022',
     title: 'UI Improvements',
     description: `
 * Cool new datepicker with day, month, and year views
@@ -154,7 +154,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 14,
-    date: '10 July',
+    date: '10 June 2022',
     title: 'No more hangups',
     description:
       'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
@@ -165,7 +165,7 @@ export const FeatureUpdateList: FeatureUpdate[] = [
   },
   {
     id: 15,
-    date: '10 July',
+    date: '10 June 2022',
     title: 'Introducing Workspaces',
     description:
       "A workspace that's never messy. The first thing you see when you log into FormSG is your Workspace. This is where you store and organize all of your forms. Create multiple Workspaces and move your forms into them to stay organised.",
