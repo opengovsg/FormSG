@@ -1,7 +1,9 @@
+import { ApplicationError } from '../core/core.errors'
+
 /**
  * Error while creating Authorisation URL
  */
-export class CreateAuthorisationUrlError extends Error {
+export class CreateAuthorisationUrlError extends ApplicationError {
   constructor(message = 'Error while creating Authorisation URL') {
     super(message)
   }
@@ -10,7 +12,7 @@ export class CreateAuthorisationUrlError extends Error {
 /**
  * Failed to create JWT
  */
-export class CreateJwtError extends Error {
+export class CreateJwtError extends ApplicationError {
   constructor(message = 'Create JWT failed') {
     super(message)
   }
@@ -19,7 +21,7 @@ export class CreateJwtError extends Error {
 /**
  * Failed to get decryption key
  */
-export class GetDecryptionKeyError extends Error {
+export class GetDecryptionKeyError extends ApplicationError {
   constructor(message = 'Failed to get decryption key') {
     super(message)
   }
@@ -28,7 +30,7 @@ export class GetDecryptionKeyError extends Error {
 /**
  * Failed to get verification key
  */
-export class GetVerificationKeyError extends Error {
+export class GetVerificationKeyError extends ApplicationError {
   constructor(message = 'Failed to get verification key') {
     super(message)
   }
@@ -37,7 +39,7 @@ export class GetVerificationKeyError extends Error {
 /**
  * idToken has invalid shape
  */
-export class InvalidIdTokenError extends Error {
+export class InvalidIdTokenError extends ApplicationError {
   constructor(message = 'idToken has invalid shape') {
     super(message)
   }
@@ -46,7 +48,7 @@ export class InvalidIdTokenError extends Error {
 /**
  * JWK shape invalid
  */
-export class JwkError extends Error {
+export class JwkError extends ApplicationError {
   constructor(message = 'Jwk has invalid shape') {
     super(message)
   }
@@ -55,7 +57,7 @@ export class JwkError extends Error {
 /**
  * Missing idToken in tokenset
  */
-export class MissingIdTokenError extends Error {
+export class MissingIdTokenError extends ApplicationError {
   constructor(message = 'Missing id token in tokenset') {
     super(message)
   }
@@ -64,7 +66,7 @@ export class MissingIdTokenError extends Error {
 /**
  * Invalid verification key
  */
-export class VerificationKeyError extends Error {
+export class VerificationKeyError extends ApplicationError {
   constructor(message = 'Verification key invalid') {
     super(message)
   }
@@ -73,7 +75,7 @@ export class VerificationKeyError extends Error {
 /**
  * Failed to exchange auth code for nric
  */
-export class ExchangeAuthTokenError extends Error {
+export class ExchangeAuthTokenError extends ApplicationError {
   constructor(message = 'Exchange auth code for nric failed') {
     super(message)
   }
