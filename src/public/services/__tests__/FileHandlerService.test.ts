@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson-ext'
 import mockAxios from 'jest-mock-axios'
 import MockDate from 'mockdate'
 
@@ -97,13 +98,18 @@ describe('FileHandlerService', () => {
       const mockPresignedUrl = 'another/url/'
       const mockFileId = 'mockFileId'
       const mockPostUrl = 'final/presigned/url/'
+      const mockKeyReturned = `${String(new ObjectId())}-${mockFileId}`
 
       // Mock axios responses in sequence.
       mockAxios.post
         // POSTing to retrieve presigned data.
         .mockResolvedValueOnce({
           data: {
-            fields: { fieldA: 'AValue', fieldB: 'BValue' },
+            fields: {
+              fieldA: 'AValue',
+              fieldB: 'BValue',
+              key: mockKeyReturned,
+            },
             url: mockPresignedUrl,
           },
         })
@@ -126,11 +132,12 @@ describe('FileHandlerService', () => {
         fileId: mockFileId,
         fileMd5Hash: expect.any(String),
         fileType: mockUpload.type,
+        isNewClient: true,
       }
 
       const expectedFinalValue: FileHandlerService.UploadedFileData = {
-        url: `${mockPostUrl}/${mockFileId}`,
-        fileId: mockFileId,
+        url: `${mockPostUrl}/${mockKeyReturned}`,
+        fileId: mockKeyReturned,
         fileMd5Hash: expect.any(String),
         name: mockUpload.name,
         size: mockUpload.size,
@@ -138,9 +145,11 @@ describe('FileHandlerService', () => {
 
       // Generate expected FormData
       const expectedFormData = new FormData()
-      Object.entries({ fieldA: 'AValue', fieldB: 'BValue' }).forEach(([k, v]) =>
-        expectedFormData.append(k, v),
-      )
+      Object.entries({
+        fieldA: 'AValue',
+        fieldB: 'BValue',
+        key: mockKeyReturned,
+      }).forEach(([k, v]) => expectedFormData.append(k, v))
       expectedFormData.append('file', mockUpload)
 
       expect(mockAxios.post).toHaveBeenCalledTimes(2)

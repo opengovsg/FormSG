@@ -27,6 +27,9 @@ import {
 const verificationApp = setupApp('/transaction', VfnRouter)
 const VerificationModel = getVerificationModel(mongoose)
 
+// Prevent rate limiting.
+jest.mock('src/app/utils/limit-rate')
+
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockReturnValue({
     sendMail: jest.fn().mockResolvedValue(true),

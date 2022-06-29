@@ -59,6 +59,7 @@ describe('admin-form.presign.routes', () => {
       fileId: 'some file id',
       fileMd5Hash: SparkMD5.hash('test file name'),
       fileType: VALID_UPLOAD_FILE_TYPES[0],
+      isNewClient: true, // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
     }
 
     it('should return 200 with presigned POST URL object', async () => {
@@ -82,7 +83,51 @@ describe('admin-form.presign.routes', () => {
         fields: expect.objectContaining({
           'Content-MD5': DEFAULT_POST_PARAMS.fileMd5Hash,
           'Content-Type': DEFAULT_POST_PARAMS.fileType,
-          key: DEFAULT_POST_PARAMS.fileId,
+          key: expect.any(String),
+          // Should have correct permissions.
+          acl: 'public-read',
+          bucket: expect.any(String),
+        }),
+      })
+      expect(response.body.fields.key).toEqual(
+        expect.stringContaining(DEFAULT_POST_PARAMS.fileId),
+      )
+      expect(DEFAULT_POST_PARAMS.fileId.length).toEqual(
+        response.body.fields.key.length - 25,
+      )
+
+      expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
+    })
+
+    it('should return 200 with presigned POST URL object for old client', async () => {
+      // Arrange
+
+      const DEFAULT_POST_PARAMS_OLD_CLIENT = {
+        fileId: 'some file id',
+        fileMd5Hash: SparkMD5.hash('test file name'),
+        fileType: VALID_UPLOAD_FILE_TYPES[0],
+      }
+
+      const form = await EncryptFormModel.create({
+        title: 'form',
+        admin: defaultUser._id,
+        publicKey: 'does not matter',
+      })
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${form._id}/images/presign`)
+        .send(DEFAULT_POST_PARAMS_OLD_CLIENT)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      // Should equal mocked result.
+      expect(response.body).toEqual({
+        url: expect.any(String),
+        fields: expect.objectContaining({
+          'Content-MD5': DEFAULT_POST_PARAMS_OLD_CLIENT.fileMd5Hash,
+          'Content-Type': DEFAULT_POST_PARAMS_OLD_CLIENT.fileType,
+          key: DEFAULT_POST_PARAMS_OLD_CLIENT.fileId,
           // Should have correct permissions.
           acl: 'public-read',
           bucket: expect.any(String),
@@ -297,6 +342,7 @@ describe('admin-form.presign.routes', () => {
       fileId: 'some other file id',
       fileMd5Hash: SparkMD5.hash('test file name again'),
       fileType: VALID_UPLOAD_FILE_TYPES[2],
+      isNewClient: true, // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
     }
 
     it('should return 200 with presigned POST URL object', async () => {
@@ -320,7 +366,52 @@ describe('admin-form.presign.routes', () => {
         fields: expect.objectContaining({
           'Content-MD5': DEFAULT_POST_PARAMS.fileMd5Hash,
           'Content-Type': DEFAULT_POST_PARAMS.fileType,
-          key: DEFAULT_POST_PARAMS.fileId,
+          key: expect.any(String),
+          // Should have correct permissions.
+          acl: 'public-read',
+          bucket: expect.any(String),
+        }),
+      })
+
+      expect(response.body.fields.key).toEqual(
+        expect.stringContaining(DEFAULT_POST_PARAMS.fileId),
+      )
+      expect(DEFAULT_POST_PARAMS.fileId.length).toEqual(
+        response.body.fields.key.length - 25,
+      )
+
+      expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
+    })
+
+    it('should return 200 with presigned POST URL object for old client', async () => {
+      // Arrange
+
+      const DEFAULT_POST_PARAMS_OLD_CLIENT = {
+        fileId: 'some file id',
+        fileMd5Hash: SparkMD5.hash('test file name'),
+        fileType: VALID_UPLOAD_FILE_TYPES[0],
+      }
+
+      const form = await EncryptFormModel.create({
+        title: 'form',
+        admin: defaultUser._id,
+        publicKey: 'does not matter',
+      })
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${form._id}/logos/presign`)
+        .send(DEFAULT_POST_PARAMS_OLD_CLIENT)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      // Should equal mocked result.
+      expect(response.body).toEqual({
+        url: expect.any(String),
+        fields: expect.objectContaining({
+          'Content-MD5': DEFAULT_POST_PARAMS_OLD_CLIENT.fileMd5Hash,
+          'Content-Type': DEFAULT_POST_PARAMS_OLD_CLIENT.fileType,
+          key: DEFAULT_POST_PARAMS_OLD_CLIENT.fileId,
           // Should have correct permissions.
           acl: 'public-read',
           bucket: expect.any(String),

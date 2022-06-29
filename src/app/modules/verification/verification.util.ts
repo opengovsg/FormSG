@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import {
   HASH_EXPIRE_AFTER_SECONDS,
+  MAX_OTP_REQUESTS,
   VERIFIED_FIELDTYPES,
   WAIT_FOR_OTP_SECONDS,
   WAIT_FOR_OTP_TOLERANCE_SECONDS,
@@ -14,6 +15,7 @@ import {
 import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import {
+  OtpRequestCountExceededError,
   OtpRequestError,
   SmsLimitExceededError,
 } from '../../modules/verification/verification.errors'
@@ -28,6 +30,20 @@ import {
   MalformedParametersError,
 } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
+import {
+  MyInfoCookieStateError,
+  MyInfoMissingAccessTokenError,
+} from '../myinfo/myinfo.errors'
+import {
+  SgidInvalidJwtError,
+  SgidMissingJwtError,
+  SgidVerifyJwtError,
+} from '../sgid/sgid.errors'
+import {
+  InvalidJwtError,
+  MissingJwtError,
+  VerifyJwtError,
+} from '../spcp/spcp.errors'
 
 import {
   FieldNotFoundInTransactionError,
@@ -124,6 +140,16 @@ export const isOtpWaitTimeElapsed = (hashCreatedAt: Date | null): boolean => {
   return currentDate > elapseAt
 }
 
+/**
+ * Computes whether the number of OTPs requested has exceeded the maximum allowed.
+ * @param otpRequests Number of OTPs already requested
+ * @returns true if the number of OTPs has exceeded the maximum allowed
+ */
+export const isOtpRequestCountExceeded = (otpRequests: number): boolean => {
+  // Use >= because otpRequests is the number of OTPs previously requested
+  return otpRequests >= MAX_OTP_REQUESTS
+}
+
 export const mapRouteError: MapRouteError = (
   error,
   coreErrorMsg = 'Sorry, something went wrong. Please refresh and try again.',
@@ -155,6 +181,11 @@ export const mapRouteError: MapRouteError = (
         errorMessage: `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
       }
+    case OtpRequestCountExceededError:
+      return {
+        errorMessage: `You have requested too many OTPs. Please refresh and try again.`,
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
     case InvalidNumberError:
       return {
         errorMessage:
@@ -166,6 +197,18 @@ export const mapRouteError: MapRouteError = (
     case NonVerifiedFieldTypeError:
     case MissingHashDataError:
     case DatabaseValidationError:
+      return {
+        errorMessage: coreErrorMsg,
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
+    case MissingJwtError:
+    case InvalidJwtError:
+    case VerifyJwtError:
+    case SgidVerifyJwtError:
+    case SgidInvalidJwtError:
+    case SgidMissingJwtError:
+    case MyInfoMissingAccessTokenError:
+    case MyInfoCookieStateError:
       return {
         errorMessage: coreErrorMsg,
         statusCode: StatusCodes.BAD_REQUEST,

@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { BasicField } from '../../../../shared/types'
+import { startsWithSgPrefix } from '../../../../shared/utils/phone-num-validation'
 import {
   NUM_OTP_RETRIES,
   SMS_WARNING_TIERS,
@@ -40,6 +41,7 @@ import {
   MissingHashDataError,
   NonVerifiedFieldTypeError,
   OtpExpiredError,
+  OtpRequestCountExceededError,
   OtpRequestError,
   OtpRetryExceededError,
   TransactionExpiredError,
@@ -52,6 +54,7 @@ import { SendOtpParams } from './verification.types'
 import {
   hasAdminExceededFreeSmsLimit,
   isOtpExpired,
+  isOtpRequestCountExceeded,
   isOtpWaitTimeElapsed,
   isTransactionExpired,
 } from './verification.util'
@@ -278,6 +281,7 @@ export const resetFieldForTransaction = (
  * @returns err(TransactionExpiredError) when transaction is expired
  * @returns err(FieldNotFoundInTransactionError) when field does not exist
  * @returns err(WaitForOtpError) when waiting time for new OTP has not elapsed
+ * @returns err(OtpRequestCountExceededError) when max OTP requests has been exceeded
  * @returns err(MalformedParametersError) when form data to send SMS OTP cannot be retrieved
  * @returns err(SmsSendError) when attempt to send OTP SMS fails
  * @returns err(InvalidNumberError) when SMS recipient is invalid
@@ -291,6 +295,7 @@ export const sendNewOtp = ({
   recipient,
   otp,
   hashedOtp,
+  senderIp,
 }: SendOtpParams): ResultAsync<
   IVerificationSchema,
   | TransactionNotFoundError
@@ -298,6 +303,7 @@ export const sendNewOtp = ({
   | FieldNotFoundInTransactionError
   | TransactionExpiredError
   | WaitForOtpError
+  | OtpRequestCountExceededError
   | MalformedParametersError
   | SmsSendError
   | InvalidNumberError
@@ -322,7 +328,21 @@ export const sendNewOtp = ({
           return errAsync(new WaitForOtpError())
         }
 
-        return sendOtpForField(transaction.formId, field, recipient, otp)
+        if (isOtpRequestCountExceeded(field.otpRequests)) {
+          logger.warn({
+            message: 'Max OTP request count exceeded',
+            meta: logMeta,
+          })
+          return errAsync(new OtpRequestCountExceededError())
+        }
+
+        return sendOtpForField(
+          transaction.formId,
+          field,
+          recipient,
+          otp,
+          senderIp,
+        )
       })
       .andThen(() => {
         const signedData = formsgSdk.verification.generateSignature({
@@ -492,12 +512,14 @@ export const verifyOtp = (
  * @param field
  * @param recipient
  * @param otp
+ * @param senderIp
  */
 const sendOtpForField = (
   formId: string,
   field: IVerificationFieldSchema,
   recipient: string,
   otp: string,
+  senderIp: string,
 ): ResultAsync<
   true,
   | DatabaseError
@@ -514,10 +536,12 @@ const sendOtpForField = (
       return fieldId
         ? FormService.retrieveFormById(formId)
             // check if we should allow public user to request for otp
-            .andThen((form) => shouldGenerateMobileOtp(form, fieldId))
+            .andThen((form) =>
+              shouldGenerateMobileOtp(form, fieldId, recipient),
+            )
             // call sms - it should validate the recipient
             .andThen(() =>
-              SmsFactory.sendVerificationOtp(recipient, otp, formId),
+              SmsFactory.sendVerificationOtp(recipient, otp, formId, senderIp),
             )
         : errAsync(new MalformedParametersError('Field id not present'))
     case BasicField.Email:
@@ -590,20 +614,27 @@ const checkSmsCountAndPerformAction = (
 }
 
 /**
- * Check whether the field in the form is verifiable.
- * If it is not, then we don't need to generate an OTP.
+ * Check whether we should generate an OTP according to the requirements:
+ * 1. the field in the form is verifiable, and
+ * 2. if the recipient is within the allowed countries set by the field
+ * If these conditions are not met, then don't generate an OTP.
  */
 export const shouldGenerateMobileOtp = (
   { form_fields }: Pick<IFormSchema, 'form_fields'>,
   fieldId: string,
+  recipient: string,
 ): ResultAsync<true, OtpRequestError> => {
-  const isVerifiableMobileField =
-    !!form_fields &&
-    form_fields.filter(
-      ({ _id, isVerifiable }) => fieldId === String(_id) && isVerifiable,
-    ).length > 0
+  // Get the field with this fieldId
+  const field = form_fields?.find(({ _id }) => fieldId === String(_id))
 
-  return isVerifiableMobileField
+  if (!field || field.fieldType !== BasicField.Mobile)
+    return errAsync(new OtpRequestError())
+
+  // Check if recipient is within the allowed countries set by the field
+  const recipientIsWithinAllowedCountries =
+    startsWithSgPrefix(recipient) || field.allowIntlNumbers
+
+  return field.isVerifiable && recipientIsWithinAllowedCountries
     ? okAsync(true)
     : errAsync(new OtpRequestError())
 }

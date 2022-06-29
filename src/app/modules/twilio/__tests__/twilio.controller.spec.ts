@@ -48,6 +48,13 @@ describe('twilio.controller', () => {
     it('should return 200 when successfully delivered message is sent', async () => {
       const mockReq = expressHandler.mockRequest({
         body: MOCK_SUCCESSFUL_MESSAGE,
+        others: {
+          protocol: 'https',
+          host: 'webhook-endpoint.gov.sg',
+          url: `/endpoint?${encodeURI('senderIp=200.0.0.0')}`,
+          originalUrl: `/endpoint?${encodeURI('senderIp=200.0.0.0')}`,
+          get: () => 'webhook-endpoint.gov.sg',
+        },
       })
       const mockRes = expressHandler.mockResponse()
       await twilioSmsUpdates(mockReq, mockRes, jest.fn())
@@ -57,6 +64,7 @@ describe('twilio.controller', () => {
         meta: {
           action: 'twilioSmsUpdates',
           body: MOCK_SUCCESSFUL_MESSAGE,
+          senderIp: '200.0.0.0',
         },
       })
       expect(mockLogger.error).not.toBeCalled()
@@ -66,6 +74,13 @@ describe('twilio.controller', () => {
     it('should return 200 when failed delivered message is sent', async () => {
       const mockReq = expressHandler.mockRequest({
         body: MOCK_FAILED_MESSAGE,
+        others: {
+          protocol: 'https',
+          host: 'webhook-endpoint.gov.sg',
+          url: `/endpoint?${encodeURI('senderIp=200.0.0.0')}`,
+          originalUrl: `/endpoint?${encodeURI('senderIp=200.0.0.0')}`,
+          get: () => 'webhook-endpoint.gov.sg',
+        },
       })
       const mockRes = expressHandler.mockResponse()
       await twilioSmsUpdates(mockReq, mockRes, jest.fn())
@@ -76,6 +91,7 @@ describe('twilio.controller', () => {
         meta: {
           action: 'twilioSmsUpdates',
           body: MOCK_FAILED_MESSAGE,
+          senderIp: '200.0.0.0',
         },
       })
       expect(mockRes.sendStatus).toBeCalledWith(200)
