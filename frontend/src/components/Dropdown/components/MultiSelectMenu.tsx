@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
+import { Virtuoso } from 'react-virtuoso'
 import { Box, List, ListItem } from '@chakra-ui/react'
 
 import { useMultiSelectContext } from '../MultiSelectContext'
@@ -9,8 +10,14 @@ import { MultiDropdownItem } from './MultiDropdownItem'
 import { useSelectPopover } from './SelectPopover'
 
 export const MultiSelectMenu = (): JSX.Element => {
-  const { getMenuProps, isOpen, items, nothingFoundLabel, styles } =
-    useSelectContext()
+  const {
+    getMenuProps,
+    isOpen,
+    items,
+    nothingFoundLabel,
+    styles,
+    virtualListRef,
+  } = useSelectContext()
 
   const { selectedItems } = useMultiSelectContext()
 
@@ -26,6 +33,14 @@ export const MultiSelectMenu = (): JSX.Element => {
     }
   }, [isOpen, selectedItems, update])
 
+  const virtualHeight = useMemo(() => {
+    const maxHeight = 12 * 16
+    const totalHeight = items.length * 48
+    // If the total height is less than the max height, just return the total height.
+    // Otherwise, return the max height.
+    return Math.min(totalHeight, maxHeight)
+  }, [items.length])
+
   return (
     <Box
       ref={popperRef}
@@ -40,14 +55,22 @@ export const MultiSelectMenu = (): JSX.Element => {
         })}
         sx={styles.list}
       >
-        {isOpen &&
-          items.map((item, index) => (
-            <MultiDropdownItem
-              key={`${itemToValue(item)}${index}`}
-              item={item}
-              index={index}
-            />
-          ))}
+        {isOpen && items.length > 0 && (
+          <Virtuoso
+            ref={virtualListRef}
+            data={items}
+            style={{ height: virtualHeight }}
+            itemContent={(index, item) => {
+              return (
+                <MultiDropdownItem
+                  key={`${itemToValue(item)}${index}`}
+                  item={item}
+                  index={index}
+                />
+              )
+            }}
+          />
+        )}
         {isOpen && items.length === 0 ? (
           <ListItem role="option" sx={styles.emptyItem}>
             {nothingFoundLabel}

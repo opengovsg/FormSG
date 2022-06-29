@@ -8,6 +8,8 @@ import { ComboboxItem } from './types'
 export interface SharedSelectContextReturnProps<
   Item extends ComboboxItem = ComboboxItem,
 > {
+  /** Ref for list virtualization */
+  virtualListRef?: RefObject<VirtuosoHandle>
   /** Set to true to enable search, defaults to `true` */
   isSearchable?: boolean
   /** Set to true to allow clearing of input, defaults to `true` */
@@ -46,7 +48,6 @@ interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
   isFocused: boolean
   setIsFocused: (isFocused: boolean) => void
   inputRef?: MutableRefObject<HTMLInputElement | null>
-  virtualListRef?: RefObject<VirtuosoHandle>
   resetInputValue: () => void
 }
 

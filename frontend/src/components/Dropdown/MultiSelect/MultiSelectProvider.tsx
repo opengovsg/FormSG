@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { VirtuosoHandle } from 'react-virtuoso'
 import {
   FormControlOptions,
   useFormControlProps,
@@ -76,6 +77,7 @@ export const MultiSelectProvider = ({
 
   // Inject for components to manipulate
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const virtualListRef = useRef<VirtuosoHandle>(null)
 
   const { isInvalid, isDisabled, isReadOnly, isRequired } = useFormControlProps(
     {
@@ -172,6 +174,19 @@ export const MultiSelectProvider = ({
     defaultIsOpen,
     defaultInputValue: '',
     defaultHighlightedIndex: 0,
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    scrollIntoView: () => {},
+    onHighlightedIndexChange: ({ highlightedIndex }) => {
+      if (
+        highlightedIndex !== undefined &&
+        highlightedIndex >= 0 &&
+        virtualListRef.current
+      ) {
+        virtualListRef.current.scrollIntoView({
+          index: highlightedIndex,
+        })
+      }
+    },
     onStateChange: ({ inputValue, type }) => {
       switch (type) {
         case useCombobox.stateChangeTypes.FunctionSetInputValue:
@@ -286,6 +301,7 @@ export const MultiSelectProvider = ({
         isRequired,
         resetInputValue,
         inputAria,
+        virtualListRef,
       }}
     >
       <MultiSelectContext.Provider
