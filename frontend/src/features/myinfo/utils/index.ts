@@ -1,5 +1,5 @@
 export * from './augmentWithMyInfo'
-export * from './augmentWithMyInfoPrefill'
+export * from './augmentWithMyInfoPreview'
 export * from './extractPreviewValue'
 export * from './hasExistingFieldValue'
 export * from './isMyInfo'

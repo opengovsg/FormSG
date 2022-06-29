@@ -44,7 +44,7 @@ import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 import {
-  augmentWithMyInfoPrefill,
+  augmentWithMyInfoPreview,
   extractPreviewValue,
   hasExistingFieldValue,
 } from '~features/myinfo/utils'
@@ -102,7 +102,7 @@ export const FieldRowContainer = ({
       }
     }
 
-    const augmentedField = augmentWithMyInfoPrefill(field)
+    const augmentedField = augmentWithMyInfoPreview(field)
 
     if (hasExistingFieldValue(augmentedField)) {
       return {
