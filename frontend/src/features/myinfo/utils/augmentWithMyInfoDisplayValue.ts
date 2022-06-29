@@ -7,7 +7,7 @@ import { isMyInfo } from './isMyInfo'
 
 const MAP_ATTR_TO_NAME = keyBy(myInfoTypeArray, 'name')
 
-export const augmentWithMyInfoPreview = (
+export const augmentWithMyInfoDisplayValue = (
   field: FormFieldDto,
 ): MyInfoFormField => {
   if (!isMyInfo(field)) return field
