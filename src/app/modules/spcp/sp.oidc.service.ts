@@ -241,7 +241,7 @@ export class SpOidcServiceClass {
       logger.error({
         message: 'Unable to decode encodedQuery',
         meta: {
-          action: 'parseOOBParams',
+          action: 'parseState',
           encodedQuery,
         },
         error: e,
