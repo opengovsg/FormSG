@@ -20,11 +20,7 @@ const baseSchema: DropdownFieldSchema = {
   required: true,
   disabled: false,
   fieldType: BasicField.Dropdown,
-  fieldOptions: [
-    'This is the first option',
-    'This is the second option',
-    'Short third option',
-  ],
+  fieldOptions: [...Array(2000).keys()].map(String),
   _id: 'random-id',
 }
 
