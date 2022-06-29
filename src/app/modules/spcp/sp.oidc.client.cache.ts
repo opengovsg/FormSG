@@ -201,7 +201,8 @@ export class SpOidcClientCache {
    */
   async retrievePublicKeysFromNdi(): Promise<CryptoKeys> {
     const getJwksWithRetries = retryPromiseThreeAttempts(
-      () => axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint),
+      () =>
+        axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint, { timeout: 3000 }),
       `axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint)`,
     )
 
