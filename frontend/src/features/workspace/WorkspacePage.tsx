@@ -12,6 +12,8 @@ import { chunk } from 'lodash'
 
 import Pagination from '~components/Pagination'
 
+import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
+
 import CreateFormModal from './components/CreateFormModal'
 import { EmptyWorkspace } from './components/EmptyWorkspace'
 import { WorkspaceFormRows } from './components/WorkspaceFormRow'
@@ -32,6 +34,7 @@ const useWorkspaceForms = () => {
   const [isManipulating, setIsManipulating] = useState(false)
 
   const createFormModalDisclosure = useDisclosure()
+  const whatsNewFeatureDrawerDisclosure = useDisclosure()
 
   const topRef = useRef<HTMLDivElement>(null)
 
@@ -90,6 +93,7 @@ const useWorkspaceForms = () => {
     setSortOrder,
     topRef,
     createFormModalDisclosure,
+    whatsNewFeatureDrawerDisclosure,
   }
 }
 
@@ -102,6 +106,7 @@ export const WorkspacePage = (): JSX.Element => {
     setPageNumber,
     topRef,
     createFormModalDisclosure,
+    whatsNewFeatureDrawerDisclosure,
   } = useWorkspaceForms()
 
   return (
@@ -109,6 +114,10 @@ export const WorkspacePage = (): JSX.Element => {
       <CreateFormModal
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
+      />
+      <WhatsNewDrawer
+        isOpen={whatsNewFeatureDrawerDisclosure.isOpen}
+        onClose={whatsNewFeatureDrawerDisclosure.onClose}
       />
       {totalFormCount === 0 ? (
         <EmptyWorkspace
@@ -134,6 +143,7 @@ export const WorkspacePage = (): JSX.Element => {
               isLoading={isLoading}
               totalFormCount={totalFormCount}
               handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
+              handleOpenWhatsNewDrawer={whatsNewFeatureDrawerDisclosure.onOpen}
             />
           </Container>
           <Box gridArea="main">

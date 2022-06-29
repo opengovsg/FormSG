@@ -17,6 +17,7 @@ export interface WorkspaceHeaderProps {
   totalFormCount?: number | '---'
   isLoading: boolean
   handleOpenCreateFormModal: () => void
+  handleOpenWhatsNewDrawer: () => void
 }
 
 /**
@@ -26,6 +27,7 @@ export const WorkspaceHeader = ({
   totalFormCount = '---',
   isLoading,
   handleOpenCreateFormModal,
+  handleOpenWhatsNewDrawer,
 }: WorkspaceHeaderProps): JSX.Element => {
   const [sortOption, setSortOption] = useState(SortOption.LastUpdated)
   const isMobile = useIsMobile()
@@ -64,6 +66,9 @@ export const WorkspaceHeader = ({
           leftIcon={<BiPlus fontSize="1.5rem" />}
         >
           Create form
+        </Button>
+        <Button isFullWidth={isMobile} onClick={handleOpenWhatsNewDrawer}>
+          What's New
         </Button>
       </Stack>
     </Stack>
