@@ -1,7 +1,7 @@
-import { useMemo } from 'react'
 import { Virtuoso } from 'react-virtuoso'
 import { Box, List, ListItem } from '@chakra-ui/react'
 
+import { VIRTUAL_LIST_OVERSCAN_HEIGHT } from '../constants'
 import { useSelectContext } from '../SelectContext'
 import { itemToValue } from '../utils/itemUtils'
 
@@ -16,17 +16,10 @@ export const SelectMenu = (): JSX.Element => {
     nothingFoundLabel,
     styles,
     virtualListRef,
+    virtualListHeight,
   } = useSelectContext()
 
   const { popperRef, popperStyles, popperAttributes } = useSelectPopover()
-
-  const virtualHeight = useMemo(() => {
-    const maxHeight = 12 * 16
-    const totalHeight = items.length * 48
-    // If the total height is less than the max height, just return the total height.
-    // Otherwise, return the max height.
-    return Math.min(totalHeight, maxHeight)
-  }, [items.length])
 
   return (
     <Box
@@ -45,7 +38,8 @@ export const SelectMenu = (): JSX.Element => {
           <Virtuoso
             ref={virtualListRef}
             data={items}
-            style={{ height: virtualHeight }}
+            overscan={VIRTUAL_LIST_OVERSCAN_HEIGHT}
+            style={{ height: virtualListHeight }}
             itemContent={(index, item) => {
               return (
                 <DropdownItem

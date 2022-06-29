@@ -9,6 +9,7 @@ import { useCombobox, UseComboboxProps } from 'downshift'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
+import { VIRTUAL_LIST_MAX_HEIGHT } from '../constants'
 import { useItems } from '../hooks/useItems'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
 import { ComboboxItem } from '../types'
@@ -221,6 +222,13 @@ export const SingleSelectProvider = ({
     }
   }, [inputAriaProp, name, selectedItem])
 
+  const virtualListHeight = useMemo(() => {
+    const totalHeight = filteredItems.length * 48
+    // If the total height is less than the max height, just return the total height.
+    // Otherwise, return the max height.
+    return Math.min(totalHeight, VIRTUAL_LIST_MAX_HEIGHT)
+  }, [filteredItems.length])
+
   return (
     <SelectContext.Provider
       value={{
@@ -255,6 +263,7 @@ export const SingleSelectProvider = ({
         resetInputValue,
         inputAria,
         virtualListRef,
+        virtualListHeight,
       }}
     >
       {children}

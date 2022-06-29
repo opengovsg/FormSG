@@ -12,6 +12,7 @@ import {
   UseMultipleSelectionProps,
 } from 'downshift'
 
+import { VIRTUAL_LIST_MAX_HEIGHT } from '../constants'
 import { useItems } from '../hooks/useItems'
 import { MultiSelectContext } from '../MultiSelectContext'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
@@ -21,7 +22,10 @@ import { itemToLabelString, itemToValue } from '../utils/itemUtils'
 
 export interface MultiSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
-> extends Omit<SharedSelectContextReturnProps<Item>, 'isClearable'>,
+> extends Omit<
+      SharedSelectContextReturnProps<Item>,
+      'isClearable' | 'virtualListRef' | 'virtualListHeight'
+    >,
     FormControlOptions {
   /** Controlled selected values */
   values: string[]
@@ -267,6 +271,13 @@ export const MultiSelectProvider = ({
     isEmpty: selectedItems.length === 0,
   })
 
+  const virtualListHeight = useMemo(() => {
+    const totalHeight = filteredItems.length * 48
+    // If the total height is less than the max height, just return the total height.
+    // Otherwise, return the max height.
+    return Math.min(totalHeight, VIRTUAL_LIST_MAX_HEIGHT)
+  }, [filteredItems.length])
+
   return (
     <SelectContext.Provider
       value={{
@@ -302,6 +313,7 @@ export const MultiSelectProvider = ({
         resetInputValue,
         inputAria,
         virtualListRef,
+        virtualListHeight,
       }}
     >
       <MultiSelectContext.Provider

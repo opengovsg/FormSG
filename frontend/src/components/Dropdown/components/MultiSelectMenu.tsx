@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { Virtuoso } from 'react-virtuoso'
 import { Box, List, ListItem } from '@chakra-ui/react'
 
+import { VIRTUAL_LIST_OVERSCAN_HEIGHT } from '../constants'
 import { useMultiSelectContext } from '../MultiSelectContext'
 import { useSelectContext } from '../SelectContext'
 import { itemToValue } from '../utils/itemUtils'
@@ -17,6 +18,7 @@ export const MultiSelectMenu = (): JSX.Element => {
     nothingFoundLabel,
     styles,
     virtualListRef,
+    virtualListHeight,
   } = useSelectContext()
 
   const { selectedItems } = useMultiSelectContext()
@@ -32,14 +34,6 @@ export const MultiSelectMenu = (): JSX.Element => {
       update?.()
     }
   }, [isOpen, selectedItems, update])
-
-  const virtualHeight = useMemo(() => {
-    const maxHeight = 12 * 16
-    const totalHeight = items.length * 48
-    // If the total height is less than the max height, just return the total height.
-    // Otherwise, return the max height.
-    return Math.min(totalHeight, maxHeight)
-  }, [items.length])
 
   return (
     <Box
@@ -59,7 +53,8 @@ export const MultiSelectMenu = (): JSX.Element => {
           <Virtuoso
             ref={virtualListRef}
             data={items}
-            style={{ height: virtualHeight }}
+            overscan={VIRTUAL_LIST_OVERSCAN_HEIGHT}
+            style={{ height: virtualListHeight }}
             itemContent={(index, item) => {
               return (
                 <MultiDropdownItem
