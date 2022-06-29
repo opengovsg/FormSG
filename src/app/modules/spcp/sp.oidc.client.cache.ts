@@ -3,7 +3,9 @@ import { createPublicKey } from 'crypto'
 import jwkToPem from 'jwk-to-pem'
 import NodeCache from 'node-cache'
 import { BaseClient, Issuer } from 'openid-client'
-import { timeout } from 'promise-timeout'
+import { timeout, TimeoutError } from 'promise-timeout'
+
+import { createLoggerWithLabel } from '../../config/logger'
 
 import { JwkError } from './sp.oidc.client.errors'
 import {
@@ -18,6 +20,8 @@ import {
   retryPromiseForever,
   retryPromiseThreeAttempts,
 } from './sp.oidc.util'
+
+const logger = createLoggerWithLabel(module)
 
 // Name of keys in cache
 const BASE_CLIENT_NAME = 'baseClient'
@@ -93,7 +97,19 @@ export class SpOidcClientCache {
       const { ndiPublicKeys } = await timeout(
         this.refresh(),
         INITIAL_REFRESH_TIMEOUT,
-      )
+      ).catch((err) => {
+        if (err instanceof TimeoutError) {
+          logger.warn({
+            message: 'Failed to retrieve ndiPublicKeys at start',
+            meta: {
+              action: 'getNdiPublicKeys',
+            },
+            error: err,
+          })
+        }
+        throw err
+      })
+
       return ndiPublicKeys
     }
     return ndiPublicKeys
@@ -112,7 +128,19 @@ export class SpOidcClientCache {
       const { baseClient } = await timeout(
         this.refresh(),
         INITIAL_REFRESH_TIMEOUT,
-      )
+      ).catch((err) => {
+        if (err instanceof TimeoutError) {
+          logger.warn({
+            message: 'Failed to retrieve baseClient at start',
+            meta: {
+              action: 'getBaseClient',
+            },
+            error: err,
+          })
+        }
+        throw err
+      })
+
       return baseClient
     }
     return baseClient
