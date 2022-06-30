@@ -24,16 +24,16 @@ const BILLING_TABLE_COLUMNS: Column<BillingColumnData>[] = [
     Header: 'Form title',
     accessor: 'formName',
     sortType: 'basic',
-    minWidth: 350, // minWidth is only used as a limit for resizing
+    minWidth: 300, // minWidth is only used as a limit for resizing
     width: 400, // width is used for both the flex-basis and flex-grow
-    maxWidth: 450, // maxWidth is only used as a limit for resizing
+    maxWidth: 500, // maxWidth is only used as a limit for resizing
   },
   {
     Header: 'Owner',
     accessor: 'adminEmail',
     sortType: 'basic',
-    minWidth: 250,
-    width: 300,
+    minWidth: 150,
+    width: 250,
     maxWidth: 350,
   },
   {

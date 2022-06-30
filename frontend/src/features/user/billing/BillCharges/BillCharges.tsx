@@ -1,10 +1,12 @@
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
+import { BiX } from 'react-icons/bi'
 import { useQuery } from 'react-query'
 import {
   Box,
   Container,
   Flex,
   Grid,
+  IconButton,
   Skeleton,
   Stack,
   Text,
@@ -15,6 +17,7 @@ import Pagination from '~/components/Pagination'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { SingleSelect } from '~components/Dropdown'
+import Searchbar from '~components/Searchbar'
 import Spinner from '~components/Spinner'
 
 import { getBillingInfo } from '~features/user/billing/BillingService'
@@ -56,6 +59,7 @@ export const BillCharges = ({
   onSubmitEsrvcId: (inputs: EsrvcIdFormInputs) => Promise<void>
 }): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1)
+  const [searchBarOpen, setSearchBarOpen] = useState<boolean>(false)
 
   const isMobile = useIsMobile()
 
@@ -64,7 +68,6 @@ export const BillCharges = ({
     data: { loginStats } = { loginStats: [] },
     isLoading,
     isRefetching,
-    isFetched,
     refetch,
   } = useQuery(esrvcId, () =>
     getBillingInfo({
@@ -99,6 +102,11 @@ export const BillCharges = ({
     [loginCount],
   )
 
+  const isLoadingOrRefetching = useMemo(
+    () => isLoading || isRefetching,
+    [isLoading, isRefetching],
+  )
+
   // Date range selection dropdown functions
 
   const selectDateDropdownItems = useMemo(
@@ -115,7 +123,27 @@ export const BillCharges = ({
     setDateRange(stringToDateRange(dateRangeString))
   }
 
-  // TODO: Add Searchbar for new esrvcid
+  const headerGridProps = useMemo(
+    () =>
+      isMobile
+        ? {
+            gridTemplateColumns: { base: 'auto', md: 'auto 1fr' },
+            gridGap: { base: '0.5rem', md: '1.5rem' },
+            gridTemplateAreas: {
+              base: "'logincount' 'search' 'dateselect' 'export'",
+              md: "'logincount search' 'dateselect export'",
+            },
+          }
+        : {
+            gridTemplateColumns: { base: 'auto', md: 'auto 1fr' },
+            gridGap: { base: '0.5rem', md: '0.5rem' },
+            gridTemplateAreas: {
+              base: "'logincount' 'space' 'search' 'dateselect' 'export'",
+              md: "'logincount space search dateselect export'",
+            },
+          },
+    [isMobile],
+  )
 
   return (
     <Container
@@ -138,24 +166,50 @@ export const BillCharges = ({
             mb="1rem"
             alignItems="end"
             color="secondary.500"
-            gridTemplateColumns={{ base: 'auto', md: 'auto 1fr' }}
-            gridGap={{ base: '0.5rem', md: '1.5rem' }}
-            gridTemplateAreas={{
-              base: "'submissions' 'search' 'dateselect' 'export'",
-              md: "'submissions search dateselect export'",
-            }}
+            {...headerGridProps}
           >
-            <Box gridArea="submissions">
+            <Box gridArea="logincount">
               <Text textStyle="h4" mb="0.5rem">
-                <Text as="span" color="primary.500">
-                  {loginCount}
-                </Text>
-                {prettifiedLoginCount}
+                {isLoadingOrRefetching ? (
+                  'Loading logins for '
+                ) : (
+                  <>
+                    <Text as="span" color="primary.500">
+                      {loginCount}
+                    </Text>
+                    {prettifiedLoginCount}
+                  </>
+                )}
                 <Text as="span" color="primary.500">
                   {esrvcId}
                 </Text>
+                {isLoadingOrRefetching ? '...' : ''}
               </Text>
             </Box>
+
+            <Box gridArea="search">
+              <Flex justifyContent="right">
+                <Searchbar
+                  onSearch={(esrvcId) => onSubmitEsrvcId({ esrvcId })}
+                  isExpanded={searchBarOpen}
+                  onSearchIconClick={() => setSearchBarOpen(true)}
+                  placeholder="e-service ID"
+                ></Searchbar>
+                {searchBarOpen ? (
+                  <IconButton
+                    aria-label="Close search"
+                    icon={<BiX />}
+                    variant="clear"
+                    colorScheme="secondary"
+                    onClick={() => setSearchBarOpen(false)}
+                    marginLeft="2px"
+                  />
+                ) : (
+                  <></>
+                )}
+              </Flex>
+            </Box>
+
             <Box gridArea="dateselect">
               <SingleSelect
                 value={selectDateDropdownValue}
@@ -165,6 +219,7 @@ export const BillCharges = ({
                 isClearable={false}
               />
             </Box>
+
             <Box gridArea="export" justifySelf="flex-end">
               <BillingDownloadButton
                 esrvcId={esrvcId}
@@ -175,7 +230,7 @@ export const BillCharges = ({
             </Box>
           </Grid>
 
-          {isLoading || isRefetching ? (
+          {isLoadingOrRefetching ? (
             <Flex mb="3rem" justifyContent="center">
               <Spinner
                 label={"Hang on, we're getting your bill charges ready!"}
@@ -183,31 +238,37 @@ export const BillCharges = ({
               ></Spinner>
             </Flex>
           ) : (
-            <Box mb="3rem" overflow="auto" flex={1}>
-              <BillingTable
-                loginStats={loginStats}
-                currentPage={currentPage - 1}
-              />
-            </Box>
-          )}
-
-          {isFetched && statsCount === 0 ? (
-            // No charges found
-            <Text as="h2" textStyle="h2" whiteSpace="pre-line" align="center">
-              {'No charges found for '}
-              <Text as="span" color="primary.500">
-                {esrvcId}
-              </Text>
-            </Text>
-          ) : (
-            <Box>
-              <Pagination
-                totalCount={statsCount ?? 0}
-                currentPage={currentPage} //1-indexed
-                pageSize={10}
-                onPageChange={setCurrentPage}
-              />
-            </Box>
+            <>
+              <Box mb="3rem" overflow="auto" flex={1}>
+                <BillingTable
+                  loginStats={loginStats}
+                  currentPage={currentPage - 1}
+                />
+              </Box>
+              {statsCount === 0 ? (
+                // No charges found
+                <Text
+                  as="h2"
+                  textStyle="h2"
+                  whiteSpace="pre-line"
+                  align="center"
+                >
+                  {'No charges found for '}
+                  <Text as="span" color="primary.500">
+                    {esrvcId}
+                  </Text>
+                </Text>
+              ) : (
+                <Box>
+                  <Pagination
+                    totalCount={statsCount ?? 0}
+                    currentPage={currentPage} //1-indexed
+                    pageSize={10}
+                    onPageChange={setCurrentPage}
+                  />
+                </Box>
+              )}
+            </>
           )}
         </Flex>
       </Stack>

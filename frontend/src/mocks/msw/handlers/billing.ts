@@ -35,7 +35,8 @@ const generateBillingMeta = (): BillingInfoDto => {
       },
       {
         adminEmail: 'admin2@mock.gov.sg',
-        formName: 'form5',
+        formName:
+          'form5 which is a form with a very long form name which requires multiple lines for testing purposes',
         formId: 'form5id' as FormId,
         authType: FormAuthType.NIL,
         total: 3,
