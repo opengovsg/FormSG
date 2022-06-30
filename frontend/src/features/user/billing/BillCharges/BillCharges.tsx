@@ -15,7 +15,6 @@ import simplur from 'simplur'
 
 import Pagination from '~/components/Pagination'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import { SingleSelect } from '~components/Dropdown'
 import Searchbar from '~components/Searchbar'
 import Spinner from '~components/Spinner'
@@ -60,8 +59,6 @@ export const BillCharges = ({
 }): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [searchBarOpen, setSearchBarOpen] = useState<boolean>(false)
-
-  const isMobile = useIsMobile()
 
   // Query for billing info
   const {
@@ -123,28 +120,6 @@ export const BillCharges = ({
     setDateRange(stringToDateRange(dateRangeString))
   }
 
-  const headerGridProps = useMemo(
-    () =>
-      isMobile
-        ? {
-            gridTemplateColumns: { base: 'auto', md: 'auto 1fr' },
-            gridGap: { base: '0.5rem', md: '1.5rem' },
-            gridTemplateAreas: {
-              base: "'logincount' 'search' 'dateselect' 'export'",
-              md: "'logincount search' 'dateselect export'",
-            },
-          }
-        : {
-            gridTemplateColumns: { base: 'auto', md: 'auto 1fr' },
-            gridGap: { base: '0.5rem', md: '0.5rem' },
-            gridTemplateAreas: {
-              base: "'logincount' 'space' 'search' 'dateselect' 'export'",
-              md: "'logincount space search dateselect export'",
-            },
-          },
-    [isMobile],
-  )
-
   return (
     <Container
       overflowY="auto"
@@ -166,7 +141,16 @@ export const BillCharges = ({
             mb="1rem"
             alignItems="end"
             color="secondary.500"
-            {...headerGridProps}
+            gridTemplateColumns={{ base: 'auto', md: 'auto 1fr' }}
+            gridGap={'0.5rem'}
+            gridTemplateAreas={{
+              base:
+                "'logincount " +
+                // Mobile: if searchbar is expanded, split it into its own line
+                (searchBarOpen ? "logincount' 'search " : '') +
+                "search' 'dateselect export'",
+              md: "'logincount space search dateselect export'",
+            }}
           >
             <Box gridArea="logincount">
               <Text textStyle="h4" mb="0.5rem">
@@ -187,7 +171,7 @@ export const BillCharges = ({
               </Text>
             </Box>
 
-            <Box gridArea="search">
+            <Box gridArea="search" alignSelf="center" alignItems="center">
               <Flex justifyContent="right">
                 <Searchbar
                   onSearch={(esrvcId) => onSubmitEsrvcId({ esrvcId })}
