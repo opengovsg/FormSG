@@ -68,12 +68,7 @@ export type FormField =
 // These types are extended through using MyInfoableFieldBase
 // And might possibly be myInfo fields if the attribute is set
 export type MyInfoField = SetRequired<
-  | DateFieldBase
-  | DropdownFieldBase
-  | HomenoFieldBase
-  | MobileFieldBase
-  | NumberFieldBase
-  | ShortTextFieldBase,
+  DateFieldBase | DropdownFieldBase | MobileFieldBase | ShortTextFieldBase,
   'myInfo'
 >
 
@@ -86,6 +81,11 @@ export type MyInfoFormField<T extends FormField = FormField> =
   FormFieldWithId<T> & {
     fieldValue?: string
   }
+
+export type MyInfoPrefilledFormField = SetRequired<
+  MyInfoFormField,
+  'fieldValue'
+>
 
 /**
  * Form field POJO with id
