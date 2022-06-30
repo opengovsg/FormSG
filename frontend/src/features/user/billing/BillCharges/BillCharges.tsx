@@ -257,6 +257,10 @@ export const BillCharges = ({
                   <Text as="span" color="primary.500">
                     {esrvcId}
                   </Text>
+                  {' in '}
+                  <Text as="span" color="primary.500">
+                    {dateRangeToString(dateRange)}
+                  </Text>
                 </Text>
               ) : (
                 <Box>
