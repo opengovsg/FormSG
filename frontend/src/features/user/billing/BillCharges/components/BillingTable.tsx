@@ -9,7 +9,7 @@ import {
 } from 'react-table'
 import { Flex, Icon, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
-import { FormBillingStatistic } from '~shared/types'
+import { FormAuthType, FormBillingStatistic } from '~shared/types'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -18,6 +18,14 @@ type BillingColumnData = Pick<
   FormBillingStatistic,
   'formName' | 'adminEmail' | 'authType' | 'total'
 >
+
+const AUTHTYPE_TO_TEXT = {
+  [FormAuthType.NIL]: '-',
+  [FormAuthType.SP]: 'Singpass',
+  [FormAuthType.SGID]: 'sgID',
+  [FormAuthType.MyInfo]: 'MyInfo',
+  [FormAuthType.CP]: 'Corppass',
+}
 
 const BILLING_TABLE_COLUMNS: Column<BillingColumnData>[] = [
   {
@@ -38,7 +46,7 @@ const BILLING_TABLE_COLUMNS: Column<BillingColumnData>[] = [
   },
   {
     Header: 'Authentication',
-    accessor: 'authType',
+    accessor: (row) => AUTHTYPE_TO_TEXT[row.authType],
     sortType: 'basic',
     minWidth: 150,
     width: 160,
