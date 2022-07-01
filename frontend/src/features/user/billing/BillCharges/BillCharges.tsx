@@ -84,13 +84,9 @@ export const BillCharges = ({
 
   const loginCount = useMemo(
     () =>
-      loginStats
-        ?.map(({ total }) => {
-          return total
-        })
-        .reduce((acc, curr) => {
-          return acc + curr
-        }, 0) ?? 0,
+      loginStats?.reduce((acc, { total }) => {
+        return acc + total
+      }, 0) ?? 0,
     [loginStats],
   )
 
