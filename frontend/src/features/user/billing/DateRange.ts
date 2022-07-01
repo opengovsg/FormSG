@@ -29,7 +29,7 @@ export const stringToDateRange = (dateRangeString: string): DateRange => {
       `Date range string [${dateRangeString}] does not have a valid format`,
     )
 
-  const [_, mthstring, yrstring] = matches
+  const [, mthstring, yrstring] = matches
   const mth = MTH_TO_STRING.findIndex((mth) => mth === mthstring)
 
   if (mth === -1)
