@@ -11,9 +11,9 @@ export const PreviewFormHeader = (): JSX.Element => {
   const { formId } = useParams()
 
   return (
-    <Flex bg="success.600" py="0.5rem" px="2rem" display="flex" width="100%">
+    <Flex bg="success.600" px="2rem" display="flex" width="100%">
       <Flex align="center" flex={1} justify="space-between" flexDir="row">
-        <Text textStyle="h4">Preview mode</Text>
+        <Text textStyle="caption-1">Preview mode</Text>
         <Link
           variant="standalone"
           color="secondary.700"
@@ -23,7 +23,7 @@ export const PreviewFormHeader = (): JSX.Element => {
         >
           <Flex align="center">
             <Icon aria-hidden as={BxsEditAlt} fontSize="1rem" mr="0.75rem" />
-            <Text textStyle="subhead-1">Edit form</Text>
+            <Text textStyle="subhead-2">Edit form</Text>
           </Flex>
         </Link>
       </Flex>
