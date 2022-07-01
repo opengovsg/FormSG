@@ -1,8 +1,6 @@
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import Button from '~components/Button'
-
 import { Searchbar, SearchbarProps } from './Searchbar'
 import { useSearchbar } from './useSearchbar'
 
@@ -14,63 +12,68 @@ export default {
 
 export const Default: Story<SearchbarProps> = (args) => <Searchbar {...args} />
 Default.args = {
-  isExpanded: true,
   onSearch: (query) => console.log(query),
 }
 
 export const ExpandableClosed: Story<SearchbarProps> = ({
-  isExpanded: isInitiallyExpanded,
+  isInitiallyExpanded,
   ...args
 }) => {
-  const { isExpanded, inputRef, handleExpansion } = useSearchbar({
-    isInitiallyExpanded,
-  })
+  const { inputRef } = useSearchbar()
 
   return (
     <Searchbar
       ref={inputRef}
-      isExpanded={isExpanded}
-      onSearchIconClick={handleExpansion}
+      isInitiallyExpanded={isInitiallyExpanded}
       {...args}
     />
   )
 }
 ExpandableClosed.args = {
   onSearch: (query) => console.log(query),
-  isExpanded: false,
+  isInitiallyExpanded: false,
 }
 ExpandableClosed.storyName = 'Expandable/Closed'
 
 export const ExpandableOpen: Story<SearchbarProps> = ({
-  isExpanded: isInitiallyExpanded,
+  isInitiallyExpanded,
   ...args
 }) => {
-  const { isExpanded, inputRef, handleExpansion } = useSearchbar({
-    isInitiallyExpanded,
-    isFocusOnExpand: false,
-  })
+  const { inputRef } = useSearchbar()
 
   return (
     <Searchbar
       ref={inputRef}
-      onSearchIconClick={isExpanded ? undefined : handleExpansion}
-      isExpanded={isExpanded}
+      isInitiallyExpanded={isInitiallyExpanded}
       {...args}
     />
   )
 }
 ExpandableOpen.args = {
   onSearch: (query) => console.log(query),
-  isExpanded: true,
+  isInitiallyExpanded: true,
 }
 ExpandableOpen.storyName = 'Expandable/Open'
 
-export const Playground: Story<SearchbarProps> = ({
-  isExpanded: isInitiallyExpanded,
-  ...args
-}) => {
-  const { isExpanded, inputRef, handleExpansion, handleCollapse } =
-    useSearchbar({ isInitiallyExpanded })
+export const UnexpandableOpen: Story<SearchbarProps> = (args) => {
+  const { inputRef } = useSearchbar()
+
+  return (
+    <Searchbar
+      ref={inputRef}
+      isExpandable={false}
+      isInitiallyExpanded={true}
+      {...args}
+    />
+  )
+}
+UnexpandableOpen.args = {
+  onSearch: (query) => console.log(query),
+}
+UnexpandableOpen.storyName = 'Unexpandable/Open'
+
+export const Playground: Story<SearchbarProps> = (args) => {
+  const { inputRef } = useSearchbar()
 
   return (
     <Box
@@ -83,17 +86,7 @@ export const Playground: Story<SearchbarProps> = ({
       <Flex justify="space-between">
         <Text textStyle="body-1">Explore forms and use as a template</Text>
         <Flex align="center" maxW="25rem" justify="flex-end">
-          <Searchbar
-            ref={inputRef}
-            onSearchIconClick={handleExpansion}
-            isExpanded={isExpanded}
-            {...args}
-          />
-          {isExpanded && (
-            <Button variant="clear" ml="1rem" onClick={handleCollapse}>
-              Reset
-            </Button>
-          )}
+          <Searchbar ref={inputRef} {...args} />
         </Flex>
       </Flex>
     </Box>
@@ -102,5 +95,4 @@ export const Playground: Story<SearchbarProps> = ({
 
 Playground.args = {
   onSearch: (query) => alert(`${query} is being searched`),
-  isExpanded: false,
 }

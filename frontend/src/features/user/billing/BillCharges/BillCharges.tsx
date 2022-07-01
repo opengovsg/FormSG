@@ -1,12 +1,10 @@
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
-import { BiX } from 'react-icons/bi'
 import { useQuery } from 'react-query'
 import {
   Box,
   Container,
   Flex,
   Grid,
-  IconButton,
   Skeleton,
   Stack,
   Text,
@@ -26,6 +24,14 @@ import { DateRange, dateRangeToString, stringToDateRange } from '../DateRange'
 
 import { BillingDownloadButton } from './components/BillingDownloadButton'
 import { BillingTable } from './components/BillingTable'
+
+export type BillChargesProps = {
+  esrvcId: string
+  dateRange: DateRange
+  todayDateRange: DateRange
+  setDateRange: Dispatch<SetStateAction<DateRange>>
+  onSubmitEsrvcId: (inputs: EsrvcIdFormInputs) => Promise<void>
+}
 
 const getSelectDateDropdownItems = ({ yr, mth }: DateRange): string[] => {
   const selectDateDropdownItems: DateRange[] = []
@@ -50,15 +56,9 @@ export const BillCharges = ({
   todayDateRange,
   setDateRange,
   onSubmitEsrvcId,
-}: {
-  esrvcId: string
-  dateRange: DateRange
-  todayDateRange: DateRange
-  setDateRange: Dispatch<SetStateAction<DateRange>>
-  onSubmitEsrvcId: (inputs: EsrvcIdFormInputs) => Promise<void>
-}): JSX.Element => {
+}: BillChargesProps): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1)
-  const [searchBarOpen, setSearchBarOpen] = useState<boolean>(false)
+  const [searchBarExpanded, setSearchBarExpanded] = useState<boolean>(false)
 
   // Query for billing info
   const {
@@ -147,7 +147,7 @@ export const BillCharges = ({
               base:
                 "'logincount " +
                 // Mobile: if searchbar is expanded, split it into its own line
-                (searchBarOpen ? "logincount' 'search " : '') +
+                (searchBarExpanded ? "logincount' 'search " : '') +
                 "search' 'dateselect export'",
               md: "'logincount space search dateselect export'",
             }}
@@ -175,22 +175,10 @@ export const BillCharges = ({
               <Flex justifyContent="right">
                 <Searchbar
                   onSearch={(esrvcId) => onSubmitEsrvcId({ esrvcId })}
-                  isExpanded={searchBarOpen}
-                  onSearchIconClick={() => setSearchBarOpen(true)}
+                  onExpand={() => setSearchBarExpanded(true)}
+                  onCollapse={() => setSearchBarExpanded(false)}
                   placeholder="e-service ID"
                 ></Searchbar>
-                {searchBarOpen ? (
-                  <IconButton
-                    aria-label="Close search"
-                    icon={<BiX />}
-                    variant="clear"
-                    colorScheme="secondary"
-                    onClick={() => setSearchBarOpen(false)}
-                    marginLeft="2px"
-                  />
-                ) : (
-                  <></>
-                )}
               </Flex>
             </Box>
 

@@ -1,7 +1,8 @@
-import { KeyboardEvent, useCallback, useRef } from 'react'
-import { BiSearch } from 'react-icons/bi'
+import { KeyboardEvent, useCallback, useRef, useState } from 'react'
+import { BiSearch, BiX } from 'react-icons/bi'
 import {
   Box,
+  Flex,
   forwardRef,
   Icon,
   Input,
@@ -24,21 +25,44 @@ export interface SearchbarProps extends InputProps {
   onSearch: (searchValue: string) => void
 
   /**
-   * Whether the searchbar is expanded or not.
-   * @note This should be `true` if the `onSearchIconClick` function prop is not
-   * provided, or the searchbar will not be usable.
+   * Whether the searchbar is expandable/collapsable or not. Defaults to `true`.
    */
-  isExpanded: boolean
+  isExpandable?: boolean
 
   /**
-   * Optional. Function to be invoked when the search icon is clicked.
-   * If provided, the search icon will be clickable.
+   * Whether the searchbar is initially expanded or not. Defaults to `false`.
+   * @note Set this to `true` if `isExpandable` is set to `false`, else the
+   * searchbar will not be usable.
    */
-  onSearchIconClick?: () => void
+  isInitiallyExpanded?: boolean
+
+  /**
+   * Called when the search icon is clicked and the search bar is expanded.
+   */
+  onExpand?: () => void
+
+  /**
+   * Called when the X icon is clicked and the search bar is collapsed.
+   */
+  onCollapse?: () => void
 }
 
 export const Searchbar = forwardRef<SearchbarProps, 'input'>(
-  ({ onSearch, isExpanded, onSearchIconClick, ...props }, ref) => {
+  (
+    {
+      onSearch,
+      isExpandable = true,
+      isInitiallyExpanded = false,
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      onExpand,
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      onCollapse,
+      ...props
+    },
+    ref,
+  ) => {
+    const [isExpanded, setIsExpanded] = useState<boolean>(isInitiallyExpanded)
+
     const innerRef = useRef<HTMLInputElement>(null)
     const styles = useMultiStyleConfig(SEARCHBAR_THEME_KEY, {
       isExpanded,
@@ -57,31 +81,52 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     )
 
     return (
-      <InputGroup flex={isExpanded ? 1 : 0}>
+      <Flex>
+        <InputGroup flex={isExpanded ? 1 : 0}>
+          {isExpanded ? (
+            <InputLeftElement pointerEvents="none">
+              <Box __css={styles.icon}>
+                <Icon as={BiSearch} />
+              </Box>
+            </InputLeftElement>
+          ) : (
+            <IconButton
+              aria-label="Expand search"
+              icon={<BiSearch />}
+              variant="clear"
+              colorScheme="secondary"
+              onClick={() => {
+                setIsExpanded(true)
+                if (onExpand) onExpand()
+              }}
+              sx={styles.icon}
+            />
+          )}
+          <Input
+            aria-label="Press enter to search"
+            ref={inputRef}
+            sx={styles.field}
+            onKeyDown={handleSearch}
+            {...props}
+          />
+        </InputGroup>
         {isExpanded ? (
-          <InputLeftElement pointerEvents="none">
-            <Box __css={styles.icon}>
-              <Icon as={BiSearch} />
-            </Box>
-          </InputLeftElement>
-        ) : (
           <IconButton
-            aria-label="Expand search"
-            icon={<BiSearch />}
+            aria-label="Collapse search"
+            icon={<BiX />}
             variant="clear"
             colorScheme="secondary"
-            onClick={onSearchIconClick}
+            onClick={() => {
+              setIsExpanded(false)
+              if (onCollapse) onCollapse()
+            }}
             sx={styles.icon}
+            marginLeft="2px"
           />
+        ) : (
+          <></>
         )}
-        <Input
-          aria-label="Press enter to search"
-          ref={inputRef}
-          sx={styles.field}
-          onKeyDown={handleSearch}
-          {...props}
-        />
-      </InputGroup>
+      </Flex>
     )
   },
 )
