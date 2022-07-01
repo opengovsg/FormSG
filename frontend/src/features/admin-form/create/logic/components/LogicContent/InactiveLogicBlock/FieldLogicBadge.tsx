@@ -32,7 +32,7 @@ export const FieldLogicBadge = ({ field }: FieldLogicBadgeProps) => {
           <Icon as={fieldMeta.icon} fontSize="1rem" />
         </Tooltip>
         {field.questionNumber ? <Text>{field.questionNumber}.</Text> : null}
-        <Text isTruncated>{field.title}</Text>
+        <Text noOfLines={1}>{field.title}</Text>
       </Stack>
     </LogicBadge>
   )

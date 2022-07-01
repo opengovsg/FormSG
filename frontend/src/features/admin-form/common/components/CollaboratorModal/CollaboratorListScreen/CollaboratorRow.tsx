@@ -13,7 +13,7 @@ export const CollaboratorText: FC = ({ children }) => {
     <Text
       textStyle={{ base: 'subhead-1', md: 'body-2' }}
       color={{ base: 'secondary.700', md: 'secondary.500' }}
-      isTruncated
+      noOfLines={{ base: 0, md: 1 }}
     >
       {children}
     </Text>
