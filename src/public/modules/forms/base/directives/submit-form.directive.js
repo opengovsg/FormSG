@@ -1,7 +1,7 @@
 'use strict'
 const cloneDeep = require('lodash/cloneDeep')
 const get = require('lodash/get')
-const { ObjectId } = require('bson')
+const cuid = require('cuid')
 
 const FieldVerificationService = require('../../../../services/FieldVerificationService')
 const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
@@ -103,7 +103,7 @@ function submitFormDirective(
 
         const query = $location.url().split('?')
         const queryString = query.length > 1 ? query[1] : undefined
-        const queryId = queryString ? new ObjectId() : undefined
+        const queryId = queryString ? cuid() : undefined
         const encodedQuery = queryId ? btoa(`queryId=${queryId}`) : undefined
         const queryObject = {
           _id: queryId,
@@ -114,7 +114,7 @@ function submitFormDirective(
           // Defensive - try catch block in case the storage is full
           // See https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem
           try {
-            // We use storedQuery as the sessionStorage key rather than just using the ObjectId
+            // We use storedQuery as the sessionStorage key rather than just using the queryId
             // because only one person can be logging in at a time in a given session, so
             // we should only store one set of prefill params. Meanwhile, we use queryId and pass it to the
             // backend instead of simply storing the query params directly in sessionStorage, so as to
