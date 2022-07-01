@@ -10,6 +10,7 @@ SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/sam
 MOCKPASS_PORT=5156
 SINGPASS_ESRVC_ID=Test-eServiceId-Sp
 
+SP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_rp_public_jwks.json
 MYINFO_CLIENT_CONFIG=dev
 MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
 MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt

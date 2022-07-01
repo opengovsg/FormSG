@@ -29,6 +29,7 @@ type ISpcpConfig = {
   cpFormSgCertPath: string
   spIdpCertPath: string
   cpIdpCertPath: string
+  spOidcRpJwksPublicPath: string
 }
 
 type IMyInfoConfig = {
@@ -214,6 +215,12 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: String,
     default: null,
     env: 'MYINFO_CLIENT_SECRET',
+  },
+  spOidcRpJwksPublicPath: {
+    doc: "Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI.  This will be hosted at /singpass/.well-known/jwks.json endpoint.",
+    format: String,
+    default: null,
+    env: 'SP_OIDC_RP_JWKS_PUBLIC_PATH',
   },
 }
 
