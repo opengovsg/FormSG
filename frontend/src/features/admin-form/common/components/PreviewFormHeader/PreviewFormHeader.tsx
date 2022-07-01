@@ -1,5 +1,5 @@
 import { Link as ReactLink, useParams } from 'react-router-dom'
-import { Box, Flex, Icon, Text } from '@chakra-ui/react'
+import { Flex, Icon, Text } from '@chakra-ui/react'
 
 import { BxsEditAlt } from '~assets/icons/BxsEditAlt'
 import { ADMINFORM_ROUTE } from '~constants/routes'
