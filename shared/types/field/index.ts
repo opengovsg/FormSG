@@ -18,6 +18,7 @@ import { StatementFieldBase } from './statementField'
 import { TableFieldBase, TableFieldDto } from './tableField'
 import { UenFieldBase } from './uenField'
 import { YesNoFieldBase } from './yesNoField'
+import { SetRequired } from 'type-fest'
 
 export * from './attachmentField'
 export * from './base'
@@ -64,17 +65,27 @@ export type FormField =
   | UenFieldBase
   | YesNoFieldBase
 
-export type FormFieldWithId<T extends FormField = FormField> =
-  T extends TableFieldBase
-    ? TableFieldDto
-    : T & {
-        _id: string
-      }
+// These types are extended through using MyInfoableFieldBase
+// And might possibly be myInfo fields if the attribute is set
+export type MyInfoField = SetRequired<
+  DateFieldBase | DropdownFieldBase | MobileFieldBase | ShortTextFieldBase,
+  'myInfo'
+>
 
+export type FormFieldWithId<T extends FormField = FormField> =
+  T extends TableFieldBase ? TableFieldDto<T> : T & { _id: string }
+
+// MyInfo type that's seen by the public
+// This means that the values might be pre-filled
 export type MyInfoFormField<T extends FormField = FormField> =
   FormFieldWithId<T> & {
     fieldValue?: string
   }
+
+export type MyInfoPrefilledFormField = SetRequired<
+  MyInfoFormField,
+  'fieldValue'
+>
 
 /**
  * Form field POJO with id

@@ -2,10 +2,22 @@ import {
   AttachmentSize,
   BasicField,
   FieldCreateDto,
+  MyInfoAttribute,
+  MyInfoField,
   RatingShape,
 } from '~shared/types/field'
 
-import { BASICFIELD_TO_DRAWER_META } from '../../constants'
+import {
+  BASICFIELD_TO_DRAWER_META,
+  MYINFO_FIELD_TO_DRAWER_META,
+} from '../../constants'
+import {
+  MYINFO_DATEFIELD_META,
+  MYINFO_DROPDOWNFIELD_META,
+  MYINFO_FIELD_CONSTANTS,
+  MYINFO_MOBILEFIELD_META,
+  MYINFO_TEXTFIELD_META,
+} from '../constants'
 
 import { createShortTextColumn } from './columnCreation'
 
@@ -171,6 +183,83 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         columns: [createShortTextColumn()],
         minimumRows: 2,
       }
+    }
+  }
+}
+
+export const getMyInfoFieldCreationMeta = (
+  myInfoAttribute: MyInfoAttribute,
+): MyInfoField => {
+  const baseMeta: Pick<
+    MyInfoField,
+    'disabled' | 'required' | 'title' | 'description' | 'fieldType' | 'myInfo'
+  > = {
+    disabled: false,
+    required: true,
+    title: MYINFO_FIELD_TO_DRAWER_META[myInfoAttribute].label,
+    description: '',
+    fieldType: MYINFO_FIELD_CONSTANTS[myInfoAttribute].fieldType,
+    myInfo: {
+      attr: myInfoAttribute,
+    },
+  }
+
+  switch (myInfoAttribute) {
+    case MyInfoAttribute.Name:
+    case MyInfoAttribute.PassportNumber:
+    case MyInfoAttribute.VehicleNo:
+    case MyInfoAttribute.RegisteredAddress:
+    case MyInfoAttribute.MarriageCertNo:
+    case MyInfoAttribute.Employment: {
+      return {
+        ...baseMeta,
+        fieldType: BasicField.ShortText,
+        ...MYINFO_TEXTFIELD_META,
+      }
+    }
+
+    case MyInfoAttribute.DateOfBirth:
+    case MyInfoAttribute.PassportExpiryDate:
+    case MyInfoAttribute.WorkpassExpiryDate:
+    case MyInfoAttribute.MarriageDate:
+    case MyInfoAttribute.DivorceDate: {
+      return {
+        ...baseMeta,
+        fieldType: BasicField.Date,
+        ...MYINFO_DATEFIELD_META,
+      }
+    }
+
+    case MyInfoAttribute.Sex:
+    case MyInfoAttribute.Race:
+    case MyInfoAttribute.Nationality:
+    case MyInfoAttribute.BirthCountry:
+    case MyInfoAttribute.ResidentialStatus:
+    case MyInfoAttribute.Dialect:
+    case MyInfoAttribute.HousingType:
+    case MyInfoAttribute.HdbType:
+    case MyInfoAttribute.Occupation:
+    case MyInfoAttribute.WorkpassStatus:
+    case MyInfoAttribute.Marital:
+    case MyInfoAttribute.CountryOfMarriage: {
+      return {
+        ...baseMeta,
+        fieldType: BasicField.Dropdown,
+        ...MYINFO_DROPDOWNFIELD_META,
+      }
+    }
+
+    case MyInfoAttribute.MobileNo: {
+      return {
+        ...baseMeta,
+        fieldType: BasicField.Mobile,
+        ...MYINFO_MOBILEFIELD_META,
+      }
+    }
+
+    default: {
+      const exception: never = myInfoAttribute
+      throw new Error(`MyInfo type is not implemented: ${exception}`)
     }
   }
 }
