@@ -110,22 +110,25 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
             {...props}
           />
         </InputGroup>
-        {isExpanded ? (
-          <IconButton
-            aria-label="Collapse search"
-            icon={<BiX />}
-            variant="clear"
-            colorScheme="secondary"
-            onClick={() => {
-              setIsExpanded(false)
-              if (onCollapse) onCollapse()
-            }}
-            sx={styles.icon}
-            marginLeft="2px"
-          />
-        ) : (
-          <></>
-        )}
+        {
+          // If not expandable, don't give the option to close it.
+          isExpandable && isExpanded ? (
+            <IconButton
+              aria-label="Collapse search"
+              icon={<BiX />}
+              variant="clear"
+              colorScheme="secondary"
+              onClick={() => {
+                setIsExpanded(false)
+                if (onCollapse) onCollapse()
+              }}
+              sx={styles.icon}
+              marginLeft="2px"
+            />
+          ) : (
+            <></>
+          )
+        }
       </Flex>
     )
   },
