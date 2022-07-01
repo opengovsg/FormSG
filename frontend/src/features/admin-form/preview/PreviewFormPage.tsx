@@ -2,11 +2,11 @@ import { useParams } from 'react-router-dom'
 
 import GovtMasthead from '~components/GovtMasthead'
 
-import FormEndPage from '~features//public-form/components/FormEndPage'
-import FormFields from '~features//public-form/components/FormFields'
-import { FormFooter } from '~features//public-form/components/FormFooter'
-import FormStartPage from '~features//public-form/components/FormStartPage'
-import { PublicFormWrapper } from '~features//public-form/components/PublicFormWrapper'
+import FormEndPage from '~features/public-form/components/FormEndPage'
+import FormFields from '~features/public-form/components/FormFields'
+import { FormFooter } from '~features/public-form/components/FormFooter'
+import FormStartPage from '~features/public-form/components/FormStartPage'
+import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 
 import { PreviewFormHeader } from '../common/components/PreviewFormHeader/PreviewFormHeader'
 
@@ -23,7 +23,7 @@ export const PreviewFormPage = (): JSX.Element => {
       <FormStartPage />
       <PublicFormWrapper>
         <FormFields />
-        <FormEndPage isPreview={true} />
+        <FormEndPage isPreview />
         <FormFooter />
       </PublicFormWrapper>
     </PreviewFormProvider>

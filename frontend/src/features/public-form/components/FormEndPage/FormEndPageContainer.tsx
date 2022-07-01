@@ -28,7 +28,8 @@ export const FormEndPageContainer = ({
       // no mutation required in preview-form mode
       if (isPreview) {
         toast({
-          description: 'Thank you for submitting your feedback!',
+          description:
+            'Thank you for submitting your feedback! Since you are in preview mode, the feedback is not stored.',
           status: 'success',
           isClosable: true,
         })

@@ -6,7 +6,6 @@ import {
   BiShow,
   BiUserPlus,
 } from 'react-icons/bi'
-import { Link as ReactLink, useParams } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
@@ -23,7 +22,6 @@ import {
 
 import { AdminFormDto } from '~shared/types/form/form'
 
-import { ADMINFORM_PREVIEW_ROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
@@ -57,7 +55,6 @@ export const AdminFormNavbar = ({
 }: AdminFormNavbarProps): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
   const { isOpen, onClose, onOpen } = useDisclosure()
-  const { formId } = useParams()
 
   const mobileDrawerExtraButtonProps: Partial<ButtonProps> = useMemo(
     () => ({
