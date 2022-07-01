@@ -176,7 +176,7 @@ export const TableField = ({
       {schema.addMoreRows && schema.maximumRows !== undefined ? (
         <AddRowFooter
           currentRows={fields.length}
-          maxRows={schema.maximumRows}
+          maxRows={schema.maximumRows === '' ? 0 : schema.maximumRows}
           handleAddRow={handleAddRow}
         />
       ) : null}

@@ -21,12 +21,15 @@ export type ColumnDto<C extends Column = Column> = C & { _id: string }
 
 export interface TableFieldBase extends FieldBase {
   fieldType: BasicField.Table
-  minimumRows: number
+  minimumRows: number | ''
   addMoreRows?: boolean
-  maximumRows?: number
+  maximumRows?: number | ''
   columns: Column[]
 }
 
-export type TableFieldDto = Merge<TableFieldBase, { columns: ColumnDto[] }> & {
+export type TableFieldDto<T extends TableFieldBase = TableFieldBase> = Merge<
+  T,
+  { columns: ColumnDto[] }
+> & {
   _id: string
 }

@@ -43,6 +43,11 @@ import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
+import {
+  augmentWithMyInfoDisplayValue,
+  extractPreviewValue,
+  hasExistingFieldValue,
+} from '~features/myinfo/utils'
 
 import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
 import { PENDING_CREATE_FIELD_ID } from '../../constants'
@@ -61,14 +66,12 @@ import { SectionFieldRow } from './SectionFieldRow'
 export interface FieldRowContainerProps {
   field: FormFieldDto
   index: number
-  questionNumber?: string
   isDraggingOver: boolean
 }
 
 export const FieldRowContainer = ({
   field,
   index,
-  questionNumber,
   isDraggingOver,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
@@ -93,12 +96,20 @@ export const FieldRowContainer = ({
   const defaultFieldValues = useMemo(() => {
     if (field.fieldType === BasicField.Table) {
       return {
-        [field._id]: times(field.minimumRows, () => createTableRow(field)),
+        [field._id]: times(field.minimumRows || 0, () => createTableRow(field)),
+      }
+    }
+
+    const augmentedField = augmentWithMyInfoDisplayValue(field)
+
+    if (hasExistingFieldValue(augmentedField)) {
+      return {
+        [field._id]: extractPreviewValue(augmentedField),
       }
     }
   }, [field])
 
-  const formMethods = useForm({
+  const formMethods = useForm<FormFieldDto>({
     mode: 'onChange',
     defaultValues: defaultFieldValues,
   })
@@ -179,7 +190,11 @@ export const FieldRowContainer = ({
   return (
     <Draggable
       index={index}
-      isDragDisabled={!isActive || !!numFormFieldMutations}
+      isDragDisabled={
+        !isActive ||
+        !!numFormFieldMutations ||
+        stateData.state === BuildFieldState.CreatingField
+      }
       disableInteractiveElementBlocking
       draggableId={field._id}
     >
@@ -254,7 +269,7 @@ export const FieldRowContainer = ({
               pointerEvents={isActive ? undefined : 'none'}
             >
               <FormProvider {...formMethods}>
-                <MemoFieldRow field={field} questionNumber={questionNumber} />
+                <MemoFieldRow field={field} />
               </FormProvider>
             </Box>
             <Collapse in={isActive} style={{ width: '100%' }}>
@@ -310,11 +325,16 @@ export const FieldRowContainer = ({
 
 type MemoFieldRowProps = {
   field: FormFieldDto
-  questionNumber?: string
 }
 
 const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
   switch (field.fieldType) {
+    case BasicField.Section:
+      return <SectionFieldRow field={field} {...rest} />
+    case BasicField.Image:
+      return <ImageField schema={field} {...rest} />
+    case BasicField.Statement:
+      return <ParagraphField schema={field} {...rest} />
     case BasicField.Attachment:
       return <AttachmentField schema={field} {...rest} />
     case BasicField.Checkbox:
@@ -335,8 +355,6 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
       return <DateField schema={field} {...rest} />
     case BasicField.Dropdown:
       return <DropdownField schema={field} {...rest} />
-    case BasicField.Statement:
-      return <ParagraphField schema={field} {...rest} />
     case BasicField.ShortText:
       return <ShortTextField schema={field} {...rest} />
     case BasicField.LongText:
@@ -345,14 +363,10 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
       return <RadioField schema={field} {...rest} />
     case BasicField.Rating:
       return <RatingField schema={field} {...rest} />
-    case BasicField.Section:
-      return <SectionFieldRow field={field} {...rest} />
     case BasicField.Uen:
       return <UenField schema={field} {...rest} />
     case BasicField.YesNo:
       return <YesNoField schema={field} {...rest} />
-    case BasicField.Image:
-      return <ImageField schema={field} {...rest} />
     case BasicField.Table:
       return <TableField schema={field} {...rest} />
   }

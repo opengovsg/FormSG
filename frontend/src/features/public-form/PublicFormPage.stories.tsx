@@ -5,6 +5,7 @@ import { userEvent, waitFor, within } from '@storybook/testing-library'
 import { BasicField } from '~shared/types/field'
 import { FormAuthType, FormColorTheme } from '~shared/types/form'
 
+import { MOCK_PREFILLED_MYINFO_FIELDS } from '~/mocks/msw/handlers/admin-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
   getPublicFormErrorResponse,
@@ -343,4 +344,18 @@ export const FormNotFoundMobile = Template.bind({})
 FormNotFoundMobile.parameters = {
   ...FormNotFound.parameters,
   ...getMobileViewParameters(),
+}
+
+export const WithMyInfo = Template.bind({})
+WithMyInfo.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          form_fields: MOCK_PREFILLED_MYINFO_FIELDS,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
 }

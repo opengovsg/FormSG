@@ -7,8 +7,10 @@ import { BasicField, FieldCreateDto } from '~shared/types/field'
 import IconButton from '~components/IconButton'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+import { isMyInfo } from '~features/myinfo/utils'
 
 import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
+import { MYINFO_FIELD_CONSTANTS } from '../../constants'
 import {
   BuildFieldState,
   setToInactiveSelector,
@@ -29,6 +31,7 @@ import {
   EditImage,
   EditLongText,
   EditMobile,
+  EditMyInfo,
   EditNric,
   EditNumber,
   EditParagraph,
@@ -62,8 +65,11 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 
   const basicFieldText = useMemo(() => {
     if (!fieldToEdit?.fieldType) return ''
+    if (isMyInfo(fieldToEdit)) {
+      return MYINFO_FIELD_CONSTANTS[fieldToEdit.myInfo.attr].value
+    }
     return BASICFIELD_TO_DRAWER_META[fieldToEdit?.fieldType].label
-  }, [fieldToEdit?.fieldType])
+  }, [fieldToEdit])
 
   // Hacky method of determining when to rerender the drawer,
   // i.e. when the user clicks into a different field.
@@ -134,6 +140,10 @@ interface MemoFieldDrawerContentProps {
 
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
+    if (isMyInfo(field)) {
+      return <EditMyInfo {...props} field={field} />
+    }
+
     switch (field.fieldType) {
       case BasicField.Attachment:
         return <EditAttachment {...props} field={field} />
