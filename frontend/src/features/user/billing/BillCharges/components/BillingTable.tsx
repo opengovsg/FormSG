@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import {
   Column,
   useFlexLayout,
@@ -78,8 +78,8 @@ export const BillingTable = ({
     gotoPage,
   } = useTable<BillingColumnData>(
     {
-      columns: useMemo(() => BILLING_TABLE_COLUMNS, []),
-      data: useMemo(() => loginStats, [loginStats]),
+      columns: BILLING_TABLE_COLUMNS,
+      data: loginStats,
       initialState: {
         pageIndex: currentPage,
         pageSize: 10,

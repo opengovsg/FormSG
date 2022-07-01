@@ -22,15 +22,20 @@ export const dateRangeToString = ({ yr, mth }: DateRange): string =>
   MTH_TO_STRING[mth] + ' ' + yr.toString()
 
 export const stringToDateRange = (dateRangeString: string): DateRange => {
-  const dateRangePair = dateRangeString.split(' ')
+  const matches = dateRangeString.match(/^([a-z]+) ([12]\d{3})$/i)
 
-  if (dateRangePair.length !== 2)
-    throw new Error(`Date range string ${dateRangeString} does not split in 2`)
+  if (!matches)
+    throw new Error(
+      `Date range string [${dateRangeString}] does not have a valid format`,
+    )
 
-  const [mthstring, yrstring] = dateRangePair
+  const [_, mthstring, yrstring] = matches
+  const mth = MTH_TO_STRING.findIndex((mth) => mth === mthstring)
 
-  return {
-    yr: parseInt(yrstring),
-    mth: MTH_TO_STRING.findIndex((mth) => mth === mthstring),
-  }
+  if (mth === -1)
+    throw new Error(
+      `Date range string [${dateRangeString}] does not have a valid month string`,
+    )
+
+  return { mth, yr: parseInt(yrstring) }
 }

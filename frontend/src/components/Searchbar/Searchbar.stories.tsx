@@ -15,57 +15,30 @@ Default.args = {
   onSearch: (query) => console.log(query),
 }
 
-export const ExpandableClosed: Story<SearchbarProps> = ({
-  isInitiallyExpanded,
-  ...args
-}) => {
+export const ExpandableClosed: Story<SearchbarProps> = (args) => {
   const { inputRef } = useSearchbar()
 
-  return (
-    <Searchbar
-      ref={inputRef}
-      isInitiallyExpanded={isInitiallyExpanded}
-      {...args}
-    />
-  )
+  return <Searchbar ref={inputRef} isExpanded={false} {...args} />
 }
 ExpandableClosed.args = {
   onSearch: (query) => console.log(query),
-  isInitiallyExpanded: false,
 }
 ExpandableClosed.storyName = 'Expandable/Closed'
 
-export const ExpandableOpen: Story<SearchbarProps> = ({
-  isInitiallyExpanded,
-  ...args
-}) => {
+export const ExpandableOpen: Story<SearchbarProps> = (args) => {
   const { inputRef } = useSearchbar()
 
-  return (
-    <Searchbar
-      ref={inputRef}
-      isInitiallyExpanded={isInitiallyExpanded}
-      {...args}
-    />
-  )
+  return <Searchbar ref={inputRef} isExpanded={true} {...args} />
 }
 ExpandableOpen.args = {
   onSearch: (query) => console.log(query),
-  isInitiallyExpanded: true,
 }
 ExpandableOpen.storyName = 'Expandable/Open'
 
 export const UnexpandableOpen: Story<SearchbarProps> = (args) => {
   const { inputRef } = useSearchbar()
 
-  return (
-    <Searchbar
-      ref={inputRef}
-      isExpandable={false}
-      isInitiallyExpanded={true}
-      {...args}
-    />
-  )
+  return <Searchbar ref={inputRef} isExpandable={false} {...args} />
 }
 UnexpandableOpen.args = {
   onSearch: (query) => console.log(query),

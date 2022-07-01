@@ -31,10 +31,10 @@ export interface SearchbarProps extends InputProps {
 
   /**
    * Whether the searchbar is initially expanded or not. Defaults to `false`.
-   * @note Set this to `true` if `isExpandable` is set to `false`, else the
-   * searchbar will not be usable.
+   * @note If `isExpandable` is set to `false`, this prop will be ignored, and
+   * the searchbar will always be expanded.
    */
-  isInitiallyExpanded?: boolean
+  isExpanded?: boolean
 
   /**
    * Called when the search icon is clicked and the search bar is expanded.
@@ -52,7 +52,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     {
       onSearch,
       isExpandable = true,
-      isInitiallyExpanded = false,
+      isExpanded = false,
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       onExpand,
       // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -61,11 +61,13 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     },
     ref,
   ) => {
-    const [isExpanded, setIsExpanded] = useState<boolean>(isInitiallyExpanded)
+    const [isNowExpanded, setIsNowExpanded] = useState<boolean>(
+      !isExpandable || isExpanded,
+    )
 
     const innerRef = useRef<HTMLInputElement>(null)
     const styles = useMultiStyleConfig(SEARCHBAR_THEME_KEY, {
-      isExpanded,
+      isExpanded: isNowExpanded,
       ...props,
     })
 
@@ -82,8 +84,8 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
 
     return (
       <Flex>
-        <InputGroup flex={isExpanded ? 1 : 0}>
-          {isExpanded ? (
+        <InputGroup flex={isNowExpanded ? 1 : 0}>
+          {isNowExpanded ? (
             <InputLeftElement pointerEvents="none">
               <Box __css={styles.icon}>
                 <Icon as={BiSearch} />
@@ -96,7 +98,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
               variant="clear"
               colorScheme="secondary"
               onClick={() => {
-                setIsExpanded(true)
+                setIsNowExpanded(true)
                 if (onExpand) onExpand()
               }}
               sx={styles.icon}
@@ -112,14 +114,14 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
         </InputGroup>
         {
           // If not expandable, don't give the option to close it.
-          isExpandable && isExpanded ? (
+          isExpandable && isNowExpanded ? (
             <IconButton
               aria-label="Collapse search"
               icon={<BiX />}
               variant="clear"
               colorScheme="secondary"
               onClick={() => {
-                setIsExpanded(false)
+                setIsNowExpanded(false)
                 if (onCollapse) onCollapse()
               }}
               sx={styles.icon}
