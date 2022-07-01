@@ -48,7 +48,7 @@ const THIRTY_FORMS = [
     1,
     'This is a very very very very very very very very long title it should be properly truncated only in desktop view',
   ),
-  ...createForm(30),
+  ...createForm(29),
 ]
 
 export default {
