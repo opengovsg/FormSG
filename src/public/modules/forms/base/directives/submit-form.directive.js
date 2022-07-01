@@ -41,6 +41,7 @@ angular
     '$uibModal',
     '$timeout',
     '$location',
+    'prefill',
     submitFormDirective,
   ])
 
@@ -57,6 +58,7 @@ function submitFormDirective(
   $uibModal,
   $timeout,
   $location,
+  prefill,
 ) {
   return {
     restrict: 'E',
@@ -104,7 +106,9 @@ function submitFormDirective(
         const query = $location.url().split('?')
         const queryString = query.length > 1 ? query[1] : undefined
         const queryId = queryString ? cuid() : undefined
-        const encodedQuery = queryId ? btoa(`queryId=${queryId}`) : undefined
+        const encodedQuery = queryId
+          ? btoa(`${prefill.QUERY_ID}=${queryId}`)
+          : undefined
         const queryObject = {
           _id: queryId,
           queryString,
@@ -119,7 +123,10 @@ function submitFormDirective(
             // we should only store one set of prefill params. Meanwhile, we use queryId and pass it to the
             // backend instead of simply storing the query params directly in sessionStorage, so as to
             // ensure that the stored query is loaded only for the session where it was generated
-            sessionStorage.setItem('storedQuery', JSON.stringify(queryObject))
+            sessionStorage.setItem(
+              prefill.STORED_QUERY,
+              JSON.stringify(queryObject),
+            )
           } catch (e) {
             console.error('Failed to store query string')
             // Login can proceed, since after login, user can still prefill form by accessing

@@ -11,6 +11,7 @@ angular
     '$document',
     'GTag',
     'Toastr',
+    'prefill',
     SubmitFormController,
   ])
 
@@ -21,6 +22,7 @@ function SubmitFormController(
   $document,
   GTag,
   Toastr,
+  prefill,
 ) {
   const vm = this
 
@@ -35,6 +37,7 @@ function SubmitFormController(
     FormData.spcpSession && FormData.spcpSession.userName
   )
 
+  // Handle prefills
   // If it is an authenticated form, read the storedQuery from local storage and append to query params
   // As a design decision, regardless of whether user is logged in, we should replace the queryId with the
   // stored query params
@@ -45,14 +48,16 @@ function SubmitFormController(
     const location = $window.location.toString().split('?')
     if (location.length > 1) {
       const queryParams = new URLSearchParams(location[1])
-      const queryId = queryParams.get('queryId')
+      const queryId = queryParams.get(prefill.QUERY_ID)
 
       let storedQuery
 
       try {
         // If storedQuery is not valid JSON, JSON.parse throws a SyntaxError
         // In try-catch block as this should not prevent rest of form from being loaded
-        storedQuery = JSON.parse($window.sessionStorage.getItem('storedQuery'))
+        storedQuery = JSON.parse(
+          $window.sessionStorage.getItem(prefill.STORED_QUERY),
+        )
       } catch (e) {
         console.error('Unable to parse storedQuery, not valid JSON string')
       }
@@ -64,7 +69,7 @@ function SubmitFormController(
         storedQuery.queryString
       ) {
         $window.location.href = `${location[0]}?${storedQuery.queryString}` // Replace the queryId with stored queryString
-        $window.sessionStorage.removeItem('storedQuery') // Delete after reading the stored queryString, as only needed once
+        $window.sessionStorage.removeItem(prefill.STORED_QUERY) // Delete after reading the stored queryString, as only needed once
       }
     }
   }
