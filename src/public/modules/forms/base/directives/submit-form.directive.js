@@ -114,6 +114,11 @@ function submitFormDirective(
           // Defensive - try catch block in case the storage is full
           // See https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem
           try {
+            // We use storedQuery as the sessionStorage key rather than just using the ObjectId
+            // because only one person can be logging in at a time in a given session, so
+            // we should only store one set of prefill params. Meanwhile, we use queryId and pass it to the
+            // backend instead of simply storing the query params directly in sessionStorage, so as to
+            // ensure that the stored query is loaded only for the session where it was generated
             sessionStorage.setItem('storedQuery', JSON.stringify(queryObject))
           } catch (e) {
             console.error('Failed to store query string')

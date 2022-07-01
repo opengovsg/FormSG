@@ -36,8 +36,11 @@ function SubmitFormController(
   )
 
   // If it is an authenticated form, read the storedQuery from local storage and append to query params
-  // Note that regardless of whether user is logged in, we should replace the queryId with the
+  // As a design decision, regardless of whether user is logged in, we should replace the queryId with the
   // stored query params
+  // queryId could exist even though user is not logged in if user initiates the login flow
+  // but does not complete it and returns to the public form view within the same session
+
   if (isSpcpSgidForm || isMyInfoForm) {
     const location = $window.location.toString().split('?')
     if (location.length > 1) {
