@@ -56,13 +56,17 @@ export class SgidServiceClass {
    * Create a URL to sgID which is used to redirect the user for authentication
    * @param formId - the form id to redirect to after authentication
    * @param rememberMe - whether we create a JWT that remembers the user
+   * @param encodedQuery base64 encoded queryId for frontend to retrieve stored query params (usually contains prefilled form information)
    * for an extended period of time
    */
   createRedirectUrl(
     formId: string,
     rememberMe: boolean,
+    encodedQuery?: string,
   ): Result<string, SgidCreateRedirectUrlError> {
-    const state = `${formId},${rememberMe}`
+    const state = encodedQuery
+      ? `${formId},${rememberMe},${encodedQuery}`
+      : `${formId},${rememberMe}`
     const logMeta = {
       action: 'createRedirectUrl',
       state,
@@ -84,18 +88,41 @@ export class SgidServiceClass {
    * Parses the string serialization containing the form id and if the
    * user should be remembered, both needed when redirecting the user back to
    * the form post-authentication
-   * @param state - a comma-separated string of the form id and a boolean flag
-   * indicating if the user should be remembered
-   * @returns {Result<{ formId: string; rememberMe: boolean }, SgidInvalidStateError>}
-   *   the form id and whether the user should be remembered
+   * @param state - a comma-separated string of the form id, a boolean flag
+   * indicating if the user should be remembered, and an optional encodedQuery
+   * @returns {Result<{ formId: string; rememberMe: boolean; decodedQuery?: string }, SgidInvalidStateError>}
    */
   parseState(
     state: string,
-  ): Result<{ formId: string; rememberMe: boolean }, SgidInvalidStateError> {
-    const [formId, rememberMeStr] = state.split(',')
-    const rememberMe = rememberMeStr === 'true'
+  ): Result<
+    { formId: string; rememberMe: boolean; decodedQuery: string },
+    SgidInvalidStateError
+  > {
+    const payloads = state.split(',')
+    const formId = payloads[0]
+    const rememberMe = payloads[1] === 'true'
+
+    const encodedQuery = payloads.length === 3 ? payloads[2] : ''
+    let decodedQuery = ''
+
+    try {
+      decodedQuery = encodedQuery
+        ? `?${Buffer.from(encodedQuery, 'base64').toString('utf8')}`
+        : ''
+    } catch (e) {
+      logger.error({
+        message: 'Unable to decode encodedQuery',
+        meta: {
+          action: 'parseOOBParams',
+          encodedQuery,
+        },
+        error: e,
+      })
+      return err(new SgidInvalidStateError())
+    }
+
     return formId
-      ? ok({ formId, rememberMe })
+      ? ok({ formId, rememberMe, decodedQuery })
       : err(new SgidInvalidStateError())
   }
 

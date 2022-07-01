@@ -1,6 +1,7 @@
 'use strict'
 const cloneDeep = require('lodash/cloneDeep')
 const get = require('lodash/get')
+const cuid = require('cuid')
 
 const FieldVerificationService = require('../../../../services/FieldVerificationService')
 const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
@@ -40,6 +41,7 @@ angular
     '$uibModal',
     '$timeout',
     '$location',
+    'prefill',
     submitFormDirective,
   ])
 
@@ -56,6 +58,7 @@ function submitFormDirective(
   $uibModal,
   $timeout,
   $location,
+  prefill,
 ) {
   return {
     restrict: 'E',
@@ -101,7 +104,35 @@ function submitFormDirective(
         if (isPersistentLogin) GTag.persistentLoginUse(scope.form)
 
         const query = $location.url().split('?')
-        const encodedQuery = query.length > 1 ? btoa(query[1]) : undefined
+        const queryString = query.length > 1 ? query[1] : undefined
+        const queryId = queryString ? cuid() : undefined
+        const encodedQuery = queryId
+          ? btoa(`${prefill.QUERY_ID}=${queryId}`)
+          : undefined
+        const queryObject = {
+          _id: queryId,
+          queryString,
+        }
+
+        if (queryString) {
+          // Defensive - try catch block in case the storage is full
+          // See https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem
+          try {
+            // We use storedQuery as the sessionStorage key rather than just using the queryId
+            // because only one person can be logging in at a time in a given session, so
+            // we should only store one set of prefill params. Meanwhile, we use queryId and pass it to the
+            // backend instead of simply storing the query params directly in sessionStorage, so as to
+            // ensure that the stored query is loaded only for the session where it was generated
+            sessionStorage.setItem(
+              prefill.STORED_QUERY,
+              JSON.stringify(queryObject),
+            )
+          } catch (e) {
+            console.error('Failed to store query string')
+            // Login can proceed, since after login, user can still prefill form by accessing
+            // url with query params
+          }
+        }
 
         return $q
           .when(
