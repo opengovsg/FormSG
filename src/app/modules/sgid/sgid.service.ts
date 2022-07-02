@@ -1,9 +1,7 @@
 import { SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
-import Jwt from 'jsonwebtoken'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
-import { ISgidVarsSchema } from '../../../types'
 import { sgid } from '../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
@@ -21,13 +19,10 @@ import { isSgidJwtPayload } from './sgid.util'
 
 const logger = createLoggerWithLabel(module)
 
-const JWT_ALGORITHM = 'RS256'
-
 export class SgidServiceClass {
   private client: SgidClient
 
-  private publicKey: string | Buffer
-  private privateKey: string
+  private publicKeyPath: string | Buffer
 
   private cookieDomain: string
   private cookieMaxAge: number
@@ -40,13 +35,22 @@ export class SgidServiceClass {
     privateKeyPath,
     publicKeyPath,
     ...sgidOptions
-  }: ISgidVarsSchema) {
-    this.privateKey = fs.readFileSync(privateKeyPath, { encoding: 'utf8' })
+  }: {
+    endpoint: string
+    clientId: string
+    clientSecret: string
+    privateKeyPath: string
+    publicKeyPath: string
+    redirectUri: string
+    cookieDomain: string
+    cookieMaxAge: number
+    cookieMaxAgePreserved: number
+  }) {
     this.client = new SgidClient({
       ...sgidOptions,
-      privateKey: this.privateKey,
+      privateKey: fs.readFileSync(privateKeyPath),
     })
-    this.publicKey = fs.readFileSync(publicKeyPath)
+    this.publicKeyPath = fs.readFileSync(publicKeyPath)
     this.cookieDomain = cookieDomain
     this.cookieMaxAge = cookieMaxAge
     this.cookieMaxAgePreserved = cookieMaxAgePreserved
@@ -194,12 +198,8 @@ export class SgidServiceClass {
     const userName = data['myinfo.nric_number']
     const payload = { userName, rememberMe }
     const maxAge = rememberMe ? this.cookieMaxAgePreserved : this.cookieMaxAge
-    const jwt = Jwt.sign(payload, this.privateKey, {
-      algorithm: JWT_ALGORITHM,
-      expiresIn: maxAge / 1000,
-    })
     return ok({
-      jwt,
+      jwt: this.client.createJWT(payload, maxAge / 1000),
       maxAge,
     })
   }
@@ -222,9 +222,7 @@ export class SgidServiceClass {
         return err(new SgidMissingJwtError())
       }
 
-      const payload = Jwt.verify(jwtSgid, this.publicKey, {
-        algorithms: [JWT_ALGORITHM],
-      })
+      const payload = this.client.verifyJWT(jwtSgid, this.publicKeyPath)
 
       if (isSgidJwtPayload(payload)) {
         return ok(payload)
