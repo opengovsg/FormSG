@@ -22,6 +22,7 @@ import { isSgidJwtPayload } from './sgid.util'
 const logger = createLoggerWithLabel(module)
 
 const JWT_ALGORITHM = 'RS256'
+const SGID_SCOPES = 'openid myinfo.nric_number'
 
 export class SgidServiceClass {
   private client: SgidClient
@@ -71,7 +72,7 @@ export class SgidServiceClass {
       action: 'createRedirectUrl',
       state,
     }
-    const result = this.client.authorizationUrl(state)
+    const result = this.client.authorizationUrl(state, SGID_SCOPES, null)
     if (typeof result.url === 'string') {
       return ok(result.url)
     } else {
@@ -137,17 +138,20 @@ export class SgidServiceClass {
     { sub: string; accessToken: string },
     SgidFetchAccessTokenError
   > {
-    return ResultAsync.fromPromise(this.client.callback(code), (error) => {
-      logger.error({
-        message: 'Failed to retrieve access token from sgID',
-        meta: {
-          action: 'token',
-          code,
-        },
-        error,
-      })
-      return new SgidFetchAccessTokenError()
-    })
+    return ResultAsync.fromPromise(
+      this.client.callback(code, null),
+      (error) => {
+        logger.error({
+          message: 'Failed to retrieve access token from sgID',
+          meta: {
+            action: 'token',
+            code,
+          },
+          error,
+        })
+        return new SgidFetchAccessTokenError()
+      },
+    )
   }
 
   /**
