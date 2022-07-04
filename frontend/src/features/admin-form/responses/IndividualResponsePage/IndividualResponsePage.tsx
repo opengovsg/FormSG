@@ -118,16 +118,16 @@ export const IndividualResponsePage = (): JSX.Element => {
   ])
 
   const backLink = useMemo(() => {
-    const searchParams = new URLSearchParams()
     if (!lastNavPage && !lastNavSubmissionId) {
       return `..`
     }
 
+    const searchParams = new URLSearchParams()
     if (lastNavPage) {
-      searchParams.append('page', lastNavPage.toString())
+      searchParams.set('page', lastNavPage.toString())
     }
     if (lastNavSubmissionId) {
-      searchParams.append('submissionId', lastNavSubmissionId)
+      searchParams.set('submissionId', lastNavSubmissionId)
     }
     return `..?${searchParams}`
   }, [lastNavPage, lastNavSubmissionId])
