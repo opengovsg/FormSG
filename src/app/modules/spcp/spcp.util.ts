@@ -136,7 +136,7 @@ export const verifyJwtPromise = (
   jwt: string,
 ): Promise<unknown> => {
   return new Promise<unknown>((resolve, reject) => {
-    authClient.verifyJWT<unknown>(jwt, (error, data) => {
+    authClient.verifyJWT<unknown>(jwt, (error: Error, data: unknown) => {
       if (error) {
         return reject(error)
       }
