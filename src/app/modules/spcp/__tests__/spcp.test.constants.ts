@@ -40,6 +40,7 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   myInfoCertPath: 'myInfoCertPath',
   myInfoClientId: 'myInfoClientId',
   myInfoClientSecret: 'myInfoClientSecret',
+  spOidcRpJwksPublicPath: 'tests/certs/test_rp_public_jwks.json',
 }
 
 export const MOCK_ESRVCID = 'eServiceId'

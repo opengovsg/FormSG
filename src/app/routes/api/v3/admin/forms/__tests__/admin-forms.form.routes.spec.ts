@@ -30,6 +30,7 @@ import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 import {
   BasicField,
   FormColorTheme,
+  FormEndPage,
   FormLogoState,
   FormResponseMode,
   FormStartPage,
@@ -2124,6 +2125,89 @@ describe('admin-form.form.routes', () => {
       // Assert
       expect(resp.status).toBe(500)
       expect(resp.body).toEqual(expectedResponse)
+    })
+  })
+
+  describe('PUT /admin/forms/:formId/end-page', () => {
+    const MOCK_END_PAGE: Partial<FormEndPage> = {
+      title: 'end page title',
+      buttonText: 'end page button',
+    }
+
+    it('should return 200 when button link is updated with a valid HTTPS URI scheme', async () => {
+      //Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        endpage: MOCK_END_PAGE,
+      })
+
+      //Act
+      const validUriScheme = 'https://valid.scheme'
+      const response = await request
+        .put(`/admin/forms/${form._id}/end-page`)
+        .send({
+          buttonLink: validUriScheme,
+        })
+
+      //Assert
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual(
+        expect.objectContaining({ buttonLink: validUriScheme }),
+      )
+    })
+
+    it('should return 200 when button link is updated with a valid HTTP URI scheme', async () => {
+      //Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        endpage: MOCK_END_PAGE,
+      })
+
+      //Act
+      const validUriScheme = 'http://valid.scheme'
+      const response = await request
+        .put(`/admin/forms/${form._id}/end-page`)
+        .send({
+          buttonLink: validUriScheme,
+        })
+
+      //Assert
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual(
+        expect.objectContaining({ buttonLink: validUriScheme }),
+      )
+    })
+
+    it('should return 400 when button link is updated with an invalid URI scheme', async () => {
+      //Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        endpage: MOCK_END_PAGE,
+      })
+
+      //Act
+      const response = await request
+        .put(`/admin/forms/${form._id}/end-page`)
+        .send({
+          buttonLink: 'scheme://invalid.scheme',
+        })
+
+      //Assert
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'buttonLink',
+            message: 'Please enter a valid HTTP or HTTPS URI',
+          },
+        }),
+      )
     })
   })
 })
