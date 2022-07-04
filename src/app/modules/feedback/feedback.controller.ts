@@ -71,7 +71,7 @@ const submitFormFeedbackV2: ControllerHandler<
     .mapErr((error) => {
       const { errorMessage, statusCode } = mapRouteError(error)
       logger.error({
-        message: errorMessage,
+        message: 'Error while submitting form feedback',
         meta: logMeta,
         error,
       })
