@@ -14,9 +14,12 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import * as AuthService from '../../../../../modules/auth/auth.service'
+import { SpOidcClient } from '../../../../../modules/spcp/sp.oidc.client'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 import { MOCK_UINFIN } from './public-forms.routes.spec.constants'
+
+jest.mock('../../../../../modules/spcp/sp.oidc.client')
 
 jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
@@ -47,7 +50,6 @@ const app = setupApp('/forms', PublicFormsRouter)
 describe('public-form.form.routes', () => {
   let request: Session
 
-  const mockSpClient = mocked(MockAuthClient.mock.instances[0], true)
   const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
 
   beforeAll(async () => await dbHandler.connect())
@@ -90,13 +92,11 @@ describe('public-form.form.routes', () => {
 
     it('should return 200 with public form when form has FormAuthType.SP and valid formId', async () => {
       // Arrange
-      mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-        cb(null, {
-          userName: MOCK_COOKIE_PAYLOAD.userName,
-          iat: 100000000,
-          exp: 1000000000,
-        }),
-      )
+      jest.spyOn(SpOidcClient.prototype, 'verifyJwt').mockResolvedValueOnce({
+        userName: MOCK_COOKIE_PAYLOAD.userName,
+        iat: 100000000,
+        exp: 1000000000,
+      })
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',

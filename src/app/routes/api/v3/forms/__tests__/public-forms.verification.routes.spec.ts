@@ -46,6 +46,9 @@ const VerificationModel = getVerificationModel(mongoose)
 // Prevent rate limiting.
 jest.mock('src/app/utils/limit-rate')
 
+// Avoid async refresh calls
+jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
+
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockReturnValue({
     sendMail: jest.fn().mockResolvedValue(true),

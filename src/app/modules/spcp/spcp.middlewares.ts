@@ -16,3 +16,10 @@ export const loginParamsMiddleware = celebrate({
     RelayState: Joi.string().required(),
   }),
 })
+
+export const spOidcLoginParamsMiddleware = celebrate({
+  [Segments.QUERY]: Joi.object({
+    state: Joi.string().required(),
+    code: Joi.string().required(),
+  }),
+})
