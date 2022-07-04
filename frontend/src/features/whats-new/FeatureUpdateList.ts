@@ -13,6 +13,7 @@ export interface FeatureUpdate {
   image?: FeatureUpdateImage
 }
 
+// TODO: Confirm the actual features which will be showcased in the What's New section
 export const FeatureUpdateList: FeatureUpdate[] = [
   {
     id: 1,

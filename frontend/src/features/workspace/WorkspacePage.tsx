@@ -14,7 +14,7 @@ import Pagination from '~components/Pagination'
 
 import { useUserMutations } from '~features/user/mutations'
 import { useUser } from '~features/user/queries'
-import { shouldShowLatestFeatureUpdateNotification } from '~features/whats-new/utils/utils'
+import { getShowLatestFeatureUpdateNotification } from '~features/whats-new/utils/utils'
 import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
 
 import CreateFormModal from './components/CreateFormModal'
@@ -113,22 +113,18 @@ export const WorkspacePage = (): JSX.Element => {
   } = useWorkspaceForms()
   const { updateUserLastSeenFeatureUpdateDateMutation } = useUserMutations()
   const { user, isLoading: isUserLoading } = useUser()
-  const [shouldShowWhatsNewNotification, setShouldShowWhatsNewNotification] =
-    useState(false)
-  const shouldShowFeatureUpdateNotification =
-    shouldShowLatestFeatureUpdateNotification({
-      user,
-      isLoading: isUserLoading,
-    })
+  const shouldShowFeatureUpdateNotification = useMemo(() => {
+    if (isUserLoading || !user) return false
+    return getShowLatestFeatureUpdateNotification(user)
+  }, [isUserLoading, user])
 
-  useEffect(() => {
-    setShouldShowWhatsNewNotification(shouldShowFeatureUpdateNotification)
-  }, [shouldShowFeatureUpdateNotification])
-
-  const onWhatsNewDrawerOpen = () => {
+  const onWhatsNewDrawerOpen = useCallback(() => {
     whatsNewFeatureDrawerDisclosure.onOpen()
     updateUserLastSeenFeatureUpdateDateMutation.mutate()
-  }
+  }, [
+    updateUserLastSeenFeatureUpdateDateMutation,
+    whatsNewFeatureDrawerDisclosure,
+  ])
 
   return (
     <>
@@ -165,7 +161,7 @@ export const WorkspacePage = (): JSX.Element => {
               totalFormCount={totalFormCount}
               handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
               handleOpenWhatsNewDrawer={onWhatsNewDrawerOpen}
-              isWhatsNewButtonSolid={shouldShowWhatsNewNotification}
+              isWhatsNewButtonSolid={shouldShowFeatureUpdateNotification}
             />
           </Container>
           <Box gridArea="main">

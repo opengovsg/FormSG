@@ -71,6 +71,8 @@ export const WorkspaceHeader = ({
         >
           Create form
         </Button>
+        {/* TODO: Button with button variant prop is used temporarily to represent the what's new tab functionality in the admin header. 
+        Shift this to admin header once admin header is implemented.*/}
         <Button
           isFullWidth={isMobile}
           onClick={handleOpenWhatsNewDrawer}
