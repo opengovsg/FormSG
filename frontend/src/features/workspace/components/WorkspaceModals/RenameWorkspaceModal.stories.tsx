@@ -6,13 +6,13 @@ import { userHandlers } from '~/mocks/msw/handlers/user'
 import { getMobileViewParameters } from '~utils/storybook'
 
 import {
-  CreateWorkspaceModal,
-  CreateWorkspaceModalProps,
-} from './CreateWorkspaceModal'
+  RenameWorkspaceModal,
+  RenameWorkspaceModalProps,
+} from './RenameWorkspaceModal'
 
 export default {
-  title: 'Pages/WorkspacePage/CreateWorkspaceModal',
-  component: CreateWorkspaceModal,
+  title: 'Pages/WorkspacePage/RenameWorkspaceModal',
+  component: RenameWorkspaceModal,
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
@@ -21,19 +21,18 @@ export default {
   },
 } as Meta
 
-const Template: Story<CreateWorkspaceModalProps> = (args) => {
+const Template: Story<RenameWorkspaceModalProps> = (args) => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
 
   return (
-    <CreateWorkspaceModal
+    <RenameWorkspaceModal
       {...args}
       {...modalProps}
       onClose={() => console.log('close modal')}
     />
   )
 }
+export const RenameWorkspace = Template.bind({})
 
-export const CreateWorkspace = Template.bind({})
-
-export const CreateWorkspaceMobile = Template.bind({})
-CreateWorkspaceMobile.parameters = getMobileViewParameters()
+export const RenameWorkspaceMobile = Template.bind({})
+RenameWorkspaceMobile.parameters = getMobileViewParameters()
