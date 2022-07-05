@@ -18,26 +18,24 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 
-type CreateOrRenameWorkspaceInputProps = {
+type CreateWorkspaceInputProps = {
   title: string
 }
 
-export interface CreateOrRenameWorkspaceModalProps {
+export interface CreateWorkspaceModalProps {
   isOpen: boolean
   onClose: () => void
-  isCreatingWorkspace: boolean
 }
 
-export const CreateOrRenameWorkspaceModal = ({
+export const CreateWorkspaceModal = ({
   isOpen,
   onClose,
-  isCreatingWorkspace,
-}: CreateOrRenameWorkspaceModalProps): JSX.Element => {
+}: CreateWorkspaceModalProps): JSX.Element => {
   const {
     handleSubmit,
     formState: { errors },
     register,
-  } = useForm<CreateOrRenameWorkspaceInputProps>({
+  } = useForm<CreateWorkspaceInputProps>({
     defaultValues: {
       title: '',
     },
@@ -53,17 +51,11 @@ export const CreateOrRenameWorkspaceModal = ({
     onClose()
   })
 
-  const handleRenameWorkspace = handleSubmit((data) => {
-    onClose()
-  })
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>
-          {isCreatingWorkspace ? 'Create' : 'Rename'} workspace
-        </ModalHeader>
+        <ModalHeader>Create workspace</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Text textStyle="subhead-1">Workspace name</Text>
@@ -89,17 +81,7 @@ export const CreateOrRenameWorkspaceModal = ({
             <Button onClick={onClose} variant="clear" colorScheme="secondary">
               Cancel
             </Button>
-            <Button
-              onClick={() => {
-                if (isCreatingWorkspace) {
-                  handleCreateWorkspace()
-                } else {
-                  handleRenameWorkspace()
-                }
-              }}
-            >
-              {isCreatingWorkspace ? 'Create' : 'Rename'} workspace
-            </Button>
+            <Button onClick={handleCreateWorkspace}>Create workspace</Button>
           </Stack>
         </ModalFooter>
       </ModalContent>
