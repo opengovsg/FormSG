@@ -1,21 +1,12 @@
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
-import {
-  Box,
-  Container,
-  Flex,
-  Grid,
-  Skeleton,
-  Stack,
-  Text,
-} from '@chakra-ui/react'
+import { Box, Container, Flex, Grid, Stack, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
 
 import Pagination from '~/components/Pagination'
 
 import { SingleSelect } from '~components/Dropdown'
 import Searchbar from '~components/Searchbar'
-import Spinner from '~components/Spinner'
 
 import { getBillingInfo } from '~features/user/billing/BillingService'
 
@@ -23,7 +14,9 @@ import { EsrvcIdFormInputs } from '../BillingForm'
 import { DateRange, dateRangeToString, stringToDateRange } from '../DateRange'
 
 import { BillingDownloadButton } from './components/BillingDownloadButton'
+import { BillingNoChargesContent } from './components/BillingNoChargesContent'
 import { BillingTable } from './components/BillingTable'
+import { BillingTableSkeleton } from './components/BillingTableSkeleton'
 
 export type BillChargesProps = {
   esrvcId: string
@@ -126,12 +119,12 @@ export const BillCharges = ({
       flexDir="column"
     >
       <Stack spacing="2rem">
-        <Skeleton isLoaded={true} w="fit-content">
+        <Stack spacing="0.5rem">
           <Text as="h2" textStyle="h2" whiteSpace="pre-line">
             Bill charges
           </Text>
-          Export monthly bill charges
-        </Skeleton>
+          <Text>Export monthly bill charges</Text>
+        </Stack>
         <Flex flexDir="column" h="100%">
           <Grid
             mb="1rem"
@@ -199,12 +192,11 @@ export const BillCharges = ({
           </Grid>
 
           {isLoadingOrRefetching ? (
-            <Flex mb="3rem" justifyContent="center">
-              <Spinner
-                label={"Hang on, we're getting your bill charges ready!"}
-                fontSize={90}
-              ></Spinner>
-            </Flex>
+            <BillingTableSkeleton />
+          ) : statsCount === 0 ? (
+            <Box mt="2rem">
+              <BillingNoChargesContent />
+            </Box>
           ) : (
             <>
               <Box mb="3rem" overflow="auto" flex={1}>
@@ -213,33 +205,14 @@ export const BillCharges = ({
                   currentPage={currentPage - 1}
                 />
               </Box>
-              {statsCount === 0 ? (
-                // No charges found
-                <Text
-                  as="h2"
-                  textStyle="h2"
-                  whiteSpace="pre-line"
-                  align="center"
-                >
-                  {'No charges found for '}
-                  <Text as="span" color="primary.500">
-                    {esrvcId}
-                  </Text>
-                  {' in '}
-                  <Text as="span" color="primary.500">
-                    {dateRangeToString(dateRange)}
-                  </Text>
-                </Text>
-              ) : (
-                <Box>
-                  <Pagination
-                    totalCount={statsCount ?? 0}
-                    currentPage={currentPage} //1-indexed
-                    pageSize={10}
-                    onPageChange={setCurrentPage}
-                  />
-                </Box>
-              )}
+              <Box>
+                <Pagination
+                  totalCount={statsCount ?? 0}
+                  currentPage={currentPage} //1-indexed
+                  pageSize={10}
+                  onPageChange={setCurrentPage}
+                />
+              </Box>
             </>
           )}
         </Flex>

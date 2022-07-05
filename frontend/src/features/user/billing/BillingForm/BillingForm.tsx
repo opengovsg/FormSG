@@ -77,7 +77,7 @@ export const BillingForm = ({
               isLoading={formState.isSubmitting}
               type="submit"
             >
-              Submit
+              Search
             </Button>
             <Link
               isExternal
