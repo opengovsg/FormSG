@@ -22,6 +22,7 @@ const PAGE_DEFAULTS = {
 }
 
 export const CONTAINER_MAXW = '69.5rem'
+const VALID_NUM_ARG_RE = /^[1-9]\d*$/
 
 const useWorkspaceForms = () => {
   const { data: dashboardForms, isLoading } = useDashboard()
@@ -31,10 +32,15 @@ const useWorkspaceForms = () => {
 
   const createFormModalDisclosure = useDisclosure()
 
-  const currentPage = Number(
-    searchParams.get('page') ?? PAGE_DEFAULTS.pageNumber,
-  )
-  const pageSize = Number(searchParams.get('size') ?? PAGE_DEFAULTS.size)
+  const pageParam = searchParams.get('page') ?? ''
+  const sizeParam = searchParams.get('size') ?? ''
+
+  const currentPage = VALID_NUM_ARG_RE.test(pageParam)
+    ? parseInt(pageParam)
+    : PAGE_DEFAULTS.pageNumber
+  const pageSize = VALID_NUM_ARG_RE.test(sizeParam)
+    ? parseInt(sizeParam)
+    : PAGE_DEFAULTS.size
   const sort = searchParams.get('sort')
 
   const setSortOrder = useCallback(
