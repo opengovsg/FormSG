@@ -13,7 +13,7 @@ import {
   SgidMissingJwtError,
   SgidVerifyJwtError,
 } from '../sgid.errors'
-import { SgidServiceClass } from '../sgid.service'
+import { SGID_SCOPES, SgidServiceClass } from '../sgid.service'
 
 import {
   MOCK_ACCESS_TOKEN,
@@ -71,7 +71,11 @@ describe('sgid.service', () => {
         MOCK_REMEMBER_ME,
       )
       expect(url._unsafeUnwrap()).toEqual(MOCK_REDIRECT_URL)
-      expect(sgidClient.authorizationUrl).toHaveBeenCalledWith(MOCK_STATE)
+      expect(sgidClient.authorizationUrl).toHaveBeenCalledWith(
+        MOCK_STATE,
+        SGID_SCOPES,
+        null,
+      )
     })
     it('should return error if not ok', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
@@ -86,7 +90,11 @@ describe('sgid.service', () => {
         MOCK_REMEMBER_ME,
       )
       expect(url._unsafeUnwrapErr()).toBeInstanceOf(SgidCreateRedirectUrlError)
-      expect(sgidClient.authorizationUrl).toHaveBeenCalledWith(MOCK_STATE)
+      expect(sgidClient.authorizationUrl).toHaveBeenCalledWith(
+        MOCK_STATE,
+        SGID_SCOPES,
+        null,
+      )
     })
   })
   describe('parseState', () => {
@@ -111,7 +119,7 @@ describe('sgid.service', () => {
       sgidClient.callback.mockResolvedValue(MOCK_TOKEN_RESULT)
       const result = await SgidService.retrieveAccessToken(MOCK_AUTH_CODE)
       expect(result._unsafeUnwrap()).toStrictEqual(MOCK_TOKEN_RESULT)
-      expect(sgidClient.callback).toHaveBeenCalledWith(MOCK_AUTH_CODE)
+      expect(sgidClient.callback).toHaveBeenCalledWith(MOCK_AUTH_CODE, null)
     })
     it('should return error on error', async () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
@@ -121,7 +129,7 @@ describe('sgid.service', () => {
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         SgidFetchAccessTokenError,
       )
-      expect(sgidClient.callback).toHaveBeenCalledWith(MOCK_AUTH_CODE)
+      expect(sgidClient.callback).toHaveBeenCalledWith(MOCK_AUTH_CODE, null)
     })
   })
   describe('userInfo', () => {

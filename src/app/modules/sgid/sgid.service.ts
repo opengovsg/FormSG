@@ -22,7 +22,7 @@ import { isSgidJwtPayload } from './sgid.util'
 const logger = createLoggerWithLabel(module)
 
 const JWT_ALGORITHM = 'RS256'
-const SGID_SCOPES = 'openid myinfo.nric_number'
+export const SGID_SCOPES = 'openid myinfo.nric_number'
 
 export class SgidServiceClass {
   private client: SgidClient
