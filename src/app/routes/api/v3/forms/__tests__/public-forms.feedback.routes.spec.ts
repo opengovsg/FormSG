@@ -13,6 +13,9 @@ import { PublicFormsRouter } from '../public-forms.routes'
 
 const app = setupApp('/forms', PublicFormsRouter)
 
+// Avoid async refresh calls
+jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
+
 describe('public-form.feedback.routes', () => {
   let request: Session
 

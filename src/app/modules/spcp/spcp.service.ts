@@ -56,6 +56,7 @@ const LOGIN_PAGE_TIMEOUT = 10000 // 10 seconds
 
 /**
  * Class for executing Singpass/Corppass-related services.
+ * To deprecate once Singpass/Corppass have been migrated to OIDC.
  * Exported for testing.
  */
 export class SpcpServiceClass {

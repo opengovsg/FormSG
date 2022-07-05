@@ -35,9 +35,14 @@ import {
 } from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
+import { SpOidcService } from '../../spcp/sp.oidc.service'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpService } from '../../spcp/spcp.service'
-import { getRedirectTarget, validateSpcpForm } from '../../spcp/spcp.util'
+import {
+  getRedirectTarget,
+  getRedirectTargetSpOidc,
+  validateSpcpForm,
+} from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
@@ -274,6 +279,28 @@ export const handleGetPublicForm: ControllerHandler<
     case FormAuthType.NIL:
       return res.json({ form: publicForm, isIntranetUser })
     case FormAuthType.SP:
+      return SpOidcService.extractJwtPayloadFromRequest(req.cookies)
+        .map((spcpSession) => {
+          return res.json({
+            form: publicForm,
+            isIntranetUser,
+            spcpSession,
+          })
+        })
+        .mapErr((error) => {
+          // Report only relevant errors - verification failed for user here
+          if (
+            error instanceof VerifyJwtError ||
+            error instanceof InvalidJwtError
+          ) {
+            logger.error({
+              message: 'Error getting public form',
+              meta: logMeta,
+              error,
+            })
+          }
+          return res.json({ form: publicForm, isIntranetUser })
+        })
     case FormAuthType.CP:
       return SpcpService.extractJwtPayloadFromRequest(authType, req.cookies)
         .map((spcpSession) => {
@@ -430,7 +457,16 @@ export const _handleFormAuthRedirect: ControllerHandler<
               encodedQuery,
             }),
           )
-        case FormAuthType.SP:
+        case FormAuthType.SP: {
+          return validateSpcpForm(form).asyncAndThen((form) => {
+            const target = getRedirectTargetSpOidc(
+              formId,
+              isPersistentLogin,
+              encodedQuery,
+            )
+            return SpOidcService.createRedirectUrl(target, form.esrvcId)
+          })
+        }
         case FormAuthType.CP: {
           // NOTE: Persistent login is only set (and relevant) when the authType is SP.
           // If authType is not SP, assume that it was set erroneously and default it to false
@@ -542,6 +578,7 @@ export const handlePublicAuthLogout = [
 
 /**
  * Handler for validating the eServiceId of a given form
+ * @deprecated with transition to SP OIDC because NDI no longer returns error page for invalid eservice ID
  *
  * @returns 200 with eserviceId validation result
  * @returns 400 when there is an error on the authType of the form
