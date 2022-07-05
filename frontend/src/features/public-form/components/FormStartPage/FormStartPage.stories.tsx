@@ -9,7 +9,11 @@ import {
   getPublicFormResponse,
 } from '~/mocks/msw/handlers/public-form'
 
+import { getMobileViewParameters } from '~utils/storybook'
+
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
+
+import { FormSectionsProvider } from '../FormFields/FormSectionsContext'
 
 import {
   MiniHeader as MiniHeaderComponent,
@@ -173,7 +177,9 @@ ColorThemeRed.parameters = {
 }
 
 export const MiniHeader: Story<MiniHeaderProps> = (args) => (
-  <MiniHeaderComponent {...args} />
+  <FormSectionsProvider>
+    <MiniHeaderComponent {...args} />
+  </FormSectionsProvider>
 )
 MiniHeader.args = {
   isOpen: true,
@@ -189,4 +195,18 @@ MiniHeader.parameters = {
       delay: 0,
     }),
   ],
+}
+
+export const MiniHeaderMobile: Story<MiniHeaderProps> = (args) => (
+  <FormSectionsProvider>
+    <MiniHeaderComponent {...args} />
+  </FormSectionsProvider>
+)
+
+MiniHeaderMobile.args = {
+  ...MiniHeader.args,
+}
+MiniHeaderMobile.parameters = {
+  ...MiniHeader.parameters,
+  ...getMobileViewParameters(),
 }
