@@ -24,6 +24,7 @@ const baseSchema: DropdownFieldSchema = {
     'This is the first option',
     'This is the second option',
     'Short third option',
+    ...[...Array(2000).keys()].map(String),
   ],
   _id: 'random-id',
 }
