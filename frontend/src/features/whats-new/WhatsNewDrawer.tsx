@@ -12,7 +12,7 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
-import { FeatureUpdate, FeatureUpdateList } from './FeatureUpdateList'
+import { FEATURE_UPDATE_LIST, FeatureUpdate } from './FeatureUpdateList'
 import { WhatsNewContent } from './WhatsNewContent'
 
 export type WhatsNewDrawerProps = Pick<
@@ -30,13 +30,15 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
   const [linkText, setLinkText] = useState<string>(UNEXTENDED_LIST_LINK_TEXT)
   const [isListExtended, setIsListExtended] = useState<boolean>(false)
 
-  const listOfFeatureUpdatesShown: FeatureUpdate[] = FeatureUpdateList.filter(
+  const listOfFeatureUpdatesShown: FeatureUpdate[] = FEATURE_UPDATE_LIST.filter(
     (featureUpdate) => featureUpdate.id <= numberOfFeatureUpdatesShown,
   )
 
   const handleOnViewAllUpdatesClick = () => {
     setNumberOfFeatureUpdatesShown(
-      isListExtended ? DEFAULT_FEATURE_UPDATE_COUNT : FeatureUpdateList.length,
+      isListExtended
+        ? DEFAULT_FEATURE_UPDATE_COUNT
+        : FEATURE_UPDATE_LIST.length,
     )
     setLinkText(
       isListExtended ? UNEXTENDED_LIST_LINK_TEXT : EXTENDED_LIST_LINK_TEXT,
