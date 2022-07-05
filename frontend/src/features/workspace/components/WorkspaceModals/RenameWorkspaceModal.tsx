@@ -13,6 +13,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import { WORKSPACE_TITLE_VALIDATION_RULES } from '~utils/workspaceValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -45,6 +46,7 @@ export const RenameWorkspaceModal = ({
     xs: 'mobile',
     md: 'md',
   })
+  const isMobile = useIsMobile()
 
   // TODO (hans): Implement rename workspace functionality
   const handleRenameWorkspace = handleSubmit((data) => {
@@ -78,10 +80,17 @@ export const RenameWorkspaceModal = ({
             flexDir={{ base: 'column-reverse', md: 'inherit' }}
             justifyContent="flex-end"
           >
-            <Button onClick={onClose} variant="clear" colorScheme="secondary">
+            <Button
+              onClick={onClose}
+              variant="clear"
+              colorScheme="secondary"
+              isFullWidth={isMobile}
+            >
               Cancel
             </Button>
-            <Button onClick={handleRenameWorkspace}>Rename workspace</Button>
+            <Button onClick={handleRenameWorkspace} isFullWidth={isMobile}>
+              Rename workspace
+            </Button>
           </Stack>
         </ModalFooter>
       </ModalContent>

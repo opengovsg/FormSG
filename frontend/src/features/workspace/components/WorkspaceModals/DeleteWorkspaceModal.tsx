@@ -14,6 +14,7 @@ import {
 } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
@@ -42,6 +43,7 @@ export const DeleteWorkspaceModal = ({
     xs: 'mobile',
     md: 'md',
   })
+  const isMobile = useIsMobile()
 
   // TODO (hans): Implement delete workspace functionality
   const handleDeleteWorkspace = handleSubmit((data) => {
@@ -88,10 +90,19 @@ export const DeleteWorkspaceModal = ({
             flexDir={{ base: 'column-reverse', md: 'inherit' }}
             justifyContent="flex-end"
           >
-            <Button onClick={onClose} variant="clear" colorScheme="secondary">
+            <Button
+              onClick={onClose}
+              variant="clear"
+              colorScheme="secondary"
+              isFullWidth={isMobile}
+            >
               Cancel
             </Button>
-            <Button onClick={handleDeleteWorkspace} colorScheme="danger">
+            <Button
+              onClick={handleDeleteWorkspace}
+              colorScheme="danger"
+              isFullWidth={isMobile}
+            >
               Yes, delete workspace
             </Button>
           </Stack>
