@@ -1,0 +1,2 @@
+export const VIRTUAL_LIST_MAX_HEIGHT = 12 * 16
+export const VIRTUAL_LIST_OVERSCAN_HEIGHT = 4 * 16

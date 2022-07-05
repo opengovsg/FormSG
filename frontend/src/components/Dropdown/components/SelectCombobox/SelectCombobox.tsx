@@ -86,7 +86,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             ) : null}
             <Text
               textStyle="body-1"
-              isTruncated
+              noOfLines={1}
               color={isDisabled ? 'neutral.500' : undefined}
             >
               {selectedItemMeta.label}

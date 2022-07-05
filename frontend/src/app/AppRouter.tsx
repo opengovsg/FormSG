@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 
 import {
+  ADMINFORM_PREVIEW_ROUTE,
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
@@ -36,6 +37,7 @@ const LandingPage = lazy(() => import('~pages/Landing'))
 const LoginPage = lazy(() => import('~features/login'))
 const PrivacyPolicyPage = lazy(() => import('~pages/PrivacyPolicy'))
 const TermsOfUsePage = lazy(() => import('~pages/TermsOfUse'))
+const PreviewFormPage = lazy(() => import('~features/admin-form/preview'))
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
@@ -90,6 +92,10 @@ export const AppRouter = (): JSX.Element => {
             />
           </Route>
         </Route>
+        <Route
+          path={`${ADMINFORM_ROUTE}/:formId/${ADMINFORM_PREVIEW_ROUTE}`}
+          element={<PrivateElement element={<PreviewFormPage />} />}
+        />
         <Route path="*" element={<NotFoundErrorPage />} />
       </Routes>
     </WithSuspense>

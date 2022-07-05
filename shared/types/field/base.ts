@@ -25,6 +25,7 @@ export enum MyInfoAttribute {
   Name = 'name',
   PassportNumber = 'passportnumber',
   RegisteredAddress = 'regadd',
+  // NOTE: This refers to the name of employer
   Employment = 'employment',
   VehicleNo = 'vehno',
   MarriageCertNo = 'marriagecertno',
@@ -38,13 +39,13 @@ export enum MyInfoAttribute {
   HdbType = 'hdbtype',
   Marital = 'marital',
   CountryOfMarriage = 'countryofmarriage',
-  WorkpassStatus = 'workpassstatus',
   Occupation = 'occupation',
   MobileNo = 'mobileno',
   DateOfBirth = 'dob',
   PassportExpiryDate = 'passportexpirydate',
   MarriageDate = 'marriagedate',
   DivorceDate = 'divorcedate',
+  WorkpassStatus = 'workpassstatus',
   WorkpassExpiryDate = 'workpassexpirydate',
 }
 
@@ -53,6 +54,7 @@ export type AllowMyInfoBase = {
     attr: MyInfoAttribute
   }
 }
+
 export type VerifiableFieldBase = {
   isVerifiable: boolean
 }

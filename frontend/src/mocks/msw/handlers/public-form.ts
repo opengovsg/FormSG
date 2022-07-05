@@ -62,7 +62,7 @@ export const PREVENT_SUBMISSION_LOGIC: PreventSubmitLogicDto = {
   ],
 }
 
-const BASE_FORM = {
+export const BASE_FORM = {
   admin: {
     agency: {
       shortName: 'govtech',
