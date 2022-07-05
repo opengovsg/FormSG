@@ -53,7 +53,7 @@ export function useCommonFormProvider(formId: string) {
     useState<boolean>(false)
   const handleMobileSectionSidebarOpen = useCallback(() => {
     setIsMobileSectionSidebarOpen(true)
-  }, [setIsMobileSectionSidebarOpen, isMobileSectionSidebarOpen])
+  }, [setIsMobileSectionSidebarOpen])
   const handleMobileSectionSidebarClose = useCallback(() => {
     setIsMobileSectionSidebarOpen(false)
   }, [setIsMobileSectionSidebarOpen])
