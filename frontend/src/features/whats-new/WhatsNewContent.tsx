@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown'
 import { Box, Image, Text } from '@chakra-ui/react'
+import { format } from 'date-fns'
 import gfm from 'remark-gfm'
 
 import { useMdComponents } from '~hooks/useMdComponents'
@@ -7,11 +8,13 @@ import { useMdComponents } from '~hooks/useMdComponents'
 import { FeatureUpdateImage } from './FeatureUpdateList'
 
 export interface WhatsNewContentProps {
-  date: string
+  date: Date
   title: string
   description: string
   image?: FeatureUpdateImage
 }
+
+const DATE_FORMAT = 'dd MMMM YYY'
 
 export const WhatsNewContent = ({
   date,
@@ -30,9 +33,10 @@ export const WhatsNewContent = ({
       },
     },
   })
+  const formattedDate = format(date, DATE_FORMAT)
   return (
     <Box paddingX="2.5rem" paddingY="1.25">
-      <Text textStyle="caption-1">{date}</Text>
+      <Text textStyle="caption-1">{formattedDate}</Text>
       <Text textStyle="h4" mb="0.5rem" mt="1rem">
         {title}
       </Text>

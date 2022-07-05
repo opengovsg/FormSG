@@ -21,7 +21,7 @@ const Template: Story<WhatsNewContentProps> = (args) => {
 
 export const Desktop = Template.bind({})
 Desktop.args = {
-  date: '17 July',
+  date: new Date('17 July 2020 GMT+8'),
   title: 'Introducing Workspaces',
   description:
     'With the new Phone Number field, you can quickly collect people’s digits. Local and international validation available.',
