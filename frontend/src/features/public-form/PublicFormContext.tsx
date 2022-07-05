@@ -40,9 +40,13 @@ export interface PublicFormContextProps
    * Captcha will be instantiated if provided
    */
   captchaContainerId?: string
-  captchaContainerId: string
-  isMobileSectionSidebarOpen?: boolean
-  handleMobileSectionSidebarClick?: () => void
+  /** Whether mobile section sidebar is open */
+  isMobileSectionSidebarOpen: boolean
+  /**
+   * Callbacks to be invoked when mobile section sidebar
+   * is opened and closed
+   */
+  handleMobileSectionSidebarOpen: () => void
   handleMobileSectionSidebarClose: () => void
 }
 

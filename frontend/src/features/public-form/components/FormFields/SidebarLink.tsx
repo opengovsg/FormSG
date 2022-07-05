@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 import { Box, chakra, useStyleConfig } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
-
 import {
   SidebarSectionMeta,
   usePublicFormContext,

@@ -76,7 +76,7 @@ export interface MiniHeaderProps {
 
 // Exported for testing.
 export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
-  const { handleMobileSectionSidebarClick } = usePublicFormContext()
+  const { handleMobileSectionSidebarOpen } = usePublicFormContext()
   const { activeSectionId } = useFormSections()
 
   const { title, titleBg, titleColour, showHeader, miniHeaderRef } =
@@ -114,7 +114,7 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
                   fontSize="1.5rem"
                   icon={<BxMenuAltLeft />}
                   d={{ base: 'flex', md: 'none' }}
-                  onClick={handleMobileSectionSidebarClick}
+                  onClick={handleMobileSectionSidebarOpen}
                 />
               ) : (
                 <></>

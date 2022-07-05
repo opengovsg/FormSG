@@ -48,6 +48,16 @@ interface PublicFormProviderProps {
 }
 
 export function useCommonFormProvider(formId: string) {
+  // For mobile section sidebar
+  const [isMobileSectionSidebarOpen, setIsMobileSectionSidebarOpen] =
+    useState<boolean>(false)
+  const handleMobileSectionSidebarOpen = useCallback(() => {
+    setIsMobileSectionSidebarOpen(true)
+  }, [setIsMobileSectionSidebarOpen, isMobileSectionSidebarOpen])
+  const handleMobileSectionSidebarClose = useCallback(() => {
+    setIsMobileSectionSidebarOpen(false)
+  }, [setIsMobileSectionSidebarOpen])
+
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
@@ -89,6 +99,9 @@ export function useCommonFormProvider(formId: string) {
     expiryInMs,
     miniHeaderRef,
     getTransactionId,
+    isMobileSectionSidebarOpen,
+    handleMobileSectionSidebarOpen,
+    handleMobileSectionSidebarClose,
   }
 }
 
@@ -98,16 +111,6 @@ export const PublicFormProvider = ({
 }: PublicFormProviderProps): JSX.Element => {
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
-  
-  // For mobile section sidebar
-  const [isMobileSectionSidebarOpen, setIsMobileSectionSidebarOpen] =
-    useState<boolean>(false)
-  const handleMobileSectionSidebarClick = useCallback(() => {
-    setIsMobileSectionSidebarOpen(!isMobileSectionSidebarOpen)
-  }, [setIsMobileSectionSidebarOpen, isMobileSectionSidebarOpen])
-  const handleMobileSectionSidebarClose = useCallback(() => {
-    setIsMobileSectionSidebarOpen(false)
-  }, [setIsMobileSectionSidebarOpen])
 
   const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
@@ -131,6 +134,9 @@ export const PublicFormProvider = ({
     desyncToastIdRef,
     vfnToastIdRef,
     expiryInMs,
+    isMobileSectionSidebarOpen,
+    handleMobileSectionSidebarOpen,
+    handleMobileSectionSidebarClose,
     ...commonFormValues
   } = useCommonFormProvider(formId)
 
@@ -299,7 +305,7 @@ export const PublicFormProvider = ({
         expiryInMs,
         isLoading: isLoading || (!!cachedDto?.form.hasCaptcha && !hasLoaded),
         isMobileSectionSidebarOpen,
-        handleMobileSectionSidebarClick,
+        handleMobileSectionSidebarOpen,
         handleMobileSectionSidebarClose,
         ...commonFormValues,
         ...cachedDto,
