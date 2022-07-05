@@ -13,6 +13,16 @@ import { ROOT_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 
+import {
+  SubmitEmailFormArgs,
+  SubmitStorageFormArgs,
+} from '~features/public-form/PublicFormService'
+
+import {
+  submitEmailModeFormPreview,
+  submitStorageModeFormPreview,
+} from '../common/AdminViewFormService'
+
 import { permissionsToRole } from './components/CollaboratorModal/utils'
 import { updateFormEndPage } from './AdminFormPageService'
 import {
@@ -367,5 +377,24 @@ export const useMutateFormPage = () => {
 
   return {
     mutateFormEndPage,
+  }
+}
+
+export const usePreviewFormMutations = (formId: string) => {
+  const submitEmailModeFormMutation = useMutation(
+    (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
+      return submitEmailModeFormPreview({ ...args, formId })
+    },
+  )
+
+  const submitStorageModeFormMutation = useMutation(
+    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+      return submitStorageModeFormPreview({ ...args, formId })
+    },
+  )
+
+  return {
+    submitEmailModeFormMutation,
+    submitStorageModeFormMutation,
   }
 }
