@@ -14,7 +14,7 @@ import Pagination from '~components/Pagination'
 import CreateFormModal from './components/CreateFormModal'
 import { WorkspaceFormRows } from './components/WorkspaceFormRow'
 import { WorkspaceHeader } from './components/WorkspaceHeader'
-import { useWorkspace } from './queries'
+import { useDashboard } from './queries'
 
 const PAGE_DEFAULTS = {
   size: 20,
@@ -24,7 +24,7 @@ const PAGE_DEFAULTS = {
 export const CONTAINER_MAXW = '69.5rem'
 
 const useWorkspaceForms = () => {
-  const { data: dashboardForms, isLoading } = useWorkspace()
+  const { data: dashboardForms, isLoading } = useDashboard()
   const [searchParams, setSearchParams] = useSearchParams()
   const [sortedForms, setSortedForms] = useState(dashboardForms)
   const [isManipulating, setIsManipulating] = useState(false)

@@ -14,6 +14,12 @@ import * as serviceWorker from './serviceWorker'
 if (process.env.NODE_ENV === 'test') {
   import('./mocks/msw/browser').then(({ worker }) => worker.start())
 }
+// TODO (hans): Remove this once workspaces related BE is integrated with the FE
+if (process.env.NODE_ENV === 'development') {
+  import('./mocks/msw/browser').then(({ workspaceWorker }) =>
+    workspaceWorker.start(),
+  )
+}
 
 // Init Datadog RUM
 datadogRum.init({

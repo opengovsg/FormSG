@@ -1,5 +1,7 @@
 import { Flex, FlexProps, Text } from '@chakra-ui/react'
 
+import { WorkspaceDto } from '~shared/types/workspace'
+
 import { truncateLargeNumberWithPlus } from './utils'
 
 interface WorkspaceTabProps extends FlexProps {
@@ -50,8 +52,7 @@ const WorkspaceTab = ({
 }
 
 interface WorkspaceMenuTabsProps {
-  // TODO (hans): Change workspace type to use WorkspaceDto when its created
-  workspaces: any
+  workspaces: WorkspaceDto[]
   currWorkspace: string
   onClick: (id: string) => void
 }
@@ -61,7 +62,7 @@ export const WorkspaceMenuTabs = ({
   onClick,
 }: WorkspaceMenuTabsProps): JSX.Element => (
   <>
-    {workspaces.map((workspace: any) => (
+    {workspaces.map((workspace: WorkspaceDto) => (
       <WorkspaceTab
         key={workspace._id}
         label={workspace.title}

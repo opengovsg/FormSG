@@ -32,36 +32,16 @@ import {
 
 // TODO #4279: Remove after React rollout is complete
 import { AdminSwitchEnvMessage } from './components/AdminSwitchEnvMessage'
+import { EmptyWorkspace } from './components/EmptyWorkspace'
 import { WorkspaceMenuHeader } from './components/WorkspaceSideMenu/WorkspaceMenuHeader'
 import { WorkspaceMenuTabs } from './components/WorkspaceSideMenu/WorkspaceMenuTabs'
-
-// TODO (hans): Get workspaces data from workspace API once it's implemented
-const MOCK_WORKSPACES_DATA = [
-  {
-    _id: '',
-    title: 'All forms',
-    numForms: 531159249035,
-  },
-  {
-    _id: '2',
-    title: 'Product feedback',
-    numForms: 35002,
-  },
-  {
-    _id: '3',
-    title: 'Public sentiment',
-    numForms: 12,
-  },
-  {
-    _id: '4',
-    title: 'Very long number of forms',
-    numForms: 531159214021,
-  },
-]
+import { useDashboard, useWorkspace } from './queries'
 
 const WorkspaceMobilePage = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
+  const { data: workspaces, isLoading: isWorkspaceLoading } = useWorkspace()
+  if (isWorkspaceLoading || !workspaces) return <></>
 
   return (
     <>
@@ -82,7 +62,7 @@ const WorkspaceMobilePage = (): JSX.Element => {
           </DrawerHeader>
           <DrawerBody px={0} pt="1rem">
             <WorkspaceMenuTabs
-              workspaces={MOCK_WORKSPACES_DATA}
+              workspaces={workspaces}
               currWorkspace={currWorkspaceId}
               onClick={(id) => {
                 setCurrWorkspaceId(id)
@@ -116,13 +96,15 @@ const WorkspaceMobilePage = (): JSX.Element => {
 }
 const WorkspaceDesktopPage = (): JSX.Element => {
   const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
+  const { data: workspaces, isLoading: isWorkspaceLoading } = useWorkspace()
+  if (isWorkspaceLoading || !workspaces) return <></>
 
   return (
     <Grid templateColumns="15.5rem 1fr" minH="100vh">
       <Stack borderRight="1px" borderRightColor="neutral.300">
         <WorkspaceMenuHeader />
         <WorkspaceMenuTabs
-          workspaces={MOCK_WORKSPACES_DATA}
+          workspaces={workspaces}
           currWorkspace={currWorkspaceId}
           onClick={setCurrWorkspaceId}
         />
@@ -132,9 +114,11 @@ const WorkspaceDesktopPage = (): JSX.Element => {
   )
 }
 
-// TODO (hans): Add mobile view for WorkspacePage, probably split the views
 export const WorkspacePage = (): JSX.Element => {
+  const isMobile = useIsMobile()
   const { user, isLoading: isUserLoading } = useUser()
+  const createFormModalDisclosure = useDisclosure()
+  const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
@@ -165,9 +149,16 @@ export const WorkspacePage = (): JSX.Element => {
       !user?.contact,
     [isUserLoading, hasSeenAnnouncement, hasSeenEmergencyContact, user],
   )
-  const isMobile = useIsMobile()
 
-  // TODO (hans): Add <EmptyWorkspace/> if totalFormCount === 0
+  if (dashboardForms?.length === 0) {
+    return (
+      <EmptyWorkspace
+        isLoading={isDashboardLoading}
+        handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
+      />
+    )
+  }
+
   return (
     <>
       <Container gridArea="banner" maxW={CONTAINER_MAXW} pt="1.5rem">
