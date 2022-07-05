@@ -43,10 +43,16 @@ const WorkspaceTab = ({
       {...styles}
       {...props}
     >
-      <Text textStyle="body-2" whiteSpace="nowrap" isTruncated>
+      <Text
+        textStyle={isSelected ? 'subhead-2' : 'body-2'}
+        whiteSpace="nowrap"
+        isTruncated
+      >
         {label}
       </Text>
-      <Text textStyle="body-2">{truncateLargeNumberWithPlus(numForms)}</Text>
+      <Text textStyle={isSelected ? 'subhead-2' : 'body-2'}>
+        {truncateLargeNumberWithPlus(numForms)}
+      </Text>
     </Flex>
   )
 }

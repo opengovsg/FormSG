@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { BiMenuAltLeft } from 'react-icons/bi'
 import {
+  Box,
   Container,
   Drawer,
   DrawerBody,
@@ -10,7 +10,7 @@ import {
   Flex,
   Grid,
   Stack,
-  Text,
+  useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
 
@@ -18,9 +18,7 @@ import {
   EMERGENCY_CONTACT_KEY_PREFIX,
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
 } from '~constants/localStorage'
-import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
-import IconButton from '~components/IconButton'
 
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
@@ -32,93 +30,27 @@ import {
 
 // TODO #4279: Remove after React rollout is complete
 import { AdminSwitchEnvMessage } from './components/AdminSwitchEnvMessage'
+import CreateFormModal from './components/CreateFormModal'
 import { EmptyWorkspace } from './components/EmptyWorkspace'
 import { WorkspaceMenuHeader } from './components/WorkspaceSideMenu/WorkspaceMenuHeader'
 import { WorkspaceMenuTabs } from './components/WorkspaceSideMenu/WorkspaceMenuTabs'
 import { useDashboard, useWorkspace } from './queries'
 
-const WorkspaceMobilePage = (): JSX.Element => {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
-  const { data: workspaces, isLoading: isWorkspaceLoading } = useWorkspace()
-  if (isWorkspaceLoading || !workspaces) return <></>
-
-  return (
-    <>
-      <Drawer placement="left" onClose={onClose} isOpen={isOpen}>
-        <DrawerOverlay />
-        <DrawerContent maxW="15.5rem">
-          <DrawerHeader p={0}>
-            <Flex pt="1rem" px="1rem" alignItems="center">
-              <IconButton
-                icon={<BiMenuAltLeft />}
-                onClick={onClose}
-                aria-label="close workspace drawer"
-                variant="clear"
-                colorScheme="secondary"
-              />
-              <WorkspaceMenuHeader mt={0} px={0} w="100%" />
-            </Flex>
-          </DrawerHeader>
-          <DrawerBody px={0} pt="1rem">
-            <WorkspaceMenuTabs
-              workspaces={workspaces}
-              currWorkspace={currWorkspaceId}
-              onClick={(id) => {
-                setCurrWorkspaceId(id)
-                onClose()
-              }}
-            />
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
-      <Flex
-        pl={'1.25rem'}
-        alignItems="center"
-        borderBottomWidth="1px"
-        borderBottomColor="neutral.300"
-        py="0.5rem"
-      >
-        <IconButton
-          icon={<BiMenuAltLeft />}
-          onClick={onOpen}
-          aria-label="open workspace drawer"
-          variant="clear"
-          colorScheme="secondary"
-        />
-        <Text textStyle="h4" color="secondary.700">
-          Workspaces
-        </Text>
-      </Flex>
-      <WorkspaceContent workspaceId={currWorkspaceId} />
-    </>
-  )
-}
-const WorkspaceDesktopPage = (): JSX.Element => {
-  const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
-  const { data: workspaces, isLoading: isWorkspaceLoading } = useWorkspace()
-  if (isWorkspaceLoading || !workspaces) return <></>
-
-  return (
-    <Grid templateColumns="15.5rem 1fr" minH="100vh">
-      <Stack borderRight="1px" borderRightColor="neutral.300">
-        <WorkspaceMenuHeader />
-        <WorkspaceMenuTabs
-          workspaces={workspaces}
-          currWorkspace={currWorkspaceId}
-          onClick={setCurrWorkspaceId}
-        />
-      </Stack>
-      <WorkspaceContent workspaceId={currWorkspaceId} />
-    </Grid>
-  )
-}
-
 export const WorkspacePage = (): JSX.Element => {
-  const isMobile = useIsMobile()
+  const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
+
+  const shouldUseTopMenu = useBreakpointValue({
+    base: true,
+    xs: true,
+    md: true,
+    lg: false,
+  })
+  const createFormModal = useDisclosure()
+  const mobileDrawer = useDisclosure()
+
   const { user, isLoading: isUserLoading } = useUser()
-  const createFormModalDisclosure = useDisclosure()
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
+  const { data: workspaces } = useWorkspace()
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
@@ -152,19 +84,84 @@ export const WorkspacePage = (): JSX.Element => {
 
   if (dashboardForms?.length === 0) {
     return (
-      <EmptyWorkspace
-        isLoading={isDashboardLoading}
-        handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
-      />
+      <>
+        <CreateFormModal
+          isOpen={createFormModal.isOpen}
+          onClose={createFormModal.onClose}
+        />
+        <EmptyWorkspace
+          isLoading={isDashboardLoading}
+          handleOpenCreateFormModal={createFormModal.onOpen}
+        />
+      </>
     )
   }
 
   return (
     <>
-      <Container gridArea="banner" maxW={CONTAINER_MAXW} pt="1.5rem">
-        <AdminSwitchEnvMessage />
-      </Container>
-      {isMobile ? <WorkspaceMobilePage /> : <WorkspaceDesktopPage />}
+      <Drawer
+        placement="left"
+        onClose={mobileDrawer.onClose}
+        isOpen={mobileDrawer.isOpen}
+      >
+        <DrawerOverlay />
+        <DrawerContent maxW="15.5rem">
+          <DrawerHeader p={0}>
+            <Flex pt="1rem" px="1rem" alignItems="center">
+              <WorkspaceMenuHeader
+                onMenuClick={mobileDrawer.onClose}
+                shouldShowAddWorkspaceButton
+                shouldShowMenuIcon
+                justifyContent="space-between"
+                w="100%"
+                px={0}
+              />
+            </Flex>
+          </DrawerHeader>
+          <DrawerBody px={0} pt="1rem">
+            <WorkspaceMenuTabs
+              workspaces={workspaces ?? []}
+              currWorkspace={currWorkspaceId}
+              onClick={(id) => {
+                setCurrWorkspaceId(id)
+                mobileDrawer.onClose()
+              }}
+            />
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+
+      <Grid templateColumns={{ base: 'inherit', lg: '15.5rem 1fr' }} h="100vh">
+        <Container gridArea="banner" maxW={CONTAINER_MAXW} pt="1.5rem">
+          <AdminSwitchEnvMessage />
+        </Container>
+        {shouldUseTopMenu ? (
+          <WorkspaceMenuHeader
+            shouldShowMenuIcon
+            onMenuClick={mobileDrawer.onOpen}
+            borderBottom="1px"
+            borderBottomColor="neutral.300"
+            py="1rem"
+          />
+        ) : (
+          <Box overflowY="scroll">
+            <Stack
+              borderRight="1px"
+              borderRightColor="neutral.300"
+              minH="100vh"
+            >
+              <WorkspaceMenuHeader shouldShowAddWorkspaceButton />
+              <WorkspaceMenuTabs
+                workspaces={workspaces ?? []}
+                currWorkspace={currWorkspaceId}
+                onClick={setCurrWorkspaceId}
+              />
+            </Stack>
+          </Box>
+        )}
+        <WorkspaceContent workspaceId={currWorkspaceId} />
+      </Grid>
+
       <RolloutAnnouncementModal
         onClose={() => setHasSeenAnnouncement(true)}
         isOpen={isAnnouncementModalOpen}

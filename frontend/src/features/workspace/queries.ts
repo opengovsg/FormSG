@@ -8,7 +8,7 @@ import { ApiError } from '~typings/core'
 import { getDashboardView, getWorkspacesView } from './WorkspaceService'
 
 const workspaceKeys = {
-  all: ['workspace'] as const,
+  dashboard: ['dashboard'] as const,
   workspaces: ['workspaces'] as const,
 }
 
@@ -16,7 +16,7 @@ export const useDashboard = (): UseQueryResult<
   AdminDashboardFormMetaDto[],
   ApiError
 > => {
-  return useQuery(workspaceKeys.all, () => getDashboardView(), {
+  return useQuery(workspaceKeys.dashboard, () => getDashboardView(), {
     staleTime: 5000,
   })
 }

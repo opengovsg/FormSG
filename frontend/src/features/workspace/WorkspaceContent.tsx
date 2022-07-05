@@ -120,6 +120,7 @@ export const WorkspaceContent = ({
         templateRows="auto 1fr auto"
         minH="100vh"
         templateAreas="'header' 'main' 'footer'"
+        overflowY="scroll"
       >
         <Container
           gridArea="header"
