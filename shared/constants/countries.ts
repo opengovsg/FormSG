@@ -1,4 +1,5 @@
 export enum Country {
+  Singapore = 'SINGAPORE',
   Afghanistan = 'AFGHANISTAN',
   Albania = 'ALBANIA',
   Algeria = 'ALGERIA',
@@ -198,7 +199,6 @@ export enum Country {
   Serbia_Montenegro = 'SERBIA/MONTENEGRO',
   Seychelles = 'SEYCHELLES',
   Sierra_Leone = 'SIERRA LEONE',
-  Singapore = 'SINGAPORE',
   Slovak_Republic = 'SLOVAK REPUBLIC',
   Slovenia = 'SLOVENIA',
   Solomon_Islands = 'SOLOMON ISLANDS',
