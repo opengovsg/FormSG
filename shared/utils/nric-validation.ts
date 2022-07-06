@@ -1,4 +1,5 @@
 const NRIC_FORMAT = /^([STFG])(\d{7})([A-Z])$/
+const NRIC_FORMAT_M_SERIES = /^[M](\d{7})([KLJNPQRTUWX])$/
 
 /**
  * Validates whether a provided string value adheres to the UIN/FIN format
@@ -31,11 +32,10 @@ export const isNricValid = (value: string): boolean => {
  * @param value The string to be validated
  */
 export const isMFinSeriesValid = (value: string): boolean => {
-  const format = /^[M](\d{7})([KLJNPQRTUWX])$/
   const checksumEncoding = 'KLJNPQRTUWX'
 
   // Simple first-pass validation with regex parsing
-  const parsed = value.toUpperCase().match(format)
+  const parsed = value.toUpperCase().match(NRIC_FORMAT_M_SERIES)
 
   if (!parsed) return false
 

@@ -36,6 +36,7 @@ import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
 import { MyInfoCookieStateError } from '../../../myinfo/myinfo.errors'
 import { MyInfoService } from '../../../myinfo/myinfo.service'
 import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
+import { SpOidcService } from '../../../spcp/sp.oidc.service'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
@@ -60,12 +61,14 @@ jest.mock('../public-form.service')
 jest.mock('../../form.service')
 jest.mock('../../../auth/auth.service')
 jest.mock('../../../spcp/spcp.service')
+jest.mock('../../../spcp/sp.oidc.service')
 jest.mock('../../../myinfo/myinfo.service')
 
 const MockFormService = mocked(FormService)
 const MockPublicFormService = mocked(PublicFormService)
 const MockAuthService = mocked(AuthService)
 const MockSpcpService = mocked(SpcpService, true)
+const MockSpOidcService = mocked(SpOidcService, true)
 const MockMyInfoService = mocked(MyInfoService, true)
 
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
@@ -541,7 +544,7 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
         )
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
+        MockSpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
           okAsync(MOCK_SPCP_SESSION),
         )
 
@@ -865,20 +868,56 @@ describe('public-form.controller', () => {
     })
 
     describe('errors in spcp', () => {
-      const MOCK_SPCP_FORM = {
+      const MOCK_SP_FORM = {
         ...BASE_FORM,
         authType: FormAuthType.SP,
       } as unknown as IPopulatedForm
-      it('should return 200 with the form but without a spcpSession when the JWT token could not be found', async () => {
+      const MOCK_CP_FORM = {
+        ...BASE_FORM,
+        authType: FormAuthType.CP,
+      } as unknown as IPopulatedForm
+      it('should return 200 with the form but without a spcpSession when the JWT token could not be found for SP form', async () => {
         // Arrange
         // 1. Mock the response and calls
         const mockRes = expressHandler.mockResponse()
 
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_FORM),
+          okAsync(MOCK_SP_FORM),
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_FORM),
+          okAsync(MOCK_SP_FORM),
+        )
+        MockSpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
+          errAsync(new MissingJwtError()),
+        )
+
+        // Act
+        // 2. GET the endpoint
+        await PublicFormController.handleGetPublicForm(
+          MOCK_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        // Status should be 200
+        // json object should only have form property
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: MOCK_SP_FORM.getPublicView(),
+          isIntranetUser: false,
+        })
+      })
+
+      it('should return 200 with the form but without a spcpSession when the JWT token could not be found for CP form', async () => {
+        // Arrange
+        // 1. Mock the response and calls
+        const mockRes = expressHandler.mockResponse()
+
+        MockAuthService.getFormIfPublic.mockReturnValueOnce(
+          okAsync(MOCK_CP_FORM),
+        )
+        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_CP_FORM),
         )
         MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
           errAsync(new MissingJwtError()),
@@ -896,7 +935,7 @@ describe('public-form.controller', () => {
         // Status should be 200
         // json object should only have form property
         expect(mockRes.json).toHaveBeenCalledWith({
-          form: MOCK_SPCP_FORM.getPublicView(),
+          form: MOCK_CP_FORM.getPublicView(),
           isIntranetUser: false,
         })
       })
@@ -1053,7 +1092,7 @@ describe('public-form.controller', () => {
 
         const mockRes = expressHandler.mockResponse()
 
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
+        MockSpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
           okAsync(MOCK_SPCP_SESSION),
         )
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
@@ -1185,7 +1224,7 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
+      MockSpOidcService.createRedirectUrl.mockResolvedValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
 
@@ -1216,7 +1255,7 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
+      MockSpOidcService.createRedirectUrl.mockResolvedValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
 
@@ -1250,7 +1289,7 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
+      MockSpOidcService.createRedirectUrl.mockResolvedValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
 
@@ -1448,7 +1487,36 @@ describe('public-form.controller', () => {
       })
     })
 
-    it('should return 500 when the redirectURL could not be created', async () => {
+    it('should return 500 when the redirectURL could not be created for SP form', async () => {
+      // Arrange
+      const MOCK_FORM = {
+        esrvcId: '234',
+        authType: FormAuthType.SP,
+      } as unknown as SpcpForm<IFormDocument>
+
+      const mockRes = expressHandler.mockResponse()
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockSpOidcService.createRedirectUrl.mockResolvedValue(
+        err(new CreateRedirectUrlError()),
+      )
+
+      // Act
+      await PublicFormController._handleFormAuthRedirect(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(500)
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Sorry, something went wrong. Please try again.',
+      })
+    })
+
+    it('should return 500 when the redirectURL could not be created for CP form', async () => {
       // Arrange
       const MOCK_FORM = {
         esrvcId: '234',

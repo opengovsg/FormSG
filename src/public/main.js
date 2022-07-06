@@ -727,3 +727,7 @@ angular
     },
   })
   .constant('responseModeEnum', { ENCRYPT: 'encrypt', EMAIL: 'email' })
+  .constant('prefill', {
+    QUERY_ID: 'queryId',
+    STORED_QUERY: 'storedQuery',
+  })
