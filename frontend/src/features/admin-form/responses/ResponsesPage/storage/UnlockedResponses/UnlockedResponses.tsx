@@ -2,12 +2,15 @@ import { useMemo } from 'react'
 import { Box, Flex, Grid, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
 
-import { useFormResponses } from '../../../queries'
+import Pagination from '~components/Pagination'
 
 import { DownloadButton } from './DownloadButton'
+import { ResponsesTable } from './ResponsesTable'
+import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
 export const UnlockedResponses = (): JSX.Element => {
-  const { data: { count } = {} } = useFormResponses()
+  const { currentPage, setCurrentPage, count, isLoading } =
+    useUnlockedResponses()
 
   const prettifiedResponsesCount = useMemo(() => {
     if (!count) return
@@ -23,7 +26,7 @@ export const UnlockedResponses = (): JSX.Element => {
         gridTemplateColumns={{ base: 'auto', md: 'auto 1fr' }}
         gridGap={{ base: '0.5rem', md: '1.5rem' }}
         gridTemplateAreas={{
-          base: "'submissions submissions' 'export'",
+          base: "'submissions' 'export'",
           md: "'submissions export'",
         }}
       >
@@ -37,6 +40,17 @@ export const UnlockedResponses = (): JSX.Element => {
         </Box>
         <DownloadButton />
       </Grid>
+      <Box mb="3rem" overflow="auto" flex={1}>
+        <ResponsesTable />
+      </Box>
+      <Box display={isLoading || count === 0 ? 'none' : ''}>
+        <Pagination
+          totalCount={count ?? 0}
+          currentPage={currentPage ?? 1} //1-indexed
+          pageSize={10}
+          onPageChange={setCurrentPage}
+        />
+      </Box>
     </Flex>
   )
 }

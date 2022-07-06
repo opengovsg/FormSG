@@ -7,6 +7,7 @@ import { StorageModeSubmissionMetadataList } from '~shared/types/submission'
 import { adminFormKeys } from '../common/queries'
 
 import { getFormFeedback } from './FeedbackPage/FeedbackService'
+import { useStorageResponsesContext } from './ResponsesPage/storage/StorageResponsesContext'
 import {
   countFormSubmissions,
   getFormSubmissionsMetadata,
@@ -16,6 +17,8 @@ export const adminFormResponsesKeys = {
   base: [...adminFormKeys.base, 'responses'] as const,
   id: (id: string) => [...adminFormResponsesKeys.base, id] as const,
   count: (id: string) => [...adminFormResponsesKeys.id(id), 'count'] as const,
+  metadata: (id: string, page = 1) =>
+    [...adminFormResponsesKeys.id(id), 'metadata', page] as const,
 }
 
 export const adminFormFeedbackKeys = {
@@ -40,17 +43,25 @@ export const useFormResponsesCount = (): UseQueryResult<number> => {
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useFormResponses =
-  (): UseQueryResult<StorageModeSubmissionMetadataList> => {
-    const { formId } = useParams()
-    if (!formId) throw new Error('No formId provided')
+export const useFormResponses = (
+  page = 1,
+): UseQueryResult<StorageModeSubmissionMetadataList> => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
 
-    return useQuery(
-      adminFormResponsesKeys.id(formId),
-      () => getFormSubmissionsMetadata(formId),
-      { staleTime: 10 * 60 * 1000 },
-    )
-  }
+  const { secretKey } = useStorageResponsesContext()
+
+  return useQuery(
+    adminFormResponsesKeys.metadata(formId, page),
+    () => getFormSubmissionsMetadata(formId, page),
+    {
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+      keepPreviousData: true,
+      enabled: !!secretKey && page > 0,
+    },
+  )
+}
 
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
