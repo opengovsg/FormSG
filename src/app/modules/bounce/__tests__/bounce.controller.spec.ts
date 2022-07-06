@@ -172,6 +172,7 @@ describe('handleSns', () => {
     expect(MockBounceService.getEditorsWithContactNumbers).toHaveBeenCalledWith(
       mockForm,
     )
+    expect(mockBounceDoc.hasNotified).toHaveBeenCalled()
     expect(MockBounceService.sendEmailBounceNotification).toHaveBeenCalledWith(
       mockBounceDoc,
       mockForm,
@@ -229,6 +230,7 @@ describe('handleSns', () => {
     expect(MockBounceService.getEditorsWithContactNumbers).toHaveBeenCalledWith(
       mockForm,
     )
+    expect(mockBounceDoc.hasNotified).toHaveBeenCalled()
     expect(MockBounceService.sendEmailBounceNotification).toHaveBeenCalledWith(
       mockBounceDoc,
       mockForm,
@@ -334,6 +336,7 @@ describe('handleSns', () => {
     expect(MockBounceService.getEditorsWithContactNumbers).toHaveBeenCalledWith(
       mockForm,
     )
+    expect(mockBounceDoc.hasNotified).toHaveBeenCalled()
     expect(mockBounceDoc.areAllPermanentBounces).toHaveBeenCalled()
     expect(MockFormService.deactivateForm).toHaveBeenCalledWith(
       mockBounceDoc.formId,
@@ -367,6 +370,7 @@ describe('handleSns', () => {
     expect(MockBounceService.getEditorsWithContactNumbers).toHaveBeenCalledWith(
       mockForm,
     )
+    expect(mockBounceDoc.hasNotified).toHaveBeenCalled()
     expect(mockBounceDoc.areAllPermanentBounces).toHaveBeenCalled()
     expect(MockFormService.deactivateForm).toHaveBeenCalledWith(
       mockBounceDoc.formId,
