@@ -1,0 +1,1 @@
+export { IndividualResponsePage } from './IndividualResponsePage'

@@ -13,6 +13,8 @@ import { useFormResponses } from '~features/admin-form/responses/queries'
 
 import { usePageSearchParams } from './hooks/usePageSearchParams'
 
+const PAGE_SIZE = 10
+
 interface UnlockedResponsesContextProps {
   currentPage?: number
   setCurrentPage: (page: number) => void
@@ -24,6 +26,8 @@ interface UnlockedResponsesContextProps {
   getPreviousSubmissionId: (
     currentSubmissionId: string,
   ) => SubmissionId | undefined
+  onNavNextSubmissionId: (currentSubmissionId: string) => void
+  onNavPreviousSubmissionId: (currentSubmissionId: string) => void
   lastNavPage?: number
 }
 
@@ -41,7 +45,7 @@ export const useUnlockedResponses = (): UnlockedResponsesContextProps => {
   return context
 }
 
-const useProvideUnlockedResponses = () => {
+const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   const [currentPage, setCurrentPage] = usePageSearchParams()
   // Storing the params in the state for navigation when user returns from
   // individual response view.
@@ -54,19 +58,59 @@ const useProvideUnlockedResponses = () => {
   }, [currentPage, lastNavPage])
 
   const { data: { count, metadata = [] } = {}, isLoading } =
-    useFormResponses(currentPage)
+    useFormResponses(lastNavPage)
   const {
     data: { metadata: prevMetadata = [] } = {},
     isLoading: isPrevLoading,
-  } = useFormResponses(currentPage ?? 0)
+  } = useFormResponses(lastNavPage ?? 0)
   const {
     data: { metadata: nextMetadata = [] } = {},
     isLoading: isNextLoading,
-  } = useFormResponses(currentPage ?? 2)
+  } = useFormResponses(lastNavPage ?? 2)
+
+  const totalPageCount = useMemo(
+    () => (count ? Math.ceil(count / PAGE_SIZE) : 0),
+    [count],
+  )
 
   const isAnyLoading = useMemo(
     () => isLoading || isPrevLoading || isNextLoading,
     [isLoading, isNextLoading, isPrevLoading],
+  )
+
+  const onNavNextSubmissionId = useCallback(
+    (currentSubmissionId: string) => {
+      if (isAnyLoading || (lastNavPage ?? 1) >= totalPageCount) return
+      // Get row index of current submission in the metadata.
+      const currentResponseIndex = metadata.findIndex(
+        (response) => response.refNo === currentSubmissionId,
+      )
+
+      if (currentResponseIndex === -1) return
+
+      // If id belongs to the last submission in page, return first of next page
+      if (currentResponseIndex === metadata.length - 1) {
+        setLastNavPage((lastNavPage ?? 1) + 1)
+      }
+    },
+    [isAnyLoading, lastNavPage, metadata, totalPageCount],
+  )
+
+  const onNavPreviousSubmissionId = useCallback(
+    (currentSubmissionId: string) => {
+      if (isAnyLoading) return
+
+      // Get row index of current submission in the metadata.
+      const currentResponseIndex = metadata.findIndex(
+        (response) => response.refNo === currentSubmissionId,
+      )
+
+      // If id belongs to the first submission in page, return last of previous page
+      if (currentResponseIndex === 0 && lastNavPage && lastNavPage > 1) {
+        setLastNavPage(lastNavPage - 1)
+      }
+    },
+    [isAnyLoading, lastNavPage, metadata],
   )
 
   const getNextSubmissionId = useCallback(
@@ -76,16 +120,16 @@ const useProvideUnlockedResponses = () => {
       const currentResponseIndex = metadata.findIndex(
         (response) => response.refNo === currentSubmissionId,
       )
+
+      if (currentResponseIndex === -1) return
+
       // If id belongs to the last submission in page, return first of next page
       if (currentResponseIndex === metadata.length - 1) {
-        const data = nextMetadata[0]
-        setCurrentPage(currentPage ?? 2)
-        return data?.refNo
-      } else {
-        return metadata[currentResponseIndex + 1]?.refNo
+        return nextMetadata[0]?.refNo
       }
+      return metadata[currentResponseIndex + 1]?.refNo
     },
-    [currentPage, isAnyLoading, metadata, nextMetadata, setCurrentPage],
+    [isAnyLoading, metadata, nextMetadata],
   )
 
   const getPreviousSubmissionId = useCallback(
@@ -96,17 +140,16 @@ const useProvideUnlockedResponses = () => {
       const currentResponseIndex = metadata.findIndex(
         (response) => response.refNo === currentSubmissionId,
       )
+
+      if (currentResponseIndex === -1) return
+
       // If id belongs to the first submission in page, return last of previous page
-      if (currentResponseIndex === 0) {
-        if (!currentPage || currentPage === 1) return
-        const data = prevMetadata[prevMetadata.length - 1]
-        setCurrentPage(currentPage - 1)
-        return data?.refNo
-      } else {
-        return metadata[currentResponseIndex - 1]?.refNo
+      if (currentResponseIndex === 0 && lastNavPage && lastNavPage > 1) {
+        return prevMetadata[prevMetadata.length - 1]?.refNo
       }
+      return metadata[currentResponseIndex - 1]?.refNo
     },
-    [currentPage, isAnyLoading, metadata, prevMetadata, setCurrentPage],
+    [isAnyLoading, lastNavPage, metadata, prevMetadata],
   )
 
   return {
@@ -118,6 +161,8 @@ const useProvideUnlockedResponses = () => {
     isAnyLoading,
     getNextSubmissionId,
     getPreviousSubmissionId,
+    onNavNextSubmissionId,
+    onNavPreviousSubmissionId,
     lastNavPage,
   }
 }

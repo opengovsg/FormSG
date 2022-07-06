@@ -19,6 +19,8 @@ export const adminFormResponsesKeys = {
   count: (id: string) => [...adminFormResponsesKeys.id(id), 'count'] as const,
   metadata: (id: string, page = 1) =>
     [...adminFormResponsesKeys.id(id), 'metadata', page] as const,
+  individual: (id: string, submissionId: string) =>
+    [...adminFormResponsesKeys.id(id), 'individual', submissionId] as const,
 }
 
 export const adminFormFeedbackKeys = {
