@@ -52,53 +52,49 @@ const FormBuilder = ({
       overflow="auto"
       {...props}
     >
-      <Flex
-        h="fit-content"
-        bg="white"
-        p={{ base: 0, md: '2.5rem' }}
-        maxW="57rem"
-        w="100%"
-        flexDir="column"
-      >
-        <Droppable droppableId={FIELD_LIST_DROP_ID}>
-          {(provided, snapshot) =>
-            builderFields?.length ? (
-              <Box
-                pos="relative"
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-              >
-                <BuilderFields
-                  fields={builderFields}
+      <Flex flexDir="column" w="100%" maxW="57rem" h="fit-content">
+        <Flex bg="white" p={{ base: 0, md: '2.5rem' }} flexDir="column">
+          <Droppable droppableId={FIELD_LIST_DROP_ID}>
+            {(provided, snapshot) =>
+              builderFields?.length ? (
+                <Box
+                  pos="relative"
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  <BuilderFields
+                    fields={builderFields}
+                    isDraggingOver={snapshot.isDraggingOver}
+                  />
+                  {provided.placeholder}
+                  <BuilderAndDesignPlaceholder
+                    placeholderProps={placeholderProps}
+                    isDraggingOver={snapshot.isDraggingOver}
+                  />
+                </Box>
+              ) : (
+                <EmptyFormPlaceholder
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
                   isDraggingOver={snapshot.isDraggingOver}
+                  onClick={handleBuilderClick}
                 />
-                {provided.placeholder}
-                <BuilderAndDesignPlaceholder
-                  placeholderProps={placeholderProps}
-                  isDraggingOver={snapshot.isDraggingOver}
-                />
-              </Box>
-            ) : (
-              <EmptyFormPlaceholder
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                isDraggingOver={snapshot.isDraggingOver}
-                onClick={handleBuilderClick}
-              />
-            )
-          }
-        </Droppable>
+              )
+            }
+          </Droppable>
+        </Flex>
         <Button
           py="1.5rem"
           mt="1.5rem"
           variant="outline"
+          borderColor="secondary.200"
           colorScheme="secondary"
           onClick={() => {
             setEditEndPage()
             handleBuilderClick()
           }}
         >
-          <Text textStyle="subhead-2">Thank you</Text>
+          <Text textStyle="subhead-2">Customise your Thank you page</Text>
         </Button>
       </Flex>
     </Flex>
@@ -122,7 +118,7 @@ const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
     >
       <Stack w="100%">
         <Flex justifyContent="center" pt="1rem" pb="0.5rem">
-          <Image src={form?.admin?.agency?.logo ?? ''} h="4rem" />
+          <Image src={form?.admin?.agency?.logo} h="4rem" />
         </Flex>
         <Flex backgroundColor="primary.100" justifyContent="center">
           <ThankYouSvgr h="100%" pt="2.5rem" />
